@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2017, WWIV Software Services             */
+/*             Copyright (C)2015-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -21,7 +21,6 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "networkb/net_util.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/ftn_msgdupe.h"

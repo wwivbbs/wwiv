@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2017, WWIV Software Services             */
+/*             Copyright (C)2015-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,27 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include <cstdio>
+#include "core/log.h"
 #include "gtest/gtest.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
-#include "networkb/net_util.h"
 
-#include <cstdint>
-#include <string>
-
-using std::endl;
-using std::string;
-using std::unique_ptr;
-using namespace wwiv::net;
-using namespace wwiv::strings;
-
-
-class NetworkUtilTest: public testing::Test {
-public:
-  NetworkUtilTest() {}
-protected:
-  FileHelper helper_;
-};
-
-TEST_F(NetworkUtilTest, NOP) {
-}
+int main(int argc, char* argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  wwiv::core::Logger::Init(argc, argv);
+  return RUN_ALL_TESTS();
+} 

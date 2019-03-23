@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2017, WWIV Software Services             */
+/*             Copyright (C)2015-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -127,6 +127,7 @@ public:
     int num_messages = area->number_of_messages();
     int message_number = arg("num").as_int();
     cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
+    cout << string(72, '-') << endl;
 
     if (message_number < 0 || message_number > num_messages) {
       LOG(ERROR) << "Invalid message number #" << message_number;
@@ -496,10 +497,18 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   area->set_storage_type(sub.storage_type);
   area->set_max_messages(sub.maxmsgs);
 
-  const auto num_messages = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
-  for (auto current = start; current <= num_messages; current++) {
+  const auto last_message = (end >= 0) ? end : area->number_of_messages();
+  cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
+       << endl;
+  cout << string(72, '-') << endl;
+  for (auto current = start; current <= last_message; current++) {
     auto message = area->ReadMessage(current);
+    if (!message) {
+      cout << "#" << current << "  ERROR " << endl;
+      VLOG(1) << "Failed to read message number: " << current;
+      cout << string(72, '-') << endl;
+      continue;
+    }
     const auto& header = message->header();
     cout << "#" << setw(5) << std::left << current << " From: " << setw(20) << header.from()
          << "date: " << daten_to_wwivnet_time(header.daten()) << endl

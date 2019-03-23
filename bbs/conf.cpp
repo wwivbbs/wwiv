@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,15 +19,15 @@
 #include "bbs/conf.h"
 
 #include <algorithm>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "bbs/arword.h"
-#include "bbs/confutil.h"
-#include "bbs/input.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
+#include "bbs/confutil.h"
+#include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "core/log.h"
@@ -45,29 +45,18 @@ using namespace wwiv::strings;
 static int disable_conf_cnt = 0;
 
 /* Max line length in conference files */
-#define MAX_CONF_LINE 4096
-
-/* To prevent heap fragmentation, allocate confrec.subs in multiples. */
-#define CONF_MULTIPLE ( a()->config()->max_subs() / 5 )
-
-// Locals
-char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
-int  modify_conf(ConferenceType conftype, int which);
-void insert_conf(ConferenceType conftype, int n);
-void delete_conf(ConferenceType conftype, int n);
-bool create_conf_file(ConferenceType conftype);
+static const size_t MAX_CONF_LINE = 4096;
 
 namespace wwiv {
 namespace bbs {
 
-TempDisableConferences::TempDisableConferences() : wwiv::core::Transaction([] {
-  tmp_disable_conf(false);
-  }, nullptr) {
+TempDisableConferences::TempDisableConferences()
+    : wwiv::core::Transaction([] { tmp_disable_conf(false); }, nullptr) {
   tmp_disable_conf(true);
 }
 
-}  // namespace bbs
-}  // namespace wwiv
+} // namespace bbs
+} // namespace wwiv
 
 void tmp_disable_conf(bool disable) {
   static int ocs = 0, oss = 0, ocd = 0, osd = 0;
@@ -93,9 +82,7 @@ void tmp_disable_conf(bool disable) {
   }
 }
 
-void reset_disable_conf() {
-  disable_conf_cnt = 0;
-}
+void reset_disable_conf() { disable_conf_cnt = 0; }
 
 conf_info_t get_conf_info(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_DIRS) {
@@ -114,11 +101,10 @@ conf_info_t get_conf_info(ConferenceType conftype) {
 static string get_conf_filename(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_SUBS) {
     return FilePath(a()->config()->datadir(), SUBS_CNF);
-  }
-  else if (conftype == ConferenceType::CONF_DIRS) {
+  } else if (conftype == ConferenceType::CONF_DIRS) {
     return FilePath(a()->config()->datadir(), DIRS_CNF);
   }
-  return{};
+  return {};
 }
 
 /*
@@ -131,11 +117,10 @@ void jump_conf(ConferenceType conftype) {
   string allowable = " ";
   bout.nl();
   for (const auto& uc : info.uc) {
-    if (uc.confnum == -1 || checka()) break;
+    if (uc.confnum == -1 || checka())
+      break;
     const auto ac = static_cast<char>(info.confs[uc.confnum].designator);
-    bout << "|#2" << ac << "|#7)|#1 "
-      << stripcolors(info.confs[uc.confnum].conf_name)
-      << "\r\n";
+    bout << "|#2" << ac << "|#7)|#1 " << stripcolors(info.confs[uc.confnum].conf_name) << "\r\n";
     allowable.push_back(ac);
   }
 
@@ -154,10 +139,25 @@ void jump_conf(ConferenceType conftype) {
 }
 
 /*
+ * Returns true if subnum is allocated to conference c, 0 otherwise.
+ */
+bool in_conference(subconf_t subnum, confrec* c) {
+  if (!c) {
+    return false;
+  }
+  for (const auto& s : c->subs) {
+    if (s == subnum) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/*
  * Removes, inserts, or swaps subs/dirs in all conferences of a specified
  * type.
  */
-void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action) {
+void update_conf(ConferenceType conftype, subconf_t* sub1, subconf_t* sub2, int action) {
   auto info = get_conf_info(conftype);
 
   switch (action) {
@@ -212,23 +212,8 @@ char first_available_designator(ConferenceType conftype) {
   if (info.confs.empty()) {
     return 'A';
   }
-  auto last = info.confs.back();
+  const auto last = info.confs.back();
   return last.designator + 1;
-}
-
-/*
- * Returns 1 if subnum is allocated to conference c, 0 otherwise.
- */
-bool in_conference(subconf_t subnum, confrec* c) {
-  if (!c) {
-    return false;
-  }
-  for (const auto& s : c->subs) {
-    if (s == subnum) {
-      return true;
-    }
-  }
-  return false;
 }
 
 /*
@@ -236,6 +221,8 @@ bool in_conference(subconf_t subnum, confrec* c) {
  */
 bool save_confs(ConferenceType conftype) {
   auto info = get_conf_info(conftype);
+  // Backup the *.cnf file 1st before we write to it.
+  backup_file(File(info.file_name));
 
   TextFile f(info.file_name, "wt");
   if (!f.IsOpen()) {
@@ -244,7 +231,8 @@ bool save_confs(ConferenceType conftype) {
     return false;
   }
 
-  f.WriteFormatted("%s\n\n", "/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */");
+  f.WriteFormatted("%s\n\n",
+                   "/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */");
   for (const auto& cp : info.confs) {
     f.WriteFormatted("~%c %s\n!%d %d %d %d %d %d %d %u %d %s %s\n@", cp.designator,
                      cp.conf_name.c_str(), cp.status, cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl,
@@ -270,9 +258,7 @@ static std::string create_conf_str(std::set<char> chars) {
 /*
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
-void showsubconfs(ConferenceType conftype, confrec * c) {
-  char s[120];
-
+static void showsubconfs(ConferenceType conftype, confrec* c) {
   if (!c) {
     return;
   }
@@ -294,16 +280,17 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
     auto confstr = create_conf_str(confs);
 
     switch (conftype) {
-    case ConferenceType::CONF_SUBS:
-      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, 
-        stripcolors(a()->subs().sub(i).name.c_str()), confstr.c_str());
-      break;
-    case ConferenceType::CONF_DIRS:
-      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
-              confstr.c_str());
-      break;
+    case ConferenceType::CONF_SUBS: {
+      auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i,
+                            stripcolors(a()->subs().sub(i).name.c_str()), confstr.c_str());
+      bout.bpla(s, &abort);
+    } break;
+    case ConferenceType::CONF_DIRS: {
+      auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
+                            confstr.c_str());
+      bout.bpla(s, &abort);
+    } break;
     }
-    bout.bpla(s, &abort);
   }
 }
 
@@ -311,7 +298,7 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
  * Takes a string like "100-150,201,333" and returns pointer to list of
  * numbers. Number of numbers in the list is returned in numinlist.
  */
-bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
+static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& list) {
   subconf_t intarray[1024];
 
   // init vars
@@ -324,41 +311,39 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
   }
 
   // get num "words" in input string
-  int nNumWords = wordcount(pszNumbersText, ",");
+  auto num_words = wordcount(pszNumbersText, ",");
 
-  for (int word = 1; word <= nNumWords; word++) {
+  for (auto word = 1; word <= num_words; word++) {
     CheckForHangup();
     if (a()->hangup_) {
       return false;
     }
 
-    string temp = extractword(word, pszNumbersText, ",");
-    int nRangeCount = wordcount(temp, " -\t\r\n");
-    switch (nRangeCount) {
+    const auto temp = extractword(word, pszNumbersText, ",");
+    auto range_count = wordcount(temp, " -\t\r\n");
+    switch (range_count) {
     case 0:
       break;
     case 1: {
-      //This means there is no number in the range, it's just ,###,###
-      int num = to_number<int>(extractword(1, temp, " -\t\r\n"));
+      // This means there is no number in the range, it's just ,###,###
+      auto num = to_number<int>(extractword(1, temp, " -\t\r\n"));
       if (num < 1024 && num >= 0) {
-        intarray[ num ] = 1;
+        intarray[num] = 1;
       }
-    }
-    break;
+    } break;
     default: {
       // We're dealing with a range here, so it should be "XXX-YYY"
       // convert the left and right strings to numbers
-      int nLowNumber = to_number<int>(extractword(1, temp, " -\t\r\n,"));
-      int nHighNumber = to_number<int>(extractword(2, temp, " -\t\r\n,"));
+      auto low_number = to_number<int>(extractword(1, temp, " -\t\r\n,"));
+      auto high_number = to_number<int>(extractword(2, temp, " -\t\r\n,"));
       // Switch them around if they were reversed
-      if (nLowNumber > nHighNumber) {
-        std::swap(nLowNumber, nHighNumber);
+      if (low_number > high_number) {
+        std::swap(low_number, high_number);
       }
-      for (int i = std::max<int>(nLowNumber, 0); i <= std::min<int>(nHighNumber, 1023); i++) {
+      for (auto i = std::max<int>(low_number, 0); i <= std::min<int>(high_number, 1023); i++) {
         intarray[i] = 1;
       }
-    }
-    break;
+    } break;
     }
   }
 
@@ -371,7 +356,6 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
   }
   return true;
 }
-
 
 /*
  * Function to add one subconf (sub/dir/whatever) to a conference.
@@ -447,29 +431,24 @@ static void delsubconf(confrec* c, subconf_t* which) {
   }
 }
 
-char* GetGenderAllowed(int nGender, char *pszGenderAllowed) {
+static std::string GetGenderAllowed(int nGender) {
   switch (nGender) {
   case 0:
-    strcpy(pszGenderAllowed, "Male");
-    break;
+    return "Male";
   case 1:
-    strcpy(pszGenderAllowed, "Female");
-    break;
+    return "Female";
   case 2:
   default:
-    strcpy(pszGenderAllowed, "Anyone");
-    break;
+    return "Anyone";
   }
-  return pszGenderAllowed;
 }
-
 
 /*
  * Function for editing the data for one conference.
  */
-int modify_conf(ConferenceType conftype,  int which) {
+static void modify_conf(ConferenceType conftype, int which) {
   bool changed = false;
-  bool ok   = false;
+  bool ok = false;
   bool done = false;
 
   int n = which;
@@ -478,7 +457,6 @@ int modify_conf(ConferenceType conftype,  int which) {
 
   do {
     confrec& c = info.confs[n];
-    char szGenderAllowed[ 21 ];
     bout.cls();
 
     bout << "|#9A) Designator           : |#2" << c.designator << wwiv::endl;
@@ -492,13 +470,13 @@ int modify_conf(ConferenceType conftype,  int which) {
     bout << "|#9I) ARs Required         : |#2" << word_to_arstr(c.ar) << wwiv::endl;
     bout << "|#9J) DARs Required        : |#2" << word_to_arstr(c.dar) << wwiv::endl;
     bout << "|#9K) Min BPS Required     : |#2" << c.minbps << wwiv::endl;
-    bout << "|#9L) Gender Allowed       : |#2" << GetGenderAllowed(c.sex, szGenderAllowed) << wwiv::endl;
-    bout << "|#9M) Ansi Required        : |#2" << YesNoString((c.status & conf_status_ansi) ? true : false) <<
-                       wwiv::endl;
-    bout << "|#9N) WWIV RegNum Required : |#2" << YesNoString((c.status & conf_status_wwivreg) ? true : false)
-                       << wwiv::endl;
-    bout << "|#9O) Available            : |#2" << YesNoString((c.status & conf_status_offline) ? true : false)
-                       << wwiv::endl;
+    bout << "|#9L) Gender Allowed       : |#2" << GetGenderAllowed(c.sex) << wwiv::endl;
+    bout << "|#9M) Ansi Required        : |#2"
+         << YesNoString((c.status & conf_status_ansi) ? true : false) << wwiv::endl;
+    bout << "|#9N) WWIV RegNum Required : |#2"
+         << YesNoString((c.status & conf_status_wwivreg) ? true : false) << wwiv::endl;
+    bout << "|#9O) Available            : |#2"
+         << YesNoString((c.status & conf_status_offline) ? true : false) << wwiv::endl;
     bout << "|#9S) Edit SubConferences\r\n";
     bout << "|#9Q) Quit ConfEdit\r\n";
     bout.nl();
@@ -549,8 +527,7 @@ int modify_conf(ConferenceType conftype,  int which) {
         c.conf_name = cname;
         changed = true;
       }
-    }
-    break;
+    } break;
     case 'C': {
       bout.nl();
       bout << "|#2Min SL: ";
@@ -700,14 +677,12 @@ int modify_conf(ConferenceType conftype,  int which) {
   if (changed) {
     save_confs(conftype);
   }
-  return changed;
 }
-
 
 /*
  * Function for inserting one conference.
  */
-void insert_conf(ConferenceType conftype,  int n) {
+static void insert_conf(ConferenceType conftype, int n) {
 
   auto info = get_conf_info(conftype);
   confrec c{};
@@ -741,16 +716,13 @@ void insert_conf(ConferenceType conftype,  int n) {
   }
 
   read_in_conferences(conftype);
-
-  if (modify_conf(conftype, n)) {
-    save_confs(conftype);
-  }
+  modify_conf(conftype, n);
 }
 
 /**
  * Function for deleting one conference.
  */
-void delete_conf(ConferenceType conftype,  int n) {
+static void delete_conf(ConferenceType conftype, int n) {
   auto info = get_conf_info(conftype);
   erase_at(info.confs, n);
   save_confs(conftype);
@@ -770,7 +742,7 @@ void conf_edit(ConferenceType conftype) {
     auto info = get_conf_info(conftype);
     bout.nl();
     bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2? |#7 : ";
-    char ch = onek("QIDM?", true);
+    auto ch = onek("QIDM?", true);
     switch (ch) {
     case 'D':
       if (info.confs.size() == 1) {
@@ -798,12 +770,9 @@ void conf_edit(ConferenceType conftype) {
     case 'M': {
       int ec = select_conf("Modify which conference? ", conftype, 0);
       if (ec >= 0) {
-        if (modify_conf(conftype, ec)) {
-          save_confs(conftype);
-        }
+        modify_conf(conftype, ec);
       }
-    }
-    break;
+    } break;
     case 'Q':
       done = true;
       break;
@@ -818,7 +787,6 @@ void conf_edit(ConferenceType conftype) {
   }
 }
 
-
 /*
  * Lists conferences of a specified type. If OP_FLAGS_SHOW_HIER is set,
  * then the subs (dirs, whatever) in each conference are also shown.
@@ -828,22 +796,25 @@ void list_confs(ConferenceType conftype, int ssc) {
   bool abort = false;
   auto ret = get_conf_info(conftype);
 
-  bout.bpla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
-  bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
+  bout.bpla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W",
+            &abort);
+  bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD "
+            "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
+            "\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD "
+            "\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD",
+            &abort);
 
   for (const auto& cp : ret.confs) {
-    if (abort) break;
+    if (abort)
+      break;
     const string ar = word_to_arstr(cp.ar);
-    sprintf(s, "%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
-            '\xCC', 
-            cp.designator, cp.conf_name.c_str(), cp.minsl,
-            cp.maxsl, cp.mindsl, cp.maxdsl, cp.minage, cp.maxage,
-            cp.minbps, ar.c_str());
-    sprintf(s1, "%-3.3s %c %1.1s %1.1s",
-            word_to_arstr(cp.dar).c_str(),
+    sprintf(s, "%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ", '\xCC',
+            cp.designator, cp.conf_name.c_str(), cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl,
+            cp.minage, cp.maxage, cp.minbps, ar.c_str());
+    sprintf(s1, "%-3.3s %c %1.1s %1.1s", word_to_arstr(cp.dar).c_str(),
             (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',
             YesNoString((cp.status & conf_status_ansi) ? true : false),
-            YesNoString((cp.status & conf_status_wwivreg)  ? true : false));
+            YesNoString((cp.status & conf_status_wwivreg) ? true : false));
     strcat(s, s1);
     bout.Color(7);
     bout.bpla(s, &abort);
@@ -859,8 +830,7 @@ void list_confs(ConferenceType conftype, int ssc) {
                       stripcolors(a()->subs().sub(sub).name.c_str()));
               break;
             case ConferenceType::CONF_DIRS:
-              sprintf(s1, "%s%-3d : %s", "Dir #", sub,
-                      stripcolors(a()->directories[sub].name));
+              sprintf(s1, "%s%-3d : %s", "Dir #", sub, stripcolors(a()->directories[sub].name));
               break;
             }
             strcat(s, s1);
@@ -878,7 +848,7 @@ void list_confs(ConferenceType conftype, int ssc) {
  * (0-based), or -1 if the user aborted. Error message is printed for
  * invalid conference selections.
  */
-int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs) {
+int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs) {
   int i = 0, sl = 0;
   bool ok = false;
   string mmk;
@@ -891,7 +861,7 @@ int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs)
     }
     if (prompt_text && prompt_text[0]) {
       bout.nl();
-      bout <<  "|#1" << prompt_text;
+      bout << "|#1" << prompt_text;
     }
     mmk = mmkey(MMKeyAreaType::subs);
     if (mmk.empty()) {
@@ -941,7 +911,7 @@ int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs)
  * Creates a default conference file. Should only be called if no conference
  * file for that conference type already exists.
  */
-bool create_conf_file(ConferenceType conftype) {
+static bool create_conf_file(ConferenceType conftype) {
   conf_info_t info = get_conf_info(conftype);
   TextFile f(info.file_name, "wt");
   if (!f.IsOpen()) {
@@ -969,12 +939,12 @@ bool create_conf_file(ConferenceType conftype) {
  */
 static std::vector<confrec> read_conferences(const std::string& file_name) {
   if (!File::Exists(file_name)) {
-    return{};
+    return {};
   }
 
   TextFile f(file_name, "rt");
   if (!f.IsOpen()) {
-    return{};
+    return {};
   }
 
   std::vector<confrec> result;
@@ -1025,7 +995,8 @@ static std::vector<confrec> read_conferences(const std::string& file_name) {
       std::vector<string> words = SplitString(ls, DELIMS_WHITE);
       for (auto& word : words) {
         StringTrim(&word);
-        if (word.empty()) continue;
+        if (word.empty())
+          continue;
         c.subs.insert(to_number<uint16_t>(word));
       }
       c.num = static_cast<subconf_t>(c.subs.size());
@@ -1075,23 +1046,22 @@ void read_all_conferences() {
  * Returns number of "words" in a specified string, using a specified set
  * of characters as delimiters.
  */
-int wordcount(const string& instr, const char *delimstr) {
+int wordcount(const string& instr, const char* delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   int i = 0;
 
   strcpy(szTempBuffer, instr.c_str());
-  for (char *s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
+  for (char* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
     i++;
   }
   return i;
 }
 
-
 /*
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-std::string extractword(int ww, const string& instr, const char *delimstr) {
+std::string extractword(int ww, const string& instr, const char* delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   int i = 0;
 
@@ -1100,11 +1070,10 @@ std::string extractword(int ww, const string& instr, const char *delimstr) {
   }
 
   strcpy(szTempBuffer, instr.c_str());
-  for (char *s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
+  for (char* s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
     if (i == ww) {
       return string(s);
     }
   }
   return {};
 }
-

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -48,21 +48,20 @@ uint16_t str_to_arword(const std::string& arstr) {
 
 /*
  * Converts an int to a string representing those ARs (DARs).
+ * or '-' on an empty string.
  */
 std::string word_to_arstr(int ar) {
-  std::string arstr;
 
   if (!ar) {
-    return {};
+    return "-";
   }
+
+  std::string arstr;
   for (int i = 0; i < 16; i++) {
     if ((1 << i) & ar) {
       arstr.push_back(static_cast<char>('A' + i));
     }
   }
-  if (arstr.empty()) {
-    arstr = "-";
-  }
-  return arstr;
+  return (arstr.empty()) ? "-" : arstr;
 }
 

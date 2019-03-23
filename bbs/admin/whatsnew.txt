@@ -1,6 +1,6 @@
 ==============================================================================
                            WWIV BBS What's New List
-                 Copyright 1999-2018 WWIV Software Services
+                 Copyright 1999-2019 WWIV Software Services
 ==============================================================================
 Legend (starting with 5.3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,6 +8,13 @@ Legend (starting with 5.3)
 + New feature
 - Feature removed
 * Change or cleanup
+
+What's New in WWIV 5.4 (2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Conference files {subs,dirs}.cnf will be backed up before saving
+  them in case of corruption.  If you see these files getting corrupted
+  please log a bug and let us know what change was more recently made
+  to the conference data file.
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -4,5 +4,5 @@ include_directories(..)
 set(NETWORK_MAIN network3.cpp)
 
 add_executable(network3 ${NETWORK_MAIN})
-target_link_libraries(network3 networkb_lib core sdk)
+target_link_libraries(network3 networkb_lib net_core core sdk)
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*                Copyright (C)2018, WWIV Software Services               */
+/*             Copyright (C)2018-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -24,7 +24,6 @@
 #include "core/command_line.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "networkb/net_util.h"
 #include "sdk/net/packets.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"

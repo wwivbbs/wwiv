@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -180,7 +180,7 @@ public:
   void reset();
 
 public:
-  int lines_listed_;
+  int lines_listed_{0};
   bool newline{true};
   int charbufferpointer_{0};
   char charbuffer[255];

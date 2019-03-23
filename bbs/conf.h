@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -107,7 +107,7 @@ void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
 void conf_edit(ConferenceType conftype);
 void list_confs(ConferenceType conftype, int ssc);
 int  select_conf(const char *prompt_text, ConferenceType conftype, int listconfs);
-// static
+
 void read_in_conferences(ConferenceType conftype);
 void read_all_conferences();
 int wordcount(const std::string& instr, const char *delimstr);

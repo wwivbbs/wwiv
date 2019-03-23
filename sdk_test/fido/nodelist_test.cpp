@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)2016-2017, WWIV Software Services             */
+/*             Copyright (C)2016-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -106,7 +106,7 @@ TEST(NodelistTest, Zones) {
 
   auto zones = nl.zones();
   EXPECT_EQ(1, zones.size());
-  EXPECT_EQ(1, zones.front()) << std::string(zones.begin(), zones.end());
+  EXPECT_EQ(1, zones.front());
 }
 
 TEST(NodelistTest, Nets) {

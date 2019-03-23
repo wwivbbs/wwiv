@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2016-2017, WWIV Software Services             */
+/*             Copyright (C)2016-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -38,7 +38,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/fido/fido_util.h"
 
 #include "core/datetime.h"

@@ -26,7 +26,7 @@ if (UNIX)
 elseif (WIN32)
 
   if (MSVC)
-    message("Using MSVC, Setting warnings to match UNIX.")
+    message(STATUS "Using MSVC, Setting warnings to match UNIX.")
     add_definitions(/D_CRT_SECURE_NO_WARNINGS)
     add_definitions(/D_CRT_NONSTDC_NO_DEPRECATE)
     add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
@@ -39,14 +39,21 @@ elseif (WIN32)
   endif(MSVC)
 endif (UNIX)
 
+if( NOT CMAKE_BUILD_TYPE )
+  set( CMAKE_BUILD_TYPE "Debug" )
+  message(STATUS "Defaulting CMAKE_BUILD_TYPE to Debug")
+endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+
 IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  MESSAGE("Adding Debug flag...")
+  message(STATUS "Defining _DEBUG macro")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
-function(SET_WARNING_LEVEL_4)
-  message(STATUS "Setting Warning Level 4")
+function(SET_MSVC_WARNING_LEVEL_4)
   if(WIN32 AND MSVC)
+    #message(STATUS "Setting Warning Level 4")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
       string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     else()
@@ -54,6 +61,17 @@ function(SET_WARNING_LEVEL_4)
     endif()
   endif()
 endfunction()
+
+function(SET_MAX_WARNINGS)
+  if(UNIX) 
+    add_definitions ("-Wall")
+  endif()
+  if(WIN32)
+    SET_MSVC_WARNING_LEVEL_4()
+  endif()
+
+endfunction()
+
 
 MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
@@ -67,4 +85,4 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 
   
-message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")

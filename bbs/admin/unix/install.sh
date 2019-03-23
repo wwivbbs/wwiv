@@ -16,7 +16,7 @@ WWIV_BIN_DIR=$(pwd)
 WWIV_LOG_DIR=$(pwd)/log
 WWIV_USER=wwiv
 WWIV_GROUP=wwiv
-
+declare -r WWIV_OS=$(uname -s)
 
 ### Do not edit below this line ###
 
@@ -381,7 +381,7 @@ say "WWIV_GROUP: ${WWIV_GROUP}"
 echo
 echo
 
-if [[ $OSTYPE == "Linux" ]]; then
+if [[ ${WWIV_OS} == "Linux" ]]; then
   for i in systemd/*.template
   do
     out=${i%%.template}
@@ -407,7 +407,7 @@ if [[ $OSTYPE == "Linux" ]]; then
     fi
   fi
 
-elif [[ $OSTYPE == "SunOS" ]]; then
+elif [[ ${WWIV_OS} == "SunOS" ]]; then
   for i in svcadm/*.template
   do
     out=${i%%.template}
@@ -417,7 +417,7 @@ elif [[ $OSTYPE == "SunOS" ]]; then
 fi
 
 #are we using systemd?
-if [[ $OSTYPE == "Linux" ]]; then
+if [[ ${WWIV_OS} == "Linux" ]]; then
   if [[ ! -d /etc/systemd ]]
   then
     say "You don't appear to be using systemd. You may need some more customization"
@@ -437,7 +437,7 @@ if [[ $OSTYPE == "Linux" ]]; then
       say "systemd wwivd service enabled"
     fi
   fi
-elif [[ $OSTYPE == "SunOS" ]]; then
+elif [[ ${WWIV_OS} == "SunOS" ]]; then
   if [[ -e /var/svc/manifest/application/wwivd.xml ]]; then
     say "/var/svc/manifest/application/wwivd.xml already exists, aborting svcadm install"
   else

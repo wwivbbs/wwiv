@@ -1,5 +1,5 @@
 # WWIV BBS TODO List
-# Copyright 2002-2018, WWIV Software Services
+# Copyright 2002-2019, WWIV Software Services
 ***
 
 ## FTN
@@ -63,6 +63,7 @@
 ***
 * TopScreen doesn't work with CursesIO
 * stop using localIO()->WhereX to determine remote position
+* Get ZModem working again
 
 ## Net52
 ***

@@ -13,7 +13,7 @@ set(COMMON_SOURCES
   set(PLATFORM_SOURCES
 		local_io_win32.cpp
 	)
-    SET_WARNING_LEVEL_4()
+    SET_MSVC_WARNING_LEVEL_4()
 endif()
 
 add_library(local_io ${COMMON_SOURCES} ${PLATFORM_SOURCES})

@@ -8,7 +8,7 @@
 #  GTEST_FOUND - System has GTest
 #  GTEST_INCLUDE_DIRS - The GTest include directories
 #  GTEST_LIBRARIES - The libraries needed to use GTest
-message("WWIV FindGTest")
+message(STATUS "WWIV FindGTest")
 
 # TODO(rushfan): Test on Linux too.
 set(GTEST_ROOT_DIR

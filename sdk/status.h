@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -98,9 +98,6 @@ public:
   void SetNumUploadsToday(int n) { status_->uptoday = static_cast<uint16_t>(n); }
 
   const unsigned short GetMinutesActiveToday() const { return status_->activetoday; }
-  const int IncrementMinutesActiveToday(int nMinutes) {
-    return status_->uptoday += static_cast<uint16_t>(nMinutes);
-  }
   void SetMinutesActiveToday(int n) { status_->activetoday = static_cast<uint16_t>(n); }
 
   const uint32_t GetQScanPointer() const { return status_->qscanptr; }

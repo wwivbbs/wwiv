@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2019, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -374,7 +374,7 @@ void delete_dir(int n) {
     m2 = 0xffffffff << (n % 32);
     m3 = 0xffffffff >> (32 - (n % 32));
 
-    for (size_t i = 1; i <= num_users; i++) {
+    for (int i = 1; i <= num_users; i++) {
       read_qscn(i, pTempQScan, true);
 
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |

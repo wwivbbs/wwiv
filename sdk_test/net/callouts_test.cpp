@@ -18,7 +18,6 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/net_util.h"
 #include "sdk/net/callouts.h"
 #include "gtest/gtest.h"
 
@@ -31,7 +30,6 @@ using std::string;
 using std::unique_ptr;
 using namespace std::chrono;
 using namespace wwiv::core;
-using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
