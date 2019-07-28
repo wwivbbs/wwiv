@@ -115,8 +115,17 @@ static void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const
 
 static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
   if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    auto f = ini.value<int>(key, cmdline.barg(key));
+    auto f = ini.value<int>(key, cmdline.iarg(key));
     cmdline.SetNewDefault(key, std::to_string(f));
+  }
+}
+
+static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
+    std::function<void(int)> f) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    auto v = ini.value<int>(key, cmdline.iarg(key));
+    cmdline.SetNewDefault(key, std::to_string(v));
+    f(v);
   }
 }
 
@@ -136,6 +145,8 @@ bool NetworkCommandLine::LoadNetIni() {
   SetNewBooleanDefault(cmdline_, *ini, "cram_md5");
   SetNewBooleanDefault(cmdline_, *ini, "quiet");
   SetNewIntDefault(cmdline_, *ini, "semaphore_timeout");
+  SetNewIntDefault(cmdline_, *ini, "v", [](int v) { Logger::set_cmdline_verbosity(v); });
+
   return true;
 }
 

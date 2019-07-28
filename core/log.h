@@ -154,6 +154,7 @@ public:
   static void ExitLogger();
   static bool vlog_is_on(int level);
   static LoggerConfig& config() noexcept { return config_; }
+  static void set_cmdline_verbosity(int cmdline_verbosity);
 
   template <class T> Logger& operator<<(const T& msg) {
     ss_ << msg;

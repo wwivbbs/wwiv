@@ -120,6 +120,11 @@ Logger::~Logger() {
 }
 
 // static
+void Logger::set_cmdline_verbosity(int cmdline_verbosity) {
+  config_.cmdline_verbosity = cmdline_verbosity;
+}
+
+// static
 bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; }
 
 // static
