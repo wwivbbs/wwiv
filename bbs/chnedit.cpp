@@ -349,7 +349,7 @@ void chainedit() {
     case 'M': {
       bout.nl();
       bout << "|#2(Q=Quit) Chain number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains));
+      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains), false);
       if (r.key != 'Q' && r.num < size_int(a()->chains)) {
         modify_chain(r.num);
       }

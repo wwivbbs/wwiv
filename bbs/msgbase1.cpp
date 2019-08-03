@@ -482,7 +482,7 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
        << "|#9): ";
-  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea());
+  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
   bool nextsub = false;
   if (r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
