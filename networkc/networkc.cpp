@@ -69,12 +69,11 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
-
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
+
 
 static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
   const auto pattern = StringPrintf("p*.%03d", instance_number);
@@ -230,7 +229,7 @@ int main(int argc, char** argv) {
 
   NetworkCommandLine net_cmdline(cmdline, 'c');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
   try {

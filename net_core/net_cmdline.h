@@ -52,6 +52,7 @@ public:
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
   char net_cmd() const noexcept { return net_cmd_; }
   std::string semaphore_filename() const noexcept;
+  std::string GetHelp() const;
 
   bool LoadNetIni();
   bool skip_delete() const noexcept;

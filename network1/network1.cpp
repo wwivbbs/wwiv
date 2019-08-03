@@ -19,6 +19,7 @@
 // WWIV5 Network1
 #include <cctype>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -58,9 +59,8 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
 
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   NetworkCommandLine net_cmdline(cmdline, '1');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 

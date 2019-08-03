@@ -20,6 +20,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -55,10 +56,9 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-       << "/N####     Network node number to dial." << endl
-       << ".####      Network number (as defined in wwivconfig)" << endl
+static void ShowHelp(NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << "   /N####" << std::setw(22) << " "
+       << "Network node number to dial." << endl
        << endl;
   exit(1);
 }
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
     NetworkCommandLine net_cmdline(cmdline, '\0');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
+      ShowHelp(net_cmdline);
       return 1;
     }
 
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
       int nodeint = to_number<int>(node);
       if (nodeint == 0 || nodeint > 32767) {
         LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
-        ShowHelp(cmdline);
+        ShowHelp(net_cmdline);
         return 1;
       }
       if (nodeint == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {

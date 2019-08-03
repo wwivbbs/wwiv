@@ -299,14 +299,18 @@ std::string CommandLineCommand::GetHelp() const {
     } else {
       ss << "   ";
     }
-    ss << "--" << left << setw(20) << c.name << " " << c.help_text() << endl;
+    string text = c.name;
+    if (!c.is_boolean) {
+      text = StrCat(c.name, "=value");
+    }
+    ss << "--" << left << setw(25) << text << " " << c.help_text() << endl;
   }
   if (!commands_allowed_.empty()) {
     ss << endl;
     ss << "commands:" << std::endl;
     for (const auto& a : commands_allowed_) {
       const string allowed_name = a.second->name();
-      ss << setw(20) << left << allowed_name << " " << a.second->help_text() << endl;
+      ss << "   " << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
     }
   }
   return ss.str();

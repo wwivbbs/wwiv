@@ -80,7 +80,10 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
       "daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
 }
 
-static void ShowHelp(const CommandLine& cmdline) { cout << cmdline.GetHelp() << endl; }
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
+  exit(1);
+}
 
 static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
@@ -215,7 +218,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       }
       return 1;
     } else {
-      ShowHelp(net_cmdline.cmdline());
+      ShowHelp(net_cmdline);
       return 1;
     }
   } catch (const connection_error& e) {
@@ -241,7 +244,7 @@ int main(int argc, char** argv) {
   RegisterNetworkBCommands(cmdline);
   NetworkCommandLine net_cmdline(cmdline, 'b');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
   try {

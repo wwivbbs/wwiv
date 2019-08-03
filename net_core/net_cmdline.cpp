@@ -17,7 +17,9 @@
 /**************************************************************************/
 #include "net_core/net_cmdline.h"
 
+#include <iomanip>
 #include <string>
+#include <ostream>
 
 #include "core/command_line.h"
 #include "core/datetime.h"
@@ -50,6 +52,7 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
       {"semaphore_timeout",
       "Timeout (in seconds) to wait for the network semaphore to become available.",
       "30"});
+  cmdline.add_argument(BooleanCommandLineArgument("help", 'h', "Displays Help", false));
 }
 
 NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd)
@@ -155,6 +158,14 @@ bool NetworkCommandLine::skip_delete() const noexcept { return cmdline_.barg("sk
 bool NetworkCommandLine::skip_net() const noexcept { return cmdline_.barg("skip_net"); }
 
 bool NetworkCommandLine::quiet() const noexcept { return cmdline_.barg("quiet"); }
+
+std::string NetworkCommandLine::GetHelp() const {
+  std::ostringstream ss;
+  ss << cmdline_.GetHelp() << std::endl
+     << "   .#### " << std::setw(22) << " "
+     << "Network number (as defined in wwivconfig)" << std::endl;
+  return ss.str();
+}
 
 std::chrono::duration<double> NetworkCommandLine::semaphore_timeout() const noexcept {
   auto semaphore_timeout = cmdline_.iarg("semaphore_timeout");

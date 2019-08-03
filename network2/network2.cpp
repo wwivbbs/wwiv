@@ -22,6 +22,7 @@
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -100,10 +101,8 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
   }
 }
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-       << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
 
@@ -343,7 +342,7 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   NetworkCommandLine net_cmdline(cmdline, '2');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 

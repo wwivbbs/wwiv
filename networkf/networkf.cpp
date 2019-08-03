@@ -161,9 +161,8 @@ static string arc_stuff_in(const string& command_line, const string& a1, const s
   return os.str();
 }
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl
        << "commands: " << endl
        << endl
        << " import    Import messages from FTN Packet to WWIV (P*.net)" << endl
@@ -1047,7 +1046,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
   const auto& net = net_cmdline.network();
   if (net.type != network_type_t::ftn) {
     LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 
@@ -1075,7 +1074,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
   auto cmds = net_cmdline.cmdline().remaining();
   if (cmds.empty()) {
     LOG(ERROR) << "No command specified. Exiting.";
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 
@@ -1153,7 +1152,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
 
   } else {
     LOG(ERROR) << "Unknown command: " << cmd;
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
   return (num_packets_processed > 0) ? 0 : 1;
@@ -1167,7 +1166,7 @@ int main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-      ShowHelp(net_cmdline.cmdline());
+      ShowHelp(net_cmdline);
       return 1;
     }
     auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
