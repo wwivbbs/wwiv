@@ -64,13 +64,13 @@ string CreateFullPathToPrint(const string& basename) {
         }
       }
       // ANSI.
-      auto candidate = StrCat(root_filename, ".b&w");
+      const auto candidate = StrCat(root_filename, ".b&w");
       if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
-    auto candidate = StrCat(root_filename , ".msg");
+    const auto candidate = StrCat(root_filename , ".msg");
     if (File::Exists(candidate)) {
       return candidate;
     }
@@ -105,7 +105,7 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
   }
 
   TextFile tf(full_path_name, "rb");
-  auto v = tf.ReadFileIntoVector();
+  const auto v = tf.ReadFileIntoVector();
   for (const auto& s : v) {
     bout.bputs(s);
     bout.nl();
@@ -121,7 +121,9 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
       // we do not want to render in the bbs.
       break;
     }
-    if (abortable && checka()) break;
+    if (abortable && checka()) {
+      break;
+    }
   }
   bout.flush();
   return !v.empty();
