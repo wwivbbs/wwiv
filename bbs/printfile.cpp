@@ -28,6 +28,7 @@
 #include "bbs/pause.h"
 #include "bbs/application.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -149,3 +150,21 @@ void print_local_file(const string& filename) {
   pausescr();
 }
 
+bool printfile_random(const std::string& base_fn) {
+  const auto& dir = a()->language_dir;
+  const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
+  if (File::Exists(dot_zero)) {
+    int numOfScreens = 0;
+    for (auto i = 0; i < 1000; i++) {
+      const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
+      if (File::Exists(dot_n)) {
+        numOfScreens++;
+      } else {
+        break;
+      }
+    }
+    printfile(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(numOfScreens))));
+    return true;
+  }
+  return false;
+}

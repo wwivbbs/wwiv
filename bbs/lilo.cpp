@@ -106,24 +106,6 @@ static void CleanUserInfo() {
 
 }
 
-static bool random_screen(const char *mpfn) {
-  const auto dot_zero = FilePath(a()->language_dir, StrCat(mpfn, ".0"));
-  if (File::Exists(dot_zero)) {
-    int numOfScreens = 0;
-    for (int i = 0; i < 1000; i++) {
-      const auto dot_n = FilePath(a()->language_dir, StrCat(mpfn, ".", i));
-      if (File::Exists(dot_n)) {
-        numOfScreens++;
-      } else {
-        break;
-      }
-    }
-    printfile(FilePath(a()->language_dir, StrCat(mpfn, ".", random_number(numOfScreens))));
-    return true;
-  }
-  return false;
-}
-
 bool IsPhoneNumberUSAFormat(User *pUser) {
   string country = pUser->GetCountry();
   return (country == "USA" || country == "CAN" || country == "MEX");
@@ -135,29 +117,13 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
-  const string ans_filename = FilePath(a()->language_dir, WELCOME_ANS);
-  if (File::Exists(ans_filename)) {
-    bout.nl();
-    if (ans > 0) {
-      a()->user()->SetStatusFlag(User::ansi);
-      a()->user()->SetStatusFlag(User::status_color);
-      if (!random_screen(WELCOME_NOEXT)) {
-        printfile(WELCOME_ANS);
-      }
-    } else if (ans == 0) {
-      printfile(WELCOME_MSG);
-    }
-  } else {
-    if (ans) {
-      const string noext_filename = FilePath(a()->language_dir.c_str(), StrCat(WELCOME_NOEXT, ".0"));
-      if (File::Exists(noext_filename)) {
-        random_screen(WELCOME_NOEXT);
-      } else {
-        printfile(WELCOME_MSG);
-      }
-    } else {
-      printfile(WELCOME_MSG);
-    }
+  if (ans > 0) {
+    a()->user()->SetStatusFlag(User::ansi);
+    a()->user()->SetStatusFlag(User::status_color);
+  }
+  bout.nl();
+  if (!printfile_random(WELCOME_NOEXT)) {
+    printfile(WELCOME_NOEXT);
   }
   if (bout.curatr() != 7) {
     bout.ResetColors();
