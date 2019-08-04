@@ -15,6 +15,7 @@ What's New in WWIV 5.4 (2019)
   them in case of corruption.  If you see these files getting corrupted
   please log a bug and let us know what change was more recently made
   to the conference data file.
+* Help text for command line arguments are a bit easier to understand.
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
