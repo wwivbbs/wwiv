@@ -255,7 +255,9 @@ std::string username_system_net_as_string(uint16_t un, const std::string& user_n
   } else {
     ss << user_name;
   }
-  ss << " @" << sn;
+  if (sn > 0) {
+    ss << " @" << sn;
+  }
   if (!network_name.empty()) {
     ss << "." << network_name;
   }

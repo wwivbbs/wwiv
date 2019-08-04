@@ -986,7 +986,7 @@ void readmail(int mode) {
             if (system_number) {
               if (system_number == 1 && user_number == 0 &&
                 a()->current_net().type == network_type_t::internet) {
-                strcpy(s1, a()->net_email_name.c_str());
+                to_char_array(s1, a()->net_email_name);
               }
               else {
                 std::string netname =
@@ -998,8 +998,7 @@ void readmail(int mode) {
             else {
               set_net_num(nn);
               const auto& net = a()->net_networks[nn];
-              const string name = a()->names()->UserName(user_number, a()->current_net().sysnum);
-              strcpy(s1, name.c_str());
+              to_char_array(s1, a()->names()->UserName(user_number, a()->current_net().sysnum));
             }
             if (ok_to_mail(user_number, system_number, false)) {
               bout << "|#5Forward to " << s1 << "? ";
@@ -1039,7 +1038,7 @@ void readmail(int mode) {
                 pFileEmail->Close();
 
                 i = a()->net_num();
-                const string fwd_name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+                const auto fwd_name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
                 auto s = StringPrintf("\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
 
                 set_net_num(nn);
