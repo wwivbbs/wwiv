@@ -79,3 +79,48 @@ TEST(DateTime, OperatorMinusEquals) {
   start -= 5s;
   EXPECT_EQ(start.to_time_t(), start_t - 5);
 }
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_good_nondst) { 
+  auto dt = parse_yyyymmdd("2003-01-02");
+  EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "01/02/2003");
+  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(0, dt.minute());
+  EXPECT_EQ(0, dt.second());
+}
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_good_dst) {
+  auto dt = parse_yyyymmdd("2003-06-07");
+  EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "06/07/2003");
+  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(0, dt.minute());
+  EXPECT_EQ(0, dt.second());
+}
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good) {
+  auto dt = parse_yyyymmdd_with_optional_hms("2003-01-02 01:02:03");
+  EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "01/02/2003");
+  EXPECT_EQ(1, dt.hour());
+  EXPECT_EQ(2, dt.minute());
+  EXPECT_EQ(3, dt.second());
+}
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good_dst) {
+  auto dt = parse_yyyymmdd_with_optional_hms("2003-06-07 01:02:03");
+  EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "06/07/2003");
+  EXPECT_EQ(1, dt.hour());
+  EXPECT_EQ(2, dt.minute());
+  EXPECT_EQ(3, dt.second());
+}
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_without_hms) {
+  auto dt = parse_yyyymmdd_with_optional_hms("2003-04-05");
+  EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "04/05/2003");
+  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(0, dt.minute());
+  EXPECT_EQ(0, dt.second());
+}
+
+TEST(DateTime_Parsing, Parse_yyyymmdd_fail) {
+  auto dt = parse_yyyymmdd("2003-04-05x");
+  EXPECT_NE(daten_to_mmddyyyy(dt.to_daten_t()), "04/05/2003");
+}

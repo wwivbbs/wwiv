@@ -222,17 +222,17 @@ public:
     string to = arg("to").as_string();
     time_t daten = time(nullptr);
     string date_str = arg("date").as_string();
-#ifndef __unix__
+//#ifndef __unix__
     // This doesn't work on GCC until GCC 5 even though it's C++11.
     if (!date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
-      if (ss) {
+      if (!ss.fail()) {
         daten = mktime(&dt);
       }
     }
-#endif // __unix__
+//#endif // __unix__
     string in_reply_to = arg("in_reply_to").as_string();
     int from_usernum = arg("from_usernum").as_int();
     if (from_usernum >= 1 && from.empty()) {

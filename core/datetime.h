@@ -29,7 +29,12 @@ namespace wwiv {
 namespace core {
 
 time_t time_t_now();
+
 daten_t daten_t_now();
+
+/**
+ * Constructs a daten_t from a date of the format "MM/DD/YY"
+ */
 daten_t date_to_daten(const std::string& datet);
 std::string daten_to_mmddyy(daten_t date);
 std::string time_t_to_mmddyy(time_t date);
@@ -39,8 +44,20 @@ std::string time_t_to_mmddyyyy(time_t date);
 std::string daten_to_wwivnet_time(daten_t t);
 std::string time_t_to_wwivnet_time(time_t t);
 daten_t time_t_to_daten(time_t t);
+
+/**
+ * Returns the current date as 'MM/DD/YY'
+ */
 std::string date();
+
+/**
+ * Returns the current date as 'MM/DD/YYYY'
+ */
 std::string fulldate();
+
+/**
+ * Returns the current time as 'HH:MM:SS'
+ */
 std::string times();
 
 /** Displays dd as a human readable time */
@@ -49,8 +66,10 @@ std::string to_string(std::chrono::duration<double> dd);
 class DateTime {
 public:
 
-  static DateTime from_time_t(time_t t) {
-    return DateTime(t);
+  static DateTime from_time_t(time_t t) { return DateTime(t); }
+
+  static DateTime from_tm(tm* t) { 
+    return DateTime(t); 
   }
 
   static DateTime from_daten(daten_t t) {
@@ -109,6 +128,7 @@ public:
     update_tm();
     return *this;
   }
+
   friend bool operator<(const DateTime& lhs, const DateTime& rhs) { 
     if (lhs.t_ == rhs.t_) {
       return lhs.millis_ < rhs.millis_;
@@ -122,6 +142,7 @@ public:
 
 private:
   DateTime(std::chrono::system_clock::time_point t);
+  DateTime(tm* t);
   DateTime(time_t t);
   /** Updates the tm_ structure, should be called anytime the time_t value is changed */
   void update_tm() noexcept;
@@ -130,6 +151,10 @@ private:
   tm tm_ {};
   int millis_;
 };
+
+DateTime parse_yyyymmdd(const std::string& date_str);
+DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str);
+
 
 }
 }

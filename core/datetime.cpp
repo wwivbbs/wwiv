@@ -22,6 +22,7 @@
 #include <cstring>
 #include <ctime>
 #include <iomanip>
+#include <regex>
 #include <sstream>
 #include <string>
 
@@ -156,11 +157,63 @@ std::string to_string(std::chrono::duration<double> dd) {
   return os.str();
 };
 
+DateTime parse_yyyymmdd(const std::string& date_str) {
+  // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
+  std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})");
+  std::smatch result;
+  if (!std::regex_match(date_str, date_time_regex)) {
+    return DateTime::now();
+  }
+
+  std::istringstream ss{date_str};
+  ss.exceptions(std::ios::goodbit);
+  std::tm dt = {};
+  ss >> std::get_time(&dt, "%Y-%m-%d");
+  if (ss.fail()) {
+    return DateTime::now();
+  }
+  dt.tm_hour = 0;
+  dt.tm_min = 0;
+  dt.tm_sec = 0;
+  return DateTime::from_tm(&dt);
+}
+
+DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str) {
+  // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
+  std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})\\s([0-9]{2}):([0-9]{2}):([0-9]{2})");
+  std::smatch result;
+  if (!std::regex_match(date_str, date_time_regex)) {
+    return parse_yyyymmdd(date_str);
+  }
+
+  std::istringstream ss{date_str};
+  ss.exceptions(std::ios::goodbit);
+  std::tm dt = {};
+  ss >> std::get_time(&dt, "%Y-%m-%d%t%H:%M:%S");
+  if (ss.fail()) {
+    return parse_yyyymmdd(date_str);
+  }
+  return DateTime::from_tm(&dt);
+}
+
 DateTime::DateTime(system_clock::time_point t)
     : t_(system_clock::to_time_t(t)),
       millis_(static_cast<int>(duration_cast<milliseconds>(t.time_since_epoch()).count() % 1000)) {
   update_tm();
 }
+
+static time_t mktime_no_dst_changes(tm* t) noexcept { 
+  // Kludge to match the is_dst match so that our hour
+  // matches exactly in the tm struct and isn't offset
+  // for daylight savings time.
+  auto t2{*t};
+  mktime(&t2);
+  t->tm_isdst = t2.tm_isdst;
+  auto now = mktime(t); 
+  return now;
+}
+
+DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), millis_(0), tm_(*t) {}
 
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
 
