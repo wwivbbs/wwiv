@@ -54,7 +54,8 @@ public:
   std::string semaphore_filename() const noexcept;
   std::string GetHelp() const;
 
-  bool LoadNetIni();
+  /** Process net.ini and reparse command line applying new defaults */
+  bool LoadNetIni(char net_cmd, const std::string& bbsdir);
   bool skip_delete() const noexcept;
   bool skip_net() const noexcept;
   bool quiet() const noexcept;

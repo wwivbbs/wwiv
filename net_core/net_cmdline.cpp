@@ -64,6 +64,11 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   if (!cmdline.Parse()) {
     initialized_ = false;
   }
+
+  if (!LoadNetIni(net_cmd, cmdline.bbsdir())) {
+    LOG(ERROR) << "Error loading INI file for defaults";
+  }
+
   network_number_ = cmdline.arg("net").as_int();
   // TODO(rushfan): Need to look to see if WWIV_CONFIG_FILE is set 1st.
   config_.reset(new wwiv::sdk::Config(cmdline.bbsdir()));
@@ -92,10 +97,6 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
     std::cerr << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
               << " for network: " << network_name_ << std::endl;
   }
-
-  if (!LoadNetIni()) {
-    LOG(ERROR) << "Error loading INI file for defaults";
-  }
 }
 
 // Returns the name of the network command for the command character
@@ -107,6 +108,13 @@ static std::string network_cmd_name(char net_cmd) {
 
 std::string NetworkCommandLine::semaphore_filename() const noexcept {
   return StrCat(network_.dir, network_cmd_name(net_cmd_), ".bsy");
+}
+
+static void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    auto f = ini.value<std::string>(key, cmdline.sarg(key));
+    cmdline.SetNewDefault(key, f);
+  }
 }
 
 static void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
@@ -132,12 +140,12 @@ static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std
   }
 }
 
-bool NetworkCommandLine::LoadNetIni() {
-  const auto net_tag = network_cmd_name(net_cmd_);
+bool NetworkCommandLine::LoadNetIni(char net_cmd, const std::string& bbsdir) {
+  const auto net_tag = network_cmd_name(net_cmd);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
-  auto ini = std::unique_ptr<IniFile>(
-      new IniFile(FilePath(config().root_directory(), "net.ini"), {net_tag_net, net_tag}));
+  auto ini =
+      std::unique_ptr<IniFile>(new IniFile(FilePath(bbsdir, "net.ini"), {net_tag_net, net_tag}));
   if (!ini || !ini->IsOpen()) {
     // This is fine and can happen.
     return true;
@@ -149,7 +157,13 @@ bool NetworkCommandLine::LoadNetIni() {
   SetNewBooleanDefault(cmdline_, *ini, "quiet");
   SetNewIntDefault(cmdline_, *ini, "semaphore_timeout");
   SetNewIntDefault(cmdline_, *ini, "v", [](int v) { Logger::set_cmdline_verbosity(v); });
+  SetNewBooleanDefault(cmdline_, *ini, "skip_delete");
+  SetNewStringDefault(cmdline_, *ini, "configdir");
+  SetNewStringDefault(cmdline_, *ini, "bindir");
+  SetNewStringDefault(cmdline_, *ini, "logdir");
 
+  // Reparse the commandline args to update the variables.
+  cmdline_.Parse();
   return true;
 }
 

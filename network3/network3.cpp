@@ -611,7 +611,7 @@ int main(int argc, char** argv) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
-  NetworkCommandLine net_cmdline(cmdline, '2');
+  NetworkCommandLine net_cmdline(cmdline, '3');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;
