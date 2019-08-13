@@ -234,10 +234,6 @@ public:
   const std::string& batch_directory() const { return batch_directory_; }
   const uint8_t primary_port() const { return primary_port_; }
 
-  /*!
-   * @function GetHomeDir Returns the current home directory
-   */
-  const std::string GetHomeDir() const noexcept;
   const std::string bbsdir() const noexcept;
   const std::string bindir() const noexcept;
   const std::string configdir() const noexcept;
@@ -265,10 +261,20 @@ public:
 
   bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
-  void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
+  void SetChatReason(const std::string& chat_reason) {
+    chat_reason_ = chat_reason;
+    chatcall_ = !chat_reason.empty();
+  }
+
+  /** Is the chat call alert (user wanted to chat with the sysop. enabled? */
+  bool chatcall() const { return chatcall_; }
+  /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
+  void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
-  wwiv::sdk::Config* config() const { return config_.get(); }
+  wwiv::sdk::Config* config() const {
+    return config_.get();
+  }
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
     config_ = std::move(config);
   }
@@ -401,7 +407,6 @@ public:
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
   bool chat_file_{false};
-  bool chatcall_{false};
   bool received_short_message_{false};
   bool emchg_{false};
   bool hangup_{false};
@@ -442,7 +447,7 @@ private:
   // Private fields.
 private:
   /*! The current working directory.*/
-  std::string current_dir_;
+  std::string bbs_dir_;
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;
@@ -455,6 +460,7 @@ private:
   bool user_already_on_{false};
   bool need_to_clean_net_{false};
   bool at_wfc_{false};
+  bool chatcall_{false};
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;

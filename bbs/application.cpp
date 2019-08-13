@@ -108,7 +108,7 @@ Application::Application(LocalIO* localIO)
   User::CreateNewUserRecord(&thisuser_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
   // Set the home directory
-  current_dir_ = File::current_directory();
+  bbs_dir_ = File::current_directory();
 }
 
 Application::~Application() {
@@ -223,7 +223,7 @@ void Application::tleft(bool check_for_timeout) {
   int cc = bout.curatr();
   bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
-  int line_number = (chatcall_ && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  auto line_number = (chatcall() && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   localIO()->PutsXY(1, line_number, GetCurrentSpeed());
   for (int i = localIO()->WhereX(); i < 23; i++) {
@@ -294,7 +294,7 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F4: /* F4 */
-        chatcall_ = false;
+        clear_chatcall();
         UpdateTopScreen();
         break;
       case F5: /* F5 */
@@ -428,7 +428,7 @@ void Application::UpdateTopScreen() {
     localIO()->set_protect(5);
     break;
   case LocalIO::topdataUser:
-    if (chatcall_) {
+    if (chatcall()) {
       localIO()->set_protect(6);
     } else {
       if (localIO()->GetTopLine() == 6) {
@@ -554,8 +554,8 @@ void Application::UpdateTopScreen() {
                                    user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
                                    ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
 
-    if (chatcall_) {
-      localIO()->PutsXY(0, 4, chat_reason_);
+    if (chatcall()) {
+      localIO()->PutsXY(0, 4, pad_to(chat_reason_, 80));
     }
   } break;
   }
@@ -665,10 +665,9 @@ void Application::GotCaller(unsigned int ms) {
   }
 }
 
-void Application::CdHome() { File::set_current_directory(current_dir_); }
+void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
-const string Application::GetHomeDir() const noexcept { return current_dir_; }
-const std::string Application::bbsdir() const noexcept { return current_dir_; }
+const std::string Application::bbsdir() const noexcept { return bbs_dir_; }
 const std::string Application::bindir() const noexcept { return bindir_; }
 const std::string Application::configdir() const noexcept { return configdir_; }
 const std::string Application::logdir() const noexcept { return logdir_; }
@@ -756,12 +755,12 @@ int Application::Run(int argc, char* argv[]) {
   
   bout.curatr(0x07);
   // Set the directories.
-  current_dir_ = cmdline.bbsdir();
+  bbs_dir_ = cmdline.bbsdir();
   bindir_ = cmdline.bindir();
   logdir_ = cmdline.logdir();
   configdir_ = cmdline.configdir();
   verbose_ = cmdline.verbose();
-  File::set_current_directory(current_dir_);
+  File::set_current_directory(bbs_dir_);
   
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");

@@ -1055,7 +1055,7 @@ void SetNewFileScanDate() {
     if (y < 1920) {
       y += 100;
     }
-    struct tm newTime;
+    tm newTime{};
     if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (dd >= 31)) ||
         ((m == 2) && (((y % 4 != 0) && (dd == 29)) || (dd == 30))) ||
         (dd > 31) || ((m == 0) || (y == 0) || (dd == 0)) ||

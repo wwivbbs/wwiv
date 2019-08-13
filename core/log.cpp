@@ -37,6 +37,10 @@
 #include "core/textfile.h"
 #include "core/version.h"
 
+#include "fmt/core.h"
+#include "fmt/printf.h"
+
+
 using std::ofstream;
 using std::string;
 using namespace wwiv::core;
@@ -207,13 +211,12 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
 }
 
 static std::string DefaultTimestamp() {
-  auto dt = DateTime::now();
-  auto nowc = std::chrono::system_clock::now();
-  auto duration = nowc.time_since_epoch();
-  auto millis = static_cast<int>(
+  const auto dt = DateTime::now();
+  const auto nowc = std::chrono::system_clock::now();
+  const auto duration = nowc.time_since_epoch();
+  const auto millis = static_cast<int>(
       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
-  auto milliss = StringPrintf("%03d ", millis);
-  return StrCat(dt.to_string(log_date_format), ",", milliss);
+  return fmt::sprintf("%s,%03d ", dt.to_string(log_date_format), millis);
 }
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
