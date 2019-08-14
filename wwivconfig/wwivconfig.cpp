@@ -147,7 +147,11 @@ WInitApp::~WInitApp() {
 
 int main(int argc, char* argv[]) {
   try {
-    wwiv::core::Logger::Init(argc, argv);
+    LoggerConfig config{};
+    config.log_startup = true;
+    config.logdir_fn_ = LogDirFromConfig;
+    Logger::Init(argc, argv, config);
+
     std::unique_ptr<WInitApp> app(new WInitApp());
     return app->main(argc, argv);
   } catch (const std::exception& e) {

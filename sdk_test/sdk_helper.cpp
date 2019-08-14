@@ -62,6 +62,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   menus_ = CreatePath("menus");
   scripts_ = CreatePath("scripts");
   dloads_ = CreatePath("dloads");
+  logs_ = CreatePath("logs");
 
   {
     configrec c = {};
@@ -69,6 +70,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(c.gfilesdir, "gfiles");
     to_char_array(c.menudir, "menus");
     to_char_array(c.datadir, "data");
+    to_char_array(c.logdir, "logs");
     to_char_array(c.dloadsdir, "dloads");
 
     // Add header version.

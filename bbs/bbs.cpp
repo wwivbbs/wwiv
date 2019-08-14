@@ -73,16 +73,20 @@ Application* CreateSession(LocalIO* localIO) {
 
 int bbsmain(int argc, char *argv[]) {
   try {
-    // Initialize the Logger.
-    wwiv::core::Logger::Init(argc, argv);
+    using wwiv::core::Logger;
+    using wwiv::core::LoggerConfig;
+    using wwiv::sdk::LogDirFromConfig;
 
-    // CursesIO
-    out = nullptr;
+    // Initialize the Logger.
+    LoggerConfig config{};
+    config.log_startup = true;
+    config.logdir_fn_ = LogDirFromConfig;
+    Logger::Init(argc, argv, config);
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     auto bbs = CreateSession(new StdioLocalIO());
-    int return_code = bbs->Run(argc, argv);
+    const int return_code = bbs->Run(argc, argv);
     bbs->ExitBBSImpl(return_code, false);
     return return_code;
   } catch (const exception& e) {

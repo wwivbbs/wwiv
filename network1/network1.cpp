@@ -186,7 +186,11 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) { 
-  Logger::Init(argc, argv);
+  LoggerConfig config{};
+  config.log_startup = true;
+  config.logdir_fn_ = LogDirFromConfig;
+  Logger::Init(argc, argv, config);
+
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   NetworkCommandLine net_cmdline(cmdline, '1');

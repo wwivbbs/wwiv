@@ -16,6 +16,12 @@ What's New in WWIV 5.4 (2019)
   please log a bug and let us know what change was more recently made
   to the conference data file.
 * Help text for command line arguments are a bit easier to understand.
++ wwivconfig now has an option under paths for Logs directory. If set,
+  it'll be the default location for all binary *.log files.  If the
+  WWIV_LOG_DIR environment variable or --logdir command line argument
+  are specified, they will override this setting from wwivconfig.  Like
+  all other paths, if specified as a relative path, it is relative to 
+  the bbsdir (aka WWIV_DIR or --bbsdir).
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

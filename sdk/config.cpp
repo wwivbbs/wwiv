@@ -98,6 +98,10 @@ void Config::update_paths() {
     strcpy(config_.scriptdir, config_.datadir);
   }
   script_dir_ = to_abs_path(config_.scriptdir);
+  if (config_.logdir[0]) {
+    // If the logdir is empty, leave log_dir_ empty.
+    log_dir_ = to_abs_path(config_.logdir);
+  }
 }
 
 void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
@@ -199,6 +203,14 @@ bool Config430::Save() {
     return false;
   }
   return file.Write(&config_, sizeof(configrec)) == sizeof(configrec);
+}
+
+std::string LogDirFromConfig(const std::string& bbsdir) { 
+  Config config{bbsdir}; 
+  if (!config.IsInitialized()) {
+    return {};
+  }
+  return config.logdir();
 }
 
 } // namespace sdk

@@ -220,7 +220,11 @@ int Main(CommandLine& cmdline) {
 } // namespace wwiv
 
 int main(int argc, char* argv[]) {
-  Logger::Init(argc, argv);
+  LoggerConfig config{};
+  config.log_startup = true;
+  config.logdir_fn_ = LogDirFromConfig;
+  Logger::Init(argc, argv, config);
+
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();

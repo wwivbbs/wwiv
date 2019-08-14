@@ -271,32 +271,53 @@ struct configrec {
     char newuserpw[21];
     configrec_header_t header;
   } header;
-  char systempw[21],   // system password
-      msgsdir[81],     // path for msgs directory
-      gfilesdir[81],   // path for gfiles dir
-      datadir[81],     // path for data directory
-      dloadsdir[81],   // path for dloads dir
-      unused_ramdrive, // drive for ramdisk
+
+  // system password
+  char systempw[21],
+      // path for msgs directory
+      msgsdir[81],
+      // path for gfiles dir
+      gfilesdir[81],
+      // path for data directory
+      datadir[81],
+      // path for dloads dir
+      dloadsdir[81],
+      // drive for ramdisk
+      unused_ramdrive,
       // former path for temporary directory, now mirrors node 1 temp dir
       // for legacy compatibility.
       tempdir[81],
-      xmark, // 0xff
+      // 0xff  
+      xmark,
       // former reg code + modem config.
       // Script base directory.  Typically C:\wwiv\scripts
       scriptdir[81], 
-      unused1[242],
-      systemname[51],  // BBS system name
-      systemphone[13], // BBS system phone number
-      sysopname[51],   // sysop's name
-      unused2[51];     // Old single event command (removed in 4.3i0)
+      // New in 5.4: Default Log Directory to use.
+      logdir[81],
+      // Unused space (can be used for future expansion)
+      unused1[161],
+      // BBS system name
+      systemname[51],
+      // BBS system phone number
+      systemphone[13],
+      // sysop's name
+      sysopname[51],
+      // Old single event command (removed in 4.3i0)
+      unused2[51];
 
-  uint8_t newusersl, // new user SL
-      newuserdsl,    // new user DSL
-      maxwaiting,    // max mail waiting
+  // new user SL
+  uint8_t newusersl,
+      // new user DSL
+      newuserdsl,
+      // max mail waiting
+      maxwaiting,
       unused3[10],
-      primaryport,  // primary comm port
-      newuploads,   // file dir new uploads go
-      closedsystem; // if system is closed
+      // primary comm port
+      primaryport,
+      // file dir new uploads go
+      newuploads,
+      // if system is closed
+      closedsystem;
 
   // BBS system number before multiple nets were allowed.
   uint16_t unused_systemnumber; 

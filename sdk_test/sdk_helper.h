@@ -35,6 +35,7 @@ public:
   const std::string& gfiles() const { return gfiles_; }
   const std::string& menus() const { return menus_; }
   const std::string& scripts() const { return scripts_; }
+  const std::string& logs() const { return logs_; }
   FileHelper& files() { return files_; }
 
   std::string CreatePath(const std::string& name);
@@ -45,6 +46,7 @@ public:
   std::string menus_;
   std::string gfiles_;
   std::string scripts_;
+  std::string logs_;
 
 private:
   const std::string saved_dir_;

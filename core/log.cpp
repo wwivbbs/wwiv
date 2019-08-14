@@ -170,7 +170,14 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   cmdline.set_unknown_args_allowed(true);
   cmdline.Parse();
 
+  const auto l = cmdline.arg("logdir");
   auto logdir = cmdline.logdir();
+  if (l.is_default() && c.logdir_fn_) {
+    const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir());
+    if (!logdir_from_fn.empty()) {
+      logdir = logdir_from_fn;
+    }
+  }
 
   // Set --v from commandline
   config_.cmdline_verbosity = cmdline.iarg("v");
@@ -218,6 +225,7 @@ static std::string DefaultTimestamp() {
       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
   return fmt::sprintf("%s,%03d ", dt.to_string(log_date_format), millis);
 }
+
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
 

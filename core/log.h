@@ -100,6 +100,8 @@ public:
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
     log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
+typedef std::function<std::string(std::string)> logdir_fn;
+
 
 class LoggerConfig {
 public:
@@ -107,14 +109,15 @@ public:
   void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
   void reset();
 
-  bool log_startup = false;
+  bool log_startup{false};
   std::string exit_filename;
   std::string log_filename;
-  int cmdline_verbosity = 0;
-  bool register_file_destinations = true;
-  bool register_console_destinations = true;
+  int cmdline_verbosity{0};
+  bool register_file_destinations{true};
+  bool register_console_destinations{true};
   log_to_map_t log_to;
   timestamp_fn timestamp_fn_;
+  logdir_fn logdir_fn_;
 };
 
 class NullLogger {
@@ -173,7 +176,7 @@ private:
   static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;
-  bool used_ = false;
+  bool used_{false};
   std::ostringstream ss_;
 };
 

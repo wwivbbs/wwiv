@@ -79,7 +79,10 @@ static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const
 
 
 int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+  LoggerConfig config{};
+  config.log_startup = true;
+  config.logdir_fn_ = LogDirFromConfig;
+  Logger::Init(argc, argv, config);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");

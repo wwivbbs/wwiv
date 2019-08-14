@@ -85,6 +85,7 @@ public:
   const std::string menudir() const { return menudir_; }
   const std::string dloadsdir() const { return dloadsdir_; }
   const std::string scriptdir() const { return script_dir_; }
+  const std::string logdir() const { return log_dir_; }
 
   const std::string system_name() const { return config_.systemname; }
   const std::string sysop_name() const { return config_.sysopname; }
@@ -177,9 +178,16 @@ private:
   std::string menudir_;
   std::string dloadsdir_;
   std::string script_dir_;
+  std::string log_dir_;
 
   Config430 config_430;
 };
+
+/**
+ * Helper to load the config and get the logdir from it. 
+ * Used by the Logger code.
+ */
+std::string LogDirFromConfig(const std::string& bbsdir);
 
 } // namespace sdk
 } // namespace wwiv
