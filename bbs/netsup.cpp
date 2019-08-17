@@ -105,11 +105,15 @@ void cleanup_net() {
     hang_it_up();
   }
 
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
+  for (int nNetNumber = 0;
+       nNetNumber < wwiv::stl::size_int(a()->net_networks);
+       nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
+    VLOG(2) << "cleanup_net: Processing Network: " << net.name;
 
     if (!net.sysnum) {
+      VLOG(1) << "Skipping network due to no sysnum: " << net.name;
       continue;
     }
 
@@ -122,10 +126,7 @@ void cleanup_net() {
     ss << " ." << a()->net_num();
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
-    if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
-      LOG(ERROR) << "Failed to execute network command: '" << networkc_cmd << "'";
-      break;
-    }
+    ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG);
     a()->status_manager()->RefreshStatusCache();
     a()->SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
