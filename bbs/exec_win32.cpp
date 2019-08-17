@@ -366,7 +366,7 @@ int exec_cmdline(const string commandLine, int flags) {
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
-  strncpy(szTempWorkingCommandline, workingCommandLine.c_str(), MAX_PATH);
+  to_char_array(szTempWorkingCommandline, workingCommandLine);
   BOOL bRetCP = CreateProcess(
                   nullptr,
                   szTempWorkingCommandline,

@@ -612,8 +612,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     if (!are_we_hosting && !are_we_gating &&
         send_to == subscribers_send_to_t::hosted_and_gated_only) {
       // Nothing to do here, so move on to the next subnet in the list
-      continue;
       VLOG(2) << "!hosting and !gating on: " << current_net.name;
+      continue;
     }
     if (are_we_gating) {
       // update fromsys
