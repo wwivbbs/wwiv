@@ -123,6 +123,7 @@ void cleanup_net() {
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
     if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
+      LOG(ERROR) << "Failed to execute network command: '" << networkc_cmd << "'";
       break;
     }
     a()->status_manager()->RefreshStatusCache();
