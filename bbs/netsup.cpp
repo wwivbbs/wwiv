@@ -79,7 +79,6 @@ static string CreateNetworkBinary(const std::string exe) {
   ss << " --bbsdir=" << a()->bbsdir();
   ss << " --bindir=" << a()->bindir();
   ss << " --configdir=" << a()->configdir();
-  ss << " --logdir=" << a()->logdir();
 
   return ss.str();
 }
