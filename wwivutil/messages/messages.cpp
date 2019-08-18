@@ -382,6 +382,34 @@ public:
   }
 };
 
+// This is hacked from subacc.cpp.
+// TODO(rushfan): move this into the message sdk.
+static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& sub_filename) {
+  // open file, and create it if necessary
+  postrec p{};
+
+  File subFile(FilePath(datadir, StrCat(sub_filename, ".sub")));
+  if (!subFile.Exists()) {
+    return 1;
+  }
+  if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
+    return 0;
+  }
+  // read in first rec, specifying # posts
+  // p.owneruser contains # of posts.
+  subFile.Read(&p, sizeof(postrec));
+
+  if (p.owneruser == 0) {
+    // Not sure why but iscan1 returned 1 for empty subs.
+    return 1;
+  }
+
+  // read in sub date, if don't already know it
+  subFile.Seek(p.owneruser * sizeof(postrec), File::Whence::begin);
+  subFile.Read(&p, sizeof(postrec));
+  return p.qscan;
+}
+
 class MessageAreasCommand : public UtilCommand {
 public:
   MessageAreasCommand() : UtilCommand("areas", "Lists the message areas") {}
@@ -403,11 +431,14 @@ public:
     }
 
     int num = 0;
-    cout << "#Num FileName " << std::setw(30) << std::left << "Name"
+    cout << "#Num FileName LastRead   " << std::setw(30) << std::left << "Name"
          << " " << std::endl;
     cout << string(78, '=') << endl;
     for (const auto& d : subs.subs()) {
-      cout << "#" << std::setw(3) << std::left << num++ << " " << std::setw(8) << d.filename << " "
+      auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
+      cout << "#" << std::setw(3) << std::left << num++ << " " 
+           << std::setw(8) << d.filename << " "
+           << std::setw(std::numeric_limits<uint32_t>::digits10 + 1) << lastread << " "
            << std::setw(30) << d.name << std::endl;
     }
     return 0;
