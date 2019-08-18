@@ -232,9 +232,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) {
-  LoggerConfig config{};
-  config.log_startup = true;
-  config.logdir_fn_ = LogDirFromConfig;
+  LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);

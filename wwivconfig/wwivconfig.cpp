@@ -147,9 +147,7 @@ WInitApp::~WInitApp() {
 
 int main(int argc, char* argv[]) {
   try {
-    LoggerConfig config{};
-    config.log_startup = true;
-    config.logdir_fn_ = LogDirFromConfig;
+    LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
 
     std::unique_ptr<WInitApp> app(new WInitApp());

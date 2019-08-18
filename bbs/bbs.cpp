@@ -78,9 +78,7 @@ int bbsmain(int argc, char *argv[]) {
     using wwiv::sdk::LogDirFromConfig;
 
     // Initialize the Logger.
-    LoggerConfig config{};
-    config.log_startup = true;
-    config.logdir_fn_ = LogDirFromConfig;
+    LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
 
     // Create a default session using stdio, we'll reset the LocalIO

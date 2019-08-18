@@ -36,7 +36,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
       return -1;
     }
   }
-  create_chain_file();
+  auto _ = create_chain_file();
 
   // get ready to run it
   if (a()->IsUserOnline()) {

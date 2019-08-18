@@ -19,8 +19,13 @@
 #include "core/log.h"
 #include "gtest/gtest.h"
 
+using wwiv::core::Logger;
+using wwiv::core::LoggerConfig;
+
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
-  wwiv::core::Logger::Init(argc, argv);
+  LoggerConfig config{};
+  config.log_startup = false;
+  Logger::Init(argc, argv, config);
   return RUN_ALL_TESTS();
 } 

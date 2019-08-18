@@ -22,6 +22,12 @@ What's New in WWIV 5.4 (2019)
   are specified, they will override this setting from wwivconfig.  Like
   all other paths, if specified as a relative path, it is relative to 
   the bbsdir (aka WWIV_DIR or --bbsdir).
+* Added --log_startup to all binaries. This will enable the start/stop
+  default logging with command line arguments displayed.  This is now
+  not the default behavior anymore.  If you want it displayed, either
+  pass --log_startup or edit Logger::Init in core/log.cpp and set
+  log_startup_ to true.
+
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -106,9 +106,12 @@ typedef std::function<std::string(std::string)> logdir_fn;
 class LoggerConfig {
 public:
   LoggerConfig();
+  LoggerConfig(logdir_fn f);
+  LoggerConfig(logdir_fn l, timestamp_fn t);
   void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
   void reset();
 
+  // Change to true to enabled the startup log globally for all binaries.
   bool log_startup{false};
   std::string exit_filename;
   std::string log_filename;
@@ -139,7 +142,8 @@ public:
  *
  * Example:
  *
- *   Logger::Init(argc, argv);
+ *   LoggerConfig lc(LogDirFromConfig);
+ *   Logger::Init(argc, argv, lc);
  *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
  *
  * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
@@ -153,7 +157,6 @@ public:
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv, LoggerConfig& config);
-  static void Init(int argc, char** argv);
   static void ExitLogger();
   static bool vlog_is_on(int level);
   static LoggerConfig& config() noexcept { return config_; }

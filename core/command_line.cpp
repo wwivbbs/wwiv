@@ -328,6 +328,8 @@ bool CommandLine::AddStandardArgs() {
   add_argument({"logdir", "Directory where log files are written.", File::current_directory(),
                 "WWIV_LOG_DIR"});
 
+  add_argument(BooleanCommandLineArgument{"log_startup", "Should the start/stop/args be logged.", false});
+
   // Ignore these. used by logger
   add_argument({"v", "verbose log", "0"});
   return true;

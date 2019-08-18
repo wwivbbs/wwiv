@@ -289,10 +289,10 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
-    get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
+    auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
   }
 
-  auto pos = std::distance(text_.begin(), iter);
+  const auto pos = std::distance(text_.begin(), iter);
   text_.insert(pos, routing_information);
   return true;
 }

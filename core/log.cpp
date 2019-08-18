@@ -154,13 +154,6 @@ void Logger::ExitLogger() {
 }
 
 // static
-void Logger::Init(int argc, char** argv) {
-  LoggerConfig config{};
-  config.log_startup = true;
-  Init(argc, argv, config);
-};
-
-// static
 void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   config_ = c;
   config_.cmdline_verbosity = 0;
@@ -212,7 +205,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
     config_.add_appender(LoggerLevel::verbose, logfile_appender);
     config_.add_appender(LoggerLevel::start, logfile_appender);
   }
-  if (config_.log_startup) {
+  if (config_.log_startup || cmdline.barg("log_startup")) {
     StartupLog(argc, argv);
   }
 }
@@ -228,6 +221,11 @@ static std::string DefaultTimestamp() {
 
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
+
+LoggerConfig::LoggerConfig(logdir_fn l) : LoggerConfig(l, DefaultTimestamp) {}
+
+LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t) : logdir_fn_(l), timestamp_fn_(t) {}
+
 
 void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> appender) {
   log_to[level].emplace(appender);
