@@ -60,7 +60,9 @@ static void show_chain(const chainfilerec& chain, const chainregrec& reg, bool a
         &abort);
   
   } else {
-  
+    bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, chain.description,
+                           regname.c_str(), reg.usage),
+              &abort);
   }
 
   if (!is_regged) {
