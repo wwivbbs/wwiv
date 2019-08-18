@@ -582,16 +582,16 @@ void Application::read_chains() {
       regFile.ReadVector(chains_reg, max_chains);
     } else {
       regFile.Close();
-      for (size_t nTempChainNum = 0; nTempChainNum < chains.size(); nTempChainNum++) {
-        chainregrec reg;
-        memset(&reg, 0, sizeof(chainregrec));
+      for (size_t i = 0; i < chains.size(); i++) {
+        chainregrec reg{};
         reg.maxage = 255;
         chains_reg.push_back(reg);
+
+        // Since we jsut created the chain file, go ahead and save it out.
+        DataFile<chainregrec> cf(FilePath(config()->datadir(), CHAINS_REG),
+                                 File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+        cf.WriteVector(chains_reg);
       }
-      DataFile<chainregrec> writeFile(FilePath(config()->datadir(), CHAINS_REG),
-                                      File::modeReadWrite | File::modeBinary |
-                                          File::modeCreateFile);
-      writeFile.WriteVector(chains_reg);
     }
   }
 }

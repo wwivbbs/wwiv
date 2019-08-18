@@ -274,7 +274,6 @@ void modify_chain(int chain_num) {
       }
       break;
     case 'M': {
-      r.usage = 0;
       bout.nl();
       bout << "|#5Times Run : ";
       r.usage = input_number(r.usage);

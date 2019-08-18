@@ -47,6 +47,45 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+static void show_chain(const chainfilerec& chain, const chainregrec& reg, bool ansi, int chain_num, bool& abort) {
+  User user{};
+  const bool reguser_read = a()->users()->readuser(&user, reg.regby[0]);
+  const bool is_regged = (reguser_read && reg.regby[0]);
+  const std::string regname = (is_regged) ? user.GetName() : "Available";
+  if (ansi) {
+    bout.bpla(
+        StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+                     FRAME_COLOR, chain_num, FRAME_COLOR, chain.description, FRAME_COLOR,
+                     (is_regged) ? 14 : 13, regname.c_str(), FRAME_COLOR, reg.usage, FRAME_COLOR),
+        &abort);
+  
+  } else {
+  
+  }
+
+  if (!is_regged) {
+    return;
+  }
+
+  for (int i1 = 1; i1 < 5; i1++) {
+    if (!reg.regby[i1]) {
+      continue;
+    }
+    if (!a()->users()->readuser(&user, reg.regby[i1])) {
+      continue;
+    }
+    if (ansi) {
+      bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
+                             user.GetName(), FRAME_COLOR, " "),
+                &abort);
+    } else {
+      bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
+                             (reg.regby[i1]) ? user.GetName() : "Available"),
+                &abort);
+    }
+  }
+}
+
 // Displays the list of chains to a user
 // Note: we aren't using a const map since [] doesn't work for const maps.
 static void show_chains(int *mapp, std::map<int, int>& map) {
@@ -55,8 +94,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.nl();
   bool abort = false;
   bool next = false;
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && a()->chains_reg.size() > 0) {
+  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && !a()->chains_reg.empty()) {
     bout.bpla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
@@ -66,45 +104,9 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
-      User user;
-      if (okansi()) {
-        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bpla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
-                FRAME_COLOR,
-                i + 1,
-                FRAME_COLOR,
-                a()->chains[map[i]].description,
-                FRAME_COLOR,
-                (a()->chains_reg[map[i]].regby[0]) ? 14 : 13,
-                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                FRAME_COLOR,
-                a()->chains_reg[map[i]].usage,
-                FRAME_COLOR), &abort);
-        if (a()->chains_reg[map[i]].regby[0] != 0) {
-          for (int i1 = 1; i1 < 5 && !abort; i1++) {
-            if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
-                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
-            }
-          }
-        }
-      } else {
-        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
-                i + 1, a()->chains[map[i]].description,
-                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                a()->chains_reg[map[i]].usage), &abort);
-        if (a()->chains_reg[map[i]].regby[0] != 0) {
-          for (int i1 = 1; i1 < 5; i1++) {
-            if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
-                      (a()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
-            }
-          }
-        }
-      }
+      const auto reg = a()->chains_reg[map[i]];
+      const auto chain = a()->chains[map[i]];
+      show_chain(chain, reg, okansi(), i+1, abort);
     }
     if (okansi()) {
       bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
