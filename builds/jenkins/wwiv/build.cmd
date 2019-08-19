@@ -41,7 +41,7 @@ set VS_VERSION=2017
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
 
-rem ===============================================================================
+@rem ===============================================================================
 
 @if exist "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
   echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
@@ -71,26 +71,26 @@ rem ============================================================================
   set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
-echo =============================================================================
-echo Workspace:            %WORKSPACE% 
-echo Label:                %LABEL%
-echo Architecture:         %ARCH%
-echo Number of Bits:       %NUM_BITS%
-echo Visual Studio Ver:    %VS_VERSION%
-echo Visual Studio Ed:     %VS_EDITION%
-echo Visual Studio DIR:    %VS_INSTALL_DIR%
-echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
-echo WWIV Release:         %WWIV_RELEASE%        
-echo Build Number:         %BUILD_NUMBER%
-echo WWIV CMake Root:      %WWIV_CMAKE_DIR%
-echo Archive:              %RELEASE_ZIP%
-echo Staging Dir:          %STAGE_DIR%
-echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
-echo WindowsLibPath        %WindowsLibPath%
-echo INCLUDE               %INCLUDE%
-echo =============================================================================
+@echo =============================================================================
+@echo Workspace:            %WORKSPACE% 
+@echo Label:                %LABEL%
+@echo Architecture:         %ARCH%
+@echo Number of Bits:       %NUM_BITS%
+@echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
+@echo WWIV Release:         %WWIV_RELEASE%        
+@echo Build Number:         %BUILD_NUMBER%
+@echo WWIV CMake Root:      %WWIV_CMAKE_DIR%
+@echo Archive:              %RELEASE_ZIP%
+@echo Staging Dir:          %STAGE_DIR%
+@echo Visual Studio Ver:    %VS_VERSION%
+@echo Visual Studio Ed:     %VS_EDITION%
+@echo Visual Studio DIR:    %VS_INSTALL_DIR%
+@echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
+@echo WindowsLibPath        %WindowsLibPath%
+@echo INCLUDE               %INCLUDE%
+@echo =============================================================================
 
-echo on
+@echo on
 rem Turn echo back on now.
 
 if not exist %WWIV_CMAKE_DIR% (

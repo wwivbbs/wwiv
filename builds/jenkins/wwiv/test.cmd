@@ -1,3 +1,4 @@
+@echo off
 @rem **************************************************************************
 @rem WWIV Test Script.
 @rem
@@ -14,31 +15,54 @@ if /I "%LABEL%"=="win-x64" (
 	set NUM_BITS=64
 )
 
-echo "Build Number:      %BUILD_NUMBER%"
-echo "Label:             %LABEL%"
-echo "Architecture:      %ARCH%"
-echo "Workpace:          %WORKSPACE%"
-echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
-echo "WWIV CMake Root:   %WWIV_CMAKE_DIR%"
+rem TODO(rushfan) Change to 2019 once it works for command line builds.
+set VS_VERSION=2017
+set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
+set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
 
-@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+echo =============================================================================
+echo "Build Number:         %BUILD_NUMBER%"
+echo "Label:                %LABEL%"
+echo "Architecture:         %ARCH%"
+echo "Workpace:             %WORKSPACE%"
+echo "WWIV_TEST_TEMPDIR:    %WWIV_TEST_TEMPDIR%"
+echo "WWIV CMake Root:      %WWIV_CMAKE_DIR%"
+echo "Visual Studio Ver:    %VS_VERSION%"
+echo "Visual Studio Ed:     %VS_EDITION%"
+echo "Visual Studio DIR:    %VS_INSTALL_DIR%"
+echo "WindowsSdkVerBinPath  %WindowsSdkVerBinPath%"
+echo "WindowsLibPath        %WindowsLibPath%"
+echo "INCLUDE               %INCLUDE%"
+echo =============================================================================
+
+rem ===============================================================================
+
+@if exist "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="BuildTools"
+  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
-@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="BuildTools"
+  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
-@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="Community"
+  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
-@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="Community"
+  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
@@ -53,14 +77,13 @@ if not exist %WWIV_TEST_TEMPDIR% (
 )
 
 
+@echo on
 @rem build Cryptlib 1st.
-echo:
 echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
 msbuild crypt32.vcxproj  /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 set CL32_DLL="%WORKSPACE%\deps\cl342\Release\cl32.dll"
 
-echo:
 echo * Building WWIV Tests
 cd %WWIV_CMAKE_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=Debug %WORKSPACE%   || exit /b
