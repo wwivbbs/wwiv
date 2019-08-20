@@ -96,7 +96,6 @@ string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, c
   ss << " --bbsdir=" << net_cmdline.cmdline().bbsdir();
   ss << " --bindir=" << net_cmdline.cmdline().bindir();
   ss << " --configdir=" << net_cmdline.cmdline().configdir();
-  ss << " --logdir=" << net_cmdline.cmdline().logdir();
   ss << " ." << net_cmdline.network_number();
   if (num == '3') {
     ss << " Y";
