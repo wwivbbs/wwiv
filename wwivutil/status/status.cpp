@@ -32,12 +32,6 @@
 #include "sdk/networks.h"
 #include "sdk/status.h"
 
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_connect.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
-
 using std::cerr;
 using std::cout;
 using std::endl;
