@@ -28,6 +28,7 @@
 #include <sys/types.h>
 
 #include "core/file_lock.h"
+#include "core/filesystem.h"
 #include "core/wwivport.h"
 
 #ifndef MAX_PATH
@@ -134,26 +135,24 @@ public:
   bool set_last_write_time(time_t last_write_time);
 
   std::string parent() const {
-    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
+    // TODO(rushfan): 
+    const auto s = full_path_name_.string();
+    auto found = s.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return {};
     }
-    return full_path_name_.substr(0, found);
+    return s.substr(0, found);
   }
 
   std::string GetName() const {
-    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
-    if (found == std::string::npos) {
-      return {};
-    }
-    return full_path_name_.substr(found + 1);
+    return full_path_name_.filename().string();
   }
 
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
-  std::string full_pathname() const noexcept { return full_path_name_; }
-  const std::string& native() const noexcept { return full_path_name_; }
-  const char* c_str() const noexcept { return full_path_name_.c_str(); }
+  std::string full_pathname() const noexcept { return full_path_name_.string(); }
+  const std::string& native() const noexcept { return full_path_name_.string(); }
+  const char* c_str() const noexcept { return full_path_name_.string().c_str(); }
   std::string last_error() const { return error_text_; }
 
   // operators
@@ -195,7 +194,7 @@ public:
   static bool is_directory(const std::string& path);
 
   private : int handle_{-1};
-  std::string full_path_name_;
+  std::filesystem::path full_path_name_;
   std::string error_text_;
 };
 

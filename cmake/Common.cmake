@@ -20,7 +20,7 @@ if (UNIX)
   endif()
 
   if (CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND CMAKE_CXX_FLAGS "-frtti")
+    list(APPEND CMAKE_CXX_FLAGS "-frtti -lstdc++fs")
   endif()
 
 elseif (WIN32)

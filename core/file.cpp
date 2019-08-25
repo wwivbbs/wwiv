@@ -157,18 +157,19 @@ bool File::Open(int file_mode, int share_mode) {
 
   VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode;
 
-  handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+  handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
     VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
     int count = 1;
-    if (access(full_path_name_.c_str(), 0) != -1) {
+    if (access(full_path_name_.string().c_str(), 0) != -1) {
       sleep_for(wait_time);
-      handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+      handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for((count % 2) ? wait_time : milliseconds(0));
         VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
-        handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+        handle_ =
+            _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       }
 
       if (handle_ < 0) {
@@ -235,26 +236,26 @@ off_t File::Seek(off_t offset, Whence whence) {
 
 off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const { return File::Exists(full_path_name_); }
+bool File::Exists() const { return File::Exists(full_path_name_.string()); }
 
 bool File::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  return unlink(full_path_name_.c_str()) == 0;
+  return unlink(full_path_name_.string().c_str()) == 0;
 }
 
 void File::set_length(off_t lNewLength) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
-  ftruncate(handle_, lNewLength);
+  auto _ = ftruncate(handle_, lNewLength);
 }
 
 bool File::IsFile() const { return !this->IsDirectory(); }
 
-bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.c_str(), perm) == 0; }
+bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.string().c_str(), perm) == 0; }
 
 bool File::IsDirectory() const {
-  return File::is_directory(full_path_name_);
+  return File::is_directory(full_path_name_.string());
 }
 
 // static
@@ -276,7 +277,7 @@ off_t File::length() {
     }
   } else {
     // stat works on filenames, not filehandles.
-    if (stat(full_path_name_.c_str(), &fileinfo) != 0) {
+    if (stat(full_path_name_.string().c_str(), &fileinfo) != 0) {
       return 0;
     }
   }
@@ -287,12 +288,12 @@ time_t File::creation_time() {
   struct stat buf {};
   // st_ctime is creation time on windows and status change time on posix
   // so that's probably the closest to what we want.
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+  return (stat(full_path_name_.string().c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
 time_t File::last_write_time() {
   struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  return (stat(full_path_name_.string().c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -461,7 +462,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 bool File::set_last_write_time(time_t last_write_time) {
   struct utimbuf ut {};
   ut.actime = ut.modtime = last_write_time;
-  return utime(full_path_name_.c_str(), &ut) != -1;
+  return utime(full_path_name_.string().c_str(), &ut) != -1;
 }
 
 std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_type) {
@@ -480,7 +481,7 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
   // TODO: unlock here
 
 #endif // _WIN32
-  return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
+  return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_.string(), lock_type);
 }
 
 } // namespace core
