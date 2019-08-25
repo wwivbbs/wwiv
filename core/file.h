@@ -173,27 +173,55 @@ public:
   static bool IsFileHandleValid(int hFile);
 
   static std::string EnsureTrailingSlash(const std::string& path);
-  static void EnsureTrailingSlash(std::string* path);
   static std::string current_directory();
   static bool set_current_directory(const std::string& dir);
-  static void FixPathSeparators(std::string* path);
   static std::string FixPathSeparators(const std::string& path);
-  static void absolute(const std::string& base, std::string* relative);
   static std::string absolute(const std::string& base, const std::string& relative);
   static bool is_absolute(const std::string& path);
   static bool is_relative(const std::string& path) { return !is_absolute(path); }
 
   static bool canonical(const std::string& path, std::string* resolved);
+
+  /**
+   * Creates the directory {path} by creating the leaf most directory.
+   *
+   * Returns true if the new directory is created.
+   * Also returns true if there is nothing to do. This is unlike
+   * filesystem::mkdir which returns false if {path} already exists.
+   */
   static bool mkdir(const std::string& path);
+
+  /**
+   * Creates the directory {path} and all parent directories needed
+   * along the way.
+   * 
+   * Returns true if the new directory is created.
+   * Also returns true if there is nothing to do. This is unlike
+   * filesystem::mkdir which returns false if {path} already exists.
+   */
   static bool mkdirs(const std::string& path);
 
+  /**
+   * Creates the directory {path} by calling File::mkdir on the
+   * full pathname of this file object.
+   */
   static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
+
+  /**
+   * Creates the directory {path} by calling File::mkdirs on the
+   * full pathname of this file object.
+   */
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   static long freespace_for_path(const std::string& path);
   static bool is_directory(const std::string& path);
 
-  private : int handle_{-1};
+ private:
+   // Helper functions
+
+ private: 
+
+  int handle_{-1};
   std::filesystem::path full_path_name_;
   std::string error_text_;
 };

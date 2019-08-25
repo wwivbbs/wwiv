@@ -176,7 +176,7 @@ void modify_dir(int n) {
           }
         }
         if (!s.empty()) {
-          File::EnsureTrailingSlash(&s);
+          s = File::EnsureTrailingSlash(s);
           to_char_array(r.path, s);
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";

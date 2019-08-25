@@ -46,6 +46,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <system_error>
 
 #include "core/datetime.h"
 #include "core/log.h"
@@ -83,6 +84,7 @@ static constexpr int F_OK = 0;
 using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
+namespace fs = std::filesystem;
 
 namespace wwiv {
 namespace core {
@@ -163,7 +165,8 @@ bool File::Open(int file_mode, int share_mode) {
     int count = 1;
     if (access(full_path_name_.string().c_str(), 0) != -1) {
       sleep_for(wait_time);
-      handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+      handle_ =
+          _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for((count % 2) ? wait_time : milliseconds(0));
         VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
@@ -236,13 +239,13 @@ off_t File::Seek(off_t offset, Whence whence) {
 
 off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const { return File::Exists(full_path_name_.string()); }
+bool File::Exists() const { return fs::exists(full_path_name_); }
 
 bool File::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  return unlink(full_path_name_.string().c_str()) == 0;
+  return fs::remove(full_path_name_);
 }
 
 void File::set_length(off_t lNewLength) {
@@ -250,38 +253,24 @@ void File::set_length(off_t lNewLength) {
   auto _ = ftruncate(handle_, lNewLength);
 }
 
-bool File::IsFile() const { return !this->IsDirectory(); }
+bool File::IsFile() const { return !fs::is_directory(full_path_name_); }
 
-bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.string().c_str(), perm) == 0; }
-
-bool File::IsDirectory() const {
-  return File::is_directory(full_path_name_.string());
+bool File::SetFilePermissions(int perm) {
+  return chmod(full_path_name_.string().c_str(), perm) == 0;
 }
+
+bool File::IsDirectory() const { return fs::is_directory(full_path_name_); }
 
 // static
-bool File::is_directory(const std::string& path) {
-  struct stat statbuf {};
-  stat(path.c_str(), &statbuf);
-  return S_ISDIR(statbuf.st_mode);
-}
-
+bool File::is_directory(const std::string& path) { return fs::is_directory(fs::path{path}); }
 
 off_t File::length() {
-  // stat/fstat is the 32 bit version on WIN32
-  struct stat fileinfo {};
-
-  if (IsOpen()) {
-    // File is open, use fstat
-    if (fstat(handle_, &fileinfo) != 0) {
-      return 0;
-    }
-  } else {
-    // stat works on filenames, not filehandles.
-    if (stat(full_path_name_.string().c_str(), &fileinfo) != 0) {
-      return 0;
-    }
+  std::error_code ec;
+  off_t sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
+  if (ec.value() != 0) {
+    return 0;
   }
-  return fileinfo.st_size;
+  return sz;
 }
 
 time_t File::creation_time() {
@@ -300,13 +289,21 @@ time_t File::last_write_time() {
 // Static functions
 
 bool File::Rename(const string& orig_fn, const string& new_fn) {
-  return rename(orig_fn.c_str(), new_fn.c_str()) == 0;
+  fs::path o{orig_fn};
+  fs::path n{new_fn};
+  std::error_code ec{};
+  fs::rename(o, n, ec);
+  return ec.value() == 0;
 }
 
-bool File::Remove(const string& filename) { return unlink(filename.c_str()) == 0; }
+bool File::Remove(const string& filename) {
+  fs::path p{filename};
+  return fs::remove(p);
+}
 
 bool File::Remove(const string& dir, const string& file) {
-  return File::Remove(wwiv::core::FilePath(dir, file));
+  fs::path p = FilePath(dir, file);
+  return fs::remove(p);
 }
 
 bool File::Exists(const string& original_pathname) {
@@ -316,18 +313,14 @@ bool File::Exists(const string& original_pathname) {
     return false;
   }
 
-  string fn(original_pathname);
-  if (fn.back() == pathSeparatorChar) {
-    // If the pathname ends in / or \, then remove the last character.
-    fn.pop_back();
-  }
-  auto ret = access(fn.c_str(), F_OK);
-  return ret == 0;
+  fs::path p{original_pathname};
+  return fs::exists(p);
 }
 
 // static
 bool File::Exists(const string& dir, const string& file) {
-  return Exists(wwiv::core::FilePath(dir, file));
+  fs::path p{FilePath(dir, file)};
+  return fs::exists(p);
 }
 
 // static
@@ -343,56 +336,38 @@ bool File::SetFilePermissions(const string& filename, int perm) {
 
 bool File::IsFileHandleValid(int handle) { return handle != File::invalid_handle; }
 
-//static
-std::string File::EnsureTrailingSlash(const std::string& path) {
-  auto s = path;
-  EnsureTrailingSlash(&s);
-  return s;
-}
-
 // static
-void File::EnsureTrailingSlash(string* path) {
-  if (path->empty()) {
-    return;
+std::string File::EnsureTrailingSlash(const std::string& orig) {
+  if (orig.empty()) {
+    return {};
   }
-  auto last_char = path->back();
-  if (last_char != File::pathSeparatorChar) {
-    path->push_back(File::pathSeparatorChar);
+  if (orig.back() == File::pathSeparatorChar) {
+    return orig;
   }
+  std::string path{orig};
+  path.push_back(File::pathSeparatorChar);
+  return path;
 }
 
 // static
-string File::current_directory() {
-  char s[MAX_PATH];
-  getcwd(s, MAX_PATH);
-  return string(s);
+string File::current_directory() { return fs::current_path().string(); }
+
+// static
+bool File::set_current_directory(const string& dir) {
+  std::error_code ec;
+  fs::current_path({dir}, ec);
+  return ec.value() == 0;
 }
 
 // static
-bool File::set_current_directory(const string& dir) { return chdir(dir.c_str()) == 0; }
-
-// static
-void File::FixPathSeparators(std::string* name) {
+std::string File::FixPathSeparators(const std::string& orig) {
+  auto name = orig;
 #ifdef _WIN32
-  std::replace(std::begin(*name), std::end(*name), '/', File::pathSeparatorChar);
+  std::replace(std::begin(name), std::end(name), '/', File::pathSeparatorChar);
 #else
-  std::replace(std::begin(*name), std::end(*name), '\\', File::pathSeparatorChar);
+  std::replace(std::begin(name), std::end(name), '\\', File::pathSeparatorChar);
 #endif // _WIN32
-}
-
-// static
-std::string File::FixPathSeparators(const std::string& path) {
-  auto s = path;
-  FixPathSeparators(&s);
-  return s;
-}
-
-// static
-void File::absolute(const string& base, string* relative) {
-  if (!File::is_absolute(*relative)) {
-    File dir(FilePath(base, *relative));
-    relative->assign(dir.full_pathname());
-  }
+  return name;
 }
 
 // static
@@ -408,50 +383,35 @@ bool File::is_absolute(const string& path) {
   if (path.empty()) {
     return false;
   }
-#ifdef _WIN32
-  return ::PathIsRelative(path.c_str()) ? false : true;
-#else
-  return path.front() == File::pathSeparatorChar;
-#endif // _WIN32
-}
-
-#ifdef _WIN32
-#define MKDIR(x) ::mkdir(x)
-#else
-#define MKDIR(x) ::mkdir(x, S_IRWXU | S_IRWXG)
-#endif
-
-// static
-bool File::mkdir(const string& path) {
-  auto result = MKDIR(path.c_str());
-  if (result != -1) {
-    return true;
-  }
-  return errno == EEXIST;
+  fs::path p{path};
+  return p.is_absolute();
 }
 
 // static
-// based loosely on
-// http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
-bool File::mkdirs(const string& path) {
-  auto result = MKDIR(path.c_str());
-  if (result != -1) {
+bool File::mkdir(const string& s) {
+  fs::path p = s;
+  if (fs::exists(p)) {
     return true;
   }
-  if (errno == ENOENT) {
-    auto pos = path.find_last_of(File::pathSeparatorChar);
-    if (pos == string::npos) {
-      return false;
-    }
-    auto s = path.substr(0, pos);
-    if (!mkdirs(s)) {
-      return false; // failed to create the parent, stop here.
-    }
-    return File::mkdir(path);
-  } else if (errno == EEXIST) {
-    return true; // the path already existed.
+
+  std::error_code ec;
+  if (fs::create_directory(p, ec)) {
+    return true;
   }
-  return false; // unknown error.
+  return ec.value() == 0;
+}
+
+// static
+bool File::mkdirs(const string& s) { 
+  fs::path p = s;
+  if (fs::exists(p)) {
+    return true;
+  }
+  std::error_code ec;
+  if (fs::create_directories(p, ec)) {
+    return true;
+  }
+  return ec.value() == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const File& file) {

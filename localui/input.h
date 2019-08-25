@@ -542,7 +542,7 @@ public:
     auto return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
-      wwiv::core::File::EnsureTrailingSlash(&data_);
+      data_ = wwiv::core::File::EnsureTrailingSlash(data_);
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);

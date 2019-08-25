@@ -68,8 +68,8 @@ void BbsHelper::SetUp() {
   dir_msgs_ = files_.DirName("msgs");
   dir_dloads_ = files_.DirName("dloads");
 #ifdef _WIN32
-  File::FixPathSeparators(&dir_gfiles_);
-  File::FixPathSeparators(&dir_en_gfiles_);
+  dir_gfiles_ = File::FixPathSeparators(dir_gfiles_);
+  dir_en_gfiles_ = File::FixPathSeparators(dir_en_gfiles_);
 #endif  // _WIN32
 
   unique_ptr<configrec> sysconfig = make_unique<configrec>();

@@ -339,7 +339,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
   attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(bbsdir(), ATTACH_DIR);
-  File::EnsureTrailingSlash(&attach_dir_);
+  attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 
@@ -361,11 +361,11 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
     return false;
   }
 
-  File::FixPathSeparators(&temp_directory);
+  temp_directory = File::FixPathSeparators(temp_directory);
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
   string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
-  File::FixPathSeparators(&batch_directory);
+  batch_directory = File::FixPathSeparators(batch_directory);
 
   // Replace %n with instance number value.
   auto instance_num_string = std::to_string(instance_number);

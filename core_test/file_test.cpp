@@ -172,8 +172,8 @@ TEST(FileTest, Read) {
 TEST(FileTest, GetName) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
-  string path = helper.CreateTempFile(kFileName, "Hello World");
-  File file(path);
+  auto path = helper.CreateTempFile(kFileName, "Hello World");
+  File file{path};
   ASSERT_EQ(kFileName, file.GetName());
 }
 
@@ -190,28 +190,26 @@ TEST(FileTest, EnsureTrailingSlash) {
     const string double_slash = StringPrintf("temp%c%c", File::pathSeparatorChar, File::pathSeparatorChar);
     const string no_slash = "temp";
 
-    string s = single_slash;
-    File::EnsureTrailingSlash(&s);
+    auto s = File::EnsureTrailingSlash(single_slash);
     EXPECT_EQ(single_slash, s);
 
     s = File::EnsureTrailingSlash(double_slash);
     EXPECT_EQ(double_slash, s);
 
-    s = no_slash;
-    File::EnsureTrailingSlash(&s);
+    s = File::EnsureTrailingSlash(no_slash);
     EXPECT_EQ(single_slash, s);
 }
 
 TEST(FileTest, CurrentDirectory) {
-  char expected[MAX_PATH];
-  getcwd(expected, MAX_PATH);
+  char buf[MAX_PATH];
+  char* expected = getcwd(buf, MAX_PATH);
   string actual = File::current_directory();
   EXPECT_STREQ(expected, actual.c_str());
 }
 
 TEST(FileTest, SetCurrentDirectory) {
-  char expected[MAX_PATH];
-  getcwd(expected, MAX_PATH);
+  char buf[MAX_PATH];
+  char* expected = getcwd(buf, MAX_PATH);
   auto original_dir = File::current_directory();
   ASSERT_STREQ(expected, original_dir.c_str());
 
@@ -223,31 +221,20 @@ TEST(FileTest, SetCurrentDirectory) {
 }
 
 TEST(FileTest, MakeAbsolutePath_Relative) {
-  static const string kFileName = this->test_info_->name();
+  static const string kFileName{this->test_info_->name()};
   FileHelper helper;
-  const string path = helper.CreateTempFile(kFileName, "Hello World");
+  const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string relative(kFileName);
-  File::absolute(helper.TempDir(), &relative);
-  EXPECT_EQ(path, relative);
-}
-
-TEST(FileTest, MakeAbsolutePath_Relative_Returning) {
-  static const string kFileName = this->test_info_->name();
-  FileHelper helper;
-  const string path = helper.CreateTempFile(kFileName, "Hello World");
-
-  string relative = File::absolute(helper.TempDir(), kFileName);
+  auto relative = File::absolute(helper.TempDir(), kFileName);
   EXPECT_EQ(path, relative);
 }
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
-  const string expected = helper.CreateTempFile(kFileName, "Hello World");
+  const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
-  string path(expected);
-  File::absolute(helper.TempDir(), &path);
+  const auto path = File::absolute(helper.TempDir(), expected);
   EXPECT_EQ(expected, path);
 }
 
@@ -256,7 +243,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
   FileHelper helper;
   const string expected = helper.CreateTempFile(kFileName, "Hello World");
 
-  string path = File::absolute(helper.TempDir(), expected);
+  auto path = File::absolute(helper.TempDir(), expected);
   EXPECT_EQ(expected, path);
 }
 
