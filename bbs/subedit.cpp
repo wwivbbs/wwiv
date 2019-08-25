@@ -35,7 +35,6 @@
 
 #include "bbs/wqscn.h"
 #include "core/file.h"
-#include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

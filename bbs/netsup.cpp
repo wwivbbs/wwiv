@@ -39,7 +39,6 @@
 #include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/inifile.h"

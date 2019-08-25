@@ -30,7 +30,6 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"

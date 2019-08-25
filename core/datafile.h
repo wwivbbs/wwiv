@@ -20,13 +20,23 @@
 
 #include <vector>
 #include "core/file.h"
-#include "core/inifile.h" // for FilePath
 
 namespace wwiv {
 namespace core {
 
-template <typename RECORD, std::size_t SIZE = sizeof(RECORD)>
-class DataFile {
+/**
+ * File: Provides a high level, cross-platform common wrapper for file
+ * of repeating structs (like Pascal records).  Many of the common WWIV
+ * datafiles are multiple copies of the same struct type.
+ *
+ * Example:
+ *   vector<mailrec> emails;
+ *   DataFile<mailrec> f(FilePath("/home/wwiv/bbs/data", "email.dat"));
+ *   if (!f) { LOG(FATAL) << "email.dat does not exist!" << endl; }
+ *   if (!f.ReadVector(emails) { LOG(FATAL) << "unable to load email.dat"; }
+ *   // No need to close f since when f goes out of scope it'll close automatically.
+ */
+template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile {
 public:
   DataFile(const std::string& full_file_name,
            int nFileMode = File::modeDefault,
@@ -34,10 +44,13 @@ public:
       : file_(full_file_name) {
     file_.Open(nFileMode, nShareMode);
   }
+
   virtual ~DataFile() = default;
 
   File& file() { return file_; }
-  void Close() { return file_.Close(); }
+
+  void Close() { file_.Close(); }
+
   bool ok() const { return file_.IsOpen(); }
 
   bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
@@ -62,6 +75,7 @@ public:
     }
     return file_.Read(record, num_records*SIZE) == static_cast<int>(num_records*SIZE); 
   }
+
   bool Read(int record_number, RECORD* record) {
     if (!Seek(record_number)) {
       return false;
@@ -80,19 +94,26 @@ public:
   bool Write(const RECORD* record, int num_records = 1) { 
     return file_.Write(record, num_records*SIZE) == static_cast<int>(num_records*SIZE);
   }
+
   bool Write(int record_number, const RECORD* record) {
     if (!Seek(record_number)) {
       return false;
     }
     return Write(record);
   }
-  bool Seek(int record_number) { return file_.Seek(record_number * SIZE, File::Whence::begin) == static_cast<long>(record_number * SIZE); }
+
+  bool Seek(int record_number) {
+    return file_.Seek(record_number * SIZE, File::Whence::begin) ==
+           static_cast<long>(record_number * SIZE);
+  }
+
   std::size_t number_of_records() { return file_.length() / SIZE; }
 
   explicit operator bool() const { return file_.IsOpen(); }
 
 private:
   File file_;
+
 };
 
 }
