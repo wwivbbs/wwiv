@@ -25,12 +25,23 @@
 #endif
 
 // TODO(rushfan): This whole thing probably needs to be redone.
-#if defined(_MSC_VER) && (_MSC_VER >= 1700)
+#if defined(_MSC_VER)
    // Enable SAL attributes.
 #  ifndef _USE_ATTRIBUTES_FOR_SAL
 #  define _USE_ATTRIBUTES_FOR_SAL 1
 #  endif // _USE_ATTRIBUTES_FOR_SAL
-#endif
+
+#if (_MSC_VER < 1915)
+#error "Visual Studio 2017 version 15.8.0 or later is required"
+#endif // _MSC_VER < 1915
+
+#endif // _MSC_VER
+
+#if defined(__GNUC__)
+#if (__GNUC__ < 6) 
+#error "GNC C++ 6.0 or later is required"
+#endif // __GNUC__ < 6
+#endif // __GNUC__
 
 // WWIV's daten type is a 32-bit unsigned int. It can never be used for date
 // arithemetic since negative values don't exist.  This will allow us to

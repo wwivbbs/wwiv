@@ -323,7 +323,7 @@ TEST_F(FidoUtilTest, FidoToDaten) {
   EXPECT_GT(t, 0u);
 }
 
-#if (_MSC_VER >= 1900)
+#if (_MSC_VER)
 #define timezone _timezone
 #endif  // MSV_VER && !timezone
 
