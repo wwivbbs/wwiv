@@ -151,7 +151,7 @@ public:
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
   std::string full_pathname() const noexcept { return full_path_name_.string(); }
-  const std::string& native() const noexcept { return full_path_name_.string(); }
+  const std::string native() const noexcept { return full_path_name_.string(); }
   const char* c_str() const noexcept { return full_path_name_.string().c_str(); }
   std::string last_error() const { return error_text_; }
 
