@@ -298,21 +298,18 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     const auto& networks = net_cmdline.networks();
     // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options;
+    wwiv::sdk::msgapi::MessageApiOptions options{};
     // By defaukt, delete excess messages like net37 did.
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_all;
 
-    auto type2_api = make_unique<WWIVMessageApi>(
-      options, config, networks.networks(), new NullLastReadImpl());
-    auto email_api = make_unique<WWIVMessageApi>(
-      options, config, networks.networks(), new NullLastReadImpl());
     auto user_manager = make_unique<UserManager>(config);
 
     Context context(config, net, *user_manager.get(), networks.networks());
     context.network_number = net_cmdline.network_number();
-    CHECK_NOTNULL(email_api.get());
-    context.set_email_api(email_api.get());
-    context.set_api(2, std::move(type2_api));
+    context.set_email_api(
+        make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));
+    context.set_api(2, make_unique<WWIVMessageApi>(options, config, networks.networks(),
+                                                   new NullLastReadImpl()));
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
