@@ -222,6 +222,7 @@ public:
    */
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
+  /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
   static long freespace_for_path(const std::string& path);
   static bool is_directory(const std::string& path);
 

@@ -434,3 +434,12 @@ TEST(FileTest, MoveFile) {
   EXPECT_TRUE(File::Exists(f2));
   EXPECT_FALSE(File::Exists(f1));
 }
+
+TEST(FileTest, Free) {
+  FileHelper file;
+  string tmp = file.TempDir();
+
+  auto fs = File::freespace_for_path(tmp);
+  EXPECT_GT(fs, 0);
+
+}

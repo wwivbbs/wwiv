@@ -17,26 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
 
-#include <cerrno>
-#include <cstdint>
-#include <cstring>
-#include <fcntl.h>
-#include <io.h>
 #include <share.h>
-#include <sstream>
-#include <string>
-#include <sys/stat.h>
-
-#include "core/wwivassert.h"
-
-using std::string;
-namespace fs = std::filesystem;
-
-/////////////////////////////////////////////////////////////////////////////
-// Constants
 
 namespace wwiv {
 namespace core {
@@ -51,16 +36,6 @@ const int File::permReadWrite = (_S_IREAD | _S_IWRITE);
 const char File::pathSeparatorChar = '\\';
 const char File::pathSeparatorString[] = "\\";
 const char File::separatorChar = ';';
-
-// static
-long File::freespace_for_path(const string& path) {
-  uint64_t i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
-  BOOL result =
-      GetDiskFreeSpaceEx(path.c_str(), reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
-                         reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
-                         reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
-  return (result) ? static_cast<long>(i64FreeBytesToCaller / 1024) : 0;
-}
 
 } // namespace core
 } // namespace wwiv

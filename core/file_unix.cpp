@@ -18,28 +18,14 @@
 /**************************************************************************/
 #include "core/file.h"
 
-#include <algorithm>
-#include <cerrno>
-#include <climits>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#include <iostream>
-#include <sstream>
-#include <string>
+//#include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/file.h>
-#include <unistd.h>
-#include <sys/param.h>
-#include <sys/mount.h>
-#include <sys/statfs.h>
-#include <sys/vfs.h>
-
-#ifdef __linux__
-#include <sys/statvfs.h>
-#endif  // __linux__
-
-#include "core/wwivassert.h"
+//#include <sys/file.h>
+//#include <unistd.h>
+//#include <sys/param.h>
+//#include <sys/mount.h>
+//#include <sys/statfs.h>
+//#include <sys/vfs.h>
 
 namespace wwiv {
 namespace core {
@@ -55,16 +41,6 @@ const char File::pathSeparatorChar = '/';
 const char File::pathSeparatorString[] = "/";
 
 const char File::separatorChar     = ':';
-
-// static
-long File::freespace_for_path(const std::string& path) {
-  struct statvfs fs{};
-  if (statvfs(path.c_str(), &fs)) {
-    perror("statfs()");
-    return 0;
-  }
-  return static_cast<long>((long) fs.f_frsize * (double) fs.f_bavail / 1024);
-}
 
 }
 }

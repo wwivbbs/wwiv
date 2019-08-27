@@ -461,5 +461,16 @@ std::string File::canonical(const std::string& path) {
   return fs::canonical(p).string();
 }
 
+long File::freespace_for_path(const std::string& path) {
+  std::error_code ec;
+  fs::space_info devi = fs::space(path, ec);
+  if (ec.value() != 0) {
+    return 0;
+  }
+  long new_free = static_cast<long>(devi.available / 1024);
+  LOG(INFO) << "new: " << new_free;
+  return new_free;
+}
+
 } // namespace core
 } // namespace wwiv
