@@ -147,7 +147,11 @@ bool ExternalQBBSMessageEditor::After() {
   // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
   // TODO(rushfan): Let this function return an object with result and filename and anything
   // else that needs to be passed back.
-  File::Copy(FilePath(temp_directory_, MSGTMP), FilePath(temp_directory_, INPUT_MSG));
+  std::error_code ec;
+  using namespace wwiv::fs;
+  path from = FilePath(temp_directory_, MSGTMP);
+  path to = FilePath(temp_directory_, INPUT_MSG);
+  copy_file(from, to, copy_options::overwrite_existing, ec);
   return true;
 }
 

@@ -280,11 +280,8 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    auto sub_filename = StrCat(config.datadir(), name, ".sub");
-    auto dat_filename = StrCat(config.msgsdir(), name, ".dat");
-
-    bool sb = backup_file(sub_filename);
-    bool db = backup_file(dat_filename);
+    bool sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
+    bool db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
     return sb && db;
   }
 

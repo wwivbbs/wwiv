@@ -135,7 +135,7 @@ public:
   bool set_last_write_time(time_t last_write_time);
 
   std::string parent() const {
-    // TODO(rushfan): 
+    // TODO(rushfan):
     const auto s = full_path_name_.string();
     auto found = s.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
@@ -144,18 +144,21 @@ public:
     return s.substr(0, found);
   }
 
-  std::string GetName() const {
-    return full_path_name_.filename().string();
-  }
+  /** Returns the filename portion of this file's path */
+  std::string GetName() const { return full_path_name_.filename().string(); }
 
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
+  /** Returns the file path as a std::string path */
   std::string full_pathname() const noexcept { return full_path_name_.string(); }
-  const std::string native() const noexcept { return full_path_name_.string(); }
-  const char* c_str() const noexcept { return full_path_name_.string().c_str(); }
+
+  /** Returns the file path as a std::filesystem path */
+  const fs::path& path() const noexcept { return full_path_name_; }
+
   std::string last_error() const { return error_text_; }
 
   // operators
+  /** Returns true if the file is open */
   explicit operator bool() const { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const File& f);
 
@@ -170,7 +173,6 @@ public:
   static bool Move(const std::string& sourceFileName, const std::string& destFileName);
 
   static bool SetFilePermissions(const std::string& fileName, int nPermissions);
-  static bool IsFileHandleValid(int hFile);
 
   static std::string EnsureTrailingSlash(const std::string& path);
   static std::string current_directory();
@@ -180,7 +182,14 @@ public:
   static bool is_absolute(const std::string& path);
   static bool is_relative(const std::string& path) { return !is_absolute(path); }
 
-  static bool canonical(const std::string& path, std::string* resolved);
+  /**
+   * Returns an canonical absolute path.
+   *
+   * That means there are no dot or dot-dots or double-slashes in a non-UNC
+   * portion of the path.  On POSIX systems, this is congruent with how
+   * realpath behaves.
+   */
+  static std::string canonical(const std::string& path);
 
   /**
    * Creates the directory {path} by creating the leaf most directory.
@@ -194,7 +203,7 @@ public:
   /**
    * Creates the directory {path} and all parent directories needed
    * along the way.
-   * 
+   *
    * Returns true if the new directory is created.
    * Also returns true if there is nothing to do. This is unlike
    * filesystem::mkdir which returns false if {path} already exists.
@@ -216,17 +225,17 @@ public:
   static long freespace_for_path(const std::string& path);
   static bool is_directory(const std::string& path);
 
- private:
-   // Helper functions
+private:
+  // Helper functions
+  static bool IsFileHandleValid(int hFile);
 
- private: 
-
+private:
   int handle_{-1};
   std::filesystem::path full_path_name_;
   std::string error_text_;
 };
 
-bool backup_file(const File& file);
+/** Makes a backup of path using a custom suffix with the time and date */
 bool backup_file(const std::string& path);
 
 } // namespace core

@@ -118,24 +118,19 @@ string FilePath(const string& dirname, const string& filename) {
   return (dirname.empty()) ? filename : StrCat(File::EnsureTrailingSlash(dirname), filename);
 }
 
-bool backup_file(const std::string& path) {
-  const auto now = DateTime::now();
-  const auto date_string = now.to_string("%Y%m%d%H%M%S");
-  const auto backup_extension = StrCat(".backup.", date_string);
-  const auto backup_path = StrCat(path, backup_extension);
-  VLOG(1) << "Backing up file: '" << path << "'; to: '" << backup_path << "'";
-  return File::Copy(path, backup_path);
+bool backup_file(const std::string& filename) {
+  fs::path from{filename};
+  fs::path to{filename};
+  to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
+  VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
+  std::error_code ec;
+  return wwiv::fs::copy_file(from, to, ec);
 }
-
-bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
 File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
-
-// File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename))
-// {}
 
 File::~File() {
   if (this->IsOpen()) {
@@ -402,7 +397,7 @@ bool File::mkdir(const string& s) {
 }
 
 // static
-bool File::mkdirs(const string& s) { 
+bool File::mkdirs(const string& s) {
   fs::path p = s;
   if (fs::exists(p)) {
     return true;
@@ -442,6 +437,22 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
 
 #endif // _WIN32
   return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_.string(), lock_type);
+}
+
+bool File::Copy(const std::string& sourceFileName, const std::string& destFileName) {
+  fs::path from{sourceFileName};
+  fs::path to{destFileName};
+  std::error_code ec;
+  fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
+  return ec.value() == 0;
+}
+
+bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
+  fs::path from{sourceFileName};
+  fs::path to{destFileName};
+  std::error_code ec;
+  fs::rename(from, to, ec);
+  return ec.value() == 0;
 }
 
 } // namespace core

@@ -63,10 +63,18 @@ namespace std {
     namespace filesystem = experimental::filesystem;
 }
 
+namespace wwiv {
+  namespace fs = ::std::experimental::filesystem;
+}
+
 // We have a decent compiler and can use the normal version
 #   else
 // Include it
 #       include <filesystem>
+namespace wwiv {
+  namespace fs = ::std::filesystem;
+}
+
 #   endif
 
 #endif // #ifndef INCLUDE_STD_FILESYSTEM_EXPERIMENTAL

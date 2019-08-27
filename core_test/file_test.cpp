@@ -268,10 +268,9 @@ TEST(FileTest, IsRelative) {
 TEST(FileTest, RealPath_Same) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
-  const string path = helper.CreateTempFile(kFileName, "Hello World");
+  const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string canonical;
-  ASSERT_TRUE(File::canonical(path, &canonical));
+  const auto canonical = File::canonical(path);
   EXPECT_EQ(path, canonical);
 }
 
@@ -280,9 +279,9 @@ TEST(FileTest, RealPath_Different) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string canonical;
   // Add an extra ./ into the path.
-  ASSERT_TRUE(File::canonical(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &canonical));
+  auto canonical = File::canonical(StrCat(helper.TempDir(), File::pathSeparatorString, ".",
+                                          File::pathSeparatorString, kFileName));
   EXPECT_EQ(path, canonical);
 }
 
@@ -372,4 +371,66 @@ TEST(FileTest, CurrentPosition) {
 
   EXPECT_EQ(static_cast<int>(kContents.size()), file.Seek(0, File::Whence::end));
   EXPECT_EQ(static_cast<int>(kContents.size()), file.current_position());
+}
+
+TEST(FileTest, FsCopyFile) {
+  namespace fs = wwiv::fs;
+  FileHelper file;
+  string tmp = file.TempDir();
+  GTEST_ASSERT_NE("", tmp);
+  ASSERT_TRUE(file.Mkdir("newdir"));
+  auto f1 = FilePath(tmp, "f1");
+  File f(f1);
+  f.Open(File::modeWriteOnly | File::modeCreateFile);
+  f.Write("ok");
+  f.Close();
+  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+
+  auto f2 = FilePath(tmp, "f2");
+  fs::path from{f1};
+  fs::path to{f2};
+  std::error_code ec;
+  EXPECT_FALSE(File::Exists(to.string()));
+  fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
+  EXPECT_TRUE(File::Exists(to.string()));
+}
+
+TEST(FileTest, CopyFile) {
+  namespace fs = wwiv::fs;
+  FileHelper file;
+  string tmp = file.TempDir();
+  GTEST_ASSERT_NE("", tmp);
+  ASSERT_TRUE(file.Mkdir("newdir"));
+  auto f1 = FilePath(tmp, "f1");
+  File f(f1);
+  f.Open(File::modeWriteOnly | File::modeCreateFile);
+  f.Write("ok");
+  f.Close();
+  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+
+  auto f2 = FilePath(tmp, "f2");
+  EXPECT_FALSE(File::Exists(f2));
+  File::Copy(f1, f2);
+  EXPECT_TRUE(File::Exists(f2));
+}
+
+TEST(FileTest, MoveFile) {
+  namespace fs = wwiv::fs;
+  FileHelper file;
+  string tmp = file.TempDir();
+  GTEST_ASSERT_NE("", tmp);
+  ASSERT_TRUE(file.Mkdir("newdir"));
+  auto f1 = FilePath(tmp, "f1");
+  File f(f1);
+  f.Open(File::modeWriteOnly | File::modeCreateFile);
+  f.Write("ok");
+  f.Close();
+  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+
+  auto f2 = FilePath(tmp, "f2");
+  EXPECT_TRUE(File::Exists(f1)) << f1;
+  EXPECT_FALSE(File::Exists(f2));
+  File::Move(f1, f2);
+  EXPECT_TRUE(File::Exists(f2));
+  EXPECT_FALSE(File::Exists(f1));
 }

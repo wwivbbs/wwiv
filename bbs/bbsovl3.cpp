@@ -110,12 +110,11 @@ bool copyfile(const string& sourceFileName, const string& destFileName, bool sta
     bout << "|#7File movement ";
   }
 
-  if ((sourceFileName != destFileName) &&
+  if (sourceFileName != destFileName &&
       File::Exists(sourceFileName) &&
       !File::Exists(destFileName)) {
-    if (File::Copy(sourceFileName, destFileName)) {
-      return true;
-    }
+    std::error_code ec;
+    return wwiv::fs::copy_file(sourceFileName, destFileName, ec);
   }
   return false;
 }

@@ -26,7 +26,6 @@
 #include <fcntl.h>
 #include <io.h>
 #include <share.h>
-#include <string>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -34,6 +33,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+namespace fs = std::filesystem;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -42,15 +42,15 @@ namespace wwiv {
 namespace core {
 
 const int File::shareDenyReadWrite = SH_DENYRW;
-const int File::shareDenyWrite     = SH_DENYWR;
-const int File::shareDenyRead      = SH_DENYRD;
-const int File::shareDenyNone      = SH_DENYNO;
+const int File::shareDenyWrite = SH_DENYWR;
+const int File::shareDenyRead = SH_DENYRD;
+const int File::shareDenyNone = SH_DENYNO;
 
-const int File::permReadWrite      = (_S_IREAD | _S_IWRITE);
+const int File::permReadWrite = (_S_IREAD | _S_IWRITE);
 
 const char File::pathSeparatorChar = '\\';
 const char File::pathSeparatorString[] = "\\";
-const char File::separatorChar     = ';';
+const char File::separatorChar = ';';
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
@@ -61,39 +61,21 @@ const char File::separatorChar     = ';';
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Copy(const std::string& sourceFileName, const std::string& destFileName) {
-  return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
-}
-
-bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
-  return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
-}
-
-bool File::canonical(const std::string& path, std::string* resolved) {
-  constexpr DWORD BUFSIZE = 4096;
-  CHAR buffer[BUFSIZE];
-  CHAR** lppPart = { nullptr };
-
-  DWORD result = GetFullPathName(path.c_str(), BUFSIZE, buffer, lppPart);
-  if (result == 0) {
-    resolved->assign(path);
-    return false;
-  }
-
-  resolved->assign(buffer);
-  return true;
+// static
+std::string File::canonical(const std::string& path) {
+  fs::path p{path};
+  return fs::canonical(p).string();
 }
 
 // static
 long File::freespace_for_path(const string& path) {
   uint64_t i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
-  BOOL result = GetDiskFreeSpaceEx(path.c_str(),
-      reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
-      reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
-      reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
+  BOOL result =
+      GetDiskFreeSpaceEx(path.c_str(), reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
+                         reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
+                         reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
   return (result) ? static_cast<long>(i64FreeBytesToCaller / 1024) : 0;
 }
 
-
-}
-}
+} // namespace core
+} // namespace wwiv

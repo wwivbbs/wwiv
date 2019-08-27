@@ -1122,7 +1122,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
         // Delete the packet.
         f.Close();
         if (net_cmdline.skip_delete()) {
-          backup_file(f);
+          backup_file(f.full_pathname());
         }
         f.Delete();
         break;

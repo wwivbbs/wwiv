@@ -33,6 +33,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivport.h"
@@ -150,11 +151,14 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  auto users_lst = StrCat(config.datadir(), USER_LST);
-  auto backup_file = StrCat(users_lst, ".backup.pre-wwivconfig-upgrade");
+  wwiv::fs::path users_lst = FilePath(config.datadir(), USER_LST);
+  auto backup_file = users_lst;
+  backup_file += ".backup.pre-wwivconfig-upgrade";
 
   // Make a backup file.
-  File::Copy(users_lst, backup_file);
+  std::error_code ec;
+  // Note we ignore the ec since we fail open.
+  wwiv::fs::copy_file(users_lst, backup_file, ec);
 
   DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,

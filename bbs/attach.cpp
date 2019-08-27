@@ -265,8 +265,9 @@ void attach_file(int mode) {
                 bout << "File already exists or invalid filename.\r\n";
               } else {
                 if (so() && !bRemoteUpload) {
-                  // Copy file s to szFullPathName.
-                  if (!File::Copy(szFileToAttach, szFullPathName)) {
+                  std::error_code ec;
+                  using namespace wwiv::fs;
+                  if (!copy_file(szFileToAttach, szFullPathName, ec)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {
