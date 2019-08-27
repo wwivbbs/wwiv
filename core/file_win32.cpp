@@ -52,21 +52,6 @@ const char File::pathSeparatorChar = '\\';
 const char File::pathSeparatorString[] = "\\";
 const char File::separatorChar = ';';
 
-/////////////////////////////////////////////////////////////////////////////
-// Constructors/Destructors
-
-/////////////////////////////////////////////////////////////////////////////
-// Member functions
-
-/////////////////////////////////////////////////////////////////////////////
-// Static functions
-
-// static
-std::string File::canonical(const std::string& path) {
-  fs::path p{path};
-  return fs::canonical(p).string();
-}
-
 // static
 long File::freespace_for_path(const string& path) {
   uint64_t i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;

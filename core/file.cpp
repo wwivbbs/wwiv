@@ -455,5 +455,11 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
   return ec.value() == 0;
 }
 
+// static
+std::string File::canonical(const std::string& path) {
+  fs::path p{path};
+  return fs::canonical(p).string();
+}
+
 } // namespace core
 } // namespace wwiv

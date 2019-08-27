@@ -41,14 +41,8 @@
 
 #include "core/wwivassert.h"
 
-using std::string;
-
 namespace wwiv {
 namespace core {
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Constants
 
 const int File::shareDenyReadWrite = S_IWRITE;
 const int File::shareDenyWrite     = 0;
@@ -63,15 +57,7 @@ const char File::pathSeparatorString[] = "/";
 const char File::separatorChar     = ':';
 
 // static
-std::string File::canonical(const std::string& path) {
-  auto result = ::realpath(path.c_str(), nullptr);
-  std::string c{result};
-  free(result);
-  return c;
-}
-
-// static
-long File::freespace_for_path(const string& path) {
+long File::freespace_for_path(const std::string& path) {
   struct statvfs fs{};
   if (statvfs(path.c_str(), &fs)) {
     perror("statfs()");
