@@ -18,9 +18,6 @@
 /**************************************************************************/
 #include "core/file.h"
 
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-
 #include <share.h>
 
 namespace wwiv {
@@ -34,8 +31,6 @@ const int File::shareDenyNone = SH_DENYNO;
 const int File::permReadWrite = (_S_IREAD | _S_IWRITE);
 
 const char File::pathSeparatorChar = '\\';
-const char File::pathSeparatorString[] = "\\";
-const char File::separatorChar = ';';
 
 } // namespace core
 } // namespace wwiv

@@ -590,7 +590,7 @@ void print_net_listing(bool bForcePause) {
               const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
               const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
               string areacode;
-              if (File::Exists(regions_dir, town_fn)) {
+              if (File::Exists(FilePath(regions_dir, town_fn))) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
               } else {
@@ -704,7 +704,7 @@ void mailr() {
                       fsr.id = 0;
                       attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
-                      File::Remove(a()->GetAttachmentDirectory(), fsr.filename);
+                      File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     } else {
                       attachFile.Read(&fsr, sizeof(filestatusrec));
                     }
@@ -885,7 +885,7 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(a()->config()->gfilesdir(), status->GetLogFileName(2));
+  File::Remove(FilePath(a()->config()->gfilesdir(), status->GetLogFileName(2)));
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";

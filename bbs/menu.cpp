@@ -64,7 +64,7 @@ static string GetMenuDirectory(const string menuPath) {
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
-  return File::Exists(GetMenuDirectory(menu_dir), "main.mnu");
+  return File::Exists(FilePath(GetMenuDirectory(menu_dir), "main.mnu"));
 }
 
 static bool CheckMenuPassword(const string& original_password) {

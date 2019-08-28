@@ -60,7 +60,7 @@ WFileTransferFile::~WFileTransferFile() {}
 int WFileTransferFile::file_size() const { return file_->length(); }
 
 bool WFileTransferFile::Delete() {
-  if (!file_->Delete()) {
+  if (!File::Remove(file_->full_pathname())) {
     return false;
   }
   if (!flo_file_) {

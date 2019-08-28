@@ -281,7 +281,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     memset(&d1, 0, sizeof(directoryrec));
     to_char_array(d1.name, "Sysop");
     to_char_array(d1.filename, "SYSOP");
-    to_char_array(d1.path, FilePath("dloads", StrCat("sysop", File::pathSeparatorString)));
+    to_char_array(d1.path, File::EnsureTrailingSlash(FilePath("dloads", "sysop")));
     File::mkdir(d1.path);
     d1.dsl = 100;
     d1.maxfiles = 50;
@@ -293,7 +293,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     memset(&d1, 0, sizeof(directoryrec));
     to_char_array(d1.name, "Miscellaneous");
     to_char_array(d1.filename, "misc");
-    auto last = StrCat("misc", File::pathSeparatorString);
+    auto last = File::EnsureTrailingSlash("misc");
     to_char_array(d1.path, FilePath("dloads", last));
     File::mkdir(d1.path);
     d1.dsl = 10;

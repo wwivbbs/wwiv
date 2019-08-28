@@ -215,7 +215,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
     // Move to BADMSGS
     f.Close();
     wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
-    const auto dest = FilePath(dirs.bad_packets_dir(), f.GetName());
+    const auto dest = FilePath(dirs.bad_packets_dir(), f.path().filename().string());
 
     if (!File::Move(f.full_pathname(), dest)) {
       LOG(ERROR) << "Error moving file to BADMSGS; file: " << f;
@@ -323,7 +323,7 @@ static bool import_packets(const Config& config, FtnMessageDupe& dupe, const Fid
       if (skip_delete) {
         backup_file(FilePath(net.dir, f.name));
       }
-      File::Remove(dir, f.name);
+      File::Remove(FilePath(dir, f.name));
     }
   }
   return true;
@@ -406,7 +406,7 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
         if (skip_delete) {
           backup_file(FilePath(net.dir, f.name));
         }
-        File::Remove(dir, f.name);
+        File::Remove(FilePath(dir, f.name));
       }
     } else if (import_bundle_file(config, dupe, callout, net, dir, f.name, skip_delete)) {
       LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
@@ -414,7 +414,7 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
       if (skip_delete) {
         backup_file(FilePath(net.dir, f.name));
       }
-      File::Remove(dir, f.name);
+      File::Remove(FilePath(dir, f.name));
     }
   }
   return num_bundles_processed;
@@ -430,7 +430,7 @@ static string rename_fido_packet(const string& dir, const string& origname) {
     base.pop_back();
     base.push_back(static_cast<char>('a' + i));
     string newname = base + ".pkt";
-    if (!File::Exists(dir, newname)) {
+    if (!File::Exists(FilePath(dir, newname))) {
       return newname;
     }
   }
@@ -478,7 +478,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
     auto bname = bundle_name(orig, route_to, dow, i);
-    if (File::Exists(dirs.outbound_dir(), bname)) {
+    if (File::Exists(FilePath(dirs.outbound_dir(), bname))) {
       VLOG(1) << "Skipping candidate bundle: " << FilePath(dirs.outbound_dir(), bname);
       // Already exists.
       continue;
@@ -500,7 +500,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     out_bundle_name = bname;
 
     LOG(INFO) << "Created bundle: " << FilePath(dirs.outbound_dir(), bname);
-    if (!File::Remove(dirs.temp_outbound_dir(), fido_packet_name)) {
+    if (!File::Remove(FilePath(dirs.temp_outbound_dir(), fido_packet_name))) {
       LOG(ERROR) << "Error removing packet: "
                  << FilePath(dirs.temp_outbound_dir(), fido_packet_name);
     }
@@ -787,7 +787,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     // Since we wrote the packed message, let's add it to the
     // duplicate message database.
     dupe.add(p);
-    fido_packet_name = file.GetName();
+    fido_packet_name = file.path().filename().string();
     return true;
   }
   return false;
@@ -1101,7 +1101,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     }
   } else if (cmd == "export") {
     const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-    if (!File::Exists(net.dir, sfilename)) {
+    if (!File::Exists(FilePath(net.dir, sfilename))) {
       LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
       return 1;
     }
@@ -1124,7 +1124,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
         if (net_cmdline.skip_delete()) {
           backup_file(f.full_pathname());
         }
-        f.Delete();
+        File::Remove(f.full_pathname());
         break;
       } else if (response == ReadPacketResponse::ERROR) {
         return 1;

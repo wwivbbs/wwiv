@@ -151,7 +151,7 @@ static bool check_fido_host_networks(
         continue;
       }
       const auto filename = StrCat("n", n.stype, ".net");
-      if (!File::Exists(net.dir, filename)) {
+      if (!File::Exists(FilePath(net.dir, filename))) {
         text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
         text << " ** Please fix it.\r\n\n";
       }
@@ -304,8 +304,7 @@ static bool add_feedback_general_info(
 
 void update_timestamps(const string& dir) {
   // Update timestamps on {bbslist,connect,callout}.net
-  File bbsdata_net_file(FilePath(dir, BBSDATA_NET));
-  time_t t = bbsdata_net_file.last_write_time();
+  const auto t = File::last_write_time(FilePath(dir, BBSDATA_NET));
   File(FilePath(dir, BBSLIST_NET)).set_last_write_time(t);
   File(FilePath(dir, CONNECT_NET)).set_last_write_time(t);
   File(FilePath(dir, CALLOUT_NET)).set_last_write_time(t);
@@ -383,8 +382,8 @@ static void update_filechange_status_dat(const string& datadir) {
 }
 
 static void rename_pending_files(const string& dir) {
-  File dead_net_file(FilePath(dir, DEAD_NET));
-  if (dead_net_file.Exists()) {
+  const auto dead_net_file(FilePath(dir, DEAD_NET));
+  if (File::Exists(dead_net_file)) {
     rename_pend(dir, DEAD_NET, '3');
   }
 
@@ -484,7 +483,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   text << "Bad Packets dir:         " << dirs.bad_packets_dir() << "\r\n";
   text << "\r\n";
 
-  if (!File::Exists(dirs.net_dir(), FIDO_CALLOUT_JSON)) {
+  if (!File::Exists(FilePath(dirs.net_dir(), FIDO_CALLOUT_JSON))) {
     text << " ** fido_callout.json file DOES NOT EXIST.\r\n\n";
   }
   FidoCallout callout(net_cmdline.config(), net);
@@ -497,13 +496,13 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   text << "Using nodelist base:     " << net.fido.nodelist_base << "\r\n";
   text << "Using nodelist base dir: " << dirs.net_dir() << "\r\n";
   auto nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
-  File nlfile(FilePath(dirs.net_dir(), nodelist));
   text << "Latest FTN is:           " << nodelist;
-  if (!nlfile.Exists()) {
+  const auto nl_file = FilePath(dirs.net_dir(), nodelist);
+  if (!File::Exists(nl_file)) {
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
   } else {
-    text << " [" << time_t_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
+    text << " [" << time_t_to_wwivnet_time(File::creation_time(nl_file)) << "]\r\n";
     auto nl_path = File::absolute(dirs.net_dir(), nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {

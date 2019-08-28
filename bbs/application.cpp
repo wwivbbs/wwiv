@@ -142,10 +142,11 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
 void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
-    const File key_file(FilePath(config_->datadir(), "wwiv.key"));
+    const auto key_fn = FilePath(config_->datadir(), "wwiv.key");
+    const File key_file(key_fn);
     const auto system_password = config()->system_password();
-    wwiv::bbs::Key key(key_file.full_pathname(), system_password);
-    if (!key_file.Exists()) {
+    wwiv::bbs::Key key(key_fn, system_password);
+    if (!File::Exists(key_fn)) {
       LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;

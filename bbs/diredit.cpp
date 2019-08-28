@@ -166,8 +166,8 @@ void modify_dir(int n) {
       bout << " \b";
       auto s = input_path(r.path, 79);
       if (!s.empty()) {
-        File dir(s);
-        if (!dir.Exists()) {
+        const string dir{s};
+        if (!File::Exists(dir)) {
           a()->CdHome();
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;

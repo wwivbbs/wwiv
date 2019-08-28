@@ -691,7 +691,7 @@ void DoFullNewUser() {
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     input_street();
     const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
-    if (File::Exists(zip_city_dir, "zip1.dat")) {
+    if (File::Exists(FilePath(zip_city_dir, "zip1.dat"))) {
       input_zipcode();
       if (!check_zip(u->GetZipcode(), 1)) {
         u->SetCity("");
@@ -1435,15 +1435,16 @@ void DoMinimalNewUser() {
 }
 
 void new_mail() {
-  File file(FilePath(a()->config()->gfilesdir(),
-                     (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
-                                                                                 : NEWMAIL_MSG));
-  if (!file.Exists()) {
+  auto file =
+      FilePath(a()->config()->gfilesdir(),
+               (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+
+  if (!File::Exists(file)) {
     return;
   }
   int save_ed = a()->user()->GetDefaultEditor();
   a()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.full_pathname(), true, true);
+  LoadFileIntoWorkspace(file, true, true);
   use_workspace = true;
 
   MessageEditorData data;

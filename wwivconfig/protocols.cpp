@@ -253,7 +253,7 @@ void extrn_prots(const std::string& datadir) {
       internfile.WriteVector(over_interns);
     }
   } else {
-    File::Remove(datadir, NINTERN_DAT);
+    File::Remove(FilePath(datadir, NINTERN_DAT));
   }
 }
 

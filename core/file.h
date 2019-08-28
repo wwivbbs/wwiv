@@ -90,8 +90,6 @@ public:
   static const int invalid_handle;
 
   static const char pathSeparatorChar;
-  static const char pathSeparatorString[];
-  static const char separatorChar;
 
   // Constructor/Destructor
 
@@ -124,10 +122,6 @@ public:
   off_t current_position() const;
 
   bool Exists() const;
-  bool Delete();
-
-  bool IsDirectory() const;
-  bool IsFile() const;
 
   bool SetFilePermissions(int nPermissions);
   time_t creation_time();
@@ -143,9 +137,6 @@ public:
     }
     return s.substr(0, found);
   }
-
-  /** Returns the filename portion of this file's path */
-  std::string GetName() const { return full_path_name_.filename().string(); }
 
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
@@ -164,10 +155,10 @@ public:
 
   // static functions
   static bool Remove(const std::string& fileName);
-  static bool Remove(const std::string& directoryName, const std::string& fileName);
+  //static bool Remove(const std::string& directoryName, const std::string& fileName);
   static bool Rename(const std::string& origFileName, const std::string& newFileName);
   static bool Exists(const std::string& fileName);
-  static bool Exists(const std::string& directoryName, const std::string& fileName);
+  //static bool Exists(const std::string& directoryName, const std::string& fileName);
   static bool ExistsWildcard(const std::string& wildCard);
   static bool Copy(const std::string& sourceFileName, const std::string& destFileName);
   static bool Move(const std::string& sourceFileName, const std::string& destFileName);
@@ -181,6 +172,9 @@ public:
   static std::string absolute(const std::string& base, const std::string& relative);
   static bool is_absolute(const std::string& path);
   static bool is_relative(const std::string& path) { return !is_absolute(path); }
+
+  static time_t creation_time(const std::string& path);
+  static time_t last_write_time(const std::string& path);
 
   /**
    * Returns an canonical absolute path.
@@ -225,6 +219,7 @@ public:
   /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
   static long freespace_for_path(const std::string& path);
   static bool is_directory(const std::string& path);
+  static bool is_regular_file(const std::string& path);
 
 private:
   // Helper functions

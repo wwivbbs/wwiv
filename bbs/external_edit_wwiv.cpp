@@ -48,9 +48,9 @@ struct fedit_data_rec {
 };
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(FilePath(a()->temp_directory(), filename));
-  file.SetFilePermissions(File::permReadWrite);
-  file.Delete();
+  const auto f = FilePath(a()->temp_directory(), filename);
+  File::SetFilePermissions(f, File::permReadWrite);
+  File::Remove(f);
 }
 
 const std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }
@@ -76,8 +76,8 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (File::Exists(a()->temp_directory(), FEDIT_INF)) {
-    fedit_data_rec fedit_data;
+  } else if (File::Exists(FilePath(a()->temp_directory(), FEDIT_INF))) {
+    fedit_data_rec fedit_data{};
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
     File file(FilePath(a()->temp_directory(), FEDIT_INF));
     file.Open(File::modeBinary | File::modeReadOnly);

@@ -281,7 +281,7 @@ TEST_F(FidoUtilTest, FloFile) {
   net_networks_rec net{};
   net.dir = helper_.TempDir();
   net.fido.fido_address = "11:1/211";
-  FloFile flo(net, f.parent(), f.GetName());
+  FloFile flo(net, f.parent(), f.path().filename().string());
   EXPECT_FALSE(flo.poll());
   EXPECT_EQ(1, flo.flo_entries().size());
 
@@ -292,7 +292,7 @@ TEST_F(FidoUtilTest, FloFile) {
     flo.clear();
     EXPECT_TRUE(flo.empty());
     EXPECT_TRUE(flo.Save());
-    EXPECT_FALSE(f.Exists()) << f;
+    EXPECT_FALSE(File::Exists(b)) << b;
   }
 
   flo.insert("C:\\db\\outbound\\0000006f.mo0", flo_directive::truncate_file);
@@ -301,18 +301,18 @@ TEST_F(FidoUtilTest, FloFile) {
     EXPECT_EQ("C:\\db\\outbound\\0000006f.mo0", e.first);
     EXPECT_EQ(flo_directive::truncate_file, e.second);
     flo.Save();
-    EXPECT_TRUE(f.Exists());
+    EXPECT_TRUE(File::Exists(b));
     flo.clear();
-    f.Delete();
+    File::Remove(b);
   }
 
   {
     flo.set_poll(true);
     flo.Save();
-    EXPECT_TRUE(f.Exists());
+    EXPECT_TRUE(File::Exists(b));
 
-    TextFile tf(f.full_pathname(), "r");
-    const string contents = tf.ReadFileIntoString();
+    TextFile tf(b, "r");
+    const auto contents = tf.ReadFileIntoString();
     EXPECT_EQ("", contents);
   }
 

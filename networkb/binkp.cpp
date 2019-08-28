@@ -24,32 +24,32 @@
 #include <fcntl.h>
 #include <functional>
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "core/connection.h"
 #include "core/crc32.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/os.h"
+#include "core/socket_exceptions.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/os.h"
 #include "core/version.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
-#include "core/connection.h"
 #include "networkb/cram.h"
 #include "networkb/file_manager.h"
 #include "networkb/net_log.h"
-#include "core/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/filenames.h"
 
 using std::boolalpha;
 using std::end;
@@ -92,25 +92,18 @@ string expected_password_for(const net_call_out_rec* con) {
 }
 
 BinkP::BinkP(wwiv::core::Connection* conn, BinkConfig* config, BinkSide side,
-        const std::string& expected_remote_node,
-        received_transfer_file_factory_t& received_transfer_file_factory)
-  : conn_(conn),
-    config_(config), 
-    side_(side),
-    expected_remote_node_(expected_remote_node), 
-    error_received_(false),
-    received_transfer_file_factory_(received_transfer_file_factory),
-    bytes_sent_(0),
-    bytes_received_(0),
-    remote_(config, side_ == BinkSide::ANSWERING, expected_remote_node) {
+             const std::string& expected_remote_node,
+             received_transfer_file_factory_t& received_transfer_file_factory)
+    : conn_(conn), config_(config), side_(side), expected_remote_node_(expected_remote_node),
+      error_received_(false), received_transfer_file_factory_(received_transfer_file_factory),
+      bytes_sent_(0), bytes_received_(0),
+      remote_(config, side_ == BinkSide::ANSWERING, expected_remote_node) {
   if (side_ == BinkSide::ORIGINATING) {
     crc_ = config_->crc();
   }
 }
 
-BinkP::~BinkP() {
-  files_to_send_.clear();
-}
+BinkP::~BinkP() { files_to_send_.clear(); }
 
 bool BinkP::process_opt(const std::string& opt) {
   LOG(INFO) << "OPT line: '" << opt << "'";
@@ -128,23 +121,19 @@ bool BinkP::process_opt(const std::string& opt) {
         cram_.set_challenge_data(challenge);
         if (config_->cram_md5()) {
           auth_type_ = AuthType::CRAM_MD5;
-        }
-        else {
+        } else {
           LOG(INFO) << "       CRAM-MD5 disabled in net.ini; Using plain text passwords.";
         }
       }
-    }
-    else if (s == "CRC") {
+    } else if (s == "CRC") {
       if (config_->crc()) {
         LOG(INFO) << "       Enabling CRC support";
         // If we support crc. Let's use it at receiving time now.
         crc_ = true;
-      }
-      else {
+      } else {
         LOG(INFO) << "       Not enabling CRC support (disabled in net.ini).";
       }
-    }
-    else {
+    } else {
       LOG(INFO) << "       Unknown OPT: '" << s << "'";
     }
   }
@@ -172,10 +161,9 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
 
   string log_line = s;
   if (command_id == BinkpCommands::M_PWD) {
-	  log_line = string(12, '*');
+    log_line = string(12, '*');
   }
-  VLOG(1) << "RECV:  " << BinkpCommands::command_id_to_name(command_id)
-      << ": " << log_line;
+  VLOG(1) << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << log_line;
   switch (command_id) {
   case BinkpCommands::M_NUL: {
     // TODO(rushfan): process these.
@@ -219,7 +207,8 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
     error_received_ = true;
   } break;
   default: {
-    LOG(ERROR) << "       ** Unhandled Command: " << BinkpCommands::command_id_to_name(command_id) << ": " << s;
+    LOG(ERROR) << "       ** Unhandled Command: " << BinkpCommands::command_id_to_name(command_id)
+               << ": " << s;
   } break;
   }
   return true;
@@ -230,10 +219,8 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     return false;
   }
   string s = conn_->receive(length, d);
-  LOG_IF(length != static_cast<int16_t>(s.size()), ERROR) 
-      << "RECV:  DATA PACKET; ** unexpected size** len: " 
-      << s.size()
-      << "; expected: " << length
+  LOG_IF(length != static_cast<int16_t>(s.size()), ERROR)
+      << "RECV:  DATA PACKET; ** unexpected size** len: " << s.size() << "; expected: " << length
       << " duration:" << wwiv::core::to_string(d);
   if (!current_receive_file_) {
     LOG(ERROR) << "ERROR: Received M_DATA with no current file.";
@@ -243,10 +230,9 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
   if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
     LOG(INFO) << "       file finished; bytes_received: " << current_receive_file_->length();
 
-    string data_line = StringPrintf("%s %u %u",
-        current_receive_file_->filename().c_str(),
-        current_receive_file_->length(),
-        current_receive_file_->timestamp());
+    string data_line =
+        StringPrintf("%s %u %u", current_receive_file_->filename().c_str(),
+                     current_receive_file_->length(), current_receive_file_->timestamp());
 
     auto crc = current_receive_file_->crc();
     // If we want to use CRCs and we don't have a zero CRC.
@@ -271,8 +257,8 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
         if (file_crc != current_receive_file_->crc()) {
           // TODO(rushfan): Once we're sure this works, make it mark the file bad.
           LOG(ERROR) << "Wrong CRC32 of: " << current_receive_file_->filename()
-            << "; expected: " << std::hex << current_receive_file_->crc()
-            << "; actual: " << std::hex << file_crc;
+                     << "; expected: " << std::hex << current_receive_file_->crc()
+                     << "; actual: " << std::hex << file_crc;
         }
       }
     }
@@ -283,8 +269,9 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
-//    VLOG(1) << "       file still transferring; bytes_received: " << current_receive_file_->length()
-//        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
+    //    VLOG(1) << "       file still transferring; bytes_received: " <<
+    //    current_receive_file_->length()
+    //        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
   }
 
   return true;
@@ -336,7 +323,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   uint8_t b0 = ((packet_length & 0xff00) >> 8) | 0x80;
   uint8_t b1 = packet_length & 0x00ff;
 
-  char *p = packet.get();
+  char* p = packet.get();
   *p++ = b0;
   *p++ = b1;
   *p++ = command_id;
@@ -344,12 +331,11 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
 
   conn_->send(packet.get(), size, seconds(3));
   if (command_id != BinkpCommands::M_PWD) {
-    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id)
-         << ": " << data;
+    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id) << ": " << data;
   } else {
     // Mask the password.
-    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id) 
-        << ": " << string(8, '*');
+    LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id) << ": "
+              << string(8, '*');
   }
   return true;
 }
@@ -363,13 +349,13 @@ bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
   packet_length &= 0x7fff;
   uint8_t b0 = ((packet_length & 0xff00) >> 8);
   uint8_t b1 = packet_length & 0x00ff;
-  char *p = packet.get();
+  char* p = packet.get();
   *p++ = b0;
   *p++ = b1;
   memcpy(p, data, packet_length);
 
   conn_->send(packet.get(), packet_length + 2, seconds(10));
-  VLOG(3) << "SEND:  data packet: packet_length: " << (int) packet_length;
+  VLOG(3) << "SEND:  data packet: packet_length: " << (int)packet_length;
   return true;
 }
 
@@ -379,9 +365,7 @@ BinkState BinkP::ConnInit() {
   return BinkState::WAIT_CONN;
 }
 
-static string wwiv_version_string() {
-  return StrCat(wwiv_version, beta_version);
-}
+static string wwiv_version_string() { return StrCat(wwiv_version, beta_version); }
 
 static string wwiv_version_string_with_date() {
   return StrCat(wwiv_version, beta_version, " (", wwiv_date, ")");
@@ -411,16 +395,17 @@ BinkState BinkP::WaitConn() {
   string network_addresses;
   if (side_ == BinkSide::ANSWERING) {
     // Present all addresses on answering side.
-    for (const auto net : config_->networks().networks()) {    
+    for (const auto net : config_->networks().networks()) {
       if (net.type == network_type_t::wwivnet) {
         string lower_case_network_name = net.name;
-        StringLowerCase(&lower_case_network_name);		  
-        send_command_packet(BinkpCommands::M_NUL,
-            StringPrintf("WWIV @%u.%s", net.sysnum, lower_case_network_name.c_str()));
+        StringLowerCase(&lower_case_network_name);
+        send_command_packet(BinkpCommands::M_NUL, StringPrintf("WWIV @%u.%s", net.sysnum,
+                                                               lower_case_network_name.c_str()));
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
         }
-		    network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+        network_addresses +=
+            StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
       } else if (config_->config().is_5xx_or_later()) {
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
@@ -428,55 +413,54 @@ BinkState BinkP::WaitConn() {
         try {
           FidoAddress address(net.fido.fido_address);
           network_addresses += address.as_string();
-        }
-        catch (const bad_fidonet_address&) {
-          LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address
-            << "' for network: '" << net.name << "'.";
+        } catch (const bad_fidonet_address&) {
+          LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
+                       << net.name << "'.";
         }
       }
     }
   } else {
-    // Sending side: 
+    // Sending side:
     const auto net = config_->networks()[config_->callout_network_name()];
     if (net.type == network_type_t::wwivnet) {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
-        StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
+                          StringPrintf("WWIV @%u.%s", config_->callout_node_number(),
+                                       config_->callout_network_name().c_str()));
       const string lower_case_network_name = ToStringLowerCase(net.name);
-      network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+      network_addresses =
+          StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
     } else if (config_->config().is_5xx_or_later()) {
       try {
         // Present single FTN address.
         FidoAddress address(net.fido.fido_address);
         network_addresses = address.as_string();
       } catch (const bad_fidonet_address& e) {
-          LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address
-            << "' for network: '" << net.name << "'.";
-          // We should terminate here, so rethrow the exception after
-          // letting the user know the network name that is borked.
-          throw e;
+        LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
+                     << net.name << "'.";
+        // We should terminate here, so rethrow the exception after
+        // letting the user know the network name that is borked.
+        throw e;
       }
-
     }
   }
   send_command_packet(BinkpCommands::M_ADR, network_addresses);
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
-  return (side_ == BinkSide::ORIGINATING) ?
-      BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
+  return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::SendPasswd() {
   // This is on the sending side.
   const string network_name(remote_.network_name());
-  VLOG(1) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
+  VLOG(1) << "STATE: SendPasswd for network '" << network_name
+          << "' for node: " << expected_remote_node_;
   Callout* callout = config_->callouts().at(network_name).get();
   string password = expected_password_for(callout, expected_remote_node_);
   VLOG(1) << "       sending password packet";
   switch (auth_type_) {
-  case AuthType::CRAM_MD5:
-  {
+  case AuthType::CRAM_MD5: {
     string hashed_password = cram_.CreateHashedSecret(cram_.challenge_data(), password);
     string hashed_password_command = StrCat("CRAM-MD5-", hashed_password);
     send_command_packet(BinkpCommands::M_PWD, hashed_password_command);
@@ -491,7 +475,7 @@ BinkState BinkP::SendPasswd() {
 BinkState BinkP::WaitAddr() {
   VLOG(1) << "STATE: WaitAddr";
   auto predicate = [&]() -> bool { return !remote_.address_list().empty(); };
-  for (int i=0; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {
     process_frames(predicate, seconds(1));
     if (!remote_.address_list().empty()) {
       return BinkState::AUTH_REMOTE;
@@ -545,10 +529,11 @@ BinkState BinkP::PasswordAck() {
   }
 
   // Passwords do not match, send error.
-  send_command_packet(BinkpCommands::M_ERR, "Incorrect password received.  Please check your configuration.");
+  send_command_packet(BinkpCommands::M_ERR,
+                      "Incorrect password received.  Please check your configuration.");
   // Log it if we're in debug logging mode.
-  VLOG(1) << "Password doesn't match.  Received '" << remote_password_
-          << "' expected '", expected_password, "'.";
+  VLOG(1) << "Password doesn't match.  Received '" << remote_password_ << "' expected '",
+      expected_password, "'.";
   return BinkState::DONE;
 }
 
@@ -559,7 +544,7 @@ BinkState BinkP::WaitPwd() {
   }
   VLOG(1) << "STATE: WaitPwd";
   auto predicate = [&]() -> bool { return !remote_password_.empty(); };
-  for (int i=0; i < 30; i++) {
+  for (int i = 0; i < 30; i++) {
     process_frames(predicate, seconds(1));
     if (predicate()) {
       break;
@@ -572,7 +557,7 @@ BinkState BinkP::WaitPwd() {
 BinkState BinkP::WaitOk() {
   // TODO(rushfan): add proper timeout to wait for OK.
   VLOG(1) << "STATE: WaitOk";
-  for (int i=0; i < 30; i++) {
+  for (int i = 0; i < 30; i++) {
     process_frames([&]() -> bool { return ok_received_; }, seconds(1));
     if (ok_received_) {
       return BinkState::TRANSFER_FILES;
@@ -599,7 +584,8 @@ BinkState BinkP::AuthRemote() {
   if (side_ == BinkSide::ANSWERING) {
     if (!contains(config_->callouts(), network_name)) {
       // We don't have a callout.net entry for this caller. Fail the connection
-      send_command_packet(BinkpCommands::M_ERR, 
+      send_command_packet(
+          BinkpCommands::M_ERR,
           StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
       return BinkState::FATAL_ERROR;
     }
@@ -611,8 +597,10 @@ BinkState BinkP::AuthRemote() {
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
       if (callout_record == nullptr) {
         // We don't have a callout.net entry for this caller. Fail the connection
-        send_command_packet(BinkpCommands::M_ERR,
-          StrCat("Error (NETWORKB-0002): Unable to find caller in WWIVnet callout.net. caller: ", caller));
+        send_command_packet(
+            BinkpCommands::M_ERR,
+            StrCat("Error (NETWORKB-0002): Unable to find caller in WWIVnet callout.net. caller: ",
+                   caller));
         return BinkState::FATAL_ERROR;
       }
     } else {
@@ -621,8 +609,10 @@ BinkState BinkP::AuthRemote() {
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
       if (callout_record == nullptr) {
         // We don't have a callout.net entry for this caller. Fail the connection
-        send_command_packet(BinkpCommands::M_ERR,
-          StrCat("Error (NETWORKB-0002): Unable to find FTN address in remote list. caller: ", caller));
+        send_command_packet(
+            BinkpCommands::M_ERR,
+            StrCat("Error (NETWORKB-0002): Unable to find FTN address in remote list. caller: ",
+                   caller));
         return BinkState::FATAL_ERROR;
       }
     }
@@ -631,12 +621,12 @@ BinkState BinkP::AuthRemote() {
 
   VLOG(1) << "       expected_ftn: '" << expected_remote_node_ << "'";
   if (remote_.address_list().find(expected_remote_node_) != string::npos) {
-    return (side_ == BinkSide::ORIGINATING) ?
-      BinkState::IF_SECURE : BinkState::WAIT_PWD;
+    return (side_ == BinkSide::ORIGINATING) ? BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR,
-      StrCat("Error (NETWORKB-0001): Unexpected Addresses: '", remote_.address_list(),
-        "'; expected: '", expected_remote_node_, "'"));
+                        StrCat("Error (NETWORKB-0001): Unexpected Addresses: '",
+                               remote_.address_list(), "'; expected: '", expected_remote_node_,
+                               "'"));
     return BinkState::FATAL_ERROR;
   }
 }
@@ -656,7 +646,7 @@ BinkState BinkP::TransferFiles() {
 
   VLOG(1) << "STATE: After SendFilePacket for all files.";
   // Quickly let the inbound event loop percolate.
-  for (int i=0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     process_frames(milliseconds(500));
   }
 
@@ -664,8 +654,8 @@ BinkState BinkP::TransferFiles() {
   if (files_to_send_.empty()) {
     // All files are sent, let's let the remote know we are done.
     VLOG(1) << "       Sending EOB";
-    // Kinda a hack, but trying to send a 3 byte packet was stalling on Windows.  Making it larger makes
-    // it send (yes, even with TCP_NODELAY set).
+    // Kinda a hack, but trying to send a 3 byte packet was stalling on Windows.  Making it larger
+    // makes it send (yes, even with TCP_NODELAY set).
     send_command_packet(BinkpCommands::M_EOB, "All files to send have been sent. Thank you.");
     process_frames(seconds(1));
   } else {
@@ -698,14 +688,14 @@ BinkState BinkP::FatalError() {
 BinkState BinkP::WaitEob() {
   VLOG(1) << "STATE: WaitEob: ENTERING eob_received: " << boolalpha << eob_received_;
   if (eob_received_) {
-    // If we've already received an EOB, don't process_frames or do anything else. 
+    // If we've already received an EOB, don't process_frames or do anything else.
     // We're done.
     return BinkState::DONE;
   }
 
   const int eob_retries = 12;
   const int eob_wait_seconds = 5;
-  for (int count=1; count < eob_retries; count++) {
+  for (int count = 1; count < eob_retries; count++) {
     // Loop for up to one minute swaiting for an EOB before exiting.
     try {
       process_frames([&]() -> bool { return eob_received_; }, seconds(eob_wait_seconds));
@@ -713,7 +703,7 @@ BinkState BinkP::WaitEob() {
         return BinkState::DONE;
       }
       LOG(INFO) << "       WaitEob: still waiting for M_EOB to be received. will wait up to "
-          << (eob_retries * eob_wait_seconds) << " seconds.";
+                << (eob_retries * eob_wait_seconds) << " seconds.";
     } catch (const timeout_error& e) {
       LOG(ERROR) << "       WaitEob: ERROR while waiting for more data: " << e.what();
     }
@@ -741,7 +731,7 @@ bool BinkP::SendFileData(TransferFile* file) {
   const auto file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   auto chunk = std::make_unique<char[]>(chunk_size);
-  for (long start = 0; start < file_length; start+=chunk_size) {
+  for (long start = 0; start < file_length; start += chunk_size) {
     const auto size = min<int>(chunk_size, file_length - start);
     if (!file->GetChunk(chunk.get(), start, size)) {
       // Bad chunk. Abort
@@ -767,7 +757,7 @@ bool BinkP::HandlePassword(const string& password_line) {
   static const string CRAM_MD5_PREFIX = "CRAM-MD5-";
   if (!starts_with(password_line, CRAM_MD5_PREFIX)) {
     send_command_packet(BinkpCommands::M_ERR,
-        "CRAM authentication required, no common hash function");
+                        "CRAM authentication required, no common hash function");
     return false;
   }
   string hashed_password = password_line.substr(CRAM_MD5_PREFIX.size());
@@ -789,26 +779,19 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   time_t timestamp;
   long starting_offset = 0;
   uint32_t crc = 0;
-  if (!ParseFileRequestLine(request_line,
-      &filename, 
-      &expected_length,
-      &timestamp, 
-      &starting_offset,
-      &crc)) {
+  if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp, &starting_offset,
+                            &crc)) {
     return false;
   }
   const auto net = remote_.network_name();
-  auto *p = new ReceiveFile(received_transfer_file_factory_(net, filename),
-    filename,
-    expected_length,
-    timestamp,
-    crc);
+  auto* p = new ReceiveFile(received_transfer_file_factory_(net, filename), filename,
+                            expected_length, timestamp, crc);
   current_receive_file_.reset(p);
   return true;
 }
 
 bool BinkP::HandleFileGetRequest(const string& request_line) {
-  LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]"; 
+  LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
   const auto filename = s.at(0);
   const auto length = to_number<long>(s.at(1));
@@ -828,7 +811,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 }
 
 bool BinkP::HandleFileGotRequest(const string& request_line) {
-  LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]"; 
+  LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
   const auto filename = s.at(0);
   const auto length = to_number<int>(s.at(1));
@@ -843,15 +826,15 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   // Increment the number of bytes sent.
   // Also don't increment with -1 if there's an error with the file.
   bytes_sent_ += max(0, file->file_size());
-  
+
   if (length != file->file_size()) {
-    LOG(ERROR) << "NON-FATAL ERROR: Size didn't match M_GOT. Please log a bug. M_GOT: "
-      << length << "; file_size: " << file->file_size();
+    LOG(ERROR) << "NON-FATAL ERROR: Size didn't match M_GOT. Please log a bug. M_GOT: " << length
+               << "; file_size: " << file->file_size();
   }
 
   // This is a file that we sent.
   if (!file->Delete()) {
-    LOG(ERROR) << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
+    LOG(ERROR) << "       *** UNABLE TO DELETE FILE: " << file->filename();
   }
   files_to_send_.erase(iter);
   return true;
@@ -938,7 +921,8 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     // Log to net.log
     auto sec = duration_cast<seconds>(end_time - start_time);
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
-    NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
+    NetworkSide network_log_side =
+        (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
     NetworkLog net_log(config_->gfiles_directory());
     net_log.Log(system_clock::to_time_t(start_time), network_log_side, remote_.wwivnet_node(),
                 bytes_sent_, bytes_received_, sec, remote_.network_name());
@@ -948,8 +932,8 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     if (error_received_) {
       c.add_failure(remote_.wwivnet_node(), system_clock::to_time_t(start_time));
     } else {
-      c.add_connect(remote_.wwivnet_node(), system_clock::to_time_t(start_time),
-        bytes_sent_, bytes_received_);
+      c.add_connect(remote_.wwivnet_node(), system_clock::to_time_t(start_time), bytes_sent_,
+                    bytes_received_);
     }
   } else {
     // Handle FTN inbound files.
@@ -958,48 +942,48 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       file_manager_->rename_ftn_pending_files();
       if (!config_->skip_net()) {
         const auto network_number = config_->networks().network_number(remote_.network_name());
-        System(cmdline.bindir(),
-               StrCat("networkc .", network_number, " --v=", config_->verbose()));
+        System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
     }
   }
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  File file(FilePath(dir, filename));
-  return (file.Open(File::modeReadOnly)) ? file.last_write_time() > tFileTime + 2 : true;
+  const auto fn = FilePath(dir, filename);
+  File file(fn);
+  return (file.Open(File::modeReadOnly)) ? File::last_write_time(fn) > tFileTime + 2 : true;
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(dir, BBSLIST_NET)) {
+  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CONNECT_NET)) {
+  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CALLOUT_NET)) {
+  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
   if (network_version != wwiv_net_version) {
     // always need network3 if the versions do not match.
-    LOG(INFO) << "Need to run network3 since current network_version: "
-      << network_version << " != our network_version: " << wwiv_net_version;
+    LOG(INFO) << "Need to run network3 since current network_version: " << network_version
+              << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(FilePath(dir, BBSDATA_NET));
-  if (!bbsdataNet.Open(File::modeReadOnly)) {
-    return false;
+  const auto bbsdata_fn = FilePath(dir, BBSDATA_NET);
+  {
+    File bbsdataNet(bbsdata_fn);
+    if (!bbsdataNet.Open(File::modeReadOnly)) {
+      return false;
+    }
   }
 
-  time_t bbsdata_time = bbsdataNet.last_write_time();
-  bbsdataNet.Close();
+  const auto bbsdata_time = File::last_write_time(bbsdata_fn);
 
-  return checkup2(bbsdata_time, dir, BBSLIST_NET)
-    || checkup2(bbsdata_time, dir, CONNECT_NET)
-    || checkup2(bbsdata_time, dir, CALLOUT_NET);
+  return checkup2(bbsdata_time, dir, BBSLIST_NET) || checkup2(bbsdata_time, dir, CONNECT_NET) ||
+         checkup2(bbsdata_time, dir, CALLOUT_NET);
 }
-
 
 void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const {
   const string network_name = remote_.network_name();
@@ -1011,16 +995,12 @@ void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const 
   System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
-bool ParseFileRequestLine(const string& request_line,
-        string* filename,
-        long* length,
-        time_t* timestamp,
-        long* offset,
-        uint32_t* crc) {
+bool ParseFileRequestLine(const string& request_line, string* filename, long* length,
+                          time_t* timestamp, long* offset, uint32_t* crc) {
   vector<string> s = SplitString(request_line, " ");
   if (s.size() < 3) {
-    LOG(ERROR) << "ERROR: INVALID request_line: "<< request_line
-         << "; had < 3 parts.  # parts: " << s.size();
+    LOG(ERROR) << "ERROR: INVALID request_line: " << request_line
+               << "; had < 3 parts.  # parts: " << s.size();
     return false;
   }
   *filename = s.at(0);
@@ -1035,6 +1015,6 @@ bool ParseFileRequestLine(const string& request_line,
   }
   return true;
 }
-  
-}  // namespace net
+
+} // namespace net
 } // namespace wwiv

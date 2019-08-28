@@ -609,12 +609,13 @@ bool FloFile::erase(const std::string& file) {
 }
 
 bool FloFile::Load() {
-  File f(FilePath(dir_, filename_));
-  exists_ = f.Exists();
+  const auto fn = FilePath(dir_, filename_);
+  exists_ = File::Exists(fn);
   if (!exists_) {
     return false;
   }
   
+  File f(fn);
   poll_ = f.length() == 0;
   entries_ = ParseFloFile(FilePath(dir_, filename_));
   return true;
@@ -632,8 +633,8 @@ bool FloFile::Save() {
       f.Writeln(StrCat(dr, name));
     }
     return true;
-  } else if (File::Exists(dir_, filename_)) {
-    return File::Remove(dir_, filename_);
+  } else if (File::Exists(FilePath(dir_, filename_))) {
+    return File::Remove(FilePath(dir_, filename_));
   }
   return true;
 }

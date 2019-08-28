@@ -291,7 +291,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(a()->batch_directory(), file_name);
+    File::Remove(FilePath(a()->batch_directory(), file_name));
   }
 }
 
@@ -589,18 +589,17 @@ static string make_dl_batch_list() {
       string filename_to_send;
       if (a()->directories[b.dir].mask & mask_cdrom) {
         File::set_current_directory(a()->temp_directory());
-        const string current_dir = File::current_directory();
-        File fileToSend(FilePath(current_dir, stripfn(b.filename)));
-        if (!fileToSend.Exists()) {
+        const auto current_dir = File::current_directory();
+        const auto fileToSend = FilePath(current_dir, stripfn(b.filename));
+        if (!File::Exists(fileToSend)) {
           File::set_current_directory(a()->directories[b.dir].path);
           File sourceFile(FilePath(File::current_directory(), stripfn(b.filename)));
-          copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
+          copyfile(sourceFile.full_pathname(), fileToSend, true);
         }
-        filename_to_send = fileToSend.full_pathname();
+        filename_to_send = fileToSend;
       } else {
         File::set_current_directory(a()->directories[b.dir].path);
-        File fileToSend(FilePath(File::current_directory(), stripfn(b.filename)));
-        filename_to_send = fileToSend.full_pathname();
+        filename_to_send = FilePath(File::current_directory(), stripfn(b.filename));
       }
       bool ok = true;
       a()->CdHome();

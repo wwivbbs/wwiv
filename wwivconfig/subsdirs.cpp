@@ -129,7 +129,8 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     l3 = config.max_subs() * 4;
   }
 
-  File oqf(FilePath(config.datadir(), USER_QSC));
+  const auto oqf_fn = FilePath(config.datadir(), USER_QSC);
+  File oqf(oqf_fn);
   if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
@@ -156,7 +157,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
 
   oqf.Close();
   nqf.Close();
-  oqf.Delete();
+  File::Remove(oqf_fn);
   File::Rename(nqf.full_pathname(), oqf.full_pathname());
 
   config.max_subs(num_subs);

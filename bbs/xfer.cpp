@@ -141,8 +141,8 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
                stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  File file(FilePath(a()->directories[directory_num].path, stripfn(u->filename)));
-  if (!file.Exists()) {
+  const auto file = FilePath(a()->directories[directory_num].path, stripfn(u->filename));
+  if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;

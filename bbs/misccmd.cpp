@@ -176,7 +176,7 @@ void kill_old_email() {
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
+                    File::Remove(FilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }

@@ -162,7 +162,7 @@ void attach_file(int mode) {
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
-                    File::Remove(a()->GetAttachmentDirectory(), fsr.filename);
+                    File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
@@ -325,7 +325,7 @@ void attach_file(int mode) {
                         bout << "File attached.\r\n" ;
                       }
                     } else {
-                      File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(FilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
                     }
                   }
                 }

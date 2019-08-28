@@ -301,7 +301,7 @@ vector<subboardrec_422_t> read_subs(const string &datadir) {
   DataFile<subboardrec_422_t> file(FilePath(datadir, SUBS_DAT));
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
-    //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
+    //LOG(ERROR) << file.file().path().filename().string() << " NOT FOUND.";
     return{};
   }
   std::vector<subboardrec_422_t> subboards;

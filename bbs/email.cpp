@@ -151,17 +151,18 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
 }
 
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
-  auto file = std::make_unique<File>(FilePath(a()->config()->datadir(), EMAIL_DAT));
+  const auto fn = FilePath(a()->config()->datadir(), EMAIL_DAT);
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
   // around trying to open it
-  if (!file->Exists()) {
-    // if it does not exist, try to create it via the open call
-    // sf bug 1215434
+  if (!File::Exists(fn)) {
+    // If it does not exist, try to create it via the open call (sf bug 1215434)
+    auto file = std::make_unique<File>(fn);
     file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     return std::move(file);
   }
 
+  auto file = std::make_unique<File>(fn);
   for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
     if (bAllowWrite) {
       file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

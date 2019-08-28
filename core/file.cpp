@@ -17,12 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
-#ifdef _WIN32
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-
-#include "Shlwapi.h"
-#endif // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -57,14 +51,12 @@
 
 #ifdef _WIN32
 
-// Needed for PathIsRelative
-#pragma comment(lib, "Shlwapi.lib")
-
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif // ftruncate
 #define flock(h, m)                                                                                \
   { (h), (m); }
+
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
@@ -115,7 +107,7 @@ static constexpr int TRIES = 100;
 using namespace wwiv::strings;
 
 string FilePath(const string& dirname, const string& filename) {
-  return (dirname.empty()) ? filename : StrCat(File::EnsureTrailingSlash(dirname), filename);
+  return dirname.empty() ? filename : StrCat(File::EnsureTrailingSlash(dirname), filename);
 }
 
 bool backup_file(const std::string& filename) {
@@ -236,32 +228,24 @@ off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
 bool File::Exists() const { return fs::exists(full_path_name_); }
 
-bool File::Delete() {
-  if (this->IsOpen()) {
-    this->Close();
-  }
-  return fs::remove(full_path_name_);
-}
-
 void File::set_length(off_t lNewLength) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
   auto _ = ftruncate(handle_, lNewLength);
 }
 
-bool File::IsFile() const { return !fs::is_directory(full_path_name_); }
-
 bool File::SetFilePermissions(int perm) {
   return chmod(full_path_name_.string().c_str(), perm) == 0;
 }
 
-bool File::IsDirectory() const { return fs::is_directory(full_path_name_); }
-
 // static
 bool File::is_directory(const std::string& path) { return fs::is_directory(fs::path{path}); }
 
+// static
+bool File::is_regular_file(const std::string& path) { return fs::is_regular_file(fs::path{path}); }
+
 off_t File::length() {
   std::error_code ec;
-  off_t sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
+  auto sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
   if (ec.value() != 0) {
     return 0;
   }
@@ -269,19 +253,30 @@ off_t File::length() {
 }
 
 time_t File::creation_time() {
-  struct stat buf {};
-  // st_ctime is creation time on windows and status change time on posix
-  // so that's probably the closest to what we want.
-  return (stat(full_path_name_.string().c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+  return File::creation_time(full_path_name_.string());
 }
 
 time_t File::last_write_time() {
-  struct stat buf {};
-  return (stat(full_path_name_.string().c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  return File::last_write_time(full_path_name_.string());
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
+
+// static 
+time_t File::last_write_time(const std::string& path) {
+  struct stat buf {};
+  return (stat(path.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+}
+
+// static
+time_t File::creation_time(const std::string& path) {
+  struct stat buf {};
+  // st_ctime is creation time on windows and status change time on posix
+  // so that's probably the closest to what we want.
+  return (stat(path.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+}
 
 bool File::Rename(const string& orig_fn, const string& new_fn) {
   fs::path o{orig_fn};
@@ -296,11 +291,6 @@ bool File::Remove(const string& filename) {
   return fs::remove(p);
 }
 
-bool File::Remove(const string& dir, const string& file) {
-  fs::path p = FilePath(dir, file);
-  return fs::remove(p);
-}
-
 bool File::Exists(const string& original_pathname) {
   if (original_pathname.empty()) {
     // An empty filename can not exist.
@@ -309,12 +299,6 @@ bool File::Exists(const string& original_pathname) {
   }
 
   fs::path p{original_pathname};
-  return fs::exists(p);
-}
-
-// static
-bool File::Exists(const string& dir, const string& file) {
-  fs::path p{FilePath(dir, file)};
   return fs::exists(p);
 }
 
@@ -356,13 +340,8 @@ bool File::set_current_directory(const string& dir) {
 
 // static
 std::string File::FixPathSeparators(const std::string& orig) {
-  auto name = orig;
-#ifdef _WIN32
-  std::replace(std::begin(name), std::end(name), '/', File::pathSeparatorChar);
-#else
-  std::replace(std::begin(name), std::end(name), '\\', File::pathSeparatorChar);
-#endif // _WIN32
-  return name;
+  fs::path p{orig};
+  return p.make_preferred().string();
 }
 
 // static
@@ -384,7 +363,7 @@ bool File::is_absolute(const string& path) {
 
 // static
 bool File::mkdir(const string& s) {
-  fs::path p = s;
+  fs::path p{s};
   if (fs::exists(p)) {
     return true;
   }
@@ -398,7 +377,7 @@ bool File::mkdir(const string& s) {
 
 // static
 bool File::mkdirs(const string& s) {
-  fs::path p = s;
+  fs::path p{s};
   if (fs::exists(p)) {
     return true;
   }
@@ -448,11 +427,7 @@ bool File::Copy(const std::string& sourceFileName, const std::string& destFileNa
 }
 
 bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
-  fs::path from{sourceFileName};
-  fs::path to{destFileName};
-  std::error_code ec;
-  fs::rename(from, to, ec);
-  return ec.value() == 0;
+  return File::Rename(sourceFileName, destFileName);
 }
 
 // static
@@ -467,9 +442,7 @@ long File::freespace_for_path(const std::string& path) {
   if (ec.value() != 0) {
     return 0;
   }
-  long new_free = static_cast<long>(devi.available / 1024);
-  LOG(INFO) << "new: " << new_free;
-  return new_free;
+  return static_cast<long>(devi.available / 1024);
 }
 
 } // namespace core

@@ -738,7 +738,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   {
     net_networks_rec n{};
     to_char_array(n.name, "NewNet");
-    n.dir = StrCat("newnet.dir", File::pathSeparatorChar);
+    n.dir = File::EnsureTrailingSlash("newnet.dir");
     networks.insert(nn, n);
   }
 

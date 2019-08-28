@@ -79,8 +79,7 @@ static char *ttc(int d) {
 
 static void write_events() {
   if (a()->events.empty()) {
-    File eventsFile(FilePath(a()->config()->datadir(), EVENTS_DAT));
-    eventsFile.Delete();
+    File::Remove(FilePath(a()->config()->datadir(), EVENTS_DAT));
     return;
   }
   DataFile<eventsrec> file(FilePath(a()->config()->datadir(), EVENTS_DAT),

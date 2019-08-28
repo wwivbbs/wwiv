@@ -103,17 +103,17 @@ extern std::atomic<bool> need_to_reload_config;
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
-  for (int i = start_node; i <= end_node; i++) {
-    File semaphore_file(node_file(config, ConnectionType::TELNET, i));
-    if (semaphore_file.Exists()) {
-      semaphore_file.Delete();
+  for (auto i = start_node; i <= end_node; i++) {
+    const auto fn = node_file(config, ConnectionType::TELNET, i);
+    if (File::Exists(fn)) {
+      File::Remove(fn);
     }
   }
 
   // Delete any BINKP semaphores.
-  File binkp_file(node_file(config, ConnectionType::BINKP, 0));
-  if (binkp_file.Exists()) {
-    binkp_file.Delete();
+  const auto binkp_file = node_file(config, ConnectionType::BINKP, 0);
+  if (File::Exists(binkp_file)) {
+    File::Remove(binkp_file);
   }
 
   return true;

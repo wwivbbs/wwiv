@@ -679,12 +679,13 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      File nullFile(FilePath(a()->temp_directory(),
-                             StrCat(".does-not-exist-", a()->instance_number(), ".$$$")));
-      nullFile.Delete();
+      const auto fn = FilePath(a()->temp_directory(),
+                               StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+      File::Remove(fn);
+      File nullFile(fn);
       send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
       abort = true;
-      nullFile.Delete();
+      File::Remove(fn);
     }
   }
   a()->localIO()->GotoXY(oldx, oldy);

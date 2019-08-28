@@ -52,7 +52,7 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destin
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
     File file(search_path);
-    const auto basename = file.GetName();
+    const auto basename = file.path().filename().string();
     result.push_back(new WFileTransferFile(
         basename, std::make_unique<File>(FilePath(dirs_.net_dir(), basename))));
     LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
@@ -77,13 +77,13 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
     VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name);
-    if (File::Exists(dirs_.outbound_dir(), name)) {
+    if (File::Exists(FilePath(dirs_.outbound_dir(), name))) {
       LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
       FloFile flo(net_, dirs_.outbound_dir(), name);
       if (!flo.Load()) { continue; }
       for (const auto& e : flo.flo_entries()) {
         File f(e.first);
-        const auto basename = f.GetName();
+        const auto basename = f.path().filename().string();
         auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
         w->set_flo_file(std::make_unique<FloFile>(net_, dirs_.outbound_dir(), name));
         // emplace won't add another entry if one exists already.
@@ -114,12 +114,11 @@ void FileManager::ReceiveFile(const std::string& filename) {
 }
 
 static void rename_wwivnet_pend(const string& directory, const string& filename) {
-  File pend_file(FilePath(directory, filename));
-  if (!pend_file.Exists()) {
-    LOG(ERROR) << " pending file does not exist: " << pend_file;
+  const auto pend_filename = FilePath(directory, filename);
+  if (!File::Exists(pend_filename)) {
+    LOG(ERROR) << " pending file does not exist: " << pend_filename;
     return;
   }
-  const auto pend_filename = pend_file.full_pathname();
   const auto num = filename.substr(1);
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
@@ -147,7 +146,7 @@ void FileManager::rename_ftn_pending_files() {
   for (const auto& file : received_files()) {
     if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
-      if (!File::Exists(dirs_.inbound_dir(), file)) {
+      if (!File::Exists(FilePath(dirs_.inbound_dir(), file))) {
         File::Move(FilePath(dirs_.net_dir(), file), FilePath(dirs_.inbound_dir(), file));
       } else {
         LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";

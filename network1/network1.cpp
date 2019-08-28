@@ -162,17 +162,18 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
         if (net_cmdline.skip_delete()) {
           backup_file(FilePath(net.dir,f.name));
         }
-        File::Remove(net.dir, f.name);
+        File::Remove(FilePath(net.dir, f.name));
       }
     }
 
     // Update contact record.
     Contact contact(net, true);
     for (const auto& kv : contact.contacts()) {
-      File outbound(FilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net")));
       auto c = contact.contact_rec_for(kv.second.systemnumber());
-      if (outbound.Exists()) {
-        c->set_bytes_waiting(outbound.length());
+      const auto outbound_fn = FilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
+      if (File::Exists(outbound_fn)) {
+        File of(outbound_fn);
+        c->set_bytes_waiting(of.length());
       } else {
         c->set_bytes_waiting(0);
       }
