@@ -228,13 +228,9 @@ off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
 bool File::Exists() const { return fs::exists(full_path_name_); }
 
-void File::set_length(off_t lNewLength) {
+void File::set_length(off_t l) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
-  auto _ = ftruncate(handle_, lNewLength);
-}
-
-bool File::SetFilePermissions(int perm) {
-  return chmod(full_path_name_.string().c_str(), perm) == 0;
+  auto _ = ftruncate(handle_, l);
 }
 
 // static

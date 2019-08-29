@@ -15,14 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
-#include "sdk/fido/fido_util.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_util.h"
+#include "gtest/gtest.h"
 
 #include <cstdint>
 #include <ctime>
@@ -36,9 +36,10 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
-class FidoUtilTest: public testing::Test {
+class FidoUtilTest : public testing::Test {
 public:
   FidoUtilTest() {}
+
 protected:
   FileHelper helper_;
 };
@@ -49,7 +50,8 @@ TEST_F(FidoUtilTest, PacketName) {
   auto tm = dt.to_tm();
   string actual = packet_name(dt);
 
-  string expected = StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+  string expected =
+      StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
   EXPECT_EQ(expected, actual);
 }
 
@@ -112,27 +114,36 @@ TEST_F(FidoUtilTest, FidoToWWIVText_BlankLines) {
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_SoftCr) {
-  string fido = "a\x8d""b\r";
+  string fido = "a\x8d"
+                "b\r";
   string wwiv = FidoToWWIVText(fido);
   EXPECT_EQ("a\r\nb\r\n", wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine) {
-  string fido = "\001""PID\rWorld\r";
+  string fido = "\001"
+                "PID\rWorld\r";
   string wwiv = FidoToWWIVText(fido);
-  EXPECT_EQ("\004""0PID\r\nWorld\r\n", wwiv);
+  EXPECT_EQ("\004"
+            "0PID\r\nWorld\r\n",
+            wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_SeenBy) {
   string fido = "Hello\rSEEN-BY: 1/1\rWorld\r";
   string wwiv = FidoToWWIVText(fido);
-  EXPECT_EQ("Hello\r\n\004""0SEEN-BY: 1/1\r\nWorld\r\n", wwiv);
+  EXPECT_EQ("Hello\r\n\004"
+            "0SEEN-BY: 1/1\r\nWorld\r\n",
+            wwiv);
 }
 
 TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
-  string fido = "\001""PID\rWorld\r";
+  string fido = "\001"
+                "PID\rWorld\r";
   string wwiv = FidoToWWIVText(fido, false);
-  EXPECT_EQ("\001""PID\r\nWorld\r\n", wwiv);
+  EXPECT_EQ("\001"
+            "PID\r\nWorld\r\n",
+            wwiv);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Basic) {
@@ -148,25 +159,29 @@ TEST_F(FidoUtilTest, WWIVToFido_BlankLines) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MalformedControlLine) {
-  string wwiv = "a\r\nb\r\n\004""0Foo:\r\n";
+  string wwiv = "a\r\nb\r\n\004"
+                "0Foo:\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MsgId) {
-  string wwiv = "a\r\nb\r\n\004""0MSGID: 1234 5678\r\n";
+  string wwiv = "a\r\nb\r\n\004"
+                "0MSGID: 1234 5678\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r\001MSGID: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_SeenBy) {
-  string wwiv = "a\r\nb\r\n\004""0SEEN-BY: 1/1\r\n";
+  string wwiv = "a\r\nb\r\n\004"
+                "0SEEN-BY: 1/1\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\rSEEN-BY: 1/1\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Reply) {
-  string wwiv = "a\r\nb\r\n\004""0REPLY: 1234 5678\r\n";
+  string wwiv = "a\r\nb\r\n\004"
+                "0REPLY: 1234 5678\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r\001REPLY: 1234 5678\r", fido);
 }
@@ -227,7 +242,7 @@ TEST_F(FidoUtilTest, Routes) {
   EXPECT_TRUE(RoutesThroughAddress(a, "11:* !11:1/* 11:1/100"));
 }
 
-class FidoUtilConfigTest : public testing::Test{
+class FidoUtilConfigTest : public testing::Test {
 public:
   FidoUtilConfigTest() {
     files_.Mkdir("bbs");
@@ -277,11 +292,14 @@ TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
 
 TEST_F(FidoUtilTest, FloFile) {
   auto b = helper_.CreateTempFile("00010064.flo", "^C:\\db\\outbound\\0000006f.su0");
+  wwiv::fs::path dir{b};
+  const auto fn = dir.filename();
+  dir.remove_filename();
   File f(b);
   net_networks_rec net{};
   net.dir = helper_.TempDir();
   net.fido.fido_address = "11:1/211";
-  FloFile flo(net, f.parent(), f.path().filename().string());
+  FloFile flo(net, dir.string(), fn.string());
   EXPECT_FALSE(flo.poll());
   EXPECT_EQ(1, flo.flo_entries().size());
 
@@ -315,17 +333,12 @@ TEST_F(FidoUtilTest, FloFile) {
     const auto contents = tf.ReadFileIntoString();
     EXPECT_EQ("", contents);
   }
-
 }
 
 TEST_F(FidoUtilTest, FidoToDaten) {
   auto t = fido_to_daten("23 Dec 16  20:53:38");
   EXPECT_GT(t, 0u);
 }
-
-#if (_MSC_VER)
-#define timezone _timezone
-#endif  // MSV_VER && !timezone
 
 TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   char s[100];

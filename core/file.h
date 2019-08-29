@@ -123,20 +123,9 @@ public:
 
   bool Exists() const;
 
-  bool SetFilePermissions(int nPermissions);
   time_t creation_time();
   time_t last_write_time();
   bool set_last_write_time(time_t last_write_time);
-
-  std::string parent() const {
-    // TODO(rushfan):
-    const auto s = full_path_name_.string();
-    auto found = s.find_last_of(File::pathSeparatorChar);
-    if (found == std::string::npos) {
-      return {};
-    }
-    return s.substr(0, found);
-  }
 
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
@@ -155,10 +144,8 @@ public:
 
   // static functions
   static bool Remove(const std::string& fileName);
-  //static bool Remove(const std::string& directoryName, const std::string& fileName);
   static bool Rename(const std::string& origFileName, const std::string& newFileName);
   static bool Exists(const std::string& fileName);
-  //static bool Exists(const std::string& directoryName, const std::string& fileName);
   static bool ExistsWildcard(const std::string& wildCard);
   static bool Copy(const std::string& sourceFileName, const std::string& destFileName);
   static bool Move(const std::string& sourceFileName, const std::string& destFileName);

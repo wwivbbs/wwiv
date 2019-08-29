@@ -174,14 +174,6 @@ TEST(FileTest, GetName) {
   ASSERT_EQ(kFileName, file.path().filename().string());
 }
 
-TEST(FileTest, parent) {
-  static const auto kFileName = this->test_info_->name();
-  FileHelper helper;
-  const auto path = helper.CreateTempFile(kFileName, "Hello World");
-  File file(path);
-  ASSERT_EQ(helper.TempDir(), file.parent());
-}
-
 TEST(FileTest, EnsureTrailingSlash) {
   const auto single_slash = StringPrintf("temp%c", File::pathSeparatorChar);
   const auto double_slash =
