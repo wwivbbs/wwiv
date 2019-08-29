@@ -112,24 +112,24 @@ static int System(const string& cmd) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  File file(FilePath(dir, filename));
+  const auto fn = FilePath(dir, filename);
+  File file(fn);
 
   if (file.Open(File::modeReadOnly)) {
-    auto tNewFileTime = file.last_write_time();
-    file.Close();
-    return (tNewFileTime > (tFileTime + 2));
+    const auto tNewFileTime = File::last_write_time(fn);
+    return tNewFileTime > (tFileTime + 2);
   }
   return true;
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(dir, BBSLIST_NET)) {
+  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CONNECT_NET)) {
+  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CALLOUT_NET)) {
+  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
@@ -192,7 +192,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
         // Export everything to FTN bundles
         const auto fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-        if (File::Exists(net.dir, fido_out)) {
+        if (File::Exists(FilePath(net.dir, fido_out))) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
           System(create_network_cmdline(net_cmdline, 'f', "export"));
         }

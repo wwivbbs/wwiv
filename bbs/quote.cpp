@@ -84,7 +84,6 @@ static int quotes_nrm_l = 0;
 static int quotes_ind_l = 0;
 static char* quotes_ind = nullptr;
 
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -317,8 +316,9 @@ static string CreateDateString(time_t t) {
 void auto_quote(char* org, const std::string& to_name, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255], *p = org, *b = org, b1[81];
 
-  File fileInputMsg(FilePath(a()->temp_directory(), INPUT_MSG));
-  fileInputMsg.Delete();
+  const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
+  File::Remove(fn);
+  File fileInputMsg(fn);
   if (!a()->hangup_) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     fileInputMsg.Seek(0L, File::Whence::end);
@@ -530,7 +530,7 @@ std::deque<std::string> get_quote(const string& reply_to_name) {
   bout.charbufferpointer_ = 0;
   if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !a()->hangup_) {
     std::deque<std::string> r;
-    for (auto it = i1-1; it <= i2-1; it++) {
+    for (auto it = i1 - 1; it <= i2 - 1; it++) {
       r.push_back(lines.at(it));
     }
     return r;

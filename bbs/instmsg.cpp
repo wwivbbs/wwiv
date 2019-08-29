@@ -230,7 +230,7 @@ void process_inst_msgs() {
       handle_inst_msg(&ih, m.c_str());
     }
     file.Close();
-    file.Delete();
+    File::Remove(file.full_pathname());
   }
   setiia(oiia);
 }

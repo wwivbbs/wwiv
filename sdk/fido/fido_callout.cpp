@@ -178,7 +178,7 @@ bool FidoCallout::erase(const FidoAddress& a) {
 bool FidoCallout::Load() {
   node_configs_.clear();
   const string dir = File::absolute(root_dir_, net_.dir);
-  if (!File::Exists(dir, FIDO_CALLOUT_JSON)) {
+  if (!File::Exists(FilePath(dir, FIDO_CALLOUT_JSON))) {
     return true;
   }
   JsonFile<decltype(node_configs_)> json(dir, FIDO_CALLOUT_JSON, "callout", node_configs_);

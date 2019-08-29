@@ -43,7 +43,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 
-#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
@@ -54,6 +53,7 @@
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "local_io/wconstants.h"
 #include "sdk/status.h"
 
 #include "sdk/config.h"
@@ -202,11 +202,11 @@ void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
 
 #define INI_GET_ASV(s, f, func, d)                                                                 \
   {                                                                                                \
-    const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                    \
+    const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                   \
     if (!ss.empty()) {                                                                             \
-      f = func(ss);                                                                            \
+      f = func(ss);                                                                                \
     } else {                                                                                       \
-      f = d;                                                                                   \
+      f = d;                                                                                       \
     }                                                                                              \
   }
 
@@ -244,8 +244,7 @@ static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
     {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
-    {INI_STR_FREE_PHONE, sysconfig_free_phone}
-};
+    {INI_STR_FREE_PHONE, sysconfig_free_phone}};
 
 void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
@@ -283,12 +282,9 @@ void Application::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(
-      ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(
-      ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(
-      ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
+  localIO()->SetTopScreenColor(ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
+  localIO()->SetUserEditorColor(ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
+  localIO()->SetEditLineColor(ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
   chatname_color_ = ini.value<int>(INI_STR_CHATSELCOLOR, GetChatNameSelectionColor());
 
   // pull out sizing options
@@ -303,9 +299,8 @@ void Application::ReadINIFile(IniFile& ini) {
   newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
   logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
   terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
-   
-  forced_read_subnum_ =
-      ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
+
+  forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(INI_STR_INTERNALZMODEM, true);
   newscan_at_login_ = ini.value<bool>(INI_STR_NEW_SCAN_AT_LOGIN, true);
   exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
@@ -559,7 +554,7 @@ bool Application::read_dirs() {
   directories.clear();
   DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
-    LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
+    LOG(ERROR) << file.file().path().filename().string() << " NOT FOUND.";
     return false;
   }
   file.ReadVector(directories, config()->max_dirs());
@@ -659,9 +654,9 @@ void Application::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   VLOG(1) << "Reading user scan pointers.";
-  File fileQScan(FilePath(config()->datadir(), USER_QSC));
-  if (!fileQScan.Exists()) {
-    LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
+  const auto qs_fn = FilePath(config()->datadir(), USER_QSC);
+  if (!File::Exists(qs_fn)) {
+    LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
     AbortBBS();
   }
@@ -794,15 +789,15 @@ void Application::InitializeBBS() {
 // begin dupphone additions
 
 void Application::check_phonenum() {
-  File phoneFile(FilePath(config()->datadir(), PHONENUM_DAT));
-  if (!phoneFile.Exists()) {
+  const auto fn = FilePath(config()->datadir(), PHONENUM_DAT);
+  if (!File::Exists(fn)) {
     create_phone_file();
   }
 }
 
 // TODO(rushfan): maybe move this to SDK, but pass in a vector of numbers.
 void Application::create_phone_file() {
-  phonerec p;
+  phonerec p{};
 
   File file(FilePath(config()->datadir(), USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {

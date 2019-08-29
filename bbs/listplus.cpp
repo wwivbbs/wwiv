@@ -1343,7 +1343,7 @@ static int remove_filename(const char *file_name, int dn) {
           remove_from_file_database(szTempFileName);
         }
         if (rm) {
-          File::Remove(a()->directories[dn].path, u.filename);
+          File::Remove(FilePath(a()->directories[dn].path, u.filename));
           if (rdlp && u.ownersys == 0) {
             User user;
             a()->users()->readuser(&user, u.ownerusr);

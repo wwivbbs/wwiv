@@ -126,7 +126,7 @@ void modify_sec(int n) {
     } break;
     case 'B': {
       bout.nl();
-      if (File::Exists(a()->config()->gfilesdir(), r.filename)) {
+      if (File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
         bout << "\r\nThere is currently a directory for this g-file section.\r\n";
         bout << "If you change the filename, the directory will still be there.\r\n\n";
       }
@@ -135,7 +135,7 @@ void modify_sec(int n) {
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
-        if (!File::Exists(a()->config()->gfilesdir(), r.filename)) {
+        if (!File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
@@ -286,10 +286,10 @@ bool fill_sec(int sn) {
   char s[81];
 
   gfilerec *g = read_sec(sn, &n1);
-  string gfilesdir = a()->config()->gfilesdir();
-  auto filespec = StringPrintf("%s%s%c*.*", gfilesdir.c_str(), a()->gfilesec[sn].filename, File::pathSeparatorChar);
+  const auto path = FilePath(a()->config()->gfilesdir(), a()->gfilesec[sn].filename);
+  const auto filespec = FilePath(path, "*.*");
   FindFiles ff(filespec, FindFilesType::files);
-  bool ok = true;
+  bool ok{true};
   int chd = 0;
   for (const auto& f : ff) {
     if (nf >= a()->gfilesec[sn].maxfiles || a()->hangup_ || !ok) {

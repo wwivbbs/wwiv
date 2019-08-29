@@ -87,10 +87,11 @@ uint32_t WWIVReadLastRead(int sub_number) {
   // open file, and create it if necessary
   postrec p{};
 
-  File subFile(
-      FilePath(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub")));
-  if (!subFile.Exists()) {
-    bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+  const auto fn =
+      FilePath(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub"));
+  if (!File::Exists(fn)) {
+    File subFile(fn);
+    auto created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {
       return 0;
     }
@@ -99,6 +100,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
     return 1;
   }
 
+  File subFile(fn);
   if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
     return 0;
   }

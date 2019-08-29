@@ -36,6 +36,7 @@
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
 * cleanup context class (doc comments, treat type-0 as email api)
+* Get rid of non-static filesystem methods in File class (i.e. .Exists() .Delete(), etc)
 
 ## Networking Cleanup
 ***

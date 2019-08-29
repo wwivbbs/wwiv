@@ -43,9 +43,10 @@ void sound(uint32_t frequency, std::chrono::duration<double> d) {
 
 std::string os_version_string() {
 #if defined ( __linux__ )
-  File info(FilePath("/proc/sys/kernel", "osrelease"));
-  if (info.Exists()) {
-    FILE *kernel_file;
+  const auto fn = FilePath("/proc/sys/kernel", "osrelease");
+  if (File::Exists(fn)) {
+    File info(fn);
+    FILE* kernel_file;
     struct k_version { unsigned major, minor, update, iteration; };
     struct k_version k_version;
     kernel_file = fopen("/proc/sys/kernel/osrelease","r");
@@ -60,7 +61,6 @@ std::string os_version_string() {
 	    k_version.minor,
 	    k_version.update,
 	    k_version.iteration);
-    info.Close();
     return StringPrintf("Linux %s", osrelease);
   }
   return std::string("Linux");

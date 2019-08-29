@@ -59,7 +59,8 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
     DataFile<net_networks_rec_disk> file_dat(FilePath(datadir_, NETWORKS_DAT),
                                              File::modeBinary | File::modeReadOnly,
                                              File::shareDenyNone);
-    if (!File::Exists(datadir_, NETWORKS_JSON) && !File::Exists(datadir_, NETWORKS_DAT)) {
+    if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
+        !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
       return;
     }
   }

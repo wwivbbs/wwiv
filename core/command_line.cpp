@@ -27,6 +27,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -56,7 +57,7 @@ CommandLineArgument::CommandLineArgument(const std::string& name, char key,
 
 std::string CommandLineArgument::help_text() const { return help_text_; }
 
-std::string CommandLineArgument::default_value() const { 
+std::string CommandLineArgument::default_value() const {
   auto env = environment_variable(environment_variable_);
   return env.empty() ? default_value_ : env;
 }
@@ -64,13 +65,9 @@ std::string CommandLineArgument::default_value() const {
 CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
     : name_(name), help_text_(help_text) {}
 
-
 static std::string CreateProgramName(const std::string arg) {
-  auto last_slash = arg.find_last_of(File::separatorChar);
-  if (last_slash == string::npos) {
-    return arg;
-  }
-  return arg.substr(last_slash + 1);
+  wwiv::fs::path p{arg};
+  return p.filename().string();
 }
 
 // TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
@@ -149,8 +146,7 @@ bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const st
     return false;
   }
   if (args_allowed_.at(key).is_boolean) {
-    if (value == "N" || value == "0" || value == "n" ||
-        iequals(value.c_str(), "false")) {
+    if (value == "N" || value == "0" || value == "n" || iequals(value.c_str(), "false")) {
       args_.emplace(key, CommandLineValue("false", default_value));
     } else {
       args_.emplace(key, CommandLineValue("true", default_value));
@@ -310,7 +306,8 @@ std::string CommandLineCommand::GetHelp() const {
     ss << "commands:" << std::endl;
     for (const auto& a : commands_allowed_) {
       const string allowed_name = a.second->name();
-      ss << "   " << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
+      ss << "   "
+         << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
     }
   }
   return ss.str();
@@ -321,14 +318,15 @@ bool CommandLine::AddStandardArgs() {
     return false;
   }
   add_argument({"bindir", "Main BBS binary directory.", File::current_directory(), "WWIV_BIN_DIR"});
-  add_argument({"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory(),
-                "WWIV_DIR"});
+  add_argument(
+      {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory(), "WWIV_DIR"});
   add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory(),
                 "WWIV_CONFIG_DIR"});
   add_argument({"logdir", "Directory where log files are written.", File::current_directory(),
                 "WWIV_LOG_DIR"});
 
-  add_argument(BooleanCommandLineArgument{"log_startup", "Should the start/stop/args be logged.", false});
+  add_argument(
+      BooleanCommandLineArgument{"log_startup", "Should the start/stop/args be logged.", false});
 
   // Ignore these. used by logger
   add_argument({"v", "verbose log", "0"});

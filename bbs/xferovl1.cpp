@@ -199,8 +199,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     return false;
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
-  File f(s);
-  auto t = time_t_to_mmddyy(f.creation_time());
+  auto t = time_t_to_mmddyy(File::creation_time(s));
   to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');
@@ -219,8 +218,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
   }
 
-  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(a()->temp_directory(), DESC_SDI);
+  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
 
   File::set_current_directory(a()->directories[dn].path);
   {
@@ -288,8 +287,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(a()->temp_directory(), DESC_SDI);
+  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
   return true;
 }
 
@@ -336,9 +335,9 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      File file(FilePath(File::current_directory(), stripfn(u.filename)));
+      const auto file = FilePath(File::current_directory(), stripfn(u.filename));
       a()->CdHome();
-      if (file.Exists()) {
+      if (!File::Exists(file)) {
         if (get_file_idz(&u, a()->udir[tempdir].subnum)) {
           count++;
         }

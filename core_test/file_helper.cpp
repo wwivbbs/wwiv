@@ -30,7 +30,7 @@
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
-#endif  // WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 #else
@@ -50,17 +50,17 @@ using namespace wwiv::strings;
 // C++ is still lame sometimes.
 std::string FileHelper::basedir_;
 
-
 FileHelper::FileHelper() {
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
-  const string dir = StrCat(test_info->test_case_name(), "_", test_info->name());
+  const auto dir = StrCat(test_info->test_case_name(), "_", test_info->name());
   tmp_ = FileHelper::CreateTempDir(dir);
 }
 
 const string FileHelper::DirName(const string& oname) const {
-  string name = File::FixPathSeparators(oname);
-  return StrCat(tmp_, File::pathSeparatorString, name, File::pathSeparatorString);
+  const auto name = File::FixPathSeparators(oname);
+  const auto tmpname = FilePath(tmp_, name);
+  return File::EnsureTrailingSlash(tmpname);
 }
 
 bool FileHelper::Mkdir(const string& oname) const {
@@ -69,7 +69,7 @@ bool FileHelper::Mkdir(const string& oname) const {
 
 // static
 string FileHelper::GetTestTempDir() {
-  string test_tempdir = basedir_;
+  auto test_tempdir = basedir_;
   if (test_tempdir.empty()) {
 #ifdef _WIN32
     char temp_path[_MAX_PATH];
@@ -77,35 +77,35 @@ string FileHelper::GetTestTempDir() {
     test_tempdir = temp_path;
 #else  // _WIN32
     test_tempdir = "/tmp";
-#endif  // _WIN32
+#endif // _WIN32
   }
   return test_tempdir;
 }
 
 // static
 string FileHelper::CreateTempDir(const string base) {
-    const string temp_path = GetTestTempDir();
-    string template_ = StrCat(temp_path, "/fileXXXXXX");
+  const string temp_path = GetTestTempDir();
+  string template_ = StrCat(temp_path, "/fileXXXXXX");
 #ifdef _WIN32
-    const auto fn_template = StrCat(base, ".", time_t_now());
-    const auto local_dir_template = wwiv::core::FilePath(temp_path, fn_template);
-    if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
-      return local_dir_template;
-    }
+  const auto fn_template = StrCat(base, ".", time_t_now());
+  const auto local_dir_template = wwiv::core::FilePath(temp_path, fn_template);
+  if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
+    return local_dir_template;
+  }
 #else
-    char local_dir_template[MAX_PATH];
-    strcpy(local_dir_template, template_.c_str());
-    char *result = mkdtemp(local_dir_template);
-    if (result) {
-      return string(result);
-    }
+  char local_dir_template[MAX_PATH];
+  strcpy(local_dir_template, template_.c_str());
+  char* result = mkdtemp(local_dir_template);
+  if (result) {
+    return string(result);
+  }
 #endif
-    return "";
+  return "";
 }
 
 string FileHelper::CreateTempFilePath(const string& orig_name) {
-  string name(File::FixPathSeparators(orig_name));
-  return StrCat(TempDir(), File::pathSeparatorString, name);
+  const auto name{File::FixPathSeparators(orig_name)};
+  return FilePath(TempDir(), name);
 }
 
 FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
@@ -127,9 +127,9 @@ string FileHelper::CreateTempFile(const string& orig_name, const string& content
 // N.B.: We don't use TextFile::ReadFileIntoString since we are
 // testing TextFile with this helper.
 const string FileHelper::ReadFile(const string name) const {
-  std::FILE *fp = fopen(name.c_str(), "rt");
+  std::FILE* fp = fopen(name.c_str(), "rt");
   if (!fp) {
-    throw (errno);
+    throw(errno);
   }
   string contents;
   fseek(fp, 0, SEEK_END);

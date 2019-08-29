@@ -134,12 +134,14 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
-  File file(FilePath(net.dir, info.filename));
-  if (!info.overwrite && file.Exists()) {
-    LOG(ERROR) << "    ! ERROR File [" << file << "] already exists, and packet not set to overwrite; writing to dead.net";
+  const auto fn = FilePath(net.dir, info.filename);
+  if (!info.overwrite && File::Exists(fn)) {
+    LOG(ERROR) << "    ! ERROR File [" << fn << "] already exists, and packet not set to overwrite; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
-  if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+  File file(fn);
+  if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate,
+                 File::shareDenyReadWrite)) {
     // We couldn't create or open the file.
     LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -289,7 +291,7 @@ static bool handle_file(Context& context, const string& name) {
 int network2_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto& net = net_cmdline.network();
-    if (!File::Exists(net.dir, LOCAL_NET)) {
+    if (!File::Exists(FilePath(net.dir, LOCAL_NET))) {
       LOG(INFO) << "No local.net exists. exiting.";
       return 0;
     }
@@ -317,7 +319,7 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
         backup_file(FilePath(net.dir, LOCAL_NET));
       }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
-      if (!File::Remove(net.dir, LOCAL_NET)) {
+      if (!File::Remove(FilePath(net.dir, LOCAL_NET))) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);

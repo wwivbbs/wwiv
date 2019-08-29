@@ -59,7 +59,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
 
   if (File::Exists(edit_filename)) {
     File file(edit_filename);
-    if (file.IsDirectory()) {
+    if (File::is_directory(edit_filename)) {
       bout.nl();
       bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
       pausescr();
@@ -77,8 +77,9 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
     on_exit.swap([=] { File::set_current_directory(original_directory); });
   }
 
-  File fileTempForTime(FilePath(File::current_directory(), strippedFileName));
-  time_t tFileTime = fileTempForTime.Exists() ? fileTempForTime.last_write_time() : 0;
+  const auto tft_fn = FilePath(File::current_directory(), strippedFileName);
+  File fileTempForTime(tft_fn);
+  time_t tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
   auto num_screen_lines = a()->user()->GetScreenLines();
   if (!a()->using_modem) {
@@ -95,8 +96,8 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
   ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir));
   bout.clear_lines_listed();
 
-  time_t tFileTime1 = fileTempForTime.Exists() ? fileTempForTime.last_write_time() : 0;
-  return fileTempForTime.Exists() && (tFileTime != tFileTime1);
+  time_t tFileTime1 = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
+  return File::Exists(tft_fn) && (tFileTime != tFileTime1);
 }
 
 static std::unique_ptr<ExternalMessageEditor>

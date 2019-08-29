@@ -32,9 +32,6 @@ const int File::shareDenyNone      = 0;
 const int File::permReadWrite      = O_RDWR;
 
 const char File::pathSeparatorChar = '/';
-const char File::pathSeparatorString[] = "/";
-
-const char File::separatorChar     = ':';
 
 }
 }

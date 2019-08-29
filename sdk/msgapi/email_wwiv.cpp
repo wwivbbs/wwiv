@@ -59,7 +59,7 @@ WWIVEmail::WWIVEmail(
     config_(config), data_filename_(data_filename),
     mail_file_(data_filename_, File::modeBinary | File::modeReadWrite, File::shareDenyReadWrite),
     max_net_num_(max_net_num) {
-  open_ = mail_file_ && mail_file_.file().Exists();
+  open_ = mail_file_ && File::Exists(data_filename);
 }
 
 bool WWIVEmail::Close() {

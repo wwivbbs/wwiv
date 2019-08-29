@@ -44,9 +44,9 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(FilePath(a()->temp_directory(), filename));
-  file.SetFilePermissions(File::permReadWrite);
-  file.Delete();
+  auto f = FilePath(a()->temp_directory(), filename);
+  File::SetFilePermissions(f, File::permReadWrite);
+  File::Remove(f);
 }
 
 const std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }
@@ -108,11 +108,12 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
-  if (!File::Exists(a()->temp_directory(), QUOTES_TXT)) {
+  const auto qfn = FilePath(a()->temp_directory(), QUOTES_TXT);
+  if (!File::Exists(qfn)) {
     return false;
   }
   // Copy quotes.txt to MSGTMP if it exists
-  TextFile in(FilePath(a()->temp_directory(), QUOTES_TXT), "r");
+  TextFile in(qfn, "r");
   if (!in) {
     return false; 
   }

@@ -446,8 +446,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     to_char_array(u.upby, a()->names()->UserName(a()->usernum));
     to_char_array(u.date, date());
 
-    File f(full_path);
-    auto t = daten_to_mmddyy(time_t_to_daten(f.creation_time()));
+    auto t = daten_to_mmddyy(time_t_to_daten(File::creation_time(full_path)));
     to_char_array(u.actualdate, t);
 
     if (d.mask & mask_PD) {

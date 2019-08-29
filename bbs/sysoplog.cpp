@@ -84,7 +84,7 @@ void catsl() {
         } while (num_read == CAT_BUFSIZE);
 
         instLogFile.Close();
-        instLogFile.Delete();
+        File::Remove(instance_logfilename);
       }
       wholeLogFile.Close();
     }

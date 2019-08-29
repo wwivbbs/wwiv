@@ -393,12 +393,11 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
 }
 
 void rename_pend(const string& directory, const string& filename, char network_app_num) {
-  File pend_file(FilePath(directory, filename));
-  if (!pend_file.Exists()) {
-    LOG(INFO) << " pending file does not exist: " << pend_file;
+  const auto pend_filename(FilePath(directory, filename));
+  if (!File::Exists(pend_filename)) {
+    LOG(INFO) << " pending file does not exist: " << pend_filename;
     return;
   }
-  const auto pend_filename(pend_file.full_pathname());
   const auto num = filename.substr(1);
   const char prefix = (to_number<int>(num)) ? '1' : '0';
 
@@ -417,10 +416,11 @@ std::string create_pend(const string& directory, bool local, char network_app_id
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     const auto filename = StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
-    File f(FilePath(directory, filename));
-    if (f.Exists()) {
+    const auto pend_fn = FilePath(directory, filename);
+    if (File::Exists(pend_fn)) {
       continue;
     }
+    File f(pend_fn);
     if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
       LOG(INFO) << "Created pending file: " << filename;
       return filename;

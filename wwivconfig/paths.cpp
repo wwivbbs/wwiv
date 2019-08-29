@@ -72,7 +72,7 @@ void setpaths(wwiv::sdk::Config& config) {
 
   if (!cfg.scriptdir[0]) {
     // This is added in 5.3
-    auto sdir = StrCat("scripts", File::pathSeparatorString);
+    auto sdir = File::EnsureTrailingSlash("scripts");
     to_char_array(cfg.scriptdir, sdir);
   }
 

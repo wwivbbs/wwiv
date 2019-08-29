@@ -18,14 +18,14 @@
 /**************************************************************************/
 #include "bbs/trashcan.h"
 
-#include <algorithm>
-#include <chrono>
-#include <string>
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -33,9 +33,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-
-Trashcan::Trashcan(wwiv::sdk::Config& config)
-    : file_(FilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
+Trashcan::Trashcan(wwiv::sdk::Config& config) : file_(FilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
 
 Trashcan::~Trashcan() = default;
 
@@ -67,7 +65,7 @@ static bool Matches(string whole, string pattern) {
 }
 
 bool Trashcan::IsTrashName(const std::string& rawname) {
-  if (!file_.Exists()) {
+  if (!File::Exists(file_.full_pathname())) {
     return false;
   }
   // Gotta have a name to be in the trashcan.
