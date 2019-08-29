@@ -18,14 +18,8 @@
 /**************************************************************************/
 #include "core/file.h"
 
-//#include <fcntl.h>
+#include <fcntl.h>
 #include <sys/stat.h>
-//#include <sys/file.h>
-//#include <unistd.h>
-//#include <sys/param.h>
-//#include <sys/mount.h>
-//#include <sys/statfs.h>
-//#include <sys/vfs.h>
 
 namespace wwiv {
 namespace core {
