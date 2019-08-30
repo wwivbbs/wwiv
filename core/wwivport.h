@@ -26,10 +26,10 @@
 
 // TODO(rushfan): This whole thing probably needs to be redone.
 #if defined(_MSC_VER)
-   // Enable SAL attributes.
-#  ifndef _USE_ATTRIBUTES_FOR_SAL
-#  define _USE_ATTRIBUTES_FOR_SAL 1
-#  endif // _USE_ATTRIBUTES_FOR_SAL
+// Enable SAL attributes.
+#ifndef _USE_ATTRIBUTES_FOR_SAL
+#define _USE_ATTRIBUTES_FOR_SAL 1
+#endif // _USE_ATTRIBUTES_FOR_SAL
 
 #if (_MSC_VER < 1915)
 #error "Visual Studio 2017 version 15.8.0 or later is required"
@@ -37,8 +37,8 @@
 
 #endif // _MSC_VER
 
-#if defined(__GNUC__)
-#if (__GNUC__ < 6) 
+#if defined(__GNUC__) && !defined(__clang__)
+#if (__GNUC__ < 6)
 #error "GNC C++ 6.0 or later is required"
 #endif // __GNUC__ < 6
 #endif // __GNUC__
@@ -53,15 +53,15 @@ typedef uint32_t daten_t;
 #endif
 
 #ifdef _MSC_VER
-#  ifdef _WIN64
-   typedef int64_t ssize_t;
-#  else
-   typedef int32_t ssize_t;
-#  endif // _WIN64
+#ifdef _WIN64
+typedef int64_t ssize_t;
+#else
+typedef int32_t ssize_t;
+#endif // _WIN64
 #endif // MSVC
 
 #ifdef _WIN32
-   typedef int pid_t;
+typedef int pid_t;
 #endif // _WIN32
 
 #endif // __INCLUDED_PLATFORM_WWIVPORT_H__

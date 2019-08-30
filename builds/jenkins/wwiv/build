@@ -27,6 +27,7 @@ echo "WWIV Release:     ${WWIV_RELEASE}"
 echo "Version:          ${BUILD_NUMBER}"
 echo "Archive:          ${RELEASE_TGZ}"
 echo "Label:            ${label}"
+echo "GCC:              $(gcc --version)"
 
 echo "Ensuring CMAKE_BUILD exists: (${CMAKE_BUILD})"
 if [[ ! -d "${CMAKE_BUILD}" ]]; then
