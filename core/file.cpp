@@ -226,7 +226,10 @@ off_t File::Seek(off_t offset, Whence whence) {
 
 off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const { return fs::exists(full_path_name_); }
+bool File::Exists() const { 
+  std::error_code ec;
+  return fs::exists(full_path_name_, ec); 
+}
 
 void File::set_length(off_t l) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
@@ -234,10 +237,16 @@ void File::set_length(off_t l) {
 }
 
 // static
-bool File::is_directory(const std::string& path) { return fs::is_directory(fs::path{path}); }
+bool File::is_directory(const std::string& path) { 
+  std::error_code ec;
+  return fs::is_directory(fs::path{path}, ec);
+}
 
 // static
-bool File::is_regular_file(const std::string& path) { return fs::is_regular_file(fs::path{path}); }
+bool File::is_regular_file(const std::string& path) { 
+  std::error_code ec;
+  return fs::is_regular_file(fs::path{path}, ec);
+}
 
 off_t File::length() {
   std::error_code ec;
@@ -248,19 +257,14 @@ off_t File::length() {
   return sz;
 }
 
-time_t File::creation_time() {
-  return File::creation_time(full_path_name_.string());
-}
+time_t File::creation_time() { return File::creation_time(full_path_name_.string()); }
 
-time_t File::last_write_time() {
-  return File::last_write_time(full_path_name_.string());
-}
-
+time_t File::last_write_time() { return File::last_write_time(full_path_name_.string()); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-// static 
+// static
 time_t File::last_write_time(const std::string& path) {
   struct stat buf {};
   return (stat(path.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
@@ -284,7 +288,8 @@ bool File::Rename(const string& orig_fn, const string& new_fn) {
 
 bool File::Remove(const string& filename) {
   fs::path p{filename};
-  return fs::remove(p);
+  std::error_code ec;
+  return fs::remove(p, ec);
 }
 
 bool File::Exists(const string& original_pathname) {
@@ -295,7 +300,8 @@ bool File::Exists(const string& original_pathname) {
   }
 
   fs::path p{original_pathname};
-  return fs::exists(p);
+  std::error_code ec;
+  return fs::exists(p, ec);
 }
 
 // static
@@ -325,7 +331,10 @@ std::string File::EnsureTrailingSlash(const std::string& orig) {
 }
 
 // static
-string File::current_directory() { return fs::current_path().string(); }
+string File::current_directory() { 
+  std::error_code ec;
+  return fs::current_path(ec).string();
+}
 
 // static
 bool File::set_current_directory(const string& dir) {
@@ -360,11 +369,11 @@ bool File::is_absolute(const string& path) {
 // static
 bool File::mkdir(const string& s) {
   fs::path p{s};
-  if (fs::exists(p)) {
+  std::error_code ec;
+  if (fs::exists(p, ec)) {
     return true;
   }
 
-  std::error_code ec;
   if (fs::create_directory(p, ec)) {
     return true;
   }
@@ -374,10 +383,10 @@ bool File::mkdir(const string& s) {
 // static
 bool File::mkdirs(const string& s) {
   fs::path p{s};
-  if (fs::exists(p)) {
+  std::error_code ec;
+  if (fs::exists(p, ec)) {
     return true;
   }
-  std::error_code ec;
   if (fs::create_directories(p, ec)) {
     return true;
   }
@@ -429,7 +438,8 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
 // static
 std::string File::canonical(const std::string& path) {
   fs::path p{path};
-  return fs::canonical(p).string();
+  std::error_code ec;
+  return fs::canonical(p, ec).string();
 }
 
 long File::freespace_for_path(const std::string& path) {
