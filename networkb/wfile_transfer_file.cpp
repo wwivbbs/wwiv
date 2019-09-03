@@ -100,8 +100,9 @@ bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
   if (!file_->IsOpen()) {
     if (file_->Exists()) {
       // Don't overwrite an existing file.  Rename it away to: FILENAME.timestamp
-      File::Rename(file_->full_pathname(), StrCat(file_->full_pathname(), ".",
-                                                  system_clock::to_time_t(system_clock::now())));
+      std::filesystem::path newpath = file_->path();
+      newpath += StrCat(".", system_clock::to_time_t(system_clock::now()));
+      File::Rename(file_->path(), newpath);
     }
     if (!file_->Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       return false;

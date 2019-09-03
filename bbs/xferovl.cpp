@@ -130,7 +130,7 @@ void move_file() {
           bout << "\r\nToo many files in that directory.\r\n";
         }
         if (File::freespace_for_path(a()->directories[d1].path) <
-            ((double)(u.numbytes / 1024L) + 3)) {
+            ((long)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }

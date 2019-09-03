@@ -393,7 +393,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
 }
 
 void rename_pend(const string& directory, const string& filename, char network_app_num) {
-  const auto pend_filename(FilePath(directory, filename));
+  const auto pend_filename(PathFilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
     return;
@@ -402,8 +402,8 @@ void rename_pend(const string& directory, const string& filename, char network_a
   const char prefix = (to_number<int>(num)) ? '1' : '0';
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_filename =
-        StringPrintf("%sp%c-%c-%u.net", directory.c_str(), prefix, network_app_num, i);
+    const auto new_basename = StringPrintf("p%c-%c-%u.net", prefix, network_app_num, i);
+    const auto new_filename = PathFilePath(directory, new_basename);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;

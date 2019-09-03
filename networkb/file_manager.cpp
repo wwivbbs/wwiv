@@ -114,7 +114,7 @@ void FileManager::ReceiveFile(const std::string& filename) {
 }
 
 static void rename_wwivnet_pend(const string& directory, const string& filename) {
-  const auto pend_filename = FilePath(directory, filename);
+  const auto pend_filename = PathFilePath(directory, filename);
   if (!File::Exists(pend_filename)) {
     LOG(ERROR) << " pending file does not exist: " << pend_filename;
     return;
@@ -123,7 +123,8 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+    const auto new_basename = StringPrintf("p%s-0-%u.net", prefix.c_str(), i);
+    const auto new_filename = PathFilePath(directory, new_basename);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";

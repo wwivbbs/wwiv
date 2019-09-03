@@ -26,6 +26,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "core/filesystem.h"
 #include "core/wwivport.h"
 
 typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
@@ -63,7 +64,7 @@ public:
    * Constructs a TextFile.
    * Constructs a TextFile using the full path `file_name` and mode of `file_mode`.
    */
-  TextFile(const std::string& file_name, const std::string& file_mode);
+  TextFile(const std::filesystem::path& file_name, const std::string& file_mode);
 
   ~TextFile();
 
@@ -78,7 +79,7 @@ public:
    * Used to check if the file has been sucessfully open.
    * Usually code should use `operator bool()` vs. this method.
    */
-  bool IsOpen() const { return file_ != nullptr; }
+  bool IsOpen() const noexcept { return file_ != nullptr; }
   bool IsEndOfFile() { return feof(file_) != 0; }
 
   /** Writes a line of text without `\r\n` */
@@ -125,8 +126,9 @@ public:
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
   bool ReadLine(std::string* buffer);
   off_t position() { return ftell(file_); }
-  const std::string full_pathname() const { return file_name_; }
-  FILE* GetFILE() { return file_; }
+  const std::filesystem::path& path() const noexcept { return file_name_; }
+  const std::string full_pathname() const noexcept { return file_name_.string(); }
+  FILE* GetFILE() const noexcept { return file_; }
 
   /**
     Reads the entire contents of the file into the returned string.
@@ -166,7 +168,7 @@ public:
 
 
 private:
-  const std::string file_name_;
+  const std::filesystem::path file_name_;
   FILE* file_;
   const bool dos_mode_{false};
 };

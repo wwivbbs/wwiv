@@ -147,11 +147,10 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   try {
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
-    LOG(ERROR) << e.what();
+    LOG(ERROR) << "Recording failure: '" << e.what() << "'";
     const net_networks_rec& net = bink_config.networks()[network_name];
     Contact contact(net, true);
 
-    LOG(ERROR) << "Recording failure";
     if (net.type == network_type_t::wwivnet) {
       auto wwivnet_node = to_number<uint16_t>(sendto_node);
       contact.add_failure(wwivnet_node, system_clock::to_time_t(start_time));
@@ -162,7 +161,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     throw e;
   }
 
-  const net_networks_rec& net = bink_config.networks()[network_name];
+  const net_networks_rec net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
     return new WFileTransferFile(filename, std::make_unique<File>(FilePath(net.dir, filename)));
   };
@@ -184,15 +183,15 @@ static int Main(const NetworkCommandLine& net_cmdline) {
   try {
     static bool initialized = wwiv::core::InitializeSockets();
 
-    int port = net_cmdline.cmdline().iarg("port");
-    bool skip_net = net_cmdline.skip_net();
+    const int port = net_cmdline.cmdline().iarg("port");
+    const bool skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     auto status = sm.GetStatus();
 
     const auto& network_name = net_cmdline.network_name();
 
-    const string sendto_node = net_cmdline.cmdline().sarg("node");
+    const auto sendto_node = net_cmdline.cmdline().sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     bink_config.set_skip_net(skip_net);
@@ -200,7 +199,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     bink_config.set_network_version(status->GetNetworkVersion());
 
     for (const auto& n : bink_config.networks().networks()) {
-      auto lower_case_network_name = ToStringLowerCase(n.name);
+      const auto lower_case_network_name = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
         bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
       } else if (n.type == network_type_t::ftn) {

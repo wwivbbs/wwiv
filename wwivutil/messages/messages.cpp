@@ -362,16 +362,18 @@ public:
     }
 
     // Copy "new" versions back to sub and dat
-    const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
+    const auto orig_sub_fn = PathFilePath(config()->config()->datadir(), StrCat(basename, ".sub"));
+    const auto new_sub_fn =
+        PathFilePath(config()->config()->datadir(), StrCat(newsub.filename, ".sub"));
     File::Remove(orig_sub_fn);
-    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"),
-                      orig_sub_fn)) {
+    if (!File::Rename(new_sub_fn, orig_sub_fn)) {
       clog << "Unable to move sub";
     }
-    const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
+    const auto orig_dat_fn = PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
+    const auto new_dat_fn =
+        PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     File::Remove(orig_dat_fn);
-    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"),
-                      orig_dat_fn)) {
+    if (!File::Rename(new_dat_fn, orig_dat_fn)) {
       clog << "Unable to move dat";
     }
 

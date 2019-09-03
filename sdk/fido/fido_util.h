@@ -25,6 +25,7 @@
 
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
@@ -83,7 +84,7 @@ enum class flo_directive : char {
  */
 class FloFile {
 public:
-  FloFile(const net_networks_rec& net, const std::string& dir, const std::string filename);
+  FloFile(const net_networks_rec& net, const std::filesystem::path& dir, const std::string filename);
   virtual ~FloFile();
 
   wwiv::sdk::fido::FidoAddress destination_address() const;
@@ -101,7 +102,7 @@ public:
 
 private:
   const net_networks_rec& net_;
-  const std::string dir_;
+  const std::filesystem::path dir_;
   const std::string filename_;
   fido_bundle_status_t status_ = fido_bundle_status_t::unknown;
   std::unique_ptr<wwiv::sdk::fido::FidoAddress> dest_;

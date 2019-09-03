@@ -78,7 +78,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
   }
 
   if (strncmp(raw_header.signature, "WWIV\x1A", 5) != 0) {
-    VLOG(3) << "Missing 5.x header on sub: " << file.file().path().filename().string();
+    VLOG(3) << "Missing 5.x header on sub: " << file.file();
     auto saved_count = raw_header.active_message_count;
     memset(&raw_header, 0, sizeof(subfile_header_t));
     // We don't have a modern header. Create one now. Next write
@@ -92,7 +92,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     // We probably can't write the header here since the datafile is usually
     // only open for read only at this point.
     // if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {
-    //   VLOG(4) << "Unable to write 5.2 header to file: " << file.file().path().filename().string();
+    //   VLOG(4) << "Unable to write 5.2 header to file: " << file.file();
     // }
   }
 

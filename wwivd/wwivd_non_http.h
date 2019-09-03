@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "core/filesystem.h"
 #include "core/socket_connection.h"
 #include "sdk/wwivd_config.h"
 
@@ -34,7 +35,7 @@ namespace wwivd {
 
 std::string to_string(const wwiv::sdk::wwivd_matrix_entry_t& e);
 std::string to_string(const std::vector<wwiv::sdk::wwivd_matrix_entry_t>& elements);
-const std::string node_file(const wwiv::sdk::Config& config, ConnectionType ct, int node_number);
+const std::filesystem::path node_file(const wwiv::sdk::Config& config, ConnectionType ct, int node_number);
 std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params);
 
 class ConnectionHandler {

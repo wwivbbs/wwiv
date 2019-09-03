@@ -275,8 +275,7 @@ void attach_file(int mode) {
                     bout.getkey();
                   }
                 } else {
-                  const auto full_path =
-                      FilePath(a()->GetAttachmentDirectory().c_str(), szFileToAttach);
+                  const auto full_path = FilePath(a()->GetAttachmentDirectory(), szFileToAttach);
                   receive_file(full_path, &ok, "", 0);
                 }
                 if (ok) {
@@ -325,7 +324,7 @@ void attach_file(int mode) {
                         bout << "File attached.\r\n" ;
                       }
                     } else {
-                      File::Remove(FilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
+                      File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     }
                   }
                 }

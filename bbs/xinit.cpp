@@ -554,7 +554,7 @@ bool Application::read_dirs() {
   directories.clear();
   DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
-    LOG(ERROR) << file.file().path().filename().string() << " NOT FOUND.";
+    LOG(ERROR) << file.file() << " NOT FOUND.";
     return false;
   }
   file.ReadVector(directories, config()->max_dirs());
@@ -773,11 +773,6 @@ void Application::InitializeBBS() {
     sysoplog(false);
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
-  }
-  if (instance_number() > 1) {
-    File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
-  } else {
-    File::Remove(WWIV_NET_DAT);
   }
 
   catsl();

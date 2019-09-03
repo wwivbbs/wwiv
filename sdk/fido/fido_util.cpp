@@ -546,7 +546,8 @@ static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std
   return result;
 }
 
-FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std::string filename)
+FloFile::FloFile(const net_networks_rec& net, const std::filesystem::path& dir,
+                 const std::string filename)
   : net_(net), dir_(dir), filename_(filename), dest_() {
   if (!contains(filename, '.')) {
     // This is a malformed flo file

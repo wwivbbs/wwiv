@@ -27,7 +27,8 @@
 //#include <cereal/types/memory.hpp>
 //#include <cereal/archives/json.hpp>
 
-#include "core/file.h"  // For FilePath
+#include "core/file.h"  // For PathFilePath
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/textfile.h"
 
@@ -37,9 +38,11 @@ namespace core {
 template <typename T>
 class JsonFile {
 public:
-  JsonFile(const std::string& file_name, const std::string& key, T& t): file_name_(file_name), key_(key), t_(t) {}
-  JsonFile(const std::string& directory_name, const std::string& file_name, const std::string& key, T& t)
-    : JsonFile(FilePath(directory_name, file_name), key, t) {};
+  JsonFile(const std::filesystem::path& file_name, const std::string& key, T& t)
+      : file_name_(file_name), key_(key), t_(t) {}
+  JsonFile(const std::string& directory_name, const std::string& file_name, const std::string& key,
+           T& t)
+      : JsonFile(PathFilePath(directory_name, file_name), key, t){};
   virtual ~JsonFile() {}
 
   bool Load() {
@@ -48,7 +51,7 @@ public:
       if (!file.IsOpen()) {
         return false;
       }
-      std::string text = file.ReadFileIntoString();
+      const auto text = file.ReadFileIntoString();
       if (text.empty()) {
         return false;
       }
@@ -56,8 +59,8 @@ public:
       cereal::JSONInputArchive load(ss);
       load(cereal::make_nvp(key_, t_));
       return true;
-    } catch (const cereal::RapidJSONException&e) {
-      LOG(ERROR) << e.what();
+    } catch (const cereal::RapidJSONException& e) {
+      LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;
     }
   }
@@ -68,7 +71,7 @@ public:
       cereal::JSONOutputArchive save(ss);
       save(cereal::make_nvp(key_, t_));
     } catch (const cereal::RapidJSONException& e) {
-      LOG(ERROR) << e.what();
+      LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;
     }
 
@@ -84,7 +87,7 @@ public:
   }
 
  private:
-   const std::string file_name_;
+   const std::filesystem::path file_name_;
    const std::string key_;
    T& t_;
 };

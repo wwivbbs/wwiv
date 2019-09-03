@@ -34,6 +34,7 @@
 #include "core/strings.h"
 
 using std::chrono::milliseconds;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -137,14 +138,10 @@ bool NewZModemReceiveFile( const char *file_name ) {
 	nDone = doIO( &info );
 	bool ret = ( nDone == ZmDone ) ? true : false;
 	if ( ret ) {
-		char szNewFileName[MAX_PATH];
-		char szOldFileName[MAX_PATH];
-		strcpy( szNewFileName, file_name );
-		StringRemoveWhitespace( szNewFileName );
-
-		sprintf(szOldFileName, "%s%s", a()->temp_directory().c_str(), stripfn(file_name));
-		StringRemoveWhitespace(szOldFileName);
-		movefile( szOldFileName, szNewFileName, false );
+    std::string fn = file_name;
+    StringRemoveWhitespace(&fn);
+    const auto old_fn = FilePath(a()->temp_directory(), fn);
+		movefile(old_fn, fn, false );
 	}
 	return ret;
 }

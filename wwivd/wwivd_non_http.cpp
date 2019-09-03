@@ -32,6 +32,7 @@
 #include <cereal/types/vector.hpp>
 
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
 #include "core/jsonfile.h"
@@ -108,11 +109,11 @@ std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::strin
   return out;
 }
 
-const string node_file(const Config& config, ConnectionType ct, int node_number) {
+const std::filesystem::path node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
-    return FilePath(config.datadir(), "binkpinuse");
+    return PathFilePath(config.datadir(), "binkpinuse");
   }
-  return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
+  return PathFilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
 static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,
@@ -152,7 +153,7 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
-    auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+    auto semaphore_file = SemaphoreFile::try_acquire(sem_path.string(), sem_text, std::chrono::seconds(60));
     return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno

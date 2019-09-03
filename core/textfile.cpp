@@ -17,8 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/textfile.h"
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
 
 #include <iostream>
 #include <cerrno>
@@ -45,10 +43,9 @@
 #endif  // _WIN32
 
 using std::string;
-using namespace wwiv::core;
-using namespace wwiv::strings;
 using std::chrono::milliseconds;
-
+using wwiv::core::File;
+using wwiv::strings::StringReplace;
 using namespace wwiv::os;
 
 namespace {
@@ -124,8 +121,8 @@ static std::string fopen_compatible_mode(const std::string& m) {
   return StringReplace(&s, "d", "t");
 }
 
-TextFile::TextFile(const string& file_name, const string& file_mode)
-    : file_name_(file_name), file_(OpenImpl(file_name, fopen_compatible_mode(file_mode))),
+TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode)
+    : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
       dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {}
 
 bool TextFile::Close() {

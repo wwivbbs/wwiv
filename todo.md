@@ -36,7 +36,10 @@
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
 * cleanup context class (doc comments, treat type-0 as email api)
-* Get rid of non-static filesystem methods in File class (i.e. .Exists() .Delete(), etc)
+* Get rid of most non-static filesystem methods in File class (i.e. .Exists() .Delete(), etc)
+* Use fs::path vs. string parameters to File class static
+* Make FloFile, DataFile, JsonFile accept path vs. string filenames
+* Finally make FilePath return a path vs. String
 
 ## Networking Cleanup
 ***

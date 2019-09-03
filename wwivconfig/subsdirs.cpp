@@ -158,7 +158,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   oqf.Close();
   nqf.Close();
   File::Remove(oqf_fn);
-  File::Rename(nqf.full_pathname(), oqf.full_pathname());
+  File::Rename(nqf.path(), oqf.path());
 
   config.max_subs(num_subs);
   config.max_dirs(num_dirs);

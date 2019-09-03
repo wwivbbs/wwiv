@@ -18,15 +18,18 @@
 /**************************************************************************/
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/stl.h"
 #include "file_helper.h"
 #include "gtest/gtest.h"
 
 #include <iostream>
 #include <string>
 
+
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+namespace fs = std::filesystem;
 
 TEST(FileTest, DoesNotExist) {
   FileHelper file;
@@ -97,6 +100,7 @@ TEST(FileTest, Exists_TrailingSlash) {
   File dne(FilePath(tmp, "newdir"));
   const auto path = File::EnsureTrailingSlash(dne.full_pathname());
   ASSERT_TRUE(File::Exists(path)) << path;
+  ASSERT_EQ(File::pathSeparatorChar, path.back());
 }
 
 TEST(FileTest, Length_Open) {
@@ -180,14 +184,14 @@ TEST(FileTest, EnsureTrailingSlash) {
       StringPrintf("temp%c%c", File::pathSeparatorChar, File::pathSeparatorChar);
   const string no_slash = "temp";
 
-  auto s = File::EnsureTrailingSlash(single_slash);
-  EXPECT_EQ(single_slash, s);
+  EXPECT_EQ(single_slash, File::EnsureTrailingSlash(single_slash));
+  EXPECT_EQ(single_slash, File::EnsureTrailingSlashPath(single_slash));
 
-  s = File::EnsureTrailingSlash(double_slash);
-  EXPECT_EQ(double_slash, s);
+  EXPECT_EQ(double_slash, File::EnsureTrailingSlash(double_slash));
+  EXPECT_EQ(double_slash, File::EnsureTrailingSlashPath(double_slash));
 
-  s = File::EnsureTrailingSlash(no_slash);
-  EXPECT_EQ(single_slash, s);
+  EXPECT_EQ(single_slash, File::EnsureTrailingSlash(no_slash));
+  EXPECT_EQ(single_slash, File::EnsureTrailingSlashPath(no_slash));
 }
 
 TEST(FileTest, CurrentDirectory) {
@@ -235,24 +239,6 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
 
   auto path = File::absolute(helper.TempDir(), expected);
   EXPECT_EQ(expected, path);
-}
-
-TEST(FileTest, IsAbsolute) {
-  static const string kFileName = this->test_info_->name();
-  FileHelper helper;
-  const string path = helper.CreateTempFile(kFileName, "Hello World");
-
-  EXPECT_TRUE(File::is_absolute(path));
-  EXPECT_FALSE(File::is_absolute(kFileName));
-}
-
-TEST(FileTest, IsRelative) {
-  static const string kFileName = this->test_info_->name();
-  FileHelper helper;
-  const string path = helper.CreateTempFile(kFileName, "Hello World");
-
-  EXPECT_TRUE(File::is_relative(kFileName));
-  EXPECT_FALSE(File::is_relative(path));
 }
 
 TEST(FileTest, RealPath_Same) {
@@ -427,10 +413,48 @@ TEST(FileTest, MoveFile) {
   EXPECT_FALSE(File::Exists(f1));
 }
 
+TEST(FileTest, Remove_String) {
+  static const string kHelloWorld = "Hello World";
+  FileHelper helper;
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  ASSERT_TRUE(File::Exists(path));
+  File::Remove(path);
+  EXPECT_FALSE(File::Exists(path));
+}
+
+TEST(FileTest, Remove_Path) {
+  static const string kHelloWorld = "Hello World";
+  FileHelper helper;
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  ASSERT_TRUE(File::Exists(path));
+  std::filesystem::path p{path};
+  File::Remove(p);
+  EXPECT_FALSE(File::Exists(path));
+}
+
 TEST(FileTest, Free) {
   FileHelper file;
   string tmp = file.TempDir();
 
   auto fs = File::freespace_for_path(tmp);
   EXPECT_GT(fs, 0);
+}
+
+TEST(FileSystemTest, Empty) {
+  std::string s{};
+  fs::path p{s};
+  ASSERT_TRUE(p.empty());
+}
+
+TEST(FileSystemTest, PathIsDir) {
+  FileHelper file;
+  string tmp = file.TempDir();
+  fs::path p{tmp};
+  std::cerr << p << std::endl;
+  ASSERT_TRUE(fs::is_directory(p));
+}
+
+TEST(FileSystemTest, PathWithoutDir) {
+  fs::path p{"hello.txt"};
+  EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
 }

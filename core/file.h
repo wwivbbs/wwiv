@@ -51,7 +51,14 @@ namespace core {
  * Creates a full pathname of directory_name + file_name ensuring that any
  * path separators are added as needed.
  */
-std::string FilePath(const std::string& directory_name, const std::string& file_name);
+std::string FilePath(const std::filesystem::path& directory_name, const std::string& file_name);
+
+/**
+ * Creates a full std::filesystem::path of directory_name + file_name ensuring that any
+ * path separators are added as needed.
+ */
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const std::string& file_name);
 
 /**
  * File: Provides a high level, cross-platform common wrapper for file handling using C++.
@@ -93,8 +100,8 @@ public:
 
   // Constructor/Destructor
 
-  /** Constructs a file from a full pathname. */
-  explicit File(const std::string& full_file_name);
+  /** Constructs a file from a path. */
+  explicit File(const std::filesystem::path& p);
   /** Destructs File. Closes any open file handles. */
   virtual ~File();
 
@@ -143,22 +150,24 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const File& f);
 
   // static functions
-  static bool Remove(const std::string& fileName);
-  static bool Rename(const std::string& origFileName, const std::string& newFileName);
-  static bool Exists(const std::string& fileName);
+  static bool Remove(const std::filesystem::path& fileName);
+  static bool Rename(const std::filesystem::path& origFileName,
+                     const std::filesystem::path& newFileName);
+  static bool Exists(const std::filesystem::path& fileName);
   static bool ExistsWildcard(const std::string& wildCard);
-  static bool Copy(const std::string& sourceFileName, const std::string& destFileName);
-  static bool Move(const std::string& sourceFileName, const std::string& destFileName);
+  static bool Copy(const std::filesystem::path& sourceFileName,
+                   const std::filesystem::path& destFileName);
+  static bool Move(const std::filesystem::path& sourceFileName,
+                   const std::filesystem::path& destFileName);
 
-  static bool SetFilePermissions(const std::string& fileName, int nPermissions);
+  static bool SetFilePermissions(const std::filesystem::path& fileName, int nPermissions);
 
   static std::string EnsureTrailingSlash(const std::string& path);
+  static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
   static std::string current_directory();
   static bool set_current_directory(const std::string& dir);
   static std::string FixPathSeparators(const std::string& path);
   static std::string absolute(const std::string& base, const std::string& relative);
-  static bool is_absolute(const std::string& path);
-  static bool is_relative(const std::string& path) { return !is_absolute(path); }
 
   static time_t creation_time(const std::string& path);
   static time_t last_write_time(const std::string& path);
@@ -204,7 +213,7 @@ public:
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
-  static long freespace_for_path(const std::string& path);
+  static long freespace_for_path(const std::filesystem::path& p);
   static bool is_directory(const std::string& path);
   static bool is_regular_file(const std::string& path);
 

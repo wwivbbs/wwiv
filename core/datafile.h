@@ -20,6 +20,7 @@
 
 #include <vector>
 #include "core/file.h"
+#include "core/filesystem.h"
 
 namespace wwiv {
 namespace core {
@@ -38,7 +39,7 @@ namespace core {
  */
 template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile {
 public:
-  DataFile(const std::string& full_file_name,
+  DataFile(const std::filesystem::path& full_file_name,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 
       : file_(full_file_name) {

@@ -249,9 +249,9 @@ static void modify_sub(int n) {
         break;
       }
 
-      string old_sub_fullpath = StrCat(a()->config()->datadir(), old_subname, ".sub");
-      string old_msg_fullpath = StrCat(a()->config()->msgsdir(), old_subname, ".dat");
-      string new_msg_fullpath = StrCat(a()->config()->msgsdir(), new_fn, ".dat");
+      const auto old_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
+      const auto old_msg_fullpath = FilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
+      const auto new_msg_fullpath = FilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
 
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
         && new_fn != "NONAME" && old_subname != "NONAME") {
@@ -730,8 +730,8 @@ void boardedit() {
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(StrCat(a()->config()->datadir(), fn, ".sub"));
-            File::Remove(StrCat(a()->config()->msgsdir(), fn, ".dat"));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
+            File::Remove(FilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
           }
         }
       }

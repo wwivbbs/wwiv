@@ -314,7 +314,7 @@ void delete_attachment(unsigned long daten, int forceit) {
           }
         }
         if (delfile) {
-          File::Remove(FilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
+          File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
         } else {
           bout << "\r\nOrphaned attach " << fsr.filename << " remains in "
                << a()->GetAttachmentDirectory() << wwiv::endl;
