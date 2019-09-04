@@ -247,7 +247,7 @@ public:
   FidoUtilConfigTest() {
     files_.Mkdir("bbs");
     files_.Mkdir("bbs/net");
-    string root = files_.DirName("bbs");
+    const auto root = files_.Dir("bbs");
     config_.reset(new wwiv::sdk::Config(root));
   }
 
@@ -264,7 +264,7 @@ TEST_F(FidoUtilConfigTest, ExistsBundle) {
   EXPECT_FALSE(exists_bundle(*config_, net));
   EXPECT_FALSE(exists_bundle(net.dir));
 
-  string path = files_.CreateTempFile("bbs/net/00124567.su0", "x");
+  files_.CreateTempFile("bbs/net/00124567.su0", "x");
   EXPECT_TRUE(exists_bundle(*config_, net));
   EXPECT_TRUE(exists_bundle(net.dir)) << net.dir;
 }

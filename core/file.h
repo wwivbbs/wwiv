@@ -188,7 +188,7 @@ public:
    * Also returns true if there is nothing to do. This is unlike
    * filesystem::mkdir which returns false if {path} already exists.
    */
-  static bool mkdir(const std::string& path);
+  static bool mkdir(const std::filesystem::path& path);
 
   /**
    * Creates the directory {path} and all parent directories needed
@@ -198,7 +198,7 @@ public:
    * Also returns true if there is nothing to do. This is unlike
    * filesystem::mkdir which returns false if {path} already exists.
    */
-  static bool mkdirs(const std::string& path);
+  static bool mkdirs(const std::filesystem::path& path);
 
   /**
    * Creates the directory {path} by calling File::mkdir on the
@@ -215,7 +215,6 @@ public:
   /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
   static long freespace_for_path(const std::filesystem::path& p);
   static bool is_directory(const std::string& path);
-  static bool is_regular_file(const std::string& path);
 
 private:
   // Helper functions

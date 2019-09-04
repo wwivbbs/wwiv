@@ -24,6 +24,7 @@
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -105,8 +106,8 @@ static std::string network_cmd_name(char net_cmd) {
   return (net_cmd == '\0') ? "network" : StrCat("network", net_cmd);
 }
 
-std::string NetworkCommandLine::semaphore_filename() const noexcept {
-  return StrCat(network_.dir, network_cmd_name(net_cmd_), ".bsy");
+std::filesystem::path NetworkCommandLine::semaphore_path() const noexcept {
+  return PathFilePath(network_.dir, StrCat(network_cmd_name(net_cmd_), ".bsy"));
 }
 
 static void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {

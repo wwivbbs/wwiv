@@ -26,6 +26,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/inifile.h"
 #include "sdk/config.h"
 #include "sdk/net.h"
@@ -51,7 +52,7 @@ public:
   const net_networks_rec& network() const noexcept { return network_; }
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
   char net_cmd() const noexcept { return net_cmd_; }
-  std::string semaphore_filename() const noexcept;
+  std::filesystem::path semaphore_path() const noexcept;
   std::string GetHelp() const;
 
   /** Process net.ini and reparse command line applying new defaults */

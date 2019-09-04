@@ -39,7 +39,7 @@ using namespace wwiv::sdk::fido;
 class FloTest : public testing::Test {
 public:
   FloTest() {
-    net.dir = helper_.TempDir();
+    net.dir = helper_.TempDir().string();
     net.fido.fido_address = "11:1/211";
     p = helper_.CreateTempFile("00010064.flo", "^C:\\db\\outbound\\0000006f.su0");
   }

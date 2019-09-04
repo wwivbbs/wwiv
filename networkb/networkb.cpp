@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
     return 1;
   }
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
                                                 net_cmdline.semaphore_timeout());
     return Main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

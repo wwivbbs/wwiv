@@ -42,10 +42,10 @@ using namespace wwiv::strings;
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-string CreateFullPathToPrint(const string& basename) {
+std::filesystem::path CreateFullPathToPrint(const string& basename) {
   std::vector<string> dirs{a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
-    const auto file{FilePath(base, basename)};
+    const auto file{PathFilePath(base, basename)};
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (File::Exists(file)) {
@@ -54,23 +54,23 @@ string CreateFullPathToPrint(const string& basename) {
       // Since no wwiv filenames contain embedded dots skip to the next directory.
       continue;
     }
-    const auto root_filename{file};
+    std::filesystem::path candidate{file};
     if (a()->user()->HasAnsi()) {
       if (a()->user()->HasColor()) {
         // ANSI and color
-        const auto candidate = StrCat(root_filename, ".ans");
+        candidate.replace_extension(".ans");
         if (File::Exists(candidate)) {
           return candidate;
         }
       }
       // ANSI.
-      const auto candidate = StrCat(root_filename, ".b&w");
+      candidate.replace_extension(".b&w");
       if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
-    const auto candidate = StrCat(root_filename, ".msg");
+    candidate.replace_extension(".msg");
     if (File::Exists(candidate)) {
       return candidate;
     }
@@ -96,7 +96,8 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
     // No need to print a file that does not exist.
     return false;
   }
-  if (!File::is_regular_file(full_path_name)) {
+  std::error_code ec;
+  if (!std::filesystem::is_regular_file(full_path_name, ec)) {
     // Not a file, no need to print a file that is not a file.
     return false;
   }

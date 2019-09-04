@@ -32,7 +32,7 @@ using namespace wwiv::strings;
 TEST(DataFileTest, Read) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   File x(FilePath(tmp, "Read"));
   ASSERT_TRUE(x.Open(File::modeCreateFile|File::modeBinary|File::modeReadWrite));
@@ -68,7 +68,7 @@ TEST(DataFileTest, Read) {
 TEST(DataFileTest, ReadVector) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   File x(FilePath(tmp, "ReadVector"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
@@ -99,7 +99,7 @@ TEST(DataFileTest, ReadVector) {
 TEST(DataFileTest, ReadVector_MaxRecords) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   File x(FilePath(tmp, "ReadVector_MaxRecords"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
@@ -128,7 +128,7 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
 TEST(DataFileTest, Write) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
@@ -153,7 +153,7 @@ TEST(DataFileTest, Write) {
 TEST(DataFileTest, WriteVector) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
@@ -179,7 +179,7 @@ TEST(DataFileTest, WriteVector) {
 TEST(DataFileTest, WriteVector_MaxRecords) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
@@ -207,7 +207,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
 TEST(DataFileTest, Read_DoesNotExist) {
   struct T { int a; };
   FileHelper file;
-  const string tmp = file.TempDir();
+  const auto tmp = file.TempDir();
   DataFile<T> datafile(FilePath(tmp, "DoesNotExist"), File::modeBinary | File::modeReadWrite);
   if (datafile) {
     FAIL() << "file should not exist.";

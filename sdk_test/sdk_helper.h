@@ -29,29 +29,29 @@ public:
   ~SdkHelper();
   bool SetUp() { return true; }
 
-  const std::string& root() const { return root_; }
-  const std::string& data() const { return data_; }
-  const std::string& dloads() const { return dloads_; }
-  const std::string& msgs() const { return msgs_; }
-  const std::string& gfiles() const { return gfiles_; }
-  const std::string& menus() const { return menus_; }
-  const std::string& scripts() const { return scripts_; }
-  const std::string& logs() const { return logs_; }
+  const std::string root() const { return root_.string(); }
+  const std::string data() const { return data_.string(); }
+  const std::string dloads() const { return dloads_.string(); }
+  const std::string msgs() const { return msgs_.string(); }
+  const std::string gfiles() const { return gfiles_.string(); }
+  const std::string menus() const { return menus_.string(); }
+  const std::string scripts() const { return scripts_.string(); }
+  const std::string logs() const { return logs_.string(); }
   FileHelper& files() { return files_; }
 
-  std::string CreatePath(const std::string& name);
+  std::filesystem::path CreatePath(const std::string& name);
   FileHelper files_;
-  std::string data_;
-  std::string dloads_;
-  std::string msgs_;
-  std::string menus_;
-  std::string gfiles_;
-  std::string scripts_;
-  std::string logs_;
+  std::filesystem::path data_;
+  std::filesystem::path dloads_;
+  std::filesystem::path msgs_;
+  std::filesystem::path menus_;
+  std::filesystem::path gfiles_;
+  std::filesystem::path scripts_;
+  std::filesystem::path logs_;
 
 private:
   const std::filesystem::path saved_dir_;
-  const std::string root_;
+  const std::filesystem::path root_;
 };
 
 #endif  // __INCLUDED_SDK_TEST_SDK_HELPER_H__

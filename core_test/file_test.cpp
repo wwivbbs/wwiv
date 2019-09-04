@@ -17,14 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
-#include "core/strings.h"
 #include "core/stl.h"
+#include "core/strings.h"
 #include "file_helper.h"
 #include "gtest/gtest.h"
 
 #include <iostream>
 #include <string>
-
 
 using std::string;
 using namespace wwiv::core;
@@ -33,7 +32,7 @@ namespace fs = std::filesystem;
 
 TEST(FileTest, DoesNotExist) {
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   const auto fn = FilePath(tmp, "doesnotexist");
   ASSERT_FALSE(File::Exists(fn));
@@ -41,7 +40,7 @@ TEST(FileTest, DoesNotExist) {
 
 TEST(FileTest, DoesNotExist_Static) {
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   File dne(FilePath(tmp, "doesnotexist"));
   ASSERT_FALSE(File::Exists(dne.path()));
@@ -58,10 +57,10 @@ TEST(FileTest, Exists) {
 
 TEST(FileTest, ExistsWildCard) {
   FileHelper helper;
-  const string path = helper.CreateTempFile("msg00000.001", "msg00000.001");
+  const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
-  string wildcard_path = FilePath(helper.TempDir(), "msg*");
+  auto wildcard_path = FilePath(helper.TempDir(), "msg*");
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
   wildcard_path = FilePath(helper.TempDir(), "msg*.*");
@@ -73,7 +72,7 @@ TEST(FileTest, ExistsWildCard) {
 
 TEST(FileTest, ExistsWildCard_Extension) {
   FileHelper helper;
-  const string path = helper.CreateTempFile("msg00000.001", "msg00000.001");
+  const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
   auto wildcard_path = FilePath(helper.TempDir(), "msg*.001");
@@ -85,10 +84,10 @@ TEST(FileTest, ExistsWildCard_Extension) {
 
 TEST(FileTest, Exists_Static) {
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  File dne(FilePath(tmp, "newdir"));
+  File dne(PathFilePath(tmp, "newdir"));
   ASSERT_TRUE(File::Exists(dne.path())) << dne.path();
 }
 
@@ -97,7 +96,7 @@ TEST(FileTest, Exists_TrailingSlash) {
   const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  File dne(FilePath(tmp, "newdir"));
+  File dne(PathFilePath(tmp, "newdir"));
   const auto path = File::EnsureTrailingSlash(dne.full_pathname());
   ASSERT_TRUE(File::Exists(path)) << path;
   ASSERT_EQ(File::pathSeparatorChar, path.back());
@@ -106,7 +105,7 @@ TEST(FileTest, Exists_TrailingSlash) {
 TEST(FileTest, Length_Open) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   ASSERT_EQ(static_cast<long>(kHelloWorld.size()), file.length());
@@ -115,7 +114,7 @@ TEST(FileTest, Length_Open) {
 TEST(FileTest, Length_NotOpen) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_EQ(static_cast<long>(kHelloWorld.size()), file.length());
 }
@@ -123,20 +122,22 @@ TEST(FileTest, Length_NotOpen) {
 TEST(FileTest, IsDirectory_NotOpen) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
-  ASSERT_FALSE(File::is_directory(path));
-  ASSERT_TRUE(File::is_regular_file(path));
+  std::error_code ec;
+  ASSERT_FALSE(fs::is_directory(path, ec));
+  ASSERT_TRUE(fs::is_regular_file(path, ec));
 }
 
 TEST(FileTest, IsDirectory_Open) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
-  ASSERT_FALSE(File::is_directory(path));
-  ASSERT_TRUE(File::is_regular_file(path));
+  std::error_code ec;
+  ASSERT_FALSE(std::filesystem::is_directory(path, ec));
+  ASSERT_TRUE(fs::is_regular_file(path, ec));
 }
 
 TEST(FileTest, LastWriteTime_NotOpen) {
@@ -152,7 +153,7 @@ TEST(FileTest, LastWriteTime_Open) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
   time_t now = time(nullptr);
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   ASSERT_LE(now, file.last_write_time());
@@ -161,7 +162,7 @@ TEST(FileTest, LastWriteTime_Open) {
 TEST(FileTest, Read) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   char buf[255];
@@ -219,7 +220,7 @@ TEST(FileTest, MakeAbsolutePath_Relative) {
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
-  const auto relative = File::absolute(helper.TempDir(), kFileName);
+  const auto relative = File::absolute(helper.TempDir().string(), kFileName);
   EXPECT_EQ(path, relative);
 }
 
@@ -228,16 +229,16 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
   FileHelper helper;
   const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
-  const auto path = File::absolute(helper.TempDir(), expected);
+  const auto path = File::absolute(helper.TempDir().string(), expected.string());
   EXPECT_EQ(expected, path);
 }
 
 TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
-  const string expected = helper.CreateTempFile(kFileName, "Hello World");
+  const auto expected = helper.CreateTempFile(kFileName, "Hello World");
 
-  auto path = File::absolute(helper.TempDir(), expected);
+  const auto path = File::absolute(helper.TempDir().string(), expected.string());
   EXPECT_EQ(expected, path);
 }
 
@@ -246,8 +247,8 @@ TEST(FileTest, RealPath_Same) {
   FileHelper helper;
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
-  const auto canonical = File::canonical(path);
-  EXPECT_EQ(path, canonical);
+  const auto c = std::filesystem::canonical(path);
+  EXPECT_EQ(path, c);
 }
 
 TEST(FileTest, RealPath_Different) {
@@ -264,10 +265,10 @@ TEST(FileTest, RealPath_Different) {
 
 TEST(FileTest, mkdir) {
   FileHelper helper;
-  const auto path = FilePath(helper.TempDir(), "a");
+  const auto path = PathFilePath(helper.TempDir(), "a");
   const auto l = FilePath("b", "c");
 
-  const string path_missing_middle = FilePath(path, l);
+  const auto path_missing_middle = PathFilePath(path, l);
   ASSERT_FALSE(File::Exists(path));
 
   ASSERT_TRUE(File::mkdir(path));
@@ -279,9 +280,9 @@ TEST(FileTest, mkdir) {
 
 TEST(FileTest, mkdirs) {
   FileHelper helper;
-  const auto f = FilePath(helper.TempDir(), "a");
+  const auto f = PathFilePath(helper.TempDir(), "a");
   const auto l = FilePath("b", "c");
-  const auto path = FilePath(f, l);
+  const auto path = PathFilePath(f, l);
   ASSERT_FALSE(File::Exists(path));
 
   ASSERT_TRUE(File::mkdirs(path));
@@ -309,10 +310,10 @@ TEST(FileTest, IsOpen_Open) {
 }
 
 TEST(FileTest, IsOpen_NotOpen) {
-  static const string kHelloWorld = "Hello World";
+  static const std::string kHelloWorld = "Hello World";
   FileHelper helper;
-  const auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
-  File file(path + "DNE");
+  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  File file(path.concat("DNE"));
   EXPECT_FALSE(file.IsOpen());
   EXPECT_FALSE(file);
 }
@@ -354,7 +355,7 @@ TEST(FileTest, CurrentPosition) {
 TEST(FileTest, FsCopyFile) {
   namespace fs = wwiv::fs;
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
   auto f1 = FilePath(tmp, "f1");
@@ -376,17 +377,17 @@ TEST(FileTest, FsCopyFile) {
 TEST(FileTest, CopyFile) {
   namespace fs = wwiv::fs;
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto f1 = FilePath(tmp, "f1");
+  auto f1 = PathFilePath(tmp, "f1");
   File f(f1);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto f2 = FilePath(tmp, "f2");
+  auto f2 = PathFilePath(tmp, "f2");
   EXPECT_FALSE(File::Exists(f2));
   File::Copy(f1, f2);
   EXPECT_TRUE(File::Exists(f2));
@@ -395,10 +396,10 @@ TEST(FileTest, CopyFile) {
 TEST(FileTest, MoveFile) {
   namespace fs = wwiv::fs;
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto f1 = FilePath(tmp, "f1");
+  auto f1 = PathFilePath(tmp, "f1");
   File f(f1);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
@@ -418,7 +419,7 @@ TEST(FileTest, Remove_String) {
   FileHelper helper;
   auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
-  File::Remove(path);
+  File::Remove(path.string());
   EXPECT_FALSE(File::Exists(path));
 }
 
@@ -427,28 +428,26 @@ TEST(FileTest, Remove_Path) {
   FileHelper helper;
   auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   ASSERT_TRUE(File::Exists(path));
-  std::filesystem::path p{path};
-  File::Remove(p);
+  File::Remove(path);
   EXPECT_FALSE(File::Exists(path));
 }
 
 TEST(FileTest, Free) {
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   auto fs = File::freespace_for_path(tmp);
   EXPECT_GT(fs, 0);
 }
 
 TEST(FileSystemTest, Empty) {
-  std::string s{};
-  fs::path p{s};
+  fs::path p{""};
   ASSERT_TRUE(p.empty());
 }
 
 TEST(FileSystemTest, PathIsDir) {
   FileHelper file;
-  string tmp = file.TempDir();
+  const auto tmp = file.TempDir();
   fs::path p{tmp};
   std::cerr << p << std::endl;
   ASSERT_TRUE(fs::is_directory(p));

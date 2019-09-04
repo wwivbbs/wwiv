@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "file_helper.h"
@@ -43,7 +44,7 @@ protected:
   const string& test_name() const { return test_name_; }
 
   FileHelper helper_;
-  string hello_world_path_;
+  std::filesystem::path hello_world_path_;
   string test_name_;
   static const string kHelloWorld;
 };
@@ -58,7 +59,7 @@ TEST_F(TextFileTest, Constructor_SunnyCase) {
 }
 
 TEST_F(TextFileTest, Constructor_Path_And_Name) {
-  TextFile file(FilePath(helper_.TempDir(), this->test_name()), "rt");
+  TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("Hello World", s);
@@ -66,7 +67,7 @@ TEST_F(TextFileTest, Constructor_Path_And_Name) {
 
 TEST_F(TextFileTest, Append) {
   std::unique_ptr<TextFile> file(
-      new TextFile(FilePath(helper_.TempDir(), this->test_name()), "a+t"));
+      new TextFile(PathFilePath(helper_.TempDir(), this->test_name()), "a+t"));
   EXPECT_EQ(3, file->Write("abc"));
   const auto filename = file->full_pathname();
   file.reset();
@@ -76,7 +77,7 @@ TEST_F(TextFileTest, Append) {
 }
 
 TEST_F(TextFileTest, ReadLine_CA) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  const auto path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
   char s[255];
   EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
@@ -89,7 +90,7 @@ TEST_F(TextFileTest, ReadLine_CA) {
 }
 
 TEST_F(TextFileTest, ReadLine_String) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  const auto path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
@@ -104,7 +105,7 @@ TEST_F(TextFileTest, ReadLine_String) {
 TEST_F(TextFileTest, Write) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.Write("Hello");
     filename = file.full_pathname();
     // Let the textfile close.
@@ -116,7 +117,7 @@ TEST_F(TextFileTest, Write) {
 TEST_F(TextFileTest, Insertion_Basic) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file << "Hello" << " " << "World";
     filename = file.full_pathname();
     // Let the textfile close.
@@ -128,7 +129,7 @@ TEST_F(TextFileTest, Insertion_Basic) {
 TEST_F(TextFileTest, Insertion_TwoLines) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file << "Hello" << std::endl;
     file << "World" << std::endl;
     filename = file.full_pathname();
@@ -144,7 +145,7 @@ TEST_F(TextFileTest, Insertion_TwoLines) {
 TEST_F(TextFileTest, WriteFormatted) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteFormatted("%s %s", "Hello", "World");
     filename = file.full_pathname();
     // Let the textfile close.
@@ -156,7 +157,7 @@ TEST_F(TextFileTest, WriteFormatted) {
 TEST_F(TextFileTest, WriteChar) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteChar('H');
     filename = file.full_pathname();
     // Let the textfile close.
@@ -168,7 +169,7 @@ TEST_F(TextFileTest, WriteChar) {
 TEST_F(TextFileTest, WriteBinary) {
   string filename;
   {
-    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteBinary(kHelloWorld.c_str(), kHelloWorld.size() - 1); // trim off \n
     filename = file.full_pathname();
     // Let the textfile close.
@@ -203,7 +204,7 @@ TEST_F(TextFileTest, IsEOF) {
 }
 
 TEST_F(TextFileTest, GetPosition) {
-  const string path = helper_.CreateTempFile(test_name_, "a\nb\nc\n");
+  const auto path = helper_.CreateTempFile(test_name_, "a\nb\nc\n");
   TextFile file(path, "rt");
   ASSERT_EQ(0, file.position());
   string s;
@@ -217,7 +218,7 @@ TEST_F(TextFileTest, GetPosition) {
 }
 
 TEST_F(TextFileTest, ReadFileIntoString) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  const auto path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
   string s = file.ReadFileIntoString();
   EXPECT_EQ("a\nb\nc\n", s);

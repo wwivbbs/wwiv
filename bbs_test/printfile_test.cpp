@@ -36,70 +36,68 @@ using wwiv::sdk::User;
 
 class PrintFileTest : public ::testing::Test {
 protected:
-  void SetUp() override {
-        helper.SetUp();
-    }
+  void SetUp() override { helper.SetUp(); }
 
-    string CreateTempFile(const string& name) {
-        return helper.files().CreateTempFile(name, "1");
-    }
-    BbsHelper helper;
+  std::filesystem::path CreateTempFile(const std::string& name) {
+    return helper.files().CreateTempFile(name, "1");
+  }
+  BbsHelper helper;
 };
 
 TEST_F(PrintFileTest, LanguageDir) {
-    const string expected_ans = CreateTempFile("en/gfiles/one.ans");
-    const string expected_bw = CreateTempFile("en/gfiles/one.b&w");
-    const string expected_msg = CreateTempFile("en/gfiles/one.msg");
-    CreateTempFile("gfiles/one.ans");
-    CreateTempFile("gfiles/one.b&w");
-    CreateTempFile("gfiles/one.msg");
+  const auto expected_ans = CreateTempFile("en/gfiles/one.ans");
+  const auto expected_bw = CreateTempFile("en/gfiles/one.b&w");
+  const auto expected_msg = CreateTempFile("en/gfiles/one.msg");
+  CreateTempFile("gfiles/one.ans");
+  CreateTempFile("gfiles/one.b&w");
+  CreateTempFile("gfiles/one.msg");
 
-    helper.user()->SetStatus(0);
-    string actual_msg = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_msg, actual_msg);
+  helper.user()->SetStatus(0);
+  auto actual_msg = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_msg, actual_msg);
 
-    helper.user()->SetStatusFlag(User::ansi);
-    string actual_bw = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_bw, actual_bw);
+  helper.user()->SetStatusFlag(User::ansi);
+  auto actual_bw = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_bw, actual_bw);
 
-    helper.user()->SetStatusFlag(User::status_color);
-    string actual_ans = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_ans, actual_ans);
+  helper.user()->SetStatusFlag(User::status_color);
+  auto actual_ans = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_ans, actual_ans);
 }
 
 TEST_F(PrintFileTest, GFilesOnly_NoExt) {
-    const string expected_ans = CreateTempFile("gfiles/one.ans");
-    const string expected_bw = CreateTempFile("gfiles/one.b&w");
-    const string expected_msg = CreateTempFile("gfiles/one.msg");
+  const auto expected_ans = CreateTempFile("gfiles/one.ans");
+  const auto expected_bw = CreateTempFile("gfiles/one.b&w");
+  const auto expected_msg = CreateTempFile("gfiles/one.msg");
 
-    helper.user()->SetStatus(0);
-    string actual_msg = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_msg, actual_msg);
+  helper.user()->SetStatus(0);
+  auto actual_msg = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_msg, actual_msg);
 
-    helper.user()->SetStatusFlag(User::ansi);
-    string actual_bw = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_bw, actual_bw);
+  helper.user()->SetStatusFlag(User::ansi);
+  auto actual_bw = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_bw, actual_bw);
 
-    helper.user()->SetStatusFlag(User::status_color);
-    string actual_ans = CreateFullPathToPrint("one");
-    EXPECT_EQ(expected_ans, actual_ans);
+  helper.user()->SetStatusFlag(User::status_color);
+  auto actual_ans = CreateFullPathToPrint("one");
+  EXPECT_EQ(expected_ans, actual_ans);
 }
 
 TEST_F(PrintFileTest, WithExtension) {
-    const string expected_ans = CreateTempFile("gfiles/one.ans");
-    const string expected_bw = CreateTempFile("gfiles/one.b&w");
-    const string expected_msg = CreateTempFile("gfiles/one.msg");
+  const auto expected_ans = CreateTempFile("gfiles/one.ans");
+  const auto expected_bw = CreateTempFile("gfiles/one.b&w");
+  const auto expected_msg = CreateTempFile("gfiles/one.msg");
 
-    string actual_msg = CreateFullPathToPrint("one.msg");
-    EXPECT_EQ(expected_msg, actual_msg);
-    string actual_bw = CreateFullPathToPrint("one.b&w");
-    EXPECT_EQ(expected_bw, actual_bw);
-    string actual_ans = CreateFullPathToPrint("one.ans");
-    EXPECT_EQ(expected_ans, actual_ans);
+  auto actual_msg = CreateFullPathToPrint("one.msg");
+  EXPECT_EQ(expected_msg, actual_msg);
+  auto actual_bw = CreateFullPathToPrint("one.b&w");
+  EXPECT_EQ(expected_bw, actual_bw);
+  auto actual_ans = CreateFullPathToPrint("one.ans");
+  EXPECT_EQ(expected_ans, actual_ans);
 }
 
 TEST_F(PrintFileTest, FullyQualified) {
-    const string expected = CreateTempFile("gfiles/one.ans");
-    string actual = CreateFullPathToPrint(expected);
-    EXPECT_EQ(expected, actual);
+  const auto expected = CreateTempFile("gfiles/one.ans");
+  auto actual = CreateFullPathToPrint(expected.string());
+  EXPECT_EQ(expected, actual);
 }

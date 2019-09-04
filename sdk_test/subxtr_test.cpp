@@ -54,9 +54,9 @@ protected:
     subs_.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs_.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
-  const string dir() { return helper.files_.TempDir(); }
-  string CreateTempFile(const string& name, const string& contents) {
-    return helper.files().CreateTempFile(name, contents);
+  const string dir() { return helper.files_.TempDir().string(); }
+  void CreateTempFile(const string& name, const string& contents) {
+    helper.files().CreateTempFile(name, contents);
   }
   SdkHelper helper;
   vector<net_networks_rec> net_networks_;

@@ -255,12 +255,6 @@ bool File::is_directory(const std::string& path) {
   return fs::is_directory(fs::path{path}, ec);
 }
 
-// static
-bool File::is_regular_file(const std::string& path) {
-  std::error_code ec;
-  return fs::is_regular_file(fs::path{path}, ec);
-}
-
 off_t File::length() {
   std::error_code ec;
   auto sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
@@ -381,8 +375,7 @@ string File::absolute(const std::string& base, const std::string& relative) {
 }
 
 // static
-bool File::mkdir(const string& s) {
-  fs::path p{s};
+bool File::mkdir(const std::filesystem::path& p) {
   std::error_code ec;
   if (fs::exists(p, ec)) {
     return true;
@@ -395,8 +388,7 @@ bool File::mkdir(const string& s) {
 }
 
 // static
-bool File::mkdirs(const string& s) {
-  fs::path p{s};
+bool File::mkdirs(const std::filesystem::path& p) {
   std::error_code ec;
   if (fs::exists(p, ec)) {
     return true;

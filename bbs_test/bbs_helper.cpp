@@ -48,9 +48,9 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 
 void BbsHelper::SetUp() {
-  string temp = files_.TempDir();
+  auto temp = files_.TempDir();
   // We want the "BBS Home" to be our temp dir.
-  chdir(files_.TempDir().c_str());
+  chdir(temp.string().c_str());
 
   ASSERT_TRUE(files_.Mkdir("data"));
   ASSERT_TRUE(files_.Mkdir("gfiles"));

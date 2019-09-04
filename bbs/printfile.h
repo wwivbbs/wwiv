@@ -20,9 +20,10 @@
 #define __INCLUDED_PRINTFILE_H__
 
 #include <string>
+#include "core/filesystem.h"
 
 /** [VisibleForTesting] */
-std::string CreateFullPathToPrint(const std::string& basename);
+std::filesystem::path CreateFullPathToPrint(const std::string& basename);
 void print_local_file(const std::string& filename);
 bool printfile(const std::string& filename, bool bAbortable = true, bool bForcePause = true);
 bool print_help_file(const std::string& filename);

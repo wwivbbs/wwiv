@@ -54,8 +54,8 @@ TEST_F(MakeAbsTest, NotUnderRoot) {
 }
 
 TEST_F(MakeAbsTest, UnderRoot) {
-  const string foo = helper.files().CreateTempFile("foo.exe", "");
-  const string expected = foo + " bar";
+  const auto foo = helper.files().CreateTempFile("foo.exe", "");
+  const auto expected = StrCat(foo.string(), " bar");
   string cmdline = "foo bar";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());

@@ -33,11 +33,11 @@ using namespace wwiv::core;
 
 TEST(Crc32Test, Simple) {
   FileHelper file;
-  const string path = file.CreateTempFile("helloworld.txt", "Hello World");
+  const auto path = file.CreateTempFile("helloworld.txt", "Hello World");
 
   ASSERT_TRUE(File::Exists(path));
 
-  uint32_t crc = crc32file(path);
+  uint32_t crc = crc32file(path.string());
   uint32_t expected = 0x4a17b156;
 
   // use wwiv/scripts/crc32.py to generate golden values as needed.

@@ -15,7 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+
 #include "gtest/gtest.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/transfer_file.h"
@@ -44,7 +46,7 @@ public:
   const string contents;
   const string filename;
   InMemoryTransferFile file;
-  string full_filename;
+  std::filesystem::path full_filename;
   FileHelper file_helper_;
 };
 
@@ -126,7 +128,7 @@ TEST_F(TransferFileTest, WFileTest_Read) {
 
 TEST_F(TransferFileTest, WFileTest_Write) {
   const string empty_filename = StrCat(filename, "_empty");
-  const string empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
+  const auto empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
   {
     WFileTransferFile wfile_file(empty_filename, unique_ptr<File>(new File(empty_file_fullpath)));
     EXPECT_EQ(empty_filename, wfile_file.filename());

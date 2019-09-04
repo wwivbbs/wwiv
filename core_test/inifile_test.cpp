@@ -22,29 +22,29 @@
 #include <string>
 #include <vector>
 
-#include "file_helper.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "file_helper.h"
 
 using std::string;
 using std::vector;
-using wwiv::core::IniFile;
-using wwiv::core::FilePath;
+using namespace wwiv::core;
 
 class IniFileTest : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    const ::testing::TestInfo* const test_info = 
-        ::testing::UnitTest::GetInstance()->current_test_info();
+    const auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     test_name_ = test_info->name();
   }
 
   const string& test_name() const { return test_name_; }
 
-  string CreateIniFile(const string section, const vector<string> lines) {
-    string path;
-    FILE* file = helper_.OpenTempFile(test_name_, &path);
+  std::filesystem::path CreateIniFile(const string section, const vector<string> lines) {
+    std::filesystem::path path;
+    FILE* file;
+    // TODO(rushfan): use structured bindings in GCC > 7.0
+    std::tie(file, path) = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section.c_str());
     for (const auto& line : lines) {
       fprintf(file, "%s\n", line.c_str());
@@ -53,10 +53,13 @@ protected:
     return path;
   }
 
-  string CreateIniFile(const string section1, const vector<string> lines1,
-        const string section2, const vector<string> lines2) {
-    string path;
-    FILE* file = helper_.OpenTempFile(test_name_, &path);
+  std::filesystem::path CreateIniFile(const string section1, const vector<string> lines1,
+                                      const string section2,
+                       const vector<string> lines2) {
+    // TODO(rushfan): use structured bindings in GCC > 7.0
+    std::filesystem::path path;
+    FILE* file;
+    std::tie(file, path) = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section1.c_str());
     for (const auto& line : lines1) {
       fprintf(file, "%s\n", line.c_str());
@@ -76,24 +79,24 @@ protected:
 };
 
 TEST_F(IniFileTest, Single_GetValue) {
-  const string path = this->CreateIniFile("TEST", { "FOO=BAR" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST"});
+  const auto path = this->CreateIniFile("TEST", {"FOO=BAR"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
 TEST_F(IniFileTest, Single_GetValue_Comment) {
-  const string path = this->CreateIniFile("TEST", { "FOO=BAR  ; BAZ" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST"});
+  const auto path = this->CreateIniFile("TEST", {"FOO=BAR  ; BAZ"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
 TEST_F(IniFileTest, Single_GetNumericValue) {
-  const string path = this->CreateIniFile("TEST", { "FOO=1234", "BAR=4321", "baz=12345" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST"});
+  const auto path = this->CreateIniFile("TEST", {"FOO=1234", "BAR=4321", "baz=12345"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ(1234, ini.value<int>("FOO"));
   EXPECT_EQ(4321, ini.value<int>("BAR"));
@@ -102,8 +105,9 @@ TEST_F(IniFileTest, Single_GetNumericValue) {
 }
 
 TEST_F(IniFileTest, Single_GetBooleanValue) {
-  const string path = this->CreateIniFile("TEST", { "T1=TRUE", "T2=1", "T3=Y", "F1=FALSE", "F2=0", "F3=N", "U=WTF" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST"});
+  const auto path =
+      this->CreateIniFile("TEST", {"T1=TRUE", "T2=1", "T3=Y", "F1=FALSE", "F2=0", "F3=N", "U=WTF"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_TRUE(ini.value<bool>("T1"));
   EXPECT_TRUE(ini.value<bool>("T2"));
@@ -117,7 +121,7 @@ TEST_F(IniFileTest, Single_GetBooleanValue) {
 }
 
 TEST_F(IniFileTest, Reopen_GetValue) {
-  const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST2", { "BAR=BAZ" } );
+  const auto path = this->CreateIniFile("TEST", {"FOO=BAR"}, "TEST2", {"BAR=BAZ"});
   {
     IniFile ini(path, {"TEST"});
     ASSERT_TRUE(ini.IsOpen());
@@ -131,24 +135,24 @@ TEST_F(IniFileTest, Reopen_GetValue) {
 }
 
 TEST_F(IniFileTest, TwoSection_GetValue) {
-  const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO=BAZ" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  const auto path = this->CreateIniFile("TEST", {"FOO=BAR"}, "TEST-1", {"FOO=BAZ"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("BAZ", ini.value<string>("FOO"));
   ini.Close();
 }
 
 TEST_F(IniFileTest, TwoSection_GetValue_OnlyInSecondary) {
-  const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO1=BAZ" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  const auto path = this->CreateIniFile("TEST", {"FOO=BAR"}, "TEST-1", {"FOO1=BAZ"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
 TEST_F(IniFileTest, CommentAtStart) {
-  const string path = this->CreateIniFile("TEST", { ";FOO=BAR" } );
-  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
+  const auto path = this->CreateIniFile("TEST", {";FOO=BAR"});
+  IniFile ini(PathFilePath(helper_.TempDir(), this->test_name()), {"TEST-1", "TEST"});
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ("", ini.value<string>("FOO"));
   ini.Close();

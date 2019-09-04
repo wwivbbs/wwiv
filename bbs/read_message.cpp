@@ -117,7 +117,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
         description = describe_area_code(to_number<int>(csne->phone));
       }
 
-      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
+      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus);
       *outLocation = (!description.empty()) ? description : "Unknown Area";
     } else {
       *outNetworkName = StrCat(netName, "Unknown System");

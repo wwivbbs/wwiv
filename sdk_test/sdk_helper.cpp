@@ -55,7 +55,9 @@ static statusrec_t create_status() {
   return s;
 }
 
-SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.CreateTempFilePath("bbs")) {
+SdkHelper::SdkHelper()
+    : saved_dir_(File::current_directory()), 
+      root_(files_.CreateTempFilePath("bbs")) {
   data_ = CreatePath("data");
   msgs_ = CreatePath("msgs");
   gfiles_ = CreatePath("gfiles");
@@ -84,7 +86,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 
-    File cfile(FilePath(root_, CONFIG_DAT));
+    File cfile(PathFilePath(root_, CONFIG_DAT));
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");
     }
@@ -93,7 +95,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   }
 
   {
-    File sfile(FilePath(data_, STATUS_DAT));
+    File sfile(PathFilePath(data_, STATUS_DAT));
     if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
       throw std::runtime_error("failed to create status.dat");
     }
@@ -103,12 +105,13 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   }
 }
 
-std::string SdkHelper::CreatePath(const string& name) {
-  const string  path = files_.CreateTempFilePath(StrCat("bbs/", name));
+std::filesystem::path SdkHelper::CreatePath(const string& name) {
+  const auto path = files_.CreateTempFilePath(FilePath("bbs", name));
   File::mkdirs(path);
   return path;
 }
 
 SdkHelper::~SdkHelper() {
-  chdir(saved_dir_.string().c_str());
+  auto dir = saved_dir_.string();
+  chdir(dir.c_str());
 }

@@ -21,6 +21,8 @@
 
 #include <cstdio>
 #include <string>
+#include <tuple>
+#include "core/filesystem.h"
 
 /**
  * Helper class for tests requing local filesystem access.  
@@ -31,20 +33,26 @@ class FileHelper {
 public:
   FileHelper();
   // Returns a fully qualified path name to "name" under the temporary directory.
+  // This will end with a pathSeparator and is suitable for use
+  // in wwiv datastructures.
   const std::string DirName(const std::string& name) const;
+  // Returns a fully qualified path to "name" under the temporary directory.
+  // This is suitable for use in constructing paths
+  const std::filesystem::path Dir(const std::string& name) const;
   // Creates a directory under TempDir.
   bool Mkdir(const std::string& name) const;
-  std::string CreateTempFilePath(const std::string& name);
-  FILE* OpenTempFile(const std::string& name, std::string* path);
-  std::string CreateTempFile(const std::string& name, const std::string& contents);
-  const std::string& TempDir() const { return tmp_; }
-  const std::string ReadFile(const std::string name) const;
-  static void set_wwiv_test_tempdir(const std::string& d) { basedir_ = d; }
+  std::filesystem::path CreateTempFilePath(const std::string& name);
+  std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name);
+  std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents);
+  const std::filesystem::path& TempDir() const { return tmp_; }
+  const std::string ReadFile(const std::filesystem::path& name) const;
+  static void set_wwiv_test_tempdir(const std::string& d) noexcept;
+
 private:
-  static std::string GetTestTempDir();
-  static std::string CreateTempDir(const std::string base);
-  std::string tmp_;
-  static std::string basedir_;
+  static std::filesystem::path GetTestTempDir();
+  static std::filesystem::path CreateTempDir(const std::string& base);
+  std::filesystem::path tmp_;
+  static std::filesystem::path basedir_;
 };
 
 #endif // __INCLUDED_FILE_HELPER_H__
