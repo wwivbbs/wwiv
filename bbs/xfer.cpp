@@ -264,7 +264,7 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
     full_pathname = FilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
       auto name_in_dir = FilePath(pszDirectory, file_name);
-      copyfile(name_in_dir, full_pathname, false);
+      File::Copy(name_in_dir, full_pathname);
       name_to_delete = full_pathname;
     }
   }

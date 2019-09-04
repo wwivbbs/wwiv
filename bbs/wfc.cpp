@@ -71,8 +71,6 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::FilePath;
-using wwiv::core::IniFile;
 using wwiv::os::random_number;
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -153,10 +151,10 @@ void WFC::DrawScreen() {
     a()->Cls();
     if (!screen_buffer) {
       screen_buffer = std::make_unique<char[]>(80 * 25 * sizeof(uint16_t));
-      File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
+      File wfcFile(PathFilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
-        LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
+        LOG(FATAL) << wfcFile << " NOT FOUND.";
         a()->AbortBBS();
       }
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));

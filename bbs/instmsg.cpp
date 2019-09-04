@@ -211,7 +211,7 @@ void process_inst_msgs() {
     if (a()->hangup_) { break; }
     File file(FilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
-      LOG(ERROR) << "Unable to open file: " << file.full_pathname();
+      LOG(ERROR) << "Unable to open file: " << file;
       continue;
     }
     while (true) {

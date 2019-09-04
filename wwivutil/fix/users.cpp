@@ -75,7 +75,7 @@ static bool checkFileSize(File &file, unsigned long len) {
 }
 
 static void saveStatus(const std::string& datadir) {
-  File statusDat(FilePath(datadir, STATUS_DAT));
+  File statusDat(PathFilePath(datadir, STATUS_DAT));
 
   statusDat.Open(File::modeReadWrite | File::modeBinary);
   statusDat.Write(&st, sizeof(statusrec_t));
@@ -85,7 +85,7 @@ static void saveStatus(const std::string& datadir) {
 static bool initStatusDat(const std::string& datadir) {
   int nFileMode = File::modeReadOnly | File::modeBinary;
   bool update = false;
-  const auto status_fn = FilePath(datadir, STATUS_DAT);
+  const auto status_fn = PathFilePath(datadir, STATUS_DAT);
   if (!File::Exists(status_fn)) {
     LOG(INFO) << status_fn << " NOT FOUND!";
     LOG(INFO) << "Recreating " << status_fn;
@@ -178,7 +178,7 @@ int FixUsersCommand::Execute() {
   LOG(INFO) << "Runnning FixUsersCommand::Execute";
 
   initStatusDat(config()->config()->datadir());
-  const auto user_fn = FilePath(config()->config()->datadir(), USER_LST);
+  const auto user_fn = PathFilePath(config()->config()->datadir(), USER_LST);
 	if (!File::Exists(user_fn)) {
     LOG(ERROR) << user_fn << " does not exist.";
     return 1;
@@ -236,7 +236,7 @@ int FixUsersCommand::Execute() {
 
 	printf("size=%lu %lu\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
   LOG(INFO) << "Checking NAMES.LST";
-  const auto name_fn = FilePath(config()->config()->datadir(), NAMES_LST);
+  const auto name_fn = PathFilePath(config()->config()->datadir(), NAMES_LST);
 	if (!File::Exists(name_fn)) {
     LOG(INFO) << name_fn << " does not exist, regenerating with " << smallrecords.size()
               << " names";

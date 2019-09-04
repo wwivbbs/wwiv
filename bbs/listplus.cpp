@@ -1556,11 +1556,11 @@ static int move_filename(const char *file_name, int dn) {
           if (ListPlusExist(szDestFileName)) {
             File::Remove(szSourceFileName);
           } else {
-            copyfile(szSourceFileName, szDestFileName, false);
+            File::Copy(szSourceFileName, szDestFileName);
             File::Remove(szSourceFileName);
           }
         } else {
-          copyfile(szSourceFileName, szDestFileName, false);
+          File::Copy(szSourceFileName, szDestFileName);
           File::Remove(szSourceFileName);
         }
       }

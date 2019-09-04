@@ -76,13 +76,15 @@ static void load_protocols(const std::string& datadir, vector<newexternalrec>& e
   externs.clear();
   over_intern.clear();
   {
-    DataFile<newexternalrec> file(FilePath(datadir, NEXTERN_DAT), File::modeBinary | File::modeReadWrite);
+    DataFile<newexternalrec> file(PathFilePath(datadir, NEXTERN_DAT),
+                                  File::modeBinary | File::modeReadWrite);
     if (file) {
       file.ReadVector(externs, 15);
     }
   }
   {
-    DataFile<newexternalrec> file(FilePath(datadir, NINTERN_DAT), File::modeBinary | File::modeReadWrite);
+    DataFile<newexternalrec> file(PathFilePath(datadir, NINTERN_DAT),
+                                  File::modeBinary | File::modeReadWrite);
     if (file) {
       file.ReadVector(over_intern, 3);
     } else {
@@ -239,7 +241,7 @@ void extrn_prots(const std::string& datadir) {
     }
   } while (!done);
 
-  DataFile<newexternalrec> newexternfile(FilePath(datadir, NEXTERN_DAT),
+  DataFile<newexternalrec> newexternfile(PathFilePath(datadir, NEXTERN_DAT),
     File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
   if (newexternfile) {
     newexternfile.WriteVector(externs);
@@ -247,13 +249,13 @@ void extrn_prots(const std::string& datadir) {
   newexternfile.Close();
 
   if ((over_interns[0].othr | over_interns[1].othr | over_interns[2].othr)&othr_override_internal) {
-    DataFile<newexternalrec>  internfile(FilePath(datadir, NINTERN_DAT),
+    DataFile<newexternalrec> internfile(PathFilePath(datadir, NINTERN_DAT),
       File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
     if (internfile) {
       internfile.WriteVector(over_interns);
     }
   } else {
-    File::Remove(FilePath(datadir, NINTERN_DAT));
+    File::Remove(PathFilePath(datadir, NINTERN_DAT));
   }
 }
 

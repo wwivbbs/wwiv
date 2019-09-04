@@ -22,6 +22,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -29,8 +30,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::core::IniFile;
-using wwiv::core::FilePath;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -58,7 +58,7 @@ std::string ctypes(int num) {
     "Other",
   };
 
-  IniFile iniFile(FilePath(a()->bbsdir(), WWIV_INI), {"CTYPES"});
+  IniFile iniFile(PathFilePath(a()->bbsdir(), WWIV_INI), {"CTYPES"});
   if (iniFile.IsOpen()) {
     return iniFile.value<string>(StringPrintf("COMP_TYPE[%d]", num + 1));
   }

@@ -466,7 +466,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const auto quotes_filename = FilePath(a()->temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = PathFilePath(a()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -482,8 +482,8 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const auto msginf_filename = FilePath(a()->temp_directory(), "msginf");
-  copyfile(quotes_filename, msginf_filename, false);
+  const auto msginf_filename = PathFilePath(a()->temp_directory(), "msginf");
+  File::Copy(quotes_filename, msginf_filename);
 }
 
 static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {

@@ -59,7 +59,7 @@ namespace wwivutil {
 namespace files {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
-  DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+  DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
   if (!file) {
     LOG(ERROR) << "Unable to open file: " << file.file();
     return false;
@@ -143,7 +143,7 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename));
+    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename));
     if (!file) {
       LOG(ERROR) << "Unable to open file: " << file.file();
       return 1;
@@ -209,7 +209,7 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename),
+    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename),
                               File::modeBinary | File::modeReadWrite);
     if (!file) {
       LOG(ERROR) << "Unable to open file: " << file.file();

@@ -53,7 +53,7 @@ void read_automessage() {
   auto current_status = a()->status_manager()->GetStatus();
   bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
-  TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
+  TextFile autoMessageFile(PathFilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
   string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     bout << "|#3No auto-message.\r\n";
@@ -113,7 +113,7 @@ static void write_automessage() {
       s.SetAutoMessageAuthorUserNumber(a()->usernum);
     });
 
-    TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
+    TextFile file(PathFilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
     const string authorName = a()->names()->UserName(a()->usernum);
     file.WriteLine(authorName);
     sysoplog() << "Changed Auto-message";

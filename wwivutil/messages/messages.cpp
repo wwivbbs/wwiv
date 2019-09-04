@@ -280,8 +280,8 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    bool sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
-    bool db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
+    bool sb = backup_file(PathFilePath(config.datadir(), StrCat(name, ".sub")));
+    bool db = backup_file(PathFilePath(config.msgsdir(), StrCat(name, ".dat")));
     return sb && db;
   }
 
@@ -387,11 +387,11 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   // open file, and create it if necessary
   postrec p{};
 
-  const auto sub_fn = FilePath(datadir, StrCat(sub_filename, ".sub"));
+  const auto sub_fn = PathFilePath(datadir, StrCat(sub_filename, ".sub"));
   if (!File::Exists(sub_fn)) {
     return 1;
   }
-  File subFile(FilePath(datadir, StrCat(sub_filename, ".sub")));
+  File subFile(PathFilePath(datadir, StrCat(sub_filename, ".sub")));
   if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
     return 0;
   }

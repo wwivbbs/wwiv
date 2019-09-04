@@ -62,7 +62,7 @@
 using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
-using wwiv::core::FilePath;
+using wwiv::core::PathFilePath;
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -587,10 +587,10 @@ void print_net_listing(bool bForcePause) {
           } else {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
-              const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
+              const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
               const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
               string areacode;
-              if (File::Exists(FilePath(regions_dir, town_fn))) {
+              if (File::Exists(PathFilePath(regions_dir, town_fn))) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
               } else {
@@ -657,7 +657,7 @@ void mailr() {
           bout.Color(a()->GetMessageColor());
           bout << m.title << wwiv::endl;
           if (m.status & status_file) {
-            File attachDat(FilePath(a()->config()->datadir(), ATTACH_DAT));
+            File attachDat(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
               bool found = false;
               auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
@@ -695,7 +695,7 @@ void mailr() {
               delmail(*pFileEmail.get(), nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
-                File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
+                File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
                 if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                   auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
@@ -817,7 +817,7 @@ void auto_purge() {
   int days = 0;
   int skipsl = 0;
   {
-    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+    IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       days = ini.value<int>("AUTO_USER_PURGE");
@@ -885,12 +885,12 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(FilePath(a()->config()->gfilesdir(), status->GetLogFileName(2)));
+  File::Remove(PathFilePath(a()->config()->gfilesdir(), status->GetLogFileName(2)));
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
-  File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
+  File fileZLog(PathFilePath(a()->config()->datadir(), ZLOG_DAT));
   zlogrec z1;
   if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
     fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);

@@ -58,7 +58,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void write_qscn(const Config& config, unsigned int un, uint32_t* qscn) {
-  File file(FilePath(config.datadir(), USER_QSC));
+  File file(PathFilePath(config.datadir(), USER_QSC));
   if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     file.Seek(config.qscn_len() * un, File::Whence::begin);
     file.Write(qscn, config.qscn_len());
@@ -77,8 +77,8 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
       window->Puts("ERROR Unable to unzip file.\n");
     }
 
-    const auto sysop_dir = FilePath("dloads", "sysop");
-    File::Rename(zipfile, FilePath(sysop_dir, zipfile));
+    const auto sysop_dir = PathFilePath("dloads", "sysop");
+    File::Rename(zipfile, PathFilePath(sysop_dir, zipfile));
     return true;
   }
   return false;
@@ -258,7 +258,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_user(config, 1, &u);
   write_qscn(config, 1, qsc.get());
   {
-    File namesfile(FilePath("data", NAMES_LST));
+    File namesfile(PathFilePath("data", NAMES_LST));
     namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   }
   {
@@ -286,7 +286,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.dsl = 100;
     d1.maxfiles = 50;
     d1.type = 65535;
-    File dirsfile(FilePath("data", DIRS_DAT));
+    File dirsfile(PathFilePath("data", DIRS_DAT));
     dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 

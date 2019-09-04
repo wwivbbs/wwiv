@@ -573,7 +573,7 @@ void temp_extract() {
       sprintf(s2, "%s%s", a()->temp_directory().c_str(), u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
-        copyfile(s1, s2, false);
+        File::Copy(s1, s2);
       }
     }
     get_arc_cmd(s1, s2, 1, "");
@@ -876,11 +876,11 @@ void move_file_t() {
             if (File::Exists(s2)) {
               File::Remove(s1);
             } else {
-              copyfile(s1, s2, false);
+              File::Copy(s1, s2);
               File::Remove(s1);
             }
           } else {
-            copyfile(s1, s2, false);
+            File::Copy(s1, s2);
             File::Remove(s1);
           }
           remlist(a()->batch().entry[nCurBatchPos].filename);

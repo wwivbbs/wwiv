@@ -57,7 +57,7 @@ void get_user_ppp_addr() {
   a()->internetFullEmailAddress = StringPrintf("%s@%s",
       a()->internetEmailName.c_str(),
       a()->internetEmailDomain.c_str());
-  TextFile acctFile(FilePath(net.dir, ACCT_INI), "rt");
+  TextFile acctFile(PathFilePath(net.dir, ACCT_INI), "rt");
   char szLine[260];
   bool found = false;
   if (acctFile.IsOpen()) {
@@ -148,7 +148,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
   if (user_number == a()->usernum && check_inet_addr(a()->user()->GetEmailAddress())) {
     internet_address = a()->user()->GetEmailAddress();
   } else {
-    const auto fn = FilePath(a()->config()->datadir(), INETADDR_DAT);
+    const auto fn = PathFilePath(a()->config()->datadir(), INETADDR_DAT);
     if (!File::Exists(fn)) {
       File file(fn);
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
@@ -179,7 +179,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return; /*nullptr;*/
   }
 
-  File inetAddrFile(FilePath(a()->config()->datadir(), INETADDR_DAT));
+  File inetAddrFile(PathFilePath(a()->config()->datadir(), INETADDR_DAT));
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::Whence::begin);
@@ -192,8 +192,8 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return;
   }
   const auto& net = a()->net_networks[inet_net_num];
-  TextFile in(FilePath(net.dir, ACCT_INI), "rt");
-  TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
+  TextFile in(PathFilePath(net.dir, ACCT_INI), "rt");
+  TextFile out(PathFilePath(a()->temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {
     char szLine[260];
     while (in.ReadLine(szLine, 255)) {
@@ -216,6 +216,6 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     out.Close();
   }
   File::Remove(in.path());
-  copyfile(out.full_pathname(), in.full_pathname(), false);
+  File::Copy(out.path(), in.path());
   File::Remove(out.path());
 }

@@ -129,13 +129,13 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     l3 = config.max_subs() * 4;
   }
 
-  const auto oqf_fn = FilePath(config.datadir(), USER_QSC);
+  const auto oqf_fn = PathFilePath(config.datadir(), USER_QSC);
   File oqf(oqf_fn);
   if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  File nqf(FilePath(config.datadir(), "userqsc.new"));
+  File nqf(PathFilePath(config.datadir(), "userqsc.new"));
   if (!nqf.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
     messagebox(window, "Could not open userqsc.new");
     return;

@@ -138,10 +138,9 @@ bool NewZModemReceiveFile( const char *file_name ) {
 	nDone = doIO( &info );
 	bool ret = ( nDone == ZmDone ) ? true : false;
 	if ( ret ) {
-    std::string fn = file_name;
-    StringRemoveWhitespace(&fn);
-    const auto old_fn = FilePath(a()->temp_directory(), fn);
-		movefile(old_fn, fn, false );
+    const auto fn = ToStringRemoveWhitespace(file_name);
+    const auto old_fn = PathFilePath(a()->temp_directory(), fn);
+    File::Move(old_fn, fn);
 	}
 	return ret;
 }

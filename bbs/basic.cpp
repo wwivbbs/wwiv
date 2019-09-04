@@ -125,14 +125,14 @@ static script_data_t to_script_data(const mb_value_t& v) {
 }
 
 static bool SaveData(const std::string basename, const std::vector<script_data_t>& data) {
-  const auto path = FilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
+  const auto path = PathFilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   return json.Save();
 }
 
 static std::vector<script_data_t> LoadData(const std::string basename) {
   std::vector<script_data_t> data;
-  const auto path = FilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
+  const auto path = PathFilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   json.Load();
   return data;
@@ -173,7 +173,7 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
     bout << "|#6Invalid script name: " << script_name << "\r\n";
   }
 
-  const auto path = FilePath(a()->config()->scriptdir(), script_name);
+  const auto path = PathFilePath(a()->config()->scriptdir(), script_name);
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
     bout << "|#6Unable to locate script: " << script_name << "\r\n";
@@ -525,7 +525,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
 bool RunBasicScript(const std::string& script_name) {
   static bool pnce = RegisterMyBasicGlobals();
 
-  auto path = FilePath(a()->config()->scriptdir(), script_name);
+  auto path = PathFilePath(a()->config()->scriptdir(), script_name);
   if (!File::Exists(path)) {
     bout << "|#6Unable to locate script: " << script_name;
     return false;

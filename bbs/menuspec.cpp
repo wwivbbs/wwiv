@@ -124,14 +124,14 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
         auto s2 = FilePath(a()->directories[dn].path, u.filename);
         s1 = FilePath(a()->temp_directory(), u.filename);
         if (!File::Exists(s1)) {
-          copyfile(s2, s1, false);
+          File::Copy(s2, s1);
         }
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1.c_str(), &sent, &abort, u.filename, dn, -2L);
+        send_file(s1, &sent, &abort, u.filename, dn, -2L);
       } else {
-        send_file(s1.c_str(), &sent, &abort, u.filename, dn, u.numbytes);
+        send_file(s1, &sent, &abort, u.filename, dn, u.numbytes);
       }
 
       if (sent) {

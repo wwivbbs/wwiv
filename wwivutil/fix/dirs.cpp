@@ -85,7 +85,7 @@ static string Unalign(const char* filename) {
 void checkFileAreas(const std::string& datadir, bool verbose) {
   vector<directoryrec> directories;
   {
-    DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+    DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
     if (!file) {
       // TODO(rushfan): show error?
       return;
@@ -102,7 +102,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
       if (checkDirExists(directories[i].path, directories[i].name)) {
         LOG(INFO) << "Checking directory: " << directories[i].name;
         const auto filename = StrCat(directories[i].filename, ".dir");
-        const auto record_path = FilePath(datadir, filename);
+        const auto record_path = PathFilePath(datadir, filename);
         if (File::Exists(record_path)) {
           File recordFile(record_path);
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -120,7 +120,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             if (numFiles >= 1) {
               ext_desc_rec *extDesc = nullptr;
               unsigned int recNo = 0;
-              const auto fn = FilePath(datadir, StrCat(directories[i].filename, ".ext"));
+              const auto fn = PathFilePath(datadir, StrCat(directories[i].filename, ".ext"));
               if (File::Exists(fn)) {
                 File extDescFile(fn);
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -158,7 +158,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                const auto dir_fn = FilePath(directories[i].path, Unalign(upload.filename));
+                const auto dir_fn = PathFilePath(directories[i].path, Unalign(upload.filename));
                 File file(dir_fn);
                 if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {

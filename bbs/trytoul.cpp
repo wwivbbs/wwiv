@@ -248,7 +248,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
 
   // s1 and s2 should remain set,they are used below
-  movefile(src, dest, true);
+  File::Move(src, dest);
   strcpy(u.description, "NO DESCRIPTION GIVEN");
   bool file_id_avail = get_file_idz(&u, dn);
   done = false;
@@ -271,7 +271,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       if (yesno()) {
         t2u_error(file_name, "Changed mind");
         // move file back to batch dir
-        movefile(dest, src, true);
+        File::Move(dest, src);
         return 1;
       }
       break;
@@ -417,7 +417,7 @@ int try_to_ul(const string& file_name) {
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
   }
   // it clean and up to date
-  copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
+  File::Copy(src, dest); // copy file from batch dir,to try2ul dir */
 
   if (a()->IsUserOnline()) {
     a()->UpdateTopScreen();

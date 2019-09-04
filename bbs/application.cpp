@@ -157,7 +157,7 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
     }
     if (!key.Open()) {
       LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
-      LOG(ERROR) << "If so, delete " << key_file.full_pathname();
+      LOG(ERROR) << "If so, delete " << key_file;
       LOG(ERROR) << "SSH will be disabled!";
       type = CommunicationType::TELNET;
     }

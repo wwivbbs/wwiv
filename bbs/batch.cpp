@@ -239,7 +239,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               File::Rename(source_filename, dest_filename);
               File::Remove(source_filename);
             } else {
-              copyfile(source_filename, dest_filename, false);
+              File::Copy(source_filename, dest_filename);
               File::Remove(source_filename);
             }
           }
@@ -384,7 +384,7 @@ void zmbatchdl(bool bHangupAfterDl) {
           // update the send filename and copy it from the cdrom
           send_filename = FilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
-            copyfile(orig_filename, send_filename, true);
+            File::Copy(orig_filename, send_filename);
           }
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -464,7 +464,7 @@ void ymbatchdl(bool bHangupAfterDl) {
               FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
           send_filename = FilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
-            copyfile(orig_filename, send_filename, true);
+            File::Copy(orig_filename, send_filename);
           }
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
@@ -594,7 +594,7 @@ static string make_dl_batch_list() {
         if (!File::Exists(fileToSend)) {
           File::set_current_directory(a()->directories[b.dir].path);
           File sourceFile(FilePath(File::current_directory(), stripfn(b.filename)));
-          copyfile(sourceFile.path().string(), fileToSend, true);
+          File::Copy(sourceFile.path(), fileToSend);
         }
         filename_to_send = fileToSend;
       } else {

@@ -39,7 +39,6 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -193,7 +192,7 @@ std::string CalloutOptionsToString(uint16_t options) {
 
 static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map,
                              const string network_dir) {
-  TextFile node_config_file(FilePath(network_dir, CALLOUT_NET), "rt");
+  TextFile node_config_file(PathFilePath(network_dir, CALLOUT_NET), "rt");
   if (!node_config_file.IsOpen()) {
     return false;
   }
@@ -256,8 +255,8 @@ bool Callout::erase(uint16_t node) {
 }
 
 bool Callout::Save() {
-  backup_file(FilePath(net_.dir, CALLOUT_NET));
-  TextFile node_config_file(FilePath(net_.dir, CALLOUT_NET), "wt");
+  backup_file(PathFilePath(net_.dir, CALLOUT_NET));
+  TextFile node_config_file(PathFilePath(net_.dir, CALLOUT_NET), "wt");
   if (!node_config_file.IsOpen()) {
     return false;
   }

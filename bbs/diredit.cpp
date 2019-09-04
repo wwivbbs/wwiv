@@ -495,15 +495,15 @@ void dlboardedit() {
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".dir")));
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".ext")));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(s, ".dir")));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(s, ".ext")));
           }
         }
       }
     } break;
     }
   } while (!done && !a()->hangup_);
-  DataFile<directoryrec> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
+  DataFile<directoryrec> dirsFile(PathFilePath(a()->config()->datadir(), DIRS_DAT),
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";

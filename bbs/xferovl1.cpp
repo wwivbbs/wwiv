@@ -422,7 +422,7 @@ void tag_it() {
                   stripfn(f.u.filename));
           sprintf(s, "%s%s", a()->temp_directory().c_str(), stripfn(f.u.filename));
           if (!File::Exists(s)) {
-            copyfile(s2, s, true);
+            File::Copy(s2, s);
           }
         }
         File fp(s);
@@ -625,7 +625,7 @@ void tag_files(bool& need_title) {
           sprintf(s1, "%s%s", a()->temp_directory().c_str(),
                   stripfn(f.u.filename));
           if (!File::Exists(s1)) {
-            copyfile(s2, s1, true);
+            File::Copy(s2, s1);
           }
         }
         if (!File::Exists(s1)) {
@@ -699,7 +699,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
           sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
           sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
           if (!File::Exists(s1)) {
-            if (!copyfile(s2, s1, true)) {
+            if (!File::Copy(s2, s1)) {
               bout << "|#6 file unavailable... press any key.";
               bout.getkey();
             }

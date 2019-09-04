@@ -50,7 +50,7 @@ bool StringToBoolean(const char *p) {
 }
 }  // namespace {}
 
-static bool ParseIniFile(const string& filename, std::map<string, string>& data) {
+static bool ParseIniFile(const std::filesystem::path& filename, std::map<string, string>& data) {
   data.clear();
   TextFile file(filename, "rt");
   if (!file.IsOpen()) {
@@ -89,27 +89,31 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
   return true;
 }
 
-IniFile::IniFile(const std::string& filename, const std::initializer_list<const char*> sections)
-  : file_name_(filename), open_(false) {
+IniFile::IniFile(const std::filesystem::path& filename,
+                 const std::initializer_list<const char*> sections)
+    : path_(filename) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
     sections_.emplace_back(s);
   }
-  open_ = ParseIniFile(filename, data_);
+  open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::IniFile(const std::string& filename, const std::initializer_list<const std::string> sections)
-  : file_name_(filename), open_(false) {
+IniFile::IniFile(const std::filesystem::path& filename,
+                 const std::initializer_list<const std::string> sections)
+    : path_(filename) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
     sections_.emplace_back(s);
   }
-  open_ = ParseIniFile(filename, data_);
+  open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::~IniFile() { open_ = false; }
+IniFile::~IniFile() {
+  open_ = false;
+}
 
 /* Close is now a NOP */
 void IniFile::Close() {}

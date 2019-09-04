@@ -119,7 +119,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
                << " nh.length = " << p.nh.length;
     return false;
   }
-  File file(FilePath(net.dir, filename));
+  File file(PathFilePath(net.dir, filename));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename << "Unable to open file.";
     return false;
@@ -416,7 +416,7 @@ std::string create_pend(const string& directory, bool local, char network_app_id
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     const auto filename = StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
-    const auto pend_fn = FilePath(directory, filename);
+    const auto pend_fn = PathFilePath(directory, filename);
     if (File::Exists(pend_fn)) {
       continue;
     }

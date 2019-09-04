@@ -95,64 +95,6 @@ bool do_sysop_command(int nCommandID) {
   return bNeedToRedraw;
 }
 
-/**
- * copyfile - Copies a file from one location to another
- *
- * @param input - fully-qualified name of the source file
- * @param output - fully-qualified name of the destination file
- * @param stats - if true, print stuff to the screen
- *
- * @return - false on failure, true on success
- *
- */
-bool copyfile(const string& sourceFileName, const string& destFileName, bool stats) {
-  if (stats) {
-    bout << "|#7File movement ";
-  }
-
-  if (sourceFileName != destFileName &&
-      File::Exists(sourceFileName) &&
-      !File::Exists(destFileName)) {
-    std::error_code ec;
-    return wwiv::fs::copy_file(sourceFileName, destFileName, ec);
-  }
-  return false;
-}
-
-/**
- * movefile - Moves a file from one location to another
- *
- * @param src - fully-qualified name of the source file
- * @param dst - fully-qualified name of the destination file
- * @param stats - if true, print stuff to the screen (not used)
- *
- * @return - false on failure, true on success
- *
- */
-bool movefile(const string& sourceFileName, const string& destFileName, bool stats) {
-  if (sourceFileName != destFileName && File::Exists(sourceFileName)) {
-    bool bCanUseRename = false;
-
-    if (sourceFileName[1] != ':' && destFileName[1] != ':') {
-      bCanUseRename = true;
-    }
-    if (sourceFileName[1] == ':' && destFileName[1] == ':' && sourceFileName[0] == destFileName[0]) {
-      bCanUseRename = true;
-    }
-
-    if (bCanUseRename) {
-      File::Rename(sourceFileName, destFileName);
-      if (File::Exists(destFileName)) {
-        return false;
-      }
-    }
-  }
-  bool bCopyFileResult = copyfile(sourceFileName, destFileName, stats);
-  File::Remove(sourceFileName);
-
-  return bCopyFileResult;
-}
-
 void ListAllColors() {
   bout.nl();
   for (int i = 0; i < 128; i++) {

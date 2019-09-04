@@ -399,7 +399,7 @@ bool Application::ReadConfig() {
   user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
 
-  IniFile ini(FilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
+  IniFile ini(PathFilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();
@@ -419,7 +419,7 @@ bool Application::ReadConfig() {
 
 void Application::read_nextern() {
   externs.clear();
-  DataFile<newexternalrec> externalFile(FilePath(config()->datadir(), NEXTERN_DAT));
+  DataFile<newexternalrec> externalFile(PathFilePath(config()->datadir(), NEXTERN_DAT));
   if (externalFile) {
     externalFile.ReadVector(externs, 15);
   }
@@ -427,7 +427,7 @@ void Application::read_nextern() {
 
 void Application::read_arcs() {
   arcs.clear();
-  DataFile<arcrec> file(FilePath(config()->datadir(), ARCHIVER_DAT));
+  DataFile<arcrec> file(PathFilePath(config()->datadir(), ARCHIVER_DAT));
   if (file) {
     file.ReadVector(arcs, MAX_ARCS);
   }
@@ -435,7 +435,7 @@ void Application::read_arcs() {
 
 void Application::read_editors() {
   editors.clear();
-  DataFile<editorrec> file(FilePath(config()->datadir(), EDITORS_DAT));
+  DataFile<editorrec> file(PathFilePath(config()->datadir(), EDITORS_DAT));
   if (!file) {
     return;
   }
@@ -444,7 +444,7 @@ void Application::read_editors() {
 
 void Application::read_nintern() {
   over_intern.clear();
-  DataFile<newexternalrec> file(FilePath(config()->datadir(), NINTERN_DAT));
+  DataFile<newexternalrec> file(PathFilePath(config()->datadir(), NINTERN_DAT));
   if (file) {
     file.ReadVector(over_intern, 3);
   }
@@ -553,7 +553,7 @@ bool Application::read_names() {
 
 bool Application::read_dirs() {
   directories.clear();
-  DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
+  DataFile<directoryrec> file(PathFilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
     LOG(ERROR) << file.file() << " NOT FOUND.";
     return false;
@@ -564,7 +564,7 @@ bool Application::read_dirs() {
 
 void Application::read_chains() {
   chains.clear();
-  DataFile<chainfilerec> file(FilePath(config()->datadir(), CHAINS_DAT));
+  DataFile<chainfilerec> file(PathFilePath(config()->datadir(), CHAINS_DAT));
   if (!file) {
     return;
   }
@@ -573,7 +573,7 @@ void Application::read_chains() {
   if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chains_reg.clear();
 
-    DataFile<chainregrec> regFile(FilePath(config()->datadir(), CHAINS_REG));
+    DataFile<chainregrec> regFile(PathFilePath(config()->datadir(), CHAINS_REG));
     if (regFile) {
       regFile.ReadVector(chains_reg, max_chains);
     } else {
@@ -584,7 +584,7 @@ void Application::read_chains() {
         chains_reg.push_back(reg);
 
         // Since we jsut created the chain file, go ahead and save it out.
-        DataFile<chainregrec> cf(FilePath(config()->datadir(), CHAINS_REG),
+        DataFile<chainregrec> cf(PathFilePath(config()->datadir(), CHAINS_REG),
                                  File::modeReadWrite | File::modeBinary | File::modeCreateFile);
         cf.WriteVector(chains_reg);
       }
@@ -594,7 +594,7 @@ void Application::read_chains() {
 
 bool Application::read_language() {
   {
-    DataFile<languagerec> file(FilePath(config()->datadir(), LANGUAGE_DAT));
+    DataFile<languagerec> file(PathFilePath(config()->datadir(), LANGUAGE_DAT));
     if (file) {
       file.ReadVector(languages);
     }
@@ -618,7 +618,7 @@ bool Application::read_language() {
 }
 
 void Application::read_gfile() {
-  DataFile<gfiledirrec> file(FilePath(config()->datadir(), GFILE_DAT));
+  DataFile<gfiledirrec> file(PathFilePath(config()->datadir(), GFILE_DAT));
   if (file) {
     file.ReadVector(gfilesec, max_gfilesec);
   }
@@ -655,7 +655,7 @@ void Application::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   VLOG(1) << "Reading user scan pointers.";
-  const auto qs_fn = FilePath(config()->datadir(), USER_QSC);
+  const auto qs_fn = PathFilePath(config()->datadir(), USER_QSC);
   if (!File::Exists(qs_fn)) {
     LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
@@ -785,7 +785,7 @@ void Application::InitializeBBS() {
 // begin dupphone additions
 
 void Application::check_phonenum() {
-  const auto fn = FilePath(config()->datadir(), PHONENUM_DAT);
+  const auto fn = PathFilePath(config()->datadir(), PHONENUM_DAT);
   if (!File::Exists(fn)) {
     create_phone_file();
   }
@@ -795,7 +795,7 @@ void Application::check_phonenum() {
 void Application::create_phone_file() {
   phonerec p{};
 
-  File file(FilePath(config()->datadir(), USER_LST));
+  File file(PathFilePath(config()->datadir(), USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -803,7 +803,7 @@ void Application::create_phone_file() {
   file.Close();
   int numOfRecords = static_cast<int>(file_size / sizeof(userrec));
 
-  File phoneNumFile(FilePath(config()->datadir(), PHONENUM_DAT));
+  File phoneNumFile(PathFilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |
                          File::modeCreateFile)) {
     return;

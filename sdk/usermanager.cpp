@@ -69,7 +69,7 @@ UserManager::UserManager(const wwiv::sdk::Config& config)
 UserManager::~UserManager() { }
 
 int  UserManager::num_user_records() const {
-  File userList(FilePath(data_directory_, USER_LST));
+  File userList(PathFilePath(data_directory_, USER_LST));
   if (userList.Open(File::modeReadOnly | File::modeBinary)) {
     auto nSize = userList.length();
     auto nNumRecords = static_cast<int>(nSize / userrec_length_) - 1;
@@ -79,7 +79,7 @@ int  UserManager::num_user_records() const {
 }
 
 bool UserManager::readuser_nocache(User *pUser, int user_number) {
-  File userList(FilePath(data_directory_, USER_LST));
+  File userList(PathFilePath(data_directory_, USER_LST));
   if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
@@ -105,7 +105,7 @@ bool UserManager::readuser(User *pUser, int user_number) {
 }
 
 bool UserManager::writeuser_nocache(User *pUser, int user_number) {
-  File userList(FilePath(data_directory_, USER_LST));
+  File userList(PathFilePath(data_directory_, USER_LST));
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
     userList.Seek(pos, File::Whence::begin);
@@ -151,7 +151,8 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
 }
 
 static bool delete_votes(const std::string datadir, User& user) {
-  DataFile<votingrec> voteFile(FilePath(datadir, VOTING_DAT), File::modeReadWrite | File::modeBinary);
+  DataFile<votingrec> voteFile(PathFilePath(datadir, VOTING_DAT),
+                               File::modeReadWrite | File::modeBinary);
   if (!voteFile) {
     return false;
   }

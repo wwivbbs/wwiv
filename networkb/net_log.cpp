@@ -36,7 +36,6 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

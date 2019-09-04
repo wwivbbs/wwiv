@@ -444,7 +444,7 @@ void gfile_sec(int sn) {
             auto file_name = FilePath(a()->gfilesec[sn].filename, g[i2 - 1].filename);
             File file(FilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
-              bout << "|#6File not found : [" << file.full_pathname() << "]";
+              bout << "|#6File not found : [" << file << "]";
             } else {
               auto file_size = file.length();
               file.Close();

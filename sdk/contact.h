@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/net.h"
@@ -111,6 +112,7 @@ class Contact {
   const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
   std::string ToString() const;
   std::string full_pathname() const noexcept;
+  std::filesystem::path path() const noexcept;
 
  private:
    /** add a contact. called by connect or failure. */

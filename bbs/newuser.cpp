@@ -537,7 +537,7 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
 }
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
-  File userFile(FilePath(a()->config()->datadir(), USER_LST));
+  File userFile(PathFilePath(a()->config()->datadir(), USER_LST));
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       sleep_for(milliseconds(100));
@@ -655,7 +655,7 @@ bool CanCreateNewUserAccountHere() {
 }
 
 bool UseMinimalNewUserInfo() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     return ini.value<bool>("NEWUSER_MIN");
@@ -690,8 +690,8 @@ void DoFullNewUser() {
   }
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     input_street();
-    const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
-    if (File::Exists(FilePath(zip_city_dir, "zip1.dat"))) {
+    const auto zip_city_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
+    if (File::Exists(PathFilePath(zip_city_dir, "zip1.dat"))) {
       input_zipcode();
       if (!check_zip(u->GetZipcode(), 1)) {
         u->SetCity("");
@@ -749,7 +749,7 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     return;
@@ -1115,10 +1115,10 @@ bool check_zip(const std::string& zipcode, int mode) {
   bool ok = true;
   bool found = false;
 
-  const auto zipcity_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
+  const auto zipcity_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
   const auto fn = StringPrintf("zip%c.dat", zipcode.front());
 
-  TextFile zip_file(FilePath(zipcity_dir, fn), "r");
+  TextFile zip_file(PathFilePath(zipcity_dir, fn), "r");
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {

@@ -205,11 +205,11 @@ void move_file() {
           if (File::Exists(s2)) {
             File::Remove(s1);
           } else {
-            copyfile(s1, s2, false);
+            File::Copy(s1, s2);
             File::Remove(s1);
           }
         } else {
-          copyfile(s1, s2, false);
+          File::Copy(s1, s2);
           File::Remove(s1);
         }
       }

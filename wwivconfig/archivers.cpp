@@ -109,7 +109,7 @@ bool create_arcs(UIWindow* window, const std::string& datadir) {
                             "archive test command"});
   }
 
-  File file(FilePath(datadir, ARCHIVER_DAT));
+  File file(PathFilePath(datadir, ARCHIVER_DAT));
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile)) {
     messagebox(window,
                StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
@@ -122,7 +122,7 @@ bool create_arcs(UIWindow* window, const std::string& datadir) {
 bool edit_archivers(wwiv::sdk::Config& config) {
   arcrec arc[MAX_ARCS];
 
-  File file(FilePath(config.datadir(), ARCHIVER_DAT));
+  File file(PathFilePath(config.datadir(), ARCHIVER_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary)) {
     if (!create_arcs(out->window(), config.datadir())) {
       return false;
