@@ -206,7 +206,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
     if (File::Exists(FilePath(context.net.dir, response_file))) {
       TextFile tf(FilePath(context.net.dir, response_file), "r");
-      LOG(INFO) << "Sending SA file: " << tf.full_pathname();
+      LOG(INFO) << "Sending SA file: " << tf;
       text = tf.ReadFileIntoString();
     }
     return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype, text);

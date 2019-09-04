@@ -362,7 +362,7 @@ int exec_cmdline(const string commandLine, int flags) {
     ::Sleep(250);
   }
 
-  const auto current_directory = File::current_directory();
+  const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];

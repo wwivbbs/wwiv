@@ -8,6 +8,7 @@ set(test_sources
   datetime_test.cpp
   email_test.cpp
   fido_util_test.cpp
+  flo_test.cpp
   ftn_msgdupe_test.cpp
   msgapi_test.cpp
   names_test.cpp

@@ -134,7 +134,7 @@ void upload_post() {
     if (file_size > lMaxBytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
-      File::Remove(file.full_pathname());
+      File::Remove(file.path());
     } else {
       file.Close();
       use_workspace = true;

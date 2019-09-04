@@ -68,7 +68,7 @@ TEST_F(TextFileTest, Append) {
   std::unique_ptr<TextFile> file(
       new TextFile(FilePath(helper_.TempDir(), this->test_name()), "a+t"));
   EXPECT_EQ(3, file->Write("abc"));
-  const string filename = file->full_pathname();
+  const auto filename = file->full_pathname();
   file.reset();
 
   const string actual = helper_.ReadFile(filename);

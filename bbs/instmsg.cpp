@@ -80,7 +80,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
 
     for (int i = 0; i < 1000; i++) {
       string dest = FilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
-      if (!File::Rename(file.full_pathname(), dest) || (errno != EACCES)) {
+      if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
         break;
       }
     }
@@ -230,7 +230,7 @@ void process_inst_msgs() {
       handle_inst_msg(&ih, m.c_str());
     }
     file.Close();
-    File::Remove(file.full_pathname());
+    File::Remove(file.path());
   }
   setiia(oiia);
 }

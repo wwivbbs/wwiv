@@ -317,13 +317,13 @@ bool CommandLine::AddStandardArgs() {
   if (!CommandLineCommand::AddStandardArgs()) {
     return false;
   }
-  add_argument({"bindir", "Main BBS binary directory.", File::current_directory(), "WWIV_BIN_DIR"});
+  add_argument({"bindir", "Main BBS binary directory.", File::current_directory().string(), "WWIV_BIN_DIR"});
   add_argument(
-      {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory(), "WWIV_DIR"});
-  add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory(),
-                "WWIV_CONFIG_DIR"});
-  add_argument({"logdir", "Directory where log files are written.", File::current_directory(),
-                "WWIV_LOG_DIR"});
+      {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory().string(), "WWIV_DIR"});
+  add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT",
+                File::current_directory().string(), "WWIV_CONFIG_DIR"});
+  add_argument({"logdir", "Directory where log files are written.",
+                File::current_directory().string(), "WWIV_LOG_DIR"});
 
   add_argument(
       BooleanCommandLineArgument{"log_startup", "Should the start/stop/args be logged.", false});

@@ -108,7 +108,7 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                           File::shareDenyReadWrite);
   if (!file) {
-    throw std::runtime_error("Unable to open file: " + file.file().full_pathname());
+    throw std::runtime_error(StrCat("Unable to open file: ", file.file()));
   }
   uint64_t now = time(nullptr);
   uint64_t msg_num;

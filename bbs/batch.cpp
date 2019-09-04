@@ -563,7 +563,7 @@ static string make_ul_batch_list() {
       File::set_current_directory(a()->directories[b.dir].path);
       File file(FilePath(File::current_directory(), stripfn(b.filename)));
       a()->CdHome();
-      fileList.Write(StrCat(file.full_pathname(), "\r\n"));
+      fileList.Write(StrCat(file.path().string(), "\r\n"));
     }
   }
   fileList.Close();
@@ -594,7 +594,7 @@ static string make_dl_batch_list() {
         if (!File::Exists(fileToSend)) {
           File::set_current_directory(a()->directories[b.dir].path);
           File sourceFile(FilePath(File::current_directory(), stripfn(b.filename)));
-          copyfile(sourceFile.full_pathname(), fileToSend, true);
+          copyfile(sourceFile.path().string(), fileToSend, true);
         }
         filename_to_send = fileToSend;
       } else {
@@ -667,7 +667,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       uplist);
 
   if (!commandLine.empty()) {
-    make_abs_cmd(a()->bbsdir(), &commandLine);
+    make_abs_cmd(a()->bbsdir().string(), &commandLine);
     a()->Cls();
     const string user_name_number = a()->names()->UserName(a()->usernum);
     const string message = StringPrintf(

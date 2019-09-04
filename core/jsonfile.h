@@ -40,9 +40,8 @@ class JsonFile {
 public:
   JsonFile(const std::filesystem::path& file_name, const std::string& key, T& t)
       : file_name_(file_name), key_(key), t_(t) {}
-  JsonFile(const std::string& directory_name, const std::string& file_name, const std::string& key,
-           T& t)
-      : JsonFile(PathFilePath(directory_name, file_name), key, t){};
+//  JsonFile(const std::string& directory_name, const std::string& file_name, const std::string& key, T& t)
+//      : JsonFile(PathFilePath(directory_name, file_name), key, t){};
   virtual ~JsonFile() {}
 
   bool Load() {

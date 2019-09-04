@@ -63,12 +63,11 @@ static bool checkFileSize(File &file, unsigned long len) {
   unsigned long actual = file.length();
   file.Close();
   if (actual < len) {
-    LOG(INFO) << file.full_pathname() << " too short (" << actual << "<"
-      << len << ").";
+    LOG(INFO) << file << " too short (" << actual << "<" << len << ").";
     return false;
   }
   if (actual > len) {
-    LOG(INFO) << file.full_pathname() << " too long (" << actual << ">"
+    LOG(INFO) << file << " too long (" << actual << ">"
       << len << ").";
     LOG(INFO) << "Attempting to continue.";
   }
@@ -103,9 +102,9 @@ static bool initStatusDat(const std::string& datadir) {
   } else {
     File statusDat(status_fn);
     checkFileSize(statusDat, sizeof(statusrec_t));
-    LOG(INFO) << "Reading " << statusDat.full_pathname() << "...";
+    LOG(INFO) << "Reading " << statusDat << "...";
     if (!statusDat.Open(nFileMode)) {
-      LOG(INFO) << statusDat.full_pathname() << " NOT FOUND.";
+      LOG(INFO) << statusDat << " NOT FOUND.";
       return false;
     }
     statusDat.Read(&st, sizeof(statusrec_t));

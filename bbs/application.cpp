@@ -69,6 +69,8 @@
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/status.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 
 #if defined(_WIN32)
 #include "bbs/remote_socket_io.h"
@@ -668,7 +670,7 @@ void Application::GotCaller(unsigned int ms) {
 
 void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
-const std::string Application::bbsdir() const noexcept { return bbs_dir_; }
+const std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_.string(); }
 const std::string Application::bindir() const noexcept { return bindir_; }
 const std::string Application::configdir() const noexcept { return configdir_; }
 const std::string Application::logdir() const noexcept { return logdir_; }
@@ -958,4 +960,14 @@ int Application::Run(int argc, char* argv[]) {
   } while (!ooneuser);
 
   return oklevel_;
+}
+
+wwiv::sdk::msgapi::MessageApi* Application::msgapi(int type) const {
+  return msgapis_.at(type).get();
+}
+wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
+  return msgapis_.at(current_sub().storage_type).get();
+}
+wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
+  return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
 }

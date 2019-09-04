@@ -142,11 +142,11 @@ public:
   /** Returns the file path as a std::filesystem path */
   const fs::path& path() const noexcept { return full_path_name_; }
 
-  std::string last_error() const { return error_text_; }
+  std::string last_error() const noexcept { return error_text_; }
 
   // operators
   /** Returns true if the file is open */
-  explicit operator bool() const { return IsOpen(); }
+  explicit operator bool() const noexcept { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const File& f);
 
   // static functions
@@ -164,8 +164,8 @@ public:
 
   static std::string EnsureTrailingSlash(const std::string& path);
   static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
-  static std::string current_directory();
-  static bool set_current_directory(const std::string& dir);
+  static std::filesystem::path current_directory();
+  static bool set_current_directory(const std::filesystem::path& dir);
   static std::string FixPathSeparators(const std::string& path);
   static std::string absolute(const std::string& base, const std::string& relative);
 
@@ -228,7 +228,7 @@ private:
 };
 
 /** Makes a backup of path using a custom suffix with the time and date */
-bool backup_file(const std::string& path);
+bool backup_file(const std::filesystem::path& p);
 
 } // namespace core
 } // namespace wwiv

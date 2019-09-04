@@ -215,7 +215,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     in.Close();
     out.Close();
   }
-  File::Remove(in.full_pathname());
+  File::Remove(in.path());
   copyfile(out.full_pathname(), in.full_pathname(), false);
-  File::Remove(out.full_pathname());
+  File::Remove(out.path());
 }

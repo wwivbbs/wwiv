@@ -34,7 +34,7 @@ static const int CONFIG_DAT_SIZE_424 = 5660;
 
 Config::Config(const configrec& config) : config_430(config) { set_config(&config, true); }
 
-Config::Config(const std::string& root_directory)
+Config::Config(const std::filesystem::path& root_directory)
     : initialized_(false), root_directory_(root_directory), config_430(root_directory) {
   if (!config_430.IsReadable()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -129,7 +129,7 @@ bool Config430::IsReadable() {
   return true;
 }
 
-Config430::Config430(const std::string& root_directory)
+Config430::Config430(const std::filesystem::path& root_directory)
     : initialized_(false), root_directory_(root_directory) {
   DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
@@ -164,7 +164,7 @@ Config430::Config430(const std::string& root_directory)
   }
 }
 
-std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_, dir); }
+std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_.string(), dir); }
 
 void Config430::update_paths() {
   if (!config_.scriptdir[0]) {

@@ -34,7 +34,7 @@
 namespace wwiv {
 namespace net {
 
-void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline);
 
 /**
  * Wrapper class that augments CommandLine to specialize it for the network commands.

@@ -39,8 +39,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
-                            const std::string& current_directory) {
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
@@ -59,7 +58,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
     : cmdline_(cmdline), net_cmd_(net_cmd) {
   cmdline.set_no_args_allowed(true);
   cmdline.AddStandardArgs();
-  AddStandardNetworkArgs(cmdline, File::current_directory());
+  AddStandardNetworkArgs(cmdline);
 
   if (!cmdline.Parse()) {
     initialized_ = false;

@@ -217,7 +217,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
     wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
     const auto dest = FilePath(dirs.bad_packets_dir(), f.path().filename().string());
 
-    if (!File::Move(f.full_pathname(), dest)) {
+    if (!File::Move(f.path(), dest)) {
       LOG(ERROR) << "Error moving file to BADMSGS; file: " << f;
     }
     return false;
@@ -644,7 +644,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite |
                        File::modeBinary,
                    File::shareDenyReadWrite)) {
-      LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
+      LOG(INFO) << "Will try again: Unable to create packet file: " << file;
       sleep_for(std::chrono::seconds(1));
       continue;
     }
@@ -834,7 +834,7 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
   if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive |
                         File::modeReadWrite,
                     File::shareDenyReadWrite)) {
-    LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
+    LOG(ERROR) << "Unable to open netmail filen: '" << netmail << "'";
     return false;
   }
 
@@ -917,7 +917,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
 
     TextFile flo_file(FilePath(dirs.outbound_dir(), floname), "a+");
     if (!flo_file.IsOpen()) {
-      LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
+      LOG(ERROR) << "Unable to open FLO file: " << flo_file;
       return false;
     }
     int num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename)));
@@ -1124,7 +1124,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
         if (net_cmdline.skip_delete()) {
           backup_file(f.full_pathname());
         }
-        File::Remove(f.full_pathname());
+        File::Remove(f.path());
         break;
       } else if (response == ReadPacketResponse::ERROR) {
         return 1;

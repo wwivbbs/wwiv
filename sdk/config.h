@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_CONFIG_H__
 #define __INCLUDED_SDK_CONFIG_H__
 
+#include "core/filesystem.h"
 #include "sdk/vardec.h"
 #include <memory>
 
@@ -31,7 +32,7 @@ class Config430 {
 public:
   explicit Config430(const Config& config);
   explicit Config430(const configrec& config);
-  explicit Config430(const std::string& root_directory);
+  explicit Config430(const std::filesystem::path& root_directory);
   bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const configrec* config, bool update_paths);
@@ -51,7 +52,7 @@ private:
 
   bool initialized_{false};
   configrec config_{};
-  const std::string root_directory_;
+  const std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
   uint32_t config_revision_number_{0};
   uint16_t written_by_wwiv_num_version_{0};
@@ -60,7 +61,7 @@ private:
 class Config {
 public:
   explicit Config(const configrec& config);
-  explicit Config(const std::string& root_directory);
+  explicit Config(const std::filesystem::path& root_directory);
 
   bool Load();
   bool Save();
@@ -78,7 +79,7 @@ public:
   uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
   uint32_t config_revision_number() const { return config_revision_number_; }
 
-  const std::string root_directory() const { return root_directory_; }
+  const std::string root_directory() const { return root_directory_.string(); }
   const std::string datadir() const { return datadir_; }
   const std::string msgsdir() const { return msgsdir_; }
   const std::string gfilesdir() const { return gfilesdir_; }
@@ -167,7 +168,7 @@ private:
 
   bool initialized_ = false;
   configrec config_{};
-  const std::string root_directory_;
+  const std::filesystem::path root_directory_;
   bool versioned_config_dat_ = false;
   uint32_t config_revision_number_ = 0;
   uint16_t written_by_wwiv_num_version_ = 0;

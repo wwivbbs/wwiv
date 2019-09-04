@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
     cmdline.AddStandardArgs();
-    AddStandardNetworkArgs(cmdline, File::current_directory());
+    AddStandardNetworkArgs(cmdline);
     cmdline.add_argument({"node", 'n', "Network node number to dial.", "0"});
     cmdline.add_argument(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
     cmdline.add_argument({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});

@@ -106,7 +106,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
         if (File::Exists(record_path)) {
           File recordFile(record_path);
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
-            LOG(INFO) << "Unable to open:" << recordFile.full_pathname();
+            LOG(INFO) << "Unable to open:" << recordFile;
           } else {
             unsigned int numFiles = recordFile.length() / sizeof(uploadsrec);
             uploadsrec upload;
@@ -163,7 +163,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                 if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {
                     if (verbose) {
-                      LOG(INFO) << "Checking file: " << file.full_pathname();
+                      LOG(INFO) << "Checking file: " << file;
                     }
                     if (upload.numbytes != static_cast<decltype(upload.numbytes)>(file.length())) {
                       upload.numbytes = file.length();

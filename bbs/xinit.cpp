@@ -367,7 +367,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
-  const auto base_dir = bbsdir();
+  const auto base_dir = bbsdir().string();
   temp_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
   batch_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
@@ -410,8 +410,9 @@ bool Application::ReadConfig() {
     return false;
   }
 
-  temp_directory_ = File::absolute(bbsdir(), temp_directory());
-  batch_directory_ = File::absolute(bbsdir(), batch_directory());
+  const auto b = bbsdir().string();
+  temp_directory_ = File::absolute(b, temp_directory());
+  batch_directory_ = File::absolute(b, batch_directory());
 
   return true;
 }

@@ -44,7 +44,7 @@ TEST(FileTest, DoesNotExist_Static) {
   string tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   File dne(FilePath(tmp, "doesnotexist"));
-  ASSERT_FALSE(File::Exists(dne.full_pathname()));
+  ASSERT_FALSE(File::Exists(dne.path()));
 }
 
 TEST(FileTest, Exists) {
@@ -89,7 +89,7 @@ TEST(FileTest, Exists_Static) {
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
   File dne(FilePath(tmp, "newdir"));
-  ASSERT_TRUE(File::Exists(dne.full_pathname())) << dne.full_pathname();
+  ASSERT_TRUE(File::Exists(dne.path())) << dne.path();
 }
 
 TEST(FileTest, Exists_TrailingSlash) {
@@ -197,19 +197,19 @@ TEST(FileTest, EnsureTrailingSlash) {
 TEST(FileTest, CurrentDirectory) {
   char buf[MAX_PATH];
   char* expected = getcwd(buf, MAX_PATH);
-  const auto actual = File::current_directory();
+  const auto actual = File::current_directory().string();
   EXPECT_STREQ(expected, actual.c_str());
 }
 
 TEST(FileTest, SetCurrentDirectory) {
   char buf[MAX_PATH];
   char* expected = getcwd(buf, MAX_PATH);
-  const auto original_dir = File::current_directory();
+  const auto original_dir = File::current_directory().string();
   ASSERT_STREQ(expected, original_dir.c_str());
 
   FileHelper helper;
   File::set_current_directory(helper.TempDir());
-  EXPECT_EQ(helper.TempDir(), File::current_directory());
+  EXPECT_EQ(helper.TempDir(), File::current_directory().string());
 
   File::set_current_directory(original_dir);
 }
@@ -362,7 +362,7 @@ TEST(FileTest, FsCopyFile) {
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
-  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+  ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
   auto f2 = FilePath(tmp, "f2");
   fs::path from{f1};
@@ -384,7 +384,7 @@ TEST(FileTest, CopyFile) {
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
-  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+  ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
   auto f2 = FilePath(tmp, "f2");
   EXPECT_FALSE(File::Exists(f2));
@@ -403,7 +403,7 @@ TEST(FileTest, MoveFile) {
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
-  ASSERT_TRUE(File::Exists(f.full_pathname())) << f.full_pathname();
+  ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
   auto f2 = FilePath(tmp, "f2");
   EXPECT_TRUE(File::Exists(f1)) << f1;

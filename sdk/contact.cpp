@@ -80,8 +80,7 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
 
   for (const auto& v : vs) {
     if (v.systemnumber == 0) {
-      VLOG(2) << "Skipping contact.net entry for system #0 from file: "
-              << file.file().full_pathname();
+      VLOG(2) << "Skipping contact.net entry for system #0 from file: " << file.file();
       continue;
     }
     network_contact_record r{};

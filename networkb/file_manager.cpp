@@ -79,13 +79,16 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
     VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name);
     if (File::Exists(FilePath(dirs_.outbound_dir(), name))) {
       LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
-      FloFile flo(net_, dirs_.outbound_dir(), name);
-      if (!flo.Load()) { continue; }
+      const auto path = PathFilePath(dirs_.outbound_dir(), name);
+      FloFile flo(net_, path);
+      if (!flo.Load()) {
+        continue;
+      }
       for (const auto& e : flo.flo_entries()) {
         File f(e.first);
         const auto basename = f.path().filename().string();
         auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
-        w->set_flo_file(std::make_unique<FloFile>(net_, dirs_.outbound_dir(), name));
+        w->set_flo_file(std::make_unique<FloFile>(net_, path));
         // emplace won't add another entry if one exists already.
         result_map.emplace(basename, w);
       }

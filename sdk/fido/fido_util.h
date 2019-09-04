@@ -84,7 +84,7 @@ enum class flo_directive : char {
  */
 class FloFile {
 public:
-  FloFile(const net_networks_rec& net, const std::filesystem::path& dir, const std::string filename);
+  FloFile(const net_networks_rec& net, const std::filesystem::path& p);
   virtual ~FloFile();
 
   wwiv::sdk::fido::FidoAddress destination_address() const;
@@ -93,21 +93,25 @@ public:
   fido_bundle_status_t status() const { return status_; }
   const std::vector<std::pair<std::string, flo_directive>>& flo_entries() const { return entries_; }
 
-  bool empty() const { return entries_.empty(); }
+  bool exists() const noexcept { return exists_; }
+  bool empty() const noexcept { return entries_.empty(); }
   bool insert(const std::string& file, flo_directive directive);
-  bool clear() { entries_.clear(); poll_ = false; return true; }
+  bool clear() noexcept {
+    entries_.clear();
+    poll_ = false;
+    return true;
+  }
   bool erase(const std::string& file);
   bool Load();
   bool Save();
 
 private:
   const net_networks_rec& net_;
-  const std::filesystem::path dir_;
-  const std::string filename_;
+  const std::filesystem::path path_;
   fido_bundle_status_t status_ = fido_bundle_status_t::unknown;
   std::unique_ptr<wwiv::sdk::fido::FidoAddress> dest_;
-  bool exists_ = false;
-  bool poll_ = false;
+  bool exists_{false};
+  bool poll_{false};
 
   std::vector<std::pair<std::string, flo_directive>> entries_;
 };

@@ -34,9 +34,6 @@
 #include "bbs/runnable.h"
 #include "core/file.h"
 #include "local_io/local_io.h"
-#include "sdk/config.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/net.h"
 #include "sdk/status.h"
@@ -69,6 +66,14 @@ extern Output bout;
 namespace wwiv {
 namespace core {
 class IniFile;
+}
+namespace sdk {
+class Config;
+
+namespace msgapi {
+class MessageApi;
+class WWIVMessageApi;
+}
 }
 } // namespace wwiv
 
@@ -234,7 +239,7 @@ public:
   const std::string& batch_directory() const { return batch_directory_; }
   const uint8_t primary_port() const { return primary_port_; }
 
-  const std::string bbsdir() const noexcept;
+  const std::filesystem::path bbsdir() const noexcept;
   const std::string bindir() const noexcept;
   const std::string configdir() const noexcept;
   const std::string logdir() const noexcept;
@@ -281,13 +286,9 @@ public:
   /** Returns the WWIV Names.LST Config Object. */
   wwiv::sdk::Names* names() const { return names_.get(); }
 
-  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
-  wwiv::sdk::msgapi::MessageApi* msgapi() const {
-    return msgapis_.at(current_sub().storage_type).get();
-  }
-  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const {
-    return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
-  }
+  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const;
+  wwiv::sdk::msgapi::MessageApi* msgapi() const;
+  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
 
   // Public subsystems
   Batch& batch() { return batch_; }
@@ -447,7 +448,7 @@ private:
   // Private fields.
 private:
   /*! The current working directory.*/
-  std::string bbs_dir_;
+  std::filesystem::path bbs_dir_;
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;

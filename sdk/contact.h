@@ -117,9 +117,9 @@ class Contact {
    void add_contact(NetworkContact* c, time_t time);
 
    const net_networks_rec net_;
-   bool save_on_destructor_;
+   bool save_on_destructor_{false};
    std::map<std::string, NetworkContact> contacts_;
-   bool initialized_;
+   bool initialized_{false};
 
    NetworkContact empty_contact{};
 };

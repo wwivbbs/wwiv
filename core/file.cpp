@@ -120,9 +120,9 @@ std::filesystem::path PathFilePath(const std::filesystem::path& dirname, const s
   return dirname / filename;
 }
 
-bool backup_file(const std::string& filename) {
-  fs::path from{filename};
-  fs::path to{filename};
+bool backup_file(const std::filesystem::path& p) {
+  fs::path from{p};
+  fs::path to{p};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
@@ -353,15 +353,15 @@ std::string File::EnsureTrailingSlashPath(const std::filesystem::path& orig) {
 }
 
 // static
-string File::current_directory() {
+std::filesystem::path File::current_directory() {
   std::error_code ec;
-  return fs::current_path(ec).string();
+  return fs::current_path(ec);
 }
 
 // static
-bool File::set_current_directory(const string& dir) {
+bool File::set_current_directory(const std::filesystem::path& dir) {
   std::error_code ec;
-  fs::current_path({dir}, ec);
+  fs::current_path(dir, ec);
   return ec.value() == 0;
 }
 

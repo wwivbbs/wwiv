@@ -1275,7 +1275,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
-    make_abs_cmd(a()->bbsdir(), &qwk_file_to_send);
+    make_abs_cmd(a()->bbsdir().string(), &qwk_file_to_send);
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "core/filesystem.h"
 #include "core_test/file_helper.h"
 
 class SdkHelper {
@@ -49,7 +50,7 @@ public:
   std::string logs_;
 
 private:
-  const std::string saved_dir_;
+  const std::filesystem::path saved_dir_;
   const std::string root_;
 };
 

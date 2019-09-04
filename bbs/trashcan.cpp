@@ -65,14 +65,14 @@ static bool Matches(string whole, string pattern) {
 }
 
 bool Trashcan::IsTrashName(const std::string& rawname) {
-  if (!File::Exists(file_.full_pathname())) {
+  if (!File::Exists(file_.path())) {
     return false;
   }
   // Gotta have a name to be in the trashcan.
   if (rawname.empty()) {
     return false;
   }
-  TextFile file(file_.full_pathname(), "rt");
+  TextFile file(file_.path(), "rt");
   if (!file.IsOpen()) {
     return false;
   }

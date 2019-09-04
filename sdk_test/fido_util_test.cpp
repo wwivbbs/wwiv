@@ -290,51 +290,6 @@ TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
   }
 }
 
-TEST_F(FidoUtilTest, FloFile) {
-  auto b = helper_.CreateTempFile("00010064.flo", "^C:\\db\\outbound\\0000006f.su0");
-  wwiv::fs::path dir{b};
-  const auto fn = dir.filename();
-  dir.remove_filename();
-  File f(b);
-  net_networks_rec net{};
-  net.dir = helper_.TempDir();
-  net.fido.fido_address = "11:1/211";
-  FloFile flo(net, dir, fn.string());
-  EXPECT_FALSE(flo.poll());
-  EXPECT_EQ(1, flo.flo_entries().size());
-
-  {
-    auto e = flo.flo_entries().front();
-    EXPECT_EQ("C:\\db\\outbound\\0000006f.su0", e.first);
-    EXPECT_EQ(flo_directive::delete_file, e.second);
-    flo.clear();
-    EXPECT_TRUE(flo.empty());
-    EXPECT_TRUE(flo.Save());
-    EXPECT_FALSE(File::Exists(b)) << b;
-  }
-
-  flo.insert("C:\\db\\outbound\\0000006f.mo0", flo_directive::truncate_file);
-  {
-    auto e = flo.flo_entries().front();
-    EXPECT_EQ("C:\\db\\outbound\\0000006f.mo0", e.first);
-    EXPECT_EQ(flo_directive::truncate_file, e.second);
-    flo.Save();
-    EXPECT_TRUE(File::Exists(b));
-    flo.clear();
-    File::Remove(b);
-  }
-
-  {
-    flo.set_poll(true);
-    flo.Save();
-    EXPECT_TRUE(File::Exists(b));
-
-    TextFile tf(b, "r");
-    const auto contents = tf.ReadFileIntoString();
-    EXPECT_EQ("", contents);
-  }
-}
-
 TEST_F(FidoUtilTest, FidoToDaten) {
   auto t = fido_to_daten("23 Dec 16  20:53:38");
   EXPECT_GT(t, 0u);
@@ -344,6 +299,7 @@ TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   char s[100];
   auto t = time(nullptr);
   auto tm = localtime(&t);
+  memset(s, 0, sizeof(s));
   ASSERT_NE(0UL, strftime(s, sizeof(s), "%z", tm));
   string ss(s);
   EXPECT_EQ(ss, tz_offset_from_utc());

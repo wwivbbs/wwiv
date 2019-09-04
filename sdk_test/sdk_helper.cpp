@@ -110,5 +110,5 @@ std::string SdkHelper::CreatePath(const string& name) {
 }
 
 SdkHelper::~SdkHelper() {
-  chdir(saved_dir_.c_str());
+  chdir(saved_dir_.string().c_str());
 }

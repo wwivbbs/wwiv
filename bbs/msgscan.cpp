@@ -64,6 +64,8 @@
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
+#include "sdk/msgapi/message.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
