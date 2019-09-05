@@ -65,8 +65,8 @@ bool is_chat_invis() {
 }
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
-  const string fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
-  File file(FilePath(a()->config()->datadir(), fn));
+  const auto fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
+  File file(PathFilePath(a()->config()->datadir(), fn));
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::Whence::end);
     if (ih->msg_size > 0 && msg.empty()) {
@@ -79,7 +79,8 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      string dest = FilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
+      const auto dest =
+          PathFilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
       if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
         break;
       }
@@ -209,7 +210,7 @@ void process_inst_msgs() {
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->hangup_) { break; }
-    File file(FilePath(a()->config()->datadir(), f.name));
+    File file(PathFilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file;
       continue;
@@ -243,7 +244,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
@@ -289,7 +290,7 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -431,7 +432,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write) {
     ti.last_update = daten_t_now();
-    File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+    File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);
       instFile.Write(&ti, sizeof(instancerec));

@@ -97,10 +97,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "w");
+        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
+        File::Remove(PathFilePath(a()->temp_directory(), "extended.dsc"));
       }
 
       const int saved_screen_chars = a()->user()->GetScreenChars();
@@ -112,7 +112,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
+        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
@@ -218,12 +218,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
   }
 
-  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
+  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
 
   File::set_current_directory(a()->directories[dn].path);
   {
-    File file(FilePath(File::current_directory(), stripfn(u->filename)));
+    File file(PathFilePath(File::current_directory(), stripfn(u->filename)));
 	  a()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
@@ -287,8 +287,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
+  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
   return true;
 }
 
@@ -335,7 +335,7 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      const auto file = FilePath(File::current_directory(), stripfn(u.filename));
+      const auto file = PathFilePath(File::current_directory(), stripfn(u.filename));
       a()->CdHome();
       if (!File::Exists(file)) {
         if (get_file_idz(&u, a()->udir[tempdir].subnum)) {

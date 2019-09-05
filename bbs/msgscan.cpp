@@ -652,7 +652,7 @@ static void HandleMessageDownload(int msgnum) {
     if (!okfn(filename)) {
       return;
     }
-    const auto f = FilePath(a()->temp_directory(), filename);
+    const auto f = PathFilePath(a()->temp_directory(), filename);
     File::Remove(f);
     {
       File fileTemp(f);
@@ -663,7 +663,7 @@ static void HandleMessageDownload(int msgnum) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(f, &bStatus, &bFileAbortStatus, f, -1, b.length());
+    send_file(f.string(), &bStatus, &bFileAbortStatus, f.string(), -1, b.length());
     bout << "|#1Message download... |#2" << (bStatus ? "successful" : "unsuccessful");
     if (bStatus) {
       sysoplog() << "Downloaded message";

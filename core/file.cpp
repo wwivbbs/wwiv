@@ -264,25 +264,27 @@ off_t File::length() {
   return sz;
 }
 
-time_t File::creation_time() { return File::creation_time(full_path_name_.string()); }
+time_t File::creation_time() { return File::creation_time(full_path_name_); }
 
-time_t File::last_write_time() { return File::last_write_time(full_path_name_.string()); }
+time_t File::last_write_time() { return File::last_write_time(full_path_name_); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
 // static
-time_t File::last_write_time(const std::string& path) {
+time_t File::last_write_time(const std::filesystem::path& path) {
   struct stat buf {};
-  return (stat(path.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  const auto p = path.string();
+  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 }
 
 // static
-time_t File::creation_time(const std::string& path) {
+time_t File::creation_time(const std::filesystem::path& path) {
   struct stat buf {};
   // st_ctime is creation time on windows and status change time on posix
   // so that's probably the closest to what we want.
-  return (stat(path.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+  const auto p = path.string();
+  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
 bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n) {

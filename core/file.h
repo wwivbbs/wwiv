@@ -169,8 +169,8 @@ public:
   static std::string FixPathSeparators(const std::string& path);
   static std::string absolute(const std::string& base, const std::string& relative);
 
-  static time_t creation_time(const std::string& path);
-  static time_t last_write_time(const std::string& path);
+  static time_t creation_time(const std::filesystem::path& path);
+  static time_t last_write_time(const std::filesystem::path& path);
 
   /**
    * Returns an canonical absolute path.

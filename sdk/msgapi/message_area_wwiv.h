@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
@@ -71,8 +72,9 @@ private:
 
 class WWIVMessageArea : public MessageArea, private Type2Text {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub, const std::string& sub_filename,
-                  const std::string& text_filename, int subnum);
+  WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
+                  const std::filesystem::path& sub_filename,
+                  const std::filesystem::path& text_filename, int subnum);
   virtual ~WWIVMessageArea();
 
   // Message Sub Specific Operations
@@ -118,7 +120,7 @@ private:
   // The currently opened sub if available.
   const subboard_t sub_;
   // Full path to the *.sub filename.
-  const std::string sub_filename_;
+  const std::filesystem::path sub_filename_;
   bool open_{false};
   subfile_header_t header_;
   int subnum_{-1};

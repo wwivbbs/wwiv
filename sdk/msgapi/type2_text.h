@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {
@@ -39,7 +40,7 @@ static constexpr int GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BL
 
 class Type2Text {
 public:
-  Type2Text(const std::string& text_filename);
+  Type2Text(const std::filesystem::path& text_filename);
 
   std::vector<gati_t> load_gat(wwiv::core::File& file, size_t section);
   void save_gat(wwiv::core::File& f, size_t section, const std::vector<gati_t>& gat);
@@ -49,7 +50,7 @@ public:
 
 private:
   std::unique_ptr<wwiv::core::File> OpenMessageFile();
-  const std::string filename_;
+  const std::filesystem::path path_;
 };
 
 }  // namespace msgapi

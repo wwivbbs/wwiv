@@ -141,7 +141,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
                stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = FilePath(a()->directories[directory_num].path, stripfn(u->filename));
+  const auto file = PathFilePath(a()->directories[directory_num].path, stripfn(u->filename));
   if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
@@ -259,17 +259,17 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
 int list_arc_out(const char *file_name, const char *pszDirectory) {
   string name_to_delete;
 
-  auto full_pathname = FilePath(pszDirectory, file_name);
+  auto full_pathname = PathFilePath(pszDirectory, file_name);
   if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    full_pathname = FilePath(a()->temp_directory(), file_name);
+    full_pathname = PathFilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      auto name_in_dir = FilePath(pszDirectory, file_name);
+      auto name_in_dir = PathFilePath(pszDirectory, file_name);
       File::Copy(name_in_dir, full_pathname);
-      name_to_delete = full_pathname;
+      name_to_delete = full_pathname.string();
     }
   }
   char szArchiveCmd[MAX_PATH];
-  get_arc_cmd(szArchiveCmd, full_pathname.c_str(), 0, "");
+  get_arc_cmd(szArchiveCmd, full_pathname.string().c_str(), 0, "");
   if (!okfn(file_name)) {
     szArchiveCmd[0] = 0;
   }

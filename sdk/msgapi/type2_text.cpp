@@ -49,8 +49,7 @@ using namespace wwiv::strings;
 
 constexpr char CZ = 26;
 
-Type2Text::Type2Text(const std::string& text_filename)
-  : filename_(text_filename) {}
+Type2Text::Type2Text(const std::filesystem::path& p) : path_(p) {}
 
 // Implementation Details
 
@@ -84,7 +83,7 @@ std::unique_ptr<File> Type2Text::OpenMessageFile() {
   // 
   // a()->status_manager()->RefreshStatusCache();
 
-  auto message_file = std::make_unique<File>(filename_);
+  auto message_file = std::make_unique<File>(path_);
   if (!message_file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create should have created this.
     // TODO(rushfan): Set error code

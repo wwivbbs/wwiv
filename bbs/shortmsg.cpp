@@ -44,7 +44,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   if (!pUser->HasShortMessage()) {
     return;
   }
-  DataFile<shortmsgrec> file(FilePath(a()->config()->datadir(), SMW_DAT),
+  DataFile<shortmsgrec> file(PathFilePath(a()->config()->datadir(), SMW_DAT),
                              File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return;
@@ -96,7 +96,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
   User user;
   a()->users()->readuser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    File file(FilePath(a()->config()->datadir(), SMW_DAT));
+    File file(PathFilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }

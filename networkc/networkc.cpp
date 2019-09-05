@@ -85,7 +85,7 @@ static void rename_bbs_instance_files(const string& dir, int instance_number, bo
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, const string& cmd) {
-  const auto path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
+  const auto path = PathFilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path;
@@ -112,7 +112,7 @@ static int System(const string& cmd) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  const auto fn = FilePath(dir, filename);
+  const auto fn = PathFilePath(dir, filename);
   File file(fn);
 
   if (file.Open(File::modeReadOnly)) {
@@ -123,13 +123,13 @@ static bool checkup2(const time_t tFileTime, string dir, string filename) {
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
+  if (!File::Exists(PathFilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
+  if (!File::Exists(PathFilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
+  if (!File::Exists(PathFilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
@@ -139,7 +139,7 @@ static bool need_network3(const string& dir, int network_version) {
               << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(FilePath(dir, BBSDATA_NET));
+  File bbsdataNet(PathFilePath(dir, BBSDATA_NET));
   if (!bbsdataNet.Open(File::modeReadOnly)) {
     return false;
   }
@@ -192,14 +192,14 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
         // Export everything to FTN bundles
         const auto fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-        if (File::Exists(FilePath(net.dir, fido_out))) {
+        if (File::Exists(PathFilePath(net.dir, fido_out))) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
           System(create_network_cmdline(net_cmdline, 'f', "export"));
         }
       }
 
       // Process local mail with network2.
-      if (File::Exists(FilePath(net.dir, LOCAL_NET))) {
+      if (File::Exists(PathFilePath(net.dir, LOCAL_NET))) {
         VLOG(2) << "Found: " << LOCAL_NET;
         System(create_network_cmdline(net_cmdline, '2', ""));
         found = true;

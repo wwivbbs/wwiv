@@ -132,7 +132,7 @@ void normalupload(int dn) {
       ok = 0;
     }
   }
-  const auto receive_fn = FilePath(d.path, unalign(szInputFileName));
+  const auto receive_fn = PathFilePath(d.path, unalign(szInputFileName));
   if (ok && yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {
@@ -223,7 +223,7 @@ void normalupload(int dn) {
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
         auto ti = std::chrono::system_clock::now();
-        receive_file(receive_fn, &ok, u.filename, dn);
+        receive_file(receive_fn.string(), &ok, u.filename, dn);
         auto used = std::chrono::system_clock::now() - ti;
         a()->user()->add_extratime(used);
       }

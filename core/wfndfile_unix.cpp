@@ -56,7 +56,7 @@ static int fname_ok(const struct dirent *ent) {
     mode = DTTOIF(ent->d_type);
 #else
     struct stat s;
-    std::string fullpath = FilePath(s_path, ent->d_name);
+    auto fullpath = PathFilePath(s_path, ent->d_name).stiring();
     stat(fullpath.c_str(), &s);
     mode = s.st_mode;
 #endif  // _DIRENT_HAVE_D_TYPE

@@ -229,7 +229,7 @@ static void modify_sub(int n) {
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
-      auto new_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
+      auto new_sub_fullpath = PathFilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();
@@ -249,9 +249,11 @@ static void modify_sub(int n) {
         break;
       }
 
-      const auto old_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
-      const auto old_msg_fullpath = FilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
-      const auto new_msg_fullpath = FilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
+      const auto old_sub_fullpath =
+          PathFilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
+      const auto old_msg_fullpath =
+          PathFilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
+      const auto new_msg_fullpath = PathFilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
 
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
         && new_fn != "NONAME" && old_subname != "NONAME") {
@@ -730,8 +732,8 @@ void boardedit() {
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
-            File::Remove(FilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
+            File::Remove(PathFilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
           }
         }
       }

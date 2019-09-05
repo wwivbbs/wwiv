@@ -80,7 +80,7 @@ void remove_from_temp(const std::string& file_name, const std::string& directory
   bout.nl();
   for (const auto& f : ff) {
     // We don't want to delete ".", "..".
-    const auto fullpath = FilePath(directory_name, f.name);
+    const auto fullpath = PathFilePath(directory_name, f.name);
     LOG_IF(bPrintStatus, INFO) << "Deleting TEMP file: '" << fullpath << "'";
     File::Remove(fullpath);
   }

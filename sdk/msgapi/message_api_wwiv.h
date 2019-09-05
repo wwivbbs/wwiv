@@ -18,15 +18,16 @@
 #ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/filesystem.h"
 #include "sdk/config.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_area_wwiv.h"
 #include "sdk/net.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace wwiv {
 namespace sdk {

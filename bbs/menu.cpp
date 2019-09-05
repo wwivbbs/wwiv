@@ -64,7 +64,7 @@ static string GetMenuDirectory(const string menuPath) {
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
-  return File::Exists(FilePath(GetMenuDirectory(menu_dir), "main.mnu"));
+  return File::Exists(PathFilePath(GetMenuDirectory(menu_dir), "main.mnu"));
 }
 
 static bool CheckMenuPassword(const string& original_password) {
@@ -251,7 +251,7 @@ const std::string MenuInstance::create_menu_filename(const std::string& path,
                                                      const std::string& menu,
                                                      const std::string& extension) {
   const auto menu_with_ext = StrCat(menu, ".", extension);
-  const auto base = FilePath(GetMenuDirectory(), path);
+  const auto base = PathFilePath(GetMenuDirectory(), path);
   return FilePath(base, menu_with_ext);
 }
 
@@ -530,7 +530,7 @@ string MenuInstance::GetCommand() const {
 }
 
 MenuDescriptions::MenuDescriptions(const std::string& menupath) : menupath_(menupath) {
-  TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
+  TextFile file(PathFilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
     while (file.ReadLine(&s)) {
@@ -557,7 +557,7 @@ const std::string MenuDescriptions::description(const std::string& name) const {
 bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
   descriptions_[name] = description;
 
-  TextFile file(FilePath(menupath_, DESCRIPT_ION), "wt");
+  TextFile file(PathFilePath(menupath_, DESCRIPT_ION), "wt");
   if (!file.IsOpen()) {
     return false;
   }

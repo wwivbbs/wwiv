@@ -704,7 +704,7 @@ void mailr() {
                       fsr.id = 0;
                       attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
-                      File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
+                      File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     } else {
                       attachFile.Read(&fsr, sizeof(filestatusrec));
                     }
@@ -758,7 +758,7 @@ void chuser() {
 }
 
 void zlog() {
-  File file(FilePath(a()->config()->datadir(), ZLOG_DAT));
+  File file(PathFilePath(a()->config()->datadir(), ZLOG_DAT));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }

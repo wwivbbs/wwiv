@@ -24,6 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -52,9 +53,8 @@ using namespace wwiv::strings;
 constexpr char CD = 4;
 constexpr char CZ = 26;
 
-WWIVEmail::WWIVEmail(
-  const Config& config,
-  const std::string& data_filename, const std::string& text_filename, int max_net_num)
+WWIVEmail::WWIVEmail(const Config& config, const std::filesystem::path& data_filename,
+                     const std::filesystem::path& text_filename, int max_net_num)
   : Type2Text(text_filename), 
     config_(config), data_filename_(data_filename),
     mail_file_(data_filename_, File::modeBinary | File::modeReadWrite, File::shareDenyReadWrite),

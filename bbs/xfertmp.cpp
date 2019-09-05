@@ -406,7 +406,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     return false;
   }
   const auto file_to_send = StrCat(file_name, ".", a()->arcs[ARC_NUMBER].extension);
-  const auto dl_filename = FilePath(a()->temp_directory(), file_to_send);
+  const auto dl_filename = PathFilePath(a()->temp_directory(), file_to_send);
   File file(dl_filename);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -423,7 +423,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
     bool sent = false;
     bool abort = false;
-    send_file(dl_filename, &sent, &abort, file_to_send, -1, file_size);
+    send_file(dl_filename.string(), &sent, &abort, file_to_send, -1, file_size);
     if (sent) {
       if (count_against_xfer_ratio) {
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
@@ -587,7 +587,7 @@ void temp_extract() {
       } else {
         File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
-      File file(FilePath(File::current_directory(), stripfn(u.filename)));
+      File file(PathFilePath(File::current_directory(), stripfn(u.filename)));
       a()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;

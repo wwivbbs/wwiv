@@ -535,7 +535,7 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
 
 
 static void UpdateLastOnFile() {
-  const string laston_txt_filename = FilePath(a()->config()->gfilesdir(), LASTON_TXT);
+  const auto laston_txt_filename = PathFilePath(a()->config()->gfilesdir(), LASTON_TXT);
   vector<string> lines;
   {
     TextFile laston_file(laston_txt_filename, "r");
@@ -782,7 +782,7 @@ static void LoginCheckForNewMail() {
 
 static vector<bool> read_voting() {
   vector<votingrec> votes;
-  DataFile<votingrec> file(FilePath(a()->config()->datadir(), VOTING_DAT));
+  DataFile<votingrec> file(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   vector<bool> questused(20);
   if (file) {
     file.ReadVector(votes);
@@ -1007,7 +1007,7 @@ void logoff() {
     }
   }
   if (a()->received_short_message_) {
-    File smwFile(FilePath(a()->config()->datadir(), SMW_DAT));
+    File smwFile(PathFilePath(a()->config()->datadir(), SMW_DAT));
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));
       int r = 0;

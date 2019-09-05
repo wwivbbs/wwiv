@@ -118,7 +118,7 @@ void kill_old_email() {
         bout.Color(a()->GetMessageColor());
         bout << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+          File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bool found = false;
             auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
@@ -167,7 +167,7 @@ void kill_old_email() {
             delmail(*delete_email_file.get(), cur);
             bool found = false;
             if (m.status & status_file) {
-              File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+              File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
                 auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
@@ -176,7 +176,7 @@ void kill_old_email() {
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(FilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
+                    File::Remove(PathFilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -269,7 +269,7 @@ void list_users(int mode) {
   write_qscn(a()->usernum, a()->context().qsc, false);
   a()->status_manager()->RefreshStatusCache();
 
-  File userList(FilePath(a()->config()->datadir(), USER_LST));
+  File userList(PathFilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !a()->hangup_; i++) {

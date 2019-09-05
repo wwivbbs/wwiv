@@ -32,6 +32,7 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
+#include "core/filesystem.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -312,17 +313,17 @@ void hang_it_up() {
 bool play_sdf(const string& sound_filename, bool abortable) {
   WWIV_ASSERT(!sound_filename.empty());
 
-  string full_pathname;
+  std::filesystem::path full_pathname;
   // append gfilesdir if no path specified
   if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
-    full_pathname = FilePath(a()->config()->gfilesdir(), sound_filename);
+    full_pathname = PathFilePath(a()->config()->gfilesdir(), sound_filename);
   } else {
     full_pathname = sound_filename;
   }
 
-  // append .SDF if no extension specified
-  if (full_pathname.find('.') == string::npos) {
-    full_pathname += ".sdf";
+  // append .SDF if no extension specifie
+  if (!full_pathname.has_extension()) {
+    full_pathname.replace_extension(".sdf");
   }
 
   // Must Exist
@@ -372,7 +373,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(FilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
+  TextFile file(PathFilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
@@ -399,9 +400,9 @@ string describe_area_code(int nAreaCode) {
  * @return the description for the specified area code.
  */
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
-  const auto regions_dir = wwiv::core::FilePath(a()->config()->datadir(), REGIONS_DIR);
+  const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
   const auto filename = StringPrintf("%s.%-3d", REGIONS_DIR, nAreaCode);
-  TextFile file(FilePath(regions_dir, filename), "rt");
+  TextFile file(PathFilePath(regions_dir, filename), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

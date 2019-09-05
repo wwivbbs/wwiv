@@ -291,7 +291,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(FilePath(a()->batch_directory(), file_name));
+    File::Remove(PathFilePath(a()->batch_directory(), file_name));
   }
 }
 
@@ -549,7 +549,7 @@ static double ratio1(unsigned long xa) {
 static string make_ul_batch_list() {
   const auto fn = StringPrintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
   // TODO(rushfan): This should move to a temp directory.
-  const auto list_filename = FilePath(a()->bbsdir(), fn);
+  const auto list_filename = PathFilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -561,13 +561,13 @@ static string make_ul_batch_list() {
   for (const auto& b : a()->batch().entry) {
     if (!b.sending) {
       File::set_current_directory(a()->directories[b.dir].path);
-      File file(FilePath(File::current_directory(), stripfn(b.filename)));
+      File file(PathFilePath(File::current_directory(), stripfn(b.filename)));
       a()->CdHome();
       fileList.Write(StrCat(file.path().string(), "\r\n"));
     }
   }
   fileList.Close();
-  return list_filename;
+  return list_filename.string();
 }
 
 static string make_dl_batch_list() {

@@ -131,7 +131,8 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
 }
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
-                                 const std::string& sub_filename, const std::string& text_filename,
+                                 const std::filesystem::path& sub_filename,
+                                 const std::filesystem::path& text_filename,
                                  int subnum)
     : MessageArea(api), Type2Text(text_filename), wwiv_api_(api), sub_(sub),
       sub_filename_(sub_filename), header_{}, subnum_(subnum) {

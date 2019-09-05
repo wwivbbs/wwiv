@@ -48,13 +48,13 @@ namespace net {
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) const {
   vector<TransferFile*> result;
   const auto s_node_net = StringPrintf("s%d.net", destination_node);
-  const auto search_path = FilePath(dirs_.net_dir(), s_node_net);
+  const auto search_path = PathFilePath(dirs_.net_dir(), s_node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
     File file(search_path);
     const auto basename = file.path().filename().string();
     result.push_back(new WFileTransferFile(
-        basename, std::make_unique<File>(FilePath(dirs_.net_dir(), basename))));
+        basename, std::make_unique<File>(PathFilePath(dirs_.net_dir(), basename))));
     LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
   }
   return result;
@@ -77,7 +77,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
     VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name);
-    if (File::Exists(FilePath(dirs_.outbound_dir(), name))) {
+    if (File::Exists(PathFilePath(dirs_.outbound_dir(), name))) {
       LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
       const auto path = PathFilePath(dirs_.outbound_dir(), name);
       FloFile flo(net_, path);
@@ -150,8 +150,8 @@ void FileManager::rename_ftn_pending_files() {
   for (const auto& file : received_files()) {
     if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
-      if (!File::Exists(FilePath(dirs_.inbound_dir(), file))) {
-        File::Move(FilePath(dirs_.net_dir(), file), FilePath(dirs_.inbound_dir(), file));
+      if (!File::Exists(PathFilePath(dirs_.inbound_dir(), file))) {
+        File::Move(PathFilePath(dirs_.net_dir(), file), PathFilePath(dirs_.inbound_dir(), file));
       } else {
         LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";
       }

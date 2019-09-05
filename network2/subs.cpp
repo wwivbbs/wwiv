@@ -204,8 +204,8 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     auto response_file = StrCat(base, subtype, ".net");
     string text;
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
-    if (File::Exists(FilePath(context.net.dir, response_file))) {
-      TextFile tf(FilePath(context.net.dir, response_file), "r");
+    if (File::Exists(PathFilePath(context.net.dir, response_file))) {
+      TextFile tf(PathFilePath(context.net.dir, response_file), "r");
       LOG(INFO) << "Sending SA file: " << tf;
       text = tf.ReadFileIntoString();
     }
@@ -326,7 +326,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
 }
 
 bool handle_sub_list_info_response(Context& context, Packet& p) {
-  TextFile subs_inf(FilePath(context.net.dir, "subs.inf"), "at");
+  TextFile subs_inf(PathFilePath(context.net.dir, "subs.inf"), "at");
   LOG(INFO) << "Received subs line for subs.inf:";
   LOG(INFO) << p.text();
   return subs_inf.Write(p.text()) > 0;

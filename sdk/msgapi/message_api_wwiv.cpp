@@ -108,11 +108,11 @@ bool WWIVMessageApi::Remove(const std::string&) {
 }
 
 MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
-  string sub_fullpath;
-  string msgs_fullpath;
+  std::filesystem::path sub_fullpath;
+  std::filesystem::path msgs_fullpath;
   {
-    const auto sub_fn = FilePath(subs_directory_, StrCat(sub.filename, ".sub"));
-    const auto msgs_fn = FilePath(messages_directory_, StrCat(sub.filename, ".dat"));
+    const auto sub_fn = PathFilePath(subs_directory_, StrCat(sub.filename, ".sub"));
+    const auto msgs_fn = PathFilePath(messages_directory_, StrCat(sub.filename, ".dat"));
     if (!File::Exists(sub_fn)) {
       throw bad_message_area(sub.filename);
     }
@@ -142,8 +142,8 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
 }
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
-  auto data = FilePath(subs_directory_, EMAIL_DAT);
-  auto text = FilePath(messages_directory_, EMAIL_DAT);
+  auto data = PathFilePath(subs_directory_, EMAIL_DAT);
+  auto text = PathFilePath(messages_directory_, EMAIL_DAT);
   {
     if (!File::Exists(data)) {
       // Create it if it doesn't exist.  We still can have an odd case

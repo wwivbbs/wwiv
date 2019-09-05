@@ -120,7 +120,7 @@ static bool handle_packet(const BbsListNet& b, const net_networks_rec& net, Pack
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
-  File f(FilePath(net.dir, name));
+  File f(PathFilePath(net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << net.dir << name;
     return false;
@@ -160,9 +160,9 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
       if (handle_file(b, net, f.name)) {
         LOG(INFO) << "Deleting: " << net.dir << f.name;
         if (net_cmdline.skip_delete()) {
-          backup_file(FilePath(net.dir,f.name));
+          backup_file(PathFilePath(net.dir, f.name));
         }
-        File::Remove(FilePath(net.dir, f.name));
+        File::Remove(PathFilePath(net.dir, f.name));
       }
     }
 
@@ -170,7 +170,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
     Contact contact(net, true);
     for (const auto& kv : contact.contacts()) {
       auto c = contact.contact_rec_for(kv.second.systemnumber());
-      const auto outbound_fn = FilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
+      const auto outbound_fn = PathFilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
       if (File::Exists(outbound_fn)) {
         File of(outbound_fn);
         c->set_bytes_waiting(of.length());

@@ -151,7 +151,7 @@ static bool check_fido_host_networks(
         continue;
       }
       const auto filename = StrCat("n", n.stype, ".net");
-      if (!File::Exists(FilePath(net.dir, filename))) {
+      if (!File::Exists(PathFilePath(net.dir, filename))) {
         text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
         text << " ** Please fix it.\r\n\n";
       }
@@ -211,7 +211,7 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
 }
 
 static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {
-  TextFile feedback_hdr(FilePath(net_dir, "fbackhdr.net"), "rt");
+  TextFile feedback_hdr(PathFilePath(net_dir, "fbackhdr.net"), "rt");
   if (!feedback_hdr.IsOpen()) {
     return true;
   }
@@ -304,10 +304,10 @@ static bool add_feedback_general_info(
 
 void update_timestamps(const string& dir) {
   // Update timestamps on {bbslist,connect,callout}.net
-  const auto t = File::last_write_time(FilePath(dir, BBSDATA_NET));
-  File(FilePath(dir, BBSLIST_NET)).set_last_write_time(t);
-  File(FilePath(dir, CONNECT_NET)).set_last_write_time(t);
-  File(FilePath(dir, CALLOUT_NET)).set_last_write_time(t);
+  const auto t = File::last_write_time(PathFilePath(dir, BBSDATA_NET));
+  File(PathFilePath(dir, BBSLIST_NET)).set_last_write_time(t);
+  File(PathFilePath(dir, CONNECT_NET)).set_last_write_time(t);
+  File(PathFilePath(dir, CALLOUT_NET)).set_last_write_time(t);
 }
 
 static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
@@ -317,7 +317,7 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
   for (const auto& entry : b.node_config()) {
     bbsdata_reg_data.push_back(reg.at(entry.first));
   }
-  DataFile<int32_t> bbsdata_reg_file(FilePath(dir, BBSDATA_REG),
+  DataFile<int32_t> bbsdata_reg_file(PathFilePath(dir, BBSDATA_REG),
                                      File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   bbsdata_reg_file.WriteVector(bbsdata_reg_data);
 }
@@ -325,8 +325,9 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
 static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
   {
     LOG(INFO) << "Writing bbsdata.net...";
-    DataFile<net_system_list_rec> bbsdata_net_file(
-        FilePath(dir, BBSDATA_NET), File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<net_system_list_rec> bbsdata_net_file(PathFilePath(dir, BBSDATA_NET),
+                                                   File::modeBinary | File::modeReadWrite |
+                                                       File::modeCreateFile);
     bbsdata_net_file.WriteVector(bbsdata_data);
    }
   update_timestamps(dir);
@@ -336,7 +337,7 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     for (const auto& n : bbsdata_data) {
       bbsdata_ind_data.push_back((n.forsys == WWIVNET_NO_NODE) ? 0 : n.sysnum);
     }
-    DataFile<uint16_t> bbsdata_ind_file(FilePath(dir, BBSDATA_IND), File::modeBinary |
+    DataFile<uint16_t> bbsdata_ind_file(PathFilePath(dir, BBSDATA_IND), File::modeBinary |
                                         File::modeReadWrite | File::modeCreateFile);
     bbsdata_ind_file.WriteVector(bbsdata_ind_data);
   }
@@ -346,15 +347,17 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     for (const auto& n : bbsdata_data) {
       bbsdata_rou_data.push_back(n.forsys);
     }
-    DataFile<uint16_t> bbsdata_rou_file(
-        FilePath(dir, BBSDATA_ROU), File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<uint16_t> bbsdata_rou_file(PathFilePath(dir, BBSDATA_ROU), File::modeBinary |
+                                                                            File::modeReadWrite |
+                                                                            File::modeCreateFile);
     bbsdata_rou_file.WriteVector(bbsdata_rou_data);
   }
 }
 
 static void update_net_ver_status_dat(const string& datadir) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite);
   if (!file) {
     return;
   }
@@ -372,7 +375,8 @@ static void update_net_ver_status_dat(const string& datadir) {
 
 static void update_filechange_status_dat(const string& datadir) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &statusrec)) {
       statusrec.filechange[filechange_net]++;
@@ -382,7 +386,7 @@ static void update_filechange_status_dat(const string& datadir) {
 }
 
 static void rename_pending_files(const string& dir) {
-  const auto dead_net_file(FilePath(dir, DEAD_NET));
+  const auto dead_net_file(PathFilePath(dir, DEAD_NET));
   if (File::Exists(dead_net_file)) {
     rename_pend(dir, DEAD_NET, '3');
   }
@@ -461,7 +465,8 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
     vector<int32_t> bbsdata_reg_data;
     bbsdata_reg_data.push_back(net_cmdline.config().wwiv_reg_number());
     bbsdata_reg_data.push_back(0);
-    DataFile<int32_t> bbsdata_reg_file(FilePath(net.dir, BBSDATA_REG), File::modeBinary |
+    DataFile<int32_t> bbsdata_reg_file(PathFilePath(net.dir, BBSDATA_REG),
+                                       File::modeBinary |
                                                                            File::modeReadWrite |
                                                                            File::modeCreateFile);
     bbsdata_reg_file.WriteVector(bbsdata_reg_data);
@@ -483,7 +488,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   text << "Bad Packets dir:         " << dirs.bad_packets_dir() << "\r\n";
   text << "\r\n";
 
-  if (!File::Exists(FilePath(dirs.net_dir(), FIDO_CALLOUT_JSON))) {
+  if (!File::Exists(PathFilePath(dirs.net_dir(), FIDO_CALLOUT_JSON))) {
     text << " ** fido_callout.json file DOES NOT EXIST.\r\n\n";
   }
   FidoCallout callout(net_cmdline.config(), net);
@@ -497,7 +502,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   text << "Using nodelist base dir: " << dirs.net_dir() << "\r\n";
   auto nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
   text << "Latest FTN is:           " << nodelist;
-  const auto nl_file = FilePath(dirs.net_dir(), nodelist);
+  const auto nl_file = PathFilePath(dirs.net_dir(), nodelist);
   if (!File::Exists(nl_file)) {
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";

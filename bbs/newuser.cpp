@@ -1435,8 +1435,7 @@ void DoMinimalNewUser() {
 }
 
 void new_mail() {
-  auto file =
-      FilePath(a()->config()->gfilesdir(),
+  auto file = PathFilePath(a()->config()->gfilesdir(),
                (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG : NEWMAIL_MSG);
 
   if (!File::Exists(file)) {
@@ -1444,7 +1443,7 @@ void new_mail() {
   }
   int save_ed = a()->user()->GetDefaultEditor();
   a()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file, true, true);
+  LoadFileIntoWorkspace(file.string(), true, true);
   use_workspace = true;
 
   MessageEditorData data;

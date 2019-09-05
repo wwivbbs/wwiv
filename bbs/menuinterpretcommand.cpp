@@ -58,7 +58,6 @@ using std::map;
 using std::string;
 using std::unique_ptr;
 
-using wwiv::core::FilePath;
 using wwiv::core::IniFile;
 using wwiv::bbslist::NewBBSList;
 

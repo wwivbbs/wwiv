@@ -657,7 +657,7 @@ static void check_lp_colors() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
@@ -667,7 +667,7 @@ void save_lp_config() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
@@ -1343,7 +1343,7 @@ static int remove_filename(const char *file_name, int dn) {
           remove_from_file_database(szTempFileName);
         }
         if (rm) {
-          File::Remove(FilePath(a()->directories[dn].path, u.filename));
+          File::Remove(PathFilePath(a()->directories[dn].path, u.filename));
           if (rdlp && u.ownersys == 0) {
             User user;
             a()->users()->readuser(&user, u.ownerusr);

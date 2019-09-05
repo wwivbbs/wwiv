@@ -553,7 +553,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = FilePath(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = PathFilePath(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }

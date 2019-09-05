@@ -297,7 +297,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   filestatusrec fsr;
 
   bool found = false;
-  File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+  File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
   if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
     auto l = fileAttach.Read(&fsr, sizeof(fsr));
     while (l > 0 && !found) {
@@ -594,13 +594,13 @@ void readmail(int mode) {
       found = false;
       attach_exists = false;
       if (m.status & status_file) {
-        File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+        File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
-              if (File::Exists(FilePath(a()->GetAttachmentDirectory(), fsr.filename))) {
+              if (File::Exists(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename))) {
                 bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes
                      << " bytes).\r\n";
                 attach_exists = true;
@@ -757,7 +757,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(FilePath(a()->temp_directory(), INPUT_MSG));
+              File::Remove(PathFilePath(a()->temp_directory(), INPUT_MSG));
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";

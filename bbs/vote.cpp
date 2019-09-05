@@ -41,7 +41,7 @@ static void print_quest(int mapp, int map[21]) {
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " Voting Questions"));
   bool abort = false;
-  File voteFile(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File voteFile(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -64,7 +64,7 @@ static void print_quest(int mapp, int map[21]) {
 static bool print_question(int i, int ii) {
   votingrec v;
 
-  File voteFile(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File voteFile(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return false;
   }
@@ -124,7 +124,7 @@ static void vote_question(int i, int ii) {
   }
 
 
-  File voteFile(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File voteFile(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -187,7 +187,7 @@ static void vote_question(int i, int ii) {
 void vote() {
   votingrec v;
 
-  File voteFile(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File voteFile(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }

@@ -101,8 +101,8 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
       }
       const auto phone_fn =
           StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
-      const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
-      const string filename = FilePath(regions_dir, phone_fn);
+      const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
+      const auto filename = PathFilePath(regions_dir, phone_fn);
 
       string description;
       if (File::Exists(filename)) {

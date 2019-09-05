@@ -523,7 +523,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->directories[directory_num].path, file_name));
+            File::Remove(PathFilePath(a()->directories[directory_num].path, file_name));
             bout.nl();
             return true;
           } else {

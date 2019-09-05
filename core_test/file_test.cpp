@@ -34,7 +34,7 @@ TEST(FileTest, DoesNotExist) {
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
-  const auto fn = FilePath(tmp, "doesnotexist");
+  const auto fn = PathFilePath(tmp, "doesnotexist");
   ASSERT_FALSE(File::Exists(fn));
 }
 
@@ -42,7 +42,7 @@ TEST(FileTest, DoesNotExist_Static) {
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
-  File dne(FilePath(tmp, "doesnotexist"));
+  File dne(PathFilePath(tmp, "doesnotexist"));
   ASSERT_FALSE(File::Exists(dne.path()));
 }
 
@@ -51,7 +51,7 @@ TEST(FileTest, Exists) {
   const auto tmp{file.TempDir()};
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  const auto f{FilePath(tmp, "newdir")};
+  const auto f{PathFilePath(tmp, "newdir")};
   ASSERT_TRUE(File::Exists(f)) << f;
 }
 
@@ -293,7 +293,7 @@ TEST(FileTest, mkdirs) {
 
 TEST(FileTest, Stream) {
   FileHelper file;
-  File f(FilePath(file.TempDir(), "newdir"));
+  File f(PathFilePath(file.TempDir(), "newdir"));
   std::stringstream s;
   s << f;
   ASSERT_EQ(f.full_pathname(), s.str());
@@ -358,16 +358,14 @@ TEST(FileTest, FsCopyFile) {
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto f1 = FilePath(tmp, "f1");
-  File f(f1);
+  auto from = PathFilePath(tmp, "f1");
+  File f(from);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto f2 = FilePath(tmp, "f2");
-  fs::path from{f1};
-  fs::path to{f2};
+  auto to = PathFilePath(tmp, "f2");
   std::error_code ec;
   EXPECT_FALSE(File::Exists(to.string()));
   fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
@@ -406,7 +404,7 @@ TEST(FileTest, MoveFile) {
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto f2 = FilePath(tmp, "f2");
+  auto f2 = PathFilePath(tmp, "f2");
   EXPECT_TRUE(File::Exists(f1)) << f1;
   EXPECT_FALSE(File::Exists(f2));
   File::Move(f1, f2);

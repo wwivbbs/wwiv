@@ -240,8 +240,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
     dliscan1(dn);
     bout.nl();
   }
-  const string src = FilePath(a()->batch_directory(), file_name);
-  const string dest = FilePath(d.path, file_name);
+  const auto src = PathFilePath(a()->batch_directory(), file_name);
+  const auto dest = PathFilePath(d.path, file_name);
 
   if (File::Exists(dest)) {
     File::Remove(dest);
@@ -327,7 +327,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bout.nl(3);
 
-  File file(FilePath(d.path, s));
+  File file(PathFilePath(d.path, s));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {
@@ -402,7 +402,7 @@ int try_to_ul(const string& file_name) {
     return 0;  // success
   }
 
-  const auto dest_dir = FilePath(a()->config()->dloadsdir(), "TRY2UL");
+  const auto dest_dir = PathFilePath(a()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
   a()->CdHome();   // ensure we are in the correct directory
 
@@ -410,8 +410,8 @@ int try_to_ul(const string& file_name) {
 
   sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
-  const string src = FilePath(a()->batch_directory(), file_name);
-  const string dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
+  const auto src = PathFilePath(a()->batch_directory(), file_name);
+  const auto dest = PathFilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep

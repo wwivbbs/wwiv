@@ -56,7 +56,7 @@ gfilerec *read_sec(int sn, int *nf) {
     return nullptr;
   }
 
-  File file(FilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
+  File file(PathFilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
   }
@@ -278,7 +278,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       rnum = std::to_string(i + 2);
       s5 = trim_to_size_ignore_colors(g[i + 1].description, 29);
       const auto path_name =
-          FilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i + 1].filename));
+          PathFilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i + 1].filename));
       if (File::Exists(path_name)) {
         File handle(path_name);
         rsize = StrCat(std::to_string(bytes_to_k(handle.length())), "k");
@@ -401,14 +401,14 @@ void gfile_sec(int sn) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
             const auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
-            File::Remove(FilePath(a()->config()->gfilesdir(), file_name));
+            File::Remove(PathFilePath(a()->config()->gfilesdir(), file_name));
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
           const auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-          File file(FilePath(a()->config()->datadir(), file_name));
+          File file(PathFilePath(a()->config()->datadir(), file_name));
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();

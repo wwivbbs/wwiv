@@ -679,7 +679,7 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      const auto fn = FilePath(a()->temp_directory(),
+      const auto fn = PathFilePath(a()->temp_directory(),
                                StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);

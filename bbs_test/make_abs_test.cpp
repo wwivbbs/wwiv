@@ -64,7 +64,7 @@ TEST_F(MakeAbsTest, UnderRoot) {
 #else 
 
 TEST_F(MakeAbsTest, Smoke) {
-  File f (FilePath(helper.files().TempDir(), "ls foo"));
+  File f(PathFilePath(helper.files().TempDir(), "ls foo"));
   string expected = f.full_pathname();
   string cmdline = "ls foo";
   make_abs_cmd(root, &cmdline);
