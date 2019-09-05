@@ -189,7 +189,7 @@ DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str) {
   std::istringstream ss{date_str};
   ss.exceptions(std::ios::goodbit);
   std::tm dt = {};
-  ss >> std::get_time(&dt, "%Y-%m-%d%t%H:%M:%S");
+  ss >> std::get_time(&dt, "%Y-%m-%d %H:%M:%S");
   if (ss.fail()) {
     return parse_yyyymmdd(date_str);
   }
