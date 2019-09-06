@@ -313,7 +313,7 @@ static bool import_packets(const Config& config, FtnMessageDupe& dupe, const Fid
                            const net_networks_rec& net, const std::string& dir,
                            const std::string& mask, bool skip_delete) {
   VLOG(1) << "Importing packets from: " << dir;
-  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  FindFiles files(PathFilePath(dir, mask), FindFilesType::files);
   if (files.empty()) {
     LOG(INFO) << "No packets to import in: " << dir;
   }
@@ -392,7 +392,7 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
   FtnMessageDupe dupe(config);
 
   VLOG(1) << "import_bundles: mask: " << mask;
-  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  FindFiles files(PathFilePath(dir, mask), FindFilesType::files);
   for (const auto& f : files) {
     if (f.size == 0) {
       // skip zero byte files.

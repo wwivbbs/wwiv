@@ -429,7 +429,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
     const auto unaligned_filename = unalign(file_name);
-    const auto full_path = FilePath(d.path, unaligned_filename);
+    const auto full_path = PathFilePath(d.path, unaligned_filename);
 
     File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {

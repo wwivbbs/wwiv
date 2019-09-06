@@ -154,7 +154,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
     }
 
     LOG(INFO) << " * Analyzing " << net.name << " pending files...";
-    FindFiles ff(net.dir, "p*.net", FindFilesType::files);
+    FindFiles ff(PathFilePath(net.dir, "p*.net"), FindFilesType::files);
     for (const auto& f : ff) {
       LOG(INFO) << "Processing: " << net.dir << f.name;
       if (handle_file(b, net, f.name)) {

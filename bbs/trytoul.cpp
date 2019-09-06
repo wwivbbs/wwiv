@@ -411,7 +411,7 @@ int try_to_ul(const string& file_name) {
   sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
   const auto src = PathFilePath(a()->batch_directory(), file_name);
-  const auto dest = PathFilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
+  const auto dest = PathFilePath(PathFilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep

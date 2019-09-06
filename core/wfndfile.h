@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
+#include "core/filesystem.h"
 #include "core/wwiv_windows.h"
 #include <cstring>
 #include <string>
@@ -34,14 +35,14 @@ enum class WFindFileTypeMask {
 };
 
 class WFindFile {
- protected:
+protected:
   std::string dir_;
   std::string filename_;
   std::string filespec_;
-  long file_size_ = 0;
-  WFindFileTypeMask type_mask_ = WFindFileTypeMask::WFINDFILE_ANY;
-  unsigned char file_type_ = 0;
-  bool open_ = false;
+  long file_size_{0};
+  WFindFileTypeMask type_mask_{WFindFileTypeMask::WFINDFILE_ANY};
+  unsigned char file_type_{0};
+  bool open_{false};
 
   void __open(const std::string& file_spec, WFindFileTypeMask type_mask) {
     filespec_ = file_spec;

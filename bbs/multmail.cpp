@@ -335,7 +335,7 @@ void slash_e() {
       add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
-      FindFiles ff(FilePath(a()->config()->datadir(), "*.mml"), FindFilesType::any);
+      FindFiles ff(PathFilePath(a()->config()->datadir(), "*.mml"), FindFilesType::any);
       if (ff.empty()) {
         bout.nl();
         bout << "No mailing lists available.\r\n\n";

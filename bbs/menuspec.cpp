@@ -119,19 +119,19 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = FilePath(a()->directories[dn].path, u.filename);
+      auto s1 = PathFilePath(a()->directories[dn].path, u.filename);
       if (a()->directories[dn].mask & mask_cdrom) {
-        auto s2 = FilePath(a()->directories[dn].path, u.filename);
-        s1 = FilePath(a()->temp_directory(), u.filename);
+        auto s2 = PathFilePath(a()->directories[dn].path, u.filename);
+        s1 = PathFilePath(a()->temp_directory(), u.filename);
         if (!File::Exists(s1)) {
           File::Copy(s2, s1);
         }
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1, &sent, &abort, u.filename, dn, -2L);
+        send_file(s1.string(), &sent, &abort, u.filename, dn, -2L);
       } else {
-        send_file(s1, &sent, &abort, u.filename, dn, u.numbytes);
+        send_file(s1.string(), &sent, &abort, u.filename, dn, u.numbytes);
       }
 
       if (sent) {

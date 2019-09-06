@@ -368,7 +368,7 @@ static std::map<int, std::string> ListMenuDirs() {
        << "|#9============================" << wwiv::endl;
 
   int num = 1;
-  auto menus = FindFiles(menu_directory, "*", FindFilesType::directories);
+  auto menus = FindFiles(PathFilePath(menu_directory, "*"), FindFilesType::directories);
 
   for (const auto& m : menus) {
     const auto& filename = m.name;

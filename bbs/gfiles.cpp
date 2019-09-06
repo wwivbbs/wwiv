@@ -257,7 +257,8 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     i2++;
     lnum = std::to_string(i + 1);
     s4 = trim_to_size_ignore_colors(g[i].description, 29);
-    const auto path_name = StrCat(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i].filename));
+    const auto path_name =
+        PathFilePath(gfilesdir, StrCat(a()->gfilesec[sn].filename, g[i].filename));
     if (File::Exists(path_name)) {
       File handle(path_name);
       lsize = StrCat(std::to_string(bytes_to_k(handle.length())), "k");
@@ -442,7 +443,7 @@ void gfile_sec(int sn) {
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
             auto file_name = FilePath(a()->gfilesec[sn].filename, g[i2 - 1].filename);
-            File file(FilePath(a()->config()->datadir(), file_name));
+            File file(PathFilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file << "]";
             } else {

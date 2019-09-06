@@ -153,11 +153,11 @@ void print_local_file(const string& filename) {
 
 bool printfile_random(const std::string& base_fn) {
   const auto& dir = a()->language_dir;
-  const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
+  const auto dot_zero = PathFilePath(dir, StrCat(base_fn, ".0"));
   if (File::Exists(dot_zero)) {
     int numOfScreens = 0;
     for (auto i = 0; i < 1000; i++) {
-      const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
+      const auto dot_n = PathFilePath(dir, StrCat(base_fn, ".", i));
       if (File::Exists(dot_n)) {
         numOfScreens++;
       } else {

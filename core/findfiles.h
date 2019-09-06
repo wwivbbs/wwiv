@@ -23,6 +23,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include "core/filesystem.h"
 #include "core/wwivport.h"
 
 namespace wwiv {
@@ -40,8 +41,7 @@ public:
   typedef typename std::vector<FileEntry>::iterator iterator;
   typedef typename std::vector<FileEntry>::const_iterator const_iterator;
 
-  FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type);
-  FindFiles(const std::string& mask, const FindFilesType type);
+  FindFiles(const std::filesystem::path& mask, const FindFilesType type);
 
   iterator begin() { return entries_.begin(); }
   const_iterator begin() const { return entries_.begin(); }

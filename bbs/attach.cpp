@@ -275,8 +275,8 @@ void attach_file(int mode) {
                     bout.getkey();
                   }
                 } else {
-                  const auto full_path = FilePath(a()->GetAttachmentDirectory(), szFileToAttach);
-                  receive_file(full_path, &ok, "", 0);
+                  const auto full_path = PathFilePath(a()->GetAttachmentDirectory(), szFileToAttach);
+                  receive_file(full_path.string(), &ok, "", 0);
                 }
                 if (ok) {
                   File attachmentFile(szFullPathName);

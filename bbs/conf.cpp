@@ -30,6 +30,7 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -98,11 +99,11 @@ conf_info_t get_conf_info(ConferenceType conftype) {
   return ret;
 }
 
-static string get_conf_filename(ConferenceType conftype) {
+static std::filesystem::path get_conf_filename(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_SUBS) {
-    return FilePath(a()->config()->datadir(), SUBS_CNF);
+    return PathFilePath(a()->config()->datadir(), SUBS_CNF);
   } else if (conftype == ConferenceType::CONF_DIRS) {
-    return FilePath(a()->config()->datadir(), DIRS_CNF);
+    return PathFilePath(a()->config()->datadir(), DIRS_CNF);
   }
   return {};
 }
@@ -937,7 +938,7 @@ static bool create_conf_file(ConferenceType conftype) {
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
-static std::vector<confrec> read_conferences(const std::string& file_name) {
+static std::vector<confrec> read_conferences(const std::filesystem::path& file_name) {
   if (!File::Exists(file_name)) {
     return {};
   }

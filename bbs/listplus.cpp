@@ -364,9 +364,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
+      auto stf =
+          PathFilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
       if (lp_config.check_exist) {
-        if (!ListPlusExist(stf)) {
+        if (!ListPlusExist(stf.string())) {
           buffer = "OFFLN";
         }
       }

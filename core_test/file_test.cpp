@@ -443,7 +443,7 @@ TEST(FileSystemTest, Empty) {
   ASSERT_TRUE(p.empty());
 }
 
-TEST(FileSystemTest, PathIsDir) {
+TEST(FileSystemTest, Path_IsDir) {
   FileHelper file;
   const auto tmp = file.TempDir();
   fs::path p{tmp};
@@ -451,7 +451,13 @@ TEST(FileSystemTest, PathIsDir) {
   ASSERT_TRUE(fs::is_directory(p));
 }
 
-TEST(FileSystemTest, PathWithoutDir) {
+TEST(FileSystemTest, Path_WithoutDir) {
   fs::path p{"hello.txt"};
   EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
+}
+
+TEST(FileSystemTest, Path_WithWildCard) {
+  fs::path p{"hello.*"};
+  EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
+  EXPECT_TRUE(wwiv::strings::ends_with(p.string(), "hello.*")) << "p: " << p.string();
 }

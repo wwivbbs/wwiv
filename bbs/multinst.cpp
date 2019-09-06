@@ -182,7 +182,7 @@ int inst_ok(int loc, int subloc) {
   }
 
   int num = 0;
-  File f(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File f(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!f.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }

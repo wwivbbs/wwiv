@@ -718,12 +718,12 @@ void readmail(int mode) {
           if (user_input.empty()) {
             break;
           }
-          auto fn = FilePath(a()->config()->gfilesdir(), StrCat(user_input, ".frm"));
+          auto fn = PathFilePath(a()->config()->gfilesdir(), StrCat(user_input, ".frm"));
           if (!File::Exists(fn)) {
-            fn = FilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
+            fn = PathFilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
           }
           if (File::Exists(fn)) {
-            LoadFileIntoWorkspace(fn, true);
+            LoadFileIntoWorkspace(fn.string(), true);
             num_mail = a()->user()->GetNumFeedbackSent() + a()->user()->GetNumEmailSent() +
                        a()->user()->GetNumNetEmailSent();
             clear_quotes();

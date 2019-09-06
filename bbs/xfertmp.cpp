@@ -520,7 +520,7 @@ void del_temp() {
 }
 
 void list_temp_dir() {
-  FindFiles ff(a()->temp_directory(), "*", FindFilesType::any);
+  FindFiles ff(PathFilePath(a()->temp_directory(), "*"), FindFilesType::any);
   bout.nl();
   bout << "Files in temporary directory:\r\n\n";
   for (const auto& f : ff) {

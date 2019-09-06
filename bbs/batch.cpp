@@ -225,23 +225,11 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         } while (nRecNum != -1 && u.numbytes != 0);
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
-          auto source_filename = FilePath(a()->batch_directory(), file_name);
-          auto dest_filename = FilePath(a()->directories[b.dir].path, file_name);
-          if (source_filename != dest_filename && File::Exists(source_filename)) {
-            bool found = false;
-            if (source_filename[1] != ':' && dest_filename[1] != ':') {
-              found = true;
-            }
-            if (source_filename[1] == ':' && dest_filename[1] == ':' && source_filename[0] == dest_filename[0]) {
-              found = true;
-            }
-            if (found) {
-              File::Rename(source_filename, dest_filename);
-              File::Remove(source_filename);
-            } else {
-              File::Copy(source_filename, dest_filename);
-              File::Remove(source_filename);
-            }
+          auto source_filename = PathFilePath(a()->batch_directory(), file_name);
+          auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
+        if (source_filename != dest_filename && File::Exists(source_filename)) {
+            File::Rename(source_filename, dest_filename);
+            File::Remove(source_filename);
           }
           File file(dest_filename);
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
@@ -377,20 +365,20 @@ void zmbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         auto send_filename =
-            FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
           // update the send filename and copy it from the cdrom
-          send_filename = FilePath(a()->temp_directory(), u.filename);
+          send_filename = PathFilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-        StringRemoveWhitespace(&send_filename);
+        const auto send_fn = ToStringRemoveWhitespace(send_filename.string());
         double percent;
-        zmodem_send(send_filename, &ok, &percent);
+        zmodem_send(send_fn, &ok, &percent);
         if (ok) {
           downloaded(u.filename, 0);
         }
@@ -458,18 +446,18 @@ void ymbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         auto send_filename =
-            FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
-          send_filename = FilePath(a()->temp_directory(), u.filename);
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+          send_filename = PathFilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
         double percent;
-        xymodem_send(send_filename, &ok, &percent, true, true, true);
+        xymodem_send(send_filename.string(), &ok, &percent, true, true, true);
         if (ok) {
           downloaded(u.filename, 0);
         }
