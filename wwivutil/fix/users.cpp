@@ -45,7 +45,7 @@ static statusrec_t st;
 
 static char *dateFromTimeT(time_t t) {
   static char date_string[11];
-  auto ds = time_t_to_mmddyy(t);
+  auto ds = DateTime::from_time_t(t).to_string("%m/%d/%y");
   to_char_array(date_string, ds);
   return date_string;
 }

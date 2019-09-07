@@ -87,7 +87,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
-    raw_header.daten_created = time_t_now();
+    raw_header.daten_created = DateTime::now().to_daten_t();
 
     // We probably can't write the header here since the datafile is usually
     // only open for read only at this point.
@@ -126,7 +126,7 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
   strcpy(header_.signature, "WWIV\x1A");
   header_.revision = 1;
   header_.wwiv_version = expected_wwiv_num_version;
-  header_.daten_created = time_t_now();
+  header_.daten_created = DateTime::now().to_daten_t();
   header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 
@@ -325,7 +325,7 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
-  DataFile<statusrec_t> file(FilePath(config.datadir(), STATUS_DAT),
+  DataFile<statusrec_t> file(PathFilePath(config.datadir(), STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
   if (!file) {
     return 0;

@@ -929,11 +929,11 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
 
     // Update contact.net
     Contact c(config_->network(remote_.network_name()), true);
+    auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
     if (error_received_) {
-      c.add_failure(remote_.wwivnet_node(), system_clock::to_time_t(start_time));
+      c.add_failure(remote_.wwivnet_node(), dt);
     } else {
-      c.add_connect(remote_.wwivnet_node(), system_clock::to_time_t(start_time), bytes_sent_,
-                    bytes_received_);
+      c.add_connect(remote_.wwivnet_node(), dt, bytes_sent_, bytes_received_);
     }
   } else {
     // Handle FTN inbound files.

@@ -63,20 +63,6 @@ daten_t date_to_daten(const std::string& datet) {
   return time_t_to_daten(mktime(pTm));
 }
 
-std::string daten_to_mmddyy(daten_t n) { return time_t_to_mmddyy(static_cast<time_t>(n)); }
-
-std::string time_t_to_mmddyy(time_t t) {
-  auto dt = DateTime::from_time_t(t);
-  return dt.to_string("%m/%d/%y");
-}
-
-std::string daten_to_mmddyyyy(daten_t n) { return time_t_to_mmddyyyy(static_cast<time_t>(n)); }
-
-std::string time_t_to_mmddyyyy(time_t t) {
-  auto dt = DateTime::from_time_t(t);
-  return dt.to_string("%m/%d/%Y");
-}
-
 std::string daten_to_wwivnet_time(daten_t n) {
   return time_t_to_wwivnet_time(static_cast<time_t>(n));
 }
@@ -216,6 +202,8 @@ static time_t mktime_no_dst_changes(tm* t) noexcept {
 DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), millis_(0), tm_(*t) {}
 
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
+
+DateTime::DateTime() : DateTime(static_cast<time_t>(0)) {}
 
 std::string DateTime::to_string(const std::string& format) const { return put_time(&tm_, format); }
 

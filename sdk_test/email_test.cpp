@@ -56,7 +56,7 @@ public:
     EmailData e{};
     e.title = title;
     e.text = text;
-    e.daten = time_t_to_daten(time(nullptr));
+    e.daten = daten_t_now();
     e.from_user = from;
     e.user_number = to;
     return email->AddMessage(e);

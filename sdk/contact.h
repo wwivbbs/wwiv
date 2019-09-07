@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "core/datetime.h"
 #include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -65,9 +66,9 @@ public:
   void set_bytes_waiting(int32_t bw) { ncr_.ncr.bytes_waiting = bw; }
 
   void fixup();
-  void AddContact(time_t t);
-  void AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_received);
-  void AddFailure(time_t t);
+  void AddContact(const wwiv::core::DateTime& t);
+  void AddConnect(const wwiv::core::DateTime& t, uint32_t bytes_sent, uint32_t bytes_received);
+  void AddFailure(const wwiv::core::DateTime& t);
 
   const net_contact_rec& ncr() const { return ncr_.ncr; }
 
@@ -102,11 +103,12 @@ class Contact {
   void ensure_rec_for(const std::string& node);
 
   /** add a connection to node, including bytes send and received. */
-  void add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);
-  void add_connect(const std::string& node, time_t time, uint32_t bytes_sent, uint32_t bytes_received);
+  void add_connect(int node, const wwiv::core::DateTime& time, uint32_t bytes_sent, uint32_t bytes_received);
+  void add_connect(const std::string& node, const wwiv::core::DateTime& time, uint32_t bytes_sent,
+                   uint32_t bytes_received);
   /** add a failure attempt to node */
-  void add_failure(int node, time_t time);
-  void add_failure(const std::string& node, time_t time);
+  void add_failure(int node, const wwiv::core::DateTime& time);
+  void add_failure(const std::string& node, const wwiv::core::DateTime& time);
 
   bool Save();
   const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
@@ -116,7 +118,7 @@ class Contact {
 
  private:
    /** add a contact. called by connect or failure. */
-   void add_contact(NetworkContact* c, time_t time);
+   void add_contact(NetworkContact* c, const wwiv::core::DateTime& time);
 
    const net_networks_rec net_;
    bool save_on_destructor_{false};

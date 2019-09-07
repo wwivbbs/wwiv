@@ -152,11 +152,12 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     const net_networks_rec& net = bink_config.networks()[network_name];
     Contact contact(net, true);
 
+    auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
     if (net.type == network_type_t::wwivnet) {
       auto wwivnet_node = to_number<uint16_t>(sendto_node);
-      contact.add_failure(wwivnet_node, system_clock::to_time_t(start_time));
+      contact.add_failure(wwivnet_node, dt);
     } else {
-      contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
+      contact.add_failure(sendto_node, dt);
     }
 
     throw e;

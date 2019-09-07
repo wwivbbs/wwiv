@@ -216,20 +216,20 @@ public:
       return 1;
     }
 
-    const string filename = remaining().at(1);
-    string from = arg("from").as_string();
-    string title = arg("title").as_string();
-    string to = arg("to").as_string();
-    time_t daten = time(nullptr);
-    string date_str = arg("date").as_string();
-//#ifndef __unix__
+    const auto filename = remaining().at(1);
+    auto from = arg("from").as_string();
+    auto title = arg("title").as_string();
+    auto to = arg("to").as_string();
+    auto daten = DateTime::now();
+    auto date_str = arg("date").as_string();
+    //#ifndef __unix__
     // This doesn't work on GCC until GCC 5 even though it's C++11.
     if (!date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
       if (!ss.fail()) {
-        daten = mktime(&dt);
+        daten = DateTime::from_time_t(mktime(&dt));
       }
     }
 //#endif // __unix__
@@ -250,7 +250,7 @@ public:
     msg->header().set_title(title);
     msg->header().set_from(from);
     msg->header().set_to(to);
-    msg->header().set_daten(time_t_to_daten(daten));
+    msg->header().set_daten(daten.to_daten_t());
     msg->header().set_in_reply_to(in_reply_to);
     msg->text().set_text(JoinStrings(lines, "\r\n"));
 

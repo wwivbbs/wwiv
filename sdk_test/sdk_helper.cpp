@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 static statusrec_t create_status() {
   statusrec_t s = {};
   memset(&s, 0, sizeof(statusrec_t));
-  const string now(time_t_to_mmddyy(time_t_now()));
+  const auto now{DateTime::now().to_string("%m/%d/%y")};
   to_char_array(s.date1, now);
   strcpy(s.date2, "00/00/00");
   strcpy(s.date3, "00/00/00");

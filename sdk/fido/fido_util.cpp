@@ -180,7 +180,7 @@ daten_t fido_to_daten(std::string d) {
       // Error.. return now so we don't blow stuff up.
       result = time_t_now();
     }
-    return time_t_to_daten(result);
+    return DateTime::from_time_t(result).to_daten_t();  
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
     return daten_t_now();

@@ -128,7 +128,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     } else {
       std::set<uint16_t> subscribers;
       bool subscribers_read =
-          ReadSubcriberFile(net.dir, StrCat("n", xnp.stype, ".net"), subscribers);
+          ReadSubcriberFile(PathFilePath(net.dir, StrCat("n", xnp.stype, ".net")), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
           if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {

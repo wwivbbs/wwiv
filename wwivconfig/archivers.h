@@ -19,11 +19,12 @@
 #ifndef __INCLUDED_ARCHIVERS_H__
 #define __INCLUDED_ARCHIVERS_H__
 
+#include "core/filesystem.h"
 #include "sdk/config.h"
 
 class UIWindow;
 
 bool edit_archivers(wwiv::sdk::Config&);
-bool create_arcs(UIWindow* window, const std::string& datadir);
+bool create_arcs(UIWindow* window, const std::filesystem::path& datadir);
 
 #endif // __INCLUDED_ARCHIVERS_H__

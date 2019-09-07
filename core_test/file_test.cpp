@@ -60,13 +60,13 @@ TEST(FileTest, ExistsWildCard) {
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
-  auto wildcard_path = FilePath(helper.TempDir(), "msg*");
+  auto wildcard_path = PathFilePath(helper.TempDir(), "msg*");
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = FilePath(helper.TempDir(), "msg*.*");
+  wildcard_path = PathFilePath(helper.TempDir(), "msg*.*");
   EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = FilePath(helper.TempDir(), "msg*.???");
+  wildcard_path = PathFilePath(helper.TempDir(), "msg*.???");
   EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 }
 

@@ -123,7 +123,7 @@ bool WFindFile::next() {
 
 #else
   struct stat s;
-  string fullpath = FilePath(dir_, entry->d_name);
+  auto fullpath = FilePath(dir_, entry->d_name);
   if (stat(fullpath.c_str(), &s) == 0) {
     file_type_ = s.st_mode;
   } else {

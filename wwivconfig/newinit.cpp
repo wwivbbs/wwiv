@@ -212,7 +212,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   // cfg430 is done
   Config config(cfg430);
 
-  const auto datadir = FilePath(bbsdir, "data");
+  const auto datadir = PathFilePath(bbsdir, "data");
   create_arcs(window, datadir);
   statusrec_t statusrec{};
   memset(&statusrec, 0, sizeof(statusrec_t));
@@ -230,7 +230,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   auto qsc = std::make_unique<uint32_t[]>(config.qscn_len() / sizeof(uint32_t));
 
-  save_status(datadir, statusrec);
+  save_status(datadir.string(), statusrec);
   userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(config, 0, &u);

@@ -83,7 +83,7 @@ bool GoodIp::LoadLines(const std::vector<std::string>& lines) {
   return LoadLinesIntoSet(ips_, lines);
 }
 
-GoodIp::GoodIp(const std::string& fn) {
+GoodIp::GoodIp(const std::filesystem::path& fn) {
   TextFile f(fn, "r");
   if (f) {
     auto lines = f.ReadFileIntoVector();
@@ -98,7 +98,7 @@ bool GoodIp::IsAlwaysAllowed(const std::string& ip) {
   return ips_.find(ip) != ips_.end();
 }
 
-BadIp::BadIp(const std::string& fn) : fn_(fn) {
+BadIp::BadIp(const std::filesystem::path& fn) : fn_(fn) {
   TextFile f(fn, "r");
   if (f) {
     auto lines = f.ReadFileIntoVector();

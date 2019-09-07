@@ -40,7 +40,7 @@ namespace wwiv {
 namespace wwivutil {
 namespace fido {
 
-static int dump_file(const std::string& filename) {
+static int dump_file(const std::filesystem::path& filename) {
 
   if (!File::Exists(filename)) {
     LOG(ERROR) << "subscriber file: '" << filename << "' does not exist.";
@@ -55,7 +55,7 @@ static int dump_file(const std::string& filename) {
     return 0;
   }
 
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
        << std::endl;
   cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
@@ -79,8 +79,8 @@ int DumpFidoSubscribersCommand::Execute() {
     cout << GetUsage() << GetHelp() << endl;
     return 2;
   }
-  const auto filename = remaining().front();
-  return dump_file(filename);
+  const std::filesystem::path p{remaining().front()};
+  return dump_file(p);
 }
 
 bool DumpFidoSubscribersCommand::AddSubCommands() {

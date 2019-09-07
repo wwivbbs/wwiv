@@ -55,11 +55,11 @@ namespace wwiv {
 namespace menus {
 
 static string GetMenuDirectory() {
-  return File::EnsureTrailingSlash(FilePath(a()->language_dir, "menus"));
+  return FilePath(a()->language_dir, "menus");
 }
 
 static string GetMenuDirectory(const string menuPath) {
-  return File::EnsureTrailingSlash(FilePath(GetMenuDirectory(), menuPath));
+  return FilePath(GetMenuDirectory(), menuPath);
 }
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
@@ -326,12 +326,12 @@ bool MenuInstance::OpenImpl() {
 string MenuInstance::GetHelpFileName() const {
   if (a()->user()->HasAnsi()) {
     if (a()->user()->HasColor()) {
-      const string filename = create_menu_filename("ans");
+      const auto filename = create_menu_filename("ans");
       if (File::Exists(filename)) {
         return filename;
       }
     }
-    const string filename = create_menu_filename("b&w");
+    const auto filename = create_menu_filename("b&w");
     if (File::Exists(filename)) {
       return filename;
     }
@@ -360,7 +360,7 @@ static bool IsNumber(const string& command) {
 
 static std::map<int, std::string> ListMenuDirs() {
   std::map<int, std::string> result;
-  const string menu_directory = GetMenuDirectory();
+  const auto menu_directory = GetMenuDirectory();
   wwiv::menus::MenuDescriptions descriptions(menu_directory);
 
   bout.nl();

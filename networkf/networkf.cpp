@@ -986,7 +986,7 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline,
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
-  auto subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
+  auto subscribers = ReadFidoSubcriberFile(PathFilePath(net_dir, StrCat("n", subtype, ".net")));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }

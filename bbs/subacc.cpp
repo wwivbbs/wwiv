@@ -232,7 +232,7 @@ void add_post(postrec* pp) {
     p.active_message_count = saved_count;
     p.revision = 1;
     p.wwiv_version = wwiv_num_version;
-    p.daten_created = time_t_now();
+    p.daten_created = DateTime::now().to_daten_t();
   }
 
   // one more post

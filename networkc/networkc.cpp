@@ -170,7 +170,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       }
 
       // Pending files, call network1 to put them into s* or local.net.
-      if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
+      if (File::ExistsWildcard(PathFilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
         System(create_network_cmdline(net_cmdline, '1', ""));
         found = true;
@@ -180,7 +180,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       if (net.type == network_type_t::ftn) {
         wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
         // Import everything into local.net
-        if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
+        if (File::ExistsWildcard(PathFilePath(dirs.inbound_dir(), "*.*"))) {
           VLOG(2) << "Trying to FTN import";
           System(create_network_cmdline(net_cmdline, 'f', "import"));
         }

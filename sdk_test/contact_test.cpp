@@ -21,9 +21,12 @@
 #include "sdk/contact.h"
 #include "gtest/gtest.h"
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 
+using namespace std::chrono_literals;
+using std::chrono::seconds;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -32,13 +35,13 @@ using namespace wwiv::strings;
 class ContactTest : public testing::Test {
 protected:
   ContactTest() {
-    now = time_t_now();
-    then = now - 100;
+    now = DateTime::now();
+    then = now - 100s;
   }
   NetworkContact c1{1};
   NetworkContact c2{2};
-  time_t now;
-  time_t then;
+  DateTime now;
+  DateTime then;
 };
 
 TEST_F(ContactTest, SimpleCase) {
@@ -47,9 +50,9 @@ TEST_F(ContactTest, SimpleCase) {
 
   c.add_connect(1, then, 100, 200);
 
-  EXPECT_EQ(then, ncr1->lastcontact());
-  EXPECT_EQ(then, ncr1->lastcontactsent());
-  EXPECT_EQ(then, ncr1->lasttry());
+  EXPECT_EQ(then.to_daten_t(), ncr1->lastcontact());
+  EXPECT_EQ(then.to_daten_t(), ncr1->lastcontactsent());
+  EXPECT_EQ(then.to_daten_t(), ncr1->lasttry());
   EXPECT_EQ(1, ncr1->numcontacts());
   EXPECT_EQ(0, ncr1->numfails());
   EXPECT_EQ(100, ncr1->bytes_sent());
@@ -64,10 +67,10 @@ TEST_F(ContactTest, MultipleConnects) {
   c.add_connect(1, then, 100, 200);
   c.add_connect(1, now, 200, 300);
 
-  EXPECT_EQ(now, ncr1->lastcontact());
-  EXPECT_EQ(now, ncr1->lastcontactsent());
-  EXPECT_EQ(now, ncr1->lasttry());
-  EXPECT_EQ(then, ncr1->firstcontact());
+  EXPECT_EQ(now.to_daten_t(), ncr1->lastcontact());
+  EXPECT_EQ(now.to_daten_t(), ncr1->lastcontactsent());
+  EXPECT_EQ(now.to_daten_t(), ncr1->lasttry());
+  EXPECT_EQ(then.to_daten_t(), ncr1->firstcontact());
   EXPECT_EQ(2, ncr1->numcontacts());
   EXPECT_EQ(0, ncr1->numfails());
   EXPECT_EQ(300, ncr1->bytes_sent());
@@ -82,10 +85,10 @@ TEST_F(ContactTest, WithFailure) {
   c.add_connect(1, then, 100, 200);
   c.add_failure(1, now);
 
-  EXPECT_EQ(now, ncr1->lastcontact());
-  EXPECT_EQ(now, ncr1->lasttry());
-  EXPECT_EQ(then, ncr1->lastcontactsent());
-  EXPECT_EQ(then, ncr1->firstcontact());
+  EXPECT_EQ(now.to_daten_t(), ncr1->lastcontact());
+  EXPECT_EQ(now.to_daten_t(), ncr1->lasttry());
+  EXPECT_EQ(then.to_daten_t(), ncr1->lastcontactsent());
+  EXPECT_EQ(then.to_daten_t(), ncr1->firstcontact());
   EXPECT_EQ(2, ncr1->numcontacts());
   EXPECT_EQ(1, ncr1->numfails());
   EXPECT_EQ(100, ncr1->bytes_sent());
@@ -105,7 +108,7 @@ TEST_F(ContactTest, EnsureBytesWaitingClears) {
   c.add_failure(1, now);
   EXPECT_EQ(100, ncr1->bytes_waiting());
 
-  c.add_connect(1, now + 1, 100, 200);
+  c.add_connect(1, now + 1s, 100, 200);
   EXPECT_EQ(0, ncr1->bytes_waiting());
 }
 

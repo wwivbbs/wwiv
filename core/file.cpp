@@ -310,9 +310,9 @@ bool File::Exists(const std::filesystem::path& p) {
 }
 
 // static
-bool File::ExistsWildcard(const string& wildcard) {
+bool File::ExistsWildcard(const std::filesystem::path& wildcard) {
   WFindFile fnd;
-  return fnd.open(wildcard, WFindFileTypeMask::WFINDFILE_ANY);
+  return fnd.open(wildcard.string(), WFindFileTypeMask::WFINDFILE_ANY);
 }
 
 bool File::SetFilePermissions(const std::filesystem::path& filename, int perm) {

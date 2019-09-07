@@ -36,10 +36,6 @@ daten_t daten_t_now();
  * Constructs a daten_t from a date of the format "MM/DD/YY"
  */
 daten_t date_to_daten(const std::string& datet);
-std::string daten_to_mmddyy(daten_t date);
-std::string time_t_to_mmddyy(time_t date);
-std::string daten_to_mmddyyyy(daten_t date);
-std::string time_t_to_mmddyyyy(time_t date);
 
 std::string daten_to_wwivnet_time(daten_t t);
 std::string time_t_to_wwivnet_time(time_t t);
@@ -85,8 +81,10 @@ public:
 
   /** Month starting at 1 for this DateTime */
   int month() const noexcept { return tm_.tm_mon + 1; }
+
   /** Day starting at 1 for this DateTime */
   int day() const noexcept { return tm_.tm_mday; }
+
   /** Year starting at 0 for this DateTime */
   int year() const noexcept { return tm_.tm_year + 1900; }
 
@@ -100,8 +98,10 @@ public:
 
   /** Returns this Datetime as a UNIX time_t */
   time_t to_time_t() const noexcept { return t_; }
+
   /** Returns this Datetime as a WWIV BBS daten_t */
   daten_t to_daten_t() const noexcept { return time_t_to_daten(t_); }
+
   /** Returns this Datetime as a POSIX tm structure. */
   struct tm to_tm() const noexcept;
 
@@ -112,16 +112,19 @@ public:
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     return DateTime::from_time_t(to_time_t() + static_cast<time_t>(du.count()));
   }
+
   DateTime& operator+=(std::chrono::duration<double> d) {
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     t_ += static_cast<time_t>(du.count());
     update_tm();
     return *this;
   }
+
   DateTime operator-(std::chrono::duration<double> d) {
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     return DateTime::from_time_t(to_time_t() - static_cast<time_t>(du.count()));
   }
+
   DateTime& operator-=(std::chrono::duration<double> d) {
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     t_ -= static_cast<time_t>(du.count());
@@ -136,9 +139,16 @@ public:
       return lhs.t_ < rhs.t_;
     }
   }
+
+  friend bool operator==(const DateTime& lhs, const DateTime& rhs) { return lhs.t_ == lhs.t_; }
+
   friend bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
+
   friend bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs); }
+
   friend bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
+
+  DateTime();
 
 private:
   DateTime(std::chrono::system_clock::time_point t);

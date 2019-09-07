@@ -642,7 +642,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
         // We are the host.
         std::set<uint16_t> subscribers;
         bool subscribers_read =
-            ReadSubcriberFile(current_net.dir, StrCat("n", subnet.stype, ".net"), subscribers);
+            ReadSubcriberFile(PathFilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
         if (subscribers_read) {
           // Remove the original sender from the set of systems
           // that we will resend this to.

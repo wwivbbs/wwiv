@@ -154,7 +154,7 @@ public:
   static bool Rename(const std::filesystem::path& origFileName,
                      const std::filesystem::path& newFileName);
   static bool Exists(const std::filesystem::path& fileName);
-  static bool ExistsWildcard(const std::string& wildCard);
+  static bool ExistsWildcard(const std::filesystem::path& wildCard);
   static bool Copy(const std::filesystem::path& sourceFileName,
                    const std::filesystem::path& destFileName);
   static bool Move(const std::filesystem::path& sourceFileName,

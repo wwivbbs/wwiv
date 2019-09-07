@@ -33,6 +33,11 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
 
+static std::string daten_to_mmddyyyy(daten_t n) {
+  auto dt = DateTime::from_daten(n);
+  return dt.to_string("%m/%d/%Y");
+}
+
 TEST(DateTime, Now) {
   auto start = DateTime::now();
   auto start_t = time(nullptr);

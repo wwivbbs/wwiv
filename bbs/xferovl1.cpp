@@ -199,7 +199,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     return false;
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
-  auto t = time_t_to_mmddyy(File::creation_time(s));
+  auto t = DateTime::from_time_t(File::creation_time(s))
+               .to_string(DateTime::now().to_string("%m/%d/%y"));
   to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');
@@ -986,7 +987,7 @@ void SetNewFileScanDate() {
   bool ok = true;
 
   bout.nl();
-  bout << "|#9Current limiting date: |#2" << daten_to_mmddyy(a()->context().nscandate()) << "\r\n";
+  bout << "|#9Current limiting date: |#2" << DateTime::from_daten(a()->context().nscandate()).to_string("%m/%d/%y") << "\r\n";
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
   bout << "|#1 MM/DD/YY\r\n|#7:";
@@ -1072,10 +1073,11 @@ void SetNewFileScanDate() {
       newTime.tm_mon  = m - 1;
     }
     bout.nl();
-    a()->context().nscandate(time_t_to_daten(mktime(&newTime)));
+    auto dt = DateTime::from_time_t(mktime(&newTime));
+    a()->context().nscandate(dt.to_daten_t());
 
     // Display the new nscan date
-    auto d = daten_to_mmddyyyy(a()->context().nscandate());
+    auto d = dt.to_string("%m/%d/%Y");
     bout << "|#9New Limiting Date: |#2" << d << "\r\n";
 
     // Hack to make sure the date covers everythig since we had to increment the hour by one

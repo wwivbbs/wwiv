@@ -19,19 +19,20 @@
 #define __INCLUDED_WWIVD_IPS_H__
 
 #include <ctime>
-#include "sdk/wwivd_config.h"
 #include <memory>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include "core/filesystem.h"
+#include "sdk/wwivd_config.h"
 
 namespace wwiv {
 namespace wwivd {
 
 class GoodIp {
 public:
-  GoodIp(const std::string& fn);
+  GoodIp(const std::filesystem::path& fn);
   GoodIp(const std::vector<std::string>& lines);
   bool IsAlwaysAllowed(const std::string& ip);
 
@@ -42,12 +43,12 @@ private:
 
 class BadIp {
 public:
-  BadIp(const std::string& fn);
+  BadIp(const std::filesystem::path& fn);
   bool IsBlocked(const std::string& ip);
   bool Block(const std::string& ip);
 
 private:
-  const std::string fn_;
+  const std::filesystem::path fn_;
   std::unordered_set<std::string> ips_;
 };
 

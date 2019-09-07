@@ -658,7 +658,7 @@ void list_temp_text() {
     if (!contains(fn, '.')) {
       fn += ".*";
     }
-    const auto fmask = FilePath(a()->temp_directory(), stripfn(fn.c_str()));
+    const auto fmask = PathFilePath(a()->temp_directory(), stripfn(fn.c_str()));
     FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
     for (const auto& f : ff) {

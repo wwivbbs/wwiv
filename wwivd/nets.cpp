@@ -80,11 +80,12 @@ std::atomic<bool> need_to_reload_config;
 
 // TODO(rushfan): Add tests for new stuff in here.
 
-static NetworkContact network_contact_from_last_time(const std::string& address, time_t t) {
+static NetworkContact network_contact_from_last_time(const std::string& address,
+                                                     const wwiv::core::DateTime& t) {
   network_contact_record ncr{};
   ncr.address = address;
-  ncr.ncr.lastcontact = time_t_to_daten(t);
-  ncr.ncr.lasttry = time_t_to_daten(t);
+  ncr.ncr.lastcontact = t.to_daten_t();
+  ncr.ncr.lasttry = t.to_daten_t();
   return NetworkContact{ncr};
 }
 
@@ -110,7 +111,7 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
       // Is the callout bit set.
       continue;
     }
-    auto ncn = network_contact_from_last_time(address, current_last_contact[address]);
+    auto ncn = network_contact_from_last_time(address, DateTime::from_time_t(current_last_contact[address]));
     if (!wwiv::sdk::net::should_call(ncn, callout, DateTime::now())) {
       // Has it been long enough, or do we have enough k waiting.
       continue;

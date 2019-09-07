@@ -219,7 +219,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   }
   auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
+  if (!ReadSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -227,7 +227,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   if (result.second == false) {
     return resp(sub_adddrop_already_there);
   }
-  if (!WriteSubcriberFile(context.net.dir, filename, subscribers)) {
+  if (!WriteSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -250,7 +250,7 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   }
   auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
-  if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
+  if (!ReadSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
@@ -258,7 +258,7 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   if (num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
-  if (!WriteSubcriberFile(context.net.dir, filename, subscribers)) {
+  if (!WriteSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to write subscribers file.";
     return resp(sub_adddrop_error);
   }

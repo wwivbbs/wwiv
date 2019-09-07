@@ -391,27 +391,27 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
   ss << crlf;
 }
 
-static string FindTagFileName() {
+static std::filesystem::path FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
     auto nd = a()->net_networks[xnp.net_num].dir;
-    auto filename = StrCat(nd, xnp.stype, ".tag");
+    auto filename = PathFilePath(nd, StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(nd, GENERAL_TAG);
+    filename = PathFilePath(nd, GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = FilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
+    filename = PathFilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = FilePath(a()->config()->datadir(), GENERAL_TAG);
+    filename = PathFilePath(a()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
   }
-  return "";
+  return {};
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title, const string& to_name) {

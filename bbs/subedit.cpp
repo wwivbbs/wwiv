@@ -138,7 +138,7 @@ static void DisplayNetInfo(size_t nSubNum) {
       const auto dir = a()->net_networks[(*it).net_num].dir;
       const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
       std::set<uint16_t> subscribers;
-      ReadSubcriberFile(dir, StrCat("n", (*it).stype, ".net"), subscribers);
+      ReadSubcriberFile(PathFilePath(dir, StrCat("n", (*it).stype, ".net")), subscribers);
       int num = size_int(subscribers);
       bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',

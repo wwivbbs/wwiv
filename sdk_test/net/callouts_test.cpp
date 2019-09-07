@@ -102,7 +102,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_TimeToCall) {
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
   auto last_connect = dt_ - minutes(240);
-  ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
+  ncn_.AddConnect(last_connect, 100, 0);
 
   EXPECT_TRUE(should_call(ncn_, c_, dt_));
 }
@@ -113,7 +113,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_NotTimeYet) {
   // Call every 239 minutes
   c_.call_every_x_minutes = 239;
   auto last_connect = dt_ - minutes(238);
-  ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
+  ncn_.AddConnect(last_connect, 100, 0);
 
   EXPECT_FALSE(should_call(ncn_, c_, dt_));
 }
@@ -125,7 +125,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinK) {
   c_.call_every_x_minutes = 239;
   c_.min_k = 10;
   auto last_connect = dt_ - minutes(238);
-  ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
+  ncn_.AddConnect(last_connect, 100, 0);
   ncn_.set_bytes_waiting((10 * 1024) + 1);
 
   EXPECT_TRUE(should_call(ncn_, c_, dt_));
@@ -138,7 +138,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinKNotMet) {
   c_.call_every_x_minutes = 239;
   c_.min_k = 10;
   auto last_connect = dt_ - minutes(238);
-  ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
+  ncn_.AddConnect(last_connect, 100, 0);
   ncn_.set_bytes_waiting(8 * 1024);
 
   EXPECT_FALSE(should_call(ncn_, c_, dt_));

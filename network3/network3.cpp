@@ -105,7 +105,7 @@ static bool check_wwivnet_host_networks(
           std::set<uint16_t> subscribers;
 
           const string filename = StrCat("n", n.stype, ".net");
-          if (ReadSubcriberFile(net.dir, filename, subscribers)) {
+          if (ReadSubcriberFile(PathFilePath(net.dir, filename), subscribers)) {
             for (uint16_t subscriber : subscribers) {
               auto c = b.node_config_for(subscriber);
               if (c == nullptr) {
@@ -156,7 +156,7 @@ static bool check_fido_host_networks(
         text << " ** Please fix it.\r\n\n";
       }
       LOG(INFO) << "Checking FTN Subscribers in file " << FilePath(net.dir, filename);
-      auto subscribers = ReadFidoSubcriberFile(net.dir, filename);
+      auto subscribers = ReadFidoSubcriberFile(PathFilePath(net.dir, filename));
       if (subscribers.empty()) {
         text << "Unable to find any uplinks in subscriber file for echotag: " << n.stype << "\r\n";
         text << " ** Please fix it.\r\n\n";
@@ -198,7 +198,7 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  string now_mmddyy = daten_to_mmddyy(daten_t_now());
+  string now_mmddyy = DateTime::now().to_string("%m/%d/%y");
   string title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
   string byname = StringPrintf("%s @%u", net.name, net.sysnum);
 

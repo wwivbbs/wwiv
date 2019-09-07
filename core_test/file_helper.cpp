@@ -107,7 +107,6 @@ std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& 
   auto fp = fopen(fn.c_str(), "wt");
   assert(fp);
   return std::make_tuple(fp, path);
-  ;
 }
 
 std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
