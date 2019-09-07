@@ -32,8 +32,8 @@ namespace core {
 class IniFile {
  public:
   IniFile(const std::filesystem::path& filename, const std::initializer_list<const char*> sections);
-   IniFile(const std::filesystem::path& filename,
-           const std::initializer_list<const std::string> sections);
+  IniFile(const std::filesystem::path& filename,
+          const std::initializer_list<const std::string> sections);
   // Constructor/Destructor
   virtual ~IniFile(); 
 
@@ -80,7 +80,6 @@ template<>
 bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
 template<>
 bool IniFile::value<bool>(const std::string& key) const;
-
 
 
 }  // namespace core

@@ -43,7 +43,8 @@ protected:
     }
 
 public:
-    const std::string t(const std::string name) { return FilePath(a()->temp_directory(), name);
+    const std::string t(const std::string name) { 
+      return FilePath(a()->temp_directory(), name);
     }
 
     BbsHelper helper;

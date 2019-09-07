@@ -22,12 +22,6 @@
 #include <memory>
 #include <string>
 
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif // _WIN32
-
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"

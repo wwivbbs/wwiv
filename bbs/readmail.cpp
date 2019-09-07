@@ -677,10 +677,10 @@ void readmail(int mode) {
       switch (ch) {
       case 'T': {
         bout.nl();
-        auto fn = FilePath(a()->GetAttachmentDirectory(), fsr.filename);
+        auto fn = PathFilePath(a()->GetAttachmentDirectory(), fsr.filename);
         bool sentt;
         bool abortt;
-        send_file(fn, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
+        send_file(fn.string(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
           sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.",

@@ -27,6 +27,13 @@ What's New in WWIV 5.4 (2019)
   not the default behavior anymore.  If you want it displayed, either
   pass --log_startup or edit Logger::Init in core/log.cpp and set
   log_startup_ to true.
+* WWIV now uses the C++17 standard std::filesystem for almost all file
+  and directory operations, this removed most of the OS specific code
+  from WWIV.
+* The wwiv_test from jenkins has been removed, the normal build target
+  also runs tests now, this saves a lot of time double-compiling
+  everything.
+* 
 
 
 What's New in WWIV 5.4 (2018)

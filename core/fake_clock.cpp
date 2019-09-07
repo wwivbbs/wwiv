@@ -36,7 +36,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-DateTime FakeClock::Now() noexcept { 
+DateTime FakeClock::Now() const noexcept { 
   return date_time_;
 }
 

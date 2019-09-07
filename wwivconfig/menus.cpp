@@ -27,13 +27,6 @@
 #include <utility>
 #include <vector>
 
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/filesystem.h"

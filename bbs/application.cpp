@@ -18,7 +18,7 @@
 /**************************************************************************/
 #ifdef _WIN32
 // include this here so it won't get includes by local_io_win32.h
-#include "core/wwiv_windows.h"
+// Needed for isatty
 #include <io.h>
 #endif // WIN32
 #include "bbs/application.h"

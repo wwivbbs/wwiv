@@ -36,7 +36,9 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-DateTime SystemClock::Now() noexcept { return DateTime::now(); }
+DateTime SystemClock::Now() const noexcept { 
+  return DateTime::now();
+}
 
 }
 }

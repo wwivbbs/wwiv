@@ -662,7 +662,7 @@ void list_temp_text() {
     FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
     for (const auto& f : ff) {
-      const auto s = FilePath(a()->temp_directory(), f.name);
+      const auto s = PathFilePath(a()->temp_directory(), f.name);
       if (iequals(f.name, "door.sys") || iequals(f.name, DROPFILE_CHAIN_TXT)) {
         continue;
       }
@@ -670,7 +670,7 @@ void list_temp_text() {
       bout << "Listing " << f.name << "\r\n\n";
       bool sent;
       double percent;
-      ascii_send(s, &sent, &percent);
+      ascii_send(s.string(), &sent, &percent);
       if (sent) {
         sysoplog() << "Temp text D/L \"" << f.name << "\"";
       } else {

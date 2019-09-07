@@ -198,9 +198,9 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  string now_mmddyy = DateTime::now().to_string("%m/%d/%y");
-  string title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
-  string byname = StringPrintf("%s @%u", net.name, net.sysnum);
+  auto now_mmddyy = DateTime::now().to_string("%m/%d/%y");
+  auto title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
+  auto byname = StringPrintf("%s @%u", net.name, net.sysnum);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();

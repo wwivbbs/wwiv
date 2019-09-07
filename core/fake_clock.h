@@ -32,7 +32,7 @@ namespace core {
 class FakeClock : public Clock {
 public:
   explicit FakeClock(const DateTime& dt) : date_time_(dt) {}
-  virtual DateTime Now() noexcept override;
+  virtual DateTime Now() const noexcept override;
   void tick(std::chrono::duration<double> inc);
 
 private:
