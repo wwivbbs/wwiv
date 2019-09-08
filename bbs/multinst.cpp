@@ -26,6 +26,7 @@
 #include "local_io/wconstants.h"
 
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -46,16 +47,16 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
       if (so() && ir.subloc < a()->directories.size()) {
-        string temp = StringPrintf("Dir : %s", stripcolors(a()->directories[ ir.subloc ].name));
-        return StrCat("Transfer Area", temp);
+        return fmt::format("Transfer Area: Dir : {}",
+                           stripcolors(a()->directories[ir.subloc].name));
       }
-      return string("Transfer Area");
+      return "Transfer Area";
     case INST_LOC_CHAINS:
-      if (ir.subloc > 0 && ir.subloc <= a()->chains.size()) {
-        string temp = StringPrintf("Door: %s", stripcolors(a()->chains[ ir.subloc - 1 ].description));
-        return StrCat("Chains", temp);
+      if (ir.subloc > 0 && ir.subloc <= a()->chains->chains().size()) {
+        const auto& c = a()->chains->at(ir.subloc - 1);
+        return fmt::format("Chains: Door: {}", stripcolors(c.description));
       }
-      return string("Chains");
+      return "Chains";
     case INST_LOC_NET: return string("Network Transmission");
     case INST_LOC_GFILES: return string("GFiles");
     case INST_LOC_BEGINDAY: return string("Running BeginDay");
@@ -81,11 +82,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_AMSG: return ("AutoMessage");
     case INST_LOC_SUBS:
       if (so() && ir.subloc < a()->subs().subs().size()) {
-        string temp = StringPrintf("(Sub: %s)",
-            stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
-        return StrCat("Reading Messages", temp);
+        return fmt::format("Reading Messages: (Sub: {})", stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
       }
-      return string("Reading Messages");
+      return "Reading Messages";
     case INST_LOC_CHUSER: return string("Changing User");
     case INST_LOC_TEDIT: return string("In TEDIT");
     case INST_LOC_MAILR: return string("Reading All Mail");
@@ -113,7 +112,7 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_WFC: return string("Waiting for Call");
     case INST_LOC_QWK: return string("In QWK");
   }
-  return string("Unknown BBS Location!");
+  return "Unknown BBS Location!";
 }
 
 /*

@@ -23,6 +23,7 @@
 #include "bbs/com.h"
 #include "bbs/finduser.h"
 #include "bbs/input.h"
+#include "bbs/pause.h"
 #include "bbs/utility.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -38,12 +39,11 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-void modify_chain(int chain_num);
 void insert_chain(int chain_num);
 void delete_chain(int chain_num);
 
 static string chaindata(int chain_num) {
-  chainfilerec c = a()->chains[chain_num];
+  const auto& c = a()->chains->at(chain_num);
   char chAr = SPACE;
 
   if (c.ar != 0) {
@@ -53,9 +53,10 @@ static string chaindata(int chain_num) {
       }
     }
   }
-  char chAnsiReq = (c.ansir & ansir_ansi) ? 'Y' : 'N';
+  char chAnsiReq = c.ansi ? 'Y' : 'N';
   return StringPrintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
-                      stripcolors(c.description), c.filename, c.sl, chAnsiReq, chAr);
+                      stripcolors(c.description).c_str(), c.filename.c_str(), c.sl, chAnsiReq,
+                      chAr);
 }
 
 static void showchains() {
@@ -65,8 +66,8 @@ static void showchains() {
             &abort);
   bout.bpla("|#7== ----------------------------  ============================== --- ==== --",
             &abort);
-  for (size_t nChainNum = 0; nChainNum < a()->chains.size() && !abort; nChainNum++) {
-    const string s = chaindata(nChainNum);
+  for (size_t nChainNum = 0; nChainNum < a()->chains->chains().size() && !abort; nChainNum++) {
+    const auto s = chaindata(nChainNum);
     bout.bpla(s, &abort);
   }
 }
@@ -94,15 +95,67 @@ void ShowChainCommandLineHelp() {
 }
 
 static std::string YesNoStringList(bool b, const std::string& yes, const std::string& no) {
-  return (b)  ? yes : no;
+  return (b) ? yes : no;
 }
 
-void modify_chain(int chain_num) {
-  chainfilerec c = a()->chains[chain_num];
-  chainregrec r{};
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    r = a()->chains_reg[chain_num];
+static void modify_chain_sponsors(int chain_num, chain_t& c) {
+  if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+    return;
   }
+  bool done = false;
+  do {
+    bout.cls();
+    bout.litebarf("Editing Chain # %d", chain_num);
+    const auto& r = c.regby;
+    User regUser;
+    if (!r.empty()) {
+      auto it = r.begin();
+      auto first = *r.begin();
+      a()->users()->readuser(&regUser, *it++);
+      bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
+      for (; it != std::end(r); it++) {
+        const auto rbc = *it;
+        if (rbc != 0) {
+          if (a()->users()->readuser(&regUser, rbc)) {
+            bout << string(18, ' ') << "|#2" << a()->names()->UserName(rbc) << wwiv::endl;
+          }
+        }
+      }
+    } else {
+      bout << "|#9L) Registered by: |#2AVAILABLE" << wwiv::endl;
+    }
+    bout.nl();
+    bout << "|#9(A)dd, (R)emove, (Q)uit: Which (A,R,Q) ? ";
+    auto ch = onek("QARQ", true); 
+    switch (ch) {
+    case 'Q':
+      return;
+    case 'A': {
+      if (c.regby.size() > 5) {
+        bout << "|#6Only 5 sponsors allowed." << wwiv::endl;
+        pausescr();
+        break;
+      }
+      auto nn = input(30, true);
+      auto user_number = finduser1(nn);
+      if (user_number > 0) {
+        c.regby.insert(user_number);
+      }
+    } break;
+    case 'R': {
+      auto nn = input(30, true);
+      auto user_number = finduser1(nn);
+      if (user_number > 0) {
+        c.regby.erase(user_number);
+      }
+    } break;
+    }
+  } while (!done && !a()->hangup_);
+}
+
+
+static void modify_chain(int chain_num) {
+  auto c = a()->chains->at(chain_num);
   bool done = false;
   do {
     bout.cls();
@@ -122,41 +175,40 @@ void modify_chain(int chain_num) {
       }
     }
     bout << "|#9D) AR           : |#2" << ar << wwiv::endl;
-    bout << "|#9E) ANSI         : |#2" << ((c.ansir & ansir_ansi) ? "|#6Required" : "|#1Optional")
-         << wwiv::endl;
-    bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used")
-         << wwiv::endl;
-    bout << "|#9G) Win32 FOSSIL : |#2"
-         << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) << wwiv::endl;
-    bout << "|#9H) Native STDIO : |#2" << YesNoString((c.ansir & ansir_stdio) ? true : false)
-         << wwiv::endl;
+    bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
+    bout << "|#9F) Exec Mode:     |#2" << Chains::exec_mode_to_string(c.exec_mode) << wwiv::endl;
     bout << "|#9I) Launch From  : |#2"
-         << YesNoStringList(c.ansir & ansir_temp_dir, "Temp/Node Directory", "BBS Root Directory")
+         << YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
+                            "BBS Root Directory")
          << wwiv::endl;
-    bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false)
-         << wwiv::endl;
-    bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false)
-         << wwiv::endl;
+    bout << "|#9J) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
+    bout << "|#9K) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
     char ch{};
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+      const auto& r = c.regby;
       User regUser;
-      if (r.regby[0]) {
-        a()->users()->readuser(&regUser, r.regby[0]);
-      }
-      bout << "|#9L) Registered by: |#2" << ((r.regby[0]) ? regUser.GetName() : "AVAILABLE")
-           << wwiv::endl;
-      for (int i = 1; i < 5; i++) {
-        if (r.regby[i] != 0) {
-          a()->users()->readuser(&regUser, r.regby[i]);
-          bout << string(18, ' ') << regUser.GetName() << wwiv::endl;
+      if (!r.empty()) {
+        auto it = r.begin();
+        const auto first = *it;
+        a()->users()->readuser(&regUser, *it++);
+        bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
+        for (; it != std::end(r); it++) {
+          const auto rbc = *it;
+          if (rbc != 0) {
+            if (a()->users()->readuser(&regUser, rbc)) {
+              bout << string(18, ' ') << "|#2" << a()->names()->UserName(rbc) << wwiv::endl;
+            }
+          }
         }
+      } else {
+        bout << "|#9L) Registered by: |#2AVAILABLE" << wwiv::endl;
       }
-      bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
-      if (r.maxage == 0 && r.minage == 0) {
-        r.maxage = 255;
+      bout << "|#9M) Usage        : |#2" << c.usage << wwiv::endl;
+      if (c.maxage == 0 && c.minage == 0) {
+        c.maxage = 255;
       }
-      bout << "|#9N) Age limit    : |#2" << static_cast<int>(r.minage) << " - "
-           << static_cast<int>(r.maxage) << wwiv::endl;
+      bout << "|#9N) Age limit    : |#2" << static_cast<int>(c.minage) << " - "
+           << static_cast<int>(c.maxage) << wwiv::endl;
       bout.nl();
       bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
       ch = onek("QABCDEFGHIJKLMN[]", true); // removed i
@@ -170,45 +222,32 @@ void modify_chain(int chain_num) {
       done = true;
     } break;
     case '[':
-      a()->chains[chain_num] = c;
-      if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        a()->chains_reg[chain_num] = r;
-      }
+      a()->chains->at(chain_num) = c;
       if (--chain_num < 0) {
-        chain_num = size_int(a()->chains) - 1;
+        chain_num = size_int(a()->chains->chains()) - 1;
       }
-      c = a()->chains[chain_num];
-      if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        r = a()->chains_reg[chain_num];
-      }
+      c = a()->chains->at(chain_num);
       break;
     case ']':
-      a()->chains[chain_num] = c;
-      if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        a()->chains_reg[chain_num] = r;
-      }
-      if (++chain_num >= size_int(a()->chains)) {
+      a()->chains->at(chain_num) = c;
+      if (++chain_num >= size_int(a()->chains->chains())) {
         chain_num = 0;
       }
-      c = a()->chains[chain_num];
-      if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-        r = a()->chains_reg[chain_num];
-      }
+      c = a()->chains->at(chain_num);
       break;
     case 'A': {
       bout.nl();
       bout << "|#7New Description? ";
       auto descr = input_text(c.description, 40);
       if (!descr.empty()) {
-        to_char_array(c.description, descr);
+        c.description = descr;
       }
     } break;
     case 'B': {
       bout.cls();
       ShowChainCommandLineHelp();
       bout << "\r\n|#9Enter Command Line.\r\n|#7:";
-      auto fn = input_cmdline(c.filename, 79);
-      to_char_array(c.filename, fn);
+      c.filename = input_cmdline(c.filename, 79);
     } break;
     case 'C': {
       bout.nl();
@@ -226,106 +265,62 @@ void modify_chain(int chain_num) {
       }
     } break;
     case 'E':
-      c.ansir ^= ansir_ansi;
-      break;
+      c.ansi = !c.ansi;
     case 'F':
-      c.ansir ^= ansir_no_DOS;
-      break;
-    case 'G':
-      c.ansir ^= ansir_emulate_fossil;
-      break;
-    case 'H':
-      c.ansir ^= ansir_stdio;
+      c.exec_mode++;
       break;
     case 'I':
-      c.ansir ^= ansir_temp_dir;
+      c.dir++;
       break;
     case 'J':
-      c.ansir ^= ansir_local_only;
+      c.local_only = !c.local_only;
       break;
     case 'K':
-      c.ansir ^= ansir_multi_user;
+      c.multi_user = !c.multi_user;
       break;
     case 'L':
       if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         break;
       }
-      for (int i = 0; i < 5; i++) {
-        bout.nl();
-        bout << "|#9(Q=Quit, 0=None) User name/number: : ";
-        auto s1 = input(30, true);
-        if (!s1.empty() && s1.front() != 'Q' && s1.front() != 'q') {
-          if (s1.front() == '0') {
-            r.regby[i] = 0;
-          } else {
-            int user_number = finduser1(s1);
-            if (user_number > 0) {
-              User regUser;
-              a()->users()->readuser(&regUser, user_number);
-              r.regby[i] = static_cast<int16_t>(user_number);
-              bout.nl();
-              bout << "|#1Registered by       |#2" << user_number << " "
-                   << ((r.regby[i]) ? regUser.GetName() : "AVAILABLE");
-            }
-          }
-        } else {
-          break;
-        }
-      }
+      modify_chain_sponsors(chain_num, c);
       break;
     case 'M': {
       bout.nl();
       bout << "|#5Times Run : ";
-      r.usage = input_number(r.usage);
+      c.usage = input_number(c.usage);
     } break;
     case 'N':
       bout.nl();
       bout << "|#5New minimum age? ";
-      r.minage = input_number(r.minage);
-      if (r.minage > 0) {
+      c.minage = input_number(c.minage);
+      if (c.minage > 0) {
         bout << "|#5New maximum age? ";
-        auto maxage = input_number(r.maxage);
-        if (maxage < r.minage) {
+        auto maxage = input_number(c.maxage);
+        if (maxage < c.minage) {
           break;
         }
-        r.maxage = maxage;
+        c.maxage = maxage;
       }
       break;
     }
   } while (!done && !a()->hangup_);
-  a()->chains[chain_num] = c;
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    a()->chains_reg[chain_num] = r;
-  }
+  a()->chains->at(chain_num) = c;
 }
 
 void insert_chain(int pos) {
-  {
-    chainfilerec c{};
-    strcpy(c.description, "** NEW CHAIN **");
-    strcpy(c.filename, "REM");
-    c.sl = 10;
-    c.ar = 0;
-    c.ansir = 0;
-    c.ansir |= ansir_no_DOS;
-
-    insert_at(a()->chains, pos, c);
-  }
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    chainregrec r{};
-    memset(&r, 0, sizeof(r));
-    r.maxage = 255;
-
-    insert_at(a()->chains_reg, pos, r);
-  }
+  chain_t c{};
+  c.description = "** NEW CHAIN **";
+  c.filename = "REM";
+  c.sl = 10;
+  c.ar = 0;
+  c.exec_mode = chain_exec_mode_t::none;
+  c.maxage = 255;
+  a()->chains->insert(pos, c);
   modify_chain(pos);
 }
 
 void delete_chain(int chain_num) {
-  erase_at(a()->chains, chain_num);
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    erase_at(a()->chains_reg, chain_num);
-  }
+  a()->chains->erase(chain_num);
 }
 
 void chainedit() {
@@ -348,21 +343,21 @@ void chainedit() {
     case 'M': {
       bout.nl();
       bout << "|#2(Q=Quit) Chain number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains), false);
-      if (r.key != 'Q' && r.num < size_int(a()->chains)) {
+      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains->chains()), false);
+      if (r.key != 'Q' && r.num < size_int(a()->chains->chains())) {
         modify_chain(r.num);
       }
     } break;
     case 'I': {
-      if (a()->chains.size() < a()->max_chains) {
+      if (a()->chains->chains().size() < a()->max_chains) {
         bout.nl();
         bout << "|#2(Q=Quit) Insert before which chain ('$' for end) : ";
-        auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains), false);
+        auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
         if (r.key == 'Q') {
           break;
         }
-        auto chain = (r.key == '$') ? size_int(a()->chains) : r.num;
-        if (chain >= 0 && chain <= size_int(a()->chains)) {
+        auto chain = (r.key == '$') ? size_int(a()->chains->chains()) : r.num;
+        if (chain >= 0 && chain <= size_int(a()->chains->chains())) {
           insert_chain(chain);
         }
       }
@@ -370,13 +365,13 @@ void chainedit() {
     case 'D': {
       bout.nl();
       bout << "|#2(Q=Quit) Delete which chain? ";
-      auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains), false);
+      auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
       if (r.key == 'Q') {
         break;
       }
-      if (r.num >= 0 && r.num < size_int(a()->chains)) {
+      if (r.num >= 0 && r.num < size_int(a()->chains->chains())) {
         bout.nl();
-        bout << "|#5Delete " << a()->chains[r.num].description << "? ";
+        bout << "|#5Delete " << a()->chains->at(r.num).description << "? ";
         if (yesno()) {
           delete_chain(r.num);
         }
@@ -385,16 +380,5 @@ void chainedit() {
     }
   } while (!done && !a()->hangup_);
 
-  DataFile<chainfilerec> file(PathFilePath(a()->config()->datadir(), CHAINS_DAT),
-                              File::modeReadWrite | File::modeBinary | File::modeCreateFile |
-                                  File::modeTruncate);
-  file.WriteVector(a()->chains);
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    DataFile<chainregrec> regFile(PathFilePath(a()->config()->datadir(), CHAINS_REG),
-                                  File::modeReadWrite | File::modeBinary | File::modeCreateFile |
-                                      File::modeTruncate);
-    if (regFile) {
-      regFile.WriteVector(a()->chains_reg);
-    }
-  }
+  a()->chains->Save();
 }

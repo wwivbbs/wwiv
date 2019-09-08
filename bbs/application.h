@@ -34,6 +34,7 @@
 #include "bbs/runnable.h"
 #include "core/file.h"
 #include "local_io/local_io.h"
+#include "sdk/chains.h"
 #include "sdk/names.h"
 #include "sdk/net.h"
 #include "sdk/status.h"
@@ -73,8 +74,8 @@ class Config;
 namespace msgapi {
 class MessageApi;
 class WWIVMessageApi;
-}
-}
+} // namespace msgapi
+} // namespace sdk
 } // namespace wwiv
 
 /**
@@ -90,7 +91,7 @@ class Application : public Runnable {
 
 public:
   // Constants
-  static constexpr int exitLevelOK = 0;
+  static constexpr int exitLevelOK{0};
   static constexpr int exitLevelNotOK = 1;
   static constexpr int exitLevelQuit = 2;
 
@@ -277,9 +278,7 @@ public:
   void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
-  wwiv::sdk::Config* config() const {
-    return config_.get();
-  }
+  wwiv::sdk::Config* config() const { return config_.get(); }
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
     config_ = std::move(config);
   }
@@ -324,42 +323,54 @@ public:
 public:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
-  int chatname_color_ = 0;
-  int message_color_ = 0;
+  int chatname_color_{0};
+  int message_color_{0};
 
-  uint16_t forced_read_subnum_ = 0;
+  uint16_t forced_read_subnum_{0};
   bool allow_cc_ = false;
   bool user_online_{false};
   bool quoting_ = false;
-  bool m_bTimeOnlineLimited = false;
+  bool m_bTimeOnlineLimited{false};
 
-  bool newscan_at_login_ = false, internal_zmodem_ = true, exec_log_syncfoss_ = true;
-  int m_nNumMessagesReadThisLogon = 0, m_nCurrentLanguageNumber = 0;
-  uint16_t user_dir_num_ = 0;
-  uint16_t user_sub_num_ = 0;
+  bool newscan_at_login_ = false;
+  bool internal_zmodem_ = true;
+  bool exec_log_syncfoss_ = true;
+  int m_nNumMessagesReadThisLogon{0};
+  int m_nCurrentLanguageNumber{0};
+  uint16_t user_dir_num_{0};
+  uint16_t user_sub_num_{0};
   // This one should stay in int since -1 is an allowed value.
-  int current_read_message_area = 0;
-  uint16_t current_conf_msgarea_ = 0;
-  uint16_t current_conf_filearea_ = 0;
-  int m_nNumMsgsInCurrentSub = 0, beginday_node_number_ = 1, exec_child_process_wait_time_ = 500,
-      m_nMaxNumberMessageAreas = 0, m_nMaxNumberFileAreas = 0, network_num_ = 0,
-      m_nMaxNetworkNumber = 0, numf = 0, subchg = 0, topdata = 0, using_modem = 0;
-  int screenlinest = 25;
-  int defscreenbottom = 24;
+  int current_read_message_area{0};
+  uint16_t current_conf_msgarea_{0};
+  uint16_t current_conf_filearea_{0};
+  int m_nNumMsgsInCurrentSub{0};
+
+  int beginday_node_number_{1};
+  int exec_child_process_wait_time_{500};
+  int m_nMaxNumberMessageAreas{0};
+  int m_nMaxNumberFileAreas{0};
+  int network_num_{0};
+  int m_nMaxNetworkNumber{0};
+  int numf{0};
+  int subchg{0};
+  int topdata{0};
+  int using_modem{0};
+  int screenlinest{25};
+  int defscreenbottom{24};
 
   std::string internetPopDomain;
   std::string internetEmailDomain;
   std::string internetEmailName;
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
-  bool m_bInternetUseRealNames;
+  bool m_bInternetUseRealNames{false};
   std::string language_dir;
   std::string cur_lang_name;
   std::string chat_reason_;
   std::string net_email_name;
   std::string temp_directory_;
   std::string batch_directory_;
-  uint8_t primary_port_ = 1;
+  uint8_t primary_port_{1};
   std::string extended_description_filename_;
   std::string dsz_logfile_name_;
   std::string download_filename_;
@@ -368,16 +379,20 @@ public:
 
   asv_rec asv;
 
-  uint16_t mail_who_field_len = 0, max_batch = 0, max_extend_lines = 0, max_chains = 0,
-           max_gfilesec = 0, screen_saver_time = 0;
+  uint16_t mail_who_field_len{0};
+
+  uint16_t max_batch{0};
+  uint16_t max_extend_lines{0};
+  uint16_t max_chains{0};
+  uint16_t max_gfilesec{0};
+  uint16_t screen_saver_time{0};
 
   std::vector<uint8_t> newuser_colors;
   std::vector<uint8_t> newuser_bwcolors;
 
   // public data structures
   std::vector<editorrec> editors;
-  std::vector<chainfilerec> chains;
-  std::vector<chainregrec> chains_reg;
+  std::unique_ptr<wwiv::sdk::Chains> chains;
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;

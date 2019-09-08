@@ -21,6 +21,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
 #include "bbs/chains.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -28,21 +29,20 @@
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/input.h"
-#include "bbs/msgbase1.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "bbs/instmsg.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/mmkey.h"
-#include "bbs/sr.h"
-#include "bbs/shortmsg.h"
-#include "bbs/sysoplog.h"
+#include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
-
+#include "bbs/shortmsg.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -199,8 +199,8 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 }
 
 int FindDoorNo(const char *pszDoor) {
-  for (size_t i = 0; i < a()->chains.size(); i++) {
-    if (iequals(a()->chains[i].description, pszDoor)) {
+  for (size_t i = 0; i < a()->chains->chains().size(); i++) {
+    if (iequals(a()->chains->at(i).description, pszDoor)) {
       return i;
     }
   }
@@ -210,24 +210,23 @@ int FindDoorNo(const char *pszDoor) {
 
 bool ValidateDoorAccess(int nDoorNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
+  const auto& c = a()->chains->at(nDoorNumber);
   if (inst != 0) {
-    char szChainInUse[255];
-    sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", a()->chains[nDoorNumber].description, inst);
-    if (!(a()->chains[nDoorNumber].ansir & ansir_multi_user)) {
-      bout << szChainInUse << " Try again later.\r\n";
+    const auto inuse_msg = fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
+    if (!(c.multi_user)) {
+      bout << inuse_msg << " Try again later.\r\n";
       return false;
     } else {
-      bout << szChainInUse << " Care to join in? ";
+      bout << inuse_msg << " Care to join in? ";
       if (!(yesno())) {
         return false;
       }
     }
   }
-  auto& c = a()->chains[nDoorNumber];
-  if ((c.ansir & ansir_ansi) && !okansi()) {
+  if (c.ansi && !okansi()) {
     return false;
   }
-  if ((c.ansir & ansir_local_only) && a()->using_modem) {
+  if (c.local_only && a()->using_modem) {
     return false;
   }
   if (c.sl > a()->effective_sl()) {
@@ -237,11 +236,10 @@ bool ValidateDoorAccess(int nDoorNumber) {
     return false;
   }
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && a()->chains_reg.size() > 0
+      && a()->chains->HasRegisteredChains()
       && a()->effective_sl() < 255) {
-    chainregrec& r = a()->chains_reg[ nDoorNumber ];
-    if (r.maxage) {
-      if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {
+    if (c.maxage) {
+      if (c.minage > a()->user()->GetAge() || c.maxage < a()->user()->GetAge()) {
         return false;
       }
     }

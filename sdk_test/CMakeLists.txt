@@ -3,6 +3,7 @@ include_directories(..)
 
 set(test_sources
   callout_test.cpp
+  chains_test.cpp
   config_test.cpp
   contact_test.cpp
   datetime_test.cpp

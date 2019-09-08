@@ -51,6 +51,7 @@
 #include "sdk/status.h"
 
 #include "sdk/config.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
@@ -557,32 +558,9 @@ bool Application::read_dirs() {
 }
 
 void Application::read_chains() {
-  chains.clear();
-  DataFile<chainfilerec> file(PathFilePath(config()->datadir(), CHAINS_DAT));
-  if (!file) {
-    return;
-  }
-  file.ReadVector(chains, max_chains);
-
-  if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    chains_reg.clear();
-
-    DataFile<chainregrec> regFile(PathFilePath(config()->datadir(), CHAINS_REG));
-    if (regFile) {
-      regFile.ReadVector(chains_reg, max_chains);
-    } else {
-      regFile.Close();
-      for (size_t i = 0; i < chains.size(); i++) {
-        chainregrec reg{};
-        reg.maxage = 255;
-        chains_reg.push_back(reg);
-
-        // Since we jsut created the chain file, go ahead and save it out.
-        DataFile<chainregrec> cf(PathFilePath(config()->datadir(), CHAINS_REG),
-                                 File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-        cf.WriteVector(chains_reg);
-      }
-    }
+  chains = std::make_unique<Chains>(*config());
+  if (chains->IsInitialized()) {
+    chains->Save();
   }
 }
 

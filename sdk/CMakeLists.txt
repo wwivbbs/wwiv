@@ -5,6 +5,7 @@ set(COMMON_SOURCES
   bbslist.cpp
   binkp.cpp
   callout.cpp
+  chains.cpp
   config.cpp
   connect.cpp
   contact.cpp

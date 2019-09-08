@@ -111,6 +111,7 @@ Application::Application(LocalIO* localIO)
 
   // Set the home directory
   bbs_dir_ = File::current_directory();
+  chains = std::make_unique<Chains>();
 }
 
 Application::~Application() {
