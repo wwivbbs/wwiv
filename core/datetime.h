@@ -61,12 +61,9 @@ std::string to_string(std::chrono::duration<double> dd);
 
 class DateTime {
 public:
-
   static DateTime from_time_t(time_t t) { return DateTime(t); }
 
-  static DateTime from_tm(tm* t) { 
-    return DateTime(t); 
-  }
+  static DateTime from_tm(tm* t) { return DateTime(t); }
 
   static DateTime from_daten(daten_t t) {
     time_t tt = t;
@@ -108,31 +105,25 @@ public:
   /** Returns this Datetime as a time_point in the std::chrono::system_clock */
   std::chrono::system_clock::time_point to_system_clock() const noexcept;
 
-  DateTime operator+(std::chrono::duration<double> d) {
-    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
-    return DateTime::from_time_t(to_time_t() + static_cast<time_t>(du.count()));
-  }
+  friend DateTime operator+(DateTime lhs, std::chrono::duration<double> d);
 
   DateTime& operator+=(std::chrono::duration<double> d) {
-    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     t_ += static_cast<time_t>(du.count());
     update_tm();
     return *this;
   }
 
-  DateTime operator-(std::chrono::duration<double> d) {
-    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
-    return DateTime::from_time_t(to_time_t() - static_cast<time_t>(du.count()));
-  }
+  friend DateTime operator-(DateTime lhs, std::chrono::duration<double> d);
 
   DateTime& operator-=(std::chrono::duration<double> d) {
-    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
     t_ -= static_cast<time_t>(du.count());
     update_tm();
     return *this;
   }
 
-  friend bool operator<(const DateTime& lhs, const DateTime& rhs) { 
+  friend bool operator<(const DateTime& lhs, const DateTime& rhs) {
     if (lhs.t_ == rhs.t_) {
       return lhs.millis_ < rhs.millis_;
     } else {
@@ -140,13 +131,14 @@ public:
     }
   }
 
-  friend bool operator==(const DateTime& lhs, const DateTime& rhs) { return lhs.t_ == lhs.t_; }
+  friend bool operator==(const DateTime& lhs, const DateTime& rhs);
+  friend bool operator!=(const DateTime& lhs, const DateTime& rhs);
 
-  friend bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
+  friend bool operator>(const DateTime& lhs, const DateTime& rhs); 
 
-  friend bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs); }
+  friend bool operator<=(const DateTime& lhs, const DateTime& rhs);
 
-  friend bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
+  friend bool operator>=(const DateTime& lhs, const DateTime& rhs);
 
   DateTime();
 
@@ -158,15 +150,14 @@ private:
   void update_tm() noexcept;
 
   time_t t_;
-  tm tm_ {};
+  tm tm_{};
   int millis_;
 };
 
 DateTime parse_yyyymmdd(const std::string& date_str);
 DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str);
 
-
-}
-}
+} // namespace core
+} // namespace wwiv
 
 #endif // __INCLUDED_CORE_DATETIME_H__

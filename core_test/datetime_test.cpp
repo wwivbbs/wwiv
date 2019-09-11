@@ -85,7 +85,7 @@ TEST(DateTime, OperatorMinusEquals) {
   EXPECT_EQ(start.to_time_t(), start_t - 5);
 }
 
-TEST(DateTime_Parsing, Parse_yyyymmdd_good_nondst) { 
+TEST(DateTime_Parsing, Parse_yyyymmdd_good_nondst) {
   auto dt = parse_yyyymmdd("2003-01-02");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "01/02/2003");
   EXPECT_EQ(0, dt.hour());
@@ -128,4 +128,44 @@ TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_without_hms) {
 TEST(DateTime_Parsing, Parse_yyyymmdd_fail) {
   auto dt = parse_yyyymmdd("2003-04-05x");
   EXPECT_NE(daten_to_mmddyyyy(dt.to_daten_t()), "04/05/2003");
+}
+
+TEST(DateTime, Plus_Duration) {
+  const auto t1 = DateTime::now();
+  const auto t2s{t1 + 2s};
+  auto t2{t1};
+  t2 += 2s;
+
+  ASSERT_EQ(2, t2s.to_time_t() - t1.to_time_t());
+  ASSERT_EQ(2, t2.to_time_t() - t1.to_time_t());
+}
+
+TEST(DateTime, Minus_Duration) {
+  const auto t1 = DateTime::now();
+  const auto t2s{t1 - 2s};
+  auto t2{t1};
+  t2 -= 2s;
+
+  ASSERT_EQ(2, t1.to_time_t() - t2s.to_time_t());
+  ASSERT_EQ(2, t1.to_time_t() - t2.to_time_t());
+}
+
+TEST(DateTime, Comparisons) {
+  const auto t1 = DateTime::now();
+  auto t2{t1};
+  t2 += 1s;
+  const auto t1a{t1};
+
+  EXPECT_TRUE(t1 == t1a);
+  ASSERT_EQ(t1, t1a);
+
+  EXPECT_FALSE(t1 == t2);
+  EXPECT_NE(t1, t2);
+
+  EXPECT_TRUE(t2 > t1);
+  EXPECT_TRUE(t1 < t2);
+  EXPECT_TRUE(t1 <= t2);
+  EXPECT_TRUE(t1 <= t1a);
+  EXPECT_TRUE(t2 >= t1);
+  EXPECT_TRUE(t1 >= t1a);
 }

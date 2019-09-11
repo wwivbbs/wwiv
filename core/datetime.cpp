@@ -231,4 +231,24 @@ std::chrono::system_clock::time_point DateTime::to_system_clock() const noexcept
   return std::chrono::system_clock::from_time_t(t_);
 }
 
+bool operator==(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() == rhs.to_time_t(); }
+bool operator!=(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() != rhs.to_time_t(); }
+
+bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
+
+bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs); }
+
+bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
+
+ DateTime operator+(DateTime lhs, std::chrono::duration<double> d) {
+  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+  return DateTime::from_time_t(lhs.to_time_t() + static_cast<time_t>(du.count()));
+}
+
+DateTime operator-(DateTime lhs, std::chrono::duration<double> d) {
+  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+  return DateTime::from_time_t(lhs.to_time_t() - static_cast<time_t>(du.count()));
+}
+
+
 } // namespace wwiv
