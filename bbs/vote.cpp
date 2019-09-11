@@ -19,17 +19,16 @@
 #include "bbs/vote.h"
 
 #include <string>
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/mmkey.h"
-
 #include "sdk/status.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;

@@ -21,24 +21,25 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "sdk/subxtr.h"
-#include "local_io/keycodes.h"
-#include "sdk/status.h"
-#include "bbs/bbs.h"
-#include "bbs/com.h"
 #include "bbs/subreq.h"
-
 #include "bbs/wqscn.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 #include "sdk/subscribers.h"
+#include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

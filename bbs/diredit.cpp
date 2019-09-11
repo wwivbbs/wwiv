@@ -34,6 +34,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
+#include "sdk/user.h"
+
 
 using std::string;
 using wwiv::bbs::InputMode;

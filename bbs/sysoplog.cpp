@@ -21,15 +21,14 @@
 #include <cstdarg>
 #include <cstddef>
 #include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-
 #include "bbs/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;

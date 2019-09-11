@@ -158,9 +158,9 @@ public:
   std::string name() const { return name_; }
   std::string help_text() const { return help_text_; }
 
-  const CommandLineValue arg(const std::string name) const;
+  const CommandLineValue arg(const std::string& name) const;
   bool contains_arg(const std::string& name) const noexcept;
-  std::string sarg(const std::string name) const { return arg(name).as_string(); }
+  std::string sarg(const std::string& name) const { return arg(name).as_string(); }
   int iarg(const std::string name) const { return arg(name).as_int(); }
   bool barg(const std::string name) const { return arg(name).as_bool(); }
   bool help_requested() const { return barg("help"); }
@@ -168,8 +168,8 @@ public:
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
   virtual int Execute() override;
-  virtual std::string GetHelp() const override;
-  virtual std::string GetUsage() const override { return ""; }
+  std::string GetHelp() const override;
+  std::string GetUsage() const override { return ""; }
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
   bool unknown_args_allowed() const { return unknown_args_allowed_; }
 
@@ -217,8 +217,8 @@ public:
    * will be replaced by --network=0.  An empty dot_argument means
    * that no replacement will happen.
    */
-  CommandLine(const std::vector<std::string>& args, const std::string dot_argument);
-  CommandLine(int argc, char** argv, const std::string dot_argument);
+  CommandLine(const std::vector<std::string>& args, const std::string& dot_argument);
+  CommandLine(int argc, char** argv, const std::string& dot_argument);
   virtual bool Parse();
   virtual int Execute() override final;
   bool AddStandardArgs() override;

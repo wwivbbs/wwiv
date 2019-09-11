@@ -19,9 +19,8 @@
 #include "bbs/wqscn.h"
 
 #include <memory>
-
 #include "bbs/bbs.h"
-
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 
 using namespace wwiv::core;

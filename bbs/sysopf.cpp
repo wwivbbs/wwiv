@@ -29,7 +29,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/finduser.h"
-
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
@@ -58,6 +57,9 @@
 #include "sdk/filenames.h"
 #include "sdk/bbslist.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::unique_ptr;

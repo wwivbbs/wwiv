@@ -20,13 +20,10 @@
 #include <cstdarg>
 #include <string>
 #include <vector>
-
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/types/vector.hpp>
-
 #include "deps/my_basic/core/my_basic.h"
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
@@ -41,6 +38,7 @@
 #include "core/textfile.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "sdk/config.h"
 
 using std::string;
 using std::vector;

@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #ifdef _WIN32
-// include this here so it won't get includes by local_io_win32.h
+#include <crtdbg.h>
 // Needed for isatty
 #include <io.h>
 #endif // WIN32
@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdarg>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -49,10 +48,8 @@
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
 #include "bbs/null_remote_io.h"
-#include "bbs/pause.h"
 #include "bbs/remote_io.h"
 #include "bbs/ssh.h"
-#include "bbs/subacc.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
@@ -68,9 +65,13 @@
 #include "local_io/local_io_curses.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
+#include "sdk/chains.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 #include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
 
 #if defined(_WIN32)
 #include "bbs/remote_socket_io.h"
@@ -96,10 +97,11 @@ using namespace wwiv::strings;
 Output bout;
 
 Application::Application(LocalIO* localIO)
-    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_(),
+    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(this) {
   ::bout.SetLocalIO(localIO);
   SetCurrentReadMessageArea(-1);
+  thisuser_ = std::make_unique<wwiv::sdk::User>();
 
   tzset();
   srand(static_cast<unsigned int>(time_t_now()));
@@ -107,7 +109,7 @@ Application::Application(LocalIO* localIO)
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
   newuser_bwcolors = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
-  User::CreateNewUserRecord(&thisuser_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
+  User::CreateNewUserRecord(user(), 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
   // Set the home directory
   bbs_dir_ = File::current_directory();
@@ -180,7 +182,7 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
 }
 
 bool Application::ReadCurrentUser(int user_number) {
-  if (!users()->readuser(&thisuser_, user_number)) {
+  if (!users()->readuser(user(), user_number)) {
     return false;
   }
   last_read_user_number_ = user_number;
@@ -188,6 +190,14 @@ bool Application::ReadCurrentUser(int user_number) {
   screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
   return true;
 }
+
+void Application::reset_effective_sl() {
+  effective_sl_ = user()->GetSl(); 
+}
+void Application::effective_sl(int nSl) { effective_sl_ = nSl; }
+int Application::effective_sl() const { return effective_sl_; }
+const slrec& Application::effective_slrec() const { return config()->sl(effective_sl_); }
+
 
 bool Application::WriteCurrentUser(int user_number) {
 
@@ -197,7 +207,7 @@ bool Application::WriteCurrentUser(int user_number) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
                << "; last_read_user_number_: " << last_read_user_number_;
   }
-  return users()->writeuser(&thisuser_, user_number);
+  return users()->writeuser(user(), user_number);
 }
 
 void Application::tleft(bool check_for_timeout) {
@@ -716,6 +726,11 @@ int Application::Run(int argc, char* argv[]) {
   bool ooneuser = false;
   CommunicationType type = CommunicationType::NONE;
 
+#ifdef _WIN32
+  // Disble padding with 0xFE for all safe string functions.
+  // We'd rather leave them padded with 0x0 as default.
+  _CrtSetDebugFillThreshold(0);
+#endif
   CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
@@ -963,6 +978,14 @@ int Application::Run(int argc, char* argv[]) {
   return oklevel_;
 }
 
+  /** Returns the WWIV SDK Config Object. */
+wwiv::sdk::Config* Application::config() const { return config_.get(); }
+void Application::set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
+  config_ = std::move(config);
+}
+/** Returns the WWIV Names.LST Config Object. */
+wwiv::sdk::Names* Application::names() const { return names_.get(); }
+
 wwiv::sdk::msgapi::MessageApi* Application::msgapi(int type) const {
   return msgapis_.at(type).get();
 }
@@ -971,4 +994,22 @@ wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
 }
 wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
   return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
+}
+
+Batch& Application::batch() { return batch_; }
+
+const wwiv::sdk::subboard_t& Application::current_sub() const {
+  return subs().sub(GetCurrentReadMessageArea());
+}
+
+wwiv::sdk::Subs& Application::subs() { return *subs_.get(); }
+
+const wwiv::sdk::Subs& Application::subs() const { return *subs_.get(); }
+
+const net_networks_rec& Application::current_net() const {
+  const static net_networks_rec empty_rec{};
+  if (net_networks.empty()) {
+    return empty_rec;
+  }
+  return net_networks[net_num()];
 }

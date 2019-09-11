@@ -45,8 +45,7 @@ using namespace wwiv::strings;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 CommandLineArgument::CommandLineArgument(const std::string& name, char key,
                                          const std::string& help_text,
@@ -58,20 +57,20 @@ CommandLineArgument::CommandLineArgument(const std::string& name, char key,
 std::string CommandLineArgument::help_text() const { return help_text_; }
 
 std::string CommandLineArgument::default_value() const {
-  auto env = environment_variable(environment_variable_);
+  const auto env = environment_variable(environment_variable_);
   return env.empty() ? default_value_ : env;
 }
 
 CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
     : name_(name), help_text_(help_text) {}
 
-static std::string CreateProgramName(const std::string arg) {
+static std::string CreateProgramName(const std::string& arg) {
   wwiv::fs::path p{arg};
   return p.filename().string();
 }
 
-// TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
-CommandLine::CommandLine(const std::vector<std::string>& args, const std::string dot_argument)
+// TODO(rushfan): Make the static command for the root commandline here and pass it as the invoker.
+CommandLine::CommandLine(const std::vector<std::string>& args, const std::string& dot_argument)
     : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) {
   set_raw_args(args);
   set_dot_argument(dot_argument);
@@ -85,7 +84,7 @@ static std::vector<std::string> make_args(int argc, char** argv) {
   return v;
 }
 
-CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
+CommandLine::CommandLine(int argc, char** argv, const std::string& dot_argument)
     : CommandLine(make_args(argc, argv), dot_argument) {}
 
 bool CommandLine::Parse() {
@@ -161,7 +160,7 @@ bool CommandLineCommand::contains_arg(const std::string& name) const noexcept {
   return contains(args_, name);
 }
 
-const CommandLineValue CommandLineCommand::arg(const std::string name) const {
+const CommandLineValue CommandLineCommand::arg(const std::string& name) const {
   if (!contains(args_, name)) {
     VLOG(1) << "Unknown argument name: " << name << endl;
     return CommandLineValue("", true);
@@ -349,5 +348,4 @@ std::string CommandLine::GetHelp() const {
 unknown_argument_error::unknown_argument_error(const std::string& message)
     : std::runtime_error(StrCat("unknown_argument_error: ", message)) {}
 
-} // namespace core
 } // namespace wwiv

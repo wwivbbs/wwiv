@@ -34,6 +34,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;

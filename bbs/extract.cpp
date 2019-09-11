@@ -42,6 +42,7 @@
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;

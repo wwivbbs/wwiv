@@ -33,13 +33,14 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/sysoplog.h"
-
 #include "local_io/wconstants.h"
 #include "sdk/status.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 
 using std::chrono::milliseconds;
 using std::string;

@@ -27,7 +27,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
 #include "local_io/keycodes.h"
-
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
@@ -35,6 +34,8 @@
 #include "bbs/xferovl1.h"
 #include "local_io/wconstants.h"
 #include "core/strings.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 
 using std::string;

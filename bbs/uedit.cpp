@@ -19,6 +19,7 @@
 #include "bbs/uedit.h"
 
 #include "bbs/bbs.h"
+#include "sdk/config.h"
 #include "sdk/user.h"
 
 void auto_val(int n, wwiv::sdk::User *u) {

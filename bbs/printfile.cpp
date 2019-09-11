@@ -32,6 +32,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
+#include "sdk/config.h"
 
 using std::string;
 using std::unique_ptr;

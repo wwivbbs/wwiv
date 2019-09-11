@@ -27,6 +27,8 @@
 #include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using std::to_string;

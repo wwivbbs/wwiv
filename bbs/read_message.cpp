@@ -38,16 +38,17 @@
 #include "bbs/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
-
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/makeansi.h"
 #include "sdk/ansi/framebuffer.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/net.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using std::unique_ptr;

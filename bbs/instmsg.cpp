@@ -38,7 +38,9 @@
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 using std::chrono::steady_clock;
 using std::chrono::seconds;

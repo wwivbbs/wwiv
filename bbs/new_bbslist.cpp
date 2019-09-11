@@ -40,6 +40,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
 
 // This is defined in keycodes.h and breaks rapidjson since that is what is used
 // for the template variable.

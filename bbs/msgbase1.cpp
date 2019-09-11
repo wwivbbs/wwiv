@@ -38,12 +38,11 @@
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/xfer.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/wconstants.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
@@ -51,6 +50,8 @@
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::unique_ptr;

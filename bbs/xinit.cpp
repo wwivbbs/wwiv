@@ -16,11 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <chrono>
-#include <cstddef>
-#include <memory>
-#include <string>
 
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
@@ -36,7 +31,6 @@
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
 #include "bbs/workspace.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
@@ -48,16 +42,22 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 #include "local_io/wconstants.h"
-#include "sdk/status.h"
-
-#include "sdk/config.h"
 #include "sdk/chains.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/networks.h"
+#include "sdk/status.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <string>
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"

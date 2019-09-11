@@ -35,6 +35,8 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::core;

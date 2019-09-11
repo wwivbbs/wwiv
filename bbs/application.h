@@ -25,22 +25,12 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "bbs/batch.h"
 #include "bbs/conf.h"
 #include "bbs/context.h"
 #include "bbs/output.h"
-#include "bbs/remote_io.h"
 #include "bbs/runnable.h"
-#include "core/file.h"
-#include "local_io/local_io.h"
-#include "sdk/chains.h"
-#include "sdk/names.h"
-#include "sdk/net.h"
-#include "sdk/status.h"
-#include "sdk/subxtr.h"
-#include "sdk/user.h"
-#include "sdk/usermanager.h"
+#include "core/filesystem.h"
 #include "sdk/vardec.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,6 +53,10 @@ struct tagrec_t {
 };
 
 extern Output bout;
+enum class CommunicationType;
+class LocalIO;
+class RemoteIO;
+struct net_networks_rec;
 
 namespace wwiv {
 namespace core {
@@ -70,6 +64,13 @@ class IniFile;
 }
 namespace sdk {
 class Config;
+class Chains;
+class Names;
+class StatusMgr;
+class Subs;
+struct subboard_t;
+class User;
+class UserManager;
 
 namespace msgapi {
 class MessageApi;
@@ -98,7 +99,7 @@ public:
   Application(LocalIO* localIO);
   virtual ~Application();
 
-  wwiv::sdk::User* user() { return &thisuser_; }
+  wwiv::sdk::User* user() { return thisuser_.get(); }
   wwiv::bbs::SessionContext& context();
 
   void handle_sysop_key(uint8_t key);
@@ -129,10 +130,10 @@ public:
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int user_number);
 
-  void reset_effective_sl() { effective_sl_ = user()->GetSl(); }
-  void effective_sl(int nSl) { effective_sl_ = nSl; }
-  int effective_sl() const { return effective_sl_; }
-  const slrec& effective_slrec() const { return config()->sl(effective_sl_); }
+  void reset_effective_sl();
+  void effective_sl(int nSl);
+  int effective_sl() const;
+  const slrec& effective_slrec() const;
 
   int GetChatNameSelectionColor() const { return chatname_color_; }
 
@@ -195,18 +196,10 @@ public:
   int GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
-  const wwiv::sdk::subboard_t& current_sub() const {
-    return subs().sub(GetCurrentReadMessageArea());
-  }
+  const wwiv::sdk::subboard_t& current_sub() const;
   const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
 
-  const net_networks_rec& current_net() const {
-    const static net_networks_rec empty_rec{};
-    if (net_networks.empty()) {
-      return empty_rec;
-    }
-    return net_networks[net_num()];
-  }
+  const net_networks_rec& current_net() const;
 
   uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
   void SetCurrentConferenceMessageArea(uint16_t n) { current_conf_msgarea_ = n; }
@@ -278,21 +271,20 @@ public:
   void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
-  wwiv::sdk::Config* config() const { return config_.get(); }
-  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
-    config_ = std::move(config);
-  }
+  wwiv::sdk::Config* config() const;
+  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config);
+
   /** Returns the WWIV Names.LST Config Object. */
-  wwiv::sdk::Names* names() const { return names_.get(); }
+  wwiv::sdk::Names* names() const;
 
   wwiv::sdk::msgapi::MessageApi* msgapi(int type) const;
   wwiv::sdk::msgapi::MessageApi* msgapi() const;
   wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
 
   // Public subsystems
-  Batch& batch() { return batch_; }
-  wwiv::sdk::Subs& subs() { return *subs_.get(); }
-  const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
+  Batch& batch();
+  wwiv::sdk::Subs& subs();
+  const wwiv::sdk::Subs& subs() const;
 
   bool read_subs();
   bool create_message_api();
@@ -481,7 +473,7 @@ private:
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
-  wwiv::sdk::User thisuser_;
+  std::unique_ptr<wwiv::sdk::User> thisuser_;
   int effective_sl_{0};
   std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;

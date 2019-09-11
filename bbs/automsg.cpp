@@ -21,7 +21,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
@@ -33,7 +32,9 @@
 #include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 using std::string;
 using std::stringstream;

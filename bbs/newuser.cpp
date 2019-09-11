@@ -53,7 +53,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
 #include "bbs/uedit.h"
-
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/inifile.h"
@@ -62,9 +61,13 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/phone_numbers.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::chrono::milliseconds;

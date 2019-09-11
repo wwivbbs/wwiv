@@ -19,6 +19,7 @@
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "sdk/config.h"
 
 #include <chrono>
 #include <string>

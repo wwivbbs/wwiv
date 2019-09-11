@@ -20,7 +20,6 @@
 
 #include <memory>
 #include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
@@ -37,6 +36,8 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 using std::string;

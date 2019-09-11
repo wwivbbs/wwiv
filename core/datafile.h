@@ -19,6 +19,7 @@
 #define __INCLUDED_CORE_DATAFILE_H__
 
 #include <vector>
+#include <sys/types.h>
 #include "core/file.h"
 #include "core/filesystem.h"
 
@@ -37,7 +38,7 @@ namespace core {
  *   if (!f.ReadVector(emails) { LOG(FATAL) << "unable to load email.dat"; }
  *   // No need to close f since when f goes out of scope it'll close automatically.
  */
-template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile {
+template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile final {
 public:
   DataFile(const std::filesystem::path& full_file_name,
            int nFileMode = File::modeDefault,
@@ -46,7 +47,7 @@ public:
     file_.Open(nFileMode, nShareMode);
   }
 
-  virtual ~DataFile() = default;
+  ~DataFile() = default;
 
   File& file() { return file_; }
 
@@ -85,7 +86,7 @@ public:
   }
 
   bool WriteVector(const std::vector<RECORD>& records, std::size_t max_records = 0) {
-    std::size_t num = records.size();
+    auto num = records.size();
     if (max_records != 0 && max_records < num) {
       num = max_records;
     }
@@ -105,7 +106,7 @@ public:
 
   bool Seek(int record_number) {
     return file_.Seek(record_number * SIZE, File::Whence::begin) ==
-           static_cast<long>(record_number * SIZE);
+           static_cast<off_t>(record_number * SIZE);
   }
 
   std::size_t number_of_records() { return file_.length() / SIZE; }
@@ -114,7 +115,6 @@ public:
 
 private:
   File file_;
-
 };
 
 }

@@ -20,12 +20,11 @@
 #ifndef __INCLUDED_CORE_FILE_H__
 #define __INCLUDED_CORE_FILE_H__
 
-#include <cstring>
 #include <ctime>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <sys/types.h>
+#include <sys/types.h>   // off_t
 
 #include "core/file_lock.h"
 #include "core/filesystem.h"
@@ -103,12 +102,12 @@ public:
   /** Constructs a file from a path. */
   explicit File(const std::filesystem::path& p);
   /** Destructs File. Closes any open file handles. */
-  virtual ~File();
+  ~File();
 
   // Public Member functions
-  bool Open(int nFileMode = File::modeDefault, int nShareMode = File::shareUnknown);
-  void Close();
-  bool IsOpen() const { return File::IsFileHandleValid(handle_); }
+  bool Open(int nFileMode = modeDefault, int nShareMode = shareUnknown);
+  void Close() noexcept;
+  bool IsOpen() const noexcept;
 
   ssize_t Read(void* buf, size_t count);
   ssize_t Write(const void* buf, size_t count);
@@ -128,7 +127,7 @@ public:
   void set_length(off_t lNewLength);
   off_t current_position() const;
 
-  bool Exists() const;
+  bool Exists() const noexcept;
 
   time_t creation_time();
   time_t last_write_time();
@@ -218,7 +217,7 @@ public:
 
 private:
   // Helper functions
-  static bool IsFileHandleValid(int hFile);
+  static bool IsFileHandleValid(int hFile) noexcept;
 
 private:
   int handle_{-1};

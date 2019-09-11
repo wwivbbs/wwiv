@@ -19,6 +19,8 @@
 #define __INCLUDED_BBS_XFER_H__
 
 #include <string>
+#include "core/file.h"
+#include "sdk/vardec.h"
 
 void zap_ed_info();
 void get_ed_info();

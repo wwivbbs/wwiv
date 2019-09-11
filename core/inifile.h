@@ -29,17 +29,17 @@
 namespace wwiv {
 namespace core {
 
-class IniFile {
+class IniFile final {
  public:
   IniFile(const std::filesystem::path& filename, const std::initializer_list<const char*> sections);
   IniFile(const std::filesystem::path& filename,
           const std::initializer_list<const std::string> sections);
   // Constructor/Destructor
-  virtual ~IniFile(); 
+  ~IniFile(); 
 
   // Member functions
-  void Close();
-  bool IsOpen() const { return open_; }
+  void Close() noexcept;
+  bool IsOpen() const noexcept { return open_; }
 
   template<typename T>
   T value(const std::string& key, const T& default_value) const {
@@ -54,7 +54,7 @@ class IniFile {
   std::filesystem::path path() const noexcept { return path_; }
 
  private:
-  // This class should not be assigneable via '=' so remove the implicit operator=
+  // This class should not be assignable via '=' so remove the implicit operator=
   // and Copy constructor.
   IniFile(const IniFile& other) = delete;
   IniFile& operator=(const IniFile& other) = delete;

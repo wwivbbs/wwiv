@@ -25,6 +25,7 @@
 #include "bbs/utility.h"
 #include "bbs/input.h"
 #include "core/strings.h"
+#include "sdk/subxtr.h"
 
 using namespace wwiv::strings;
 

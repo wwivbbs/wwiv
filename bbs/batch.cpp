@@ -52,7 +52,10 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::begin;
 using std::end;

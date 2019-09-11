@@ -46,15 +46,14 @@
 #include "bbs/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/showfiles.h"
+#include "bbs/sr.h"
 #include "bbs/subacc.h"
 #include "bbs/sublist.h"
+#include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wqscn.h"
-
-#include "bbs/sr.h"
-#include "bbs/sysopf.h"
 #include "bbs/workspace.h"
+#include "bbs/wqscn.h"
 #include "bbs/xfer.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -62,10 +61,12 @@
 #include "core/wwivassert.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
-#include "sdk/status.h"
-#include "sdk/subxtr.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/status.h"
+#include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::unique_ptr;

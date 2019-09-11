@@ -18,11 +18,11 @@
 /**************************************************************************/
 #include "bbs/save_qscan.h"
 
+#include "bbs/application.h"
+#include "bbs/bbs.h"
+#include "sdk/config.h"
 #include <cstdint>
 #include <memory>
-#include "bbs/bbs.h"
-
-#include "bbs/application.h"
 
 namespace wwiv {
 namespace bbs {

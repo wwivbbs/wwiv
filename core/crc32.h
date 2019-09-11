@@ -26,8 +26,6 @@ namespace core {
 uint32_t crc32file(const std::string& name);
 uint32_t crc32string(const std::string& contents);
 
-
-
 }
 }
 

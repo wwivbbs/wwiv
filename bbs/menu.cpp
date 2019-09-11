@@ -42,6 +42,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 
 using std::string;

@@ -33,12 +33,10 @@ using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 DateTime SystemClock::Now() const noexcept { 
   return DateTime::now();
 }
 
-}
 }

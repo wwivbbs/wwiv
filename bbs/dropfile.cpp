@@ -31,6 +31,7 @@
 #include "bbs/utility.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 

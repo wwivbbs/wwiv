@@ -41,8 +41,12 @@
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
+#include "sdk/names.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::bbs;

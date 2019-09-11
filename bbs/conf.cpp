@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -37,6 +36,8 @@
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using namespace wwiv::core;

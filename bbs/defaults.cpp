@@ -48,6 +48,9 @@
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/usermanager.h"
+
 
 using std::setw;
 using std::endl;

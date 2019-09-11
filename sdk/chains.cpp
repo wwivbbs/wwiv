@@ -41,16 +41,16 @@
 #include "sdk/vardec.h"
 
 using cereal::make_nvp;
+using cereal::specialization;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // We want to override how we store some enums as a string, not int.
 // This has to be in the global namespace.
-CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::chain_exec_mode_t,
-                                   cereal::specialization::non_member_load_save_minimal);
-CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::chain_exec_dir_t,
-                                   cereal::specialization::non_member_load_save_minimal);
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_mode_t, specialization::non_member_load_save_minimal);
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_dir_t, specialization::non_member_load_save_minimal);
 
 namespace cereal {
 
@@ -87,24 +87,24 @@ inline T from_enum_string(const std::string& v, const std::vector<std::string>& 
 }
 
 template <class Archive>
-inline std::string save_minimal(Archive const&, const wwiv::sdk::chain_exec_mode_t& t) {
-  return wwiv::sdk::Chains::exec_mode_to_string(t);
+inline std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
+  return Chains::exec_mode_to_string(t);
 }
 template <class Archive>
-inline void load_minimal(Archive const&, wwiv::sdk::chain_exec_mode_t& t, const std::string& s) {
-  t = wwiv::sdk::Chains::exec_mode_from_string(s);
+inline void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
+  t = Chains::exec_mode_from_string(s);
 }
 
 template <class Archive>
-inline std::string save_minimal(Archive const&, const wwiv::sdk::chain_exec_dir_t& t) {
-  return to_enum_string<const wwiv::sdk::chain_exec_dir_t>(t, {"bbs", "temp"});
+inline std::string save_minimal(Archive const&, const chain_exec_dir_t& t) {
+  return to_enum_string<const chain_exec_dir_t>(t, {"bbs", "temp"});
 }
 template <class Archive>
-inline void load_minimal(Archive const&, wwiv::sdk::chain_exec_dir_t& t, const std::string& v) {
-  t = from_enum_string<const wwiv::sdk::chain_exec_dir_t>(v, {"bbs", "temp"});
+inline void load_minimal(Archive const&, chain_exec_dir_t& t, const std::string& v) {
+  t = from_enum_string<const chain_exec_dir_t>(v, {"bbs", "temp"});
 }
 
-template <class Archive> void serialize(Archive& ar, wwiv::sdk::chain_t& n) {
+template <class Archive> void serialize(Archive& ar, chain_t& n) {
   SERIALIZE(n, filename);
   SERIALIZE(n, description);
   SERIALIZE(n, exec_mode);
@@ -167,7 +167,6 @@ Chains::Chains(const Config& config) : datadir_(config.datadir()) {
   if (!initialized_) {
     LOG(ERROR) << "Failed to read " << CHAINS_JSON << " or " << CHAINS_DAT;
   }
-  initialized_ = true;
 }
 
 Chains::~Chains() {}
@@ -259,8 +258,6 @@ bool Chains::SaveToJSON() {
 }
 
 bool Chains::SaveToDat() {
-  return true;
-  // TODO(rushfan): Implement this
   std::vector<chainfilerec> cdisk;
   std::vector<chainregrec> rdisk;
   for (const auto& from : chains_) {
@@ -292,7 +289,7 @@ bool Chains::SaveToDat() {
                                  File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                                      File::modeTruncate,
                                  File::shareDenyReadWrite);
-    if (cfile) {
+    if (!cfile) {
       return false;
     }
     cwritten = cfile.WriteVector(cdisk);
@@ -349,15 +346,13 @@ uint8_t Chains::to_ansir(chain_t c) {
 }
 
 // static
-std::string Chains::exec_mode_to_string(const wwiv::sdk::chain_exec_mode_t& t) {
-  return cereal::to_enum_string<wwiv::sdk::chain_exec_mode_t>(t,
-                                                              {"none", "DOS", "FOSSIL", "STDIO"});
+std::string Chains::exec_mode_to_string(const chain_exec_mode_t& t) {
+  return cereal::to_enum_string<chain_exec_mode_t>(t, {"none", "DOS", "FOSSIL", "STDIO"});
 }
 
 // static
-wwiv::sdk::chain_exec_mode_t Chains::exec_mode_from_string(const std::string& s) {
-  return cereal::from_enum_string<wwiv::sdk::chain_exec_mode_t>(s,
-                                                                {"none", "DOS", "FOSSIL", "STDIO"});
+chain_exec_mode_t Chains::exec_mode_from_string(const std::string& s) {
+  return cereal::from_enum_string<chain_exec_mode_t>(s, {"none", "DOS", "FOSSIL", "STDIO"});
 }
 
 } // namespace sdk

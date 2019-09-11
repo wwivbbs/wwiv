@@ -38,7 +38,6 @@
 #include "bbs/xfertmp.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
-
 #include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/sysoplog.h"
@@ -46,6 +45,8 @@
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 // the archive type to use
 #define ARC_NUMBER 0

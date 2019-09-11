@@ -19,7 +19,6 @@
 #include "core/datetime.h"
 
 #include <chrono>
-#include <cstring>
 #include <ctime>
 #include <iomanip>
 #include <regex>
@@ -33,8 +32,7 @@ using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 time_t time_t_now() { return time(nullptr); }
 
@@ -233,5 +231,4 @@ std::chrono::system_clock::time_point DateTime::to_system_clock() const noexcept
   return std::chrono::system_clock::from_time_t(t_);
 }
 
-} // namespace core
 } // namespace wwiv

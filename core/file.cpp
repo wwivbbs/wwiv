@@ -106,18 +106,18 @@ static constexpr int TRIES = 100;
 
 using namespace wwiv::strings;
 
-string FilePath(const std::filesystem::path& dirname, const string& filename) {
-  if (dirname.empty()) {
-    return filename;
+string FilePath(const std::filesystem::path& directory_name, const string& file_name) {
+  if (directory_name.empty()) {
+    return file_name;
   }
-  return PathFilePath(dirname, filename).string();
+  return PathFilePath(directory_name, file_name).string();
 }
 
-std::filesystem::path PathFilePath(const std::filesystem::path& dirname, const string& filename) {
-  if (dirname.empty()) {
-    return filename;
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name, const string& file_name) {
+  if (directory_name.empty()) {
+    return file_name;
   }
-  return dirname / filename;
+  return directory_name / file_name;
 }
 
 bool backup_file(const std::filesystem::path& p) {
@@ -195,7 +195,11 @@ bool File::Open(int file_mode, int share_mode) {
   return File::IsFileHandleValid(handle_);
 }
 
-void File::Close() {
+bool File::IsOpen() const noexcept {
+  return File::IsFileHandleValid(handle_);
+}
+
+void File::Close() noexcept {
   VLOG(3) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
   if (File::IsFileHandleValid(handle_)) {
     flock(handle_, LOCK_UN);
@@ -239,7 +243,7 @@ off_t File::Seek(off_t offset, Whence whence) {
 
 off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const {
+bool File::Exists() const noexcept {
   std::error_code ec;
   return fs::exists(full_path_name_, ec);
 }
@@ -320,7 +324,7 @@ bool File::SetFilePermissions(const std::filesystem::path& filename, int perm) {
   return chmod(filename.string().c_str(), perm) == 0;
 }
 
-bool File::IsFileHandleValid(int handle) { return handle != File::invalid_handle; }
+bool File::IsFileHandleValid(int handle) noexcept { return handle != File::invalid_handle; }
 
 // static
 std::string File::EnsureTrailingSlash(const std::string& orig) {

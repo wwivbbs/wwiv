@@ -25,9 +25,11 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/com.h"
-
 #include "core/strings.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;

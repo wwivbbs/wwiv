@@ -50,6 +50,7 @@
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/files/allow.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 
 using std::string;

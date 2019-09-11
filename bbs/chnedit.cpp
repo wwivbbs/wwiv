@@ -30,7 +30,11 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::bbs;

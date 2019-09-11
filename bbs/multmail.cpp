@@ -36,9 +36,12 @@
 #include "core/findfiles.h"
 #include "core/strings.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);

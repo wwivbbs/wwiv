@@ -34,6 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

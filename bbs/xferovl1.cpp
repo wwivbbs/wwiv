@@ -17,42 +17,40 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <cmath>
-#include <memory>
-#include <string>
-#include <vector>
-
+#include "bbs/xferovl1.h"
 #include "bbs/batch.h"
-#include "bbs/bbsutl.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
-#include "bbs/bbs.h"
-#include "bbs/com.h"
-#include "bbs/sysoplog.h"
-#include "bbs/sr.h"
-#include "bbs/utility.h"
-#include "bbs/xfer.h"
-#include "bbs/xferovl.h"
-#include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
-
 #include "bbs/external_edit.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
 #include "bbs/xfer_common.h"
+#include "bbs/xferovl.h"
+#include "bbs/xfertmp.h"
+#include "core/datetime.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file.h"
 #include "core/textfile.h"
-#include "core/datetime.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;

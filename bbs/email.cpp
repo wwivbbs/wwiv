@@ -46,8 +46,11 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9

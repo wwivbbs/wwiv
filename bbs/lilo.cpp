@@ -66,7 +66,9 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 using std::chrono::duration;
 using std::chrono::duration_cast;

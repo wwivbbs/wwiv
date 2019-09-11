@@ -26,7 +26,18 @@ using std::string;
 
 using namespace wwiv::sdk;
 
-TEST(ChainsTest, Smoke) {
-  ASSERT_TRUE(false);
+TEST(ChainsTest, ExecMode_Operator) { 
+  chain_exec_mode_t t = chain_exec_mode_t::dos; 
+  ASSERT_EQ(chain_exec_mode_t::dos, t++);
+  ASSERT_EQ(chain_exec_mode_t::fossil, t++);
+  ASSERT_EQ(chain_exec_mode_t::stdio, t++);
+  ASSERT_EQ(chain_exec_mode_t::none, t++);
+  ASSERT_EQ(chain_exec_mode_t::dos, t++);
 }
 
+TEST(ChainsTest, ExecDir_Operator) {
+  chain_exec_dir_t t = chain_exec_dir_t::bbs;
+  ASSERT_EQ(chain_exec_dir_t::bbs, t++);
+  ASSERT_EQ(chain_exec_dir_t::temp, t++);
+  ASSERT_EQ(chain_exec_dir_t::bbs, t++);
+}

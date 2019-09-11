@@ -65,6 +65,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/ansi/makeansi.h"
+#include "sdk/config.h"
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 

@@ -54,7 +54,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "local_io/local_io.h"
-
 #include "bbs/application.h"
 #include "bbs/voteedit.h"
 #include "bbs/workspace.h"
@@ -67,6 +66,9 @@
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/names.h"
 
 using std::string;
 using std::unique_ptr;

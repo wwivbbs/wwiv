@@ -18,18 +18,19 @@
 /**************************************************************************/
 #include "bbs/shortmsg.h"
 
-#include <cstdarg>
-#include <string>
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include <cstdarg>
+#include <string>
 
 using std::string;;
 using namespace wwiv::core;

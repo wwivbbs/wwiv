@@ -89,6 +89,7 @@
 #include "core/version.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

@@ -42,6 +42,7 @@
 #include "local_io/null_local_io.h"
 #include "local_io/stdio_local_io.h"
 #include "localui/curses_io.h"
+#include "sdk/config.h"
 
 #if defined( _WIN32 )
 #include "local_io/local_io_win32.h"

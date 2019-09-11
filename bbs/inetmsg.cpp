@@ -33,6 +33,8 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;

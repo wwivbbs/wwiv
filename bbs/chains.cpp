@@ -42,6 +42,7 @@
 #include "fmt/format.h"
 #include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
 #include "sdk/user.h"
 
 using std::string;

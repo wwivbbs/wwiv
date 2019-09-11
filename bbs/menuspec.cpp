@@ -43,6 +43,11 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "sdk/config.h"
+#include "sdk/chains.h"
+#include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::core;

@@ -37,6 +37,7 @@
 #include "core/strings.h"
 #include "core/findfiles.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;

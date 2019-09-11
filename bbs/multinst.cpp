@@ -16,18 +16,21 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <string>
 #include "bbs/multinst.h"
+#include <string>
 
 #include "bbs/bbs.h"
-
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
-#include "local_io/wconstants.h"
-
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "local_io/wconstants.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using namespace wwiv::core;

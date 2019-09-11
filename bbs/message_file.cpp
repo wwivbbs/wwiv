@@ -24,6 +24,7 @@
 #include "bbs/bbs.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "sdk/config.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"

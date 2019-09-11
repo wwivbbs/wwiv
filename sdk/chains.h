@@ -24,6 +24,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace wwiv {
@@ -75,8 +76,8 @@ public:
   const chain_t& at(size_type num) const { return chains_.at(num); }
   chain_t& at(size_type num) { return chains_.at(num); }
 
-  chain_t& operator[](size_type num) { return at(num); }
-  const chain_t& operator[](int num) const { return at(num); }
+  //chain_t& operator[](size_type num) { return at(num); }
+  //const chain_t& operator[](int num) const { return at(num); }
 
   bool insert(std::size_t n, chain_t r);
   bool erase(std::size_t n);
