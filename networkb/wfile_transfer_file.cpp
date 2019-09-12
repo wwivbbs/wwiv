@@ -60,6 +60,11 @@ WFileTransferFile::~WFileTransferFile() {}
 int WFileTransferFile::file_size() const { return file_->length(); }
 
 bool WFileTransferFile::Delete() {
+  // Since this file may still be open, need to ensure
+  // that it is closed so File::Remove will work.
+  if (file_->IsOpen()) {
+    file_->Close();
+  }
   if (!File::Remove(file_->full_pathname())) {
     return false;
   }
