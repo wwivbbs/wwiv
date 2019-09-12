@@ -33,7 +33,7 @@ What's New in WWIV 5.4 (2019)
 * The wwiv_test from jenkins has been removed, the normal build target
   also runs tests now, this saves a lot of time double-compiling
   everything.
-* 
+* Created chains.json to replace chains.dat and chains.reg.
 
 
 What's New in WWIV 5.4 (2018)

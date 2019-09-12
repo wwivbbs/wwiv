@@ -113,7 +113,8 @@ string FilePath(const std::filesystem::path& directory_name, const string& file_
   return PathFilePath(directory_name, file_name).string();
 }
 
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name, const string& file_name) {
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const string& file_name) {
   if (directory_name.empty()) {
     return file_name;
   }
@@ -195,9 +196,7 @@ bool File::Open(int file_mode, int share_mode) {
   return File::IsFileHandleValid(handle_);
 }
 
-bool File::IsOpen() const noexcept {
-  return File::IsFileHandleValid(handle_);
-}
+bool File::IsOpen() const noexcept { return File::IsFileHandleValid(handle_); }
 
 void File::Close() noexcept {
   VLOG(3) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
@@ -299,7 +298,11 @@ bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n
 
 bool File::Remove(const std::filesystem::path& filename) {
   std::error_code ec;
-  return fs::remove(filename, ec);
+  bool result = fs::remove(filename, ec);
+  if (!result) {
+    LOG(ERROR) << "File::Remove failed: error code: " << ec.value() << "; msg: " << ec.message();
+  }
+  return result;
 }
 
 bool File::Exists(const std::filesystem::path& p) {
@@ -435,15 +438,13 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
   return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_.string(), lock_type);
 }
 
-bool File::Copy(const std::filesystem::path& from,
-                const std::filesystem::path& to) {
+bool File::Copy(const std::filesystem::path& from, const std::filesystem::path& to) {
   std::error_code ec;
   fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
   return ec.value() == 0;
 }
 
-bool File::Move(const std::filesystem::path& from,
-                const std::filesystem::path& to) {
+bool File::Move(const std::filesystem::path& from, const std::filesystem::path& to) {
   return File::Rename(from, to);
 }
 
