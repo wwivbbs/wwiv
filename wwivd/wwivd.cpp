@@ -18,24 +18,20 @@
 /**************************************************************************/
 
 #include <atomic>
-#include <cctype>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <utility>
 
 #include <signal.h>
 #include <string>
-#include <sys/types.h>
 #include <vector>
 
 #ifdef _WIN32
 
 #include <WS2tcpip.h>
-#include <process.h>
 
 #else // _WIN32
 
@@ -47,26 +43,15 @@
 #include <unistd.h>
 #endif // __linux__
 
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
-
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
-#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -95,8 +80,7 @@ using namespace wwiv::os;
 #undef DELETE
 #endif // DELETE
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 extern std::atomic<bool> need_to_exit;
 extern std::atomic<bool> need_to_reload_config;
@@ -216,7 +200,6 @@ int Main(CommandLine& cmdline) {
   return EXIT_SUCCESS;
 }
 
-} // namespace wwivd
 } // namespace wwiv
 
 int main(int argc, char* argv[]) {
