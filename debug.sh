@@ -1,6 +1,5 @@
 #!/bin/bash
 declare -r OS=$(uname)
-echo "$(pwd)"
 
 if [[ "${OS}" == "SunOS" ]]; then
     echo "Setting compiler to gcc for SunOS"
@@ -8,4 +7,15 @@ if [[ "${OS}" == "SunOS" ]]; then
     export CC=/usr/bin/gcc
 fi
 
-cmake -DCMAKE_BUILD_TYPE:STRING=Debug $@
+declare -r NINJA=$(which ninja)
+if [[ -x "${NINJA}" ]]; then
+	echo "Using Ninja Build Tool: ${NINJA}"
+else
+	echo "** ERROR: Please install ninja"
+	echo ""
+	echo "   Debian: apt install ninja-build"
+	echo "   CentOS: yum install ninja-build"
+	exit 1
+fi
+
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug -G "Ninja" $@

@@ -38,14 +38,14 @@ run_test() {
 build_binaries() {
     local make_args=$1
     
-    echo "Building binaries"
-    cd ${WORKSPACE}
-    sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
-    
     echo "Compiling dependencies that are not CMake friendly"
     pushd deps/cl342
     make ${make_args}
     popd > /dev/null
+    
+    echo "Building binaries"
+    cd ${WORKSPACE}
+    sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
     
     echo "Compiling Everything"
     if [[ ! -d "${CMAKE_BUILD}" ]]; then
@@ -53,7 +53,7 @@ build_binaries() {
     fi
     
     pushd ${CMAKE_BUILD}
-    ${CMAKE_BIN} -DCMAKE_BUILD_TYPE:STRING=Debug ..
+    ${CMAKE_BIN} -DCMAKE_BUILD_TYPE:STRING=Debug -G "Ninja" ..
     ${CMAKE_BIN} --build . -- ${make_args}
     popd > /dev/null
 
