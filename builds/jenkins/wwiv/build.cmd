@@ -31,8 +31,8 @@ if /I "%LABEL%"=="win-x64" (
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.4
-set WWIV_FULL_RELEASE=5.4.0
+set WWIV_RELEASE=5.5
+set WWIV_FULL_RELEASE=5.5.0
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build

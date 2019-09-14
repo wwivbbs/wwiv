@@ -20,7 +20,7 @@
 #include <cstdint>
 
 // Version String
-const char *wwiv_version = "5.4.0";
+const char *wwiv_version = "5.5.0";
 
 // Build Information
 const char *beta_version = ".development";

@@ -9,6 +9,9 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+What's New in WWIV 5.5 (2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 What's New in WWIV 5.4 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Conference files {subs,dirs}.cnf will be backed up before saving

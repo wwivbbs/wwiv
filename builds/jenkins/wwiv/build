@@ -14,8 +14,8 @@ set -e
 
 declare -r CMAKE_BUILD="${WORKSPACE}/_build"
 declare -r RELEASE_DIR="${WORKSPACE}/release"
-declare -r WWIV_RELEASE="5.4"
-declare -r WWIV_FULL_RELEASE="5.4.0"
+declare -r WWIV_RELEASE="5.5"
+declare -r WWIV_FULL_RELEASE="5.5.0"
 declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
 echo "WWIV BBS Build"
 echo "Workspace:        ${WORKSPACE}"
