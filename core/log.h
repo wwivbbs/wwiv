@@ -93,6 +93,7 @@ enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, f
 
 class Appender {
 public:
+  virtual ~Appender() = default;
   Appender(){};
   virtual bool append(const std::string& message) const = 0;
 };
@@ -100,21 +101,27 @@ public:
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
     log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
+typedef std::function<std::string(std::string)> logdir_fn;
+
 
 class LoggerConfig {
 public:
   LoggerConfig();
+  LoggerConfig(logdir_fn f);
+  LoggerConfig(logdir_fn l, timestamp_fn t);
   void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
   void reset();
 
-  bool log_startup = false;
+  // Change to true to enabled the startup log globally for all binaries.
+  bool log_startup{false};
   std::string exit_filename;
   std::string log_filename;
-  int cmdline_verbosity = 0;
-  bool register_file_destinations = true;
-  bool register_console_destinations = true;
+  int cmdline_verbosity{0};
+  bool register_file_destinations{true};
+  bool register_console_destinations{true};
   log_to_map_t log_to;
   timestamp_fn timestamp_fn_;
+  logdir_fn logdir_fn_;
 };
 
 class NullLogger {
@@ -136,7 +143,8 @@ public:
  *
  * Example:
  *
- *   Logger::Init(argc, argv);
+ *   LoggerConfig lc(LogDirFromConfig);
+ *   Logger::Init(argc, argv, lc);
  *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
  *
  * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
@@ -150,10 +158,10 @@ public:
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv, LoggerConfig& config);
-  static void Init(int argc, char** argv);
   static void ExitLogger();
   static bool vlog_is_on(int level);
   static LoggerConfig& config() noexcept { return config_; }
+  static void set_cmdline_verbosity(int cmdline_verbosity);
 
   template <class T> Logger& operator<<(const T& msg) {
     ss_ << msg;
@@ -172,7 +180,7 @@ private:
   static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;
-  bool used_ = false;
+  bool used_{false};
   std::ostringstream ss_;
 };
 

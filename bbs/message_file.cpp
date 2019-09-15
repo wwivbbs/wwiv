@@ -24,6 +24,7 @@
 #include "bbs/bbs.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "sdk/config.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
@@ -47,8 +48,8 @@ static gati_t *gat = new gati_t[2048]();
 static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
   a()->status_manager()->RefreshStatusCache();
 
-  const string filename = StrCat(
-    FilePath(a()->config()->msgsdir(), messageAreaFileName), FILENAME_DAT_EXTENSION);
+  const auto filename =
+      PathFilePath(a()->config()->msgsdir(), StrCat(messageAreaFileName, FILENAME_DAT_EXTENSION));
   auto file = std::make_unique<File>(filename);
   if (!file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.

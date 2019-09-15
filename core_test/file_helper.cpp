@@ -25,20 +25,9 @@
 #include <iostream>
 #include <string>
 
-#ifdef _WIN32
-#include <io.h>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif  // WIN32_LEAN_AND_MEAN
-
-#include <Windows.h>
-#else
-#include <sys/stat.h>
-#endif
-
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -47,77 +36,84 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// C++ is still lame sometimes.
-std::string FileHelper::basedir_;
-
+// Base test directory.
+std::filesystem::path FileHelper::basedir_;
 
 FileHelper::FileHelper() {
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
-  const string dir = StrCat(test_info->test_case_name(), "_", test_info->name());
+  const auto dir = StrCat(test_info->test_case_name(), "_", test_info->name());
   tmp_ = FileHelper::CreateTempDir(dir);
 }
 
 const string FileHelper::DirName(const string& oname) const {
-  string name = File::FixPathSeparators(oname);
-  return StrCat(tmp_, File::pathSeparatorString, name, File::pathSeparatorString);
+  const auto name = File::FixPathSeparators(oname);
+  const auto tmpname = FilePath(tmp_, name);
+  return File::EnsureTrailingSlash(tmpname);
+}
+
+const std::filesystem::path FileHelper::Dir(const string& oname) const {
+  const auto name = File::FixPathSeparators(oname);
+  return PathFilePath(tmp_, name);
 }
 
 bool FileHelper::Mkdir(const string& oname) const {
-  return File::mkdir(DirName(File::FixPathSeparators(oname)));
+  return File::mkdir(Dir(File::FixPathSeparators(oname)));
 }
 
 // static
-string FileHelper::GetTestTempDir() {
-  string test_tempdir = basedir_;
-  if (test_tempdir.empty()) {
-#ifdef _WIN32
-    char temp_path[_MAX_PATH];
-    GetTempPath(_MAX_PATH, temp_path);
-    test_tempdir = temp_path;
-#else  // _WIN32
-    test_tempdir = "/tmp";
-#endif  // _WIN32
+void FileHelper::set_wwiv_test_tempdir(const std::string& d) noexcept {
+  basedir_ = std::filesystem::canonical(d);
+}
+
+// static
+std::filesystem::path FileHelper::GetTestTempDir() {
+  if (!basedir_.empty()) {
+    return basedir_;
   }
-  return test_tempdir;
+  return std::filesystem::canonical(std::filesystem::temp_directory_path());
 }
 
 // static
-string FileHelper::CreateTempDir(const string base) {
-    const string temp_path = GetTestTempDir();
-    string template_ = StrCat(temp_path, "/fileXXXXXX");
+std::filesystem::path FileHelper::CreateTempDir(const string& base) {
+  const auto temp_path = GetTestTempDir();
+  // TODO(rushfan): This may be good enough for linux too.
 #ifdef _WIN32
-    const auto fn_template = StrCat(base, ".", time_t_now());
-    const auto local_dir_template = wwiv::core::FilePath(temp_path, fn_template);
-    if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
-      return local_dir_template;
-    }
+  const auto dir = wwiv::core::PathFilePath(temp_path, StrCat(base, ".", time_t_now()));
+  std::error_code ec;
+  if (std::filesystem::create_directories(dir, ec)) {
+    return dir;
+  }
 #else
-    char local_dir_template[MAX_PATH];
-    strcpy(local_dir_template, template_.c_str());
-    char *result = mkdtemp(local_dir_template);
-    if (result) {
-      return string(result);
-    }
+  char local_dir_template[MAX_PATH];
+  const auto template_ = StrCat(temp_path.string(), "/fileXXXXXX");
+  to_char_array(local_dir_template, template_);
+  char* result = mkdtemp(local_dir_template);
+  if (result) {
+    return std::filesystem::path{result};
+  }
 #endif
-    return "";
+  return {};
 }
 
-string FileHelper::CreateTempFilePath(const string& orig_name) {
-  string name(File::FixPathSeparators(orig_name));
-  return StrCat(TempDir(), File::pathSeparatorString, name);
+std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) {
+  const auto name{File::FixPathSeparators(orig_name)};
+  return FilePath(TempDir(), name);
 }
 
-FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
-  *path = CreateTempFilePath(orig_name);
-  FILE* file = fopen(path->c_str(), "wt");
-  assert(file);
-  return file;
+std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) {
+  const auto path = CreateTempFilePath(orig_name);
+  const auto fn = path.string();
+  auto fp = fopen(fn.c_str(), "wt");
+  assert(fp);
+  return std::make_tuple(fp, path);
 }
 
-string FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
-  string path;
-  FILE* file = OpenTempFile(orig_name, &path);
+std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
+  std::filesystem::path path;
+  FILE* file;
+  // TODO(rushfan): use structured bindings in GCC > 7.0
+  std::tie(file, path) = OpenTempFile(orig_name);
   assert(file);
   fputs(contents.c_str(), file);
   fclose(file);
@@ -126,16 +122,18 @@ string FileHelper::CreateTempFile(const string& orig_name, const string& content
 
 // N.B.: We don't use TextFile::ReadFileIntoString since we are
 // testing TextFile with this helper.
-const string FileHelper::ReadFile(const string name) const {
-  std::FILE *fp = fopen(name.c_str(), "rt");
+const string FileHelper::ReadFile(const std::filesystem::path& name) const {
+  const auto name_string = name.string();
+  auto fp = fopen(name_string.c_str(), "rt");
   if (!fp) {
-    throw (errno);
+    const auto msg = StrCat("Unable to open file: ", name_string, "; errno: ", errno);
+    throw std::runtime_error(msg);
   }
   string contents;
   fseek(fp, 0, SEEK_END);
   contents.resize(ftell(fp));
   rewind(fp);
-  int num_read = fread(&contents[0], 1, contents.size(), fp);
+  auto num_read = fread(&contents[0], 1, contents.size(), fp);
   contents.resize(num_read);
   fclose(fp);
   return contents;

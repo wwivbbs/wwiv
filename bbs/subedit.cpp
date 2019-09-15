@@ -21,25 +21,25 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "sdk/subxtr.h"
-#include "local_io/keycodes.h"
-#include "sdk/status.h"
-#include "bbs/bbs.h"
-#include "bbs/com.h"
 #include "bbs/subreq.h"
-
 #include "bbs/wqscn.h"
 #include "core/file.h"
-#include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 #include "sdk/subscribers.h"
+#include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -139,7 +139,7 @@ static void DisplayNetInfo(size_t nSubNum) {
       const auto dir = a()->net_networks[(*it).net_num].dir;
       const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
       std::set<uint16_t> subscribers;
-      ReadSubcriberFile(dir, StrCat("n", (*it).stype, ".net"), subscribers);
+      ReadSubcriberFile(PathFilePath(dir, StrCat("n", (*it).stype, ".net")), subscribers);
       int num = size_int(subscribers);
       bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
@@ -230,7 +230,7 @@ static void modify_sub(int n) {
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
-      auto new_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
+      auto new_sub_fullpath = PathFilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();
@@ -250,9 +250,11 @@ static void modify_sub(int n) {
         break;
       }
 
-      string old_sub_fullpath = StrCat(a()->config()->datadir(), old_subname, ".sub");
-      string old_msg_fullpath = StrCat(a()->config()->msgsdir(), old_subname, ".dat");
-      string new_msg_fullpath = StrCat(a()->config()->msgsdir(), new_fn, ".dat");
+      const auto old_sub_fullpath =
+          PathFilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
+      const auto old_msg_fullpath =
+          PathFilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
+      const auto new_msg_fullpath = PathFilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
 
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
         && new_fn != "NONAME" && old_subname != "NONAME") {
@@ -731,8 +733,8 @@ void boardedit() {
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(StrCat(a()->config()->datadir(), fn, ".sub"));
-            File::Remove(StrCat(a()->config()->msgsdir(), fn, ".dat"));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
+            File::Remove(PathFilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
           }
         }
       }

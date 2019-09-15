@@ -79,7 +79,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   if (user.IsUserDeleted()) {
     return false;
   }
-  File file(FilePath(data_directory_, SMW_DAT));
+  File file(PathFilePath(data_directory_, SMW_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
@@ -113,7 +113,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
 }
 
 bool SSM::delete_local_to_user(uint32_t user_number) {
-  DataFile<shortmsgrec> file(FilePath(data_directory_, SMW_DAT),
+  DataFile<shortmsgrec> file(PathFilePath(data_directory_, SMW_DAT),
                              File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return false;

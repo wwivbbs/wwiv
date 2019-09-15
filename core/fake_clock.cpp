@@ -19,11 +19,7 @@
 #include "core/fake_clock.h"
 
 #include <chrono>
-#include <cstring>
-#include <iomanip>
-#include <ctime>
 #include <string>
-#include <sstream>
 
 #include "core/datetime.h"
 #include "core/strings.h"
@@ -36,7 +32,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-DateTime FakeClock::Now() noexcept { 
+DateTime FakeClock::Now() const noexcept { 
   return date_time_;
 }
 

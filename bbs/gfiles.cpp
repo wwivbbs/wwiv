@@ -34,6 +34,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -56,7 +57,7 @@ gfilerec *read_sec(int sn, int *nf) {
     return nullptr;
   }
 
-  File file(FilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
+  File file(PathFilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
   }
@@ -257,8 +258,8 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     i2++;
     lnum = std::to_string(i + 1);
     s4 = trim_to_size_ignore_colors(g[i].description, 29);
-    string path_name = StrCat(
-      gfilesdir, a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i].filename);
+    const auto path_name =
+        PathFilePath(gfilesdir, StrCat(a()->gfilesec[sn].filename, g[i].filename));
     if (File::Exists(path_name)) {
       File handle(path_name);
       lsize = StrCat(std::to_string(bytes_to_k(handle.length())), "k");
@@ -278,8 +279,8 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     } else {
       rnum = std::to_string(i + 2);
       s5 = trim_to_size_ignore_colors(g[i + 1].description, 29);
-      auto path_name = StrCat(
-        gfilesdir, a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i + 1].filename);
+      const auto path_name =
+          PathFilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i + 1].filename));
       if (File::Exists(path_name)) {
         File handle(path_name);
         rsize = StrCat(std::to_string(bytes_to_k(handle.length())), "k");
@@ -401,16 +402,15 @@ void gfile_sec(int sn) {
         if (yesno()) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
-            string gfilesdir = a()->config()->gfilesdir();
-            auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
-            File::Remove(a()->config()->datadir(), file_name);
+            const auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
+            File::Remove(PathFilePath(a()->config()->gfilesdir(), file_name));
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
           const auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-          File file(FilePath(a()->config()->datadir(), file_name));
+          File file(PathFilePath(a()->config()->datadir(), file_name));
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
@@ -444,9 +444,9 @@ void gfile_sec(int sn) {
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
             auto file_name = FilePath(a()->gfilesec[sn].filename, g[i2 - 1].filename);
-            File file(FilePath(a()->config()->datadir(), file_name));
+            File file(PathFilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
-              bout << "|#6File not found : [" << file.full_pathname() << "]";
+              bout << "|#6File not found : [" << file << "]";
             } else {
               auto file_size = file.length();
               file.Close();

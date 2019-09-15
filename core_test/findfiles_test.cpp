@@ -32,7 +32,7 @@ using namespace wwiv::strings;
 TEST(FindFiles, Suffix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  FindFiles ff(FilePath(helper.TempDir(), "msg*"), FindFilesType::any);
+  FindFiles ff(PathFilePath(helper.TempDir(), "msg*"), FindFilesType::any);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
@@ -42,7 +42,7 @@ TEST(FindFiles, Suffix) {
 TEST(FindFiles, Prefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  FindFiles ff(FilePath(helper.TempDir(), "*001"), FindFilesType::files);
+  FindFiles ff(PathFilePath(helper.TempDir(), "*001"), FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
@@ -52,7 +52,7 @@ TEST(FindFiles, Prefix) {
 TEST(FindFiles, SingleCharSuffix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  FindFiles ff(FilePath(helper.TempDir(), "msg00000.00?"), FindFilesType::files);
+  FindFiles ff(PathFilePath(helper.TempDir(), "msg00000.00?"), FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
@@ -62,7 +62,7 @@ TEST(FindFiles, SingleCharSuffix) {
 TEST(FindFiles, SingleCharPrefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  FindFiles ff(FilePath(helper.TempDir(), "?sg00000.001"), FindFilesType::files);
+  FindFiles ff(PathFilePath(helper.TempDir(), "?sg00000.001"), FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
@@ -72,7 +72,7 @@ TEST(FindFiles, SingleCharPrefix) {
 TEST(FindFiles, SingleCharExtensionPrefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  FindFiles ff(FilePath(helper.TempDir(), "msg00000.?01"), FindFilesType::files);
+  FindFiles ff(PathFilePath(helper.TempDir(), "msg00000.?01"), FindFilesType::files);
   auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;

@@ -9,12 +9,36 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+What's New in WWIV 5.5 (2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* WWIV now requires GCC 8.3 or later and MSVC 2019 v16.3 or later.
+
 What's New in WWIV 5.4 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Conference files {subs,dirs}.cnf will be backed up before saving
   them in case of corruption.  If you see these files getting corrupted
   please log a bug and let us know what change was more recently made
   to the conference data file.
+* Help text for command line arguments are a bit easier to understand.
++ wwivconfig now has an option under paths for Logs directory. If set,
+  it'll be the default location for all binary *.log files.  If the
+  WWIV_LOG_DIR environment variable or --logdir command line argument
+  are specified, they will override this setting from wwivconfig.  Like
+  all other paths, if specified as a relative path, it is relative to 
+  the bbsdir (aka WWIV_DIR or --bbsdir).
+* Added --log_startup to all binaries. This will enable the start/stop
+  default logging with command line arguments displayed.  This is now
+  not the default behavior anymore.  If you want it displayed, either
+  pass --log_startup or edit Logger::Init in core/log.cpp and set
+  log_startup_ to true.
+* WWIV now uses the C++17 standard std::filesystem for almost all file
+  and directory operations, this removed most of the OS specific code
+  from WWIV.
+* The wwiv_test from jenkins has been removed, the normal build target
+  also runs tests now, this saves a lot of time double-compiling
+  everything.
+* Created chains.json to replace chains.dat and chains.reg.
+
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

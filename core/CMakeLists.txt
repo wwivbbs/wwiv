@@ -48,3 +48,8 @@ set_max_warnings()
 
 
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
+target_link_libraries(core fmt::fmt-header-only)
+if (UNIX)
+	target_link_libraries(core stdc++fs)
+endif()
+

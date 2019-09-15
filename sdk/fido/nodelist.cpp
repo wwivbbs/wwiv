@@ -342,15 +342,15 @@ static std::string latest_extension(const std::map<int, int>& ey) {
 
 // static
 std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::string& base) {
-  const string filespec = StrCat(FilePath(dir, base), ".*");
+  const auto filespec = PathFilePath(dir, StrCat(base, ".*"));
   std::map<int, int> extension_year;
   FindFiles fnd(filespec, FindFilesType::files);
   for (const auto& ff : fnd) {
-    File f(FilePath(dir, ff.name));
-    extension_year.emplace(extension_number(f.GetName()), year_of(f.creation_time()));
+    const auto fn = PathFilePath(dir, ff.name);
+    extension_year.emplace(extension_number(fn.filename().string()), year_of(File::creation_time(fn)));
   }
 
-  string ext = latest_extension(extension_year);
+  auto ext = latest_extension(extension_year);
   return StrCat(base, ".", ext);
 }
 

@@ -32,8 +32,9 @@
 #include "bbs/read_message.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
-
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
+
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;

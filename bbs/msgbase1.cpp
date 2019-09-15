@@ -38,12 +38,11 @@
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/xfer.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/wconstants.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
@@ -51,6 +50,8 @@
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::unique_ptr;
@@ -128,7 +129,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     } else {
       std::set<uint16_t> subscribers;
       bool subscribers_read =
-          ReadSubcriberFile(net.dir, StrCat("n", xnp.stype, ".net"), subscribers);
+          ReadSubcriberFile(PathFilePath(net.dir, StrCat("n", xnp.stype, ".net")), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
           if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
@@ -482,7 +483,7 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
        << "|#9): ";
-  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea());
+  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
   bool nextsub = false;
   if (r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);

@@ -22,6 +22,7 @@
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -86,7 +87,8 @@ static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
   statusrec_t status{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
       if (email) {
@@ -100,10 +102,8 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
   }
 }
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-       << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
 
@@ -135,12 +135,14 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
-  File file(FilePath(net.dir, info.filename));
-  if (!info.overwrite && file.Exists()) {
-    LOG(ERROR) << "    ! ERROR File [" << file << "] already exists, and packet not set to overwrite; writing to dead.net";
+  const auto fn = PathFilePath(net.dir, info.filename);
+  if (!info.overwrite && File::Exists(fn)) {
+    LOG(ERROR) << "    ! ERROR File [" << fn << "] already exists, and packet not set to overwrite; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
-  if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+  File file(fn);
+  if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate,
+                 File::shareDenyReadWrite)) {
     // We couldn't create or open the file.
     LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -264,7 +266,7 @@ static bool handle_packet(
 }
 
 static bool handle_file(Context& context, const string& name) {
-  File f(FilePath(context.net.dir, name));
+  File f(PathFilePath(context.net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
     return false;
@@ -290,7 +292,7 @@ static bool handle_file(Context& context, const string& name) {
 int network2_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto& net = net_cmdline.network();
-    if (!File::Exists(net.dir, LOCAL_NET)) {
+    if (!File::Exists(PathFilePath(net.dir, LOCAL_NET))) {
       LOG(INFO) << "No local.net exists. exiting.";
       return 0;
     }
@@ -299,29 +301,26 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     const auto& networks = net_cmdline.networks();
     // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options;
+    wwiv::sdk::msgapi::MessageApiOptions options{};
     // By defaukt, delete excess messages like net37 did.
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_all;
 
-    auto type2_api = make_unique<WWIVMessageApi>(
-      options, config, networks.networks(), new NullLastReadImpl());
-    auto email_api = make_unique<WWIVMessageApi>(
-      options, config, networks.networks(), new NullLastReadImpl());
     auto user_manager = make_unique<UserManager>(config);
 
     Context context(config, net, *user_manager.get(), networks.networks());
     context.network_number = net_cmdline.network_number();
-    CHECK_NOTNULL(email_api.get());
-    context.set_email_api(email_api.get());
-    context.set_api(2, std::move(type2_api));
+    context.set_email_api(
+        make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));
+    context.set_api(2, make_unique<WWIVMessageApi>(options, config, networks.networks(),
+                                                   new NullLastReadImpl()));
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
       if (net_cmdline.skip_delete()) {
-        backup_file(FilePath(net.dir, LOCAL_NET));
+        backup_file(PathFilePath(net.dir, LOCAL_NET));
       }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
-      if (!File::Remove(net.dir, LOCAL_NET)) {
+      if (!File::Remove(PathFilePath(net.dir, LOCAL_NET))) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
@@ -338,17 +337,18 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   NetworkCommandLine net_cmdline(cmdline, '2');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
                                                 net_cmdline.semaphore_timeout());
     return network2_main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

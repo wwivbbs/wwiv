@@ -140,7 +140,7 @@ template <typename T>
 input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
                                       int min_value = std::numeric_limits<T>::min(),
                                       int max_value = std::numeric_limits<T>::max(),
-                                      bool set_default_value = true) {
+                                      bool set_default_value = false) {
   auto orig = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
   input_result_t<T> r{static_cast<T>(orig.num), orig.key};
   return r;

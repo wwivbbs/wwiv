@@ -25,6 +25,7 @@
 #pragma comment(lib, "AdvApi32.lib")
 
 #include <MSWSock.h>
+#include <WS2tcpip.h>
 
 #else
 
@@ -234,9 +235,9 @@ bool SocketSet::RunOnce() {
   }
 
   VLOG(3) << "About to call select. (" << max_fd << ")";
-  int status = 0;
+  auto status = 0;
   if (timeout_seconds_ > 0) {
-    timeval timeout{};
+    timeval timeout;
     timeout.tv_usec = 0;
     timeout.tv_sec = timeout_seconds_;
     status = select(max_fd + 1, &fds, nullptr, nullptr, &timeout);

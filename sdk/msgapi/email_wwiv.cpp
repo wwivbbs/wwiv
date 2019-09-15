@@ -24,6 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -52,14 +53,13 @@ using namespace wwiv::strings;
 constexpr char CD = 4;
 constexpr char CZ = 26;
 
-WWIVEmail::WWIVEmail(
-  const Config& config,
-  const std::string& data_filename, const std::string& text_filename, int max_net_num)
+WWIVEmail::WWIVEmail(const Config& config, const std::filesystem::path& data_filename,
+                     const std::filesystem::path& text_filename, int max_net_num)
   : Type2Text(text_filename), 
     config_(config), data_filename_(data_filename),
     mail_file_(data_filename_, File::modeBinary | File::modeReadWrite, File::shareDenyReadWrite),
     max_net_num_(max_net_num) {
-  open_ = mail_file_ && mail_file_.file().Exists();
+  open_ = mail_file_ && File::Exists(data_filename);
 }
 
 bool WWIVEmail::Close() {
@@ -85,7 +85,7 @@ static bool modify_email_waiting(const Config& config, uint16_t email_usernum, i
 
 static bool increment_email_counters(const Config& config, uint16_t email_usernum) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(FilePath(config.datadir(), STATUS_DAT),
+  DataFile<statusrec_t> file(PathFilePath(config.datadir(), STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
   if (!file) {
     return false;

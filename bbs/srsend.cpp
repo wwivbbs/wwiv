@@ -44,11 +44,6 @@ bool NewZModemSendFile(const std::string& file_name);
 // from sr.cpp
 extern unsigned char checksum;
 
-
-#if (_MSC_VER >= 1900)
-#define timezone _timezone
-#endif  // MSV_VER && !timezone
-
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   int nBlockSize = 0;
 
@@ -102,7 +97,7 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
 
 char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const std::string& file_name,
             int *terr, bool *abort) {
-  char b[1025], szTempBuffer[20];
+  char b[1025];
 
   int nb = 0;
   if (block_type == 0) {
@@ -118,16 +113,13 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
       b[i] = '\0';
     }
   } else if (block_type == 5) {
-    char szFileDate[20];
     memset(b, 0, 128);
     nb = 128;
     to_char_array(b, stripfn(file_name));
-    sprintf(szTempBuffer, "%ld ", pos);
     // We needed this cast to (long) to compile with XCode 1.5 on OS X
-    sprintf(szFileDate, "%ld", static_cast<long>(file.last_write_time() - timezone));
+    const auto sb = StringPrintf("%ld %ld", pos, static_cast<long>(file.last_write_time()));
 
-    strcat(szTempBuffer, szFileDate);
-    strcpy(&(b[strlen(b) + 1]), szTempBuffer);
+    strcpy(&(b[strlen(b) + 1]), sb.c_str());
     b[127] = static_cast<unsigned char>((static_cast<int>(pos + 127) / 128) >> 8);
     b[126] = static_cast<unsigned char>((static_cast<int>(pos + 127) / 128) & 0x00ff);
   }

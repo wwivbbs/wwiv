@@ -37,6 +37,10 @@
 #include "core/textfile.h"
 #include "core/version.h"
 
+#include "fmt/core.h"
+#include "fmt/printf.h"
+
+
 using std::ofstream;
 using std::string;
 using namespace wwiv::core;
@@ -120,6 +124,11 @@ Logger::~Logger() {
 }
 
 // static
+void Logger::set_cmdline_verbosity(int cmdline_verbosity) {
+  config_.cmdline_verbosity = cmdline_verbosity;
+}
+
+// static
 bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; }
 
 // static
@@ -145,13 +154,6 @@ void Logger::ExitLogger() {
 }
 
 // static
-void Logger::Init(int argc, char** argv) {
-  LoggerConfig config{};
-  config.log_startup = true;
-  Init(argc, argv, config);
-};
-
-// static
 void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   config_ = c;
   config_.cmdline_verbosity = 0;
@@ -161,7 +163,14 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   cmdline.set_unknown_args_allowed(true);
   cmdline.Parse();
 
+  const auto l = cmdline.arg("logdir");
   auto logdir = cmdline.logdir();
+  if (l.is_default() && c.logdir_fn_) {
+    const auto logdir_from_fn = c.logdir_fn_(cmdline.bbsdir());
+    if (!logdir_from_fn.empty()) {
+      logdir = logdir_from_fn;
+    }
+  }
 
   // Set --v from commandline
   config_.cmdline_verbosity = cmdline.iarg("v");
@@ -196,22 +205,27 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
     config_.add_appender(LoggerLevel::verbose, logfile_appender);
     config_.add_appender(LoggerLevel::start, logfile_appender);
   }
-  if (config_.log_startup) {
+  if (config_.log_startup || cmdline.barg("log_startup")) {
     StartupLog(argc, argv);
   }
 }
 
 static std::string DefaultTimestamp() {
-  auto dt = DateTime::now();
-  auto nowc = std::chrono::system_clock::now();
-  auto duration = nowc.time_since_epoch();
-  auto millis = static_cast<int>(
+  const auto dt = DateTime::now();
+  const auto nowc = std::chrono::system_clock::now();
+  const auto duration = nowc.time_since_epoch();
+  const auto millis = static_cast<int>(
       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
-  auto milliss = StringPrintf("%03d ", millis);
-  return StrCat(dt.to_string(log_date_format), ",", milliss);
+  return fmt::sprintf("%s,%03d ", dt.to_string(log_date_format), millis);
 }
 
+
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
+
+LoggerConfig::LoggerConfig(logdir_fn l) : LoggerConfig(l, DefaultTimestamp) {}
+
+LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t) : logdir_fn_(l), timestamp_fn_(t) {}
+
 
 void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> appender) {
   log_to[level].emplace(appender);

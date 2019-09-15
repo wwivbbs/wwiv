@@ -49,7 +49,7 @@ void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, boo
     b[lOrigSize++] = CZ;
   }
 
-  File fileOut(FilePath(a()->temp_directory(), INPUT_MSG));
+  File fileOut(PathFilePath(a()->temp_directory(), INPUT_MSG));
   fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();

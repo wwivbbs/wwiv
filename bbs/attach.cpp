@@ -20,7 +20,6 @@
 
 #include <memory>
 #include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
@@ -37,6 +36,8 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -105,7 +106,7 @@ void attach_file(int mode) {
         int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / SECONDS_PER_DAY);
         bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+          File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bFound = false;
             auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
@@ -155,14 +156,14 @@ void attach_file(int mode) {
               m.status ^= status_file;
               pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
               pFileEmail->Write(&m, sizeof(mailrec));
-              File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
+              File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
               if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                 bFound = false;
                 auto lNumRead = attachFile.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
-                    File::Remove(a()->GetAttachmentDirectory(), fsr.filename);
+                    File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
@@ -249,7 +250,7 @@ void attach_file(int mode) {
                   }
                 } while (!done3 && !a()->hangup_);
               }
-              File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
+              File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
                 auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
@@ -265,8 +266,9 @@ void attach_file(int mode) {
                 bout << "File already exists or invalid filename.\r\n";
               } else {
                 if (so() && !bRemoteUpload) {
-                  // Copy file s to szFullPathName.
-                  if (!File::Copy(szFileToAttach, szFullPathName)) {
+                  std::error_code ec;
+                  using namespace wwiv::fs;
+                  if (!copy_file(szFileToAttach, szFullPathName, ec)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {
@@ -274,9 +276,8 @@ void attach_file(int mode) {
                     bout.getkey();
                   }
                 } else {
-                  const auto full_path =
-                      FilePath(a()->GetAttachmentDirectory().c_str(), szFileToAttach);
-                  receive_file(full_path, &ok, "", 0);
+                  const auto full_path = PathFilePath(a()->GetAttachmentDirectory(), szFileToAttach);
+                  receive_file(full_path.string(), &ok, "", 0);
                 }
                 if (ok) {
                   File attachmentFile(szFullPathName);
@@ -297,7 +298,7 @@ void attach_file(int mode) {
                       m.status ^= status_file;
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                       pFileEmail->Write(&m, sizeof(mailrec));
-                      File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
+                      File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
                       if (!attachFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
                         bout << "Could not write attachment data.\r\n";
                         m.status ^= status_file;
@@ -324,7 +325,7 @@ void attach_file(int mode) {
                         bout << "File attached.\r\n" ;
                       }
                     } else {
-                      File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     }
                   }
                 }
@@ -351,7 +352,7 @@ void attach_file(int mode) {
           msg.title = m.title;
           display_type2_message(msg, &next);
           if (m.status & status_file) {
-            File f(FilePath(a()->config()->datadir(), ATTACH_DAT));
+            File f(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
             if (f.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
               auto num_read = f.Read(&fsr, sizeof(fsr));

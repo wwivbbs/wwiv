@@ -32,16 +32,17 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
+#include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
 
 using std::string;
 using std::unique_ptr;
@@ -86,7 +87,7 @@ static void edit_arc(int arc_number, arcrec* a) {
   items.Run(StringPrintf("Archiver #%d  %s", arc_number, ((arc_number == 1) ? "(Default)" : "")));
 }
 
-bool create_arcs(UIWindow* window, const std::string& datadir) {
+bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -j -C %1 %2", "unzip -l %1",
                           "zip -d %1 -@ < BBSADS.TXT", "zip -z %1 < COMMENT.TXT", "unzip -t %1"});
@@ -109,7 +110,7 @@ bool create_arcs(UIWindow* window, const std::string& datadir) {
                             "archive test command"});
   }
 
-  File file(FilePath(datadir, ARCHIVER_DAT));
+  File file(PathFilePath(datadir, ARCHIVER_DAT));
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile)) {
     messagebox(window,
                StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
@@ -122,7 +123,7 @@ bool create_arcs(UIWindow* window, const std::string& datadir) {
 bool edit_archivers(wwiv::sdk::Config& config) {
   arcrec arc[MAX_ARCS];
 
-  File file(FilePath(config.datadir(), ARCHIVER_DAT));
+  File file(PathFilePath(config.datadir(), ARCHIVER_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary)) {
     if (!create_arcs(out->window(), config.datadir())) {
       return false;

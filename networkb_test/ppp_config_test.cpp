@@ -52,7 +52,7 @@ TEST(PPPConfigTest, NodeConfig) {
   files.Mkdir("network");
   const string line("@2 foo@example.com");
   files.CreateTempFile("network/address.net", line);
-  const string network_dir = files.DirName("network");
+  const auto network_dir = files.DirName("network");
   PPPConfig config(1, "mybbs", network_dir);
   const PPPNodeConfig* node_config = config.ppp_node_config_for(2);
   ASSERT_TRUE(node_config != nullptr);

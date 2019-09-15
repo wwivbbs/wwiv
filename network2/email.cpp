@@ -31,7 +31,6 @@
 #include <vector>
 
 #include "core/command_line.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"

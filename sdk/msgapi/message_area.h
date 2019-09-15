@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "core/filesystem.h"
 #include "core/wwivport.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message.h"

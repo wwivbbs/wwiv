@@ -18,11 +18,8 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
-#include <algorithm>
 #include <cerrno>
-#include <cstring>
 #include <fcntl.h>
-#include <iostream>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
@@ -47,8 +44,7 @@ using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 #ifndef _WIN32
 #ifndef O_TEMPORARY
@@ -57,7 +53,7 @@ namespace core {
 #endif  // _WIN32
 
 // static 
-SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, 
+SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath, 
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
   VLOG(1) << "SemaphoreFile::try_acquire: '" << filepath << "'";
@@ -67,10 +63,11 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath,
   if (step > std::chrono::seconds(1)) {
     step = std::chrono::seconds(1);
   }
-  auto start = std::chrono::steady_clock::now();
-  auto end = start + timeout;
+  const auto start = std::chrono::steady_clock::now();
+  const auto end = start + timeout;
   while (true) {
-    int fd = open(filepath.c_str(), mode, pmode);
+    const auto fn = filepath.string();
+    auto fd = open(fn.c_str(), mode, pmode);
     if (fd >= 0) { 
       write(fd, text.c_str(), text.size());
       return { filepath, fd };
@@ -83,32 +80,32 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath,
 }
 
 // static 
-SemaphoreFile SemaphoreFile::acquire(const std::string& filepath, const std::string& text) {
+SemaphoreFile SemaphoreFile::acquire(const std::filesystem::path& filepath,
+                                     const std::string& text) {
   return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
-SemaphoreFile::SemaphoreFile(const std::string& filepath, int fd) 
-  : filename_(filepath), fd_(fd) {}
+SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd) 
+  : path_(filepath), fd_(fd) {}
 
 SemaphoreFile::~SemaphoreFile() {
-  VLOG(1) << "~SemaphoreFile(): " << filename_ << "; fd: " << fd_;
+  VLOG(1) << "~SemaphoreFile(): " << path_ << "; fd: " << fd_;
   if (fd_ < 0) {
-    LOG(ERROR) << "Skipping closing since file already closed: " << filename_;
+    LOG(ERROR) << "Skipping closing since file already closed: " << path_;
     return;
   }
   if (close(fd_) == -1) {
-    LOG(ERROR) << "Failed to close file: " << filename_ << "; error: " << errno;
+    LOG(ERROR) << "Failed to close file: " << path_ << "; error: " << errno;
   }
   fd_ = -1;
 #ifndef _WIN32
   // Since we don't have O_TEMPORARY on POSIX, we unlink the file
   // which will delete it once the last file handle is closed.
-  if (::unlink(filename_.c_str()) == -1) {
-    LOG(ERROR) << "Failed to unlink file: " << filename_ << "; error: " << errno;
+  if (::unlink(path_.string().c_str()) == -1) {
+    LOG(ERROR) << "Failed to unlink file: " << path_ << "; error: " << errno;
   }
 #endif  // _WIN32
 }
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace wwiv

@@ -34,6 +34,7 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 #include "sdk/user.h"
 
 using std::string;

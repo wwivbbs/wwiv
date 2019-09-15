@@ -25,24 +25,12 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "bbs/batch.h"
 #include "bbs/conf.h"
 #include "bbs/context.h"
 #include "bbs/output.h"
-#include "bbs/remote_io.h"
 #include "bbs/runnable.h"
-#include "core/file.h"
-#include "local_io/local_io.h"
-#include "sdk/config.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/names.h"
-#include "sdk/net.h"
-#include "sdk/status.h"
-#include "sdk/subxtr.h"
-#include "sdk/user.h"
-#include "sdk/usermanager.h"
+#include "core/filesystem.h"
 #include "sdk/vardec.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,11 +53,30 @@ struct tagrec_t {
 };
 
 extern Output bout;
+enum class CommunicationType;
+class LocalIO;
+class RemoteIO;
+struct net_networks_rec;
 
 namespace wwiv {
 namespace core {
 class IniFile;
 }
+namespace sdk {
+class Config;
+class Chains;
+class Names;
+class StatusMgr;
+class Subs;
+struct subboard_t;
+class User;
+class UserManager;
+
+namespace msgapi {
+class MessageApi;
+class WWIVMessageApi;
+} // namespace msgapi
+} // namespace sdk
 } // namespace wwiv
 
 /**
@@ -85,14 +92,14 @@ class Application : public Runnable {
 
 public:
   // Constants
-  static constexpr int exitLevelOK = 0;
+  static constexpr int exitLevelOK{0};
   static constexpr int exitLevelNotOK = 1;
   static constexpr int exitLevelQuit = 2;
 
   Application(LocalIO* localIO);
   virtual ~Application();
 
-  wwiv::sdk::User* user() { return &thisuser_; }
+  wwiv::sdk::User* user() { return thisuser_.get(); }
   wwiv::bbs::SessionContext& context();
 
   void handle_sysop_key(uint8_t key);
@@ -123,10 +130,10 @@ public:
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int user_number);
 
-  void reset_effective_sl() { effective_sl_ = user()->GetSl(); }
-  void effective_sl(int nSl) { effective_sl_ = nSl; }
-  int effective_sl() const { return effective_sl_; }
-  const slrec& effective_slrec() const { return config()->sl(effective_sl_); }
+  void reset_effective_sl();
+  void effective_sl(int nSl);
+  int effective_sl() const;
+  const slrec& effective_slrec() const;
 
   int GetChatNameSelectionColor() const { return chatname_color_; }
 
@@ -189,18 +196,10 @@ public:
   int GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
-  const wwiv::sdk::subboard_t& current_sub() const {
-    return subs().sub(GetCurrentReadMessageArea());
-  }
+  const wwiv::sdk::subboard_t& current_sub() const;
   const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
 
-  const net_networks_rec& current_net() const {
-    const static net_networks_rec empty_rec{};
-    if (net_networks.empty()) {
-      return empty_rec;
-    }
-    return net_networks[net_num()];
-  }
+  const net_networks_rec& current_net() const;
 
   uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
   void SetCurrentConferenceMessageArea(uint16_t n) { current_conf_msgarea_ = n; }
@@ -234,11 +233,7 @@ public:
   const std::string& batch_directory() const { return batch_directory_; }
   const uint8_t primary_port() const { return primary_port_; }
 
-  /*!
-   * @function GetHomeDir Returns the current home directory
-   */
-  const std::string GetHomeDir() const noexcept;
-  const std::string bbsdir() const noexcept;
+  const std::filesystem::path bbsdir() const noexcept;
   const std::string bindir() const noexcept;
   const std::string configdir() const noexcept;
   const std::string logdir() const noexcept;
@@ -265,28 +260,31 @@ public:
 
   bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
-  void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
+  void SetChatReason(const std::string& chat_reason) {
+    chat_reason_ = chat_reason;
+    chatcall_ = !chat_reason.empty();
+  }
+
+  /** Is the chat call alert (user wanted to chat with the sysop. enabled? */
+  bool chatcall() const { return chatcall_; }
+  /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
+  void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
-  wwiv::sdk::Config* config() const { return config_.get(); }
-  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
-    config_ = std::move(config);
-  }
-  /** Returns the WWIV Names.LST Config Object. */
-  wwiv::sdk::Names* names() const { return names_.get(); }
+  wwiv::sdk::Config* config() const;
+  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config);
 
-  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
-  wwiv::sdk::msgapi::MessageApi* msgapi() const {
-    return msgapis_.at(current_sub().storage_type).get();
-  }
-  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const {
-    return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
-  }
+  /** Returns the WWIV Names.LST Config Object. */
+  wwiv::sdk::Names* names() const;
+
+  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const;
+  wwiv::sdk::msgapi::MessageApi* msgapi() const;
+  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
 
   // Public subsystems
-  Batch& batch() { return batch_; }
-  wwiv::sdk::Subs& subs() { return *subs_.get(); }
-  const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
+  Batch& batch();
+  wwiv::sdk::Subs& subs();
+  const wwiv::sdk::Subs& subs() const;
 
   bool read_subs();
   bool create_message_api();
@@ -317,42 +315,54 @@ public:
 public:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
-  int chatname_color_ = 0;
-  int message_color_ = 0;
+  int chatname_color_{0};
+  int message_color_{0};
 
-  uint16_t forced_read_subnum_ = 0;
+  uint16_t forced_read_subnum_{0};
   bool allow_cc_ = false;
   bool user_online_{false};
   bool quoting_ = false;
-  bool m_bTimeOnlineLimited = false;
+  bool m_bTimeOnlineLimited{false};
 
-  bool newscan_at_login_ = false, internal_zmodem_ = true, exec_log_syncfoss_ = true;
-  int m_nNumMessagesReadThisLogon = 0, m_nCurrentLanguageNumber = 0;
-  uint16_t user_dir_num_ = 0;
-  uint16_t user_sub_num_ = 0;
+  bool newscan_at_login_ = false;
+  bool internal_zmodem_ = true;
+  bool exec_log_syncfoss_ = true;
+  int m_nNumMessagesReadThisLogon{0};
+  int m_nCurrentLanguageNumber{0};
+  uint16_t user_dir_num_{0};
+  uint16_t user_sub_num_{0};
   // This one should stay in int since -1 is an allowed value.
-  int current_read_message_area = 0;
-  uint16_t current_conf_msgarea_ = 0;
-  uint16_t current_conf_filearea_ = 0;
-  int m_nNumMsgsInCurrentSub = 0, beginday_node_number_ = 1, exec_child_process_wait_time_ = 500,
-      m_nMaxNumberMessageAreas = 0, m_nMaxNumberFileAreas = 0, network_num_ = 0,
-      m_nMaxNetworkNumber = 0, numf = 0, subchg = 0, topdata = 0, using_modem = 0;
-  int screenlinest = 25;
-  int defscreenbottom = 24;
+  int current_read_message_area{0};
+  uint16_t current_conf_msgarea_{0};
+  uint16_t current_conf_filearea_{0};
+  int m_nNumMsgsInCurrentSub{0};
+
+  int beginday_node_number_{1};
+  int exec_child_process_wait_time_{500};
+  int m_nMaxNumberMessageAreas{0};
+  int m_nMaxNumberFileAreas{0};
+  int network_num_{0};
+  int m_nMaxNetworkNumber{0};
+  int numf{0};
+  int subchg{0};
+  int topdata{0};
+  int using_modem{0};
+  int screenlinest{25};
+  int defscreenbottom{24};
 
   std::string internetPopDomain;
   std::string internetEmailDomain;
   std::string internetEmailName;
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
-  bool m_bInternetUseRealNames;
+  bool m_bInternetUseRealNames{false};
   std::string language_dir;
   std::string cur_lang_name;
   std::string chat_reason_;
   std::string net_email_name;
   std::string temp_directory_;
   std::string batch_directory_;
-  uint8_t primary_port_ = 1;
+  uint8_t primary_port_{1};
   std::string extended_description_filename_;
   std::string dsz_logfile_name_;
   std::string download_filename_;
@@ -361,16 +371,20 @@ public:
 
   asv_rec asv;
 
-  uint16_t mail_who_field_len = 0, max_batch = 0, max_extend_lines = 0, max_chains = 0,
-           max_gfilesec = 0, screen_saver_time = 0;
+  uint16_t mail_who_field_len{0};
+
+  uint16_t max_batch{0};
+  uint16_t max_extend_lines{0};
+  uint16_t max_chains{0};
+  uint16_t max_gfilesec{0};
+  uint16_t screen_saver_time{0};
 
   std::vector<uint8_t> newuser_colors;
   std::vector<uint8_t> newuser_bwcolors;
 
   // public data structures
   std::vector<editorrec> editors;
-  std::vector<chainfilerec> chains;
-  std::vector<chainregrec> chains_reg;
+  std::unique_ptr<wwiv::sdk::Chains> chains;
 
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
@@ -401,7 +415,6 @@ public:
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
   bool chat_file_{false};
-  bool chatcall_{false};
   bool received_short_message_{false};
   bool emchg_{false};
   bool hangup_{false};
@@ -442,7 +455,7 @@ private:
   // Private fields.
 private:
   /*! The current working directory.*/
-  std::string current_dir_;
+  std::filesystem::path bbs_dir_;
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;
@@ -455,11 +468,12 @@ private:
   bool user_already_on_{false};
   bool need_to_clean_net_{false};
   bool at_wfc_{false};
+  bool chatcall_{false};
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
-  wwiv::sdk::User thisuser_;
+  std::unique_ptr<wwiv::sdk::User> thisuser_;
   int effective_sl_{0};
   std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;

@@ -25,6 +25,7 @@
 #include "bbs/new_bbslist.h"
 
 #include "bbs_test/bbs_helper.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 
@@ -48,8 +49,8 @@ static string FindAddressByType(const BbsListEntry& entry, const std::string& ty
 class NewBbsListTest : public testing::Test {
 protected:
     virtual void SetUp() { helper.SetUp(); }
-    const string dir() { return helper.files().TempDir(); }
-    string CreateTempFile(const string& name, const string& contents) {
+    const string dir() { return helper.files().TempDir().string(); }
+    std::filesystem::path CreateTempFile(const string& name, const string& contents) {
       return helper.files().CreateTempFile(name, contents);
     }
     BbsHelper helper;

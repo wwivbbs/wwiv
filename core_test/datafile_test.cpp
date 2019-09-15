@@ -32,9 +32,9 @@ using namespace wwiv::strings;
 TEST(DataFileTest, Read) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
-  File x(FilePath(tmp, "Read"));
+  File x(PathFilePath(tmp, "Read"));
   ASSERT_TRUE(x.Open(File::modeCreateFile|File::modeBinary|File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -43,7 +43,7 @@ TEST(DataFileTest, Read) {
   x.Close();
 
   {
-    DataFile<T> datafile(FilePath(tmp, "Read"), File::modeReadOnly);
+    DataFile<T> datafile(PathFilePath(tmp, "Read"), File::modeReadOnly);
     ASSERT_TRUE((bool) datafile);
     EXPECT_EQ(static_cast<size_t>(2), datafile.number_of_records());
     T t{0, 0};
@@ -68,9 +68,9 @@ TEST(DataFileTest, Read) {
 TEST(DataFileTest, ReadVector) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
-  File x(FilePath(tmp, "ReadVector"));
+  File x(PathFilePath(tmp, "ReadVector"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -81,7 +81,7 @@ TEST(DataFileTest, ReadVector) {
   x.Close();
 
   {
-    DataFile<T> datafile(FilePath(tmp, "ReadVector"), File::modeReadOnly);
+    DataFile<T> datafile(PathFilePath(tmp, "ReadVector"), File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
     EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
@@ -99,9 +99,9 @@ TEST(DataFileTest, ReadVector) {
 TEST(DataFileTest, ReadVector_MaxRecords) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
-  File x(FilePath(tmp, "ReadVector_MaxRecords"));
+  File x(PathFilePath(tmp, "ReadVector_MaxRecords"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -112,7 +112,7 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
   x.Close();
 
   {
-    DataFile<T> datafile(FilePath(tmp, "ReadVector_MaxRecords"), File::modeReadOnly);
+    DataFile<T> datafile(PathFilePath(tmp, "ReadVector_MaxRecords"), File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
     EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
@@ -128,18 +128,19 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
 TEST(DataFileTest, Write) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
 
   {
-    DataFile<T> datafile(FilePath(tmp, "Write"), File::modeCreateFile|File::modeBinary|File::modeReadWrite);
+    DataFile<T> datafile(PathFilePath(tmp, "Write"),
+                         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool) datafile);
     datafile.Write(&t1);
     datafile.Write(&t2);
   }
-  File x(FilePath(tmp, "Write"));
+  File x(PathFilePath(tmp, "Write"));
   ASSERT_TRUE(x.Open(File::modeBinary|File::modeReadOnly));
   x.Read(&t1, sizeof(T));
   x.Read(&t2, sizeof(T));
@@ -153,19 +154,19 @@ TEST(DataFileTest, Write) {
 TEST(DataFileTest, WriteVector) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
 
   {
-    DataFile<T> datafile(FilePath(tmp, "WriteVector"),
+    DataFile<T> datafile(PathFilePath(tmp, "WriteVector"),
         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2};
     datafile.WriteVector(t);
   }
-  File x(FilePath(tmp, "WriteVector"));
+  File x(PathFilePath(tmp, "WriteVector"));
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
   x.Read(&t1, sizeof(T));
   EXPECT_EQ(1, t1.a);
@@ -179,20 +180,20 @@ TEST(DataFileTest, WriteVector) {
 TEST(DataFileTest, WriteVector_MaxRecords) {
   struct T { int a; int b; };
   FileHelper file;
-  string tmp = file.TempDir();
+  auto tmp = file.TempDir();
 
   T t1{1, 2};
   T t2{3, 4};
   T t3{5, 6};
 
   {
-    DataFile<T> datafile(FilePath(tmp, "WriteVector_MaxRecords"),
+    DataFile<T> datafile(PathFilePath(tmp, "WriteVector_MaxRecords"),
       File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2, t3};
     datafile.WriteVector(t, 2);
   }
-  File x(FilePath(tmp, "WriteVector_MaxRecords"));
+  File x(PathFilePath(tmp, "WriteVector_MaxRecords"));
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
   ASSERT_EQ(static_cast<long>(2 * sizeof(T)), x.length());
   x.Read(&t1, sizeof(T));
@@ -207,8 +208,8 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
 TEST(DataFileTest, Read_DoesNotExist) {
   struct T { int a; };
   FileHelper file;
-  const string tmp = file.TempDir();
-  DataFile<T> datafile(FilePath(tmp, "DoesNotExist"), File::modeBinary | File::modeReadWrite);
+  const auto tmp = file.TempDir();
+  DataFile<T> datafile(PathFilePath(tmp, "DoesNotExist"), File::modeBinary | File::modeReadWrite);
   if (datafile) {
     FAIL() << "file should not exist.";
   }

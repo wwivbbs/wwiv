@@ -22,13 +22,13 @@ if (WWIV_BUILD_TESTS)
 endif (WWIV_BUILD_TESTS)
 
 # Cryptlib
-add_subdirectory(deps/cl342)
+add_subdirectory(deps/cl342 EXCLUDE_FROM_ALL)
 
 # FMT
-add_subdirectory(deps/fmt)
+add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
 
 if(WIN32)
-  add_subdirectory(deps/pdcurses)
+  add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
 
 add_subdirectory(core)

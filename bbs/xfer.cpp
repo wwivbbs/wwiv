@@ -17,35 +17,34 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <string>
-#include <vector>
-
+#include "bbs/xfer.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/bgetch.h"
-#include "bbs/execexternal.h"
-
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl2.h"
+#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
+#include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/listplus.h"
+#include "bbs/make_abs_cmd.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
-#include "local_io/keycodes.h"
 #include "bbs/utility.h"
-#include "bbs/xfer.h"
+#include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-#include "local_io/wconstants.h"
-#include "bbs/xfer_common.h"
-#include "bbs/make_abs_cmd.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace wwiv::core;
@@ -141,8 +140,8 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
                stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  File file(FilePath(a()->directories[directory_num].path, stripfn(u->filename)));
-  if (!file.Exists()) {
+  const auto file = PathFilePath(a()->directories[directory_num].path, stripfn(u->filename));
+  if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
@@ -249,7 +248,7 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      make_abs_cmd(a()->bbsdir(), &command);
+      make_abs_cmd(a()->bbsdir().string(), &command);
       strcpy(out_buffer, command.c_str());
       return;
     }
@@ -259,17 +258,17 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
 int list_arc_out(const char *file_name, const char *pszDirectory) {
   string name_to_delete;
 
-  auto full_pathname = FilePath(pszDirectory, file_name);
+  auto full_pathname = PathFilePath(pszDirectory, file_name);
   if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    full_pathname = FilePath(a()->temp_directory(), file_name);
+    full_pathname = PathFilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      auto name_in_dir = FilePath(pszDirectory, file_name);
-      copyfile(name_in_dir, full_pathname, false);
-      name_to_delete = full_pathname;
+      auto name_in_dir = PathFilePath(pszDirectory, file_name);
+      File::Copy(name_in_dir, full_pathname);
+      name_to_delete = full_pathname.string();
     }
   }
   char szArchiveCmd[MAX_PATH];
-  get_arc_cmd(szArchiveCmd, full_pathname.c_str(), 0, "");
+  get_arc_cmd(szArchiveCmd, full_pathname.string().c_str(), 0, "");
   if (!okfn(file_name)) {
     szArchiveCmd[0] = 0;
   }

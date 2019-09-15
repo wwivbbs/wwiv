@@ -22,15 +22,17 @@
 #include <string>
 #include <vector>
 
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "local_io/keycodes.h"
 #include "bbs/pause.h"
-#include "bbs/application.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "local_io/keycodes.h"
+#include "sdk/config.h"
 
 using std::string;
 using std::unique_ptr;
@@ -41,35 +43,35 @@ using namespace wwiv::strings;
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-string CreateFullPathToPrint(const string& basename) {
-  std::vector<string> dirs { a()->language_dir, a()->config()->gfilesdir()};
+std::filesystem::path CreateFullPathToPrint(const string& basename) {
+  std::vector<string> dirs{a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
-    File file(FilePath(base, basename));
+    const auto file{PathFilePath(base, basename)};
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
-      if (file.Exists()) {
-        return file.full_pathname();
+      if (File::Exists(file)) {
+        return file;
       }
       // Since no wwiv filenames contain embedded dots skip to the next directory.
       continue;
     }
-    const auto root_filename = file.full_pathname();
+    std::filesystem::path candidate{file};
     if (a()->user()->HasAnsi()) {
       if (a()->user()->HasColor()) {
         // ANSI and color
-        auto candidate = StrCat(root_filename, ".ans");
+        candidate.replace_extension(".ans");
         if (File::Exists(candidate)) {
           return candidate;
         }
       }
       // ANSI.
-      auto candidate = StrCat(root_filename, ".b&w");
+      candidate.replace_extension(".b&w");
       if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
-    auto candidate = StrCat(root_filename , ".msg");
+    candidate.replace_extension(".msg");
     if (File::Exists(candidate)) {
       return candidate;
     }
@@ -91,20 +93,18 @@ string CreateFullPathToPrint(const string& basename) {
  */
 bool printfile(const string& filename, bool abortable, bool force_pause) {
   const auto full_path_name = CreateFullPathToPrint(filename);
-  {
-    File f(full_path_name);
-    if (!f.Exists()) {
-      // No need to print a file that does not exist.
-      return false;
-    }
-    if (!f.IsFile()) {
-      // Not a file, no need to print a file that is not a file.
-      return false;
-    }
+  if (!File::Exists(full_path_name)) {
+    // No need to print a file that does not exist.
+    return false;
+  }
+  std::error_code ec;
+  if (!std::filesystem::is_regular_file(full_path_name, ec)) {
+    // Not a file, no need to print a file that is not a file.
+    return false;
   }
 
   TextFile tf(full_path_name, "rb");
-  auto v = tf.ReadFileIntoVector();
+  const auto v = tf.ReadFileIntoVector();
   for (const auto& s : v) {
     bout.bputs(s);
     bout.nl();
@@ -112,7 +112,8 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
-    if (has_ansi && !force_pause) bout.clear_lines_listed();
+    if (has_ansi && !force_pause)
+      bout.clear_lines_listed();
     if (contains(s, CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
@@ -120,7 +121,9 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
       // we do not want to render in the bbs.
       break;
     }
-    if (abortable && checka()) break;
+    if (abortable && checka()) {
+      break;
+    }
   }
   bout.flush();
   return !v.empty();
@@ -128,7 +131,7 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
 
 /**
  * Displays a help file or an error that no help is available.
- * 
+ *
  * A help file is a normal file displayed with printfile.
  */
 bool print_help_file(const std::string& filename) {
@@ -149,3 +152,21 @@ void print_local_file(const string& filename) {
   pausescr();
 }
 
+bool printfile_random(const std::string& base_fn) {
+  const auto& dir = a()->language_dir;
+  const auto dot_zero = PathFilePath(dir, StrCat(base_fn, ".0"));
+  if (File::Exists(dot_zero)) {
+    int numOfScreens = 0;
+    for (auto i = 0; i < 1000; i++) {
+      const auto dot_n = PathFilePath(dir, StrCat(base_fn, ".", i));
+      if (File::Exists(dot_n)) {
+        numOfScreens++;
+      } else {
+        break;
+      }
+    }
+    printfile(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(numOfScreens))));
+    return true;
+  }
+  return false;
+}

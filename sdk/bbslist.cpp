@@ -155,7 +155,7 @@ static bool ParseBbsListNetFile(
   const string network_dir,
   wwiv::graphs::Graph& graph,
   uint16_t net_node_number) {
-  TextFile bbs_list_file(FilePath(network_dir, BBSLIST_NET), "rt");
+  TextFile bbs_list_file(PathFilePath(network_dir, BBSLIST_NET), "rt");
   if (!bbs_list_file.IsOpen()) {
     return false;
   }
@@ -233,7 +233,7 @@ BbsListNet BbsListNet::ReadBbsDataNet(const std::string& network_dir) {
   BbsListNet b;
   vector<net_system_list_rec> system_list;
 
-  DataFile<net_system_list_rec> file(FilePath(network_dir, BBSDATA_NET));
+  DataFile<net_system_list_rec> file(PathFilePath(network_dir, BBSDATA_NET));
   if (file) {
     file.ReadVector(system_list);
     for (const auto s : system_list) {

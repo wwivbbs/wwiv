@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "core/os.h"
 
-#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <cstdint>
@@ -53,8 +52,7 @@ using std::stringstream;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace os {
+namespace wwiv::os {
 
 void sleep_for(duration<double> d) {
   auto count = duration_cast<milliseconds>(d).count();
@@ -65,7 +63,7 @@ void sleep_for(duration<double> d) {
 }
 
 void sound(uint32_t frequency, duration<double> d) {
-  auto count = duration_cast<milliseconds>(d).count();
+  const auto count = duration_cast<milliseconds>(d).count();
   ::Beep(frequency, static_cast<uint32_t>(count));
 }
 
@@ -81,7 +79,7 @@ std::string environment_variable(const std::string& variable_name) {
   // See http://techunravel.blogspot.com/2011/08/win32-env-variable-pitfall-of.html
   // Use Win32 functions to get since we do to set...
   char buffer[4096];
-  DWORD size = GetEnvironmentVariable(variable_name.c_str(), buffer, 4096);
+  const DWORD size = GetEnvironmentVariable(variable_name.c_str(), buffer, 4096);
   if (size == 0) {
     // error or does not exits.
     return "";
@@ -90,15 +88,15 @@ std::string environment_variable(const std::string& variable_name) {
 }
 
 string stacktrace() {
-  HANDLE process = GetCurrentProcess();
-  if (process == NULL) {
+  const auto process = GetCurrentProcess();
+  if (process == nullptr) {
     return "";
   }
   SymInitialize(process, nullptr, TRUE);
   void* stack[100];
   uint16_t frames = CaptureStackBackTrace(0, 100, stack, nullptr);
-  SYMBOL_INFO* symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
-  if (symbol == NULL) {
+  auto symbol = static_cast<SYMBOL_INFO *>(calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1));
+  if (symbol == nullptr) {
     return "";
   }
   symbol->MaxNameLen = 255;
@@ -107,12 +105,12 @@ string stacktrace() {
   stringstream out;
   // start at one to skip this current frame.
   for(decltype(frames) i = 1; i < frames; i++) {
-    if (SymFromAddr(process, (DWORD64)(stack[i]), nullptr, symbol)) {
+    if (SymFromAddr(process, reinterpret_cast<DWORD64>(stack[i]), nullptr, symbol)) {
       out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
     }
     IMAGEHLP_LINE64 line;
     DWORD displacement;
-    if (SymGetLineFromAddr64(process, (DWORD64)stack[i], &displacement, &line)) {
+    if (SymGetLineFromAddr64(process, reinterpret_cast<DWORD64>(stack[i]), &displacement, &line)) {
       out << " (" << line.FileName << ": " << std::dec << line.LineNumber << ") ";
     }
     out << std::endl;
@@ -126,5 +124,4 @@ pid_t get_pid() {
 }
 
 
-}  // namespace os
-}  // namespace wwiv
+} // namespace wwiv

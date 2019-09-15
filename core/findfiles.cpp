@@ -28,9 +28,6 @@
 namespace wwiv {
 namespace core {
 
-FindFiles::FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type) 
-  : FindFiles(FilePath(dir, mask), type) {}
-
 static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
   switch (type) {
   case FindFilesType::any: return WFindFileTypeMask::WFINDFILE_ANY;
@@ -43,9 +40,9 @@ static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
   }
 }
 
-FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
+FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type) {
   WFindFile fnd;
-  if (!fnd.open(mask, FindFilesTypeToInt(type))) {
+  if (!fnd.open(mask.string(), FindFilesTypeToInt(type))) {
     VLOG(3) << "Unable to open mask: " << mask;
     return;
   }

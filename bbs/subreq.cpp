@@ -62,7 +62,7 @@ static bool display_sub_categories(const net_networks_rec& net) {
     return false;
   }
 
-  TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
+  TextFile ff(PathFilePath(net.dir, CATEG_NET), "rt");
   if (!ff.IsOpen()) {
     return false;
   }
@@ -124,11 +124,11 @@ static int find_hostfor(const net_networks_rec& net, const std::string& type, sh
 
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
-    std::string fn;
+    std::filesystem::path fn;
     if (i) {
-      fn = FilePath(net.dir, StrCat(SUBS_NOEXT, ".", i));
+      fn = PathFilePath(net.dir, StrCat(SUBS_NOEXT, ".", i));
     } else {
-      fn = FilePath(net.dir, StrCat(SUBS_LST));
+      fn = PathFilePath(net.dir, StrCat(SUBS_LST));
     }
     TextFile file(fn, "r");
     if (!file) {
@@ -349,7 +349,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = to_number<uint16_t>(s);
           if (i || IsEquals(s, "0")) {
-            TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
+            TextFile ff(PathFilePath(net.dir, CATEG_NET), "rt");
             while (ff.ReadLine(s, 100)) {
               int i1 = to_number<uint16_t>(s);
               if (i1 == i) {

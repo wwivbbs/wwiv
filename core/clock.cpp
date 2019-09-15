@@ -19,11 +19,7 @@
 #include "core/clock.h"
 
 #include <chrono>
-#include <cstring>
-#include <iomanip>
-#include <ctime>
 #include <string>
-#include <sstream>
 
 #include "core/datetime.h"
 #include "core/strings.h"
@@ -33,10 +29,10 @@ using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-DateTime SystemClock::Now() noexcept { return DateTime::now(); }
-
+DateTime SystemClock::Now() const noexcept { 
+  return DateTime::now();
 }
+
 }

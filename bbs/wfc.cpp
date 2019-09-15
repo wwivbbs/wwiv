@@ -54,7 +54,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "local_io/local_io.h"
-
 #include "bbs/application.h"
 #include "bbs/voteedit.h"
 #include "bbs/workspace.h"
@@ -67,12 +66,13 @@
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/names.h"
 
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::FilePath;
-using wwiv::core::IniFile;
 using wwiv::os::random_number;
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -153,10 +153,10 @@ void WFC::DrawScreen() {
     a()->Cls();
     if (!screen_buffer) {
       screen_buffer = std::make_unique<char[]>(80 * 25 * sizeof(uint16_t));
-      File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
+      File wfcFile(PathFilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
-        LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
+        LOG(FATAL) << wfcFile << " NOT FOUND.";
         a()->AbortBBS();
       }
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
@@ -462,7 +462,7 @@ int WFC::doWFCEvents() {
         Clear();
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
-        const auto current_dir_slash = StrCat(File::current_directory(), File::pathSeparatorString);
+        const auto current_dir_slash = File::EnsureTrailingSlashPath(File::current_directory());
         auto net_filename = input_path(current_dir_slash, 50);
         if (!net_filename.empty()) {
           external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);

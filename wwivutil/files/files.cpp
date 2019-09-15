@@ -59,13 +59,13 @@ namespace wwivutil {
 namespace files {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
-  DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+  DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
   if (!file) {
-    LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
+    LOG(ERROR) << "Unable to open file: " << file.file();
     return false;
   }
   if (!file.ReadVector(dirs)) {
-    LOG(ERROR) << "Unable to read from file: " << file.file().full_pathname();
+    LOG(ERROR) << "Unable to read from file: " << file.file();
     return false;
   }
   return true;
@@ -143,14 +143,14 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename));
+    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename));
     if (!file) {
-      LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
+      LOG(ERROR) << "Unable to open file: " << file.file();
       return 1;
     }
     vector<uploadsrec> files;
     if (!file.ReadVector(files)) {
-      LOG(ERROR) << "Unable to read dir entries from file: " << file.file().full_pathname();
+      LOG(ERROR) << "Unable to read dir entries from file: " << file.file();
       return 1;
     }
     int num = 0;
@@ -209,15 +209,15 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename),
+    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename),
                               File::modeBinary | File::modeReadWrite);
     if (!file) {
-      LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
+      LOG(ERROR) << "Unable to open file: " << file.file();
       return 1;
     }
     vector<uploadsrec> files;
     if (!file.ReadVector(files)) {
-      LOG(ERROR) << "Unable to read dir entries from file: " << file.file().full_pathname();
+      LOG(ERROR) << "Unable to read dir entries from file: " << file.file();
       return 1;
     }
 
@@ -233,7 +233,7 @@ public:
 
     file.Seek(0);
     if (!file.WriteVector(files)) {
-      LOG(ERROR) << "Unable to write dir entries in file: " << file.file().full_pathname();
+      LOG(ERROR) << "Unable to write dir entries in file: " << file.file();
       return 1;
     }
     // TODO(rushfan): Push this into the DataFile class.

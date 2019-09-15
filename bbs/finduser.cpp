@@ -27,9 +27,13 @@
 #include "bbs/application.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::sdk;

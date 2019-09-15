@@ -38,7 +38,7 @@ class MakeAbsTest : public ::testing::Test {
 protected:
   virtual void SetUp() {
     helper.SetUp();
-    root = helper.app_->bbsdir();
+    root = helper.app_->bbsdir().string();
   }
   BbsHelper helper;
   string root;
@@ -54,8 +54,8 @@ TEST_F(MakeAbsTest, NotUnderRoot) {
 }
 
 TEST_F(MakeAbsTest, UnderRoot) {
-  const string foo = helper.files().CreateTempFile("foo.exe", "");
-  const string expected = foo + " bar";
+  const auto foo = helper.files().CreateTempFile("foo.exe", "");
+  const auto expected = StrCat(foo.string(), " bar");
   string cmdline = "foo bar";
   make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
@@ -64,7 +64,7 @@ TEST_F(MakeAbsTest, UnderRoot) {
 #else 
 
 TEST_F(MakeAbsTest, Smoke) {
-  File f (FilePath(helper.files().TempDir(), "ls foo"));
+  File f(PathFilePath(helper.files().TempDir(), "ls foo"));
   string expected = f.full_pathname();
   string cmdline = "ls foo";
   make_abs_cmd(root, &cmdline);

@@ -19,9 +19,9 @@
 #include "core/datetime.h"
 
 #include <chrono>
-#include <cstring>
 #include <ctime>
 #include <iomanip>
+#include <regex>
 #include <sstream>
 #include <string>
 
@@ -32,8 +32,7 @@ using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 time_t time_t_now() { return time(nullptr); }
 
@@ -60,20 +59,6 @@ daten_t date_to_daten(const std::string& datet) {
   pTm->tm_isdst = 0; // Since this is used for arbitrary compare of date strings, this is ok.
 
   return time_t_to_daten(mktime(pTm));
-}
-
-std::string daten_to_mmddyy(daten_t n) { return time_t_to_mmddyy(static_cast<time_t>(n)); }
-
-std::string time_t_to_mmddyy(time_t t) {
-  auto dt = DateTime::from_time_t(t);
-  return dt.to_string("%m/%d/%y");
-}
-
-std::string daten_to_mmddyyyy(daten_t n) { return time_t_to_mmddyyyy(static_cast<time_t>(n)); }
-
-std::string time_t_to_mmddyyyy(time_t t) {
-  auto dt = DateTime::from_time_t(t);
-  return dt.to_string("%m/%d/%Y");
 }
 
 std::string daten_to_wwivnet_time(daten_t n) {
@@ -148,13 +133,50 @@ std::string to_string(std::chrono::duration<double> dd) {
   if (ms.count() > 0) {
     if (has_one) {
       os << " ";
-    } else {
-      has_one = true;
     }
     os << ms.count() << "ms";
   }
   return os.str();
 };
+
+DateTime parse_yyyymmdd(const std::string& date_str) {
+  // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
+  std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})");
+  std::smatch result;
+  if (!std::regex_match(date_str, date_time_regex)) {
+    return DateTime::now();
+  }
+
+  std::istringstream ss{date_str};
+  ss.exceptions(std::ios::goodbit);
+  std::tm dt = {};
+  ss >> std::get_time(&dt, "%Y-%m-%d");
+  if (ss.fail()) {
+    return DateTime::now();
+  }
+  dt.tm_hour = 0;
+  dt.tm_min = 0;
+  dt.tm_sec = 0;
+  return DateTime::from_tm(&dt);
+}
+
+DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str) {
+  // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
+  std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})\\s([0-9]{2}):([0-9]{2}):([0-9]{2})");
+  std::smatch result;
+  if (!std::regex_match(date_str, date_time_regex)) {
+    return parse_yyyymmdd(date_str);
+  }
+
+  std::istringstream ss{date_str};
+  ss.exceptions(std::ios::goodbit);
+  std::tm dt{};
+  ss >> std::get_time(&dt, "%Y-%m-%d %H:%M:%S");
+  if (ss.fail()) {
+    return parse_yyyymmdd(date_str);
+  }
+  return DateTime::from_tm(&dt);
+}
 
 DateTime::DateTime(system_clock::time_point t)
     : t_(system_clock::to_time_t(t)),
@@ -162,7 +184,22 @@ DateTime::DateTime(system_clock::time_point t)
   update_tm();
 }
 
+static time_t mktime_no_dst_changes(tm* t) noexcept { 
+  // Kludge to match the is_dst match so that our hour
+  // matches exactly in the tm struct and isn't offset
+  // for daylight savings time.
+  auto t2{*t};
+  mktime(&t2);
+  t->tm_isdst = t2.tm_isdst;
+  auto now = mktime(t); 
+  return now;
+}
+
+DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), tm_(*t) , millis_(0) {}
+
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
+
+DateTime::DateTime() : DateTime(static_cast<time_t>(0)) {}
 
 std::string DateTime::to_string(const std::string& format) const { return put_time(&tm_, format); }
 
@@ -192,5 +229,24 @@ std::chrono::system_clock::time_point DateTime::to_system_clock() const noexcept
   return std::chrono::system_clock::from_time_t(t_);
 }
 
-} // namespace core
+bool operator==(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() == rhs.to_time_t(); }
+bool operator!=(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() != rhs.to_time_t(); }
+
+bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
+
+bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs); }
+
+bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
+
+ DateTime operator+(DateTime lhs, std::chrono::duration<double> d) {
+  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+  return DateTime::from_time_t(lhs.to_time_t() + static_cast<time_t>(du.count()));
+}
+
+DateTime operator-(DateTime lhs, std::chrono::duration<double> d) {
+  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+  return DateTime::from_time_t(lhs.to_time_t() - static_cast<time_t>(du.count()));
+}
+
+
 } // namespace wwiv

@@ -14,8 +14,8 @@ set -e
 
 declare -r CMAKE_BUILD="${WORKSPACE}/_build"
 declare -r RELEASE_DIR="${WORKSPACE}/release"
-declare -r WWIV_RELEASE="5.4"
-declare -r WWIV_FULL_RELEASE="5.4.0"
+declare -r WWIV_RELEASE="5.5"
+declare -r WWIV_FULL_RELEASE="5.5.0"
 declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
 echo "WWIV BBS Build"
 echo "Workspace:        ${WORKSPACE}"
@@ -27,6 +27,7 @@ echo "WWIV Release:     ${WWIV_RELEASE}"
 echo "Version:          ${BUILD_NUMBER}"
 echo "Archive:          ${RELEASE_TGZ}"
 echo "Label:            ${label}"
+echo "GCC:              $(gcc --version)"
 
 echo "Ensuring CMAKE_BUILD exists: (${CMAKE_BUILD})"
 if [[ ! -d "${CMAKE_BUILD}" ]]; then
@@ -42,6 +43,13 @@ mkdir -p "${RELEASE_DIR}"
 echo "Created release dir: ${RELEASE_DIR}"
 
 build_binaries -j8
+
+run_test "${CMAKE_BUILD}/core_test" core_tests
+run_test "${CMAKE_BUILD}/sdk_test" sdk_tests
+run_test "${CMAKE_BUILD}/networkb_test" networkb_tests
+run_test "${CMAKE_BUILD}/net_core_test" net_core_tests
+run_test "${CMAKE_BUILD}/bbs_test" bbs_tests
+run_test "${CMAKE_BUILD}/wwivd_test" wwivd_tests
 
 echo "Populating built binaries"
 cp  ${CMAKE_BUILD}/bbs/bbs \

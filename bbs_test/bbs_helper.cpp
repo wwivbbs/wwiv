@@ -48,9 +48,9 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 
 void BbsHelper::SetUp() {
-  string temp = files_.TempDir();
+  auto temp = files_.TempDir();
   // We want the "BBS Home" to be our temp dir.
-  chdir(files_.TempDir().c_str());
+  chdir(temp.string().c_str());
 
   ASSERT_TRUE(files_.Mkdir("data"));
   ASSERT_TRUE(files_.Mkdir("gfiles"));
@@ -68,8 +68,8 @@ void BbsHelper::SetUp() {
   dir_msgs_ = files_.DirName("msgs");
   dir_dloads_ = files_.DirName("dloads");
 #ifdef _WIN32
-  File::FixPathSeparators(&dir_gfiles_);
-  File::FixPathSeparators(&dir_en_gfiles_);
+  dir_gfiles_ = File::FixPathSeparators(dir_gfiles_);
+  dir_en_gfiles_ = File::FixPathSeparators(dir_en_gfiles_);
 #endif  // _WIN32
 
   unique_ptr<configrec> sysconfig = make_unique<configrec>();

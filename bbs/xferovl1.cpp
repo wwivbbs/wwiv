@@ -17,42 +17,40 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <cmath>
-#include <memory>
-#include <string>
-#include <vector>
-
+#include "bbs/xferovl1.h"
 #include "bbs/batch.h"
-#include "bbs/bbsutl.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
-#include "bbs/bbs.h"
-#include "bbs/com.h"
-#include "bbs/sysoplog.h"
-#include "bbs/sr.h"
-#include "bbs/utility.h"
-#include "bbs/xfer.h"
-#include "bbs/xferovl.h"
-#include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
-
 #include "bbs/external_edit.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
 #include "bbs/xfer_common.h"
+#include "bbs/xferovl.h"
+#include "bbs/xfertmp.h"
+#include "core/datetime.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/file.h"
 #include "core/textfile.h"
-#include "core/datetime.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;
@@ -97,10 +95,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "w");
+        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
+        File::Remove(PathFilePath(a()->temp_directory(), "extended.dsc"));
       }
 
       const int saved_screen_chars = a()->user()->GetScreenChars();
@@ -112,7 +110,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
+        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
@@ -199,8 +197,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     return false;
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
-  File f(s);
-  auto t = time_t_to_mmddyy(f.creation_time());
+  auto t = DateTime::from_time_t(File::creation_time(s))
+               .to_string(DateTime::now().to_string("%m/%d/%y"));
   to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');
@@ -219,12 +217,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
   }
 
-  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(a()->temp_directory(), DESC_SDI);
+  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
 
   File::set_current_directory(a()->directories[dn].path);
   {
-    File file(FilePath(File::current_directory(), stripfn(u->filename)));
+    File file(PathFilePath(File::current_directory(), stripfn(u->filename)));
 	  a()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
@@ -288,8 +286,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(a()->temp_directory(), DESC_SDI);
+  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
   return true;
 }
 
@@ -336,9 +334,9 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      File file(FilePath(File::current_directory(), stripfn(u.filename)));
+      const auto file = PathFilePath(File::current_directory(), stripfn(u.filename));
       a()->CdHome();
-      if (file.Exists()) {
+      if (!File::Exists(file)) {
         if (get_file_idz(&u, a()->udir[tempdir].subnum)) {
           count++;
         }
@@ -423,7 +421,7 @@ void tag_it() {
                   stripfn(f.u.filename));
           sprintf(s, "%s%s", a()->temp_directory().c_str(), stripfn(f.u.filename));
           if (!File::Exists(s)) {
-            copyfile(s2, s, true);
+            File::Copy(s2, s);
           }
         }
         File fp(s);
@@ -626,7 +624,7 @@ void tag_files(bool& need_title) {
           sprintf(s1, "%s%s", a()->temp_directory().c_str(),
                   stripfn(f.u.filename));
           if (!File::Exists(s1)) {
-            copyfile(s2, s1, true);
+            File::Copy(s2, s1);
           }
         }
         if (!File::Exists(s1)) {
@@ -700,7 +698,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
           sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
           sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
           if (!File::Exists(s1)) {
-            if (!copyfile(s2, s1, true)) {
+            if (!File::Copy(s2, s1)) {
               bout << "|#6 file unavailable... press any key.";
               bout.getkey();
             }
@@ -987,7 +985,7 @@ void SetNewFileScanDate() {
   bool ok = true;
 
   bout.nl();
-  bout << "|#9Current limiting date: |#2" << daten_to_mmddyy(a()->context().nscandate()) << "\r\n";
+  bout << "|#9Current limiting date: |#2" << DateTime::from_daten(a()->context().nscandate()).to_string("%m/%d/%y") << "\r\n";
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
   bout << "|#1 MM/DD/YY\r\n|#7:";
@@ -1055,7 +1053,7 @@ void SetNewFileScanDate() {
     if (y < 1920) {
       y += 100;
     }
-    struct tm newTime;
+    tm newTime{};
     if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (dd >= 31)) ||
         ((m == 2) && (((y % 4 != 0) && (dd == 29)) || (dd == 30))) ||
         (dd > 31) || ((m == 0) || (y == 0) || (dd == 0)) ||
@@ -1073,10 +1071,11 @@ void SetNewFileScanDate() {
       newTime.tm_mon  = m - 1;
     }
     bout.nl();
-    a()->context().nscandate(time_t_to_daten(mktime(&newTime)));
+    auto dt = DateTime::from_time_t(mktime(&newTime));
+    a()->context().nscandate(dt.to_daten_t());
 
     // Display the new nscan date
-    auto d = daten_to_mmddyyyy(a()->context().nscandate());
+    auto d = dt.to_string("%m/%d/%Y");
     bout << "|#9New Limiting Date: |#2" << d << "\r\n";
 
     // Hack to make sure the date covers everythig since we had to increment the hour by one

@@ -33,25 +33,26 @@ using namespace wwiv::strings;
 TEST(SemaphoreFileTest, AlreadyAcqired) {
   FileHelper file;
   auto tmp = file.TempDir();
-  string fn;
+  std::filesystem::path path;
   {
     // Will throw if it can't acquire.
-    auto ok = SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+    auto ok =
+        SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
-    fn = ok.filename();
-    LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
+    path = ok.path();
+    LOG(INFO) << "fd: " << ok.fd() << "; fn: " << path;
 
-    EXPECT_TRUE(File::Exists(fn));
+    EXPECT_TRUE(File::Exists(path));
 
     try {
       auto nok =
-          SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
+          SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
       FAIL() << "semaphore_not_acquired expected";
     } catch (const wwiv::core::semaphore_not_acquired&) {
       // expected to happen.
     }
   }
-  EXPECT_FALSE(File::Exists(fn)) << fn;
+  EXPECT_FALSE(File::Exists(path)) << path;
 }
 
 TEST(SemaphoreFileTest, Smoke) {
@@ -59,9 +60,9 @@ TEST(SemaphoreFileTest, Smoke) {
   auto tmp = file.TempDir();
   // Will throw if it can't acquire.
   auto ok =
-      SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+      SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
-  auto fn = ok.filename();
+  auto fn = ok.path();
   LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
 
   EXPECT_TRUE(File::Exists(fn)) << fn;

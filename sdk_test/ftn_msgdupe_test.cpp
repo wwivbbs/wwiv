@@ -48,7 +48,7 @@ class FtnMsgDupeTest : public testing::Test {
 public:
   FtnMsgDupeTest() : config_(helper.root()) {}
   bool CreateDupes(std::vector<msgids> ids) {
-    DataFile<msgids> file(FilePath(config_.datadir(), MSGDUPE_DAT),
+    DataFile<msgids> file(PathFilePath(config_.datadir(), MSGDUPE_DAT),
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate);
     if (!file) {
@@ -60,7 +60,7 @@ public:
 
   bool SetLastMessageId(uint32_t message_id) {
     uint64_t id = message_id;
-    DataFile<uint64_t> file(FilePath(config_.datadir(), MSGID_DAT),
+    DataFile<uint64_t> file(PathFilePath(config_.datadir(), MSGID_DAT),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                             File::shareDenyReadWrite);
     if (!file) {
@@ -102,14 +102,14 @@ TEST_F(FtnMsgDupeTest, MsgId_NoExists) {
   auto id = std::stol(parts.at(1), nullptr, 16);
 
   EXPECT_LT(std::abs(id - now), 11) << "id: " << id << "; now: " << now;
-  EXPECT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
+  EXPECT_TRUE(File::Exists(PathFilePath(config_.datadir(), MSGID_DAT)));
 }
 
 TEST_F(FtnMsgDupeTest, Exists) {
   auto now = daten_t_now();
   auto last_message_id = now + 10000;
   ASSERT_TRUE(SetLastMessageId(last_message_id));
-  ASSERT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
+  ASSERT_TRUE(File::Exists(PathFilePath(config_.datadir(), MSGID_DAT)));
   FtnMessageDupe dupe(config_.datadir(), true);
   FidoAddress a{"1:2/3"};
   auto line = dupe.CreateMessageID(a);

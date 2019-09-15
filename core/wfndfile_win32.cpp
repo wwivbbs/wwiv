@@ -18,9 +18,7 @@
 /**************************************************************************/
 #include "core/wfndfile.h"
 
-#include <iostream>
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) {
   __open(file_spec, nTypeMask);
@@ -62,10 +60,10 @@ bool WFindFile::close() {
   return true;
 }
 
-bool WFindFile::IsDirectory() {
+bool WFindFile::IsDirectory() const {
   return !IsFile();
 }
 
-bool WFindFile::IsFile() {
+bool WFindFile::IsFile() const {
   return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }

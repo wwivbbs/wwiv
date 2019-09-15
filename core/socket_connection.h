@@ -21,13 +21,11 @@
 
 #include <chrono>
 #include <cstdint>
-#include <exception>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
-#include "core/net.h"
 #include "core/connection.h"
+#include "core/net.h" // SOCKET
 
 #ifdef _WIN32
 #include <WinSock2.h>

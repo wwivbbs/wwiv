@@ -20,7 +20,6 @@
 #include <chrono>
 #include <cstring>
 #include <iostream>
-#include <stdexcept>
 #include <thread>
 
 #ifdef _WIN32
@@ -230,11 +229,10 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
     }
     return total_read;
   }
-  throw socket_error("unknown error reading from socket.");
 }
 
 int SocketConnection::receive(void* data, const int size, duration<double> d) {
-  int num_read = read_TYPE<void, 0>(sock_, data, d, true, size);
+  const auto num_read = read_TYPE<void, 0>(sock_, data, d, true, size);
   if (open_ && num_read == 0) {
     throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
   }
@@ -242,13 +240,12 @@ int SocketConnection::receive(void* data, const int size, duration<double> d) {
 }
 
 int SocketConnection::receive_upto(void* data, const int size, duration<double> d) {
-  int num_read = read_TYPE<void, 0>(sock_, data, d, false, size);
-  return num_read;
+  return read_TYPE<void, 0>(sock_, data, d, false, size);
 }
 
 string SocketConnection::receive(int size, duration<double> d) {
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  int num_read = receive(data.get(), size, d);
+  const auto num_read = receive(data.get(), size, d);
   return string(data.get(), num_read);
 }
 

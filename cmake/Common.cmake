@@ -20,7 +20,7 @@ if (UNIX)
   endif()
 
   if (CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND CMAKE_CXX_FLAGS "-frtti")
+    list(APPEND CMAKE_CXX_FLAGS "-frtti -lstdc++fs")
   endif()
 
 elseif (WIN32)
@@ -32,6 +32,10 @@ elseif (WIN32)
     add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
     add_definitions(/DNOMINMAX)
     add_definitions(/DWIN32_LEAN_AND_MEAN=1)
+    
+    # Warning 26444 is too noisy to be useful for passing parameters to functions.
+    # See https://developercommunity.visualstudio.com/content/problem/422153/warning-c26444-not-aligned-with-cppcoreguidelines.html
+    add_definitions(/wd26444)
 
     # To silence cereal warnings that they know about already
     # bug: https://github.com/USCiLab/cereal/issues/456

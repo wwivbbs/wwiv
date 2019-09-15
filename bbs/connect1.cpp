@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "core/file.h"
-#include "core/datafile.h"
 #include "core/log.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"

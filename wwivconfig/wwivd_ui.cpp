@@ -294,15 +294,11 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     c.telnet_port = 2323;
     c.http_port = 8080;
     c.http_address = "127.0.0.1";
-    c.binkp_cmd = "./networkb --receive --handle=@H";
-    File::FixPathSeparators(&c.binkp_cmd);
-    c.network_callout_cmd = "./networkb --send --net=@T --node=@N";
-    File::FixPathSeparators(&c.network_callout_cmd);
-    c.beginday_cmd = "./bbs -e";
-    File::FixPathSeparators(&c.beginday_cmd);
+    c.binkp_cmd = File::FixPathSeparators("./networkb --receive --handle=@H");
+    c.network_callout_cmd = File::FixPathSeparators("./networkb --send --net=@T --node=@N");
+    c.beginday_cmd = File::FixPathSeparators("./bbs -e");
 
-    wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
-    c.bbses.push_back(e);
+    c.bbses.push_back(CreateWWIVMatrixEntry());
   } else {
     if (c.network_callout_cmd.empty()) {
       c.network_callout_cmd = File::FixPathSeparators("./networkb --send --net=@T --node=@N");
@@ -311,7 +307,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
       c.beginday_cmd = File::FixPathSeparators("./bbs -e");
     }
     if (c.binkp_cmd.empty()) {
-      c.binkp_cmd = File::FixPathSeparators("./bbs -e");
+      c.binkp_cmd = File::FixPathSeparators("./networkb --receive --handle=@H");
     }
   }
 

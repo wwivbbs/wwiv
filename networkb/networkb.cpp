@@ -80,7 +80,10 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
       "daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
 }
 
-static void ShowHelp(const CommandLine& cmdline) { cout << cmdline.GetHelp() << endl; }
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
+  exit(1);
+}
 
 static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
@@ -115,7 +118,8 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
                                                             const string& filename) {
         const net_networks_rec& net = bink_config.networks()[network_name];
-        return new WFileTransferFile(filename, std::make_unique<File>(FilePath(net.dir, filename)));
+        return new WFileTransferFile(filename,
+                                     std::make_unique<File>(PathFilePath(net.dir, filename)));
       };
       BinkP binkp(c.get(), &bink_config, side, "0", factory);
       binkp.Run(cmdline);
@@ -144,24 +148,24 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   try {
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
-    LOG(ERROR) << e.what();
+    LOG(ERROR) << "Recording failure: '" << e.what() << "'";
     const net_networks_rec& net = bink_config.networks()[network_name];
     Contact contact(net, true);
 
-    LOG(ERROR) << "Recording failure";
+    auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
     if (net.type == network_type_t::wwivnet) {
       auto wwivnet_node = to_number<uint16_t>(sendto_node);
-      contact.add_failure(wwivnet_node, system_clock::to_time_t(start_time));
+      contact.add_failure(wwivnet_node, dt);
     } else {
-      contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
+      contact.add_failure(sendto_node, dt);
     }
 
     throw e;
   }
 
-  const net_networks_rec& net = bink_config.networks()[network_name];
+  const net_networks_rec net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
-    return new WFileTransferFile(filename, std::make_unique<File>(FilePath(net.dir, filename)));
+    return new WFileTransferFile(filename, std::make_unique<File>(PathFilePath(net.dir, filename)));
   };
 
   string sendto_ftn_node;
@@ -181,15 +185,15 @@ static int Main(const NetworkCommandLine& net_cmdline) {
   try {
     static bool initialized = wwiv::core::InitializeSockets();
 
-    int port = net_cmdline.cmdline().iarg("port");
-    bool skip_net = net_cmdline.skip_net();
+    const int port = net_cmdline.cmdline().iarg("port");
+    const bool skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     auto status = sm.GetStatus();
 
     const auto& network_name = net_cmdline.network_name();
 
-    const string sendto_node = net_cmdline.cmdline().sarg("node");
+    const auto sendto_node = net_cmdline.cmdline().sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     bink_config.set_skip_net(skip_net);
@@ -197,7 +201,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     bink_config.set_network_version(status->GetNetworkVersion());
 
     for (const auto& n : bink_config.networks().networks()) {
-      auto lower_case_network_name = ToStringLowerCase(n.name);
+      const auto lower_case_network_name = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
         bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
       } else if (n.type == network_type_t::ftn) {
@@ -215,7 +219,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       }
       return 1;
     } else {
-      ShowHelp(net_cmdline.cmdline());
+      ShowHelp(net_cmdline);
       return 1;
     }
   } catch (const connection_error& e) {
@@ -229,7 +233,9 @@ static int Main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
+
   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
 #ifdef __unix__
@@ -241,11 +247,11 @@ int main(int argc, char** argv) {
   RegisterNetworkBCommands(cmdline);
   NetworkCommandLine net_cmdline(cmdline, 'b');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
                                                 net_cmdline.semaphore_timeout());
     return Main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

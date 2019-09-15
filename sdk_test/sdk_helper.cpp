@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 static statusrec_t create_status() {
   statusrec_t s = {};
   memset(&s, 0, sizeof(statusrec_t));
-  const string now(time_t_to_mmddyy(time_t_now()));
+  const auto now{DateTime::now().to_string("%m/%d/%y")};
   to_char_array(s.date1, now);
   strcpy(s.date2, "00/00/00");
   strcpy(s.date3, "00/00/00");
@@ -55,13 +55,16 @@ static statusrec_t create_status() {
   return s;
 }
 
-SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.CreateTempFilePath("bbs")) {
+SdkHelper::SdkHelper()
+    : saved_dir_(File::current_directory()), 
+      root_(files_.CreateTempFilePath("bbs")) {
   data_ = CreatePath("data");
   msgs_ = CreatePath("msgs");
   gfiles_ = CreatePath("gfiles");
   menus_ = CreatePath("menus");
   scripts_ = CreatePath("scripts");
   dloads_ = CreatePath("dloads");
+  logs_ = CreatePath("logs");
 
   {
     configrec c = {};
@@ -69,6 +72,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(c.gfilesdir, "gfiles");
     to_char_array(c.menudir, "menus");
     to_char_array(c.datadir, "data");
+    to_char_array(c.logdir, "logs");
     to_char_array(c.dloadsdir, "dloads");
 
     // Add header version.
@@ -82,7 +86,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 
-    File cfile(FilePath(root_, CONFIG_DAT));
+    File cfile(PathFilePath(root_, CONFIG_DAT));
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");
     }
@@ -91,7 +95,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   }
 
   {
-    File sfile(FilePath(data_, STATUS_DAT));
+    File sfile(PathFilePath(data_, STATUS_DAT));
     if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
       throw std::runtime_error("failed to create status.dat");
     }
@@ -101,12 +105,13 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   }
 }
 
-std::string SdkHelper::CreatePath(const string& name) {
-  const string  path = files_.CreateTempFilePath(StrCat("bbs/", name));
+std::filesystem::path SdkHelper::CreatePath(const string& name) {
+  const auto path = files_.CreateTempFilePath(FilePath("bbs", name));
   File::mkdirs(path);
   return path;
 }
 
 SdkHelper::~SdkHelper() {
-  chdir(saved_dir_.c_str());
+  auto dir = saved_dir_.string();
+  chdir(dir.c_str());
 }

@@ -19,6 +19,7 @@
 // WWIV5 Network1
 #include <cctype>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -58,9 +59,8 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
 
@@ -120,7 +120,7 @@ static bool handle_packet(const BbsListNet& b, const net_networks_rec& net, Pack
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
-  File f(FilePath(net.dir, name));
+  File f(PathFilePath(net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << net.dir << name;
     return false;
@@ -154,25 +154,26 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
     }
 
     LOG(INFO) << " * Analyzing " << net.name << " pending files...";
-    FindFiles ff(net.dir, "p*.net", FindFilesType::files);
+    FindFiles ff(PathFilePath(net.dir, "p*.net"), FindFilesType::files);
     for (const auto& f : ff) {
       LOG(INFO) << "Processing: " << net.dir << f.name;
       if (handle_file(b, net, f.name)) {
         LOG(INFO) << "Deleting: " << net.dir << f.name;
         if (net_cmdline.skip_delete()) {
-          backup_file(FilePath(net.dir,f.name));
+          backup_file(PathFilePath(net.dir, f.name));
         }
-        File::Remove(net.dir, f.name);
+        File::Remove(PathFilePath(net.dir, f.name));
       }
     }
 
     // Update contact record.
     Contact contact(net, true);
     for (const auto& kv : contact.contacts()) {
-      File outbound(FilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net")));
       auto c = contact.contact_rec_for(kv.second.systemnumber());
-      if (outbound.Exists()) {
-        c->set_bytes_waiting(outbound.length());
+      const auto outbound_fn = PathFilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
+      if (File::Exists(outbound_fn)) {
+        File of(outbound_fn);
+        c->set_bytes_waiting(of.length());
       } else {
         c->set_bytes_waiting(0);
       }
@@ -186,17 +187,19 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) { 
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
+
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   NetworkCommandLine net_cmdline(cmdline, '1');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
 
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
                                                 net_cmdline.semaphore_timeout());
     return network1_main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

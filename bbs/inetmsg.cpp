@@ -33,6 +33,8 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -57,7 +59,7 @@ void get_user_ppp_addr() {
   a()->internetFullEmailAddress = StringPrintf("%s@%s",
       a()->internetEmailName.c_str(),
       a()->internetEmailDomain.c_str());
-  TextFile acctFile(FilePath(net.dir, ACCT_INI), "rt");
+  TextFile acctFile(PathFilePath(net.dir, ACCT_INI), "rt");
   char szLine[260];
   bool found = false;
   if (acctFile.IsOpen()) {
@@ -148,14 +150,16 @@ void read_inet_addr(std::string& internet_address, int user_number) {
   if (user_number == a()->usernum && check_inet_addr(a()->user()->GetEmailAddress())) {
     internet_address = a()->user()->GetEmailAddress();
   } else {
-    File file(FilePath(a()->config()->datadir(), INETADDR_DAT));
-    if (!file.Exists()) {
+    const auto fn = PathFilePath(a()->config()->datadir(), INETADDR_DAT);
+    if (!File::Exists(fn)) {
+      File file(fn);
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       auto size = a()->config()->max_users() * 80;
       auto zero = std::make_unique<char[]>(size);
       file.Write(zero.get(), size);
     } else {
       char szUserName[255];
+      File file(fn);
       file.Open(File::modeReadOnly | File::modeBinary);
       file.Seek(80 * user_number, File::Whence::begin);
       file.Read(szUserName, 80L);
@@ -169,7 +173,6 @@ void read_inet_addr(std::string& internet_address, int user_number) {
         a()->users()->writeuser(&user, user_number);
       }
     }
-    file.Close();
   }
 }
 
@@ -178,7 +181,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return; /*nullptr;*/
   }
 
-  File inetAddrFile(FilePath(a()->config()->datadir(), INETADDR_DAT));
+  File inetAddrFile(PathFilePath(a()->config()->datadir(), INETADDR_DAT));
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::Whence::begin);
@@ -191,8 +194,8 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return;
   }
   const auto& net = a()->net_networks[inet_net_num];
-  TextFile in(FilePath(net.dir, ACCT_INI), "rt");
-  TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
+  TextFile in(PathFilePath(net.dir, ACCT_INI), "rt");
+  TextFile out(PathFilePath(a()->temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {
     char szLine[260];
     while (in.ReadLine(szLine, 255)) {
@@ -214,7 +217,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     in.Close();
     out.Close();
   }
-  File::Remove(in.full_pathname());
-  copyfile(out.full_pathname(), in.full_pathname(), false);
-  File::Remove(out.full_pathname());
+  File::Remove(in.path());
+  File::Copy(out.path(), in.path());
+  File::Remove(out.path());
 }

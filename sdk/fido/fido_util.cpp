@@ -25,13 +25,13 @@
 #include <vector>
 
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/findfiles.h"
-#include "core/datetime.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;
@@ -47,14 +47,14 @@ namespace fido {
 
 constexpr char CZ = 26;
 
-
 // We use DDHHMMSS like SBBSECHO v2 does.
 std::string packet_name(DateTime& dt) {
   auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }
 
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source,
+                        const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
   int16_t net = source.net() - dest.net();
   uint16_t node = source.node() - dest.node();
 
@@ -73,12 +73,13 @@ std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_statu
   return net_node_name(dest, extension);
 }
 
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source,
+                        const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
   return bundle_name(source, dest, dow_extension(dow, bundle_number));
 }
 
 std::vector<std::string> dow_prefixes() {
-  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
+  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
   return dow;
 }
 
@@ -96,11 +97,15 @@ std::string dow_extension(int dow_num, int bundle_number) {
 }
 
 bool is_bundle_file(const std::string& name) {
-  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa" };
+  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa"};
   auto dot = name.find_last_of('.');
-  if (dot == string::npos) { return false; }
+  if (dot == string::npos) {
+    return false;
+  }
   auto ext = name.substr(dot + 1);
-  if (ext.length() != 3) { return false; }
+  if (ext.length() != 3) {
+    return false;
+  }
   ext.pop_back();
   StringLowerCase(&ext);
   return contains(dow, ext);
@@ -126,7 +131,8 @@ static string control_file_extension(fido_bundle_status_t status) {
   return s;
 }
 
-std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
+std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest,
+                              fido_bundle_status_t status) {
   auto net = dest.net();
   auto node = dest.node();
 
@@ -143,7 +149,8 @@ std::string daten_to_fido(time_t t) {
 // Format: 10 Nov 16  21:15:45
 daten_t fido_to_daten(std::string d) {
   try {
-    vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
     auto now = time_t_now();
     struct tm* t = localtime(&now);
@@ -173,7 +180,7 @@ daten_t fido_to_daten(std::string d) {
       // Error.. return now so we don't blow stuff up.
       result = time_t_now();
     }
-    return time_t_to_daten(result);
+    return DateTime::from_time_t(result).to_daten_t();  
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
     return daten_t_now();
@@ -189,7 +196,7 @@ std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a) {
 }
 
 std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a) {
-  return StrCat(to_zone_net_node(a),  ".", a.point());
+  return StrCat(to_zone_net_node(a), ".", a.point());
 }
 
 std::vector<std::string> split_message(const std::string& s) {
@@ -202,11 +209,7 @@ std::vector<std::string> split_message(const std::string& s) {
 /**
  * \brief Type of control line. Control-A Kludge or non-control-a like AREA, or none.
  */
-enum class FtnControlLineType {
-  control_a,
-  plain_control_line,
-  none
-};
+enum class FtnControlLineType { control_a, plain_control_line, none };
 
 static FtnControlLineType determine_kludge_line_type(const std::string& line) {
   if (line.empty()) {
@@ -215,8 +218,7 @@ static FtnControlLineType determine_kludge_line_type(const std::string& line) {
   if (line.front() == 0x01) {
     return line.size() > 1 ? FtnControlLineType::control_a : FtnControlLineType::none;
   }
-  if (starts_with(line, "AREA:")
-    || starts_with(line, "SEEN-BY: ")) {
+  if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
     return FtnControlLineType::plain_control_line;
   }
   return FtnControlLineType::none;
@@ -268,17 +270,14 @@ string FidoToWWIVText(const string& ft, bool convert_control_codes) {
     } break;
     case FtnControlLineType::none:
     default:
-    break;
+      break;
     }
     wt.append(line).append("\r\n");
   }
   return wt;
 }
 
-string WWIVToFidoText(const string& wt) {
-  return WWIVToFidoText(wt, 9);
-
-}
+string WWIVToFidoText(const string& wt) { return WWIVToFidoText(wt, 9); }
 
 string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
   auto temp = wt;
@@ -314,11 +313,11 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
       line = line.substr(2);
       int8_t code_num = code - '0';
       if (code == '0') {
-        if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") || starts_with(line, "PID:")) {
+        if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") ||
+            starts_with(line, "PID:")) {
           // Handle ^A Control Lines
           out << "\001" << line << "\r";
-        }
-        else if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
+        } else if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
           // Handle kludge lines that do not start with ^A
           out << line << "\r";
         }
@@ -392,14 +391,13 @@ static std::vector<std::string> parse_routes(const std::string& routes) {
   return result;
 }
 
-
 enum class RouteMatch { yes, no, exclude };
 
 // route can be a mask of: {Zone:*, Zone:Net/*, or Zone:Net/node}
 // also a route can be negated with ! in front of it.
 static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std::string& route) {
   auto r = StringTrim(route);
-  
+
   RouteMatch positive = RouteMatch::yes;
 
   // Negated route.
@@ -463,7 +461,7 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
   for (const auto& rr : rs) {
     RouteMatch m = matches_route(a, rr);
     if (m != RouteMatch::no) {
-       // Ignore any no matches, return otherwise;
+      // Ignore any no matches, return otherwise;
       if (m != RouteMatch::no) {
         ok = (m == RouteMatch::yes);
       }
@@ -473,8 +471,8 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
 }
 
 wwiv::sdk::fido::FidoAddress FindRouteToAddress(
-  const wwiv::sdk::fido::FidoAddress& a,
-  const std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t>& node_configs_map) {
+    const wwiv::sdk::fido::FidoAddress& a,
+    const std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t>& node_configs_map) {
 
   for (const auto& nc : node_configs_map) {
     if (nc.first == a) {
@@ -487,8 +485,8 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
   return EMPTY_FIDO_ADDRESS;
 }
 
-wwiv::sdk::fido::FidoAddress FindRouteToAddress(
-  const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout) {
+wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddress& a,
+                                                const wwiv::sdk::fido::FidoCallout& callout) {
   return FindRouteToAddress(a, callout.node_configs_map());
 }
 
@@ -501,22 +499,24 @@ bool exists_bundle(const std::string& dir) {
   const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {
-      FindFiles ff(FilePath(dir, StrCat("*.", e)), FindFilesType::files);
+      FindFiles ff(PathFilePath(dir, StrCat("*.", e)), FindFilesType::files);
       for (const auto& f : ff) {
-        if (f.size > 0) return true;
+        if (f.size > 0)
+          return true;
       }
     }
     {
-      FindFiles ff(FilePath(dir, StrCat("*.", ToStringUpperCase(e))), FindFilesType::files);
+      FindFiles ff(PathFilePath(dir, StrCat("*.", ToStringUpperCase(e))), FindFilesType::files);
       for (const auto& f : ff) {
-        if (f.size > 0) return true;
+        if (f.size > 0)
+          return true;
       }
     }
   }
   return false;
 }
 
-/** 
+/**
  * Display ISO 8601 offset from UTC in timezone
  * (1 minute=1, 1 hour=100)
  * If timezone cannot be determined, no characters.
@@ -526,17 +526,20 @@ std::string tz_offset_from_utc() {
   return dt.to_string("%z");
 }
 
-static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std::string path) {
+static std::vector<std::pair<std::string, flo_directive>>
+ParseFloFile(const std::filesystem::path& path) {
   TextFile file(path, "r");
   if (!file.IsOpen()) {
-    return{};
+    return {};
   }
 
   std::vector<std::pair<std::string, flo_directive>> result;
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
-    if (line.empty()) { continue; }
+    if (line.empty()) {
+      continue;
+    }
     auto st = line.front();
     if (st == '^' || st == '#' || st == '~') {
       const string fn = line.substr(1);
@@ -546,38 +549,43 @@ static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std
   return result;
 }
 
-FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std::string filename)
-  : net_(net), dir_(dir), filename_(filename), dest_() {
-  if (!contains(filename, '.')) {
+FloFile::FloFile(const net_networks_rec& net, const std::filesystem::path& p)
+    : net_(net), path_(p), dest_() {
+  std::filesystem::path fn;
+  if (!path_.has_filename()) {
     // This is a malformed flo file
+    LOG(ERROR) << "Malformed FLO file found, bad filename: " << path_;
+    return;
+  }
+  if (!path_.has_extension()) {
+    // This is a malformed flo file
+    LOG(ERROR) << "Malformed FLO file found, no extension: " << path_;
     return;
   }
 
-  string::size_type dot = filename.find_last_of('.');
-  if (dot == string::npos) {
-    // WTF
-    return;
-  }
+  auto basename = ToStringLowerCase(path_.stem().string());
+  auto ext = ToStringLowerCase(path_.extension().string());
 
-  auto basename = ToStringLowerCase(filename.substr(0, dot));
-  auto ext = ToStringLowerCase(filename.substr(dot + 1));
-
-  if (ext.length() != 3) {
+  // Check for 4 so that it's dot + 3 letter extension
+  if (ext.length() != 4) {
     // malformed flo file
+    LOG(ERROR) << "Malformed FLO file found, bad extension: " << path_;
     return;
   }
+  // extract the dot
+  ext = ext.substr(1);
 
   if (basename.length() != 8) {
     // malformed flo file
+    LOG(ERROR) << "Malformed FLO file found, bad stem: " << path_;
     return;
   }
-
   if (!ends_with(ext, "lo")) {
     // malformed flo file
+    LOG(ERROR) << "Malformed FLO file found, bad extension: " << path_;
     return;
   }
-  auto st = to_lower_case(ext.front());
-  status_ = static_cast<fido_bundle_status_t>(st);
+  status_ = static_cast<fido_bundle_status_t>(ext.front());
 
   auto netstr = basename.substr(0, 4);
   auto net_num = to_number<int16_t>(netstr, 16);
@@ -590,10 +598,9 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
   Load();
 }
 
-FloFile::~FloFile() {
-}
+FloFile::~FloFile() {}
 
-bool FloFile::insert(const std::string& file, flo_directive directive) { 
+bool FloFile::insert(const std::string& file, flo_directive directive) {
   entries_.push_back(std::make_pair(file, directive));
   return true;
 }
@@ -609,21 +616,22 @@ bool FloFile::erase(const std::string& file) {
 }
 
 bool FloFile::Load() {
-  File f(FilePath(dir_, filename_));
-  exists_ = f.Exists();
+  exists_ = File::Exists(path_);
   if (!exists_) {
     return false;
   }
-  
+
+  File f(path_);
   poll_ = f.length() == 0;
-  entries_ = ParseFloFile(FilePath(dir_, filename_));
+  entries_ = ParseFloFile(path_);
   return true;
 }
 
 bool FloFile::Save() {
   if (poll_ || !entries_.empty()) {
-    File f(FilePath(dir_, filename_));
-    if (!f.Open(File::modeCreateFile | File::modeReadWrite | File::modeText | File::modeTruncate, File::shareDenyReadWrite)) {
+    File f(path_);
+    if (!f.Open(File::modeCreateFile | File::modeReadWrite | File::modeText | File::modeTruncate,
+                File::shareDenyReadWrite)) {
       return false;
     }
     for (const auto& e : entries_) {
@@ -632,27 +640,22 @@ bool FloFile::Save() {
       f.Writeln(StrCat(dr, name));
     }
     return true;
-  } else if (File::Exists(dir_, filename_)) {
-    return File::Remove(dir_, filename_);
+  } else if (File::Exists(path_)) {
+    return File::Remove(path_);
   }
   return true;
 }
 
-
-FidoAddress FloFile::destination_address() const {
-  return *dest_.get();
-}
+FidoAddress FloFile::destination_address() const { return *dest_.get(); }
 
 FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net)
-	: bbsdir_(bbsdir), 
-    net_(net),
-    net_dir_(File::absolute(bbsdir, net.dir)),
-    inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
-    temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
-    temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
-    outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
-    netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
-    bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)) {}
+    : bbsdir_(bbsdir), net_(net), net_dir_(File::absolute(bbsdir, net.dir)),
+      inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
+      temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
+      temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
+      outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
+      netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
+      bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)) {}
 
 FtnDirectories::~FtnDirectories() {}
 
@@ -660,12 +663,10 @@ const std::string& FtnDirectories::net_dir() const { return net_dir_; }
 const std::string& FtnDirectories::inbound_dir() const { return inbound_dir_; }
 const std::string& FtnDirectories::temp_inbound_dir() const { return temp_inbound_dir_; }
 const std::string& FtnDirectories::temp_outbound_dir() const { return temp_outbound_dir_; }
-const std::string&FtnDirectories::outbound_dir() const { return outbound_dir_; }
-const std::string&FtnDirectories::netmail_dir() const { return netmail_dir_; }
-const std::string&FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
+const std::string& FtnDirectories::outbound_dir() const { return outbound_dir_; }
+const std::string& FtnDirectories::netmail_dir() const { return netmail_dir_; }
+const std::string& FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
 
-
-}  // namespace fido
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace fido
+} // namespace sdk
+} // namespace wwiv

@@ -39,7 +39,6 @@
 #include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/inifile.h"
@@ -79,7 +78,6 @@ static string CreateNetworkBinary(const std::string exe) {
   ss << " --bbsdir=" << a()->bbsdir();
   ss << " --bindir=" << a()->bindir();
   ss << " --configdir=" << a()->configdir();
-  ss << " --logdir=" << a()->logdir();
 
   return ss.str();
 }
@@ -105,11 +103,15 @@ void cleanup_net() {
     hang_it_up();
   }
 
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
+  for (int nNetNumber = 0;
+       nNetNumber < wwiv::stl::size_int(a()->net_networks);
+       nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
+    VLOG(2) << "cleanup_net: Processing Network: " << net.name;
 
     if (!net.sysnum) {
+      VLOG(1) << "Skipping network due to no sysnum: " << net.name;
       continue;
     }
 
@@ -122,9 +124,7 @@ void cleanup_net() {
     ss << " ." << a()->net_num();
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
-    if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
-      break;
-    }
+    ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG);
     a()->status_manager()->RefreshStatusCache();
     a()->SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
@@ -340,7 +340,7 @@ void print_pending_list() {
       continue;
     }
 
-    File deadNetFile(FilePath(net.dir, DEAD_NET));
+    File deadNetFile(PathFilePath(net.dir, DEAD_NET));
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
@@ -357,7 +357,7 @@ void print_pending_list() {
       continue;
     }
 
-    File checkNetFile(FilePath(net.dir, CHECK_NET));
+    File checkNetFile(PathFilePath(net.dir, CHECK_NET));
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
@@ -535,7 +535,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
 
   if (!got_color) {
     got_color = 1;
-    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+    IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
@@ -642,7 +642,7 @@ static std::pair<uint16_t, int> ansicallout() {
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+    IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       callout_ansi = ini.value<bool>("CALLOUT_ANSI");

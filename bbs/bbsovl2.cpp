@@ -28,6 +28,7 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "local_io/keycodes.h"
+#include "sdk/names.h"
 
 using std::string;
 using std::chrono::milliseconds;

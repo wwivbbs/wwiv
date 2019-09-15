@@ -22,8 +22,9 @@
 #include <vector>
 
 #include "bbs/batch.h"
-#include "bbs/bbsutl.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
@@ -31,26 +32,28 @@
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "local_io/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/lpfunc.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "bbs/sysoplog.h"
-#include "local_io/wconstants.h"
-#include "bbs/bbs.h"
 #include "bbs/shortmsg.h"
+#include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
 
 using std::string;
@@ -364,9 +367,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
+      auto stf =
+          PathFilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
       if (lp_config.check_exist) {
-        if (!ListPlusExist(stf)) {
+        if (!ListPlusExist(stf.string())) {
           buffer = "OFFLN";
         }
       }
@@ -657,7 +661,7 @@ static void check_lp_colors() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
@@ -667,7 +671,7 @@ void save_lp_config() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
@@ -1343,7 +1347,7 @@ static int remove_filename(const char *file_name, int dn) {
           remove_from_file_database(szTempFileName);
         }
         if (rm) {
-          File::Remove(a()->directories[dn].path, u.filename);
+          File::Remove(PathFilePath(a()->directories[dn].path, u.filename));
           if (rdlp && u.ownersys == 0) {
             User user;
             a()->users()->readuser(&user, u.ownerusr);
@@ -1556,11 +1560,11 @@ static int move_filename(const char *file_name, int dn) {
           if (ListPlusExist(szDestFileName)) {
             File::Remove(szSourceFileName);
           } else {
-            copyfile(szSourceFileName, szDestFileName, false);
+            File::Copy(szSourceFileName, szDestFileName);
             File::Remove(szSourceFileName);
           }
         } else {
-          copyfile(szSourceFileName, szDestFileName, false);
+          File::Copy(szSourceFileName, szDestFileName);
           File::Remove(szSourceFileName);
         }
       }

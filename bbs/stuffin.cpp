@@ -18,21 +18,19 @@
 /**************************************************************************/
 #include "bbs/stuffin.h"
 
-#include <string>
-#include <vector>
-
-#include "core/file.h"
-#include "core/strings.h"
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/dropfile.h"
 #include "bbs/remote_io.h"
 #include "bbs/utility.h"
-
+#include "core/file.h"
+#include "core/strings.h"
 #include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;

@@ -51,7 +51,7 @@ TEST(GoodIps, IsAlwaysAllowed) {
 TEST(BadIps, Smoke) {
   FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  BadIp ip(fn);
+  BadIp ip(fn.string());
   EXPECT_TRUE(ip.IsBlocked("10.0.0.1"));
   EXPECT_TRUE(ip.IsBlocked("8.8.8.8"));
   EXPECT_FALSE(ip.IsBlocked("4.4.4.4"));
@@ -73,7 +73,7 @@ TEST(AutoBlock, ShouldBlock) {
   b.auto_bl_sessions = 1;
   FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  auto bip = std::make_shared<BadIp>(fn);
+  auto bip = std::make_shared<BadIp>(fn.string());
   AutoBlocker blocker(bip, b);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");
@@ -89,7 +89,7 @@ TEST(AutoBlock, ShouldNotBlock) {
   b.auto_bl_sessions = 1;
   FileHelper helper;
   auto fn = helper.CreateTempFile("badip.txt", "10.0.0.1\r\n8.8.8.8\r\n");
-  auto bip = std::make_shared<BadIp>(fn);
+  auto bip = std::make_shared<BadIp>(fn.string());
   AutoBlocker blocker(bip, b);
   EXPECT_FALSE(bip->IsBlocked("1.1.1.1"));
   blocker.Connection("1.1.1.1");

@@ -89,10 +89,10 @@ static bool CreateConfigOvr(const string& bbsdir) {
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (int i = 1; i <= num_instances; i++) {
-    string instance_tag = StringPrintf("WWIV-%u", i);
+    auto instance_tag = StringPrintf("WWIV-%u", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
-    string temp_directory = ini.value<string>("TEMP_DIRECTORY");
+    auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
     if (temp_directory.empty()) {
       LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
       return false;
@@ -100,20 +100,17 @@ static bool CreateConfigOvr(const string& bbsdir) {
 
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-    string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
+    auto batch_directory = ini.value<string>("BATCH_DIRECTORY", temp_directory);
 
     // Replace %n with instance number value.
     const auto instance_num_string = std::to_string(i);
     StringReplace(&temp_directory, "%n", instance_num_string);
     StringReplace(&batch_directory, "%n", instance_num_string);
 
-    File::absolute(bbsdir, &temp_directory);
-    File::absolute(bbsdir, &batch_directory);
+    temp_directory = File::EnsureTrailingSlash(File::absolute(bbsdir, temp_directory));
+    batch_directory = File::EnsureTrailingSlash(File::absolute(bbsdir, batch_directory));
 
-    File::EnsureTrailingSlash(&temp_directory);
-    File::EnsureTrailingSlash(&batch_directory);
-
-    legacy_configovrrec_424_t r = {};
+    legacy_configovrrec_424_t r{};
     r.primaryport = 1;
     to_char_array(r.batchdir, batch_directory);
     to_char_array(r.tempdir, temp_directory);
@@ -147,7 +144,9 @@ WInitApp::~WInitApp() {
 
 int main(int argc, char* argv[]) {
   try {
-    wwiv::core::Logger::Init(argc, argv);
+    LoggerConfig config(LogDirFromConfig);
+    Logger::Init(argc, argv, config);
+
     std::unique_ptr<WInitApp> app(new WInitApp());
     return app->main(argc, argv);
   } catch (const std::exception& e) {
@@ -410,7 +409,7 @@ int WInitApp::main(int argc, char** argv) {
   CreateConfigOvr(bbsdir);
 
   {
-    File archiverfile(FilePath(config.datadir(), ARCHIVER_DAT));
+    File archiverfile(PathFilePath(config.datadir(), ARCHIVER_DAT));
     if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
       create_arcs(window, config.datadir());
     }

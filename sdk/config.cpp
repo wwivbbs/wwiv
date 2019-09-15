@@ -34,7 +34,7 @@ static const int CONFIG_DAT_SIZE_424 = 5660;
 
 Config::Config(const configrec& config) : config_430(config) { set_config(&config, true); }
 
-Config::Config(const std::string& root_directory)
+Config::Config(const std::filesystem::path& root_directory)
     : initialized_(false), root_directory_(root_directory), config_430(root_directory) {
   if (!config_430.IsReadable()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -98,6 +98,10 @@ void Config::update_paths() {
     strcpy(config_.scriptdir, config_.datadir);
   }
   script_dir_ = to_abs_path(config_.scriptdir);
+  if (config_.logdir[0]) {
+    // If the logdir is empty, leave log_dir_ empty.
+    log_dir_ = to_abs_path(config_.logdir);
+  }
 }
 
 void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
@@ -116,7 +120,7 @@ Config430::Config430(const Config& config) : Config430(config.root_directory()) 
 Config430::Config430(const configrec& config) { set_config(&config, true); }
 
 bool Config430::IsReadable() {
-  DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
+  DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -125,9 +129,9 @@ bool Config430::IsReadable() {
   return true;
 }
 
-Config430::Config430(const std::string& root_directory)
+Config430::Config430(const std::filesystem::path& root_directory)
     : initialized_(false), root_directory_(root_directory) {
-  DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
+  DataFile<configrec> configFile(PathFilePath(root_directory, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -160,7 +164,7 @@ Config430::Config430(const std::string& root_directory)
   }
 }
 
-std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_, dir); }
+std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_.string(), dir); }
 
 void Config430::update_paths() {
   if (!config_.scriptdir[0]) {
@@ -180,7 +184,7 @@ void Config430::set_config(const configrec* config, bool need_to_update_paths) {
 const configrec* Config430::config() const { return &config_; }
 
 bool Config430::Load() {
-  DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
+  DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -194,11 +198,19 @@ bool Config430::Load() {
 }
 
 bool Config430::Save() {
-  File file(FilePath(root_directory_, CONFIG_DAT));
+  File file(PathFilePath(root_directory_, CONFIG_DAT));
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
   }
   return file.Write(&config_, sizeof(configrec)) == sizeof(configrec);
+}
+
+std::string LogDirFromConfig(const std::string& bbsdir) { 
+  Config config{bbsdir}; 
+  if (!config.IsInitialized()) {
+    return {};
+  }
+  return config.logdir();
 }
 
 } // namespace sdk

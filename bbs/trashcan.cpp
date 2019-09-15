@@ -18,14 +18,14 @@
 /**************************************************************************/
 #include "bbs/trashcan.h"
 
-#include <algorithm>
-#include <chrono>
-#include <string>
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -33,9 +33,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-
 Trashcan::Trashcan(wwiv::sdk::Config& config)
-    : file_(FilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
+    : file_(PathFilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
 
 Trashcan::~Trashcan() = default;
 
@@ -51,13 +50,13 @@ static bool Matches(string whole, string pattern) {
   StringUpperCase(&pattern);
   if ((pattern.length() > 2) && pattern.front() == '*' && pattern.back() == '*') {
     // We have *foo*
-    string s = pattern.substr(1);
+    auto s = pattern.substr(1);
     s.pop_back();
     return whole.find(s) != string::npos;
   } else if (pattern.front() == '*') {
     return ends_with(whole, pattern.substr(1));
   } else if (pattern.back() == '*') {
-    string s = pattern;
+    auto s = pattern;
     s.pop_back();
     return starts_with(whole, s);
   } else {
@@ -67,20 +66,19 @@ static bool Matches(string whole, string pattern) {
 }
 
 bool Trashcan::IsTrashName(const std::string& rawname) {
-  if (!file_.Exists()) {
+  if (!File::Exists(file_.path())) {
     return false;
   }
   // Gotta have a name to be in the trashcan.
   if (rawname.empty()) {
     return false;
   }
-  TextFile file(file_.full_pathname(), "rt");
+  TextFile file(file_.path(), "rt");
   if (!file.IsOpen()) {
     return false;
   }
 
-  string name(rawname);
-  StringUpperCase(&name);
+  const auto name{ToStringUpperCase(rawname)};
 
   string line;
   while (file.ReadLine(&line)) {

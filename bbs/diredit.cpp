@@ -34,6 +34,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
+#include "sdk/user.h"
+
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -166,8 +169,8 @@ void modify_dir(int n) {
       bout << " \b";
       auto s = input_path(r.path, 79);
       if (!s.empty()) {
-        File dir(s);
-        if (!dir.Exists()) {
+        const string dir{s};
+        if (!File::Exists(dir)) {
           a()->CdHome();
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
@@ -176,7 +179,7 @@ void modify_dir(int n) {
           }
         }
         if (!s.empty()) {
-          File::EnsureTrailingSlash(&s);
+          s = File::EnsureTrailingSlash(s);
           to_char_array(r.path, s);
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";
@@ -495,15 +498,15 @@ void dlboardedit() {
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".dir")));
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".ext")));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(s, ".dir")));
+            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(s, ".ext")));
           }
         }
       }
     } break;
     }
   } while (!done && !a()->hangup_);
-  DataFile<directoryrec> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
+  DataFile<directoryrec> dirsFile(PathFilePath(a()->config()->datadir(), DIRS_DAT),
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";

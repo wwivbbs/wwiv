@@ -64,12 +64,10 @@ public:
   daten_t daten = 0;
 };
 
-class WWIVEmail: private Type2Text {
+class WWIVEmail : private Type2Text {
 public:
-  WWIVEmail(
-      const wwiv::sdk::Config& config,
-      const std::string& data_filename, const std::string& text_filename,
-      int max_net_num);
+  WWIVEmail(const wwiv::sdk::Config& config, const std::filesystem::path& data_filename,
+            const std::filesystem::path& text_filename, int max_net_num);
 
   bool Close();
 
@@ -92,10 +90,10 @@ public:
 private:
   bool add_email(const mailrec& m);
   const wwiv::sdk::Config& config_;
-  const std::string data_filename_;
+  const std::filesystem::path data_filename_;
   wwiv::core::DataFile<mailrec> mail_file_;
-  bool open_ = false;
-  const int max_net_num_;
+  bool open_{false};
+  const int max_net_num_{-1};
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };

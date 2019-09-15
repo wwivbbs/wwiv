@@ -216,23 +216,23 @@ public:
       return 1;
     }
 
-    const string filename = remaining().at(1);
-    string from = arg("from").as_string();
-    string title = arg("title").as_string();
-    string to = arg("to").as_string();
-    time_t daten = time(nullptr);
-    string date_str = arg("date").as_string();
-#ifndef __unix__
+    const auto filename = remaining().at(1);
+    auto from = arg("from").as_string();
+    auto title = arg("title").as_string();
+    auto to = arg("to").as_string();
+    auto daten = DateTime::now();
+    auto date_str = arg("date").as_string();
+    //#ifndef __unix__
     // This doesn't work on GCC until GCC 5 even though it's C++11.
     if (!date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
       ss >> std::get_time(&dt, "Www Mmm dd hh:mm:ss yyyy");
-      if (ss) {
-        daten = mktime(&dt);
+      if (!ss.fail()) {
+        daten = DateTime::from_time_t(mktime(&dt));
       }
     }
-#endif // __unix__
+//#endif // __unix__
     string in_reply_to = arg("in_reply_to").as_string();
     int from_usernum = arg("from_usernum").as_int();
     if (from_usernum >= 1 && from.empty()) {
@@ -250,7 +250,7 @@ public:
     msg->header().set_title(title);
     msg->header().set_from(from);
     msg->header().set_to(to);
-    msg->header().set_daten(time_t_to_daten(daten));
+    msg->header().set_daten(daten.to_daten_t());
     msg->header().set_in_reply_to(in_reply_to);
     msg->text().set_text(JoinStrings(lines, "\r\n"));
 
@@ -280,11 +280,8 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    auto sub_filename = StrCat(config.datadir(), name, ".sub");
-    auto dat_filename = StrCat(config.msgsdir(), name, ".dat");
-
-    bool sb = backup_file(sub_filename);
-    bool db = backup_file(dat_filename);
+    bool sb = backup_file(PathFilePath(config.datadir(), StrCat(name, ".sub")));
+    bool db = backup_file(PathFilePath(config.msgsdir(), StrCat(name, ".dat")));
     return sb && db;
   }
 
@@ -365,22 +362,53 @@ public:
     }
 
     // Copy "new" versions back to sub and dat
-    const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
+    const auto orig_sub_fn = PathFilePath(config()->config()->datadir(), StrCat(basename, ".sub"));
+    const auto new_sub_fn =
+        PathFilePath(config()->config()->datadir(), StrCat(newsub.filename, ".sub"));
     File::Remove(orig_sub_fn);
-    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"),
-                      orig_sub_fn)) {
+    if (!File::Rename(new_sub_fn, orig_sub_fn)) {
       clog << "Unable to move sub";
     }
-    const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
+    const auto orig_dat_fn = PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
+    const auto new_dat_fn =
+        PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     File::Remove(orig_dat_fn);
-    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"),
-                      orig_dat_fn)) {
+    if (!File::Rename(new_dat_fn, orig_dat_fn)) {
       clog << "Unable to move dat";
     }
 
     return 0;
   }
 };
+
+// This is hacked from subacc.cpp.
+// TODO(rushfan): move this into the message sdk.
+static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& sub_filename) {
+  // open file, and create it if necessary
+  postrec p{};
+
+  const auto sub_fn = PathFilePath(datadir, StrCat(sub_filename, ".sub"));
+  if (!File::Exists(sub_fn)) {
+    return 1;
+  }
+  File subFile(PathFilePath(datadir, StrCat(sub_filename, ".sub")));
+  if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
+    return 0;
+  }
+  // read in first rec, specifying # posts
+  // p.owneruser contains # of posts.
+  subFile.Read(&p, sizeof(postrec));
+
+  if (p.owneruser == 0) {
+    // Not sure why but iscan1 returned 1 for empty subs.
+    return 1;
+  }
+
+  // read in sub date, if don't already know it
+  subFile.Seek(p.owneruser * sizeof(postrec), File::Whence::begin);
+  subFile.Read(&p, sizeof(postrec));
+  return p.qscan;
+}
 
 class MessageAreasCommand : public UtilCommand {
 public:
@@ -403,11 +431,14 @@ public:
     }
 
     int num = 0;
-    cout << "#Num FileName " << std::setw(30) << std::left << "Name"
+    cout << "#Num FileName LastRead   " << std::setw(30) << std::left << "Name"
          << " " << std::endl;
     cout << string(78, '=') << endl;
     for (const auto& d : subs.subs()) {
-      cout << "#" << std::setw(3) << std::left << num++ << " " << std::setw(8) << d.filename << " "
+      auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
+      cout << "#" << std::setw(3) << std::left << num++ << " " 
+           << std::setw(8) << d.filename << " "
+           << std::setw(std::numeric_limits<uint32_t>::digits10 + 1) << lastread << " "
            << std::setw(30) << d.name << std::endl;
     }
     return 0;

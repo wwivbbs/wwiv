@@ -16,17 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <chrono>
-#include <cstddef>
-#include <memory>
-#include <string>
-
-#ifdef _WIN32
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif // _WIN32
 
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
@@ -42,8 +31,6 @@
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
@@ -54,15 +41,23 @@
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "sdk/status.h"
-
+#include "local_io/wconstants.h"
+#include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/networks.h"
+#include "sdk/status.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <string>
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
@@ -202,11 +197,11 @@ void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
 
 #define INI_GET_ASV(s, f, func, d)                                                                 \
   {                                                                                                \
-    const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                    \
+    const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                   \
     if (!ss.empty()) {                                                                             \
-      f = func(ss);                                                                            \
+      f = func(ss);                                                                                \
     } else {                                                                                       \
-      f = d;                                                                                   \
+      f = d;                                                                                       \
     }                                                                                              \
   }
 
@@ -244,8 +239,7 @@ static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
     {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
     {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
-    {INI_STR_FREE_PHONE, sysconfig_free_phone}
-};
+    {INI_STR_FREE_PHONE, sysconfig_free_phone}};
 
 void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
@@ -283,12 +277,9 @@ void Application::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(
-      ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(
-      ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(
-      ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
+  localIO()->SetTopScreenColor(ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
+  localIO()->SetUserEditorColor(ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
+  localIO()->SetEditLineColor(ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
   chatname_color_ = ini.value<int>(INI_STR_CHATSELCOLOR, GetChatNameSelectionColor());
 
   // pull out sizing options
@@ -303,9 +294,8 @@ void Application::ReadINIFile(IniFile& ini) {
   newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
   logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
   terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
-   
-  forced_read_subnum_ =
-      ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
+
+  forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(INI_STR_INTERNALZMODEM, true);
   newscan_at_login_ = ini.value<bool>(INI_STR_NEW_SCAN_AT_LOGIN, true);
   exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
@@ -339,7 +329,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
   attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(bbsdir(), ATTACH_DIR);
-  File::EnsureTrailingSlash(&attach_dir_);
+  attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 
@@ -361,18 +351,18 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
     return false;
   }
 
-  File::FixPathSeparators(&temp_directory);
+  temp_directory = File::FixPathSeparators(temp_directory);
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
   string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
-  File::FixPathSeparators(&batch_directory);
+  batch_directory = File::FixPathSeparators(batch_directory);
 
   // Replace %n with instance number value.
   auto instance_num_string = std::to_string(instance_number);
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
-  const auto base_dir = bbsdir();
+  const auto base_dir = bbsdir().string();
   temp_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
   batch_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
@@ -404,7 +394,7 @@ bool Application::ReadConfig() {
   user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
 
-  IniFile ini(FilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
+  IniFile ini(PathFilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();
@@ -415,15 +405,16 @@ bool Application::ReadConfig() {
     return false;
   }
 
-  temp_directory_ = File::absolute(bbsdir(), temp_directory());
-  batch_directory_ = File::absolute(bbsdir(), batch_directory());
+  const auto b = bbsdir().string();
+  temp_directory_ = File::absolute(b, temp_directory());
+  batch_directory_ = File::absolute(b, batch_directory());
 
   return true;
 }
 
 void Application::read_nextern() {
   externs.clear();
-  DataFile<newexternalrec> externalFile(FilePath(config()->datadir(), NEXTERN_DAT));
+  DataFile<newexternalrec> externalFile(PathFilePath(config()->datadir(), NEXTERN_DAT));
   if (externalFile) {
     externalFile.ReadVector(externs, 15);
   }
@@ -431,7 +422,7 @@ void Application::read_nextern() {
 
 void Application::read_arcs() {
   arcs.clear();
-  DataFile<arcrec> file(FilePath(config()->datadir(), ARCHIVER_DAT));
+  DataFile<arcrec> file(PathFilePath(config()->datadir(), ARCHIVER_DAT));
   if (file) {
     file.ReadVector(arcs, MAX_ARCS);
   }
@@ -439,7 +430,7 @@ void Application::read_arcs() {
 
 void Application::read_editors() {
   editors.clear();
-  DataFile<editorrec> file(FilePath(config()->datadir(), EDITORS_DAT));
+  DataFile<editorrec> file(PathFilePath(config()->datadir(), EDITORS_DAT));
   if (!file) {
     return;
   }
@@ -448,7 +439,7 @@ void Application::read_editors() {
 
 void Application::read_nintern() {
   over_intern.clear();
-  DataFile<newexternalrec> file(FilePath(config()->datadir(), NINTERN_DAT));
+  DataFile<newexternalrec> file(PathFilePath(config()->datadir(), NINTERN_DAT));
   if (file) {
     file.ReadVector(over_intern, 3);
   }
@@ -557,9 +548,9 @@ bool Application::read_names() {
 
 bool Application::read_dirs() {
   directories.clear();
-  DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
+  DataFile<directoryrec> file(PathFilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
-    LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
+    LOG(ERROR) << file.file() << " NOT FOUND.";
     return false;
   }
   file.ReadVector(directories, config()->max_dirs());
@@ -567,38 +558,15 @@ bool Application::read_dirs() {
 }
 
 void Application::read_chains() {
-  chains.clear();
-  DataFile<chainfilerec> file(FilePath(config()->datadir(), CHAINS_DAT));
-  if (!file) {
-    return;
-  }
-  file.ReadVector(chains, max_chains);
-
-  if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    chains_reg.clear();
-
-    DataFile<chainregrec> regFile(FilePath(config()->datadir(), CHAINS_REG));
-    if (regFile) {
-      regFile.ReadVector(chains_reg, max_chains);
-    } else {
-      regFile.Close();
-      for (size_t nTempChainNum = 0; nTempChainNum < chains.size(); nTempChainNum++) {
-        chainregrec reg;
-        memset(&reg, 0, sizeof(chainregrec));
-        reg.maxage = 255;
-        chains_reg.push_back(reg);
-      }
-      DataFile<chainregrec> writeFile(FilePath(config()->datadir(), CHAINS_REG),
-                                      File::modeReadWrite | File::modeBinary |
-                                          File::modeCreateFile);
-      writeFile.WriteVector(chains_reg);
-    }
+  chains = std::make_unique<Chains>(*config());
+  if (chains->IsInitialized()) {
+    chains->Save();
   }
 }
 
 bool Application::read_language() {
   {
-    DataFile<languagerec> file(FilePath(config()->datadir(), LANGUAGE_DAT));
+    DataFile<languagerec> file(PathFilePath(config()->datadir(), LANGUAGE_DAT));
     if (file) {
       file.ReadVector(languages);
     }
@@ -622,7 +590,7 @@ bool Application::read_language() {
 }
 
 void Application::read_gfile() {
-  DataFile<gfiledirrec> file(FilePath(config()->datadir(), GFILE_DAT));
+  DataFile<gfiledirrec> file(PathFilePath(config()->datadir(), GFILE_DAT));
   if (file) {
     file.ReadVector(gfilesec, max_gfilesec);
   }
@@ -659,9 +627,9 @@ void Application::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   VLOG(1) << "Reading user scan pointers.";
-  File fileQScan(FilePath(config()->datadir(), USER_QSC));
-  if (!fileQScan.Exists()) {
-    LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
+  const auto qs_fn = PathFilePath(config()->datadir(), USER_QSC);
+  if (!File::Exists(qs_fn)) {
+    LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
     AbortBBS();
   }
@@ -779,11 +747,6 @@ void Application::InitializeBBS() {
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
   }
-  if (instance_number() > 1) {
-    File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
-  } else {
-    File::Remove(WWIV_NET_DAT);
-  }
 
   catsl();
 
@@ -794,17 +757,17 @@ void Application::InitializeBBS() {
 // begin dupphone additions
 
 void Application::check_phonenum() {
-  File phoneFile(FilePath(config()->datadir(), PHONENUM_DAT));
-  if (!phoneFile.Exists()) {
+  const auto fn = PathFilePath(config()->datadir(), PHONENUM_DAT);
+  if (!File::Exists(fn)) {
     create_phone_file();
   }
 }
 
 // TODO(rushfan): maybe move this to SDK, but pass in a vector of numbers.
 void Application::create_phone_file() {
-  phonerec p;
+  phonerec p{};
 
-  File file(FilePath(config()->datadir(), USER_LST));
+  File file(PathFilePath(config()->datadir(), USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -812,7 +775,7 @@ void Application::create_phone_file() {
   file.Close();
   int numOfRecords = static_cast<int>(file_size / sizeof(userrec));
 
-  File phoneNumFile(FilePath(config()->datadir(), PHONENUM_DAT));
+  File phoneNumFile(PathFilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |
                          File::modeCreateFile)) {
     return;

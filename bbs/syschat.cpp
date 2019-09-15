@@ -18,27 +18,28 @@
 /**************************************************************************/
 #include "bbs/syschat.h"
 
-#include <algorithm>
-#include <chrono>
-#include <string>
-
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/utility.h"
-
 #include "bbs/datetime.h"
 #include "bbs/email.h"
-#include "bbs/instmsg.h"
 #include "bbs/input.h"
-#include "local_io/keycodes.h"
+#include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
-#include "local_io/wconstants.h"
+#include "bbs/utility.h"
+#include "core/datetime.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/datetime.h"
+#include "fmt/format.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
 
 using std::string;
 using std::chrono::duration_cast;
@@ -51,7 +52,7 @@ using namespace wwiv::strings;
 // module private functions
 void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
 
-#define ABORTED             8
+#define ABORTED 8
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -62,8 +63,7 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
 #define MAXLINES_SIDE 13
 
 static int wwiv_x1, wwiv_y1, wwiv_x2, wwiv_y2, cp0, cp1;
-static char(*side0)[MAXLEN], (*side1)[MAXLEN];
-
+static char (*side0)[MAXLEN], (*side1)[MAXLEN];
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -102,8 +102,8 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
 void RequestChat() {
   bout.nl(2);
   if (sysop2() && !a()->user()->IsRestrictionChat()) {
-    if (a()->chatcall_) {
-      a()->chatcall_ = false;
+    if (a()->chatcall()) {
+      a()->clear_chatcall();
       bout << "Chat call turned off.\r\n";
       a()->UpdateTopScreen();
     } else {
@@ -113,17 +113,10 @@ void RequestChat() {
         if (!play_sdf(CHAT_NOEXT, false)) {
           chatsound(100, 800, 10, 10, 25, 5);
         }
-        a()->chatcall_ = true;
-
-        char szChatReason[81];
-        sprintf(szChatReason, "Chat: %s", chatReason.c_str());
+        const auto cr = fmt::format("Chat: {}", chatReason);
         bout.nl();
-        sysoplog() << szChatReason;
-        for (int nTemp = strlen(szChatReason); nTemp < 80; nTemp++) {
-          szChatReason[nTemp] = SPACE;
-        }
-        szChatReason[80] = '\0';
-        a()->SetChatReason(szChatReason);
+        sysoplog() << cr;
+        a()->SetChatReason(cr);
         a()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";
         bout.nl();
@@ -136,14 +129,13 @@ void RequestChat() {
   }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 //
 //
 // Allows selection of a name to "chat as". Returns selected string in *s.
 //
 
-static void select_chat_name(char *sysop_name) {
+static void select_chat_name(char* sysop_name) {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
   strcpy(sysop_name, a()->config()->sysop_name().c_str());
@@ -176,7 +168,7 @@ static void select_chat_name(char *sysop_name) {
 
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
-static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
+static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop_name) {
   char s2[100], temp1[100];
   int i, i1;
 
@@ -302,8 +294,8 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           }
         }
       } else {
-        if ((a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1))
-            && (cp1 < max_length)) {
+        if ((a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1)) &&
+            (cp1 < max_length)) {
           if (a()->localIO()->WhereY() < 23) {
             side1[a()->localIO()->WhereY() - 13][cp1++] = ch;
             bout.bputch(ch);
@@ -335,14 +327,14 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           }
         }
       }
-    } else switch (ch) {
+    } else
+      switch (ch) {
       case 7: {
         if (a()->chatting_ && a()->context().outcom()) {
           bout.rputch(7);
         }
-      }
-      break;
-      case RETURN:                            /* C/R */
+      } break;
+      case RETURN: /* C/R */
         if (side == 0) {
           side0[a()->localIO()->WhereY()][cp0] = 0;
         } else {
@@ -350,7 +342,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
         }
         done = true;
         break;
-      case BACKSPACE: {                           /* Backspace */
+      case BACKSPACE: { /* Backspace */
         if (side == 0) {
           if (cp0) {
             if (side0[a()->localIO()->WhereY()][cp0 - 2] == 3) {
@@ -368,7 +360,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           if (side1[a()->localIO()->WhereY() - 13][cp1 - 2] == CC) {
             cp1 -= 2;
             bout.Color(0);
-          } else  if (side1[a()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
+          } else if (side1[a()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
             cp1--;
             bout.bputch(SPACE);
           } else {
@@ -376,9 +368,8 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
             bout.bs();
           }
         }
-      }
-      break;
-      case CX:                            /* Ctrl-X */
+      } break;
+      case CX: /* Ctrl-X */
         while (a()->localIO()->WhereX() > begx) {
           bout.bs();
           if (side == 0) {
@@ -389,7 +380,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
         }
         bout.Color(0);
         break;
-      case CW:                            /* Ctrl-W */
+      case CW: /* Ctrl-W */
         if (side == 0) {
           if (cp0) {
             do {
@@ -426,18 +417,18 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           }
         }
         break;
-      case CN:                            /* Ctrl-N */
+      case CN: /* Ctrl-N */
         if (side == 0) {
           if ((a()->localIO()->WhereX()) && (cp0 < max_length)) {
             bout.bputch(BACKSPACE);
             side0[a()->localIO()->WhereY()][cp0++] = BACKSPACE;
           }
-        } else  if ((a()->localIO()->WhereX()) && (cp1 < max_length)) {
+        } else if ((a()->localIO()->WhereX()) && (cp1 < max_length)) {
           bout.bputch(BACKSPACE);
           side1[a()->localIO()->WhereY() - 13][cp1++] = BACKSPACE;
         }
         break;
-      case CP:                            /* Ctrl-P */
+      case CP: /* Ctrl-P */
         if (side == 0) {
           if (cp0 < max_length - 1) {
             ch = bout.getkey();
@@ -458,11 +449,11 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           }
         }
         break;
-      case TAB:                             /* Tab */
+      case TAB: /* Tab */
         if (side == 0) {
           i = 5 - (cp0 % 5);
-          if (((cp0 + i) < max_length)
-              && ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
+          if (((cp0 + i) < max_length) &&
+              ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
             i = 5 - ((a()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side0[a()->localIO()->WhereY()][cp0++] = SPACE;
@@ -471,8 +462,8 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           }
         } else {
           i = 5 - (cp1 % 5);
-          if (((cp1 + i) < max_length)
-              && ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
+          if (((cp1 + i) < max_length) &&
+              ((a()->localIO()->WhereX() + i) < a()->user()->GetScreenChars())) {
             i = 5 - ((a()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side1[a()->localIO()->WhereY() - 13][cp1++] = SPACE;
@@ -489,7 +480,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
       i = cp0 - 1;
       while ((i > 0) && (side0[a()->localIO()->WhereY()][i] != SPACE) &&
              ((side0[a()->localIO()->WhereY()][i] != BACKSPACE) ||
-             (side0[a()->localIO()->WhereY()][i - 1] == CC))) {
+              (side0[a()->localIO()->WhereY()][i - 1] == CC))) {
         i--;
       }
       if ((i > static_cast<int>(a()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
@@ -511,7 +502,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
       i = cp1 - 1;
       while ((i > 0) && (side1[a()->localIO()->WhereY() - 13][i] != SPACE) &&
              ((side1[a()->localIO()->WhereY() - 13][i] != BACKSPACE) ||
-             (side1[a()->localIO()->WhereY() - 13][i - 1] == CC))) {
+              (side1[a()->localIO()->WhereY() - 13][i - 1] == CC))) {
         i--;
       }
       if ((i > static_cast<int>(a()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
@@ -548,7 +539,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
  * uses normal TTY chat.
  */
 
-void chat1(const char *chat_line, bool two_way) {
+void chat1(const char* chat_line, bool two_way) {
   char s[255], s1[255], s2[81], szSysopName[81];
   if (!okansi()) {
     two_way = false;
@@ -559,7 +550,7 @@ void chat1(const char *chat_line, bool two_way) {
     return;
   }
 
-  a()->chatcall_ = false;
+  a()->clear_chatcall();
   if (two_way) {
     write_inst(INST_LOC_CHAT2, 0, INST_FLAGS_NONE);
     a()->chatting_ = 2;
@@ -568,7 +559,7 @@ void chat1(const char *chat_line, bool two_way) {
     a()->chatting_ = 1;
   }
   auto tc_start = steady_clock::now();
-  File chatFile(FilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
+  File chatFile(PathFilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
 
   SavedLine line = bout.SaveCurrentLine();
   s1[0] = '\0';
@@ -669,4 +660,3 @@ void chat1(const char *chat_line, bool two_way) {
   bout.RestoreCurrentLine(line);
   bout.clreol();
 }
-

@@ -48,9 +48,9 @@ struct fedit_data_rec {
 };
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(FilePath(a()->temp_directory(), filename));
-  file.SetFilePermissions(File::permReadWrite);
-  file.Delete();
+  const auto f = PathFilePath(a()->temp_directory(), filename);
+  File::SetFilePermissions(f, File::permReadWrite);
+  File::Remove(f);
 }
 
 const std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }
@@ -64,7 +64,7 @@ void ExternalWWIVMessageEditor::CleanupControlFiles() {
 }
 
 static void ReadWWIVResultFiles(string* title, int* anon) {
-  auto fp = FilePath(a()->temp_directory(), RESULT_ED);
+  auto fp = PathFilePath(a()->temp_directory(), RESULT_ED);
   if (File::Exists(fp)) {
     TextFile file(fp, "rt");
     string anon_string;
@@ -76,10 +76,10 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (File::Exists(a()->temp_directory(), FEDIT_INF)) {
-    fedit_data_rec fedit_data;
+  } else if (File::Exists(PathFilePath(a()->temp_directory(), FEDIT_INF))) {
+    fedit_data_rec fedit_data{};
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    File file(FilePath(a()->temp_directory(), FEDIT_INF));
+    File file(PathFilePath(a()->temp_directory(), FEDIT_INF));
     file.Open(File::modeBinary | File::modeReadOnly);
     if (file.Read(&fedit_data, sizeof(fedit_data))) {
       title->assign(fedit_data.ttl);
@@ -90,7 +90,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name,
                                         const string& to_name, int flags) {
-  TextFile f(FilePath(a()->temp_directory(), EDITOR_INF), "wt");
+  TextFile f(PathFilePath(a()->temp_directory(), EDITOR_INF), "wt");
   if (f.IsOpen()) {
     if (!to_name.empty()) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -126,7 +126,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   to_char_array(fedit_data.ttl, title);
   fedit_data.anon = 0;
 
-  File fedit_inf(FilePath(a()->temp_directory(), FEDIT_INF));
+  File fedit_inf(PathFilePath(a()->temp_directory(), FEDIT_INF));
   if (fedit_inf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate,
                      File::shareDenyReadWrite)) {
     fedit_inf.Write(&fedit_data, sizeof(fedit_data));

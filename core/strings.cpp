@@ -373,18 +373,18 @@ std::string put_time(const struct tm *tm_info, const std::string& fmt_arg) {
 
   auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
   if (num == 0) {
-    return "";
+    return {};
   }
   return string(buffer);
 }
 
 std::string::size_type size_without_colors(const std::string& s) {
-  const string stripped = stripcolors(s);
+  const auto stripped = stripcolors(s);
   return stripped.size();
 }
 
 std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size) {
-  string s(orig);
+  string s{orig};
   while (size_without_colors(s) > size) {
     s.pop_back();
   }
@@ -392,7 +392,7 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
 }
 
 std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size) {
-  auto len = size_without_colors(orig);
+  const auto len = size_without_colors(orig);
   if (size <= len) {
     return orig;
   }
@@ -463,7 +463,7 @@ static bool IsColorCode(char c) {
 char *stripcolors(const char *str) {
   CHECK(str != nullptr);
   static char s[255];
-  const string result = stripcolors(string(str));
+  const auto result = stripcolors(string(str));
   strcpy(s, result.c_str());
   return s;
 }

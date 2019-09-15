@@ -69,24 +69,23 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
-static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
-       << endl;
-
+static void ShowHelp(const NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << endl;
   exit(1);
 }
+
 
 static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
   const auto pattern = StringPrintf("p*.%03d", instance_number);
   LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
-  FindFiles ff(dir, pattern, FindFilesType::files);
+  FindFiles ff(PathFilePath(dir, pattern), FindFilesType::files);
   for (const auto& f : ff) {
     rename_pend(dir, f.name, 'c');
   }
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, const string& cmd) {
-  const auto path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
+  const auto path = PathFilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path;
@@ -97,7 +96,6 @@ string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, c
   ss << " --bbsdir=" << net_cmdline.cmdline().bbsdir();
   ss << " --bindir=" << net_cmdline.cmdline().bindir();
   ss << " --configdir=" << net_cmdline.cmdline().configdir();
-  ss << " --logdir=" << net_cmdline.cmdline().logdir();
   ss << " ." << net_cmdline.network_number();
   if (num == '3') {
     ss << " Y";
@@ -114,24 +112,24 @@ static int System(const string& cmd) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  File file(FilePath(dir, filename));
+  const auto fn = PathFilePath(dir, filename);
+  File file(fn);
 
   if (file.Open(File::modeReadOnly)) {
-    auto tNewFileTime = file.last_write_time();
-    file.Close();
-    return (tNewFileTime > (tFileTime + 2));
+    const auto tNewFileTime = File::last_write_time(fn);
+    return tNewFileTime > (tFileTime + 2);
   }
   return true;
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(dir, BBSLIST_NET)) {
+  if (!File::Exists(PathFilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CONNECT_NET)) {
+  if (!File::Exists(PathFilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(dir, CALLOUT_NET)) {
+  if (!File::Exists(PathFilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
@@ -141,7 +139,7 @@ static bool need_network3(const string& dir, int network_version) {
               << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(FilePath(dir, BBSDATA_NET));
+  File bbsdataNet(PathFilePath(dir, BBSDATA_NET));
   if (!bbsdataNet.Open(File::modeReadOnly)) {
     return false;
   }
@@ -172,7 +170,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       }
 
       // Pending files, call network1 to put them into s* or local.net.
-      if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
+      if (File::ExistsWildcard(PathFilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
         System(create_network_cmdline(net_cmdline, '1', ""));
         found = true;
@@ -182,7 +180,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       if (net.type == network_type_t::ftn) {
         wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
         // Import everything into local.net
-        if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
+        if (File::ExistsWildcard(PathFilePath(dirs.inbound_dir(), "*.*"))) {
           VLOG(2) << "Trying to FTN import";
           System(create_network_cmdline(net_cmdline, 'f', "import"));
         }
@@ -194,14 +192,14 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
         // Export everything to FTN bundles
         const auto fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-        if (File::Exists(net.dir, fido_out)) {
+        if (File::Exists(PathFilePath(net.dir, fido_out))) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
           System(create_network_cmdline(net_cmdline, 'f', "export"));
         }
       }
 
       // Process local mail with network2.
-      if (File::Exists(FilePath(net.dir, LOCAL_NET))) {
+      if (File::Exists(PathFilePath(net.dir, LOCAL_NET))) {
         VLOG(2) << "Found: " << LOCAL_NET;
         System(create_network_cmdline(net_cmdline, '2', ""));
         found = true;
@@ -223,18 +221,20 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 }
 
 int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
+
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
 
   NetworkCommandLine net_cmdline(cmdline, 'c');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
-    ShowHelp(net_cmdline.cmdline());
+    ShowHelp(net_cmdline);
     return 1;
   }
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
                                                 net_cmdline.semaphore_timeout());
     return networkc_main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {

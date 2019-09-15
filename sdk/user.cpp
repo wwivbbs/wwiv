@@ -107,7 +107,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
                                const std::vector<uint8_t>& bwcolors) {
   u->ZeroUserData();
 
-  const auto date = daten_to_mmddyy(daten_t_now());
+  const auto date = DateTime::now().to_string("%m/%d/%y");
   u->SetFirstOn(date);
   u->SetLastOn("Never.");
   u->SetMacro(0, "Wow! This is a GREAT BBS!");

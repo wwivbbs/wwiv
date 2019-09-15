@@ -17,12 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
-#ifdef _WIN32
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-
-#include "Shlwapi.h"
-#endif // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -46,6 +40,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <system_error>
 
 #include "core/datetime.h"
 #include "core/log.h"
@@ -56,14 +51,12 @@
 
 #ifdef _WIN32
 
-// Needed for PathIsRelative
-#pragma comment(lib, "Shlwapi.lib")
-
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif // ftruncate
 #define flock(h, m)                                                                                \
   { (h), (m); }
+
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
@@ -83,6 +76,7 @@ static constexpr int F_OK = 0;
 using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
+namespace fs = std::filesystem;
 
 namespace wwiv {
 namespace core {
@@ -112,28 +106,37 @@ static constexpr int TRIES = 100;
 
 using namespace wwiv::strings;
 
-string FilePath(const string& dirname, const string& filename) {
-  return (dirname.empty()) ? filename : StrCat(File::EnsureTrailingSlash(dirname), filename);
+string FilePath(const std::filesystem::path& directory_name, const string& file_name) {
+  if (directory_name.empty()) {
+    return file_name;
+  }
+  return PathFilePath(directory_name, file_name).string();
 }
 
-bool backup_file(const std::string& path) {
-  const auto now = DateTime::now();
-  const auto date_string = now.to_string("%Y%m%d%H%M%S");
-  const auto backup_extension = StrCat(".backup.", date_string);
-  const auto backup_path = StrCat(path, backup_extension);
-  VLOG(1) << "Backing up file: '" << path << "'; to: '" << backup_path << "'";
-  return File::Copy(path, backup_path);
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const string& file_name) {
+  if (directory_name.empty()) {
+    return file_name;
+  }
+  return directory_name / file_name;
 }
 
-bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
+bool backup_file(const std::filesystem::path& p) {
+  fs::path from{p};
+  fs::path to{p};
+  to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
+  VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
+  std::error_code ec;
+  return wwiv::fs::copy_file(from, to, ec);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
+// File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
 
-// File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename))
-// {}
+/** Constructs a file from a path. */
+File::File(const std::filesystem::path& p) : full_path_name_(p) {}
 
 File::~File() {
   if (this->IsOpen()) {
@@ -157,18 +160,20 @@ bool File::Open(int file_mode, int share_mode) {
 
   VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode;
 
-  handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+  handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
     VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
     int count = 1;
-    if (access(full_path_name_.c_str(), 0) != -1) {
+    if (access(full_path_name_.string().c_str(), 0) != -1) {
       sleep_for(wait_time);
-      handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+      handle_ =
+          _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for((count % 2) ? wait_time : milliseconds(0));
         VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
-        handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
+        handle_ =
+            _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       }
 
       if (handle_ < 0) {
@@ -191,7 +196,9 @@ bool File::Open(int file_mode, int share_mode) {
   return File::IsFileHandleValid(handle_);
 }
 
-void File::Close() {
+bool File::IsOpen() const noexcept { return File::IsFileHandleValid(handle_); }
+
+void File::Close() noexcept {
   VLOG(3) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
   if (File::IsFileHandleValid(handle_)) {
     flock(handle_, LOCK_UN);
@@ -235,222 +242,170 @@ off_t File::Seek(off_t offset, Whence whence) {
 
 off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const { return File::Exists(full_path_name_); }
-
-bool File::Delete() {
-  if (this->IsOpen()) {
-    this->Close();
-  }
-  return unlink(full_path_name_.c_str()) == 0;
+bool File::Exists() const noexcept {
+  std::error_code ec;
+  return fs::exists(full_path_name_, ec);
 }
 
-void File::set_length(off_t lNewLength) {
+void File::set_length(off_t l) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
-  ftruncate(handle_, lNewLength);
-}
-
-bool File::IsFile() const { return !this->IsDirectory(); }
-
-bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.c_str(), perm) == 0; }
-
-bool File::IsDirectory() const {
-  return File::is_directory(full_path_name_);
+  auto _ = ftruncate(handle_, l);
 }
 
 // static
 bool File::is_directory(const std::string& path) {
-  struct stat statbuf {};
-  stat(path.c_str(), &statbuf);
-  return S_ISDIR(statbuf.st_mode);
+  std::error_code ec;
+  return fs::is_directory(fs::path{path}, ec);
 }
-
 
 off_t File::length() {
-  // stat/fstat is the 32 bit version on WIN32
-  struct stat fileinfo {};
-
-  if (IsOpen()) {
-    // File is open, use fstat
-    if (fstat(handle_, &fileinfo) != 0) {
-      return 0;
-    }
-  } else {
-    // stat works on filenames, not filehandles.
-    if (stat(full_path_name_.c_str(), &fileinfo) != 0) {
-      return 0;
-    }
+  std::error_code ec;
+  auto sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
+  if (ec.value() != 0) {
+    return 0;
   }
-  return fileinfo.st_size;
+  return sz;
 }
 
-time_t File::creation_time() {
-  struct stat buf {};
-  // st_ctime is creation time on windows and status change time on posix
-  // so that's probably the closest to what we want.
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
-}
+time_t File::creation_time() { return File::creation_time(full_path_name_); }
 
-time_t File::last_write_time() {
-  struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
-}
+time_t File::last_write_time() { return File::last_write_time(full_path_name_); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Rename(const string& orig_fn, const string& new_fn) {
-  return rename(orig_fn.c_str(), new_fn.c_str()) == 0;
+// static
+time_t File::last_write_time(const std::filesystem::path& path) {
+  struct stat buf {};
+  const auto p = path.string();
+  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 }
 
-bool File::Remove(const string& filename) { return unlink(filename.c_str()) == 0; }
-
-bool File::Remove(const string& dir, const string& file) {
-  return File::Remove(wwiv::core::FilePath(dir, file));
+// static
+time_t File::creation_time(const std::filesystem::path& path) {
+  struct stat buf {};
+  // st_ctime is creation time on windows and status change time on posix
+  // so that's probably the closest to what we want.
+  const auto p = path.string();
+  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
-bool File::Exists(const string& original_pathname) {
-  if (original_pathname.empty()) {
+bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n) {
+  std::error_code ec{};
+  fs::rename(o, n, ec);
+  return ec.value() == 0;
+}
+
+bool File::Remove(const std::filesystem::path& filename) {
+  std::error_code ec;
+  bool result = fs::remove(filename, ec);
+  if (!result) {
+    LOG(ERROR) << "File::Remove failed: error code: " << ec.value() << "; msg: " << ec.message();
+  }
+  return result;
+}
+
+bool File::Exists(const std::filesystem::path& p) {
+  if (p.empty()) {
     // An empty filename can not exist.
     // The question is should we assert here?
     return false;
   }
 
-  string fn(original_pathname);
-  if (fn.back() == pathSeparatorChar) {
-    // If the pathname ends in / or \, then remove the last character.
-    fn.pop_back();
-  }
-  auto ret = access(fn.c_str(), F_OK);
-  return ret == 0;
+  std::error_code ec;
+  return fs::exists(p, ec);
 }
 
 // static
-bool File::Exists(const string& dir, const string& file) {
-  return Exists(wwiv::core::FilePath(dir, file));
-}
-
-// static
-bool File::ExistsWildcard(const string& wildcard) {
+bool File::ExistsWildcard(const std::filesystem::path& wildcard) {
   WFindFile fnd;
-  return fnd.open(wildcard, WFindFileTypeMask::WFINDFILE_ANY);
+  return fnd.open(wildcard.string(), WFindFileTypeMask::WFINDFILE_ANY);
 }
 
-bool File::SetFilePermissions(const string& filename, int perm) {
+bool File::SetFilePermissions(const std::filesystem::path& filename, int perm) {
   CHECK(!filename.empty());
-  return chmod(filename.c_str(), perm) == 0;
+  return chmod(filename.string().c_str(), perm) == 0;
 }
 
-bool File::IsFileHandleValid(int handle) { return handle != File::invalid_handle; }
-
-//static
-std::string File::EnsureTrailingSlash(const std::string& path) {
-  auto s = path;
-  EnsureTrailingSlash(&s);
-  return s;
-}
+bool File::IsFileHandleValid(int handle) noexcept { return handle != File::invalid_handle; }
 
 // static
-void File::EnsureTrailingSlash(string* path) {
-  if (path->empty()) {
-    return;
+std::string File::EnsureTrailingSlash(const std::string& orig) {
+  if (orig.empty()) {
+    return {};
   }
-  auto last_char = path->back();
-  if (last_char != File::pathSeparatorChar) {
-    path->push_back(File::pathSeparatorChar);
+  if (orig.back() == File::pathSeparatorChar) {
+    return orig;
   }
+  std::string path{orig};
+  path.push_back(File::pathSeparatorChar);
+  return path;
 }
 
 // static
-string File::current_directory() {
-  char s[MAX_PATH];
-  getcwd(s, MAX_PATH);
-  return string(s);
-}
-
-// static
-bool File::set_current_directory(const string& dir) { return chdir(dir.c_str()) == 0; }
-
-// static
-void File::FixPathSeparators(std::string* name) {
-#ifdef _WIN32
-  std::replace(std::begin(*name), std::end(*name), '/', File::pathSeparatorChar);
-#else
-  std::replace(std::begin(*name), std::end(*name), '\\', File::pathSeparatorChar);
-#endif // _WIN32
-}
-
-// static
-std::string File::FixPathSeparators(const std::string& path) {
-  auto s = path;
-  FixPathSeparators(&s);
-  return s;
-}
-
-// static
-void File::absolute(const string& base, string* relative) {
-  if (!File::is_absolute(*relative)) {
-    File dir(FilePath(base, *relative));
-    relative->assign(dir.full_pathname());
+std::string File::EnsureTrailingSlashPath(const std::filesystem::path& orig) {
+  if (orig.empty()) {
+    return {};
   }
+  std::string path{orig.string()};
+  if (path.back() == File::pathSeparatorChar) {
+    return path;
+  }
+  path.push_back(File::pathSeparatorChar);
+  return path;
+}
+
+// static
+std::filesystem::path File::current_directory() {
+  std::error_code ec;
+  return fs::current_path(ec);
+}
+
+// static
+bool File::set_current_directory(const std::filesystem::path& dir) {
+  std::error_code ec;
+  fs::current_path(dir, ec);
+  return ec.value() == 0;
+}
+
+// static
+std::string File::FixPathSeparators(const std::string& orig) {
+  fs::path p{orig};
+  return p.make_preferred().string();
 }
 
 // static
 string File::absolute(const std::string& base, const std::string& relative) {
-  if (File::is_absolute(relative)) {
+  fs::path r{relative};
+  if (r.is_absolute()) {
     return relative;
   }
   return FilePath(base, relative);
 }
 
 // static
-bool File::is_absolute(const string& path) {
-  if (path.empty()) {
-    return false;
-  }
-#ifdef _WIN32
-  return ::PathIsRelative(path.c_str()) ? false : true;
-#else
-  return path.front() == File::pathSeparatorChar;
-#endif // _WIN32
-}
-
-#ifdef _WIN32
-#define MKDIR(x) ::mkdir(x)
-#else
-#define MKDIR(x) ::mkdir(x, S_IRWXU | S_IRWXG)
-#endif
-
-// static
-bool File::mkdir(const string& path) {
-  auto result = MKDIR(path.c_str());
-  if (result != -1) {
+bool File::mkdir(const std::filesystem::path& p) {
+  std::error_code ec;
+  if (fs::exists(p, ec)) {
     return true;
   }
-  return errno == EEXIST;
+
+  if (fs::create_directory(p, ec)) {
+    return true;
+  }
+  return ec.value() == 0;
 }
 
 // static
-// based loosely on
-// http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
-bool File::mkdirs(const string& path) {
-  auto result = MKDIR(path.c_str());
-  if (result != -1) {
+bool File::mkdirs(const std::filesystem::path& p) {
+  std::error_code ec;
+  if (fs::exists(p, ec)) {
     return true;
   }
-  if (errno == ENOENT) {
-    auto pos = path.find_last_of(File::pathSeparatorChar);
-    if (pos == string::npos) {
-      return false;
-    }
-    auto s = path.substr(0, pos);
-    if (!mkdirs(s)) {
-      return false; // failed to create the parent, stop here.
-    }
-    return File::mkdir(path);
-  } else if (errno == EEXIST) {
-    return true; // the path already existed.
+  if (fs::create_directories(p, ec)) {
+    return true;
   }
-  return false; // unknown error.
+  return ec.value() == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const File& file) {
@@ -461,7 +416,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 bool File::set_last_write_time(time_t last_write_time) {
   struct utimbuf ut {};
   ut.actime = ut.modtime = last_write_time;
-  return utime(full_path_name_.c_str(), &ut) != -1;
+  return utime(full_path_name_.string().c_str(), &ut) != -1;
 }
 
 std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_type) {
@@ -480,7 +435,33 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
   // TODO: unlock here
 
 #endif // _WIN32
-  return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
+  return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_.string(), lock_type);
+}
+
+bool File::Copy(const std::filesystem::path& from, const std::filesystem::path& to) {
+  std::error_code ec;
+  fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
+  return ec.value() == 0;
+}
+
+bool File::Move(const std::filesystem::path& from, const std::filesystem::path& to) {
+  return File::Rename(from, to);
+}
+
+// static
+std::string File::canonical(const std::string& path) {
+  fs::path p{path};
+  std::error_code ec;
+  return fs::canonical(p, ec).string();
+}
+
+long File::freespace_for_path(const std::filesystem::path& p) {
+  std::error_code ec;
+  auto devi = fs::space(p, ec);
+  if (ec.value() != 0) {
+    return 0;
+  }
+  return static_cast<long>(devi.available / 1024);
 }
 
 } // namespace core

@@ -39,13 +39,57 @@
 #include "core/datafile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "fmt/format.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
 #include "sdk/user.h"
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
+
+static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) {
+  User user{};
+  const auto r = c.regby;
+  const bool is_regged = r.empty() ? false : a()->users()->readuser(&user, *r.begin());
+  const std::string regname = (is_regged) ? user.GetName() : "Available";
+  if (ansi) {
+    bout.bpla(
+        StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+                     FRAME_COLOR, chain_num, FRAME_COLOR, c.description.c_str(), FRAME_COLOR,
+                     (is_regged) ? 14 : 13, regname.c_str(), FRAME_COLOR, c.usage, FRAME_COLOR),
+        &abort);
+  
+  } else {
+    bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description.c_str(),
+                           regname.c_str(), c.usage),
+              &abort);
+  }
+
+  if (!is_regged) {
+    return;
+  }
+
+  for (const auto rb : r) {
+    if (rb <= 0) {
+      continue;
+    }
+    if (!a()->users()->readuser(&user, rb)) {
+      continue;
+    }
+    if (ansi) {
+      bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
+                             user.GetName(), FRAME_COLOR, " "),
+                &abort);
+    } else {
+      bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
+                             rb ? user.GetName() : "Available"),
+                &abort);
+    }
+  }
+}
 
 // Displays the list of chains to a user
 // Note: we aren't using a const map since [] doesn't work for const maps.
@@ -55,8 +99,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.nl();
   bool abort = false;
   bool next = false;
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && a()->chains_reg.size() > 0) {
+  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && a()->chains->HasRegisteredChains()) {
     bout.bpla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
@@ -66,45 +109,8 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
-      User user;
-      if (okansi()) {
-        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bpla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
-                FRAME_COLOR,
-                i + 1,
-                FRAME_COLOR,
-                a()->chains[map[i]].description,
-                FRAME_COLOR,
-                (a()->chains_reg[map[i]].regby[0]) ? 14 : 13,
-                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                FRAME_COLOR,
-                a()->chains_reg[map[i]].usage,
-                FRAME_COLOR), &abort);
-        if (a()->chains_reg[map[i]].regby[0] != 0) {
-          for (int i1 = 1; i1 < 5 && !abort; i1++) {
-            if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
-                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
-            }
-          }
-        }
-      } else {
-        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
-                i + 1, a()->chains[map[i]].description,
-                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                a()->chains_reg[map[i]].usage), &abort);
-        if (a()->chains_reg[map[i]].regby[0] != 0) {
-          for (int i1 = 1; i1 < 5; i1++) {
-            if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
-                      (a()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
-            }
-          }
-        }
-      }
+      const auto& c = a()->chains->at(map[i]);
+      show_chain(c, okansi(), i+1, abort);
     }
     if (okansi()) {
       bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
@@ -115,13 +121,15 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
-      bout.bputs(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort, &next);
+      bout.bputs(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description.c_str()), &abort, &next);
       i++;
       if (!abort && !a()->hangup_) {
         if (i >= *mapp) {
           bout.bpla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          bout.bpla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort);
+          bout.bpla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
+                                 a()->chains->at(map[i]).description.c_str()),
+                    &abort);
         }
       }
     }
@@ -131,11 +139,12 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
 
 // Executes a "chain", index number chain_num.
 void run_chain(int chain_num) {
+  const auto& c = a()->chains->at(chain_num);
   int inst = inst_ok(INST_LOC_CHAINS, chain_num + 1);
   if (inst != 0) {
-    const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", 
-        a()->chains[chain_num].description, inst);
-    if (!(a()->chains[chain_num].ansir & ansir_multi_user)) {
+    const string message =
+        fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
+    if (!c.multi_user) {
       bout << message << "Try again later.\r\n";
       return;
     } else {
@@ -146,22 +155,16 @@ void run_chain(int chain_num) {
     }
   }
   write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(chain_num + 1), INST_FLAGS_NONE);
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    a()->chains_reg[chain_num].usage++;
-    wwiv::core::DataFile<chainregrec> regFile(FilePath(a()->config()->datadir(), CHAINS_REG),
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-    if (regFile) {
-      regFile.WriteVector(a()->chains_reg);
-    }
-  }
-  const auto chainCmdLine = stuff_in(
-      a()->chains[chain_num].filename, create_chain_file(), std::to_string(a()->modem_speed_),
-      std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_), "");
+  a()->chains->increment_chain_usage(chain_num);
+  a()->chains->Save();
+  const auto chainCmdLine =
+      stuff_in(c.filename, create_chain_file(), std::to_string(a()->modem_speed_),
+               std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_), "");
 
-  sysoplog() << "!Ran \"" << a()->chains[chain_num].description << "\"";
+  sysoplog() << "!Ran \"" << c.description << "\"";
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
 
-  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(a()->chains[chain_num].ansir));
+  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(Chains::to_ansir(c)));
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   a()->UpdateTopScreen();
 }
@@ -175,39 +178,34 @@ void do_chains() {
   std::map<int, int> map;
 
   a()->tleft(true);
-  int mapp = 0;
+  int mapp{0};
   std::set<char> odc;
-  for (size_t i = 0; i < a()->chains.size(); i++) {
-    bool ok = true;
-    chainfilerec c = a()->chains[i];
-    if ((c.ansir & ansir_ansi) && !okansi()) {
-      ok = false;
+  const auto chains = a()->chains->chains();
+  for (size_t i = 0; i < chains.size(); i++) {
+    auto c = chains[i];
+    if (c.ansi && !okansi()) {
+      continue;
     }
-    if ((c.ansir & ansir_local_only) && a()->using_modem) {
-      ok = false;
+    if (c.local_only && a()->using_modem) {
+      continue;
     }
     if (c.sl > a()->effective_sl()) {
-      ok = false;
+      continue;
     }
     if (c.ar && !a()->user()->HasArFlag(c.ar)) {
-      ok = false;
+      continue;
     }
-    if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && a()->chains_reg.size() > 0 
-      && (a()->effective_sl() < 255)) {
-      chainregrec r = a()->chains_reg[i];
-      if (r.maxage) {
-        if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {
-          ok = false;
+    if (a()->effective_sl() < 255) {
+      if (c.maxage > 0 && c.maxage < 255) {
+        if (c.minage > a()->user()->GetAge() || c.maxage < a()->user()->GetAge()) {
+          continue;
         }
       }
     }
-    if (ok) {
-      map[mapp++] = i;
-      if (mapp < 100) {
-        if ((mapp % 10) == 0) {
-          odc.insert(static_cast<char>('0' + (mapp / 10)));
-        }
+    map[mapp++] = i;
+    if (mapp < 100) {
+      if ((mapp % 10) == 0) {
+        odc.insert(static_cast<char>('0' + (mapp / 10)));
       }
     }
   }

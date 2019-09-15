@@ -28,8 +28,7 @@
 using std::string;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn) : conn_(std::move(conn)) {}
 HttpServer::~HttpServer() {}
@@ -44,7 +43,7 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
 
 
 static string current_time_as_string() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   return dt.to_string();
 };
 
@@ -81,8 +80,7 @@ static std::vector<std::string> read_lines(SocketConnection* conn) {
 }
 
 bool HttpServer::Run() {
-  const auto d = std::chrono::seconds(1);
-  auto inital_requestline = conn_->read_line(1024, std::chrono::milliseconds(10));
+  const auto inital_requestline = conn_->read_line(1024, std::chrono::milliseconds(10));
   if (inital_requestline.empty()) {
     return false;
   }
@@ -109,6 +107,4 @@ bool HttpServer::Run() {
 }
 
 
-
-}
 }

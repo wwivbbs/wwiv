@@ -54,9 +54,9 @@ protected:
     subs_.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs_.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
-  const string dir() { return helper.files_.TempDir(); }
-  string CreateTempFile(const string& name, const string& contents) {
-    return helper.files().CreateTempFile(name, contents);
+  const string dir() { return helper.files_.TempDir().string(); }
+  void CreateTempFile(const string& name, const string& contents) {
+    helper.files().CreateTempFile(name, contents);
   }
   SdkHelper helper;
   vector<net_networks_rec> net_networks_;
@@ -71,7 +71,7 @@ TEST_F(SubXtrTest, Write) {
   xsubs.emplace_back(s2);
 
   write_subs_xtr(helper.data(), net_networks_, xsubs);
-  TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
+  TextFile subs_xtr_file(PathFilePath(helper.data(), "subs.xtr"), "r");
   vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4, actual.size());
   vector<string> expected = {
@@ -118,7 +118,7 @@ TEST_F(SubXtrTest, Read) {
     vector<string> contents{
       {"!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
     };
-    TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "w");
+    TextFile subs_xtr_file(PathFilePath(helper.data(), "subs.xtr"), "w");
     for (const auto& line : contents) {
       subs_xtr_file.WriteLine(line);
     }

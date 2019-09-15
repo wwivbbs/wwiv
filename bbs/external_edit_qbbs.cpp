@@ -44,9 +44,9 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(FilePath(a()->temp_directory(), filename));
-  file.SetFilePermissions(File::permReadWrite);
-  file.Delete();
+  auto f = PathFilePath(a()->temp_directory(), filename);
+  File::SetFilePermissions(f, File::permReadWrite);
+  File::Remove(f);
 }
 
 const std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }
@@ -72,7 +72,7 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
                         const string& to_name) {
-  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wd");
+  TextFile file(PathFilePath(a()->temp_directory(), MSGINF), "wd");
   if (!file.IsOpen()) {
     return false;
   }
@@ -108,15 +108,16 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
-  if (!File::Exists(a()->temp_directory(), QUOTES_TXT)) {
+  const auto qfn = PathFilePath(a()->temp_directory(), QUOTES_TXT);
+  if (!File::Exists(qfn)) {
     return false;
   }
   // Copy quotes.txt to MSGTMP if it exists
-  TextFile in(FilePath(a()->temp_directory(), QUOTES_TXT), "r");
+  TextFile in(qfn, "r");
   if (!in) {
     return false; 
   }
-  File out(FilePath(a()->temp_directory(), MSGTMP));
+  File out(PathFilePath(a()->temp_directory(), MSGTMP));
   if (!out.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                 File::modeTruncate)) {
     return false;
@@ -147,7 +148,11 @@ bool ExternalQBBSMessageEditor::After() {
   // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
   // TODO(rushfan): Let this function return an object with result and filename and anything
   // else that needs to be passed back.
-  File::Copy(FilePath(temp_directory_, MSGTMP), FilePath(temp_directory_, INPUT_MSG));
+  std::error_code ec;
+  using namespace wwiv::fs;
+  path from = PathFilePath(temp_directory_, MSGTMP);
+  path to = PathFilePath(temp_directory_, INPUT_MSG);
+  copy_file(from, to, copy_options::overwrite_existing, ec);
   return true;
 }
 

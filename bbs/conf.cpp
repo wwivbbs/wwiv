@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -30,12 +29,15 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
+#include "core/filesystem.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -98,11 +100,11 @@ conf_info_t get_conf_info(ConferenceType conftype) {
   return ret;
 }
 
-static string get_conf_filename(ConferenceType conftype) {
+static std::filesystem::path get_conf_filename(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_SUBS) {
-    return FilePath(a()->config()->datadir(), SUBS_CNF);
+    return PathFilePath(a()->config()->datadir(), SUBS_CNF);
   } else if (conftype == ConferenceType::CONF_DIRS) {
-    return FilePath(a()->config()->datadir(), DIRS_CNF);
+    return PathFilePath(a()->config()->datadir(), DIRS_CNF);
   }
   return {};
 }
@@ -222,7 +224,7 @@ char first_available_designator(ConferenceType conftype) {
 bool save_confs(ConferenceType conftype) {
   auto info = get_conf_info(conftype);
   // Backup the *.cnf file 1st before we write to it.
-  backup_file(File(info.file_name));
+  backup_file(info.file_name);
 
   TextFile f(info.file_name, "wt");
   if (!f.IsOpen()) {
@@ -937,7 +939,7 @@ static bool create_conf_file(ConferenceType conftype) {
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
-static std::vector<confrec> read_conferences(const std::string& file_name) {
+static std::vector<confrec> read_conferences(const std::filesystem::path& file_name) {
   if (!File::Exists(file_name)) {
     return {};
   }

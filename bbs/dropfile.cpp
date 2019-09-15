@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "bbs/bbs.h"
@@ -31,6 +30,7 @@
 #include "bbs/utility.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 
@@ -176,9 +176,9 @@ void CreateDoorInfoDropFile() {
 
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile() {
-  string fileName = create_dropfile_filename(drop_file_t::PCBOARD_SYS);
+  const auto fileName = create_dropfile_filename(drop_file_t::PCBOARD_SYS);
+  File::Remove(fileName);
   File pcbFile(fileName);
-  pcbFile.Delete();
   if (pcbFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     pcboard_sys_rec pcb{};
     memset(&pcb, 0, sizeof(pcb));

@@ -42,13 +42,13 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace wwivutil {
 
-bool checkDirExists(File &dir, const char *desc) {
-  if (dir.Exists()) {
+static bool checkDirExists(const std::string& dir, const char *desc) {
+  if (File::Exists(dir)) {
     return true;
   }
 
   LOG(INFO) << "For File Area: " << desc;
-  LOG(INFO) << "Unable to find dir: " << dir.full_pathname();
+  LOG(INFO) << "Unable to find dir: " << dir;
   LOG(INFO) << "Please create it.";
   return false;
   //printf("   Do you wish to CREATE it (y/N)?\n");
@@ -85,7 +85,7 @@ static string Unalign(const char* filename) {
 void checkFileAreas(const std::string& datadir, bool verbose) {
   vector<directoryrec> directories;
   {
-    DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+    DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
     if (!file) {
       // TODO(rushfan): show error?
       return;
@@ -99,14 +99,14 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
   LOG(INFO) << "Checking " << directories.size() << " directories.";
   for (size_t i = 0; i < directories.size(); i++) {
     if (!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
-      File dir(directories[i].path);
-      if (checkDirExists(dir, directories[i].name)) {
+      if (checkDirExists(directories[i].path, directories[i].name)) {
         LOG(INFO) << "Checking directory: " << directories[i].name;
         const auto filename = StrCat(directories[i].filename, ".dir");
-        File recordFile(FilePath(datadir, filename));
-        if (recordFile.Exists()) {
+        const auto record_path = PathFilePath(datadir, filename);
+        if (File::Exists(record_path)) {
+          File recordFile(record_path);
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
-            LOG(INFO) << "Unable to open:" << recordFile.full_pathname();
+            LOG(INFO) << "Unable to open:" << recordFile;
           } else {
             unsigned int numFiles = recordFile.length() / sizeof(uploadsrec);
             uploadsrec upload;
@@ -120,8 +120,9 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             if (numFiles >= 1) {
               ext_desc_rec *extDesc = nullptr;
               unsigned int recNo = 0;
-              File extDescFile(FilePath(datadir, StrCat(directories[i].filename, ".ext")));
-              if (extDescFile.Exists()) {
+              const auto fn = PathFilePath(datadir, StrCat(directories[i].filename, ".ext"));
+              if (File::Exists(fn)) {
+                File extDescFile(fn);
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
                   extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
                   size_t offs = 0;
@@ -157,21 +158,22 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                File file(FilePath(directories[i].path, Unalign(upload.filename)));
-                if (strlen(upload.filename) > 0 && file.Exists()) {
+                const auto dir_fn = PathFilePath(directories[i].path, Unalign(upload.filename));
+                File file(dir_fn);
+                if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {
                     if (verbose) {
-                      LOG(INFO) << "Checking file: " << file.full_pathname();
+                      LOG(INFO) << "Checking file: " << file;
                     }
-                    if (upload.numbytes != (unsigned long)file.length()) {
+                    if (upload.numbytes != static_cast<decltype(upload.numbytes)>(file.length())) {
                       upload.numbytes = file.length();
                       modified = true;
                       LOG(INFO) << "Fixed file size for: " << upload.filename;
                     }
                     file.Close();
                   } else {
-                    LOG(INFO) << "Unable to open file '" << file.full_pathname()
-                      << "', error:" << file.last_error();
+                    LOG(INFO) << "Unable to open file '" << dir_fn
+                              << "', error:" << file.last_error();
                   }
 								}
 								if (modified) {
@@ -187,8 +189,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
 						recordFile.Close();
 					}
 				} else {
-          LOG(INFO) << "Directory '" << directories[i].name
-            << "' missing file: " << recordFile.full_pathname();
+          LOG(INFO) << "Directory '" << directories[i].name << "' missing file: " << record_path;
 				}
 			}
 		} else if (directories[i].mask & mask_offline) {

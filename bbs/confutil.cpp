@@ -27,6 +27,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/subxtr.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

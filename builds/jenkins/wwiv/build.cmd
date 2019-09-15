@@ -7,7 +7,8 @@
 @rem
 @rem Installed Software:
 @rem   7-Zip [C:\Program Files\7-Zip\7z.exe]
-@rem   VS 2013 [C:\Program Files (x86)\Microsoft Visual Studio 12.0]
+@rem   Visual Studio [C:\Program Files (x86)\Microsoft Visual Studio\VER]
+@rem   cmake [in PATH, set by vcvarsall.bat]
 @rem   msbuild [in PATH, set by vcvarsall.bat]
 @rem   sed [in PATH]
 @rem 
@@ -30,44 +31,65 @@ if /I "%LABEL%"=="win-x64" (
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.4
-set WWIV_FULL_RELEASE=5.4.0
+set WWIV_RELEASE=5.5
+set WWIV_FULL_RELEASE=5.5.0
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
-echo =============================================================================
-echo Workspace:         %WORKSPACE% 
-echo Label:             %LABEL%
-echo Architecture:      %ARCH%
-echo WWIV Full Release: %WWIV_FULL_RELEASE%        
-echo WWIV Release:      %WWIV_RELEASE%        
-echo Build Number:      %BUILD_NUMBER%
-echo WWIV CMake Root:   %WWIV_CMAKE_DIR%
-echo Archive:           %RELEASE_ZIP%
-echo Staging Dir:       %STAGE_DIR%
-echo =============================================================================
+set VS_VERSION=2019
+set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
+set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
 
-@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@rem ===============================================================================
+
+@if exist "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="BuildTools"
+  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
-@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="BuildTools"
+  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
-@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="Community"
+  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
-@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  echo "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+@if exist "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  set VS_EDITION="Community"
+  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
-echo on
+@echo =============================================================================
+@echo Workspace:            %WORKSPACE% 
+@echo Label:                %LABEL%
+@echo Architecture:         %ARCH%
+@echo Number of Bits:       %NUM_BITS%
+@echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
+@echo WWIV Release:         %WWIV_RELEASE%        
+@echo Build Number:         %BUILD_NUMBER%
+@echo WWIV CMake Root:      %WWIV_CMAKE_DIR%
+@echo Archive:              %RELEASE_ZIP%
+@echo Staging Dir:          %STAGE_DIR%
+@echo Visual Studio Ver:    %VS_VERSION%
+@echo Visual Studio Ed:     %VS_EDITION%
+@echo Visual Studio DIR:    %VS_INSTALL_DIR%
+@echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
+@echo WindowsLibPath        %WindowsLibPath%
+@echo INCLUDE               %INCLUDE%
+@echo =============================================================================
+
+@echo on
 rem Turn echo back on now.
 
 if not exist %WWIV_CMAKE_DIR% (
@@ -173,10 +195,50 @@ echo * Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
 echo Build: %WWIV_FULL_RELEASE%.%BUILD_NUMBER% >> release\build.nfo
 
+
+@echo =============================================================================
+@echo. 
+@echo                           **** RUNNING TESTS ****
+@echo. 
+@echo =============================================================================
+
+
 echo:
 echo * Creating release archive: %RELEASE_ZIP%
 cd %STAGE_DIR%
 %ZIP_EXE% a -tzip -y %RELEASE_ZIP%
+
+cd %WWIV_CMAKE_DIR%\core_test
+del result.xml
+dir
+core_tests.exe --gtest_output=xml:result-core.xml
+
+cd %WWIV_CMAKE_DIR%\bbs_test
+copy /y/v %CL32_DLL% .
+del result.xml
+dir
+bbs_tests.exe --gtest_output=xml:result-bbs.xml
+
+cd %WWIV_CMAKE_DIR%\sdk_test
+del result.xml
+dir
+sdk_tests.exe --gtest_output=xml:result-sdk.xml
+
+cd %WWIV_CMAKE_DIR%\networkb_test
+del result.xml
+dir
+networkb_tests.exe --gtest_output=xml:result-networkb.xml
+
+cd %WWIV_CMAKE_DIR%\net_core_test
+del result.xml
+dir
+net_core_tests.exe --gtest_output=xml:result-net_core.xml
+
+cd %WWIV_CMAKE_DIR%\wwivd_test
+del result.xml
+dir
+wwivd_tests.exe --gtest_output=xml:result-wwivd.xml
+
 
 echo:
 echo:

@@ -20,19 +20,17 @@
 
 #include <set>
 #include <string>
+
+#include "core/filesystem.h"
 #include "sdk/fido/fido_address.h"
 
 namespace wwiv {
 namespace sdk {
 
-std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const ::std::string& dir,
-                                                             const std::string& filename);
-std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const std::string& filename);
-bool ReadSubcriberFile(const std::string& dir, const std::string& filename,
+std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename);
+bool ReadSubcriberFile(const std::filesystem::path& filename,
                        std::set<uint16_t>& subscribers);
-bool ReadSubcriberFile(const std::string& filename,
-                       std::set<uint16_t>& subscribers);
-bool WriteSubcriberFile(const std::string& dir, const std::string& filename,
+bool WriteSubcriberFile(const std::filesystem::path& path,
                         const std::set<uint16_t>& subscribers);
 
 }  // namespace sdk

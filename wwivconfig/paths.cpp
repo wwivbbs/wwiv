@@ -39,18 +39,19 @@ static constexpr int LABEL1_POS = 2;
 static constexpr int LABEL1_WIDTH = 11;
 static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 
-/* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir */
+/* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */
 void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
   configrec cfg = *config.config();
 
   items.add_items({
-    new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),
-    new FilePathItem(COL1_POSITION, 2, 60, config.root_directory(), cfg.gfilesdir),
-    new FilePathItem(COL1_POSITION, 3, 60, config.root_directory(), cfg.menudir),
-    new FilePathItem(COL1_POSITION, 4, 60, config.root_directory(), cfg.datadir),
-    new FilePathItem(COL1_POSITION, 5, 60, config.root_directory(), cfg.scriptdir),
-    new FilePathItem(COL1_POSITION, 6, 60, config.root_directory(), cfg.dloadsdir),
+      new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),
+      new FilePathItem(COL1_POSITION, 2, 60, config.root_directory(), cfg.gfilesdir),
+      new FilePathItem(COL1_POSITION, 3, 60, config.root_directory(), cfg.menudir),
+      new FilePathItem(COL1_POSITION, 4, 60, config.root_directory(), cfg.datadir),
+      new FilePathItem(COL1_POSITION, 5, 60, config.root_directory(), cfg.logdir),
+      new FilePathItem(COL1_POSITION, 6, 60, config.root_directory(), cfg.scriptdir),
+      new FilePathItem(COL1_POSITION, 7, 60, config.root_directory(), cfg.dloadsdir),
   });
 
   int y = 1;
@@ -58,6 +59,7 @@ void setpaths(wwiv::sdk::Config& config) {
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "GFiles:"),
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Menus:"),
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Data:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Logs:"),
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Scripts:"),
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Downloads:")});
   y+=2;
@@ -70,7 +72,7 @@ void setpaths(wwiv::sdk::Config& config) {
 
   if (!cfg.scriptdir[0]) {
     // This is added in 5.3
-    auto sdir = StrCat("scripts", File::pathSeparatorString);
+    auto sdir = File::EnsureTrailingSlash("scripts");
     to_char_array(cfg.scriptdir, sdir);
   }
 

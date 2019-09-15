@@ -89,6 +89,7 @@
 #include "core/version.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -302,15 +303,15 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  auto filename = FilePath(a()->language_dir, LOGOFF_MAT);
+  auto filename = PathFilePath(a()->language_dir, LOGOFF_MAT);
   if (!File::Exists(filename)) {
-    filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
+    filename = PathFilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
   if (File::Exists(filename)) {
     cycle = 0;
     do {
       bout.cls();
-      printfile(filename);
+      printfile(filename.string());
       ch = onek("QFTO", true);
       switch (ch) {
       case 'Q':

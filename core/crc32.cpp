@@ -1,9 +1,6 @@
 /*
 *  Crc - 32 BIT ANSI X3.66 CRC checksum files
 */
-#include <cstdio>
-#include <cstring>
-#include <iostream>
 #include <memory>
 #include <string>
 

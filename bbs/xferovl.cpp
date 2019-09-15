@@ -50,6 +50,7 @@
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/files/allow.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 
 using std::string;
@@ -130,7 +131,7 @@ void move_file() {
           bout << "\r\nToo many files in that directory.\r\n";
         }
         if (File::freespace_for_path(a()->directories[d1].path) <
-            ((double)(u.numbytes / 1024L) + 3)) {
+            ((long)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -205,11 +206,11 @@ void move_file() {
           if (File::Exists(s2)) {
             File::Remove(s1);
           } else {
-            copyfile(s1, s2, false);
+            File::Copy(s1, s2);
             File::Remove(s1);
           }
         } else {
-          copyfile(s1, s2, false);
+          File::Copy(s1, s2);
           File::Remove(s1);
         }
       }
@@ -429,7 +430,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
     const auto unaligned_filename = unalign(file_name);
-    const auto full_path = FilePath(d.path, unaligned_filename);
+    const auto full_path = PathFilePath(d.path, unaligned_filename);
 
     File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
@@ -446,8 +447,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     to_char_array(u.upby, a()->names()->UserName(a()->usernum));
     to_char_array(u.date, date());
 
-    File f(full_path);
-    auto t = daten_to_mmddyy(time_t_to_daten(f.creation_time()));
+    auto t = DateTime::from_time_t(File::creation_time(full_path)).to_string("%m/%d/%y");
     to_char_array(u.actualdate, t);
 
     if (d.mask & mask_PD) {
@@ -524,7 +524,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->directories[directory_num].path, file_name));
+            File::Remove(PathFilePath(a()->directories[directory_num].path, file_name));
             bout.nl();
             return true;
           } else {

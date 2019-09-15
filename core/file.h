@@ -20,14 +20,14 @@
 #ifndef __INCLUDED_CORE_FILE_H__
 #define __INCLUDED_CORE_FILE_H__
 
-#include <cstring>
 #include <ctime>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <sys/types.h>
+#include <sys/types.h>   // off_t
 
 #include "core/file_lock.h"
+#include "core/filesystem.h"
 #include "core/wwivport.h"
 
 #ifndef MAX_PATH
@@ -50,7 +50,14 @@ namespace core {
  * Creates a full pathname of directory_name + file_name ensuring that any
  * path separators are added as needed.
  */
-std::string FilePath(const std::string& directory_name, const std::string& file_name);
+std::string FilePath(const std::filesystem::path& directory_name, const std::string& file_name);
+
+/**
+ * Creates a full std::filesystem::path of directory_name + file_name ensuring that any
+ * path separators are added as needed.
+ */
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const std::string& file_name);
 
 /**
  * File: Provides a high level, cross-platform common wrapper for file handling using C++.
@@ -89,20 +96,18 @@ public:
   static const int invalid_handle;
 
   static const char pathSeparatorChar;
-  static const char pathSeparatorString[];
-  static const char separatorChar;
 
   // Constructor/Destructor
 
-  /** Constructs a file from a full pathname. */
-  explicit File(const std::string& full_file_name);
+  /** Constructs a file from a path. */
+  explicit File(const std::filesystem::path& p);
   /** Destructs File. Closes any open file handles. */
-  virtual ~File();
+  ~File();
 
   // Public Member functions
-  bool Open(int nFileMode = File::modeDefault, int nShareMode = File::shareUnknown);
-  void Close();
-  bool IsOpen() const { return File::IsFileHandleValid(handle_); }
+  bool Open(int nFileMode = modeDefault, int nShareMode = shareUnknown);
+  void Close() noexcept;
+  bool IsOpen() const noexcept;
 
   ssize_t Read(void* buf, size_t count);
   ssize_t Write(const void* buf, size_t count);
@@ -122,85 +127,106 @@ public:
   void set_length(off_t lNewLength);
   off_t current_position() const;
 
-  bool Exists() const;
-  bool Delete();
+  bool Exists() const noexcept;
 
-  bool IsDirectory() const;
-  bool IsFile() const;
-
-  bool SetFilePermissions(int nPermissions);
   time_t creation_time();
   time_t last_write_time();
   bool set_last_write_time(time_t last_write_time);
 
-  std::string parent() const {
-    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
-    if (found == std::string::npos) {
-      return {};
-    }
-    return full_path_name_.substr(0, found);
-  }
-
-  std::string GetName() const {
-    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
-    if (found == std::string::npos) {
-      return {};
-    }
-    return full_path_name_.substr(found + 1);
-  }
-
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
-  std::string full_pathname() const noexcept { return full_path_name_; }
-  const std::string& native() const noexcept { return full_path_name_; }
-  const char* c_str() const noexcept { return full_path_name_.c_str(); }
-  std::string last_error() const { return error_text_; }
+  /** Returns the file path as a std::string path */
+  std::string full_pathname() const noexcept { return full_path_name_.string(); }
+
+  /** Returns the file path as a std::filesystem path */
+  const fs::path& path() const noexcept { return full_path_name_; }
+
+  std::string last_error() const noexcept { return error_text_; }
 
   // operators
-  explicit operator bool() const { return IsOpen(); }
+  /** Returns true if the file is open */
+  explicit operator bool() const noexcept { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const File& f);
 
   // static functions
-  static bool Remove(const std::string& fileName);
-  static bool Remove(const std::string& directoryName, const std::string& fileName);
-  static bool Rename(const std::string& origFileName, const std::string& newFileName);
-  static bool Exists(const std::string& fileName);
-  static bool Exists(const std::string& directoryName, const std::string& fileName);
-  static bool ExistsWildcard(const std::string& wildCard);
-  static bool Copy(const std::string& sourceFileName, const std::string& destFileName);
-  static bool Move(const std::string& sourceFileName, const std::string& destFileName);
+  static bool Remove(const std::filesystem::path& fileName);
+  static bool Rename(const std::filesystem::path& origFileName,
+                     const std::filesystem::path& newFileName);
+  static bool Exists(const std::filesystem::path& fileName);
+  static bool ExistsWildcard(const std::filesystem::path& wildCard);
+  static bool Copy(const std::filesystem::path& sourceFileName,
+                   const std::filesystem::path& destFileName);
+  static bool Move(const std::filesystem::path& sourceFileName,
+                   const std::filesystem::path& destFileName);
 
-  static bool SetFilePermissions(const std::string& fileName, int nPermissions);
-  static bool IsFileHandleValid(int hFile);
+  static bool SetFilePermissions(const std::filesystem::path& fileName, int nPermissions);
 
   static std::string EnsureTrailingSlash(const std::string& path);
-  static void EnsureTrailingSlash(std::string* path);
-  static std::string current_directory();
-  static bool set_current_directory(const std::string& dir);
-  static void FixPathSeparators(std::string* path);
+  static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
+  static std::filesystem::path current_directory();
+  static bool set_current_directory(const std::filesystem::path& dir);
   static std::string FixPathSeparators(const std::string& path);
-  static void absolute(const std::string& base, std::string* relative);
   static std::string absolute(const std::string& base, const std::string& relative);
-  static bool is_absolute(const std::string& path);
-  static bool is_relative(const std::string& path) { return !is_absolute(path); }
 
-  static bool canonical(const std::string& path, std::string* resolved);
-  static bool mkdir(const std::string& path);
-  static bool mkdirs(const std::string& path);
+  static time_t creation_time(const std::filesystem::path& path);
+  static time_t last_write_time(const std::filesystem::path& path);
 
+  /**
+   * Returns an canonical absolute path.
+   *
+   * That means there are no dot or dot-dots or double-slashes in a non-UNC
+   * portion of the path.  On POSIX systems, this is congruent with how
+   * realpath behaves.
+   */
+  static std::string canonical(const std::string& path);
+
+  /**
+   * Creates the directory {path} by creating the leaf most directory.
+   *
+   * Returns true if the new directory is created.
+   * Also returns true if there is nothing to do. This is unlike
+   * filesystem::mkdir which returns false if {path} already exists.
+   */
+  static bool mkdir(const std::filesystem::path& path);
+
+  /**
+   * Creates the directory {path} and all parent directories needed
+   * along the way.
+   *
+   * Returns true if the new directory is created.
+   * Also returns true if there is nothing to do. This is unlike
+   * filesystem::mkdir which returns false if {path} already exists.
+   */
+  static bool mkdirs(const std::filesystem::path& path);
+
+  /**
+   * Creates the directory {path} by calling File::mkdir on the
+   * full pathname of this file object.
+   */
   static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
+
+  /**
+   * Creates the directory {path} by calling File::mkdirs on the
+   * full pathname of this file object.
+   */
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
-  static long freespace_for_path(const std::string& path);
+  /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
+  static long freespace_for_path(const std::filesystem::path& p);
   static bool is_directory(const std::string& path);
 
-  private : int handle_{-1};
-  std::string full_path_name_;
+private:
+  // Helper functions
+  static bool IsFileHandleValid(int hFile) noexcept;
+
+private:
+  int handle_{-1};
+  std::filesystem::path full_path_name_;
   std::string error_text_;
 };
 
-bool backup_file(const File& file);
-bool backup_file(const std::string& path);
+/** Makes a backup of path using a custom suffix with the time and date */
+bool backup_file(const std::filesystem::path& p);
 
 } // namespace core
 } // namespace wwiv

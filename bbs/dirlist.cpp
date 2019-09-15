@@ -27,6 +27,7 @@
 #include "bbs/xfer.h"
 #include "bbs/mmkey.h"
 #include "core/strings.h"
+#include "sdk/config.h"
 
 
 //////////////////////////////////////////////////////////////////////////////

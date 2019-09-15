@@ -67,7 +67,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   std::vector<uint8_t> newuser_colors{7, 11, 14, 13, 31, 10, 12, 9, 5, 3};
   std::vector<uint8_t> newuser_bwcolors{7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
 
-  IniFile ini(FilePath(config.root_directory(), "wwiv.ini"), {"WWIV"});
+  IniFile ini(PathFilePath(config.root_directory(), "wwiv.ini"), {"WWIV"});
   if (ini.IsOpen()) {
     for (int i = 0; i < 10; i++) {
       {

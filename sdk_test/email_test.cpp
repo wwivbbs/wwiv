@@ -24,6 +24,7 @@
 #include <string>
 
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
@@ -55,7 +56,7 @@ public:
     EmailData e{};
     e.title = title;
     e.text = text;
-    e.daten = time_t_to_daten(time(nullptr));
+    e.daten = daten_t_now();
     e.from_user = from;
     e.user_number = to;
     return email->AddMessage(e);
@@ -71,8 +72,8 @@ TEST_F(EmailTest, BasicCase) {
   // new area.
   EXPECT_EQ(0, email->number_of_messages());
 
-  EXPECT_TRUE(File::Exists(wwiv::core::FilePath(helper.data(), EMAIL_DAT)));
-  EXPECT_TRUE(File::Exists(wwiv::core::FilePath(helper.msgs(), EMAIL_DAT)));
+  EXPECT_TRUE(File::Exists(PathFilePath(helper.data(), EMAIL_DAT)));
+  EXPECT_TRUE(File::Exists(PathFilePath(helper.msgs(), EMAIL_DAT)));
 }
 
 TEST_F(EmailTest, Create) {
@@ -81,7 +82,7 @@ TEST_F(EmailTest, Create) {
 
   // Add a new message, expect it to be there.
   ASSERT_TRUE(Add(1, 2, "Title", "Text"));
-  EXPECT_EQ(1, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
+  EXPECT_EQ(1, email->number_of_messages()) << PathFilePath(helper.data(), EMAIL_DAT);
 
   // Read it back and make sure.
   mailrec nm{};
@@ -93,10 +94,10 @@ TEST_F(EmailTest, Delete) {
   ASSERT_TRUE(Add(1, 2, "Title", "Text"));
   ASSERT_TRUE(Add(1, 2, "Title2", "Text2"));
   ASSERT_TRUE(Add(1, 3, "Title3", "Text3"));
-  EXPECT_EQ(3, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
+  EXPECT_EQ(3, email->number_of_messages()) << PathFilePath(helper.data(), EMAIL_DAT);
 
   email->DeleteAllMailToOrFrom(2);
-  EXPECT_EQ(1, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
+  EXPECT_EQ(1, email->number_of_messages()) << PathFilePath(helper.data(), EMAIL_DAT);
   mailrec nm{};
   EXPECT_FALSE(email->read_email_header(0, nm));
   EXPECT_FALSE(email->read_email_header(1, nm));

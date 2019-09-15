@@ -19,8 +19,6 @@
 #ifdef _WIN32
 // include this here so it won't get includes by local_io_win32.h
 #include "core/wwiv_windows.h"
-#include <direct.h>
-#include <io.h>
 #endif  // WIN32
 
 #include <algorithm>
@@ -44,6 +42,7 @@
 #include "local_io/null_local_io.h"
 #include "local_io/stdio_local_io.h"
 #include "localui/curses_io.h"
+#include "sdk/config.h"
 
 #if defined( _WIN32 )
 #include "local_io/local_io_win32.h"
@@ -73,16 +72,18 @@ Application* CreateSession(LocalIO* localIO) {
 
 int bbsmain(int argc, char *argv[]) {
   try {
-    // Initialize the Logger.
-    wwiv::core::Logger::Init(argc, argv);
+    using wwiv::core::Logger;
+    using wwiv::core::LoggerConfig;
+    using wwiv::sdk::LogDirFromConfig;
 
-    // CursesIO
-    out = nullptr;
+    // Initialize the Logger.
+    LoggerConfig config(LogDirFromConfig);
+    Logger::Init(argc, argv, config);
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     auto bbs = CreateSession(new StdioLocalIO());
-    int return_code = bbs->Run(argc, argv);
+    const int return_code = bbs->Run(argc, argv);
     bbs->ExitBBSImpl(return_code, false);
     return return_code;
   } catch (const exception& e) {

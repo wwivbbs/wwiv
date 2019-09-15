@@ -12,7 +12,11 @@ using namespace wwiv::core;
 
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
-  wwiv::core::Logger::Init(argc, argv);
+
+  LoggerConfig log_config{};
+  log_config.log_startup = false;
+  Logger::Init(argc, argv, log_config);
+
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument({ "wwiv_test_tempdir", "Use instead of WWIV_TEST_TEMPDIR environment variable.", "" });

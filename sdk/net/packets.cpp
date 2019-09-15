@@ -119,7 +119,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
                << " nh.length = " << p.nh.length;
     return false;
   }
-  File file(FilePath(net.dir, filename));
+  File file(PathFilePath(net.dir, filename));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename << "Unable to open file.";
     return false;
@@ -289,10 +289,10 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
-    get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
+    auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
   }
 
-  auto pos = std::distance(text_.begin(), iter);
+  const auto pos = std::distance(text_.begin(), iter);
   text_.insert(pos, routing_information);
   return true;
 }
@@ -393,18 +393,17 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
 }
 
 void rename_pend(const string& directory, const string& filename, char network_app_num) {
-  File pend_file(FilePath(directory, filename));
-  if (!pend_file.Exists()) {
-    LOG(INFO) << " pending file does not exist: " << pend_file;
+  const auto pend_filename(PathFilePath(directory, filename));
+  if (!File::Exists(pend_filename)) {
+    LOG(INFO) << " pending file does not exist: " << pend_filename;
     return;
   }
-  const auto pend_filename(pend_file.full_pathname());
   const auto num = filename.substr(1);
   const char prefix = (to_number<int>(num)) ? '1' : '0';
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_filename =
-        StringPrintf("%sp%c-%c-%u.net", directory.c_str(), prefix, network_app_num, i);
+    const auto new_basename = StringPrintf("p%c-%c-%u.net", prefix, network_app_num, i);
+    const auto new_filename = PathFilePath(directory, new_basename);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
@@ -417,10 +416,11 @@ std::string create_pend(const string& directory, bool local, char network_app_id
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     const auto filename = StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
-    File f(FilePath(directory, filename));
-    if (f.Exists()) {
+    const auto pend_fn = PathFilePath(directory, filename);
+    if (File::Exists(pend_fn)) {
       continue;
     }
+    File f(pend_fn);
     if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
       LOG(INFO) << "Created pending file: " << filename;
       return filename;
@@ -612,8 +612,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     if (!are_we_hosting && !are_we_gating &&
         send_to == subscribers_send_to_t::hosted_and_gated_only) {
       // Nothing to do here, so move on to the next subnet in the list
-      continue;
       VLOG(2) << "!hosting and !gating on: " << current_net.name;
+      continue;
     }
     if (are_we_gating) {
       // update fromsys
@@ -642,7 +642,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
         // We are the host.
         std::set<uint16_t> subscribers;
         bool subscribers_read =
-            ReadSubcriberFile(current_net.dir, StrCat("n", subnet.stype, ".net"), subscribers);
+            ReadSubcriberFile(PathFilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
         if (subscribers_read) {
           // Remove the original sender from the set of systems
           // that we will resend this to.

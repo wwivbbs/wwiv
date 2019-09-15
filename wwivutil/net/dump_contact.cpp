@@ -79,7 +79,7 @@ int DumpContactCommand::Execute() {
   if (barg("save")) {
     for (auto& c : contacts) {
       if (barg("backup")) {
-        backup_file(c.second.full_pathname());
+        backup_file(c.second.path());
       }
       c.second.Save();
     }

@@ -38,7 +38,6 @@
 #include "bbs/xfertmp.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
-
 #include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/sysoplog.h"
@@ -46,6 +45,8 @@
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 // the archive type to use
 #define ARC_NUMBER 0
@@ -406,7 +407,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     return false;
   }
   const auto file_to_send = StrCat(file_name, ".", a()->arcs[ARC_NUMBER].extension);
-  const auto dl_filename = FilePath(a()->temp_directory(), file_to_send);
+  const auto dl_filename = PathFilePath(a()->temp_directory(), file_to_send);
   File file(dl_filename);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -423,7 +424,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
     bool sent = false;
     bool abort = false;
-    send_file(dl_filename, &sent, &abort, file_to_send, -1, file_size);
+    send_file(dl_filename.string(), &sent, &abort, file_to_send, -1, file_size);
     if (sent) {
       if (count_against_xfer_ratio) {
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
@@ -520,7 +521,7 @@ void del_temp() {
 }
 
 void list_temp_dir() {
-  FindFiles ff(a()->temp_directory(), "*", FindFilesType::any);
+  FindFiles ff(PathFilePath(a()->temp_directory(), "*"), FindFilesType::any);
   bout.nl();
   bout << "Files in temporary directory:\r\n\n";
   for (const auto& f : ff) {
@@ -573,7 +574,7 @@ void temp_extract() {
       sprintf(s2, "%s%s", a()->temp_directory().c_str(), u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
-        copyfile(s1, s2, false);
+        File::Copy(s1, s2);
       }
     }
     get_arc_cmd(s1, s2, 1, "");
@@ -587,7 +588,7 @@ void temp_extract() {
       } else {
         File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
-      File file(FilePath(File::current_directory(), stripfn(u.filename)));
+      File file(PathFilePath(File::current_directory(), stripfn(u.filename)));
       a()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
@@ -658,11 +659,11 @@ void list_temp_text() {
     if (!contains(fn, '.')) {
       fn += ".*";
     }
-    const auto fmask = FilePath(a()->temp_directory(), stripfn(fn.c_str()));
+    const auto fmask = PathFilePath(a()->temp_directory(), stripfn(fn.c_str()));
     FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
     for (const auto& f : ff) {
-      const auto s = FilePath(a()->temp_directory(), f.name);
+      const auto s = PathFilePath(a()->temp_directory(), f.name);
       if (iequals(f.name, "door.sys") || iequals(f.name, DROPFILE_CHAIN_TXT)) {
         continue;
       }
@@ -670,7 +671,7 @@ void list_temp_text() {
       bout << "Listing " << f.name << "\r\n\n";
       bool sent;
       double percent;
-      ascii_send(s, &sent, &percent);
+      ascii_send(s.string(), &sent, &percent);
       if (sent) {
         sysoplog() << "Temp text D/L \"" << f.name << "\"";
       } else {
@@ -876,11 +877,11 @@ void move_file_t() {
             if (File::Exists(s2)) {
               File::Remove(s1);
             } else {
-              copyfile(s1, s2, false);
+              File::Copy(s1, s2);
               File::Remove(s1);
             }
           } else {
-            copyfile(s1, s2, false);
+            File::Copy(s1, s2);
             File::Remove(s1);
           }
           remlist(a()->batch().entry[nCurBatchPos].filename);

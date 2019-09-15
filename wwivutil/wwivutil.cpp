@@ -57,7 +57,9 @@ namespace wwivutil {
 class WWIVUtil {
 public:
   WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "net") {
-    Logger::Init(argc, argv);
+    LoggerConfig config(LogDirFromConfig);
+    Logger::Init(argc, argv, config);
+
     cmdline_.AddStandardArgs();
   }
   ~WWIVUtil() {}

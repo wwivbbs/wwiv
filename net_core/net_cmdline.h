@@ -26,6 +26,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/inifile.h"
 #include "sdk/config.h"
 #include "sdk/net.h"
@@ -34,7 +35,7 @@
 namespace wwiv {
 namespace net {
 
-void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline);
 
 /**
  * Wrapper class that augments CommandLine to specialize it for the network commands.
@@ -51,9 +52,11 @@ public:
   const net_networks_rec& network() const noexcept { return network_; }
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
   char net_cmd() const noexcept { return net_cmd_; }
-  std::string semaphore_filename() const noexcept;
+  std::filesystem::path semaphore_path() const noexcept;
+  std::string GetHelp() const;
 
-  bool LoadNetIni();
+  /** Process net.ini and reparse command line applying new defaults */
+  bool LoadNetIni(char net_cmd, const std::string& bbsdir);
   bool skip_delete() const noexcept;
   bool skip_net() const noexcept;
   bool quiet() const noexcept;

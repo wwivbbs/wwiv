@@ -53,7 +53,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
 #include "bbs/uedit.h"
-
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/inifile.h"
@@ -62,9 +61,13 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/wconstants.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/phone_numbers.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using std::chrono::milliseconds;
@@ -537,7 +540,7 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
 }
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
-  File userFile(FilePath(a()->config()->datadir(), USER_LST));
+  File userFile(PathFilePath(a()->config()->datadir(), USER_LST));
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       sleep_for(milliseconds(100));
@@ -655,7 +658,7 @@ bool CanCreateNewUserAccountHere() {
 }
 
 bool UseMinimalNewUserInfo() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     return ini.value<bool>("NEWUSER_MIN");
@@ -690,8 +693,8 @@ void DoFullNewUser() {
   }
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     input_street();
-    const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
-    if (File::Exists(zip_city_dir, "zip1.dat")) {
+    const auto zip_city_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
+    if (File::Exists(PathFilePath(zip_city_dir, "zip1.dat"))) {
       input_zipcode();
       if (!check_zip(u->GetZipcode(), 1)) {
         u->SetCity("");
@@ -749,7 +752,7 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(PathFilePath(a()->bbsdir(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     return;
@@ -1115,10 +1118,10 @@ bool check_zip(const std::string& zipcode, int mode) {
   bool ok = true;
   bool found = false;
 
-  const auto zipcity_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
+  const auto zipcity_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
   const auto fn = StringPrintf("zip%c.dat", zipcode.front());
 
-  TextFile zip_file(FilePath(zipcity_dir, fn), "r");
+  TextFile zip_file(PathFilePath(zipcity_dir, fn), "r");
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {
@@ -1435,15 +1438,15 @@ void DoMinimalNewUser() {
 }
 
 void new_mail() {
-  File file(FilePath(a()->config()->gfilesdir(),
-                     (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
-                                                                                 : NEWMAIL_MSG));
-  if (!file.Exists()) {
+  auto file = PathFilePath(a()->config()->gfilesdir(),
+               (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+
+  if (!File::Exists(file)) {
     return;
   }
   int save_ed = a()->user()->GetDefaultEditor();
   a()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.full_pathname(), true, true);
+  LoadFileIntoWorkspace(file.string(), true, true);
   use_workspace = true;
 
   MessageEditorData data;

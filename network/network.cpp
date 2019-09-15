@@ -20,6 +20,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -55,10 +56,9 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-       << "/N####     Network node number to dial." << endl
-       << ".####      Network number (as defined in wwivconfig)" << endl
+static void ShowHelp(NetworkCommandLine& cmdline) {
+  cout << cmdline.GetHelp() << "   /N####" << std::setw(22) << " "
+       << "Network node number to dial." << endl
        << endl;
   exit(1);
 }
@@ -79,12 +79,13 @@ static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const
 
 
 int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
     cmdline.AddStandardArgs();
-    AddStandardNetworkArgs(cmdline, File::current_directory());
+    AddStandardNetworkArgs(cmdline);
     cmdline.add_argument({"node", 'n', "Network node number to dial.", "0"});
     cmdline.add_argument(BooleanCommandLineArgument("allow_sendback", 'A', "Allow sendback (only used by legacy network0)", true));
     cmdline.add_argument({"phone_number", 'P', "Network number to use (only used by legacy network0)", ""});
@@ -93,7 +94,7 @@ int main(int argc, char** argv) {
 
     NetworkCommandLine net_cmdline(cmdline, '\0');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
+      ShowHelp(net_cmdline);
       return 1;
     }
 
@@ -104,7 +105,7 @@ int main(int argc, char** argv) {
       int nodeint = to_number<int>(node);
       if (nodeint == 0 || nodeint > 32767) {
         LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
-        ShowHelp(cmdline);
+        ShowHelp(net_cmdline);
         return 1;
       }
       if (nodeint == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {

@@ -24,19 +24,22 @@
 #include <string>
 #include <vector>
 
+#include "core/filesystem.h"
+
 namespace wwiv {
 namespace core {
 
-class IniFile {
+class IniFile final {
  public:
-  IniFile(const std::string& filename, const std::initializer_list<const char*> sections);
-  IniFile(const std::string& filename, const std::initializer_list<const std::string> sections);
+  IniFile(const std::filesystem::path& filename, const std::initializer_list<const char*> sections);
+  IniFile(const std::filesystem::path& filename,
+          const std::initializer_list<const std::string> sections);
   // Constructor/Destructor
-  virtual ~IniFile(); 
+  ~IniFile(); 
 
   // Member functions
-  void Close();
-  bool IsOpen() const { return open_; }
+  void Close() noexcept;
+  bool IsOpen() const noexcept { return open_; }
 
   template<typename T>
   T value(const std::string& key, const T& default_value) const {
@@ -47,10 +50,11 @@ class IniFile {
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
-  std::string full_pathname() const { return file_name_; }
+  std::string full_pathname() const noexcept { return path_.string(); }
+  std::filesystem::path path() const noexcept { return path_; }
 
  private:
-  // This class should not be assigneable via '=' so remove the implicit operator=
+  // This class should not be assignable via '=' so remove the implicit operator=
   // and Copy constructor.
   IniFile(const IniFile& other) = delete;
   IniFile& operator=(const IniFile& other) = delete;
@@ -60,8 +64,8 @@ class IniFile {
   long GetNumericValueT(const std::string& key, long default_value = 0) const;
   bool GetBooleanValue(const std::string& key, bool default_value = false) const;
 
-  const std::string file_name_;
-  bool open_;
+  const std::filesystem::path path_;
+  bool open_{false};
   std::vector<std::string> sections_;
   std::map<std::string, std::string> data_;
 };
@@ -76,7 +80,6 @@ template<>
 bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
 template<>
 bool IniFile::value<bool>(const std::string& key) const;
-
 
 
 }  // namespace core

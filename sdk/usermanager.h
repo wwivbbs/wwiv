@@ -62,12 +62,11 @@ class UserManager {
 
 private:
 
-  // ICK.
-  const wwiv::sdk::Config& config_;
+  const wwiv::sdk::Config config_;
   const std::string data_directory_;
   int userrec_length_;
   int max_number_users_;
-  bool allow_writes_ = false;
+  bool allow_writes_{false};
 };
 
 }  // namespace sdk

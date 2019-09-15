@@ -41,8 +41,12 @@
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
+#include "sdk/names.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using namespace wwiv::bbs;
@@ -123,7 +127,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(FilePath(a()->temp_directory(), INPUT_MSG));
+  File file(PathFilePath(a()->temp_directory(), INPUT_MSG));
   off_t lMaxBytes = 250 * static_cast<off_t>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
@@ -134,7 +138,7 @@ void upload_post() {
     if (file_size > lMaxBytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
-      file.Delete();
+      File::Remove(file.path());
     } else {
       file.Close();
       use_workspace = true;

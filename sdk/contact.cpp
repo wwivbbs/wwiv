@@ -40,7 +40,6 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -67,7 +66,7 @@ Contact::Contact(const net_networks_rec& net) : Contact(net, false) {}
 
 Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     : net_(net), save_on_destructor_(save_on_destructor) {
-  DataFile<net_contact_rec> file(FilePath(net_.dir, CONTACT_NET),
+  DataFile<net_contact_rec> file(PathFilePath(net_.dir, CONTACT_NET),
                                  File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return;
@@ -80,8 +79,7 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
 
   for (const auto& v : vs) {
     if (v.systemnumber == 0) {
-      VLOG(2) << "Skipping contact.net entry for system #0 from file: "
-              << file.file().full_pathname();
+      VLOG(2) << "Skipping contact.net entry for system #0 from file: " << file.file();
       continue;
     }
     network_contact_record r{};
@@ -110,8 +108,7 @@ bool Contact::Save() {
   }
 
   VLOG(2) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET);
-  DataFile<net_contact_rec> file(
-                 FilePath(net_.dir, CONTACT_NET),
+  DataFile<net_contact_rec> file(PathFilePath(net_.dir, CONTACT_NET),
                  File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite);
   if (!file) {
@@ -150,8 +147,8 @@ void NetworkContact::fixup() {
   fixup_long(ncr_.ncr.lasttry);
 }
 
-void NetworkContact::AddContact(time_t t) {
-  daten_t d = time_t_to_daten(t);
+void NetworkContact::AddContact(const wwiv::core::DateTime& t) {
+  daten_t d = t.to_daten_t();
   ncr_.ncr.lasttry = d;
   ncr_.ncr.lastcontact = d;
   ncr_.ncr.numcontacts++;
@@ -161,19 +158,19 @@ void NetworkContact::AddContact(time_t t) {
   }
 }
 
-void NetworkContact::AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_received) {
+void NetworkContact::AddConnect(const wwiv::core::DateTime& t, uint32_t bytes_sent,
+                                uint32_t bytes_received) {
   AddContact(t);
 
-  daten_t d = time_t_to_daten(t);
   if (bytes_sent > 0) {
-    ncr_.ncr.lastcontactsent = d;
+    ncr_.ncr.lastcontactsent = t.to_daten_t();
     ncr_.ncr.bytes_waiting = 0;
     ncr_.ncr.bytes_sent += bytes_sent;
   }
   ncr_.ncr.bytes_received += bytes_received;
 }
 
-void NetworkContact::AddFailure(time_t t) {
+void NetworkContact::AddFailure(const wwiv::core::DateTime& t) {
   AddContact(t);
   ncr_.ncr.numfails++;
 }
@@ -208,12 +205,14 @@ void Contact::ensure_rec_for(const std::string& node) {
   }
 }
 
-void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+void Contact::add_connect(int node, const wwiv::core::DateTime& time, uint32_t bytes_sent,
+                          uint32_t bytes_received) {
   auto key = NetworkContact::CreateFakeFtnAddress(node);
   add_connect(key, time, bytes_sent, bytes_received);
 }
 
-void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_sent,
+void Contact::add_connect(const std::string& node, const wwiv::core::DateTime& time,
+                          uint32_t bytes_sent,
                           uint32_t bytes_received) {
   auto key = node;
   NetworkContact* c = contact_rec_for(key);
@@ -228,7 +227,7 @@ void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_s
   c->AddConnect(time, bytes_sent, bytes_received);
 }
 
-void Contact::add_failure(int node, time_t time) {
+void Contact::add_failure(int node, const wwiv::core::DateTime& time) {
   NetworkContact* c = contact_rec_for(node);
   if (c == nullptr) {
     ensure_rec_for(node);
@@ -241,7 +240,7 @@ void Contact::add_failure(int node, time_t time) {
   c->AddFailure(time);
 }
 
-void Contact::add_failure(const std::string& n, time_t time) {
+void Contact::add_failure(const std::string& n, const wwiv::core::DateTime& time) {
   auto key = n;
   NetworkContact* c = contact_rec_for(key);
   if (c == nullptr) {
@@ -255,7 +254,9 @@ void Contact::add_failure(const std::string& n, time_t time) {
   c->AddFailure(time);
 }
 
-void Contact::add_contact(NetworkContact* c, time_t time) { c->AddContact(time); }
+void Contact::add_contact(NetworkContact* c, const wwiv::core::DateTime& time) {
+  c->AddContact(time);
+}
 
 static std::string DumpCallout(const NetworkContact& n) {
   std::ostringstream ss;
@@ -282,6 +283,8 @@ std::string Contact::ToString() const {
 }
 
 std::string Contact::full_pathname() const noexcept { return FilePath(net_.dir, CONTACT_NET); }
+
+std::filesystem::path Contact::path() const noexcept { return PathFilePath(net_.dir, CONTACT_NET); }
 
 network_contact_record to_network_contact_record(const net_contact_rec& n) {
   network_contact_record ncr{};

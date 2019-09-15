@@ -27,35 +27,28 @@
 #include <utility>
 #include <vector>
 
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
-
-#include "local_io/keycodes.h"
-#include "core/log.h"
-#include "core/findfiles.h"
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/filesystem.h"
+#include "core/findfiles.h"
+#include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "wwivconfig/subacc.h"
-#include "localui/wwiv_curses.h"
+#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "sdk/filenames.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/networks.h"
+#include "sdk/filenames.h"
 #include "sdk/menu.h"
+#include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
 
 using std::pair;
 using std::string;
@@ -238,10 +231,10 @@ private:
   int y_ = 0;
 };
 
-static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {
+static void edit_menu(const std::filesystem::path& menu_dir, const std::string& menu_name) {
   vector<MenuRec> menu_items;
   {
-    DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name));
+    DataFile<MenuRec> menu_file(PathFilePath(menu_dir, menu_name));
     if (menu_file) {
       menu_file.ReadVector(menu_items);
     }
@@ -344,7 +337,7 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
   memcpy(&r, &h, sizeof(MenuHeader));
   menu_items[0] = r;
 
-  DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name),
+  DataFile<MenuRec> menu_file(PathFilePath(menu_dir, menu_name),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate, File::shareDenyReadWrite);
   if (menu_file) {
@@ -354,8 +347,8 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
 }
 
 static void select_menu(const std::string& menu_dir, const std::string& dir) {
-  const auto full_dir_path = FilePath(menu_dir, dir);
-  auto menus = FindFiles(full_dir_path, "*", FindFilesType::files);
+  const auto full_dir_path = PathFilePath(menu_dir, dir);
+  auto menus = FindFiles(PathFilePath(full_dir_path, "*"), FindFilesType::files);
   int selected = -1;
   try {
     bool done = false;
@@ -397,7 +390,7 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
 
 void menus(const std::string& menu_dir) {
   try {
-    auto dirs = FindFiles(menu_dir, "*", FindFilesType::directories);
+    auto dirs = FindFiles(PathFilePath(menu_dir, "*"), FindFilesType::directories);
 
     bool done = false;
     int selected = -1;

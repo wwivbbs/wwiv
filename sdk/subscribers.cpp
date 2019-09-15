@@ -50,11 +50,7 @@ using namespace wwiv::sdk::fido;
 namespace wwiv {
 namespace sdk {
 
-std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& dir, const std::string& filename) {
-  return ReadFidoSubcriberFile(FilePath(dir, filename));
-}
-
-std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& filename) {
+std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename) {
 
   VLOG(1) << "ReadFidoSubcriberFile: " << filename;
   TextFile file(filename, "rt");
@@ -78,12 +74,7 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& filename) {
   return subscribers;
 }
 
-bool ReadSubcriberFile(const std::string& dir, const std::string& filename,
-                       std::set<uint16_t>& subscribers) {
-  return ReadSubcriberFile(FilePath(dir, filename), subscribers);
-}
-
-bool ReadSubcriberFile(const std::string& filename, std::set<uint16_t>& subscribers) {
+bool ReadSubcriberFile(const std::filesystem::path& filename, std::set<uint16_t>& subscribers) {
   VLOG(1) << "ReadSubcriberFile: " << filename;
   subscribers.clear();
 
@@ -103,8 +94,8 @@ bool ReadSubcriberFile(const std::string& filename, std::set<uint16_t>& subscrib
   return true;
 }
 
-bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers) {
-  TextFile file(FilePath(dir, filename), "wt");
+bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<uint16_t>& subscribers) {
+  TextFile file(path, "wt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -114,7 +105,6 @@ bool WriteSubcriberFile(const std::string& dir, const std::string& filename, con
   }
   return true;
 }
-
 
 
 }

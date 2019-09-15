@@ -42,7 +42,7 @@ using namespace wwiv::strings;
 class PhoneNumbersTest : public testing::Test {
 public:
   bool CreatePhoneNumDat(const Config& config) {
-    File file(FilePath(config.datadir(), PHONENUM_DAT));
+    File file(PathFilePath(config.datadir(), PHONENUM_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file) {
       return false;

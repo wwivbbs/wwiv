@@ -21,19 +21,18 @@
 #define __INCLUDED_CORE_SEMAPHORE_FILE_H__
 
 #include <chrono>
-#include <cstring>
-#include <ctime>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
 
+#include "core/filesystem.h"
 
 namespace wwiv {
 namespace core {
 
 struct semaphore_not_acquired : public std::runtime_error {
-  semaphore_not_acquired(const std::string& filename) : std::runtime_error(filename) {}
+  semaphore_not_acquired(const std::filesystem::path& filename)
+      : std::runtime_error(filename.string()) {}
 };
 
 class SemaphoreFile final {
@@ -45,7 +44,7 @@ public:
    * failing by throwing a semaphore_not_acquired exception.
    * Will write 'text' into the semaphore file.
    */
-  static SemaphoreFile try_acquire(const std::string& filepath, 
+  static SemaphoreFile try_acquire(const std::filesystem::path& filepath, 
                                    const std::string& text,
                                    std::chrono::duration<double> timeout);
 
@@ -53,7 +52,7 @@ public:
    * Tries to create the semaphore file, waiting up to timeout and then
    * failing by throwing a semaphore_not_acquired exception.
    */
-  static SemaphoreFile try_acquire(const std::string& filepath,
+  static SemaphoreFile try_acquire(const std::filesystem::path& filepath,
     std::chrono::duration<double> timeout) {
     return try_acquire(filepath, "", timeout);
   }
@@ -62,18 +61,18 @@ public:
    * Tries to create the semaphore file, waiting forever.
    * Will write 'text' into the semaphore file.
    */
-  static SemaphoreFile acquire(const std::string& filepath, const std::string& text);
+  static SemaphoreFile acquire(const std::filesystem::path& filepath, const std::string& text);
 
   /**
    * Tries to create the semaphore file, waiting forever.
    */
-  static SemaphoreFile acquire(const std::string& filepath) {
+  static SemaphoreFile acquire(const std::filesystem::path& filepath) {
     return acquire(filepath, "");
   }
 
   ~SemaphoreFile();
 
-  const std::string& filename() const { return filename_; }
+  const std::filesystem::path& path() const { return path_; }
   int fd() const { return fd_; }
 
   SemaphoreFile(SemaphoreFile&&) = default;
@@ -81,10 +80,10 @@ public:
   SemaphoreFile& operator= (const SemaphoreFile&) = delete;
 
 private:
-  SemaphoreFile(const std::string& filepath, int fd);
+  SemaphoreFile(const std::filesystem::path&, int fd);
 
-  const std::string filename_;
-  int fd_ = -1;
+  const std::filesystem::path path_;
+  int fd_{-1};
 };
 
 }  // namespace core

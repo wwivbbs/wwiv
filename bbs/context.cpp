@@ -19,6 +19,7 @@
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "sdk/config.h"
 
 #include <chrono>
 #include <string>
@@ -56,7 +57,6 @@ void SessionContext::reset() {
   a_->localIO()->SetTopLine(0);
   a_->screenlinest = a_->defscreenbottom + 1;
   a_->hangup_ = false;
-  a_->chatcall_ = false;
   a_->SetChatReason("");
   a_->SetUserOnline(false);
   a_->chatting_ = 0;

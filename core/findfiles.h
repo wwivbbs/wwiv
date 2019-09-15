@@ -23,7 +23,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "core/wwivport.h"
+#include "core/filesystem.h"
 
 namespace wwiv {
 namespace core {
@@ -37,11 +37,10 @@ struct FileEntry {
 
 class FindFiles {
 public:
-  typedef typename std::vector<FileEntry>::iterator iterator;
-  typedef typename std::vector<FileEntry>::const_iterator const_iterator;
+  typedef std::vector<FileEntry>::iterator iterator;
+  typedef std::vector<FileEntry>::const_iterator const_iterator;
 
-  FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type);
-  FindFiles(const std::string& mask, const FindFilesType type);
+  FindFiles(const std::filesystem::path& mask, const FindFilesType type);
 
   iterator begin() { return entries_.begin(); }
   const_iterator begin() const { return entries_.begin(); }

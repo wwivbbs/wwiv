@@ -30,7 +30,6 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -39,7 +38,9 @@
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 
 using std::chrono::steady_clock;
 using std::chrono::seconds;
@@ -66,8 +67,8 @@ bool is_chat_invis() {
 }
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
-  const string fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
-  File file(FilePath(a()->config()->datadir(), fn));
+  const auto fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
+  File file(PathFilePath(a()->config()->datadir(), fn));
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::Whence::end);
     if (ih->msg_size > 0 && msg.empty()) {
@@ -80,8 +81,9 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      string dest = FilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
-      if (!File::Rename(file.full_pathname(), dest) || (errno != EACCES)) {
+      const auto dest =
+          PathFilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
+      if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
         break;
       }
     }
@@ -210,9 +212,9 @@ void process_inst_msgs() {
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->hangup_) { break; }
-    File file(FilePath(a()->config()->datadir(), f.name));
+    File file(PathFilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
-      LOG(ERROR) << "Unable to open file: " << file.full_pathname();
+      LOG(ERROR) << "Unable to open file: " << file;
       continue;
     }
     while (true) {
@@ -231,7 +233,7 @@ void process_inst_msgs() {
       handle_inst_msg(&ih, m.c_str());
     }
     file.Close();
-    file.Delete();
+    File::Remove(file.path());
   }
   setiia(oiia);
 }
@@ -244,7 +246,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
@@ -290,7 +292,7 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -432,7 +434,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write) {
     ti.last_update = daten_t_now();
-    File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
+    File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);
       instFile.Write(&ti, sizeof(instancerec));
@@ -453,7 +455,7 @@ bool inst_msg_waiting() {
   }
 
   const string filename = StringPrintf("msg*.%3.3u", a()->instance_number());
-  if (!File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
+  if (!File::ExistsWildcard(PathFilePath(a()->config()->datadir(), filename))) {
     last_iia = l;
     return false;
   }

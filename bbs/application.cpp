@@ -17,15 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 #ifdef _WIN32
-// include this here so it won't get includes by local_io_win32.h
-#include "core/wwiv_windows.h"
+#include <crtdbg.h>
+// Needed for isatty
 #include <io.h>
 #endif // WIN32
 #include "bbs/application.h"
 
 #include <algorithm>
 #include <chrono>
-#include <cstdarg>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -49,10 +48,8 @@
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
 #include "bbs/null_remote_io.h"
-#include "bbs/pause.h"
 #include "bbs/remote_io.h"
 #include "bbs/ssh.h"
-#include "bbs/subacc.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
@@ -68,7 +65,13 @@
 #include "local_io/local_io_curses.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
+#include "sdk/chains.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 #if defined(_WIN32)
 #include "bbs/remote_socket_io.h"
@@ -94,10 +97,11 @@ using namespace wwiv::strings;
 Output bout;
 
 Application::Application(LocalIO* localIO)
-    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_(),
+    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(this) {
   ::bout.SetLocalIO(localIO);
   SetCurrentReadMessageArea(-1);
+  thisuser_ = std::make_unique<wwiv::sdk::User>();
 
   tzset();
   srand(static_cast<unsigned int>(time_t_now()));
@@ -105,10 +109,11 @@ Application::Application(LocalIO* localIO)
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
   newuser_bwcolors = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
-  User::CreateNewUserRecord(&thisuser_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
+  User::CreateNewUserRecord(user(), 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
   // Set the home directory
-  current_dir_ = File::current_directory();
+  bbs_dir_ = File::current_directory();
+  chains = std::make_unique<Chains>();
 }
 
 Application::~Application() {
@@ -142,10 +147,11 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
 void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
-    const File key_file(FilePath(config_->datadir(), "wwiv.key"));
+    const auto key_fn = PathFilePath(config_->datadir(), "wwiv.key");
+    const File key_file(key_fn);
     const auto system_password = config()->system_password();
-    wwiv::bbs::Key key(key_file.full_pathname(), system_password);
-    if (!key_file.Exists()) {
+    wwiv::bbs::Key key(key_fn.string(), system_password);
+    if (!File::Exists(key_fn)) {
       LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
@@ -154,7 +160,7 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
     }
     if (!key.Open()) {
       LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
-      LOG(ERROR) << "If so, delete " << key_file.full_pathname();
+      LOG(ERROR) << "If so, delete " << key_file;
       LOG(ERROR) << "SSH will be disabled!";
       type = CommunicationType::TELNET;
     }
@@ -176,7 +182,7 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
 }
 
 bool Application::ReadCurrentUser(int user_number) {
-  if (!users()->readuser(&thisuser_, user_number)) {
+  if (!users()->readuser(user(), user_number)) {
     return false;
   }
   last_read_user_number_ = user_number;
@@ -184,6 +190,14 @@ bool Application::ReadCurrentUser(int user_number) {
   screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
   return true;
 }
+
+void Application::reset_effective_sl() {
+  effective_sl_ = user()->GetSl(); 
+}
+void Application::effective_sl(int nSl) { effective_sl_ = nSl; }
+int Application::effective_sl() const { return effective_sl_; }
+const slrec& Application::effective_slrec() const { return config()->sl(effective_sl_); }
+
 
 bool Application::WriteCurrentUser(int user_number) {
 
@@ -193,7 +207,7 @@ bool Application::WriteCurrentUser(int user_number) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
                << "; last_read_user_number_: " << last_read_user_number_;
   }
-  return users()->writeuser(&thisuser_, user_number);
+  return users()->writeuser(user(), user_number);
 }
 
 void Application::tleft(bool check_for_timeout) {
@@ -223,7 +237,7 @@ void Application::tleft(bool check_for_timeout) {
   int cc = bout.curatr();
   bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
-  int line_number = (chatcall_ && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  auto line_number = (chatcall() && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   localIO()->PutsXY(1, line_number, GetCurrentSpeed());
   for (int i = localIO()->WhereX(); i < 23; i++) {
@@ -294,7 +308,7 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F4: /* F4 */
-        chatcall_ = false;
+        clear_chatcall();
         UpdateTopScreen();
         break;
       case F5: /* F5 */
@@ -428,7 +442,7 @@ void Application::UpdateTopScreen() {
     localIO()->set_protect(5);
     break;
   case LocalIO::topdataUser:
-    if (chatcall_) {
+    if (chatcall()) {
       localIO()->set_protect(6);
     } else {
       if (localIO()->GetTopLine() == 6) {
@@ -554,8 +568,8 @@ void Application::UpdateTopScreen() {
                                    user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
                                    ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
 
-    if (chatcall_) {
-      localIO()->PutsXY(0, 4, chat_reason_);
+    if (chatcall()) {
+      localIO()->PutsXY(0, 4, pad_to(chat_reason_, 80));
     }
   } break;
   }
@@ -665,10 +679,9 @@ void Application::GotCaller(unsigned int ms) {
   }
 }
 
-void Application::CdHome() { File::set_current_directory(current_dir_); }
+void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
-const string Application::GetHomeDir() const noexcept { return current_dir_; }
-const std::string Application::bbsdir() const noexcept { return current_dir_; }
+const std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_.string(); }
 const std::string Application::bindir() const noexcept { return bindir_; }
 const std::string Application::configdir() const noexcept { return configdir_; }
 const std::string Application::logdir() const noexcept { return logdir_; }
@@ -713,6 +726,11 @@ int Application::Run(int argc, char* argv[]) {
   bool ooneuser = false;
   CommunicationType type = CommunicationType::NONE;
 
+#ifdef _WIN32
+  // Disble padding with 0xFE for all safe string functions.
+  // We'd rather leave them padded with 0x0 as default.
+  _CrtSetDebugFillThreshold(0);
+#endif
   CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
@@ -756,12 +774,12 @@ int Application::Run(int argc, char* argv[]) {
   
   bout.curatr(0x07);
   // Set the directories.
-  current_dir_ = cmdline.bbsdir();
+  bbs_dir_ = cmdline.bbsdir();
   bindir_ = cmdline.bindir();
   logdir_ = cmdline.logdir();
   configdir_ = cmdline.configdir();
   verbose_ = cmdline.verbose();
-  File::set_current_directory(current_dir_);
+  File::set_current_directory(bbs_dir_);
   
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");
@@ -958,4 +976,40 @@ int Application::Run(int argc, char* argv[]) {
   } while (!ooneuser);
 
   return oklevel_;
+}
+
+  /** Returns the WWIV SDK Config Object. */
+wwiv::sdk::Config* Application::config() const { return config_.get(); }
+void Application::set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
+  config_ = std::move(config);
+}
+/** Returns the WWIV Names.LST Config Object. */
+wwiv::sdk::Names* Application::names() const { return names_.get(); }
+
+wwiv::sdk::msgapi::MessageApi* Application::msgapi(int type) const {
+  return msgapis_.at(type).get();
+}
+wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
+  return msgapis_.at(current_sub().storage_type).get();
+}
+wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
+  return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
+}
+
+Batch& Application::batch() { return batch_; }
+
+const wwiv::sdk::subboard_t& Application::current_sub() const {
+  return subs().sub(GetCurrentReadMessageArea());
+}
+
+wwiv::sdk::Subs& Application::subs() { return *subs_.get(); }
+
+const wwiv::sdk::Subs& Application::subs() const { return *subs_.get(); }
+
+const net_networks_rec& Application::current_net() const {
+  const static net_networks_rec empty_rec{};
+  if (net_networks.empty()) {
+    return empty_rec;
+  }
+  return net_networks[net_num()];
 }

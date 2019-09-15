@@ -3,11 +3,13 @@ include_directories(..)
 
 set(test_sources
   callout_test.cpp
+  chains_test.cpp
   config_test.cpp
   contact_test.cpp
   datetime_test.cpp
   email_test.cpp
   fido_util_test.cpp
+  flo_test.cpp
   ftn_msgdupe_test.cpp
   msgapi_test.cpp
   names_test.cpp

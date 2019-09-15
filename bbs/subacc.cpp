@@ -36,6 +36,7 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 #include "core/datetime.h"
+#include "sdk/config.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
@@ -87,10 +88,11 @@ uint32_t WWIVReadLastRead(int sub_number) {
   // open file, and create it if necessary
   postrec p{};
 
-  File subFile(
-      FilePath(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub")));
-  if (!subFile.Exists()) {
-    bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+  const auto fn =
+      PathFilePath(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub"));
+  if (!File::Exists(fn)) {
+    File subFile(fn);
+    auto created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {
       return 0;
     }
@@ -99,6 +101,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
     return 1;
   }
 
+  File subFile(fn);
   if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
     return 0;
   }
@@ -230,7 +233,7 @@ void add_post(postrec* pp) {
     p.active_message_count = saved_count;
     p.revision = 1;
     p.wwiv_version = wwiv_num_version;
-    p.daten_created = time_t_now();
+    p.daten_created = DateTime::now().to_daten_t();
   }
 
   // one more post

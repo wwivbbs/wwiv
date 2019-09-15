@@ -58,26 +58,19 @@ TEST_F(ConfigTest, Config_DifferentDirectory) {
   EXPECT_EQ(helper.data_, config.datadir());
 }
 
-TEST_F(ConfigTest, SetConfig_Stack) {
-  Config config(helper.root());
-  ASSERT_TRUE(config.IsInitialized());
-
-  configrec c{};
-  strcpy(c.systemname, "mysys");
-  config.set_config(&c, true);
-  ASSERT_EQ(c.systemname, config.system_name());
+TEST_F(ConfigTest, Config_WrongDirectory) {
+  Config config(StrCat(helper.root(), "x"));
+  ASSERT_FALSE(config.IsInitialized());
 }
 
-TEST_F(ConfigTest, SetConfig_Heap) {
+TEST_F(ConfigTest, SetConfig) {
   Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
 
-  configrec* c = new configrec();
+  auto c = std::make_unique<configrec>();
   strcpy(c->systemname, "mysys");
-  config.set_config(c, true);
+  config.set_config(c.get(), true);
   ASSERT_EQ(c->systemname, config.system_name());
-  EXPECT_NE(nullptr, c);
-  delete c;
 }
 
 TEST_F(ConfigTest, WrittenByNumVersion) {
@@ -90,4 +83,14 @@ TEST_F(ConfigTest, Is5XXOrLater) {
   Config config(helper.root());
 
   ASSERT_TRUE(config.is_5xx_or_later());
+}
+
+TEST_F(ConfigTest, LogDirFromConfig_Found) {
+  Config config(helper.root());
+  ASSERT_EQ(config.logdir(), LogDirFromConfig(helper.root()));
+}
+
+TEST_F(ConfigTest, LogDirFromConfig_NotFound) {
+  Config config(helper.root());
+  ASSERT_EQ("", LogDirFromConfig(StrCat(helper.root(), "x")));
 }

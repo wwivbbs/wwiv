@@ -32,6 +32,7 @@
 #include <cereal/types/vector.hpp>
 
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
 #include "core/jsonfile.h"
@@ -108,11 +109,11 @@ std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::strin
   return out;
 }
 
-const string node_file(const Config& config, ConnectionType ct, int node_number) {
+const std::filesystem::path node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
-    return FilePath(config.datadir(), "binkpinuse");
+    return PathFilePath(config.datadir(), "binkpinuse");
   }
-  return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
+  return PathFilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
 static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,

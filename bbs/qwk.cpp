@@ -65,6 +65,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/ansi/makeansi.h"
+#include "sdk/config.h"
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
@@ -88,7 +89,7 @@ static bool replacefile(char *src, char *dst) {
   if (strlen(dst) == 0) {
     return false;
   }
-  return copyfile(src, dst, true);
+  return File::Copy(src, dst);
 }
 
 void build_qwk_packet() {
@@ -1224,19 +1225,19 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     if (qwk_cfg.hello[0]) {
       sprintf(parem1, "%s%s", a()->config()->gfilesdir().c_str(), qwk_cfg.hello);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.hello);
-      copyfile(parem1, parem2, 1);
+      File::Copy(parem1, parem2);
     }
 
     if (qwk_cfg.news[0]) {
       sprintf(parem1, "%s%s", a()->config()->gfilesdir().c_str(), qwk_cfg.news);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.news);
-      copyfile(parem1, parem2, 1);
+      File::Copy(parem1, parem2);
     }
 
     if (qwk_cfg.bye[0]) {
       sprintf(parem1, "%s%s", a()->config()->gfilesdir().c_str(), qwk_cfg.bye);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.bye);
-      copyfile(parem1, parem2, 1);
+      File::Copy(parem1, parem2);
     }
 
     x = 0;
@@ -1247,7 +1248,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
         {
           sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.bltname[x]);
-          copyfile(qwk_cfg.blt[x], parem2, 1);
+          File::Copy(qwk_cfg.blt[x], parem2);
         }
         ++x;
       }
@@ -1275,7 +1276,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
-    make_abs_cmd(a()->bbsdir(), &qwk_file_to_send);
+    make_abs_cmd(a()->bbsdir().string(), &qwk_file_to_send);
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

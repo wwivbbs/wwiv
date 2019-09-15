@@ -391,27 +391,27 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
   ss << crlf;
 }
 
-static string FindTagFileName() {
+static std::filesystem::path FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
     auto nd = a()->net_networks[xnp.net_num].dir;
-    auto filename = StrCat(nd, xnp.stype, ".tag");
+    auto filename = PathFilePath(nd, StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(nd, GENERAL_TAG);
+    filename = PathFilePath(nd, GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = FilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
+    filename = PathFilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = FilePath(a()->config()->datadir(), GENERAL_TAG);
+    filename = PathFilePath(a()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
   }
-  return "";
+  return {};
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title, const string& to_name) {
@@ -466,7 +466,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const auto quotes_filename = FilePath(a()->temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = PathFilePath(a()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -482,8 +482,8 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const auto msginf_filename = FilePath(a()->temp_directory(), "msginf");
-  copyfile(quotes_filename, msginf_filename, false);
+  const auto msginf_filename = PathFilePath(a()->temp_directory(), "msginf");
+  File::Copy(quotes_filename, msginf_filename);
 }
 
 static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
@@ -553,7 +553,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = FilePath(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = PathFilePath(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }

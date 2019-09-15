@@ -42,6 +42,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -55,16 +56,16 @@ namespace wwiv {
 namespace menus {
 
 static string GetMenuDirectory() {
-  return File::EnsureTrailingSlash(FilePath(a()->language_dir, "menus"));
+  return FilePath(a()->language_dir, "menus");
 }
 
 static string GetMenuDirectory(const string menuPath) {
-  return File::EnsureTrailingSlash(FilePath(GetMenuDirectory(), menuPath));
+  return FilePath(GetMenuDirectory(), menuPath);
 }
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
-  return File::Exists(GetMenuDirectory(menu_dir), "main.mnu");
+  return File::Exists(PathFilePath(GetMenuDirectory(menu_dir), "main.mnu"));
 }
 
 static bool CheckMenuPassword(const string& original_password) {
@@ -251,7 +252,7 @@ const std::string MenuInstance::create_menu_filename(const std::string& path,
                                                      const std::string& menu,
                                                      const std::string& extension) {
   const auto menu_with_ext = StrCat(menu, ".", extension);
-  const auto base = FilePath(GetMenuDirectory(), path);
+  const auto base = PathFilePath(GetMenuDirectory(), path);
   return FilePath(base, menu_with_ext);
 }
 
@@ -326,12 +327,12 @@ bool MenuInstance::OpenImpl() {
 string MenuInstance::GetHelpFileName() const {
   if (a()->user()->HasAnsi()) {
     if (a()->user()->HasColor()) {
-      const string filename = create_menu_filename("ans");
+      const auto filename = create_menu_filename("ans");
       if (File::Exists(filename)) {
         return filename;
       }
     }
-    const string filename = create_menu_filename("b&w");
+    const auto filename = create_menu_filename("b&w");
     if (File::Exists(filename)) {
       return filename;
     }
@@ -360,7 +361,7 @@ static bool IsNumber(const string& command) {
 
 static std::map<int, std::string> ListMenuDirs() {
   std::map<int, std::string> result;
-  const string menu_directory = GetMenuDirectory();
+  const auto menu_directory = GetMenuDirectory();
   wwiv::menus::MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
@@ -368,7 +369,7 @@ static std::map<int, std::string> ListMenuDirs() {
        << "|#9============================" << wwiv::endl;
 
   int num = 1;
-  auto menus = FindFiles(menu_directory, "*", FindFilesType::directories);
+  auto menus = FindFiles(PathFilePath(menu_directory, "*"), FindFilesType::directories);
 
   for (const auto& m : menus) {
     const auto& filename = m.name;
@@ -530,7 +531,7 @@ string MenuInstance::GetCommand() const {
 }
 
 MenuDescriptions::MenuDescriptions(const std::string& menupath) : menupath_(menupath) {
-  TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
+  TextFile file(PathFilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
     while (file.ReadLine(&s)) {
@@ -557,7 +558,7 @@ const std::string MenuDescriptions::description(const std::string& name) const {
 bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
   descriptions_[name] = description;
 
-  TextFile file(FilePath(menupath_, DESCRIPT_ION), "wt");
+  TextFile file(PathFilePath(menupath_, DESCRIPT_ION), "wt");
   if (!file.IsOpen()) {
     return false;
   }

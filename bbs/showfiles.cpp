@@ -54,7 +54,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   i = a()->user()->GetScreenChars() - 1 - i - size_without_colors(s);
   bout << "|#7" << std::string(i, c);
 
-  auto full_pathname = FilePath(pszDirectoryName, strlwr(stripfn(file_name)));
+  auto full_pathname = PathFilePath(pszDirectoryName, strlwr(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFilesType::files);
   for (const auto& f : ff) {
     s = f.name;

@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include <initializer_list>
 #include <map>
-#include <sstream>
 #include <string>
 
 #include "core/inifile.h"
@@ -30,14 +29,13 @@ using namespace wwiv::strings;
 using std::map;
 using std::string;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 namespace {
 /**
 * Reads a specified value from INI file data (contained in *inidata). The
 * name of the value to read is contained in *value_name. If such a name
-* doesn't exist in this INI file subsection, then *val is nullptr, else *val
+* does not exist in this INI file subsection, then *val is nullptr, else *val
 * will be set to the string value of that value name. If *val has been set
 * to something, then this function returns 1, else it returns 0.
 */
@@ -45,12 +43,12 @@ bool StringToBoolean(const char *p) {
   if (!p) {
     return false;
   }
-  char ch = to_upper_case<char>(*p);
+  auto ch = to_upper_case<char>(*p);
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 }  // namespace {}
 
-static bool ParseIniFile(const string& filename, std::map<string, string>& data) {
+static bool ParseIniFile(const std::filesystem::path& filename, std::map<string, string>& data) {
   data.clear();
   TextFile file(filename, "rt");
   if (!file.IsOpen()) {
@@ -74,45 +72,49 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
         line.erase(line.find(';'));
       }
 
-      auto equals = line.find('=');
+      const auto equals = line.find('=');
       if (equals == string::npos) {
         // not a line of the form full_key = value [; comment]
         continue;
       }
-      auto key = StringTrim(line.substr(0, equals));
-      auto value = StringTrim(line.substr(equals + 1));
+      const auto key = StringTrim(line.substr(0, equals));
+      const auto value = StringTrim(line.substr(equals + 1));
 
-      auto real_key = StrCat(section, ".", key);
+      const auto real_key = StrCat(section, ".", key);
       data[real_key] = value;
     }
   }
   return true;
 }
 
-IniFile::IniFile(const std::string& filename, const std::initializer_list<const char*> sections)
-  : file_name_(filename), open_(false) {
+IniFile::IniFile(const std::filesystem::path& filename,
+                 const std::initializer_list<const char*> sections)
+    : path_(filename) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
     sections_.emplace_back(s);
   }
-  open_ = ParseIniFile(filename, data_);
+  open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::IniFile(const std::string& filename, const std::initializer_list<const std::string> sections)
-  : file_name_(filename), open_(false) {
+IniFile::IniFile(const std::filesystem::path& filename,
+                 const std::initializer_list<const std::string> sections)
+    : path_(filename) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
     sections_.emplace_back(s);
   }
-  open_ = ParseIniFile(filename, data_);
+  open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::~IniFile() { open_ = false; }
+IniFile::~IniFile() {
+  open_ = false;
+}
 
 /* Close is now a NOP */
-void IniFile::Close() {}
+void IniFile::Close() noexcept {}
 
 const char* IniFile::GetValue(const string& raw_key, const char *default_value)  const {
   for (const auto& section : sections_) {
@@ -128,17 +130,17 @@ const char* IniFile::GetValue(const string& raw_key, const char *default_value) 
 }
 
 std::string IniFile::GetStringValue(const std::string& key, const std::string& default_value) const {
-  const char *s = GetValue(key);
+  const auto s = GetValue(key);
   return (s != nullptr) ? s : default_value;
 }
 
 bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
-  const char *s = GetValue(key);
+  const auto s = GetValue(key);
   return (s != nullptr) ? StringToBoolean(s) : defaultValue;
 }
 
 long IniFile::GetNumericValueT(const string& key, long default_value) const {
-  const char *s = GetValue(key);
+  const auto s = GetValue(key);
   return (s != nullptr) ? wwiv::strings::to_number<long>(s) : default_value;
 }
 
@@ -163,5 +165,4 @@ bool IniFile::value<bool>(const std::string& key) const {
 }
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace wwiv

@@ -18,24 +18,20 @@
 /**************************************************************************/
 
 #include <atomic>
-#include <cctype>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <utility>
 
 #include <signal.h>
 #include <string>
-#include <sys/types.h>
 #include <vector>
 
 #ifdef _WIN32
 
 #include <WS2tcpip.h>
-#include <process.h>
 
 #else // _WIN32
 
@@ -47,26 +43,15 @@
 #include <unistd.h>
 #endif // __linux__
 
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
-
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
-#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -95,25 +80,24 @@ using namespace wwiv::os;
 #undef DELETE
 #endif // DELETE
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 extern std::atomic<bool> need_to_exit;
 extern std::atomic<bool> need_to_reload_config;
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
-  for (int i = start_node; i <= end_node; i++) {
-    File semaphore_file(node_file(config, ConnectionType::TELNET, i));
-    if (semaphore_file.Exists()) {
-      semaphore_file.Delete();
+  for (auto i = start_node; i <= end_node; i++) {
+    const auto fn = node_file(config, ConnectionType::TELNET, i);
+    if (File::Exists(fn)) {
+      File::Remove(fn);
     }
   }
 
   // Delete any BINKP semaphores.
-  File binkp_file(node_file(config, ConnectionType::BINKP, 0));
-  if (binkp_file.Exists()) {
-    binkp_file.Delete();
+  const auto binkp_file = node_file(config, ConnectionType::BINKP, 0);
+  if (File::Exists(binkp_file)) {
+    File::Remove(binkp_file);
   }
 
   return true;
@@ -161,14 +145,14 @@ int Main(CommandLine& cmdline) {
 
   ConnectionData data(&config, &c, &nodes, concurrent_connections);
   if (c.blocking.use_goodip_txt) {
-    data.good_ips_ = std::make_shared<GoodIp>(FilePath(config.datadir(), "goodip.txt"));
+    data.good_ips_ = std::make_shared<GoodIp>(PathFilePath(config.datadir(), "goodip.txt"));
   }
   if (c.blocking.use_badip_txt) {
-    data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+    data.bad_ips_ = std::make_shared<BadIp>(PathFilePath(config.datadir(), "badip.txt"));
   }
   if (c.blocking.auto_blacklist) {
     if (!data.bad_ips_) {
-      data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+      data.bad_ips_ = std::make_shared<BadIp>(PathFilePath(config.datadir(), "badip.txt"));
     }
     data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking);
   }
@@ -216,11 +200,12 @@ int Main(CommandLine& cmdline) {
   return EXIT_SUCCESS;
 }
 
-} // namespace wwivd
 } // namespace wwiv
 
 int main(int argc, char* argv[]) {
-  Logger::Init(argc, argv);
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
+
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();

@@ -663,9 +663,8 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
 void trimstrpath(char* s) {
   StringTrimEnd(s);
 
-  int i = strlen(s);
+  const auto i = strlen(s);
   if (i && (s[i - 1] != File::pathSeparatorChar)) {
-    // We don't have pathSeparatorString.
     s[i] = File::pathSeparatorChar;
     s[i + 1] = 0;
   }

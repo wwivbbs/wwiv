@@ -46,8 +46,10 @@
 #define CATEG_NET "categ.net"
 #define CHAT_NOEXT "chat"
 #define DROPFILE_CHAIN_TXT "chain.txt"
-#define CHAINS_DAT "chains.dat"
-#define CHAINS_REG "chains.reg"
+const constexpr auto CHAINS_DAT = "chains.dat";
+const constexpr auto CHAINS_REG = "chains.reg";
+const constexpr auto CHAINS_JSON = "chains.json";
+
 #define CHAINS_NOEXT "chains"
 
 #define CHAT_INI "chat.ini"

@@ -38,16 +38,17 @@
 #include "bbs/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
-
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/makeansi.h"
 #include "sdk/ansi/framebuffer.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/net.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using std::unique_ptr;
@@ -101,8 +102,8 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
       }
       const auto phone_fn =
           StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
-      const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
-      const string filename = FilePath(regions_dir, phone_fn);
+      const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
+      const auto filename = PathFilePath(regions_dir, phone_fn);
 
       string description;
       if (File::Exists(filename)) {
@@ -117,7 +118,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
         description = describe_area_code(to_number<int>(csne->phone));
       }
 
-      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
+      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus);
       *outLocation = (!description.empty()) ? description : "Unknown Area";
     } else {
       *outNetworkName = StrCat(netName, "Unknown System");

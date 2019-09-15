@@ -40,6 +40,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/config.h"
 
 // This is defined in keycodes.h and breaks rapidjson since that is what is used
 // for the template variable.
@@ -101,7 +102,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
                   std::vector<BbsListEntry>& entries) {
   entries.clear();
 
-  TextFile file(FilePath(dir, filename), "r");
+  TextFile file(PathFilePath(dir, filename), "r");
   if (!file.IsOpen()) {
     return false;
   }
@@ -127,7 +128,7 @@ bool SaveToJSON(const string& dir, const string& filename,
     save(cereal::make_nvp("bbslist", entries));
   }
   
-  TextFile file(FilePath(dir, filename), "w");
+  TextFile file(PathFilePath(dir, filename), "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -142,7 +143,7 @@ static bool ConvertLegacyList(
     const string& dir, const string& legacy_filename, 
     std::vector<BbsListEntry>& entries) {
 
-  TextFile legacy_file(FilePath(dir, legacy_filename), "r");
+  TextFile legacy_file(PathFilePath(dir, legacy_filename), "r");
   if (!legacy_file.IsOpen()) {
     return false;
   }

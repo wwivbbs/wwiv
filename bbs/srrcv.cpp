@@ -20,15 +20,15 @@
 #include <cmath>
 #include <string>
 
-#include "bbs/bgetch.h"
-#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
-#include "local_io/keycodes.h"
+#include "bbs/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
+#include "local_io/keycodes.h"
 
 #include "bbs/xfer.h"
 
@@ -40,13 +40,12 @@ using namespace std::chrono;
 using namespace wwiv::strings;
 
 // From zmwwiv.cpp
-bool NewZModemReceiveFile(const char *file_name);
+bool NewZModemReceiveFile(const char* file_name);
 
 // from sr.cpp
 extern unsigned char checksum;
 
-
-char modemkey(int *tout) {
+char modemkey(int* tout) {
   if (bkbhitraw()) {
     char ch = bgetchraw();
     calc_CRC(ch);
@@ -68,9 +67,7 @@ char modemkey(int *tout) {
   return 0;
 }
 
-
-
-int receive_block(char *b, unsigned char *bln, bool use_crc) {
+int receive_block(char* b, unsigned char* bln, bool use_crc) {
   bool abort = false;
   unsigned char ch = gettimeout(5, &abort);
   int err = 0;
@@ -160,7 +157,7 @@ int receive_block(char *b, unsigned char *bln, bool use_crc) {
   }
 }
 
-void xymodem_receive(const std::string& file_name, bool *received, bool use_crc) {
+void xymodem_receive(const std::string& file_name, bool* received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
   int i1, i2, i3;
@@ -169,8 +166,8 @@ void xymodem_receive(const std::string& file_name, bool *received, bool use_crc)
   bool ok = true;
   bool lastcan = false;
   bool lasteot = false;
-  int  nTotalErrors = 0;
-  int  nConsecErrors = 0;
+  int nTotalErrors = 0;
+  int nConsecErrors = 0;
 
   File file(file_name);
   if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
@@ -194,14 +191,15 @@ void xymodem_receive(const std::string& file_name, bool *received, bool use_crc)
   a()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
   a()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
   a()->localIO()->PutsXY(52, 6,
-                                       "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
+                         "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+                         "\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, stripfn(file_name));
   int nNumStartTries = 0;
   do {
     if (nNumStartTries++ > 9) {
       *received = false;
       file.Close();
-      file.Delete();
+      File::Remove(file_name);
       return;
     }
     if (use_crc) {
@@ -304,7 +302,7 @@ void xymodem_receive(const std::string& file_name, bool *received, bool use_crc)
         lastcan = true;
         bout.rputch(CU);
       }
-    } else  if (i == 5) {
+    } else if (i == 5) {
       lasteot = true;
       if (lasteot) {
         done = true;
@@ -337,12 +335,12 @@ void xymodem_receive(const std::string& file_name, bool *received, bool use_crc)
     *received = true;
   } else {
     file.Close();
-    file.Delete();
+    File::Remove(file_name);
     *received = false;
   }
 }
 
-void zmodem_receive(const string& filename, bool *received) {
+void zmodem_receive(const string& filename, bool* received) {
   string local_filename(filename);
   wwiv::strings::StringRemoveWhitespace(&local_filename);
 

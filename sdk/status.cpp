@@ -71,7 +71,7 @@ std::string WStatus::GetLogFileName(int nDaysAgo) const {
   switch (nDaysAgo) {
   case 0:
   {
-    return GetSysopLogFileName(daten_to_mmddyy(daten_t_now()));
+    return GetSysopLogFileName(DateTime::now().to_string("%m/%d/%y"));
   }
   case 1:
     return status_->log1;
@@ -96,7 +96,7 @@ void WStatus::ValidateAndFixDates() {
     status_->date1[8] = '\0'; // forgot to add null termination
   }
 
-  string currentDate = daten_to_mmddyy(daten_t_now());
+  string currentDate = DateTime::now().to_string("%m/%d/%y");
   if (status_->date3[8] != '\0') {
     status_->date3[6] = currentDate[6];
     status_->date3[7] = currentDate[7];
@@ -134,7 +134,7 @@ bool WStatus::NewDay() {
 
   strcpy(status_->date3, status_->date2);
   strcpy(status_->date2, status_->date1);
-  const string d = daten_to_mmddyy(daten_t_now());
+  const auto d = DateTime::now().to_string("%m/%d/%y");
   strcpy(status_->date1, d.c_str());
   strcpy(status_->log2, status_->log1);
 
@@ -146,7 +146,7 @@ bool WStatus::NewDay() {
 // StatusMgr
 bool StatusMgr::Get(bool bLockFile) {
   if (!status_file_) {
-    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
+    status_file_.reset(new File(PathFilePath(datadir_, STATUS_DAT)));
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     status_file_->Open(nLockMode);
   } else {
@@ -199,7 +199,7 @@ bool StatusMgr::CommitTransaction(std::unique_ptr<WStatus> pStatus) {
 
 bool StatusMgr::Write(statusrec_t *pStatus) {
   if (!status_file_) {
-    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
+    status_file_.reset(new File(PathFilePath(datadir_, STATUS_DAT)));
     status_file_->Open(File::modeReadWrite | File::modeBinary);
   } else {
     status_file_->Seek(0L, File::Whence::begin);

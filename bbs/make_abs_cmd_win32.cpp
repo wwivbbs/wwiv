@@ -98,7 +98,8 @@ void make_abs_cmd(const std::string root, std::string* out) {
       }
     } else {
       if (File::Exists(s)) {
-        if (File::is_directory(root) && !File::is_directory(FilePath(root, s))) {
+        std::error_code ec;
+        if (File::is_directory(root) && !std::filesystem::is_directory(PathFilePath(root, s), ec)) {
           *out = StrCat(FilePath(root, s), s2);
         } else {
           *out = StrCat(root, s, s2);
@@ -115,9 +116,10 @@ void make_abs_cmd(const std::string root, std::string* out) {
     }
   }
 
-  auto maybe_dir = FilePath(root, s1);
-  if (File::Exists(maybe_dir) && File::is_directory(maybe_dir)) {
-    *out = StrCat(maybe_dir, s2);
+  auto maybe_dir = PathFilePath(root, s1);
+  std::error_code ec;
+  if (File::Exists(maybe_dir) && std::filesystem::is_directory(maybe_dir, ec)) {
+    *out = StrCat(maybe_dir.string(), s2);
   } else {
     *out = StrCat(root, s1, s2);
   }

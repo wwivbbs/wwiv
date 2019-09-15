@@ -19,7 +19,6 @@
 #ifndef __INCLUDED_NETWORKB_SOCKET_EXCEPTIONS_H__
 #define __INCLUDED_NETWORKB_SOCKET_EXCEPTIONS_H__
 
-#include <exception>
 #include <stdexcept>
 #include <string>
 

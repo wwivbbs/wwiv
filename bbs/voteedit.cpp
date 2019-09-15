@@ -25,16 +25,18 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/com.h"
-
 #include "core/strings.h"
+#include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void print_quests() {
-  File file(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File file(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     return;
   }
@@ -92,7 +94,7 @@ static void set_question(int ii) {
     }
   }
 
-  File votingDat(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File votingDat(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   votingDat.Seek(ii * sizeof(votingrec), File::Whence::begin);
   votingDat.Write(&v, sizeof(votingrec));
@@ -112,7 +114,7 @@ static void set_question(int ii) {
 void ivotes() {
   votingrec v{};
 
-  File votingDat(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File votingDat(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   int n = static_cast<int>((votingDat.length() / sizeof(votingrec)) - 1);
   if (n < 20) {
@@ -155,11 +157,11 @@ void voteprint() {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
   }
-  File votingText(FilePath(a()->config()->gfilesdir(), VOTING_TXT));
+  File votingText(PathFilePath(a()->config()->gfilesdir(), VOTING_TXT));
   votingText.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
   votingText.Write(votingText.full_pathname());
 
-  File votingDat(FilePath(a()->config()->datadir(), VOTING_DAT));
+  File votingDat(PathFilePath(a()->config()->datadir(), VOTING_DAT));
   a()->status_manager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {

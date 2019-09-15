@@ -8,15 +8,9 @@
 [submodule "deps/cereal"]
 	path = deps/cereal
 	url = https://github.com/wwivbbs/cereal.git
-[submodule "deps/cctz"]
-	path = deps/cctz
-	url = https://github.com/wwivbbs/cctz
 [submodule "deps/googletest"]
 	path = deps/googletest
 	url = https://github.com/google/googletest.git
-[submodule "deps/benchmark"]
-	path = deps/benchmark
-	url = https://github.com/google/benchmark.git
 [submodule "deps/fmt"]
 	path = deps/fmt
 	url = https://github.com/wwivbbs/fmt

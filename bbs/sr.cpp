@@ -24,27 +24,25 @@
 #include <string>
 #include <vector>
 
-#include "core/strings.h"
-
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
-#include "bbs/stuffin.h"
-#include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
-#include "bbs/bbs.h"
-#include "bbs/srsend.h"
 #include "bbs/srrcv.h"
+#include "bbs/srsend.h"
+#include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
 #include "bbs/xfer.h"
-
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
+#include "sdk/config.h"
+#include "sdk/names.h"
 
 using std::string;
 using namespace std::chrono;
@@ -679,12 +677,13 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      File nullFile(FilePath(a()->temp_directory(),
-                             StrCat(".does-not-exist-", a()->instance_number(), ".$$$")));
-      nullFile.Delete();
+      const auto fn = PathFilePath(a()->temp_directory(),
+                               StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+      File::Remove(fn);
+      File nullFile(fn);
       send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
       abort = true;
-      nullFile.Delete();
+      File::Remove(fn);
     }
   }
   a()->localIO()->GotoXY(oldx, oldy);

@@ -22,11 +22,11 @@
 #include <utility>
 #include <vector>
 
+#include "bbs/subacc.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "bbs/subacc.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
@@ -39,35 +39,31 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-WWIVMessageApi::WWIVMessageApi(
-  const wwiv::sdk::msgapi::MessageApiOptions& options,
-  const wwiv::sdk::Config& config,
-  const std::vector<net_networks_rec>& net_networks,
-  WWIVLastReadImpl* last_read)
-  : MessageApi(options, config.root_directory(), 
-    config.datadir(), 
-    config.msgsdir(), 
-    net_networks),
-  last_read_(last_read), config_(config) {}
+WWIVMessageApi::WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
+                               const wwiv::sdk::Config& config,
+                               const std::vector<net_networks_rec>& net_networks,
+                               WWIVLastReadImpl* last_read)
+    : MessageApi(options, config.root_directory(), config.datadir(), config.msgsdir(),
+                 net_networks),
+      last_read_(last_read), config_(config) {}
 
 bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
-  const std::string sub_filename = StrCat(sub.filename, ".sub");
-  File subs(FilePath(subs_directory_, sub_filename));
-  return subs.Exists();
+  return File::Exists(PathFilePath(subs_directory_, StrCat(sub.filename, ".sub")));
 }
 
 bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
   return Create(sub.filename, ".sub", ".dat", subnum);
 }
 
-bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
+bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
+                            const std::string& text_ext, int subnum) {
   LOG(INFO) << "Creating: " << name;
-  const std::string sub_filename = StrCat(name, sub_ext);
-  File fileSub(FilePath(subs_directory_, sub_filename));
-  if (fileSub.Exists()) {
+  const auto fn = PathFilePath(subs_directory_, StrCat(name, sub_ext));
+  if (File::Exists(fn)) {
     // Don't create if it already exists.
     return false;
   }
+  File fileSub(fn);
   if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create if we can open it.
     return false;
@@ -79,7 +75,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
   }
 
   const std::string text_filename = StrCat(name, text_ext);
-  File msgs_file(FilePath(messages_directory_, text_filename));
+  File msgs_file(PathFilePath(messages_directory_, text_filename));
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
     return false;
@@ -111,32 +107,33 @@ bool WWIVMessageApi::Remove(const std::string&) {
   return false;
 }
 
-
 MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
-  string sub_fullpath;
-  string msgs_fullpath;
+  std::filesystem::path sub_fullpath;
+  std::filesystem::path msgs_fullpath;
   {
-    File fileSub(FilePath(subs_directory_, StrCat(sub.filename, ".sub")));
-    File msgs_file(FilePath(messages_directory_, StrCat(sub.filename, ".dat")));
-    if (!fileSub.Exists()) {
+    const auto sub_fn = PathFilePath(subs_directory_, StrCat(sub.filename, ".sub"));
+    const auto msgs_fn = PathFilePath(messages_directory_, StrCat(sub.filename, ".dat"));
+    if (!File::Exists(sub_fn)) {
       throw bad_message_area(sub.filename);
     }
+    File fileSub(sub_fn);
     if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
       throw bad_message_area(sub.filename);
     }
 
-    if (!msgs_file.Exists()) {
-      File create_msgs_file(FilePath(messages_directory_, StrCat(sub.filename, ".dat")));
+    if (!File::Exists(msgs_fn)) {
+      File create_msgs_file(PathFilePath(messages_directory_, StrCat(sub.filename, ".dat")));
       if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         throw bad_message_area(sub.filename);
       }
     }
+    File msgs_file(msgs_fn);
     if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
       throw bad_message_area(sub.filename);
     }
 
-    sub_fullpath = fileSub.full_pathname();
-    msgs_fullpath = msgs_file.full_pathname();
+    sub_fullpath = sub_fn;
+    msgs_fullpath = msgs_fn;
   }
   auto area = new WWIVMessageArea(this, sub, sub_fullpath, msgs_fullpath, subnum);
   area->set_max_messages(sub.maxmsgs);
@@ -144,19 +141,13 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
   return area;
 }
 
-
 WWIVEmail* WWIVMessageApi::OpenEmail() {
-  string data;
-  string text;
+  auto data = PathFilePath(subs_directory_, EMAIL_DAT);
+  auto text = PathFilePath(messages_directory_, EMAIL_DAT);
   {
-    File datafile(FilePath(subs_directory_, EMAIL_DAT));
-    File textfile(FilePath(messages_directory_, EMAIL_DAT));
-    data = datafile.full_pathname();
-    text = textfile.full_pathname();
-
-    if (!datafile.Exists()) {
+    if (!File::Exists(data)) {
       // Create it if it doesn't exist.  We still can have an odd case
-      // where 1 file exists, but that's not ever normal. so we'll 
+      // where 1 file exists, but that's not ever normal. so we'll
       // complain later about not being able to create this.
       auto created = Create("email", ".dat", ".dat", 0);
       if (!created) {
@@ -166,14 +157,17 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
       return new WWIVEmail(config_, data, text, net_networks_.size());
     }
 
+    File datafile(data);
     if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
       LOG(ERROR) << "Unable to open datafile: " << data;
       return nullptr;
     }
-    if (!textfile.Exists()) {
+
+    if (!File::Exists(text)) {
       LOG(ERROR) << "'" << data << "' exists, but '" << text << "' does not! ";
       return nullptr;
     }
+    File textfile(text);
     if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
       LOG(ERROR) << "Unable to open msgsfile: " << data;
       return nullptr;
@@ -196,6 +190,6 @@ void WWIVMessageApi::set_last_read(int area, uint32_t last_read) {
   }
 }
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace msgapi
+} // namespace sdk
+} // namespace wwiv

@@ -33,6 +33,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivport.h"
@@ -45,7 +46,6 @@
 #include "sdk/wwivcolors.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/wwivconfig.h"
-#include "sdk/vardec.h"
 
 using std::string;
 using std::vector;
@@ -150,13 +150,16 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  auto users_lst = StrCat(config.datadir(), USER_LST);
-  auto backup_file = StrCat(users_lst, ".backup.pre-wwivconfig-upgrade");
+  wwiv::fs::path users_lst = PathFilePath(config.datadir(), USER_LST);
+  auto backup_file = users_lst;
+  backup_file += ".backup.pre-wwivconfig-upgrade";
 
   // Make a backup file.
-  File::Copy(users_lst, backup_file);
+  std::error_code ec;
+  // Note we ignore the ec since we fail open.
+  wwiv::fs::copy_file(users_lst, backup_file, ec);
 
-  DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
+  DataFile<userrec> usersFile(PathFilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                               File::shareDenyReadWrite);
   if (!usersFile) {
@@ -230,8 +233,9 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
     file.Close();
   }
 
-  DataFile<user_config> configUsrFile(FilePath(config.datadir(), "config.usr"),
-                                      File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
+  const auto config_usr_filename = PathFilePath(config.datadir(), "config.usr");
+  DataFile<user_config> configUsrFile(config_usr_filename, File::modeReadOnly | File::modeBinary,
+                                      File::shareDenyWrite);
   if (!configUsrFile) {
     return false;
   }
@@ -262,11 +266,11 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
 
   // Close the user_config file (config.usr) and delete it.
   configUsrFile.Close();
-  configUsrFile.file().Delete();
+  File::Remove(config_usr_filename);
 
   // 2nd version of config.usr that wwivconfig was mistakenly creating.
-  File userDatFile(FilePath(config.datadir(), "user.dat"));
-  userDatFile.Delete();
+  const auto user_dat_fn = PathFilePath(config.datadir(), "user.dat");
+  File::Remove(user_dat_fn);
 
   messagebox(window, "Converted to config version #1");
   return true;
@@ -296,7 +300,7 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   window->SetColor(SchemeId::NORMAL);
   configrec syscfg53{};
   file.Read(&syscfg53, sizeof(configrec));
-  auto menus_dir = StrCat("menus", File::pathSeparatorString);
+  auto menus_dir = File::EnsureTrailingSlash("menus");
   to_char_array(syscfg53.menudir, FilePath(syscfg53.gfilesdir, menus_dir));
 
   arcrec arc[MAX_ARCS];
@@ -319,7 +323,7 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   file.Write(&syscfg53, sizeof(configrec));
   file.Close();
 
-  File archiver(FilePath(config.datadir(), ARCHIVER_DAT));
+  File archiver(PathFilePath(config.datadir(), ARCHIVER_DAT));
   if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
     window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Puts("Creating new file....\n");

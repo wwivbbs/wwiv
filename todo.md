@@ -10,6 +10,7 @@
 
 ## Ini Files and Configuration
 ***
+
 ## Container work
 ***
 * Add WWIV_CONFIG_DIR to point to where the config.json file lives (default to config.dat's data)
@@ -35,6 +36,7 @@
 * move to datetime as much as possible.
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
+* cleanup context class (doc comments, treat type-0 as email api)
 
 ## Networking Cleanup
 ***
@@ -42,10 +44,6 @@
 
 ## core::File Improvements
 ***
-* start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
-  - also todo is to figure out if we want to add some interoperability with
-    iostreams here.  Note: This needs C++17 (ish) support, so needs debian9 as the
-    baseline since GCC 4.x only suppors std=gnu++14 as the latest.
 * File::lock doesn't seem to be finished
 
 

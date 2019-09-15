@@ -19,6 +19,7 @@
 #define __INCLUDED_BBS_XFEROVL1_H__
 
 #include <string>
+#include "sdk/vardec.h"
 
 void modify_extended_description(std::string* sss, const std::string& dest);
 bool valid_desc(const std::string& description);

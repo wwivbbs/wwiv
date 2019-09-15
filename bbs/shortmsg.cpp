@@ -18,18 +18,19 @@
 /**************************************************************************/
 #include "bbs/shortmsg.h"
 
-#include <cstdarg>
-#include <string>
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include <cstdarg>
+#include <string>
 
 using std::string;;
 using namespace wwiv::core;
@@ -44,7 +45,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   if (!pUser->HasShortMessage()) {
     return;
   }
-  DataFile<shortmsgrec> file(FilePath(a()->config()->datadir(), SMW_DAT),
+  DataFile<shortmsgrec> file(PathFilePath(a()->config()->datadir(), SMW_DAT),
                              File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return;
@@ -96,7 +97,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
   User user;
   a()->users()->readuser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    File file(FilePath(a()->config()->datadir(), SMW_DAT));
+    File file(PathFilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
