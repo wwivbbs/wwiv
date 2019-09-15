@@ -19,28 +19,23 @@
 #include "core/os.h"
 
 #include <chrono>
-#include <cstdlib>
 #include <functional>
-#include <limits>
 #include <random>
-#include <thread>
 
 #include "core/strings.h"
-#include "core/file.h"
 
 using std::function;
 using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace os {
+namespace wwiv::os {
 
 bool wait_for(function<bool()> predicate, duration<double> d) {
   auto now = std::chrono::steady_clock::now();
-  auto end = now + d;
+  const auto end = now + d;
   while (!predicate() && now < end) {
-    now = std::chrono::steady_clock::now();
+    now = steady_clock::now();
     sleep_for(milliseconds(100));
   }
   return predicate();
@@ -62,9 +57,8 @@ int random_number(int max_value) {
   static std::random_device rdev;
   static std::default_random_engine re(rdev());
 
-  std::uniform_int_distribution<int> dist(0, max_value - 1);
+  const std::uniform_int_distribution<int> dist(0, max_value - 1);
   return dist(re);
 }
 
-}  // namespace os
-}  // namespace wwiv
+} // namespace wwiv

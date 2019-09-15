@@ -23,8 +23,6 @@
 #include "core/datetime.h"
 
 #include <chrono>
-#include <ctime>
-#include <string>
 
 namespace wwiv {
 namespace core {

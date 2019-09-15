@@ -20,7 +20,6 @@
 #define __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -88,6 +87,7 @@ public:
 
 class HttpHandler {
 public:
+  virtual ~HttpHandler() = default;
   virtual HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) = 0;
 };
 

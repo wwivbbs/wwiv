@@ -29,7 +29,6 @@
 
 #define NOCRYPT // Disable include of wincrypt.h
 #include <winsock2.h>
-#include <WS2tcpip.h>
 
 // Really windows?
 typedef int socklen_t;

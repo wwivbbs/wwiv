@@ -19,7 +19,7 @@
 #define __INCLUDED_CORE_DATAFILE_H__
 
 #include <vector>
-#include <sys/types.h>
+#include <sys/types.h>  // off_t
 #include "core/file.h"
 #include "core/filesystem.h"
 

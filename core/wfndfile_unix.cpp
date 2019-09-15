@@ -139,14 +139,14 @@ bool WFindFile::close() {
   return true;
 }
 
-bool WFindFile::IsDirectory() {
+bool WFindFile::IsDirectory() const {
   if (nCurrentEntry > nMatches) {
     return false;
   }
   return S_ISDIR(file_type_);
 }
 
-bool WFindFile::IsFile() {
+bool WFindFile::IsFile()  const {
   if (nCurrentEntry > nMatches) {
     return false;
   }

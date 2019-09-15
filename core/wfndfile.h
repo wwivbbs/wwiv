@@ -20,9 +20,7 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
-#include "core/filesystem.h"
 #include "core/wwiv_windows.h"
-#include <cstring>
 #include <string>
 
 /**
@@ -75,8 +73,8 @@ protected:
 
   std::string GetFileName() const { return filename_; }
   long GetFileSize() const { return file_size_; }
-  bool IsDirectory();
-  bool IsFile();
+  bool IsDirectory() const;
+  bool IsFile() const;
 };
 
 

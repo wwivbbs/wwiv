@@ -135,6 +135,7 @@ public:
 
 class Command {
 public:
+  virtual ~Command() = default;
   virtual int Execute() = 0;
   virtual std::string GetUsage() const = 0;
   virtual std::string GetHelp() const = 0;

@@ -24,8 +24,7 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 connection_error::connection_error(const string& host, int port) 
   : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {
@@ -39,5 +38,4 @@ socket_error::socket_error(const std::string& message) : std::runtime_error(mess
 }
 
 
-}  // namespace net
 } // namespace wwiv

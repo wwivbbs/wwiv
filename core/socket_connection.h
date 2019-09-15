@@ -21,12 +21,9 @@
 
 #include <chrono>
 #include <cstdint>
-#include <exception>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
-#include "core/net.h"
 #include "core/connection.h"
 
 #ifdef _WIN32

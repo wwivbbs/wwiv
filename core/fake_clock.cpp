@@ -19,11 +19,7 @@
 #include "core/fake_clock.h"
 
 #include <chrono>
-#include <cstring>
-#include <iomanip>
-#include <ctime>
 #include <string>
-#include <sstream>
 
 #include "core/datetime.h"
 #include "core/strings.h"

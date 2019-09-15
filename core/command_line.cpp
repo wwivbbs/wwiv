@@ -65,7 +65,7 @@ CommandLineCommand::CommandLineCommand(const std::string& name, const std::strin
     : name_(name), help_text_(help_text) {}
 
 static std::string CreateProgramName(const std::string& arg) {
-  wwiv::fs::path p{arg};
+  fs::path p{arg};
   return p.filename().string();
 }
 
@@ -79,7 +79,7 @@ CommandLine::CommandLine(const std::vector<std::string>& args, const std::string
 static std::vector<std::string> make_args(int argc, char** argv) {
   std::vector<std::string> v;
   for (int i = 0; i < argc; i++) {
-    v.push_back(argv[i]);
+    v.emplace_back(argv[i]);
   }
   return v;
 }

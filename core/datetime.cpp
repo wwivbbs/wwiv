@@ -133,8 +133,6 @@ std::string to_string(std::chrono::duration<double> dd) {
   if (ms.count() > 0) {
     if (has_one) {
       os << " ";
-    } else {
-      has_one = true;
     }
     os << ms.count() << "ms";
   }
@@ -197,7 +195,7 @@ static time_t mktime_no_dst_changes(tm* t) noexcept {
   return now;
 }
 
-DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), millis_(0), tm_(*t) {}
+DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), tm_(*t) , millis_(0) {}
 
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
 

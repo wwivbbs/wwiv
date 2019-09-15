@@ -2,6 +2,8 @@
 // From https://stackoverflow.com/questions/53365538/how-to-determine-whether-to-use-filesystem-or-experimental-filesystem
 
 // We haven't checked which filesystem to include yet
+#ifndef __WWIV_CORE_FILESYSTEM_H__
+#define __WWIV_CORE_FILESYSTEM_H__
 #ifndef INCLUDE_STD_FILESYSTEM_EXPERIMENTAL
 
 // Check for feature test macro for <filesystem>
@@ -78,3 +80,4 @@ namespace wwiv {
 #   endif
 
 #endif // #ifndef INCLUDE_STD_FILESYSTEM_EXPERIMENTAL
+#endif // __WWIV_CORE_FILESYSTEM_H__

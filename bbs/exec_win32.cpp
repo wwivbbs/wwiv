@@ -22,7 +22,6 @@
 #include "core/wwiv_windows.h"
 
 #include <algorithm>
-#include <ctime>
 #include <string>
 #include <sstream>
 
@@ -62,7 +61,7 @@ using namespace wwiv::strings;
 
 static void LogToSync(const std::string& s) {
   if (a()->IsExecLogSyncFoss()) {
-    fprintf(hLogFile, s.c_str());
+    fputs(s.c_str(), hLogFile);
   }
 }
 
@@ -110,7 +109,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   HANDLE hSyncWriteSlot = INVALID_HANDLE_VALUE;     // Mailslot for writing
 
   // Cleanup on all exit paths
-  wwiv::core::ScopeExit at_exit([&] {
+  ScopeExit at_exit([&] {
     if (hSyncHangupEvent != INVALID_HANDLE_VALUE) { 
       CloseHandle(hSyncHangupEvent);
       hSyncHangupEvent = INVALID_HANDLE_VALUE;
@@ -153,17 +152,16 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     if (a()->remoteIO()->incoming()) {
       counter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      int nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
+      auto nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
 
-      int nLp = 0;
       if (a()->IsExecLogSyncFoss()) {
-        for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
-          fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[nLp]));
+        for (unsigned int n_lp = 0; n_lp < nNumReadFromComm; n_lp++) {
+          fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[n_lp]));
         }
         fprintf(hLogFile, "   ");
-        for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
-          fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
+        for (unsigned int n_lp = 0; n_lp < nNumReadFromComm; n_lp++) {
+          fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ n_lp ]));
         }
         fprintf(hLogFile, "\r\n");
       }
@@ -171,7 +169,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
         ::Sleep(500);
-        string write_slot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\wr%d", a()->instance_number());
+        string write_slot_name = StringPrintf(R"(\\.\mailslot\sbbsexec\wr%d)", a()->instance_number());
         LogToSync(StrCat("Creating Mail Slot: '", write_slot_name, "'\r\n"));
 
         hSyncWriteSlot = CreateFile(write_slot_name.c_str(),

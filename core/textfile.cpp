@@ -193,6 +193,10 @@ bool TextFile::ReadLine(string *out) {
   return true;
 }
 
+const std::filesystem::path& TextFile::path() const noexcept { return file_name_; }
+
+std::string TextFile::full_pathname() const noexcept { return file_name_.string(); }
+
 TextFile::~TextFile() {
   Close();
 }

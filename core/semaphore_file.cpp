@@ -18,11 +18,8 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
-#include <algorithm>
 #include <cerrno>
-#include <cstring>
 #include <fcntl.h>
-#include <iostream>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
@@ -47,8 +44,7 @@ using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 #ifndef _WIN32
 #ifndef O_TEMPORARY
@@ -67,11 +63,11 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
   if (step > std::chrono::seconds(1)) {
     step = std::chrono::seconds(1);
   }
-  auto start = std::chrono::steady_clock::now();
-  auto end = start + timeout;
+  const auto start = std::chrono::steady_clock::now();
+  const auto end = start + timeout;
   while (true) {
     const auto fn = filepath.string();
-    int fd = open(fn.c_str(), mode, pmode);
+    auto fd = open(fn.c_str(), mode, pmode);
     if (fd >= 0) { 
       write(fd, text.c_str(), text.size());
       return { filepath, fd };
@@ -112,5 +108,4 @@ SemaphoreFile::~SemaphoreFile() {
 }
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace wwiv

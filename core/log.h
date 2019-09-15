@@ -93,6 +93,7 @@ enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, f
 
 class Appender {
 public:
+  virtual ~Appender() = default;
   Appender(){};
   virtual bool append(const std::string& message) const = 0;
 };

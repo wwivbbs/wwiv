@@ -20,10 +20,8 @@
 #define __INCLUDED_WTEXTFILE_H__
 
 #include <cstdio>
-#include <cstring>
 #include <string>
 #include <sstream>
-#include <type_traits>
 #include <vector>
 
 #include "core/filesystem.h"
@@ -126,8 +124,8 @@ public:
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
   bool ReadLine(std::string* buffer);
   off_t position() { return ftell(file_); }
-  const std::filesystem::path& path() const noexcept { return file_name_; }
-  const std::string full_pathname() const noexcept { return file_name_.string(); }
+  const std::filesystem::path& path() const noexcept;
+  std::string full_pathname() const noexcept;
   FILE* GetFILE() const noexcept { return file_; }
 
   /**
