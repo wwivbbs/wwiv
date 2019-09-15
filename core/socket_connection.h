@@ -25,6 +25,7 @@
 #include <string>
 
 #include "core/connection.h"
+#include "core/net.h" // SOCKET
 
 #ifdef _WIN32
 #include <WinSock2.h>
