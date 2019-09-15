@@ -96,6 +96,8 @@ if not exist %WWIV_CMAKE_DIR% (
   echo Creating %WWIV_CMAKE_DIR%
   mkdir %WWIV_CMAKE_DIR%
 )
+del %WWIV_CMAKE_DIR%\CMakeCache.txt
+rmdir /s/q %WWIV_CMAKE_DIR%\CMakeFiles
 
 @rem Build Cryptlib 1st.
 echo:
@@ -192,8 +194,9 @@ cd %WORKSPACE%\bbs\admin
 
 echo:
 echo * Creating build.nfo file
-echo Build URL %BUILD_URL% > release\build.nfo
-echo Build: %WWIV_FULL_RELEASE%.%BUILD_NUMBER% >> release\build.nfo
+cd %WORKSPACE%\
+echo Build URL %BUILD_URL% > %STAGE_DIR%\build.nfo
+echo Build: %WWIV_FULL_RELEASE%.%BUILD_NUMBER% >> %STAGE_DIR%\build.nfo
 
 
 @echo =============================================================================

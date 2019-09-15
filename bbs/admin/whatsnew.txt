@@ -12,6 +12,8 @@ Legend (starting with 5.3)
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * WWIV now requires GCC 8.3 or later and MSVC 2019 v16.3 or later.
+* WWIV now builds on Debian10, Windows 10 and Centos7 (soon to add Centos8)
+* 
 
 What's New in WWIV 5.4 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
