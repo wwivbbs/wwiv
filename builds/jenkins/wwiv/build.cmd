@@ -36,8 +36,7 @@ set WWIV_FULL_RELEASE=5.5.0
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
-rem TODO(rushfan) Change to 2019 once it works for command line builds.
-set VS_VERSION=2017
+set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
 
