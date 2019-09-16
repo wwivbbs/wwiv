@@ -26,7 +26,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/inifile.h"
 #include "sdk/config.h"
 #include "sdk/net.h"

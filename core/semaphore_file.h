@@ -25,7 +25,7 @@
 #include <string>
 #include <sys/types.h>
 
-#include "core/filesystem.h"
+#include <filesystem>
 
 namespace wwiv {
 namespace core {

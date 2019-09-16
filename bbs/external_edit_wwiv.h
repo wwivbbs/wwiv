@@ -34,7 +34,7 @@ public:
   void CleanupControlFiles() override;
   bool Before() override;
   bool After() override;
-  virtual const std::string editor_filename() const override;
+  std::string editor_filename() const override;
 };
 
 

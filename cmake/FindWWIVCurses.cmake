@@ -4,7 +4,7 @@
 # On Windows, WWIV uses PDCurses. On all other platforms, use ncurses.
 
 if(UNIX)
-  message("FindWWIVCurses: Using NCurses")
+  # message("FindWWIVCurses: Using NCurses")
   set(CURSES_NEED_NCURSES TRUE)
   find_package(Curses REQUIRED)
 elseif(WIN32)

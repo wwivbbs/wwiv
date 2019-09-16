@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <string>
 #include <tuple>
-#include "core/filesystem.h"
+#include <filesystem>
 
 /**
  * Helper class for tests requing local filesystem access.  

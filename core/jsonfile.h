@@ -22,7 +22,7 @@
 #include <string>
 #include <sstream>
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/log.h"
 #include "core/textfile.h"
 

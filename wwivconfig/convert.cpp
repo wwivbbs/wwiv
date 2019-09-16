@@ -19,12 +19,7 @@
 #include "wwivconfig/convert.h"
 
 #include "localui/wwiv_curses.h"
-#include <cctype>
-#include <cmath>
-#include <cstdlib>
 #include <cstring>
-#include <fcntl.h>
-#include <memory>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
@@ -33,10 +28,9 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivport.h"
 #include "local_io/wconstants.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
@@ -45,7 +39,6 @@
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
 #include "wwivconfig/archivers.h"
-#include "wwivconfig/wwivconfig.h"
 
 using std::string;
 using std::vector;
@@ -150,14 +143,14 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  wwiv::fs::path users_lst = PathFilePath(config.datadir(), USER_LST);
+  std::filesystem::path users_lst = PathFilePath(config.datadir(), USER_LST);
   auto backup_file = users_lst;
   backup_file += ".backup.pre-wwivconfig-upgrade";
 
   // Make a backup file.
   std::error_code ec;
   // Note we ignore the ec since we fail open.
-  wwiv::fs::copy_file(users_lst, backup_file, ec);
+  std::filesystem::copy_file(users_lst, backup_file, ec);
 
   DataFile<userrec> usersFile(PathFilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,

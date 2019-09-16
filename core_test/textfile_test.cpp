@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "file_helper.h"

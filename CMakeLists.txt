@@ -12,13 +12,17 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
 if (WWIV_BUILD_TESTS)
   # Workaround gtest really wanting to compile with /Mtd vs /MD
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  # Since we don't include the top level googletest CMakeLists.txt
+  # explicitly set the version.
+  set(GOOGLETEST_VERSION 1.9.0)
+
   # googlemock also includes googletest
   add_subdirectory(deps/googletest/googlemock)
 
   enable_testing()
   find_package(GTest REQUIRED)
   find_package(GMock REQUIRED)
-  message("Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
+  message(STATUS "Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
 endif (WWIV_BUILD_TESTS)
 
 # Cryptlib

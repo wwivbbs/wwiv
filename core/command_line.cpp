@@ -27,7 +27,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -65,7 +65,7 @@ CommandLineCommand::CommandLineCommand(const std::string& name, const std::strin
     : name_(name), help_text_(help_text) {}
 
 static std::string CreateProgramName(const std::string& arg) {
-  fs::path p{arg};
+  std::filesystem::path p{arg};
   return p.filename().string();
 }
 

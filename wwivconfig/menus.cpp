@@ -29,7 +29,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/findfiles.h"
 #include "core/log.h"
 #include "core/scope_exit.h"

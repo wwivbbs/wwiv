@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/config.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api.h"

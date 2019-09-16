@@ -29,7 +29,7 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"

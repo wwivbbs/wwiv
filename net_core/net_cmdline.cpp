@@ -24,7 +24,7 @@
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"

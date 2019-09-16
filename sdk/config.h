@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_SDK_CONFIG_H__
 #define __INCLUDED_SDK_CONFIG_H__
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/vardec.h"
 #include <memory>
 

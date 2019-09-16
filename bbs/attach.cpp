@@ -50,7 +50,7 @@ void attach_file(int mode) {
   bool bFound;
   char szFullPathName[MAX_PATH], szNewFileName[MAX_PATH], szFileToAttach[MAX_PATH];
   User u;
-  filestatusrec fsr;
+  filestatusrec fsr{};
 
   bout.nl();
   bool bDirectionForward = true;
@@ -67,7 +67,7 @@ void attach_file(int mode) {
   int ok = 0;
   bool done = false;
   do {
-    mailrec m;
+    mailrec m{};
     pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     while ((m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0) &&
@@ -267,8 +267,7 @@ void attach_file(int mode) {
               } else {
                 if (so() && !bRemoteUpload) {
                   std::error_code ec;
-                  using namespace wwiv::fs;
-                  if (!copy_file(szFileToAttach, szFullPathName, ec)) {
+                  if (!std::filesystem::copy_file(szFileToAttach, szFullPathName, ec)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {
@@ -305,7 +304,7 @@ void attach_file(int mode) {
                         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                         pFileEmail->Write(&m, sizeof(mailrec));
                       } else {
-                        filestatusrec fsr1;
+                        filestatusrec fsr1{};
                         fsr1.id = 1;
                         long lNumRead = 0;
                         do {

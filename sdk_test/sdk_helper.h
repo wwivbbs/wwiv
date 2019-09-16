@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core_test/file_helper.h"
 
 class SdkHelper {

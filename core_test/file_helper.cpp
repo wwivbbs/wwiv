@@ -27,7 +27,7 @@
 
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

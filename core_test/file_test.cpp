@@ -125,26 +125,26 @@ TEST(FileTest, IsDirectory_NotOpen) {
   auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   std::error_code ec;
-  ASSERT_FALSE(fs::is_directory(path, ec));
-  ASSERT_TRUE(fs::is_regular_file(path, ec));
+  ASSERT_FALSE(std::filesystem::is_directory(path, ec));
+  ASSERT_TRUE(std::filesystem::is_regular_file(path, ec));
 }
 
 TEST(FileTest, IsDirectory_Open) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   std::error_code ec;
   ASSERT_FALSE(std::filesystem::is_directory(path, ec));
-  ASSERT_TRUE(fs::is_regular_file(path, ec));
+  ASSERT_TRUE(std::filesystem::is_regular_file(path, ec));
 }
 
 TEST(FileTest, LastWriteTime_NotOpen) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  auto now = time(nullptr);
-  auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  const auto now = time(nullptr);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_LE(now, file.last_write_time());
 }
@@ -174,7 +174,7 @@ TEST(FileTest, Read) {
 TEST(FileTest, GetName) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
-  auto path = helper.CreateTempFile(kFileName, "Hello World");
+  const auto path = helper.CreateTempFile(kFileName, "Hello World");
   File file{path};
   ASSERT_EQ(kFileName, file.path().filename().string());
 }
@@ -306,7 +306,7 @@ TEST(FileTest, IsOpen_Open) {
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   EXPECT_TRUE(file.IsOpen());
-  EXPECT_TRUE((bool)file);
+  EXPECT_TRUE(static_cast<bool>(file));
 }
 
 TEST(FileTest, IsOpen_NotOpen) {
@@ -353,7 +353,7 @@ TEST(FileTest, CurrentPosition) {
 }
 
 TEST(FileTest, FsCopyFile) {
-  namespace fs = wwiv::fs;
+  namespace fs = std::filesystem;
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
@@ -368,12 +368,12 @@ TEST(FileTest, FsCopyFile) {
   auto to = PathFilePath(tmp, "f2");
   std::error_code ec;
   EXPECT_FALSE(File::Exists(to.string()));
-  fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
+  std::filesystem::copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
   EXPECT_TRUE(File::Exists(to.string()));
 }
 
 TEST(FileTest, CopyFile) {
-  namespace fs = wwiv::fs;
+  namespace fs = std::filesystem;
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
@@ -392,7 +392,7 @@ TEST(FileTest, CopyFile) {
 }
 
 TEST(FileTest, MoveFile) {
-  namespace fs = wwiv::fs;
+  namespace fs = std::filesystem;
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
@@ -439,25 +439,25 @@ TEST(FileTest, Free) {
 }
 
 TEST(FileSystemTest, Empty) {
-  fs::path p{""};
+  std::filesystem::path p{""};
   ASSERT_TRUE(p.empty());
 }
 
 TEST(FileSystemTest, Path_IsDir) {
   FileHelper file;
   const auto tmp = file.TempDir();
-  fs::path p{tmp};
+  std::filesystem::path p{tmp};
   std::cerr << p << std::endl;
-  ASSERT_TRUE(fs::is_directory(p));
+  ASSERT_TRUE(std::filesystem::is_directory(p));
 }
 
 TEST(FileSystemTest, Path_WithoutDir) {
-  fs::path p{"hello.txt"};
+  std::filesystem::path p{"hello.txt"};
   EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
 }
 
 TEST(FileSystemTest, Path_WithWildCard) {
-  fs::path p{"hello.*"};
+  std::filesystem::path p{"hello.*"};
   EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
   EXPECT_TRUE(wwiv::strings::ends_with(p.string(), "hello.*")) << "p: " << p.string();
 }

@@ -33,7 +33,7 @@
 #include <vector>
 
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "local_io/wconstants.h" // for MAX_ARCHIVERS

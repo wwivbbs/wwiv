@@ -24,7 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"

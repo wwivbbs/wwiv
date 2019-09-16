@@ -23,7 +23,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "core/filesystem.h"
+#include <filesystem>
 
 namespace wwiv {
 namespace core {

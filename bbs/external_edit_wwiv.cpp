@@ -18,23 +18,16 @@
 /**************************************************************************/
 #include "bbs/external_edit_wwiv.h"
 
-#include <algorithm>
 #include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/execexternal.h"
-#include "bbs/make_abs_cmd.h"
 #include "bbs/message_editor_data.h"
-#include "bbs/pause.h"
-#include "bbs/utility.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 
-#include "bbs/stuffin.h"
-#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -53,7 +46,7 @@ static void RemoveEditorFileFromTemp(const string& filename) {
   File::Remove(f);
 }
 
-const std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }
+std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }
 
 ExternalWWIVMessageEditor ::~ExternalWWIVMessageEditor() { this->CleanupControlFiles(); }
 

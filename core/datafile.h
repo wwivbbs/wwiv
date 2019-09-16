@@ -21,7 +21,7 @@
 #include <vector>
 #include <sys/types.h>  // off_t
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 
 namespace wwiv {
 namespace core {
@@ -53,7 +53,7 @@ public:
 
   void Close() { file_.Close(); }
 
-  bool ok() const { return file_.IsOpen(); }
+  [[nodiscard]] bool ok() const { return file_.IsOpen(); }
 
   bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
     std::size_t num_to_read = number_of_records();

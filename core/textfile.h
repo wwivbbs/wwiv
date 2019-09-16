@@ -24,7 +24,7 @@
 #include <sstream>
 #include <vector>
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/wwivport.h"
 
 typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);

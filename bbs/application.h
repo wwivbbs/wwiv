@@ -30,7 +30,7 @@
 #include "bbs/context.h"
 #include "bbs/output.h"
 #include "bbs/runnable.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/vardec.h"
 
 ///////////////////////////////////////////////////////////////////////////////

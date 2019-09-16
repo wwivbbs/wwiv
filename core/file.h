@@ -27,7 +27,7 @@
 #include <sys/types.h>   // off_t
 
 #include "core/file_lock.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/wwivport.h"
 
 #ifndef MAX_PATH
@@ -107,7 +107,7 @@ public:
   // Public Member functions
   bool Open(int nFileMode = modeDefault, int nShareMode = shareUnknown);
   void Close() noexcept;
-  bool IsOpen() const noexcept;
+  [[nodiscard]] bool IsOpen() const noexcept;
 
   ssize_t Read(void* buf, size_t count);
   ssize_t Write(const void* buf, size_t count);
@@ -122,26 +122,26 @@ public:
 
   ssize_t Writeln(const std::string& s) { return this->Writeln(s.c_str(), s.length()); }
 
-  off_t length();
+  [[nodiscard]] off_t length() noexcept;
   off_t Seek(off_t lOffset, Whence whence);
   void set_length(off_t lNewLength);
-  off_t current_position() const;
+  [[nodiscard]] off_t current_position() const;
 
-  bool Exists() const noexcept;
+  [[nodiscard]] bool Exists() const noexcept;
 
-  time_t creation_time();
-  time_t last_write_time();
-  bool set_last_write_time(time_t last_write_time);
+  [[nodiscard]] time_t creation_time() const noexcept;
+  [[nodiscard]] time_t last_write_time() const noexcept;
+  bool set_last_write_time(time_t last_write_time) noexcept;
 
   std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
   /** Returns the file path as a std::string path */
-  std::string full_pathname() const noexcept { return full_path_name_.string(); }
+  [[nodiscard]] std::string full_pathname() const noexcept { return full_path_name_.string(); }
 
   /** Returns the file path as a std::filesystem path */
-  const fs::path& path() const noexcept { return full_path_name_; }
+  [[nodiscard]] const std::filesystem::path& path() const noexcept { return full_path_name_; }
 
-  std::string last_error() const noexcept { return error_text_; }
+  [[nodiscard]] std::string last_error() const noexcept { return error_text_; }
 
   // operators
   /** Returns true if the file is open */
@@ -152,8 +152,8 @@ public:
   static bool Remove(const std::filesystem::path& fileName);
   static bool Rename(const std::filesystem::path& origFileName,
                      const std::filesystem::path& newFileName);
-  static bool Exists(const std::filesystem::path& fileName);
-  static bool ExistsWildcard(const std::filesystem::path& wildCard);
+  [[nodiscard]] static bool Exists(const std::filesystem::path& fileName);
+  [[nodiscard]] static bool ExistsWildcard(const std::filesystem::path& wildCard);
   static bool Copy(const std::filesystem::path& sourceFileName,
                    const std::filesystem::path& destFileName);
   static bool Move(const std::filesystem::path& sourceFileName,
@@ -161,15 +161,15 @@ public:
 
   static bool SetFilePermissions(const std::filesystem::path& fileName, int nPermissions);
 
-  static std::string EnsureTrailingSlash(const std::string& path);
-  static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
-  static std::filesystem::path current_directory();
+  [[nodiscard]] static std::string EnsureTrailingSlash(const std::string& path);
+  [[nodiscard]] static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
+  [[nodiscard]] static std::filesystem::path current_directory();
   static bool set_current_directory(const std::filesystem::path& dir);
-  static std::string FixPathSeparators(const std::string& path);
-  static std::string absolute(const std::string& base, const std::string& relative);
+  [[nodiscard]] static std::string FixPathSeparators(const std::string& path);
+  [[nodiscard]] static std::string absolute(const std::string& base, const std::string& relative);
 
-  static time_t creation_time(const std::filesystem::path& path);
-  static time_t last_write_time(const std::filesystem::path& path);
+  [[nodiscard]] static time_t creation_time(const std::filesystem::path& path);
+  [[nodiscard]] static time_t last_write_time(const std::filesystem::path& path);
 
   /**
    * Returns an canonical absolute path.
@@ -178,7 +178,7 @@ public:
    * portion of the path.  On POSIX systems, this is congruent with how
    * realpath behaves.
    */
-  static std::string canonical(const std::string& path);
+  [[nodiscard]] static std::string canonical(const std::string& path);
 
   /**
    * Creates the directory {path} by creating the leaf most directory.
@@ -212,12 +212,12 @@ public:
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
-  static long freespace_for_path(const std::filesystem::path& p);
-  static bool is_directory(const std::string& path);
+  [[nodiscard]] static long freespace_for_path(const std::filesystem::path& p);
+  [[nodiscard]] static bool is_directory(const std::string& path) noexcept;
 
 private:
   // Helper functions
-  static bool IsFileHandleValid(int hFile) noexcept;
+  [[nodiscard]] static bool IsFileHandleValid(int hFile) noexcept;
 
 private:
   int handle_{-1};

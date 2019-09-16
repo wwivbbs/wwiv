@@ -24,7 +24,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/wwivd_config.h"
 
 namespace wwiv {

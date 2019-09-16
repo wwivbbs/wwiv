@@ -32,7 +32,7 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"

@@ -76,7 +76,7 @@ static constexpr int F_OK = 0;
 using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
-namespace fs = std::filesystem;
+using namespace std::filesystem;
 
 namespace wwiv {
 namespace core {
@@ -100,7 +100,7 @@ const int File::shareUnknown = -1;
 
 const int File::invalid_handle = -1;
 
-static const std::chrono::milliseconds wait_time(10);
+static const milliseconds wait_time(10);
 
 static constexpr int TRIES = 100;
 
@@ -122,12 +122,12 @@ std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
 }
 
 bool backup_file(const std::filesystem::path& p) {
-  fs::path from{p};
-  fs::path to{p};
+  path from{p};
+  path to{p};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
-  return wwiv::fs::copy_file(from, to, ec);
+  return copy_file(from, to, ec);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
 bool File::Exists() const noexcept {
   std::error_code ec;
-  return fs::exists(full_path_name_, ec);
+  return std::filesystem::exists(full_path_name_, ec);
 }
 
 void File::set_length(off_t l) {
@@ -253,23 +253,23 @@ void File::set_length(off_t l) {
 }
 
 // static
-bool File::is_directory(const std::string& path) {
+bool File::is_directory(const std::string& path) noexcept{
   std::error_code ec;
-  return fs::is_directory(fs::path{path}, ec);
+  return std::filesystem::is_directory(std::filesystem::path{path}, ec);
 }
 
-off_t File::length() {
+off_t File::length() noexcept {
   std::error_code ec;
-  auto sz = static_cast<off_t>(fs::file_size(full_path_name_, ec));
+  auto sz = static_cast<off_t>(std::filesystem::file_size(full_path_name_, ec));
   if (ec.value() != 0) {
     return 0;
   }
   return sz;
 }
 
-time_t File::creation_time() { return File::creation_time(full_path_name_); }
+time_t File::creation_time() const noexcept { return File::creation_time(full_path_name_); }
 
-time_t File::last_write_time() { return File::last_write_time(full_path_name_); }
+time_t File::last_write_time() const noexcept { return File::last_write_time(full_path_name_); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -292,13 +292,13 @@ time_t File::creation_time(const std::filesystem::path& path) {
 
 bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n) {
   std::error_code ec{};
-  fs::rename(o, n, ec);
+  std::filesystem::rename(o, n, ec);
   return ec.value() == 0;
 }
 
 bool File::Remove(const std::filesystem::path& filename) {
   std::error_code ec;
-  bool result = fs::remove(filename, ec);
+  bool result = std::filesystem::remove(filename, ec);
   if (!result) {
     LOG(ERROR) << "File::Remove failed: error code: " << ec.value() << "; msg: " << ec.message();
   }
@@ -313,7 +313,7 @@ bool File::Exists(const std::filesystem::path& p) {
   }
 
   std::error_code ec;
-  return fs::exists(p, ec);
+  return std::filesystem::exists(p, ec);
 }
 
 // static
@@ -358,25 +358,25 @@ std::string File::EnsureTrailingSlashPath(const std::filesystem::path& orig) {
 // static
 std::filesystem::path File::current_directory() {
   std::error_code ec;
-  return fs::current_path(ec);
+  return std::filesystem::current_path(ec);
 }
 
 // static
 bool File::set_current_directory(const std::filesystem::path& dir) {
   std::error_code ec;
-  fs::current_path(dir, ec);
+  std::filesystem::current_path(dir, ec);
   return ec.value() == 0;
 }
 
 // static
 std::string File::FixPathSeparators(const std::string& orig) {
-  fs::path p{orig};
+  std::filesystem::path p{orig};
   return p.make_preferred().string();
 }
 
 // static
 string File::absolute(const std::string& base, const std::string& relative) {
-  fs::path r{relative};
+  std::filesystem::path r{relative};
   if (r.is_absolute()) {
     return relative;
   }
@@ -386,11 +386,11 @@ string File::absolute(const std::string& base, const std::string& relative) {
 // static
 bool File::mkdir(const std::filesystem::path& p) {
   std::error_code ec;
-  if (fs::exists(p, ec)) {
+  if (std::filesystem::exists(p, ec)) {
     return true;
   }
 
-  if (fs::create_directory(p, ec)) {
+  if (std::filesystem::create_directory(p, ec)) {
     return true;
   }
   return ec.value() == 0;
@@ -399,10 +399,10 @@ bool File::mkdir(const std::filesystem::path& p) {
 // static
 bool File::mkdirs(const std::filesystem::path& p) {
   std::error_code ec;
-  if (fs::exists(p, ec)) {
+  if (std::filesystem::exists(p, ec)) {
     return true;
   }
-  if (fs::create_directories(p, ec)) {
+  if (std::filesystem::create_directories(p, ec)) {
     return true;
   }
   return ec.value() == 0;
@@ -413,7 +413,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
   return os;
 }
 
-bool File::set_last_write_time(time_t last_write_time) {
+bool File::set_last_write_time(time_t last_write_time) noexcept {
   struct utimbuf ut {};
   ut.actime = ut.modtime = last_write_time;
   return utime(full_path_name_.string().c_str(), &ut) != -1;
@@ -440,7 +440,7 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
 
 bool File::Copy(const std::filesystem::path& from, const std::filesystem::path& to) {
   std::error_code ec;
-  fs::copy_file(from, to, fs::copy_options::overwrite_existing, ec);
+  std::filesystem::copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
   return ec.value() == 0;
 }
 
@@ -450,14 +450,14 @@ bool File::Move(const std::filesystem::path& from, const std::filesystem::path& 
 
 // static
 std::string File::canonical(const std::string& path) {
-  fs::path p{path};
+  std::filesystem::path p{path};
   std::error_code ec;
-  return fs::canonical(p, ec).string();
+  return std::filesystem::canonical(p, ec).string();
 }
 
 long File::freespace_for_path(const std::filesystem::path& p) {
   std::error_code ec;
-  auto devi = fs::space(p, ec);
+  auto devi = std::filesystem::space(p, ec);
   if (ec.value() != 0) {
     return 0;
   }
