@@ -35,17 +35,17 @@ public:
   // Returns a fully qualified path name to "name" under the temporary directory.
   // This will end with a pathSeparator and is suitable for use
   // in wwiv datastructures.
-  [[nodiscard]] const std::string DirName(const std::string& name) const;
+  [[nodiscard]] std::string DirName(const std::string& name) const;
   // Returns a fully qualified path to "name" under the temporary directory.
   // This is suitable for use in constructing paths
-  [[nodiscard]] const std::filesystem::path Dir(const std::string& name) const;
+  [[nodiscard]] std::filesystem::path Dir(const std::string& name) const;
   // Creates a directory under TempDir.
   bool Mkdir(const std::string& name) const;
-  std::filesystem::path CreateTempFilePath(const std::string& name);
-  std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name);
+  std::filesystem::path CreateTempFilePath(const std::string& name) const;
+  std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name) const;
   std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents);
   [[nodiscard]] const std::filesystem::path& TempDir() const { return tmp_; }
-  [[nodiscard]] const std::string ReadFile(const std::filesystem::path& name) const;
+  [[nodiscard]] std::string ReadFile(const std::filesystem::path& name) const;
   static void set_wwiv_test_tempdir(const std::string& d) noexcept;
 
 private:

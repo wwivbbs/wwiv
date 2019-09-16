@@ -33,18 +33,16 @@ using namespace wwiv::core;
 
 class IniFileTest : public ::testing::Test {
 protected:
-  virtual void SetUp() {
+  void SetUp() override {
     const auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     test_name_ = test_info->name();
   }
 
-  const string& test_name() const { return test_name_; }
+  [[nodiscard]] const string& test_name() const { return test_name_; }
 
+  // ReSharper disable once CppMemberFunctionMayBeConst
   std::filesystem::path CreateIniFile(const string section, const vector<string> lines) {
-    std::filesystem::path path;
-    FILE* file;
-    // TODO(rushfan): use structured bindings in GCC > 7.0
-    std::tie(file, path) = helper_.OpenTempFile(test_name_);
+    auto [file, path] = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section.c_str());
     for (const auto& line : lines) {
       fprintf(file, "%s\n", line.c_str());
@@ -53,13 +51,11 @@ protected:
     return path;
   }
 
+  // ReSharper disable once CppMemberFunctionMayBeConst
   std::filesystem::path CreateIniFile(const string section1, const vector<string> lines1,
                                       const string section2,
                        const vector<string> lines2) {
-    // TODO(rushfan): use structured bindings in GCC > 7.0
-    std::filesystem::path path;
-    FILE* file;
-    std::tie(file, path) = helper_.OpenTempFile(test_name_);
+    auto [file, path] = helper_.OpenTempFile(test_name_);
     fprintf(file, "[%s]\n", section1.c_str());
     for (const auto& line : lines1) {
       fprintf(file, "%s\n", line.c_str());

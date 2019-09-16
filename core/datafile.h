@@ -49,14 +49,14 @@ public:
 
   ~DataFile() = default;
 
-  File& file() { return file_; }
+  [[nodiscard]] File& file() { return file_; }
 
   void Close() { file_.Close(); }
 
   [[nodiscard]] bool ok() const { return file_.IsOpen(); }
 
   bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
-    std::size_t num_to_read = number_of_records();
+    auto num_to_read = number_of_records();
     if (num_to_read == 0) {
       // Reading nothing is always successful.
       return true;
@@ -94,7 +94,7 @@ public:
   }
 
   bool Write(const RECORD* record, int num_records = 1) { 
-    return file_.Write(record, num_records*SIZE) == static_cast<int>(num_records*SIZE);
+    return file_.Write(record, num_records*SIZE) == static_cast<ssize_t>(num_records*SIZE);
   }
 
   bool Write(int record_number, const RECORD* record) {
@@ -109,7 +109,7 @@ public:
            static_cast<off_t>(record_number * SIZE);
   }
 
-  std::size_t number_of_records() { return file_.length() / SIZE; }
+  [[nodiscard]] std::size_t number_of_records() { return file_.length() / SIZE; }
 
   explicit operator bool() const { return file_.IsOpen(); }
 

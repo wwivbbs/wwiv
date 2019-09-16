@@ -19,18 +19,14 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 
-#include <algorithm>
 #include <cerrno>
 #include <cstdio>
-#include <iostream>
 #include <string>
 
 #include "core/datetime.h"
 #include "core/file.h"
 #include <filesystem>
-#include "core/os.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -40,19 +36,18 @@ using namespace wwiv::strings;
 std::filesystem::path FileHelper::basedir_;
 
 FileHelper::FileHelper() {
-  const ::testing::TestInfo* const test_info =
-      ::testing::UnitTest::GetInstance()->current_test_info();
+  const auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
   const auto dir = StrCat(test_info->test_case_name(), "_", test_info->name());
-  tmp_ = FileHelper::CreateTempDir(dir);
+  tmp_ = CreateTempDir(dir);
 }
 
-const string FileHelper::DirName(const string& oname) const {
+string FileHelper::DirName(const string& oname) const {
   const auto name = File::FixPathSeparators(oname);
   const auto tmpname = FilePath(tmp_, name);
   return File::EnsureTrailingSlash(tmpname);
 }
 
-const std::filesystem::path FileHelper::Dir(const string& oname) const {
+std::filesystem::path FileHelper::Dir(const string& oname) const {
   const auto name = File::FixPathSeparators(oname);
   return PathFilePath(tmp_, name);
 }
@@ -96,12 +91,12 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
   return {};
 }
 
-std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) {
+std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) const {
   const auto name{File::FixPathSeparators(orig_name)};
   return FilePath(TempDir(), name);
 }
 
-std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) {
+std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) const {
   const auto path = CreateTempFilePath(orig_name);
   const auto fn = path.string();
   auto fp = fopen(fn.c_str(), "wt");
@@ -110,10 +105,7 @@ std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& 
 }
 
 std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
-  std::filesystem::path path;
-  FILE* file;
-  // TODO(rushfan): use structured bindings in GCC > 7.0
-  std::tie(file, path) = OpenTempFile(orig_name);
+  auto [file, path] = OpenTempFile(orig_name);
   assert(file);
   fputs(contents.c_str(), file);
   fclose(file);
@@ -122,8 +114,9 @@ std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const 
 
 // N.B.: We don't use TextFile::ReadFileIntoString since we are
 // testing TextFile with this helper.
-const string FileHelper::ReadFile(const std::filesystem::path& name) const {
+string FileHelper::ReadFile(const std::filesystem::path& name) const {
   const auto name_string = name.string();
+  // ReSharper disable once CppLocalVariableMayBeConst
   auto fp = fopen(name_string.c_str(), "rt");
   if (!fp) {
     const auto msg = StrCat("Unable to open file: ", name_string, "; errno: ", errno);
@@ -133,7 +126,7 @@ const string FileHelper::ReadFile(const std::filesystem::path& name) const {
   fseek(fp, 0, SEEK_END);
   contents.resize(ftell(fp));
   rewind(fp);
-  auto num_read = fread(&contents[0], 1, contents.size(), fp);
+  const auto num_read = fread(&contents[0], 1, contents.size(), fp);
   contents.resize(num_read);
   fclose(fp);
   return contents;

@@ -59,51 +59,50 @@ std::string times();
 /** Displays dd as a human readable time */
 std::string to_string(std::chrono::duration<double> dd);
 
-class DateTime {
+class DateTime final {
 public:
-  static DateTime from_time_t(time_t t) { return DateTime(t); }
+  [[nodiscard]] static DateTime from_time_t(time_t t) { return DateTime(t); }
 
-  static DateTime from_tm(tm* t) { return DateTime(t); }
+  [[nodiscard]] static DateTime from_tm(tm* t) { return DateTime(t); }
 
-  static DateTime from_daten(daten_t t) {
-    time_t tt = t;
-    return from_time_t(tt);
+  [[nodiscard]] static DateTime from_daten(daten_t t) {
+    return from_time_t(static_cast<time_t>(t));
   }
 
-  static DateTime now();
+  [[nodiscard]] static DateTime now();
 
-  int hour() const noexcept { return tm_.tm_hour; }
-  int minute() const noexcept { return tm_.tm_min; }
-  int second() const noexcept { return tm_.tm_sec; }
+  [[nodiscard]] int hour() const noexcept { return tm_.tm_hour; }
+  [[nodiscard]] int minute() const noexcept { return tm_.tm_min; }
+  [[nodiscard]] int second() const noexcept { return tm_.tm_sec; }
 
   /** Month starting at 1 for this DateTime */
-  int month() const noexcept { return tm_.tm_mon + 1; }
+  [[nodiscard]] int month() const noexcept { return tm_.tm_mon + 1; }
 
   /** Day starting at 1 for this DateTime */
-  int day() const noexcept { return tm_.tm_mday; }
+  [[nodiscard]] int day() const noexcept { return tm_.tm_mday; }
 
   /** Year starting at 0 for this DateTime */
-  int year() const noexcept { return tm_.tm_year + 1900; }
+  [[nodiscard]] int year() const noexcept { return tm_.tm_year + 1900; }
 
-  int dow() const noexcept { return tm_.tm_wday; }
+  [[nodiscard]] int dow() const noexcept { return tm_.tm_wday; }
 
   /** Prints a date using the strftime format specified.  */
-  std::string to_string(const std::string& format) const;
+  [[nodiscard]] std::string to_string(const std::string& format) const;
 
   /** Prints a Date using asctime but without the trailing linefeed. */
-  std::string to_string() const;
+  [[nodiscard]] std::string to_string() const;
 
   /** Returns this Datetime as a UNIX time_t */
-  time_t to_time_t() const noexcept { return t_; }
+  [[nodiscard]] time_t to_time_t() const noexcept { return t_; }
 
   /** Returns this Datetime as a WWIV BBS daten_t */
-  daten_t to_daten_t() const noexcept { return time_t_to_daten(t_); }
+  [[nodiscard]] daten_t to_daten_t() const noexcept { return time_t_to_daten(t_); }
 
   /** Returns this Datetime as a POSIX tm structure. */
-  struct tm to_tm() const noexcept;
+  [[nodiscard]] struct tm to_tm() const noexcept;
 
   /** Returns this Datetime as a time_point in the std::chrono::system_clock */
-  std::chrono::system_clock::time_point to_system_clock() const noexcept;
+  [[nodiscard]] std::chrono::system_clock::time_point to_system_clock() const noexcept;
 
   friend DateTime operator+(DateTime lhs, std::chrono::duration<double> d);
 
@@ -141,11 +140,12 @@ public:
   friend bool operator>=(const DateTime& lhs, const DateTime& rhs);
 
   DateTime();
+  ~DateTime() = default;
 
 private:
-  DateTime(std::chrono::system_clock::time_point t);
-  DateTime(tm* t);
-  DateTime(time_t t);
+  explicit DateTime(std::chrono::system_clock::time_point t);
+  explicit DateTime(tm* t);
+  explicit DateTime(time_t t);
   /** Updates the tm_ structure, should be called anytime the time_t value is changed */
   void update_tm() noexcept;
 
