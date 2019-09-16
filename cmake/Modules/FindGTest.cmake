@@ -10,7 +10,6 @@
 #  GTEST_LIBRARIES - The libraries needed to use GTest
 message(STATUS "WWIV FindGTest")
 
-# TODO(rushfan): Test on Linux too.
 set(GTEST_ROOT_DIR
     "${CMAKE_SOURCE_DIR}/deps/googletest/googletest"
     CACHE PATH

@@ -2,7 +2,7 @@
 # Common CMake module for WWIV
 #
 
-message(STATUS "Loaded WWIV Common CMake Module.")
+message(STATUS "WWIV Common CMake Module.")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules/sanitizers)
@@ -13,6 +13,22 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
+
+macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
+  # Set minimum GCC version
+  # See https://stackoverflow.com/questions/14933172/how-can-i-add-a-minimum-compiler-version-requisite
+  if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.3)
+      message(FATAL_ERROR "Require at least gcc-8.3; found: ${CMAKE_CXX_COMPILER_VERSION}")
+  endif()
+
+  if (MSVC)
+    if (${MSVC_VERSION} LESS 1922)
+      # See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+      # for versions
+      message(FATAL_ERROR "Require at least MSVC 2019 16.2 (1922); Found: ${MSVC_VERSION}")
+    endif()
+  endif()
+endmacro(ENSURE_MINIMUM_COMPILER_VERSIONS)
 
 if (UNIX)
   if (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -57,7 +73,6 @@ ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
 function(SET_MSVC_WARNING_LEVEL_4)
   if(WIN32 AND MSVC)
-    #message(STATUS "Setting Warning Level 4")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
       string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     else()
@@ -84,7 +99,11 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
     "${PARENTDIR}" insourcesubdir)
   IF(insource OR insourcesubdir)
-    MESSAGE(FATAL_ERROR "${PROJECT_NAME} requires an out of source build.")
+    MESSAGE(FATAL_ERROR 
+    "${PROJECT_NAME} requires an out of source build.
+     This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
+     Please delete them."
+    )
   ENDIF(insource OR insourcesubdir)
 ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 

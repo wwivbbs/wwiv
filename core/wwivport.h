@@ -31,16 +31,17 @@
 #define _USE_ATTRIBUTES_FOR_SAL 1
 #endif // _USE_ATTRIBUTES_FOR_SAL
 
-#if (_MSC_VER < 1915)
-#error "Visual Studio 2017 version 15.8.0 or later is required"
-#endif // _MSC_VER < 1915
+#if (_MSC_VER < 1922)
+// See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+#error "Visual Studio 2017 version 16.2.0 or later is required"
+#endif // _MSC_VER < 1922
 
 #endif // _MSC_VER
 
 #if defined(__GNUC__) && !defined(__clang__)
-#if (__GNUC__ < 6)
-#error "GNC C++ 6.0 or later is required"
-#endif // __GNUC__ < 6
+#if (__GNUC__ < 8)
+#error "GNC C++ 8.3 or later is required"
+#endif // __GNUC__ < 8
 #endif // __GNUC__
 
 // WWIV's daten type is a 32-bit unsigned int. It can never be used for date

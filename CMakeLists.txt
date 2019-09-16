@@ -10,6 +10,7 @@ include(Common)
 include(FindASan)
 
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
+ENSURE_MINIMUM_COMPILER_VERSIONS()
 
 if (WWIV_BUILD_TESTS)
   # Workaround gtest really wanting to compile with /Mtd vs /MD
