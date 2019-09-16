@@ -1,5 +1,4 @@
 # CMake for WWIV Daemon
-include_directories(..)
 include_directories(../deps/cereal/include)
 
 set(WWIVD_SOURCES 

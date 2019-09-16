@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(..)
 
 set(COMMON_SOURCES
   clock.cpp

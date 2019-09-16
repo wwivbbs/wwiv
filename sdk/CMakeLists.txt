@@ -1,4 +1,3 @@
-include_directories(..)
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES

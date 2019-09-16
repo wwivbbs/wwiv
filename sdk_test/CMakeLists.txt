@@ -1,5 +1,4 @@
-include_directories(../deps/googletest/googletest/include)
-include_directories(..)
+include_directories(${GTEST_INCLUDE_DIRS})
 
 set(test_sources
   callout_test.cpp

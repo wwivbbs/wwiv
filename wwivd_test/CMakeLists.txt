@@ -1,6 +1,4 @@
-include_directories(../deps/googletest/googletest/include)
-include_directories(..)
-
+include_directories(${GTEST_INCLUDE_DIRS})
 
 set(test_sources
   wwivd_non_http_test.cpp

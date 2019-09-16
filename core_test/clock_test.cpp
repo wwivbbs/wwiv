@@ -28,13 +28,13 @@ using std::vector;
 
 using namespace wwiv::core;
 
-TEST(Clock, Simple) { 
-  auto start = DateTime::now(); 
+TEST(Clock, Simple) {
+  const auto start = DateTime::now(); 
 
   SystemClock c{};
-  auto mid = c.Now();
+  const auto mid = c.Now();
 
-  auto end = DateTime::now();
+  const auto end = DateTime::now();
 
   EXPECT_GE(mid, start);
   EXPECT_LE(mid, end);

@@ -25,7 +25,7 @@
 #include <filesystem>
 
 /**
- * Helper class for tests requing local filesystem access.  
+ * Helper class for tests requiring local filesystem access.  
  *
  * Note: This class can not use File since it is used by the tests for File.
  */
@@ -35,17 +35,17 @@ public:
   // Returns a fully qualified path name to "name" under the temporary directory.
   // This will end with a pathSeparator and is suitable for use
   // in wwiv datastructures.
-  const std::string DirName(const std::string& name) const;
+  [[nodiscard]] const std::string DirName(const std::string& name) const;
   // Returns a fully qualified path to "name" under the temporary directory.
   // This is suitable for use in constructing paths
-  const std::filesystem::path Dir(const std::string& name) const;
+  [[nodiscard]] const std::filesystem::path Dir(const std::string& name) const;
   // Creates a directory under TempDir.
   bool Mkdir(const std::string& name) const;
   std::filesystem::path CreateTempFilePath(const std::string& name);
   std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name);
   std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents);
-  const std::filesystem::path& TempDir() const { return tmp_; }
-  const std::string ReadFile(const std::filesystem::path& name) const;
+  [[nodiscard]] const std::filesystem::path& TempDir() const { return tmp_; }
+  [[nodiscard]] const std::string ReadFile(const std::filesystem::path& name) const;
   static void set_wwiv_test_tempdir(const std::string& d) noexcept;
 
 private:

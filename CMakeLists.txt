@@ -4,6 +4,8 @@ project(wwiv)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+include_directories(${CMAKE_SOURCE_DIR})
+
 include(Common)
 include(FindASan)
 

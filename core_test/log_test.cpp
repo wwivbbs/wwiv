@@ -20,7 +20,6 @@
 #include "core/log.h"
 
 #include <map>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -33,7 +32,7 @@ using namespace wwiv::core;
 class TestAppender : public Appender {
 public:
   TestAppender() : Appender() {}
-  virtual bool append(const std::string& message) const {
+  bool append(const std::string& message) override {
     log_lines.push_back(message);
     return true;
   }
@@ -43,7 +42,7 @@ public:
 
 class LogTest : public ::testing::Test {
 protected:
-  virtual void SetUp() { 
+  void SetUp() override { 
     // Clear all of the loggers
     info = std::make_shared<TestAppender>();
     warning = std::make_shared<TestAppender>();
@@ -52,11 +51,11 @@ protected:
     Logger::config().add_appender(LoggerLevel::warning, warning); 
 
     timestamp.assign("2018-01-01 21:12:00,530 ");
-    timestamp_fn fn = [this]() { return timestamp; };
+    const auto fn = [this]() { return timestamp; };
     Logger::config().timestamp_fn_ = fn;
   }
 
-  virtual void TearDown() { Logger::config().reset(); }
+  void TearDown() override { Logger::config().reset(); }
 
   std::shared_ptr<TestAppender> info;
   std::shared_ptr<TestAppender> warning;

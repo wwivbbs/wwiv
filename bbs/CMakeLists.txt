@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(..)
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
 Include(FindWWIVCurses)
