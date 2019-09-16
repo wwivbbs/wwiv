@@ -95,7 +95,7 @@ class Appender {
 public:
   virtual ~Appender() = default;
   Appender(){};
-  virtual bool append(const std::string& message) const = 0;
+  virtual bool append(const std::string& message) = 0;
 };
 
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
@@ -120,8 +120,8 @@ public:
   bool register_file_destinations{true};
   bool register_console_destinations{true};
   log_to_map_t log_to;
-  timestamp_fn timestamp_fn_;
   logdir_fn logdir_fn_;
+  timestamp_fn timestamp_fn_;
 };
 
 class NullLogger {
@@ -176,7 +176,7 @@ public:
 
 private:
   static void StartupLog(int argc, char* argv[]);
-  std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg);
+  std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) const noexcept;
   static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;

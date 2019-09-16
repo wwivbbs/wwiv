@@ -20,10 +20,7 @@
 
 #include <chrono>
 #include <cstdlib>
-#include <ctime>
-#include <fstream>
 #include <functional>
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -46,8 +43,7 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 static constexpr char log_date_format[] = "%F %T";
 
@@ -56,7 +52,7 @@ static std::shared_ptr<Appender> logfile_appender;
 LoggerConfig Logger::config_;
 
 class ConsoleAppender : public Appender {
-  virtual bool append(const std::string& message) const {
+  bool append(const std::string& message) override {
     std::cerr << message << std::endl;
     return true;
   }
@@ -65,7 +61,8 @@ class ConsoleAppender : public Appender {
 class LogFileAppender : public Appender {
 public:
   LogFileAppender(const std::string& fn) : filename_(fn) {}
-  virtual bool append(const std::string& message) const {
+
+  bool append(const std::string& message) override {
     // Not super performant, but we'll start here and see how far this
     // gets us.
     if (message.empty()) {
@@ -84,7 +81,7 @@ private:
   const std::string filename_;
 };
 
-const std::string FormatLogLevel(LoggerLevel l, int v) {
+static std::string FormatLogLevel(LoggerLevel l, int v) {
   if (l == LoggerLevel::verbose) {
     return StrCat("VER-", v);
   }
@@ -101,7 +98,7 @@ const std::string FormatLogLevel(LoggerLevel l, int v) {
   return map.at(l);
 }
 
-std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) {
+std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) const noexcept {
   return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
 }
 
@@ -115,8 +112,8 @@ Logger::~Logger() {
   }
   const auto msg = FormatLogMessage(level_, verbosity_, ss_.str());
   const auto& appenders = config_.log_to[level_];
-  for (auto appender : appenders) {
-    appender->append(msg);
+  for (auto a : appenders) {
+    a->append(msg);
   }
   if (level_ == LoggerLevel::fatal) {
     abort();
@@ -133,13 +130,13 @@ bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; 
 
 // static
 void Logger::StartupLog(int argc, char* argv[]) {
-  DateTime dt = DateTime::now();
+  const auto dt = DateTime::now();
   LOG(STARTUP) << config_.exit_filename << " version " << wwiv_version << beta_version << " ("
                << wwiv_date << ")";
   LOG(STARTUP) << config_.exit_filename << " starting at " << dt.to_string();
   if (argc > 1) {
     string cmdline;
-    for (int i = 1; i < argc; i++) {
+    for (auto i = 1; i < argc; i++) {
       cmdline += argv[i];
       cmdline += " ";
     }
@@ -149,7 +146,7 @@ void Logger::StartupLog(int argc, char* argv[]) {
 
 // static
 void Logger::ExitLogger() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   LOG(STARTUP) << config_.exit_filename << " exiting at " << dt.to_string();
 }
 
@@ -179,7 +176,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
   }
-  auto last_slash = filename.rfind(File::pathSeparatorChar);
+  const auto last_slash = filename.rfind(File::pathSeparatorChar);
   if (last_slash != string::npos) {
     filename = filename.substr(last_slash + 1);
   }
@@ -235,5 +232,4 @@ void LoggerConfig::reset() {
   timestamp_fn_ = DefaultTimestamp;
 }
 
-} // namespace core
 } // namespace wwiv
