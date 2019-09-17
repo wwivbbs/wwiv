@@ -19,13 +19,12 @@
 #ifndef __INCLUDED_WTEXTFILE_H__
 #define __INCLUDED_WTEXTFILE_H__
 
-#include <cstdio>
-#include <string>
-#include <sstream>
-#include <vector>
-
-#include <filesystem>
 #include "core/wwivport.h"
+#include <cstdio>
+#include <filesystem>
+#include <sstream>
+#include <string>
+#include <vector>
 
 typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
 

@@ -191,8 +191,7 @@ static time_t mktime_no_dst_changes(tm* t) noexcept {
   auto t2{*t};
   mktime(&t2);
   t->tm_isdst = t2.tm_isdst;
-  auto now = mktime(t); 
-  return now;
+  return mktime(t); 
 }
 
 DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), tm_(*t) , millis_(0) {}
