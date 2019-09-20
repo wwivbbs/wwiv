@@ -23,19 +23,6 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
-#ifdef _WIN32
-#include "sys/utime.h"
-#include <direct.h>
-#include <io.h>
-#include <share.h>
-
-#else
-#include <sys/file.h>
-#include <unistd.h>
-#include <utime.h>
-
-#endif // _WIN32
-
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -50,6 +37,19 @@
 #include "core/wwivassert.h"
 
 #ifdef _WIN32
+#include "sys/utime.h"
+#include <direct.h>
+#include <io.h>
+#include <share.h>
+
+#else
+#include <sys/file.h>
+#include <unistd.h>
+#include <utime.h>
+#endif // _WIN32
+
+#ifdef _WIN32
+#include "core/wwiv_windows.h"
 
 #if !defined(ftruncate)
 #define ftruncate chsize

@@ -24,7 +24,7 @@
 namespace wwiv {
 namespace core {
 
-class ScopeExit {
+class ScopeExit final {
 public:
   ScopeExit() noexcept {}
   explicit ScopeExit(std::function<void()> fn) : fn_(fn) {}

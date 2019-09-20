@@ -20,7 +20,8 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
-#include "core/wwiv_windows.h"
+#include <any>
+#include <memory>
 #include <string>
 
 /**
@@ -55,9 +56,10 @@ protected:
     open_ = false;
   }
 
-#if defined (_WIN32)
-  WIN32_FIND_DATA ffdata{};
-  HANDLE  hFind = nullptr;
+#if defined(_WIN32)
+  typedef void* HANDLE;
+  std::any ffdata_;
+  HANDLE hFind{nullptr};
 #elif defined ( __unix__ )
   struct dirent **entries = nullptr;
   int nMatches = 0;

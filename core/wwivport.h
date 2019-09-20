@@ -20,30 +20,6 @@
 #ifndef __INCLUDED_PLATFORM_WWIVPORT_H__
 #define __INCLUDED_PLATFORM_WWIVPORT_H__
 
-#if !defined(__unix__) && !defined(_WIN32) && defined(__APPLE__) && defined(__MACH__)
-#define __unix__
-#endif
-
-// TODO(rushfan): This whole thing probably needs to be redone.
-#if defined(_MSC_VER)
-// Enable SAL attributes.
-#ifndef _USE_ATTRIBUTES_FOR_SAL
-#define _USE_ATTRIBUTES_FOR_SAL 1
-#endif // _USE_ATTRIBUTES_FOR_SAL
-
-#if (_MSC_VER < 1922)
-// See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-#error "Visual Studio 2017 version 16.2.0 or later is required"
-#endif // _MSC_VER < 1922
-
-#endif // _MSC_VER
-
-#if defined(__GNUC__) && !defined(__clang__)
-#if (__GNUC__ < 8)
-#error "GNC C++ 8.3 or later is required"
-#endif // __GNUC__ < 8
-#endif // __GNUC__
-
 // WWIV's daten type is a 32-bit unsigned int. It can never be used for date
 // arithemetic since negative values don't exist.  This will allow us to
 // truncate a 64-bit time_t value for use till 2106.
@@ -53,16 +29,32 @@ typedef uint32_t daten_t;
 #define DATEN_T_DEFINED
 #endif
 
-#ifdef _MSC_VER
+#if !defined(__unix__) && !defined(_WIN32) && defined(__APPLE__) && defined(__MACH__)
+#define __unix__
+#endif
+
+#if defined(_MSC_VER)
+#if (_MSC_VER < 1922)
+// See https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
+#error "Visual Studio 2017 version 16.2.0 or later is required"
+#endif // _MSC_VER < 1922
+
 #ifdef _WIN64
 typedef int64_t ssize_t;
 #else
 typedef int32_t ssize_t;
 #endif // _WIN64
-#endif // MSVC
 
 #ifdef _WIN32
 typedef int pid_t;
 #endif // _WIN32
+
+#endif // _MSC_VER
+
+#if defined(__GNUC__) && !defined(__clang__)
+#if (__GNUC__ < 8)
+#error "GNC C++ 8.3 or later is required"
+#endif // __GNUC__ < 8
+#endif // __GNUC__
 
 #endif // __INCLUDED_PLATFORM_WWIVPORT_H__

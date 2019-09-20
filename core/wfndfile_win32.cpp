@@ -19,38 +19,40 @@
 #include "core/wfndfile.h"
 
 #include "core/strings.h"
+#include "core/wwiv_windows.h"
 
 bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) {
+  ffdata_ = WIN32_FIND_DATA{};
   __open(file_spec, nTypeMask);
 
-  hFind = FindFirstFile(file_spec.c_str(), &ffdata);
+  hFind = FindFirstFile(file_spec.c_str(), &std::any_cast<WIN32_FIND_DATA>(ffdata_));
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
 
-  if (ffdata.cAlternateFileName[0] == '\0') {
-    filename_ = ffdata.cFileName;
+  if (std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName[0] == '\0') {
+    filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cFileName;
   } else {
-    filename_ = ffdata.cAlternateFileName;
+    filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName;
   }
-  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
   return true;
 }
 
 bool WFindFile::next() {
-  if (!FindNextFile(hFind, &ffdata)) {
+  if (!FindNextFile(hFind, &std::any_cast<WIN32_FIND_DATA>(ffdata_))) {
     return false;
   }
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
 
-  if (ffdata.cAlternateFileName[0] == '\0') {
-    filename_ = ffdata.cFileName;
+  if (std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName[0] == '\0') {
+    filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cFileName;
   } else {
-    filename_ = ffdata.cAlternateFileName;
+    filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName;
   }
-  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
   return true;
 }
 
@@ -65,5 +67,5 @@ bool WFindFile::IsDirectory() const {
 }
 
 bool WFindFile::IsFile() const {
-  return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
+  return (std::any_cast<WIN32_FIND_DATA>(ffdata_).dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }
