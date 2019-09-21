@@ -20,15 +20,14 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "file_helper.h"
+#include "fmt/format-inl.h"
 #include "gtest/gtest.h"
-
 #include <iostream>
 #include <string>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
-namespace fs = std::filesystem;
 
 TEST(FileTest, DoesNotExist) {
   FileHelper file;
@@ -180,9 +179,9 @@ TEST(FileTest, GetName) {
 }
 
 TEST(FileTest, EnsureTrailingSlash) {
-  const auto single_slash = StringPrintf("temp%c", File::pathSeparatorChar);
+  const auto single_slash = fmt::format("temp{}", File::pathSeparatorChar);
   const auto double_slash =
-      StringPrintf("temp%c%c", File::pathSeparatorChar, File::pathSeparatorChar);
+      fmt::format("temp{}{}", File::pathSeparatorChar, File::pathSeparatorChar);
   const string no_slash = "temp";
 
   EXPECT_EQ(single_slash, File::EnsureTrailingSlash(single_slash));
@@ -353,7 +352,6 @@ TEST(FileTest, CurrentPosition) {
 }
 
 TEST(FileTest, FsCopyFile) {
-  namespace fs = std::filesystem;
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
@@ -368,12 +366,11 @@ TEST(FileTest, FsCopyFile) {
   auto to = PathFilePath(tmp, "f2");
   std::error_code ec;
   EXPECT_FALSE(File::Exists(to.string()));
-  std::filesystem::copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
+  copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
   EXPECT_TRUE(File::Exists(to.string()));
 }
 
 TEST(FileTest, CopyFile) {
-  namespace fs = std::filesystem;
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);

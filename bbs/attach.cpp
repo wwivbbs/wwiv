@@ -36,6 +36,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
@@ -318,9 +319,10 @@ void attach_file(int mode) {
                         }
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
-                        const string to_user_name = a()->names()->UserName(m.touser);
-                        sysoplog() << StringPrintf("Attached %s (%u bytes) in message to %s",
-                                       fsr.filename, fsr.numbytes, to_user_name.c_str());
+                        const auto to_user_name = a()->names()->UserName(m.touser);
+                        sysoplog()
+                            << fmt::sprintf("Attached %s (%u bytes) in message to %s", fsr.filename,
+                                            fsr.numbytes, to_user_name.c_str());
                         bout << "File attached.\r\n" ;
                       }
                     } else {

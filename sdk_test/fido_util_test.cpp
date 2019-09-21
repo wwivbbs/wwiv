@@ -20,11 +20,10 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_util.h"
 #include "gtest/gtest.h"
-
-#include <cstdint>
 #include <ctime>
 #include <memory>
 #include <string>
@@ -38,7 +37,7 @@ using namespace wwiv::sdk::fido;
 
 class FidoUtilTest : public testing::Test {
 public:
-  FidoUtilTest() {}
+  FidoUtilTest() = default;
 
 protected:
   FileHelper helper_;
@@ -46,19 +45,18 @@ protected:
 
 TEST_F(FidoUtilTest, PacketName) {
   auto dt = DateTime::now();
-  auto now = dt.to_time_t();
-  auto tm = dt.to_tm();
-  string actual = packet_name(dt);
+  const auto tm = dt.to_tm();
+  const auto actual = packet_name(dt);
 
-  string expected =
-      StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+  const auto expected =
+      fmt::sprintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(FidoUtilTest, BundleName_Extension) {
   FidoAddress source("1:105/6");
   FidoAddress dest("1:105/42");
-  string actual = bundle_name(source, dest, "su0");
+  const auto actual = bundle_name(source, dest, "su0");
 
   EXPECT_EQ("0000ffdc.su0", actual);
 }
@@ -258,7 +256,7 @@ public:
 TEST_F(FidoUtilConfigTest, ExistsBundle) {
   net_networks_rec net;
   to_char_array(net.name, "testnet");
-  files_.Mkdir("bbs/net");
+  ASSERT_TRUE(files_.Mkdir("bbs/net"));
   net.dir = files_.DirName("bbs/net");
 
   EXPECT_FALSE(exists_bundle(*config_, net));

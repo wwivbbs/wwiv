@@ -18,9 +18,6 @@
 /**************************************************************************/
 #include "bbsovl1.h"
 
-#include <sstream>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -37,16 +34,19 @@
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
-#include "sdk/names.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <sstream>
+#include <string>
 
 using std::string;
 using namespace wwiv::bbs;
@@ -228,7 +228,7 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     auto title =
-        StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
+        fmt::sprintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
                      a()->config()->max_users() - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04

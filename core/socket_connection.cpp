@@ -21,7 +21,6 @@
 #include <cstring>
 #include <iostream>
 #include <thread>
-
 #ifdef _WIN32
 #include <WS2tcpip.h>
 #include <WinSock2.h>
@@ -36,7 +35,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 #endif // _WIN32
 
 #include "core/log.h"
@@ -44,6 +42,7 @@
 #include "core/os.h"
 #include "core/socket_exceptions.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 
 using std::endl;
 using std::string;
@@ -234,7 +233,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
 int SocketConnection::receive(void* data, const int size, duration<double> d) {
   const auto num_read = read_TYPE<void, 0>(sock_, data, d, true, size);
   if (open_ && num_read == 0) {
-    throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
+    throw socket_closed_error(fmt::sprintf("receive: got zero read from socket. expected: ", size));
   }
   return num_read;
 }

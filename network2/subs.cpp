@@ -17,47 +17,27 @@
 /**************************************************************************/
 #include "network2/subs.h"
 
-// WWIV5 Network2
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "fmt/printf.h"
+#include "network2/context.h"
+#include "sdk/config.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
+#include "sdk/subscribers.h"
+#include "sdk/subxtr.h"
 #include <iostream>
 #include <iterator>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/os.h"
-#include "core/textfile.h"
-#include "core/connection.h"
-#include "net_core/net_cmdline.h"
-#include "sdk/net/packets.h"
-#include "network2/context.h"
-#include "network2/email.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/callout.h"
-#include "sdk/connect.h"
-#include "sdk/config.h"
-#include "sdk/contact.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
-#include "sdk/networks.h"
-#include "sdk/subscribers.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 using std::cout;
 using std::endl;
@@ -77,9 +57,7 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
-namespace network2 {
+namespace wwiv::net::network2 {
 
 struct sub_info_t {
   std::string stype;
@@ -89,7 +67,7 @@ struct sub_info_t {
 };
 
 static string to_string(sub_info_t& s, uint16_t system_number) {
-  return StringPrintf("%-7s %5u %-5s %s~%u", s.stype.c_str(), system_number, s.flags.c_str(), s.description.c_str(), s.category);
+  return fmt::sprintf("%-7s %5u %-5s %s~%u", s.stype.c_str(), system_number, s.flags.c_str(), s.description.c_str(), s.category);
 }
 
 static std::vector<string> create_sub_info(Context& context) {
@@ -150,10 +128,10 @@ static string SubTypeFromText(const std::string& text) {
 }
 
 static bool send_sub_add_drop_resp(Context& context, 
-  net_header_rec orig,
-  uint8_t main_type, uint8_t code,
-  const std::string& subtype,
-  const std::string& response_file_text) {
+                                   net_header_rec orig,
+                                   uint8_t main_type, uint8_t code,
+                                   const std::string& subtype,
+                                   const std::string& response_file_text) {
   net_header_rec nh = {};
   nh.daten = daten_t_now();
   nh.fromsys = orig.tosys;
@@ -178,7 +156,7 @@ static bool send_sub_add_drop_resp(Context& context,
   // Add the text that probably came from a SA or SR  + subtype + .net file.
   text.append(response_file_text);
 
-  nh.length = text.size();  // should be subtype.size() + 2
+  nh.length = text.size(); // should be subtype.size() + 2
   const auto pendfile = create_pend(context.net.dir, false, '2');
   Packet packet(nh, {}, std::move(text));
   return write_wwivnet_packet(pendfile, context.net, packet);
@@ -276,7 +254,8 @@ static string SubAddDropResponseMessage(uint8_t code) {
   case sub_adddrop_not_host: return "This system is not the host";
   case sub_adddrop_not_there: return "You were not subscribed to the sub";
   case sub_adddrop_ok: return "Add or Drop successful";
-  default: return StringPrintf("Unknown response code %d", code);
+  default:
+    return fmt::format("Unknown response code {}", code);
   }
 
 }
@@ -356,6 +335,4 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
 }
 
 
-}
-}
 }

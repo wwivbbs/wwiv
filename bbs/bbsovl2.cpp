@@ -18,17 +18,16 @@
 /**************************************************************************/
 #include "bbs/bbsovl2.h"
 
-#include <chrono>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/confutil.h"
 #include "bbs/utility.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/names.h"
+#include <chrono>
+#include <string>
 
 using std::string;
 using std::chrono::milliseconds;
@@ -202,7 +201,7 @@ void OnlineUserEditor() {
       a()->localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetGold(static_cast<float>(atof(gold)));
       sprintf(gold, "%7.2f", a()->user()->GetGold());
-      a()->localIO()->Puts(StringPrintf("%-5s", gold));
+      a()->localIO()->Puts(fmt::sprintf("%-5s", gold));
       break;
     case 10:
       a()->localIO()->GotoXY(wx + 22, wy + 8);

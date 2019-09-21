@@ -18,39 +18,35 @@
 /**************************************************************************/
 #include "bbs/email.h"
 
-#include <chrono>
-#include <memory>
-#include <string>
-
 #include "bbs/attach.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
-#include "bbs/instmsg.h"
-#include "bbs/inmsg.h"
 #include "bbs/inetmsg.h"
+#include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
-#include "bbs/read_message.h"
-#include "bbs/sysoplog.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "bbs/quote.h"
-#include "local_io/wconstants.h"
-#include "bbs/workspace.h"
-#include "sdk/status.h"
+#include "bbs/sysoplog.h"
+#include "core/datetime.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <chrono>
+#include <memory>
+#include <string>
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
@@ -579,16 +575,16 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           set_net_num(carbon_copy[j].net_num);
           if (wwiv::stl::size_int(a()->net_networks) > 1) {
             if (carbon_copy[j].user_number == 0) {
-              destination = StringPrintf("%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
+              destination = fmt::sprintf("%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
                       carbon_copy[j].net_name);
             } else {
-              destination = StringPrintf("#%u@%u.%s", carbon_copy[j].user_number, carbon_copy[j].system_number, carbon_copy[j].net_name);
+              destination = fmt::sprintf("#%u@%u.%s", carbon_copy[j].user_number, carbon_copy[j].system_number, carbon_copy[j].net_name);
             }
           } else {
             if (carbon_copy[j].user_number == 0) {
-              destination = StringPrintf("%s@%u", carbon_copy[j].net_email_name, carbon_copy[j].system_number);
+              destination = fmt::sprintf("%s@%u", carbon_copy[j].net_email_name, carbon_copy[j].system_number);
             } else {
-              destination = StringPrintf("#%u@%u", carbon_copy[j].user_number, carbon_copy[j].system_number);
+              destination = fmt::sprintf("#%u@%u", carbon_copy[j].user_number, carbon_copy[j].system_number);
             }
           }
         }

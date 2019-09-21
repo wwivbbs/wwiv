@@ -16,34 +16,30 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <map>
-#include <set>
-#include <string>
-
-#include "bbs/input.h"
-#include "bbs/datetime.h"
-#include "bbs/dropfile.h"
-#include "bbs/multinst.h"
-#include "bbs/mmkey.h"
+#include "sdk/chains.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/com.h"
+#include "bbs/dropfile.h"
 #include "bbs/execexternal.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/mmkey.h"
+#include "bbs/multinst.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
-#include "core/datafile.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/format.h"
-#include "sdk/chains.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
-#include "sdk/usermanager.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include <algorithm>
+#include <map>
+#include <set>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -57,13 +53,13 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
   const std::string regname = (is_regged) ? user.GetName() : "Available";
   if (ansi) {
     bout.bpla(
-        StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+        fmt::sprintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                      FRAME_COLOR, chain_num, FRAME_COLOR, c.description.c_str(), FRAME_COLOR,
                      (is_regged) ? 14 : 13, regname.c_str(), FRAME_COLOR, c.usage, FRAME_COLOR),
         &abort);
   
   } else {
-    bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description.c_str(),
+    bout.bpla(fmt::sprintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description.c_str(),
                            regname.c_str(), c.usage),
               &abort);
   }
@@ -80,11 +76,11 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
       continue;
     }
     if (ansi) {
-      bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
+      bout.bpla(fmt::sprintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3", FRAME_COLOR, " ",
                              user.GetName(), FRAME_COLOR, " "),
                 &abort);
     } else {
-      bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
+      bout.bpla(fmt::sprintf(" |   |                                         |%-21.21s|     |",
                              rb ? user.GetName() : "Available"),
                 &abort);
     }
@@ -100,34 +96,34 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bool abort = false;
   bool next = false;
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && a()->chains->HasRegisteredChains()) {
-    bout.bpla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
+    bout.bpla(fmt::sprintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
-      bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR,
+      bout.bpla(fmt::sprintf("|#%d %s", FRAME_COLOR,
               "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF"), &abort);
     } else {
-      bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
       const auto& c = a()->chains->at(map[i]);
       show_chain(c, okansi(), i+1, abort);
     }
     if (okansi()) {
-      bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
+      bout.bpla(fmt::sprintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
     } else {
-      bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
-      bout.bputs(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description.c_str()), &abort, &next);
+      bout.bputs(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description.c_str()), &abort, &next);
       i++;
       if (!abort && !a()->hangup_) {
         if (i >= *mapp) {
-          bout.bpla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
+          bout.bpla(fmt::sprintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          bout.bpla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
+          bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
                                  a()->chains->at(map[i]).description.c_str()),
                     &abort);
         }

@@ -24,9 +24,7 @@
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/events.h"
-#include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
-#include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
@@ -37,16 +35,14 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
-#include "core/wwivport.h"
+#include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
@@ -55,7 +51,6 @@
 #include "sdk/usermanager.h"
 #include <algorithm>
 #include <chrono>
-#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -721,9 +716,9 @@ void Application::InitializeBBS() {
   network_extension_ = ".net";
   const auto wwiv_instance = environment_variable("WWIV_INSTANCE");
   if (!wwiv_instance.empty()) {
-    int inst_num = to_number<int>(wwiv_instance);
+    const auto inst_num = to_number<int>(wwiv_instance);
     if (inst_num > 0) {
-      network_extension_ = StringPrintf(".%3.3d", inst_num);
+      network_extension_ = fmt::sprintf(".%3.3d", inst_num);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the
       // -n<instance> parameter it sets the WWIV_INSTANCE environment variable, however it wasn't
       // doing the reverse.

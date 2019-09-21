@@ -16,17 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
-#include "bbs/com.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -60,7 +60,7 @@ std::string ctypes(int num) {
 
   IniFile iniFile(PathFilePath(a()->bbsdir(), WWIV_INI), {"CTYPES"});
   if (iniFile.IsOpen()) {
-    return iniFile.value<string>(StringPrintf("COMP_TYPE[%d]", num + 1));
+    return iniFile.value<string>(fmt::format("COMP_TYPE[{}]", num + 1));
   }
   if (num < 0 || num > size_int(default_ctypes)) {
     return "";

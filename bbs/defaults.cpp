@@ -22,7 +22,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsovl3.h"
@@ -50,7 +49,7 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
-
+#include "fmt/printf.h"
 
 using std::setw;
 using std::endl;
@@ -109,7 +108,7 @@ static string GetMailBoxStatus() {
   }
   if (a()->user()->GetForwardSystemNumber() != 0) {
     if (a()->user()->IsMailboxForwarded()) {
-      return StringPrintf("Forward to #%u @%u.%s.",
+      return fmt::sprintf("Forward to #%u @%u.%s.",
               a()->user()->GetForwardUserNumber(),
               a()->user()->GetForwardSystemNumber(),
               a()->net_networks[ a()->user()->GetForwardNetNumber() ].name);
@@ -137,7 +136,7 @@ static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
   bout << left;
-  const string screen_size = StringPrintf("%d X %d", 
+  const string screen_size = fmt::sprintf("%d X %d", 
       a()->user()->GetScreenChars(),
       a()->user()->GetScreenLines());
   const string ansi_setting = (a()->user()->HasAnsi() ?
@@ -185,7 +184,7 @@ static void print_cur_stat() {
 
   string wwiv_regnum = "(None)";
   if (a()->user()->GetWWIVRegNumber()) {
-    wwiv_regnum = StringPrintf("%ld", a()->user()->GetWWIVRegNumber());
+    wwiv_regnum = fmt::sprintf("%ld", a()->user()->GetWWIVRegNumber());
   }
   bout << "|#1U|#9) Use Msg AutoQuote : |#2" << setw(16) << YesNoString(a()->user()->IsUseAutoQuote()) << " "
        << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
@@ -384,7 +383,7 @@ void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
-    bout.bpla(StringPrintf("%c %s. %s",
+    bout.bpla(fmt::sprintf("%c %s. %s",
                            (a()->context().qsc_q[a()->usub[i].subnum / 32] &
                             (1L << (a()->usub[i].subnum % 32)))
                                ? '*'
@@ -895,7 +894,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     for (size_t this_sub = first; (this_sub < a()->subs().subs().size()) && (a()->usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
       bout.clear_lines_listed();
-      auto s = StringPrintf("|#7[|#1%c|#7] |#9%s",
+      auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
               (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               a()->subs().sub(a()->usub[this_sub].subnum).name.c_str());
       s[44] = '\0';
@@ -913,7 +912,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
          *amount < max_lines * 2; this_dir++) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
-      auto s = StringPrintf("|#7[|#1%c|#7] |#2%s",
+      auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
                             a()->context().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
                                                                                             : ' ',
         a()->directories[alias_dir].name);
@@ -969,7 +968,7 @@ static long is_inscan(int dir) {
   }
 
   for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-    const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
+    const string key = fmt::sprintf("%d", (sysdir ? dir : (dir + 1)));
     if (key == a()->udir[this_dir].keys) {
       int16_t ad = a()->udir[this_dir].subnum;
       return (a()->context().qsc_n[ad / 32] & (1L << ad % 32));
@@ -1082,7 +1081,7 @@ void config_scan_plus(int type) {
         else {
           bool sysdir = IsEquals(a()->udir[0].keys, "0");
           for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-            const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+            const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
               a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
@@ -1130,7 +1129,7 @@ void config_scan_plus(int type) {
           } else {
             bool sysdir = IsEquals(a()->udir[0].keys, "0");
             for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-              const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+              const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
                 a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));

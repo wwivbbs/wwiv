@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/dropfile.h"
 
-#include <algorithm>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/datetime.h"
@@ -30,9 +26,13 @@
 #include "bbs/utility.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include <algorithm>
+#include <memory>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -147,8 +147,8 @@ void CreateDoorInfoDropFile() {
     f.WriteLine(a()->config()->system_name());
     f.WriteLine(a()->config()->sysop_name());
     f.WriteLine();
-    f.WriteLine(StringPrintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
-    f.WriteLine(StringPrintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
+    f.WriteLine(fmt::sprintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
+    f.WriteLine(fmt::sprintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
     f.WriteLine("0");
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       char szTemp[81];

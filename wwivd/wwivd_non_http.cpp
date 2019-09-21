@@ -18,7 +18,6 @@
 #include "wwivd/wwivd_non_http.h"
 
 #include "core/file.h"
-#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
@@ -27,22 +26,19 @@
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/ansi/makeansi.h"
 #include "sdk/config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 #include "wwivd/wwivd.h"
 #include <cctype>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 using std::map;
 using std::string;
@@ -106,11 +102,11 @@ const std::filesystem::path node_file(const Config& config, ConnectionType ct, i
 
 static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,
                        int node_number, int sock, ConnectionType connection_type,
-                       const string remote_peer) {
-  auto pid = StringPrintf("[%d] ", get_pid());
+                       const string& remote_peer) {
+  const auto pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
-  map<char, string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
+  const map<char, string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
 
   // Reset the socket back to blocking mode
   VLOG(2) << "Setting blocking mode.";
@@ -118,8 +114,8 @@ static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> 
     LOG(ERROR) << "Failed to reset the socket to blocking mode.";
   }
 
-  const string cmd = CreateCommandLine(raw_cmd, params);
-  bool result = ExecCommandAndWait(cmd, pid, node_number, sock);
+  const auto cmd = CreateCommandLine(raw_cmd, params);
+  const bool result = ExecCommandAndWait(cmd, pid, node_number, sock);
 
   nodes->ReleaseNode(node_number);
 
@@ -134,10 +130,9 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
     VLOG(2) << "closed socket: " << sock;
   });
 
-  auto pid = StringPrintf("[%d] ", get_pid());
+  const auto pid = fmt::format("[{}] ", get_pid());
   VLOG(1) << pid << "launching node(" << node_number << ")";
-  const auto sem_text =
-      StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
+  const auto sem_text = fmt::format("Created by pid: {}\nremote peer: {}", pid, remote_peer);
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
@@ -330,7 +325,7 @@ void ConnectionHandler::HandleBinkPConnection() {
     auto& nodemgr = data.nodes->at("BINKP");
     int node = -1;
     if (nodemgr->AcquireNode(node)) {
-      ScopeExit at_exit([=] {
+      ScopeExit at_exit2([=] {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
@@ -379,7 +374,6 @@ void ConnectionHandler::HandleConnection() {
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
       LOG(INFO) << "Blocked by concurrent limit..";
-      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
@@ -399,7 +393,6 @@ void ConnectionHandler::HandleConnection() {
 
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.
-      SocketConnection conn(r.client_socket);
       LOG(ERROR) << "No BBSes defined in wwivconfig for the Matrix.";
       conn.send_line("No BBSes defined in wwivconfig for the Matrix.  Please tell the SysOp.",
                      std::chrono::seconds(1));
@@ -417,7 +410,6 @@ void ConnectionHandler::HandleConnection() {
 
     if (!contains(*data.nodes, bbs.name)) {
       // HOW???
-      SocketConnection conn(r.client_socket);
       conn.send_line(StrCat("Can't find config for bbs: ", bbs.name), std::chrono::seconds(1));
       return;
     }
@@ -432,7 +424,6 @@ void ConnectionHandler::HandleConnection() {
     } else {
       using namespace std::chrono_literals;
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       VLOG(1) << "Exiting HandleConnection (busy)";
     }
@@ -445,5 +436,4 @@ void HandleConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleConnectio
 
 void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleBinkPConnection(); }
 
-} // namespace wwivd
 } // namespace wwiv

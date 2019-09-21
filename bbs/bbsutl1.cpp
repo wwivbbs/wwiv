@@ -38,7 +38,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
-#include "core/wwivport.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 
@@ -402,7 +402,7 @@ string describe_area_code(int nAreaCode) {
  */
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
-  const auto filename = StringPrintf("%s.%-3d", REGIONS_DIR, nAreaCode);
+  const auto filename = fmt::sprintf("%s.%-3d", REGIONS_DIR, nAreaCode);
   TextFile file(PathFilePath(regions_dir, filename), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file

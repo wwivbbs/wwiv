@@ -17,26 +17,23 @@
 /**************************************************************************/
 #include "sdk/names.h"
 
-#include <algorithm>
-#include <exception>
-#include <stdexcept>
-#include <string>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+#include <algorithm>
+#include <string>
 
 using std::endl;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 Names::Names(const wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
   loaded_ = Load();
@@ -48,35 +45,34 @@ static smalrec smalrec_for(uint32_t user_number, const std::vector<smalrec>& nam
       return n;
     }
   }
-  return smalrec{"", 0};
+  return {"", 0};
 }
 
 std::string Names::UserName(uint32_t user_number) const {
-  smalrec sr = smalrec_for(user_number, names_);
+  auto sr = smalrec_for(user_number, names_);
   if (sr.number == 0) {
     return "";
   }
-  string name = properize(string(reinterpret_cast<char*>(sr.name)));
-  return StringPrintf("%s #%u", name.c_str(), user_number);
+  const auto name = properize(string(reinterpret_cast<char*>(sr.name)));
+  return fmt::format("{} #{}", name, user_number);
 }
 
 std::string Names::UserName(uint32_t user_number, uint32_t system_number) const {
-  const string base = UserName(user_number);
+  const auto base = UserName(user_number);
   if (base.empty()) {
     return "";
   }
-  return StringPrintf("%s @%u", base.c_str(), system_number);
+  return fmt::format("{} @{}", base, system_number);
 }
 
 bool Names::Add(const std::string name, uint32_t user_number) {
-  string upper_case_name(name);
-  StringUpperCase(&upper_case_name);
+  const auto upper_case_name = ToStringUpperCase(name);
   auto it = names_.begin();
   for (; it != names_.end()
-    && StringCompare(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name)) > 0;
-    it++) {
+         && StringCompare(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name)) > 0;
+         ++it) {
   }
-  smalrec sr;
+  smalrec sr{};
   strcpy(reinterpret_cast<char*>(sr.name), upper_case_name.c_str());
   sr.number = static_cast<uint16_t>(user_number);
   names_.insert(it, sr);
@@ -89,14 +85,14 @@ bool Names::Remove(uint32_t user_number) {
     return false;
   }
 
-  string upper_case_name(name);
+  auto upper_case_name(name);
   StringUpperCase(&upper_case_name);
   auto it = names_.begin();
   for (; it != names_.end()
-    && StringCompare(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name)) > 0;
-    it++) {
+         && StringCompare(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name)) > 0;
+         ++it) {
   }
-  if (!wwiv::strings::IsEquals(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name))) {
+  if (!IsEquals(upper_case_name.c_str(), reinterpret_cast<char*>((*it).name))) {
     return false;
   }
   names_.erase(it);
@@ -149,5 +145,4 @@ Names::~Names() {
   Save();
 }
 
-}
 }

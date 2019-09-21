@@ -23,6 +23,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -169,11 +170,11 @@ void extrn_prots(const std::string& datadir) {
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    items.emplace_back(StringPrintf("2. XModem (Internal)"), 0, 2);
-    items.emplace_back(StringPrintf("X. XModem CRC (Internal)"), 0, 3);
-    items.emplace_back(StringPrintf("Y. YModem (Internal)"), 0, 4);
+    items.emplace_back("2. XModem (Internal)", 0, 2);
+    items.emplace_back("X. XModem CRC (Internal)", 0, 3);
+    items.emplace_back("Y. YModem (Internal)", 0, 4);
     for (size_t i = 0; i < externs.size(); i++) {
-      items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
+      items.emplace_back(fmt::format("{}. {} (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(out->window());
     ListBox list(window, "Select Protocol", items);
@@ -187,12 +188,12 @@ void extrn_prots(const std::string& datadir) {
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
-        if (externs.size() > 0) {
+        if (!externs.empty()) {
           if (items[result.selected].data() < 6) {
             messagebox(out->window(), "You can only delete external protocols.");
             break;
           }
-          string prompt = StringPrintf("Delete '%s' ?", items[result.selected].text().c_str());
+          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text().c_str());
           bool yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
@@ -206,7 +207,7 @@ void extrn_prots(const std::string& datadir) {
           messagebox(out->window(), "Too many external protocols.");
           break;
         }
-        string prompt = StringPrintf("Insert before which (6-%d) ? ", max_protocol_number + 1);
+        string prompt = fmt::format("Insert before which (6-{}) ? ", max_protocol_number + 1);
         size_t pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
         if (pos >= 6 && pos <= externs.size() + 6) {
           size_t extern_pos = pos - 6;
@@ -219,7 +220,7 @@ void extrn_prots(const std::string& datadir) {
           }
           edit_prot(externs, over_interns, pos);
         } else {
-          messagebox(out->window(), StringPrintf("Invalid entry: %d", pos));
+          messagebox(out->window(), fmt::format("Invalid entry: {}", pos));
         }
       } break;
       }

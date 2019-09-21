@@ -28,6 +28,7 @@
 #include "core/strings.h"
 #include "core/version.cpp"
 #include "core/wwivport.h"
+#include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -71,7 +72,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (int i = 1; i <= num_instances; i++) {
-    auto instance_tag = StringPrintf("WWIV-%u", i);
+    auto instance_tag = fmt::format("WWIV-{}", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
     auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
@@ -309,8 +310,8 @@ int WInitApp::main(int argc, char** argv) {
       BooleanCommandLineArgument("user_editor", 'U', "Run the user editor and then exit.", false));
   cmdline.add_argument(
       BooleanCommandLineArgument("menu_editor", 'M', "Run the menu editor and then exit.", false));
-  cmdline.add_argument(
-      BooleanCommandLineArgument("network_editor", 'N', "Run the network editor and then exit.", false));
+  cmdline.add_argument(BooleanCommandLineArgument("network_editor", 'N',
+                                                  "Run the network editor and then exit.", false));
   cmdline.add_argument(
       BooleanCommandLineArgument("4xx", '4', "Only run editors that work on WWIV 4.xx.", false));
   cmdline.add_argument({"menu_dir", "Override the menu directory when using --menu_editor.", ""});
@@ -319,14 +320,14 @@ int WInitApp::main(int argc, char** argv) {
     ShowHelp(cmdline);
     return 0;
   }
-  
+
   auto bbsdir = File::EnsureTrailingSlash(cmdline.bbsdir());
   const bool forced_initialize = cmdline.barg("initialize");
   UIWindow* window;
   if (forced_initialize) {
     window = new StdioWindow(nullptr, new ColorScheme());
   } else {
-    CursesIO::Init(StringPrintf("WWIV %s%s Configuration Program.", wwiv_version, beta_version));
+    CursesIO::Init(fmt::format("WWIV {}{} Configuration Program.", wwiv_version, beta_version));
     window = out->window();
     out->Cls(ACS_CKBOARD);
     window->SetColor(SchemeId::NORMAL);
@@ -379,8 +380,7 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   if (!legacy_4xx_mode &&
-        read_configdat_and_upgrade_datafiles_if_needed(window, config) ==
-        ShouldContinue::EXIT) {
+      read_configdat_and_upgrade_datafiles_if_needed(window, config) == ShouldContinue::EXIT) {
     legacy_4xx_mode = true;
   }
 

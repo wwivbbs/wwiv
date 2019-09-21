@@ -22,6 +22,8 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -108,7 +110,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
         messagebox(window, "Error reading smalrec");
         return -1;
       }
-      items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
+      items.emplace_back(fmt::format("{} #{}", name.name, name.number), 0, name.number);
     }
   }
 
@@ -138,38 +140,35 @@ void user_editor(const wwiv::sdk::Config& config) {
   auto user_name_field =
       new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, EditLineMode::UPPER_ONLY);
   user_name_field->set_displayfn(
-      [&]() -> string { return StringPrintf("%s #%d", user.name, current_usernum); });
+      [&]() -> string { return fmt::format("{} #{}", user.name, current_usernum); });
 
-  auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10,
-                                           [&]() -> string {
-                                             return StringPrintf("%2.2d/%2.2d/%4.4d", user.month,
-                                                                 user.day, user.year + 1900);
-                                           },
-                                           [&](const string& s) {
-                                             if (s[2] != '/' || s[5] != '/') {
-                                               return;
-                                             }
-                                             auto month = to_number<uint8_t>(s.substr(0, 2));
-                                             if (month < 1 || month > 12) {
-                                               return;
-                                             }
-
-                                             auto day = to_number<uint8_t>(s.substr(3, 2));
-                                             if (day < 1 || day > 31) {
-                                               return;
-                                             }
-
-                                             auto year = to_number<int>(s.substr(6, 4));
-                                             auto dt = DateTime::now();
-                                             auto current_year = dt.year();
-                                             if (year < 1900 || year > current_year) {
-                                               return;
-                                             }
-
-                                             user.month = month;
-                                             user.day = day;
-                                             user.year = static_cast<uint8_t>(year - 1900);
-                                           });
+  auto birthday_field = new CustomEditItem(
+      COL1_POSITION, 9, 10,
+      [&]() -> string {
+        return fmt::sprintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
+      },
+      [&](const string& s) {
+        if (s[2] != '/' || s[5] != '/') {
+          return;
+        }
+        const auto month = to_number<uint8_t>(s.substr(0, 2));
+        if (month < 1 || month > 12) {
+          return;
+        }
+        const auto day = to_number<uint8_t>(s.substr(3, 2));
+        if (day < 1 || day > 31) {
+          return;
+        }
+        const auto year = to_number<int>(s.substr(6, 4));
+        const auto dt = DateTime::now();
+        const auto current_year = dt.year();
+        if (year < 1900 || year > current_year) {
+          return;
+        }
+        user.month = month;
+        user.day = day;
+        user.year = static_cast<uint8_t>(year - 1900);
+      });
 
   EditItems items{};
   items.add_items({
