@@ -23,6 +23,7 @@
 
 #include "core/command_line.h"
 #include "core/datetime.h"
+#include "core/inifile.h"
 #include "core/file.h"
 #include <filesystem>
 #include "core/log.h"
@@ -37,8 +38,7 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
@@ -72,7 +72,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   network_number_ = cmdline.arg("net").as_int();
   // TODO(rushfan): Need to look to see if WWIV_CONFIG_FILE is set 1st.
   config_.reset(new wwiv::sdk::Config(cmdline.bbsdir()));
-  networks_.reset(new wwiv::sdk::Networks(*config_.get()));
+  networks_.reset(new wwiv::sdk::Networks(*config_));
 
   if (!config_->IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
@@ -112,40 +112,41 @@ std::filesystem::path NetworkCommandLine::semaphore_path() const noexcept {
 
 static void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
   if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    auto f = ini.value<std::string>(key, cmdline.sarg(key));
+    const auto f = ini.value<std::string>(key, cmdline.sarg(key));
     cmdline.SetNewDefault(key, f);
   }
 }
 
 static void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
   if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    auto f = ini.value<bool>(key, cmdline.barg(key));
+    const auto f = ini.value<bool>(key, cmdline.barg(key));
     cmdline.SetNewDefault(key, f ? "Y" : "N");
   }
 }
 
 static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
   if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    auto f = ini.value<int>(key, cmdline.iarg(key));
+    const auto f = ini.value<int>(key, cmdline.iarg(key));
     cmdline.SetNewDefault(key, std::to_string(f));
   }
 }
 
 static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
-    std::function<void(int)> f) {
+                             const std::function<void(int)>& f) {
   if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    auto v = ini.value<int>(key, cmdline.iarg(key));
+    const auto v = ini.value<int>(key, cmdline.iarg(key));
     cmdline.SetNewDefault(key, std::to_string(v));
     f(v);
   }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool NetworkCommandLine::LoadNetIni(char net_cmd, const std::string& bbsdir) {
   const auto net_tag = network_cmd_name(net_cmd);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
-  auto ini =
-      std::unique_ptr<IniFile>(new IniFile(FilePath(bbsdir, "net.ini"), {net_tag_net, net_tag}));
+  const auto ini = std::make_unique<IniFile>(
+      FilePath(bbsdir, "net.ini"), std::initializer_list<const std::string>{net_tag_net, net_tag});
   if (!ini || !ini->IsOpen()) {
     // This is fine and can happen.
     return true;
@@ -182,10 +183,9 @@ std::string NetworkCommandLine::GetHelp() const {
 }
 
 std::chrono::duration<double> NetworkCommandLine::semaphore_timeout() const noexcept {
-  auto semaphore_timeout = cmdline_.iarg("semaphore_timeout");
+  const auto semaphore_timeout = cmdline_.iarg("semaphore_timeout");
   return std::chrono::seconds(semaphore_timeout);
 }
 
 
-} // namespace net
 } // namespace wwiv

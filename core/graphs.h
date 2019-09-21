@@ -33,10 +33,13 @@ namespace graphs {
 struct edge {
   uint16_t node_;
   float cost_;
+
   edge(uint16_t node, float cost)
     : node_(node),
-    cost_(cost) {}
+      cost_(cost) {
+  }
 };
+
 typedef std::vector<std::vector<edge>> adjacency_list_t;
 
 /*
@@ -59,8 +62,9 @@ public:
   std::list<uint16_t> shortest_path_to(uint16_t destination);
   float cost_to(uint16_t destination);
   std::string DumpCosts() const;
-  int num_hops_to(uint16_t destination) { 
-    std::list<uint16_t> path = shortest_path_to(destination);
+
+  int num_hops_to(uint16_t destination) {
+    const auto path = shortest_path_to(destination);
     if (path.empty()) {
       return 0;
     }
@@ -78,7 +82,7 @@ private:
   void Compute();
 };
 
-}  // namespace graphs
-}  // namespace wwiv
+} // namespace graphs
+} // namespace wwiv
 
 #endif  // __INCLUDED_WWIV_GRAPHS_OS_H__

@@ -50,10 +50,10 @@ public:
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  const int GetTopLine() const noexcept { return topline_; }
+  int GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  const int GetScreenBottom() const noexcept { return screen_bottom_; }
+  int GetScreenBottom() const noexcept { return screen_bottom_; }
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
@@ -108,7 +108,6 @@ public:
 private:
   virtual void FastPuts(const std::string& text) = 0;
 
-private:
   int topline_{0};
   int screen_bottom_{25}; // Just a default.
   int top_screen_color_{27};

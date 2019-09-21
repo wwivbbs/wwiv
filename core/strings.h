@@ -37,17 +37,18 @@ namespace wwiv {
 namespace strings {
 
 enum class JustificationType {
-  LEFT, RIGHT
+  LEFT,
+  RIGHT
 };
 
-template<typename A>
+template <typename A>
 std::string StrCat(const A& a) {
   std::ostringstream ss;
   ss << a;
   return ss.str();
 }
 
-template<typename A, typename... Args>
+template <typename A, typename... Args>
 std::string StrCat(const A& a, const Args&... args) {
   std::ostringstream ss;
   ss << a << StrCat(args...);
@@ -61,7 +62,7 @@ std::string StrCat(const A& a, const Args&... args) {
  * to use safe versions of the CRT as possible in the future.
  */
 template <size_t SIZE>
-bool to_char_array(char(&out)[SIZE], const std::string& s) {
+bool to_char_array(char (&out)[SIZE], const std::string& s) {
 #ifdef _MSC_VER
   strncpy_s(out, s.c_str(), SIZE);
 #else
@@ -77,37 +78,42 @@ bool to_char_array(char(&out)[SIZE], const std::string& s) {
  * Also won't assert on Windows if out is too small.
  */
 template <size_t SIZE>
-bool to_char_array_no_null(char(&out)[SIZE], const std::string& s) {
+bool to_char_array_no_null(char (&out)[SIZE], const std::string& s) {
   strncpy(out, s.c_str(), SIZE);
   return s.size() <= SIZE;
 }
 
-std::string StringPrintf(const char *formatted_text, ...);
+std::string StringPrintf(const char* formatted_text, ...);
 
 // Comparisons
-bool IsEquals(const char *str1, const char *str2);
+bool IsEquals(const char* str1, const char* str2);
 bool iequals(const char* s1, const char* s2);
 bool iequals(const std::string& s1, const std::string& s2);
-int StringCompareIgnoreCase(const char *str1, const char *str2);
-int StringCompare(const char *str1, const char *str2);
+int StringCompareIgnoreCase(const char* str1, const char* str2);
+int StringCompare(const char* str1, const char* str2);
 
-const std::string& StringReplace(std::string* orig, const std::string& old_string, const std::string& new_string);
+const std::string& StringReplace(std::string* orig, const std::string& old_string,
+                                 const std::string& new_string);
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
-std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims, bool skip_empty);
-void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
-void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty, std::vector<std::string>* out);
+std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims,
+                                     bool skip_empty);
+void SplitString(const std::string& original_string, const std::string& delims,
+                 std::vector<std::string>* out);
+void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
+                 std::vector<std::string>* out);
 
 bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
-void StringJustify(std::string* s, std::string::size_type length, char bg, JustificationType just_type);
-void StringTrim(char *str);
+void StringJustify(std::string* s, std::string::size_type length, char bg,
+                   JustificationType just_type);
+void StringTrim(char* str);
 void StringTrim(std::string* s);
 std::string StringTrim(const std::string& orig);
 
 void StringTrimCRLF(std::string* s);
 void StringTrimEnd(std::string* s);
-void StringTrimEnd(char *str);
+void StringTrimEnd(char* str);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 std::string ToStringUpperCase(const std::string& s);
@@ -117,10 +123,10 @@ void StringRemoveWhitespace(std::string* s);
 std::string ToStringRemoveWhitespace(const std::string& s);
 
 
-char *StringRemoveWhitespace(char *str);
+char* StringRemoveWhitespace(char* str);
 // Strips the string from the first occurence of ch
 // Doesn't seem to be used anywhere. Maybe it should be removed.
-char *StringRemoveChar(const char *str, char ch);
+char* StringRemoveChar(const char* str, char ch);
 
 /**
  * Joints the strings in lines, using end_of_line in between each line.
@@ -132,7 +138,7 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
 /** 
  * Like std::put_time.  GCC 4.x doesn't support it.
  */
-std::string put_time(const struct tm *tm_info, const std::string& fmt_arg);
+std::string put_time(const struct tm* tm_info, const std::string& fmt_arg);
 
 // String length without colors
 std::string::size_type size_without_colors(const std::string& s);
@@ -169,14 +175,14 @@ std::string lpad_to(const std::string& orig, std::string::size_type size);
 std::string lpad_to(const std::string& orig, char pad, std::string::size_type size);
 
 /** Typesafe version of toupper */
-template<class T>
-const T to_upper_case(const T a) {
+template <class T>
+T to_upper_case(const T a) {
   return static_cast<T>(::toupper(a));
 }
 
 /** Typesafe version of tolower */
-template<class T>
-const T to_lower_case(const T a) {
+template <class T>
+T to_lower_case(const T a) {
   return static_cast<T>(::tolower(a));
 }
 
@@ -191,47 +197,46 @@ static T StringToT(std::function<R(const std::string&, int)> f, const std::strin
       return std::numeric_limits<T>::min();
     }
     return static_cast<T>(ret);
-  }
-  catch (const std::logic_error&) {
+  } catch (const std::logic_error&) {
     // Handle invalid_argument and out_of_range.
     return 0;
   }
 }
 
-template<typename T, typename std::enable_if<std::is_unsigned<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<std::is_unsigned<T>::value, T>::type* = nullptr>
 T to_number(const std::string& s, int b = 10) {
   return StringToT<T, unsigned long>(
-    [](const std::string& s, int b) { return std::stoul(s, nullptr, b); }, s, b);
+      [](const std::string& s, int b) { return std::stoul(s, nullptr, b); }, s, b);
 }
 
-template<typename T, typename std::enable_if<std::is_signed<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<std::is_signed<T>::value, T>::type* = nullptr>
 T to_number(const std::string& s, int b = 10) {
   return StringToT<T, long>(
-    [](const std::string& s, int b) { return std::stol(s, nullptr, b); }, s, b);
+      [](const std::string& s, int b) { return std::stol(s, nullptr, b); }, s, b);
 }
 
 
-}  // namespace strings
+} // namespace strings
 
-}  // namespace wwiv
+} // namespace wwiv
 
 // Function Prototypes
-char *stripcolors(const char *pszOrig);
+char* stripcolors(const char* pszOrig);
 std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
 
-void properize(char *text);
+void properize(char* text);
 std::string properize(const std::string& text);
 
-extern const char *DELIMS_WHITE;
+extern const char* DELIMS_WHITE;
 
 #ifdef _WIN32
 
 #define strcasecmp( a, b ) _stricmp( a, b )
 #define strncasecmp( a, b, c) _strnicmp( a, b, c )
 
-char *strcasestr(const char *str, const char *pszPattern);
+char* strcasestr(const char* str, const char* pszPattern);
 
 #else  // _WIN32
 char *strupr(char *s);

@@ -60,7 +60,9 @@ class ConsoleAppender : public Appender {
 
 class LogFileAppender : public Appender {
 public:
-  LogFileAppender(const std::string& fn) : filename_(fn) {}
+  LogFileAppender(const std::string& fn)
+    : filename_(fn) {
+  }
 
   bool append(const std::string& message) override {
     // Not super performant, but we'll start here and see how far this
@@ -85,24 +87,27 @@ static std::string FormatLogLevel(LoggerLevel l, int v) {
   if (l == LoggerLevel::verbose) {
     return StrCat("VER-", v);
   }
-  static const std::unordered_map<LoggerLevel, std::string, wwiv::stl::enum_hash> map = {
+  static const std::unordered_map<LoggerLevel, std::string, stl::enum_hash> map = {
       {LoggerLevel::ignored, ""},
       {LoggerLevel::start, "START"},
       {LoggerLevel::debug, "DEBUG"},
-      {LoggerLevel::verbose, "VER- "},  
+      {LoggerLevel::verbose, "VER- "},
       {LoggerLevel::error, "ERROR"},
       {LoggerLevel::info, "INFO "},
-      {LoggerLevel::warning, "WARN "}, 
+      {LoggerLevel::warning, "WARN "},
       {LoggerLevel::fatal, "FATAL"},
   };
   return map.at(l);
 }
 
-std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) const noexcept {
+std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity,
+                                     const std::string& msg) const noexcept {
   return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
 }
 
-Logger::Logger(LoggerLevel level, int verbosity) : level_(level), verbosity_(verbosity) {}
+Logger::Logger(LoggerLevel level, int verbosity)
+  : level_(level), verbosity_(verbosity) {
+}
 
 Logger::~Logger() {
   if (level_ == LoggerLevel::verbose) {
@@ -132,7 +137,7 @@ bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; 
 void Logger::StartupLog(int argc, char* argv[]) {
   const auto dt = DateTime::now();
   LOG(STARTUP) << config_.exit_filename << " version " << wwiv_version << beta_version << " ("
-               << wwiv_date << ")";
+      << wwiv_date << ")";
   LOG(STARTUP) << config_.exit_filename << " starting at " << dt.to_string();
   if (argc > 1) {
     string cmdline;
@@ -212,23 +217,29 @@ static std::string DefaultTimestamp() {
   const auto nowc = std::chrono::system_clock::now();
   const auto duration = nowc.time_since_epoch();
   const auto millis = static_cast<int>(
-      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
+    std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
   return fmt::sprintf("%s,%03d ", dt.to_string(log_date_format), millis);
 }
 
 
-LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
+LoggerConfig::LoggerConfig()
+  : timestamp_fn_(DefaultTimestamp) {
+}
 
-LoggerConfig::LoggerConfig(logdir_fn l) : LoggerConfig(l, DefaultTimestamp) {}
+LoggerConfig::LoggerConfig(logdir_fn l)
+  : LoggerConfig(l, DefaultTimestamp) {
+}
 
-LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t) : logdir_fn_(l), timestamp_fn_(t) {}
+LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t)
+  : logdir_fn_(l), timestamp_fn_(t) {
+}
 
 
 void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> appender) {
   log_to[level].emplace(appender);
 }
 
-void LoggerConfig::reset() { 
+void LoggerConfig::reset() {
   timestamp_fn_ = DefaultTimestamp;
 }
 

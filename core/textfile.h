@@ -77,7 +77,7 @@ public:
    * Usually code should use `operator bool()` vs. this method.
    */
   bool IsOpen() const noexcept { return file_ != nullptr; }
-  bool IsEndOfFile() { return feof(file_) != 0; }
+  bool IsEndOfFile() const { return feof(file_) != 0; }
 
   /** Writes a line of text without `\r\n` */
   ssize_t Write(const std::string& text);
@@ -111,11 +111,13 @@ public:
   ssize_t WriteFormatted(const char* formatText, ...);
 
   /** Writes a binary blob as binary data. */
+  // ReSharper disable once CppMemberFunctionMayBeConst
   ssize_t WriteBinary(const void* buffer, size_t nSize) {
-    return (int)fwrite(buffer, nSize, 1, file_);
+    return static_cast<int>(fwrite(buffer, nSize, 1, file_));
   }
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
+  // ReSharper disable once CppMemberFunctionMayBeConst
   bool ReadLine(char* buffer, int nBufferSize) {
     return fgets(buffer, nBufferSize, file_) != nullptr;
   }
@@ -155,13 +157,13 @@ public:
     Write(ss.str());
     return *this;
   }
-  inline TextFile& operator<<(ENDL_TYPE2* value) {
+
+  TextFile& operator<<(ENDL_TYPE2* value) {
     std::ostringstream ss;
     ss << value;
     Write(ss.str());
     return *this;
   }
-
 
 
 private:

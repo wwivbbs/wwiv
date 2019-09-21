@@ -42,8 +42,8 @@ template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile fin
 public:
   DataFile(const std::filesystem::path& full_file_name,
            int nFileMode = File::modeDefault,
-           int nShareMode = File::shareUnknown) 
-      : file_(full_file_name) {
+           int nShareMode = File::shareUnknown)
+    : file_(full_file_name) {
     file_.Open(nFileMode, nShareMode);
   }
 
@@ -70,12 +70,12 @@ public:
     return Read(&records[0], num_to_read);
   }
 
-  bool Read(RECORD* record, int num_records = 1) { 
+  bool Read(RECORD* record, int num_records = 1) {
     if (num_records == 0) {
       // Reading nothing is always successful.
       return true;
     }
-    return file_.Read(record, num_records*SIZE) == static_cast<int>(num_records*SIZE); 
+    return file_.Read(record, num_records * SIZE) == static_cast<int>(num_records * SIZE);
   }
 
   bool Read(int record_number, RECORD* record) {
@@ -93,8 +93,8 @@ public:
     return Write(&records[0], num);
   }
 
-  bool Write(const RECORD* record, int num_records = 1) { 
-    return file_.Write(record, num_records*SIZE) == static_cast<ssize_t>(num_records*SIZE);
+  bool Write(const RECORD* record, int num_records = 1) {
+    return file_.Write(record, num_records * SIZE) == static_cast<ssize_t>(num_records * SIZE);
   }
 
   bool Write(int record_number, const RECORD* record) {

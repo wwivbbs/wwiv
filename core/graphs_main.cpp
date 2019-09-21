@@ -1,5 +1,3 @@
-
-
 using namespace wwiv::graphs;
 
 int main() {
@@ -26,9 +24,9 @@ int main() {
   std::vector<uint16_t> previous;
   all_paths(1, adjacency_list, cost_, previous);
   std::cout << "Cost from 1 to 5: " << cost_[5] << std::endl;
-  std::copy_if(previous.begin(), previous.end(), 
-    std::ostream_iterator<uint16_t>(std::cout, " "),
-    [](uint16_t i) {return i != NO_NODE; });
+  std::copy_if(previous.begin(), previous.end(),
+               std::ostream_iterator<uint16_t>(std::cout, " "),
+               [](uint16_t i) { return i != NO_NODE; });
   std::list<uint16_t> path = shortest_path(5, previous);
   std::cout << "Path : ";
   std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::cout, " "));
@@ -36,4 +34,3 @@ int main() {
 
   return 0;
 }
-

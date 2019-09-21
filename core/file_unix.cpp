@@ -25,11 +25,11 @@ namespace wwiv {
 namespace core {
 
 const int File::shareDenyReadWrite = S_IWRITE;
-const int File::shareDenyWrite     = 0;
-const int File::shareDenyRead      = S_IREAD;
-const int File::shareDenyNone      = 0;
+const int File::shareDenyWrite = 0;
+const int File::shareDenyRead = S_IREAD;
+const int File::shareDenyNone = 0;
 
-const int File::permReadWrite      = O_RDWR;
+const int File::permReadWrite = O_RDWR;
 
 const char File::pathSeparatorChar = '/';
 

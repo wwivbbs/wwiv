@@ -18,11 +18,11 @@
 /**************************************************************************/
 #include "local_io/local_io.h"
 
-class DefaultCurAttrProvider : public wwiv::local_io::curatr_provider {
+class DefaultCurAttrProvider final : public wwiv::local_io::curatr_provider {
 public:
   DefaultCurAttrProvider() = default;
-  virtual int curatr() const noexcept override { return a_; }
-  virtual void curatr(int n) override { a_ = n; }
+  int curatr() const noexcept override { return a_; }
+  void curatr(int n) override { a_ = n; }
 
 private:
   uint8_t a_{7};

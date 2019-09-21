@@ -59,12 +59,12 @@ void sleep_for(duration<double> d) {
   if (count > numeric_limits<uint32_t>::max()) {
     count = numeric_limits<uint32_t>::max();
   }
-  ::Sleep(static_cast<uint32_t>(count));
+  Sleep(static_cast<uint32_t>(count));
 }
 
 void sound(uint32_t frequency, duration<double> d) {
   const auto count = duration_cast<milliseconds>(d).count();
-  ::Beep(frequency, static_cast<uint32_t>(count));
+  Beep(frequency, static_cast<uint32_t>(count));
 }
 
 std::string os_version_string() {
@@ -104,7 +104,7 @@ string stacktrace() {
 
   stringstream out;
   // start at one to skip this current frame.
-  for(decltype(frames) i = 1; i < frames; i++) {
+  for (decltype(frames) i = 1; i < frames; i++) {
     if (SymFromAddr(process, reinterpret_cast<DWORD64>(stack[i]), nullptr, symbol)) {
       out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
     }

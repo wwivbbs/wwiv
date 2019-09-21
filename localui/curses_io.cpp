@@ -20,15 +20,11 @@
 #include "core/wwiv_windows.h"
 
 #include <algorithm>
-#include <cstring>
-#include <exception>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 
 #include "core/strings.h"
-#include "core/version.h"
 #include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
 
@@ -92,7 +88,7 @@ CursesIO::CursesIO(const string& title)
     CONSOLE_SCREEN_BUFFER_INFO consoleBufferInfo;
     GetConsoleScreenBufferInfo(hConOut, &consoleBufferInfo);
     originalConsoleSize = consoleBufferInfo.dwSize;
-    SMALL_RECT rect = consoleBufferInfo.srWindow;
+    auto rect = consoleBufferInfo.srWindow;
     COORD bufSize;
     bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
     bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
@@ -199,8 +195,9 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 
 // static
 void CursesIO::Init(const std::string& title) {
-  auto once_init = [=]() { out = new CursesIO(title); return true; };
-  static bool initialized_once = once_init();
+  const auto once_init = [=]() { out = new CursesIO(title); return true; };
+  // ReSharper disable once CppDeclaratorNeverUsed
+  static auto initialized_once = once_init();
 }
 
 // static 

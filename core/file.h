@@ -133,7 +133,7 @@ public:
   [[nodiscard]] time_t last_write_time() const noexcept;
   bool set_last_write_time(time_t last_write_time) noexcept;
 
-  std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
+  std::unique_ptr<FileLock> lock(FileLockType lock_type);
 
   /** Returns the file path as a std::string path */
   [[nodiscard]] std::string full_pathname() const noexcept { return full_path_name_.string(); }
@@ -203,13 +203,13 @@ public:
    * Creates the directory {path} by calling File::mkdir on the
    * full pathname of this file object.
    */
-  static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
+  static bool mkdir(const File& dir) { return mkdir(dir.full_pathname()); }
 
   /**
    * Creates the directory {path} by calling File::mkdirs on the
    * full pathname of this file object.
    */
-  static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
+  static bool mkdirs(const File& dir) { return mkdirs(dir.full_pathname()); }
 
   /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
   [[nodiscard]] static long freespace_for_path(const std::filesystem::path& p);

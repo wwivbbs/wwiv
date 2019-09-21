@@ -45,9 +45,8 @@ private:
   FileLockType lock_type_;
 };
 
-}  // namespace core
-}  // namespace wwiv
-
+} // namespace core
+} // namespace wwiv
 
 
 #endif // __INCLUDED_CORE_FILE_LOCK_H__

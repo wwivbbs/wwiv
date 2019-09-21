@@ -35,7 +35,8 @@ bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) 
   } else {
     filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName;
   }
-  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
+  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<
+                 WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
   return true;
 }
 
@@ -52,7 +53,8 @@ bool WFindFile::next() {
   } else {
     filename_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).cAlternateFileName;
   }
-  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
+  file_size_ = std::any_cast<WIN32_FIND_DATA>(ffdata_).nFileSizeHigh * MAXDWORD + std::any_cast<
+                 WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
   return true;
 }
 
@@ -67,5 +69,7 @@ bool WFindFile::IsDirectory() const {
 }
 
 bool WFindFile::IsFile() const {
-  return (std::any_cast<WIN32_FIND_DATA>(ffdata_).dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
+  return (std::any_cast<WIN32_FIND_DATA>(ffdata_).dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+           ? false
+           : true;
 }

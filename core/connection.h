@@ -26,8 +26,7 @@
 namespace wwiv {
 namespace core {
 
-class Connection
-{
+class Connection {
 public:
   Connection() noexcept;
   virtual ~Connection();
@@ -43,7 +42,7 @@ public:
   virtual bool close() = 0;
 };
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace net
+} // namespace wwiv
 
 #endif  // __INCLUDED_NETWORKB_CONNECTION_H__

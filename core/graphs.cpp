@@ -7,33 +7,31 @@
 #include <vector>
 #include <string>
 #include <list>
-#include <limits> 
+#include <limits>
 #include <set>
 #include <utility>
-#include <algorithm> 
+#include <algorithm>
 #include <iterator>
 #include <sstream>
 
-namespace wwiv {
-namespace graphs {
+namespace wwiv::graphs {
 
 using std::list;
 using std::numeric_limits;
-using std::vector;
 
 static constexpr uint16_t NO_NODE = 0;
 static constexpr float max_cost = numeric_limits<float>::infinity();
 
-Graph::Graph(uint16_t node, uint16_t max_size) 
-  : node_(node), max_size_(max_size), adjacency_list_(max_size), cost_() {
-    cost_.clear();
-    cost_.resize(max_size, max_cost);
-    cost_[node] = 0;
-    previous_.clear();
-    previous_.resize(max_size, NO_NODE);
+Graph::Graph(uint16_t node, uint16_t max_size)
+  : node_(node), max_size_(max_size), adjacency_list_(max_size) {
+  cost_.clear();
+  cost_.resize(max_size, max_cost);
+  cost_[node] = 0;
+  previous_.clear();
+  previous_.resize(max_size, NO_NODE);
 }
 
-Graph::~Graph() {}
+Graph::~Graph() = default;
 
 bool Graph::add_edge(uint16_t source, uint16_t dest, float cost) {
   if (computed_) {
@@ -56,15 +54,15 @@ void Graph::Compute() {
   queue.insert(std::make_pair(cost_[node_], node_));
 
   while (!queue.empty()) {
-    float dist = queue.begin()->first;
-    uint16_t u = queue.begin()->second;
+    const auto dist = queue.begin()->first;
+    const auto u = queue.begin()->second;
     queue.erase(queue.begin());
 
     // Visit each edge exiting u
-    const std::vector<edge> &edges = adjacency_list_[u];
+    const auto& edges = adjacency_list_[u];
     for (const auto& e : edges) {
-      uint16_t v = e.node_;
-      float cost_through_u = dist + e.cost_;
+      auto v = e.node_;
+      const auto cost_through_u = dist + e.cost_;
       if (cost_through_u < cost_[v]) {
         queue.erase(std::make_pair(cost_[v], v));
         cost_[v] = cost_through_u;
@@ -76,7 +74,7 @@ void Graph::Compute() {
   //DumpCosts();
 }
 
-float Graph::cost_to(uint16_t destination) { 
+float Graph::cost_to(uint16_t destination) {
   if (!computed_) {
     Compute();
   }
@@ -87,8 +85,8 @@ float Graph::cost_to(uint16_t destination) {
 std::string Graph::DumpCosts() const {
   std::ostringstream ss;
   ss << "costs_: ";
-  for (int i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
-    float cost = cost_[i];
+  for (auto i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
+    const auto cost = cost_[i];
     if (std::isfinite(cost)) {
       ss << i << "[" << cost_[i] << "] ";
     }
@@ -107,5 +105,4 @@ std::list<uint16_t> Graph::shortest_path_to(uint16_t destination) {
   }
   return path;
 }
-}  // namespace graphs
-}  // namespace wwiv
+} // namespace wwiv

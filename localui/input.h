@@ -19,7 +19,13 @@
 #ifndef __INCLUDED_INPUT_H__
 #define __INCLUDED_INPUT_H__
 
-#include <cstdlib>
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
+#include "wwivconfig/utility.h"
+#include <cstring>
 #include <functional>
 #include <limits>
 #include <stdexcept>
@@ -27,16 +33,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <string.h>
-
-#include "core/file.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "localui/curses_io.h"
-#include "localui/curses_win.h"
-#include "wwivconfig/utility.h"
 
 enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
@@ -91,7 +87,7 @@ static std::string to_restriction_string(T data, std::size_t size, const char* r
 class BaseEditItem {
 public:
   BaseEditItem(int x, int y, int maxsize) : x_(x), y_(y), maxsize_(maxsize){};
-  virtual ~BaseEditItem() {}
+  virtual ~BaseEditItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) = 0;
   virtual void Display(CursesWindow* window) const = 0;
@@ -99,7 +95,7 @@ public:
     help_text_ = help_text;
     return this;
   }
-  const std::string& help_text() const { return help_text_; }
+  std::string help_text() const { return help_text_; }
   virtual int x() const noexcept { return x_; }
   virtual void set_x(int x) noexcept { x_ = x; }
   virtual int y() const noexcept { return y_; }
@@ -113,19 +109,20 @@ protected:
 };
 
 // Label class that's used to display a label for an EditItem
-class Label {
+class Label final {
 public:
-  Label(int x, int y, const std::string& text) : x_(x), y_(y), text_(text), width_(text.size()) {}
+  Label(int x, int y, const std::string& text) : x_(x), y_(y), width_(text.size()), text_(text) {}
   Label(int x, int y, int width, const std::string& text)
-      : x_(x), y_(y), text_(text), width_(width) {}
-  virtual void Display(CursesWindow* window);
-  virtual void Display(CursesWindow* window, int x, int y);
+      : x_(x), y_(y), width_(width), text_(text) {}
+
+  void Display(CursesWindow* window);
+  void Display(CursesWindow* window, int x, int y);
   void set_width(int width) noexcept { width_ = width; }
   int width() const noexcept { return width_; }
   void set_right_justified(bool r) noexcept { right_justify_ = r; }
-  virtual int x() const noexcept { return x_; }
-  virtual int y() const noexcept { return y_; }
-  virtual const std::string& text() const noexcept { return text_; }
+  int x() const noexcept { return x_; }
+  int y() const noexcept { return y_; }
+  const std::string& text() const noexcept { return text_; }
 
 protected:
   int x_;
@@ -142,16 +139,16 @@ public:
   typedef std::function<std::string(void)> displayfn;
 
   EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data){};
-  virtual ~EditItem() {}
+  virtual ~EditItem() = default;
 
   void set_displayfn(displayfn f) { display_ = f; }
 
-  virtual void Display(CursesWindow* window) const {
+  void Display(CursesWindow* window) const override {
     if (display_) {
       std::string blanks(maxsize_, ' ');
-      auto custom = display_();
-      window->PutsXY(x_, y_, blanks.c_str());
-      window->PutsXY(x_, y_, custom.c_str());
+      const auto custom = display_();
+      window->PutsXY(x_, y_, blanks);
+      window->PutsXY(x_, y_, custom);
     } else {
       DefaultDisplay(window);
     }
@@ -182,7 +179,7 @@ public:
   StringEditItem(int x, int y, int maxsize, T data, EditLineMode edit_line_mode)
       : EditItem<T>(x, y, maxsize, data), edit_line_mode_(edit_line_mode) {}
   StringEditItem(int x, int y, int maxsize, T data) : StringEditItem(x, y, maxsize, data, EditLineMode::ALL) {}
-  virtual ~StringEditItem() {}
+  virtual ~StringEditItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -209,8 +206,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    auto result = editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
-    return result;
+    return editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
   }
 
 protected:
@@ -228,7 +224,7 @@ public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, MAXLEN + 2, data) {}
   virtual ~NumberEditItem() {}
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     auto s = std::to_string(*this->data_);
     auto return_code = editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, "");
@@ -237,7 +233,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
+  void DefaultDisplay(CursesWindow* window) const override {
     auto d = std::to_string(*this->data_);
     window->PutsXY(this->x_, this->y_, wwiv::strings::pad_to(d, this->maxsize()));
   }
@@ -266,7 +262,7 @@ std::size_t index_of(T& haystack, const std::vector<std::pair<T, std::string>>& 
   return 0;
 }
 
-template <typename T> class ToggleEditItem : public EditItem<T*> {
+template <typename T> class ToggleEditItem final : public EditItem<T*> {
 public:
   ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data)
       : EditItem<T*>(x, y, 0, data), items_(items) {
@@ -274,13 +270,13 @@ public:
       this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.second.size());
     }
   }
-  virtual ~ToggleEditItem() {}
+  virtual ~ToggleEditItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
 
     window->GotoXY(this->x_, this->y_);
-    EditlineResult return_code = EditlineResult::NEXT;
+    auto return_code = EditlineResult::NEXT;
     auto index = index_of(*this->data_, items_);
     const auto items = item_list(items_);
     index = toggleitem(window, index, items, &return_code);
@@ -291,7 +287,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
+  void DefaultDisplay(CursesWindow* window) const override {
     try {
       auto index = index_of(*this->data_, items_);
       const auto& s = items_.at(index).second;
@@ -317,13 +313,13 @@ class StringListItem : public EditItem<std::string&> {
 public:
   StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
       : EditItem<std::string&>(x, y, maxlen_from_list(items), data), items_(items) {}
-  virtual ~StringListItem() {}
+  virtual ~StringListItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     window->GotoXY(this->x_, this->y_);
-    EditlineResult return_code = EditlineResult::NEXT;
-    auto it = std::find(items_.begin(), items_.end(), data_);
+    auto return_code = EditlineResult::NEXT;
+    const auto it = std::find(items_.begin(), items_.end(), data_);
     std::vector<std::string>::size_type selection = 0;
     if (it != items_.end()) {
       selection = std::distance(items_.begin(), it);
@@ -336,7 +332,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const { DefaultDisplayString(window, data_); }
+  void DefaultDisplay(CursesWindow* window) const override { DefaultDisplayString(window, data_); }
 
 private:
   const std::vector<std::string> items_;
@@ -350,9 +346,9 @@ public:
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
-  virtual ~FlagEditItem() {}
+  virtual ~FlagEditItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     EditlineResult return_code = EditlineResult::NEXT;
@@ -368,8 +364,8 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
-    int state = (*this->data_ & this->flag_) ? 1 : 0;
+  void DefaultDisplay(CursesWindow* window) const override {
+    const int state = (*this->data_ & this->flag_) ? 1 : 0;
     this->DefaultDisplayString(window, items_.at(state));
   }
 
@@ -385,7 +381,7 @@ public:
     strcpy(rs_, rs);
   }
 
-  virtual ~BaseRestrictionsEditItem() {}
+  virtual ~BaseRestrictionsEditItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
 
@@ -420,8 +416,8 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string s = to_restriction_string(*data_, rs_size_, rs_);
+  void DefaultDisplay(CursesWindow* window) const override {
+    auto s = to_restriction_string(*data_, rs_size_, rs_);
     DefaultDisplayString(window, s);
   }
   char rs_[21];
@@ -444,13 +440,13 @@ class ArEditItem : public BaseRestrictionsEditItem {
 public:
   ArEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
-  virtual ~ArEditItem() {}
+  virtual ~ArEditItem() = default;
 };
 
 class BooleanEditItem : public EditItem<bool*> {
 public:
   BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 6, data) {}
-  virtual ~BooleanEditItem() {}
+  virtual ~BooleanEditItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
@@ -458,7 +454,7 @@ public:
 
     window->GotoXY(this->x_, this->y_);
     std::vector<std::string>::size_type data = *this->data_ ? 1 : 0;
-    EditlineResult return_code = EditlineResult::NEXT;
+    auto return_code = EditlineResult::NEXT;
     data = toggleitem(window, data, boolean_strings, &return_code);
 
     *this->data_ = (data > 0) ? true : false;
@@ -467,9 +463,9 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
+  void DefaultDisplay(CursesWindow* window) const override {
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
-    std::string s = boolean_strings.at(*data_ ? 1 : 0);
+    const auto s = boolean_strings.at(*data_ ? 1 : 0);
     DefaultDisplayString(window, s);
   }
 };
@@ -482,8 +478,8 @@ public:
   CustomEditItem(int x, int y, int maxsize, prefn to_field, postfn from_field)
       : BaseEditItem(x, y, maxsize), to_field_(to_field), from_field_(from_field) {}
 
-  virtual EditlineResult Run(CursesWindow* window);
-  virtual void Display(CursesWindow* window) const;
+  EditlineResult Run(CursesWindow* window) override;
+  void Display(CursesWindow* window) const override;
   void set_displayfn(CustomEditItem::displayfn f) { display_ = f; }
 
 private:
@@ -498,17 +494,17 @@ public:
       : EditItem<char*>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
-  virtual ~FilePathItem() {}
+  virtual ~FilePathItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    const auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
 
     // Update what we display in case it changed.
     DefaultDisplay(window);
 
-    auto dir = wwiv::core::File::absolute(this->base_, this->data_);
+    const auto dir = wwiv::core::File::absolute(this->base_, this->data_);
     if (!wwiv::core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
@@ -535,11 +531,11 @@ public:
       : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
-  virtual ~StringFilePathItem() {}
+  virtual ~StringFilePathItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    auto return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    const auto return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
       data_ = wwiv::core::File::EnsureTrailingSlash(data_);
@@ -547,7 +543,7 @@ public:
     // Update what we display in case it changed.
     DefaultDisplay(window);
 
-    auto dir = wwiv::core::File::absolute(this->base_, this->data_);
+    const auto dir = wwiv::core::File::absolute(this->base_, this->data_);
     if (!wwiv::core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
@@ -571,17 +567,17 @@ private:
 class CommandLineItem : public EditItem<char*> {
 public:
   CommandLineItem(int x, int y, int maxsize, char* data) : EditItem<char*>(x, y, maxsize, data) {}
-  virtual ~CommandLineItem() {}
+  virtual ~CommandLineItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    const auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(this->data_);
     return return_code;
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const override {
+  void DefaultDisplay(CursesWindow* window) const override {
     DefaultDisplayString(window, data_);
   }
 };

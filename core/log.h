@@ -83,7 +83,7 @@ namespace core {
 
 struct enum_hash {
   template <typename T>
-  inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
+  typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
   operator()(T const value) const {
     return static_cast<std::size_t>(value);
   }
@@ -94,12 +94,14 @@ enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, f
 class Appender {
 public:
   virtual ~Appender() = default;
-  Appender(){};
+
+  Appender() {
+  };
   virtual bool append(const std::string& message) = 0;
 };
 
 typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
-    log_to_map_t;
+log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
 typedef std::function<std::string(std::string)> logdir_fn;
 
@@ -126,10 +128,14 @@ public:
 
 class NullLogger {
 public:
-  NullLogger() {}
-  void operator&(std::ostream&) {}
+  NullLogger() {
+  }
+
+  void operator&(std::ostream&) {
+  }
+
   template <class T> NullLogger& operator<<(const T& msg) { return *this; }
-  inline NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
+  NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
 };
 
 /**
@@ -151,8 +157,14 @@ public:
  */
 class Logger {
 public:
-  Logger() : Logger(LoggerLevel::info, 0) {}
-  Logger(LoggerLevel level) : Logger(level, 0) {}
+  Logger()
+    : Logger(LoggerLevel::info, 0) {
+  }
+
+  Logger(LoggerLevel level)
+    : Logger(level, 0) {
+  }
+
   Logger(LoggerLevel level, int verbosity);
   ~Logger();
 
@@ -168,7 +180,8 @@ public:
     used_ = true;
     return *this;
   }
-  inline Logger& operator<<(ENDL_TYPE* m) {
+
+  Logger& operator<<(ENDL_TYPE* m) {
     used_ = true;
     ss_ << m;
     return *this;
@@ -176,7 +189,8 @@ public:
 
 private:
   static void StartupLog(int argc, char* argv[]);
-  std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) const noexcept;
+  std::string FormatLogMessage(LoggerLevel level, int verbosity,
+                               const std::string& msg) const noexcept;
   static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;

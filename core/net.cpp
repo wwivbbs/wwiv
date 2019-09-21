@@ -96,7 +96,7 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
 }
 
 SOCKET CreateListenSocket(int port) {
-  struct sockaddr_in my_addr {};
+  struct sockaddr_in my_addr{};
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == INVALID_SOCKET) {
     throw socket_error("Unable to create socket [socket]");
@@ -139,7 +139,7 @@ SOCKET CreateListenSocket(int port) {
 static std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
   string out;
   auto v = SplitString(address, ".");
-  for (auto it = v.rbegin(); it != v.rend(); it++) {
+  for (auto it = v.rbegin(); it != v.rend(); ++it) {
     out.append(*it);
     out.push_back('.');
   }
@@ -166,7 +166,7 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
     return 0;
   }
 
-  wwiv::core::ScopeExit at_exit([res] { freeaddrinfo(res); });
+  ScopeExit at_exit([res] { freeaddrinfo(res); });
   if (res->ai_family == AF_INET) {
     auto ipv4 = reinterpret_cast<struct sockaddr_in*>(res->ai_addr);
     uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
@@ -190,9 +190,13 @@ bool SetBlockingMode(SOCKET sock) {
 #endif // _WIN32
 }
 
-SocketSet::SocketSet() : SocketSet(2) {};
+SocketSet::SocketSet()
+  : SocketSet(2) {
+};
 
-SocketSet::SocketSet(int timeout_seconds) : timeout_seconds_(timeout_seconds){};
+SocketSet::SocketSet(int timeout_seconds)
+  : timeout_seconds_(timeout_seconds) {
+};
 
 SocketSet::~SocketSet() = default;
 
@@ -249,11 +253,13 @@ bool SocketSet::RunOnce() {
     LOG(ERROR) << "Caught signal calling select";
     // return true so we can check for exit signal.
     return true;
-  } if (status < 0) {
+  }
+  if (status < 0) {
     LOG(ERROR) << "Error calling select; errno: " << errno;
     // return false here since we know this wasn't a signal.
     return false;
-  } else if (status == 0) {
+  }
+  if (status == 0) {
     // Timeout expired.  Keep on trucking.
     VLOG(4) << "timeout expired on select";
     return true;

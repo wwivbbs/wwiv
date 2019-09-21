@@ -62,12 +62,20 @@ struct unknown_argument_error : public std::runtime_error {
 
 class CommandLineValue {
 public:
-  CommandLineValue() noexcept : default_(true) {}
-  explicit CommandLineValue(const std::string& s) noexcept : CommandLineValue(s, false) {}
+  CommandLineValue() noexcept
+    : default_(true) {
+  }
+
+  explicit CommandLineValue(const std::string& s) noexcept
+    : CommandLineValue(s, false) {
+  }
+
   CommandLineValue(const std::string& s, bool default_value) noexcept
-      : value_(s), default_(default_value) {}
+    : value_(s), default_(default_value) {
+  }
 
   std::string as_string() const noexcept { return value_; }
+
   int as_int() const noexcept {
     try {
       return std::stoi(value_);
@@ -75,6 +83,7 @@ public:
       return 0;
     }
   }
+
   bool as_bool() const noexcept { return value_ == "true"; }
 
   bool is_default() const noexcept { return default_; }
@@ -88,19 +97,29 @@ class CommandLineArgument {
 public:
   CommandLineArgument(const std::string& name, char key, const std::string& help_text,
                       const std::string& default_value, const std::string& environment_variable);
+
   CommandLineArgument(const std::string& name, char key, const std::string& help_text,
                       const std::string& default_value)
-      : CommandLineArgument(name, key, help_text, default_value, "") {}
+    : CommandLineArgument(name, key, help_text, default_value, "") {
+  }
+
   CommandLineArgument(const std::string& name, const std::string& help_text,
                       const std::string& default_value, const std::string& environment_variable)
-      : CommandLineArgument(name, 0, help_text, default_value, environment_variable) {}
+    : CommandLineArgument(name, 0, help_text, default_value, environment_variable) {
+  }
+
   CommandLineArgument(const std::string& name, const std::string& help_text,
                       const std::string& default_value)
-      : CommandLineArgument(name, 0, help_text, default_value, "") {}
+    : CommandLineArgument(name, 0, help_text, default_value, "") {
+  }
+
   CommandLineArgument(const std::string& name, char key, const std::string& help_text)
-      : CommandLineArgument(name, key, help_text, "", "") {}
+    : CommandLineArgument(name, key, help_text, "", "") {
+  }
+
   CommandLineArgument(const std::string& name, const std::string& help_text)
-      : CommandLineArgument(name, 0, help_text, "", "") {}
+    : CommandLineArgument(name, 0, help_text, "", "") {
+  }
 
   std::string help_text() const;
   std::string default_value() const;
@@ -116,18 +135,18 @@ class BooleanCommandLineArgument : public CommandLineArgument {
 public:
   BooleanCommandLineArgument(const std::string& name, char key, const std::string& help_text,
                              bool default_value)
-      : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
+    : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
     is_boolean = true;
   }
 
   BooleanCommandLineArgument(const std::string& name, const std::string& help_text,
                              bool default_value)
-      : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
+    : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
     is_boolean = true;
   }
 
   BooleanCommandLineArgument(const std::string& name, const std::string& help_text)
-      : CommandLineArgument(name, 0, help_text, "false") {
+    : CommandLineArgument(name, 0, help_text, "false") {
     is_boolean = true;
   }
 
@@ -146,12 +165,14 @@ class CommandLineCommand : public Command {
 public:
   CommandLineCommand(const std::string& name, const std::string& help_text);
   bool add_argument(const CommandLineArgument& cmd);
+
   virtual bool add(std::shared_ptr<CommandLineCommand> cmd) {
     cmd->set_raw_args(raw_args_);
     cmd->set_dot_argument(dot_argument_);
     commands_allowed_[cmd->name()] = std::move(cmd);
     return true;
   }
+
   std::string ArgNameForKey(char key);
   virtual bool AddStandardArgs();
 
@@ -159,7 +180,7 @@ public:
   std::string name() const { return name_; }
   std::string help_text() const { return help_text_; }
 
-  const CommandLineValue arg(const std::string& name) const;
+  CommandLineValue arg(const std::string& name) const;
   bool contains_arg(const std::string& name) const noexcept;
   std::string sarg(const std::string& name) const { return arg(name).as_string(); }
   int iarg(const std::string name) const { return arg(name).as_int(); }
@@ -168,7 +189,7 @@ public:
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
-  virtual int Execute() override;
+  int Execute() override;
   std::string GetHelp() const override;
   std::string GetUsage() const override { return ""; }
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
@@ -221,7 +242,7 @@ public:
   CommandLine(const std::vector<std::string>& args, const std::string& dot_argument);
   CommandLine(int argc, char** argv, const std::string& dot_argument);
   virtual bool Parse();
-  virtual int Execute() override final;
+  int Execute() override final;
   bool AddStandardArgs() override;
   std::string GetHelp() const override final;
 

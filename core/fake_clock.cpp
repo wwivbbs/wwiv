@@ -32,11 +32,11 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-DateTime FakeClock::Now() const noexcept { 
+DateTime FakeClock::Now() const noexcept {
   return date_time_;
 }
 
-void FakeClock::tick(std::chrono::duration<double> inc) { date_time_ += inc; }
+void FakeClock::tick(duration<double> inc) { date_time_ += inc; }
 
 }
 }

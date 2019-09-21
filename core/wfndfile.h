@@ -66,7 +66,7 @@ protected:
   int nCurrentEntry = 0;
 #endif
 
- public:
+public:
   WFindFile() noexcept { this->__close(); }
   bool open(const std::string& filespec, WFindFileTypeMask nTypeMask);
   bool next();

@@ -26,8 +26,13 @@ namespace core {
 
 class ScopeExit final {
 public:
-  ScopeExit() noexcept {}
-  explicit ScopeExit(std::function<void()> fn) : fn_(fn) {}
+  ScopeExit() noexcept {
+  }
+
+  explicit ScopeExit(std::function<void()> fn)
+    : fn_(fn) {
+  }
+
   ~ScopeExit() { if (fn_) { fn_(); } }
   // Apparently msvc always has a valid target here since this doesn't go boom:
   // std::function<void(void)> f;
@@ -38,7 +43,7 @@ private:
   std::function<void()> fn_;
 };
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 #endif // __INCLUDED_SCOPE_EXIT_H__

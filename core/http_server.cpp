@@ -30,8 +30,12 @@ using namespace wwiv::strings;
 
 namespace wwiv::core {
 
-HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn) : conn_(std::move(conn)) {}
-HttpServer::~HttpServer() {}
+HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn)
+  : conn_(std::move(conn)) {
+}
+
+HttpServer::~HttpServer() {
+}
 
 bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* handler) {
   if (method != HttpMethod::GET) {
@@ -54,12 +58,11 @@ void HttpServer::SendResponse(const HttpResponse& r) {
   conn_->send_line(StrCat("Date: ", current_time_as_string()), d);
   conn_->send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
   if (!r.text.empty()) {
-    auto content_length = r.text.size();
+    const auto content_length = r.text.size();
     conn_->send_line(StrCat("Content-Length: ", content_length), d);
     conn_->send("\r\n", d);
     conn_->send(r.text, d);
-  }
-  else {
+  } else {
     conn_->send_line("Connection: close", d);
     conn_->send("\r\n", d);
   }
@@ -71,8 +74,7 @@ static std::vector<std::string> read_lines(SocketConnection* conn) {
     auto s = conn->read_line(1024, std::chrono::milliseconds(10));
     if (!s.empty()) {
       lines.push_back(s);
-    }
-    else {
+    } else {
       break;
     }
   }
@@ -94,7 +96,7 @@ bool HttpServer::Run() {
   if (cmd == "GET") {
     for (const auto& e : get_) {
       if (starts_with(path, e.first)) {
-        auto r = e.second->Handle(HttpMethod::GET, path, headers);
+        const auto r = e.second->Handle(HttpMethod::GET, path, headers);
         SendResponse(r);
         return true;
       }

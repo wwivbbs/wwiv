@@ -21,5 +21,5 @@
 namespace wwiv {
 namespace stl {
 
-}  // namespace stl
-}  // namespace wwiv
+} // namespace stl
+} // namespace wwiv

@@ -57,14 +57,13 @@ using std::chrono::time_point;
 using wwiv::os::sleep_for;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 namespace {
 
-static const auto SLEEP_MS = milliseconds(100);
+const auto SLEEP_MS = milliseconds(100);
 
-static bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
+bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
   if (sock == INVALID_SOCKET) {
     return false;
   }
@@ -78,7 +77,7 @@ static bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
 #endif // _WIN32
 }
 
-static bool SetNoDelayMode(SOCKET sock, bool no_delay) {
+bool SetNoDelayMode(SOCKET sock, bool no_delay) {
 #ifdef _WIN32
   int one = no_delay ? 1 : 0;
   return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) !=
@@ -91,7 +90,7 @@ static bool SetNoDelayMode(SOCKET sock, bool no_delay) {
 #endif // _WIN32
 }
 
-static bool WouldSocketBlock() {
+bool WouldSocketBlock() {
 #ifdef _WIN32
   return WSAGetLastError() == WSAEWOULDBLOCK;
 #else  // _WIN32
@@ -101,10 +100,12 @@ static bool WouldSocketBlock() {
 
 } // namespace
 
-SocketConnection::SocketConnection(SOCKET sock) : SocketConnection(sock, ExitMode::CLOSE_SOCKET) {}
+SocketConnection::SocketConnection(SOCKET sock)
+  : SocketConnection(sock, ExitMode::CLOSE_SOCKET) {
+}
 
 SocketConnection::SocketConnection(SOCKET sock, ExitMode exit_mode)
-    : sock_(sock), open_(true), exit_mode_(exit_mode) {
+  : sock_(sock), open_(true), exit_mode_(exit_mode) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -130,24 +131,24 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
   }
 
-  struct addrinfo hints {};
+  struct addrinfo hints{};
   hints.ai_family = PF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = IPPROTO_IP;
 
-  const string port_string = std::to_string(port);
+  const auto port_string = std::to_string(port);
   struct addrinfo* address = nullptr;
-  int result_addrinfo = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
+  const auto result_addrinfo = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
   if (result_addrinfo != 0) {
     LOG(ERROR) << "ERROR calling getaddrinfo: " << result_addrinfo;
     // TODO(rushfan): Throw connection error here?
   }
   for (struct addrinfo* res = address; res != nullptr; res = res->ai_next) {
-    SOCKET s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    auto s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (s == INVALID_SOCKET) {
       continue;
     }
-    auto result = connect(s, res->ai_addr, static_cast<int>(res->ai_addrlen));
+    const auto result = connect(s, res->ai_addr, static_cast<int>(res->ai_addrlen));
     if (result == SOCKET_ERROR) {
       closesocket(s);
     } else {
@@ -194,19 +195,18 @@ SocketConnection::~SocketConnection() {
 template <typename TYPE, std::size_t SIZE = sizeof(TYPE)>
 static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bool throw_on_timeout,
                      std::size_t size = SIZE) {
-  auto end = system_clock::now() + d;
-  char* p = reinterpret_cast<char*>(data);
+  const auto end = system_clock::now() + d;
+  auto p = reinterpret_cast<char*>(data);
   std::size_t total_read = 0;
   int remaining = size;
   while (true) {
     if (system_clock::now() > end) {
       if (throw_on_timeout) {
         throw timeout_error("timeout error reading from socket.");
-      } else {
-        return total_read;
       }
+      return total_read;
     }
-    int result = ::recv(sock, p, remaining, 0);
+    const int result = recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
       if (WouldSocketBlock()) {
         sleep_for(SLEEP_MS);
@@ -244,24 +244,24 @@ int SocketConnection::receive_upto(void* data, const int size, duration<double> 
 }
 
 string SocketConnection::receive(int size, duration<double> d) {
-  std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
+  const auto data = std::make_unique<char[]>(size);
   const auto num_read = receive(data.get(), size, d);
   return string(data.get(), num_read);
 }
 
 string SocketConnection::receive_upto(int size, duration<double> d) {
-  std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  int num_read = receive_upto(data.get(), size, d);
+  const auto data = std::make_unique<char[]>(size);
+  const int num_read = receive_upto(data.get(), size, d);
   return string(data.get(), num_read);
 }
 
-std::string SocketConnection::read_line(int max_size, std::chrono::duration<double> d) {
+std::string SocketConnection::read_line(int max_size, duration<double> d) {
   string s;
-  int size = 0;
+  auto size = 0;
   try {
     while (true) {
       char data = 0;
-      int num_read = read_TYPE<char>(sock_, &data, d, true);
+      const auto num_read = read_TYPE<char>(sock_, &data, d, true);
       if (!open_) {
         throw socket_closed_error("read_line: socket not open");
       }
@@ -287,7 +287,7 @@ std::string SocketConnection::read_line(int max_size, std::chrono::duration<doub
 #endif  // MSG_NOSIGNAL 
 
 int SocketConnection::send(const void* data, int size, duration<double>) {
-  int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, MSG_NOSIGNAL);
+  const auto sent = ::send(sock_, reinterpret_cast<const char*>(data), size, MSG_NOSIGNAL);
   if (open_ && sent != size) {
     if (sent == -1) {
       throw socket_closed_error(
@@ -298,17 +298,17 @@ int SocketConnection::send(const void* data, int size, duration<double>) {
   return size;
 }
 
-int SocketConnection::send(const std::string& s, std::chrono::duration<double> d) {
+int SocketConnection::send(const std::string& s, duration<double> d) {
   return send(s.data(), s.size(), d);
 }
 
-int SocketConnection::send_line(const std::string& s, std::chrono::duration<double> d) {
+int SocketConnection::send_line(const std::string& s, duration<double> d) {
   return send(s + "\r\n", d);
 }
 
 uint16_t SocketConnection::read_uint16(duration<double> d) {
   uint16_t data = 0;
-  int num_read = read_TYPE<uint16_t>(sock_, &data, d, true);
+  const auto num_read = read_TYPE<uint16_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
     throw socket_closed_error(
         StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
@@ -318,7 +318,7 @@ uint16_t SocketConnection::read_uint16(duration<double> d) {
 
 uint8_t SocketConnection::read_uint8(duration<double> d) {
   uint8_t data = 0;
-  int num_read = read_TYPE<uint8_t>(sock_, &data, d, true);
+  const auto num_read = read_TYPE<uint8_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
     throw socket_closed_error(
         StrCat("read_uint8: got zero read from socket. expected: ", sizeof(uint8_t)));
@@ -334,5 +334,4 @@ bool SocketConnection::close() {
   return true;
 }
 
-} // namespace core
 } // namespace wwiv

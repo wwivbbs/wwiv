@@ -30,10 +30,13 @@ namespace core {
 
 static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
   switch (type) {
-  case FindFilesType::any: return WFindFileTypeMask::WFINDFILE_ANY;
-  case FindFilesType::directories: return WFindFileTypeMask::WFINDFILE_DIRS;
-  case FindFilesType::files: return WFindFileTypeMask::WFINDFILE_FILES;
-  default: 
+  case FindFilesType::any:
+    return WFindFileTypeMask::WFINDFILE_ANY;
+  case FindFilesType::directories:
+    return WFindFileTypeMask::WFINDFILE_DIRS;
+  case FindFilesType::files:
+    return WFindFileTypeMask::WFINDFILE_FILES;
+  default:
     LOG(FATAL) << "Invalid FindFilesType: " << static_cast<int>(type);
     // Make Compiler happy
     return WFindFileTypeMask::WFINDFILE_ANY;
@@ -62,8 +65,9 @@ FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type
         continue;
       }
     }
-    entries_.push_back({fn, fnd.GetFileSize() });
-  } while (fnd.next());
+    entries_.push_back({fn, fnd.GetFileSize()});
+  }
+  while (fnd.next());
 }
 
 }

@@ -53,7 +53,7 @@ namespace wwiv::core {
 #endif  // _WIN32
 
 // static 
-SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath, 
+SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
   VLOG(1) << "SemaphoreFile::try_acquire: '" << filepath << "'";
@@ -68,9 +68,9 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
   while (true) {
     const auto fn = filepath.string();
     auto fd = open(fn.c_str(), mode, pmode);
-    if (fd >= 0) { 
+    if (fd >= 0) {
       write(fd, text.c_str(), text.size());
-      return { filepath, fd };
+      return {filepath, fd};
     }
     if (std::chrono::steady_clock::now() > end) {
       throw semaphore_not_acquired(filepath);
@@ -85,8 +85,9 @@ SemaphoreFile SemaphoreFile::acquire(const std::filesystem::path& filepath,
   return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
-SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd) 
-  : path_(filepath), fd_(fd) {}
+SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd)
+  : path_(filepath), fd_(fd) {
+}
 
 SemaphoreFile::~SemaphoreFile() {
   VLOG(1) << "~SemaphoreFile(): " << path_ << "; fd: " << fd_;

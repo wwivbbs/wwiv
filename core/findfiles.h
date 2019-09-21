@@ -40,7 +40,7 @@ public:
   typedef std::vector<FileEntry>::iterator iterator;
   typedef std::vector<FileEntry>::const_iterator const_iterator;
 
-  FindFiles(const std::filesystem::path& mask, const FindFilesType type);
+  FindFiles(const std::filesystem::path& mask, FindFilesType type);
 
   iterator begin() { return entries_.begin(); }
   const_iterator begin() const { return entries_.begin(); }
@@ -52,7 +52,7 @@ public:
 
 private:
   std::vector<FileEntry> entries_; //we wish to iterate over this
-                            //container implementation code
+  //container implementation code
 
 };
 

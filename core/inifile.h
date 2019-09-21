@@ -30,22 +30,23 @@ namespace wwiv {
 namespace core {
 
 class IniFile final {
- public:
-  IniFile(const std::filesystem::path& filename, const std::initializer_list<const char*> sections);
+public:
+  IniFile(const std::filesystem::path& filename, std::initializer_list<const char*> sections);
   IniFile(const std::filesystem::path& filename,
-          const std::initializer_list<const std::string> sections);
+          std::initializer_list<const std::string> sections);
   // Constructor/Destructor
-  ~IniFile(); 
+  ~IniFile();
 
   // Member functions
   void Close() noexcept;
   bool IsOpen() const noexcept { return open_; }
 
-  template<typename T>
+  template <typename T>
   T value(const std::string& key, const T& default_value) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
   }
-  template<typename T>
+
+  template <typename T>
   T value(const std::string& key) const {
     return static_cast<T>(GetNumericValueT(key, T()));
   }
@@ -53,12 +54,12 @@ class IniFile final {
   std::string full_pathname() const noexcept { return path_.string(); }
   std::filesystem::path path() const noexcept { return path_; }
 
- private:
+private:
   // This class should not be assignable via '=' so remove the implicit operator=
   // and Copy constructor.
   IniFile(const IniFile& other) = delete;
   IniFile& operator=(const IniFile& other) = delete;
-  const char* GetValue(const std::string& key, const char *default_value = nullptr) const;
+  const char* GetValue(const std::string& key, const char* default_value = nullptr) const;
 
   std::string GetStringValue(const std::string& key, const std::string& default_value) const;
   long GetNumericValueT(const std::string& key, long default_value = 0) const;
@@ -70,19 +71,20 @@ class IniFile final {
   std::map<std::string, std::string> data_;
 };
 
-template<>
-std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const;
+template <>
+std::string IniFile::value<std::string>(const std::string& key,
+                                        const std::string& default_value) const;
 
-template<>
+template <>
 std::string IniFile::value<std::string>(const std::string& key) const;
 
-template<>
+template <>
 bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
-template<>
+template <>
 bool IniFile::value<bool>(const std::string& key) const;
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 #endif  // __INCLUDED_INIFILE_H__

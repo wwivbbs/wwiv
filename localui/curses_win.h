@@ -21,15 +21,11 @@
 
 #include "localui/colors.h"
 #include "localui/ui_win.h"
-#include <map>
+#include <any>
 #include <string>
 
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif // INSERT
-
 // Curses implementation of screen display routines for wwivconfig.
-class CursesWindow : public UIWindow {
+class CursesWindow final : public UIWindow {
 public:
   // Constructor/Destructor
   CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
@@ -37,7 +33,7 @@ public:
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
-  void SetTitle(const std::string& title);
+  void SetTitle(const std::string& title) override;
 
   void Bkgd(uint32_t ch) override;
   int RedrawWin() override;
@@ -64,13 +60,13 @@ public:
 
   void SetColor(SchemeId id) override;
 
-  void* window() const { return window_; }
-  CursesWindow* parent() const { return parent_; }
+  std::any window() const;
+  CursesWindow* parent() const;
 
-  virtual bool IsGUI() const override { return true; }
+  bool IsGUI() const override;
 
 private:
-  void* window_;
+  std::any window_;
   CursesWindow* parent_;
   ColorScheme* color_scheme_;
 };

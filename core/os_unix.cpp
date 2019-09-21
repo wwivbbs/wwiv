@@ -33,11 +33,11 @@ namespace os {
 
 void sleep_for(duration<double> d) {
   // usleep is microseconds.
-  auto ns = duration_cast<microseconds>(d);
-  usleep (static_cast<__useconds_t>(ns.count()));
+  const auto ns = duration_cast<microseconds>(d);
+  usleep(static_cast<__useconds_t>(ns.count()));
 }
 
-void sound(uint32_t frequency, std::chrono::duration<double> d) {
+void sound(uint32_t frequency, duration<double> d) {
   // NOP
 }
 
@@ -111,5 +111,5 @@ pid_t get_pid() {
 }
 
 
-}  // namespace os
-}  // namespace wwiv
+} // namespace os
+} // namespace wwiv

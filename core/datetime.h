@@ -125,15 +125,14 @@ public:
   friend bool operator<(const DateTime& lhs, const DateTime& rhs) {
     if (lhs.t_ == rhs.t_) {
       return lhs.millis_ < rhs.millis_;
-    } else {
-      return lhs.t_ < rhs.t_;
     }
+    return lhs.t_ < rhs.t_;
   }
 
   friend bool operator==(const DateTime& lhs, const DateTime& rhs);
   friend bool operator!=(const DateTime& lhs, const DateTime& rhs);
 
-  friend bool operator>(const DateTime& lhs, const DateTime& rhs); 
+  friend bool operator>(const DateTime& lhs, const DateTime& rhs);
 
   friend bool operator<=(const DateTime& lhs, const DateTime& rhs);
 

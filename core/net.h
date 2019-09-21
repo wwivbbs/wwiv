@@ -33,7 +33,7 @@
 // Really windows?
 typedef int socklen_t;
 
-#else 
+#else
 
 #include <netdb.h>
 #include <unistd.h>
@@ -64,12 +64,12 @@ SOCKET CreateListenSocket(int port);
 /**
  * Returns true if address is contained in the DNSRBL rbl_address.
  */
-bool on_dns_dbl(const std::string address, const std::string& rbl_address);
+bool on_dns_dbl(std::string address, const std::string& rbl_address);
 
 /**
  * Gets the DNS country code using rbl_address
  */
-int get_dns_cc(const std::string address, const std::string& rbl_address);
+int get_dns_cc(std::string address, const std::string& rbl_address);
 
 /** Sets the socket to blocking mode. */
 bool SetBlockingMode(SOCKET sock);
@@ -117,7 +117,7 @@ private:
   const int timeout_seconds_;
 };
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 #endif  // __INCLUDED_WWIV_CORE_NET_H__

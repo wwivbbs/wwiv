@@ -60,15 +60,15 @@ using namespace wwiv::os;
 namespace wwiv {
 namespace core {
 
-FileLock::FileLock(int fd, const std::string& filename, FileLockType lock_type) 
+FileLock::FileLock(int fd, const std::string& filename, FileLockType lock_type)
   : fd_(fd), filename_(filename), lock_type_(lock_type) {
 }
 
 FileLock::~FileLock() {
 #ifdef _WIN32
   HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(fd_));
-  OVERLAPPED overlapped = { 0 };
-  if (!::UnlockFileEx(h, 0, MAXDWORD, MAXDWORD, &overlapped)) {
+  OVERLAPPED overlapped = {0};
+  if (!UnlockFileEx(h, 0, MAXDWORD, MAXDWORD, &overlapped)) {
     LOG(ERROR) << "Error Unlocking file: " << filename_;
   }
 #else
@@ -79,5 +79,5 @@ FileLock::~FileLock() {
 }
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
