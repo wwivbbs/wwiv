@@ -22,11 +22,9 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "core/wfndfile.h"
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
   switch (type) {
@@ -70,5 +68,4 @@ FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type
   while (fnd.next());
 }
 
-}
 }
