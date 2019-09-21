@@ -18,12 +18,6 @@
 /**************************************************************************/
 #include "wwivconfig/user_editor.h"
 
-#include <cmath>
-#include <cstdint>
-#include <ctime>
-#include <string>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -37,11 +31,13 @@
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
+#include <cstdint>
+#include <string>
+#include <vector>
 
-static const int COL1_POSITION = 17;
-static const int COL2_POSITION = 50;
-static const int COL1_LINE = 2;
+static constexpr int COL1_POSITION = 17;
+static constexpr int COL2_POSITION = 50;
+static constexpr int COL1_LINE = 2;
 
 using std::string;
 using std::unique_ptr;
@@ -53,8 +49,8 @@ static bool IsUserDeleted(userrec* user) { return user->inact & inact_deleted; }
 
 static void show_user(EditItems* items, userrec* user) {
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
-  auto height = items->window()->GetMaxY() - 2;
-  auto width = items->window()->GetMaxX() - 2;
+  const auto height = items->window()->GetMaxY() - 2;
+  const auto width = items->window()->GetMaxX() - 2;
   const string blank(width - COL2_POSITION, ' ');
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i = 1; i < height; i++) {

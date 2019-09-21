@@ -18,32 +18,23 @@
 /**************************************************************************/
 #include "wwivconfig/languages.h"
 
-#include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
 #include <memory>
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
-#include <sys/stat.h>
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/strings.h"
 #include "core/stl.h"
-#include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "localui/wwiv_curses.h"
+#include "core/strings.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 
 using std::string;
 using std::unique_ptr;
@@ -148,7 +139,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
           break;
         } 
         
-        languagerec l;
+        languagerec l{};
         memset(&l, 0, sizeof(languagerec));
         to_char_array(l.name, "English");
         to_char_array(l.dir, config.gfilesdir());

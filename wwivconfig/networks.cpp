@@ -18,26 +18,16 @@
 /**************************************************************************/
 #include "wwivconfig/networks.h"
 
-#include <cmath>
-#include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
 #include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -46,13 +36,14 @@
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
-#include "sdk/vardec.h"
 
 #define UINT(u, n) (*((int*)(((char*)(u)) + (n))))
 #define UCHAR(u, n) (*((char*)(((char*)(u)) + (n))))
+
+constexpr ssize_t MAX_NETWORKS = 100;
 
 using std::pair;
 using std::string;

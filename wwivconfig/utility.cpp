@@ -16,24 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cstdlib>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <string>
-#include <sys/stat.h>
 
-#include "local_io/wconstants.h"
-#include "core/wwivport.h"
 #include "core/datafile.h"
 #include "core/file.h"
-#include "wwivconfig/archivers.h"
+#include "core/wwivport.h"
 #include "localui/input.h"
-#include "wwivconfig/wwivconfig.h"
-#include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include <string>
 
 // Make sure it's after windows.h
 #include "localui/wwiv_curses.h"

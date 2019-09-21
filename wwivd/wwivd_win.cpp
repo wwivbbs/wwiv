@@ -18,36 +18,26 @@
 /**************************************************************************/
 #include "wwivd/wwivd.h"
 
-#include <atomic>
-#include <iostream>
-#include <map>
-#include <string>
-
-#include <signal.h>
-#include <string>
-#include <sys/types.h>
-
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
+#include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "core/socket_connection.h"
 #include "sdk/config.h"
+#include <atomic>
+#include <iostream>
+#include <signal.h>
+#include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 extern std::atomic<bool> need_to_exit;
-}
 } // namespace wwiv
 
 using namespace wwiv::wwivd;
@@ -72,7 +62,7 @@ void signal_handler(int mysignal) {
 
 void BeforeStartServer() {
   // Not the best place, but this works.
-  static bool initialized = wwiv::core::InitializeSockets();
+  wwiv::core::InitializeSockets();
   signal(SIGTERM, signal_handler);
   signal(SIGINT, signal_handler);
   std::cerr << "set signal handlers" << std::endl;
@@ -90,17 +80,17 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   char cmdstr[4000];
   to_char_array(cmdstr, cmd);
 
-  DWORD creation_flags = CREATE_NEW_CONSOLE;
+  const DWORD creation_flags = CREATE_NEW_CONSOLE;
 
-  BOOL ok = CreateProcess(
-    NULL, 
+  auto ok = CreateProcess(
+    nullptr, 
     cmdstr,
-    NULL,
-    NULL,
+    nullptr,
+    nullptr,
     TRUE,
     creation_flags,
-    NULL,
-    NULL,
+    nullptr,
+    nullptr,
     &si,
     &pi);
 
@@ -117,7 +107,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   }
 
   // Wait until child process exits.
-  DWORD dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);
+  auto dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
 
   // Close process and thread handles. 

@@ -18,32 +18,21 @@
 /**************************************************************************/
 #include "wwivconfig/protocols.h"
 
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <memory>
-#include <string>
-#include <sys/stat.h>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;

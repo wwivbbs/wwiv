@@ -16,28 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cstdlib>
-#include <fcntl.h>
-#include <memory>
-#include <string>
-#ifdef _WIN32
-#include <io.h>
-#endif
-#include <sys/stat.h>
 
+#include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "core/file.h"
-#include "sdk/vardec.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "localui/wwiv_curses.h"
 #include "localui/input.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
+#include "wwivconfig/utility.h"
+#include <cstdlib>
+#include <memory>
+#include <string>
 
-static const int MAX_SUBS_DIRS = 4096;
+static constexpr int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
@@ -184,13 +175,13 @@ void up_subs_dirs(wwiv::sdk::Config& config) {
     y++;
     window->SetColor(SchemeId::PROMPT);
     window->PutsXY(2, y++, "New max subs: ");
-    uint16_t num_subs = input_number<uint16_t>(window.get(), 4);
+    auto num_subs = input_number<uint16_t>(window.get(), 4);
     if (!num_subs) {
       num_subs = config.max_subs();
     }
     window->SetColor(SchemeId::PROMPT);
     window->PutsXY(2, y++, "New max dirs: ");
-    uint16_t num_dirs = input_number<uint16_t>(window.get(), 4);
+    auto num_dirs = input_number<uint16_t>(window.get(), 4);
     if (!num_dirs) {
       num_dirs = config.max_dirs();
     }

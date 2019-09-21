@@ -16,23 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 #include <memory>
 #include <string>
-#include <sys/stat.h>
 
-#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
 #include "sdk/vardec.h"
 #include "localui/input.h"

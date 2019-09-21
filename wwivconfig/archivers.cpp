@@ -19,30 +19,19 @@
 #include "wwivconfig/archivers.h"
 
 #include "localui/wwiv_curses.h"
-#include <cmath>
-#include <cstdint>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
 #include <memory>
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 
 #include "core/file.h"
-#include <filesystem>
 #include "core/strings.h"
-#include "core/wwivport.h"
 #include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
+#include <filesystem>
 
 using std::string;
 using std::unique_ptr;
@@ -82,7 +71,7 @@ static void edit_arc(int arc_number, arcrec* a) {
                     new Label(6, y++,
                               "Extract command lines. For added security, a complete path to"),
                     new Label(6, y++, "the archiver and extension should be used. i.e.:"),
-                    new Label(6, y++, "c:\\bin\\arcs\\zip.exe -a %1 %2")});
+                    new Label(6, y++, R"(c:\bin\arcs\zip.exe -a %1 %2)")});
 
   items.Run(StringPrintf("Archiver #%d  %s", arc_number, ((arc_number == 1) ? "(Default)" : "")));
 }

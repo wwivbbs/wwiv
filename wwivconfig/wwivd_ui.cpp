@@ -18,19 +18,14 @@
 /**************************************************************************/
 #include "wwivconfig/wwivd_ui.h"
 
-#include "local_io/keycodes.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
+#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/wwivd_config.h"
-#include <cmath>
-#include <cstdint>
+#include "wwivconfig/utility.h"
 #include <memory>
 #include <string>
 

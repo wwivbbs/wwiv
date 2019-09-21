@@ -17,24 +17,7 @@
 /**************************************************************************/
 #include "wwivd/wwivd_non_http.h"
 
-#include <cctype>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <vector>
-
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
-
 #include "core/file.h"
-#include <filesystem>
-#include "core/http_server.h"
-#include "core/inifile.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
@@ -44,14 +27,19 @@
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
-#include "sdk/config.h"
 #include "sdk/ansi/makeansi.h"
-#include "core/datetime.h"
+#include "sdk/config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 #include "wwivd/wwivd.h"
+#include <cctype>
+#include <cereal/archives/json.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace wwiv {
 namespace wwivd {

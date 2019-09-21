@@ -25,8 +25,7 @@
 
 using wwiv::stl::contains;
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 std::string to_string(ConnectionType t) {
   switch (t) {
@@ -51,7 +50,7 @@ NodeManager::NodeManager(const std::string& name, ConnectionType type, int start
   }
 }
 
-NodeManager::~NodeManager() {}
+NodeManager::~NodeManager() = default;
 
 std::string NodeManager::status_string(const NodeStatus& n) const {
   auto s = n.description;
@@ -175,5 +174,4 @@ bool ConcurrentConnections::release(const std::string& peer) {
 }
 
 
-} // namespace wwivd
 } // namespace wwiv

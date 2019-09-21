@@ -19,8 +19,6 @@
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
 
-#include <vector>
-
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"

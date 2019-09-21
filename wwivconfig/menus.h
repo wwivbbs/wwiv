@@ -19,8 +19,6 @@
 #ifndef __INCLUDED_INIT_MENUS_H__
 #define __INCLUDED_INIT_MENUS_H__
 
-#include "sdk/config.h"
-
 #include <string>
 
 void menus(const std::string& menu_dir);

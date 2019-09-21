@@ -18,9 +18,7 @@
 /**************************************************************************/
 #include "wwivconfig/menus.h"
 
-#include <cmath>
 #include <cstring>
-#include <cstdlib>
 #include <iomanip>
 #include <memory>
 #include <string>
@@ -29,26 +27,17 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include <filesystem>
 #include "core/findfiles.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/filenames.h"
 #include "sdk/menu.h"
-#include "sdk/networks.h"
-#include "sdk/subxtr.h"
-#include "sdk/vardec.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
+#include <filesystem>
 
 using std::pair;
 using std::string;

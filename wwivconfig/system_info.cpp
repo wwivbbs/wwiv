@@ -18,18 +18,14 @@
 /**************************************************************************/
 #include "wwivconfig/system_info.h"
 
+#include "core/strings.h"
+#include "localui/input.h"
+#include "localui/wwiv_curses.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 #include <cstdint>
-#include <cstdlib>
-#include <cstring>
 #include <memory>
 #include <string>
-
-#include "core/strings.h"
-#include "wwivconfig/wwivconfig.h"
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
 
 using std::unique_ptr;
 using std::string;

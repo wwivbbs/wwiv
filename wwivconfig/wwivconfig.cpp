@@ -18,22 +18,7 @@
 /**************************************************************************/
 #define _DEFINE_GLOBALS_
 
-#include <cctype>
-#include <cerrno>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#include <memory>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <locale.h>
-#include <sys/stat.h>
-
-#include "local_io/wconstants.h"
-
+#include "wwivconfig/wwivconfig.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -43,7 +28,16 @@
 #include "core/strings.h"
 #include "core/version.cpp"
 #include "core/wwivport.h"
-
+#include "localui/curses_io.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
+#include "localui/stdio_win.h"
+#include "localui/ui_win.h"
+#include "localui/wwiv_curses.h"
+#include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/autoval.h"
 #include "wwivconfig/convert.h"
@@ -60,22 +54,10 @@
 #include "wwivconfig/sysop_account.h"
 #include "wwivconfig/system_info.h"
 #include "wwivconfig/user_editor.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/wwivd_ui.h"
-#include "sdk/vardec.h"
-
-#include "localui/curses_io.h"
-#include "localui/curses_win.h"
-#include "localui/input.h"
-#include "localui/listbox.h"
-#include "localui/stdio_win.h"
-#include "localui/ui_win.h"
-#include "localui/wwiv_curses.h"
-
-#include "sdk/config.h"
-#include "sdk/filenames.h"
-#include "sdk/usermanager.h"
+#include <cstdlib>
+#include <locale.h>
+#include <memory>
 
 using std::string;
 using std::vector;
@@ -85,7 +67,7 @@ using namespace wwiv::strings;
 
 static bool CreateConfigOvr(const string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
-  int num_instances = oini.value("NUM_INSTANCES", 4);
+  auto num_instances = oini.value("NUM_INSTANCES", 4);
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (int i = 1; i <= num_instances; i++) {
@@ -185,7 +167,7 @@ enum class ShouldContinue { CONTINUE, EXIT };
 static ShouldContinue
 read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
-  configrec cfg;
+  configrec cfg{};
 
   File file(config.config_filename());
   if (file.length() != sizeof(configrec)) {

@@ -61,7 +61,7 @@ bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
   sockaddr_in addr = {};
   socklen_t nAddrSize = sizeof(sockaddr);
 
-  int result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
+  const auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
   if (result == -1) {
     return false;
   }
@@ -78,7 +78,7 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
   char host[1024];
   char service[81];
 
-  int result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
+  auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
   if (result == -1) {
     return false;
   }
@@ -237,7 +237,7 @@ bool SocketSet::RunOnce() {
   VLOG(3) << "About to call select. (" << max_fd << ")";
   auto status = 0;
   if (timeout_seconds_ > 0) {
-    timeval timeout;
+    timeval timeout{};
     timeout.tv_usec = 0;
     timeout.tv_sec = timeout_seconds_;
     status = select(max_fd + 1, &fds, nullptr, nullptr, &timeout);

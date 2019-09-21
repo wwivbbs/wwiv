@@ -15,42 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivd/ips.h"
-
-#include <atomic>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <unordered_set>
-#include <vector>
-
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/unordered_set.hpp>
-#include <cereal/types/vector.hpp>
 
 #include "core/datetime.h"
-#include "core/file.h"
-#include "core/http_server.h"
-#include "core/inifile.h"
-#include "core/jsonfile.h"
 #include "core/log.h"
-#include "core/net.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
@@ -61,6 +31,12 @@
 #include "wwivd/connection_data.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_non_http.h"
+#include <atomic>
+#include <map>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace wwiv {
 namespace wwivd {

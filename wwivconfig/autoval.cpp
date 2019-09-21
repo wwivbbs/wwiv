@@ -17,27 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 #include "localui/wwiv_curses.h"
-#include <cmath>
 #include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-//#include <io.h>
-#else
-#include <unistd.h>
-#endif
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 
-#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 
 using std::string;
 using std::unique_ptr;
@@ -47,7 +36,7 @@ using namespace wwiv::strings;
 
 static string create_autoval_line(Config& config, int n) {
   char ar[20], dar[20], r[20];
-  valrec v = config.auto_val(n);
+  auto v = config.auto_val(n);
   string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {

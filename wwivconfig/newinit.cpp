@@ -18,38 +18,27 @@
 /**************************************************************************/
 #include "wwivconfig/newinit.h"
 
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <string>
-#include <sys/stat.h>
-#include <vector>
-
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivport.h"
 #include "localui/input.h"
 #include "localui/ui_win.h"
 #include "localui/wwiv_curses.h"
-#include "wwivconfig/archivers.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
-#include "sdk/vardec.h"
-
-#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
+#include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/utility.h"
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -277,7 +266,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   }
 
   {
-    directoryrec d1;
+    directoryrec d1{};
     memset(&d1, 0, sizeof(directoryrec));
     to_char_array(d1.name, "Sysop");
     to_char_array(d1.filename, "SYSOP");

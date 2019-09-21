@@ -16,17 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cstdlib>
-#include <memory>
-#include <string>
-#include <vector>
+#include "wwivconfig/subacc.h"
 
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "wwivconfig/subacc.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include <cstdlib>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::vector;
 using namespace wwiv::core;

@@ -19,29 +19,24 @@
 #include <string>
 #include <vector>
 
-#include <cereal/access.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/string.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 
 #include "core/http_server.h"
-#include "core/inifile.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
 #include "core/semaphore_file.h"
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
 #include "sdk/config.h"
-#include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 
