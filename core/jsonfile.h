@@ -25,6 +25,8 @@
 #include <filesystem>
 #include "core/log.h"
 #include "core/textfile.h"
+#include <cereal/cereal.hpp>
+#include <cereal/archives/json.hpp>
 
 namespace wwiv::core {
 

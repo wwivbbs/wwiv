@@ -57,7 +57,8 @@ int random_number(int max_value) {
   static std::random_device rdev;
   static std::default_random_engine re(rdev());
 
-  const std::uniform_int_distribution<int> dist(0, max_value - 1);
+  // Can't be const or it won't compile on gcc.
+  std::uniform_int_distribution<int> dist(0, max_value - 1);
   return dist(re);
 }
 

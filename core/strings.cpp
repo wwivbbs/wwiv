@@ -53,9 +53,9 @@ using std::stoi;
 using std::string;
 using std::out_of_range;
 
-unsigned char* translate_letters[] = {
-    reinterpret_cast<unsigned char *>("abcdefghijklmnopqrstuvwxyz�������"),
-    reinterpret_cast<unsigned char *>("ABCDEFGHIJKLMNOPQRSTUVWXYZ�������"),
+const unsigned char* translate_letters[] = {
+    reinterpret_cast<const unsigned char *>("abcdefghijklmnopqrstuvwxyz�������"),
+    reinterpret_cast<const unsigned char *>("ABCDEFGHIJKLMNOPQRSTUVWXYZ�������"),
     nullptr,
 };
 const char* DELIMS_WHITE = " \t\r\n";
