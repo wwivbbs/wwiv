@@ -43,6 +43,7 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
+#include <cmath>
 #include <string>
 #include <vector>
 

@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <cmath>
 #include <cstdio>
 #include <functional>
 #include <string>
