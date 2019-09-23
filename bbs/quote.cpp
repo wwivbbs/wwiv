@@ -17,11 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <deque>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl2.h"
@@ -30,13 +25,17 @@
 #include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
-
 #include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/wwivassert.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
 
 #define LINELEN 79
 #define PFXCOL 2

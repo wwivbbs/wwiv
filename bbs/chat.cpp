@@ -763,7 +763,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
 // Displays help on an action
 void action_help(int num) {
   char buffer[150];
-  char ac[12], rec[17];
+  char ac[13], rec[18];
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");

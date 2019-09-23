@@ -19,15 +19,9 @@
 #ifndef __INCLUDED_INPUT_H__
 #define __INCLUDED_INPUT_H__
 
-#include <cmath>
-#include <stdexcept>
+#include "core/strings.h"
 #include <set>
 #include <string>
-#include <vector>
-#include <type_traits>
-
-#include "core/strings.h"
-#include "core/wwivassert.h"
 
 namespace wwiv {
 namespace bbs {
