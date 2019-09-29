@@ -109,7 +109,10 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
   Contact contact(net);
   Callout callout(net);
   for (const auto& kv : callout.callout_config()) {
-    const auto& ncn = contact.contact_rec_for(kv.first);
+    const auto ncn = contact.contact_rec_for(kv.first);
+    if (ncn == nullptr) {
+      continue;
+    }
     if (!wwiv::sdk::net::allowed_to_call(kv.second, DateTime::now())) {
       continue;
     }
