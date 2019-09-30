@@ -251,7 +251,7 @@ bool File::Exists() const noexcept {
 
 void File::set_length(off_t l) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
-  auto _ = ftruncate(handle_, l);
+  [[maybe_unused]] auto _ = ftruncate(handle_, l);
 }
 
 // static

@@ -108,7 +108,7 @@ static bool check_wwivnet_host_networks(
           if (ReadSubcriberFile(PathFilePath(net.dir, filename), subscribers)) {
             for (uint16_t subscriber : subscribers) {
               auto c = b.node_config_for(subscriber);
-              if (c == nullptr) {
+              if (!c) {
                 text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
               }
             }
@@ -118,7 +118,7 @@ static bool check_wwivnet_host_networks(
         } else {
           // Sub hosted elsewhere.
           auto c = b.node_config_for(n.host);
-          if (c == nullptr) {
+          if (!c) {
             text << "Unknown system @" << n.host << " hosting subtype '" << n.stype << "'\r\n";
           }
         }
@@ -175,7 +175,7 @@ static bool check_connect_net(
   Connect connect(net.dir);
   for (const auto& entry : b.node_config()) {
     const auto n = connect.node_config_for(entry.first);
-    if (n == nullptr) {
+    if (!n) {
       text << "connect.net entry missing for node @" << entry.first << "\r\n";
     }
   }

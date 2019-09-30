@@ -26,8 +26,6 @@
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
 #include "sdk/networks.h"
 
 using std::cout;
@@ -38,8 +36,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string DumpBbsDataCommand::GetUsage() const {
   std::ostringstream ss;
@@ -55,14 +52,14 @@ bool DumpBbsDataCommand::AddSubCommands() {
 }
 
 int DumpBbsDataCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
   map<const string, BbsListNet> bbslists;
-  for (const auto net : networks.networks()) {
+  for (const auto& net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     if (barg("bbslist")) {
@@ -74,15 +71,14 @@ int DumpBbsDataCommand::Execute() {
     }
   }
 
-  for (const auto& b : bbslists) {
-    cout << "bbsdata.net information: : " << b.first << endl;
+  for (const auto& [net_name, b] : bbslists) {
+    cout << "bbsdata.net information: : " << net_name << endl;
     cout << "===========================================================" << endl;
-    cout << b.second.ToString() << endl;
+    cout << b.ToString() << endl;
   }
 
   return 0;
 }
 
 
-}
 }

@@ -37,7 +37,7 @@ net_system_list_rec *next_system(int ts) {
 
   auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   auto c = b.node_config_for(ts);
-  if (c == nullptr) {
+  if (!c) {
     csne = {};
     return nullptr;
   }

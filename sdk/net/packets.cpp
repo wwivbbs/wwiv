@@ -289,7 +289,7 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
-    auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
+    [[maybe_unused]] auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
   }
 
   const auto pos = std::distance(text_.begin(), iter);
@@ -309,11 +309,18 @@ void Packet::set_text(std::string&& text) {
 
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
   VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
-  auto n = b.node_config_for(node);
+
   if (node == 0) {
+    VLOG(2) << "get_forsys: zero node. ";
     return 0;
   }
-  if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
+
+  auto n = b.node_config_for(node);
+  if (!n) {
+    VLOG(2) << "get_forsys: no route to node: " << node;
+    return WWIVNET_NO_NODE;
+  }
+  if (n->forsys == WWIVNET_NO_NODE) {
     VLOG(2) << "get_forsys: no route to node: " << node;
     return WWIVNET_NO_NODE;
   }

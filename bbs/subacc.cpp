@@ -182,7 +182,7 @@ postrec* get_post(int mn) {
   if (mn > a()->GetNumMessagesInCurrentMessageArea()) {
     mn = a()->GetNumMessagesInCurrentMessageArea();
   }
-  bool need_close = false;
+  auto need_close = false;
   if (!fileSub) {
     if (!open_sub(false)) {
       return nullptr;

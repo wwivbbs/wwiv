@@ -131,13 +131,11 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   return true;
 }
 
-postrec* get_post(int mn) {
-  // Returns info for a post.  Maintains a cache.  Does not correct anything
-  // if the sub has changed.
-  static postrec p{};
-  // error if msg # invalid
+std::optional<postrec> get_post(int mn) {
+  // Returns info for a post.  Does not correct anything if the sub has changed.
+  // returns null optional if msg # invalid
   if (mn < 1) {
-    return nullptr;
+    return std::nullopt;
   }
   // adjust msgnum, if it is no longer valid
   if (mn > GetNumMessagesInCurrentMessageArea()) {
@@ -145,14 +143,15 @@ postrec* get_post(int mn) {
   }
 
   // read in some sub info
+  postrec p{};
   fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
   fileSub->Read(&p, sizeof(postrec));
-  return &p;
+  return {p};
 }
 
-void write_post(int mn, postrec* pp) {
+void write_post(int mn, const postrec& pp) {
   if (fileSub->IsOpen()) {
     fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
-    fileSub->Write(pp, sizeof(postrec));
+    fileSub->Write(&pp, sizeof(postrec));
   }
 }
