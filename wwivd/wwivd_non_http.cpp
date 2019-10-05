@@ -50,12 +50,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-static string to_string(const NodeManager& nodes) {
-  std::ostringstream ss;
-  ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
-  return ss.str();
-}
-
 string to_string(const wwivd_matrix_entry_t& e) {
   std::ostringstream ss;
   ss << "[" << e.key << "] " << e.name << " (" << e.description << ")";
@@ -93,7 +87,7 @@ std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::strin
   return out;
 }
 
-const std::filesystem::path node_file(const Config& config, ConnectionType ct, int node_number) {
+std::filesystem::path node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
     return PathFilePath(config.datadir(), "binkpinuse");
   }
@@ -198,8 +192,8 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
     return c.bbses.front();
   }
 
-  auto ansi = check_ansi(conn);
-  auto d = 1s;
+  const auto ansi = check_ansi(conn);
+  const auto d = 1s;
   for (auto tries = 0; tries < 3; tries++) {
     conn.send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
     conn.send_line("\r\n", d);
@@ -227,7 +221,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
     if (key_str.empty()) {
       continue;
     }
-    auto key = key_str.front();
+    const auto key = key_str.front();
 
     for (const auto& b : c.bbses) {
       if (std::toupper(b.key) == std::toupper(key)) {
@@ -248,7 +242,7 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
 
 // Can throw
 ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
-  auto sock = r.client_socket;
+  const auto sock = r.client_socket;
   string remote_peer;
   const auto& b = data.c->blocking;
 

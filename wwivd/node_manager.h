@@ -49,7 +49,7 @@ public:
   NodeManager(const std::string& name, ConnectionType type, int start, int end);
   virtual ~NodeManager();
 
-  std::string status_string(const NodeStatus& n) const;
+  static std::string status_string(const NodeStatus& n);
 
   std::vector<std::string> status_lines() const;
 

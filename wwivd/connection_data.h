@@ -18,13 +18,13 @@
 #ifndef __INCLUDED_WWIVD_CONNECTION_DATA_H__
 #define __INCLUDED_WWIVD_CONNECTION_DATA_H__
 
-#include <map>
-#include <memory>
 #include "core/net.h"
 #include "sdk/config.h"
 #include "sdk/wwivd_config.h"
 #include "wwivd/ips.h"
 #include "wwivd/node_manager.h"
+#include <map>
+#include <memory>
 
 namespace wwiv {
 namespace wwivd {
@@ -38,9 +38,9 @@ struct ConnectionData {
   const wwiv::sdk::wwivd_config_t* c;
   std::map<const std::string, std::shared_ptr<NodeManager>>* nodes;
   std::shared_ptr<ConcurrentConnections> concurrent_connections_;
-  std::shared_ptr<wwiv::wwivd::GoodIp> good_ips_;
-  std::shared_ptr<wwiv::wwivd::BadIp> bad_ips_;
-  std::shared_ptr<wwiv::wwivd::AutoBlocker> auto_blocker_;
+  std::shared_ptr<GoodIp> good_ips_;
+  std::shared_ptr<BadIp> bad_ips_;
+  std::shared_ptr<AutoBlocker> auto_blocker_;
 };
 
 }  // namespace wwivd

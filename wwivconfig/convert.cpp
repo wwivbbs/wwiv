@@ -17,16 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivconfig/convert.h"
-
 #include "localui/wwiv_curses.h"
-#include <cstring>
-#ifdef _WIN32
-#include <direct.h>
-#endif
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include <filesystem>
 #include "core/strings.h"
 #include "core/version.h"
 #include "local_io/wconstants.h"
@@ -37,14 +31,14 @@
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
 #include "wwivconfig/archivers.h"
+#include <cstring>
+#include <filesystem>
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-#define CONFIG_USR "config.usr"
 
 struct user_config {
   char name[31]; // verify against a user
@@ -75,7 +69,7 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   }
 
   // update user info data
-  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  auto userreclen = static_cast<int16_t>(sizeof(userrec));
   int16_t waitingoffset = offsetof(userrec, waiting);
   int16_t inactoffset = offsetof(userrec, inact);
   int16_t sysstatusoffset = offsetof(userrec, sysstatus);

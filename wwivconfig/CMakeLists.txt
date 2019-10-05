@@ -1,7 +1,6 @@
 # CMake for WWIV 5
 Include(FindWWIVCurses)
 
-
 set(COMMON_SOURCES
   archivers.cpp
   autoval.cpp

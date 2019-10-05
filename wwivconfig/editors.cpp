@@ -18,21 +18,21 @@
 /**************************************************************************/
 #include "wwivconfig/editors.h"
 
+#include "core/datafile.h"
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
+#include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/datafile.h"
-#include "core/file.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
-#include "localui/listbox.h"
-#include "sdk/filenames.h"
 
 using std::unique_ptr;
 using std::string;
@@ -103,9 +103,9 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (size_t i = 0; i < editors.size(); i++) {
-      items.emplace_back(StringPrintf("%d. %s", i + 1, editors[i].description));
+      items.emplace_back(fmt::format("{}. {}", i + 1, editors[i].description));
     }
-    CursesWindow* window = out->window();
+    auto window = out->window();
     ListBox list(window, "Select Editor", items);
 
     list.selection_returns_hotkey(true);
@@ -115,8 +115,8 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
         case 'D': {
-          if (editors.size()) {
-            string prompt = StringPrintf("Delete '%s'", items[result.selected].text().c_str());
+          if (!editors.empty()) {
+            auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
             bool yn = dialog_yn(window, prompt);
             if (!yn) {
               break;
@@ -129,7 +129,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
             messagebox(out->window(), "Too many editors.");
             break;
           }
-          string prompt = StringPrintf("Insert before which (1-%d) : ", editors.size() + 1);
+          string prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
           size_t i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
           editorrec e{};
           memset(&e, 0, sizeof(editorrec));

@@ -42,12 +42,17 @@ if (UNIX)
 elseif (WIN32)
 
   if (MSVC)
-    message(STATUS "Using MSVC, Setting warnings to match UNIX.")
+    # Don't show warnings on using normal POSIX functions.  Maybe one day
+    # We'll be using all C++ replacements for most things and can get rid
+    # of this.
     add_definitions(/D_CRT_SECURE_NO_WARNINGS)
     add_definitions(/D_CRT_NONSTDC_NO_DEPRECATE)
+    # Make Windows.h not so awful if included
     add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
     add_definitions(/DNOMINMAX)
     add_definitions(/DWIN32_LEAN_AND_MEAN=1)
+    # Otherwise fmt will include windows.h and that breaks everything
+    add_definitions(/DFMT_USE_WINDOWS_H=0)
     
     # Warning 26444 is too noisy to be useful for passing parameters to functions.
     # See https://developercommunity.visualstudio.com/content/problem/422153/warning-c26444-not-aligned-with-cppcoreguidelines.html

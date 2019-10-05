@@ -38,7 +38,7 @@ static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */
 void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
-  configrec cfg = *config.config();
+  auto cfg = *config.config();
 
   items.add_items({
       new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),

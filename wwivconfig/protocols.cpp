@@ -78,10 +78,8 @@ static void load_protocols(const std::string& datadir, vector<newexternalrec>& e
     if (file) {
       file.ReadVector(over_intern, 3);
     } else {
-      newexternalrec e;
-      memset(&e, 0, sizeof(newexternalrec));
       for (size_t i = 0; i < 3; i++) {
-        over_intern.push_back(e);
+        over_intern.push_back({});
       }
     }
   }
@@ -182,8 +180,8 @@ void extrn_prots(const std::string& datadir) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-    ListBoxResult result = list.Run();
-    const int max_protocol_number = externs.size() -1 + 6;
+    auto result = list.Run();
+    const int max_protocol_number = size_int(externs) -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
@@ -193,8 +191,8 @@ void extrn_prots(const std::string& datadir) {
             messagebox(out->window(), "You can only delete external protocols.");
             break;
           }
-          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text().c_str());
-          bool yn = dialog_yn(window, prompt);
+          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
+          auto yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
           }
@@ -211,7 +209,7 @@ void extrn_prots(const std::string& datadir) {
         size_t pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
         if (pos >= 6 && pos <= externs.size() + 6) {
           size_t extern_pos = pos - 6;
-          newexternalrec e;
+          newexternalrec e{};
           memset(&e, 0, sizeof(newexternalrec));
           if (extern_pos > externs.size()) {
             externs.push_back(e);

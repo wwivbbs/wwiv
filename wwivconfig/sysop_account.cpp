@@ -21,6 +21,7 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -54,15 +55,15 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   if (ini.IsOpen()) {
     for (int i = 0; i < 10; i++) {
       {
-        const string key_name = StringPrintf("%s[%d]", "NUCOLOR", i);
-        uint8_t num = ini.value<uint8_t>(key_name);
+        const auto key_name = fmt::format("{}[{}]", "NUCOLOR", i);
+        auto num = ini.value<uint8_t>(key_name);
         if (num != 0) {
           newuser_colors[i] = num;
         }
       }
       {
-        const string key_name = StringPrintf("%s[%d]", "NUCOLORBW", i);
-        uint8_t num = ini.value<uint8_t>(key_name);
+        const auto key_name = fmt::format("{}[{}]", "NUCOLORBW", i);
+        auto num = ini.value<uint8_t>(key_name);
         if (num != 0) {
           newuser_bwcolors[i] = num;
         }

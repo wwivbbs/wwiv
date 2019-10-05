@@ -44,7 +44,7 @@ static constexpr int LABEL1_WIDTH = 18;
 static const char enter_to_edit[] = "[Press Enter to Edit]";
 
 /** 
- * EditItem that exeucutes a std::function<T, CursesWindow*> to 
+ * EditItem that executes a std::function<T, CursesWindow*> to 
  * edit the items. It is intended that this function will invoke
  * a new Edititems dialog or ListBox for editing.
  */
@@ -52,9 +52,9 @@ template <class T> class SubDialog : public BaseEditItem {
 public:
   SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
       : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), fn_(fn), t_(t){};
-  virtual ~SubDialog() {}
+  virtual ~SubDialog() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
@@ -69,7 +69,8 @@ public:
     }
     return EditlineResult::NEXT;
   }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, enter_to_edit); }
+
+  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, enter_to_edit); }
 
 private:
   T& t_;
@@ -88,7 +89,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    ListBoxResult result = list.Run();
+    auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
@@ -107,7 +108,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
           break;
         }
         auto code_num = to_number<int>(code_str);
-        auto pos = result.selected;
+        const auto pos = result.selected;
         if (pos >= 0 && pos < size_int(items)) {
           wwiv::stl::insert_at(b_.block_cc_countries, pos, code_num);
         } else {
@@ -117,7 +118,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
       auto& b = b_.block_cc_countries.at(result.selected);
-      const string code_str =
+      const auto code_str =
           dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
       if (code_str.empty()) {
         break;

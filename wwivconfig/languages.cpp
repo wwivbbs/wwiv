@@ -18,23 +18,23 @@
 /**************************************************************************/
 #include "wwivconfig/languages.h"
 
-#include <cstdint>
-#include <cstring>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -100,7 +100,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (std::size_t i = 0; i < languages.size(); i++) {
-      items.emplace_back(StringPrintf("%d. %s (%s)", i + 1, languages[i].name, languages[i].dir));
+      items.emplace_back(fmt::format("{} {} ({})", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = out->window();
     ListBox list(window, "Select Language", items);
@@ -108,13 +108,13 @@ void edit_languages(const wwiv::sdk::Config& config) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-    ListBoxResult result = list.Run();
+    auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
         if (languages.size() > 1) {
-          string prompt = StringPrintf("Delete '%s' ?", items[result.selected].text().c_str());
-          bool yn = dialog_yn(window, prompt);
+          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
+          auto yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
           }
@@ -132,10 +132,10 @@ void edit_languages(const wwiv::sdk::Config& config) {
           break;
         }
 
-        string prompt = StringPrintf("Insert before which (1-%d) : ", languages.size() + 1);
-        size_t i = dialog_input_number(out->window(), prompt, 1, languages.size() + 1);
+        auto prompt = fmt::format("Insert before which (1-{}) : ", languages.size() + 1);
+        auto i = dialog_input_number(out->window(), prompt, 1, size_int(languages) + 1);
         // N.B. i is one based, result.selected is 0 based.
-        if (i <= 0 || i > languages.size() + 1) {
+        if (i <= 0 || i > size_int(languages) + 1) {
           break;
         } 
         
@@ -146,7 +146,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
         to_char_array(l.mdir, config.gfilesdir());
         l.num = get_next_langauge_num(languages);
 
-        if (i > languages.size()) {
+        if (i > size_int(languages)) {
           languages.push_back(l);
           edit_lang(config.root_directory(), languages.back());
         } else {

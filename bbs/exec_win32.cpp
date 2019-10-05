@@ -34,6 +34,7 @@
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/format.h"
 
 static FILE* hLogFile;
 
@@ -169,7 +170,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
         ::Sleep(500);
-        string write_slot_name = StringPrintf(R"(\\.\mailslot\sbbsexec\wr%d)", a()->instance_number());
+        string write_slot_name = fmt::format(R"(\\.\mailslot\sbbsexec\wr{})", a()->instance_number());
         LogToSync(StrCat("Creating Mail Slot: '", write_slot_name, "'\r\n"));
 
         hSyncWriteSlot = CreateFile(write_slot_name.c_str(),
@@ -262,7 +263,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
 
   // Create Hangup Event.
-  const auto event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
+  const auto event_name = fmt::format("sbbsexec_hungup{}", a()->instance_number());
   hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
   if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
@@ -271,7 +272,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   }
 
   // Create Read Mail Slot
-  const auto readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
+  const auto readslot_name = fmt::format(R"(\\.\mailslot\sbbsexec\rd{})", a()->instance_number());
   hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
   if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
@@ -315,10 +316,10 @@ int exec_cmdline(const string commandLine, int flags) {
     }
 
     // Set the socket to be std{in,out}
-    auto sock = a()->remoteIO()->GetDoorHandle();
-    si.hStdInput = (HANDLE) sock;
-    si.hStdOutput = (HANDLE)sock;
-    si.hStdError = (HANDLE)sock;
+    const auto sock = a()->remoteIO()->GetDoorHandle();
+    si.hStdInput = reinterpret_cast<HANDLE>(sock);
+    si.hStdOutput = reinterpret_cast<HANDLE>(sock);
+    si.hStdError = reinterpret_cast<HANDLE>(sock);
     si.dwFlags |= STARTF_USESTDHANDLES;
   }
 
@@ -339,7 +340,7 @@ int exec_cmdline(const string commandLine, int flags) {
   }
 
   DWORD dwCreationFlags = 0;
-  auto title = std::make_unique<char[]>(500);
+  const auto title = std::make_unique<char[]>(500);
   if (flags & EFLAG_NETPROG) {
     strcpy(title.get(), "NETWORK");
   } else {
@@ -352,8 +353,8 @@ int exec_cmdline(const string commandLine, int flags) {
     a()->remoteIO()->close(true);
   }
 
-  HANDLE hSyncHangupEvent = INVALID_HANDLE_VALUE;
-  HANDLE hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
+  auto hSyncHangupEvent = INVALID_HANDLE_VALUE;
+  auto hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
     
   if (bUsingSync) {
     SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
@@ -365,7 +366,7 @@ int exec_cmdline(const string commandLine, int flags) {
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
   to_char_array(szTempWorkingCommandline, workingCommandLine);
-  BOOL bRetCP = CreateProcess(
+  auto bRetCP = CreateProcess(
                   nullptr,
                   szTempWorkingCommandline,
                   nullptr,
@@ -398,9 +399,9 @@ int exec_cmdline(const string commandLine, int flags) {
   CloseHandle(pi.hThread);
 
   if (bUsingSync) {
-    bool saved_binary_mode = a()->remoteIO()->binary_mode();
+    const auto saved_binary_mode = a()->remoteIO()->binary_mode();
     a()->remoteIO()->set_binary_mode(true);
-    bool sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
+    const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
     fclose(hLogFile);
 

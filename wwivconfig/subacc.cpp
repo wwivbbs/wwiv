@@ -23,7 +23,6 @@
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>

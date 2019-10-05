@@ -17,16 +17,15 @@
 /**************************************************************************/
 #include "sdk/fido/nodelist.h"
 
-#include <set>
-#include <string>
-
+#include "core/datetime.h"
 #include "core/file.h"
-#include "core/log.h"
+#include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/findfiles.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
+#include <set>
+#include <string>
 
 using std::string;
 using std::vector;
@@ -334,7 +333,7 @@ static std::string latest_extension(const std::map<int, int>& ey) {
 
   for (auto r = ey.rbegin(); r != ey.rend(); r++) {
     if ((*r).second == highest_year) {
-      return StringPrintf("%03d", (*r).first);
+      return fmt::sprintf("%03d", (*r).first);
     }
   }
   return "000";

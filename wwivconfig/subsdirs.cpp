@@ -20,6 +20,7 @@
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
@@ -37,7 +38,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 template<typename T>
-static T input_number(CursesWindow* window, int max_digits) {
+static auto input_number(CursesWindow* window, int max_digits) -> T {
   string s;
   editline(window, &s, max_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
@@ -77,9 +78,9 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  auto nqscn_len =
+  const auto nqscn_len =
       static_cast<uint16_t>(4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32)));
-  uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
+  auto nqsc = static_cast<uint32_t *>(malloc(nqscn_len));
   wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
   if (!nqsc) {
     return;
@@ -93,18 +94,18 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  uint32_t* oqsc = (uint32_t *)malloc(config.qscn_len());
+  auto oqsc = static_cast<uint32_t *>(malloc(config.qscn_len()));
   wwiv::core::ScopeExit free_oqsc([&]() { free(oqsc); oqsc = nullptr; });
   if (!oqsc) {
-    messagebox(window, StringPrintf("Could not allocate %d bytes for old quickscan rec\n",
+    messagebox(window, fmt::format("Could not allocate {} bytes for old quickscan rec\n",
                                     config.qscn_len()));
     return;
   }
   memset(oqsc, 0, config.qscn_len());
 
-  uint32_t* oqsc_n = oqsc + 1;
-  uint32_t* oqsc_q = oqsc_n + ((config.max_dirs() + 31) / 32);
-  uint32_t* oqsc_p = oqsc_q + ((config.max_subs() + 31) / 32);
+  const auto oqsc_n = oqsc + 1;
+  const auto oqsc_q = oqsc_n + ((config.max_dirs() + 31) / 32);
+  const auto oqsc_p = oqsc_q + ((config.max_subs() + 31) / 32);
 
   if (num_dirs < config.max_dirs()) {
     l1 = ((num_dirs + 31) / 32) * 4;
@@ -208,7 +209,7 @@ void up_subs_dirs(wwiv::sdk::Config& config) {
     }
 
     if ((num_subs != config.max_subs()) || (num_dirs != config.max_dirs())) {
-      const auto text = StringPrintf("Change to %d subs and %d dirs? ", num_subs, num_dirs);
+      const auto text = fmt::format("Change to {} subs and {} dirs? ", num_subs, num_dirs);
       if (dialog_yn(window.get(), text)) {
         window->SetColor(SchemeId::INFO);
         window->Puts("Please wait...\n");

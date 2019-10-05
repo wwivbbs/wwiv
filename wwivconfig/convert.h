@@ -22,7 +22,6 @@
 #include "localui/curses_win.h"
 #include "sdk/config.h"
 
-
 bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config&);
 void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config&);
 bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config&);

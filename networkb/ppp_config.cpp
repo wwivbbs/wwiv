@@ -17,18 +17,16 @@
 /**************************************************************************/
 #include "networkb/ppp_config.h"
 
-#include <iostream>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <string>
-
-#include "core/strings.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
 
 using std::map;
 using std::string;
@@ -39,8 +37,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 // [[ VisibleForTesting ]]
 bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* config) {
@@ -87,7 +84,7 @@ PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& conf
   const auto& net = networks[callout_network_name];
   node_ = net.sysnum;
   if (node_ == 0) {
-    throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+    throw config_error(fmt::format("NODE not specified for network: '{}'", callout_network_name));
   }
 
   ParseAddressesFile(&node_config_, net.dir);
@@ -109,6 +106,5 @@ const PPPNodeConfig* PPPConfig::ppp_node_config_for(int node) const {
 }
 
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace wwiv
 

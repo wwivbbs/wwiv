@@ -17,20 +17,9 @@
 /**************************************************************************/
 
 // WWIV5 NetworkC
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
@@ -38,20 +27,21 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/fido/fido_util.h"
-
-#include "core/datetime.h"
-#include "core/findfiles.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/connect.h"
-#include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/filenames.h"
 #include "sdk/net/packets.h"
-#include "sdk/networks.h"
 #include "sdk/status.h"
-#include "sdk/subscribers.h"
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -76,7 +66,7 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 
 
 static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
-  const auto pattern = StringPrintf("p*.%03d", instance_number);
+  const auto pattern = fmt::sprintf("p*.%03d", instance_number);
   LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
   FindFiles ff(PathFilePath(dir, pattern), FindFilesType::files);
   for (const auto& f : ff) {

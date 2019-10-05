@@ -52,7 +52,8 @@ NodeManager::NodeManager(const std::string& name, ConnectionType type, int start
 
 NodeManager::~NodeManager() = default;
 
-std::string NodeManager::status_string(const NodeStatus& n) const {
+// static 
+std::string NodeManager::status_string(const NodeStatus& n) {
   auto s = n.description;
   if (n.connected) {
     s += " [";
@@ -147,12 +148,12 @@ bool NodeManager::ReleaseNode(int node) {
 }
 
 ConcurrentConnections::ConcurrentConnections(int max_num) : max_num_(max_num) {}
-ConcurrentConnections::~ConcurrentConnections() {}
+ConcurrentConnections::~ConcurrentConnections() = default;
 
 bool ConcurrentConnections::aquire(const std::string& peer) {
   VLOG(1) << "ConcurrentConnections::aquire: " << peer;
   std::lock_guard<std::mutex> lock(connection_mu_);
-  auto cur = map_[peer];
+  const auto cur = map_[peer];
   VLOG(2) << "ConcurrentConnections: cur: " << cur << "; max_num_: " << max_num_;
   if (cur < max_num_) {
     map_[peer] = cur + 1;
@@ -164,7 +165,7 @@ bool ConcurrentConnections::aquire(const std::string& peer) {
 
 bool ConcurrentConnections::release(const std::string& peer) {
   std::lock_guard<std::mutex> lock(connection_mu_);
-  auto cur = map_[peer] - 1;
+  const auto cur = map_[peer] - 1;
   if (cur > 0) {
     map_[peer] = cur;
   } else {

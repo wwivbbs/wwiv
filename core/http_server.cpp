@@ -34,8 +34,7 @@ HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn)
   : conn_(std::move(conn)) {
 }
 
-HttpServer::~HttpServer() {
-}
+HttpServer::~HttpServer() = default;
 
 bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* handler) {
   if (method != HttpMethod::GET) {

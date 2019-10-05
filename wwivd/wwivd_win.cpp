@@ -57,6 +57,9 @@ void signal_handler(int mysignal) {
     need_to_exit.store(true);
     // call default handler
   } break;
+  default: {
+    std::cerr << "Unknown signal: " << mysignal << std::endl;
+  };
   }
 }
 
@@ -100,7 +103,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
     return false;
   }
 
-  if (sock != SOCKET_ERROR) {
+  if (sock != INVALID_SOCKET) {
     // We're done with this socket and the child has another reference count
     // to it.
     closesocket(sock);

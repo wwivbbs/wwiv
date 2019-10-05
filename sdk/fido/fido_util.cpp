@@ -17,14 +17,6 @@
 /**************************************************************************/
 #include "sdk/fido/fido_util.h"
 
-#include <chrono>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -32,7 +24,13 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
+#include <chrono>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -41,28 +39,26 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 constexpr char CZ = 26;
 
 // We use DDHHMMSS like SBBSECHO v2 does.
 std::string packet_name(DateTime& dt) {
-  auto buf = dt.to_string("%d%H%M%S");
+  const auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }
 
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source,
                         const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
-  int16_t net = source.net() - dest.net();
-  uint16_t node = source.node() - dest.node();
+  const int16_t net = source.net() - dest.net();
+  const uint16_t node = source.node() - dest.node();
 
-  return StringPrintf("%04.4x%04.4x.%s", net, node, extension.c_str());
+  return fmt::sprintf("%04.4x%04.4x.%s", net, node, extension);
 }
 
 std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
-  return StringPrintf("%04.4x%04.4x.%s", dest.net(), dest.node(), extension.c_str());
+  return fmt::sprintf("%04.4x%04.4x.%s", dest.net(), dest.node(), extension);
 }
 
 std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
@@ -133,16 +129,16 @@ static string control_file_extension(fido_bundle_status_t status) {
 
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest,
                               fido_bundle_status_t status) {
-  auto net = dest.net();
-  auto node = dest.node();
+  const auto net = dest.net();
+  const auto node = dest.node();
 
   const auto ext = control_file_extension(status);
-  return StringPrintf("%04.4x%04.4x.%s", net, node, ext.c_str());
+  return fmt::sprintf("%04.4x%04.4x.%s", net, node, ext);
 }
 
 // 10 Nov 16  21:15:45
 std::string daten_to_fido(time_t t) {
-  auto dt = DateTime::from_time_t(t);
+  const auto dt = DateTime::from_time_t(t);
   return dt.to_string("%d %b %y  %H:%M:%S");
 }
 
@@ -153,7 +149,7 @@ daten_t fido_to_daten(std::string d) {
                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
     auto now = time_t_now();
-    struct tm* t = localtime(&now);
+    auto t = localtime(&now);
     stream >> t->tm_mday;
     string mon_str;
     stream >> mon_str;
@@ -170,7 +166,7 @@ daten_t fido_to_daten(std::string d) {
 
     string hms;
     stream >> hms;
-    vector<string> parts = SplitString(hms, ":");
+    auto parts = SplitString(hms, ":");
     t->tm_hour = to_number<int>(parts.at(0)) - 1;
     t->tm_min = to_number<int>(parts.at(1));
     t->tm_sec = to_number<int>(parts.at(2));
@@ -303,7 +299,7 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
     }
     if (line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
-      auto code = line.at(1);
+      const auto code = line.at(1);
       if (code < '0' || code > '9') {
         // Bogus control-D line, let's skip.
         VLOG(1) << "Invalid control-D line: '" << line << "'";
@@ -311,7 +307,7 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
       }
       // Strip WWIV control off.
       line = line.substr(2);
-      int8_t code_num = code - '0';
+      const int8_t code_num = code - '0';
       if (code == '0') {
         if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") ||
             starts_with(line, "PID:")) {
@@ -356,13 +352,13 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
 }
 
 FidoAddress get_address_from_single_line(const std::string& line) {
-  auto start = line.find_last_of('(');
-  auto end = line.find_last_of(')');
+  const auto start = line.find_last_of('(');
+  const auto end = line.find_last_of(')');
   if (start == string::npos || end == string::npos) {
     return EMPTY_FIDO_ADDRESS;
   }
 
-  auto astr = line.substr(start + 1, end - start - 1);
+  const auto astr = line.substr(start + 1, end - start - 1);
   try {
     return FidoAddress(astr);
   } catch (std::exception&) {
@@ -435,8 +431,8 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
       VLOG(2) << "Malformed route: " << route;
       return RouteMatch::no;
     }
-    auto zone = to_number<uint16_t>(parts.at(0));
-    auto net = to_number<uint16_t>(parts.at(1));
+    const auto zone = to_number<uint16_t>(parts.at(0));
+    const auto net = to_number<uint16_t>(parts.at(1));
     if (a.zone() == zone && a.net() == net) {
       return positive;
     }
@@ -491,7 +487,7 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddre
 }
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net) {
-  FtnDirectories dirs(config.root_directory(), net);
+  const FtnDirectories dirs(config.root_directory(), net);
   return exists_bundle(dirs.inbound_dir());
 }
 
@@ -598,7 +594,7 @@ FloFile::FloFile(const net_networks_rec& net, const std::filesystem::path& p)
   Load();
 }
 
-FloFile::~FloFile() {}
+FloFile::~FloFile() = default;
 
 bool FloFile::insert(const std::string& file, flo_directive directive) {
   entries_.push_back(std::make_pair(file, directive));
@@ -667,6 +663,4 @@ const std::string& FtnDirectories::outbound_dir() const { return outbound_dir_; 
 const std::string& FtnDirectories::netmail_dir() const { return netmail_dir_; }
 const std::string& FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
 
-} // namespace fido
-} // namespace sdk
 } // namespace wwiv

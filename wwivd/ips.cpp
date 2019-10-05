@@ -18,7 +18,6 @@
 #include "wwivd/ips.h"
 
 #include "core/datetime.h"
-#include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -30,7 +29,6 @@
 #include <cereal/types/memory.hpp>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -49,7 +47,7 @@ using namespace wwiv::os;
 static bool LoadLinesIntoSet(std::unordered_set<string>& s, const std::vector<std::string>& lines) {
   for (auto line : lines) {
     const auto space = line.find(' ');
-    if (space != line.npos) {
+    if (space != std::string::npos) {
       line = line.substr(0, space);
     }
     s.emplace(StringTrim(line));
@@ -104,16 +102,6 @@ AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_bloc
     : bip_(bip), b_(b) {}
 
 AutoBlocker::~AutoBlocker() = default;
-
-static string to_string(const std::set<time_t>& times) {
-  std::stringstream ss;
-  ss << "{";
-  for (const auto& t : times) {
-    ss << t << ", ";
-  }
-  ss << "}";
-  return ss.str();
-}
 
 bool AutoBlocker::Connection(const std::string& ip) {
   VLOG(1) << "AutoBlocker::Connection: " << ip;

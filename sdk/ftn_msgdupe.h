@@ -43,7 +43,7 @@ public:
   virtual ~FtnMessageDupe() = default;
 
   bool IsInitialized() const { return initialized_; }
-  const std::string CreateMessageID(const wwiv::sdk::fido::FidoAddress& a);
+  std::string CreateMessageID(const wwiv::sdk::fido::FidoAddress& a);
   bool add(const wwiv::sdk::fido::FidoPackedMessage& msg);
   bool add(uint32_t header_crc32, uint32_t msgid_crc32);
   bool remove(uint32_t header_crc32, uint32_t msgid_crc32);

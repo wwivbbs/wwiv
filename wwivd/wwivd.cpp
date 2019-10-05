@@ -16,13 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwivd/wwivd.h"
+
 #include "core/command_line.h"
-#include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"

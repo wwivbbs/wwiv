@@ -16,6 +16,8 @@ set(SOURCES
 )
 
 add_library(networkb_lib ${SOURCES})
+target_link_libraries(networkb_lib fmt::fmt-header-only)
+
 add_executable(networkb ${NETWORKB_MAIN})
 target_link_libraries(networkb networkb_lib net_core core sdk)
 if(UNIX)

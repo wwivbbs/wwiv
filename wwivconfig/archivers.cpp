@@ -17,14 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivconfig/archivers.h"
-
 #include "localui/wwiv_curses.h"
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -32,6 +29,9 @@
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
 #include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -54,7 +54,7 @@ static void edit_arc(int arc_number, arcrec* a) {
       new CommandLineItem(COL1_POSITION, y++, 49, a->arca),
       new CommandLineItem(COL1_POSITION, y++, 49, a->arcd),
       new CommandLineItem(COL1_POSITION, y++, 49, a->arck),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arct),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arct),
   });
   y = 1;
   items.add_labels({new Label(2, y++, LABEL_WIDTH, "Archiver Name:"),
@@ -71,9 +71,9 @@ static void edit_arc(int arc_number, arcrec* a) {
                     new Label(6, y++,
                               "Extract command lines. For added security, a complete path to"),
                     new Label(6, y++, "the archiver and extension should be used. i.e.:"),
-                    new Label(6, y++, R"(c:\bin\arcs\zip.exe -a %1 %2)")});
+                    new Label(6, y, R"(c:\bin\arcs\zip.exe -a %1 %2)")});
 
-  items.Run(StringPrintf("Archiver #%d  %s", arc_number, ((arc_number == 1) ? "(Default)" : "")));
+  items.Run(fmt::format("Archiver #{}  {}", arc_number, ((arc_number == 1) ? "(Default)" : "")));
 }
 
 bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
@@ -102,7 +102,7 @@ bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   File file(PathFilePath(datadir, ARCHIVER_DAT));
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile)) {
     messagebox(window,
-               StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
+               fmt::format("Couldn't open '{}' for writing.\n", file.full_pathname()));
     return false;
   }
   file.Write(&arc[0], MAX_ARCS * sizeof(arcrec));
@@ -125,15 +125,15 @@ bool edit_archivers(wwiv::sdk::Config& config) {
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    for (auto i = 0; i < MAX_ARCS; i++) {
-      items.emplace_back(StringPrintf("[%s] %s", arc[i].extension, arc[i].name));
+    for (auto& i : arc) {
+      items.emplace_back(fmt::format("[{}] {}", i.extension, i.name));
     }
     CursesWindow* window = out->window();
     ListBox list(window, "Select Archiver", items);
 
     list.selection_returns_hotkey(true);
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
-    ListBoxResult result = list.Run();
+    const auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {
       edit_arc(result.selected + 1, &arc[result.selected]);

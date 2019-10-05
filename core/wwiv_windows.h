@@ -89,10 +89,6 @@
 #undef CY
 #endif
 
-// Define this so fmtlib doesn't try to use windows.h bits
-// and fail to compile.
-#define FMT_USE_WINDOWS_H 0
-
 #endif // _WIN32
 
 #endif  // __INCLUDED_CORE_WWIV_WINDOWS_H__
