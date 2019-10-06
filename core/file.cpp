@@ -299,6 +299,10 @@ bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n
 }
 
 bool File::Remove(const std::filesystem::path& filename) {
+  if (!Exists(filename)) {
+    // Don't try to delete a file that doesn't exist.
+    return true;
+  }
   std::error_code ec;
   const auto result = std::filesystem::remove(filename, ec);
   if (!result) {

@@ -18,12 +18,6 @@
 /**************************************************************************/
 #include "bbs/msgscan.h"
 
-#include <algorithm>
-#include <iomanip>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
@@ -53,12 +47,12 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/workspace.h"
-#include "bbs/wqscn.h"
 #include "bbs/xfer.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message.h"
@@ -67,6 +61,11 @@
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <algorithm>
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -95,9 +94,9 @@ static string GetScanReadPrompts(int nMessageNumber) {
   } else {
     set_net_num(0);
   }
-  const string sub_name_prompt = StringPrintf(
-      "|#7[|#1%s|#7] [|#2%s|#7]", local_network_name.c_str(), a()->current_sub().name.c_str());
-  return StringPrintf("%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ", sub_name_prompt.c_str(),
+  const auto sub_name_prompt = fmt::sprintf(
+      "|#7[|#1%s|#7] [|#2%s|#7]", local_network_name, a()->current_sub().name);
+  return fmt::sprintf("%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ", sub_name_prompt,
                       nMessageNumber, a()->GetNumMessagesInCurrentMessageArea());
 }
 
@@ -203,7 +202,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
               fileExtract.Seek(-1L, File::Whence::end);
             }
           }
-          string buffer = StringPrintf("ON: %s", a()->current_sub().name.c_str());
+          auto buffer = fmt::format("ON: {}", a()->current_sub().name);
           fileExtract.Write(buffer);
           fileExtract.Write("\r\n\r\n", 4);
           fileExtract.Write(post->title, strlen(post->title));
@@ -352,11 +351,11 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   string tmpbuf;
   const auto& h = msg->header();
   if (h.local() && h.from_usernum() == a()->usernum) {
-    tmpbuf = StringPrintf("|09[|11%d|09]", msgnum);
+    tmpbuf = fmt::sprintf("|09[|11%d|09]", msgnum);
   } else if (!h.local()) {
-    tmpbuf = StringPrintf("|09<|11%d|09>", msgnum);
+    tmpbuf = fmt::sprintf("|09<|11%d|09>", msgnum);
   } else {
-    tmpbuf = StringPrintf("|09(|11%d|09)", msgnum);
+    tmpbuf = fmt::sprintf("|09(|11%d|09)", msgnum);
   }
   string line = "       ";
   if (h.storage_type() == 2) {

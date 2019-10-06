@@ -69,21 +69,6 @@ using std::vector;
 namespace wwiv::strings {
 
 /**
- * sprintf type function for STL string classes.
- * @param formatted_text The format specifier
- * @param ... Variable arguments
- */
-string StringPrintf(const char* formatted_text, ...) {
-  char buffer[1024];
-
-  va_list ap;
-  va_start(ap, formatted_text);
-  vsnprintf(buffer, sizeof(buffer), formatted_text, ap);
-  va_end(ap);
-  return string(buffer);
-}
-
-/**
  * Compares the strings
  * @param str1 string to compare
  * @param str2 other string to compare

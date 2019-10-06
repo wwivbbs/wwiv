@@ -18,23 +18,22 @@
 /**************************************************************************/
 #include "bbs/sublist.h"
 
-#include <algorithm>
-#include <string>
-
+#include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
-#include "bbs/bbsutl2.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
+#include "bbs/confutil.h"
 #include "bbs/mmkey.h"
 #include "bbs/subacc.h"
-#include "bbs/confutil.h"
-#include "sdk/subxtr.h"
+#include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
+#include "sdk/subxtr.h"
+#include <algorithm>
+#include <string>
 
 using std::max;
 using namespace wwiv::stl;
@@ -74,14 +73,14 @@ void old_sublist() {
     if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, i, -1);
       auto cn = stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name);
-      auto s = StringPrintf("|#1%s %c|#0:|#2 %s", "Conference",
+      auto s = fmt::sprintf("|#1%s %c|#0:|#2 %s", "Conference",
         a()->subconfs[a()->uconfsub[i].confnum].designator,
         cn.c_str());
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
-      auto s = StringPrintf("  |#5%4.4s|#2", a()->usub[i1].keys);
+      auto s = fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
       if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
         s += " - ";
       } else {

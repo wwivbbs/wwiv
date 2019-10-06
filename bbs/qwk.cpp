@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/qwk.h"
 
-#include <memory>
-#include <string>
-
-#include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
@@ -31,41 +27,39 @@
 #include <unistd.h>
 #endif
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/utility.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
-#include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
+#include "bbs/make_abs_cmd.h"
 #include "bbs/message_file.h"
-#include "bbs/multmail.h"
 #include "bbs/pause.h"
 #include "bbs/save_qscan.h"
+#include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/subacc.h"
-#include "bbs/bbs.h"
 #include "bbs/sysoplog.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/utility.h"
-#include "bbs/sr.h"
-#include "bbs/xfer.h"
-#include "bbs/xfertmp.h"
-#include "bbs/make_abs_cmd.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
+#include "sdk/ansi/makeansi.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include "sdk/ansi/makeansi.h"
-#include "sdk/config.h"
+#include <cctype>
+#include <memory>
+#include <string>
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
@@ -271,7 +265,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
-    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
+    auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
             a()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     bout.bputs(subinfo);
@@ -300,8 +294,9 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
-    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
-            bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(), 0);
+    string subinfo =
+        fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3", bn + 1,
+                     thissub, a()->GetNumMessagesInCurrentMessageArea(), 0);
     bout.bputs(subinfo);
     bout.nl();
 
@@ -1274,7 +1269,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     string command = stuff_in(a()->arcs[archiver].arca, parem1, parem2, "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
+    qwk_file_to_send = StrCat(QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
     make_abs_cmd(a()->bbsdir().string(), &qwk_file_to_send);
 

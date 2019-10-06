@@ -16,14 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <csignal>
-#include <string>
-#include <vector>
-
+#include "bbs/listplus.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -32,7 +27,6 @@
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/listplus.h"
 #include "bbs/lpfunc.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
@@ -43,10 +37,9 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
@@ -55,6 +48,10 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
+#include <algorithm>
+#include <csignal>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -170,7 +167,8 @@ static void build_header() {
 static void printtitle_plus_old() {
   bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
-  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
+  const string buf =
+      fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
           a()->directories[a()->current_user_dir().subnum].name, a()->numf);
   bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
@@ -190,7 +188,8 @@ void printtitle_plus() {
   if (a()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
-    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
+    const string buf =
+        fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
             a()->directories[a()->current_user_dir().subnum].name, a()->numf);
     bout.litebarf("%-54s Space=Tag/?=Help", buf.c_str());
     bout.Color(0);
@@ -336,7 +335,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
-  string file_information = StringPrintf("|%02d %c |%02d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
+  string file_information = fmt::sprintf("|%02d %c |%02d%3d ", lp_config.tagged_color,
+                                         marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
   bout.clear_lines_listed();
 
@@ -347,7 +347,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[0]);
     }
-    file_information += StringPrintf("|%02d%s", a()->user()->data.lp_colors[0], buffer.c_str());
+    file_information += fmt::sprintf("|%02d%s", a()->user()->data.lp_colors[0], buffer);
     width += 8;
   }
   if (a()->user()->data.lp_options & cfl_extension) {
@@ -361,11 +361,11 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_dloads) {
-    file_information += StringPrintf(" |%02d%3d", a()->user()->data.lp_colors[2], u->numdloads);
+    file_information += fmt::sprintf(" |%02d%3d", a()->user()->data.lp_colors[2], u->numdloads);
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_kbytes) {
-    buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
+    buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
       auto stf =
           PathFilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
@@ -440,10 +440,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
 
   if (a()->user()->data.lp_options & cfl_date_uploaded) {
     if ((u->actualdate[2] == '/') && (u->actualdate[5] == '/')) {
-      buffer = StringPrintf("UL: %s  New: %s", u->date, u->actualdate);
+      buffer = fmt::sprintf("UL: %s  New: %s", u->date, u->actualdate);
       StringJustify(&buffer, 27, ' ', JustificationType::LEFT);
     } else {
-      buffer = StringPrintf("UL: %s", u->date);
+      buffer = fmt::sprintf("UL: %s", u->date);
       StringJustify(&buffer, 12, ' ', JustificationType::LEFT);
     }
     sprintf(element, "|%02d%s  ", a()->user()->data.lp_colors[4], buffer.c_str());
@@ -458,7 +458,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       ++numl;
     }
     string tmp = properize(string(u->upby));
-    file_information = StringPrintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp.c_str());
+    file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
   if (!buffer.empty()) {

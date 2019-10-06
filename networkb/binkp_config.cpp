@@ -17,18 +17,16 @@
 /**************************************************************************/
 #include "networkb/binkp_config.h"
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -64,14 +62,14 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
       callout_wwivnet_node_ = net.sysnum;
       if (callout_wwivnet_node_ == 0) {
         throw config_error(
-            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+            fmt::sprintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
       }
       binkp_.reset(new Binkp(net.dir));
     } else if (net.type == network_type_t::ftn) {
       callout_fido_node_ = net.fido.fido_address;
       if (callout_fido_node_.empty()) {
         throw config_error(
-            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+            fmt::sprintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
       }
     } else {
       throw config_error("BinkP is not supported for this network type.");

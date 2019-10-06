@@ -18,20 +18,19 @@
 /**************************************************************************/
 #include "bbs/inetmsg.h"
 
-#include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "bbs/input.h"
-#include "bbs/misccmd.h"
 #include "bbs/instmsg.h"
+#include "bbs/misccmd.h"
 #include "bbs/quote.h"
+#include "bbs/utility.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
@@ -56,9 +55,8 @@ void get_user_ppp_addr() {
     return;
   }
   const auto& net = a()->net_networks[network_number];
-  a()->internetFullEmailAddress = StringPrintf("%s@%s",
-      a()->internetEmailName.c_str(),
-      a()->internetEmailDomain.c_str());
+  a()->internetFullEmailAddress =
+      fmt::format("{}@{}", a()->internetEmailName, a()->internetEmailDomain);
   TextFile acctFile(PathFilePath(net.dir, ACCT_INI), "rt");
   char szLine[260];
   bool found = false;
@@ -94,7 +92,7 @@ void get_user_ppp_addr() {
       }
     }
     szLine[ j ] = '\0';
-    a()->internetFullEmailAddress = StringPrintf("%s@%s", szLine,
+    a()->internetFullEmailAddress = fmt::format("{}@{}", szLine,
         a()->internetPopDomain.c_str());
   }
 }

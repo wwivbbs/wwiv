@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/msgbase1.h"
 
-#include <algorithm>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
@@ -42,16 +38,17 @@
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "local_io/wconstants.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
-#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -248,7 +245,7 @@ void post(const PostData& post_data) {
 
   postrec p{};
   memset(&p, 0, sizeof(postrec));
-  strcpy(p.title, data.title.c_str());
+  to_char_array(p.title, data.title);
   p.anony = static_cast<unsigned char>(data.anonymous_flag);
   p.msg = m;
   p.ownersys = 0;
@@ -508,7 +505,7 @@ void remove_post() {
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
       any = true;
-      bout.bpla(StringPrintf("%u: %60.60s", j, get_post(j)->title), &abort);
+      bout.bpla(fmt::sprintf("%u: %60.60s", j, get_post(j)->title), &abort);
     }
   }
   if (!any) {

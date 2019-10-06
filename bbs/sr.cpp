@@ -18,12 +18,6 @@
 /**************************************************************************/
 #include "bbs/sr.h"
 
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
@@ -39,10 +33,15 @@
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace std::chrono;
@@ -574,7 +573,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
     if (percent == 1.0) {
       *sent = true;
     } else {
-      sysoplog() << StringPrintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
+      sysoplog() << fmt::sprintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
     }
   }
 }

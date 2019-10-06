@@ -18,48 +18,46 @@
 /**************************************************************************/
 #include "bbs/sysopf.h"
 
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/com.h"
-#include "bbs/execexternal.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/finduser.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
-#include "bbs/instmsg.h"
+#include "bbs/execexternal.h"
+#include "bbs/finduser.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/read_message.h"
+#include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
-#include "bbs/uedit.h"
-#include "bbs/shortmsg.h"
+#include "bbs/utility.h"
 #include "bbs/wqscn.h"
-#include "sdk/status.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "local_io/wconstants.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
-#include "sdk/filenames.h"
+#include "local_io/wconstants.h"
 #include "sdk/bbslist.h"
+#include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"
+#include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -590,7 +588,7 @@ void print_net_listing(bool bForcePause) {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
               const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
-              const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
+              const auto town_fn = fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
               string areacode;
               if (File::Exists(PathFilePath(regions_dir, town_fn))) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
@@ -598,7 +596,7 @@ void print_net_listing(bool bForcePause) {
               } else {
                 areacode = describe_area_code(to_number<int>(csne.phone));
               }
-              const string line = StringPrintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode.c_str());
+              const string line = fmt::sprintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode);
               bout.bpla(line, &abort);
               bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
               bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
@@ -606,11 +604,11 @@ void print_net_listing(bool bForcePause) {
           }
           string line;
           if (cmdbit != NET_SEARCH_NOCONNECT) {
-            line = StringPrintf("%5u%c %12s  %-40s %3d %5u %2d",
+            line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d",
                     csne.sysnum, bbstype, csne.phone, csne.name,
                     csne.numhops, csne.forsys, csne.group);
           } else {
-            line = StringPrintf("%5u%c %12s  %-40s%s%2d",
+            line = fmt::sprintf("%5u%c %12s  %-40s%s%2d",
                     csne.sysnum, bbstype, csne.phone, csne.name, " |17|15--- ----- |#0", csne.group);
           }
           bout.bpla(line, &abort);

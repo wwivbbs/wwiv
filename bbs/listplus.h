@@ -24,6 +24,7 @@
 #include "sdk/wwivcolors.h"
 
 extern int foundany;
+struct uploadsrec;
 
 // This is the place the first file will be printed, which defaults to line
 // 3, if you modify the file listing header, this will need to be changed

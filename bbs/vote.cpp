@@ -18,17 +18,18 @@
 /**************************************************************************/
 #include "bbs/vote.h"
 
-#include <string>
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/com.h"
 #include "bbs/bbsutl.h"
-#include "bbs/utility.h"
+#include "bbs/com.h"
 #include "bbs/mmkey.h"
-#include "sdk/status.h"
+#include "bbs/utility.h"
 #include "core/strings.h"
-#include "sdk/filenames.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/status.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -49,7 +50,7 @@ static void print_quest(int mapp, int map[21]) {
     voteFile.Seek(map[i] * sizeof(votingrec), File::Whence::begin);
     voteFile.Read(&v, sizeof(votingrec));
 
-    auto buffer = StringPrintf("|#6%c |#2%2d|#7) |#1%s",
+    auto buffer = fmt::sprintf("|#6%c |#2%2d|#7) |#1%s",
              a()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
     bout.bpla(buffer, &abort);
   }

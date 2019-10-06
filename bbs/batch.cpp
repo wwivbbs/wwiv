@@ -94,7 +94,7 @@ static void listbatch() {
     if (b.sending) {
       const string t = ctim(std::lround(b.time));
       buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
-          b.filename, t.c_str(), a()->directories[b.dir].name);
+          b.filename, t, a()->directories[b.dir].name);
     } else {
       buffer = fmt::sprintf("%d. %s %s             %s", current_num, "(U)",
           b.filename, a()->directories[b.dir].name);
@@ -269,14 +269,14 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       }
       it = delbatch(it);
       if (try_to_ul(file_name)) {
-        sysoplog() << fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name.c_str());
+        sysoplog() << fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name);
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
+    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(PathFilePath(a()->batch_directory(), file_name));
@@ -657,11 +657,9 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   if (!commandLine.empty()) {
     make_abs_cmd(a()->bbsdir().string(), &commandLine);
     a()->Cls();
-    const string user_name_number = a()->names()->UserName(a()->usernum);
-    const string message = fmt::sprintf(
-        "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-        user_name_number.c_str(),
-        a()->modem_speed_, dl.c_str(), commandLine.c_str());
+    const auto user_name_number = a()->names()->UserName(a()->usernum);
+    const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
+                                      user_name_number, a()->modem_speed_, dl, commandLine);
     a()->localIO()->Puts(message);
     if (a()->context().incom()) {
       File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);

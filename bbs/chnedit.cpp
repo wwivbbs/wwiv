@@ -26,12 +26,11 @@
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 #include "core/datafile.h"
-#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/chains.h"
-#include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
@@ -51,16 +50,15 @@ static string chaindata(int chain_num) {
   char chAr = SPACE;
 
   if (c.ar != 0) {
-    for (int i = 0; i < 16; i++) {
+    for (auto i = 0; i < 16; i++) {
       if ((1 << i) & c.ar) {
         chAr = static_cast<char>('A' + i);
       }
     }
   }
-  char chAnsiReq = c.ansi ? 'Y' : 'N';
-  return StringPrintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
-                      stripcolors(c.description).c_str(), c.filename.c_str(), c.sl, chAnsiReq,
-                      chAr);
+  const auto ansi_req = c.ansi ? 'Y' : 'N';
+  return fmt::sprintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
+                      stripcolors(c.description), c.filename, c.sl, ansi_req, chAr);
 }
 
 static void showchains() {

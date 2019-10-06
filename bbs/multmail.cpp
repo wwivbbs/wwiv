@@ -18,30 +18,27 @@
 /**************************************************************************/
 #include "bbs/multmail.h"
 
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/email.h"
 #include "bbs/finduser.h"
-
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
-#include "bbs/sysoplog.h"
 #include "bbs/message_file.h"
 #include "bbs/printfile.h"
-#include "bbs/utility.h"
-#include "local_io/wconstants.h"
+#include "bbs/sysoplog.h"
+#include "core/datetime.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
-#include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <string>
 
 // local function prototypes
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
@@ -75,7 +72,7 @@ void multimail(int *pnUserNumber, int numu) {
   bout << "|#5Show all recipients in mail? ";
   bool show_all = yesno();
   int j = 0;
-  string s1 = StringPrintf("\003""6CC: \003""1");
+  auto s1 = fmt::sprintf("\003""6CC: \003""1");
 
   m.msg.storage_type = EMAIL_STORAGE;
   a()->context().irt("Multi-Mail");
@@ -148,7 +145,7 @@ void multimail(int *pnUserNumber, int numu) {
       lineadd(&m.msg, s1, "email");
     }
   }
-  s1 = StringPrintf("\003""2Mail Sent to %d Addresses!", numu);
+  s1 = fmt::sprintf("\003""2Mail Sent to %d Addresses!", numu);
   lineadd(&m.msg, "\003""7----", "email");
   lineadd(&m.msg, s1, "email");
 

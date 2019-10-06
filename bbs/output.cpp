@@ -18,24 +18,22 @@
 /**************************************************************************/
 #include "bbs/output.h"
 
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/instmsg.h"
+#include "bbs/interpret.h"
+#include "bbs/utility.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/localio_screen.h"
+#include "sdk/ansi/makeansi.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdarg>
 #include <string>
-
-#include "bbs/bbsutl.h"
-#include "local_io/keycodes.h"
-#include "bbs/interpret.h"
-#include "bbs/com.h"
-#include "bbs/bbs.h"
-#include "bbs/instmsg.h"
-#include "bbs/output.h"
-#include "bbs/utility.h"
-
-#include "core/strings.h"
-#include "sdk/ansi/ansi.h"
-#include "sdk/ansi/localio_screen.h"
-#include "sdk/ansi/makeansi.h"
 
 using std::ostream;
 using std::string;
@@ -202,7 +200,7 @@ void Output::litebarf(const char *fmt, ...) {
 
 void Output::litebar(const std::string& msg) {
   if (okansi()) {
-    bputs(StrCat(StringPrintf("|17|15 %-78s", msg.c_str()), "|#0\r\n\n"));
+    bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
     bout << "|#5" << msg << "|#0\r\n\n";

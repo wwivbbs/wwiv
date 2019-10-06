@@ -83,8 +83,6 @@ bool to_char_array_no_null(char (&out)[SIZE], const std::string& s) {
   return s.size() <= SIZE;
 }
 
-std::string StringPrintf(const char* formatted_text, ...);
-
 // Comparisons
 bool IsEquals(const char* str1, const char* str2);
 bool iequals(const char* s1, const char* s2);

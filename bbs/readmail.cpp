@@ -18,11 +18,6 @@
 /**************************************************************************/
 #include "bbs/readmail.h"
 
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
@@ -35,13 +30,11 @@
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/extract.h"
-
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
-#include "bbs/multmail.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/quote.h"
@@ -53,19 +46,22 @@
 #include "bbs/sublist.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
-#include "bbs/uedit.h"
 #include "bbs/utility.h"
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -278,7 +274,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
   }
   TextFile host_file(fn, "a+t");
   if (host_file.IsOpen()) {
-    host_file.Write(StringPrintf("%u\n", system_number));
+    host_file.Write(fmt::sprintf("%u\n", system_number));
     host_file.Close();
     // TODO find replacement for autosend.exe
     if (File::Exists("autosend.exe")) {
@@ -418,7 +414,7 @@ void readmail(int mode) {
 
       nn = network_number_from(&m);
       std::ostringstream ss(std::ostringstream::ate);
-      ss << "|#2" << StringPrintf("%3d", i + 1) << (m.status & status_seen ? " " : "|#3*")
+      ss << "|#2" << fmt::sprintf("%3d", i + 1) << (m.status & status_seen ? " " : "|#3*")
          << (okansi() ? '\xB3' : '|') << "|#1 ";
 
       if ((m.anony & anony_sender) && ((sl.ability & ability_read_email_anony) == 0)) {
@@ -683,11 +679,11 @@ void readmail(int mode) {
         send_file(fn.string(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
-          sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.",
+          sysoplog() << fmt::sprintf("Downloaded %ldk of attached file %s.",
                                      (fsr.numbytes + 1023) / 1024, fsr.filename);
         } else {
           bout << "\r\nAttached file not completely sent.\r\n";
-          sysoplog() << StringPrintf("Tried to download attached file %s.", fsr.filename);
+          sysoplog() << fmt::sprintf("Tried to download attached file %s.", fsr.filename);
         }
         bout.nl();
       } break;
@@ -1021,7 +1017,7 @@ void readmail(int mode) {
                 i = a()->net_num();
                 const auto fwd_name =
                     a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
-                auto s = StringPrintf("\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
+                auto s = fmt::sprintf("\r\nForwarded to %s from %s.", s1, fwd_name);
 
                 set_net_num(nn);
                 const auto& net = a()->net_networks[nn];

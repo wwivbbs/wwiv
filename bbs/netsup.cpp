@@ -18,25 +18,14 @@
 /**************************************************************************/
 #include "bbs/netsup.h"
 
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "local_io/keycodes.h"
-#include "bbs/misccmd.h"
 #include "bbs/pause.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"
 #include "core/file.h"
@@ -46,14 +35,20 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/bbslist.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "sdk/binkp.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
 #include "sdk/filenames.h"
 #include "sdk/net/callouts.h"
 #include "sdk/status.h"
+#include <chrono>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace std::chrono;
 using std::string;
@@ -708,7 +703,7 @@ static std::pair<uint16_t, int> ansicallout() {
   fill_call(color4, rownum, entries);
   int x = 0;
   int y = 0;
-  a()->localIO()->PutsXYA(6, 5, color2, StringPrintf("%-5u", entries[pos].node));
+  a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
   print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
   char ch = 0;
 
@@ -734,40 +729,40 @@ static std::pair<uint16_t, int> ansicallout() {
       switch (ch) {
       case RARROW: // right arrow
         if ((pos < size_int(entries) - 1) && (x < 63)) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case LARROW: // left arrow
         if (x > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos--;
           x -= 7;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case UPARROW: // up arrow
         if (y > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos -= 10;
           y--;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if (rownum > 0) {
           pos -= 10;
           rownum--;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case DNARROW: // down arrow
         if ((y < 5) && (pos + 10 < size_int(entries))) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
         } else if ((rownum + 6) * 10 < size_int(entries)) {
@@ -779,7 +774,7 @@ static std::pair<uint16_t, int> ansicallout() {
             --y;
           }
         }
-        a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+        a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
         print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         break;
       case HOME: // home
@@ -789,15 +784,15 @@ static std::pair<uint16_t, int> ansicallout() {
           pos = 0;
           rownum = 0;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6, 5, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
       case PAGEUP: // page up
         if (y > 0) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos -= 10 * y;
           y = 0;
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else {
           if (rownum > 5) {
@@ -808,20 +803,20 @@ static std::pair<uint16_t, int> ansicallout() {
             rownum = 0;
           }
           fill_call(color4, rownum, entries);
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case PAGEDN: // page down
         if (y < 5) {
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10 * (5 - y);
           y = 5;
           while (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
@@ -835,7 +830,7 @@ static std::pair<uint16_t, int> ansicallout() {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;

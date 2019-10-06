@@ -18,9 +18,6 @@
 /**************************************************************************/
 #include "bbs/subedit.h"
 
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -33,6 +30,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
@@ -40,6 +38,8 @@
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -69,9 +69,9 @@ static string boarddata(size_t n, const subboard_t& r) {
     stype = r.nets[0].stype;
   }
   string ar = GetAr(r, " ");
-  return StringPrintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
-          n, ar.c_str(), stripcolors(r.name.c_str()), r.filename.c_str(), r.readsl, r.postsl, r.age,
-          r.maxmsgs, stype.c_str());
+  return fmt::sprintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
+          n, ar, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
+          r.maxmsgs, stype);
 }
 
 static void showsubs() {

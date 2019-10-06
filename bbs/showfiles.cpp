@@ -17,17 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <cstring>
-#include <string>
-
-#include "bbs/bbs.h"
 #include "bbs/application.h"
-#include "local_io/local_io.h"
+#include "bbs/bbs.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "core/wwivport.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
+#include "fmt/printf.h"
+#include <string>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -47,8 +45,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   strcpy(ext, "");
 #endif
   auto stripped_fn = ToStringLowerCase(stripfn(file_name));
-  auto s = StringPrintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", stripped_fn.c_str(), drive,
-                        direc);
+  auto s = fmt::sprintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", stripped_fn, drive, direc);
   int i = (a()->user()->GetScreenChars() - 1) / 2 - size_without_colors(s) / 2;
   bout << "|#7" << std::string(i, c) << s;
   i = a()->user()->GetScreenChars() - 1 - i - size_without_colors(s);

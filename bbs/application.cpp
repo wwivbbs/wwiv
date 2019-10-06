@@ -426,7 +426,7 @@ void Application::UpdateTopScreen() {
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
-    string title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num.c_str());
+    string title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
@@ -484,7 +484,7 @@ void Application::UpdateTopScreen() {
     const string username_num = names()->UserName(usernum);
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                                   username_num.c_str(), status->GetMinutesActiveToday(),
+                                   username_num, status->GetMinutesActiveToday(),
                                    static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
                                    status->GetNumEmailSentToday()));
 
@@ -531,7 +531,7 @@ void Application::UpdateTopScreen() {
 
     const auto username_num = names()->UserName(usernum);
     auto line =
-        fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num.c_str(),
+        fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
                      user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(),
                      user()->GetSl(), user()->GetNumLogons(), user()->GetNumMessagesPosted());
     localIO()->PutsXYA(0, 0, bout.curatr(), line);
@@ -547,13 +547,13 @@ void Application::UpdateTopScreen() {
     localIO()->PutsXY(0, 1,
                       fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
                                    user()->GetRealName(), user()->GetVoicePhoneNumber(),
-                                   callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
+                                   callsign_or_regnum, user()->GetFilesDownloaded(),
                                    user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
                                    user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
 
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
-                                   user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent()));
+                                   user()->GetExempt(), lo, user()->GetNumFeedbackSent()));
 
     User sysop{};
     int feedback_waiting = 0;
@@ -562,8 +562,8 @@ void Application::UpdateTopScreen() {
     }
     localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                                   user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
-                                   ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
+                                   user()->GetNote(), user()->GetGender(), user()->GetAge(),
+                                   ctypes(user()->GetComputerType()), feedback_waiting));
 
     if (chatcall()) {
       localIO()->PutsXY(0, 4, pad_to(chat_reason_, 80));

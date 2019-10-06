@@ -74,7 +74,7 @@ class RemoteIO {
 protected:
   bool binary_mode_ = false;
 
-  static const std::string GetLastErrorText();
+  static std::string GetLastErrorText();
 
 private:
   // used by the GetLastErrorText() method

@@ -18,9 +18,6 @@
 /**************************************************************************/
 #include "bbs/conf.h"
 
-#include <algorithm>
-#include <string>
-#include <vector>
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -29,15 +26,19 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
-#include <filesystem>
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
-#include "sdk/filenames.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/subxtr.h"
+#include <algorithm>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace wwiv::core;
@@ -49,15 +50,13 @@ static int disable_conf_cnt = 0;
 /* Max line length in conference files */
 static const size_t MAX_CONF_LINE = 4096;
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 TempDisableConferences::TempDisableConferences()
     : wwiv::core::Transaction([] { tmp_disable_conf(false); }, nullptr) {
   tmp_disable_conf(true);
 }
 
-} // namespace bbs
 } // namespace wwiv
 
 void tmp_disable_conf(bool disable) {
@@ -283,13 +282,13 @@ static void showsubconfs(ConferenceType conftype, confrec* c) {
 
     switch (conftype) {
     case ConferenceType::CONF_SUBS: {
-      auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i,
-                            stripcolors(a()->subs().sub(i).name.c_str()), confstr.c_str());
+      const auto s = fmt::sprintf("|#2%3d |#9%-39.39s |#1%s", i,
+                                  stripcolors(a()->subs().sub(i).name), confstr);
       bout.bpla(s, &abort);
     } break;
     case ConferenceType::CONF_DIRS: {
-      auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
-                            confstr.c_str());
+      const auto s = fmt::sprintf("|#2%3d |#9%-39.39s |#1%s", i,
+                                  stripcolors(a()->directories[i].name), confstr);
       bout.bpla(s, &abort);
     } break;
     }

@@ -17,24 +17,24 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/gfiles.h"
-#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/gfileedit.h"
-#include "bbs/mmkey.h"
 #include "bbs/instmsg.h"
+#include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "bbs/sysoplog.h"
 #include "bbs/sr.h"
+#include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
 #include "core/datetime.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -163,10 +163,10 @@ void list_sec(int *map, int nmap) {
       s5 = trim_to_size_ignore_colors(a()->gfilesec[map[i + 1]].name, 29);
     }
     if (okansi()) {
-      s = StringPrintf("|#7\xB3|#2%3s|#7\xB3|#1%-34s|#7\xB3|#2%3s|#7\xB3|#1%-33s|#7\xB3", 
-        lnum, s4.c_str(), rnum, s5.c_str());
+      s = fmt::sprintf("|#7\xB3|#2%3s|#7\xB3|#1%-34s|#7\xB3|#2%3s|#7\xB3|#1%-33s|#7\xB3", lnum, s4,
+                       rnum, s5);
     } else {
-      s = StringPrintf("|%3s|%-34s|%3s|%-33s|", lnum, s4.c_str(), rnum, s5.c_str());
+      s = fmt::sprintf("|%3s|%-34s|%3s|%-33s|", lnum, s4, rnum, s5);
     }
     bout.bpla(s, &abort);
     bout.Color(0);
@@ -175,11 +175,12 @@ void list_sec(int *map, int nmap) {
       i2 = 0;
       string s1;
       if (okansi()) {
-        s1 = StringPrintf("|#7\xC3\xC4\xC4\xC4X%s\xC4\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#2\xFE|#7\xC4\xC4\xC4X",
-                s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf(
+            "|#7\xC3\xC4\xC4\xC4X%s\xC4\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4\xC4\xC4\xC4\xC4\xC4%s|#"
+            "1\xFE|#7\xC4|#2%s|#7\xC4|#2\xFE|#7\xC4\xC4\xC4X",
+            s2, s3, t);
       } else {
-        s1 = StringPrintf("+---+%s-----+--------+%s-o-%s-o---+",
-                s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf("+---+%s-----+--------+%s-o-%s-o---+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -192,40 +193,43 @@ void list_sec(int *map, int nmap) {
     if (so()) {
       string s1;
       if (okansi()) {
-        s1= StringPrintf("|#7\xC3\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xB4", 
-          s2.c_str(), s2.c_str());
+        s1 = fmt::sprintf("|#7\xC3\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%"
+                          "s\xC4\xC4\xC4\xC4\xB4",
+                          s2, s2);
       } else {
-        s1 = StringPrintf("+---+%s-----+---+%s----+", s2.c_str(), s2.c_str());
+        s1 = fmt::sprintf("+---+%s-----+---+%s----+", s2, s2);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
 
       string padding61 = std::string(61, ' ');
       if (okansi()) {
-        s1 = StringPrintf("|#7\xB3  |#2G|#7)|#1G-File Edit%s|#7\xB3", padding61.c_str());
+        s1 = fmt::sprintf("|#7\xB3  |#2G|#7)|#1G-File Edit%s|#7\xB3", padding61);
       } else {
-        s1 = StringPrintf("|  G)G-File Edit%s|", padding61.c_str());
+        s1 = fmt::sprintf("|  G)G-File Edit%s|", padding61);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
       if (okansi()) {
-        s1 = StringPrintf(
-            "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
-            s2.c_str(), s7.c_str(), t.c_str());
+        s1 = fmt::sprintf("|#7\xC0\xC4\xC4\xC4\xC4%"
+                          "s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#"
+                          "1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
+                          s2, s7, t);
       } else {
-        s1 = StringPrintf("+----%s----------------%so-%s-o---+", s2.c_str(), s7.c_str(), t.c_str());
+        s1 = fmt::sprintf("+----%s----------------%so-%s-o---+", s2, s7, t);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
     } else {
       string s1;
       if (okansi()) {
-        s1 = StringPrintf(
-                "|#7\xC0\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
-                s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf(
+            "|#7\xC0\xC4\xC4\xC4\xC1%"
+            "s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+            "\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
+            s2, s3, t);
       } else {
-        s1 = StringPrintf("+---+%s-----+---------------------+%so-%s-o---+", 
-          s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf("+---+%s-----+---------------------+%so-%s-o---+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -289,11 +293,11 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       }
     }
     if (okansi()) {
-      s = StringPrintf("|#7\xB3|#2%3s|#7\xB3|#1%-29s|#7\xB3|#2%4s|#7\xB3|#2%3s|#7\xB3|#1%-29s|#7\xB3|#2%4s|#7\xB3",
-              lnum.c_str(), s4.c_str(), lsize.c_str(), rnum.c_str(), s5.c_str(), rsize.c_str());
+      s = fmt::sprintf("|#7\xB3|#2%3s|#7\xB3|#1%-29s|#7\xB3|#2%4s|#7\xB3|#2%3s|#7\xB3|#1%-29s|#"
+                       "7\xB3|#2%4s|#7\xB3",
+                       lnum, s4, lsize, rnum, s5, rsize);
     } else {
-      s = StringPrintf("|%3s|%-29s|%4s|%3s|%-29s|%4s|", 
-        lnum.c_str(), s4.c_str(), lsize.c_str(), rnum.c_str(), s5.c_str(), rsize.c_str());
+      s = fmt::sprintf("|%3s|%-29s|%4s|%3s|%-29s|%4s|", lnum, s4, lsize, rnum, s5, rsize);
     }
     bout.bpla(s, &abort);
     bout.Color(0);
@@ -302,11 +306,11 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       i2 = 0;
       string s1;
       if (okansi()) {
-        s1 = StringPrintf("|#7\xC3\xC4\xC4\xC4X%sX\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xFE\xC4\xC4\xC4\xC4\xD9",
-                s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf("|#7\xC3\xC4\xC4\xC4X%sX\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4%s|#1\xFE|#"
+                          "7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xFE\xC4\xC4\xC4\xC4\xD9",
+                          s2, s3, t);
       } else {
-        s1 = StringPrintf("+---+%s+----+---+%s-o-%s-o-+----+", 
-          s2.c_str(), s3.c_str(), t.c_str());
+        s1 = fmt::sprintf("+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, t);
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -317,10 +321,11 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   }
   if (!abort) {
     if (okansi()) {
-      s = StringPrintf("|#7\xC3\xC4\xC4\xC4\xC1%s\xC1\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%s\xC1\xC4\xC4\xC4\xC4\xB4", 
-        s2.c_str(), s2.c_str());
+      s = fmt::sprintf("|#7\xC3\xC4\xC4\xC4\xC1%s\xC1\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%"
+                       "s\xC1\xC4\xC4\xC4\xC4\xB4",
+                       s2, s2);
     } else {
-      s = StringPrintf("+---+%s+----+---+%s+----+", s2.c_str(), s2.c_str());
+      s = fmt::sprintf("+---+%s+----+---+%s+----+", s2, s2);
     }
     bout.bpla(s, &abort);
     bout.Color(0);
@@ -343,11 +348,13 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   }
   string s1;
   if (okansi()) {
-    s1 = StringPrintf("|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xC4\xD9",
-        s2.c_str(), s3.c_str(), t.c_str());
+    s1 = fmt::sprintf(
+        "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%"
+        "s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xC4\xD9",
+        s2, s3, t);
   } else {
-    s1 = StringPrintf("+----%s----------------%so-%s-o----+",
-        s2.c_str(), s3.c_str(), t.c_str());
+    s1 = fmt::sprintf("+----%s----------------%so-%s-o----+",
+        s2, s3, t);
   }
   bout.bpla(s1, &abort);
   bout.Color(0);

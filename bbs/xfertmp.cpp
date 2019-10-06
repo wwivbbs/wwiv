@@ -17,37 +17,38 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/xfertmp.h"
+#include "bbs/batch.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/conf.h"
+#include "bbs/datetime.h"
+#include "bbs/dirlist.h"
+#include "bbs/execexternal.h"
+#include "bbs/input.h"
+#include "bbs/mmkey.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
+#include "bbs/xfer_common.h"
+#include "bbs/xferovl.h"
+#include "core/findfiles.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
+#include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 #include <cmath>
 #include <cstdio>
 #include <functional>
 #include <string>
 #include <vector>
-#include "bbs/batch.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/conf.h"
-#include "bbs/datetime.h"
-#include "bbs/execexternal.h"
-#include "bbs/input.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/com.h"
-#include "bbs/dirlist.h"
-#include "bbs/sr.h"
-#include "bbs/utility.h"
-#include "bbs/xfer.h"
-#include "bbs/xferovl.h"
-#include "bbs/xfertmp.h"
-#include "bbs/mmkey.h"
-#include "bbs/pause.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "bbs/sysoplog.h"
-#include "core/findfiles.h"
-#include "bbs/printfile.h"
-#include "bbs/xfer_common.h"
-#include "sdk/filenames.h"
-#include "sdk/user.h"
-#include "sdk/usermanager.h"
 
 // the archive type to use
 #define ARC_NUMBER 0
@@ -470,7 +471,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
       a()->UpdateTopScreen();
     }
     a()->CdHome();
-    sysoplog() << StringPrintf("Added \"%s\" to %s", file_name, szArchiveFileName);
+    sysoplog() << fmt::format("Added \"{}\" to {}", file_name, szArchiveFileName);
 
   } else {
     bout << "Sorry, can't add to temp archive.\r\n\n";
@@ -533,7 +534,7 @@ void list_temp_dir() {
     }
     string filename = f.name;
     align(&filename);
-    bout.bputs(StringPrintf("%12s  %-8ld", filename.c_str(), f.size));
+    bout.bputs(fmt::sprintf("%12s  %-8ld", filename, f.size));
   }
   if (ff.empty()) {
     bout << "None.\r\n";
@@ -972,7 +973,7 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, a()->directories[a()->current_user_dir().subnum].name);
+          sysoplog() << fmt::format("- \"{}\" removed off of {}", u.filename, a()->directories[a()->current_user_dir().subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int i1 = i; i1 < a()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);

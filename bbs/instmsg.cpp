@@ -18,33 +18,28 @@
 /**************************************************************************/
 #include "bbs/instmsg.h"
 
-#include <chrono>
-#include <cstdarg>
-#include <string>
-
-#include "bbs/bbsutl1.h"
-#include "bbs/com.h"
-#include "bbs/datetime.h"
-#include "bbs/input.h"
-#include "bbs/multinst.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
+#include "bbs/datetime.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 #include "bbs/utility.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/findfiles.h"
 #include "core/wwivassert.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include <chrono>
+#include <string>
 
-using std::chrono::steady_clock;
-using std::chrono::seconds;
 using std::string;
+using std::chrono::seconds;
+using std::chrono::steady_clock;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -67,7 +62,7 @@ bool is_chat_invis() {
 }
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
-  const auto fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
+  const auto fn = fmt::sprintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
   File file(PathFilePath(a()->config()->datadir(), fn));
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::Whence::end);
@@ -82,7 +77,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
 
     for (int i = 0; i < 1000; i++) {
       const auto dest =
-          PathFilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
+          PathFilePath(a()->config()->datadir(), fmt::sprintf("msg%5.5d.%3.3d", i, ih->dest_inst));
       if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
         break;
       }
@@ -208,7 +203,7 @@ void process_inst_msgs() {
   last_iia = steady_clock::now();
   auto oiia = setiia(std::chrono::milliseconds(0));
 
-  string fndspec = StringPrintf("%smsg*.%3.3u", a()->config()->datadir().c_str(), a()->instance_number());
+  string fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->hangup_) { break; }
@@ -454,7 +449,7 @@ bool inst_msg_waiting() {
     return false;
   }
 
-  const string filename = StringPrintf("msg*.%3.3u", a()->instance_number());
+  const string filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
   if (!File::ExistsWildcard(PathFilePath(a()->config()->datadir(), filename))) {
     last_iia = l;
     return false;

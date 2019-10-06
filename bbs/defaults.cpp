@@ -388,7 +388,7 @@ void l_config_qscan() {
                             (1L << (a()->usub[i].subnum % 32)))
                                ? '*'
                                : ' ',
-                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name.c_str()),
+                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name),
               &abort);
   }
   bout.nl(2);
@@ -896,7 +896,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
       bout.clear_lines_listed();
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
               (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
-              a()->subs().sub(a()->usub[this_sub].subnum).name.c_str());
+              a()->subs().sub(a()->usub[this_sub].subnum).name);
       s[44] = '\0';
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);

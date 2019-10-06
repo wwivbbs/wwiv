@@ -75,7 +75,7 @@ inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& 
  */
 void remove_from_temp(const std::string& file_name, const std::string& directory_name,
                       bool bPrintStatus) {
-  const auto filespec = StrCat(directory_name, stripfn(file_name.c_str()));
+  const auto filespec = StrCat(directory_name, stripfn(file_name));
   FindFiles ff(filespec, FindFilesType::any);
   bout.nl();
   for (const auto& f : ff) {

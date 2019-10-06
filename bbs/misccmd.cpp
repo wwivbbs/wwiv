@@ -18,17 +18,11 @@
 /**************************************************************************/
 #include "bbs/misccmd.h"
 
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"
-#include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
@@ -40,6 +34,7 @@
 #include "bbs/wqscn.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
@@ -47,6 +42,8 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <memory>
+#include <string>
 
 // from qwk.c
 void qwk_menu();
@@ -58,13 +55,14 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 void kill_old_email() {
-  mailrec m, m1;
+  mailrec m{};
+  mailrec m1{};
   User user;
-  filestatusrec fsr;
+  filestatusrec fsr{};
 
   bout << "|#5List mail starting at most recent? ";
   bool forward = yesno();
-  unique_ptr<File> pFileEmail(OpenEmailFile(false));
+  auto pFileEmail(OpenEmailFile(false));
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     return;
@@ -178,7 +176,7 @@ void kill_old_email() {
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(PathFilePath(a()->GetAttachmentDirectory().c_str(), fsr.filename));
+                    File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -378,13 +376,12 @@ void list_users(int mode) {
         sprintf(szCity, "%s, %s", s5, user.GetState());
       }
       string properName = properize(user.GetName());
-      char szUserListLine[255];
-      sprintf(szUserListLine,
-              "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
-              FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
-              FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn().c_str(), FRAME_COLOR,
-              user.GetLastBaudRate(), FRAME_COLOR);
-      bout.bpla(szUserListLine, &abort);
+      const auto line = fmt::sprintf("|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 "
+                                     "%-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
+                                     FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ',
+                                     properName, FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(),
+                                     FRAME_COLOR, user.GetLastBaudRate(), FRAME_COLOR);
+      bout.bpla(line, &abort);
       num++;
       if (in_qscan) {
         numscn++;

@@ -135,7 +135,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   if (a()->upload_cmd.empty()) {
     return true;
   }
-  const auto comport = StringPrintf("%d", a()->context().incom() ? a()->primary_port() : 0);
+  const auto comport = std::to_string(a()->context().incom() ? a()->primary_port() : 0);
   const auto cmdLine =
       stuff_in(a()->upload_cmd, create_chain_file(), a()->directories[directory_num].path,
                stripfn(u->filename), comport, "");

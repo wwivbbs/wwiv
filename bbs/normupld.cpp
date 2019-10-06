@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <string>
-
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -25,18 +23,20 @@
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/sysoplog.h"
-#include "local_io/keycodes.h"
 #include "bbs/sr.h"
+#include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "local_io/wconstants.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -116,8 +116,8 @@ void normalupload(int dn) {
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  const string unn = a()->names()->UserName(a()->usernum);
-  strcpy(u.upby, unn.c_str());
+  const auto unn = a()->names()->UserName(a()->usernum);
+  to_char_array(u.upby, unn);
   to_char_array(u.date, date());
   bout.nl();
   ok = 1;
@@ -161,7 +161,7 @@ void normalupload(int dn) {
         bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
-        const string message = StringPrintf("Wanted to upload \"%s\"", u.filename);
+        const string message = fmt::format("Wanted to upload \"{}\"", u.filename);
         sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
         a()->user()->IncrementAssPoints(5);
         ok = 0;
@@ -290,7 +290,7 @@ void normalupload(int dn) {
               s.IncrementNumUploadsToday();
               s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
             });
-            sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
+            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", u.filename, a()->directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);

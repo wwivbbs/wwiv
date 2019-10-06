@@ -17,46 +17,37 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <chrono>
-#include <limits>
-#include <memory>
-#include <string>
-
 #include "bbs/automsg.h"
 #include "bbs/basic.h"
 #include "bbs/batch.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
-#include "bbs/connect1.h"
-#include "bbs/dropfile.h"
-#include "bbs/email.h"
-#include "bbs/events.h"
-#include "bbs/execexternal.h"
-#include "bbs/finduser.h"
-#include "bbs/input.h"
-#include "bbs/inetmsg.h"
 #include "bbs/confutil.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"
+#include "bbs/dropfile.h"
+#include "bbs/email.h"
+#include "bbs/execexternal.h"
+#include "bbs/finduser.h"
+#include "bbs/inetmsg.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
 #include "bbs/msgbase1.h"
-#include "bbs/netsup.h"
 #include "bbs/newuser.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/readmail.h"
-#include "bbs/shortmsg.h"
-#include "bbs/sysoplog.h"
-#include "bbs/stuffin.h"
 #include "bbs/remote_io.h"
+#include "bbs/shortmsg.h"
+#include "bbs/stuffin.h"
+#include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "bbs/wqscn.h"
-#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -66,9 +57,16 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include "sdk/status.h"
+#include <chrono>
+#include <limits>
+#include <memory>
+#include <string>
 
 using std::chrono::duration;
 using std::chrono::duration_cast;
@@ -483,19 +481,19 @@ static void PrintLogonFile() {
 
 static void PrintUserSpecificFiles() {
   const User* user = a()->user();  // not-owned
-  printfile(StringPrintf("sl%d", user->GetSl()));
-  printfile(StringPrintf("dsl%d", user->GetDsl()));
+  printfile(fmt::format("sl{}", user->GetSl()));
+  printfile(fmt::format("dsl{}", user->GetDsl()));
 
   const int short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (int i=0; i < short_size; i++) {
     if (user->HasArFlag(1 << i)) {
-      printfile(StringPrintf("ar%c", static_cast<char>('A' + i)));
+      printfile(fmt::format("ar{}", static_cast<char>('A' + i)));
     }
   }
 
   for (int i=0; i < short_size; i++) {
     if (user->HasDarFlag(1 << i)) {
-      printfile(StringPrintf("dar%c", static_cast<char>('A' + i)));
+      printfile(fmt::format("dar{}", static_cast<char>('A' + i)));
     }
   }
 }
@@ -507,29 +505,29 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
     const string username_num = a()->names()->UserName(a()->usernum);
     const string t = times();
     const string f = fulldate();
-    log_line = StringPrintf(
+    log_line = fmt::sprintf(
       "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
       status.GetCallerNumber(),
-      username_num.c_str(),
-      t.c_str(),
-      f.c_str(),
+      username_num,
+      t,
+      f,
       a()->user()->GetCity(),
       a()->user()->GetState(),
       a()->user()->GetCountry(),
-      a()->GetCurrentSpeed().c_str(),
+      a()->GetCurrentSpeed(),
       a()->user()->GetTimesOnToday());
   } else {
     const string username_num = a()->names()->UserName(a()->usernum);
     const string t = times();
     const string f = fulldate();
-    log_line = StringPrintf(
+    log_line = fmt::sprintf(
       "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
       status.GetCallerNumber(),
-      username_num.c_str(),
-      a()->cur_lang_name.c_str(),
-      t.c_str(),
-      f.c_str(),
-      a()->GetCurrentSpeed().c_str(),
+      username_num,
+      a()->cur_lang_name,
+      t,
+      f,
+      a()->GetCurrentSpeed(),
       a()->user()->GetTimesOnToday());
   }
   return log_line;
@@ -575,12 +573,12 @@ static void UpdateLastOnFile() {
     const string username_num = a()->names()->UserName(a()->usernum);
     string t = times();
     string f = fulldate();
-    const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
+    const string sysop_log_line = fmt::sprintf("%ld: %s %s %s   %s - %d (%u)",
       status->GetCallerNumber(),
-      username_num.c_str(),
-      t.c_str(),
-      f.c_str(),
-      a()->GetCurrentSpeed().c_str(),
+      username_num,
+      t,
+      f,
+      a()->GetCurrentSpeed(),
       a()->user()->GetTimesOnToday(),
       a()->instance_number());
     sysoplog(false) << "";
@@ -875,7 +873,7 @@ void logon() {
   CheckUserForVotingBooth();
 
   if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
-    broadcast(StringPrintf("%s Just logged on!", a()->user()->GetName()));
+    broadcast(fmt::format("{} Just logged on!", a()->user()->GetName()));
   }
   setiia(std::chrono::seconds(5));
 
@@ -926,7 +924,7 @@ void logoff() {
 
   if (a()->usernum > 0) {
     if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
-      broadcast(StringPrintf("%s Just logged off!", a()->user()->GetName()));
+      broadcast(fmt::format("{} Just logged off!", a()->user()->GetName()));
     }
   }
   setiia(std::chrono::seconds(5));

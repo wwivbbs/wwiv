@@ -17,17 +17,15 @@
 /**************************************************************************/
 #include "networkb/transfer_file.h"
 
+#include "core/crc32.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <cstring>
-#include <fcntl.h>
-#include <iostream>
 #include <string>
-
-#include "core/crc32.h"
-#include "core/log.h"
-#include "core/strings.h"
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
@@ -35,18 +33,17 @@ using std::endl;
 using std::string;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 TransferFile::TransferFile(const string& filename, time_t timestamp, uint32_t crc)
   : filename_(filename), timestamp_(timestamp), crc_(crc) {}
 
-TransferFile::~TransferFile() {}
+TransferFile::~TransferFile() = default;
 
-const string TransferFile::as_packet_data(int size, int offset) const {
-  string dataline = StringPrintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
+string TransferFile::as_packet_data(int size, int offset) const {
+  string dataline = fmt::sprintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
   if (crc_ != 0) {
-    dataline += StringPrintf(" %08X", crc_);
+    dataline += fmt::sprintf(" %08X", crc_);
   }
   return dataline;
 }
@@ -58,7 +55,7 @@ InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const st
 InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)
   : InMemoryTransferFile(filename, contents, system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
-InMemoryTransferFile::~InMemoryTransferFile() {}
+InMemoryTransferFile::~InMemoryTransferFile() = default;
 
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
@@ -81,5 +78,4 @@ bool InMemoryTransferFile::Close() {
 }
 
 
-}  // namespace net
 } // namespace wwiv

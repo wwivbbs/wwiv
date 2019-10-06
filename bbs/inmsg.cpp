@@ -18,41 +18,35 @@
 /**************************************************************************/
 #include "bbs/inmsg.h"
 
-#include <algorithm>
-#include <chrono>
-#include <deque>
-#include <string>
-#include <sstream>
-#include <vector>
-
+#include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/bbsutl2.h"
-#include "bbs/com.h"
-#include "bbs/crc.h"
-#include "bbs/input.h"
-#include "sdk/subxtr.h"
-#include "bbs/printfile.h"
-#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/instmsg.h"
+#include "bbs/com.h"
 #include "bbs/external_edit.h"
-#include "local_io/keycodes.h"
-#include "bbs/message_file.h"
+#include "bbs/input.h"
+#include "bbs/instmsg.h"
+#include "bbs/printfile.h"
 #include "bbs/quote.h"
-#include "local_io/wconstants.h"
+#include "bbs/utility.h"
 #include "bbs/workspace.h"
+#include "core/datetime.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
-#include "core/datetime.h"
-#include "sdk/names.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/subxtr.h"
+#include <chrono>
+#include <deque>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -64,9 +58,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const int LEN = 161;
 static const char crlf[] = "\r\n";
-
 
 static bool GetMessageToName(MessageEditorData& data) {
   // If a()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
@@ -80,13 +72,12 @@ static bool GetMessageToName(MessageEditorData& data) {
     return false;
   }
 
-  bool has_address = false;
   bool newlsave = bout.newline;
   for (const auto& xnp : a()->current_sub().nets) {
     if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
       bout << "|#2To   : ";
       bout.newline = false;
-      auto to_name = input_text("All", 40);
+      const auto to_name = input_text("All", 40);
       bout.newline = newlsave;
       if (to_name.empty()) {
         data.to_name = "All";
@@ -150,7 +141,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         }
         bout << "|#2Title: ";
         bout.mpl(60);
-        auto rollover_line = StringPrintf("%c", ch);
+        auto rollover_line = fmt::sprintf("%c", ch);
         inli(&s1, &rollover_line, 60, true, false);
         data.title.assign(s1);
       } else {
@@ -313,7 +304,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       }
       if (cmd == "/C:") {
         const auto centered_text = current_line.substr(3);
-        current_line = StringPrintf("%c%s", CB, centered_text.c_str());
+        current_line = fmt::sprintf("%c%s", CB, centered_text);
       } else if (cmd == "/SU" && current_line[3] == '/' && curli > 0) {
         auto old_string = current_line.substr(4);
         auto slash = old_string.find('/');
@@ -364,7 +355,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
   if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
-        const auto buf = StringPrintf("%c0FidoAddr: %s", CD, to_name.c_str());
+        const auto buf = fmt::sprintf("%c0FidoAddr: %s", CD, to_name);
         ss << buf << crlf;
         break;
       }
@@ -373,7 +364,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
   if (a()->current_net().type == network_type_t::internet ||
       a()->current_net().type == network_type_t::news) {
     if (a()->usenetReferencesLine.length() > 0) {
-      const auto buf = StringPrintf("%c0RReferences: %s", CD, a()->usenetReferencesLine.c_str());
+      const auto buf = fmt::sprintf("%c0RReferences: %s", CD, a()->usenetReferencesLine);
       ss << buf << crlf;
       a()->usenetReferencesLine = "";
     }
@@ -451,10 +442,10 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
       }
       string s1 = s;
       if (s[0] != CD) {
-        s1 = StringPrintf("%c%c%s", CD, j + '2', s.c_str());
+        s1 = fmt::sprintf("%c%c%s", CD, j + '2', s);
       }
       if (!j) {
-        ss << StringPrintf("%c1", CD) << crlf;
+        ss << fmt::sprintf("%c1", CD) << crlf;
       }
       ss << s1 << crlf;
       if (j < 7) {
@@ -652,7 +643,7 @@ bool inmsg(MessageEditorData& data) {
   // New in 5.x. Add PID to all message types. This will be for WWIV messages
   // as well as FTN messages so we know the Program ID (WWIV) that created
   // the message.
-  const auto control_d_zero = StringPrintf("%c0", CD);
+  const auto control_d_zero = fmt::sprintf("%c0", CD);
   b << control_d_zero << "PID: WWIV " << wwiv_version << beta_version << crlf;
 
   // iterate through the lines in "lin" and append them to 'b'

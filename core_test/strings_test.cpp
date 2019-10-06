@@ -73,12 +73,6 @@ TEST(StringsTest, Properize) {
   EXPECT_EQ(string("Rushfan"), properize(string("Rushfan")));
 }
 
-TEST(StringsTest, StringPrintf_Smoke) {
-  static const string kRushfan = "rushfan";
-  EXPECT_EQ(kRushfan, StringPrintf("%s%s", "rush", "fan"));
-  EXPECT_EQ(kRushfan, StringPrintf("%s%c%c%c", "rush", 'f', 'a', 'n'));
-}
-
 TEST(StringsTest, StrCat_Smoke) {
   static const string kRushfan = "rushfan";
   EXPECT_EQ(kRushfan, StrCat("rush", "fan"));

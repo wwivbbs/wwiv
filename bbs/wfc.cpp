@@ -63,6 +63,8 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
@@ -162,8 +164,8 @@ void WFC::DrawScreen() {
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
     }
     a()->localIO()->WriteScreenBuffer(screen_buffer.get());
-    const auto title = StringPrintf("Activity and Statistics of %s Node %d",
-                                    a()->config()->system_name().c_str(), a()->instance_number());
+    const auto title = fmt::format("Activity and Statistics of {} Node {}",
+                                   a()->config()->system_name(), a()->instance_number());
     a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
@@ -185,7 +187,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
     a()->localIO()->PutsXYA(
         21, 13, 14,
-        StringPrintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
+        fmt::sprintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
                      100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
     a()->localIO()->PutsXYA(58, 6, 14, StrCat(wwiv_version, beta_version));
 
@@ -194,7 +196,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->GetCallerNumber()));
     if (status->GetDays()) {
       a()->localIO()->PutsXYA(58, 10, 14,
-                              StringPrintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
+                              fmt::sprintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
                                                        static_cast<float>(status->GetDays())));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
@@ -349,7 +351,7 @@ int WFC::doWFCEvents() {
           case '0':
           case '1':
           case '2': {
-            print_local_file(StringPrintf("netdat%c.log", ch));
+            print_local_file(fmt::format("netdat{}.log", ch));
           } break;
           }
         }

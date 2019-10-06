@@ -54,14 +54,13 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
   if (ansi) {
     bout.bpla(
         fmt::sprintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
-                     FRAME_COLOR, chain_num, FRAME_COLOR, c.description.c_str(), FRAME_COLOR,
-                     (is_regged) ? 14 : 13, regname.c_str(), FRAME_COLOR, c.usage, FRAME_COLOR),
+                     FRAME_COLOR, chain_num, FRAME_COLOR, c.description, FRAME_COLOR,
+                     (is_regged) ? 14 : 13, regname, FRAME_COLOR, c.usage, FRAME_COLOR),
         &abort);
-  
   } else {
-    bout.bpla(fmt::sprintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description.c_str(),
-                           regname.c_str(), c.usage),
-              &abort);
+    bout.bpla(
+        fmt::sprintf(" |%3d|%-41.41s|%-21.21s|%5d|", chain_num, c.description, regname, c.usage),
+        &abort);
   }
 
   if (!is_regged) {
@@ -117,14 +116,14 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
-      bout.bputs(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description.c_str()), &abort, &next);
+      bout.bputs(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
       i++;
       if (!abort && !a()->hangup_) {
         if (i >= *mapp) {
           bout.bpla(fmt::sprintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
           bout.bpla(fmt::sprintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,
-                                 a()->chains->at(map[i]).description.c_str()),
+                                 a()->chains->at(map[i]).description),
                     &abort);
         }
       }

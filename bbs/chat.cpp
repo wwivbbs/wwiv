@@ -489,7 +489,7 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
     User u;
     a()->users()->readuser(&u, ir.user);
     const string s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->GetName(),
-                                  u.GetName(), color_string, message.c_str());
+                                  u.GetName(), color_string, message);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
       if (ir.loc == loc && i != a()->instance_number()) {
@@ -519,7 +519,7 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
   string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
     text = fmt::sprintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(),
-                        color_string, message.c_str());
+                        color_string, message);
   }
   send_inst_str(node, text);
   User u;
@@ -641,7 +641,7 @@ void moving(bool bOnline, int loc) {
 // Sets color_string string for current node
 
 void get_colors(char* color_string, IniFile* pIniFile) {
-  string s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
+  const auto s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
   strcpy(color_string, s.c_str());
 }
 

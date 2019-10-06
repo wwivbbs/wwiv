@@ -17,13 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/multinst.h"
-#include <string>
 
+#include <string>
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
 #include "sdk/filenames.h"
@@ -85,7 +86,7 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_AMSG: return ("AutoMessage");
     case INST_LOC_SUBS:
       if (so() && ir.subloc < a()->subs().subs().size()) {
-        return fmt::format("Reading Messages: (Sub: {})", stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
+        return fmt::format("Reading Messages: (Sub: {})", stripcolors(a()->subs().sub(ir.subloc).name));
       }
       return "Reading Messages";
     case INST_LOC_CHUSER: return string("Changing User");
@@ -99,11 +100,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_KILLEMAIL: return string("Viewing Old Email");
     case INST_LOC_POST:
       if (so() && ir.subloc < a()->subs().subs().size()) {
-        string temp = StringPrintf(" (Sub: %s)",
-            stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
-        return StrCat("Posting a Message", temp);
+        return fmt::format("Posting a Message (Sub: {})", stripcolors(a()->subs().sub(ir.subloc).name));
       }
-      return string("Posting a Message");
+      return "Posting a Message";
     case INST_LOC_NEWUSER: return string("Registering a Newuser");
     case INST_LOC_RMAIL: return string("Reading Email");
     case INST_LOC_DOWNLOAD: return string("Downloading");
@@ -130,7 +129,7 @@ string GetInstanceActivityString(instancerec &ir) {
  *     CurrUser: Sysop #1
  */
 std::string make_inst_str(int instance_num, int format) {
-  const auto s = StringPrintf("|#1Instance %-3d: |#2", instance_num);
+  const auto s = fmt::sprintf("|#1Instance %-3d: |#2", instance_num);
 
   instancerec ir{};
   get_inst_info(instance_num, &ir);
@@ -156,10 +155,10 @@ std::string make_inst_str(int instance_num, int format) {
     } else {
       userName = "(Nobody)";
     }
-    return StringPrintf("|#5%-4d |#2%-35.35s |#1%-37.37s", instance_num, userName.c_str(), activity_string.c_str());
+    return fmt::sprintf("|#5%-4d |#2%-35.35s |#1%-37.37s", instance_num, userName, activity_string);
   }
   }
-  return StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", format);
+  return fmt::format("** INVALID INSTANCE FORMAT PASSED [{}] **", format);
 }
 
 void multi_instance() {

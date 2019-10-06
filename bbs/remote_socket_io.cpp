@@ -35,7 +35,7 @@ typedef int socklen_t;
 #include <iostream>
 #include <memory>
 #include <system_error>
-
+#include "fmt/printf.h"
 #include "sdk/user.h"
 #include "core/strings.h"
 #include "core/file.h"
@@ -43,7 +43,6 @@ typedef int socklen_t;
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
-#include "core/wwivport.h"
 #include "core/wwivassert.h"
 
 
@@ -414,21 +413,21 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_WILL: {
-    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
     // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_WONT: {
-    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
     // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_DO: {
-    // const string do_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    // const string do_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
     // ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
-      const string will_s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
+      const string will_s = fmt::sprintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
       write(will_s.c_str(), 3, true);
       // Sent TELNET IAC WILL SUPPRESSS GA
     }
@@ -437,7 +436,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_DONT: {
-    // const string dont_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    // const string dont_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
     // ::OutputDebugString(dont_s.c_str());
   }
   break;

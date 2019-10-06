@@ -18,29 +18,28 @@
 /**************************************************************************/
 #include <chrono>
 
-#include "bbs/batch.h"
-#include "bbs/bbsovl3.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
-#include "bbs/input.h"
-#include "bbs/bbs.h"
 #include "bbs/dirlist.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
+#include "bbs/input.h"
 #include "bbs/pause.h"
+#include "bbs/sysoplog.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/sysoplog.h"
-#include "local_io/wconstants.h"
-#include "sdk/status.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
+#include "sdk/status.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -176,7 +175,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  to_char_array(u.filename, s.c_str());
+  to_char_array(u.filename, s);
   u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
@@ -385,7 +384,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   status->IncrementNumUploadsToday();
   status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   a()->status_manager()->CommitTransaction(std::move(status));
-  sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
+  sysoplog() << fmt::sprintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
   return 0;                                 // This means success
 }
 
@@ -409,7 +408,7 @@ int try_to_ul(const string& file_name) {
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
-  sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
+  sysoplog() << fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name);
 
   const auto src = PathFilePath(a()->batch_directory(), file_name);
   const auto dest = PathFilePath(PathFilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);

@@ -568,7 +568,7 @@ void InitVotes() {
 
 void ReadLog() {
   const string sysop_log_file = GetSysopLogFileName(date());
-  print_local_file(sysop_log_file.c_str());
+  print_local_file(sysop_log_file);
 }
 
 void ReadNetLog() {

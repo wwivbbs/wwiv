@@ -17,33 +17,28 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/menu.h"
-#include <cstdint>
-#include <iomanip>
-#include <memory>
-#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/common.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/menu_parser.h"
-#include "bbs/menusupp.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
 #include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <iomanip>
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -52,8 +47,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 static string GetMenuDirectory() {
   return FilePath(a()->language_dir, "menus");
@@ -509,7 +503,7 @@ void ConfigUserMenuSet() {
   // Save current menu setup.
   a()->WriteCurrentUser();
 
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s", a()->user()->menu_set().c_str(),
+  MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
                             a()->user()->hotkeys() ? "Hot" : "Off"));
   bout.nl(2);
 }
@@ -613,5 +607,4 @@ void MenuInstance::GenerateMenu() const {
   return;
 }
 
-} // namespace menus
 } // namespace wwiv

@@ -24,7 +24,7 @@
 #include "bbs/utility.h"
 #include "bbs/pause.h"
 #include "bbs/datetime.h"
-#include "local_io/wconstants.h"
+#include "fmt/printf.h"
 #include "core/strings.h"
 #include "core/datetime.h"
 #include "sdk/config.h"
@@ -74,8 +74,8 @@ std::string MacroContext::interpret(char ch) const {
   case 'a':                               // User's language
     return a()->cur_lang_name;
   case 'B':                               // User's birthday
-    return StringPrintf("%d/%d/%d", u().GetBirthdayMonth(),
-             u().GetBirthdayDay(), u().GetBirthdayYear());
+    return fmt::format("{}/{}/{}", u().GetBirthdayMonth(), u().GetBirthdayDay(),
+                       u().GetBirthdayYear());
   case 'b':                               // Minutes in bank
     return to_string(u().GetTimeBankMinutes());
   case 'C':                               // User's city
@@ -156,7 +156,7 @@ std::string MacroContext::interpret(char ch) const {
   case 'W':                               // Total # of messages in sub
     return to_string(a()->GetNumMessagesInCurrentMessageArea());
   case 'X':                               // User's sex
-    return StringPrintf("%c", u().GetGender());
+    return fmt::sprintf("%c", u().GetGender());
   case 'Y':                               // Your BBS name
     return a()->config()->system_name();
   case 'y':                               // Computer type
