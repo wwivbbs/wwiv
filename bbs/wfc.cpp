@@ -113,16 +113,16 @@ static void wfc_update() {
 
   get_inst_info(inst_num, &ir);
   a()->users()->readuser_nocache(&u, ir.user);
-  a()->localIO()->PutsXYA(57, 18, 15, pad_to(std::to_string(inst_num), 3));
+  a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
   if (ir.flags & INST_FLAGS_ONLINE) {
-    const string unn = a()->names()->UserName(ir.user);
-    a()->localIO()->PutsXYA(42, 19, 14, pad_to(unn, 25));
+    const auto unn = a()->names()->UserName(ir.user);
+    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
   } else {
-    a()->localIO()->PutsXYA(42, 19, 14, pad_to("Nobody", 25));
+    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", "Nobody"));
   }
 
-  string activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
-  a()->localIO()->PutsXYA(42, 20, 14, pad_to(activity_string, 25));
+  auto activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
+  a()->localIO()->PutsXYA(42, 20, 14, fmt::format("{:<25}", activity_string));
   if (num_instances() > 1) {
     do {
       ++inst_num;
@@ -139,7 +139,7 @@ void WFC::Clear() {
 }
 
 void WFC::DrawScreen() {
-  instancerec ir;
+  instancerec ir{};
   User u;
   static steady_clock::time_point wfc_time;
   static steady_clock::time_point poll_time;
@@ -148,7 +148,7 @@ void WFC::DrawScreen() {
     return;
   }
 
-  int nNumNewMessages = check_new_mail(sysop_usernum);
+  auto nNumNewMessages = check_new_mail(sysop_usernum);
   auto status = a()->status_manager()->GetStatus();
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
@@ -206,9 +206,9 @@ void WFC::DrawScreen() {
     get_inst_info(a()->instance_number(), &ir);
     if (ir.user < a()->config()->max_users() && ir.user > 0) {
       const string unn = a()->names()->UserName(ir.user);
-      a()->localIO()->PutsXYA(33, 16, 14, pad_to(unn, 20));
+      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
     } else {
-      a()->localIO()->PutsXYA(33, 16, 14, pad_to("Nobody", 20));
+      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));
     }
 
     status_ = 1;

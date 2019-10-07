@@ -516,7 +516,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
 
   if (i == -1) {
     if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
-      bout << pad_to(file_name, 12) << ": |#5In filename database - add anyway? ";
+      bout << fmt::format("{:<12}: |#5In filename database - add anyway? ", file_name);
       char ch = ynq();
       if (ch == *str_quit) {
         return false;

@@ -35,6 +35,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
@@ -243,7 +244,7 @@ bool attempt_callout() {
 }
 
 void print_pending_list() {
-  int adjust = 0, lines = 0;
+  int lines = 0;
   char s1[81], s2[81], s3[81], s4[81], s5[81];
   auto ss = a()->user()->GetStatus();
 
@@ -511,9 +512,19 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
 // begin callout additions
 
+static std::string to_difftime_string(daten_t now, daten_t then) {
+  if (then == 0) {
+    return fmt::format("{:<16}", "NEVER");
+  }
+  const auto h = std::min<int>(999, static_cast<int>((now - then) / SECONDS_PER_HOUR));
+  const auto m = static_cast<int>(((now - then) % SECONDS_PER_HOUR) / 60);
+  const auto s = fmt::format("{}:{:0<2} Hrs", h, m);
+  return fmt::format("{:<16}", s);
+}
+
 static void print_call(uint16_t sn, const net_networks_rec& net) {
   static int color, got_color = 0;
-  time_t tCurrentTime = time(nullptr);
+  auto now = daten_t_now();
 
   Callout callout(net);
   Contact contact(net, false);
@@ -523,7 +534,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   if (!ncn) {
     return;
   }
-  net_system_list_rec* csne = next_system(sn);
+  auto csne = next_system(sn);
   if (!csne) {
     return;
   }
@@ -545,53 +556,18 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   s1 = to_string(bytes_to_k(ncn->bytes_sent()));
   a()->localIO()->PutsXYA(23, 18, color, s1);
 
-  if (ncn->firstcontact() > 0) {
-    s1 = StrCat(to_string((tCurrentTime - ncn->firstcontact()) / SECONDS_PER_HOUR), ":");
-    time_t tTime = (((tCurrentTime - ncn->firstcontact()) % SECONDS_PER_HOUR) / 60);
-    string s = to_string(tTime);
-    if (tTime < 10) {
-      s1 += StrCat("0", s);
-    } else {
-      s1 += s;
-    }
-    s1 += " Hrs";
-  } else {
-    s1 = "NEVER";
-  }
+  s1 = to_difftime_string(now, ncn->firstcontact());
   a()->localIO()->PutsXYA(23, 16, color, s1);
 
-  if (ncn->lastcontactsent() > 0) {
-    s1 = StrCat(to_string((tCurrentTime - ncn->lastcontactsent()) / SECONDS_PER_HOUR), ":");
-    time_t tTime = (((tCurrentTime - ncn->lastcontactsent()) % SECONDS_PER_HOUR) / 60);
-    string s = to_string(tTime);
-    if (tTime < 10) {
-      s1 += StrCat("0", s);
-    } else {
-      s1 += s;
-    }
-    s1 += " Hrs";
-  } else {
-    s1 = "NEVER";
-  }
+  s1 = to_difftime_string(now, ncn->lastcontactsent());
   a()->localIO()->PutsXYA(58, 16, color, s1);
 
-  if (ncn->lasttry() > 0) {
-    string tmp = to_string((tCurrentTime - ncn->lasttry()) / SECONDS_PER_HOUR);
-    s1 = StrCat(tmp, ":");
-    time_t tTime = (((tCurrentTime - ncn->lasttry()) % SECONDS_PER_HOUR) / 60);
-    string s = to_string(tTime);
-    if (tTime < 10) {
-      s1 += StrCat("0", s);
-    } else {
-      s1 += s;
-    }
-    s1 += " Hrs";
-  } else {
-    s1 = "NEVER";
-  }
+  s1 = to_difftime_string(now, ncn->lasttry());
   a()->localIO()->PutsXYA(58, 15, color, s1);
-  a()->localIO()->PutsXYA(23, 15, color, pad_to(std::to_string(ncn->numcontacts()), 16));
-  a()->localIO()->PutsXYA(41, 3, color, pad_to(csne->name, 30));
+
+  const auto ncns = fmt::format("{:<16}", ncn->numcontacts());
+  a()->localIO()->PutsXYA(23, 15, color,  ncns);
+  a()->localIO()->PutsXYA(41, 3, color, fmt::format("{:<30}", csne->name, 30));
   auto binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   string hostname = csne->phone;
   auto speed = StrCat(to_string(csne->speed), " BPS");
@@ -600,9 +576,9 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
     hostname = StrCat(binkp_node->host, ":", binkp_node->port);
     speed = "BinkP";
   }
-  a()->localIO()->PutsXYA(23, 19, color, pad_to(hostname, 30));
-  a()->localIO()->PutsXYA(58, 18, color, pad_to(speed, 10));
-  a()->localIO()->PutsXYA(14, 3, color, pad_to(a()->network_name(), 16));
+  a()->localIO()->PutsXYA(23, 19, color, fmt::format("{:<30}", hostname));
+  a()->localIO()->PutsXYA(58, 18, color, fmt::format("{:<10}", speed));
+  a()->localIO()->PutsXYA(14, 3, color, fmt::format("{:<16}", a()->network_name()));
 }
 
 static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
@@ -705,11 +681,10 @@ static std::pair<uint16_t, int> ansicallout() {
   int y = 0;
   a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
   print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
-  char ch = 0;
 
   bool done = false;
   do {
-    ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
+    char ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
     switch (ch) {
     case ' ':
     case RETURN:

@@ -470,9 +470,9 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    const auto sn = lpad_to(config()->system_name(), 50);
-    const auto ld = lpad_to(status->GetLastDate(), 8);
-    localIO()->PutsXY(0, 0, StrCat(sn, "  Activity for ", ld, ":      "));
+    localIO()->PutsXY(0, 0,
+                      fmt::format("{:>50}  Activity for {:>8}:      ", config()->system_name(),
+                                  status->GetLastDate()));
 
     localIO()->PutsXY(
         0, 1,
@@ -566,7 +566,7 @@ void Application::UpdateTopScreen() {
                                    ctypes(user()->GetComputerType()), feedback_waiting));
 
     if (chatcall()) {
-      localIO()->PutsXY(0, 4, pad_to(chat_reason_, 80));
+      localIO()->PutsXY(0, 4, fmt::format("{:<80}", chat_reason_));
     }
   } break;
   }

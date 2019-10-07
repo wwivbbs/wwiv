@@ -22,6 +22,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "wwivconfig/utility.h"
@@ -234,8 +235,8 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    auto d = std::to_string(*this->data_);
-    window->PutsXY(this->x_, this->y_, wwiv::strings::pad_to(d, this->maxsize()));
+    const auto d = std::to_string(*this->data_);
+    window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->maxsize()));
   }
 };
 

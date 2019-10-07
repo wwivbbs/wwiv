@@ -18,10 +18,11 @@
 /**************************************************************************/
 #include "core/strings.h"
 
+#include "core/log.h"
+#include "core/wwivport.h"
+#include "fmt/format.h"
 #include <algorithm>
 #include <cctype>
-#include <cstdarg>
-#include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -29,9 +30,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "core/log.h"
-#include "core/wwivport.h"
 
 #ifdef _WIN32
 
@@ -358,7 +356,7 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
 std::string put_time(const struct tm* tm_info, const std::string& fmt_arg) {
   char buffer[1024];
 
-  auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
+  const auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
   if (num == 0) {
     return {};
   }
@@ -407,30 +405,6 @@ std::string trim_to_size(const std::string& orig, std::string::size_type max_siz
     s.pop_back();
   }
   return s;
-}
-
-std::string pad_to(const std::string& orig, std::string::size_type max_size) {
-  return pad_to(orig, ' ', max_size);
-}
-
-std::string pad_to(const std::string& orig, char pad, std::string::size_type max_size) {
-  const auto len = size(orig);
-  if (max_size <= len) {
-    return orig;
-  }
-  return StrCat(orig, std::string(max_size - len, pad));
-}
-
-std::string lpad_to(const std::string& orig, std::string::size_type max_size) {
-  return lpad_to(orig, ' ', max_size);
-}
-
-std::string lpad_to(const std::string& orig, char pad, std::string::size_type max_size) {
-  const auto len = size(orig);
-  if (max_size <= len) {
-    return orig;
-  }
-  return StrCat(std::string(max_size - len, pad), orig);
 }
 
 } // namespace wwiv
@@ -541,7 +515,7 @@ void properize(char* text) {
     return;
   }
 
-  for (int i = 0; i < wwiv::strings::size_int(text); i++) {
+  for (auto i = 0; i < wwiv::strings::size_int(text); i++) {
     if ((i == 0) || ((i > 0) && ((text[i - 1] == ' ') || (text[i - 1] == '-') ||
                                  (text[i - 1] == '.')))) {
       text[i] = wwiv::strings::to_upper_case<char>(text[i]);

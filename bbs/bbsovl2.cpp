@@ -98,9 +98,8 @@ void OnlineUserEditor() {
   bool done = false;
 
   // heading
-  string s = StrCat("[", a()->names()->UserName(a()->usernum), "]");
-  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31,
-                          StrCat(pad_to(" WWIV User Editor", 30), lpad_to(s, 37)));
+  const auto s = StrCat("[", a()->names()->UserName(a()->usernum), "]");
+  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, fmt::format("{:<30}{:>37}"," WWIV User Editor", s));
 
   a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", sl));
   a()->localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));

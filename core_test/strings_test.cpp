@@ -406,23 +406,3 @@ TEST(StringsTest, TrimToSizeIgnoreColors) {
   EXPECT_EQ("|09|16a|09", trim_to_size_ignore_colors("|09|16a|09", 1));
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16aa|09", 1));
 }
-
-TEST(StringsTest, PadTo) { 
-  auto result = pad_to("a", 2);
-  EXPECT_EQ(result, "a ");
-}
-
-TEST(StringsTest, PadToPad) {
-  auto result = pad_to("a", 'x', 2);
-  EXPECT_EQ(result, "ax");
-}
-
-TEST(StringsTest, LPadTo) {
-  auto result = lpad_to("a", 2);
-  EXPECT_EQ(result, " a");
-}
-
-TEST(StringsTest, LPadToPad) {
-  auto result = lpad_to("a", 'x', 2);
-  EXPECT_EQ(result, "xa");
-}
