@@ -940,7 +940,7 @@ static void drawscan(int filepos, long tagged) {
   }
 
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
-  bout.bprintf("[%c]", tagged ? '\xFE' : ' ');
+  bout << "[" << (tagged ? '\xFE' : ' ') << "]";
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
 
   if (filepos >= max_lines) {

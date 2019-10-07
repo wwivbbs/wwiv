@@ -22,19 +22,17 @@
 
 #include <chrono>
 #include <ios>
-#include <iostream>
 #include <memory>
 #include <streambuf>
 #include <string>
 #include <utility>
 #include <vector>
-
+#include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/wwivcolors.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
-
 
 class outputstreambuf : public std::streambuf {
 public:
@@ -136,7 +134,11 @@ public:
    * @param next The next flag (Output Parameter)
    */
   int bputs(const std::string& text, bool* abort, bool* next);
-  int bprintf(const char* fmt, ...);
+  template <typename... Args>
+  int bprintf(const std::string& format_str, const Args&... args) {
+    const auto s2 = fmt::sprintf(format_str, args...);
+    return bputs(s2);
+  }
 
   int bputch(char c, bool use_buffer = false);
   void flush();
@@ -154,7 +156,7 @@ public:
   void RedrawCurrentLine();
 
   // Key Timeouts
-  std::chrono::duration<double> key_timeout() const;
+  [[nodiscard]] std::chrono::duration<double> key_timeout() const;
   void set_key_timeout(std::chrono::duration<double> k) { non_sysop_key_timeout_ = k; }
   void set_sysop_key_timeout(std::chrono::duration<double> k) { sysop_key_timeout_ = k; }
   void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }

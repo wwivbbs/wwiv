@@ -347,16 +347,6 @@ int Output::bputs(const std::string& text, bool *abort, bool *next) {
   return ret;
 }
 
-int Output::bprintf(const char *formatText, ...) {
-  va_list ap;
-  char szBuffer[4096];
-
-  va_start(ap, formatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
-  va_end(ap);
-  return bputs(szBuffer);
-}
-
 void Output::move_up_if_newline(int num_lines) {
   if (okansi() && !newline) {
     const auto s = StrCat("\r\x1b[", num_lines, "A");
