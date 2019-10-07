@@ -291,8 +291,6 @@ void Output::reset() {
   ansi_->reset();
   curatr(0x07);
   clear_lines_listed();
-  // Reset the error bit on bout since after a a()->hangup_ it can be set.
-  bout.clear();
 }
 
 

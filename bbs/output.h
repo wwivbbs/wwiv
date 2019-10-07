@@ -20,27 +20,20 @@
 #ifndef __INCLUDED_BBS_OUTPUT_H__
 #define __INCLUDED_BBS_OUTPUT_H__
 
-#include <chrono>
-#include <ios>
-#include <memory>
-#include <streambuf>
-#include <string>
-#include <utility>
-#include <vector>
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
-#include "sdk/wwivcolors.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
+#include "sdk/wwivcolors.h"
+#include <chrono>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
-class outputstreambuf : public std::streambuf {
-public:
-  outputstreambuf();
-  ~outputstreambuf();
-  virtual std::ostream::int_type overflow(std::ostream::int_type c);
-  virtual std::streamsize xsputn(const char* text, std::streamsize numChars);
-};
+typedef std::basic_ostream<char>&(ENDL_TYPE_O)(std::basic_ostream<char>&);
 
 class RemoteIO;
 
@@ -51,15 +44,14 @@ public:
   int color;
 };
 
-class Output : public std::ostream, public wwiv::local_io::curatr_provider {
+class Output final : public wwiv::local_io::curatr_provider {
 protected:
-  outputstreambuf buf;
-  LocalIO* local_io_;
-  RemoteIO* comm_;
+  LocalIO* local_io_{nullptr};
+  RemoteIO* comm_{nullptr};
 
 public:
   Output();
-  virtual ~Output() {}
+  ~Output();
 
   void SetLocalIO(LocalIO* local_io);
   LocalIO* localIO() const noexcept { return local_io_; }
@@ -84,8 +76,13 @@ public:
   std::string MakeColor(int wwiv_color);
   std::string MakeSystemColor(int nColor);
   std::string MakeSystemColor(wwiv::sdk::Color color);
-  void litebarf(const char* fmt, ...);
+  
   void litebar(const std::string& msg);
+  template <typename... Args> void litebarf(const std::string& format_str, const Args&... args) {
+    const auto s2 = fmt::sprintf(format_str, args...);
+    litebar(s2);
+  }
+
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
 
@@ -139,6 +136,21 @@ public:
     const auto s2 = fmt::sprintf(format_str, args...);
     return bputs(s2);
   }
+
+template <typename T> Output& operator<<(T const& value) {
+    std::ostringstream ss;
+    ss << value;
+    bputs(ss.str());
+    return *this;
+  }
+
+  Output& operator<<(ENDL_TYPE_O* value) {
+    std::ostringstream ss;
+    ss << value;
+    bputs(ss.str());
+    return *this;
+  }
+
 
   int bputch(char c, bool use_buffer = false);
   void flush();

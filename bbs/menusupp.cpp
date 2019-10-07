@@ -438,7 +438,7 @@ void WWIVVersion() {
       if (!n.sysnum) {
         continue;
       }
-      bout << "|#9" << std::setw(14) << std::left << n.name << ":|#2 @" << n.sysnum << wwiv::endl;
+      bout << fmt::format("|#9{:<14}:|#2 @{}", n.name, n.sysnum) << wwiv::endl;
     }
   }
 

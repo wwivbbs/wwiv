@@ -40,41 +40,8 @@ using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
 
-outputstreambuf::outputstreambuf() {}
-outputstreambuf::~outputstreambuf() {}
-
-std::ostream::int_type outputstreambuf::overflow(std::ostream::int_type c) {
-  if (c != EOF) {
-    bout.bputch(static_cast<char>(c), false);
-  }
-  return c;
-}
-
-std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_chars) {
-  if (num_chars == 0) {
-    return 0;
-  }
-  CheckForHangup();
-  if (a()->hangup_) {
-    // Returning 0 here would set the fail bit on the stream, which
-    // is not what we want, so pretend that we emitted all of the characters.
-    return num_chars;
-  }
-  bout.bputs(string(text, static_cast<unsigned int>(num_chars)));
-
-  // From a stream, we want to return the number of chars, including
-  // color codes.
-  return num_chars;
-}
-
-Output::Output() :
-#if defined(_WIN32)
-      buf(),
-#endif
-      std::ostream(&buf) {
-  init(&buf);
-  memset(charbuffer, 0, sizeof(charbuffer));
-}
+Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
+Output::~Output() = default;
 
 void Output::SetLocalIO(LocalIO* local_io) {
   // We would use a()->user()->GetScreenChars() but I don't thik we
@@ -130,8 +97,7 @@ void Output::Right(int num) {
     ss << num;
   }
   ss << "C";
-  string s = ss.str();
-  bputs(s);
+  bputs(ss.str());
 }
 
 void Output::SavePosition() {
@@ -185,17 +151,6 @@ std::string Output::MakeSystemColor(int c) {
 
 std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
   return MakeSystemColor(static_cast<uint8_t>(c));
-}
-
-void Output::litebarf(const char *fmt, ...) {
-  va_list ap;
-  char s[1024];
-
-  va_start(ap, fmt);
-  vsnprintf(s, sizeof(s), fmt, ap);
-  va_end(ap);
-
-  litebar(s);
 }
 
 void Output::litebar(const std::string& msg) {

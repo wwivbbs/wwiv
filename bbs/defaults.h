@@ -23,7 +23,7 @@
 #include "bbs/menu.h"
 
 void select_editor();
-const std::string DescribeColorCode(int nColorCode);
+std::string DescribeColorCode(int nColorCode);
 void color_list();
 void config_qscan();
 void enter_regnum();

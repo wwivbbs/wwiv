@@ -427,8 +427,12 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
     // ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
-      const string will_s = fmt::sprintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
-      write(will_s.c_str(), 3, true);
+      char s[4];
+      s[0] = TELNET_OPTION_IAC;
+      s[1] = TELNET_OPTION_WILL;
+      s[2] = TELNET_OPTION_SUPPRESSS_GA;
+      s[3] = 0;
+      write(s, 3, true);
       // Sent TELNET IAC WILL SUPPRESSS GA
     }
     break;

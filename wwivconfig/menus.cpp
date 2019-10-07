@@ -146,11 +146,9 @@ public:
         vector<ListBoxItem> items;
         for (size_t i = 1; i < menu_items_.size(); i++) {
           const auto& m = menu_items_.at(i);
-          std::ostringstream ss;
           auto key = fmt::format("({})", m.szKey);
-          ss << "#" << i << " " << std::left << std::setw(12) << key 
-             << " '" << m.szMenuText << "' [" << m.szExecute << "]";
-          items.emplace_back(ss.str(), 0, i);
+          const auto s = fmt::format("#{} {:<12} '{}' [{}]", i, key, m.szMenuText, m.szExecute);
+          items.emplace_back(s, 0, i);
         }
         ListBox list(window, title_, items);
 

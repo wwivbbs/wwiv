@@ -586,9 +586,8 @@ void MenuInstance::GenerateMenu() const {
         keystr = StrCat("[", menu.szKey, "]");
       }
       bout.Color(1);
-      bout << std::left << std::setw(8) << keystr << "  ";
-      bout.Color(9);
-      bout << std::left << std::setw(25) << (menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
+      const auto txt = menu.szMenuText[0] ? menu.szMenuText : menu.szExecute;
+      bout << fmt::format("{:<8} |#9{:<25}", keystr, txt);
       if (lines_displayed % 2) {
         bout.nl();
       }

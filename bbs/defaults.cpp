@@ -51,9 +51,6 @@
 #include "sdk/usermanager.h"
 #include "fmt/printf.h"
 
-using std::setw;
-using std::endl;
-using std::left;
 using std::string;
 using std::vector;
 using wwiv::bbs::InputMode;
@@ -135,64 +132,68 @@ static string GetMailBoxStatus() {
 static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
-  bout << left;
-  const string screen_size = fmt::sprintf("%d X %d", 
-      a()->user()->GetScreenChars(),
-      a()->user()->GetScreenLines());
-  const string ansi_setting = (a()->user()->HasAnsi() ?
+  const string screen_size =
+      fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
+  const string ansi_setting =
+      (a()->user()->HasAnsi() ?
           (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
-  bout << "|#11|#9) Screen size       : |#2" << setw(16) << screen_size << " " 
-       << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
+  bout << fmt::format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
+  bout << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
 
-  const string mailbox_status = GetMailBoxStatus();
-  bout << "|#13|#9) Pause on screen   : |#2" << setw(16) << (a()->user()->HasPause() ? "On " : "Off") << " "
-       << "|#14|#9) Mailbox           : |#2" << mailbox_status << wwiv::endl;
+  bout << fmt::format("|#13|#9) Pause on screen   : |#2{:<16} ",
+                      a()->user()->HasPause() ? "On " : "Off");
+  bout << "|#14|#9) Mailbox           : |#2" << GetMailBoxStatus() << wwiv::endl;
 
-  bout << setw(45) << "|#15|#9) Configured Q-scan" << " " << setw(45) << "|#16|#9) Change password" << wwiv::endl;
+  bout << fmt::format("{:<45} {}", "|#15|#9) Configured Q-scan", "|#16|#9) Change password")
+       << wwiv::endl;
 
   if (okansi()) {
-    bout << setw(45) << "|#17|#9) Update macros" << " "
-         << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
+    bout << fmt::format("{:<45} {}", "|#17|#9) Update macros", "|#18|#9) Change colors")
+         << wwiv::endl;
 
-    unsigned int nEditorNum = a()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= a()->editors.size()) ?
-        a()->editors[nEditorNum-1].description : "None";
-     bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
-          << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
+    const auto nEditorNum = a()->user()->GetDefaultEditor();
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= size_int(a()->editors))
+                                   ? a()->editors[nEditorNum - 1].description
+                                   : "None";
+    bout << fmt::format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
+    bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;
   }
 
-  const string internet_email_address = 
+  const auto internet_email_address = 
       ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
-  bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << a()->user()->GetOptionalVal() << " "
-       << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
+  bout << fmt::format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
+  bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
   if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (a()->languages.size() > 1) {
-    bout<< "|#1L|#9) Language          : |#2" << setw(16) << a()->cur_lang_name << " ";
+    bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->cur_lang_name);
   }
   if (num_instances() > 1) {
     bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!a()->user()->IsIgnoreNodeMessages());
   }
   bout.nl();
-  bout << "|#1S|#9) Cls Between Msgs? : |#2" << setw(16) << YesNoString(a()->user()->IsUseClearScreen()) << " "
-       << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr") << wwiv::endl;
+  bout << fmt::format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
+                      YesNoString(a()->user()->IsUseClearScreen()));
+  bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr")
+       << wwiv::endl;
 
   string wwiv_regnum = "(None)";
   if (a()->user()->GetWWIVRegNumber()) {
-    wwiv_regnum = fmt::sprintf("%ld", a()->user()->GetWWIVRegNumber());
+    wwiv_regnum = std::to_string(a()->user()->GetWWIVRegNumber());
   }
-  bout << "|#1U|#9) Use Msg AutoQuote : |#2" << setw(16) << YesNoString(a()->user()->IsUseAutoQuote()) << " "
-       << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
+  bout << fmt::format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
+                      YesNoString(a()->user()->IsUseAutoQuote()));
+  bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
-static const string DisplayColorName(int c) {
+static string DisplayColorName(int c) {
   switch (c) {
   case 0:
     return "Black";
@@ -215,7 +216,7 @@ static const string DisplayColorName(int c) {
   }
 }
 
-const string DescribeColorCode(int nColorCode) {
+string DescribeColorCode(int nColorCode) {
   std::ostringstream os;
 
   if (a()->user()->HasColor()) {
