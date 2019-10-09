@@ -43,17 +43,17 @@
 
 #define WRTPFX                                                                                     \
   {                                                                                                \
-    file.WriteFormatted("\x3%c", PFXCOL + 48);                                                     \
+    file.Write(fmt::sprintf("\x3%c", PFXCOL + 48));                                                \
     if (tf == 1)                                                                                   \
       cp = file.WriteBinary(pfx.c_str(), pfx.size() - 1);                                          \
     else                                                                                           \
       cp = file.WriteBinary(pfx.c_str(), pfx.size());                                              \
-    file.WriteFormatted("\x3%c", cc);                                                              \
+    file.Write(fmt::sprintf("\x3%c", cc));                                                         \
   }
 #define NL                                                                                         \
   {                                                                                                \
     if (!cp) {                                                                                     \
-      file.WriteFormatted("\x3%c", PFXCOL + 48);                                                   \
+      file.Write(fmt::sprintf("\x3%c", PFXCOL + 48));                                              \
       file.WriteBinary(pfx.c_str(), pfx.size());                                                   \
     }                                                                                              \
     if (ctlc)                                                                                      \
@@ -68,7 +68,7 @@
         NL else if (ns) cp += file.WriteBinary(" ", 1);                                            \
       if (!cp) {                                                                                   \
         if (ctld)                                                                                  \
-          file.WriteFormatted("\x4%c", ctld);                                                      \
+          file.Write(fmt::sprintf("\x4%c", ctld));                                                 \
         WRTPFX;                                                                                    \
       }                                                                                            \
       file.WriteBinary(ss1, l2);                                                                   \
@@ -246,7 +246,7 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
             }
             if (!cp) {
               if (ctld) {
-                file.WriteFormatted("\x04%c", ctld);
+                file.Write(fmt::sprintf("\x04%c", ctld));
               }
               WRTPFX;
             }

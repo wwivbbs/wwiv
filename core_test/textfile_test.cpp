@@ -142,18 +142,6 @@ TEST_F(TextFileTest, Insertion_TwoLines) {
   EXPECT_EQ("World", lines.at(1));
 }
 
-TEST_F(TextFileTest, WriteFormatted) {
-  string filename;
-  {
-    TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
-    file.WriteFormatted("%s %s", "Hello", "World");
-    filename = file.full_pathname();
-    // Let the textfile close.
-  }
-  const string actual = helper_.ReadFile(filename);
-  EXPECT_EQ("Hello World", actual);
-}
-
 TEST_F(TextFileTest, WriteChar) {
   string filename;
   {

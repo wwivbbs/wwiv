@@ -107,9 +107,6 @@ public:
   /** Writes a single character to a text file. */
   ssize_t WriteChar(char ch);
 
-  /** Writes a line of formatText like printf. */
-  ssize_t WriteFormatted(const char* formatText, ...);
-
   /** Writes a binary blob as binary data. */
   // ReSharper disable once CppMemberFunctionMayBeConst
   ssize_t WriteBinary(const void* buffer, size_t nSize) {

@@ -161,16 +161,6 @@ ssize_t TextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-ssize_t TextFile::WriteFormatted(const char* formatText, ...) {
-  va_list ap;
-  char buffer[4096];
-
-  va_start(ap, formatText);
-  vsnprintf(buffer, sizeof(buffer), formatText, ap);
-  va_end(ap);
-  return Write(buffer);
-}
-
 static void StripLineEnd(char* str) {
   size_t i = strlen(str);
   while ((i > 0) && ((str[i - 1] == 10) || str[i - 1] == 13)) {

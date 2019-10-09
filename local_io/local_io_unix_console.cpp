@@ -211,43 +211,6 @@ void UnixConsoleIO::LocalFastPuts(const string& text) {
   // TODO: set current attributes
 }
 
-int  UnixConsoleIO::LocalPrintf(const char *pszFormattedText, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
-  va_end(ap);
-  LocalFastPuts(szBuffer);
-  return nNumWritten;
-}
-
-int UnixConsoleIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
-  va_end(ap);
-  LocalXYPuts(x, y, szBuffer);
-  return nNumWritten;
-}
-
-int  UnixConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormattedText);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
-  va_end(ap);
-
-  int nOldColor = curatr();
-  curatr(nAttribute);
-  LocalXYPuts(x, y, szBuffer);
-  curatr(nOldColor);
-  return nNumWritten;
-}
-
 void UnixConsoleIO::set_protect(int l) {
   SetTopLine(l);
 }
