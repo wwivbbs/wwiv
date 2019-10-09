@@ -97,7 +97,6 @@ copy readme.500 %1
 copy menu.doc %1
 copy *.sam %1
 copy modems.500 %1\DATA
-copy menucmds.dat %1\DATA
 copy regions.dat %1\DATA
 copy wfc.dat %1\DATA
 
