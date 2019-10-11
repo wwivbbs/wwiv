@@ -93,9 +93,9 @@ const std::string BinkConfig::network_dir(const std::string& network_name) const
 }
 
 static net_networks_rec test_net(const string& network_dir) {
-  net_networks_rec net;
+  net_networks_rec net{};
   net.sysnum = 1;
-  strcpy(net.name, "wwivnet");
+  to_char_array(net.name, "wwivnet");
   net.type = network_type_t::wwivnet;
   net.dir = network_dir;
   return net;

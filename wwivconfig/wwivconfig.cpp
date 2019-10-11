@@ -117,7 +117,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
   return true;
 }
 
-WInitApp::WInitApp() {}
+WInitApp::WInitApp() = default;
 
 WInitApp::~WInitApp() {
   // Don't leak the localIO (also fix the color when the app exits)
@@ -134,6 +134,8 @@ int main(int argc, char* argv[]) {
     return app->main(argc, argv);
   } catch (const std::exception& e) {
     LOG(INFO) << "Fatal exception launching wwivconfig: " << e.what();
+  } catch (...) {
+    LOG(INFO) << "Unknown fatal exception launching wwivconfig.";
   }
 }
 

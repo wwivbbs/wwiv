@@ -109,7 +109,7 @@ static bool increment_email_counters(const Config& config, uint16_t email_usernu
 // SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
 bool WWIVEmail::AddMessage(const EmailData& data) {
   mailrec m{};
-  strcpy(m.title, data.title.c_str());
+  to_char_array(m.title, data.title);
   m.msg = { STORAGE_TYPE, 0xffffff };
   m.anony = static_cast<unsigned char>(data.anony);
   m.fromsys = static_cast<uint16_t>(data.from_system);

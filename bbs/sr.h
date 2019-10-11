@@ -35,7 +35,7 @@ void calc_CRC(unsigned char b);
 char gettimeout(long d, bool *abort);
 int extern_prot(int nProtocolNum, const std::string& pfile_nameToSend, bool bSending);
 bool ok_prot(int nProtocolNum, xfertype xt);
-char *prot_name(int nProtocolNum);
+std::string prot_name(int num);
 int  get_protocol(xfertype xt);
 void ascii_send(const std::string& file_name, bool* sent, double* percent);
 void maybe_internal(const std::string& file_name, bool* xferred, double* percent, bool bSend,

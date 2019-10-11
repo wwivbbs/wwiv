@@ -43,10 +43,10 @@ static statusrec_t create_status() {
   memset(&s, 0, sizeof(statusrec_t));
   const auto now{DateTime::now().to_string("%m/%d/%y")};
   to_char_array(s.date1, now);
-  strcpy(s.date2, "00/00/00");
-  strcpy(s.date3, "00/00/00");
-  strcpy(s.log1, "000000.log");
-  strcpy(s.log2, "000000.log");
+  to_char_array(s.date2, "00/00/00");
+  to_char_array(s.date3, "00/00/00");
+  to_char_array(s.log1, "000000.log");
+  to_char_array(s.log2, "000000.log");
   to_char_array(s.gfiledate, now);
   s.callernum = 65535;
   s.qscanptr = 2;

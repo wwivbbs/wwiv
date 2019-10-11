@@ -39,7 +39,7 @@ std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it);
 void delbatch(int nBatchEntryNum);
 //char *unalign(char *file_name);
 std::string unalign(const std::string& file_name);
-void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description);
+void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string& description);
 int  batchdl(int mode);
 void didnt_upload(const batchrec& b);
 void ymbatchdl(bool bHangupAfterDl);

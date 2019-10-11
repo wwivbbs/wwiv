@@ -26,17 +26,17 @@ namespace wwiv {
 namespace core {
 
 struct socket_error : public std::runtime_error {
-  socket_error(const std::string& message);
+  explicit socket_error(const std::string& message);
 };
 
 struct socket_closed_error : public socket_error {
-  socket_closed_error(const std::string& message)
+  explicit socket_closed_error(const std::string& message)
     : socket_error(message) {
   }
 };
 
 struct timeout_error : public socket_error {
-  timeout_error(const std::string& message)
+  explicit timeout_error(const std::string& message)
     : socket_error(message) {
   }
 };

@@ -113,7 +113,7 @@ TEST_F(CalloutTest, NodeConfig) {
   const string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);
   net_networks_rec net{};
-  strcpy(net.name, "Dummy Network");
+  to_char_array(net.name, "Dummy Network");
   net.dir = files.DirName("network");
   Callout callout(net);
   const net_call_out_rec* con = callout.net_call_out_for(1);

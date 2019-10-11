@@ -53,9 +53,9 @@ protected:
     const string network_dir = files_.DirName("network");
     const string gfiles_dir = files_.DirName("gfiles");
     memset(&wwiv_config_, 0, sizeof(configrec));
-    strcpy(wwiv_config_.systemname, "Test System");
-    strcpy(wwiv_config_.sysopname, "Test Sysop");
-    strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
+    to_char_array(wwiv_config_.systemname, "Test System");
+    to_char_array(wwiv_config_.sysopname, "Test Sysop");
+    to_char_array(wwiv_config_.gfilesdir, gfiles_dir);
     wwiv::sdk::Config config(File::current_directory());
     config.set_config(&wwiv_config_, true);
     config.set_initialized_for_test(true);

@@ -43,7 +43,7 @@ using namespace wwiv::strings;
 void OnlineUserEditor() {
   char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8],
       up[6], down[6], posts[6], banktime[6], gold[10], ass[6], logons[6];
-  int cp, i, rc = ABORTED;
+  int i, rc = ABORTED;
 
   a()->localIO()->savescreen();
   a()->DisplaySysopWorkingIndicator(true);
@@ -94,7 +94,7 @@ void OnlineUserEditor() {
   dar[16] = '\0';
   ar[16] = '\0';
   restrict[16] = '\0';
-  cp = 0;
+  int cp = 0;
   bool done = false;
 
   // heading

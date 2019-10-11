@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "core/command_line.h"
 #include "core/datetime.h"
@@ -60,8 +61,8 @@ class ConsoleAppender : public Appender {
 
 class LogFileAppender : public Appender {
 public:
-  LogFileAppender(const std::string& fn)
-    : filename_(fn) {
+  LogFileAppender(std::string fn)
+    : filename_(std::move(fn)) {
   }
 
   bool append(const std::string& message) override {
@@ -83,7 +84,7 @@ private:
   const std::string filename_;
 };
 
-static std::string FormatLogLevel(LoggerLevel l, int v) {
+static std::string FormatLogLevel(LoggerLevel l, int v) noexcept {
   if (l == LoggerLevel::verbose) {
     return StrCat("VER-", v);
   }
@@ -105,11 +106,11 @@ std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity,
   return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
 }
 
-Logger::Logger(LoggerLevel level, int verbosity)
+Logger::Logger(LoggerLevel level, int verbosity) noexcept
   : level_(level), verbosity_(verbosity) {
 }
 
-Logger::~Logger() {
+Logger::~Logger() noexcept {
   if (level_ == LoggerLevel::verbose) {
     if (!vlog_is_on(verbosity_)) {
       return;

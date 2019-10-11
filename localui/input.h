@@ -25,7 +25,6 @@
 #include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
-#include "wwivconfig/utility.h"
 #include <cstring>
 #include <functional>
 #include <limits>
@@ -72,7 +71,7 @@ int messagebox(UIWindow* window, const std::vector<std::string>& text);
 void trimstrpath(char* s);
 
 template <typename T>
-static std::string to_restriction_string(T data, std::size_t size, const char* res) {
+static std::string to_restriction_string(T data, std::size_t size, const std::string& res) {
   std::string s;
   for (size_t i = 0; i < size; i++) {
     if (data & (1 << i)) {
@@ -96,11 +95,12 @@ public:
     help_text_ = help_text;
     return this;
   }
-  std::string help_text() const { return help_text_; }
-  virtual int x() const noexcept { return x_; }
+
+  [[nodiscard]] std::string help_text() const { return help_text_; }
+  [[nodiscard]] virtual int x() const noexcept { return x_; }
   virtual void set_x(int x) noexcept { x_ = x; }
-  virtual int y() const noexcept { return y_; }
-  virtual int maxsize() const noexcept { return maxsize_; }
+  [[nodiscard]] virtual int y() const noexcept { return y_; }
+  [[nodiscard]] virtual int maxsize() const noexcept { return maxsize_; }
 
 protected:
   int x_;
@@ -113,17 +113,17 @@ protected:
 class Label final {
 public:
   Label(int x, int y, const std::string& text) : x_(x), y_(y), width_(text.size()), text_(text) {}
-  Label(int x, int y, int width, const std::string& text)
-      : x_(x), y_(y), width_(width), text_(text) {}
+  Label(int x, int y, int width, std::string text)
+      : x_(x), y_(y), width_(width), text_(std::move(text)) {}
 
   void Display(CursesWindow* window);
   void Display(CursesWindow* window, int x, int y);
   void set_width(int width) noexcept { width_ = width; }
-  int width() const noexcept { return width_; }
+  [[nodiscard]] int width() const noexcept { return width_; }
   void set_right_justified(bool r) noexcept { right_justify_ = r; }
-  int x() const noexcept { return x_; }
-  int y() const noexcept { return y_; }
-  const std::string& text() const noexcept { return text_; }
+  [[nodiscard]] int x() const noexcept { return x_; }
+  [[nodiscard]] int y() const noexcept { return y_; }
+  [[nodiscard]] const std::string& text() const noexcept { return text_; }
 
 protected:
   int x_;
@@ -137,7 +137,7 @@ protected:
 // value under edit.
 template <typename T> class EditItem : public BaseEditItem {
 public:
-  typedef std::function<std::string(void)> displayfn;
+  typedef std::function<std::string()> displayfn;
 
   EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data){};
   virtual ~EditItem() = default;
@@ -146,7 +146,7 @@ public:
 
   void Display(CursesWindow* window) const override {
     if (display_) {
-      std::string blanks(maxsize_, ' ');
+      const std::string blanks(maxsize_, ' ');
       const auto custom = display_();
       window->PutsXY(x_, y_, blanks);
       window->PutsXY(x_, y_, custom);
@@ -168,8 +168,8 @@ protected:
     window->PutsXY(this->x_, this->y_, s);
   }
 
-  const T data() const { return data_; }
-  void set_data(T data) { data_ = data; }
+  [[nodiscard]] T data() const noexcept { return data_; }
+  void set_data(T data) noexcept { data_ = data; }
 
   T data_;
   displayfn display_;
@@ -203,7 +203,7 @@ template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
 public:
   StringEditItem(int x, int y, int maxsize, std::string& data,  EditLineMode mode)
       : EditItem<std::string&>(x, y, maxsize, data), edit_line_mode_(mode) {}
-  virtual ~StringEditItem() {}
+  virtual ~StringEditItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -220,10 +220,10 @@ private:
 };
 
 template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
-class NumberEditItem : public EditItem<T*> {
+class NumberEditItem final : public EditItem<T*> {
 public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, MAXLEN + 2, data) {}
-  virtual ~NumberEditItem() {}
+  virtual ~NumberEditItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -310,13 +310,13 @@ static int maxlen_from_list(const std::vector<std::string>& items) {
   return m;
 }
 
-class StringListItem : public EditItem<std::string&> {
+class StringListItem final : public EditItem<std::string&> {
 public:
   StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
       : EditItem<std::string&>(x, y, maxlen_from_list(items), data), items_(items) {}
   virtual ~StringListItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     window->GotoXY(this->x_, this->y_);
     auto return_code = EditlineResult::NEXT;
@@ -339,7 +339,7 @@ private:
   const std::vector<std::string> items_;
 };
 
-template <typename T> class FlagEditItem : public EditItem<T*> {
+template <typename T> class FlagEditItem final : public EditItem<T*> {
 public:
   FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data)
       : EditItem<T*>(x, y, 0, data), flag_(flag) {
@@ -352,7 +352,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
-    EditlineResult return_code = EditlineResult::NEXT;
+    auto return_code = EditlineResult::NEXT;
     std::vector<std::string>::size_type state = (*this->data_ & this->flag_) ? 1 : 0;
     state = toggleitem(window, state, this->items_, &return_code);
     if (state == 0) {
@@ -378,20 +378,18 @@ private:
 class BaseRestrictionsEditItem : public EditItem<uint16_t*> {
 public:
   BaseRestrictionsEditItem(int x, int y, const char* rs, int rs_size, uint16_t* data)
-      : EditItem<uint16_t*>(x, y, rs_size, data), rs_size_(rs_size) {
-    strcpy(rs_, rs);
-  }
+      : EditItem<uint16_t*>(x, y, rs_size, data), rs_(rs), rs_size_(rs_size) {}
 
   virtual ~BaseRestrictionsEditItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
 
     window->GotoXY(this->x_, this->y_);
     char s[21];
     char rs[21];
     char ch1 = '0';
 
-    strcpy(rs, rs_);
+    strcpy(rs, rs_.c_str());
     for (int i = 0; i < rs_size_; i++) {
       if (rs[i] == ' ') {
         rs[i] = ch1++;
@@ -404,10 +402,10 @@ public:
     }
     s[rs_size_] = 0;
 
-    auto return_code = editline(window, s, 16, EditLineMode::SET, rs);
+    const auto return_code = editline(window, s, 16, EditLineMode::SET, rs);
 
     *this->data_ = 0;
-    for (int i = 0; i < rs_size_; i++) {
+    for (auto i = 0; i < rs_size_; i++) {
       if (s[i] != 32 && s[i] != 0) {
         *this->data_ |= (1 << i);
       }
@@ -418,10 +416,10 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    auto s = to_restriction_string(*data_, rs_size_, rs_);
+    const auto s = to_restriction_string(*data_, rs_size_, rs_);
     DefaultDisplayString(window, s);
   }
-  char rs_[21];
+  std::string rs_;
   int rs_size_{0};
 };
 
@@ -430,26 +428,26 @@ static constexpr int ar_string_size = 16;
 static const char* xrestrictstring = "LCMA*PEVKNU     ";
 static constexpr int xrestrictstring_size = 16;
 
-class RestrictionsEditItem : public BaseRestrictionsEditItem {
+class RestrictionsEditItem final : public BaseRestrictionsEditItem {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, xrestrictstring, xrestrictstring_size, data) {}
-  virtual ~RestrictionsEditItem() {}
+  virtual ~RestrictionsEditItem() = default;
 };
 
-class ArEditItem : public BaseRestrictionsEditItem {
+class ArEditItem final : public BaseRestrictionsEditItem {
 public:
   ArEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
   virtual ~ArEditItem() = default;
 };
 
-class BooleanEditItem : public EditItem<bool*> {
+class BooleanEditItem final : public EditItem<bool*> {
 public:
   BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 6, data) {}
   virtual ~BooleanEditItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
 
@@ -471,7 +469,7 @@ protected:
   }
 };
 
-class CustomEditItem : public BaseEditItem {
+class CustomEditItem final : public BaseEditItem {
 public:
   typedef std::function<void(const std::string&)> displayfn;
   typedef std::function<std::string(void)> prefn;
@@ -489,7 +487,7 @@ private:
   displayfn display_;
 };
 
-class FilePathItem : public EditItem<char*> {
+class FilePathItem final : public EditItem<char*> {
 public:
   FilePathItem(int x, int y, int maxsize, const std::string& base, char* data)
       : EditItem<char*>(x, y, maxsize, data), base_(base) {
@@ -497,7 +495,7 @@ public:
   }
   virtual ~FilePathItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) override {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
@@ -518,7 +516,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const override {
+  void DefaultDisplay(CursesWindow* window) const override {
     DefaultDisplayString(window, data_);
   }
 
@@ -526,7 +524,7 @@ private:
   const std::string base_;
 };
 
-class StringFilePathItem : public EditItem<std::string&> {
+class StringFilePathItem final : public EditItem<std::string&> {
 public:
   StringFilePathItem(int x, int y, int maxsize, const std::string& base, std::string& data)
       : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
@@ -534,7 +532,7 @@ public:
   }
   virtual ~StringFilePathItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) override {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
@@ -557,7 +555,7 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const override {
+  void DefaultDisplay(CursesWindow* window) const override {
     DefaultDisplayString(window, data_);
   }
 
@@ -565,12 +563,12 @@ private:
   const std::string base_;
 };
 
-class CommandLineItem : public EditItem<char*> {
+class CommandLineItem final : public EditItem<char*> {
 public:
   CommandLineItem(int x, int y, int maxsize, char* data) : EditItem<char*>(x, y, maxsize, data) {}
   virtual ~CommandLineItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) override {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(this->data_);
@@ -583,16 +581,16 @@ protected:
   }
 };
 
-class EditItems {
+class EditItems final {
 public:
   typedef std::function<void(void)> additional_helpfn;
   EditItems()
       : navigation_help_items_(StandardNavigationHelpItems()),
         editor_help_items_(StandardEditorHelpItems()), edit_mode_(false) {}
-  virtual ~EditItems();
+  ~EditItems();
 
-  virtual void Run(const std::string& title = "");
-  virtual void Display() const;
+  void Run(const std::string& title = "");
+  void Display() const;
 
   void set_navigation_help_items(const std::vector<HelpItem> items) {
     navigation_help_items_ = items;
@@ -614,10 +612,10 @@ public:
   BaseEditItem* add(Label* label, BaseEditItem* item);
   void create_window(const std::string& title);
 
-  CursesWindow* window() const { return window_.get(); }
-  size_t size() const noexcept { return items_.size(); }
+  [[nodiscard]] CursesWindow* window() const { return window_.get(); }
+  [[nodiscard]] size_t size() const noexcept { return static_cast<size_t>(items_.size()); }
 
-  int max_display_width() const {
+  [[nodiscard]] int max_display_width() const {
     int result = 0;
     for (const auto i : items_) {
       if ((i->x() + i->maxsize()) > result) {
@@ -627,7 +625,7 @@ public:
     return std::min<int>(out->window()->GetMaxX(), result + 2); // 2 is padding
   }
 
-  int max_display_height() {
+  [[nodiscard]] int max_display_height() {
     int result = 1;
     for (const auto l : labels_) {
       if (l->y() > result) {
@@ -643,7 +641,7 @@ public:
   }
 
   /** Returns the size of the longest label */
-  int max_label_width() const {
+  [[nodiscard]] int max_label_width() const {
     std::string::size_type result = 0;
     for (const auto l : labels_) {
       if (l->text().size() > result) {

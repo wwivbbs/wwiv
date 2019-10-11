@@ -134,11 +134,11 @@ bool WStatus::NewDay() {
   strcpy(status_->date3, status_->date2);
   strcpy(status_->date2, status_->date1);
   const auto d = DateTime::now().to_string("%m/%d/%y");
-  strcpy(status_->date1, d.c_str());
+  to_char_array(status_->date1, d);
   strcpy(status_->log2, status_->log1);
 
   const string log = GetSysopLogFileName(GetLastDate(1));
-  strcpy(status_->log1, log.c_str());
+  to_char_array(status_->log1, log);
   return true;
 }
 

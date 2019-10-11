@@ -21,6 +21,7 @@
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "localui/input.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include <string>
@@ -51,12 +52,12 @@ int number_userrecs(const std::string& datadir) {
   DataFile<userrec> file(PathFilePath(datadir, USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (file) {
-    return file.number_of_records() - 1;
+    return static_cast<int>(file.number_of_records()) - 1;
   }
   return -1;
 }
 
-void read_user(const Config& config, unsigned int un, userrec* u) {
+void read_user(const Config& config, int un, userrec* u) {
   DataFile<userrec> file(PathFilePath(config.datadir(), USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {
@@ -65,7 +66,7 @@ void read_user(const Config& config, unsigned int un, userrec* u) {
     return;
   }
 
-  std::size_t nu = file.number_of_records() - 1;
+  const auto nu = static_cast<int>(file.number_of_records()) - 1;
   if (un > nu) {
     u->inact = inact_deleted;
     fix_user_rec(u);
@@ -76,7 +77,7 @@ void read_user(const Config& config, unsigned int un, userrec* u) {
   fix_user_rec(u);
 }
 
-void write_user(const Config& config, unsigned int un, userrec* u) {
+void write_user(const Config& config, int un, userrec* u) {
   if (un < 1 || un > config.max_users()) {
     return;
   }
@@ -97,7 +98,7 @@ void save_status(const std::string& datadir, const statusrec_t& statusrec) {
   }
 }
 
-/** returns true if statusrec.dat is read correctly */
+/** returns true if "status.dat" is read correctly */
 bool read_status(const std::string& datadir, statusrec_t& statusrec) {
   DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);

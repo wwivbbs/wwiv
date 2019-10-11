@@ -27,7 +27,7 @@ namespace core {
 class Transaction {
 public:
   Transaction(std::function<void()> commit_fn, std::function<void()> rollback_fn)
-    : commit_fn_(commit_fn), rollback_fn_(rollback_fn), rollback_(false) {
+    : commit_fn_(commit_fn), rollback_fn_(rollback_fn) {
   }
 
   ~Transaction() {
@@ -43,7 +43,7 @@ public:
 private:
   std::function<void()> commit_fn_;
   std::function<void()> rollback_fn_;
-  bool rollback_;
+  bool rollback_{false};
 };
 
 } // namespace core

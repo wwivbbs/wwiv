@@ -128,8 +128,7 @@ public:
 
 class NullLogger {
 public:
-  NullLogger() {
-  }
+  NullLogger() = default;
 
   void operator&(std::ostream&) {
   }
@@ -157,16 +156,16 @@ public:
  */
 class Logger {
 public:
-  Logger()
+  Logger() noexcept
     : Logger(LoggerLevel::info, 0) {
   }
 
-  Logger(LoggerLevel level)
+  Logger(LoggerLevel level) noexcept
     : Logger(level, 0) {
   }
 
-  Logger(LoggerLevel level, int verbosity);
-  ~Logger();
+  Logger(LoggerLevel level, int verbosity) noexcept;
+  ~Logger() noexcept;
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv, LoggerConfig& config);
@@ -175,13 +174,13 @@ public:
   static LoggerConfig& config() noexcept { return config_; }
   static void set_cmdline_verbosity(int cmdline_verbosity);
 
-  template <class T> Logger& operator<<(const T& msg) {
+  template <class T> Logger& operator<<(const T& msg) noexcept {
     ss_ << msg;
     used_ = true;
     return *this;
   }
 
-  Logger& operator<<(ENDL_TYPE* m) {
+  Logger& operator<<(ENDL_TYPE* m) noexcept {
     used_ = true;
     ss_ << m;
     return *this;

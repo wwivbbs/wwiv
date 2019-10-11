@@ -18,23 +18,17 @@
 /**************************************************************************/
 #include "bbs/defaults.h"
 
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
 #include "bbs/bbs.h"
-#include "bbs/bbsutl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
+#include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/instmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
-#include "local_io/keycodes.h"
+#include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
@@ -43,13 +37,18 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
-#include "local_io/wconstants.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
-#include "fmt/printf.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;

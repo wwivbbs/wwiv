@@ -126,7 +126,7 @@ static void DisplayNetInfo(size_t nSubNum) {
   for (auto it = nets.begin(); it != nets.end(); i++, it++) {
     char szBuffer[255], szBuffer2[255];
     if ((*it).host == 0) {
-      strcpy(szBuffer, "<HERE>");
+      to_char_array(szBuffer, "<HERE>");
     } else {
       sprintf(szBuffer, "%u ", (*it).host);
     }

@@ -120,9 +120,9 @@ static void align_char_filename(char* file_name) {
 
 static std::string align_filename(const std::string& file_name) {
   char s[MAX_PATH];
-  strcpy(s, file_name.c_str());
+  to_char_array(s, file_name);
   align_char_filename(s);
-  return std::string(s);
+  return s;
 }
 
 static std::string stripfn(const char* file_name) {
@@ -137,7 +137,7 @@ static std::string stripfn(const char* file_name) {
   if (nSepIndex != -1) {
     strcpy(szTempFileName, &(file_name[nSepIndex + 1]));
   } else {
-    strcpy(szTempFileName, file_name);
+    to_char_array(szTempFileName, file_name);
   }
   for (size_t i1 = 0; i1 < size(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {

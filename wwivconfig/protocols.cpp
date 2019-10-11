@@ -42,7 +42,7 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
+static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
   switch (pn) {
   case 1:
     return "ASCII";
@@ -96,7 +96,7 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     c = externs[n - 6];
   } else {
     c = over_intern[n - 2];
-    strcpy(c.description, prot_name(over_intern, n));
+    to_char_array(c.description, prot_name(over_intern, n));
   }
 
   constexpr int LABEL1_POSITION = 2;

@@ -20,16 +20,14 @@
 #define __INCLUDED_WWIV_CORE_STL_H__
 #pragma once
 
-#include <algorithm>
-#include <chrono>
-#include <cstring>
-#include <iterator>
-#include <map>
-#include <functional>
-#include <string>
-
 #include "core/log.h"
 #include "core/strings.h"
+#include <algorithm>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <map>
+#include <string>
 
 namespace wwiv {
 namespace stl {

@@ -23,15 +23,16 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 PhoneNumbers::PhoneNumbers(const Config& config) 
     : initialized_(config.IsInitialized()), datadir_(config.datadir()) {
@@ -40,7 +41,7 @@ PhoneNumbers::PhoneNumbers(const Config& config)
   }
 }
 
-PhoneNumbers::~PhoneNumbers() {}
+PhoneNumbers::~PhoneNumbers() = default;
 
 bool PhoneNumbers::insert(int user_number, const std::string& phone_number) {
   if (phone_number.find("000-") != string::npos) {
@@ -48,17 +49,17 @@ bool PhoneNumbers::insert(int user_number, const std::string& phone_number) {
   }
   phonerec p{};
   p.usernum = static_cast<int16_t>(user_number);
-  strcpy(p.phone, phone_number.c_str());
+  to_char_array(p.phone, phone_number);
   phones_.emplace_back(p);
   
   return Save();
 }
 
 bool PhoneNumbers::erase(int user_number, const std::string& phone_number) {
-  auto predicate = [=](const phonerec& p) {
+  const auto predicate = [=](const phonerec& p) {
     return phone_number == p.phone && p.usernum == user_number;
   };
-  phones_.erase(std::remove_if(std::begin(phones_), std::end(phones_), predicate));
+  phones_.erase(std::remove_if(std::begin(phones_), std::end(phones_), predicate), std::end(phones_));
   return Save();
 }
 
@@ -98,5 +99,4 @@ bool PhoneNumbers::Save() {
 }
 
 
-}
 }

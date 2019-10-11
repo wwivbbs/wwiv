@@ -686,7 +686,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 
-void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
+void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string& description) {
   string download_log_entry = StrCat(description,
       "%s BATCH Download: Files - ", a()->batch().entry.size(), 
       ", Time - ", ctim(a()->batch().dl_time_in_secs()));
@@ -703,7 +703,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-static void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
+static void dszbatchul(bool bHangupAfterDl, char *command_line, const std::string& description) {
   string download_log_entry = fmt::sprintf("%s BATCH Upload: Files - %d", description,
           a()->batch().entry.size());
   if (bHangupAfterDl) {
@@ -715,11 +715,11 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, char *descriptio
   bout.nl(2);
 
   write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-  string list_filename = make_ul_batch_list();
+  const auto list_filename = make_ul_batch_list();
 
-  auto ti = std::chrono::system_clock::now();
+  const auto ti = std::chrono::system_clock::now();
   run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
-  auto time_used = std::chrono::system_clock::now() - ti;
+  const auto time_used = std::chrono::system_clock::now() - ti;
   a()->user()->add_extratime(time_used);
 }
 

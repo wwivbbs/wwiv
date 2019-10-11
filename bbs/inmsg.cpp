@@ -434,13 +434,13 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
     string s;
     do {
       s.clear();
-      file.ReadLine(&s);
-      if (s.length() > 1 && s[s.length() - 2] == RETURN) {
+      const bool line_read = file.ReadLine(&s);
+      if (line_read && s.length() > 1 && s[s.length() - 2] == RETURN) {
         // remove last 2 characters.
         s.pop_back();
         s.pop_back();
       }
-      string s1 = s;
+      auto s1 = s;
       if (s[0] != CD) {
         s1 = fmt::sprintf("%c%c%s", CD, j + '2', s);
       }

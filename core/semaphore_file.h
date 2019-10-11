@@ -21,11 +21,9 @@
 #define __INCLUDED_CORE_SEMAPHORE_FILE_H__
 
 #include <chrono>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
-#include <sys/types.h>
-
-#include <filesystem>
 
 namespace wwiv {
 namespace core {
@@ -73,8 +71,8 @@ public:
 
   ~SemaphoreFile();
 
-  const std::filesystem::path& path() const { return path_; }
-  int fd() const { return fd_; }
+  [[nodiscard]] const std::filesystem::path& path() const { return path_; }
+  [[nodiscard]] int fd() const { return fd_; }
 
   SemaphoreFile(SemaphoreFile&&) = default;
   SemaphoreFile(const SemaphoreFile&) = delete;

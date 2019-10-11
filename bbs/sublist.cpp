@@ -194,9 +194,9 @@ void SubList() {
         ++ns;
         sprintf(s, "    %-3.3s", a()->usub[i1].keys);
         if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
-          strcpy(s2, "|#5Yes");
+          to_char_array(s2, "|#5Yes");
         } else {
-          strcpy(s2, "|#6No ");
+          to_char_array(s2, "|#6No ");
         }
         iscan(i1);
         if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks) > 1) {

@@ -60,7 +60,7 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
     window->SetColor(SchemeId::NORMAL);
     window->Puts(StrCat("Decompressing file: ", zipfile, "\n"));
     const auto unzip_cmd = StrCat("unzip -qq -o ", zipfile, " -d", dir);
-    auto rc = system(unzip_cmd.c_str());
+    const auto rc = system(unzip_cmd.c_str());
     if (rc != 0) {
       window->SetColor(SchemeId::ERROR_TEXT);
       window->Puts("ERROR Unable to unzip file.\n");
@@ -126,13 +126,13 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   v.restrict = 0;
   v.sl = 10;
   v.dsl = 0;
-  for (int i = 0; i < 10; i++) {
-    cfg430.autoval[i] = v;
+  for (auto& i : cfg430.autoval) {
+    i = v;
   }
   for (int i = 0; i < 256; i++) {
     slrec sl{};
     sl.time_per_logon = static_cast<uint16_t>((i / 10) * 10);
-    sl.time_per_day = static_cast<uint16_t>(((float)sl.time_per_logon) * 2.5);
+    sl.time_per_day = static_cast<uint16_t>(static_cast<float>(sl.time_per_logon) * 2.5);
     sl.messages_read = static_cast<uint16_t>((i / 10) * 100);
     if (i < 10) {
       sl.emails = 0;
@@ -330,7 +330,7 @@ bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
-    bool chdir_ok = File::set_current_directory(dirname);
+    const bool chdir_ok = File::set_current_directory(dirname);
     if (!chdir_ok) {
       if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);

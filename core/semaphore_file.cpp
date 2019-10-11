@@ -20,15 +20,14 @@
 
 #include <cerrno>
 #include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
 #include <io.h>
 #include <share.h>
+
+#ifdef _WIN32
+#include <direct.h>
 #endif  // _WIN32
 #include <sstream>
 #include <string>
-#include <sys/stat.h>
-
 #include "core/log.h"
 
 #ifndef _WIN32

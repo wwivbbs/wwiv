@@ -20,12 +20,12 @@
 #define __INCLUDED_INIT_H__
 
 /*!
- * @class WInitApp  Main Application object for WWIV 5
+ * @class WInitApp  Main Application object for WWIV.
  */
-class WInitApp {
+class WInitApp final {
  public:
   WInitApp();
-  virtual ~WInitApp();
+  ~WInitApp();
 
   int main(int argc, char* argv[]);
 };
