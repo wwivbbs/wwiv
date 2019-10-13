@@ -368,7 +368,7 @@ static std::map<int, std::string> ListMenuDirs() {
   for (const auto& m : menus) {
     const auto& filename = m.name;
     const string description = descriptions.description(filename);
-    bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename.c_str(), description.c_str());
+    bout << fmt::sprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename, description);
     result.emplace(num, filename);
     ++num;
   }
@@ -569,7 +569,7 @@ void MenuInstance::GenerateMenu() const {
 
   int lines_displayed = 0;
   if (header.nums != MENU_NUMFLAG_NOTHING) {
-    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
+    bout << fmt::sprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++lines_displayed;
   }
   for (const auto& key : insertion_order_) {
@@ -598,7 +598,7 @@ void MenuInstance::GenerateMenu() const {
     if (lines_displayed % 2) {
       bout.nl();
     }
-    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
+    bout << fmt::sprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
                  "Guest Account Application");
     ++lines_displayed;
   }

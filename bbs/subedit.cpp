@@ -129,7 +129,7 @@ static void DisplayNetInfo(size_t nSubNum) {
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(PathFilePath(dir, StrCat("n", (*it).stype, ".net")), subscribers);
       int num = size_int(subscribers);
-      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
+      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
                     a()->net_networks[(*it).net_num].name,
                     (*it).stype.c_str(),
@@ -138,7 +138,7 @@ static void DisplayNetInfo(size_t nSubNum) {
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                     ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
     } else {
-      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n",
+      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n",
                     i + 'a',
                     a()->net_networks[(*it).net_num].name,
                     (*it).stype.c_str(),

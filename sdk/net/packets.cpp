@@ -251,8 +251,8 @@ static int number_of_header_lines(uint16_t main_type) {
   }
   return 0;
 }
-Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
-    : nh(h), list(l), text_(t) {
+Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string t)
+    : nh(h), list(l), text_(std::move(t)) {
   if (nh.list_len != list.size()) {
     LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
                << list.size() << "]";
@@ -265,6 +265,9 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const st
 
 Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
     : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
+
+Packet::Packet() noexcept {
+}
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {

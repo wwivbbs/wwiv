@@ -353,7 +353,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
   } else if (iequals(raw_message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
-      bout.bprintf("%-16.16s", actions[i2]->aword);
+      bout << fmt::sprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;

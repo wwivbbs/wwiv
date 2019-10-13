@@ -303,7 +303,7 @@ static void HandleScanReadFind(int& nMessageNumber, MsgScanOption& scan_option) 
     }
     checka(&abort);
     if (!(tmp_msgnum % 5)) {
-      bout.bprintf("%5.5d", tmp_msgnum);
+      bout << fmt::sprintf("%5.5d", tmp_msgnum);
       for (int i1 = 0; i1 < 5; i1++) {
         bout << "\b";
       }

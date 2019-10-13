@@ -322,7 +322,7 @@ int read_idz(int mode, int tempdir) {
     align(&s);
     dliscan1(a()->udir[tempdir].subnum);
   }
-  bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
+  bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
                                     a()->directories[a()->udir[tempdir].subnum].name,
                                     a()->udir[tempdir].keys);
   File fileDownload(a()->download_filename_);
@@ -409,7 +409,7 @@ void tag_it() {
       }
       if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio()) &&
           !a()->user()->IsExemptRatio() && !bad) {
-        bout.bprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
+        bout << fmt::sprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
                                           ratio(), a()->config()->req_ratio());
         bad = true;
       }
@@ -689,7 +689,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         }
       }
       bout.backline();
-      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
+      bout << fmt::sprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
                                         bytes_to_k(fs), stripcolors(description));
       ch = onek_ncr("QYN\r");
       bout.backline();
@@ -726,7 +726,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         b.len = fs;
         bout << "\r";
         const string bt = ctim(std::lround(b.time));
-        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
+        bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                      a()->batch().entry.size() + 1, b.filename, b.len,
                      bt.c_str(),
                      a()->directories[b.dir].name);
@@ -822,7 +822,7 @@ void download() {
       const auto& b = a()->batch().entry[i];
       if (b.sending) {
         const auto t = ctim(std::lround(b.time));
-        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
+        bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
           b.len, t.c_str(), 
           a()->directories[b.dir].name);
@@ -832,7 +832,7 @@ void download() {
         count = 0;
         ok = true;
         bout.backline();
-        bout.bprintf("|#2%3d ", a()->batch().entry.size() + 1);
+        bout << fmt::sprintf("|#2%3d ", a()->batch().entry.size() + 1);
         bout.Color(1);
         bool onl = bout.newline;
         bout.newline = false;
@@ -1059,7 +1059,7 @@ void SetNewFileScanDate() {
         (dd > 31) || ((m == 0) || (y == 0) || (dd == 0)) ||
         ((m > 12) || (dd > 31))) {
       bout.nl();
-      bout.bprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd, (y % 100));
+      bout << fmt::sprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd, (y % 100));
       bout.nl();
     } else {
       // Rushfan - Note, this needs a better fix, this whole routine should be replaced.

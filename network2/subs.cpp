@@ -67,7 +67,7 @@ struct sub_info_t {
 };
 
 static string to_string(sub_info_t& s, uint16_t system_number) {
-  return fmt::sprintf("%-7s %5u %-5s %s~%u", s.stype.c_str(), system_number, s.flags.c_str(), s.description.c_str(), s.category);
+  return fmt::sprintf("%-7s %5u %-5s %s~%u", s.stype, system_number, s.flags, s.description, s.category);
 }
 
 static std::vector<string> create_sub_info(Context& context) {
@@ -158,7 +158,7 @@ static bool send_sub_add_drop_resp(Context& context,
 
   nh.length = text.size(); // should be subtype.size() + 2
   const auto pendfile = create_pend(context.net.dir, false, '2');
-  Packet packet(nh, {}, std::move(text));
+  const Packet packet(nh, {}, text);
   return write_wwivnet_packet(pendfile, context.net, packet);
 }
 
@@ -176,10 +176,10 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 }
 
 bool handle_sub_add_req(Context& context, Packet& p) {
-  const string subtype = SubTypeFromText(p.text());
-  auto resp = [&](int code) -> bool { 
-    string base = (code == sub_adddrop_ok) ? "sa" : "sr";
-    auto response_file = StrCat(base, subtype, ".net");
+  const auto subtype = SubTypeFromText(p.text());
+  const auto resp = [&](int code) -> bool {
+    const string base = (code == sub_adddrop_ok) ? "sa" : "sr";
+    const auto response_file = StrCat(base, subtype, ".net");
     string text;
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
     if (File::Exists(PathFilePath(context.net.dir, response_file))) {
@@ -195,13 +195,13 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   if (!IsHostedHere(context, subtype)) {
     return resp(sub_adddrop_not_host);
   }
-  auto filename = StrCat("n", subtype, ".net");
+  const auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  auto result = subscribers.insert(p.nh.fromsys);
+  const auto result = subscribers.insert(p.nh.fromsys);
   if (result.second == false) {
     return resp(sub_adddrop_already_there);
   }
@@ -216,8 +216,8 @@ bool handle_sub_add_req(Context& context, Packet& p) {
 }
 
 bool handle_sub_drop_req(Context& context, Packet& p) {
-  const string subtype = SubTypeFromText(p.text());
-  auto resp = [&](int code) -> bool { 
+  const auto subtype = SubTypeFromText(p.text());
+  const auto resp = [&](int code) -> bool { 
     return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype, ""); 
   };
   if (subtype.empty()) {
@@ -226,13 +226,13 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   if (!IsHostedHere(context, subtype)) {
     return resp(sub_adddrop_not_host);
   }
-  auto filename = StrCat("n", subtype, ".net");
+  const auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(PathFilePath(context.net.dir, filename), subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  set<uint16_t>::size_type num_removed = subscribers.erase(p.nh.fromsys);
+  const auto num_removed = subscribers.erase(p.nh.fromsys);
   if (num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
@@ -262,16 +262,18 @@ static string SubAddDropResponseMessage(uint8_t code) {
 
 bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
-  string subname = p.text().c_str();
+  string subname = p.text();
   StringTrimEnd(&subname);
 
   auto b = std::begin(p.text());
-  while (b != std::end(p.text()) && *b != '\0') { b++; }
+  while (b != std::end(p.text()) && *b != '\0') {
+    ++b;
+  }
   if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   } // NULL
-  b++;
+  ++b;
   if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
@@ -279,7 +281,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
 
   LOG(INFO) << "Processed " << add_or_drop << " response from system @" << p.nh.fromsys << " to subtype: " << subname;
 
-  char code = *b++;
+  auto code = *b++;
   auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
   auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
@@ -322,15 +324,15 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   nh.minor_type = 1;
   nh.daten = daten_t_now();
 
-  auto lines = create_sub_info(context);
-  auto text = JoinStrings(lines, "\r\n");
+  const auto lines = create_sub_info(context);
+  const auto text = JoinStrings(lines, "\r\n");
   nh.length = text.size();
 
   LOG(INFO) << "Sending subs line for subs.inf:";
   LOG(INFO) << text;
 
   const auto pendfile = create_pend(context.net.dir, false, '2');
-  Packet np(nh, {}, text);
+  const Packet np(nh, {}, text);
   return write_wwivnet_packet(pendfile, context.net, np);
 }
 

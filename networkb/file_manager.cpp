@@ -120,7 +120,7 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_basename = fmt::sprintf("p%s-0-%u.net", prefix.c_str(), i);
+    const auto new_basename = fmt::format("p{}-0-{}.net", prefix, i);
     const auto new_filename = PathFilePath(directory, new_basename);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {

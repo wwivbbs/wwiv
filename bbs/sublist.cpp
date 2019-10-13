@@ -245,7 +245,7 @@ void SubList() {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
-          bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
+          bout << fmt::sprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const std::string ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
             for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
@@ -282,12 +282,12 @@ void SubList() {
         DisplayHorizontalBar(78, 7);
         if (okconf(a()->user())) {
           if (a()->uconfsub[1].confnum != -1) {
-            bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout << fmt::sprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
-            bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout << fmt::sprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           }
         } else {
-          bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+          bout << fmt::sprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
         const std::string ss = mmkey(MMKeyAreaType::subs, true);
 

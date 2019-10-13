@@ -878,10 +878,10 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     else {
       s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name, 26);
     }
-    bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout << fmt::sprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
   } else {
-    bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout << fmt::sprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
@@ -958,7 +958,7 @@ static void undrawscan(int filepos, long tagged) {
   } else {
     bout.GotoXY(1, filepos + 3);
   }
-  bout.bprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
+  bout << fmt::sprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
 
 static long is_inscan(int dir) {

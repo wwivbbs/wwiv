@@ -335,10 +335,10 @@ int get_protocol(xfertype xt) {
       if (ok_prot(j, xt)) {
         ch1 = prot_key(j);
         if (fl[j] == 0) {
-          bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                             prot_name(j));
         } else {
-          bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
+          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
         }
       }
     }
@@ -358,10 +358,10 @@ int get_protocol(xfertype xt) {
         if (ok_prot(j, xt)) {
           ch1 = prot_key(j);
           if (fl[ j ] == 0) {
-            bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                               prot_name(j));
           } else {
-            bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
+            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
           }
         }
       }

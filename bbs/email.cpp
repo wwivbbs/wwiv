@@ -268,7 +268,7 @@ void sendout_email(EmailData& data) {
     memmove(&(b1[i]), b.c_str(), b.length());
     nh.length = b.length() + i;
     if (nh.length > 32760) {
-      bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
+      bout << fmt::sprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
     if (data.from_network_number != a()->net_num()) {

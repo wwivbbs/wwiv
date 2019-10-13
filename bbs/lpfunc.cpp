@@ -61,14 +61,14 @@ static void drawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
   bout.SystemColor(lp_config.current_file_color);
-  bout.bprintf("%3d|#0", filenum);
+  bout << fmt::sprintf("%3d|#0", filenum);
   bout.GotoXY(4, filepos + first_file_pos());
 }
 
 static void undrawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%02d%3d|#0", lp_config.file_num_color, filenum);
+  bout << fmt::sprintf("|%02d%3d|#0", lp_config.file_num_color, filenum);
 }
 
 static void prep_menu_items(vector<string>* menu_items) {
@@ -331,7 +331,7 @@ ADD_OR_REMOVE_BATCH:
                         }
                       }
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
-                      bout.bprintf("|%2d %c ", lp_config.tagged_color,
+                      bout << fmt::sprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;

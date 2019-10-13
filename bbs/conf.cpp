@@ -813,9 +813,9 @@ void list_confs(ConferenceType conftype, int ssc) {
     const auto dar = word_to_arstr(cp.dar, "-");
     auto l1 =
         fmt::sprintf("%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ", '\xCC',
-                     cp.designator, cp.conf_name.c_str(), cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl,
-                     cp.minage, cp.maxage, cp.minbps, ar.c_str());
-    auto l2 = fmt::sprintf("%-3.3s %c %1.1s %1.1s", dar.c_str(),
+                     cp.designator, cp.conf_name, cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl,
+                     cp.minage, cp.maxage, cp.minbps, ar);
+    auto l2 = fmt::sprintf("%-3.3s %c %1.1s %1.1s", dar,
                                  (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',
                                  YesNoString((cp.status & conf_status_ansi) ? true : false),
                                  YesNoString((cp.status & conf_status_wwivreg) ? true : false));

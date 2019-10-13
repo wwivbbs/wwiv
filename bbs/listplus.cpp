@@ -167,10 +167,10 @@ static void build_header() {
 static void printtitle_plus_old() {
   bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
-  const string buf =
+  const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
           a()->directories[a()->current_user_dir().subnum].name, a()->numf);
-  bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
+  bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
@@ -220,7 +220,7 @@ void print_searching(search_record* search_rec) {
   }
   bout << "|#9<Space> aborts  : ";
   bout.cls();
-  bout.bprintf(" |17|15%-40.40s|16|#0\r",
+  bout << fmt::sprintf(" |17|15%-40.40s|16|#0\r",
     a()->directories[a()->current_user_dir().subnum].name);
 }
 
@@ -727,47 +727,47 @@ void sysop_configure() {
     printfile(LPSYSOP_NOEXT);
     bout.GotoXY(38, 2);
     bout.SystemColor(lp_config.normal_highlight);
-    bout.bprintf("%3d", lp_config.normal_highlight);
+    bout << fmt::sprintf("%3d", lp_config.normal_highlight);
     bout.GotoXY(77, 2);
     bout.SystemColor(lp_config.normal_menu_item);
-    bout.bprintf("%3d", lp_config.normal_menu_item);
+    bout << fmt::sprintf("%3d", lp_config.normal_menu_item);
     bout.GotoXY(38, 3);
     bout.SystemColor(lp_config.current_highlight);
-    bout.bprintf("%3d", lp_config.current_highlight);
+    bout << fmt::sprintf("%3d", lp_config.current_highlight);
     bout.GotoXY(77, 3);
     bout.SystemColor(lp_config.current_menu_item);
-    bout.bprintf("%3d", lp_config.current_menu_item);
+    bout << fmt::sprintf("%3d", lp_config.current_menu_item);
     bout.Color(0);
     bout.GotoXY(38, 6);
-    bout.bprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
     bout.GotoXY(77, 6);
-    bout.bprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
     bout.GotoXY(38, 7);
-    bout.bprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
     bout.GotoXY(77, 7);
-    bout.bprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
     bout.GotoXY(38, 8);
     bout.SystemColor(lp_config.current_file_color);
-    bout.bprintf("%3d", lp_config.current_file_color);
+    bout << fmt::sprintf("%3d", lp_config.current_file_color);
     bout.GotoXY(38, 11);
-    bout.bprintf("|#4%2d", lp_config.max_screen_lines_to_show);
+    bout << fmt::sprintf("|#4%2d", lp_config.max_screen_lines_to_show);
     bout.GotoXY(77, 11);
-    bout.bprintf("|#4%2d", lp_config.show_at_least_extended);
+    bout << fmt::sprintf("|#4%2d", lp_config.show_at_least_extended);
     bout.GotoXY(74, 14);
-    bout.bprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
     bout.GotoXY(74, 15);
-    bout.bprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
     bout.GotoXY(74, 16);
-    bout.bprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
     bout.Color(0);
     bout.GotoXY(29, 14);
-    bout.bprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
     bout.GotoXY(29, 15);
-    bout.bprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
     bout.GotoXY(29, 16);
-    bout.bprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
     bout.GotoXY(29, 17);
-    bout.bprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
     bout.GotoXY(1, 19);
     bout << "|#9Q-Quit ";
     char key = onek("Q\rABCDEFGHIJKLMNOPRS", true);

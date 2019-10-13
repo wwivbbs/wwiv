@@ -321,7 +321,7 @@ void print_pending_list() {
         h--;
       }
 
-      bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
+      bout << fmt::sprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
                    "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
                    s2, a()->network_name().c_str(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
@@ -341,7 +341,7 @@ void print_pending_list() {
       auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (dead_net_file_size + 1023) / 1024);
-      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
+      bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
                    net.name, s3);
@@ -359,7 +359,7 @@ void print_pending_list() {
       checkNetFile.Close();
       sprintf(s3, "%ldk", (check_net_file_size + 1023) / 1024);
       strcat(s3, "k");
-      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
+      bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
                    net.name, s3);
     }

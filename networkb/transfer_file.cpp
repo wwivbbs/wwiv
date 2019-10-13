@@ -41,7 +41,7 @@ TransferFile::TransferFile(const string& filename, time_t timestamp, uint32_t cr
 TransferFile::~TransferFile() = default;
 
 string TransferFile::as_packet_data(int size, int offset) const {
-  string dataline = fmt::sprintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
+  string dataline = fmt::format("{} {} {} {}", filename_, size, timestamp_, offset);
   if (crc_ != 0) {
     dataline += fmt::sprintf(" %08X", crc_);
   }

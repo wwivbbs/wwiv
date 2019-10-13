@@ -183,7 +183,7 @@ void build_qwk_packet() {
 
   if (qwk_info.abort) {
     bout.Color(1);
-    bout.bprintf("Abort everything? (NO=Download what I have gathered)");
+    bout << fmt::sprintf("Abort everything? (NO=Download what I have gathered)");
     if (!yesno()) {
       qwk_info.abort = 0;
     }
@@ -391,7 +391,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   string ss;
   if (!readfile(&m, fn, &ss)) {
-    bout.bprintf("File not found.");
+    bout << fmt::sprintf("File not found.");
     bout.nl();
     return;
   }
@@ -804,7 +804,7 @@ void qwk_menu() {
     if (qwk_percent) {
       bout.Color(3);
       bout.nl();
-      bout.bprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
+      bout << fmt::sprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
     }
     bout.nl();
     strcpy(temp, "7[3Q1DCUBS%");
@@ -812,7 +812,7 @@ void qwk_menu() {
       strcat(temp, "1");
     }
     strcat(temp, "7] ");
-    bout.bprintf(temp);
+    bout << fmt::sprintf(temp);
     bout.mpl(1);
 
     strcpy(temp, "Q\r?CDUBS%");
@@ -878,7 +878,7 @@ void qwk_menu() {
     case '%':
       sysoplog() << "Set %";
       bout.Color(2);
-      bout.bprintf("Enter percent of all messages in all QSCAN subs to pack:");
+      bout << fmt::sprintf("Enter percent of all messages in all QSCAN subs to pack:");
       bout.mpl(3);
       input(temp, 3);
       qwk_percent = to_number<int>(temp);
@@ -1063,7 +1063,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.cls();
   bout.nl();
   bout.Color(2);
-  bout.bprintf("Largest packet you want, in msgs? (0=Unlimited) : ");
+  bout << fmt::sprintf("Largest packet you want, in msgs? (0=Unlimited) : ");
   bout.mpl(5);
 
   char temp[6];
@@ -1075,7 +1075,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
 
   *qwk_max_msgs = to_number<uint16_t>(temp);
 
-  bout.bprintf("Most messages you want per sub? ");
+  bout << fmt::sprintf("Most messages you want per sub? ");
   bout.mpl(5);
   input(temp, 5);
 
@@ -1109,10 +1109,10 @@ void qwk_nscan() {
     checka(&abort);
     count++;
 
-    bout.bprintf("%d.", color);
+    bout << fmt::sprintf("%d.", color);
     if (count >= DOTS) {
-      bout.bprintf("\r");
-      bout.bprintf("Searching");
+      bout << fmt::sprintf("\r");
+      bout << fmt::sprintf("Searching");
       color++;
       count = 0;
       if (color == 4) {
@@ -1300,7 +1300,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         bout.Color(2);
         bout.bputs("Packet was not successful...");
         bout.Color(1);
-        bout.bprintf("Try transfer again?");
+        bout << fmt::sprintf("Try transfer again?");
 
         if (!noyes()) {
           done = 1;
@@ -1320,7 +1320,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       char nfile[81];
 
       bout.Color(2);
-      bout.bprintf("Move to what dir? ");
+      bout << fmt::sprintf("Move to what dir? ");
       bout.mpl(60);
       input(new_dir, 60);
 

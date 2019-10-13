@@ -39,7 +39,7 @@ class RemoteIO;
 
 class SavedLine {
 public:
-  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c) : line(l), color(c) {}
+  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c) : line(std::move(l)), color(c) {}
   std::vector<std::pair<char, uint8_t>> line;
   int color;
 };
@@ -54,10 +54,10 @@ public:
   ~Output();
 
   void SetLocalIO(LocalIO* local_io);
-  LocalIO* localIO() const noexcept { return local_io_; }
+  [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
-  RemoteIO* remoteIO() const noexcept { return comm_; }
+  [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -131,13 +131,8 @@ public:
    * @param next The next flag (Output Parameter)
    */
   int bputs(const std::string& text, bool* abort, bool* next);
-  template <typename... Args>
-  int bprintf(const std::string& format_str, const Args&... args) {
-    const auto s2 = fmt::sprintf(format_str, args...);
-    return bputs(s2);
-  }
 
-template <typename T> Output& operator<<(T const& value) {
+  template <typename T> Output& operator<<(T const& value) {
     std::ostringstream ss;
     ss << value;
     bputs(ss.str());
@@ -151,7 +146,6 @@ template <typename T> Output& operator<<(T const& value) {
     return *this;
   }
 
-
   int bputch(char c, bool use_buffer = false);
   void flush();
   void rputch(char ch, bool use_buffer = false);
@@ -161,9 +155,9 @@ template <typename T> Output& operator<<(T const& value) {
   SavedLine SaveCurrentLine();
   void dump();
   void clear_lines_listed() { lines_listed_ = 0; }
-  int lines_listed() const noexcept { return lines_listed_; }
+  [[nodiscard]] int lines_listed() const noexcept { return lines_listed_; }
   int wherex();
-  bool IsLastKeyLocal() const noexcept { return last_key_local_; }
+  [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
   void RedrawCurrentLine();
 
@@ -180,14 +174,14 @@ template <typename T> Output& operator<<(T const& value) {
   void move_up_if_newline(int num_lines);
 
   // ANSI movement happened.
-  bool ansi_movement_occurred() const noexcept { return ansi_movement_occurred_; }
+  [[nodiscard]] bool ansi_movement_occurred() const noexcept { return ansi_movement_occurred_; }
   void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
   // curatr_provider
-  int curatr() const noexcept override { return curatr_; }
+  [[nodiscard]] int curatr() const noexcept override { return curatr_; }
   void curatr(int n) override { curatr_ = n; }
 
-  bool okskey() const noexcept { return okskey_; }
+  [[nodiscard]] bool okskey() const noexcept { return okskey_; }
   void okskey(bool n) { okskey_ = n; }
 
   // reset the state of Output
