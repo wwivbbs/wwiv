@@ -188,10 +188,10 @@ void printtitle_plus() {
   if (a()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
-    const string buf =
+    const auto buf =
         fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
             a()->directories[a()->current_user_dir().subnum].name, a()->numf);
-    bout.litebarf("%-54s Space=Tag/?=Help", buf.c_str());
+    bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
     bout.Color(0);
   }
 }

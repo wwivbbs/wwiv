@@ -332,12 +332,12 @@ static void HandleScanReadFind(int& nMessageNumber, MsgScanOption& scan_option) 
 }
 
 static FullScreenView CreateFullScreenListTitlesView() {
-  auto screen_width = a()->user()->GetScreenChars();
-  auto screen_length = a()->user()->GetScreenLines() - 1;
+  const auto screen_width = a()->user()->GetScreenChars();
+  const auto screen_length = a()->user()->GetScreenLines() - 1;
 
-  int num_header_lines = 2;
-  bout.litebarf("Sub #%d - %s  (%d messages.)", a()->current_user_sub_num(),
-                a()->current_sub().name.c_str(), a()->GetNumMessagesInCurrentMessageArea());
+  const auto num_header_lines = 2;
+  bout.litebar(fmt::format("Sub #{} - {}  ({} messages.)", a()->current_user_sub_num(),
+                a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea()));
   bout << "|14      Num"
        << " " << std::left << std::setw(43) << "Title" << std::left << "From\r\n";
   bout.clear_lines_listed();
@@ -369,7 +369,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   if (h.pending_network() || h.unvalidated()) {
     line[0] = '+';
   }
-  int tmpbuf_size = size_without_colors(tmpbuf);
+  const int tmpbuf_size = size_without_colors(tmpbuf);
   line.resize(std::max<int>(0, 9 - tmpbuf_size));
   line += tmpbuf;
   line += "|11 ";

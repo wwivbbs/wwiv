@@ -45,7 +45,6 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include <sstream>
 #include <string>
 
 using std::string;
@@ -61,11 +60,11 @@ extern char str_quit[];
 
 /**
  * Displays a horizontal bar of nSize characters in nColor
- * @param nSize Length of the horizontal bar to display
- * @param nColor Color of the horizontal bar to display
+ * @param width Length of the horizontal bar to display
+ * @param color Color of the horizontal bar to display
  */
 void DisplayHorizontalBar(int width, int color) {
-  char ch = (okansi()) ? '\xC4' : '-';
+  const auto ch = (okansi()) ? '\xC4' : '-';
   bout.Color(color);
   bout << string(width, ch);
   bout.nl();
@@ -93,12 +92,12 @@ void YourInfo() {
   bout << "|#9Times on       : |#2" << a()->user()->GetNumLogons() << wwiv::endl;
   bout << "|#9On today       : |#2" << a()->user()->GetTimesOnToday() << wwiv::endl;
   bout << "|#9Messages posted: |#2" << a()->user()->GetNumMessagesPosted() << wwiv::endl;
-  auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() +
+  const auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() +
                          a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
-  auto seconds_used = static_cast<int>(a()->user()->GetTimeOn());
-  auto minutes_used = seconds_used / SECONDS_PER_MINUTE;
-  minutes_used +=
+  const auto seconds_used = static_cast<int>(a()->user()->GetTimeOn());
+  const auto minutes_used =
+      (seconds_used / SECONDS_PER_MINUTE) +
       std::chrono::duration_cast<std::chrono::minutes>(a()->duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
@@ -154,10 +153,11 @@ void upload_post() {
  */
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
+  a()->context().clear_irt();
+
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
   auto username = input_text(75);
-  a()->context().clear_irt();
-  auto atpos = username.find_first_of("@");
+  const auto atpos = username.find_first_of('@');
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
     if (username.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == string::npos) {
       StringLowerCase(&username);
@@ -165,10 +165,10 @@ void send_email() {
     }
   } else if (username.find('(') != std::string::npos && username.find(')') != std::string::npos) {
     // This is where we'd check for (NNNN) and add in the @NNN for the FTN networks.
-    auto first = username.find_last_of('(');
-    auto last = username.find_last_of(')');
+    const auto first = username.find_last_of('(');
+    const auto last = username.find_last_of(')');
     if (last > first) {
-      auto inner = username.substr(first + 1, last - first - 1);
+      const auto inner = username.substr(first + 1, last - first - 1);
       if (inner.find('/') != std::string::npos) {
         // At least need a FTN address.
         username += StrCat(" ", FTN_FAKE_OUTBOUND_ADDRESS);
@@ -198,7 +198,7 @@ void edit_confs() {
     bout << "|#21|#9)|#1 Subs\r\n";
     bout << "|#22|#9)|#1 Dirs\r\n";
     bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
-    char ch = onek("Q12", true);
+    const auto ch = onek("Q12", true);
     switch (ch) {
     case '1':
       conf_edit(ConferenceType::CONF_SUBS);

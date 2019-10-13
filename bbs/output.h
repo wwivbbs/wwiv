@@ -76,13 +76,10 @@ public:
   std::string MakeColor(int wwiv_color);
   std::string MakeSystemColor(int nColor);
   std::string MakeSystemColor(wwiv::sdk::Color color);
-  
-  void litebar(const std::string& msg);
-  template <typename... Args> void litebarf(const std::string& format_str, const Args&... args) {
-    const auto s2 = fmt::sprintf(format_str, args...);
-    litebar(s2);
-  }
 
+  /** Displays msg in a lightbar header. */
+  void litebar(const std::string& msg);
+ 
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
 

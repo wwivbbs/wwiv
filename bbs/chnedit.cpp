@@ -108,7 +108,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebarf("Editing Chain # %d", chain_num);
+    bout.litebar(fmt::format("Editing Chain #{}", chain_num));
     const auto& r = c.regby;
     User regUser;
     if (!r.empty()) {
@@ -162,7 +162,7 @@ static void modify_chain(int chain_num) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebarf("Editing Chain # %d", chain_num);
+    bout.litebar(fmt::format("Editing Chain #{}", chain_num));
 
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
