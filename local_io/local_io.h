@@ -84,7 +84,10 @@ public:
   virtual void WriteScreenBuffer(const char* buffer) = 0;
   virtual int GetDefaultScreenBottom() const noexcept = 0;
   virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
-                        const char* ss) = 0;
+                        const char* allowed_set_chars) = 0;
+  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys,
+                       const std::string& allowed_set_chars);
+  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys);
   virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) = 0;
 
   int GetTopScreenColor() const noexcept { return top_screen_color_; }

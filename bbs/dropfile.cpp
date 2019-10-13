@@ -344,7 +344,7 @@ void CreateDoor32SysDropFile() {
       4 = Max Graphics
 
      ========================================================================= */
-  auto fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
+  const auto fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
   File::Remove(fileName);
 
   TextFile file(fileName, "wt");
@@ -486,15 +486,15 @@ MrBill             System SysOp
 2400               Com port baud rate
 7400               WWIVnet node number
  */
-const string create_chain_file() {
-  auto cspeed = std::to_string(a()->modem_speed_);
+string create_chain_file() {
+  const auto cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
-  auto start_duration = duration_since_midnight(a()->system_logon_time());
-  auto start_second =
+  const auto start_duration = duration_since_midnight(a()->system_logon_time());
+  const auto start_second =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
-  auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
-  auto seconds_used =
+  const auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
+  const auto seconds_used =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 
   const auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
@@ -506,8 +506,8 @@ const string create_chain_file() {
         a()->user()->GetRealName(), a()->user()->GetCallsign(), a()->user()->GetAge(),
         a()->user()->GetGender(), a()->user()->GetGold(), a()->user()->GetLastOn(),
         a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl()));
-    auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-    auto gfilesdir = a()->config()->gfilesdir();
+    const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
+    const auto gfilesdir = a()->config()->gfilesdir();
     file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
                             a()->context().incom(), nsl(), gfilesdir, a()->config()->datadir(),
                             temporary_log_filename));

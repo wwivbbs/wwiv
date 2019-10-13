@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/subedit.h"
 
+#include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -32,11 +33,9 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
-#include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
-#include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include <string>
 #include <vector>
@@ -52,23 +51,12 @@ static void save_subs() {
   a()->subs().Save();
 }
 
-static string GetAr(const subboard_t& r, const string& default_value) {
-  if (r.ar != 0) {
-    for (int i = 0; i < 16; i++) {
-      if ((1 << i) & r.ar) {
-        return string(1, static_cast<char>('A' + i));
-      }
-    }
-  }
-  return default_value;
-}
-
 static string boarddata(size_t n, const subboard_t& r) {
   string stype;
   if (!r.nets.empty()) {
     stype = r.nets[0].stype;
   }
-  string ar = GetAr(r, " ");
+  string ar = word_to_arstr(r.ar, "None.");
   return fmt::sprintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
           n, ar, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
           r.maxmsgs, stype);
@@ -184,7 +172,7 @@ static void modify_sub(int n) {
     bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
     bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
     bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9I) AR         : |#2" << GetAr(r, "None.") << wwiv::endl;
+    bout << "|#9I) AR         : |#2" << word_to_arstr(r.ar, "None.") << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 

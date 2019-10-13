@@ -22,6 +22,6 @@
 #include <string>
 
 uint16_t str_to_arword(const std::string& arstr);
-std::string word_to_arstr(int ar);
+std::string word_to_arstr(int ar, const std::string& empty_ar_str);
 
 #endif  // __INCLUDED_BBS_ARWORD_H__

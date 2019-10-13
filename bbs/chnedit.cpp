@@ -34,6 +34,7 @@
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "arword.h"
 
 using std::string;
 using namespace wwiv::bbs;
@@ -166,17 +167,7 @@ static void modify_chain(int chain_num) {
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
     bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
-    std::string ar = "None.";
-    // TODO(rushfan): Maybe use word_to_arstr?
-    if (c.ar != 0) {
-      for (int i = 0; i < 16; i++) {
-        if ((1 << i) & c.ar) {
-          ar.clear();
-          ar.push_back(static_cast<char>('A' + i));
-        }
-      }
-    }
-    bout << "|#9D) AR           : |#2" << ar << wwiv::endl;
+    bout << "|#9D) AR           : |#2" << word_to_arstr(c.ar, "None.") << wwiv::endl;
     bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
     bout << "|#9F) Exec Mode:     |#2" << Chains::exec_mode_to_string(c.exec_mode) << wwiv::endl;
     bout << "|#9I) Launch From  : |#2"

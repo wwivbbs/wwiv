@@ -38,7 +38,7 @@ const std::string create_dropfile_filename(drop_file_t dropfile_type);
  * Creates a dropfile of type chain.txt, and returns the string form
  * of the filename.
  */
-const std::string create_chain_file();
+std::string create_chain_file();
 
 
 #endif  // __INCLUDED_DROPFILE_H__

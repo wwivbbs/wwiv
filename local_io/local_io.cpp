@@ -18,10 +18,14 @@
 /**************************************************************************/
 #include "local_io/local_io.h"
 
+#include "core/strings.h"
+
+using namespace wwiv::strings;
+
 class DefaultCurAttrProvider final : public wwiv::local_io::curatr_provider {
 public:
   DefaultCurAttrProvider() = default;
-  int curatr() const noexcept override { return a_; }
+  [[nodiscard]] int curatr() const noexcept override { return a_; }
   void curatr(int n) override { a_ = n; }
 
 private:
@@ -39,3 +43,17 @@ wwiv::local_io::curatr_provider* LocalIO::curatr_provider() { return curatr_; }
 
 int LocalIO::curatr() const { return curatr_->curatr(); }
 void LocalIO::curatr(int c) { curatr_->curatr(c); }
+
+int LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys,
+                    const std::string& allowed_set_chars) {
+  char p[1024];
+  to_char_array(p, s);
+  auto rc{0};
+  EditLine(p, len, allowed_keys, &rc, allowed_set_chars.c_str());
+  s = p;
+  return rc;
+}
+
+int LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys) {
+  return EditLine(s, len, allowed_keys, {});
+}
