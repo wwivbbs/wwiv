@@ -18,26 +18,25 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
+#include "core/log.h"
+#include "core/os.h"
 #include <cerrno>
 #include <fcntl.h>
-#include <io.h>
-#include <share.h>
+#include <sstream>
+#include <string>
 
 #ifdef _WIN32
 #include <direct.h>
-#endif  // _WIN32
-#include <sstream>
-#include <string>
-#include "core/log.h"
+#include <io.h>
+#include <share.h>
 
-#ifndef _WIN32
+#else // _WIN32
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
 #endif  // _WIN32
-
-#include "core/os.h"
 
 using std::string;
 using std::chrono::milliseconds;
