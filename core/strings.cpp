@@ -19,7 +19,6 @@
 #include "core/strings.h"
 
 #include "core/log.h"
-#include "core/wwivport.h"
 #include "fmt/format.h"
 #include <algorithm>
 #include <cctype>
@@ -30,21 +29,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#ifdef _WIN32
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif  // NOMINMAX
-
-#include "Shlwapi.h"
-#pragma comment(lib, "Shlwapi.lib")
-
-#ifdef StrCat
-#undef StrCat
-#endif  // StrCat
-#endif  // _WIN32
-
 
 using std::numeric_limits;
 using std::stoi;
@@ -543,14 +527,24 @@ string properize(const string& text) {
   return os.str();
 }
 
+bool ifind_first(const std::string& haystack, const std::string& needle) {
+  const auto it =
+      std::search(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle),
+                  [](char a, char b) { return std::toupper(a) == std::toupper(b); });
+  return it != std::end(haystack);
+}
+
 #ifdef _WIN32
+// from strcasestr
+char* strcasestr_i(const char* haystack, const char* needle);
+
 char* strcasestr(const char* haystack, const char* needle) {
   if (strlen(needle) == 0) {
     // unlike strstr() and wcsstr() passing an emtpy string results in NULL being returned.
     // See http://msdn.microsoft.com/en-us/library/windows/desktop/bb773439%28v=vs.85%29.aspx
     return const_cast<char*>(haystack);
   }
-  return StrStrI(haystack, needle);
+  return strcasestr_i(haystack, needle);
 }
 #else
 

@@ -56,7 +56,7 @@ static string boarddata(size_t n, const subboard_t& r) {
   if (!r.nets.empty()) {
     stype = r.nets[0].stype;
   }
-  string ar = word_to_arstr(r.ar, "None.");
+  auto ar = word_to_arstr(r.ar, "");
   return fmt::sprintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s",
           n, ar, stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age,
           r.maxmsgs, stype);
@@ -71,9 +71,9 @@ static void showsubs() {
   bout.bpla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
   int subnum = 0;
   for (const auto& r : a()->subs().subs()) {
-    const string subdata = StrCat(r.name, " ", r.filename);
-    if (strcasestr(subdata.c_str(), substring.c_str())) {
-      const string line = boarddata(subnum, r);
+    const auto subdata = StrCat(r.name, " ", r.filename);
+    if (ifind_first(subdata, substring)) {
+      const auto line = boarddata(subnum, r);
       bout.bpla(line, &abort);
       if (abort) break;
     }
@@ -111,48 +111,34 @@ static void DisplayNetInfo(size_t nSubNum) {
   bout << "\r\n|#9      Network      Type                 Host    Scrb   Flags\r\n";
   int i = 0;
   const auto& nets = a()->subs().sub(nSubNum).nets;
-  for (auto it = nets.begin(); it != nets.end(); i++, it++) {
-    char szBuffer[255], szBuffer2[255];
-    if ((*it).host == 0) {
-      to_char_array(szBuffer, "<HERE>");
-    } else {
-      sprintf(szBuffer, "%u ", (*it).host);
-    }
-    if ((*it).category) {
-      sprintf(szBuffer2, " Auto-Info(%d)", (*it).category);
-    } else {
-      strcpy(szBuffer2, " Auto-Info");
-    }
-    if ((*it).host == 0) {
-      const auto dir = a()->net_networks[(*it).net_num].dir;
-      const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
+  for (const auto& n : nets) {
+    std::string auto_info = (n.category) ? fmt::format(" Auto-Info({})", n.category) : " Auto-Info";
+    if (n.host == 0) {
+      std::string host = "<HERE>";
+      const auto dir = a()->net_networks[n.net_num].dir;
+      const auto net_file_name = fmt::format("n{}.net", dir, n.stype);
       std::set<uint16_t> subscribers;
-      ReadSubcriberFile(PathFilePath(dir, StrCat("n", (*it).stype, ".net")), subscribers);
-      int num = size_int(subscribers);
-      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
-                    i + 'a',
-                    a()->net_networks[(*it).net_num].name,
-                    (*it).stype.c_str(),
-                    szBuffer,
-                    num,
-                    ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
-                    ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
+      ReadSubcriberFile(PathFilePath(dir, net_file_name), subscribers);
+      auto num = size_int(subscribers);
+      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
+                           a()->net_networks[n.net_num].name, n.stype, host, num,
+                           (n.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
+                           (n.flags & XTRA_NET_AUTO_INFO) ? auto_info : "");
     } else {
-      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n",
-                    i + 'a',
-                    a()->net_networks[(*it).net_num].name,
-                    (*it).stype.c_str(),
-                    szBuffer,
-                    ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
-                    ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
+      auto host = fmt::format("{} ", n.host);
+      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n", i + 'a',
+                           a()->net_networks[n.net_num].name, n.stype, host,
+                           (n.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
+                           (n.flags & XTRA_NET_AUTO_INFO) ? auto_info : "");
     }
+    ++i;
   }
 }
 
 // returns the sub name using the file filename or empty string.
 static string subname_using(const string& filename) {
   for (const auto& sub : a()->subs().subs()) {
-    if (iequals(filename.c_str(), sub.filename.c_str())) {
+    if (iequals(filename, sub.filename)) {
       return sub.name;
     }
   }

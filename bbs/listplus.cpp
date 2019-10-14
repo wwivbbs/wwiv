@@ -83,8 +83,7 @@ static bool ListPlusExist(const std::string& file_name) {
 }
 
 static void colorize_foundtext(char *text, search_record* search_rec, int color) {
-  int size;
-  char *pszTempBuffer, found_color[10], normal_color[10], *tok;
+  char found_color[10], normal_color[10];
   char find[101], word[101];
 
   sprintf(found_color, "|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color);
@@ -92,16 +91,16 @@ static void colorize_foundtext(char *text, search_record* search_rec, int color)
 
   if (lp_config.colorize_found_text) {
     to_char_array(find, search_rec->search);
-    tok = strtok(find, "&|!()");
+    char* tok = strtok(find, "&|!()");
 
     while (tok) {
-      pszTempBuffer = text;
+      char* pszTempBuffer = text;
       strcpy(word, tok);
       StringTrim(word);
 
       while (pszTempBuffer && word[0]) {
         if ((pszTempBuffer = strcasestr(pszTempBuffer, word)) != nullptr) {
-          size = strlen(pszTempBuffer) + 1;
+          int size = strlen(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, found_color, 6);
           pszTempBuffer += strlen(word) + 6;

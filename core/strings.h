@@ -212,6 +212,9 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
 
   extern const char* DELIMS_WHITE;
 
+  /** returns true if needle is found in haystack ,ignoring case */
+  bool ifind_first(const std::string& haystack, const std::string& needle);
+
 #ifdef _WIN32
 
 #define strcasecmp(a, b) _stricmp(a, b)

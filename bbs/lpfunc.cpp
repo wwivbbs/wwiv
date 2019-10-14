@@ -748,7 +748,7 @@ OPERATOR_CHECK_1:
   szBuffer[tpos] = 0;
   StringTrim(szBuffer);
 
-  if (strcasestr(raw, szBuffer)) {
+  if (ifind_first(raw, szBuffer)) {
     return (sign ? 1 : 0);
   } else {
     return (sign ? 0 : 1);

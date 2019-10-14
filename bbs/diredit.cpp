@@ -80,7 +80,7 @@ static void showdirs() {
   bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
   for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
     auto text = StrCat(a()->directories[i].name, " ", a()->directories[i].filename);
-    if (strcasestr(text.c_str(), pattern.c_str())) {
+    if (ifind_first(text, pattern)) {
       bout.bpla(dirdata(i), &abort);
     }
   }

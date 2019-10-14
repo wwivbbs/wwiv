@@ -80,35 +80,34 @@ void old_sublist() {
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
-      auto s = fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
+      std::ostringstream os;
+      os << fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
       if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
-        s += " - ";
+        os << " - ";
       } else {
-        s += "  ";
+        os << "  ";
       }
       if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks) > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
-          const char *ss;
+          std::string ss;
           if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
             ss = "Gated";
           } else {
             ss = stripcolors(a()->net_networks[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name);
           }
 
-          char s1[80];
           if (a()->subs().sub(a()->usub[i1].subnum).anony & anony_val_net) {
-            sprintf(s1, "|17|15[%-8.8s]|#9 ", ss);
+            os << fmt::sprintf("|17|15[%-8.8s]|#9 ", ss);
           } else {
-            sprintf(s1, "|17|15<%-8.8s>|#9 ", ss);
+            os << fmt::sprintf("|17|15<%-8.8s>|#9 ", ss);
           }
-          s += s1;
         } else {
-          s += std::string(11, ' ');
+          os << std::string(11, ' ');
         }
-        s += "|#9";
+        os << "|#9";
       }
-      s += stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
-      bout.bpla(s, &abort);
+      os << stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
+      bout.bpla(os.str(), &abort);
       i1++;
     }
     i++;
@@ -131,9 +130,9 @@ void old_sublist() {
 
 void SubList() {
   int p,
-      wc,  // color code
-      msgIndex,  // message Index
-      newTally; // new message tally
+      wc // color code
+      // message Index
+      ; // new message tally
   char ch, s[81], s2[10], s3[81], sdf[130];
   bool next;
 
@@ -221,12 +220,12 @@ void SubList() {
         } else {
           strcpy(s3, "|#7>|#1LOCAL|#7<  ");
         }
-        msgIndex = 1;
+        int msgIndex = 1;
         while ((msgIndex <= a()->GetNumMessagesInCurrentMessageArea()) &&
                (get_post(msgIndex)->qscan <= a()->context().qsc_p[a()->usub[i1].subnum])) {
           ++msgIndex;
         }
-        newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
+        int newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
         if (a()->current_user_sub().subnum == a()->usub[i1].subnum) {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
                   i1 + 1, s2, s3, a()->subs().sub(a()->usub[i1].subnum).name.c_str(), 
