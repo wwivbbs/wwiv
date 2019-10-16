@@ -30,7 +30,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"

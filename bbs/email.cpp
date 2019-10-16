@@ -36,7 +36,6 @@
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -158,7 +157,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
     // If it does not exist, try to create it via the open call (sf bug 1215434)
     auto file = std::make_unique<File>(fn);
     file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    return std::move(file);
+    return file;
   }
 
   auto file = std::make_unique<File>(fn);
@@ -173,7 +172,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
     }
     sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
   }
-  return std::move(file);
+  return file;
 }
 
 void sendout_email(EmailData& data) {
@@ -485,7 +484,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     i = 0;
     anony = 0;
     bout.nl();
-    WWIV_ASSERT(csne);
+    CHECK_NOTNULL(csne);
     bout << "|#9Name of system: |#2" << csne->name << wwiv::endl;
     bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
     bout.nl();

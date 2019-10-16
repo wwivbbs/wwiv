@@ -31,7 +31,7 @@ namespace core {
 
 class IniFile final {
 public:
-  IniFile(const std::filesystem::path& filename, std::initializer_list<const char*> sections);
+  IniFile(std::filesystem::path filename, std::initializer_list<const char*> sections);
   IniFile(const std::filesystem::path& filename,
           std::initializer_list<const std::string> sections);
   // Constructor/Destructor
@@ -39,7 +39,7 @@ public:
 
   // Member functions
   void Close() noexcept;
-  bool IsOpen() const noexcept { return open_; }
+  [[nodiscard]] bool IsOpen() const noexcept { return open_; }
 
   template <typename T>
   T value(const std::string& key, const T& default_value) const {

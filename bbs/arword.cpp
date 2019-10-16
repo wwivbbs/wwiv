@@ -18,14 +18,8 @@
 /**************************************************************************/
 #include "bbs/arword.h"
 
-#include <algorithm>
-#include <vector>
 #include <string>
-#include "bbs/conf.h"
-#include "bbs/confutil.h"
-#include "bbs/input.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 using std::string;
 using namespace wwiv::strings;

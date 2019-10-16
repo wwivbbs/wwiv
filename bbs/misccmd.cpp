@@ -33,7 +33,6 @@
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
@@ -211,7 +210,6 @@ void kill_old_email() {
         }
       } while (!a()->hangup_ && !done1);
       pFileEmail = OpenEmailFile(false);
-      WWIV_ASSERT(pFileEmail);
       if (!pFileEmail->IsOpen()) {
         break;
       }

@@ -20,19 +20,5 @@
 #ifndef __INCLUDED_WWIVASSERT_H__
 #define __INCLUDED_WWIVASSERT_H__
 
-#include <cassert>
-
-#if defined (_DEBUG)
-
-#define WWIV_ASSERT(x) assert(x)
-
-#else // !_DEBUG
-
-#define WWIV_ASSERT(x)
-#if !defined ( NDEBUG )
-#define NDEBUG
-#endif // NDEBUG
-
-#endif // _DEBUG
 
 #endif  // __INCLUDED_WWIVASSERT_H__

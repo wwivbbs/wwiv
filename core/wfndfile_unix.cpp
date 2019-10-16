@@ -30,7 +30,6 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;

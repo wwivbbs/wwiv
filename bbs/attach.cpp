@@ -35,7 +35,6 @@
 #include "sdk/user.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
@@ -56,7 +55,6 @@ void attach_file(int mode) {
   bout.nl();
   bool bDirectionForward = true;
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
-  WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     pFileEmail->Close();

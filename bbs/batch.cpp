@@ -38,10 +38,8 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
@@ -614,8 +612,7 @@ static string make_dl_batch_list() {
 }
 
 void ProcessDSZLogFile() {
-  char **lines = static_cast<char **>(calloc((a()->max_batch * sizeof(char *) * 2) + 1, 1));
-  WWIV_ASSERT(lines != nullptr);
+  const auto lines = static_cast<char **>(calloc((a()->max_batch * sizeof(char *) * 2) + 1, 1));
 
   if (!lines) {
     return;
@@ -625,7 +622,6 @@ void ProcessDSZLogFile() {
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     auto nFileSize = fileDszLog.length();
     char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
-    WWIV_ASSERT(ss != nullptr);
     if (ss) {
       auto nBytesRead = fileDszLog.Read(ss, nFileSize);
       if (nBytesRead > 0) {

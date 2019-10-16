@@ -64,12 +64,12 @@ SOCKET CreateListenSocket(int port);
 /**
  * Returns true if address is contained in the DNSRBL rbl_address.
  */
-bool on_dns_dbl(std::string address, const std::string& rbl_address);
+bool on_dns_dbl(const std::string& address, const std::string& rbl_address);
 
 /**
  * Gets the DNS country code using rbl_address
  */
-int get_dns_cc(std::string address, const std::string& rbl_address);
+int get_dns_cc(const std::string& address, const std::string& rbl_address);
 
 /** Sets the socket to blocking mode. */
 bool SetBlockingMode(SOCKET sock);
@@ -100,7 +100,7 @@ public:
    * accepted.  If fn should be handled asynchronously, then it should
    * dispatch to a worker thread.
    */
-  bool add(int port, socketset_accept_fn fn, const std::string& description);
+  bool add(int port, const socketset_accept_fn& fn, const std::string& description);
 
   /** 
    * Runs the select/accept/execute loop until exit_signal is true.

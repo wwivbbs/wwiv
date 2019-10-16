@@ -22,9 +22,9 @@
 #include "bbs/datetime.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
+#include <string>
 
 using std::string;
 using namespace std::chrono;
@@ -57,7 +57,6 @@ bool sysop1() {
 }
 
 bool isleap(int year) {
-  WWIV_ASSERT(year >= 0);
   return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
 }
 

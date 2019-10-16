@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/remote_socket_io.h"
+
 #ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
@@ -30,21 +32,16 @@ typedef int socklen_t;
 
 #endif  // _WIN32
 
-#include "bbs/remote_socket_io.h"
-
-#include <iostream>
-#include <memory>
-#include <system_error>
-#include "fmt/printf.h"
-#include "sdk/user.h"
-#include "core/strings.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
-#include "core/wwivassert.h"
-
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include <iostream>
+#include <memory>
+#include <system_error>
 
 using std::chrono::milliseconds;
 using std::lock_guard;
@@ -448,8 +445,6 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 }
 
 void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
-  WWIV_ASSERT(buffer);
-
   // Add the data to the input buffer
   for (int num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));

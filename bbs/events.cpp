@@ -18,14 +18,11 @@
 /**************************************************************************/
 #include "bbs/events.h"
 
-#include <algorithm>
-
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/datetime.h"
-#include "bbs/bbs.h"
 #include "bbs/com.h"
+#include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -33,17 +30,15 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/remote_io.h"
-#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
-#include "core/file.h"
 #include "core/datafile.h"
+#include "core/datetime.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "core/wwivport.h"
-#include "core/datetime.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <algorithm>
 
 using wwiv::bbs::InputMode;
 using namespace wwiv::core;

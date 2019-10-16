@@ -27,7 +27,6 @@
 #include "bbs/printfile.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
@@ -696,7 +695,6 @@ void add_action(ch_action act) {
     return;
   }
   ch_action* addact = static_cast<ch_action*>(calloc(sizeof(ch_action) + 1, 1));
-  WWIV_ASSERT(addact != nullptr);
   addact->r = act.r;
   strcpy(addact->aword, act.aword);
   strcpy(addact->toprint, act.toprint);

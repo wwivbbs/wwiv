@@ -18,24 +18,22 @@
 /**************************************************************************/
 #include "core/file.h"
 
-#include <algorithm>
-#include <cerrno>
-#include <cstring>
-#include <fcntl.h>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <system_error>
-
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
-#include "core/wwivassert.h"
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
+// Keep all of these
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <system_error>
 #ifdef _WIN32
 #include "sys/utime.h"
 #include <direct.h>
@@ -250,7 +248,6 @@ bool File::Exists() const noexcept {
 }
 
 void File::set_length(off_t l) {
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
   [[maybe_unused]] auto _ = ftruncate(handle_, l);
 }
 

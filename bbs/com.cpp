@@ -17,24 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
-#include <cmath>
 
 #include "bbs/bbsutl.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/exceptions.h"
 #include "local_io/keycodes.h"
-#include "bbs/pause.h"
 #include "bbs/remote_io.h"
-#include "local_io/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "sdk/config.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

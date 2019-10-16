@@ -24,16 +24,13 @@
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/datetime.h"
-#include "bbs/input.h"
 #include "bbs/interpret.h"
-#include "local_io/wconstants.h"
 #include "bbs/bbs.h"
 #include "local_io/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/stl.h"
-#include "core/wwivassert.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
 
@@ -73,8 +70,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
           bool two_color, bool clear_previous_line) {
   char rollover_buffer[255];
 
-  WWIV_ASSERT(buffer);
-  WWIV_ASSERT(rollover);
+  CHECK_NOTNULL(buffer);
+  CHECK_NOTNULL(rollover);
 
   int cm = a()->chatting_;
 

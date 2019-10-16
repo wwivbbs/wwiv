@@ -18,28 +18,24 @@
 /**************************************************************************/
 #include "bbs/subacc.h"
 
-#include <memory>
-#include <string>
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/connect1.h"
-#include "bbs/email.h"
 #include "bbs/message_file.h"
 #include "bbs/output.h"
-
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "core/datetime.h"
 #include "sdk/config.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;

@@ -36,7 +36,6 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"

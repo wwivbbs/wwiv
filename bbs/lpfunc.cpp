@@ -18,27 +18,23 @@
 /**************************************************************************/
 #include "bbs/lpfunc.h"
 
-#include <string>
-#include <vector>
-
 #include "bbs/batch.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bbs.h"
-
 #include "bbs/common.h"
 #include "bbs/listplus.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
-#include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -128,7 +124,6 @@ int listfiles_plus_function(int type) {
   prep_menu_items(&menu_items);
 
   file_recs = (uploadsrec(*)[1])(BbsAllocA((a()->user()->GetScreenLines() + 20) * sizeof(uploadsrec)));
-  WWIV_ASSERT(file_recs);
   if (!file_recs) {
     return 0;
   }

@@ -172,7 +172,7 @@ void StringJustify(string* s, string::size_type length, char bg, JustificationTy
   }
   break;
   case JustificationType::RIGHT: {
-    string tmp(*s);
+    const auto tmp(*s);
     *s = StrCat(string(delta, bg), tmp);
   }
   break;

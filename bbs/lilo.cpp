@@ -56,7 +56,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivassert.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"

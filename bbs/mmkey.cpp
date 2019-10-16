@@ -18,17 +18,14 @@
 /**************************************************************************/
 #include "bbs/mmkey.h"
 
-#include <set>
-#include <string>
-
+#include "bbs/bbs.h"
 #include "bbs/input.h"
 #include "core/log.h"
-#include "bbs/bbs.h"
-#include "local_io/keycodes.h"
-
-#include "core/strings.h"
 #include "core/stl.h"
-#include "core/wwivassert.h"
+#include "core/strings.h"
+#include "local_io/keycodes.h"
+#include <set>
+#include <string>
 
 using std::string;
 using namespace wwiv::strings;

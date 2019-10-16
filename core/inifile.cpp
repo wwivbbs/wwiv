@@ -19,6 +19,7 @@
 #include <initializer_list>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "core/inifile.h"
 #include "core/strings.h"
@@ -87,9 +88,9 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<string,
   return true;
 }
 
-IniFile::IniFile(const std::filesystem::path& filename,
+IniFile::IniFile(std::filesystem::path filename,
                  const std::initializer_list<const char*> sections)
-  : path_(filename) {
+  : path_(std::move(filename)) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
@@ -119,12 +120,10 @@ void IniFile::Close() noexcept {
 
 const char* IniFile::GetValue(const string& raw_key, const char* default_value) const {
   for (const auto& section : sections_) {
-    const string full_key = StrCat(section, ".", raw_key);
-    {
-      const auto& it = data_.find(full_key);
-      if (it != data_.end()) {
-        return it->second.c_str();
-      }
+    const auto full_key = StrCat(section, ".", raw_key);
+    const auto& it = data_.find(full_key);
+    if (it != data_.end()) {
+      return it->second.c_str();
     }
   }
   return default_value;

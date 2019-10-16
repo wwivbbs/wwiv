@@ -23,13 +23,11 @@
 #include "bbs/com.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
-#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include <deque>
@@ -137,8 +135,6 @@ void clear_quotes() {
 }
 
 void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
-  WWIV_ASSERT(m);
-
   char temp[255];
   long l2, l3;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
