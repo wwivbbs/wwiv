@@ -891,7 +891,7 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
   File fileZLog(PathFilePath(a()->config()->datadir(), ZLOG_DAT));
-  zlogrec z1;
+  zlogrec z1{};
   if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
     fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
     z1.date[0] = '\0';

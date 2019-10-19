@@ -97,7 +97,7 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     a()->users()->readuser(&user, pnUserNumber[cv]);
-    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->max_waiting() * 5))) ||
+    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > a()->config()->max_waiting() * 5)) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
         user.GetNumMailWaiting() > 200) {
       bout << a()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
@@ -243,7 +243,7 @@ int oneuser() {
     return 0;
   }
   a()->users()->readuser(&user, user_number);
-  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->max_waiting() * 5))) ||
+  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > (a()->config()->max_waiting() * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
       (user.GetNumMailWaiting() > 200)) {
     bout.nl();

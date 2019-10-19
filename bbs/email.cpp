@@ -363,7 +363,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
     a()->users()->readuser(&userRecord, user_number);
     if ((userRecord.GetSl() == 255 &&
          userRecord.GetNumMailWaiting() >
-             (static_cast<unsigned>(a()->config()->max_waiting()) * 5)) ||
+             (a()->config()->max_waiting() * 5)) ||
         (userRecord.GetSl() != 255 &&
          userRecord.GetNumMailWaiting() > a()->config()->max_waiting()) ||
         userRecord.GetNumMailWaiting() > 200) {
