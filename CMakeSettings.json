@@ -1,45 +1,51 @@
-{
-    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
-    "configurations": [
-        {
-        "name": "x86-Debug",
-        "generator": "Ninja",
-        "configurationType" : "Debug",
-        "inheritEnvironments": [ "msvc_x86" ],
-        "buildRoot":  "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-        "cmakeCommandArgs":  "",
-        "buildCommandArgs": "-v",
-        "ctestCommandArgs":  ""
-        },
-        {
-        "name": "x86-Release",
-        "generator": "Ninja",
-        "configurationType" : "RelWithDebInfo",
-        "inheritEnvironments": [ "msvc_x86" ],
-        "buildRoot":  "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-        "cmakeCommandArgs":  "",
-        "buildCommandArgs": "-v",
-        "ctestCommandArgs":  ""
-        },
-        {
-        "name": "x64-Debug",
-        "generator": "Ninja",
-        "configurationType" : "Debug",
-        "inheritEnvironments": [ "msvc_x64" ],
-        "buildRoot":  "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-        "cmakeCommandArgs":  "",
-        "buildCommandArgs": "-v",
-        "ctestCommandArgs":  ""
-        },
-        {
-        "name": "x64-Release",
-        "generator": "Ninja",
-        "configurationType" : "RelWithDebInfo",
-       "inheritEnvironments": [ "msvc_x64" ],
-        "buildRoot":  "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-        "cmakeCommandArgs":  "",
-        "buildCommandArgs": "-v",
-        "ctestCommandArgs":  ""
-        }
-    ]
+﻿{
+  "configurations": [
+    {
+      "name": "x86-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "clangTidyChecks": "clang-analyzer-*,bugprone-*",
+      "enableMicrosoftCodeAnalysis": true,
+      "enableClangTidyCodeAnalysis": true,
+      "variables": []
+    },
+    {
+      "name": "x86-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": []
+    },
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64" ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": []
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64" ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": []
+    }
+  ]
 }
