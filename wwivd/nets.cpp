@@ -171,7 +171,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
       const auto d = date();
       VLOG(4) << "Doing beginday check";
       if (d != ld) {
-        LOG(INFO) << "Executing BeginDay Event. (" << d << " != " << ld << ")";
+        LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
         const std::map<char, string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
         if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {

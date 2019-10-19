@@ -935,6 +935,7 @@ void beginday(bool displayStatus) {
     ssm(1) << "Only " << nus << " new user slots left.";
   }
   if (!a()->beginday_cmd.empty()) {
+    LOG(INFO) << "Beginday command not empty, executing: " << a()->beginday_cmd;
     const auto commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_BEGINDAY));
   }
@@ -953,6 +954,7 @@ void beginday(bool displayStatus) {
   sysoplog(false);
   sysoplog(false) << "* Ran Daily Maintenance...";
   sysoplog(false);
+  LOG(INFO) << "Completed executing beginday";
 }
 
 

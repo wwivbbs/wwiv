@@ -780,7 +780,7 @@ int Application::Run(int argc, char* argv[]) {
   
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");
-  unsigned int hSockOrComm = cmdline.iarg("handle");
+  const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
   int num_min = cmdline.iarg("remaining_min");
   context().ok_modem_stuff(!cmdline.barg("no_modem"));
@@ -789,7 +789,7 @@ int Application::Run(int argc, char* argv[]) {
   uint16_t this_usernum_from_commandline = cmdline.iarg("user_num");
   const auto x = cmdline.sarg("x");
   if (!x.empty()) {
-    char xarg = to_upper_case<char>(x.at(0));
+    const auto xarg = to_upper_case<char>(x.at(0));
     if (cmdline.arg("handle").is_default()) {
       clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;
@@ -865,7 +865,7 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   if (cmdline.barg("beginday")) {
-    auto status = status_manager()->GetStatus();
+    const auto status = status_manager()->GetStatus();
     cleanup_events();
     if (date() != status->GetLastDate()) {
       // This may be another node, but the user explicitly wanted to run the beginday
