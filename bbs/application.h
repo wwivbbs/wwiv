@@ -395,7 +395,6 @@ public:
   std::vector<directoryrec> directories;
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
-  std::vector<eventsrec> events;
   std::vector<tagrec_t> filelist;
   std::vector<confrec> subconfs;
   std::vector<confrec> dirconfs;
@@ -419,7 +418,6 @@ public:
   bool emchg_{false};
   bool hangup_{false};
   int chatting_{0};
-  int do_event_{0};
   bool no_hangup_{false};
   bool in_chatroom_{false};
   bool chatline_{false};

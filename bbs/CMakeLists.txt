@@ -36,7 +36,6 @@ set(COMMON_SOURCES
  dirlist.cpp
  dropfile.cpp
  email.cpp
- events.cpp
  execexternal.cpp
  external_edit.cpp
  external_edit_qbbs.cpp

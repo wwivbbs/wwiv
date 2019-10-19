@@ -38,8 +38,6 @@
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
-#include "bbs/dropfile.h"
-#include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/finduser.h"
 #include "bbs/gfileedit.h"
@@ -486,12 +484,6 @@ void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Ran Directory Edit";
   dlboardedit();
-}
-
-void EventEdit() {
-  write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "- Ran Event Editor";
-  eventedit();
 }
 
 void LoadTextFile() {

@@ -521,9 +521,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "SetNewScanMsg", [](MenuItemContext& context) {
       SetNewScanMsg();
     } },
-    { "EventEdit", [](MenuItemContext& context) {
-      EventEdit();
-    } },
     { "LoadTextFile", [](MenuItemContext& context) {
       LoadTextFile();
     } },

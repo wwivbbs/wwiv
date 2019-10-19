@@ -23,7 +23,6 @@
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
-#include "bbs/events.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
@@ -702,11 +701,7 @@ void Application::InitializeBBS() {
   set_environment_variable("BBS", wwiv_version);
   context().InitalizeContext();
 
-  VLOG(1) << "Reading External Events.";
-  init_events();
-
   VLOG(1) << "Allocating Memory for Message/File Areas.";
-  do_event_ = 0;
   usub.resize(config()->max_subs());
   udir.resize(config()->max_dirs());
   uconfsub.resize(MAX_CONFERENCES);

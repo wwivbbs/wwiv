@@ -1033,32 +1033,6 @@ struct phonerec {
   char phone[13];  // user's phone number
 };
 
-// begin events additions
-
-#define MAX_EVENT 30 // max number of timed events
-
-#define EVENT_FORCED 0x0001      // force user off to run event?
-#define EVENT_SHRINK 0x0002      // shrink for event?
-#define UNUSED_EVENT_HOLD 0x0004 // holdphone for event?
-#define EVENT_EXIT 0x0008        // exit bbs completely to run?
-#define EVENT_PERIODIC 0x0010    // event runs periodically
-#define EVENT_RUNTODAY 0x8000    // has it run today?
-
-struct eventsrec {
-  char cmd[81]; // commandline to execute
-
-  int16_t days, // days to run this event
-      time,     // time to run event in minutes
-      instance, // instance to run event on
-      status,   // bit mapped event status
-      period,   // execution period
-      lastrun;  // timestamp of last execution
-
-  char resv[25]; // reserved
-};
-
-// end events additions
-
 ///////////////////////////////////////////////////////////////////////////////
 
 struct ext_desc_rec {
@@ -1111,7 +1085,6 @@ static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
 static_assert(sizeof(languagerec) == 258, "languagerec == 258");
 static_assert(sizeof(filestatusrec) == 23, "filestatusrec == 23");
 static_assert(sizeof(phonerec) == 15, "phonerec == 15");
-static_assert(sizeof(eventsrec) == 118, "eventsrec == 118");
 static_assert(sizeof(ext_desc_rec) == 17, "ext_desc_rec == 17");
 static_assert(sizeof(instancerec) == 100, "instancerec == 100");
 

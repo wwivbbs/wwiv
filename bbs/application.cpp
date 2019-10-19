@@ -27,9 +27,7 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
-#include "bbs/events.h"
 #include "bbs/exceptions.h"
-#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
@@ -866,7 +864,6 @@ int Application::Run(int argc, char* argv[]) {
 
   if (cmdline.barg("beginday")) {
     const auto status = status_manager()->GetStatus();
-    cleanup_events();
     if (date() != status->GetLastDate()) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.

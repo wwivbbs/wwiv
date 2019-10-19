@@ -74,7 +74,6 @@ int main(int argc, char * argv[]) {
   WRITE_SIZE(adv_asv_rec);
   WRITE_SIZE(cbv_rec);
   WRITE_SIZE(phonerec);
-  WRITE_SIZE(eventsrec);
   WRITE_SIZE(ext_desc_rec);
   WRITE_SIZE(instancerec);
   return 0;

@@ -36,7 +36,6 @@
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/diredit.h"
-#include "bbs/events.h"
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
@@ -264,22 +263,9 @@ int WFC::doWFCEvents() {
     if (date() != last_date_status->GetLastDate()) {
       if ((a_->GetBeginDayNodeNumber() == 0) ||
           (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
-        cleanup_events();
         beginday(true);
         Clear();
       }
-    }
-
-    if (!a()->do_event_) {
-      check_event();
-    }
-
-    while (a()->do_event_) {
-      run_event(a()->do_event_ - 1);
-      // dunno if we really need this.
-      Clear();
-      check_event();
-      any = true;
     }
 
     lokb = 0;
@@ -407,11 +393,6 @@ int WFC::doWFCEvents() {
       case 'G':
         write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
         gfileedit();
-        break;
-        // EventEdit
-      case 'H':
-        write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-        eventedit();
         break;
         // Send Internet Mail
       case 'I': {
