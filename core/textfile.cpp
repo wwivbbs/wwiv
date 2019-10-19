@@ -108,6 +108,8 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
   FILE* f = fopen(name.c_str(), mode.c_str());
   if (f != nullptr) {
     flock(fileno(f), (strpbrk(mode.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
+  } else {
+    VLOG(1) << "TextFile::OpenImpl; fopen failed; errno: " << errno << std::endl;    
   }
   return f;
 }

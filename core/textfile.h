@@ -73,7 +73,7 @@ public:
   bool Close() noexcept;
 
   /**
-   * Used to check if the file has been sucessfully open.
+   * Used to check if the file has been successfully open.
    * Usually code should use `operator bool()` vs. this method.
    */
   [[nodiscard]] bool IsOpen() const noexcept { return file_ != nullptr; }
@@ -144,7 +144,7 @@ public:
   // operators
 
   /**
-   * Used to check if the file has been sucessfully open.
+   * Used to check if the file has been successfully open.
    * This operator is preferred over the function IsOpen.
   */
   explicit operator bool() const { return IsOpen(); }
