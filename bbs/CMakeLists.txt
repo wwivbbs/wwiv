@@ -141,15 +141,31 @@ if(UNIX)
 endif()
 
 if(WIN32)
-  set(PLATFORM_SOURCES
-		exec_win32.cpp 
-		make_abs_cmd_win32.cpp 
-)
-    SET_MSVC_WARNING_LEVEL_4()
+  set(
+    PLATFORM_SOURCES
+		  exec_win32.cpp 
+		  make_abs_cmd_win32.cpp 
+  )
+  SET_MSVC_WARNING_LEVEL_4()
 endif()
 
-add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib local_io localui core sdk ${CMAKE_THREAD_LIBS_INIT} ${FORKPTY_LIB} CL342_LIB)
+add_library(
+  bbs_lib 
+  ${COMMON_SOURCES} 
+  ${ZMODEM_SOURCES} 
+  ${PLATFORM_SOURCES}
+) 
+
+target_link_libraries(
+  bbs_lib 
+  local_io 
+  localui 
+  core 
+  sdk 
+  CL342_LIB 
+  ${CMAKE_THREAD_LIBS_INIT} 
+  ${FORKPTY_LIB}
+)
+
 add_executable(bbs ${BBS_MAIN})
-message ("In BBS: CL: ${CL342_LIB}")
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
