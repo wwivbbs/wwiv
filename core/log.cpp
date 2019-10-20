@@ -120,7 +120,9 @@ Logger::~Logger() noexcept {
   const auto& appenders = config_.log_to[level_];
   if (appenders.empty()) {
     // probably should never happen.
-    console_appender->append(StrCat("No appenders specified; : ", msg));
+    if (console_appender) {
+      console_appender->append(StrCat("No appenders specified; : ", msg));
+    }
   }
   for (auto a : appenders) {
     a->append(msg);

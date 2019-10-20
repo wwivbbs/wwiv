@@ -69,13 +69,12 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 static int System(const string& bbsdir, const string& cmd) {
   const auto path = FilePath(bbsdir, cmd);
 
-  auto err = system(path.c_str());
+  const auto err = system(path.c_str());
   VLOG(1) << "       executed: '" << path << "' with an error code: " << err;
   return err;
 }
@@ -1013,5 +1012,4 @@ bool ParseFileRequestLine(const string& request_line, string* filename, long* le
   return true;
 }
 
-} // namespace net
 } // namespace wwiv
