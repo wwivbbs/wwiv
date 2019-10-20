@@ -20,10 +20,6 @@
 #include <cstdarg>
 #include <string>
 #include <vector>
-#include <cereal/cereal.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
-#include "deps/my_basic/core/my_basic.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
@@ -35,18 +31,25 @@
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
-#include "core/textfile.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/version.h"
+#include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
+#include <cassert>
+
+#include <cereal/cereal.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/archives/json.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/vector.hpp>
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 static char* BasicStrDup(const std::string& s) {
   return mb_memdup(s.c_str(), s.size() + 1);
@@ -197,28 +200,28 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, c
     if (f) {
       if (e == SE_RN_WRONG_FUNCTION_REACHED) {
         printf(
-          "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-          row, col, f,
-          e, abort_code,
-          m
-        );
+            "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+            row, col, f,
+            e, abort_code,
+            m
+            );
       }
       else {
         printf(
-          "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
-          row, col, f,
-          e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
-          m
-        );
+            "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+            row, col, f,
+            e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+            m
+            );
       }
     }
     else {
       printf(
-        "Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n",
-        row, col,
-        e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
-        m
-      );
+          "Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n",
+          row, col,
+          e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+          m
+          );
     }
   }
 }
@@ -563,6 +566,5 @@ bool RunBasicScript(const std::string& script_name) {
   return ret == MB_FUNC_OK;
 }
 
-}
 }
 

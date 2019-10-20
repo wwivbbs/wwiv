@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/qwk.h"
 
-#include <memory>
-#include <string>
-
-#include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
@@ -31,41 +27,39 @@
 #include <unistd.h>
 #endif
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/utility.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
-#include "bbs/instmsg.h"
 #include "bbs/input.h"
+#include "bbs/instmsg.h"
+#include "bbs/make_abs_cmd.h"
 #include "bbs/message_file.h"
-#include "bbs/multmail.h"
 #include "bbs/pause.h"
 #include "bbs/save_qscan.h"
+#include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/subacc.h"
-#include "bbs/bbs.h"
 #include "bbs/sysoplog.h"
-
-#include "local_io/wconstants.h"
 #include "bbs/utility.h"
-#include "bbs/sr.h"
-#include "bbs/xfer.h"
-#include "bbs/xfertmp.h"
-#include "bbs/make_abs_cmd.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
+#include "sdk/ansi/makeansi.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include "sdk/ansi/makeansi.h"
-#include "sdk/config.h"
+#include <cctype>
+#include <memory>
+#include <string>
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
@@ -189,7 +183,7 @@ void build_qwk_packet() {
 
   if (qwk_info.abort) {
     bout.Color(1);
-    bout.bprintf("Abort everything? (NO=Download what I have gathered)");
+    bout << fmt::sprintf("Abort everything? (NO=Download what I have gathered)");
     if (!yesno()) {
       qwk_info.abort = 0;
     }
@@ -271,7 +265,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
-    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
+    auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
             a()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     bout.bputs(subinfo);
@@ -300,8 +294,9 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
-    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
-            bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(), 0);
+    string subinfo =
+        fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3", bn + 1,
+                     thissub, a()->GetNumMessagesInCurrentMessageArea(), 0);
     bout.bputs(subinfo);
     bout.nl();
 
@@ -396,7 +391,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   string ss;
   if (!readfile(&m, fn, &ss)) {
-    bout.bprintf("File not found.");
+    bout << fmt::sprintf("File not found.");
     bout.nl();
     return;
   }
@@ -809,7 +804,7 @@ void qwk_menu() {
     if (qwk_percent) {
       bout.Color(3);
       bout.nl();
-      bout.bprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
+      bout << fmt::sprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
     }
     bout.nl();
     strcpy(temp, "7[3Q1DCUBS%");
@@ -817,7 +812,7 @@ void qwk_menu() {
       strcat(temp, "1");
     }
     strcat(temp, "7] ");
-    bout.bprintf(temp);
+    bout << fmt::sprintf(temp);
     bout.mpl(1);
 
     strcpy(temp, "Q\r?CDUBS%");
@@ -883,7 +878,7 @@ void qwk_menu() {
     case '%':
       sysoplog() << "Set %";
       bout.Color(2);
-      bout.bprintf("Enter percent of all messages in all QSCAN subs to pack:");
+      bout << fmt::sprintf("Enter percent of all messages in all QSCAN subs to pack:");
       bout.mpl(3);
       input(temp, 3);
       qwk_percent = to_number<int>(temp);
@@ -1068,7 +1063,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.cls();
   bout.nl();
   bout.Color(2);
-  bout.bprintf("Largest packet you want, in msgs? (0=Unlimited) : ");
+  bout << fmt::sprintf("Largest packet you want, in msgs? (0=Unlimited) : ");
   bout.mpl(5);
 
   char temp[6];
@@ -1080,7 +1075,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
 
   *qwk_max_msgs = to_number<uint16_t>(temp);
 
-  bout.bprintf("Most messages you want per sub? ");
+  bout << fmt::sprintf("Most messages you want per sub? ");
   bout.mpl(5);
   input(temp, 5);
 
@@ -1114,10 +1109,10 @@ void qwk_nscan() {
     checka(&abort);
     count++;
 
-    bout.bprintf("%d.", color);
+    bout << fmt::sprintf("%d.", color);
     if (count >= DOTS) {
-      bout.bprintf("\r");
-      bout.bprintf("Searching");
+      bout << fmt::sprintf("\r");
+      bout << fmt::sprintf("Searching");
       color++;
       count = 0;
       if (color == 4) {
@@ -1274,7 +1269,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     string command = stuff_in(a()->arcs[archiver].arca, parem1, parem2, "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
+    qwk_file_to_send = StrCat(QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
     make_abs_cmd(a()->bbsdir().string(), &qwk_file_to_send);
 
@@ -1305,7 +1300,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         bout.Color(2);
         bout.bputs("Packet was not successful...");
         bout.Color(1);
-        bout.bprintf("Try transfer again?");
+        bout << fmt::sprintf("Try transfer again?");
 
         if (!noyes()) {
           done = 1;
@@ -1325,7 +1320,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       char nfile[81];
 
       bout.Color(2);
-      bout.bprintf("Move to what dir? ");
+      bout << fmt::sprintf("Move to what dir? ");
       bout.mpl(60);
       input(new_dir, 60);
 

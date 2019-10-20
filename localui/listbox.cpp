@@ -18,17 +18,15 @@
 /**************************************************************************/
 #include "listbox.h"
 
-#include <algorithm>
-#include <cmath>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "localui/colors.h"
 #include "localui/wwiv_curses.h"
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <sstream>
 
 using std::string;
 using namespace wwiv::stl;

@@ -18,24 +18,19 @@
 /**************************************************************************/
 #include "bbs/input.h"
 
-#include <algorithm>
-#include <cctype>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "core/wwivport.h"
 #include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <set>
+#include <string>
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -561,7 +556,6 @@ std::string input_text(const std::string& orig_text, bool mpl, int max_length) {
     return Input1(orig_text, max_length, true, InputMode::MIXED);
   }
   if (max_length > 255) {
-    WWIV_ASSERT(max_length > 255);
     return "";
   }
   char s[255];

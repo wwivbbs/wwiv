@@ -20,12 +20,7 @@
 #define __INCLUDED_LOCALUI_UI_WIN_H__
 
 #include "colors.h"
-#include <map>
 #include <string>
-
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif // INSERT
 
 // Generic implementation of screen display routines for wwivconfig.
 class UIWindow {
@@ -34,7 +29,7 @@ public:
   UIWindow(UIWindow* parent, ColorScheme* color_scheme)
       : parent_(parent), color_scheme_(color_scheme) {}
   UIWindow(const UIWindow& copy) = delete;
-  virtual ~UIWindow() {}
+  virtual ~UIWindow() = default;
 
   virtual void SetColor(SchemeId) {}
   virtual void SetTitle(const std::string&) {}
@@ -66,7 +61,7 @@ public:
    */
   virtual bool IsGUI() const { return false; }
 
-  UIWindow* parent() const { return parent_; }
+  virtual UIWindow* parent() const { return parent_; }
   SchemeId current_scheme_id() const { return current_scheme_id_; }
 
 protected:

@@ -20,37 +20,21 @@
 #ifdef _WIN32
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
-
 #include "Shlwapi.h"
 #endif  // _WIN32
 
+#include "core/log.h"
+#include "core/os.h"
 #include <algorithm>
-#include <cerrno>
-#include <cstring>
-#include <fcntl.h>
-#include <iostream>
+#include <string>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
-#include <share.h>
-#include "sys/utime.h"
-#endif  // _WIN32
-#include <sstream>
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include "core/log.h"
-
-#ifndef _WIN32
+#else // _WIN32
 #include <sys/file.h>
 #include <unistd.h>
 #include <utime.h>
-#endif  // _WIN32
-
-#include "core/os.h"
-#include "core/wfndfile.h"
-#include "core/wwivassert.h"
+#endif // _WIN32
 
 using std::string;
 using std::chrono::milliseconds;
@@ -60,15 +44,15 @@ using namespace wwiv::os;
 namespace wwiv {
 namespace core {
 
-FileLock::FileLock(int fd, const std::string& filename, FileLockType lock_type) 
+FileLock::FileLock(int fd, const std::string& filename, FileLockType lock_type)
   : fd_(fd), filename_(filename), lock_type_(lock_type) {
 }
 
 FileLock::~FileLock() {
 #ifdef _WIN32
   HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(fd_));
-  OVERLAPPED overlapped = { 0 };
-  if (!::UnlockFileEx(h, 0, MAXDWORD, MAXDWORD, &overlapped)) {
+  OVERLAPPED overlapped = {0};
+  if (!UnlockFileEx(h, 0, MAXDWORD, MAXDWORD, &overlapped)) {
     LOG(ERROR) << "Error Unlocking file: " << filename_;
   }
 #else
@@ -79,5 +63,5 @@ FileLock::~FileLock() {
 }
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv

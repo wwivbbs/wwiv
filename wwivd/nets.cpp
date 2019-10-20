@@ -15,42 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivd/ips.h"
-
-#include <atomic>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <unordered_set>
-#include <vector>
-
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/unordered_set.hpp>
-#include <cereal/types/vector.hpp>
 
 #include "core/datetime.h"
-#include "core/file.h"
-#include "core/http_server.h"
-#include "core/inifile.h"
-#include "core/jsonfile.h"
 #include "core/log.h"
-#include "core/net.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
@@ -61,9 +31,14 @@
 #include "wwivd/connection_data.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_non_http.h"
+#include <atomic>
+#include <map>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 using std::map;
 using std::string;
@@ -91,7 +66,7 @@ static NetworkContact network_contact_from_last_time(const std::string& address,
 
 static void one_net_ftn_callout(const Config& config, const net_networks_rec& net,
                                 const wwivd_config_t& c, int network_number) {
-  wwiv::sdk::fido::FidoCallout callout(config, net);
+  const wwiv::sdk::fido::FidoCallout callout(config, net);
 
   // TODO(rushfan): 1. Right now we just keep the map of last callout
   // time in memory, but we should checkpoint this to disk and reload
@@ -106,13 +81,13 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
 
   for (const auto& kv : callout.node_configs_map()) {
     const auto address = kv.first.as_string();
-    const auto& callout = kv.second.callout_config;
-    if (!wwiv::sdk::net::allowed_to_call(callout, DateTime::now())) {
+    const auto& callout_config = kv.second.callout_config;
+    if (!wwiv::sdk::net::allowed_to_call(callout_config, DateTime::now())) {
       // Is the callout bit set.
       continue;
     }
     auto ncn = network_contact_from_last_time(address, DateTime::from_time_t(current_last_contact[address]));
-    if (!wwiv::sdk::net::should_call(ncn, callout, DateTime::now())) {
+    if (!wwiv::sdk::net::should_call(ncn, callout_config, DateTime::now())) {
       // Has it been long enough, or do we have enough k waiting.
       continue;
     }
@@ -131,9 +106,12 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
 static void one_net_wwivnet_callout(const Config& config, const net_networks_rec& net,
                                     const wwivd_config_t& c, int network_number) {
   Contact contact(net);
-  Callout callout(net);
+  const Callout callout(net);
   for (const auto& kv : callout.callout_config()) {
-    const auto& ncn = contact.contact_rec_for(kv.first);
+    const auto ncn = contact.contact_rec_for(kv.first);
+    if (ncn == nullptr) {
+      continue;
+    }
     if (!wwiv::sdk::net::allowed_to_call(kv.second, DateTime::now())) {
       continue;
     }
@@ -153,7 +131,7 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
 
 static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
   VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
-  Networks networks(config);
+  const Networks networks(config);
   const auto& nets = networks.networks();
   int network_number = 0;
   for (const auto& net : nets) {
@@ -167,7 +145,7 @@ static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
 
 // This is called from the thread
 static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config) {
-  wwivd_config_t c{original_config};
+  auto c{original_config};
 
   StatusMgr sm(config.datadir(), [](int) {});
   auto e = need_to_exit.load();
@@ -188,12 +166,12 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
     e = need_to_exit.load();
 
     if (c.do_beginday_event) {
-      auto last_date_status = sm.GetStatus();
+      const auto last_date_status = sm.GetStatus();
       auto ld = last_date_status->GetLastDate();
       const auto d = date();
       VLOG(4) << "Doing beginday check";
       if (d != ld) {
-        LOG(INFO) << "Executing BeginDay Event. (" << d << " != " << ld << ")";
+        LOG(INFO) << "Executing beginday event. (" << d << " != " << ld << ")";
         const std::map<char, string> params{};
         const auto cmd = CreateCommandLine(c.beginday_cmd, params);
         if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
@@ -215,5 +193,4 @@ void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) {
   callout_thread.detach();
 }
 
-} // namespace wwivd
 } // namespace wwiv

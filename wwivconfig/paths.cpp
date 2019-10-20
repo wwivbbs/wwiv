@@ -18,17 +18,13 @@
 /**************************************************************************/
 #include "wwivconfig/paths.h"
 
-#include <cstdint>
+#include "core/strings.h"
+#include "localui/input.h"
+#include "localui/wwiv_curses.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 #include <memory>
 #include <string>
-
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
 
 using std::unique_ptr;
 using std::string;
@@ -42,7 +38,7 @@ static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */
 void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
-  configrec cfg = *config.config();
+  auto cfg = *config.config();
 
   items.add_items({
       new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),

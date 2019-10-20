@@ -26,25 +26,27 @@ namespace core {
 
 class Transaction {
 public:
-  Transaction(std::function<void()> commit_fn, std::function<void()> rollback_fn) 
-    : commit_fn_(commit_fn), rollback_fn_(rollback_fn), rollback_(false) {}
+  Transaction(std::function<void()> commit_fn, std::function<void()> rollback_fn)
+    : commit_fn_(commit_fn), rollback_fn_(rollback_fn) {
+  }
 
-  ~Transaction() { 
-    if (rollback_) { 
+  ~Transaction() {
+    if (rollback_) {
       if (rollback_fn_) { rollback_fn_(); }
     } else {
       if (commit_fn_) { commit_fn_(); }
     }
   }
+
   void Rollback() { rollback_ = true; }
 
 private:
   std::function<void()> commit_fn_;
   std::function<void()> rollback_fn_;
-  bool rollback_;
+  bool rollback_{false};
 };
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 #endif // __INCLUDED_TRANSACTION_H__

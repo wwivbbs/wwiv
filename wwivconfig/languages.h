@@ -19,8 +19,6 @@
 #ifndef __INCLUDED_LANGUAGES_H__
 #define __INCLUDED_LANGUAGES_H__
 
-#include <string>
-
 #include "sdk/config.h"
 
 void edit_languages(const wwiv::sdk::Config&);

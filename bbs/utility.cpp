@@ -16,42 +16,33 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#ifdef _WIN32
-#include <sys/utime.h>
 
-#else
-#include <utime.h>
-#endif // WIN32
-
-#include <string>
-#include <vector>
-
+#include "bbs/utility.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
-#include "bbs/events.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/utility.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
-#include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
-
 #include "core/findfiles.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "sdk/config.h"
+#include "local_io/keycodes.h"
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <string>
+#include <vector>
+#ifdef _WIN32
+#include <sys/utime.h>
+#else
+#include <utime.h>
+#endif // WIN32
 
 using std::string;
 using std::vector;
@@ -75,7 +66,7 @@ inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& 
  */
 void remove_from_temp(const std::string& file_name, const std::string& directory_name,
                       bool bPrintStatus) {
-  const auto filespec = StrCat(directory_name, stripfn(file_name.c_str()));
+  const auto filespec = StrCat(directory_name, stripfn(file_name));
   FindFiles ff(filespec, FindFilesType::any);
   bout.nl();
   for (const auto& f : ff) {
@@ -166,8 +157,6 @@ long nsl() {
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,
               const std::string& byname) {
-  WWIV_ASSERT(nh);
-
   const string filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -223,8 +212,6 @@ char* stripfn(const char* file_name) {
   static char szStaticFileName[15];
   char szTempFileName[MAX_PATH];
 
-  WWIV_ASSERT(file_name);
-
   size_t nSepIndex = -1;
   for (size_t i = 0; i < size(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
@@ -259,8 +246,6 @@ char* get_wildlist(char* file_mask) {
   int mark = 0;
   char *pszPath, t;
 
-  WWIV_ASSERT(file_mask);
-
   FindFiles ff(file_mask, FindFilesType::any);
   if (ff.empty()) {
     bout << "No files found\r\n";
@@ -268,7 +253,7 @@ char* get_wildlist(char* file_mask) {
     return file_mask;
   }
   auto f = ff.begin();
-  bout.bprintf("%12.12s ", f->name.c_str());
+  bout << fmt::sprintf("%12.12s ", f->name);
 
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
@@ -294,7 +279,7 @@ char* get_wildlist(char* file_mask) {
       break;
     }
     f++;
-    bout.bprintf("%12.12s ", f->name.c_str());
+    bout << fmt::sprintf("%12.12s ", f->name);
     if (bout.getkey() == SPACE) {
       bout.nl();
       break;
@@ -321,9 +306,6 @@ char* get_wildlist(char* file_mask) {
 int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items, int xpos,
               int ypos, side_menu_colors* smc) {
   static int positions[20], amount = 1;
-
-  WWIV_ASSERT(menu_pos);
-  WWIV_ASSERT(smc);
 
   a()->tleft(true);
 

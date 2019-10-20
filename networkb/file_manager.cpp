@@ -18,21 +18,16 @@
 /**************************************************************************/
 #include "networkb/file_manager.h"
 
-#include <cstring>
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "core/file.h"
-#include "core/md5.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "networkb/wfile_transfer_file.h"
-#include "sdk/fido/fido_util.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_util.h"
+#include <map>
+#include <string>
+#include <vector>
 
 using std::map;
 using std::string;
@@ -42,12 +37,11 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) const {
   vector<TransferFile*> result;
-  const auto s_node_net = StringPrintf("s%d.net", destination_node);
+  const auto s_node_net = fmt::sprintf("s%d.net", destination_node);
   const auto search_path = PathFilePath(dirs_.net_dir(), s_node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
@@ -64,10 +58,10 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   LOG(INFO) << "CreateFtnTransferFileList: " << address;
 
   std::vector<fido_bundle_status_t> statuses{
-    fido_bundle_status_t::crash,
-    fido_bundle_status_t::normal,
-    fido_bundle_status_t::direct, 
-    fido_bundle_status_t::immediate
+      fido_bundle_status_t::crash,
+      fido_bundle_status_t::normal,
+      fido_bundle_status_t::direct, 
+      fido_bundle_status_t::immediate
   };
 
   map<string, TransferFile*> result_map;
@@ -126,7 +120,7 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_basename = StringPrintf("p%s-0-%u.net", prefix.c_str(), i);
+    const auto new_basename = fmt::format("p{}-0-{}.net", prefix, i);
     const auto new_filename = PathFilePath(directory, new_basename);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
@@ -162,5 +156,4 @@ void FileManager::rename_ftn_pending_files() {
 }
 
 
-}
 }

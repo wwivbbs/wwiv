@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {

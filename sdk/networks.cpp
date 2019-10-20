@@ -17,15 +17,15 @@
 /**************************************************************************/
 #include "sdk/networks.h"
 
-#include <exception>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <cereal/cereal.hpp>
-#include <cereal/access.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/archives/json.hpp>
 
 #include "core/datafile.h"
@@ -36,17 +36,15 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/vardec.h"
 
-using cereal::make_nvp;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/networks_cereal.h"
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 const int Networks::npos;  // reserve space.
 
@@ -159,8 +157,8 @@ bool Networks::LoadFromDat() {
 }
 
 bool Networks::Save() {
-  bool dat = SaveToDat();
-  bool json = SaveToJSON();
+  auto dat = SaveToDat();
+  auto json = SaveToJSON();
 
   return dat && json;
 }
@@ -192,5 +190,4 @@ bool Networks::SaveToDat() {
   return file.WriteVector(disk);
 }
 
-}
 }

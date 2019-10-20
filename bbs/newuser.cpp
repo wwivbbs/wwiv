@@ -18,15 +18,9 @@
 /**************************************************************************/
 #include "bbs/newuser.h"
 
-#include <algorithm>
-#include <chrono>
-#include <string>
-
-#include "bbs/asv.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
@@ -42,7 +36,6 @@
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/lilo.h"
-#include "bbs/listplus.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
@@ -52,7 +45,6 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
-#include "bbs/uedit.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/inifile.h"
@@ -60,7 +52,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "local_io/wconstants.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
@@ -68,6 +60,9 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
 
 using std::string;
 using std::chrono::milliseconds;
@@ -106,7 +101,7 @@ static void input_phone() {
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
     phoneNumber = input_phonenumber(a()->user()->GetVoicePhoneNumber(), 12);
 
-    ok = valid_phone(phoneNumber.c_str());
+    ok = valid_phone(phoneNumber);
     if (!ok) {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
@@ -550,8 +545,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     return -1;
   }
 
-  int nNewUserNumber =
-      static_cast<int>((userFile.length() / a()->config()->userrec_length()) - 1);
+  int nNewUserNumber = static_cast<int>((userFile.length() / a()->config()->userrec_length()) - 1);
   userFile.Seek(a()->config()->userrec_length(), File::Whence::begin);
   int user_number = 1;
 
@@ -613,10 +607,10 @@ static bool CreateNewUserRecord() {
   auto u = a()->user();
   a()->reset_effective_sl();
 
-  bool ok = User::CreateNewUserRecord(
-      u, a()->config()->newuser_sl(), a()->config()->newuser_dsl(),
-      a()->config()->newuser_restrict(), a()->config()->newuser_gold(),
-      a()->newuser_colors, a()->newuser_bwcolors);
+  bool ok =
+      User::CreateNewUserRecord(u, a()->config()->newuser_sl(), a()->config()->newuser_dsl(),
+                                a()->config()->newuser_restrict(), a()->config()->newuser_gold(),
+                                a()->newuser_colors, a()->newuser_bwcolors);
   u->CreateRandomPassword();
   return ok;
 }
@@ -643,7 +637,7 @@ bool CanCreateNewUserAccountHere() {
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
-      auto password = input_password("New User Password :" , 20);
+      auto password = input_password("New User Password :", 20);
       if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
@@ -892,22 +886,22 @@ static void add_phone_number(int usernum, const char* phone) {
 void WriteNewUserInfoToSysopLog() {
   const auto u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), a()->usernum, u->GetRealName());
+  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->GetName(), a()->usernum, u->GetRealName());
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
     sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode() << "  ("
                << u->GetCountry() << " )";
   }
-  sysoplog() << StringPrintf("-> %s (Voice)", u->GetVoicePhoneNumber());
+  sysoplog() << fmt::format("-> {} (Voice)", u->GetVoicePhoneNumber());
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-    sysoplog() << StringPrintf("-> %s (Data)", u->GetDataPhoneNumber());
+    sysoplog() << fmt::format("-> {} (Data)", u->GetDataPhoneNumber());
   }
-  sysoplog() << StringPrintf("-> %02d/%02d/%02d (%d yr old %s)", u->GetBirthdayMonth(),
+  sysoplog() << fmt::sprintf("-> %02d/%02d/%02d (%d yr old %s)", u->GetBirthdayMonth(),
                              u->GetBirthdayDay(), u->GetBirthdayYear(), u->GetAge(),
                              ((u->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplog() << StringPrintf("-> Using a %s Computer", ctypes(u->GetComputerType()).c_str());
+  sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
   if (u->GetWWIVRegNumber()) {
-    sysoplog() << StringPrintf("-> WWIV Registration # %ld", u->GetWWIVRegNumber());
+    sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->GetWWIVRegNumber());
   }
   sysoplog() << "********";
 
@@ -977,10 +971,10 @@ void ExecNewUserCommand() {
 
 void newuser() {
   sysoplog(false);
-  string t = times();
-  string f = fulldate();
-  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", f.c_str(), t.c_str(),
-                                  a()->GetCurrentSpeed().c_str(), a()->instance_number());
+  const auto t = times();
+  const auto f = fulldate();
+  sysoplog(false) << fmt::sprintf("*** NEW USER %s   %s    %s (%ld)", f, t, a()->GetCurrentSpeed(),
+                                  a()->instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
   a()->screenlinest = 25;
@@ -1119,7 +1113,7 @@ bool check_zip(const std::string& zipcode, int mode) {
   bool found = false;
 
   const auto zipcity_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
-  const auto fn = StringPrintf("zip%c.dat", zipcode.front());
+  const auto fn = fmt::format("zip{}.dat", zipcode.front());
 
   TextFile zip_file(PathFilePath(zipcity_dir, fn), "r");
   if (!zip_file.IsOpen()) {
@@ -1199,13 +1193,13 @@ static int find_phone_number(const char* phone) {
 bool check_dupes(const char* pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
   if (user_number && user_number != a()->usernum) {
-    string s = StringPrintf("    %s entered phone # %s", a()->user()->GetName(), pszPhoneNumber);
+    string s = fmt::format("    {} entered phone # {}", a()->user()->GetName(), pszPhoneNumber);
     sysoplog(false) << s;
     ssm(1) << s;
 
     User user;
     a()->users()->readuser(&user, user_number);
-    s = StringPrintf("      also entered by %s", user.GetName());
+    s = fmt::format("      also entered by {}", user.GetName());
     sysoplog(false) << s;
     ssm(1) << s;
 
@@ -1406,7 +1400,7 @@ void DoMinimalNewUser() {
       break;
     case 'B':
       u->SetAge(0);
-      //sprintf(s1, "%02d/%02d/%02d", u->GetBirthdayDay(), u->GetBirthdayMonth(),
+      // sprintf(s1, "%02d/%02d/%02d", u->GetBirthdayDay(), u->GetBirthdayMonth(),
       //        u->GetBirthdayYear());
       break;
     case 'C':
@@ -1439,7 +1433,8 @@ void DoMinimalNewUser() {
 
 void new_mail() {
   auto file = PathFilePath(a()->config()->gfilesdir(),
-               (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+                           (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
+                                                                                : NEWMAIL_MSG);
 
   if (!File::Exists(file)) {
     return;

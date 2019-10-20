@@ -36,7 +36,6 @@
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/diredit.h"
-#include "bbs/events.h"
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
@@ -63,6 +62,8 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
@@ -111,16 +112,16 @@ static void wfc_update() {
 
   get_inst_info(inst_num, &ir);
   a()->users()->readuser_nocache(&u, ir.user);
-  a()->localIO()->PutsXYA(57, 18, 15, pad_to(std::to_string(inst_num), 3));
+  a()->localIO()->PutsXYA(57, 18, 15, fmt::format("{:<3}", inst_num));
   if (ir.flags & INST_FLAGS_ONLINE) {
-    const string unn = a()->names()->UserName(ir.user);
-    a()->localIO()->PutsXYA(42, 19, 14, pad_to(unn, 25));
+    const auto unn = a()->names()->UserName(ir.user);
+    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", unn));
   } else {
-    a()->localIO()->PutsXYA(42, 19, 14, pad_to("Nobody", 25));
+    a()->localIO()->PutsXYA(42, 19, 14, fmt::format("{:<25}", "Nobody"));
   }
 
-  string activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
-  a()->localIO()->PutsXYA(42, 20, 14, pad_to(activity_string, 25));
+  auto activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
+  a()->localIO()->PutsXYA(42, 20, 14, fmt::format("{:<25}", activity_string));
   if (num_instances() > 1) {
     do {
       ++inst_num;
@@ -137,7 +138,7 @@ void WFC::Clear() {
 }
 
 void WFC::DrawScreen() {
-  instancerec ir;
+  instancerec ir{};
   User u;
   static steady_clock::time_point wfc_time;
   static steady_clock::time_point poll_time;
@@ -146,7 +147,7 @@ void WFC::DrawScreen() {
     return;
   }
 
-  int nNumNewMessages = check_new_mail(sysop_usernum);
+  auto nNumNewMessages = check_new_mail(sysop_usernum);
   auto status = a()->status_manager()->GetStatus();
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
@@ -162,8 +163,8 @@ void WFC::DrawScreen() {
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
     }
     a()->localIO()->WriteScreenBuffer(screen_buffer.get());
-    const auto title = StringPrintf("Activity and Statistics of %s Node %d",
-                                    a()->config()->system_name().c_str(), a()->instance_number());
+    const auto title = fmt::format("Activity and Statistics of {} Node {}",
+                                   a()->config()->system_name(), a()->instance_number());
     a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
@@ -185,7 +186,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
     a()->localIO()->PutsXYA(
         21, 13, 14,
-        StringPrintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
+        fmt::sprintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
                      100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
     a()->localIO()->PutsXYA(58, 6, 14, StrCat(wwiv_version, beta_version));
 
@@ -194,7 +195,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->GetCallerNumber()));
     if (status->GetDays()) {
       a()->localIO()->PutsXYA(58, 10, 14,
-                              StringPrintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
+                              fmt::sprintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
                                                        static_cast<float>(status->GetDays())));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
@@ -204,9 +205,9 @@ void WFC::DrawScreen() {
     get_inst_info(a()->instance_number(), &ir);
     if (ir.user < a()->config()->max_users() && ir.user > 0) {
       const string unn = a()->names()->UserName(ir.user);
-      a()->localIO()->PutsXYA(33, 16, 14, pad_to(unn, 20));
+      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
     } else {
-      a()->localIO()->PutsXYA(33, 16, 14, pad_to("Nobody", 20));
+      a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));
     }
 
     status_ = 1;
@@ -262,22 +263,9 @@ int WFC::doWFCEvents() {
     if (date() != last_date_status->GetLastDate()) {
       if ((a_->GetBeginDayNodeNumber() == 0) ||
           (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
-        cleanup_events();
         beginday(true);
         Clear();
       }
-    }
-
-    if (!a()->do_event_) {
-      check_event();
-    }
-
-    while (a()->do_event_) {
-      run_event(a()->do_event_ - 1);
-      // dunno if we really need this.
-      Clear();
-      check_event();
-      any = true;
     }
 
     lokb = 0;
@@ -349,7 +337,7 @@ int WFC::doWFCEvents() {
           case '0':
           case '1':
           case '2': {
-            print_local_file(StringPrintf("netdat%c.log", ch));
+            print_local_file(fmt::format("netdat{}.log", ch));
           } break;
           }
         }
@@ -405,11 +393,6 @@ int WFC::doWFCEvents() {
       case 'G':
         write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
         gfileedit();
-        break;
-        // EventEdit
-      case 'H':
-        write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-        eventedit();
         break;
         // Send Internet Mail
       case 'I': {

@@ -32,7 +32,7 @@ using namespace wwiv::strings;
 namespace wwiv::os {
 
 bool wait_for(function<bool()> predicate, duration<double> d) {
-  auto now = std::chrono::steady_clock::now();
+  auto now = steady_clock::now();
   const auto end = now + d;
   while (!predicate() && now < end) {
     now = steady_clock::now();
@@ -57,6 +57,7 @@ int random_number(int max_value) {
   static std::random_device rdev;
   static std::default_random_engine re(rdev());
 
+  // Can't be const or it won't compile on gcc.
   std::uniform_int_distribution<int> dist(0, max_value - 1);
   return dist(re);
 }

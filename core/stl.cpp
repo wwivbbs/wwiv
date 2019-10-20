@@ -18,8 +18,6 @@
 /**************************************************************************/
 #include "core/stl.h"
 
-namespace wwiv {
-namespace stl {
+namespace wwiv::stl {
 
-}  // namespace stl
-}  // namespace wwiv
+} // namespace wwiv

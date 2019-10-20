@@ -18,26 +18,26 @@
 /**************************************************************************/
 #include "bbs/gfileedit.h"
 
-#include <string>
-#include <vector>
-
-#include "bbs/datetime.h"
-#include "bbs/input.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
+#include "bbs/datetime.h"
 #include "bbs/gfiles.h"
+#include "bbs/input.h"
 #include "bbs/pause.h"
-#include "local_io/keycodes.h"
 #include "bbs/xfer.h"
-#include "sdk/status.h"
-#include "core/file.h"
 #include "core/datafile.h"
+#include "core/file.h"
+#include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/findfiles.h"
-#include "sdk/filenames.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/status.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace wwiv::core;
@@ -54,7 +54,7 @@ static string gfiledata(const gfiledirrec& r, int nSectionNum) {
       }
     }
   }
-  return StringPrintf("|#2%2d |#3%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
+  return fmt::sprintf("|#2%2d |#3%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
           nSectionNum, x, stripcolors(r.name), r.filename, r.sl, r.age, r.maxfiles);
 }
 

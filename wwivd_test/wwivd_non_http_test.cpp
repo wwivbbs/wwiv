@@ -16,20 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "gtest/gtest.h"
+
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
-#include "gtest/gtest.h"
-
 #include "sdk/wwivd_config.h"
 #include "wwivd/wwivd_non_http.h"
-
-#include <iostream>
+#include <chrono>
 #include <string>
 #include <vector>
-#include <chrono>
 
 using std::string;
 using std::vector;
@@ -40,7 +38,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::wwivd;
 
 TEST(GoodIps, IsAlwaysAllowed) {
-  vector<string> lines{"10.0.0.1", "192.168.0.1 # This is line #2"};
+  const vector<string> lines{"10.0.0.1", "192.168.0.1 # This is line #2"};
   GoodIp ip(lines);
   EXPECT_TRUE(ip.IsAlwaysAllowed("10.0.0.1"));
   EXPECT_TRUE(ip.IsAlwaysAllowed("192.168.0.1"));

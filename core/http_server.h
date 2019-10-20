@@ -38,23 +38,23 @@ namespace core {
 // Subset from https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1
 static std::map<int, std::string> CreateHttpStatusMap() {
   std::map<int, std::string> m = {
-    { 200, "OK" },
-    { 204, "No Content" },
-    { 301, "Moved Permanently" },
-    { 302, "Found" },
-    { 304, "Not Modified" },
-    { 307, "Temporary Redirect" },
-    { 400, "Bad Request" },
-    { 401, "Unauthorized" },
-    { 403, "Forbidden" },
-    { 404, "Not Found" },
-    { 405, "Method Not Allowed" },
-    { 406, "Not Acceptable" },
-    { 408, "Request Time-out" },
-    { 412, "Precondition Failed" },
-    { 500, "Internal Server Error" },
-    { 501, "Not Implemented" },
-    { 503, "Service Unavailable" }
+      {200, "OK"},
+      {204, "No Content"},
+      {301, "Moved Permanently"},
+      {302, "Found"},
+      {304, "Not Modified"},
+      {307, "Temporary Redirect"},
+      {400, "Bad Request"},
+      {401, "Unauthorized"},
+      {403, "Forbidden"},
+      {404, "Not Found"},
+      {405, "Method Not Allowed"},
+      {406, "Not Acceptable"},
+      {408, "Request Time-out"},
+      {412, "Precondition Failed"},
+      {500, "Internal Server Error"},
+      {501, "Not Implemented"},
+      {503, "Service Unavailable"}
   };
   return m;
 }
@@ -76,9 +76,17 @@ enum class HttpMethod {
  */
 class HttpResponse {
 public:
-  HttpResponse(int s) : status(s) {};
-  HttpResponse(int s, const std::string& t) : status(s), text(t) {};
-  HttpResponse(int s, std::map<std::string, std::string>& h, const std::string& t) : status(s), headers(h), text(t) {};
+  HttpResponse(int s)
+    : status(s) {
+  };
+
+  HttpResponse(int s, const std::string& t)
+    : status(s), text(t) {
+  };
+
+  HttpResponse(int s, std::map<std::string, std::string>& h, const std::string& t)
+    : status(s), headers(h), text(t) {
+  };
 
   int status;
   std::map<std::string, std::string> headers;
@@ -88,7 +96,8 @@ public:
 class HttpHandler {
 public:
   virtual ~HttpHandler() = default;
-  virtual HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) = 0;
+  virtual HttpResponse Handle(HttpMethod method, const std::string& path,
+                              std::vector<std::string> headers) = 0;
 };
 
 /**
@@ -111,7 +120,7 @@ private:
 };
 
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 #endif  // __INCLUDED_WWIV_CORE_HTTP_SERVER_H__

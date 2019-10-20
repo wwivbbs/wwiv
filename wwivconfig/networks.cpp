@@ -18,26 +18,12 @@
 /**************************************************************************/
 #include "wwivconfig/networks.h"
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -46,13 +32,19 @@
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
-#include "sdk/vardec.h"
+#include <cstring>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #define UINT(u, n) (*((int*)(((char*)(u)) + (n))))
 #define UCHAR(u, n) (*((char*)(((char*)(u)) + (n))))
+
+constexpr ssize_t MAX_NETWORKS = 100;
 
 using std::pair;
 using std::string;
@@ -84,16 +76,19 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
       iscan1(i, subs, config);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
-        postrec* p = get_post(i1);
-        if (p->status & status_post_new_net) {
-          if (p->network.network_msg.net_number == nn) {
-            p->network.network_msg.net_number = static_cast<uint8_t>('\xff');
-            write_post(i1, p);
-          } else if (p->network.network_msg.net_number > nn) {
-            p->network.network_msg.net_number--;
-            write_post(i1, p);
-          }
+        auto p = get_post(i1);
+        if (!p) {
+          continue;
         }
+        if (!(p->status & status_post_new_net)) {
+          continue;
+        }
+        if (p->network.network_msg.net_number == nn) {
+          p->network.network_msg.net_number = static_cast<uint8_t>('\xff');
+        } else if (p->network.network_msg.net_number > nn) {
+          p->network.network_msg.net_number--;
+        }
+        write_post(i1, p.value());
       }
       close_sub();
     }
@@ -108,9 +103,9 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
       emailfile.Seek(r * sizeof(mailrec), File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
+        if (strnlen(m.title, WWIV_MESSAGE_TITLE_LENGTH) >= WWIV_MESSAGE_TITLE_LENGTH) {
           // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
-          m.title[WWIV_MESSAGE_TITLE_LENGTH] = 0;
+          m.title[WWIV_MESSAGE_TITLE_LENGTH - 1] = 0;
         }
         m.status |= status_new_net;
         if (m.status & status_source_verified) {
@@ -156,10 +151,10 @@ class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
   FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
                              int width, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y){};
-  virtual ~FidoNetworkConfigSubDialog() {}
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), d_(d), x_(x), y_(y){};
+  virtual ~FidoNetworkConfigSubDialog() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     EditItems items{};
@@ -218,8 +213,10 @@ public:
 
       items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
                                    n->packet_config.compression_type));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
+      items.add(new StringEditItem<std::string&>(
+          COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
+      items.add(new StringEditItem<std::string&>(
+          COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
 
       // dy_start
       int dy = dy_start_;
@@ -272,16 +269,16 @@ public:
     };
     return EditlineResult::NEXT;
   }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+
+  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
   const std::string netdir_;
   const std::string title_;
-  int width_ = 40;
   net_networks_rec& d_;
-  int x_ = 0;
-  int y_ = 0;
-  int dy_start_ = 0;
+  int x_{0};
+  int y_{0};
+  int dy_start_{0};
 };
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
@@ -291,7 +288,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 
   auto& p = n.packet_config;
   EditItems items{};
-  vector<pair<fido_packet_t, string>> packetlist = {
+  const vector<pair<fido_packet_t, string>> packetlist = {
       {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
   int y = 1;
@@ -384,9 +381,9 @@ class FidoPacketConfigSubDialog : public BaseEditItem {
 public:
   FidoPacketConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
                             int width, const Config& config, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config),
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), config_(config),
         d_(d), x_(x), y_(y){};
-  virtual ~FidoPacketConfigSubDialog() {}
+  virtual ~FidoPacketConfigSubDialog() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
@@ -460,7 +457,6 @@ public:
 private:
   const std::string netdir_;
   const std::string title_;
-  int width_ = 40;
   const Config& config_;
   net_networks_rec& d_;
   int x_ = 0;
@@ -477,37 +473,44 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
   int y = 1;
 
   EditItems items{};
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password,
-                                             EditLineMode::ALL))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password,
+                                            EditLineMode::ALL))
       ->set_help_text("WWIVnet password to use when connecting to this node");
 
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
-            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
-                                                  &c.options))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
+           new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
+                                                 &c.options))
       ->set_help_text("Is our system allowed to callout to this one?");
   y += 2;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
-            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
-                                                                 &c.call_every_x_minutes))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
+           new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
+                                                                &c.call_every_x_minutes))
       ->set_help_text("Automatically call out every N minutes");
 
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
-            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
+           new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
       ->set_help_text("Automatically call out when K kilobytes of packet is pending");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call between hours of:"),
-            new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr))
-  ->set_help_text("Only call automatically between the house of X and Y");
-  items.add(new Label(LBL2_POSITION, y, LABEL2_WIDTH, "and:"),
-            new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call between hours of:"),
+           new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr))
+      ->set_help_text("Only call automatically between the house of X and Y");
+  items
+      .add(new Label(LBL2_POSITION, y, LABEL2_WIDTH, "and:"),
+           new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr))
       ->set_help_text("Only call automatically between the house of X and Y");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
-            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
-                                                  &c.options))
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
+           new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
+                                                 &c.options))
       ->set_help_text("Hide this node from the WFC pending system display");
 
   items.Run(StrCat("Node: @", c.sysnum, ".", net.name));
@@ -516,20 +519,19 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 // Base item of an editable value, this class does not use templates.
 class CalloutNetSubDialog : public BaseEditItem {
 public:
-  CalloutNetSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width,
-                      const Config& config, const net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config),
-        d_(d), x_(x), y_(y){};
-  virtual ~CalloutNetSubDialog() {}
+  CalloutNetSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
+                      const net_networks_rec& d)
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), d_(d), x_(x), y_(y){};
+  virtual ~CalloutNetSubDialog() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
-    int ch = window->GetChar();
+    auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       Callout callout(d_);
-      bool done = false;
+      auto done = false;
       do {
         vector<ListBoxItem> items;
         for (const auto& e : callout.callout_config()) {
@@ -540,7 +542,7 @@ public:
         list.selection_returns_hotkey(true);
         list.set_additional_hotkeys("DI");
         list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-        ListBoxResult result = list.Run();
+        auto result = list.Run();
         if (result.type == ListBoxResultType::HOTKEY) {
           switch (result.hotkey) {
           case 'D': {
@@ -558,7 +560,7 @@ public:
           } break;
           case 'I': {
             const string prompt = "Enter Address (Node number only) : @";
-            const string address_string = dialog_input_string(window, prompt, 20);
+            const auto address_string = dialog_input_string(window, prompt, 20);
             if (address_string.empty()) {
               break;
             }
@@ -596,16 +598,15 @@ public:
       return EditlineResult::NEXT;
     }
   }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+
+  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
   const std::string netdir_;
   const std::string title_;
-  int width_ = 40;
-  const Config& config_;
   const net_networks_rec& d_;
-  int x_ = 0;
-  int y_ = 0;
+  int x_{0};
+  int y_{0};
 };
 
 static void edit_net(const Config& config, Networks& networks, int nn) {
@@ -616,9 +617,9 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
       {network_type_t::news, "Newsgroup (not supported yet)"}};
 
   Subs subs(config.datadir(), networks.networks());
-  bool subs_loaded = subs.Load();
+  const auto subs_loaded = subs.Load();
 
-  net_networks_rec& n = networks.at(nn);
+  auto& n = networks.at(nn);
   const string orig_network_name(n.name);
 
   constexpr int LABEL1_POSITION = 2;
@@ -633,7 +634,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
       ->set_help_text("WWIVnet node number, or 1 for FTN networks");
   items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
-  auto net_dir = File::absolute(config.root_directory(), n.dir);
+  const auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
     items.add(
         new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
@@ -641,7 +642,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
         new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
   } else if (n.type == network_type_t::wwivnet) {
     items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
-              new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", 76, config, n));
+              new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", n));
     y++;
   }
 
@@ -683,11 +684,14 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
       iscan1(i, subs, config);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
-        postrec* p = get_post(i1);
+        auto p = get_post(i1);
+        if (!p) {
+          continue;
+        }
         if (p->status & status_post_new_net) {
           if (p->network.network_msg.net_number >= nn) {
             p->network.network_msg.net_number++;
-            write_post(i1, p);
+            write_post(i1, p.value());
           }
         }
       }
@@ -701,7 +705,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
     auto t = emailfile.length() / sizeof(mailrec);
     for (size_t r = 0; r < t; r++) {
-      mailrec m;
+      mailrec m{};
       emailfile.Seek(sizeof(mailrec) * r, File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
@@ -729,7 +733,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   int nu = number_userrecs(config.datadir());
   for (int i = 1; i <= nu; i++) {
     read_user(config, i, &u);
-    if (u.net_num  >= nn) {
+    if (u.net_num >= nn) {
       u.net_num++;
       write_user(config, i, &u);
     }
@@ -755,9 +759,9 @@ void networks(const wwiv::sdk::Config& config) {
       vector<ListBoxItem> items;
       int num = 0;
       for (const auto& n : networks.networks()) {
-        items.emplace_back(StringPrintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
+        items.emplace_back(fmt::sprintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
       }
-      CursesWindow* window = out->window();
+      auto window = out->window();
       ListBox list(window, "Select Network", items);
 
       list.selection_returns_hotkey(true);
@@ -773,8 +777,8 @@ void networks(const wwiv::sdk::Config& config) {
         switch (result.hotkey) {
         case 'D':
           if (networks.networks().size() > 1) {
-            const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
-            bool yn = dialog_yn(window, prompt);
+            const auto prompt = fmt::format("Delete '{}'", networks.at(result.selected).name);
+            auto yn = dialog_yn(window, prompt);
             if (yn) {
               yn = dialog_yn(window, "Are you REALLY sure? ");
               if (yn) {
@@ -790,11 +794,11 @@ void networks(const wwiv::sdk::Config& config) {
             messagebox(window, "Too many networks.");
             break;
           }
-          const string prompt =
-              StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
-          const size_t net_num =
-              dialog_input_number(window, prompt, 1, networks.networks().size() + 1);
-          if (net_num > 0 && net_num <= networks.networks().size() + 1) {
+          const auto prompt =
+              fmt::format("Insert before which (1-%{} ? ", networks.networks().size() + 1);
+          const auto net_num =
+              dialog_input_number(window, prompt, 1, wwiv::stl::size_int(networks.networks()) + 1);
+          if (net_num > 0 && net_num <= wwiv::stl::size_int(networks.networks()) + 1) {
             if (dialog_yn(window, "Are you sure? ")) {
               insert_net(config, networks, net_num - 1);
             }

@@ -19,17 +19,16 @@
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
 
-#include <vector>
-
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include <optional>
 
 void close_sub();
 bool open_sub(bool wr);
 bool iscan1(int si, const wwiv::sdk::Subs&, const wwiv::sdk::Config&);
-postrec *get_post(int mn);
-void write_post(int mn, postrec * pp);
+std::optional<postrec> get_post(int mn);
+void write_post(int mn, const postrec& pp);
 
 int GetNumMessagesInCurrentMessageArea();
 

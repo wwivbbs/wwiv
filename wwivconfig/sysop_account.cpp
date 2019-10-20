@@ -18,37 +18,21 @@
 /**************************************************************************/
 #include "wwivconfig/sysop_account.h"
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
-
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
-#include "sdk/filenames.h"
 #include "sdk/names.h"
-#include "sdk/networks.h"
-#include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
 #include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -71,15 +55,15 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   if (ini.IsOpen()) {
     for (int i = 0; i < 10; i++) {
       {
-        const string key_name = StringPrintf("%s[%d]", "NUCOLOR", i);
-        uint8_t num = ini.value<uint8_t>(key_name);
+        const auto key_name = fmt::format("{}[{}]", "NUCOLOR", i);
+        auto num = ini.value<uint8_t>(key_name);
         if (num != 0) {
           newuser_colors[i] = num;
         }
       }
       {
-        const string key_name = StringPrintf("%s[%d]", "NUCOLORBW", i);
-        uint8_t num = ini.value<uint8_t>(key_name);
+        const auto key_name = fmt::format("{}[{}]", "NUCOLORBW", i);
+        auto num = ini.value<uint8_t>(key_name);
         if (num != 0) {
           newuser_bwcolors[i] = num;
         }

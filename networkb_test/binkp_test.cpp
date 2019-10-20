@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/binkp.h"
@@ -24,9 +25,6 @@
 #include "sdk/callout.h"
 #include "networkb/transfer_file.h"
 #include "networkb_test/fake_connection.h"
-
-#include <chrono>
-#include <cstdint>
 #include <string>
 #include <thread>
 
@@ -50,12 +48,12 @@ protected:
     files_.Mkdir("gfiles");
     const string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
-    const string network_dir = files_.DirName("network");
-    const string gfiles_dir = files_.DirName("gfiles");
+    const auto network_dir = files_.DirName("network");
+    const auto gfiles_dir = files_.DirName("gfiles");
     memset(&wwiv_config_, 0, sizeof(configrec));
-    strcpy(wwiv_config_.systemname, "Test System");
-    strcpy(wwiv_config_.sysopname, "Test Sysop");
-    strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
+    to_char_array(wwiv_config_.systemname, "Test System");
+    to_char_array(wwiv_config_.sysopname, "Test Sysop");
+    to_char_array(wwiv_config_.gfilesdir, gfiles_dir);
     wwiv::sdk::Config config(File::current_directory());
     config.set_config(&wwiv_config_, true);
     config.set_initialized_for_test(true);
@@ -64,13 +62,13 @@ protected:
     to_char_array(net.name, "Dummy Network");
     net.type = network_type_t::wwivnet;
     net.sysnum = 0;
-    BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
-    std::unique_ptr<Callout> dummy_callout = std::make_unique<Callout>(net);
+    binkp_config_ = std::make_unique<BinkConfig>(ORIGINATING_ADDRESS, config, network_dir);
+    auto dummy_callout = std::make_unique<Callout>(net);
     BinkP::received_transfer_file_factory_t null_factory = [](const string&, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };
-    dummy_config->callouts()["wwivnet"] = std::move(dummy_callout);
-    binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
+    binkp_config_->callouts()["wwivnet"] = std::move(dummy_callout);
+    binkp_.reset(new BinkP(&conn_, binkp_config_.get(), BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     CommandLine cmdline({ "networkb_tests.exe" }, "");
     thread_ = thread([&]() { binkp_->Run(cmdline); });
   } 
@@ -80,10 +78,11 @@ protected:
   }
 
   unique_ptr<BinkP> binkp_;
+  std::unique_ptr<BinkConfig> binkp_config_;
   FakeConnection conn_;
   std::thread thread_;
   FileHelper files_;
-  configrec wwiv_config_;
+  configrec wwiv_config_{};
 };
 
 TEST_F(BinkTest, ErrorAbortsSession) {
@@ -97,7 +96,7 @@ TEST_F(BinkTest, ErrorAbortsSession) {
 }
 
 static int node_number_from_address_list(const std::string& addresses, const string& network_name) {
-  auto a = ftn_address_from_address_list(addresses, network_name);
+  const auto a = ftn_address_from_address_list(addresses, network_name);
   return wwivnet_node_number_from_ftn_address(a);
 }
 
@@ -128,15 +127,15 @@ TEST(NetworkNameFromAddressTest, SingleAddress) {
 
 // string expected_password_for(Callout* callout, int node)
 TEST(ExpectedPasswordTest, Basic) {
-  net_call_out_rec n{ "20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
+  const net_call_out_rec n{ "20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
-  string actual = expected_password_for(&callout, 1234);
+  const string actual = expected_password_for(&callout, 1234);
   EXPECT_EQ("pass", actual);
 }
 
 TEST(ExpectedPasswordTest, WrongNode) {
-  net_call_out_rec n{"20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
+  const net_call_out_rec n{"20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
-  string actual = expected_password_for(&callout, 12345);
+  const string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);
 }

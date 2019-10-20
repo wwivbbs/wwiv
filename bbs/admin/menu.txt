@@ -551,10 +551,6 @@ SetNewScanMsg
   Enter the menu so that a user can set which subs he want to scan when doing
   a new message scan
 
-EventEdit
-
-  Sysop command to enter the event editor
-
 LoadTextFile
 
   Looks like a duplicate to 'LoadText'

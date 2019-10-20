@@ -375,7 +375,7 @@ struct fido_packet_config_t {
  */
 struct binkp_session_config_t {
   std::string host;
-  int port = 0;
+  int port{0};
   std::string password;
 };
 

@@ -18,14 +18,8 @@
 /**************************************************************************/
 #include "bbs/arword.h"
 
-#include <algorithm>
-#include <vector>
 #include <string>
-#include "bbs/conf.h"
-#include "bbs/confutil.h"
-#include "bbs/input.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -50,10 +44,10 @@ uint16_t str_to_arword(const std::string& arstr) {
  * Converts an int to a string representing those ARs (DARs).
  * or '-' on an empty string.
  */
-std::string word_to_arstr(int ar) {
+std::string word_to_arstr(int ar, const std::string& empty_ar_str) {
 
   if (!ar) {
-    return "-";
+    return empty_ar_str;
   }
 
   std::string arstr;
@@ -62,6 +56,6 @@ std::string word_to_arstr(int ar) {
       arstr.push_back(static_cast<char>('A' + i));
     }
   }
-  return (arstr.empty()) ? "-" : arstr;
+  return (arstr.empty()) ? empty_ar_str : arstr;
 }
 

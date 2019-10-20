@@ -17,20 +17,15 @@
 /**************************************************************************/
 #include "wwivutil/net/list.h"
 
+#include "core/log.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include "sdk/net/packets.h"
+#include "sdk/networks.h"
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "sdk/net/packets.h"
-#include "sdk/bbslist.h"
-#include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
-#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
@@ -41,8 +36,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string NetListCommand::GetUsage() const {
   std::ostringstream ss;
@@ -61,13 +55,12 @@ int NetListCommand::Execute() {
     return 1;
   }
 
-  int nn = 0;
+  auto nn = 0;
   for (const auto& net : networks.networks()) {
-    cout << "." << pad_to(std::to_string(nn++), 2) << " " << pad_to(net.name, 17) << "(" << net.dir
-         << ")" << std::endl;
+    const auto s = fmt::format(".{:<2} {:<17}({})", nn++, net.name, net.dir);
+    cout << s << std::endl;
   }
   return 0;
 }
 
-}
 }

@@ -16,22 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "core/socket_exceptions.h"
-
-#include <stdexcept>
 #include "core/log.h"
 #include "core/strings.h"
-
-using std::string;
-using wwiv::strings::StringPrintf;
+#include "fmt/format.h"
+#include <stdexcept>
 
 namespace wwiv::core {
 
-connection_error::connection_error(const string& host, int port) 
-  : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {
+connection_error::connection_error(const std::string& host, int port)
+  : socket_error(fmt::format("Error connecting to: {}:{}", host, port)) {
   LOG(ERROR) << "connection_error: " << host << ":" << port;
 }
 
-socket_error::socket_error(const std::string& message) : std::runtime_error(message) {
+socket_error::socket_error(const std::string& message)
+  : std::runtime_error(message) {
   // Don't log this since we *often* hit a timeout since we use nonblocking
   // sockets and that's OK.
   VLOG(4) << "socket_error: " << message;

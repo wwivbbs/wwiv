@@ -20,7 +20,7 @@
 #define __INCLUDED_PRINTFILE_H__
 
 #include <string>
-#include "core/filesystem.h"
+#include <filesystem>
 
 /** [VisibleForTesting] */
 std::filesystem::path CreateFullPathToPrint(const std::string& basename);

@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(..)
 
 set(COMMON_SOURCES
   clock.cpp
@@ -21,6 +20,7 @@ set(COMMON_SOURCES
   semaphore_file.cpp
   socket_connection.cpp
   socket_exceptions.cpp
+  strcasestr.cpp
   strings.cpp
   textfile.cpp
   version.cpp

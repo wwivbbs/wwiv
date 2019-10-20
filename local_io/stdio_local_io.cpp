@@ -21,8 +21,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-StdioLocalIO::StdioLocalIO() {}
-StdioLocalIO::~StdioLocalIO() {}
+StdioLocalIO::StdioLocalIO() = default;
+StdioLocalIO::~StdioLocalIO() = default;
 
 void StdioLocalIO::Putch(unsigned char ch) { putchar(ch); };
 

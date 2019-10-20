@@ -16,28 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-#include <memory>
-#include <string>
-#include <sys/stat.h>
-
-#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -45,10 +33,10 @@ using std::vector;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static const int MAX_SL = 255;
-static const int MIN_SL = 0;
-static const int COL1_POSITION = 21;
-static const int LABEL1_POSITION = 2;
+static constexpr int MAX_SL = 255;
+static constexpr int MIN_SL = 0;
+static constexpr int COL1_POSITION = 21;
+static constexpr int LABEL1_POSITION = 2;
 static constexpr int LABEL1_WIDTH = 18;
 
 static vector<HelpItem> create_extra_help_items() {
@@ -56,14 +44,14 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const uint8_t JumpToSl(CursesWindow* window) {
+static uint8_t JumpToSl(CursesWindow* window) {
   vector<ListBoxItem> items;
   for (int i = MIN_SL; i < MAX_SL; i++) {
-    items.emplace_back(StringPrintf("SL #%d", i), 0, i);
+    items.emplace_back(fmt::format("SL #{}", i), 0, i);
   }
 
   ListBox list(window, "Select SL", items);
-  ListBoxResult result = list.Run();
+  auto result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return static_cast<uint8_t>(items[result.selected].data());
   }
@@ -72,7 +60,7 @@ static const uint8_t JumpToSl(CursesWindow* window) {
 
 void sec_levs(Config& config) {
   uint8_t cursl = 10;
-  slrec sl = config.sl(cursl);
+  auto sl = config.sl(cursl);
   EditItems items{};
   items.add_items({
       new NumberEditItem<uint8_t>(COL1_POSITION, 1, &cursl),
@@ -114,7 +102,7 @@ void sec_levs(Config& config) {
   items.Display();
 
   for (;;) {
-    char ch = onek(items.window(), "\033JQ[]{}\r");
+    auto ch = onek(items.window(), "\033JQ[]{}\r");
     switch (ch) {
     case '\r': {
       items.Run();
@@ -122,7 +110,7 @@ void sec_levs(Config& config) {
       items.window()->Refresh();
     } break;
     case 'J': {
-      uint8_t sl_number = JumpToSl(items.window());
+      auto sl_number = JumpToSl(items.window());
       if (sl_number >= MIN_SL) {
         cursl = sl_number;
       }
@@ -136,9 +124,8 @@ void sec_levs(Config& config) {
       }
       break;
     case '[': {
-      if (--cursl < MIN_SL) {
-        cursl = MAX_SL;
-      }
+      // Wraps around at 0 == 255
+      --cursl;
     } break;
     case '}':
       cursl += 10;
@@ -147,10 +134,8 @@ void sec_levs(Config& config) {
       }
       break;
     case '{':
+      // Auto wraps
       cursl -= 10;
-      if (cursl < MIN_SL) {
-        cursl = MIN_SL;
-      }
       break;
     }
     sl = config.sl(cursl);

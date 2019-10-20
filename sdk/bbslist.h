@@ -20,6 +20,7 @@
 
 #include <initializer_list>
 #include <map>
+#include <optional>
 #include <string>
 
 #include "sdk/net.h"
@@ -35,7 +36,7 @@ class BbsListNet {
   // VisibleForTesting
   BbsListNet(std::initializer_list<net_system_list_rec> l);
   virtual ~BbsListNet();
-  const net_system_list_rec* node_config_for(int node) const;
+  std::optional<net_system_list_rec> node_config_for(int node) const;
   BbsListNet& operator=(const BbsListNet& rhs) { node_config_ = rhs.node_config_; return *this; }
   std::string ToString() const;
 

@@ -21,7 +21,6 @@
 
 #include <map>
 #include <memory>
-#include <utility>
 #include "curses_win.h"
 #include "colors.h"
 
@@ -41,7 +40,7 @@ class CursesFooter {
 public:
   CursesFooter(CursesWindow* window, ColorScheme* color_scheme) 
     : window_(window), color_scheme_(color_scheme) {}
-  virtual ~CursesFooter() {}
+  virtual ~CursesFooter() = default;
   virtual void ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const;
   virtual void ShowContextHelp(const std::string& help_text) const;
   virtual void SetDefaultFooter() const;
@@ -53,26 +52,26 @@ public:
 };
 
 // Curses implementation of screen display routines for wwivconfig.
-class CursesIO {
+class CursesIO final {
  public:
   // Constructor/Destructor
   CursesIO(const std::string& title);
   CursesIO(const CursesIO& copy) = delete;
-  virtual ~CursesIO();
+  ~CursesIO();
 
-  virtual void Cls(uint32_t background_char = ' ');
-  virtual CursesWindow* window() const { return window_.get(); }
-  virtual CursesFooter* footer() const { return footer_.get(); }
-  virtual CursesWindow* header() const { return header_.get(); }
-  virtual void SetIndicatorMode(IndicatorMode mode);
+  void Cls(uint32_t background_char = ' ');
+  CursesWindow* window() const { return window_.get(); }
+  CursesFooter* footer() const { return footer_.get(); }
+  CursesWindow* header() const { return header_.get(); }
+  void SetIndicatorMode(IndicatorMode mode);
 
-  virtual CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
+  CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
 
-  ColorScheme* color_scheme() { return color_scheme_.get(); }
+  ColorScheme* color_scheme() const { return color_scheme_.get(); }
   static void Init(const std::string& title);
   static CursesIO* Get();
-  virtual int GetMaxX() const;
-  virtual int GetMaxY() const;
+  int GetMaxX() const;
+  int GetMaxY() const;
 
  private:
   int max_x_;

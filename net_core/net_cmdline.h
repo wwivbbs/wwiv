@@ -20,14 +20,10 @@
 
 #include <chrono>
 #include <memory>
-#include <set>
 #include <string>
-#include <vector>
 
 #include "core/command_line.h"
-#include "core/file.h"
-#include "core/filesystem.h"
-#include "core/inifile.h"
+#include <filesystem>
 #include "sdk/config.h"
 #include "sdk/net.h"
 #include "sdk/networks.h"
@@ -47,8 +43,8 @@ public:
   bool IsInitialized() const noexcept { return initialized_; }
   const wwiv::sdk::Config& config() const noexcept { return *config_.get(); }
   const wwiv::sdk::Networks& networks() const noexcept { return *networks_.get(); }
-  const std::string network_name() const noexcept { return network_name_; }
-  const int network_number() const noexcept { return network_number_; }
+  std::string network_name() const noexcept { return network_name_; }
+  int network_number() const noexcept { return network_number_; }
   const net_networks_rec& network() const noexcept { return network_; }
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
   char net_cmd() const noexcept { return net_cmd_; }

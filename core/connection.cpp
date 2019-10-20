@@ -24,5 +24,5 @@ Connection::Connection() noexcept = default;
 
 Connection::~Connection() = default;
 
-}  // namespace net
+} // namespace net
 } // namespace wwiv

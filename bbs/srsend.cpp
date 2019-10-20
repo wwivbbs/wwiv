@@ -16,22 +16,21 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <chrono>
-#include <cmath>
-#include <string>
-
-#include "bbs/crc.h"
-#include "bbs/datetime.h"
-#include "local_io/keycodes.h"
-#include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
+#include "bbs/crc.h"
+#include "bbs/datetime.h"
+#include "bbs/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
-
 #include "bbs/xfer.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include <chrono>
+#include <cmath>
+#include <string>
 
 using std::string;
 using namespace std::chrono;
@@ -117,7 +116,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
     nb = 128;
     to_char_array(b, stripfn(file_name));
     // We needed this cast to (long) to compile with XCode 1.5 on OS X
-    const auto sb = StringPrintf("%ld %ld", pos, static_cast<long>(file.last_write_time()));
+    const auto sb = fmt::sprintf("%ld %ld", pos, static_cast<long>(file.last_write_time()));
 
     strcpy(&(b[strlen(b) + 1]), sb.c_str());
     b[127] = static_cast<unsigned char>((static_cast<int>(pos + 127) / 128) >> 8);
@@ -223,7 +222,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, working_filename);
-  a()->localIO()->PutsXY(65, 2, StringPrintf("%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size)));
+  a()->localIO()->PutsXY(65, 2, fmt::sprintf("%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size)));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;
@@ -244,7 +243,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
     if ((file_size - cp) < 128L) {
       bUse1kBlocks = false;
     }
-    a()->localIO()->PutsXY(65, 3, StringPrintf("%ld - %ldk", cp / 128 + 1, cp / 1024 + 1));
+    a()->localIO()->PutsXY(65, 3, fmt::sprintf("%ld - %ldk", cp / 128 + 1, cp / 1024 + 1));
     const string t = ctim(std::lround((file_size - cp) * tpb));
     a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");

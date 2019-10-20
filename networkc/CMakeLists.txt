@@ -1,5 +1,4 @@
 # CMake for WWIV 5
-include_directories(..)
 
 set(NETWORK_MAIN networkc.cpp)
 

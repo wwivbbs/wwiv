@@ -20,9 +20,6 @@
 #define __INCLUDED_INIT_NETWORKS_H__
 
 #include "sdk/config.h"
-#include "sdk/net.h"
-
-#define MAX_NETWORKS 100
 
 void networks(const wwiv::sdk::Config& config);
 

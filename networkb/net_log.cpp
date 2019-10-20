@@ -17,18 +17,18 @@
 /**************************************************************************/
 #include "networkb/net_log.h"
 
-#include <chrono>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/printf.h"
 #include "sdk/networks.h"
+#include <chrono>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -40,11 +40,10 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 NetworkLog::NetworkLog(const std::string& gfiles_directory) : gfiles_directory_(gfiles_directory) {}
-NetworkLog::~NetworkLog() {}
+NetworkLog::~NetworkLog() = default;
 
 std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int16_t node,
                                       unsigned int bytes_sent, unsigned int bytes_received,
@@ -56,22 +55,22 @@ std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int16_t nod
   // sprintf(s, "%s To %5d, %s         %5s min  %s\r\n", s1, sn, s2, tmused, net_name);
 
   std::ostringstream ss;
-  auto dt = DateTime::from_time_t(time);
+  const auto dt = DateTime::from_time_t(time);
   ss << dt.to_string("%m/%d/%y %H:%M%S") << " ";
   if (side == NetworkSide::FROM) {
     ss << "Fr ";
   } else {
     ss << "To ";
   }
-  ss << StringPrintf("%5d", node);
-  ss << StringPrintf(", S:%4uk", (bytes_sent + 1023) / 1024);
-  ss << StringPrintf(", R:%4uk", (bytes_received + 1023) / 1024);
+  ss << fmt::sprintf("%5d", node);
+  ss << fmt::sprintf(", S:%4uk", (bytes_sent + 1023) / 1024);
+  ss << fmt::sprintf(", R:%4uk", (bytes_received + 1023) / 1024);
   ss << "          "; // should be ", %4.0f cps";
   ss << " ";          // last space before time.
 
   using float_minutes = std::chrono::duration<float, std::ratio<60>>;
-  auto minutes = std::chrono::duration_cast<float_minutes>(seconds_elapsed);
-  ss << StringPrintf("%4.1f min ", minutes.count());
+  const auto minutes = std::chrono::duration_cast<float_minutes>(seconds_elapsed);
+  ss << fmt::sprintf("%4.1f min ", minutes.count());
   ss << " " << network_name;
 
   return ss.str();
@@ -103,5 +102,4 @@ std::string NetworkLog::ToString() const {
   return wwiv::core::FilePath(gfiles_directory_, "net.log");
 }
 
-} // namespace net
 } // namespace wwiv

@@ -26,15 +26,15 @@
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 #include "core/datafile.h"
-#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/chains.h"
-#include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "arword.h"
 
 using std::string;
 using namespace wwiv::bbs;
@@ -51,16 +51,15 @@ static string chaindata(int chain_num) {
   char chAr = SPACE;
 
   if (c.ar != 0) {
-    for (int i = 0; i < 16; i++) {
+    for (auto i = 0; i < 16; i++) {
       if ((1 << i) & c.ar) {
         chAr = static_cast<char>('A' + i);
       }
     }
   }
-  char chAnsiReq = c.ansi ? 'Y' : 'N';
-  return StringPrintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
-                      stripcolors(c.description).c_str(), c.filename.c_str(), c.sl, chAnsiReq,
-                      chAr);
+  const auto ansi_req = c.ansi ? 'Y' : 'N';
+  return fmt::sprintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
+                      stripcolors(c.description), c.filename, c.sl, ansi_req, chAr);
 }
 
 static void showchains() {
@@ -109,7 +108,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebarf("Editing Chain # %d", chain_num);
+    bout.litebar(fmt::format("Editing Chain #{}", chain_num));
     const auto& r = c.regby;
     User regUser;
     if (!r.empty()) {
@@ -163,22 +162,12 @@ static void modify_chain(int chain_num) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebarf("Editing Chain # %d", chain_num);
+    bout.litebar(fmt::format("Editing Chain #{}", chain_num));
 
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
     bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
-    std::string ar = "None.";
-    // TODO(rushfan): Maybe use word_to_arstr?
-    if (c.ar != 0) {
-      for (int i = 0; i < 16; i++) {
-        if ((1 << i) & c.ar) {
-          ar.clear();
-          ar.push_back(static_cast<char>('A' + i));
-        }
-      }
-    }
-    bout << "|#9D) AR           : |#2" << ar << wwiv::endl;
+    bout << "|#9D) AR           : |#2" << word_to_arstr(c.ar, "None.") << wwiv::endl;
     bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
     bout << "|#9F) Exec Mode:     |#2" << Chains::exec_mode_to_string(c.exec_mode) << wwiv::endl;
     bout << "|#9I) Launch From  : |#2"

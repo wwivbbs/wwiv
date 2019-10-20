@@ -18,31 +18,19 @@
 /**************************************************************************/
 #include "bbs/extract.h"
 
-#include <ctime>
-#include <string>
-
-#include "bbs/com.h"
-#include "bbs/conf.h"
-#include "bbs/execexternal.h"
-#include "bbs/input.h"
-#include "local_io/keycodes.h"
-#include "bbs/stuffin.h"
-#include "bbs/printfile.h"
 #include "bbs/bbs.h"
-#include "bbs/dirlist.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/xfer.h"
-#include "bbs/xferovl.h"
-#include "bbs/xfertmp.h"
+#include "bbs/com.h"
+#include "bbs/input.h"
 #include "bbs/misccmd.h"
-#include "bbs/mmkey.h"
-#include "core/strings.h"
+#include "bbs/printfile.h"
+#include "bbs/xfer.h"
 #include "core/findfiles.h"
-#include "core/textfile.h"
-#include "core/wwivassert.h"
-#include "sdk/filenames.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -51,7 +39,7 @@ using namespace wwiv::strings;
 void extract_out(char *b, long len, const char *title) {
   // TODO Fix platform specific path issues...
 
-  WWIV_ASSERT(b);
+  CHECK_NOTNULL(b);
   char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
   print_help_file(MEXTRACT_NOEXT);

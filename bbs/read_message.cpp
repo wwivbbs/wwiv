@@ -18,17 +18,9 @@
 /**************************************************************************/
 #include "bbs/read_message.h"
 
-#include <cctype>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
@@ -41,14 +33,18 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/ansi/ansi.h"
-#include "sdk/ansi/makeansi.h"
 #include "sdk/ansi/framebuffer.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/net.h"
 #include "sdk/subxtr.h"
+#include <cctype>
+#include <memory>
+#include <stdexcept>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -95,23 +91,23 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
         if (csne->other & other_net_coord) {
           netstatus = "{NC}";
         } else if (csne->other & other_group_coord) {
-          netstatus = StringPrintf("{GC%d}", csne->group);
+          netstatus = fmt::format("{GC{}}", csne->group);
         } else if (csne->other & other_area_coord) {
           netstatus = "{AC}";
         }
       }
       const auto phone_fn =
-          StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
+          fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
       const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
       const auto filename = PathFilePath(regions_dir, phone_fn);
 
       string description;
       if (File::Exists(filename)) {
         // Try to use the town first.
-        const string phone_prefix =
-            StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+        const auto phone_prefix =
+            fmt::sprintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
         description = describe_area_code_prefix(to_number<int>(csne->phone),
-                                                to_number<int>(phone_prefix.c_str()));
+                                                to_number<int>(phone_prefix));
       }
       if (description.empty()) {
         // Try area code if we still don't have a description.

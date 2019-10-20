@@ -50,10 +50,10 @@ public:
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  const int GetTopLine() const noexcept { return topline_; }
+  int GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  const int GetScreenBottom() const noexcept { return screen_bottom_; }
+  int GetScreenBottom() const noexcept { return screen_bottom_; }
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
@@ -84,7 +84,10 @@ public:
   virtual void WriteScreenBuffer(const char* buffer) = 0;
   virtual int GetDefaultScreenBottom() const noexcept = 0;
   virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
-                        const char* ss) = 0;
+                        const char* allowed_set_chars) = 0;
+  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys,
+                       const std::string& allowed_set_chars);
+  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys);
   virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) = 0;
 
   int GetTopScreenColor() const noexcept { return top_screen_color_; }
@@ -108,7 +111,6 @@ public:
 private:
   virtual void FastPuts(const std::string& text) = 0;
 
-private:
   int topline_{0};
   int screen_bottom_{25}; // Just a default.
   int top_screen_color_{27};

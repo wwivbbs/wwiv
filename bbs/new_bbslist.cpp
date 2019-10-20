@@ -175,10 +175,10 @@ static void ReadBBSList(const vector<BbsListEntry>& entries) {
   bout.litebar(StrCat(a()->config()->system_name(), " BBS List"));
   for (const auto& entry : entries) {
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
-    bout << left << setw(3) << entry.id << " : " << setw(60) << entry.name << " (" << entry.software << ")" << wwiv::endl;
+    bout << fmt::format("{:<3} : {:<60} ({})", entry.id, entry.name, entry.software) << wwiv::endl;
     for (const auto& a : entry.addresses) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << std::setw(11) << a.type << " : " << a.address << wwiv::endl;
+      bout << fmt::format("{:<11} : {}",a.type, a.address) << wwiv::endl;
     }
   }
   bout.nl();

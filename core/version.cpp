@@ -20,10 +20,10 @@
 #include <cstdint>
 
 // Version String
-const char *wwiv_version = "5.5.0";
+const char* wwiv_version = "5.5.0";
 
 // Build Information
-const char *beta_version = ".development";
+const char* beta_version = ".development";
 
 // The statusrec.wwiv_version
 uint16_t wwiv_num_version = 520;
@@ -31,5 +31,4 @@ uint16_t wwiv_num_version = 520;
 int wwiv_net_version = 53;
 
 // Data/time of this build
-const char *wwiv_date = __DATE__ ", " __TIME__;
-
+const char* wwiv_date = __DATE__ ", " __TIME__;

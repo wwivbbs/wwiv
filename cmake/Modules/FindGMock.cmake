@@ -10,7 +10,6 @@
 #  GMOCK_LIBRARIES - The libraries needed to use GMOCKmessage("WWIV FindGMock")
 include(FindPackageHandleStandardArgs)
 # Make googletest happy.
-# TODO(rushfan): Test on Linux too.
 set(GMOCK_ROOT_DIR 
     "${CMAKE_SOURCE_DIR}/deps/googletest/googlemock" 
     CACHE PATH 

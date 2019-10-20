@@ -40,11 +40,11 @@ class SocketConnection;
 
 std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
 
-class SocketConnection : public Connection
-{
+class SocketConnection : public Connection {
 public:
 
   enum class ExitMode { LEAVE_SOCKET_OPEN, RESET_TO_BLOCKING, CLOSE_SOCKET };
+
   explicit SocketConnection(SOCKET sock);
   SocketConnection(SOCKET sock, ExitMode exit_mode);
   SocketConnection(const SocketConnection& other) = delete;
@@ -78,7 +78,7 @@ private:
 };
 
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace net
+} // namespace wwiv
 
 #endif  // __INCLUDED_NETWORKB_SOCKET_CONNECTION_H__

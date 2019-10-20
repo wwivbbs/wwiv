@@ -19,38 +19,44 @@
 #include "core/wfndfile.h"
 
 #include "core/strings.h"
+#include "core/wwiv_windows.h"
 
 bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) {
+  ffdata_ =  std::make_any<WIN32_FIND_DATA>();
   __open(file_spec, nTypeMask);
 
-  hFind = FindFirstFile(file_spec.c_str(), &ffdata);
+  auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
+
+  hFind = FindFirstFile(file_spec.c_str(), f);
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
 
-  if (ffdata.cAlternateFileName[0] == '\0') {
-    filename_ = ffdata.cFileName;
+  if (f->cAlternateFileName[0] == '\0') {
+    filename_ = f->cFileName;
   } else {
-    filename_ = ffdata.cAlternateFileName;
+    filename_ = f->cAlternateFileName;
   }
-  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = f->nFileSizeHigh * MAXDWORD + std::any_cast<
+                 WIN32_FIND_DATA>(ffdata_).nFileSizeLow;
   return true;
 }
 
 bool WFindFile::next() {
-  if (!FindNextFile(hFind, &ffdata)) {
+  auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
+  if (!FindNextFile(hFind, f)) {
     return false;
   }
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
 
-  if (ffdata.cAlternateFileName[0] == '\0') {
-    filename_ = ffdata.cFileName;
+  if (f->cAlternateFileName[0] == '\0') {
+    filename_ = f->cFileName;
   } else {
-    filename_ = ffdata.cAlternateFileName;
+    filename_ = f->cAlternateFileName;
   }
-  file_size_ = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  file_size_ = static_cast<decltype(file_size_)>((f->nFileSizeHigh * MAXDWORD) + f->nFileSizeLow);
   return true;
 }
 
@@ -65,5 +71,8 @@ bool WFindFile::IsDirectory() const {
 }
 
 bool WFindFile::IsFile() const {
-  return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
+  auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
+  return (f->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+           ? false
+           : true;
 }

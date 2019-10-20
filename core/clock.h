@@ -26,16 +26,24 @@ namespace core {
 
 class Clock {
 public:
-  Clock() {}
+  Clock() {
+  }
+
   virtual DateTime Now() const noexcept = 0;
-  virtual ~Clock() {}
+
+  virtual ~Clock() {
+  }
 };
 
 class SystemClock : public Clock {
 public:
-  SystemClock() {}
-  virtual ~SystemClock() {}
-  virtual DateTime Now() const noexcept override;
+  SystemClock() {
+  }
+
+  virtual ~SystemClock() {
+  }
+
+  DateTime Now() const noexcept override;
 };
 
 } // namespace core

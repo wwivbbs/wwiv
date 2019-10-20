@@ -24,6 +24,7 @@ namespace local_io {
 
 class curatr_provider {
 public:
+  virtual ~curatr_provider() = default;
   virtual int curatr() const noexcept = 0;
   virtual void curatr(int n) = 0;
 };

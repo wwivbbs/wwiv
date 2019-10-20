@@ -17,20 +17,18 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_wwiv.h"
 
-#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
+#include "core/strings.h"
 #include "sdk/vardec.h"
 
 using std::string;
 using std::vector;
+using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
   : header_(postrec{}), api_(api) {}
@@ -84,7 +82,7 @@ void WWIVMessageHeader::set_title(const std::string& t) {
   if (title.size() > 72) {
     title.resize(72);
   }
-  strcpy(header_.title, title.c_str());
+  to_char_array(header_.title, title);
 }
 
 WWIVMessageText::WWIVMessageText()
@@ -106,6 +104,4 @@ WWIVMessage::WWIVMessage(std::unique_ptr<WWIVMessageHeader> header,
   : Message(), header_(std::move(header)), text_(std::move(text)) {}
 
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace wwiv

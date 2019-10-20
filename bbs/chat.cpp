@@ -16,27 +16,23 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/finduser.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "bbs/uedit.h"
-#include "bbs/utility.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -111,7 +107,7 @@ static int grabname(const std::string& orig, int channel) {
   int n = to_number<int>(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
-      bout << StringPrintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+      bout << fmt::sprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       return 0;
     }
     get_inst_info(n, &ir);
@@ -122,7 +118,7 @@ static int grabname(const std::string& orig, int channel) {
       }
       return n;
     }
-    bout << StringPrintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+    bout << fmt::sprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
     return 0;
   }
   {
@@ -356,7 +352,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
   } else if (iequals(raw_message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
-      bout.bprintf("%-16.16s", actions[i2]->aword);
+      bout << fmt::sprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;
@@ -491,8 +487,8 @@ void ch_direct(const string& message, int loc, char* color_string, int node) {
   if (ir.loc == loc) {
     User u;
     a()->users()->readuser(&u, ir.user);
-    const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->GetName(),
-                                  u.GetName(), color_string, message.c_str());
+    const string s = fmt::sprintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->GetName(),
+                                  u.GetName(), color_string, message);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
       if (ir.loc == loc && i != a()->instance_number()) {
@@ -521,8 +517,8 @@ void ch_whisper(const std::string& message, char* color_string, int node) {
 
   string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    text = StringPrintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(),
-                        color_string, message.c_str());
+    text = fmt::sprintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(),
+                        color_string, message);
   }
   send_inst_str(node, text);
   User u;
@@ -644,7 +640,7 @@ void moving(bool bOnline, int loc) {
 // Sets color_string string for current node
 
 void get_colors(char* color_string, IniFile* pIniFile) {
-  string s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
+  const auto s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
   strcpy(color_string, s.c_str());
 }
 
@@ -699,7 +695,6 @@ void add_action(ch_action act) {
     return;
   }
   ch_action* addact = static_cast<ch_action*>(calloc(sizeof(ch_action) + 1, 1));
-  WWIV_ASSERT(addact != nullptr);
   addact->r = act.r;
   strcpy(addact->aword, act.aword);
   strcpy(addact->toprint, act.toprint);
@@ -766,7 +761,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
 // Displays help on an action
 void action_help(int num) {
   char buffer[150];
-  char ac[12], rec[17];
+  char ac[13], rec[18];
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");

@@ -32,13 +32,12 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
-#include "core/wwivport.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 
@@ -161,7 +160,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       nv = 0;
       on = a()->net_num();
       ss = static_cast<char*>(calloc(wwiv::stl::size_int(a()->net_networks) + 1, 1));
-      WWIV_ASSERT(ss != nullptr);
+      CHECK_NOTNULL(ss);
       xx = -1;
       for (int i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
         set_net_num(i);
@@ -308,11 +307,13 @@ void hang_it_up() {
  * <freq> <duration in ms> [pause_delay in ms]
  * 1000 1000 50
  *
- * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
+ * Returns true if successful, else returns false. The pause_delay is optional and
  * is used to insert silences between tones.
  */
 bool play_sdf(const string& sound_filename, bool abortable) {
-  WWIV_ASSERT(!sound_filename.empty());
+  if (sound_filename.empty()) {
+    return false;
+  }
 
   std::filesystem::path full_pathname;
   // append gfilesdir if no path specified
@@ -344,9 +345,9 @@ bool play_sdf(const string& sound_filename, bool abortable) {
     if (abortable && bkbhit()) {
       break;
     }
-    int nw = wordcount(soundLine, DELIMS_WHITE);
+    const int nw = wordcount(soundLine, DELIMS_WHITE);
     if (nw >= 2) {
-      auto freq = to_number<int>(extractword(1, soundLine, DELIMS_WHITE));
+      const auto freq = to_number<int>(extractword(1, soundLine, DELIMS_WHITE));
       auto dur = to_number<int>(extractword(2, soundLine, DELIMS_WHITE));
 
       // only play if freq and duration > 0
@@ -363,15 +364,12 @@ bool play_sdf(const string& sound_filename, bool abortable) {
     }
   }
 
-  soundFile.Close();
   return true;
 }
 
 /**
  * Describes the area code as listed in regions.dat
  * @param nAreaCode The area code to describe
- * @param description point to return the description for the specified
- *        area code.
  */
 string describe_area_code(int nAreaCode) {
   TextFile file(PathFilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
@@ -383,7 +381,7 @@ string describe_area_code(int nAreaCode) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    auto current_town = to_number<int>(current);
+    const auto current_town = to_number<int>(current);
     if (current_town == nAreaCode) {
       return previous;
     } else if (current_town == 0) {
@@ -402,7 +400,7 @@ string describe_area_code(int nAreaCode) {
  */
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
-  const auto filename = StringPrintf("%s.%-3d", REGIONS_DIR, nAreaCode);
+  const auto filename = fmt::sprintf("%s.%-3d", REGIONS_DIR, nAreaCode);
   TextFile file(PathFilePath(regions_dir, filename), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file

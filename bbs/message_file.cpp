@@ -18,17 +18,17 @@
 /**************************************************************************/
 #include "bbs/message_file.h"
 
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
 #include "sdk/filenames.h"
-#include "sdk/status.h"
 #include "sdk/msgapi/type2_text.h"
+#include "sdk/net.h"
+#include "sdk/status.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -170,7 +170,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   break;
   default:
   {
-    bout.bprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", msg->storage_type);
+    bout << fmt::sprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", msg->storage_type);
   }
   break;
   }
@@ -215,7 +215,7 @@ bool readfile(const messagerec* msg, const string& fileName, string* out) {
 }
 
 void lineadd(const messagerec* msg, const string& sx, string fileName) {
-  const auto line = StringPrintf("%s\r\n\x1a", sx.c_str());
+  const auto line = fmt::sprintf("%s\r\n\x1a", sx);
 
   switch (msg->storage_type) {
   case 0:
@@ -223,8 +223,8 @@ void lineadd(const messagerec* msg, const string& sx, string fileName) {
     break;
   case 2:
   {
-    unique_ptr<File> message_file(OpenMessageFile(fileName));
-    set_gat_section(*message_file.get(), msg->stored_as / GAT_NUMBER_ELEMENTS);
+    auto message_file(OpenMessageFile(fileName));
+    set_gat_section(*message_file, msg->stored_as / GAT_NUMBER_ELEMENTS);
     int new1 = 1;
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
       ++new1;

@@ -19,18 +19,13 @@
 #ifndef __INCLUDED_SDK_BINKP_H__
 #define __INCLUDED_SDK_BINKP_H__
 
-#include <cstdint>
-#include <exception>
-#include <map>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
-#include "core/inifile.h"
-#include "networkb/config_exceptions.h"
-#include "sdk/callout.h"
 #include "sdk/net.h"
 #include "sdk/networks.h"
+#include <cstdint>
+#include <map>
+#include <optional>
+#include <string>
+#include <tuple>
 
 namespace wwiv {
 namespace sdk {
@@ -47,9 +42,7 @@ class Binkp {
   std::string network_dir_;
 };
 
-bool ParseBinkConfigLine(const std::string& line,
-       std::string& node,
-			 binkp_session_config_t& config);
+std::optional<std::tuple<std::string, binkp_session_config_t>> ParseBinkConfigLine(const std::string& line);
 
 }  // namespace sdk
 }  // namespace wwiv

@@ -30,7 +30,6 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
@@ -45,7 +44,7 @@ using namespace wwiv::strings;
 // Local functions
 //
 
-static int fname_ok(const struct dirent *ent) {
+static int fname_ok(const struct dirent* ent) {
   if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
     return 0;
   }
@@ -62,7 +61,8 @@ static int fname_ok(const struct dirent *ent) {
 #endif  // _DIRENT_HAVE_D_TYPE
     if ((S_ISDIR(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
       return 0;
-    } else if ((S_ISREG(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
+    }
+    if ((S_ISREG(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
       return 0;
     }
   }
@@ -113,7 +113,7 @@ bool WFindFile::next() {
   if (nCurrentEntry >= nMatches) {
     return false;
   }
-  struct dirent *entry = entries[nCurrentEntry++];
+  struct dirent* entry = entries[nCurrentEntry++];
 
   filename_ = entry->d_name;
   file_size_ = entry->d_reclen;
@@ -146,11 +146,9 @@ bool WFindFile::IsDirectory() const {
   return S_ISDIR(file_type_);
 }
 
-bool WFindFile::IsFile()  const {
+bool WFindFile::IsFile() const {
   if (nCurrentEntry > nMatches) {
     return false;
   }
   return S_ISREG(file_type_);
 }
-
-

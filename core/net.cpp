@@ -42,13 +42,12 @@
 using std::string;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 bool InitializeSockets() {
 #ifdef _WIN32
   WSADATA wsadata;
-  int result = WSAStartup(MAKEWORD(2, 2), &wsadata);
+  const auto result = WSAStartup(MAKEWORD(2, 2), &wsadata);
   if (result != 0) {
     LOG(ERROR) << "WSAStartup failed with error: " << result;
     return false;
@@ -58,10 +57,10 @@ bool InitializeSockets() {
 }
 
 bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
-  sockaddr_in addr = {};
+  sockaddr_in addr{};
   socklen_t nAddrSize = sizeof(sockaddr);
 
-  int result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
+  const auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
   if (result == -1) {
     return false;
   }
@@ -72,13 +71,13 @@ bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
 }
 
 bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
-  sockaddr_in addr = {};
+  sockaddr_in addr{};
   socklen_t nAddrSize = sizeof(sockaddr);
 
   char host[1024];
   char service[81];
 
-  int result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
+  auto result = getpeername(socket, reinterpret_cast<sockaddr*>(&addr), &nAddrSize);
   if (result == -1) {
     return false;
   }
@@ -96,8 +95,8 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
 }
 
 SOCKET CreateListenSocket(int port) {
-  struct sockaddr_in my_addr {};
-  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+  struct sockaddr_in my_addr{};
+  const auto sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == INVALID_SOCKET) {
     throw socket_error("Unable to create socket [socket]");
   }
@@ -119,7 +118,7 @@ SOCKET CreateListenSocket(int port) {
   my_addr.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&my_addr), sizeof(my_addr)) == -1) {
-    const string msg =
+    const auto msg =
         StrCat("Error binding to socket, make sure nothing else is listening on port: ", port,
                "; errno: ", errno);
     throw socket_error(msg);
@@ -139,7 +138,7 @@ SOCKET CreateListenSocket(int port) {
 static std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
   string out;
   auto v = SplitString(address, ".");
-  for (auto it = v.rbegin(); it != v.rend(); it++) {
+  for (auto it = v.rbegin(); it != v.rend(); ++it) {
     out.append(*it);
     out.push_back('.');
   }
@@ -147,10 +146,10 @@ static std::string dns_rbl_name(const std::string& address, const std::string& r
   return out;
 }
 
-bool on_dns_dbl(const std::string address, const std::string& rbl_address) {
-  string s = dns_rbl_name(address, rbl_address);
+bool on_dns_dbl(const std::string& address, const std::string& rbl_address) {
+  const auto s = dns_rbl_name(address, rbl_address);
   struct addrinfo* res = nullptr;
-  auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
+  const auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
   if (result != 0) {
     return false;
   }
@@ -158,18 +157,18 @@ bool on_dns_dbl(const std::string address, const std::string& rbl_address) {
   return true;
 }
 
-int get_dns_cc(const std::string address, const std::string& rbl_address) {
-  string s = dns_rbl_name(address, rbl_address);
+int get_dns_cc(const std::string& address, const std::string& rbl_address) {
+  const auto s = dns_rbl_name(address, rbl_address);
   struct addrinfo* res = nullptr;
-  auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
+  const auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
   if (result != 0) {
     return 0;
   }
 
-  wwiv::core::ScopeExit at_exit([res] { freeaddrinfo(res); });
+  ScopeExit at_exit([res] { freeaddrinfo(res); });
   if (res->ai_family == AF_INET) {
-    auto ipv4 = reinterpret_cast<struct sockaddr_in*>(res->ai_addr);
-    uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
+    const auto ipv4 = reinterpret_cast<struct sockaddr_in*>(res->ai_addr);
+    const uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
     return b;
   }
   return 0;
@@ -190,14 +189,18 @@ bool SetBlockingMode(SOCKET sock) {
 #endif // _WIN32
 }
 
-SocketSet::SocketSet() : SocketSet(2) {};
+SocketSet::SocketSet()
+  : SocketSet(2) {
+};
 
-SocketSet::SocketSet(int timeout_seconds) : timeout_seconds_(timeout_seconds){};
+SocketSet::SocketSet(int timeout_seconds)
+  : timeout_seconds_(timeout_seconds) {
+};
 
 SocketSet::~SocketSet() = default;
 
-bool SocketSet::add(int port, socketset_accept_fn fn, const std::string& description) {
-  SOCKET s = CreateListenSocket(port);
+bool SocketSet::add(int port, const socketset_accept_fn& fn, const std::string& description) {
+  auto s = CreateListenSocket(port);
   if (s == INVALID_SOCKET) {
     return false;
   }
@@ -235,9 +238,9 @@ bool SocketSet::RunOnce() {
   }
 
   VLOG(3) << "About to call select. (" << max_fd << ")";
-  auto status = 0;
+  int status;
   if (timeout_seconds_ > 0) {
-    timeval timeout;
+    timeval timeout{};
     timeout.tv_usec = 0;
     timeout.tv_sec = timeout_seconds_;
     status = select(max_fd + 1, &fds, nullptr, nullptr, &timeout);
@@ -249,11 +252,13 @@ bool SocketSet::RunOnce() {
     LOG(ERROR) << "Caught signal calling select";
     // return true so we can check for exit signal.
     return true;
-  } if (status < 0) {
+  }
+  if (status < 0) {
     LOG(ERROR) << "Error calling select; errno: " << errno;
     // return false here since we know this wasn't a signal.
     return false;
-  } else if (status == 0) {
+  }
+  if (status == 0) {
     // Timeout expired.  Keep on trucking.
     VLOG(4) << "timeout expired on select";
     return true;
@@ -263,10 +268,10 @@ bool SocketSet::RunOnce() {
     if (FD_ISSET(e.first, &fds)) {
       socklen_t addr_size = sizeof(sockaddr_in);
       struct sockaddr_in saddr{};
-      auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
+      const auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
 
 #ifdef _WIN32
-      int newvalue = SO_SYNCHRONOUS_NONALERT;
+      auto newvalue = SO_SYNCHRONOUS_NONALERT;
       setsockopt(client_sock, SOL_SOCKET, SO_OPENTYPE, reinterpret_cast<char*>(&newvalue),
                  sizeof(newvalue));
 #endif
@@ -276,5 +281,4 @@ bool SocketSet::RunOnce() {
   return true;
 }
 
-} // namespace core
 } // namespace wwiv

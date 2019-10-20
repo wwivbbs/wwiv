@@ -37,6 +37,5 @@ sizeof (asv_rec) = 9
 sizeof (adv_asv_rec) = 4
 sizeof (cbv_rec) = 12
 sizeof (phonerec) = 15
-sizeof (eventsrec) = 118
 sizeof (ext_desc_rec) = 17
 sizeof (instancerec) = 100

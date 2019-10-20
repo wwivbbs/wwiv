@@ -1,6 +1,5 @@
 
-include_directories(../deps/googletest/googletest/include)
-include_directories(..)
+include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../deps/cereal/include)
 
 set(test_sources

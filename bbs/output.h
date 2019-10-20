@@ -20,54 +20,44 @@
 #ifndef __INCLUDED_BBS_OUTPUT_H__
 #define __INCLUDED_BBS_OUTPUT_H__
 
+#include "fmt/printf.h"
+#include "local_io/curatr_provider.h"
+#include "local_io/local_io.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/localio_screen.h"
+#include "sdk/wwivcolors.h"
 #include <chrono>
-#include <ios>
-#include <iostream>
 #include <memory>
-#include <streambuf>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "local_io/curatr_provider.h"
-#include "local_io/local_io.h"
-#include "sdk/wwivcolors.h"
-#include "sdk/ansi/ansi.h"
-#include "sdk/ansi/localio_screen.h"
-
-
-class outputstreambuf : public std::streambuf {
-public:
-  outputstreambuf();
-  ~outputstreambuf();
-  virtual std::ostream::int_type overflow(std::ostream::int_type c);
-  virtual std::streamsize xsputn(const char* text, std::streamsize numChars);
-};
+typedef std::basic_ostream<char>&(ENDL_TYPE_O)(std::basic_ostream<char>&);
 
 class RemoteIO;
 
 class SavedLine {
 public:
-  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c) : line(l), color(c) {}
+  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c) : line(std::move(l)), color(c) {}
   std::vector<std::pair<char, uint8_t>> line;
   int color;
 };
 
-class Output : public std::ostream, public wwiv::local_io::curatr_provider {
+class Output final : public wwiv::local_io::curatr_provider {
 protected:
-  outputstreambuf buf;
-  LocalIO* local_io_;
-  RemoteIO* comm_;
+  LocalIO* local_io_{nullptr};
+  RemoteIO* comm_{nullptr};
 
 public:
   Output();
-  virtual ~Output() {}
+  ~Output();
 
   void SetLocalIO(LocalIO* local_io);
-  LocalIO* localIO() const noexcept { return local_io_; }
+  [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
-  RemoteIO* remoteIO() const noexcept { return comm_; }
+  [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -86,8 +76,10 @@ public:
   std::string MakeColor(int wwiv_color);
   std::string MakeSystemColor(int nColor);
   std::string MakeSystemColor(wwiv::sdk::Color color);
-  void litebarf(const char* fmt, ...);
+
+  /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
+ 
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
 
@@ -136,7 +128,20 @@ public:
    * @param next The next flag (Output Parameter)
    */
   int bputs(const std::string& text, bool* abort, bool* next);
-  int bprintf(const char* fmt, ...);
+
+  template <typename T> Output& operator<<(T const& value) {
+    std::ostringstream ss;
+    ss << value;
+    bputs(ss.str());
+    return *this;
+  }
+
+  Output& operator<<(ENDL_TYPE_O* value) {
+    std::ostringstream ss;
+    ss << value;
+    bputs(ss.str());
+    return *this;
+  }
 
   int bputch(char c, bool use_buffer = false);
   void flush();
@@ -147,14 +152,14 @@ public:
   SavedLine SaveCurrentLine();
   void dump();
   void clear_lines_listed() { lines_listed_ = 0; }
-  int lines_listed() const noexcept { return lines_listed_; }
+  [[nodiscard]] int lines_listed() const noexcept { return lines_listed_; }
   int wherex();
-  bool IsLastKeyLocal() const noexcept { return last_key_local_; }
+  [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
   void RedrawCurrentLine();
 
   // Key Timeouts
-  std::chrono::duration<double> key_timeout() const;
+  [[nodiscard]] std::chrono::duration<double> key_timeout() const;
   void set_key_timeout(std::chrono::duration<double> k) { non_sysop_key_timeout_ = k; }
   void set_sysop_key_timeout(std::chrono::duration<double> k) { sysop_key_timeout_ = k; }
   void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }
@@ -166,14 +171,14 @@ public:
   void move_up_if_newline(int num_lines);
 
   // ANSI movement happened.
-  bool ansi_movement_occurred() const noexcept { return ansi_movement_occurred_; }
+  [[nodiscard]] bool ansi_movement_occurred() const noexcept { return ansi_movement_occurred_; }
   void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
   // curatr_provider
-  int curatr() const noexcept override { return curatr_; }
+  [[nodiscard]] int curatr() const noexcept override { return curatr_; }
   void curatr(int n) override { curatr_ = n; }
 
-  bool okskey() const noexcept { return okskey_; }
+  [[nodiscard]] bool okskey() const noexcept { return okskey_; }
   void okskey(bool n) { okskey_ = n; }
 
   // reset the state of Output

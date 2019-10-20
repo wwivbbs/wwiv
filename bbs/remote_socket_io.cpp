@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/remote_socket_io.h"
+
 #ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
@@ -30,22 +32,16 @@ typedef int socklen_t;
 
 #endif  // _WIN32
 
-#include "bbs/remote_socket_io.h"
-
-#include <iostream>
-#include <memory>
-#include <system_error>
-
-#include "sdk/user.h"
-#include "core/strings.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
-#include "core/wwivport.h"
-#include "core/wwivassert.h"
-
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include <iostream>
+#include <memory>
+#include <system_error>
 
 using std::chrono::milliseconds;
 using std::lock_guard;
@@ -414,22 +410,26 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_WILL: {
-    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
     // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_WONT: {
-    // const string s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
     // ::OutputDebugString(s.c_str());
   }
   break;
   case TELNET_OPTION_DO: {
-    // const string do_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    // const string do_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
     // ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
-      const string will_s = StringPrintf("%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA);
-      write(will_s.c_str(), 3, true);
+      char s[4];
+      s[0] = TELNET_OPTION_IAC;
+      s[1] = TELNET_OPTION_WILL;
+      s[2] = TELNET_OPTION_SUPPRESSS_GA;
+      s[3] = 0;
+      write(s, 3, true);
       // Sent TELNET IAC WILL SUPPRESSS GA
     }
     break;
@@ -437,7 +437,7 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
   break;
   case TELNET_OPTION_DONT: {
-    // const string dont_s = StringPrintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    // const string dont_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
     // ::OutputDebugString(dont_s.c_str());
   }
   break;
@@ -445,8 +445,6 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 }
 
 void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
-  WWIV_ASSERT(buffer);
-
   // Add the data to the input buffer
   for (int num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));

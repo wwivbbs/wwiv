@@ -27,14 +27,14 @@
 #include "sdk/filenames.h"
 #include "sdk/subscribers.h"
 
+#include "fmt/format.h"
+
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace net {
+namespace wwiv::sdk::net {
 
 bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
                       const std::string& byname, const std::string& title) {
@@ -251,8 +251,8 @@ static int number_of_header_lines(uint16_t main_type) {
   }
   return 0;
 }
-Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
-    : nh(h), list(l), text_(t) {
+Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string t)
+    : nh(h), list(l), text_(std::move(t)) {
   if (nh.list_len != list.size()) {
     LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
                << list.size() << "]";
@@ -265,6 +265,9 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const st
 
 Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
     : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
+
+Packet::Packet() noexcept {
+}
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {
@@ -289,7 +292,7 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
-    auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
+    [[maybe_unused]] auto _ = get_message_field(text_, iter, {'\0', '\r', '\n'}, 80);
   }
 
   const auto pos = std::distance(text_.begin(), iter);
@@ -309,11 +312,18 @@ void Packet::set_text(std::string&& text) {
 
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
   VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
-  auto n = b.node_config_for(node);
+
   if (node == 0) {
+    VLOG(2) << "get_forsys: zero node. ";
     return 0;
   }
-  if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
+
+  auto n = b.node_config_for(node);
+  if (!n) {
+    VLOG(2) << "get_forsys: no route to node: " << node;
+    return WWIVNET_NO_NODE;
+  }
+  if (n->forsys == WWIVNET_NO_NODE) {
     VLOG(2) << "get_forsys: no route to node: " << node;
     return WWIVNET_NO_NODE;
   }
@@ -330,7 +340,7 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
   if (node == WWIVNET_NO_NODE) {
     return DEAD_NET;
   }
-  return StringPrintf("s%u.net", node);
+  return fmt::format("s{}.net", node);
 }
 
 ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
@@ -385,7 +395,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   }
   text.append(ppt.title());
   text.push_back(0);
-  const auto crlf = StringPrintf("\r\n");
+  const std::string crlf{"\r\n"};
   text.append(ppt.sender()).append(crlf);
   text.append(ppt.date()).append(crlf);
   text.append(ppt.text());
@@ -402,7 +412,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
   const char prefix = (to_number<int>(num)) ? '1' : '0';
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_basename = StringPrintf("p%c-%c-%u.net", prefix, network_app_num, i);
+    const auto new_basename = fmt::format("p{}-{}-{}.net", prefix, network_app_num, i);
     const auto new_filename = PathFilePath(directory, new_basename);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
@@ -415,7 +425,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
 std::string create_pend(const string& directory, bool local, char network_app_id) {
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
-    const auto filename = StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
+    const auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
     const auto pend_fn = PathFilePath(directory, filename);
     if (File::Exists(pend_fn)) {
       continue;
@@ -479,7 +489,7 @@ string main_type_name(uint16_t typ) {
   case main_type_game_pack:
     return "main_type_game_pack";
   default:
-    return StringPrintf("UNKNOWN type #%d", typ);
+    return fmt::format("UNKNOWN type #{}", typ);
   }
 }
 
@@ -508,7 +518,7 @@ string net_info_minor_type_name(uint16_t typ) {
   case net_info_binkp:
     return "net_info_binkp";
   default:
-    return StringPrintf("UNKNOWN type #%d", typ);
+    return fmt::format("UNKNOWN type #{}", typ);
   }
 }
 
@@ -681,6 +691,4 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
   return true;
 }
 
-} // namespace net
-} // namespace sdk
 } // namespace wwiv

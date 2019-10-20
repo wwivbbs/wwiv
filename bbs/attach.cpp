@@ -35,7 +35,7 @@
 #include "sdk/user.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
@@ -50,12 +50,11 @@ void attach_file(int mode) {
   bool bFound;
   char szFullPathName[MAX_PATH], szNewFileName[MAX_PATH], szFileToAttach[MAX_PATH];
   User u;
-  filestatusrec fsr;
+  filestatusrec fsr{};
 
   bout.nl();
   bool bDirectionForward = true;
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
-  WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     pFileEmail->Close();
@@ -67,7 +66,7 @@ void attach_file(int mode) {
   int ok = 0;
   bool done = false;
   do {
-    mailrec m;
+    mailrec m{};
     pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     while ((m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0) &&
@@ -267,8 +266,7 @@ void attach_file(int mode) {
               } else {
                 if (so() && !bRemoteUpload) {
                   std::error_code ec;
-                  using namespace wwiv::fs;
-                  if (!copy_file(szFileToAttach, szFullPathName, ec)) {
+                  if (!std::filesystem::copy_file(szFileToAttach, szFullPathName, ec)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {
@@ -305,7 +303,7 @@ void attach_file(int mode) {
                         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                         pFileEmail->Write(&m, sizeof(mailrec));
                       } else {
-                        filestatusrec fsr1;
+                        filestatusrec fsr1{};
                         fsr1.id = 1;
                         long lNumRead = 0;
                         do {
@@ -319,9 +317,10 @@ void attach_file(int mode) {
                         }
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
-                        const string to_user_name = a()->names()->UserName(m.touser);
-                        sysoplog() << StringPrintf("Attached %s (%u bytes) in message to %s",
-                                       fsr.filename, fsr.numbytes, to_user_name.c_str());
+                        const auto to_user_name = a()->names()->UserName(m.touser);
+                        sysoplog()
+                            << fmt::sprintf("Attached %s (%u bytes) in message to %s", fsr.filename,
+                                            fsr.numbytes, to_user_name.c_str());
                         bout << "File attached.\r\n" ;
                       }
                     } else {

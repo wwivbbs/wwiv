@@ -145,12 +145,14 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
   auto current_uid = getuid();
   auto wwiv_uid = GetWWIVUserId(wwiv_user);
   if (wwiv_uid != current_uid) {
-    if (setuid(wwiv_uid) != 0) {
-      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
-    }
+    // Try to set the group ID before user ID, since otherwise we don't
+    // have permissions to set the groupid after becoming non-root.
     auto wwiv_gid = GetWWIVUserGroupId(wwiv_user);
     if (setgid(wwiv_gid) != 0) {
       LOG(ERROR) << "Unable to call setgid(" << wwiv_gid << "); errno: " << errno;
+    }
+    if (setuid(wwiv_uid) != 0) {
+      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
     }
   }
 }

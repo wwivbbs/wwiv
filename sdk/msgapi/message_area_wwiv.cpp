@@ -79,11 +79,11 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
 
   if (strncmp(raw_header.signature, "WWIV\x1A", 5) != 0) {
     VLOG(3) << "Missing 5.x header on sub: " << file.file();
-    auto saved_count = raw_header.active_message_count;
+    const auto saved_count = raw_header.active_message_count;
     memset(&raw_header, 0, sizeof(subfile_header_t));
     // We don't have a modern header. Create one now. Next write
     // from here will have it.
-    strcpy(raw_header.signature, "WWIV\x1A");
+    to_char_array(raw_header.signature, "WWIV\x1A");
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
@@ -123,7 +123,7 @@ bool WWIVMessageAreaLastRead::Close() { return false; }
 WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
                                              uint32_t num_messages)
     : header_(subfile_header_t()) {
-  strcpy(header_.signature, "WWIV\x1A");
+  to_char_array(header_.signature, "WWIV\x1A");
   header_.revision = 1;
   header_.wwiv_version = expected_wwiv_num_version;
   header_.daten_created = DateTime::now().to_daten_t();

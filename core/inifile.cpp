@@ -19,6 +19,7 @@
 #include <initializer_list>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "core/inifile.h"
 #include "core/strings.h"
@@ -39,14 +40,14 @@ namespace {
 * will be set to the string value of that value name. If *val has been set
 * to something, then this function returns 1, else it returns 0.
 */
-bool StringToBoolean(const char *p) {
+bool StringToBoolean(const char* p) {
   if (!p) {
     return false;
   }
-  auto ch = to_upper_case<char>(*p);
+  const auto ch = to_upper_case<char>(*p);
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
-}  // namespace {}
+} // namespace {}
 
 static bool ParseIniFile(const std::filesystem::path& filename, std::map<string, string>& data) {
   data.clear();
@@ -87,9 +88,9 @@ static bool ParseIniFile(const std::filesystem::path& filename, std::map<string,
   return true;
 }
 
-IniFile::IniFile(const std::filesystem::path& filename,
+IniFile::IniFile(std::filesystem::path filename,
                  const std::initializer_list<const char*> sections)
-    : path_(filename) {
+  : path_(std::move(filename)) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
@@ -100,7 +101,7 @@ IniFile::IniFile(const std::filesystem::path& filename,
 
 IniFile::IniFile(const std::filesystem::path& filename,
                  const std::initializer_list<const std::string> sections)
-    : path_(filename) {
+  : path_(filename) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
@@ -114,27 +115,27 @@ IniFile::~IniFile() {
 }
 
 /* Close is now a NOP */
-void IniFile::Close() noexcept {}
+void IniFile::Close() noexcept {
+}
 
-const char* IniFile::GetValue(const string& raw_key, const char *default_value)  const {
+const char* IniFile::GetValue(const string& raw_key, const char* default_value) const {
   for (const auto& section : sections_) {
-    const string full_key = StrCat(section, ".", raw_key);
-    {
-      const auto& it = data_.find(full_key);
-      if (it != data_.end()) {
-        return it->second.c_str();
-      }
+    const auto full_key = StrCat(section, ".", raw_key);
+    const auto& it = data_.find(full_key);
+    if (it != data_.end()) {
+      return it->second.c_str();
     }
   }
   return default_value;
 }
 
-std::string IniFile::GetStringValue(const std::string& key, const std::string& default_value) const {
+std::string IniFile::
+GetStringValue(const std::string& key, const std::string& default_value) const {
   const auto s = GetValue(key);
   return (s != nullptr) ? s : default_value;
 }
 
-bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
+bool IniFile::GetBooleanValue(const string& key, bool defaultValue) const {
   const auto s = GetValue(key);
   return (s != nullptr) ? StringToBoolean(s) : defaultValue;
 }
@@ -144,22 +145,23 @@ long IniFile::GetNumericValueT(const string& key, long default_value) const {
   return (s != nullptr) ? wwiv::strings::to_number<long>(s) : default_value;
 }
 
-template<>
-std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const {
+template <>
+std::string IniFile::value<std::string>(const std::string& key,
+                                        const std::string& default_value) const {
   return GetStringValue(key, default_value);
 }
 
-template<>
+template <>
 std::string IniFile::value<std::string>(const std::string& key) const {
   return GetStringValue(key, "");
 }
 
-template<>
+template <>
 bool IniFile::value<bool>(const std::string& key, const bool& default_value) const {
   return GetBooleanValue(key, default_value);
 }
 
-template<>
+template <>
 bool IniFile::value<bool>(const std::string& key) const {
   return GetBooleanValue(key, false);
 }

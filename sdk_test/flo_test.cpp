@@ -47,7 +47,8 @@ public:
 protected:
   FileHelper helper_;
   net_networks_rec net{};
-  wwiv::fs::path p{};
+
+  std::filesystem::path p{};
 };
 
 TEST_F(FloTest, FloFile_Exists) {

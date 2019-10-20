@@ -17,11 +17,6 @@
 /**************************************************************************/
 #include "sdk/fido/fido_callout.h"
 
-#include <exception>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include <cereal/access.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
@@ -32,9 +27,11 @@
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/vardec.h"
+#include <exception>
+#include <string>
 
 using cereal::make_nvp;
 using std::string;
@@ -70,9 +67,7 @@ inline void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const 
 
 } // namespace cereal
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
     : Callout(net), root_dir_(config.root_directory()), net_(net) {
@@ -99,7 +94,7 @@ fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) cons
 
 const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
   VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
-  return net_call_out_for(StringPrintf("20000:20000/%d@%s", node, net_.name));
+  return net_call_out_for(fmt::format("20000:20000/{}@{}", node, net_.name));
 }
 
 const net_call_out_rec* FidoCallout::net_call_out_for(const FidoAddress& node) const {
@@ -111,7 +106,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
   VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
 
   try {
-    auto node_config = fido_node_config_for(FidoAddress(node));
+    const auto node_config = fido_node_config_for(FidoAddress(node));
     nc = {};
     nc.session_password = node_config.binkp_config.password;
     return &nc;
@@ -191,6 +186,4 @@ bool FidoCallout::Save() {
   return json.Save();
 }
 
-} // namespace fido
-} // namespace sdk
 } // namespace wwiv

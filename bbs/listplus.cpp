@@ -16,14 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
-#include <csignal>
-#include <string>
-#include <vector>
-
+#include "bbs/listplus.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -32,7 +27,6 @@
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/listplus.h"
 #include "bbs/lpfunc.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
@@ -43,10 +37,9 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
@@ -55,6 +48,10 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
+#include <algorithm>
+#include <csignal>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -86,8 +83,7 @@ static bool ListPlusExist(const std::string& file_name) {
 }
 
 static void colorize_foundtext(char *text, search_record* search_rec, int color) {
-  int size;
-  char *pszTempBuffer, found_color[10], normal_color[10], *tok;
+  char found_color[10], normal_color[10];
   char find[101], word[101];
 
   sprintf(found_color, "|%02d|%02d", lp_config.found_fore_color, lp_config.found_back_color);
@@ -95,16 +91,16 @@ static void colorize_foundtext(char *text, search_record* search_rec, int color)
 
   if (lp_config.colorize_found_text) {
     to_char_array(find, search_rec->search);
-    tok = strtok(find, "&|!()");
+    char* tok = strtok(find, "&|!()");
 
     while (tok) {
-      pszTempBuffer = text;
+      char* pszTempBuffer = text;
       strcpy(word, tok);
       StringTrim(word);
 
       while (pszTempBuffer && word[0]) {
         if ((pszTempBuffer = strcasestr(pszTempBuffer, word)) != nullptr) {
-          size = strlen(pszTempBuffer) + 1;
+          int size = strlen(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, found_color, 6);
           pszTempBuffer += strlen(word) + 6;
@@ -170,9 +166,10 @@ static void build_header() {
 static void printtitle_plus_old() {
   bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
-  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
+  const auto buf =
+      fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
           a()->directories[a()->current_user_dir().subnum].name, a()->numf);
-  bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
+  bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
@@ -190,9 +187,10 @@ void printtitle_plus() {
   if (a()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
-    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
+    const auto buf =
+        fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
             a()->directories[a()->current_user_dir().subnum].name, a()->numf);
-    bout.litebarf("%-54s Space=Tag/?=Help", buf.c_str());
+    bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
     bout.Color(0);
   }
 }
@@ -221,7 +219,7 @@ void print_searching(search_record* search_rec) {
   }
   bout << "|#9<Space> aborts  : ";
   bout.cls();
-  bout.bprintf(" |17|15%-40.40s|16|#0\r",
+  bout << fmt::sprintf(" |17|15%-40.40s|16|#0\r",
     a()->directories[a()->current_user_dir().subnum].name);
 }
 
@@ -336,7 +334,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
-  string file_information = StringPrintf("|%02d %c |%02d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
+  string file_information = fmt::sprintf("|%02d %c |%02d%3d ", lp_config.tagged_color,
+                                         marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
   bout.clear_lines_listed();
 
@@ -347,7 +346,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[0]);
     }
-    file_information += StringPrintf("|%02d%s", a()->user()->data.lp_colors[0], buffer.c_str());
+    file_information += fmt::sprintf("|%02d%s", a()->user()->data.lp_colors[0], buffer);
     width += 8;
   }
   if (a()->user()->data.lp_options & cfl_extension) {
@@ -361,11 +360,11 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_dloads) {
-    file_information += StringPrintf(" |%02d%3d", a()->user()->data.lp_colors[2], u->numdloads);
+    file_information += fmt::sprintf(" |%02d%3d", a()->user()->data.lp_colors[2], u->numdloads);
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_kbytes) {
-    buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
+    buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
       auto stf =
           PathFilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
@@ -440,10 +439,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
 
   if (a()->user()->data.lp_options & cfl_date_uploaded) {
     if ((u->actualdate[2] == '/') && (u->actualdate[5] == '/')) {
-      buffer = StringPrintf("UL: %s  New: %s", u->date, u->actualdate);
+      buffer = fmt::sprintf("UL: %s  New: %s", u->date, u->actualdate);
       StringJustify(&buffer, 27, ' ', JustificationType::LEFT);
     } else {
-      buffer = StringPrintf("UL: %s", u->date);
+      buffer = fmt::sprintf("UL: %s", u->date);
       StringJustify(&buffer, 12, ' ', JustificationType::LEFT);
     }
     sprintf(element, "|%02d%s  ", a()->user()->data.lp_colors[4], buffer.c_str());
@@ -458,7 +457,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       ++numl;
     }
     string tmp = properize(string(u->upby));
-    file_information = StringPrintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp.c_str());
+    file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
   if (!buffer.empty()) {
@@ -727,47 +726,47 @@ void sysop_configure() {
     printfile(LPSYSOP_NOEXT);
     bout.GotoXY(38, 2);
     bout.SystemColor(lp_config.normal_highlight);
-    bout.bprintf("%3d", lp_config.normal_highlight);
+    bout << fmt::sprintf("%3d", lp_config.normal_highlight);
     bout.GotoXY(77, 2);
     bout.SystemColor(lp_config.normal_menu_item);
-    bout.bprintf("%3d", lp_config.normal_menu_item);
+    bout << fmt::sprintf("%3d", lp_config.normal_menu_item);
     bout.GotoXY(38, 3);
     bout.SystemColor(lp_config.current_highlight);
-    bout.bprintf("%3d", lp_config.current_highlight);
+    bout << fmt::sprintf("%3d", lp_config.current_highlight);
     bout.GotoXY(77, 3);
     bout.SystemColor(lp_config.current_menu_item);
-    bout.bprintf("%3d", lp_config.current_menu_item);
+    bout << fmt::sprintf("%3d", lp_config.current_menu_item);
     bout.Color(0);
     bout.GotoXY(38, 6);
-    bout.bprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
     bout.GotoXY(77, 6);
-    bout.bprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
     bout.GotoXY(38, 7);
-    bout.bprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
     bout.GotoXY(77, 7);
-    bout.bprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
+    bout << fmt::sprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
     bout.GotoXY(38, 8);
     bout.SystemColor(lp_config.current_file_color);
-    bout.bprintf("%3d", lp_config.current_file_color);
+    bout << fmt::sprintf("%3d", lp_config.current_file_color);
     bout.GotoXY(38, 11);
-    bout.bprintf("|#4%2d", lp_config.max_screen_lines_to_show);
+    bout << fmt::sprintf("|#4%2d", lp_config.max_screen_lines_to_show);
     bout.GotoXY(77, 11);
-    bout.bprintf("|#4%2d", lp_config.show_at_least_extended);
+    bout << fmt::sprintf("|#4%2d", lp_config.show_at_least_extended);
     bout.GotoXY(74, 14);
-    bout.bprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
     bout.GotoXY(74, 15);
-    bout.bprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
     bout.GotoXY(74, 16);
-    bout.bprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
     bout.Color(0);
     bout.GotoXY(29, 14);
-    bout.bprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
     bout.GotoXY(29, 15);
-    bout.bprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
     bout.GotoXY(29, 16);
-    bout.bprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
     bout.GotoXY(29, 17);
-    bout.bprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
+    bout << fmt::sprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
     bout.GotoXY(1, 19);
     bout << "|#9Q-Quit ";
     char key = onek("Q\rABCDEFGHIJKLMNOPRS", true);

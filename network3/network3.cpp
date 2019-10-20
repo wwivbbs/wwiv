@@ -17,49 +17,44 @@
 /**************************************************************************/
 
 // WWIV5 Network3
-#include <cctype>
+#include "core/command_line.h"
+#include "core/datafile.h"
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/findfiles.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/semaphore_file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "core/version.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
+#include "net_core/net_cmdline.h"
+#include "networkb/binkp_config.h"
+#include "sdk/bbslist.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/connect.h"
+#include "sdk/contact.h"
+#include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_callout.h"
+#include "sdk/fido/fido_util.h"
+#include "sdk/fido/nodelist.h"
+#include "sdk/filenames.h"
+#include "sdk/net/packets.h"
+#include "sdk/networks.h"
+#include "sdk/subscribers.h"
+#include "sdk/subxtr.h"
 #include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "core/command_line.h"
-#include "core/datafile.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/os.h"
-#include "core/textfile.h"
-#include "core/version.h"
-#include "core/findfiles.h"
-#include "networkb/binkp_config.h"
-#include "core/connection.h"
-#include "net_core/net_cmdline.h"
-#include "sdk/net/packets.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/callout.h"
-#include "sdk/connect.h"
-#include "sdk/config.h"
-#include "sdk/contact.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
-#include "sdk/networks.h"
-#include "sdk/subscribers.h"
-#include "sdk/subxtr.h"
-#include "sdk/fido/fido_address.h"
-#include "sdk/fido/fido_callout.h"
-#include "sdk/fido/fido_util.h"
-#include "sdk/fido/nodelist.h"
-#include "sdk/net/packets.h"
 
 using std::cout;
 using std::endl;
@@ -106,9 +101,9 @@ static bool check_wwivnet_host_networks(
 
           const string filename = StrCat("n", n.stype, ".net");
           if (ReadSubcriberFile(PathFilePath(net.dir, filename), subscribers)) {
-            for (uint16_t subscriber : subscribers) {
-              auto c = b.node_config_for(subscriber);
-              if (c == nullptr) {
+            for (auto subscriber : subscribers) {
+              const auto c = b.node_config_for(subscriber);
+              if (!c) {
                 text << "Unknown system @" << subscriber << " subscribed to sub '" << n.stype << "'\r\n";
               }
             }
@@ -117,8 +112,8 @@ static bool check_wwivnet_host_networks(
           }
         } else {
           // Sub hosted elsewhere.
-          auto c = b.node_config_for(n.host);
-          if (c == nullptr) {
+          const auto c = b.node_config_for(n.host);
+          if (!c) {
             text << "Unknown system @" << n.host << " hosting subtype '" << n.stype << "'\r\n";
           }
         }
@@ -172,10 +167,10 @@ static bool check_connect_net(
   const net_networks_rec& net,
   std::ostringstream& text) {
 
-  Connect connect(net.dir);
+  const Connect connect(net.dir);
   for (const auto& entry : b.node_config()) {
     const auto n = connect.node_config_for(entry.first);
-    if (n == nullptr) {
+    if (!n) {
       text << "connect.net entry missing for node @" << entry.first << "\r\n";
     }
   }
@@ -198,9 +193,9 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  auto now_mmddyy = DateTime::now().to_string("%m/%d/%y");
-  auto title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
-  auto byname = StringPrintf("%s @%u", net.name, net.sysnum);
+  const auto now_mmddyy = DateTime::now().to_string("%m/%d/%y");
+  const auto title = fmt::format("{} analysis on {}", net.name, now_mmddyy);
+  const auto byname = fmt::format("{} @{}", net.name, net.sysnum);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
@@ -260,32 +255,32 @@ static bool add_feedback_general_info(
 
     total_hops += d.numhops;
     if (d.forsys != WWIVNET_NO_NODE) {
-      auto num_route = system_to_route_count[d.forsys];
+      const auto num_route = system_to_route_count[d.forsys];
       system_to_route_count[d.forsys] = num_route + 1;
     }
   }
 
-  text << StringPrintf("Network Coordinator is @%u\r\n", nc);
-  text << StringPrintf("Group Coordinator is @%u\r\n", (gc != 0) ? gc : nc);
-  text << StringPrintf("Area Coordinator is @%u\r\n", (ac != 0) ? ac : nc);
+  text << fmt::format("Network Coordinator is @{}\r\n", nc);
+  text << fmt::format("Group Coordinator is @{}\r\n", (gc != 0) ? gc : nc);
+  text << fmt::format("Area Coordinator is @{}\r\n", (ac != 0) ? ac : nc);
   text << "\r\n";
   text << "Using bias of 0.00100 $ / k / hop.\r\n";
   text << "\r\n";
   text << "\r\n";
   for (const auto& e : hops_to_count) {
     if (e.first > 0 && e.first < 10000) {
-      text << StringPrintf("%d systems are %d hops away.\r\n", e.second, e.first);
+      text << fmt::format("{} systems are {} hops away.\r\n", e.second, e.first);
     }
   }
   text << "\r\n";
   for (const auto& e : system_to_route_count) {
     if (e.first != net.sysnum) {
-      text << StringPrintf("%d systems route through @%d.\r\n", e.second, e.first);
+      text << fmt::format("{} systems route through @{}.\r\n", e.second, e.first);
     }
   }
   text << "\r\n";
 
-  Connect connect(net.dir);
+  const Connect connect(net.dir);
   const auto c = connect.node_config_for(net.sysnum);
   if (c == nullptr) {
     text << " ** Missing connect.net entries.";
@@ -543,14 +538,14 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
 static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "Reading bbslist.net..";
   const auto& net = net_cmdline.network();
-  BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
+  const auto b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
   if (b.empty()) {
     LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
     return 1;
   }
 
-  auto nc = get_network_cordinator(b);
-  bool is_nc = (net.sysnum == nc);
+  const auto nc = get_network_cordinator(b);
+  const auto is_nc = (net.sysnum == nc);
   LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
 
   vector<net_system_list_rec> bbsdata_data;
@@ -577,7 +572,7 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
 
     if (is_nc) {
       // We should alwyas send feedback to the NCs.
-      BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
+      const BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
       check_binkp_net(b, bink_config, text);
       check_connect_net(b, net, text);
     }
@@ -617,7 +612,7 @@ int main(int argc, char** argv) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
-  NetworkCommandLine net_cmdline(cmdline, '3');
+  const NetworkCommandLine net_cmdline(cmdline, '3');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;

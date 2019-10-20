@@ -17,45 +17,23 @@
 /**************************************************************************/
 #include "wwivd/ips.h"
 
+#include "core/datetime.h"
+#include "core/jsonfile.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "sdk/config.h"
+#include "wwivd/connection_data.h"
+#include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
 #include <map>
 #include <memory>
-#include <mutex>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/unordered_set.hpp>
-#include <cereal/types/vector.hpp>
-
-#include "core/file.h"
-#include "core/http_server.h"
-#include "core/inifile.h"
-#include "core/jsonfile.h"
-#include "core/log.h"
-#include "core/net.h"
-#include "core/os.h"
-#include "core/scope_exit.h"
-#include "core/semaphore_file.h"
-#include "core/socket_connection.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
-#include "wwivd/connection_data.h"
-#include "wwivd/node_manager.h"
-#include "wwivd/wwivd.h"
-
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 using std::map;
 using std::string;
@@ -68,8 +46,8 @@ using namespace wwiv::os;
 
 static bool LoadLinesIntoSet(std::unordered_set<string>& s, const std::vector<std::string>& lines) {
   for (auto line : lines) {
-    auto space = line.find(' ');
-    if (space != line.npos) {
+    const auto space = line.find(' ');
+    if (space != std::string::npos) {
       line = line.substr(0, space);
     }
     s.emplace(StringTrim(line));
@@ -86,7 +64,7 @@ bool GoodIp::LoadLines(const std::vector<std::string>& lines) {
 GoodIp::GoodIp(const std::filesystem::path& fn) {
   TextFile f(fn, "r");
   if (f) {
-    auto lines = f.ReadFileIntoVector();
+    const auto lines = f.ReadFileIntoVector();
     LoadLines(lines);
   }
 }
@@ -101,7 +79,7 @@ bool GoodIp::IsAlwaysAllowed(const std::string& ip) {
 BadIp::BadIp(const std::filesystem::path& fn) : fn_(fn) {
   TextFile f(fn, "r");
   if (f) {
-    auto lines = f.ReadFileIntoVector();
+    const auto lines = f.ReadFileIntoVector();
     LoadLinesIntoSet(ips_, lines);
   }
 }
@@ -114,8 +92,8 @@ bool BadIp::IsBlocked(const std::string& ip) {
 bool BadIp::Block(const std::string& ip) {
   ips_.emplace(ip);
   TextFile appender(fn_, "at");
-  auto now = DateTime::now();
-  auto written =
+  const auto now = DateTime::now();
+  const auto written =
       appender.WriteLine(StrCat(ip, " # AutoBlocked by wwivd on: ", now.to_string("%FT%T")));
   return written > 0;
 }
@@ -123,17 +101,7 @@ bool BadIp::Block(const std::string& ip) {
 AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_blocking_t& b)
     : bip_(bip), b_(b) {}
 
-AutoBlocker::~AutoBlocker() {}
-
-static string to_string(std::set<time_t> times) {
-  std::stringstream ss;
-  ss << "{";
-  for (const auto& t : times) {
-    ss << t << ", ";
-  }
-  ss << "}";
-  return ss.str();
-}
+AutoBlocker::~AutoBlocker() = default;
 
 bool AutoBlocker::Connection(const std::string& ip) {
   VLOG(1) << "AutoBlocker::Connection: " << ip;
@@ -143,8 +111,8 @@ bool AutoBlocker::Connection(const std::string& ip) {
 
   const auto auto_bl_sessions = b_.auto_bl_sessions;
   const auto auto_bl_seconds = b_.auto_bl_seconds;
-  auto now = DateTime::now();
-  auto oldest_in_window = now.to_time_t() - auto_bl_seconds;
+  const auto now = DateTime::now();
+  const auto oldest_in_window = now.to_time_t() - auto_bl_seconds;
   auto& s = sessions_[ip];
   s.emplace(now.to_time_t());
   if (s.size() == 1) {
@@ -168,5 +136,4 @@ bool AutoBlocker::Connection(const std::string& ip) {
   return true;
 }
 
-} // namespace wwivd
 } // namespace wwiv

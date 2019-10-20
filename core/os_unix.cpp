@@ -22,6 +22,7 @@
 
 #include "core/strings.h"
 #include "core/file.h"
+#include "fmt/format.h"
 
 using namespace std::chrono;
 using std::string;
@@ -33,11 +34,11 @@ namespace os {
 
 void sleep_for(duration<double> d) {
   // usleep is microseconds.
-  auto ns = duration_cast<microseconds>(d);
-  usleep (static_cast<__useconds_t>(ns.count()));
+  const auto ns = duration_cast<microseconds>(d);
+  usleep(static_cast<__useconds_t>(ns.count()));
 }
 
-void sound(uint32_t frequency, std::chrono::duration<double> d) {
+void sound(uint32_t frequency, duration<double> d) {
   // NOP
 }
 
@@ -61,11 +62,11 @@ std::string os_version_string() {
 	    k_version.minor,
 	    k_version.update,
 	    k_version.iteration);
-    return StringPrintf("Linux %s", osrelease);
+    return fmt::format("Linux {}", osrelease);
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
-  return string("MacOSX"); // StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
+  return string("MacOSX"); // fmt::format("{} {}", GetOSNameString(), GetMacVersionString());
 #elif defined(__OS2__)
   return string("OS/2");
 #elif defined(__FreeBSD__)
@@ -111,5 +112,5 @@ pid_t get_pid() {
 }
 
 
-}  // namespace os
-}  // namespace wwiv
+} // namespace os
+} // namespace wwiv

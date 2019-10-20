@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "bbs/bbsovl1.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"
@@ -27,6 +26,7 @@
 #include "bbs/xfer.h"
 #include "bbs/mmkey.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 
 
@@ -109,7 +109,7 @@ void dirlist(int mode) {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
-          bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
+          bout << fmt::sprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
           std::string ss = mmkey(MMKeyAreaType::dirs, true);
           if (isdigit(ss[0])) {
@@ -153,14 +153,14 @@ void dirlist(int mode) {
       DisplayHorizontalBar(78, 7);
       if (okconf(a()->user())) {
         if (a()->uconfdir[1].confnum != -1) {
-          bout.bprintf("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
+          bout << fmt::sprintf("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
                                             is ? 0 : 1, is ? nd - 1 : nd);
         } else {
-          bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+          bout << fmt::sprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                             is ? nd - 1 : nd);
         }
       } else {
-        bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+        bout << fmt::sprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                           is ? nd - 1 : nd);
       }
       std::string ss = mmkey(MMKeyAreaType::subs, true);

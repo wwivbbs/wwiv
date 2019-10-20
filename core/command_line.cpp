@@ -27,7 +27,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -51,8 +51,9 @@ CommandLineArgument::CommandLineArgument(const std::string& name, char key,
                                          const std::string& help_text,
                                          const std::string& default_value,
                                          const std::string& environment_variable)
-    : name(name), key(static_cast<char>(std::toupper(key))), help_text_(help_text),
-      default_value_(default_value), environment_variable_(environment_variable) {}
+  : name(name), key(static_cast<char>(std::toupper(key))), help_text_(help_text),
+    default_value_(default_value), environment_variable_(environment_variable) {
+}
 
 std::string CommandLineArgument::help_text() const { return help_text_; }
 
@@ -62,16 +63,17 @@ std::string CommandLineArgument::default_value() const {
 }
 
 CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
-    : name_(name), help_text_(help_text) {}
+  : name_(name), help_text_(help_text) {
+}
 
 static std::string CreateProgramName(const std::string& arg) {
-  fs::path p{arg};
+  std::filesystem::path p{arg};
   return p.filename().string();
 }
 
 // TODO(rushfan): Make the static command for the root commandline here and pass it as the invoker.
 CommandLine::CommandLine(const std::vector<std::string>& args, const std::string& dot_argument)
-    : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) {
+  : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) {
   set_raw_args(args);
   set_dot_argument(dot_argument);
 }
@@ -85,7 +87,8 @@ static std::vector<std::string> make_args(int argc, char** argv) {
 }
 
 CommandLine::CommandLine(int argc, char** argv, const std::string& dot_argument)
-    : CommandLine(make_args(argc, argv), dot_argument) {}
+  : CommandLine(make_args(argc, argv), dot_argument) {
+}
 
 bool CommandLine::Parse() {
   try {
@@ -115,7 +118,7 @@ bool CommandLine::Parse() {
 }
 
 bool CommandLine::ParseImpl() {
-  return CommandLineCommand::Parse(1) >= size_int(CommandLineCommand::raw_args_);
+  return CommandLineCommand::Parse(1) >= size_int(raw_args_);
 }
 
 int CommandLine::Execute() { return CommandLineCommand::Execute(); }
@@ -160,7 +163,7 @@ bool CommandLineCommand::contains_arg(const std::string& name) const noexcept {
   return contains(args_, name);
 }
 
-const CommandLineValue CommandLineCommand::arg(const std::string& name) const {
+CommandLineValue CommandLineCommand::arg(const std::string& name) const {
   if (!contains(args_, name)) {
     VLOG(1) << "Unknown argument name: " << name << endl;
     return CommandLineValue("", true);
@@ -197,7 +200,7 @@ int CommandLineCommand::Parse(int start_pos) {
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
-      auto letter = static_cast<char>(std::toupper(s[1]));
+      const auto letter = static_cast<char>(std::toupper(s[1]));
       const auto key = ArgNameForKey(letter);
       if (key.empty()) {
         if (unknown_args_allowed()) {
@@ -285,7 +288,7 @@ int CommandLineCommand::Execute() {
 
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
-  string program_name = (name_.empty()) ? "program" : name_;
+  const auto program_name = (name_.empty()) ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
     const auto& c = a.second;
@@ -306,7 +309,7 @@ std::string CommandLineCommand::GetHelp() const {
     for (const auto& a : commands_allowed_) {
       const string allowed_name = a.second->name();
       ss << "   "
-         << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
+          << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
     }
   }
   return ss.str();
@@ -316,9 +319,11 @@ bool CommandLine::AddStandardArgs() {
   if (!CommandLineCommand::AddStandardArgs()) {
     return false;
   }
-  add_argument({"bindir", "Main BBS binary directory.", File::current_directory().string(), "WWIV_BIN_DIR"});
+  add_argument({"bindir", "Main BBS binary directory.", File::current_directory().string(),
+                "WWIV_BIN_DIR"});
   add_argument(
-      {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory().string(), "WWIV_DIR"});
+  {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory().string(),
+   "WWIV_DIR"});
   add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT",
                 File::current_directory().string(), "WWIV_CONFIG_DIR"});
   add_argument({"logdir", "Directory where log files are written.",
@@ -346,6 +351,7 @@ std::string CommandLine::GetHelp() const {
 }
 
 unknown_argument_error::unknown_argument_error(const std::string& message)
-    : std::runtime_error(StrCat("unknown_argument_error: ", message)) {}
+  : std::runtime_error(StrCat("unknown_argument_error: ", message)) {
+}
 
 } // namespace wwiv

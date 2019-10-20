@@ -18,65 +18,30 @@
 /**************************************************************************/
 #include "bbs/output.h"
 
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/instmsg.h"
+#include "bbs/interpret.h"
+#include "bbs/utility.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/localio_screen.h"
+#include "sdk/ansi/makeansi.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdarg>
 #include <string>
-
-#include "bbs/bbsutl.h"
-#include "local_io/keycodes.h"
-#include "bbs/interpret.h"
-#include "bbs/com.h"
-#include "bbs/bbs.h"
-#include "bbs/instmsg.h"
-#include "bbs/output.h"
-#include "bbs/utility.h"
-
-#include "core/strings.h"
-#include "sdk/ansi/ansi.h"
-#include "sdk/ansi/localio_screen.h"
-#include "sdk/ansi/makeansi.h"
 
 using std::ostream;
 using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
 
-outputstreambuf::outputstreambuf() {}
-outputstreambuf::~outputstreambuf() {}
-
-std::ostream::int_type outputstreambuf::overflow(std::ostream::int_type c) {
-  if (c != EOF) {
-    bout.bputch(static_cast<char>(c), false);
-  }
-  return c;
-}
-
-std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_chars) {
-  if (num_chars == 0) {
-    return 0;
-  }
-  CheckForHangup();
-  if (a()->hangup_) {
-    // Returning 0 here would set the fail bit on the stream, which
-    // is not what we want, so pretend that we emitted all of the characters.
-    return num_chars;
-  }
-  bout.bputs(string(text, static_cast<unsigned int>(num_chars)));
-
-  // From a stream, we want to return the number of chars, including
-  // color codes.
-  return num_chars;
-}
-
-Output::Output() :
-#if defined(_WIN32)
-      buf(),
-#endif
-      std::ostream(&buf) {
-  init(&buf);
-  memset(charbuffer, 0, sizeof(charbuffer));
-}
+Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
+Output::~Output() = default;
 
 void Output::SetLocalIO(LocalIO* local_io) {
   // We would use a()->user()->GetScreenChars() but I don't thik we
@@ -132,8 +97,7 @@ void Output::Right(int num) {
     ss << num;
   }
   ss << "C";
-  string s = ss.str();
-  bputs(s);
+  bputs(ss.str());
 }
 
 void Output::SavePosition() {
@@ -189,20 +153,9 @@ std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
   return MakeSystemColor(static_cast<uint8_t>(c));
 }
 
-void Output::litebarf(const char *fmt, ...) {
-  va_list ap;
-  char s[1024];
-
-  va_start(ap, fmt);
-  vsnprintf(s, sizeof(s), fmt, ap);
-  va_end(ap);
-
-  litebar(s);
-}
-
 void Output::litebar(const std::string& msg) {
   if (okansi()) {
-    bputs(StrCat(StringPrintf("|17|15 %-78s", msg.c_str()), "|#0\r\n\n"));
+    bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
     bout << "|#5" << msg << "|#0\r\n\n";
@@ -347,16 +300,6 @@ int Output::bputs(const std::string& text, bool *abort, bool *next) {
     ret = bputs(text);
   }
   return ret;
-}
-
-int Output::bprintf(const char *formatText, ...) {
-  va_list ap;
-  char szBuffer[4096];
-
-  va_start(ap, formatText);
-  vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
-  va_end(ap);
-  return bputs(szBuffer);
 }
 
 void Output::move_up_if_newline(int num_lines) {

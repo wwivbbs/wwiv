@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(..)
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
 Include(FindWWIVCurses)
@@ -37,7 +36,6 @@ set(COMMON_SOURCES
  dirlist.cpp
  dropfile.cpp
  email.cpp
- events.cpp
  execexternal.cpp
  external_edit.cpp
  external_edit_qbbs.cpp
@@ -143,14 +141,31 @@ if(UNIX)
 endif()
 
 if(WIN32)
-  set(PLATFORM_SOURCES
-		exec_win32.cpp 
-		make_abs_cmd_win32.cpp 
-)
-    SET_MSVC_WARNING_LEVEL_4()
+  set(
+    PLATFORM_SOURCES
+		  exec_win32.cpp 
+		  make_abs_cmd_win32.cpp 
+  )
+  SET_MSVC_WARNING_LEVEL_4()
 endif()
 
-add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib local_io localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT} ${FORKPTY_LIB})
+add_library(
+  bbs_lib 
+  ${COMMON_SOURCES} 
+  ${ZMODEM_SOURCES} 
+  ${PLATFORM_SOURCES}
+) 
+
+target_link_libraries(
+  bbs_lib 
+  local_io 
+  localui 
+  core 
+  sdk 
+  CL342_LIB 
+  ${CMAKE_THREAD_LIBS_INIT} 
+  ${FORKPTY_LIB}
+)
+
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)

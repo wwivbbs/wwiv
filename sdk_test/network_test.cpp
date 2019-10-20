@@ -62,10 +62,10 @@ public:
   
     uint16_t sysnum = 1;
     for (const auto& name : names) {
-      const string dir = name;
+      const auto dir = name;
       net_networks_rec_disk rec{};
-      strcpy(rec.name, name.c_str());
-      strcpy(rec.dir, dir.c_str());
+      to_char_array(rec.name, name);
+      to_char_array(rec.dir, dir);
       rec.sysnum = sysnum++;
       file.Write(&rec, sizeof(net_networks_rec_disk));
     }

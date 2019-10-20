@@ -165,7 +165,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       }
 
       bout.nl(2);
-      bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+      bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
       if (a()->IsUserOnline()) {
         a()->UpdateTopScreen();

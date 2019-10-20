@@ -17,18 +17,16 @@
 /**************************************************************************/
 #include "networkb/binkp_config.h"
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/strings.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"
+#include <map>
+#include <memory>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -40,8 +38,7 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config,
                        const Networks& networks)
@@ -64,14 +61,14 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
       callout_wwivnet_node_ = net.sysnum;
       if (callout_wwivnet_node_ == 0) {
         throw config_error(
-            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+            fmt::format("NODE not specified for network: '{}'", callout_network_name));
       }
       binkp_.reset(new Binkp(net.dir));
     } else if (net.type == network_type_t::ftn) {
       callout_fido_node_ = net.fido.fido_address;
       if (callout_fido_node_.empty()) {
         throw config_error(
-            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+            fmt::format("NODE not specified for network: '{}'", callout_network_name));
       }
     } else {
       throw config_error("BinkP is not supported for this network type.");
@@ -95,9 +92,9 @@ const std::string BinkConfig::network_dir(const std::string& network_name) const
 }
 
 static net_networks_rec test_net(const string& network_dir) {
-  net_networks_rec net;
+  net_networks_rec net{};
   net.sysnum = 1;
-  strcpy(net.name, "wwivnet");
+  to_char_array(net.name, "wwivnet");
   net.type = network_type_t::wwivnet;
   net.dir = network_dir;
   return net;
@@ -161,5 +158,4 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(uint16_t node
   return binkp_session_config_for(std::to_string(node));
 }
 
-} // namespace net
 } // namespace wwiv

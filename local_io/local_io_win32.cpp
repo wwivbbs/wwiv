@@ -29,7 +29,6 @@
 
 #include "core/os.h"
 #include "core/strings.h"
-#include "local_io/wconstants.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
@@ -57,7 +56,7 @@ static screentype saved_screen;
  * Sets screen attribute at screen pos x,y to attribute contained in a.
  */
 void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
-  COORD loc = {0};
+  COORD loc;
   DWORD cb = {0};
 
   loc.X = static_cast<SHORT>(x);
@@ -66,7 +65,7 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   WriteConsoleOutputAttribute(out_, reinterpret_cast<LPWORD>(&a), 1, loc, &cb);
 }
 
-Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
+Win32ConsoleIO::Win32ConsoleIO() {
   out_ = GetStdHandle(STD_OUTPUT_HANDLE);
   in_ = GetStdHandle(STD_INPUT_HANDLE);
   if (out_ == INVALID_HANDLE_VALUE) {
@@ -78,7 +77,7 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   original_size_.X = csbi.dwSize.X;
   original_size_.Y = csbi.dwSize.Y;
   SMALL_RECT rect = csbi.srWindow;
-  COORD bufSize{};
+  COORD bufSize;
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
   bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
   bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
@@ -204,7 +203,7 @@ void Win32ConsoleIO::Backspace() {
    */
   if (cursor_pos_.X >= 0) {
     cursor_pos_.X--;
-  } else if (static_cast<size_t>(cursor_pos_.Y) != GetTopLine()) {
+  } else if (cursor_pos_.Y != GetTopLine()) {
     cursor_pos_.Y--;
     cursor_pos_.X = 79;
   }
@@ -232,7 +231,7 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
 
   // Need to scroll the screen up one.
   cursor_pos_.X = 0;
-  if (static_cast<size_t>(cursor_pos_.Y) == GetScreenBottom()) {
+  if (cursor_pos_.Y == GetScreenBottom()) {
     COORD dest;
     SMALL_RECT MoveRect;
     CHAR_INFO fill;
@@ -312,7 +311,7 @@ void Win32ConsoleIO::FastPuts(const string& text) {
 
 void Win32ConsoleIO::set_protect(int l) {
   // set_protect sets the number of lines protected at the top of the screen.
-  if (static_cast<size_t>(l) != GetTopLine()) {
+  if (l != GetTopLine()) {
     COORD coord;
     coord.X = 0;
     coord.Y = static_cast<int16_t>(l);
@@ -621,7 +620,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
   int cx = WhereX();
   int cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
-    pszInOutText[i] = static_cast<unsigned char>(176);
+    pszInOutText[i] = char(0xb0); // 176
   }
   pszInOutText[len] = '\0';
   curatr(GetEditLineColor());
@@ -678,7 +677,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
           for (int i = pos; i < len; i++) {
             pszInOutText[i] = pszInOutText[i + 1];
           }
-          pszInOutText[len - 1] = static_cast<unsigned char>(176);
+          pszInOutText[len - 1] = char(0xb0); // 176
           PutsXY(cx, cy, pszInOutText);
           GotoXY(cx + pos, cy);
         }
@@ -753,15 +752,15 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
               for (int i = pos - 1; i < len; i++) {
                 pszInOutText[i] = pszInOutText[i + 1];
               }
-              pszInOutText[len - 1] = static_cast<unsigned char>(176);
+              pszInOutText[len - 1] = char(0xb0); // 176
               pos--;
               PutsXY(cx, cy, pszInOutText);
               GotoXY(cx + pos, cy);
             } else {
-              int nStringLen = GetEditLineStringLength(pszInOutText);
+              const auto ell = GetEditLineStringLength(pszInOutText);
               pos--;
-              if (pos == (nStringLen - 1)) {
-                pszInOutText[pos] = static_cast<unsigned char>(176);
+              if (pos == (ell - 1)) {
+                pszInOutText[pos] = char(0xb0); // 176
               } else {
                 pszInOutText[pos] = SPACE;
               }

@@ -46,7 +46,7 @@ public:
   virtual bool Close() = 0;
 
  protected:
-  virtual const std::string as_packet_data(int size, int offset) const final;
+  virtual std::string as_packet_data(int size, int offset) const final;
 
   const std::string filename_;
   const time_t timestamp_ = 0;

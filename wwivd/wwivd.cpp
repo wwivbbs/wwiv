@@ -16,38 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#include <atomic>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <thread>
-#include <utility>
-
-#include <signal.h>
-#include <string>
-#include <vector>
-
-#ifdef _WIN32
-
-#include <WS2tcpip.h>
-
-#else // _WIN32
-
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <spawn.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#endif // __linux__
+#include "wwivd/wwivd.h"
 
 #include "core/command_line.h"
-#include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
@@ -55,14 +28,31 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivport.h"
 #include "sdk/config.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/nets.h"
 #include "wwivd/node_manager.h"
-#include "wwivd/wwivd.h"
 #include "wwivd/wwivd_http.h"
 #include "wwivd/wwivd_non_http.h"
+#include <atomic>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <signal.h>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
+#ifdef _WIN32
+#include <WS2tcpip.h>
+#else // _WIN32
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <spawn.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif // __linux__
 
 using std::cerr;
 using std::clog;

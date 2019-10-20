@@ -18,20 +18,16 @@
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
+
 #include "bbs/remote_io.h"
-
-#include <string>
-
 #include "core/scope_exit.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "bbs/remote_socket_io.h"
-#include "bbs/ssh.h"
+#include "fmt/format.h"
+#include <string>
 
 // static
 std::string RemoteIO::error_text_;
 
-const std::string RemoteIO::GetLastErrorText() {
+std::string RemoteIO::GetLastErrorText() {
 #if defined ( _WIN32 )
   char* error_text;
   wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});
@@ -43,13 +39,13 @@ const std::string RemoteIO::GetLastErrorText() {
     nullptr,
     GetLastError(),
     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-    (LPTSTR) &error_text,
+    LPTSTR(&error_text),
     0,
     nullptr
   );
   error_text_.assign(error_text);
 #else
-  return wwiv::strings::StringPrintf("errno: %d", errno);
+  return fmt::format("errno: {}", errno);
 #endif
   return error_text_;
 }

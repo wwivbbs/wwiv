@@ -18,32 +18,22 @@
 /**************************************************************************/
 #include "wwivconfig/protocols.h"
 
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <memory>
-#include <string>
-#include <sys/stat.h>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
-#include "localui/wwiv_curses.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -52,7 +42,7 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
+static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
   switch (pn) {
   case 1:
     return "ASCII";
@@ -88,10 +78,8 @@ static void load_protocols(const std::string& datadir, vector<newexternalrec>& e
     if (file) {
       file.ReadVector(over_intern, 3);
     } else {
-      newexternalrec e;
-      memset(&e, 0, sizeof(newexternalrec));
       for (size_t i = 0; i < 3; i++) {
-        over_intern.push_back(e);
+        over_intern.push_back({});
       }
     }
   }
@@ -108,7 +96,7 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     c = externs[n - 6];
   } else {
     c = over_intern[n - 2];
-    strcpy(c.description, prot_name(over_intern, n));
+    to_char_array(c.description, prot_name(over_intern, n));
   }
 
   constexpr int LABEL1_POSITION = 2;
@@ -180,11 +168,11 @@ void extrn_prots(const std::string& datadir) {
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    items.emplace_back(StringPrintf("2. XModem (Internal)"), 0, 2);
-    items.emplace_back(StringPrintf("X. XModem CRC (Internal)"), 0, 3);
-    items.emplace_back(StringPrintf("Y. YModem (Internal)"), 0, 4);
+    items.emplace_back("2. XModem (Internal)", 0, 2);
+    items.emplace_back("X. XModem CRC (Internal)", 0, 3);
+    items.emplace_back("Y. YModem (Internal)", 0, 4);
     for (size_t i = 0; i < externs.size(); i++) {
-      items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
+      items.emplace_back(fmt::format("{}. {} (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(out->window());
     ListBox list(window, "Select Protocol", items);
@@ -192,19 +180,19 @@ void extrn_prots(const std::string& datadir) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-    ListBoxResult result = list.Run();
-    const int max_protocol_number = externs.size() -1 + 6;
+    auto result = list.Run();
+    const int max_protocol_number = size_int(externs) -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
-        if (externs.size() > 0) {
+        if (!externs.empty()) {
           if (items[result.selected].data() < 6) {
             messagebox(out->window(), "You can only delete external protocols.");
             break;
           }
-          string prompt = StringPrintf("Delete '%s' ?", items[result.selected].text().c_str());
-          bool yn = dialog_yn(window, prompt);
+          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
+          auto yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
           }
@@ -217,11 +205,11 @@ void extrn_prots(const std::string& datadir) {
           messagebox(out->window(), "Too many external protocols.");
           break;
         }
-        string prompt = StringPrintf("Insert before which (6-%d) ? ", max_protocol_number + 1);
+        string prompt = fmt::format("Insert before which (6-{}) ? ", max_protocol_number + 1);
         size_t pos = dialog_input_number(out->window(), prompt, 2, max_protocol_number + 1);
         if (pos >= 6 && pos <= externs.size() + 6) {
           size_t extern_pos = pos - 6;
-          newexternalrec e;
+          newexternalrec e{};
           memset(&e, 0, sizeof(newexternalrec));
           if (extern_pos > externs.size()) {
             externs.push_back(e);
@@ -230,7 +218,7 @@ void extrn_prots(const std::string& datadir) {
           }
           edit_prot(externs, over_interns, pos);
         } else {
-          messagebox(out->window(), StringPrintf("Invalid entry: %d", pos));
+          messagebox(out->window(), fmt::format("Invalid entry: {}", pos));
         }
       } break;
       }

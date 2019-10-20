@@ -18,19 +18,15 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <ctime>
-#include <iostream>
 #include <memory>
 #include <string>
 
 #include "core/file.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/strings.h"
-#include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "core/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -46,10 +42,11 @@ class EmailTest: public testing::Test {
 public:
   void SetUp() override {
     config = make_unique<Config>(helper.root());
-    wwiv::sdk::msgapi::MessageApiOptions options;
-    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
-    api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
-    email = std::unique_ptr<WWIVEmail>(((WWIVMessageApi*)api.get())->OpenEmail());
+    MessageApiOptions options{};
+    options.overflow_strategy = OverflowStrategy::delete_none;
+    auto* a = new WWIVMessageApi(options, *config, {}, new NullLastReadImpl());
+    email = std::unique_ptr<WWIVEmail>(a->OpenEmail());
+    api.reset(a);
   }
 
   bool Add(int from, int to, const std::string& title, const std::string& text) {
@@ -63,7 +60,7 @@ public:
   }
 
   SdkHelper helper;
-  unique_ptr<MessageApi> api;
+  unique_ptr<WWIVMessageApi> api;
   unique_ptr<Config> config;
   unique_ptr<WWIVEmail> email;
 };

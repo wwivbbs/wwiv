@@ -62,7 +62,7 @@ public:
 
     cmdline_.AddStandardArgs();
   }
-  ~WWIVUtil() {}
+  ~WWIVUtil() = default;
 
   int Main() {
     ScopeExit at_exit(Logger::ExitLogger);

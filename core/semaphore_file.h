@@ -21,18 +21,17 @@
 #define __INCLUDED_CORE_SEMAPHORE_FILE_H__
 
 #include <chrono>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
-#include <sys/types.h>
-
-#include "core/filesystem.h"
 
 namespace wwiv {
 namespace core {
 
 struct semaphore_not_acquired : public std::runtime_error {
   semaphore_not_acquired(const std::filesystem::path& filename)
-      : std::runtime_error(filename.string()) {}
+    : std::runtime_error(filename.string()) {
+  }
 };
 
 class SemaphoreFile final {
@@ -44,7 +43,7 @@ public:
    * failing by throwing a semaphore_not_acquired exception.
    * Will write 'text' into the semaphore file.
    */
-  static SemaphoreFile try_acquire(const std::filesystem::path& filepath, 
+  static SemaphoreFile try_acquire(const std::filesystem::path& filepath,
                                    const std::string& text,
                                    std::chrono::duration<double> timeout);
 
@@ -53,7 +52,7 @@ public:
    * failing by throwing a semaphore_not_acquired exception.
    */
   static SemaphoreFile try_acquire(const std::filesystem::path& filepath,
-    std::chrono::duration<double> timeout) {
+                                   std::chrono::duration<double> timeout) {
     return try_acquire(filepath, "", timeout);
   }
 
@@ -72,12 +71,12 @@ public:
 
   ~SemaphoreFile();
 
-  const std::filesystem::path& path() const { return path_; }
-  int fd() const { return fd_; }
+  [[nodiscard]] const std::filesystem::path& path() const { return path_; }
+  [[nodiscard]] int fd() const { return fd_; }
 
   SemaphoreFile(SemaphoreFile&&) = default;
   SemaphoreFile(const SemaphoreFile&) = delete;
-  SemaphoreFile& operator= (const SemaphoreFile&) = delete;
+  SemaphoreFile& operator=(const SemaphoreFile&) = delete;
 
 private:
   SemaphoreFile(const std::filesystem::path&, int fd);
@@ -86,9 +85,8 @@ private:
   int fd_{-1};
 };
 
-}  // namespace core
-}  // namespace wwiv
-
+} // namespace core
+} // namespace wwiv
 
 
 #endif // __INCLUDED_CORE_SEMAPHORE_FILE_H__

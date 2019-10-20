@@ -50,11 +50,11 @@ public:
   
     phonerec rec{};
     rec.usernum = 1;
-    strcpy(rec.phone, "111-111-1111");
+    to_char_array(rec.phone, "111-111-1111");
     file.Write(&rec, sizeof(phonerec));
 
     rec.usernum = 2;
-    strcpy(rec.phone, "222-222-2222");
+    to_char_array(rec.phone, "222-222-2222");
     file.Write(&rec, sizeof(phonerec));
 
     return true;

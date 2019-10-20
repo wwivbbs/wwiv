@@ -18,15 +18,9 @@
 /**************************************************************************/
 #include "wwivconfig/regcode.h"
 
-#include <memory>
-
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
-
-using std::unique_ptr;
+#include "wwivconfig/utility.h"
 
 void edit_registration_code(wwiv::sdk::Config& config) {
   EditItems items{};

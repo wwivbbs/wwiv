@@ -73,12 +73,6 @@ TEST(StringsTest, Properize) {
   EXPECT_EQ(string("Rushfan"), properize(string("Rushfan")));
 }
 
-TEST(StringsTest, StringPrintf_Smoke) {
-  static const string kRushfan = "rushfan";
-  EXPECT_EQ(kRushfan, StringPrintf("%s%s", "rush", "fan"));
-  EXPECT_EQ(kRushfan, StringPrintf("%s%c%c%c", "rush", 'f', 'a', 'n'));
-}
-
 TEST(StringsTest, StrCat_Smoke) {
   static const string kRushfan = "rushfan";
   EXPECT_EQ(kRushfan, StrCat("rush", "fan"));
@@ -411,24 +405,4 @@ TEST(StringsTest, TrimToSizeIgnoreColors) {
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16a", 1));
   EXPECT_EQ("|09|16a|09", trim_to_size_ignore_colors("|09|16a|09", 1));
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16aa|09", 1));
-}
-
-TEST(StringsTest, PadTo) { 
-  auto result = pad_to("a", 2);
-  EXPECT_EQ(result, "a ");
-}
-
-TEST(StringsTest, PadToPad) {
-  auto result = pad_to("a", 'x', 2);
-  EXPECT_EQ(result, "ax");
-}
-
-TEST(StringsTest, LPadTo) {
-  auto result = lpad_to("a", 2);
-  EXPECT_EQ(result, " a");
-}
-
-TEST(StringsTest, LPadToPad) {
-  auto result = lpad_to("a", 'x', 2);
-  EXPECT_EQ(result, "xa");
 }

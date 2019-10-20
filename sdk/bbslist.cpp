@@ -17,26 +17,24 @@
 /**************************************************************************/
 #include "sdk/bbslist.h"
 
-#include <algorithm>
-#include <cmath>
-#include <cctype>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <string>
-
-#include "core/strings.h"
-#include "core/inifile.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/graphs.h"
+#include "core/inifile.h"
 #include "core/log.h"
+#include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/connect.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -48,8 +46,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
 bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* reg_no) {
@@ -252,14 +249,14 @@ BbsListNet::BbsListNet(std::initializer_list<net_system_list_rec> l) {
   }
 }
 
-BbsListNet::~BbsListNet() {}
+BbsListNet::~BbsListNet() = default;
 
-const net_system_list_rec* BbsListNet::node_config_for(int node) const {
-  auto iter = node_config_.find(node);
+std::optional<net_system_list_rec> BbsListNet::node_config_for(int node) const {
+  const auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
-    return &iter->second;
+    return {iter->second};
   }
-  return nullptr;
+  return std::nullopt;
 }
 
 static std::string DumpBbsListNet(const net_system_list_rec& n) {
@@ -284,6 +281,5 @@ std::string BbsListNet::ToString() const {
   return ss.str();
 }
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace wwiv
 

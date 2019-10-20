@@ -18,5 +18,5 @@
 /**************************************************************************/
 #include "local_io/null_local_io.h"
 
-NullLocalIO::NullLocalIO() {}
-NullLocalIO::~NullLocalIO() {}
+NullLocalIO::NullLocalIO() = default;
+NullLocalIO::~NullLocalIO() = default;

@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/dropfile.h"
 
-#include <algorithm>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/datetime.h"
@@ -30,9 +26,13 @@
 #include "bbs/utility.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include <algorithm>
+#include <memory>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -147,8 +147,8 @@ void CreateDoorInfoDropFile() {
     f.WriteLine(a()->config()->system_name());
     f.WriteLine(a()->config()->sysop_name());
     f.WriteLine();
-    f.WriteLine(StringPrintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
-    f.WriteLine(StringPrintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
+    f.WriteLine(fmt::sprintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
+    f.WriteLine(fmt::sprintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
     f.WriteLine("0");
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       char szTemp[81];
@@ -286,13 +286,13 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine("0");
     file.WriteLine("0");
     file.WriteLine("0");
-    file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
-                        a()->user()->GetVoicePhoneNumber(), a()->user()->GetLastOn().c_str(),
-                        a()->user()->GetLastOn().c_str(), a()->user()->GetNumLogons(),
+    file.Write(fmt::sprintf("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
+                        a()->user()->GetVoicePhoneNumber(), a()->user()->GetLastOn(),
+                        a()->user()->GetLastOn(), a()->user()->GetNumLogons(),
                         a()->user()->GetScreenLines(), a()->user()->GetFilesUploaded(),
                         a()->user()->GetFilesDownloaded(), "8N1",
                         (a()->context().incom()) ? "REMOTE" : "LOCAL",
-                        (a()->context().incom()) ? a()->primary_port() : 0);
+                        (a()->context().incom()) ? a()->primary_port() : 0));
     char szDate[81], szTemp[81];
     strcpy(szDate, "00/00/00");
     sprintf(szTemp, "%d", a()->user()->GetBirthdayMonth());
@@ -344,7 +344,7 @@ void CreateDoor32SysDropFile() {
       4 = Max Graphics
 
      ========================================================================= */
-  auto fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
+  const auto fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
   File::Remove(fileName);
 
   TextFile file(fileName, "wt");
@@ -386,14 +386,14 @@ void CreateDoorSysDropFile() {
             'N', // page bell
             'N', // caller alarm
             a()->user()->GetRealName(), a()->user()->GetCity(), a()->user()->GetState());
-    file.WriteFormatted(szLine);
+    file.Write(szLine);
     sprintf(szLine, "%s\n%s\n%s\n%d\n%u\n%s\n%u\n%ld\n", a()->user()->GetVoicePhoneNumber(),
             a()->user()->GetDataPhoneNumber(),
             "X", // a()->user()->GetPassword()
             a()->user()->GetSl(), a()->user()->GetNumLogons(), a()->user()->GetLastOn().c_str(),
             static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
-    file.WriteFormatted(szLine);
+    file.Write(szLine);
     string ansiStatus = (okansi()) ? "GR" : "NG";
     sprintf(szLine, "%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus.c_str(),
             a()->user()->GetScreenLines(), a()->user()->IsExpert() ? 'Y' : 'N',
@@ -405,7 +405,7 @@ void CreateDoorSysDropFile() {
             a()->user()->GetFilesUploaded(), a()->user()->GetFilesDownloaded(),
             0,  // kb dl today
             0); // kb dl/day max
-    file.WriteFormatted(szLine);
+    file.Write(szLine);
     char szDate[21], szTemp[81];
     strcpy(szDate, "00/00/00");
     sprintf(szTemp, "%d", a()->user()->GetBirthdayMonth());
@@ -431,13 +431,13 @@ void CreateDoorSysDropFile() {
             a()->user()->GetLastOn().c_str(), // last n-scan date
             t.c_str(),
             "00:01"); // time last call
-    file.WriteFormatted(szLine);
+    file.Write(szLine);
     sprintf(szLine, "%u\n%u\n%d\n%d\n%s\n%u\n%d\n",
             99, // max files dl/day
             0,  // files dl today so far
             a()->user()->GetUploadK(), a()->user()->GetDownloadK(), a()->user()->GetNote().c_str(),
             a()->user()->GetNumChainsRun(), a()->user()->GetNumMessagesPosted());
-    file.WriteFormatted(szLine);
+    file.Write(szLine);
     file.Close();
   }
 }
@@ -486,45 +486,44 @@ MrBill             System SysOp
 2400               Com port baud rate
 7400               WWIVnet node number
  */
-const string create_chain_file() {
-  auto cspeed = std::to_string(a()->modem_speed_);
+string create_chain_file() {
+  const auto cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
-  auto start_duration = duration_since_midnight(a()->system_logon_time());
-  auto start_second =
+  const auto start_duration = duration_since_midnight(a()->system_logon_time());
+  const auto start_second =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
-  auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
-  auto seconds_used =
+  const auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
+  const auto seconds_used =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 
   const auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
   File::Remove(fileName);
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {
-    file.WriteFormatted(
+    file.Write(fmt::sprintf(
         "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->usernum, a()->user()->GetName(),
         a()->user()->GetRealName(), a()->user()->GetCallsign(), a()->user()->GetAge(),
-        a()->user()->GetGender(), a()->user()->GetGold(), a()->user()->GetLastOn().c_str(),
-        a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl());
-    auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-    auto gfilesdir = a()->config()->gfilesdir();
-    file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
-                        a()->context().incom(), nsl(),
-                        gfilesdir.c_str(), a()->config()->datadir().c_str(),
-                        temporary_log_filename.c_str());
+        a()->user()->GetGender(), a()->user()->GetGold(), a()->user()->GetLastOn(),
+        a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl()));
+    const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
+    const auto gfilesdir = a()->config()->gfilesdir();
+    file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
+                            a()->context().incom(), nsl(), gfilesdir, a()->config()->datadir(),
+                            temporary_log_filename));
     if (a()->using_modem) {
       file.WriteLine(a()->modem_speed_);
     } else {
       file.WriteLine("KB");
     }
-    file.WriteFormatted("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n", a()->primary_port(),
-                        a()->config()->system_name().c_str(), a()->config()->sysop_name().c_str(),
+    file.Write(fmt::sprintf("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n", a()->primary_port(),
+                        a()->config()->system_name(), a()->config()->sysop_name(),
                         start_second, seconds_used, a()->user()->GetUploadK(),
                         a()->user()->GetFilesUploaded(), a()->user()->GetDownloadK(),
-                        a()->user()->GetFilesDownloaded(), "8N1", cspeed.c_str(),
-                        a()->current_net().sysnum);
-    file.WriteFormatted("N\nN\nN\n");
-    file.WriteFormatted("%u\n%u\n", a()->user()->GetAr(), a()->user()->GetDar());
+                        a()->user()->GetFilesDownloaded(), "8N1", cspeed,
+                        a()->current_net().sysnum));
+    file.Write(fmt::sprintf("N\nN\nN\n"));
+    file.Write(fmt::sprintf("%u\n%u\n", a()->user()->GetAr(), a()->user()->GetDar()));
     file.Close();
   }
 

@@ -22,9 +22,11 @@
 #include <string>
 #include <sstream>
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/log.h"
 #include "core/textfile.h"
+#include <cereal/cereal.hpp>
+#include <cereal/archives/json.hpp>
 
 namespace wwiv::core {
 
@@ -32,8 +34,11 @@ template <typename T>
 class JsonFile {
 public:
   JsonFile(const std::filesystem::path& file_name, const std::string& key, T& t)
-    : file_name_(file_name), key_(key), t_(t) {}
-  virtual ~JsonFile() {}
+    : file_name_(file_name), key_(key), t_(t) {
+  }
+
+  virtual ~JsonFile() {
+  }
 
   bool Load() {
     try {
@@ -55,7 +60,7 @@ public:
     }
   }
 
-  bool Save() { 
+  bool Save() {
     std::ostringstream ss;
     try {
       cereal::JSONOutputArchive save(ss);
@@ -85,4 +90,3 @@ private:
 }
 
 #endif // __INCLUDED_JSONFILE_H__
-

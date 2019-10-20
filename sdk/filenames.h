@@ -83,7 +83,6 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define EDITOR_NOEXT "editor"
 #define EMAIL_DAT "email.dat"
 #define EMAIL_NOEXT "email"
-#define EVENTS_DAT "events.dat"
 
 #define FEDIT_INF "fedit.inf"
 #define FEEDBACK_NOEXT "feedback"

@@ -38,11 +38,6 @@ run_test() {
 build_binaries() {
     local make_args=$1
     
-    echo "Compiling dependencies that are not CMake friendly"
-    pushd deps/cl342
-    make ${make_args}
-    popd > /dev/null
-    
     echo "Building binaries"
     cd ${WORKSPACE}
     sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp

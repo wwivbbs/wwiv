@@ -1,5 +1,4 @@
 # CMake for WWIV
-include_directories(..)
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES

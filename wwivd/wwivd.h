@@ -20,15 +20,11 @@
 #define __INCLUDED_WWIV_WWIV_WWIVD_H__
 
 #include <string>
-#include <vector>
-#include "core/net.h"
+#include <core/net.h>
 #include "sdk/config.h"
-#include "sdk/wwivd_config.h"
 
 void BeforeStartServer();
 void signal_handler(int mysignal);
-
-
 void SwitchToNonRootUser(const std::string& wwiv_user);
 
 /**
@@ -38,6 +34,5 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  * pid and node_number is just used for logging.
  */
 bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock);
-
 
 #endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__

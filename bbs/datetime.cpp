@@ -19,14 +19,12 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
 
-#include <cmath>
-
 #include "bbs/datetime.h"
-#include "local_io/wconstants.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
+#include <string>
 
 using std::string;
 using namespace std::chrono;
@@ -59,7 +57,6 @@ bool sysop1() {
 }
 
 bool isleap(int year) {
-  WWIV_ASSERT(year >= 0);
   return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
 }
 
@@ -70,12 +67,12 @@ std::string ctim(long d) {
   if (d < 0) {
     d += SECONDS_PER_DAY;
   }
-  auto hour = (d / SECONDS_PER_HOUR);
+  const auto hour = (d / SECONDS_PER_HOUR);
   d -= (hour * SECONDS_PER_HOUR);
-  auto minute = static_cast<long>(d / MINUTES_PER_HOUR);
+  const auto minute = static_cast<long>(d / MINUTES_PER_HOUR);
   d -= (minute * MINUTES_PER_HOUR);
-  auto second = static_cast<long>(d);
-  return wwiv::strings::StringPrintf("%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
+  const auto second = static_cast<long>(d);
+  return fmt::sprintf("%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
 }
 
 std::string ctim(std::chrono::duration<double> d) {
@@ -84,7 +81,7 @@ std::string ctim(std::chrono::duration<double> d) {
 
 int years_old(int nMonth, int nDay, int nYear) {
   auto t = time_t_now();
-  struct tm* pTm = localtime(&t);
+  const auto pTm = localtime(&t);
   nYear = nYear - 1900;
   --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
 
@@ -104,7 +101,7 @@ int years_old(int nMonth, int nDay, int nYear) {
     }
   }
 
-  int nAge = pTm->tm_year - nYear;
+  auto nAge = pTm->tm_year - nYear;
   if (pTm->tm_mon < nMonth) {
     --nAge;
   } else if ((pTm->tm_mon == nMonth) && (pTm->tm_mday < nDay)) {
@@ -119,23 +116,22 @@ system_clock::duration duration_since_midnight(system_clock::time_point now) {
   date->tm_hour = 0;
   date->tm_min = 0;
   date->tm_sec = 0;
-  auto midnight = system_clock::from_time_t(std::mktime(date));
+  const auto midnight = system_clock::from_time_t(std::mktime(date));
 
   return now - midnight;
 }
 
 system_clock::time_point minutes_after_midnight(int minutes) {
   const auto tnow = time_t_now();
-  tm* date = std::localtime(&tnow);
+  auto date = std::localtime(&tnow);
   date->tm_hour = minutes / 60;
   date->tm_min = minutes % 60;
   date->tm_sec = 0;
 
-  auto t = system_clock::from_time_t(std::mktime(date));
-  return t;
+  return system_clock::from_time_t(std::mktime(date));
 }
 
 int minutes_since_midnight() {
-  auto d = duration_since_midnight(system_clock::now());
+  const auto d = duration_since_midnight(system_clock::now());
   return duration_cast<minutes>(d).count();
 }

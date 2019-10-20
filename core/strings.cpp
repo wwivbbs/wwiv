@@ -18,12 +18,11 @@
 /**************************************************************************/
 #include "core/strings.h"
 
+#include "core/log.h"
+#include "fmt/format.h"
 #include <algorithm>
 #include <cctype>
-#include <cstdarg>
-#include <cstdio>
 #include <cstring>
-#include <functional>
 #include <iostream>
 #include <limits>
 #include <sstream>
@@ -31,65 +30,30 @@
 #include <string>
 #include <vector>
 
-#include "core/log.h"
-#include "core/wwivassert.h"
-#include "core/wwivport.h"
-
-#ifdef _WIN32
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif  // NOMINMAX
-
-#include "Shlwapi.h"
-#pragma comment(lib, "Shlwapi.lib")
-
-#ifdef StrCat
-#undef StrCat
-#endif  // StrCat
-#endif  // _WIN32
-
-
 using std::numeric_limits;
 using std::stoi;
 using std::string;
 using std::out_of_range;
 
-unsigned char *translate_letters[] = {
-  (unsigned char *)"abcdefghijklmnopqrstuvwxyz�������",
-  (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ�������",
-  nullptr,
+const unsigned char* translate_letters[] = {
+    reinterpret_cast<const unsigned char *>("abcdefghijklmnopqrstuvwxyz�������"),
+    reinterpret_cast<const unsigned char *>("ABCDEFGHIJKLMNOPQRSTUVWXYZ�������"),
+    nullptr,
 };
-const char *DELIMS_WHITE = " \t\r\n";
-const char *DELIMS_CRLF = "\r\n";
+const char* DELIMS_WHITE = " \t\r\n";
+const char* DELIMS_CRLF = "\r\n";
 
 using std::ostringstream;
 using std::string;
 using std::stringstream;
 using std::vector;
 
-namespace wwiv {
-namespace strings {
-
-/**
- * sprintf type function for STL string classes.
- * @param formatted_text The format specifier
- * @param ... Variable arguments
- */
-string StringPrintf(const char *formatted_text, ...) {
-  char buffer[1024];
-
-  va_list ap;
-  va_start(ap, formatted_text);
-  vsnprintf(buffer, sizeof(buffer), formatted_text, ap);
-  va_end(ap);
-  return string(buffer);
-}
+namespace wwiv::strings {
 
 /**
  * Compares the strings
  * @param str1 string to compare
- * @param str1 other string to compare
+ * @param str2 other string to compare
  * @return true of the strings contain the same contents
  */
 bool IsEquals(const char* str1, const char* str2) {
@@ -99,10 +63,10 @@ bool IsEquals(const char* str1, const char* str2) {
 /**
  * Compares the strings, ignoring case
  * @param str1 string to compare
- * @param str1 other string to compare
+ * @param str2 other string to compare
  * @return true of the strings contain the same contents ignoring case
  */
-bool iequals(const char *str1, const char *str2) {
+bool iequals(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
@@ -111,20 +75,21 @@ bool iequals(const char *str1, const char *str2) {
 
 bool iequals(const std::string& s1, const std::string& s2) {
   return s1.size() == s2.size() &&
-    std::equal(s1.begin(), s1.end(), s2.begin(),
-    [](const char& c1, const char& c2) {
-    return (std::tolower(c1) == std::tolower(c2));
-  });
+         std::equal(s1.begin(), s1.end(), s2.begin(),
+                    [](const char& c1, const char& c2)
+                    {
+                      return (std::tolower(c1) == std::tolower(c2));
+                    });
 }
 
-int StringCompareIgnoreCase(const char *str1, const char *str2) {
+int StringCompareIgnoreCase(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
   return strcasecmp(str1, str2);
 }
 
-int StringCompare(const char *str1, const char *str2) {
+int StringCompare(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
@@ -154,13 +119,14 @@ void SplitString(const string& original_string, const string& delims, vector<str
   SplitString(original_string, delims, true, out);
 }
 
-void SplitString(const string& original_string, const string& delims, bool skip_empty, vector<string>* out) {
+void SplitString(const string& original_string, const string& delims, bool skip_empty,
+                 vector<string>* out) {
   string s(original_string);
-  for (auto found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
+  for (auto found = s.find_first_of(delims); found != string::npos;
+       s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found > 0) {
       out->push_back(s.substr(0, found));
-    }
-    else if (!skip_empty && found == 0) {
+    } else if (!skip_empty && found == 0) {
       // Add empty lines.
       out->push_back({});
     }
@@ -172,20 +138,20 @@ void SplitString(const string& original_string, const string& delims, bool skip_
 
 bool starts_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
-      && std::equal(std::begin(match), std::end(match), std::begin(input));
+         && std::equal(std::begin(match), std::end(match), std::begin(input));
 }
 
 bool ends_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
-    && std::equal(match.rbegin(), match.rend(), input.rbegin());
+         && std::equal(match.rbegin(), match.rend(), input.rbegin());
 }
 
 /**
  * Returns a string justified and padded with "bg".
- * @param str The text to justify
- * @param nLength the length of the text
+ * @param s The text to justify
+ * @param length the length of the text
  * @param bg the character to use as the background
- * @param nJustificationType one of the following:
+ * @param just_type one of the following:
  *      LEFT
  *      RIGHT
  * @return the justified text.
@@ -194,29 +160,32 @@ void StringJustify(string* s, string::size_type length, char bg, JustificationTy
   if (s->size() > length) {
     *s = s->substr(0, length);
     return;
-  } else if (s->size() == length) {
+  }
+  if (s->size() == length) {
     return;
   }
 
-  string::size_type delta = length - s->size();
+  const auto delta = length - s->size();
   switch (just_type) {
   case JustificationType::LEFT: {
     s->resize(length, bg);
-  } break;
+  }
+  break;
   case JustificationType::RIGHT: {
-    string tmp(*s);
+    const auto tmp(*s);
     *s = StrCat(string(delta, bg), tmp);
-  } break;
+  }
+  break;
   }
 }
 
 
 /**
  * Removes spaces from the beginning and the end of the string s.
- * @param s the string from which to remove spaces
- * @return s with spaces removed.
+ * @param str the string from which to remove spaces
+ * @return str with spaces removed.
  */
-void StringTrim(char *str) {
+void StringTrim(char* str) {
   string s(str);
   StringTrim(&s);
   strcpy(str, s.c_str());
@@ -250,9 +219,9 @@ void StringTrimCRLF(string* s) {
 
 /**
 * Removes spaces from the beginning and the end of the string s and
-* returns it as a new stringl
-* @param s the string from which to remove spaces
-* @return s with spaces removed.
+* returns it as a new string
+* @param orig the string from which to remove spaces
+* @return orig with spaces removed.
 */
 string StringTrim(const string& orig) {
   string s(orig);
@@ -265,12 +234,12 @@ string StringTrim(const string& orig) {
 }
 
 void StringTrimBegin(string* s) {
-  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  const auto pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 }
 
 void StringTrimEnd(string* s) {
-  string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
+  const auto pos = s->find_last_not_of(DELIMS_WHITE);
   s->erase(pos + 1);
 }
 
@@ -278,7 +247,7 @@ void StringTrimEnd(string* s) {
  * Removes the whitespace from the end of the string
  * @param str The string from which to remove the trailing whitespace
  */
-void StringTrimEnd(char *str) {
+void StringTrimEnd(char* str) {
   string s(str);
   StringTrimEnd(&s);
   strcpy(str, s.c_str());
@@ -289,13 +258,13 @@ void StringUpperCase(string* s) {
 }
 
 string ToStringUpperCase(const string& orig) {
-  string s(orig);
+  auto s(orig);
   StringUpperCase(&s);
   return s;
 }
 
 static char tolower_char(int c) {
-  return static_cast<char>(::tolower(c));
+  return static_cast<char>(tolower(c));
 }
 
 void StringLowerCase(string* s) {
@@ -319,11 +288,11 @@ std::string ToStringRemoveWhitespace(const std::string& orig) {
 }
 
 
-char *StringRemoveWhitespace(char *str) {
+char* StringRemoveWhitespace(char* str) {
   CHECK(str != nullptr);
 
   if (str) {
-    char *obuf, *nbuf;
+    char* obuf,* nbuf;
     for (obuf = str, nbuf = str; *obuf; ++obuf) {
       if (!isspace(*obuf)) {
         *nbuf++ = *obuf;
@@ -334,7 +303,7 @@ char *StringRemoveWhitespace(char *str) {
   return str;
 }
 
-char *StringRemoveChar(const char *str, char ch) {
+char* StringRemoveChar(const char* str, char ch) {
   static char s_strip_string[255];
 
   CHECK(str != nullptr);
@@ -368,10 +337,10 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
   return out;
 }
 
-std::string put_time(const struct tm *tm_info, const std::string& fmt_arg) {
+std::string put_time(const struct tm* tm_info, const std::string& fmt_arg) {
   char buffer[1024];
 
-  auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
+  const auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
   if (num == 0) {
     return {};
   }
@@ -422,32 +391,7 @@ std::string trim_to_size(const std::string& orig, std::string::size_type max_siz
   return s;
 }
 
-std::string pad_to(const std::string& orig, std::string::size_type max_size) {
-  return pad_to(orig, ' ', max_size);
-}
-
-std::string pad_to(const std::string& orig, char pad, std::string::size_type max_size) {
-  auto len = size(orig);
-  if (max_size <= len) {
-    return orig;
-  }
-  return StrCat(orig, std::string(max_size - len, pad));
-}
-
-std::string lpad_to(const std::string& orig, std::string::size_type max_size) {
-  return lpad_to(orig, ' ', max_size);
-}
-
-std::string lpad_to(const std::string& orig, char pad, std::string::size_type max_size) {
-  auto len = size(orig);
-  if (max_size <= len) {
-    return orig;
-  }
-  return StrCat(std::string(max_size - len, pad), orig);
-}
-
-}  // namespace strings
-}  // namespace wwiv
+} // namespace wwiv
 
 /**
  * Is the character c a possible color code. (is it #, B, or a digit)
@@ -460,7 +404,7 @@ static bool IsColorCode(char c) {
   return (c == '#' || isdigit(c));
 }
 
-char *stripcolors(const char *str) {
+char* stripcolors(const char* str) {
   CHECK(str != nullptr);
   static char s[255];
   const auto result = stripcolors(string(str));
@@ -468,7 +412,7 @@ char *stripcolors(const char *str) {
   return s;
 }
 
-template<typename I>
+template <typename I>
 static bool is_ansi_seq_start(I& i, const std::string& orig) {
   auto left = string(i, end(orig));
   if (left.size() < 3) {
@@ -483,12 +427,12 @@ static bool is_ansi_seq_start(I& i, const std::string& orig) {
 /**
  * Removes the WWIV color codes and pipe codes from the string
  *
- * @param pszOrig The text from which to remove the color codes.
+ * @param orig The text from which to remove the color codes.
  * @return A new string without the color codes
  */
 string stripcolors(const string& orig) {
   string out;
-  for (auto i = begin(orig); i != end(orig); i++) {
+  for (auto i = begin(orig); i != end(orig); ++i) {
     if (*i == 27 && (i + 1) != end(orig)) {
       auto left = string(i, end(orig));
       if (!is_ansi_seq_start(i, orig)) {
@@ -497,23 +441,24 @@ string stripcolors(const string& orig) {
       }
       // skip everything until we have the end of the ansi sequence.
       while (i != end(orig) && !std::isalpha(*i)) {
-        i++;
+        ++i;
       }
       if (i != end(orig)) {
-        i++;
+        ++i;
       }
     }
     if (i == end(orig)) {
       break;
-    } else if ((i + 1) != end(orig) 
-                && (i + 2) != end(orig) 
-                && *i == '|'
-                && IsColorCode(*(i + 1)) 
-                && IsColorCode(*(i + 2))) {
+    }
+    if ((i + 1) != end(orig)
+        && (i + 2) != end(orig)
+        && *i == '|'
+        && IsColorCode(*(i + 1))
+        && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
-    } else if ((i + 1 ) != end(orig) 
-               && *i == 3 
+    } else if ((i + 1) != end(orig)
+               && *i == 3
                && isdigit(*(i + 1))) {
       ++i;
     } else {
@@ -529,7 +474,7 @@ string stripcolors(const string& orig) {
  * @return The uppercase version of the character
  */
 unsigned char upcase(unsigned char ch) {
-  auto *ss = (unsigned char*) strchr((const char*) translate_letters[0], ch);
+  const auto* ss = reinterpret_cast<const unsigned char*>(strchr(reinterpret_cast<const char*>(translate_letters[0]), ch));
   if (ss) {
     ch = translate_letters[1][ss - translate_letters[0]];
   }
@@ -542,19 +487,19 @@ unsigned char upcase(unsigned char ch) {
  * @return The lowercase version of the character
  */
 unsigned char locase(unsigned char ch) {
-  auto *ss = (unsigned char*) strchr((const char*) translate_letters[1], ch);
+  auto* ss = (unsigned char*)strchr((const char*)translate_letters[1], ch);
   if (ss) {
     ch = translate_letters[0][ss - translate_letters[1]];
   }
   return ch;
 }
 
-void properize(char *text) {
+void properize(char* text) {
   if (text == nullptr) {
     return;
   }
 
-  for (int i = 0; i < wwiv::strings::size_int(text); i++) {
+  for (auto i = 0; i < wwiv::strings::size_int(text); i++) {
     if ((i == 0) || ((i > 0) && ((text[i - 1] == ' ') || (text[i - 1] == '-') ||
                                  (text[i - 1] == '.')))) {
       text[i] = wwiv::strings::to_upper_case<char>(text[i]);
@@ -582,14 +527,24 @@ string properize(const string& text) {
   return os.str();
 }
 
+bool ifind_first(const std::string& haystack, const std::string& needle) {
+  const auto it =
+      std::search(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle),
+                  [](char a, char b) { return std::toupper(a) == std::toupper(b); });
+  return it != std::end(haystack);
+}
+
 #ifdef _WIN32
-char *strcasestr(const char *haystack, const char *needle) {
+// from strcasestr
+char* strcasestr_i(const char* haystack, const char* needle);
+
+char* strcasestr(const char* haystack, const char* needle) {
   if (strlen(needle) == 0) {
     // unlike strstr() and wcsstr() passing an emtpy string results in NULL being returned.
     // See http://msdn.microsoft.com/en-us/library/windows/desktop/bb773439%28v=vs.85%29.aspx
     return const_cast<char*>(haystack);
   }
-  return StrStrI(haystack, needle);
+  return strcasestr_i(haystack, needle);
 }
 #else
 

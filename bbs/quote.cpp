@@ -17,26 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <deque>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/com.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
-#include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
-
 #include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
 
 #define LINELEN 79
 #define PFXCOL 2
@@ -44,17 +41,17 @@
 
 #define WRTPFX                                                                                     \
   {                                                                                                \
-    file.WriteFormatted("\x3%c", PFXCOL + 48);                                                     \
+    file.Write(fmt::sprintf("\x3%c", PFXCOL + 48));                                                \
     if (tf == 1)                                                                                   \
       cp = file.WriteBinary(pfx.c_str(), pfx.size() - 1);                                          \
     else                                                                                           \
       cp = file.WriteBinary(pfx.c_str(), pfx.size());                                              \
-    file.WriteFormatted("\x3%c", cc);                                                              \
+    file.Write(fmt::sprintf("\x3%c", cc));                                                         \
   }
 #define NL                                                                                         \
   {                                                                                                \
     if (!cp) {                                                                                     \
-      file.WriteFormatted("\x3%c", PFXCOL + 48);                                                   \
+      file.Write(fmt::sprintf("\x3%c", PFXCOL + 48));                                              \
       file.WriteBinary(pfx.c_str(), pfx.size());                                                   \
     }                                                                                              \
     if (ctlc)                                                                                      \
@@ -69,7 +66,7 @@
         NL else if (ns) cp += file.WriteBinary(" ", 1);                                            \
       if (!cp) {                                                                                   \
         if (ctld)                                                                                  \
-          file.WriteFormatted("\x4%c", ctld);                                                      \
+          file.Write(fmt::sprintf("\x4%c", ctld));                                                 \
         WRTPFX;                                                                                    \
       }                                                                                            \
       file.WriteBinary(ss1, l2);                                                                   \
@@ -138,8 +135,6 @@ void clear_quotes() {
 }
 
 void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
-  WWIV_ASSERT(m);
-
   char temp[255];
   long l2, l3;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
@@ -247,7 +242,7 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
             }
             if (!cp) {
               if (ctld) {
-                file.WriteFormatted("\x04%c", ctld);
+                file.Write(fmt::sprintf("\x04%c", ctld));
               }
               WRTPFX;
             }

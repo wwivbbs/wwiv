@@ -16,20 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _WIN32
-#include <crtdbg.h>
-// Needed for isatty
-#include <io.h>
-#endif // WIN32
 #include "bbs/application.h"
-
-#include <algorithm>
-#include <chrono>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
 #include "bbs/asv.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl2.h"
@@ -40,9 +27,7 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
-#include "bbs/events.h"
 #include "bbs/exceptions.h"
-#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
@@ -61,19 +46,29 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/printf.h"
 #include "local_io/local_io.h"
 #include "local_io/local_io_curses.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
 
 #if defined(_WIN32)
+#include <crtdbg.h>
+// Needed for isatty
+#include <io.h>
 #include "bbs/remote_socket_io.h"
 #include "local_io/local_io_win32.h"
 #else
@@ -254,7 +249,7 @@ void Application::tleft(bool check_for_timeout) {
 
   auto min_left = nsln / SECONDS_PER_MINUTE;
   auto secs_left = nsln % SECONDS_PER_MINUTE;
-  auto tleft_display = wwiv::strings::StringPrintf("T-%4ldm %2lds", min_left, secs_left);
+  auto tleft_display = fmt::sprintf("T-%4ldm %2lds", min_left, secs_left);
   switch (topdata) {
   case LocalIO::topdataSystem: {
     if (IsUserOnline()) {
@@ -429,7 +424,7 @@ void Application::UpdateTopScreen() {
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
-    string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(), username_num.c_str());
+    string title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
@@ -473,21 +468,21 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    const auto sn = lpad_to(config()->system_name(), 50);
-    const auto ld = lpad_to(status->GetLastDate(), 8);
-    localIO()->PutsXY(0, 0, StrCat(sn, "  Activity for ", ld, ":      "));
+    localIO()->PutsXY(0, 0,
+                      fmt::format("{:>50}  Activity for {:>8}:      ", config()->system_name(),
+                                  status->GetLastDate()));
 
     localIO()->PutsXY(
         0, 1,
-        StringPrintf(
+        fmt::sprintf(
             "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
             status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
             status->GetNumLocalPosts()));
 
     const string username_num = names()->UserName(usernum);
     localIO()->PutsXY(0, 2,
-                      StringPrintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                                   username_num.c_str(), status->GetMinutesActiveToday(),
+                      fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+                                   username_num, status->GetMinutesActiveToday(),
                                    static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
                                    status->GetNumEmailSentToday()));
 
@@ -498,7 +493,7 @@ void Application::UpdateTopScreen() {
     }
     localIO()->PutsXY(
         0, 3,
-        StringPrintf(
+        fmt::sprintf(
             "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
             user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
             status->GetNumFeedbackSentToday()));
@@ -529,12 +524,12 @@ void Application::UpdateTopScreen() {
     if (date() != user()->GetLastOn()) {
       lo = user()->GetLastOn();
     } else {
-      lo = StringPrintf("Today:%2d", user()->GetTimesOnToday());
+      lo = fmt::sprintf("Today:%2d", user()->GetTimesOnToday());
     }
 
     const auto username_num = names()->UserName(usernum);
     auto line =
-        StringPrintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num.c_str(),
+        fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
                      user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(),
                      user()->GetSl(), user()->GetNumLogons(), user()->GetNumMessagesPosted());
     localIO()->PutsXYA(0, 0, bout.curatr(), line);
@@ -548,15 +543,15 @@ void Application::UpdateTopScreen() {
     auto minutes_used = duration_cast<minutes>(used_total);
 
     localIO()->PutsXY(0, 1,
-                      StringPrintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
+                      fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
                                    user()->GetRealName(), user()->GetVoicePhoneNumber(),
-                                   callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
+                                   callsign_or_regnum, user()->GetFilesDownloaded(),
                                    user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
                                    user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
 
     localIO()->PutsXY(0, 2,
-                      StringPrintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
-                                   user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent()));
+                      fmt::sprintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
+                                   user()->GetExempt(), lo, user()->GetNumFeedbackSent()));
 
     User sysop{};
     int feedback_waiting = 0;
@@ -564,12 +559,12 @@ void Application::UpdateTopScreen() {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PutsXY(0, 3,
-                      StringPrintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                                   user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
-                                   ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
+                      fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
+                                   user()->GetNote(), user()->GetGender(), user()->GetAge(),
+                                   ctypes(user()->GetComputerType()), feedback_waiting));
 
     if (chatcall()) {
-      localIO()->PutsXY(0, 4, pad_to(chat_reason_, 80));
+      localIO()->PutsXY(0, 4, fmt::format("{:<80}", chat_reason_));
     }
   } break;
   }
@@ -783,7 +778,7 @@ int Application::Run(int argc, char* argv[]) {
   
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");
-  unsigned int hSockOrComm = cmdline.iarg("handle");
+  const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
   int num_min = cmdline.iarg("remaining_min");
   context().ok_modem_stuff(!cmdline.barg("no_modem"));
@@ -792,7 +787,7 @@ int Application::Run(int argc, char* argv[]) {
   uint16_t this_usernum_from_commandline = cmdline.iarg("user_num");
   const auto x = cmdline.sarg("x");
   if (!x.empty()) {
-    char xarg = to_upper_case<char>(x.at(0));
+    const auto xarg = to_upper_case<char>(x.at(0));
     if (cmdline.arg("handle").is_default()) {
       clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;
@@ -829,7 +824,7 @@ int Application::Run(int argc, char* argv[]) {
       // We only want the localIO if we ran this locally at a terminal
       // and also not passed in from the telnet handler, etc.  On Windows
       // We always have a local console, so this is *NIX specific.
-      CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+      CursesIO::Init(fmt::sprintf("WWIV BBS %s%s", wwiv_version, beta_version));
       reset_local_io(new CursesLocalIO(out->GetMaxY()));
     } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
       reset_local_io(new NullLocalIO());
@@ -868,8 +863,7 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   if (cmdline.barg("beginday")) {
-    auto status = status_manager()->GetStatus();
-    cleanup_events();
+    const auto status = status_manager()->GetStatus();
     if (date() != status->GetLastDate()) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.

@@ -17,19 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <algorithm>
-#include <cstdarg>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include "core/strings.h"
 #include "localui/stdio_win.h"
-#include "localui/wwiv_curses.h"
-
-using std::string;
-using wwiv::strings::StringPrintf;
+#include "core/strings.h"
+#include <iostream>
+#include <string>
 
 int StdioWindow::GetChar() const { return std::cin.get(); }
 

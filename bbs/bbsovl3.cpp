@@ -20,13 +20,8 @@
 #include "bbs/bbsovl3.h"
 
 #include "bbs/bbs.h"
-#include "bbs/com.h"
-#include "bbs/bgetch.h"
-#include "bbs/utility.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -102,7 +97,7 @@ void ListAllColors() {
       bout.nl();
     }
     bout.SystemColor(i);
-    bout.bprintf("%3d", i);
+    bout << fmt::sprintf("%3d", i);
   }
   bout.Color(0);
   bout.nl();

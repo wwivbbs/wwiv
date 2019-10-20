@@ -18,24 +18,17 @@
 /**************************************************************************/
 #include "bbs/defaults.h"
 
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsutl1.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl.h"
+#include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/instmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
-#include "local_io/keycodes.h"
+#include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
@@ -44,17 +37,19 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
-#include "local_io/wconstants.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
-
-using std::setw;
-using std::endl;
-using std::left;
 using std::string;
 using std::vector;
 using wwiv::bbs::InputMode;
@@ -109,7 +104,7 @@ static string GetMailBoxStatus() {
   }
   if (a()->user()->GetForwardSystemNumber() != 0) {
     if (a()->user()->IsMailboxForwarded()) {
-      return StringPrintf("Forward to #%u @%u.%s.",
+      return fmt::sprintf("Forward to #%u @%u.%s.",
               a()->user()->GetForwardUserNumber(),
               a()->user()->GetForwardSystemNumber(),
               a()->net_networks[ a()->user()->GetForwardNetNumber() ].name);
@@ -136,64 +131,68 @@ static string GetMailBoxStatus() {
 static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
-  bout << left;
-  const string screen_size = StringPrintf("%d X %d", 
-      a()->user()->GetScreenChars(),
-      a()->user()->GetScreenLines());
-  const string ansi_setting = (a()->user()->HasAnsi() ?
+  const string screen_size =
+      fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
+  const string ansi_setting =
+      (a()->user()->HasAnsi() ?
           (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
-  bout << "|#11|#9) Screen size       : |#2" << setw(16) << screen_size << " " 
-       << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
+  bout << fmt::format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
+  bout << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
 
-  const string mailbox_status = GetMailBoxStatus();
-  bout << "|#13|#9) Pause on screen   : |#2" << setw(16) << (a()->user()->HasPause() ? "On " : "Off") << " "
-       << "|#14|#9) Mailbox           : |#2" << mailbox_status << wwiv::endl;
+  bout << fmt::format("|#13|#9) Pause on screen   : |#2{:<16} ",
+                      a()->user()->HasPause() ? "On " : "Off");
+  bout << "|#14|#9) Mailbox           : |#2" << GetMailBoxStatus() << wwiv::endl;
 
-  bout << setw(45) << "|#15|#9) Configured Q-scan" << " " << setw(45) << "|#16|#9) Change password" << wwiv::endl;
+  bout << fmt::format("{:<45} {}", "|#15|#9) Configured Q-scan", "|#16|#9) Change password")
+       << wwiv::endl;
 
   if (okansi()) {
-    bout << setw(45) << "|#17|#9) Update macros" << " "
-         << setw(45) << "|#18|#9) Change colors" << wwiv::endl;
+    bout << fmt::format("{:<45} {}", "|#17|#9) Update macros", "|#18|#9) Change colors")
+         << wwiv::endl;
 
-    unsigned int nEditorNum = a()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= a()->editors.size()) ?
-        a()->editors[nEditorNum-1].description : "None";
-     bout << "|#19|#9) Full screen editor: |#2" << setw(16) << editor_name << " " 
-          << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
+    const auto nEditorNum = a()->user()->GetDefaultEditor();
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= size_int(a()->editors))
+                                   ? a()->editors[nEditorNum - 1].description
+                                   : "None";
+    bout << fmt::format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
+    bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;
   }
 
-  const string internet_email_address = 
+  const auto internet_email_address = 
       ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
-  bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << a()->user()->GetOptionalVal() << " "
-       << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
+  bout << fmt::format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
+  bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
   if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (a()->languages.size() > 1) {
-    bout<< "|#1L|#9) Language          : |#2" << setw(16) << a()->cur_lang_name << " ";
+    bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->cur_lang_name);
   }
   if (num_instances() > 1) {
     bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!a()->user()->IsIgnoreNodeMessages());
   }
   bout.nl();
-  bout << "|#1S|#9) Cls Between Msgs? : |#2" << setw(16) << YesNoString(a()->user()->IsUseClearScreen()) << " "
-       << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr") << wwiv::endl;
+  bout << fmt::format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
+                      YesNoString(a()->user()->IsUseClearScreen()));
+  bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr")
+       << wwiv::endl;
 
   string wwiv_regnum = "(None)";
   if (a()->user()->GetWWIVRegNumber()) {
-    wwiv_regnum = StringPrintf("%ld", a()->user()->GetWWIVRegNumber());
+    wwiv_regnum = std::to_string(a()->user()->GetWWIVRegNumber());
   }
-  bout << "|#1U|#9) Use Msg AutoQuote : |#2" << setw(16) << YesNoString(a()->user()->IsUseAutoQuote()) << " "
-       << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
+  bout << fmt::format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
+                      YesNoString(a()->user()->IsUseAutoQuote()));
+  bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
-static const string DisplayColorName(int c) {
+static string DisplayColorName(int c) {
   switch (c) {
   case 0:
     return "Black";
@@ -216,7 +215,7 @@ static const string DisplayColorName(int c) {
   }
 }
 
-const string DescribeColorCode(int nColorCode) {
+string DescribeColorCode(int nColorCode) {
   std::ostringstream os;
 
   if (a()->user()->HasColor()) {
@@ -384,12 +383,12 @@ void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
-    bout.bpla(StringPrintf("%c %s. %s",
+    bout.bpla(fmt::sprintf("%c %s. %s",
                            (a()->context().qsc_q[a()->usub[i].subnum / 32] &
                             (1L << (a()->usub[i].subnum % 32)))
                                ? '*'
                                : ' ',
-                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name.c_str()),
+                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name),
               &abort);
   }
   bout.nl(2);
@@ -879,10 +878,10 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     else {
       s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name, 26);
     }
-    bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout << fmt::sprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
   } else {
-    bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout << fmt::sprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
@@ -895,9 +894,9 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     for (size_t this_sub = first; (this_sub < a()->subs().subs().size()) && (a()->usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
       bout.clear_lines_listed();
-      auto s = StringPrintf("|#7[|#1%c|#7] |#9%s",
+      auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
               (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
-              a()->subs().sub(a()->usub[this_sub].subnum).name.c_str());
+              a()->subs().sub(a()->usub[this_sub].subnum).name);
       s[44] = '\0';
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
@@ -913,7 +912,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
          *amount < max_lines * 2; this_dir++) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
-      auto s = StringPrintf("|#7[|#1%c|#7] |#2%s",
+      auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
                             a()->context().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
                                                                                             : ' ',
         a()->directories[alias_dir].name);
@@ -941,7 +940,7 @@ static void drawscan(int filepos, long tagged) {
   }
 
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
-  bout.bprintf("[%c]", tagged ? '\xFE' : ' ');
+  bout << "[" << (tagged ? '\xFE' : ' ') << "]";
   bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
 
   if (filepos >= max_lines) {
@@ -959,7 +958,7 @@ static void undrawscan(int filepos, long tagged) {
   } else {
     bout.GotoXY(1, filepos + 3);
   }
-  bout.bprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
+  bout << fmt::sprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
 
 static long is_inscan(int dir) {
@@ -969,7 +968,7 @@ static long is_inscan(int dir) {
   }
 
   for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-    const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
+    const string key = fmt::sprintf("%d", (sysdir ? dir : (dir + 1)));
     if (key == a()->udir[this_dir].keys) {
       int16_t ad = a()->udir[this_dir].subnum;
       return (a()->context().qsc_n[ad / 32] & (1L << ad % 32));
@@ -1082,7 +1081,7 @@ void config_scan_plus(int type) {
         else {
           bool sysdir = IsEquals(a()->udir[0].keys, "0");
           for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-            const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+            const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
               a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
@@ -1130,7 +1129,7 @@ void config_scan_plus(int type) {
           } else {
             bool sysdir = IsEquals(a()->udir[0].keys, "0");
             for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-              const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
+              const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
                 a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));

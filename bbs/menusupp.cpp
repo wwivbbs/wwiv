@@ -38,8 +38,6 @@
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
-#include "bbs/dropfile.h"
-#include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/finduser.h"
 #include "bbs/gfileedit.h"
@@ -438,7 +436,7 @@ void WWIVVersion() {
       if (!n.sysnum) {
         continue;
       }
-      bout << "|#9" << std::setw(14) << std::left << n.name << ":|#2 @" << n.sysnum << wwiv::endl;
+      bout << fmt::format("|#9{:<14}:|#2 @{}", n.name, n.sysnum) << wwiv::endl;
     }
   }
 
@@ -486,12 +484,6 @@ void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Ran Directory Edit";
   dlboardedit();
-}
-
-void EventEdit() {
-  write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "- Ran Event Editor";
-  eventedit();
 }
 
 void LoadTextFile() {
@@ -568,7 +560,7 @@ void InitVotes() {
 
 void ReadLog() {
   const string sysop_log_file = GetSysopLogFileName(date());
-  print_local_file(sysop_log_file.c_str());
+  print_local_file(sysop_log_file);
 }
 
 void ReadNetLog() {

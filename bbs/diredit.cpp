@@ -32,7 +32,7 @@
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
 #include "sdk/usermanager.h"
 #include "sdk/user.h"
@@ -67,7 +67,7 @@ static std::string dirdata(int n) {
       }
     }
   }
-  return StringPrintf("|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s", n, x,
+  return fmt::sprintf("|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s", n, x,
                       stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, r.path);
 }
 
@@ -80,7 +80,7 @@ static void showdirs() {
   bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
   for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
     auto text = StrCat(a()->directories[i].name, " ", a()->directories[i].filename);
-    if (strcasestr(text.c_str(), pattern.c_str())) {
+    if (ifind_first(text, pattern)) {
       bout.bpla(dirdata(i), &abort);
     }
   }

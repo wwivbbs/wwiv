@@ -17,18 +17,6 @@
 /**************************************************************************/
 #include "networkb/binkp.h"
 
-#include <algorithm>
-#include <chrono>
-#include <cstddef>
-#include <cstring>
-#include <fcntl.h>
-#include <functional>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/connection.h"
 #include "core/crc32.h"
 #include "core/datetime.h"
@@ -39,6 +27,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/printf.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
 #include "networkb/cram.h"
@@ -50,6 +39,15 @@
 #include "sdk/contact.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <cstring>
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::boolalpha;
 using std::end;
@@ -71,13 +69,12 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 static int System(const string& bbsdir, const string& cmd) {
   const auto path = FilePath(bbsdir, cmd);
 
-  auto err = system(path.c_str());
+  const auto err = system(path.c_str());
   VLOG(1) << "       executed: '" << path << "' with an error code: " << err;
   return err;
 }
@@ -231,13 +228,13 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     LOG(INFO) << "       file finished; bytes_received: " << current_receive_file_->length();
 
     string data_line =
-        StringPrintf("%s %u %u", current_receive_file_->filename().c_str(),
+        fmt::sprintf("%s %u %u", current_receive_file_->filename(),
                      current_receive_file_->length(), current_receive_file_->timestamp());
 
     auto crc = current_receive_file_->crc();
     // If we want to use CRCs and we don't have a zero CRC.
     if (crc_ && crc != 0) {
-      data_line += StringPrintf(" %08X", current_receive_file_->crc());
+      data_line += fmt::sprintf(" %08X", current_receive_file_->crc());
     }
 
     // Increment the nubmer of bytes received.
@@ -399,13 +396,12 @@ BinkState BinkP::WaitConn() {
       if (net.type == network_type_t::wwivnet) {
         string lower_case_network_name = net.name;
         StringLowerCase(&lower_case_network_name);
-        send_command_packet(BinkpCommands::M_NUL, StringPrintf("WWIV @%u.%s", net.sysnum,
-                                                               lower_case_network_name.c_str()));
+        send_command_packet(BinkpCommands::M_NUL, fmt::sprintf("WWIV @%u.%s", net.sysnum,
+                                                               lower_case_network_name));
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
         }
-        network_addresses +=
-            StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+        network_addresses += fmt::sprintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name);
       } else if (config_->config().is_5xx_or_later()) {
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
@@ -425,11 +421,11 @@ BinkState BinkP::WaitConn() {
     if (net.type == network_type_t::wwivnet) {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
-                          StringPrintf("WWIV @%u.%s", config_->callout_node_number(),
-                                       config_->callout_network_name().c_str()));
+                          fmt::sprintf("WWIV @%u.%s", config_->callout_node_number(),
+                                       config_->callout_network_name()));
       const string lower_case_network_name = ToStringLowerCase(net.name);
       network_addresses =
-          StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+          fmt::sprintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name);
     } else if (config_->config().is_5xx_or_later()) {
       try {
         // Present single FTN address.
@@ -1016,5 +1012,4 @@ bool ParseFileRequestLine(const string& request_line, string* filename, long* le
   return true;
 }
 
-} // namespace net
 } // namespace wwiv

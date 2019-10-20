@@ -18,11 +18,6 @@
 /**************************************************************************/
 #include "colors.h"
 
-#include <algorithm>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-
 #include "core/strings.h"
 #include "localui/wwiv_curses.h"
 
@@ -34,12 +29,12 @@ SchemeDescription::SchemeDescription()
 }
 
 ColorScheme::ColorScheme() : scheme_(LoadColorSchemes()) {
-  InitPairs();
+  ColorScheme::InitPairs();
 }
 
 uint32_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
-  const SchemeDescription& s = scheme_.at(id);
-  attr_t attr = COLOR_PAIR(s.color_pair());
+  const auto& s = scheme_.at(id);
+  auto attr = COLOR_PAIR(s.color_pair());
   if (s.bold()) {
     attr |= A_BOLD;
   }

@@ -17,33 +17,28 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/menu.h"
-#include <cstdint>
-#include <iomanip>
-#include <memory>
-#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/common.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/menu_parser.h"
-#include "bbs/menusupp.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-
 #include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <iomanip>
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -52,8 +47,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 static string GetMenuDirectory() {
   return FilePath(a()->language_dir, "menus");
@@ -374,7 +368,7 @@ static std::map<int, std::string> ListMenuDirs() {
   for (const auto& m : menus) {
     const auto& filename = m.name;
     const string description = descriptions.description(filename);
-    bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename.c_str(), description.c_str());
+    bout << fmt::sprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename, description);
     result.emplace(num, filename);
     ++num;
   }
@@ -509,7 +503,7 @@ void ConfigUserMenuSet() {
   // Save current menu setup.
   a()->WriteCurrentUser();
 
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s", a()->user()->menu_set().c_str(),
+  MenuSysopLog(fmt::format("Menu in use : {} - {}", a()->user()->menu_set(),
                             a()->user()->hotkeys() ? "Hot" : "Off"));
   bout.nl(2);
 }
@@ -564,7 +558,7 @@ bool MenuDescriptions::set_description(const std::string& name, const std::strin
   }
 
   for (const auto& iter : descriptions_) {
-    file.WriteFormatted("%s %s", iter.first.c_str(), iter.second.c_str());
+    file.Write(fmt::format("{} {}", iter.first, iter.second));
   }
   return true;
 }
@@ -575,7 +569,7 @@ void MenuInstance::GenerateMenu() const {
 
   int lines_displayed = 0;
   if (header.nums != MENU_NUMFLAG_NOTHING) {
-    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
+    bout << fmt::sprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++lines_displayed;
   }
   for (const auto& key : insertion_order_) {
@@ -592,9 +586,8 @@ void MenuInstance::GenerateMenu() const {
         keystr = StrCat("[", menu.szKey, "]");
       }
       bout.Color(1);
-      bout << std::left << std::setw(8) << keystr << "  ";
-      bout.Color(9);
-      bout << std::left << std::setw(25) << (menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
+      const auto txt = menu.szMenuText[0] ? menu.szMenuText : menu.szExecute;
+      bout << fmt::format("{:<8} |#9{:<25}", keystr, txt);
       if (lines_displayed % 2) {
         bout.nl();
       }
@@ -605,7 +598,7 @@ void MenuInstance::GenerateMenu() const {
     if (lines_displayed % 2) {
       bout.nl();
     }
-    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
+    bout << fmt::sprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
                  "Guest Account Application");
     ++lines_displayed;
   }
@@ -613,5 +606,4 @@ void MenuInstance::GenerateMenu() const {
   return;
 }
 
-} // namespace menus
 } // namespace wwiv

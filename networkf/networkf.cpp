@@ -16,20 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
-#include "core/connection.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -44,10 +31,7 @@
 #include "core/version.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/bbslist.h"
-#include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/connect.h"
-#include "sdk/contact.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/fido/fido_packets.h"
@@ -55,8 +39,16 @@
 #include "sdk/filenames.h"
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
-#include "sdk/networks.h"
 #include "sdk/subscribers.h"
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -1058,7 +1050,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     return 3;
   }
 
-  const auto* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
+  const auto fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
   if (!fake_ftn_node) {
     LOG(ERROR) << "Can not find node for outbound FTN address.";
     LOG(ERROR) << "       Do you need to run network3?";

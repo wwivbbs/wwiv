@@ -108,12 +108,14 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
   FILE* f = fopen(name.c_str(), mode.c_str());
   if (f != nullptr) {
     flock(fileno(f), (strpbrk(mode.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
+  } else {
+    VLOG(1) << "TextFile::OpenImpl; fopen failed; errno: " << errno << std::endl;    
   }
   return f;
 }
 #endif // _WIN32
 
-static std::string fopen_compatible_mode(const std::string& m) { 
+static std::string fopen_compatible_mode(const std::string& m) noexcept {
   if (m.find('d') == std::string::npos) {
     return m;
   }
@@ -121,11 +123,12 @@ static std::string fopen_compatible_mode(const std::string& m) {
   return StringReplace(&s, "d", "t");
 }
 
-TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode)
-    : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
-      dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {}
+TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode) noexcept
+  : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
+    dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {
+}
 
-bool TextFile::Close() {
+bool TextFile::Close() noexcept {
   if (file_ == nullptr) {
     return false;
   }
@@ -134,13 +137,13 @@ bool TextFile::Close() {
   return true;
 }
 
-ssize_t TextFile::WriteChar(char ch) { return fputc(ch, file_); }
+ssize_t TextFile::WriteChar(char ch) noexcept { return fputc(ch, file_); }
 
-ssize_t TextFile::Write(const std::string& text) {
+ssize_t TextFile::Write(const std::string& text) noexcept {
   return static_cast<ssize_t>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
 }
 
-ssize_t TextFile::WriteLine(const string& text) { 
+ssize_t TextFile::WriteLine(const string& text) noexcept {
   if (file_ == nullptr) {
     return -1;
   }
@@ -160,31 +163,24 @@ ssize_t TextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-ssize_t TextFile::WriteFormatted(const char* formatText, ...) {
-  va_list ap;
-  char buffer[4096];
-
-  va_start(ap, formatText);
-  vsnprintf(buffer, sizeof(buffer), formatText, ap);
-  va_end(ap);
-  return Write(buffer);
-}
-
-static void StripLineEnd(char *str) {
+static void StripLineEnd(char* str) noexcept {
   size_t i = strlen(str);
-  while ((i > 0) && ((str[i - 1] == 10) || str[i-1] == 13)) {
+  while ((i > 0) && ((str[i - 1] == 10) || str[i - 1] == 13)) {
     --i;
   }
   str[i] = '\0';
 }
 
-bool TextFile::ReadLine(string *out) {
+// ReSharper disable once CppMemberFunctionMayBeConst
+bool TextFile::ReadLine(string* out) noexcept {
   if (file_ == nullptr) {
+    out->clear();
     return false;
   }
   char s[4096];
-  char *p = fgets(s, sizeof(s), file_);
+  char* p = fgets(s, sizeof(s), file_);
   if (p == nullptr) {
+    out->clear();
     return false;
   }
   // Strip off trailing \r\n
@@ -195,7 +191,7 @@ bool TextFile::ReadLine(string *out) {
 
 const std::filesystem::path& TextFile::path() const noexcept { return file_name_; }
 
-std::string TextFile::full_pathname() const noexcept { return file_name_.string(); }
+std::string TextFile::full_pathname() const { return file_name_.string(); }
 
 TextFile::~TextFile() {
   Close();
@@ -211,7 +207,7 @@ std::string TextFile::ReadFileIntoString() {
   contents.resize(static_cast<unsigned long>(ftell(file_)));
   rewind(file_);
   auto num_read = fread(&contents[0], 1, contents.size(), file_);
-  contents.resize(num_read); 
+  contents.resize(num_read);
   return contents;
 }
 

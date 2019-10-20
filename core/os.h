@@ -58,7 +58,7 @@ std::string stacktrace();
 // Gets the PID
 pid_t get_pid();
 
-}  // namespace os
-}  // namespace wwiv
+} // namespace os
+} // namespace wwiv
 
 #endif  // __INCLUDED_WWIV_CORE_OS_H__

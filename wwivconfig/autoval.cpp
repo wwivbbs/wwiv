@@ -17,27 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 #include "localui/wwiv_curses.h"
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#ifdef _WIN32
-//#include <io.h>
-#else
-#include <unistd.h>
-#endif
-#include <string>
-#include <sys/stat.h>
-#include <vector>
 
-#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -47,7 +37,7 @@ using namespace wwiv::strings;
 
 static string create_autoval_line(Config& config, int n) {
   char ar[20], dar[20], r[20];
-  valrec v = config.auto_val(n);
+  const auto v = config.auto_val(n);
   string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
@@ -69,8 +59,8 @@ static string create_autoval_line(Config& config, int n) {
   r[16] = 0;
   ar[16] = 0;
   dar[16] = 0;
-  const auto key = StringPrintf("ALT-F%d", n + 1);
-  return StringPrintf("%-7s  %3d  %3d  %16s  %16s  %20s", key.c_str(), v.sl, v.dsl, ar, dar, r);
+  const auto key = fmt::format("ALT-F{}", n + 1);
+  return fmt::sprintf("%-7s  %3d  %3d  %16s  %16s  %20s", key, v.sl, v.dsl, ar, dar, r);
 }
 
 static void edit_autoval(Config& config, int n) {
@@ -94,7 +84,7 @@ static void edit_autoval(Config& config, int n) {
                     new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "DAR:"),
                     new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "Restrictions:")
   });
-  items.Run(StringPrintf("Auto-validation data for: Alt-F%d", n + 1));
+  items.Run(fmt::format("Auto-validation data for: Alt-F{}", n + 1));
   config.auto_val(n, v);
 }
 
@@ -112,7 +102,7 @@ void autoval_levs(wwiv::sdk::Config& config) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
-    ListBoxResult result = list.Run();
+    auto result = list.Run();
 
     if (result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {

@@ -18,25 +18,22 @@
 /**************************************************************************/
 #include "wwivconfig/system_info.h"
 
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include "localui/input.h"
+#include "localui/curses_win.h"
+#include "sdk/vardec.h"
+#include "wwivconfig/utility.h"
 #include <cstdint>
-#include <cstdlib>
-#include <cstring>
 #include <memory>
 #include <string>
-
-#include "core/strings.h"
-#include "wwivconfig/wwivconfig.h"
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
-#include "wwivconfig/utility.h"
-#include "sdk/vardec.h"
 
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
 static string print_time(uint16_t t) {
-  return StringPrintf("%02d:%02d", t / 60, t % 60);
+  return fmt::sprintf("%02d:%02d", t / 60, t % 60);
 }
 
 static uint16_t get_time(const string& s) {
@@ -44,9 +41,9 @@ static uint16_t get_time(const string& s) {
     return std::numeric_limits<uint16_t>::max();
   }
 
-  uint16_t h = to_number<uint16_t>(s);
-  string minutes = s.substr(3);
-  uint16_t m = to_number<uint16_t>(minutes);
+  const auto h = to_number<uint16_t>(s);
+  const auto minutes = s.substr(3);
+  const auto m = to_number<uint16_t>(minutes);
   if (h > 23 || m > 59) {
     return std::numeric_limits<uint16_t>::max();
   }
@@ -55,42 +52,42 @@ static uint16_t get_time(const string& s) {
 
 static const int MAX_TIME_EDIT_LEN = 5;
 
-class TimeEditItem : public EditItem<uint16_t*> {
+class TimeEditItem final : public EditItem<uint16_t*> {
 public:
   TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 5, data) {}
-  virtual ~TimeEditItem() {}
+  ~TimeEditItem() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     auto s = print_time(*this->data_);
-    auto return_code = editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, "");
+    const auto return_code = editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, "");
     *this->data_ = get_time(s);
     return return_code;
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
-    string s = print_time(*this->data_);
+  void DefaultDisplay(CursesWindow* window) const override {
+    const auto s = print_time(*this->data_);
     DefaultDisplayString(window, s);
   }
 };
 
-class Float53EditItem : public EditItem<float*> {
+class Float53EditItem final : public EditItem<float*> {
 public:
   Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 5, data) {}
-  virtual ~Float53EditItem() {}
+  ~Float53EditItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
    
-    // passing *this->data_ to StringPrintf is causing a bus error
+    // passing *this->data_ to String Printf is causing a bus error
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
-    float d = *this->data_;
-    auto s = StringPrintf("%5.3f", d);
-    auto return_code = editline(window, &s, 5 + 1, EditLineMode::NUM_ONLY, "");
+    const auto d = *this->data_;
+    auto s = fmt::sprintf("%5.3f", d);
+    const auto return_code = editline(window, &s, 5 + 1, EditLineMode::NUM_ONLY, "");
 
-    float f;
-    sscanf(s.c_str(), "%f", &f);
+    char* e;
+    auto f = strtof(s.c_str(), &e);
     if (f > 9.999 || f < 0.001) {
       f = 0.0;
     }
@@ -99,17 +96,17 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay(CursesWindow* window) const {
-    // passing *this->data_ to StringPrintf is causing a bus error
+  void DefaultDisplay(CursesWindow* window) const override {
+    // passing *this->data_ to fmt::sprintf is causing a bus error
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
-    float d = *this->data_;
-    auto s = StringPrintf("%5.3f", d);
+    const auto d = *this->data_;
+    const auto s = fmt::sprintf("%5.3f", d);
     DefaultDisplayString(window, s);
   }
 };
 
 void sysinfo1(wwiv::sdk::Config& config) {
-  configrec cfg = *config.config();
+  auto cfg = *config.config();
   statusrec_t statusrec{};
   read_status(config.datadir(), statusrec);
 

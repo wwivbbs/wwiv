@@ -17,21 +17,19 @@
 /**************************************************************************/
 #include "sdk/ftn_msgdupe.h"
 
-#include <algorithm>
-#include <cstdint>
-#include <ctime>
-#include <string>
-#include <vector>
-
 #include "core/crc32.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/stl.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/filenames.h"
-#include "sdk/vardec.h"
+#include <cstdint>
+#include <ctime>
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace wwiv::core;
@@ -39,8 +37,7 @@ using namespace wwiv::stl;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir(), true) {}
 
@@ -93,7 +90,7 @@ bool FtnMessageDupe::Save() {
   return file.WriteVector(dupes_);
 }
 
-const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
+std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
   if (!initialized_) {
     string address_string;
     if (a.point() != 0) {
@@ -110,7 +107,7 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   if (!file) {
     throw std::runtime_error(StrCat("Unable to open file: ", file.file()));
   }
-  uint64_t now = time(nullptr);
+  const uint64_t now = time(nullptr);
   uint64_t msg_num;
   if (!file.Read(0, &msg_num)) {
     msg_num = now;
@@ -130,13 +127,13 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   } else {
     address_string = to_zone_net_node(a);
   }
-  return StringPrintf("%s %08X", address_string.c_str(), msg_num);
+  return fmt::sprintf("%s %08X", address_string, msg_num);
 }
 
 // static
 std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
   static const string kMSGID = "MSGID: ";
-  std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
+  auto lines = wwiv::sdk::fido::split_message(text);
   for (const auto& line : lines) {
     if (line.empty() || line.front() != '\001' || line.size() < 2) {
       continue;
@@ -153,7 +150,7 @@ std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
 // static
 std::string FtnMessageDupe::GetMessageIDFromWWIVText(const std::string& text) {
   static const string kMSGID = "0MSGID: ";
-  std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
+  auto lines = wwiv::sdk::fido::split_message(text);
   for (const auto& line : lines) {
     if (line.empty() || line.front() != '\004' || line.size() < 2) {
       continue;
@@ -179,7 +176,7 @@ bool FtnMessageDupe::GetMessageCrc32s(const wwiv::sdk::fido::FidoPackedMessage& 
   s << msg.vh.to_user_name << "\r\n";
 
   header_crc32 = crc32string(s.str());
-  auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+  const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
   msgid_crc32 = crc32string(msgid);
   return true;
 }
@@ -220,7 +217,7 @@ bool FtnMessageDupe::remove(uint32_t header_crc32, uint32_t msgid_crc32) {
       msgid_dupes_.erase(msgid_crc32);
       return Save();
     } else {
-      it++;
+      ++it;
     }
   }
   return false;
@@ -246,5 +243,4 @@ bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) cons
   return is_dupe(header_crc32, msgid_crc32);
 }
 
-} // namespace sdk
 } // namespace wwiv

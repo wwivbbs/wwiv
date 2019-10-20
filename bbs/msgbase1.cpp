@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/msgbase1.h"
 
-#include <algorithm>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
@@ -42,16 +38,17 @@
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "local_io/wconstants.h"
+#include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
-#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -102,7 +99,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
 
   uint32_t message_length = text.size();
   if (nhorig.length > 32755) {
-    bout.bprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
+    bout << fmt::sprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
     nhorig.length = 32755;
     message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
@@ -248,7 +245,7 @@ void post(const PostData& post_data) {
 
   postrec p{};
   memset(&p, 0, sizeof(postrec));
-  strcpy(p.title, data.title.c_str());
+  to_char_array(p.title, data.title);
   p.anony = static_cast<unsigned char>(data.anonymous_flag);
   p.msg = m;
   p.ownersys = 0;
@@ -402,7 +399,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     }
     memory_last_read = a()->context().qsc_p[sub_number];
 
-    bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name.c_str(),
+    bout << fmt::sprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name,
                  a()->current_user_sub().keys, a()->GetNumMessagesInCurrentMessageArea());
 
     int i;
@@ -476,7 +473,7 @@ void ScanMessageTitles() {
     bout << "No subs available.\r\n";
     return;
   }
-  bout.bprintf("|#2%d |#9messages in area |#2%s\r\n", a()->GetNumMessagesInCurrentMessageArea(),
+  bout << fmt::sprintf("|#2%d |#9messages in area |#2%s\r\n", a()->GetNumMessagesInCurrentMessageArea(),
                a()->current_sub().name.c_str());
   if (a()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
@@ -508,7 +505,7 @@ void remove_post() {
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
       any = true;
-      bout.bpla(StringPrintf("%u: %60.60s", j, get_post(j)->title), &abort);
+      bout.bpla(fmt::sprintf("%u: %60.60s", j, get_post(j)->title), &abort);
     }
   }
   if (!any) {

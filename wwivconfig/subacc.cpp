@@ -16,17 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <cstdlib>
-#include <memory>
-#include <string>
-#include <vector>
+#include "wwivconfig/subacc.h"
 
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "wwivconfig/subacc.h"
+#include "fmt/format.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::vector;
 using namespace wwiv::core;
@@ -35,8 +35,9 @@ using namespace wwiv::strings;
 
 // File object for '.sub' file
 static std::unique_ptr<File> fileSub;             
-// filename of .sub file
-static char subdat_fn[MAX_PATH]; 
+// filename of .sub file. Ideally this shoudn't be a string but we don't use it
+// from joined threads nor from other initializers executed before the program starts
+static std::string subdat_fn; 
 
 // locals
 static int current_read_message_area, subchg;
@@ -100,9 +101,8 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   }
 
   // set sub filename
-  const auto& datadir = config.datadir();
-  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", datadir.c_str(),
-           subs.sub(si).filename.c_str());
+  const auto datadir = config.datadir();
+  subdat_fn = fmt::format("{}{}.sub", datadir, subs.sub(si).filename);
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {
@@ -131,13 +131,11 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   return true;
 }
 
-postrec* get_post(int mn) {
-  // Returns info for a post.  Maintains a cache.  Does not correct anything
-  // if the sub has changed.
-  static postrec p{};
-  // error if msg # invalid
+std::optional<postrec> get_post(int mn) {
+  // Returns info for a post.  Does not correct anything if the sub has changed.
+  // returns null optional if msg # invalid
   if (mn < 1) {
-    return nullptr;
+    return std::nullopt;
   }
   // adjust msgnum, if it is no longer valid
   if (mn > GetNumMessagesInCurrentMessageArea()) {
@@ -145,14 +143,15 @@ postrec* get_post(int mn) {
   }
 
   // read in some sub info
+  postrec p{};
   fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
   fileSub->Read(&p, sizeof(postrec));
-  return &p;
+  return {p};
 }
 
-void write_post(int mn, postrec* pp) {
+void write_post(int mn, const postrec& pp) {
   if (fileSub->IsOpen()) {
     fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
-    fileSub->Write(pp, sizeof(postrec));
+    fileSub->Write(&pp, sizeof(postrec));
   }
 }

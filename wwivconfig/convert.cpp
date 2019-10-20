@@ -17,26 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivconfig/convert.h"
-
 #include "localui/wwiv_curses.h"
-#include <cctype>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#include <memory>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <sys/stat.h>
 
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/filesystem.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivport.h"
 #include "local_io/wconstants.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
@@ -45,15 +31,14 @@
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
 #include "wwivconfig/archivers.h"
-#include "wwivconfig/wwivconfig.h"
+#include <cstring>
+#include <filesystem>
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-#define CONFIG_USR "config.usr"
 
 struct user_config {
   char name[31]; // verify against a user
@@ -84,7 +69,7 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   }
 
   // update user info data
-  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  auto userreclen = static_cast<int16_t>(sizeof(userrec));
   int16_t waitingoffset = offsetof(userrec, waiting);
   int16_t inactoffset = offsetof(userrec, inact);
   int16_t sysstatusoffset = offsetof(userrec, sysstatus);
@@ -150,14 +135,14 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  wwiv::fs::path users_lst = PathFilePath(config.datadir(), USER_LST);
+  std::filesystem::path users_lst = PathFilePath(config.datadir(), USER_LST);
   auto backup_file = users_lst;
   backup_file += ".backup.pre-wwivconfig-upgrade";
 
   // Make a backup file.
   std::error_code ec;
   // Note we ignore the ec since we fail open.
-  wwiv::fs::copy_file(users_lst, backup_file, ec);
+  std::filesystem::copy_file(users_lst, backup_file, ec);
 
   DataFile<userrec> usersFile(PathFilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,

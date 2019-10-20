@@ -19,17 +19,8 @@
 #ifndef __INCLUDED_PLATFORM_COLORS_H__
 #define __INCLUDED_PLATFORM_COLORS_H__
 
-#include <algorithm>
 #include <map>
 #include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif  // INSERT
-
 
 // Color Scheme
 enum class SchemeId { 
@@ -70,7 +61,7 @@ private:
 class ColorScheme {
  public:
   ColorScheme();
-  virtual ~ColorScheme() {}
+  virtual ~ColorScheme() = default;
   virtual uint32_t GetAttributesForScheme(SchemeId id) const;
   ColorScheme& operator=(const ColorScheme&) = delete;
   virtual void InitPairs();

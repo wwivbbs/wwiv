@@ -16,12 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/binkp_config.h"
 #include "sdk/config.h"
-
-#include <cstdint>
 #include <string>
 
 using std::string;
@@ -32,33 +31,29 @@ using namespace wwiv::sdk;
 class ParseBinkConfigLineTest : public testing::Test {};
 
 TEST_F(ParseBinkConfigLineTest, NoPort) {
-  string node;
-  binkp_session_config_t config;
-
-  string line = "@1234 myhost";
-  ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
+  const string line = "@1234 myhost";
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_TRUE(r.has_value());
+  auto [node, config] = r.value();
   EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(24554, config.port);
 }
 
 TEST_F(ParseBinkConfigLineTest, Port) {
-  string node;
-  binkp_session_config_t config;
-
   string line = "@1234 myhost:2345";
-  ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_TRUE(r.has_value());
+  auto [node, config] = r.value();
   EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(2345, config.port);
 }
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
-  string node;
-  binkp_session_config_t config;
-
-  string line = "*@1234 myhost";
-  ASSERT_FALSE(ParseBinkConfigLine(line, node, config));
+  const string line = "*@1234 myhost";
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_FALSE(r.has_value());
 }
 
 TEST(BinkConfigTest, NodeConfig) {
@@ -66,7 +61,7 @@ TEST(BinkConfigTest, NodeConfig) {
   files.Mkdir("network");
   const string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);
-  const string network_dir = files.DirName("network");
+  const auto network_dir = files.DirName("network");
   Config wwiv_config(files.TempDir());
   BinkConfig config(1, wwiv_config, network_dir);
   const binkp_session_config_t* node_config = config.binkp_session_config_for(2);

@@ -17,14 +17,14 @@
 /**************************************************************************/
 
 #include "gtest/gtest.h"
-#include "core/filesystem.h"
+#include <filesystem>
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
 
 #include <chrono>
-#include <cstdint>
+#include "fmt/printf.h"
 #include <string>
 
 using std::chrono::system_clock;
@@ -51,7 +51,7 @@ public:
 };
 
 TEST_F(TransferFileTest, AsPacketData) {
-  const string expected = StringPrintf("test1 4 %lu 0 67BC1E09", system_clock::to_time_t(now));
+  const string expected = fmt::format("test1 4 {} 0 67BC1E09", system_clock::to_time_t(now));
   ASSERT_EQ(expected, file.as_packet_data(0));
 }
 

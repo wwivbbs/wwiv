@@ -18,12 +18,6 @@
 /**************************************************************************/
 #include "bbs/sr.h"
 
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <string>
-#include <vector>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
@@ -39,10 +33,15 @@
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
+#include <algorithm>
+#include <chrono>
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace std::chrono;
@@ -89,24 +88,24 @@ char gettimeout(long ds, bool *abort) {
 }
 
 
-int extern_prot(int nProtocolNum, const std::string& send_filename, bool bSending) {
+int extern_prot(int num, const std::string& send_filename, bool bSending) {
   char s1[81], s2[81], sx1[21], sx2[21], sx3[21];
 
   if (bSending) {
     bout.nl();
     bout << "-=> Beginning file transmission, Ctrl+X to abort.\r\n";
-    if (nProtocolNum < 0) {
-      strcpy(s1, a()->over_intern[(-nProtocolNum) - 1].sendfn);
+    if (num < 0) {
+      strcpy(s1, a()->over_intern[(-num) - 1].sendfn);
     } else {
-      strcpy(s1, (a()->externs[nProtocolNum].sendfn));
+      strcpy(s1, (a()->externs[num].sendfn));
     }
   } else {
     bout.nl();
     bout << "-=> Ready to receive, Ctrl+X to abort.\r\n";
-    if (nProtocolNum < 0) {
-      strcpy(s1, a()->over_intern[(-nProtocolNum) - 1].receivefn);
+    if (num < 0) {
+      strcpy(s1, a()->over_intern[(-num) - 1].receivefn);
     } else {
-      strcpy(s1, (a()->externs[nProtocolNum].receivefn));
+      strcpy(s1, (a()->externs[num].receivefn));
     }
   }
   // Use this since fdsz doesn't like 115200
@@ -137,15 +136,15 @@ int extern_prot(int nProtocolNum, const std::string& send_filename, bool bSendin
 }
 
 
-bool ok_prot(int nProtocolNum, xfertype xt) {
+bool ok_prot(int num, xfertype xt) {
   bool ok = false;
 
   if (xt == xf_none) {
     return false;
   }
 
-  if (nProtocolNum > 0 && nProtocolNum < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
-    switch (nProtocolNum) {
+  if (num > 0 && num < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+    switch (num) {
     case WWIV_INTERNAL_PROT_ASCII:
       if (xt == xf_down || xt == xf_down_temp) {
         ok = true;
@@ -161,20 +160,20 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       if (xt != xf_up_batch && xt != xf_down_batch) {
         ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_YMODEM && xt == xf_down_batch) {
+      if (num == WWIV_INTERNAL_PROT_YMODEM && xt == xf_down_batch) {
         ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_down_batch) {
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_down_batch) {
         ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_temp) {
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_temp) {
         ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_batch) {
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_batch) {
         // TODO(rushfan): Internal ZModem doesn't support internal batch uploads
         // ok = true;
       }
-      if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && !a()->IsUseInternalZmodem()) {
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && !a()->IsUseInternalZmodem()) {
         // If AllowInternalZmodem is not true, don't allow it.
         ok = false;
       }
@@ -201,23 +200,23 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       switch (xt) {
       case xf_up:
       case xf_up_temp:
-        if (a()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivefn[0]) {
+        if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].receivefn[0]) {
           ok = true;
         }
         break;
       case xf_down:
       case xf_down_temp:
-        if (a()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendfn[0]) {
+        if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].sendfn[0]) {
           ok = true;
         }
         break;
       case xf_up_batch:
-        if (a()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn[0]) {
+        if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn[0]) {
           ok = true;
         }
         break;
       case xf_down_batch:
-        if (a()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
+        if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
           ok = true;
         }
         break;
@@ -230,45 +229,45 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
   return ok;
 }
 
-char *prot_name(int nProtocolNum) {
-  static char szProtocolName[ 21 ];
-  strcpy(szProtocolName, "-=>NONE<=-");
-  char *ss = szProtocolName;
+static char prot_key(int num) {
+  const auto s = prot_name(num);
+  return upcase(s[0]);
+}
 
-  switch (nProtocolNum) {
+std::string prot_name(int num) {
+  switch (num) {
   case WWIV_INTERNAL_PROT_ASCII:
-    strcpy(szProtocolName, "ASCII");
+    return "ASCII";
     break;
   case WWIV_INTERNAL_PROT_XMODEM:
-    strcpy(szProtocolName, "Xmodem");
+    return "Xmodem";
     break;
   case WWIV_INTERNAL_PROT_XMODEMCRC:
-    strcpy(szProtocolName, "Xmodem-CRC");
+    return "Xmodem-CRC";
     break;
   case WWIV_INTERNAL_PROT_YMODEM:
-    strcpy(szProtocolName, "Ymodem");
+    return "Ymodem";
     break;
   case WWIV_INTERNAL_PROT_BATCH:
-    strcpy(szProtocolName, "Batch");
+    return "Batch";
     break;
   case WWIV_INTERNAL_PROT_ZMODEM:
-    strcpy(szProtocolName, "Zmodem (Internal)");
+    return "Zmodem (Internal)";
   default:
-    if (nProtocolNum >= WWIV_NUM_INTERNAL_PROTOCOLS &&
-        nProtocolNum < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
-      ss = a()->externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].description;
+    if (num >= WWIV_NUM_INTERNAL_PROTOCOLS &&
+        num < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+      return a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].description;
     }
-    break;
+    return "-=>NONE<=-";
   }
 
-  return ss;
 }
 
 
 #define BASE_CHAR '!'
 
 int get_protocol(xfertype xt) {
-  char s[81], s1[81], oks[81], ch, oks1[81], *ss, ch1, fl[80];
+  char oks[81], ch, oks1[81], ch1, fl[80];
   int prot;
 
   if (ok_prot(a()->user()->GetDefaultProtocol(), xt)) {
@@ -299,7 +298,7 @@ int get_protocol(xfertype xt) {
         only = -1;
       }
       if (i >= 3) {
-        ch1 = upcase(*prot_name(i));
+        ch1 = prot_key(i);
         if (strchr(oks1, ch1) == 0) {
           oks1[oks1p++] = ch1;
           oks1[oks1p] = 0;
@@ -319,14 +318,13 @@ int get_protocol(xfertype xt) {
     bout << "No protocols available for that.\r\n\n";
     return -1;
   }
+  std::string allowable{oks};
+  std::string prompt = "Protocol (?=list) : ";
+  
   if (prot) {
-    ss = prot_name(prot);
-    sprintf(s, "Protocol (?=list, <C/R>=%s) : ", ss);
-    strcpy(s1, oks);
-    strcat(s1, "\r");
-  } else {
-    strcpy(s, "Protocol (?=list) : ");
-    strcpy(s1, oks);
+    const auto ss = prot_name(prot);
+    prompt = fmt::format("Protocol (?=list, <C/R>={}}) : ", ss);
+    allowable.push_back('\r');
   }
   if (!prot) {
     bout.nl();
@@ -335,12 +333,12 @@ int get_protocol(xfertype xt) {
     bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
     for (int j = 1; j <= maxprot; j++) {
       if (ok_prot(j, xt)) {
-        ch1 = upcase(*prot_name(j));
+        ch1 = prot_key(j);
         if (fl[j] == 0) {
-          bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                             prot_name(j));
         } else {
-          bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
+          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
         }
       }
     }
@@ -349,8 +347,8 @@ int get_protocol(xfertype xt) {
   bool done = false;
   do {
     bout.nl();
-    bout << "|#7" << s;
-    ch = onek(s1);
+    bout << "|#7" << prompt;
+    ch = onek(allowable);
     if (ch == '?') {
       bout.nl();
       bout << "|#3Available Protocols :|#1\r\n\n";
@@ -358,12 +356,12 @@ int get_protocol(xfertype xt) {
       bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
       for (int j = 1; j <= maxprot; j++) {
         if (ok_prot(j, xt)) {
-          ch1 = upcase(*prot_name(j));
+          ch1 = prot_key(j);
           if (fl[ j ] == 0) {
-            bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                               prot_name(j));
           } else {
-            bout.bprintf("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
+            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
           }
         }
       }
@@ -391,7 +389,7 @@ int get_protocol(xfertype xt) {
         return ch - BASE_CHAR + 10;
       }
       for (size_t j = 3; j < a()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
-        if (upcase(*prot_name(j)) == ch) {
+        if (prot_key(j) == ch) {
           return j;
         }
       }
@@ -574,7 +572,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
     if (percent == 1.0) {
       *sent = true;
     } else {
-      sysoplog() << StringPrintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
+      sysoplog() << fmt::sprintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
     }
   }
 }

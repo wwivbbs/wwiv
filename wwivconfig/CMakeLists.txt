@@ -1,7 +1,5 @@
 # CMake for WWIV 5
-include_directories(..)
 Include(FindWWIVCurses)
-
 
 set(COMMON_SOURCES
   archivers.cpp

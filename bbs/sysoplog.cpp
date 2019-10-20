@@ -18,17 +18,15 @@
 /**************************************************************************/
 #include "bbs/sysoplog.h"
 
+#include "bbs/bbs.h"
+#include "core/datetime.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include "sdk/config.h"
 #include <cstdarg>
 #include <cstddef>
 #include <string>
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
-#include "bbs/datetime.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "core/datetime.h"
-#include "sdk/config.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -46,14 +44,14 @@ static const std::size_t CAT_BUFSIZE = 8192;
 * Creates sysoplog filename in s, from datestring.
 */
 string GetSysopLogFileName(const string& d) {
-  return StringPrintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
+  return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
 /*
 * Returns instance (temporary) sysoplog filename in s.
 */
 std::string GetTemporaryInstanceLogFileName() {
-  return StringPrintf("inst-%3.3u.log", a()->instance_number());
+  return fmt::sprintf("inst-%3.3u.log", a()->instance_number());
 }
 
 /*

@@ -68,7 +68,7 @@ TEST_F(ConfigTest, SetConfig) {
   ASSERT_TRUE(config.IsInitialized());
 
   auto c = std::make_unique<configrec>();
-  strcpy(c->systemname, "mysys");
+  to_char_array(c->systemname, "mysys");
   config.set_config(c.get(), true);
   ASSERT_EQ(c->systemname, config.system_name());
 }

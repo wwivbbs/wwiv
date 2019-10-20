@@ -24,8 +24,6 @@
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
-#include <fcntl.h>
-#include <iostream>
 #include <string>
 #ifdef __unix__
 #include <unistd.h>
@@ -49,8 +47,8 @@ static void InitPairs() {
   std::vector<short> lowbit_colors = {COLOR_BLACK, COLOR_BLUE,    COLOR_GREEN,  COLOR_CYAN,
                                       COLOR_RED,   COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE};
   short num = 0;
-  for (int bg = 0; bg < 8; bg++) {
-    for (int fg = 0; fg < 8; fg++) {
+  for (auto bg = 0; bg < 8; bg++) {
+    for (auto fg = 0; fg < 8; fg++) {
       init_pair(num++, lowbit_colors[fg], lowbit_colors[bg]);
     }
   }
@@ -61,7 +59,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
   window_.reset(new CursesWindow(nullptr, out->color_scheme(), num_lines, 80, 0, 0));
-  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();
 }
@@ -94,7 +92,7 @@ void CursesLocalIO::Lf() {
   y_++;
 
   if (y_ > GetScreenBottom()) {
-    auto* w = reinterpret_cast<WINDOW*>(window_->window());
+    auto* w = std::any_cast<WINDOW*>(window_->window());
     scroll(w);
     y_ = GetScreenBottom();
   }
@@ -175,7 +173,7 @@ void CursesLocalIO::savescreen() {
 
   for (int line = 0; line < height; line++) {
     chtype* buf = new chtype[width];
-    auto* w = reinterpret_cast<WINDOW*>(window_->window());
+    auto* w = std::any_cast<WINDOW*>(window_->window());
     mvwinchnstr(w, line, 0, buf, width);
     saved_screen.push_back(buf);
   }
@@ -184,7 +182,7 @@ void CursesLocalIO::savescreen() {
 void CursesLocalIO::restorescreen() {
   int width = window_->GetMaxX();
   int y = 0;
-  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  auto* w = std::any_cast<WINDOW*>(window_->window());
   for (auto line : saved_screen) {
     mvwaddchnstr(w, y++, 0, line, width);
   }
@@ -202,7 +200,7 @@ bool CursesLocalIO::KeyPressed() {
   if (last_key_pressed != ERR) {
     return true;
   }
-  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  auto* w = std::any_cast<WINDOW*>(window_->window());
   nodelay(w, TRUE);
   last_key_pressed = window_->GetChar();
   return last_key_pressed != ERR;
@@ -278,7 +276,7 @@ unsigned char CursesLocalIO::GetChar() {
     last_key_pressed = ERR;
     return static_cast<unsigned char>(ch);
   }
-  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  auto* w = std::any_cast<WINDOW*>(window_->window());
   nodelay(w, FALSE);
   last_key_pressed = ERR;
   return static_cast<unsigned char>(window_->GetChar());
@@ -294,7 +292,7 @@ void CursesLocalIO::ClrEol() {
 void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
   // TODO(rushfan): Optimize me.
   const char* p = buffer;
-  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, false);
 
   char s[2];
@@ -327,7 +325,7 @@ static int GetEditLineStringLength(const char* text) {
 
 void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, int* returncode,
                              const char* pszAllowedSet) {
-  int oldatr = curatr();
+  auto oldatr = curatr();
   int cx = WhereX();
   int cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {

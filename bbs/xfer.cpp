@@ -43,6 +43,7 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -134,7 +135,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   if (a()->upload_cmd.empty()) {
     return true;
   }
-  const auto comport = StringPrintf("%d", a()->context().incom() ? a()->primary_port() : 0);
+  const auto comport = std::to_string(a()->context().incom() ? a()->primary_port() : 0);
   const auto cmdLine =
       stuff_in(a()->upload_cmd, create_chain_file(), a()->directories[directory_num].path,
                stripfn(u->filename), comport, "");
@@ -301,7 +302,7 @@ bool ratio_ok() {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
+      bout << fmt::sprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
                                         ratio(), a()->config()->req_ratio());
     }
   }
@@ -311,7 +312,7 @@ bool ratio_ok() {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n",
+      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n",
                                         "Your post/call ratio is", post_ratio(),
                                         "You need a ratio of", a()->config()->post_to_call_ratio(),
                                         "to download.");

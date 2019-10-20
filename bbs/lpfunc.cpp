@@ -18,27 +18,23 @@
 /**************************************************************************/
 #include "bbs/lpfunc.h"
 
-#include <string>
-#include <vector>
-
 #include "bbs/batch.h"
+#include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bbs.h"
-
 #include "bbs/common.h"
 #include "bbs/listplus.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "local_io/keycodes.h"
+#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
-#include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -61,14 +57,14 @@ static void drawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
   bout.SystemColor(lp_config.current_file_color);
-  bout.bprintf("%3d|#0", filenum);
+  bout << fmt::sprintf("%3d|#0", filenum);
   bout.GotoXY(4, filepos + first_file_pos());
 }
 
 static void undrawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%02d%3d|#0", lp_config.file_num_color, filenum);
+  bout << fmt::sprintf("|%02d%3d|#0", lp_config.file_num_color, filenum);
 }
 
 static void prep_menu_items(vector<string>* menu_items) {
@@ -128,7 +124,6 @@ int listfiles_plus_function(int type) {
   prep_menu_items(&menu_items);
 
   file_recs = (uploadsrec(*)[1])(BbsAllocA((a()->user()->GetScreenLines() + 20) * sizeof(uploadsrec)));
-  WWIV_ASSERT(file_recs);
   if (!file_recs) {
     return 0;
   }
@@ -331,7 +326,7 @@ ADD_OR_REMOVE_BATCH:
                         }
                       }
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
-                      bout.bprintf("|%2d %c ", lp_config.tagged_color,
+                      bout << fmt::sprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
@@ -748,7 +743,7 @@ OPERATOR_CHECK_1:
   szBuffer[tpos] = 0;
   StringTrim(szBuffer);
 
-  if (strcasestr(raw, szBuffer)) {
+  if (ifind_first(raw, szBuffer)) {
     return (sign ? 1 : 0);
   } else {
     return (sign ? 0 : 1);

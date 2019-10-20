@@ -18,22 +18,14 @@
 /**************************************************************************/
 #include "bbs/output.h"
 
-#include "bbs/bgetch.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl1.h"
-#include "bbs/com.h"
-#include "bbs/interpret.h"
-#include "local_io/keycodes.h"
-#include "bbs/pause.h"
-#include "bbs/utility.h"
-#include "bbs/remote_io.h"
-#include "local_io/wconstants.h"
 #include "bbs/application.h"
-#include "local_io/local_io.h"
-#include "core/log.h"
+#include "bbs/bbs.h"
+#include "bbs/interpret.h"
+#include "bbs/pause.h"
+#include "bbs/remote_io.h"
+#include "bbs/utility.h"
 #include "core/strings.h"
-
-#include <algorithm>
+#include "local_io/keycodes.h"
 #include <string>
 
 using namespace wwiv::strings;
@@ -125,31 +117,30 @@ void Output::rputs(const char *text) {
 }
 
 void Output::flush() {
-  if (bputch_buffer_.empty()) {
-    return;
+  if (!bputch_buffer_.empty()) {
+    a()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
+    bputch_buffer_.clear();
   }
-
-  a()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
-  bputch_buffer_.clear();
 }
 
 void Output::rputch(char ch, bool use_buffer_) {
-  if (a()->context().ok_modem_stuff() && nullptr != a()->remoteIO()) {
-    if (use_buffer_) {
-      if (bputch_buffer_.size() > 1024) {
-        flush();
-      }
-      bputch_buffer_.push_back(ch);
-    } else if (!bputch_buffer_.empty()) {
-      // If we have stuff in the buffer, and now are asked
-      // to send an unbuffered character, we must send the
-      // contents of the buffer 1st.
-      bputch_buffer_.push_back(ch);
+  if (!a()->context().ok_modem_stuff() || a()->remoteIO() == nullptr) {
+    return;
+  }
+  if (use_buffer_) {
+    if (bputch_buffer_.size() > 1024) {
       flush();
     }
-    else {
-      a()->remoteIO()->put(ch);
-    }
+    bputch_buffer_.push_back(ch);
+  } else if (!bputch_buffer_.empty()) {
+    // If we have stuff in the buffer, and now are asked
+    // to send an unbuffered character, we must send the
+    // contents of the buffer 1st.
+    bputch_buffer_.push_back(ch);
+    flush();
+  }
+  else {
+    a()->remoteIO()->put(ch);
   }
 }
 

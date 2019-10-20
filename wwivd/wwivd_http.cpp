@@ -19,29 +19,24 @@
 #include <string>
 #include <vector>
 
-#include <cereal/access.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/string.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 
 #include "core/http_server.h"
-#include "core/inifile.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
 #include "core/semaphore_file.h"
 #include "core/socket_connection.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
-#include "core/wwivport.h"
 #include "sdk/config.h"
-#include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 
@@ -105,13 +100,13 @@ private:
 };
 
 void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
-  auto sock = r.client_socket;
+  const auto sock = r.client_socket;
   const auto& b = data.c->blocking;
 
   try {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
-      auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
+      const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
       LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }

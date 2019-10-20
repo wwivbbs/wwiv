@@ -66,42 +66,42 @@ std::string daten_to_wwivnet_time(daten_t n) {
 }
 
 std::string time_t_to_wwivnet_time(time_t t) {
-  auto dt = DateTime::from_time_t(t);
+  const auto dt = DateTime::from_time_t(t);
   return dt.to_string();
 }
 
 daten_t time_t_to_daten(time_t t) { return static_cast<daten_t>(t); }
 
 std::string date() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   return dt.to_string("%m/%d/%y");
 }
 
 std::string fulldate() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   return dt.to_string("%m/%d/%Y");
 }
 
 string times() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   return dt.to_string("%H:%M:%S");
 }
 
-std::string to_string(std::chrono::duration<double> dd) {
+std::string to_string(duration<double> dd) {
   auto ns = duration_cast<nanoseconds>(dd);
   typedef duration<int, std::ratio<86400>> days;
   std::ostringstream os;
-  auto d = duration_cast<days>(ns);
+  const auto d = duration_cast<days>(ns);
   ns -= d;
-  auto h = duration_cast<hours>(ns);
+  const auto h = duration_cast<hours>(ns);
   ns -= h;
-  auto m = duration_cast<minutes>(ns);
+  const auto m = duration_cast<minutes>(ns);
   ns -= m;
-  auto s = duration_cast<seconds>(ns);
+  const auto s = duration_cast<seconds>(ns);
   ns -= s;
-  auto ms = duration_cast<milliseconds>(ns);
+  const auto ms = duration_cast<milliseconds>(ns);
   ns -= ms;
-  bool has_one = false;
+  auto has_one = false;
   if (d.count() > 0) {
     os << d.count() << "d";
     has_one = true;
@@ -179,32 +179,35 @@ DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str) {
 }
 
 DateTime::DateTime(system_clock::time_point t)
-    : t_(system_clock::to_time_t(t)),
-      millis_(static_cast<int>(duration_cast<milliseconds>(t.time_since_epoch()).count() % 1000)) {
+  : t_(system_clock::to_time_t(t)),
+    millis_(static_cast<int>(duration_cast<milliseconds>(t.time_since_epoch()).count() % 1000)) {
   update_tm();
 }
 
-static time_t mktime_no_dst_changes(tm* t) noexcept { 
+static time_t mktime_no_dst_changes(tm* t) noexcept {
   // Kludge to match the is_dst match so that our hour
   // matches exactly in the tm struct and isn't offset
   // for daylight savings time.
   auto t2{*t};
   mktime(&t2);
   t->tm_isdst = t2.tm_isdst;
-  auto now = mktime(t); 
-  return now;
+  return mktime(t);
 }
 
-DateTime::DateTime(tm* t) : t_(mktime_no_dst_changes(t)), tm_(*t) , millis_(0) {}
+DateTime::DateTime(tm* t)
+  : t_(mktime_no_dst_changes(t)), tm_(*t), millis_(0) {
+}
 
 DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
 
-DateTime::DateTime() : DateTime(static_cast<time_t>(0)) {}
+DateTime::DateTime()
+  : DateTime(static_cast<time_t>(0)) {
+}
 
 std::string DateTime::to_string(const std::string& format) const { return put_time(&tm_, format); }
 
 std::string DateTime::to_string() const {
-  auto t = asctime(&tm_);
+  const auto t = asctime(&tm_);
   if (!t) {
     return {};
   }
@@ -221,16 +224,21 @@ struct tm DateTime::to_tm() const noexcept {
 }
 
 void DateTime::update_tm() noexcept {
-  auto tm = localtime(&t_);
+  const auto tm = localtime(&t_);
   tm_ = *tm;
 }
 
-std::chrono::system_clock::time_point DateTime::to_system_clock() const noexcept {
-  return std::chrono::system_clock::from_time_t(t_);
+system_clock::time_point DateTime::to_system_clock() const noexcept {
+  return system_clock::from_time_t(t_);
 }
 
-bool operator==(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() == rhs.to_time_t(); }
-bool operator!=(const DateTime& lhs, const DateTime& rhs) { return lhs.to_time_t() != rhs.to_time_t(); }
+bool operator==(const DateTime& lhs, const DateTime& rhs) {
+  return lhs.to_time_t() == rhs.to_time_t();
+}
+
+bool operator!=(const DateTime& lhs, const DateTime& rhs) {
+  return lhs.to_time_t() != rhs.to_time_t();
+}
 
 bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
 
@@ -238,13 +246,13 @@ bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs);
 
 bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
 
- DateTime operator+(DateTime lhs, std::chrono::duration<double> d) {
-  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+DateTime operator+(DateTime lhs, duration<double> d) {
+  const auto du = std::chrono::duration_cast<seconds>(d);
   return DateTime::from_time_t(lhs.to_time_t() + static_cast<time_t>(du.count()));
 }
 
-DateTime operator-(DateTime lhs, std::chrono::duration<double> d) {
-  const auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+DateTime operator-(DateTime lhs, duration<double> d) {
+  const auto du = std::chrono::duration_cast<seconds>(d);
   return DateTime::from_time_t(lhs.to_time_t() - static_cast<time_t>(du.count()));
 }
 

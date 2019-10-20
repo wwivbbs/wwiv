@@ -55,7 +55,6 @@ void ChainEdit();
 void ToggleChat();
 void ChangeUser();
 void DirEdit();
-void EventEdit();
 void LoadTextFile();
 void EditText();
 void EditBulletins();

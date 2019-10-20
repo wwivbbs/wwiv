@@ -16,16 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <memory>
-#include <string>
-
 #include "sdk/status.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -42,7 +41,7 @@ static statusrec_t statusrec;
 
 
 static string GetSysopLogFileName(const string& d) {
-  return StringPrintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
+  return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
 WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datadir_(datadir) {
@@ -135,11 +134,11 @@ bool WStatus::NewDay() {
   strcpy(status_->date3, status_->date2);
   strcpy(status_->date2, status_->date1);
   const auto d = DateTime::now().to_string("%m/%d/%y");
-  strcpy(status_->date1, d.c_str());
+  to_char_array(status_->date1, d);
   strcpy(status_->log2, status_->log1);
 
   const string log = GetSysopLogFileName(GetLastDate(1));
-  strcpy(status_->log1, log.c_str());
+  to_char_array(status_->log1, log);
   return true;
 }
 

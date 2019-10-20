@@ -20,9 +20,8 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/net_log.h"
-
+#include "fmt/printf.h"
 #include <chrono>
-#include <cstdint>
 #include <string>
 #include <thread>
 
@@ -39,7 +38,7 @@ class NetworkLogTest : public testing::Test {
 public:
   NetworkLogTest() {
     helper_.Mkdir("gfiles");
-    auto dt = DateTime::now();
+    const auto dt = DateTime::now();
     now_ = dt.to_time_t();
     now_string_ = dt.to_string("%m/%d/%y %H:%M%S");
   }
@@ -52,41 +51,42 @@ protected:
 TEST_F(NetworkLogTest, CreateLogLine_Fr_S1K_R2K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
   string actual = net_log.CreateLogLine(now_, NetworkSide::FROM, 12345, 1024 * 1024, 2048 * 1024, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s Fr 12345, S:1024k, R:2048k            1.7 min  rushnet", now_string_.c_str());
+  string expected = fmt::format("{} Fr 12345, S:1024k, R:2048k            1.7 min  rushnet", now_string_);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(NetworkLogTest, CreateLogLine_To_S1K_R2K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
-  string actual = net_log.CreateLogLine(now_, NetworkSide::TO, 12345, 1024 * 1024, 2048 * 1024, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s To 12345, S:1024k, R:2048k            1.7 min  rushnet", now_string_.c_str());
+  const string actual = net_log.CreateLogLine(now_, NetworkSide::TO, 12345, 1024 * 1024, 2048 * 1024, std::chrono::seconds(101), "rushnet");
+  const string expected = fmt::format("{} To 12345, S:1024k, R:2048k            1.7 min  rushnet", now_string_);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(NetworkLogTest, CreateLogLine_Fr_S1K_R0K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
   string actual = net_log.CreateLogLine(now_, NetworkSide::FROM, 12345, 1024 * 1024, 0, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s Fr 12345, S:1024k, R:   0k            1.7 min  rushnet", now_string_.c_str());
+  string expected = fmt::format("{} Fr 12345, S:1024k, R:   0k            1.7 min  rushnet", now_string_);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(NetworkLogTest, CreateLogLine_To_S1K_R0K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
   string actual = net_log.CreateLogLine(now_, NetworkSide::TO, 12345, 1024 * 1024, 0, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s To 12345, S:1024k, R:   0k            1.7 min  rushnet", now_string_.c_str());
+  string expected = fmt::format("{} To 12345, S:1024k, R:   0k            1.7 min  rushnet", now_string_);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(NetworkLogTest, CreateLogLine_Fr_S0K_R3K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
   string actual = net_log.CreateLogLine(now_, NetworkSide::FROM, 12345, 0, 3072*1024, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s Fr 12345, S:   0k, R:3072k            1.7 min  rushnet", now_string_.c_str());
+  string expected = fmt::format("{} Fr 12345, S:   0k, R:3072k            1.7 min  rushnet", now_string_);
   EXPECT_EQ(expected, actual);
 }
 
 TEST_F(NetworkLogTest, CreateLogLine_To_S0K_R3K_101s) {
   NetworkLog net_log(helper_.DirName("gfiles"));
-  string actual = net_log.CreateLogLine(now_, NetworkSide::TO, 12345, 0, 3072 * 1024, std::chrono::seconds(101), "rushnet");
-  string expected = StringPrintf("%s To 12345, S:   0k, R:3072k            1.7 min  rushnet", now_string_.c_str());
+  const auto actual = net_log.CreateLogLine(now_, NetworkSide::TO, 12345, 0, 3072 * 1024, std::chrono::seconds(101), "rushnet");
+  const auto expected = fmt::format("{} To 12345, S:   0k, R:3072k            1.7 min  rushnet",
+                                now_string_);
   EXPECT_EQ(expected, actual);
 }

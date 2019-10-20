@@ -18,27 +18,25 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
+#include "core/log.h"
+#include "core/os.h"
 #include <cerrno>
 #include <fcntl.h>
+#include <sstream>
+#include <string>
+
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #include <share.h>
-#endif  // _WIN32
-#include <sstream>
-#include <string>
-#include <sys/stat.h>
 
-#include "core/log.h"
-
-#ifndef _WIN32
+#else // _WIN32
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
 #endif  // _WIN32
-
-#include "core/os.h"
 
 using std::string;
 using std::chrono::milliseconds;
@@ -53,7 +51,7 @@ namespace wwiv::core {
 #endif  // _WIN32
 
 // static 
-SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath, 
+SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
   VLOG(1) << "SemaphoreFile::try_acquire: '" << filepath << "'";
@@ -68,9 +66,9 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
   while (true) {
     const auto fn = filepath.string();
     auto fd = open(fn.c_str(), mode, pmode);
-    if (fd >= 0) { 
+    if (fd >= 0) {
       write(fd, text.c_str(), text.size());
-      return { filepath, fd };
+      return {filepath, fd};
     }
     if (std::chrono::steady_clock::now() > end) {
       throw semaphore_not_acquired(filepath);
@@ -85,8 +83,9 @@ SemaphoreFile SemaphoreFile::acquire(const std::filesystem::path& filepath,
   return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
-SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd) 
-  : path_(filepath), fd_(fd) {}
+SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd)
+  : path_(filepath), fd_(fd) {
+}
 
 SemaphoreFile::~SemaphoreFile() {
   VLOG(1) << "~SemaphoreFile(): " << path_ << "; fd: " << fd_;

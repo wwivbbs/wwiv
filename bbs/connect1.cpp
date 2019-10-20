@@ -17,16 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "core/file.h"
-#include "core/log.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 #include "sdk/bbslist.h"
-#include "sdk/filenames.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -37,7 +32,7 @@ net_system_list_rec *next_system(int ts) {
 
   auto b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   auto c = b.node_config_for(ts);
-  if (c == nullptr) {
+  if (!c) {
     csne = {};
     return nullptr;
   }

@@ -18,23 +18,21 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
-#include <fstream>
-#include <string>
-#include <vector>
-#include <sstream>
-
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
 
-
 #include "core/datafile.h"
-#include "core/log.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
 using cereal::make_nvp;
 using std::string;
@@ -43,8 +41,7 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
@@ -282,14 +279,14 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   int i = 0;
   for (const auto& x : xsubs) {
     if (!x.nets.empty()) {
-      f.WriteFormatted("!%u\n@%s\n#0\n", i, x.desc);
+      f.Write(fmt::sprintf("!%u\n@%s\n#0\n", i, x.desc));
       for (const auto& n : x.nets) {
-        f.WriteFormatted("$%s %s %lu %u %u\n",
+        f.Write(fmt::sprintf("$%s %s %lu %u %u\n",
           net_networks[n.net_num].name,
           n.stype_str.c_str(),
           n.flags,
           n.host,
-          n.category);
+          n.category));
       }
     }
     i++;
@@ -425,7 +422,7 @@ bool Subs::Save() {
     backup_file(PathFilePath(datadir_, SUBS_JSON));
 
     // Save subs.
-    subs_t t{};
+    subs_t t;
     t.subs = subs_;
     SaveToJSON(datadir_, SUBS_JSON, t);
   }
@@ -468,5 +465,4 @@ bool Subs::exists(const std::string& filename) const {
   return false;
 }
 
-}
 }

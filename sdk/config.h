@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_SDK_CONFIG_H__
 #define __INCLUDED_SDK_CONFIG_H__
 
-#include "core/filesystem.h"
+#include <filesystem>
 #include "sdk/vardec.h"
 #include <memory>
 
@@ -104,7 +104,7 @@ public:
   // Post to Call Ratio
   float post_to_call_ratio() const { return config_.post_call_ratio; }
   // Max number of emails waiting allowed
-  uint8_t max_waiting() const { return config_.maxwaiting; }
+  int max_waiting() const { return static_cast<int>(config_.maxwaiting); }
   // Directory number where uploads go by default.
   uint8_t new_uploads_dir() const { return config_.newuploads; }
 

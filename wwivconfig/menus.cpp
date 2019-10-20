@@ -18,37 +18,26 @@
 /**************************************************************************/
 #include "wwivconfig/menus.h"
 
-#include <cmath>
-#include <cstring>
-#include <cstdlib>
-#include <iomanip>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/filesystem.h"
 #include "core/findfiles.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
-#include "local_io/keycodes.h"
+#include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "localui/wwiv_curses.h"
+#include "localui/curses_win.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/filenames.h"
 #include "sdk/menu.h"
-#include "sdk/networks.h"
-#include "sdk/subxtr.h"
-#include "sdk/vardec.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivconfig.h"
+#include <cstring>
+#include <filesystem>
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 using std::pair;
 using std::string;
@@ -106,7 +95,7 @@ static void edit_menu_item(MenuRec& m) {
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Instance :"),
             new StringEditItem<char*>(COL2_LINE, y, 60, m.szInstanceMessage, EditLineMode::ALL));
   y++;
-  int col2y = y;
+  const auto col2y = y;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min SL:"),
             new NumberEditItem<uint16_t>(COL2_LINE, y, &m.nMinSL));
   y++;
@@ -146,9 +135,9 @@ class MenuItemsSubDialog : public BaseEditItem {
 public:
   MenuItemsSubDialog(vector<MenuRec>& menu_items, int x, int y, const std::string& title)
     : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {};
-  virtual ~MenuItemsSubDialog() {}
+  virtual ~MenuItemsSubDialog() = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     try {
       bool done = false;
@@ -157,11 +146,9 @@ public:
         vector<ListBoxItem> items;
         for (size_t i = 1; i < menu_items_.size(); i++) {
           const auto& m = menu_items_.at(i);
-          std::ostringstream ss;
-          auto key = StringPrintf("(%s)", m.szKey);
-          ss << "#" << i << " " << std::left << std::setw(12) << key 
-             << " '" << m.szMenuText << "' [" << m.szExecute << "]";
-          items.emplace_back(ss.str(), 0, i);
+          auto key = fmt::format("({})", m.szKey);
+          const auto s = fmt::format("#{} {:<12} '{}' [{}]", i, key, m.szMenuText, m.szExecute);
+          items.emplace_back(s, 0, i);
         }
         ListBox list(window, title_, items);
 
@@ -172,7 +159,7 @@ public:
           { "M", "Move" }
         });
         list.set_selected(selected);
-        ListBoxResult result = list.Run();
+        auto result = list.Run();
         selected = list.selected();
 
         if (result.type == ListBoxResultType::SELECTION) {
@@ -202,7 +189,7 @@ public:
           } break;
           case 'M': {
             auto maxnum = menu_items_.size() + 1;
-            auto prompt = StringPrintf("Move to before which (1-%d) : ", maxnum);
+            auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
             auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
             if (new_pos >= 1) {
               auto saved = menu_items_.at(num);
@@ -220,7 +207,8 @@ public:
     }
     return EditlineResult::NEXT;
   }
-  virtual void Display(CursesWindow* window) const {
+
+  void Display(CursesWindow* window) const override {
     window->PutsXY(x_, y_, "[Enter to Edit]");
   }
 
@@ -420,7 +408,7 @@ void menus(const std::string& menu_dir) {
         /*        case 'D':
         switch (result.hotkey) {
           if (networks.networks().size() > 1) {
-            const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
+            const string prompt = fmt::format("Delete '{}'", networks.at(result.selected).name);
             bool yn = dialog_yn(window, prompt);
             if (yn) {
               yn = dialog_yn(window, "Are you REALLY sure? ");
@@ -433,7 +421,7 @@ void menus(const std::string& menu_dir) {
           }
           break;
         case 'I':
-          const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
+          const auto prompt = fmt::format("Insert before which (1-{}) ? ", networks.networks().size() + 1);
           const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
           if (net_num > 0 && net_num <= networks.networks().size() + 1) {
             if (dialog_yn(window, "Are you sure? ")) {

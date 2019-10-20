@@ -17,17 +17,14 @@
 /**************************************************************************/
 #include "sdk/binkp.h"
 
+#include "core/file.h"
+#include "core/strings.h"
+#include "core/textfile.h"
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
-
-#include "core/strings.h"
-#include "core/inifile.h"
-#include "core/file.h"
-#include "core/textfile.h"
-#include "sdk/networks.h"
 
 using std::endl;
 using std::map;
@@ -39,22 +36,21 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseBinkConfigLine(const string& line, std::string& node, binkp_session_config_t& config) {
-
+std::optional<std::tuple<std::string, binkp_session_config_t>>
+ParseBinkConfigLine(const string& line) {
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
-    return false;
+    return std::nullopt;
   }
   
   stringstream stream(line);
   string node_str;
   stream >> node_str;
-  node = node_str.substr(1);
+  std::string node = node_str.substr(1);
   string host_port_str;
   stream >> host_port_str;
   
@@ -66,10 +62,11 @@ bool ParseBinkConfigLine(const string& line, std::string& node, binkp_session_co
     port = to_number<uint16_t>(host_port[1]);
   }
   
+  binkp_session_config_t config;
   config.host = host;
   config.port = port;
 
-  return true;
+  return {{node, config}};
 }
 
 static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const string network_dir) {
@@ -78,10 +75,10 @@ static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* no
     // Only load the configuration file if it exists.
     string line;
     while (node_config_file.ReadLine(&line)) {
-      std::string node_number;
-      binkp_session_config_t node_config;
       StringTrim(&line);
-      if (ParseBinkConfigLine(line, node_number, node_config)) {
+      auto r = ParseBinkConfigLine(line);
+      if (r) {
+        auto [node_number, node_config] = r.value();
         // Parsed a line correctly.
         node_config_map->emplace(node_number, node_config);
       }
@@ -96,7 +93,7 @@ Binkp::Binkp(const std::string& network_dir) {
   ParseAddressesFile(&node_config_, network_dir);
 }
 
-Binkp::~Binkp() {}
+Binkp::~Binkp() = default;
 
 const binkp_session_config_t* Binkp::binkp_session_config_for(const std::string& node) const {
   auto iter = node_config_.find(node);
@@ -110,6 +107,5 @@ const binkp_session_config_t* Binkp::binkp_session_config_for(uint16_t node) con
   return binkp_session_config_for(std::to_string(node));
 }
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace wwiv
 

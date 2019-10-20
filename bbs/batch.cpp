@@ -18,21 +18,14 @@
 /**************************************************************************/
 #include "bbs/batch.h"
 
-#include <algorithm>
-#include <chrono>
-#include <iterator>
-#include <string>
-#include <utility>
-
-#include "bbs/bbsovl3.h"
-#include "bbs/bgetch.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
+#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/make_abs_cmd.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/remote_io.h"
@@ -42,20 +35,22 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/make_abs_cmd.h"
-#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
+#include "fmt/printf.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <algorithm>
+#include <chrono>
+#include <iterator>
+#include <string>
 
 using std::begin;
 using std::end;
@@ -96,10 +91,10 @@ static void listbatch() {
     ++current_num;
     if (b.sending) {
       const string t = ctim(std::lround(b.time));
-      buffer = StringPrintf("%d. %s %s   %s  %s", current_num, "(D)",
-          b.filename, t.c_str(), a()->directories[b.dir].name);
+      buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
+          b.filename, t, a()->directories[b.dir].name);
     } else {
-      buffer = StringPrintf("%d. %s %s             %s", current_num, "(U)",
+      buffer = fmt::sprintf("%d. %s %s             %s", current_num, "(U)",
           b.filename, a()->directories[b.dir].name);
     }
     bout.bpla(buffer, &abort);
@@ -205,7 +200,7 @@ void didnt_upload(const batchrec& b) {
       return;
     }
   }
-  sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
+  sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
 }
 
 static void uploaded(const string& file_name, long lCharsPerSecond) {
@@ -261,7 +256,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
-              sysoplog() << StringPrintf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, a()->directories[b.dir].name, lCharsPerSecond);
+              sysoplog() << fmt::sprintf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, a()->directories[b.dir].name, lCharsPerSecond);
               bout << "Uploaded '" << u.filename << "' to "  << a()->directories[b.dir].name 
                    << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
             }
@@ -272,14 +267,14 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       }
       it = delbatch(it);
       if (try_to_ul(file_name)) {
-        sysoplog() << StringPrintf("!!! Couldn't find file \"%s\" in directory.", file_name.c_str());
+        sysoplog() << fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name);
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
+    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(PathFilePath(a()->batch_directory(), file_name));
@@ -522,7 +517,7 @@ static void handle_dszline(char *l) {
     case 'l':
     case 'U':
       // error
-      sysoplog() << StringPrintf("Error transferring \"%s\"", ss);
+      sysoplog() << fmt::sprintf("Error transferring \"%s\"", ss);
       break;
     }
   }
@@ -538,7 +533,7 @@ static double ratio1(unsigned long xa) {
 }
 
 static string make_ul_batch_list() {
-  const auto fn = StringPrintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
+  const auto fn = fmt::sprintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
   // TODO(rushfan): This should move to a temp directory.
   const auto list_filename = PathFilePath(a()->bbsdir(), fn);
 
@@ -562,7 +557,7 @@ static string make_ul_batch_list() {
 }
 
 static string make_dl_batch_list() {
-  const auto fn = StringPrintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
+  const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
   const auto list_filename = FilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
@@ -617,8 +612,7 @@ static string make_dl_batch_list() {
 }
 
 void ProcessDSZLogFile() {
-  char **lines = static_cast<char **>(calloc((a()->max_batch * sizeof(char *) * 2) + 1, 1));
-  WWIV_ASSERT(lines != nullptr);
+  const auto lines = static_cast<char **>(calloc((a()->max_batch * sizeof(char *) * 2) + 1, 1));
 
   if (!lines) {
     return;
@@ -628,7 +622,6 @@ void ProcessDSZLogFile() {
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     auto nFileSize = fileDszLog.length();
     char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
-    WWIV_ASSERT(ss != nullptr);
     if (ss) {
       auto nBytesRead = fileDszLog.Read(ss, nFileSize);
       if (nBytesRead > 0) {
@@ -660,11 +653,9 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   if (!commandLine.empty()) {
     make_abs_cmd(a()->bbsdir().string(), &commandLine);
     a()->Cls();
-    const string user_name_number = a()->names()->UserName(a()->usernum);
-    const string message = StringPrintf(
-        "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-        user_name_number.c_str(),
-        a()->modem_speed_, dl.c_str(), commandLine.c_str());
+    const auto user_name_number = a()->names()->UserName(a()->usernum);
+    const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
+                                      user_name_number, a()->modem_speed_, dl, commandLine);
     a()->localIO()->Puts(message);
     if (a()->context().incom()) {
       File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
@@ -691,7 +682,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 
-void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
+void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string& description) {
   string download_log_entry = StrCat(description,
       "%s BATCH Download: Files - ", a()->batch().entry.size(), 
       ", Time - ", ctim(a()->batch().dl_time_in_secs()));
@@ -708,8 +699,8 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-static void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
-  string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
+static void dszbatchul(bool bHangupAfterDl, char *command_line, const std::string& description) {
+  string download_log_entry = fmt::sprintf("%s BATCH Upload: Files - %d", description,
           a()->batch().entry.size());
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
@@ -720,11 +711,11 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, char *descriptio
   bout.nl(2);
 
   write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-  string list_filename = make_ul_batch_list();
+  const auto list_filename = make_ul_batch_list();
 
-  auto ti = std::chrono::system_clock::now();
+  const auto ti = std::chrono::system_clock::now();
   run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
-  auto time_used = std::chrono::system_clock::now() - ti;
+  const auto time_used = std::chrono::system_clock::now() - ti;
   a()->user()->add_extratime(time_used);
 }
 
@@ -805,7 +796,7 @@ int batchdl(int mode) {
           dszbatchul(bHangupAfterDl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!bHangupAfterDl) {
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+            bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
         }
         done = true;
@@ -846,7 +837,7 @@ int batchdl(int mode) {
           }
           if (!bHangupAfterDl) {
             bout.nl();
-            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+            bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
         }
       }

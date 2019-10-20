@@ -44,9 +44,6 @@ class UnixConsoleIO : public LocalIO {
   virtual void LocalPutch(unsigned char ch) override;
   virtual void LocalPuts(const std::string& text) override;
   virtual void LocalXYPuts(int x, int y, const std::string& text) override;
-  virtual int  LocalPrintf(const char *pszFormattedText, ...) override;
-  virtual int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) override;
-  virtual int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) override;
   virtual void set_protect(int l) override;
   virtual void savescreen() override;
   virtual void restorescreen() override;

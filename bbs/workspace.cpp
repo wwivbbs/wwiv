@@ -17,16 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/workspace.h"
+
 #include <memory>
 #include <string>
-
 #include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
 #include "bbs/application.h"
-
 #include "sdk/filenames.h"
 
 bool use_workspace;

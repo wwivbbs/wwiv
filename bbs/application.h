@@ -19,19 +19,19 @@
 #if !defined(__INCLUDED_BBS_APPLICATION_H__)
 #define __INCLUDED_BBS_APPLICATION_H__
 
-#include <chrono>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 #include "bbs/batch.h"
 #include "bbs/conf.h"
 #include "bbs/context.h"
 #include "bbs/output.h"
 #include "bbs/runnable.h"
-#include "core/filesystem.h"
 #include "sdk/vardec.h"
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
@@ -395,7 +395,6 @@ public:
   std::vector<directoryrec> directories;
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
-  std::vector<eventsrec> events;
   std::vector<tagrec_t> filelist;
   std::vector<confrec> subconfs;
   std::vector<confrec> dirconfs;
@@ -419,7 +418,6 @@ public:
   bool emchg_{false};
   bool hangup_{false};
   int chatting_{0};
-  int do_event_{0};
   bool no_hangup_{false};
   bool in_chatroom_{false};
   bool chatline_{false};

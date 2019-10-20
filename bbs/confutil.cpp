@@ -22,11 +22,8 @@
 #include "bbs/conf.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/mmkey.h"
 #include "core/log.h"
 #include "core/stl.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
 #include "sdk/subxtr.h"
 
 using namespace wwiv::sdk;
