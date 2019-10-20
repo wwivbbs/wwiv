@@ -149,6 +149,7 @@ if(WIN32)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib local_io localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT} ${FORKPTY_LIB})
+target_link_libraries(bbs_lib local_io localui core sdk ${CMAKE_THREAD_LIBS_INIT} ${FORKPTY_LIB} CL342_LIB)
 add_executable(bbs ${BBS_MAIN})
+message ("In BBS: CL: ${CL342_LIB}")
 target_link_libraries(bbs bbs_lib fmt::fmt-header-only)
