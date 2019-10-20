@@ -46,6 +46,20 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "variables": []
+    },
+    {
+      "name": "WSL-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "/usr/bin/cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "C:\\Users\\robcl\\AppData\\Local\\Microsoft\\WindowsApps\\debian.exe",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
+      "variables": []
     }
   ]
 }
