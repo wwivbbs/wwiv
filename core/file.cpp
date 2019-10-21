@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <system_error>
+#include <utility>
 #ifdef _WIN32
 #include "sys/utime.h"
 #include <direct.h>
@@ -134,9 +135,26 @@ bool backup_file(const path& p) {
 // File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
 
 /** Constructs a file from a path. */
-File::File(const std::filesystem::path& p)
-  : full_path_name_(p) {
+File::File(std::filesystem::path full_path_name)
+  : full_path_name_(std::move(full_path_name)) {
 }
+
+File::File(File&& other) : handle_(other.handle_) {
+  other.handle_ = -1;
+  full_path_name_.swap(other.full_path_name_);
+  error_text_.swap(other.error_text_);
+}
+
+File& File::operator=(File&& other) {
+  if (this != &other) {
+    handle_ = other.handle_;
+    full_path_name_.swap(other.full_path_name_);
+    error_text_.swap(other.error_text_);
+    other.handle_ = -1;
+  }
+  return *this;
+}
+
 
 File::~File() {
   if (this->IsOpen()) {
