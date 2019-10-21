@@ -18,17 +18,14 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
-#include <cstdint>
-#include <limits>
-#include <string>
-#include <vector>
-
 #include "core/file.h"
-#include <filesystem>
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
 #include "sdk/msgapi/type2_text.h"
+#include <cstdint>
+#include <filesystem>
+#include <string>
 
 namespace wwiv {
 namespace sdk {
@@ -47,7 +44,7 @@ public:
     header_.active_message_count = active_message_count;
   }
   uint16_t increment_active_message_count() { return ++header_.active_message_count; }
-  bool initialized() const { return initialized_; }
+  [[nodiscard]] bool initialized() const { return initialized_; }
   void set_initialized(bool initialized) { initialized_ = initialized; }
 
   subfile_header_t raw_header() const { return header_; }
@@ -73,8 +70,8 @@ private:
 class WWIVMessageArea : public MessageArea, private Type2Text {
 public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
-                  const std::filesystem::path& sub_filename,
-                  const std::filesystem::path& text_filename, int subnum);
+                  std::filesystem::path sub_filename,
+                  std::filesystem::path text_filename, int subnum);
   virtual ~WWIVMessageArea();
 
   // Message Sub Specific Operations

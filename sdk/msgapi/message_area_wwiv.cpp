@@ -131,16 +131,16 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
 }
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
-                                 const std::filesystem::path& sub_filename,
-                                 const std::filesystem::path& text_filename,
+                                 std::filesystem::path sub_filename,
+                                 std::filesystem::path text_filename,
                                  int subnum)
-    : MessageArea(api), Type2Text(text_filename), wwiv_api_(api), sub_(sub),
-      sub_filename_(sub_filename), header_{}, subnum_(subnum) {
+    : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
+      sub_filename_(std::move(sub_filename)), header_{}, subnum_(subnum) {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!subfile) {
     // TODO: throw exception
   } else {
-    WWIVMessageAreaHeader h = ReadHeader(subfile);
+    auto h = ReadHeader(subfile);
     header_ = h.raw_header();
   }
   open_ = true;
@@ -214,7 +214,7 @@ bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number
   }
 
   // Use the 3 arg form of split string so we don't strip blank lines.
-  vector<string> lines = SplitString(raw_text, "\n", false);
+  auto lines = SplitString(raw_text, "\n", false);
   auto it = std::begin(lines);
   if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' "
@@ -247,15 +247,15 @@ bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number
       to = StringTrim(line.substr(3));
     } else {
       // No more special lines, the rest is just text.
-      for (; it != std::end(lines); it++) {
+      for (; it != std::end(lines); ++it) {
         auto text_line = *it;
         // Terminate the string with a control-Z.
-        auto cz_pos = text_line.find(CZ);
+        const auto cz_pos = text_line.find(CZ);
         if (cz_pos != string::npos) {
           text_line = text_line.substr(0, cz_pos);
         }
         // Trim all remaining nulls.
-        auto null_pos = text_line.find((char)0);
+        const auto null_pos = text_line.find(static_cast<char>(0));
         if (null_pos != string::npos) {
           text_line.resize(null_pos);
         }

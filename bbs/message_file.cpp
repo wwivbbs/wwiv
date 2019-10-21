@@ -65,7 +65,7 @@ static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
   file->Read(gat, GAT_SECTION_SIZE);
 
   gat_section = 0;
-  return std::move(file);
+  return file;
 }
 
 static void set_gat_section(File& file, int section) {
@@ -109,18 +109,18 @@ void remove_link(const messagerec* msg, const string& fileName) {
     break;
   case 2:
   {
-    unique_ptr<File> file(OpenMessageFile(fileName));
+    auto file(OpenMessageFile(fileName));
     if (!file->IsOpen()) {
       return;
     }
-    set_gat_section(*file.get(), static_cast<int>(msg->stored_as / GAT_NUMBER_ELEMENTS));
+    set_gat_section(*file, static_cast<int>(msg->stored_as / GAT_NUMBER_ELEMENTS));
     int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
     while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-      int next_section = static_cast<long>(gat[current_section]);
+      const int next_section = static_cast<long>(gat[current_section]);
       gat[current_section] = 0;
       current_section = next_section;
     }
-    save_gat(*file.get());
+    save_gat(*file);
     file->Close();
   }
   break;
@@ -142,7 +142,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
     unique_ptr<File> file(OpenMessageFile(fileName));
     if (file->IsOpen()) {
       for (int section = 0; section < 1024; section++) {
-        set_gat_section(*file.get(), section);
+        set_gat_section(*file, section);
         int gatp = 0;
         int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
         gati_t i4 = 1;
@@ -159,7 +159,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
             file->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = gati[i + 1];
           }
-          save_gat(*file.get());
+          save_gat(*file);
           break;
         }
       }
@@ -183,7 +183,7 @@ bool readfile(const messagerec* msg, const string& fileName, string* out) {
   }
 
   unique_ptr<File> file(OpenMessageFile(fileName));
-  set_gat_section(*file.get(), msg->stored_as / GAT_NUMBER_ELEMENTS);
+  set_gat_section(*file, msg->stored_as / GAT_NUMBER_ELEMENTS);
   int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   long message_length = 0;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
@@ -205,8 +205,8 @@ bool readfile(const messagerec* msg, const string& fileName, string* out) {
     current_section = gat[current_section];
   }
   file->Close();
-  string::size_type last_cz = out->find_last_of(CZ);
-  std::string::size_type last_block_start = out->length() - MSG_BLOCK_SIZE;
+  const auto last_cz = out->find_last_of(CZ);
+  const auto last_block_start = out->length() - MSG_BLOCK_SIZE;
   if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out->resize(last_cz);
@@ -229,7 +229,7 @@ void lineadd(const messagerec* msg, const string& sx, string fileName) {
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
       ++new1;
     }
-    int i = static_cast<int>(msg->stored_as % GAT_NUMBER_ELEMENTS);
+    auto i = static_cast<int>(msg->stored_as % GAT_NUMBER_ELEMENTS);
     while (gat[i] != 65535) {
       i = gat[i];
     }
@@ -253,7 +253,7 @@ void lineadd(const messagerec* msg, const string& sx, string fileName) {
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast<gati_t>(new1);
-      save_gat(*message_file.get());
+      save_gat(*message_file);
     }
     free(b);
     message_file->Close();

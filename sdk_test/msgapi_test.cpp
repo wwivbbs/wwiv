@@ -18,18 +18,15 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
-#include "sdk/networks.h"
 #include "sdk_test/sdk_helper.h"
+#include <memory>
+#include <string>
 
 using namespace std;
 using namespace wwiv::core;
@@ -40,15 +37,15 @@ using namespace wwiv::strings;
 class MsgApiTest : public testing::Test {
 public:
   void SetUp() override {
-    wwiv::sdk::msgapi::MessageApiOptions options;
-    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+    MessageApiOptions options;
+    options.overflow_strategy = OverflowStrategy::delete_none;
     config = make_unique<Config>(helper.root());
     api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
   }
 
   unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname,
                                     const string& title, const string& text) {
-    unique_ptr<Message> msg(area.CreateMessage());
+    auto msg(area.CreateMessage());
 
     auto& h = msg->header();
     static uint32_t daten = 915192000;
@@ -105,7 +102,7 @@ TEST_F(MsgApiTest, Resynch) {
   ASSERT_TRUE(api->Create(sub, -1));
   unique_ptr<MessageArea> area(api->Open(sub, -1));
   {
-    unique_ptr<Message> m(CreateMessage(*area, 1, "From1", "Title1", "Line1\r\nLine2\r\n"));
+    auto m(CreateMessage(*area, 1, "From1", "Title1", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m, {}));
     m->header().set_from_usernum(2);
     m->header().set_from("From2");

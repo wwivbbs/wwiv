@@ -18,29 +18,29 @@
 #ifndef __INCLUDED_SDK_TYPE2_TEXT_H__
 #define __INCLUDED_SDK_TYPE2_TEXT_H__
 
+#include "core/file.h"
+#include "sdk/msgapi/message_wwiv.h"
 #include <cstdint>
+#include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
-
-#include "core/file.h"
-#include <filesystem>
-#include "sdk/msgapi/message_wwiv.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
 typedef uint16_t gati_t;
-static constexpr int GAT_NUMBER_ELEMENTS = 2048;
-static constexpr int GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t);
-static constexpr int MSG_BLOCK_SIZE = 512;
-static constexpr int GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
-#define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
+static constexpr uint32_t GAT_NUMBER_ELEMENTS = 2048;
+static constexpr uint32_t GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t);
+static constexpr uint32_t MSG_BLOCK_SIZE = 512;
+static constexpr uint32_t GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
+#define MSG_STARTING(section__) ((section__) * GATSECLEN + GAT_SECTION_SIZE)
 
 
 class Type2Text {
 public:
-  Type2Text(const std::filesystem::path& text_filename);
+  explicit Type2Text(std::filesystem::path text_filename);
 
   std::vector<gati_t> load_gat(wwiv::core::File& file, size_t section);
   void save_gat(wwiv::core::File& f, size_t section, const std::vector<gati_t>& gat);
@@ -49,7 +49,7 @@ public:
   bool remove_link(messagerec& msg);
 
 private:
-  std::unique_ptr<wwiv::core::File> OpenMessageFile();
+  std::optional<wwiv::core::File> OpenMessageFile() const;
   const std::filesystem::path path_;
 };
 
