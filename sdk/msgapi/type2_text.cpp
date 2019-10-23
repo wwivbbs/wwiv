@@ -156,7 +156,7 @@ bool Type2Text::savefile(const string& text, messagerec* msg) {
   size_t section;
   for (section = 0; section < 1024; section++) {
     auto gat = load_gat(*msgfile, section);
-    const auto nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
+    const auto nNumBlocksRequired = static_cast<int>((text.length() + MSG_BLOCK_SIZE - 1) / MSG_BLOCK_SIZE);
     gati_t i4 = 1;
     gati.clear();
     while (size_int(gati) < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
@@ -176,6 +176,7 @@ bool Type2Text::savefile(const string& text, messagerec* msg) {
       break;
     }
   }
+  msg->storage_type = STORAGE_TYPE;
   msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(section) * GAT_NUMBER_ELEMENTS;
   return true;
 }
