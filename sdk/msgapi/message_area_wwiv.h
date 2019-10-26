@@ -106,7 +106,7 @@ private:
   bool ParseMessageText(const postrec& header, int message_number, std::string& from_username,
                         std::string& date, std::string& to, std::string& in_reply_to,
                         std::string& text);
-  bool HasSubChanged();
+  bool HasSubChanged() const;
   bool ResyncMessageImpl(int& message_number, Message& message);
 
   static constexpr uint8_t STORAGE_TYPE = 2;

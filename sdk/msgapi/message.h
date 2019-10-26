@@ -83,7 +83,7 @@ class MessageText {
 public:
   virtual ~MessageText() = default;
   virtual const std::string& text() const = 0;
-  virtual void set_text(const std::string&) = 0;
+  virtual void set_text(std::string) = 0;
 
 protected:
   MessageText() = default;

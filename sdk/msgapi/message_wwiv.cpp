@@ -17,12 +17,12 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_wwiv.h"
 
+#include "core/strings.h"
+#include "sdk/vardec.h"
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include "core/strings.h"
-#include "sdk/vardec.h"
 
 using std::string;
 using std::vector;
@@ -33,13 +33,13 @@ namespace wwiv::sdk::msgapi {
 WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
   : header_(postrec{}), api_(api) {}
 
-WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-  const std::string& in_reply_to, const MessageApi* api)
-  : header_(header), from_(from), to_(to), in_reply_to_(in_reply_to),
-    api_(api) {}
+WWIVMessageHeader::WWIVMessageHeader(postrec header, std::string from, std::string to,
+                                     std::string in_reply_to, const MessageApi* api)
+    : header_(header), from_(std::move(from)), to_(std::move(to)),
+      in_reply_to_(std::move(in_reply_to)), api_(api) {}
 
 bool WWIVMessageHeader::local() const {
-  uint8_t net_num = header_.network.network_msg.net_number;
+  const auto net_num = header_.network.network_msg.net_number;
   if (net_num >= api_->network().size()) {
     // not a valid network number.
     return true;
@@ -48,7 +48,7 @@ bool WWIVMessageHeader::local() const {
     // no network system
     return true;
   }
-  int local_net = api_->network().at(net_num).sysnum;
+  const int local_net = api_->network().at(net_num).sysnum;
   return local_net == header_.ownersys;
 }
 
@@ -78,30 +78,26 @@ void WWIVMessageHeader::set_pending_network(bool b) {
 }
 
 void WWIVMessageHeader::set_title(const std::string& t) {
-  string title = t;
+  auto title = t;
   if (title.size() > 72) {
     title.resize(72);
   }
   to_char_array(header_.title, title);
 }
 
-WWIVMessageText::WWIVMessageText()
-  : WWIVMessageText("") {}
+WWIVMessageText::WWIVMessageText() : WWIVMessageText("") {}
 
-WWIVMessageText::WWIVMessageText(const std::string& text)
-  : MessageText(), text_(text) {}
+WWIVMessageText::WWIVMessageText(std::string text) : text_(std::move(text)) {}
 
-void WWIVMessageText::set_text(const std::string& text) {
-  text_ = text;
-}
+void WWIVMessageText::set_text(std::string text) { text_ = std::move(text); }
 
 const std::string& WWIVMessageText::text() const {
   return text_;
 }
 
 WWIVMessage::WWIVMessage(std::unique_ptr<WWIVMessageHeader> header,
-  std::unique_ptr<WWIVMessageText> text)
-  : Message(), header_(std::move(header)), text_(std::move(text)) {}
+                         std::unique_ptr<WWIVMessageText> text)
+    : header_(std::move(header)), text_(std::move(text)) {}
 
 
 } // namespace wwiv

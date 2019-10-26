@@ -31,7 +31,6 @@
 #include "sdk/ssm.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include <bbs/subacc.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -528,7 +527,7 @@ int WWIVMessageArea::DeleteExcess() {
     return ResyncMessageImpl(message_number, *m);
   }
 
-  bool WWIVMessageArea::HasSubChanged() {
+  bool WWIVMessageArea::HasSubChanged() const {
     const auto last_read_header = this->header_;
     subfile_header_t current_read_header = {};
     {
