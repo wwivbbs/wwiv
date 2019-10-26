@@ -50,21 +50,11 @@ public:
   }
 
   [[nodiscard]] std::optional<messagerec> save_message(const std::string& text) {
-    messagerec m{};
-    const auto ok = t_->savefile(text, &m);
-    if (!ok) {
-      return std::nullopt;
-    }
-    return m;
+    return t_->savefile(text);
   }
 
   [[nodiscard]] std::optional<std::string> readfile(const messagerec& m) const {
-    std::string out;
-    const auto ok = t_->readfile(&m, &out);
-    if (!ok) {
-      return std::nullopt;
-    }
-    return out;
+    return t_->readfile(m);
   }
 
   FileHelper helper;
@@ -86,11 +76,9 @@ TEST_F(Type2TextTest, Empty) {
 TEST_F(Type2TextTest, NotEmpty) {
   ASSERT_TRUE(CreateMsgTextFile());
 
-  messagerec m{};
-  m.storage_type = 2;
-  m.stored_as = 0xffffffff;
-  ASSERT_TRUE(t_->savefile("Hello World", &m));
-  EXPECT_EQ(m.stored_as, 1);
+  auto m = t_->savefile("Hello World");
+  ASSERT_TRUE(m.has_value());
+  EXPECT_EQ(m->stored_as, 1);
 }
 
 TEST_F(Type2TextTest, Save_Then_Load) {

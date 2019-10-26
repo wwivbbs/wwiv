@@ -25,7 +25,6 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/type2_text.h"
-#include "sdk/net.h"
 #include "sdk/status.h"
 #include <memory>
 #include <string>
@@ -37,6 +36,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
+template <class S>
+constexpr auto MSG_STARTING(S section) { return section * GATSECLEN + GAT_SECTION_SIZE; }
 
 static long gat_section = -1;
 static gati_t *gat = new gati_t[2048]();

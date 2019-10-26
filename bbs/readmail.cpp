@@ -847,7 +847,7 @@ void readmail(int mode) {
             if (!a()->current_sub().nets.empty()) {
               p.status |= status_pending_net;
             }
-            p.msg.storage_type = (uint8_t)a()->current_sub().storage_type;
+            p.msg.storage_type = static_cast<uint8_t>(a()->current_sub().storage_type);
             savefile(b, &(p.msg), a()->current_sub().filename);
             auto status = a()->status_manager()->BeginTransaction();
             p.qscan = status->IncrementQScanPointer();

@@ -36,21 +36,20 @@ static constexpr uint32_t GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t
 static constexpr uint32_t MSG_BLOCK_SIZE = 512;
 static constexpr uint32_t GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 static constexpr uint8_t STORAGE_TYPE = 2;
-#define MSG_STARTING(section__) ((section__) * GATSECLEN + GAT_SECTION_SIZE)
 
 
 class Type2Text {
 public:
   explicit Type2Text(std::filesystem::path text_filename);
 
-  std::vector<gati_t> load_gat(wwiv::core::File& file, size_t section);
-  void save_gat(wwiv::core::File& f, size_t section, const std::vector<gati_t>& gat);
-  bool readfile(const messagerec* msg, std::string* out);
-  bool savefile(const std::string& text, messagerec* message_record);
-  bool remove_link(const messagerec& msg);
+  [[nodiscard]] std::vector<gati_t> load_gat(wwiv::core::File& file, int section);
+  void save_gat(core::File& f, size_t section, const std::vector<gati_t>& gat);
+  [[nodiscard]] std::optional<std::string> readfile(const messagerec& msg);
+  [[nodiscard]] std::optional<messagerec> savefile(const std::string& text);
+  [[nodiscard]] bool remove_link(const messagerec& msg);
 
 private:
-  std::optional<wwiv::core::File> OpenMessageFile() const;
+  [[nodiscard]] std::optional<core::File> OpenMessageFile() const;
   const std::filesystem::path path_;
 };
 

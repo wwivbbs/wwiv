@@ -132,10 +132,11 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
   if (text.back() != CZ) {
     text.push_back(CZ);
   }
-
-  if (!savefile(text, &m.msg)) {
+  auto msg = savefile(text);
+  if (!msg) {
     return false;
   }
+  m.msg = msg.value();
   increment_email_counters(config_, m.touser);
   return add_email(m);
 }
@@ -192,7 +193,12 @@ bool WWIVEmail::read_email_header_and_text(int email_number, mailrec& m, std::st
   if (!read_email_header(email_number, m)) {
     return false;
   }
-  return readfile(&m.msg, &text);
+  auto o =  readfile(m.msg);
+  if (!o) {
+    return false;
+  }
+  text = o.value();
+  return true;
 }
 
 /** Deletes an email by number */
@@ -230,7 +236,7 @@ bool WWIVEmail::DeleteMessage(int email_number) {
     }
   }
   if (rm) {
-    remove_link(m.msg);
+    (void) remove_link(m.msg);
   }
 
   if (m.tosys == 0) {
