@@ -25,7 +25,6 @@
 #include "sdk/msgapi/type2_text.h"
 #include <memory>
 #include <optional>
-#include <tuple>
 
 using namespace std;
 using namespace wwiv::core;
@@ -50,10 +49,22 @@ public:
     return true;
   }
 
-  [[nodiscard]] std::tuple<bool, messagerec> save_message(const std::string& text) {
+  [[nodiscard]] std::optional<messagerec> save_message(const std::string& text) {
     messagerec m{};
     const auto ok = t_->savefile(text, &m);
-    return { ok, m };
+    if (!ok) {
+      return std::nullopt;
+    }
+    return m;
+  }
+
+  [[nodiscard]] std::optional<std::string> readfile(const messagerec& m) const {
+    std::string out;
+    const auto ok = t_->readfile(&m, &out);
+    if (!ok) {
+      return std::nullopt;
+    }
+    return out;
   }
 
   FileHelper helper;
@@ -85,41 +96,68 @@ TEST_F(Type2TextTest, NotEmpty) {
 TEST_F(Type2TextTest, Save_Then_Load) {
   ASSERT_TRUE(CreateMsgTextFile());
 
-  auto [ok, m] = save_message("Hello World");
-  ASSERT_TRUE(ok);
-  ASSERT_EQ(1, m.stored_as);
-  auto [ok2, m2] = save_message("Hello World2");
-  ASSERT_TRUE(ok2);
-  ASSERT_EQ(2, m2.stored_as);
+  auto m1 = save_message("Hello World");
+  ASSERT_EQ(1, m1->stored_as);
+  auto m2 = save_message("Hello World2");
+  ASSERT_EQ(2, m2->stored_as);
 
-  std::string out;
-  ASSERT_TRUE(t_->readfile(&m, &out));
-  ASSERT_EQ(1, m.stored_as);
-  ASSERT_EQ("Hello World", out);
+  auto out = readfile(m1.value());
+  ASSERT_EQ("Hello World", *out);
 
-  ASSERT_TRUE(t_->readfile(&m2, &out));
-  ASSERT_EQ(2, m2.stored_as);
-  ASSERT_EQ("Hello World2", out);
+  out = readfile(m2.value());
+  ASSERT_EQ("Hello World2", *out);
 }
 
 TEST_F(Type2TextTest, TwoBlocks) {
   ASSERT_TRUE(CreateMsgTextFile());
 
-  auto [ok, m] = save_message("Hello World");
-  ASSERT_TRUE(ok);
-  ASSERT_EQ(1, m.stored_as);
+  auto m1 = save_message("Hello World");
+  ASSERT_EQ(1, m1->stored_as);
 
   const std::string two_blocks(513, 'x');
-  auto [ok2, m2] = save_message(two_blocks);
-  ASSERT_TRUE(ok2);
-  ASSERT_EQ(2, m2.stored_as);
+  auto m2 = save_message(two_blocks);
+  ASSERT_EQ(2, m2->stored_as);
 
-  auto [ok4, m4] = save_message("Hello World");
-  ASSERT_TRUE(ok);
-  ASSERT_EQ(4, m4.stored_as);
+  auto m4 = save_message("Hello World");
+  ASSERT_EQ(4, m4->stored_as);
 
-  std::string out;
-  ASSERT_TRUE(t_->readfile(&m2, &out));
-  ASSERT_EQ(2, m2.stored_as);
-  ASSERT_EQ(two_blocks, out);
+  auto out = readfile(m2.value());
+  ASSERT_EQ(two_blocks, *out);
 }
+
+TEST_F(Type2TextTest, Reuse_Block_After_Delete) {
+  ASSERT_TRUE(CreateMsgTextFile());
+
+  auto m1 = save_message("Hello World");
+  ASSERT_EQ(1, m1->stored_as);
+  auto m2 = save_message("Hello World2");
+  ASSERT_EQ(2, m2->stored_as);
+
+  ASSERT_TRUE(t_->remove_link(m1.value()));
+  auto m3 = save_message("Hello World3");
+  ASSERT_EQ(1, m3->stored_as);
+
+}
+
+TEST_F(Type2TextTest, Move_To_Next_Gat_Section) {
+  ASSERT_TRUE(CreateMsgTextFile());
+
+  const std::string msg32k(32 * 1024, 'x'); 
+  // Fill up first section.  First section will have only 63 free blocks
+  for (auto i = 0; i < 31; i++) {
+    auto m = save_message(msg32k);
+    ASSERT_EQ((i * 64) + 1, m->stored_as);
+  }
+
+  // Need 64 blocks, so will start in 2nd section.
+  auto m2 = save_message(msg32k);
+  ASSERT_EQ(1, m2->stored_as / 2048);
+  ASSERT_EQ(1, m2->stored_as % 2048);
+
+  // Need 1 blocks, so will start in 1nd section again.
+  auto m3 = save_message("Hello World3");
+  ASSERT_EQ(0, m3->stored_as / 2048);
+  ASSERT_EQ(1985, m3->stored_as % 2048);
+}
+
+

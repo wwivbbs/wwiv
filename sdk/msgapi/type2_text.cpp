@@ -45,7 +45,7 @@ Type2Text::Type2Text(std::filesystem::path p) : path_(std::move(p)) {}
 
 // Implementation Details
 
-bool Type2Text::remove_link(messagerec& msg) {
+bool Type2Text::remove_link(const messagerec& msg) {
   auto file = OpenMessageFile();
   if (!file || !file->IsOpen()) {
     return false;
@@ -128,9 +128,19 @@ bool Type2Text::readfile(const messagerec* msg, string* out) {
 
   auto current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * current_section, File::Whence::begin);
+    const auto pos = file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * current_section, File::Whence::begin);
+    if (pos == -1) {
+      // Error seeking occurred.
+      LOG(ERROR) << "Error seeking to position for message stored_as: " << msg->stored_as;
+      return false;
+    }
     char b[MSG_BLOCK_SIZE + 1];
-    file->Read(b, MSG_BLOCK_SIZE);
+    const auto ret = file->Read(b, MSG_BLOCK_SIZE);
+    if (ret == -1) {
+      // Error seeking occurred.
+      LOG(ERROR) << "Error reading block for message stored_as: " << msg->stored_as;
+      return false;
+    }
     b[MSG_BLOCK_SIZE] = 0;
     out->append(b);
     current_section = gat[current_section];

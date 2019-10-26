@@ -47,7 +47,7 @@ public:
   void save_gat(wwiv::core::File& f, size_t section, const std::vector<gati_t>& gat);
   bool readfile(const messagerec* msg, std::string* out);
   bool savefile(const std::string& text, messagerec* message_record);
-  bool remove_link(messagerec& msg);
+  bool remove_link(const messagerec& msg);
 
 private:
   std::optional<wwiv::core::File> OpenMessageFile() const;
