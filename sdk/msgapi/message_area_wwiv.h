@@ -25,6 +25,7 @@
 #include "sdk/msgapi/type2_text.h"
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 
 namespace wwiv {
@@ -38,8 +39,8 @@ public:
   explicit WWIVMessageAreaHeader(subfile_header_t& header) : header_(header) {}
   WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t active_message_count);
 
-  const subfile_header_t& header() const { return header_; }
-  uint16_t active_message_count() const { return header_.active_message_count; }
+  [[nodiscard]] const subfile_header_t& header() const { return header_; }
+  [[nodiscard]] uint16_t active_message_count() const { return header_.active_message_count; }
   void set_active_message_count(uint16_t active_message_count) {
     header_.active_message_count = active_message_count;
   }
@@ -47,7 +48,7 @@ public:
   [[nodiscard]] bool initialized() const { return initialized_; }
   void set_initialized(bool initialized) { initialized_ = initialized; }
 
-  subfile_header_t raw_header() const { return header_; }
+  [[nodiscard]] subfile_header_t raw_header() const { return header_; }
 
 private:
   subfile_header_t header_{};
@@ -67,7 +68,7 @@ private:
   int message_area_number_;
 };
 
-class WWIVMessageArea : public MessageArea, private Type2Text {
+class WWIVMessageArea final : public MessageArea, private Type2Text {
 public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
                   std::filesystem::path sub_filename,
@@ -78,7 +79,7 @@ public:
   bool Close() override;
   bool Lock() override;
   bool Unlock() override;
-  void ReadMessageAreaHeader(MessageAreaHeader& header) override;
+  std::unique_ptr<MessageAreaHeader> ReadMessageAreaHeader() override;
   void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
   int FindUserMessages(const std::string& user_name) override;
   int number_of_messages() override;
@@ -94,20 +95,20 @@ public:
   bool ResyncMessage(int& message_number) override;
   bool ResyncMessage(int& message_number, Message& message) override;
 
-  std::unique_ptr<Message> CreateMessage() override;
-  bool Exists(daten_t d, const std::string& title, uint16_t from_system,
-              uint16_t from_user) override;
-  MessageAreaLastRead& last_read() const noexcept override;
-  message_anonymous_t anonymous_type() const noexcept override;
+  [[nodiscard]] std::unique_ptr<Message> CreateMessage() override;
+  [[nodiscard]] bool Exists(daten_t d, const std::string& title, uint16_t from_system,
+                            uint16_t from_user) override;
+  [[nodiscard]] MessageAreaLastRead& last_read() const noexcept override;
+  [[nodiscard]] message_anonymous_t anonymous_type() const noexcept override;
 
 private:
   int DeleteExcess();
-  bool add_post(const postrec& post);
-  bool ParseMessageText(const postrec& header, int message_number, std::string& from_username,
-                        std::string& date, std::string& to, std::string& in_reply_to,
-                        std::string& text);
-  bool HasSubChanged() const;
-  bool ResyncMessageImpl(int& message_number, Message& message);
+  [[nodiscard]] bool add_post(const postrec& post);
+  [[nodiscard]] bool ParseMessageText(const postrec& header, int message_number,
+                                      std::string& from_username, std::string& date,
+                                      std::string& to, std::string& in_reply_to, std::string& text);
+  [[nodiscard]] [[nodiscard]] bool HasSubChanged() const;
+  [[nodiscard]] bool ResyncMessageImpl(int& message_number, Message& message);
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 

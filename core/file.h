@@ -24,6 +24,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <sys/types.h>   // off_t
 
 #include "core/file_lock.h"

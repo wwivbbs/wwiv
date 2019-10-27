@@ -58,12 +58,12 @@ static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& he
   return file.Write(0, reinterpret_cast<const postrec*>(&p));
 }
 
-static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
+static std::unique_ptr<WWIVMessageAreaHeader> ReadHeader(DataFile<postrec>& file) {
   subfile_header_t raw_header{};
   if (!file.Read(0, reinterpret_cast<postrec*>(&raw_header))) {
     // Invalid header.
-    WWIVMessageAreaHeader header(0, 0);
-    header.set_initialized(false);
+    auto header = std::make_unique<WWIVMessageAreaHeader>(0, 0);
+    header->set_initialized(false);
     return header;
   }
   if (raw_header.active_message_count > file.number_of_records()) {
@@ -92,7 +92,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     // }
   }
 
-  return WWIVMessageAreaHeader(raw_header);
+  return std::make_unique<WWIVMessageAreaHeader>(raw_header);
 }
 
 WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number)
@@ -137,7 +137,7 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
     // TODO: throw exception
   } else {
     auto h = ReadHeader(subfile);
-    header_ = h.raw_header();
+    header_ = h->raw_header();
   }
   open_ = true;
   last_read_.reset(new WWIVMessageAreaLastRead(api, subnum));
@@ -154,11 +154,11 @@ bool WWIVMessageArea::Lock() { return false; }
 
 bool WWIVMessageArea::Unlock() { return false; }
 
-void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
+std::unique_ptr<MessageAreaHeader> WWIVMessageArea::ReadMessageAreaHeader() {
   DataFile<postrec> sub(sub_filename_);
-  const auto h = ReadHeader(sub);
-  header_ = h.raw_header();
-  header = h;
+  auto h = ReadHeader(sub);
+  header_ = h->raw_header();
+  return h;
 }
 
 void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader&) {
@@ -179,12 +179,12 @@ int WWIVMessageArea::number_of_messages() {
 
   const int file_num_records = sub.number_of_records();
   const auto wwiv_header = ReadHeader(sub);
-  if (!wwiv_header.initialized()) {
+  if (!wwiv_header->initialized()) {
     // TODO: throw exception
     // This is an invalid header.
     return 0;
   }
-  const int msgs = wwiv_header.active_message_count();
+  const int msgs = wwiv_header->active_message_count();
   if (msgs > file_num_records) {
     LOG(ERROR) << "Mismatch between header: " << msgs << " and filesize: " << file_num_records;
     return std::min(msgs, file_num_records);
@@ -529,12 +529,9 @@ int WWIVMessageArea::DeleteExcess() {
 
   bool WWIVMessageArea::HasSubChanged() const {
     const auto last_read_header = this->header_;
-    subfile_header_t current_read_header = {};
-    {
-      DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
-      const auto h = ReadHeader(sub);
-      current_read_header = h.raw_header();
-    }
+    DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
+    const auto h = ReadHeader(sub);
+    const auto current_read_header = h->raw_header();
 
     return current_read_header.mod_count > last_read_header.mod_count;
   }
@@ -674,18 +671,18 @@ int WWIVMessageArea::DeleteExcess() {
       return false;
     }
     auto wwiv_header = ReadHeader(sub);
-    if (!wwiv_header.initialized()) {
+    if (!wwiv_header->initialized()) {
       // This is an invalid header.
       return false;
     }
-    const uint32_t msgnum = wwiv_header.increment_active_message_count();
+    const uint32_t msgnum = wwiv_header->increment_active_message_count();
 
     // add the new post
     if (!sub.Write(msgnum, &post)) {
       return false;
     }
     // Write the header now.
-    return WriteHeader(sub, wwiv_header);
+    return WriteHeader(sub, *wwiv_header);
   }
 
   } // namespace wwiv

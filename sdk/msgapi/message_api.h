@@ -48,6 +48,7 @@ public:
 
 class MessageApi {
 public:
+  virtual ~MessageApi() = default;
   MessageApi(
     const MessageApiOptions& options,
     const std::string& root_directory,

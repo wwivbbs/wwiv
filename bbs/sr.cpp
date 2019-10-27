@@ -406,10 +406,10 @@ void ascii_send(const std::string& file_name, bool* sent, double* percent) {
     auto file_size = file.length();
     file_size = std::max<off_t>(file_size, 1);
     auto num_read = file.Read(b, 1024);
-    long lTotalBytes = 0L;
-    bool abort = false;
+    auto lTotalBytes = 0L;
+    auto abort = false;
     while (num_read && !a()->hangup_ && !abort) {
-      int nBufferPos = 0;
+      auto nBufferPos = 0;
       while (!a()->hangup_ && !abort && nBufferPos < num_read) {
         CheckForHangup();
         bout.bputch(b[nBufferPos++]);

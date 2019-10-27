@@ -70,24 +70,25 @@ static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
 }
 
 static void set_gat_section(File& file, int section) {
-  if (gat_section != section) {
-    auto file_size = file.length();
-    auto section_pos = static_cast<off_t>(section) * GATSECLEN;
-    if (file_size < section_pos) {
-      file.set_length(section_pos);
-      file_size = section_pos;
-    }
-    file.Seek(section_pos, File::Whence::begin);
-    if (file_size < (section_pos + GAT_SECTION_SIZE)) {
-      for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
-        gat[i] = 0;
-      }
-      file.Write(gat, GAT_SECTION_SIZE);
-    } else {
-      file.Read(gat, GAT_SECTION_SIZE);
-    }
-    gat_section = section;
+  if (gat_section == section) {
+    return;
   }
+  auto file_size = file.length();
+  auto section_pos = static_cast<off_t>(section) * GATSECLEN;
+  if (file_size < section_pos) {
+    file.set_length(section_pos);
+    file_size = section_pos;
+  }
+  file.Seek(section_pos, File::Whence::begin);
+  if (file_size < (section_pos + GAT_SECTION_SIZE)) {
+    for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
+      gat[i] = 0;
+    }
+    file.Write(gat, GAT_SECTION_SIZE);
+  } else {
+    file.Read(gat, GAT_SECTION_SIZE);
+  }
+  gat_section = section;
 }
 
 static void save_gat(File& file) {
@@ -115,7 +116,7 @@ void remove_link(const messagerec* msg, const string& fileName) {
       return;
     }
     set_gat_section(*file, static_cast<int>(msg->stored_as / GAT_NUMBER_ELEMENTS));
-    int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+    uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
     while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
       const int next_section = static_cast<long>(gat[current_section]);
       gat[current_section] = 0;
@@ -140,7 +141,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   {
     gati_t gati[128];
     memset(&gati, 0, sizeof(gati));
-    unique_ptr<File> file(OpenMessageFile(fileName));
+    auto file(OpenMessageFile(fileName));
     if (file->IsOpen()) {
       for (int section = 0; section < 1024; section++) {
         set_gat_section(*file, section);
@@ -183,7 +184,7 @@ bool readfile(const messagerec* msg, const string& fileName, string* out) {
     return false;
   }
 
-  unique_ptr<File> file(OpenMessageFile(fileName));
+  auto file(OpenMessageFile(fileName));
   set_gat_section(*file, msg->stored_as / GAT_NUMBER_ELEMENTS);
   int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   long message_length = 0;

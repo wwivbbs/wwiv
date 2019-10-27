@@ -19,14 +19,12 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 using std::string;
 using namespace wwiv::stl;
@@ -35,7 +33,7 @@ using namespace wwiv::strings;
 constexpr char CZ = 26;
 
 static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-  std::string temp(s);
+  auto temp(s);
   // Instead of splitting on \r\n, we remove the \n and then
   // split on just \r.  This also is great that it handles
   // the cases where we end in only \r properly.
@@ -44,9 +42,9 @@ static std::vector<std::string> split_wwiv_style_message_text(const std::string&
   return SplitString(temp, "\r", false);
 }
 
-ParsedMessageText::ParsedMessageText(const std::string& control_char, const std::string& text,
-                                     splitfn split_fn, const std::string& eol)
-    : control_char_(control_char), split_fn_(split_fn), eol_(eol) {
+ParsedMessageText::ParsedMessageText(std::string control_char, const std::string& text,
+                                     const splitfn& split_fn, std::string eol)
+    : control_char_(std::move(control_char)), split_fn_(split_fn), eol_(std::move(eol)) {
   if (text.empty()) {
     return;
   }
@@ -78,24 +76,24 @@ bool ParsedMessageText::add_control_line_after(const std::string& near_line,
           lines_.push_back(StrCat(control_char_, line));
         } else {
           // not at the end of the list, add it *after* the current item.
-          it++;
+          ++it;
           lines_.insert(it, StrCat(control_char_, line));
         }
         return true;
       }
     }
-    it++;
+    ++it;
   }
   return false;
 }
 
 bool ParsedMessageText::add_control_line(const std::string& line) {
   auto it = lines_.begin();
-  bool found_control_line = false;
+  auto found_control_line = false;
   while (it != lines_.end()) {
     auto l = *it;
     if (l.empty()) {
-      it++;
+      ++it;
       continue;
     }
     if (starts_with(l, control_char_)) {
@@ -106,7 +104,7 @@ bool ParsedMessageText::add_control_line(const std::string& line) {
       lines_.insert(it, StrCat(control_char_, line));
       return true;
     }
-    it++;
+    ++it;
   }
   lines_.push_back(StrCat(control_char_, line));
   return true;
@@ -122,7 +120,7 @@ bool ParsedMessageText::remove_control_line(const std::string& start_of_line) {
         return true;
       }
     }
-    it++;
+    ++it;
   }
   return false;
 }
@@ -138,8 +136,6 @@ WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)
                         text, split_wwiv_style_message_text,
                         "\r\n") {}
   
-WWIVParsedMessageText::~WWIVParsedMessageText() {}
+WWIVParsedMessageText::~WWIVParsedMessageText() = default;
 
-} // namespace msgapi
-} // namespace sdk
 } // namespace wwiv

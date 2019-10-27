@@ -17,29 +17,23 @@
 /**************************************************************************/
 #include "sdk/msgapi/email_wwiv.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
-#include <filesystem>
-#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "bbs/subacc.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "core/datetime.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 using std::string;
 using std::make_unique;
@@ -110,7 +104,6 @@ static bool increment_email_counters(const Config& config, uint16_t email_usernu
 bool WWIVEmail::AddMessage(const EmailData& data) {
   mailrec m{};
   to_char_array(m.title, data.title);
-  m.msg = { STORAGE_TYPE, 0xffffff };
   m.anony = static_cast<unsigned char>(data.anony);
   m.fromsys = static_cast<uint16_t>(data.from_system);
   m.fromuser = static_cast<uint16_t>(data.from_user);
@@ -147,7 +140,7 @@ static bool is_mailrec_deleted(const mailrec& h) {
 
 /** Total number of email messages in the system. */
 int WWIVEmail::number_of_messages() {
-  auto num = mail_file_.number_of_records();
+  const auto num = mail_file_.number_of_records();
   if (num == 0) { return 0; }
   std::vector<mailrec> headers;
   mail_file_.Seek(0);
@@ -204,7 +197,7 @@ bool WWIVEmail::read_email_header_and_text(int email_number, mailrec& m, std::st
 /** Deletes an email by number */
 bool WWIVEmail::DeleteMessage(int email_number) {
   if (!open_) { return false; }
-  auto num_records = static_cast<decltype(email_number)>(mail_file_.number_of_records());
+  const auto num_records = static_cast<decltype(email_number)>(mail_file_.number_of_records());
   if (num_records == 0 || email_number > num_records) {
     return false;
   }
@@ -279,8 +272,8 @@ bool WWIVEmail::add_email(const mailrec& m) {
   if (!open_) {
     return false;
   }
-  int recno = 0;
-  int max_size = mail_file_.number_of_records();
+  auto recno = 0;
+  const int max_size = mail_file_.number_of_records();
   if (max_size > 0) {
     mailrec temprec{};
     recno = max_size - 1;
@@ -297,6 +290,4 @@ bool WWIVEmail::add_email(const mailrec& m) {
   return mail_file_.Write(recno, &m);
 }
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace wwiv
