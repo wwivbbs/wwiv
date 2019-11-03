@@ -349,8 +349,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       file.Open(File::modeBinary | File::modeReadOnly);
     }
   }
-  auto lFileLength = file.length();
-  u.numbytes = lFileLength;
+  u.numbytes = static_cast<daten_t>(file.length());
   file.Close();
   a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
 

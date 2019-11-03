@@ -50,11 +50,11 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   if (!file) {
     return;
   }
-  bool bShownAnyMessage = false;
-  int bShownAllMessages = true;
-  int number_of_records = file.number_of_records();
+  auto bShownAnyMessage = false;
+  auto bShownAllMessages = true;
+  const auto number_of_records = file.number_of_records();
   shortmsgrec sm{};
-  for (int cur = 0; cur < number_of_records; cur++) {
+  for (size_t cur = 0; cur < number_of_records; cur++) {
     file.Read(cur, &sm);
     if (sm.touser == nUserNum && sm.tosys == 0) {
       bout << "|#9" << sm.message << "\r\n";
@@ -118,7 +118,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     } else {
       nNewMsgPos = 0;
     }
-    sm.tosys = static_cast<uint16_t>(0);  // 0 means local
+    sm.tosys = 0;  // 0 means local
     sm.touser = static_cast<uint16_t>(nUserNum);
     to_char_array(sm.message, messageText);
     sm.message[80] = '\0';
@@ -147,8 +147,7 @@ static void SendRemoteShortMessage(uint16_t user_num, uint16_t system_num, const
   }
   nh.length = msg.size();
   nh.method = 0;
-  const auto packet_filename = StrCat(net.dir, "p0", a()->network_extension());
-  File file(packet_filename);
+  File file(PathFilePath(net.dir, StrCat("p0", a()->network_extension())));
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);
   file.Write(&nh, sizeof(net_header_rec));

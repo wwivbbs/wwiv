@@ -291,7 +291,6 @@ void valuser(int user_number) {
 
 void print_net_listing(bool bForcePause) {
   int gn = 0;
-  char town[5];
   unsigned short slist, cmdbit = 0;
   char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
@@ -494,7 +493,7 @@ void print_net_listing(bool bForcePause) {
         pausescr();
         continue;
       }
-      strcpy(s, "000-000-0000");
+      to_char_array(s, "000-000-0000");
       bout.nl(2);
 
       for (const auto& b : bbslist.node_config()) {
@@ -591,12 +590,12 @@ void print_net_listing(bool bForcePause) {
               const auto town_fn = fmt::sprintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
               string areacode;
               if (File::Exists(PathFilePath(regions_dir, town_fn))) {
-                sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
+                auto town = fmt::sprintf("%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
               } else {
                 areacode = describe_area_code(to_number<int>(csne.phone));
               }
-              const string line = fmt::sprintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode);
+              const auto line = fmt::sprintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode);
               bout.bpla(line, &abort);
               bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
               bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
@@ -604,12 +603,11 @@ void print_net_listing(bool bForcePause) {
           }
           string line;
           if (cmdbit != NET_SEARCH_NOCONNECT) {
-            line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d",
-                    csne.sysnum, bbstype, csne.phone, csne.name,
-                    csne.numhops, csne.forsys, csne.group);
+            line = fmt::sprintf("%5u%c %12s  %-40s %3d %5u %2d", csne.sysnum, bbstype, csne.phone,
+                                csne.name, csne.numhops, csne.forsys, csne.group);
           } else {
-            line = fmt::sprintf("%5u%c %12s  %-40s%s%2d",
-                    csne.sysnum, bbstype, csne.phone, csne.name, " |17|15--- ----- |#0", csne.group);
+            line = fmt::sprintf("%5u%c %12s  %-40s%s%2d", csne.sysnum, bbstype, csne.phone,
+                                csne.name, " |17|15--- ----- |#0", csne.group);
           }
           bout.bpla(line, &abort);
         }
@@ -638,7 +636,7 @@ void mailr() {
 
   unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (pFileEmail->IsOpen()) {
-    int nRecordNumber = pFileEmail->length() / sizeof(mailrec) - 1;
+    auto nRecordNumber = (pFileEmail->length() / sizeof(mailrec)) - 1;
     char c = ' ';
     while (nRecordNumber >= 0 && c != 'Q' && !a()->hangup_) {
       pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
@@ -776,16 +774,16 @@ void zlog() {
     if (z.calls) {
       nTimePerUser = z.active / z.calls;
     }
-    char szBuffer[255];
-    sprintf(szBuffer, "%s    %4d    %4d     %3d     %3d     %3d    %3d     %3d      %3d|16",
-            z.date, z.calls, z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
+    auto buffer = fmt::sprintf(
+        "%s    %4d    %4d     %3d     %3d     %3d    %3d     %3d      %3d|16", z.date, z.calls,
+        z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
     // alternate colors to make it easier to read across the lines
     if (i % 2) {
       bout << "|#1";
-      bout.bpla(szBuffer, &abort);
+      bout.bpla(buffer, &abort);
     } else {
       bout << "|#3";
-      bout.bpla(szBuffer, &abort);
+      bout.bpla(buffer, &abort);
     }
     ++i;
     if (i < 97) {

@@ -133,7 +133,7 @@ void SubList() {
       wc // color code
       // message Index
       ; // new message tally
-  char ch, s[81], s2[10], s3[81], sdf[130];
+  char ch;
   bool next;
 
   int oldConf = a()->GetCurrentConferenceMessageArea();
@@ -178,12 +178,13 @@ void SubList() {
           p = 0;
           firstp = i1;
           bout.cls();
+          std::string s;
           if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
-            sprintf(s, "Conference %c: %s",
-              a()->subconfs[a()->uconfsub[i].confnum].designator,
-              stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name.c_str()));
+            s = fmt::sprintf("Conference %c: %s",
+                             a()->subconfs[a()->uconfsub[i].confnum].designator,
+                             stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name));
           } else {
-            sprintf(s, "%s Message Areas", a()->config()->system_name().c_str());
+            s = fmt::format("{} Message Areas", a()->config()->system_name());
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
@@ -191,34 +192,33 @@ void SubList() {
           DisplayHorizontalBar(78, 7);
         }
         ++ns;
-        sprintf(s, "    %-3.3s", a()->usub[i1].keys);
-        if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
-          to_char_array(s2, "|#5Yes");
-        } else {
-          to_char_array(s2, "|#6No ");
-        }
+        std::string yns =
+            (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32)))
+                ? "|#5Yes"
+                : "|#6No ";
         iscan(i1);
+        std::string net_info;
         if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks) > 1) {
           if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
-	          const char* ss;
+	          std::string net_name;
             if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
               wc = 6;
-              ss = "Gated";
+              net_name = "Gated";
             } else {
-              strcpy(s3, a()->net_networks[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name);
-              ss = stripcolors(s3);
+              const std::string nn = a()->net_networks[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name;
+              net_name = stripcolors(nn);
               wc = a()->net_num() % 8;
             }
             if (a()->subs().sub(a()->usub[i1].subnum).anony & anony_val_net) {
-              sprintf(s3, "|#7[|#%i%-8.8s|#7]", wc, ss);
+              net_info = fmt::sprintf("|#7[|#%i%-8.8s|#7]", wc, net_name);
             } else {
-              sprintf(s3, "|#7<|#%i%-8.8s|#7>", wc, ss);
+              net_info = fmt::sprintf("|#7<|#%i%-8.8s|#7>", wc, net_name);
             }
           } else {
-            strcpy(s3, " |#7>|#1LOCAL|#7<  ");
+            net_info = " |#7>|#1LOCAL|#7<  ";
           }
         } else {
-          strcpy(s3, "|#7>|#1LOCAL|#7<  ");
+          net_info = "|#7>|#1LOCAL|#7<  ";
         }
         int msgIndex = 1;
         while ((msgIndex <= a()->GetNumMessagesInCurrentMessageArea()) &&
@@ -226,16 +226,19 @@ void SubList() {
           ++msgIndex;
         }
         int newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
+        std::string sdf;
         if (a()->current_user_sub().subnum == a()->usub[i1].subnum) {
-          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
-                  i1 + 1, s2, s3, a()->subs().sub(a()->usub[i1].subnum).name.c_str(), 
-                  a()->GetNumMessagesInCurrentMessageArea(),
-                  newTally ? '6' : '3', newTally);
+          sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 "
+                             "|#9%5d |#9\xB3 |#%c%5u |#9",
+                             i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
+                             a()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3',
+                             newTally);
         } else {
-          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
-                  i1 + 1, s2, s3, a()->subs().sub(a()->usub[i1].subnum).name.c_str(),
-                  a()->GetNumMessagesInCurrentMessageArea(),
-                  newTally ? '6' : '3', newTally);
+          sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 "
+                             "|#9%5d |#9\xB3 |#%c%5u |#9",
+                             i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
+                             a()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3',
+                             newTally);
         }
         bout.bputs(sdf, &abort, &next);
         bout.nl();

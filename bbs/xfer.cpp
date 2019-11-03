@@ -329,7 +329,7 @@ void dliscan1(int directory_num) {
   a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".dir"));
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  int nNumRecords = fileDownload.length() / sizeof(uploadsrec);
+  auto nNumRecords = fileDownload.length() / sizeof(uploadsrec);
   uploadsrec u;
   if (nNumRecords == 0) {
     memset(&u, 0, sizeof(uploadsrec));
@@ -646,7 +646,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     strcpy(s2, a()->directories[ a()->udir[ a()->current_user_dir_num() ].subnum ].path);
     strcat(s2, u->filename);
     if (!File::Exists(s2)) {
-      strcpy(s1, "N/A");
+      to_char_array(s1, "N/A");
     }
   }
   for (i = 0; i < 5 - wwiv::strings::size_int(s1); i++) {
@@ -1003,5 +1003,6 @@ void remlist(const char *file_name) {
 }
 
 int FileAreaSetRecord(File &file, int nRecordNumber) {
-  return file.Seek(nRecordNumber * sizeof(uploadsrec), File::Whence::begin);
+  const auto r = file.Seek(nRecordNumber * sizeof(uploadsrec), File::Whence::begin);
+  return static_cast<int>(r);
 }

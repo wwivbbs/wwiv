@@ -383,13 +383,15 @@ std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
   if (IsNumber(command)) {
     if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
       MenuRec r{};
-      sprintf(r.szExecute, "SetSubNumber %d", to_number<int>(command));
-      result.push_back(std::move(r));
+      auto exec = fmt::format("SetSubNumber {}", to_number<int>(command));
+      to_char_array(r.szExecute, exec);
+      result.emplace_back(r);
       return result;
     } else if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
       MenuRec r{};
-      sprintf(r.szExecute, "SetDirNumber %d", to_number<int>(command));
-      result.push_back(std::move(r));
+      auto exec = fmt::format("SetDirNumber {}", to_number<int>(command));
+      to_char_array(r.szExecute, exec);
+      result.emplace_back(r);
       return result;
     }
   }

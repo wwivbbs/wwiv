@@ -389,7 +389,7 @@ public:
     char rs[21];
     char ch1 = '0';
 
-    strcpy(rs, rs_.c_str());
+    wwiv::strings::to_char_array(rs, rs_);
     for (int i = 0; i < rs_size_; i++) {
       if (rs[i] == ' ') {
         rs[i] = ch1++;

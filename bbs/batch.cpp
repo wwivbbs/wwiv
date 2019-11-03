@@ -240,7 +240,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               }
             }
             if (file.IsOpen()) {
-              u.numbytes = file.length();
+              u.numbytes = static_cast<daten_t>(file.length());
               file.Close();
               get_file_idz(&u, b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
@@ -620,12 +620,12 @@ void ProcessDSZLogFile() {
 
   File fileDszLog(a()->dsz_logfile_name_);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
-    auto nFileSize = fileDszLog.length();
-    char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
+    const auto nFileSize = fileDszLog.length();
+    auto ss = static_cast<char *>(calloc(nFileSize + 1, 1));
     if (ss) {
-      auto nBytesRead = fileDszLog.Read(ss, nFileSize);
-      if (nBytesRead > 0) {
-        ss[nBytesRead] = 0;
+      const auto bytes_read = fileDszLog.Read(ss, nFileSize);
+      if (bytes_read > 0) {
+        ss[bytes_read] = 0;
         lines[0] = strtok(ss, "\r\n");
         for (int i = 1; (i < a()->max_batch * 2 - 2) && (lines[i - 1]); i++) {
           lines[i] = strtok(nullptr, "\n");

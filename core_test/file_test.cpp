@@ -333,7 +333,7 @@ TEST(FileTest, Seek) {
   file.Read(&c, 1);
   EXPECT_EQ('3', c);
 
-  EXPECT_EQ(static_cast<off_t>(kContents.size()), file.Seek(0, File::Whence::end));
+  EXPECT_EQ(static_cast<File::size_type>(kContents.size()), file.Seek(0, File::Whence::end));
   EXPECT_EQ(0, file.Read(&c, 1));
 }
 

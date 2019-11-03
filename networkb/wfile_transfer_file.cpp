@@ -55,9 +55,10 @@ WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<Fil
   }
 }
 
-WFileTransferFile::~WFileTransferFile() {}
+WFileTransferFile::~WFileTransferFile() = default;
 
-int WFileTransferFile::file_size() const { return file_->length(); }
+// TODO(rushfan): This needs to be fixed to handle >2GB files.
+int WFileTransferFile::file_size() const { return static_cast<int>(file_->length()); }
 
 bool WFileTransferFile::Delete() {
   // Since this file may still be open, need to ensure

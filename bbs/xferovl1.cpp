@@ -246,7 +246,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     File file(s);
     file.Open(File::modeBinary | File::modeReadOnly);
     if (file.length() < (a()->max_extend_lines * 256)) {
-      long lFileLen = file.length();
+      auto lFileLen = file.length();
       file.Read(b, lFileLen);
       b[ lFileLen ] = 0;
     } else {
@@ -1093,7 +1093,7 @@ void removefilesnotthere(int dn, int *autodel) {
 
   dliscan1(dn);
   char szAllFilesFileMask[MAX_PATH];
-  strcpy(szAllFilesFileMask, "*.*");
+  to_char_array(szAllFilesFileMask, "*.*");
   align(szAllFilesFileMask);
   int i = recno(szAllFilesFileMask);
   bool abort = false;

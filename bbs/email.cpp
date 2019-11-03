@@ -176,11 +176,10 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
 }
 
 void sendout_email(EmailData& data) {
-  mailrec m, messageRecord;
-  net_header_rec nh;
-  int i;
+  mailrec m{};
+  mailrec messageRecord{};
+  net_header_rec nh{};
 
-  memset(&m, 0, sizeof(mailrec));
   to_char_array(m.title, data.title);
   m.msg = *data.msg;
   m.anony = data.anony;
@@ -203,21 +202,20 @@ void sendout_email(EmailData& data) {
   }
 
   if (data.system_number == 0) {
-    unique_ptr<File> pFileEmail(OpenEmailFile(true));
-    if (!pFileEmail->IsOpen()) {
+    auto file_email(OpenEmailFile(true));
+    if (!file_email->IsOpen()) {
       return;
     }
-    auto nEmailFileLen = pFileEmail->length() / sizeof(mailrec);
-    if (nEmailFileLen == 0) {
-      i = 0;
-    } else {
+    auto nEmailFileLen = file_email->length() / sizeof(mailrec);
+    File::size_type i = 0;
+    if (nEmailFileLen != 0) {
       i = nEmailFileLen - 1;
-      pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Read(&messageRecord, sizeof(mailrec));
+      file_email->Seek(i * sizeof(mailrec), File::Whence::begin);
+      file_email->Read(&messageRecord, sizeof(mailrec));
       while (i > 0 && messageRecord.tosys == 0 && messageRecord.touser == 0) {
         --i;
-        pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
-        int i1 = pFileEmail->Read(&messageRecord, sizeof(mailrec));
+        file_email->Seek(i * sizeof(mailrec), File::Whence::begin);
+        auto i1 = file_email->Read(&messageRecord, sizeof(mailrec));
         if (i1 == -1) {
           bout << "|#6DIDN'T READ WRITE!\r\n";
         }
@@ -227,10 +225,10 @@ void sendout_email(EmailData& data) {
       }
     }
 
-    pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
-    int nBytesWritten = pFileEmail->Write(&m, sizeof(mailrec));
-    pFileEmail->Close();
-    if (nBytesWritten == -1) {
+    file_email->Seek(i * sizeof(mailrec), File::Whence::begin);
+    auto bytes_written = file_email->Write(&m, sizeof(mailrec));
+    file_email->Close();
+    if (bytes_written == -1) {
       bout << "|#6DIDN'T SAVE RIGHT!\r\n";
     }
   } else {
@@ -256,15 +254,15 @@ void sendout_email(EmailData& data) {
     nh.daten = m.daten;
     nh.method = 0;
     unique_ptr<char[]> b1(new char[b.size() + 768]);
-    i = 0;
+    int i = 0;
     if (data.user_number == 0 && data.from_network_number == a()->net_num()) {
       nh.main_type = main_type_email_name;
       strcpy(&(b1[i]), a()->net_email_name.c_str());
-      i += a()->net_email_name.size() + 1;
+      i += wwiv::stl::size_int(a()->net_email_name) + 1;
     }
-    strcpy(&(b1[i]), m.title);
-    i += strlen(m.title) + 1;
-    memmove(&(b1[i]), b.c_str(), b.length());
+    strcpy(&b1[i], m.title);
+    i += size_int(m.title) + 1;
+    memmove(&b1[i], b.c_str(), b.length());
     nh.length = b.length() + i;
     if (nh.length > 32760) {
       bout << fmt::sprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
@@ -295,6 +293,7 @@ void sendout_email(EmailData& data) {
     a()->users()->readuser(&userRecord, data.user_number);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
     a()->users()->writeuser(&userRecord, data.user_number);
+    int i;
     if (user_online(data.user_number, &i)) {
       send_inst_sysstr(i, "You just received email.");
     }
@@ -302,7 +301,7 @@ void sendout_email(EmailData& data) {
       logMessage += a()->names()->UserName(data.user_number);
       sysoplog() << logMessage;
     } else {
-      string tempLogMessage = StrCat(logMessage, a()->names()->UserName(data.user_number));
+      auto tempLogMessage = StrCat(logMessage, a()->names()->UserName(data.user_number));
       sysoplog() << tempLogMessage;
       logMessage += ">UNKNOWN<";
     }

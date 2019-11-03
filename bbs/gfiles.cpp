@@ -128,8 +128,6 @@ void gfl_hdr(int which) {
 }
 
 void list_sec(int *map, int nmap) {
-  char lnum[5], rnum[5];
-
   int i2 = 0;
   bool abort = false;
   string s, s2, s3, s4, s5, s6, s7;
@@ -148,18 +146,19 @@ void list_sec(int *map, int nmap) {
   gfl_hdr(0);
   string t = times();
   for (int i = 0; i < nmap && !abort && !a()->hangup_; i++) {
-    sprintf(lnum, "%d", i + 1);
+    std::string lnum = std::to_string(i+1);
+    std::string rnum;
     s4 = trim_to_size_ignore_colors(a()->gfilesec[map[i]].name, 34);
     if (i + 1 >= nmap) {
       if (okansi()) {
-        to_char_array(rnum, std::string(3, '\xFE'));
+        rnum = std::string(3, '\xFE');
         s5 = std::string(29, '\xFE');
       } else {
-        to_char_array(rnum, std::string(3, 'o'));
+        rnum = std::string(3, 'o');
         s5 = std::string(29, 'o');
       }
     } else {
-      to_char_array(rnum, std::to_string(i + 2));
+      rnum = std::to_string(i + 2);
       s5 = trim_to_size_ignore_colors(a()->gfilesec[map[i + 1]].name, 29);
     }
     if (okansi()) {
@@ -459,13 +458,13 @@ void gfile_sec(int sn) {
               file.Close();
               bool sent = false;
               abort = false;
-              send_file(file_name.c_str(), &sent, &abort, g[i2 - 1].filename, -1, file_size);
-              char s1[255];
+              send_file(file_name, &sent, &abort, g[i2 - 1].filename, -1, file_size);
+              std::string s1;
               if (sent) {
-                sprintf(s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);
+                s1 = fmt::format("|#2{} |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);
                 done1 = true;
               } else {
-                sprintf(s1, "|#6\xFE |#9Error transferring |#2%s|#1.|#0", g[i2 - 1].filename);
+                s1 = fmt::format("|#6\xFE |#9Error transferring |#2{}|#1.|#0", g[i2 - 1].filename);
                 done1 = true;
               }
               bout.nl();

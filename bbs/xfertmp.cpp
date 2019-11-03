@@ -104,7 +104,7 @@ int check_for_files_arc(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
-    long file_size = file.length();
+    auto file_size = file.length();
     long lFilePos = 1;
     file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
@@ -215,7 +215,7 @@ int check_for_files_zip(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long l = 0;
-    long len = file.length();
+    auto len = file.length();
     while (l < len) {
       long sig = 0;
       file.Seek(l, File::Whence::begin);
@@ -281,7 +281,7 @@ int check_for_files_lzh(const char *file_name) {
     bout << "File not found: " << stripfn(file_name) << wwiv::endl;
     return 1;
   }
-  long file_size = file.length();
+  auto file_size = file.length();
   unsigned short nCrc;
   int err = 0;
   for (long l = 0; l < file_size;
@@ -320,7 +320,7 @@ int check_for_files_lzh(const char *file_name) {
 int check_for_files_arj(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    long file_size = file.length();
+    auto file_size = file.length();
     long lCurPos = 0;
     file.Seek(0L, File::Whence::begin);
     while (lCurPos < file_size) {
@@ -415,7 +415,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "No such file.\r\n\n";
     return false;
   }
-  long file_size = file.length();
+  auto file_size = file.length();
   file.Close();
   if (file_size == 0L) {
     bout << "File has nothing in it.\r\n\n";

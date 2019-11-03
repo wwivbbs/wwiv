@@ -135,57 +135,57 @@ void RequestChat() {
 // Allows selection of a name to "chat as". Returns selected string in *s.
 //
 
-static void select_chat_name(char* sysop_name) {
+static std::string select_chat_name() {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
-  strcpy(sysop_name, a()->config()->sysop_name().c_str());
+  std::string sysop_name = a()->config()->sysop_name();
   bout.curatr(a()->GetChatNameSelectionColor());
   a()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   a()->localIO()->PutsXY(22, 6, "Chat As: ");
   bout.curatr(a()->localIO()->GetEditLineColor());
   a()->localIO()->PutsXY(31, 6, std::string(30, SPACE));
 
-  int rc;
   a()->localIO()->GotoXY(31, 6);
-  a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL, &rc, sysop_name);
+  int rc = a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL);
   if (rc != ABORTED) {
-    StringTrimEnd(sysop_name);
+    StringTrimEnd(&sysop_name);
     auto user_number = to_number<int>(sysop_name);
     if (user_number > 0 && user_number <= a()->config()->max_users()) {
-      const string unn = a()->names()->UserName(user_number);
-      strcpy(sysop_name, unn.c_str());
+      sysop_name =  a()->names()->UserName(user_number);
     } else {
       if (!sysop_name[0]) {
-        strcpy(sysop_name, a()->config()->sysop_name().c_str());
+        sysop_name = a()->config()->sysop_name();
       }
     }
   } else {
-    strcpy(sysop_name, "");
+    sysop_name.clear();
   }
   a()->localIO()->restorescreen();
   a()->DisplaySysopWorkingIndicator(false);
+
+  return sysop_name;
 }
 
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
-static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop_name) {
+static void two_way_chat(std::string* rollover, int max_length, bool crend, const std::string& sysop_name) {
   char s2[100], temp1[100];
   int i, i1;
 
   auto cm = a()->chatting_;
   auto begx = a()->localIO()->WhereX();
-  if (rollover[0] != 0) {
+  if (!rollover->empty()) {
     if (bout.charbufferpointer_) {
       char szTempBuffer[255];
-      strcpy(szTempBuffer, rollover);
+      to_char_array(szTempBuffer, *rollover);
       strcat(szTempBuffer, &bout.charbuffer[bout.charbufferpointer_]);
       strcpy(&bout.charbuffer[1], szTempBuffer);
       bout.charbufferpointer_ = 1;
     } else {
-      strcpy(&bout.charbuffer[1], rollover);
+      strcpy(&bout.charbuffer[1], rollover->c_str());
       bout.charbufferpointer_ = 1;
     }
-    rollover[0] = 0;
+    rollover->clear();
   }
   bool done = false;
   int side = 0;
@@ -199,7 +199,7 @@ static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop
           s2[screencount] = '\xCD';
         }
         const string unn = a()->names()->UserName(a()->usernum);
-        sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name, unn.c_str());
+        sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name.c_str(), unn.c_str());
         int nNumCharsToMove = (((a()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
@@ -491,10 +491,10 @@ static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop
         for (i = 0; i < i1; i++) {
           bout.bputch(SPACE);
         }
+        rollover->clear();
         for (i = 0; i < i1; i++) {
-          rollover[i] = side0[a()->localIO()->WhereY()][cp0 - i1 + i];
+          rollover->push_back(side0[a()->localIO()->WhereY()][cp0 - i1 + i]);
         }
-        rollover[i1] = '\0';
         cp0 -= i1;
       }
       side0[a()->localIO()->WhereY()][cp0] = '\0';
@@ -513,10 +513,10 @@ static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop
         for (i = 0; i < i1; i++) {
           bout.bputch(SPACE);
         }
+        rollover->clear();
         for (i = 0; i < i1; i++) {
-          rollover[i] = side1[a()->localIO()->WhereY() - 13][cp1 - i1 + i];
+          rollover->push_back(side1[a()->localIO()->WhereY() - 13][cp1 - i1 + i]);
         }
-        rollover[i1] = '\0';
         cp1 -= i1;
       }
       side1[a()->localIO()->WhereY() - 13][cp1] = '\0';
@@ -540,13 +540,13 @@ static void two_way_chat(char* rollover, int max_length, bool crend, char* sysop
  */
 
 void chat1(const char* chat_line, bool two_way) {
-  char s[255], s1[255], s2[81], szSysopName[81];
+  char s2[81];
   if (!okansi()) {
     two_way = false;
   }
 
-  select_chat_name(szSysopName);
-  if (szSysopName[0] == '\0') {
+  auto sysop_name = select_chat_name();
+  if (!sysop_name.empty()) {
     return;
   }
 
@@ -562,7 +562,6 @@ void chat1(const char* chat_line, bool two_way) {
   File chatFile(PathFilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
 
   SavedLine line = bout.SaveCurrentLine();
-  s1[0] = '\0';
 
   bout.nl(2);
   int nSaveTopData = a()->topdata;
@@ -586,16 +585,16 @@ void chat1(const char* chat_line, bool two_way) {
     }
     bout.flush();
     const string unn = a()->names()->UserName(a()->usernum);
-    sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
-    auto x = ((a()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
+    auto s = fmt::format(" {} chatting with {} ", sysop_name, unn);
+    auto x = (a()->user()->GetScreenChars() - stripcolors(s).size()) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);
     bout << "|#4" << s;
     bout.GotoXY(1, 1);
-    s[0] = s1[0] = s2[0] = '\0';
+    s2[0] = '\0';
   }
-  bout << "|#7" << szSysopName << "'s here...";
+  bout << "|#7" << sysop_name << "'s here...";
   bout.nl(2);
-  strcpy(s1, chat_line);
+  std::string rollover = chat_line;
 
   if (two_way) {
     side0 = new char[MAXLINES_SIDE][MAXLEN];
@@ -605,10 +604,11 @@ void chat1(const char* chat_line, bool two_way) {
     }
   }
   do {
+    std::string s;
     if (two_way) {
-      two_way_chat(s1, MAXLEN, true, szSysopName);
+      two_way_chat(&rollover, MAXLEN, true, sysop_name);
     } else {
-      inli(s, s1, MAXLEN, true, false);
+      inli(&s, &rollover, MAXLEN, true, false);
     }
     if (a()->chat_file_ && !two_way) {
       if (!chatFile.IsOpen()) {
@@ -619,11 +619,11 @@ void chat1(const char* chat_line, bool two_way) {
           string f = fulldate();
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", f.c_str(), t.c_str());
           chatFile.Write(s2, strlen(s2));
-          strcpy(s2, "----------------------------------\r\n\r\n");
+          to_char_array(s2, "----------------------------------\r\n\r\n");
           chatFile.Write(s2, strlen(s2));
         }
       }
-      strcat(s, "\r\n");
+      s.append("\r\n");
     } else if (chatFile.IsOpen()) {
       chatFile.Close();
       a()->localIO()->Puts("-] Chat file closed.\r\n");

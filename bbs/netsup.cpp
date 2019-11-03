@@ -245,7 +245,7 @@ bool attempt_callout() {
 
 void print_pending_list() {
   int lines = 0;
-  char s1[81], s2[81], s3[81], s4[81], s5[81];
+  char s1[81];
   auto ss = a()->user()->GetStatus();
 
   if (a()->net_networks.empty()) {
@@ -295,11 +295,7 @@ void print_pending_list() {
         continue;
       }
 
-      if (allowed_to_call(con, DateTime::now())) {
-        strcpy(s2, "|#5Yes");
-      } else {
-        strcpy(s2, "|#3---");
-      }
+      std::string atc = (allowed_to_call(con, DateTime::now())) ? "|#5Yes" : "|#3---";
 
       int32_t m = 0, h = 0;
       if (r->lastcontactsent()) {
@@ -310,9 +306,9 @@ void print_pending_list() {
         strcpy(s1, "|#6     -    ");
       }
 
-      sprintf(s3, "%dk", ((r->bytes_sent()) + 1023) / 1024);
-      sprintf(s4, "%dk", ((r->bytes_received()) + 1023) / 1024);
-      sprintf(s5, "%dk", ((r->bytes_waiting()) + 1023) / 1024);
+      auto bsent = fmt::format("{}k", (r->bytes_sent() + 1023) / 1024);
+      auto brec = fmt::format("{}k", (r->bytes_received() + 1023) / 1024);
+      auto bwait = fmt::format("{}k", (r->bytes_waiting() + 1023) / 1024);
 
       if (m >= 30) {
         h++;
@@ -323,7 +319,7 @@ void print_pending_list() {
 
       bout << fmt::sprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
                    "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
-                   s2, a()->network_name().c_str(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
+                   atc, a()->network_name().c_str(), r->systemnumber(), bsent, brec, bwait, r->numfails(), s1);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;
@@ -340,11 +336,11 @@ void print_pending_list() {
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
-      sprintf(s3, "%ldk", (dead_net_file_size + 1023) / 1024);
+      auto deadk = fmt::format("{}k", (dead_net_file_size + 1023) / 1024);
       bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   net.name, s3);
+                   net.name, deadk);
     }
   }
 
@@ -357,11 +353,10 @@ void print_pending_list() {
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
-      sprintf(s3, "%ldk", (check_net_file_size + 1023) / 1024);
-      strcat(s3, "k");
+      auto checkk = fmt::format("{}k", (check_net_file_size + 1023) / 1024);
       bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   net.name, s3);
+                   net.name, checkk);
     }
   }
 
@@ -390,8 +385,8 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
   char* pszOriginalText = messageText;
   messageText += strlen(pszOriginalText) + 1;
-  unsigned short ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
-  char* ss = strchr(messageText, '\r');
+  auto ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
+  auto ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
     nm[ss - messageText] = 0;

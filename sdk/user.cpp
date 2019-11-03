@@ -139,7 +139,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->SetEmailAddress("");
 
   // Set default menu set abd listplus colors.
-  strcpy(u->data.menu_set, "wwiv");
+  to_char_array(u->data.menu_set, "wwiv");
   u->data.hot_keys = HOTKEYS_ON;
   u->data.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
   memset(u->data.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u->data.lp_colors));

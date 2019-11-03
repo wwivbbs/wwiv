@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_WTEXTFILE_H__
 #define __INCLUDED_WTEXTFILE_H__
 
+#include "core/file.h"
 #include "core/wwivport.h"
 #include <cstdio>
 #include <filesystem>
@@ -123,7 +124,7 @@ public:
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
   [[nodiscard]] bool ReadLine(std::string* buffer) noexcept;
-  [[nodiscard]] off_t position() const noexcept { return ftell(file_); }
+  [[nodiscard]] wwiv::core::File::size_type position() const noexcept { return ftell(file_); }
   [[nodiscard]] const std::filesystem::path& path() const noexcept;
   [[nodiscard]] std::string full_pathname() const;
   [[nodiscard]] FILE* GetFILE() const noexcept { return file_; }

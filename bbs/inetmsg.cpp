@@ -185,8 +185,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   inetAddrFile.Seek(lCurPos, File::Whence::begin);
   inetAddrFile.Write(internet_address.c_str(), 80L);
   inetAddrFile.Close();
-  char szDefaultUserAddr[255];
-  sprintf(szDefaultUserAddr, "USER%d", user_number);
+  std::string default_addr = StrCat("USER", user_number);
   auto inet_net_num = getnetnum_by_type(network_type_t::internet);
   if (inet_net_num < 0) {
     return;
@@ -203,7 +202,8 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
       char* ss = strtok(szLine, "=");
       if (ss) {
         StringTrim(ss);
-        if (iequals(szLine, szDefaultUserAddr)) {
+        // TODO(rushfan): This is probably broken, maybe should be ss?
+        if (iequals(szLine, default_addr)) {
           match = true;
         }
       }

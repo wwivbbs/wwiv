@@ -90,8 +90,8 @@ std::optional<File> Type2Text::OpenMessageFile() const {
 std::vector<gati_t> Type2Text::load_gat(File& file, int section) {
   std::vector<gati_t> gat(GAT_NUMBER_ELEMENTS);
   auto file_size = file.length();
-  auto section_pos = static_cast<off_t>(section * GATSECLEN);
-  if (file_size < static_cast<long>(section_pos)) {
+  auto section_pos = static_cast<File::size_type>(section * GATSECLEN);
+  if (file_size < section_pos) {
     file.set_length(section_pos);
     file_size = section_pos;
   }

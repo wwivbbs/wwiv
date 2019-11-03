@@ -283,7 +283,7 @@ void attach_file(int mode) {
                     ok = 0;
                     bout << "\r\n\nDOS error - File not bFound.\r\n\n";
                   } else {
-                    fsr.numbytes = attachmentFile.length();
+                    fsr.numbytes = static_cast<decltype(fsr.numbytes)>(attachmentFile.length());
                     attachmentFile.Close();
                     if (newname) {
                       strcpy(fsr.filename, stripfn(szNewFileName));

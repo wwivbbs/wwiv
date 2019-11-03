@@ -130,12 +130,12 @@ static void purgemail(vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m
 
 static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m, int del,
                           unsigned short stat) {
-  int i, i1;
+  int i;
   mailrec m1;
 
-  unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
+  auto pFileEmail(OpenEmailFile(del || stat));
   if (pFileEmail->IsOpen()) {
-    int mfl = pFileEmail->length() / sizeof(mailrec);
+    auto mfl = static_cast<File::size_type>(pFileEmail->length() / sizeof(mailrec));
 
     for (i = 0; i < mw; i++) {
       if (mloc[i].index >= 0) {
@@ -150,7 +150,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m,
       pFileEmail->Read(&m1, sizeof(mailrec));
 
       if (m1.tosys == 0 && m1.touser == a()->usernum) {
-        for (i1 = mp; i1 < mw; i1++) {
+        for (int i1 = mp; i1 < mw; i1++) {
           if (same_email(mloc[i1], m1)) {
             mloc[i1].index = static_cast<int16_t>(i);
             mp = i1 + 1;
@@ -359,12 +359,12 @@ void readmail(int mode) {
   slrec sl = a()->effective_slrec();
   int mw = 0;
   {
-    unique_ptr<File> pFileEmail(OpenEmailFile(false));
+    auto pFileEmail(OpenEmailFile(false));
     if (!pFileEmail->IsOpen()) {
       bout << "\r\n\nNo mail file exists!\r\n\n";
       return;
     }
-    int mfl = pFileEmail->length() / sizeof(mailrec);
+    auto mfl = static_cast<File::size_type>(pFileEmail->length() / sizeof(mailrec));
     for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
       pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&m, sizeof(mailrec));
@@ -1217,9 +1217,9 @@ void readmail(int mode) {
 int check_new_mail(int user_number) {
   int nNumNewMessages = 0; // number of new mail
 
-  unique_ptr<File> pFileEmail(OpenEmailFile(false));
+  auto pFileEmail(OpenEmailFile(false));
   if (pFileEmail->Exists() && pFileEmail->IsOpen()) {
-    int mfLength = pFileEmail->length() / sizeof(mailrec);
+    const int mfLength = pFileEmail->length() / sizeof(mailrec);
     int mWaiting = 0; // number of mail waiting
     for (int i = 0; (i < mfLength) && (mWaiting < MAXMAIL); i++) {
       mailrec m;

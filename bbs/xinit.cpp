@@ -527,7 +527,7 @@ void Application::read_networks() {
   // Add a default entry for us.
   if (net_networks.empty()) {
     net_networks_rec n{};
-    strcpy(n.name, "Sample Network");
+    to_char_array(n.name, "Sample Network");
     n.dir = config()->datadir();
     n.sysnum = 1;
   }
@@ -775,16 +775,14 @@ void Application::create_phone_file() {
     users()->readuser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
-      char szTempVoiceNumber[255], szTempDataNumber[255];
-      strcpy(szTempVoiceNumber, user.GetVoicePhoneNumber());
-      strcpy(szTempDataNumber, user.GetDataPhoneNumber());
-      if (szTempVoiceNumber[0] && !strstr(szTempVoiceNumber, "000-")) {
-        strcpy(reinterpret_cast<char*>(p.phone), szTempVoiceNumber);
+      std::string voice_num = user.GetVoicePhoneNumber();
+      std::string data_num = user.GetDataPhoneNumber();
+      if (!voice_num.empty() && voice_num.find("000-") == std::string::npos) {
+        to_char_array(p.phone, voice_num);
         phoneNumFile.Write(&p, sizeof(phonerec));
       }
-      if (szTempDataNumber[0] && !IsEquals(szTempVoiceNumber, szTempDataNumber) &&
-          !strstr(szTempVoiceNumber, "000-")) {
-        strcpy(reinterpret_cast<char*>(p.phone), szTempDataNumber);
+      if (!data_num.empty() && !iequals(voice_num, data_num) && voice_num.find("000-") == std::string::npos) {
+        to_char_array(p.phone, data_num);
         phoneNumFile.Write(&p, sizeof(phonerec));
       }
     }

@@ -17,28 +17,23 @@
 /**************************************************************************/
 #include "sdk/fido/fido_packets.h"
 
-#include <algorithm>
-#include <string>
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
 #include "sdk/net/packets.h"
+#include <algorithm>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::net;
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 static char ReadCharFromFile(File& f) {
   char buf[1];
-  auto num_read = f.Read(buf, 1);
+  const auto num_read = f.Read(buf, 1);
   if (num_read == 0) {
     return 0;
   }
@@ -47,12 +42,12 @@ static char ReadCharFromFile(File& f) {
 
 static std::string ReadRestOfFile(File& f, int max_size) {
   auto current = f.current_position();
-  auto size = f.length();
+  const auto size = f.length();
   string s;
 
-  auto to_read = std::min<size_t>(max_size, size - current);
+  const auto to_read = std::min<decltype(current)>(max_size, size - current);
   s.resize(to_read + 1);
-  auto num_read = f.Read(&s[0], to_read);
+  const auto num_read = f.Read(&s[0], to_read);
   s.resize(num_read);
   return s;
 }
@@ -64,7 +59,7 @@ static std::string ReadRestOfFile(File& f, int max_size) {
 static std::string ReadFixedLengthField(File& f, int len) {
   string s;
   s.resize(len + 1);
-  auto num_read = f.Read(&s[0], len);
+  const auto num_read = f.Read(&s[0], len);
   s.resize(num_read);
   while (!s.empty() && s.back() == '\0') {
     // Remove trailing null characters.
@@ -80,18 +75,17 @@ static std::string ReadFixedLengthField(File& f, int len) {
 static std::string ReadVariableLengthField(File& f, int max_len) {
   string s;
   for (int i = 0; i < max_len; i++) {
-    char ch = ReadCharFromFile(f);
+    const auto ch = ReadCharFromFile(f);
     if (ch == 0) {
       return s;
-    } else {
-      s.push_back(ch);
     }
+    s.push_back(ch);
   }
   return s;
 }
 
 bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
-  auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
+  const auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
   if (num_written != sizeof(packet_header_2p_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
                << "; expected: " << sizeof(packet_header_2p_t);
@@ -101,7 +95,7 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
 }
 
 bool write_packed_message(File& f, FidoPackedMessage& packet) {
-  auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
+  const auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
   if (num_written != sizeof(fido_packed_message_t)) {
     LOG(ERROR) << "short write to packet, wrote " << num_written
                << "; expected: " << sizeof(fido_packed_message_t);
@@ -138,7 +132,7 @@ bool write_stored_message(File& f, FidoStoredMessage& packet) {
  * See http://ftsc.org/docs/fts-0001.016
  */
 ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
-  auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
+  const auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
   if (num_read == 0) {
     // at the end of the packet.
     return ReadPacketResponse::END_OF_FILE;
@@ -168,7 +162,7 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
 }
 
 ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
-  auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t));
+  const auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t));
   if (num_read == 0) {
     // at the end of the packet.
     return ReadPacketResponse::END_OF_FILE;
@@ -178,6 +172,4 @@ ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
   return ReadPacketResponse::OK;
 }
 
-} // namespace fido
-} // namespace sdk
 } // namespace wwiv

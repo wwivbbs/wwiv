@@ -74,7 +74,7 @@ static void set_gat_section(File& file, int section) {
     return;
   }
   auto file_size = file.length();
-  auto section_pos = static_cast<off_t>(section) * GATSECLEN;
+  auto section_pos = static_cast<File::size_type>(section * GATSECLEN);
   if (file_size < section_pos) {
     file.set_length(section_pos);
     file_size = section_pos;
@@ -92,7 +92,7 @@ static void set_gat_section(File& file, int section) {
 }
 
 static void save_gat(File& file) {
-  auto section_pos = static_cast<off_t>(gat_section) * GATSECLEN;
+  auto section_pos = static_cast<File::size_type>(gat_section * GATSECLEN);
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
   a()->status_manager()->Run([](WStatus& s) {

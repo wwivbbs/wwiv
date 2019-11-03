@@ -173,7 +173,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
       const auto outbound_fn = PathFilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
       if (File::Exists(outbound_fn)) {
         File of(outbound_fn);
-        c->set_bytes_waiting(of.length());
+        c->set_bytes_waiting(static_cast<int32_t>(of.length()));
       } else {
         c->set_bytes_waiting(0);
       }

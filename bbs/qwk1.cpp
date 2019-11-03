@@ -105,11 +105,11 @@ void qwk_remove_email() {
     return;
   }
 
-  int mfl = f->length() / sizeof(mailrec);
+  auto mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
 
   mailrec m;
-  for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
+  for (unsigned long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == a()->usernum)) {

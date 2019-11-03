@@ -58,7 +58,7 @@ void dirlist(int mode) {
     while (i <= en && a()->uconfdir[i].confnum != -1 && !abort) {
       size_t i1 = 0;
       while (i1 < a()->directories.size() && a()->udir[i1].subnum != -1 && !abort) {
-        char s[255];
+        std::string s;
         size_t firstp = 0;
         if (p && mode == 0) {
           p = 0;
@@ -66,11 +66,10 @@ void dirlist(int mode) {
           bout.cls();
           if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
             auto conf_name = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
-            sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
-              a()->dirconfs[a()->uconfdir[i].confnum].designator,
-              conf_name.c_str());
+            s = fmt::sprintf(" [ Conference %c ] [ %s ] ",
+                             a()->dirconfs[a()->uconfdir[i].confnum].designator, conf_name);
           } else {
-            sprintf(s, " [ %s File Areas ] ", a()->config()->system_name().c_str());
+            s = fmt::sprintf(" [ %s File Areas ] ", a()->config()->system_name());
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
@@ -88,14 +87,14 @@ void dirlist(int mode) {
         }
         dliscan1(directory_number);
         if (a()->current_user_dir().subnum == a()->udir[i1].subnum) {
-          sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
-                  a()->udir[i1].keys, scanme.c_str(), a()->directories[directory_number].name,
-                  a()->numf);
+          s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
+                           a()->udir[i1].keys, scanme, a()->directories[directory_number].name,
+                           a()->numf);
         } else {
-          sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
-                  a()->udir[i1].keys, scanme.c_str(),
-                  (((mode == 1) && (a()->directories[a()->udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
-                  a()->directories[ directory_number ].name, a()->numf);
+          s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
+                            a()->udir[i1].keys, scanme,
+                            (((mode == 1) && (a()->directories[a()->udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
+                            a()->directories[ directory_number ].name, a()->numf);
         }
         if (okansi()) {
           bout.bputs(s, &abort, &next);

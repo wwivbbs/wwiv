@@ -78,23 +78,22 @@ static bool print_question(int i, int ii) {
   }
 
   bout.cls();
-  char szBuffer[255];
-  sprintf(szBuffer, "%s%d", "|#5Voting question #", i);
-  bout.bpla(szBuffer, &abort);
+  bout.bpla(fmt::format("|#5Voting question #{}", i), &abort);
   bout.Color(1);
   bout.bpla(v.question, &abort);
   bout.nl();
   int t = 0;
-  voting_response vr;
+  voting_response vr{};
   for (int i1 = 0; i1 < v.numanswers; i1++) {
     vr = v.responses[i1];
     t += vr.numresponses;
   }
 
   a()->status_manager()->RefreshStatusCache();
-  sprintf(szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
-          static_cast<double>(t) / static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
-  bout.bpla(szBuffer, &abort);
+  const auto b = fmt::format("|#9Users voting: |#2%4.1f%%\r\n",
+                       static_cast<double>(t) /
+                           static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
+  bout.bpla(b, &abort);
   int t1 = (t) ? t : 1;
   bout.bpla(" |#20|#9) |#9No Comment", &abort);
   std::set<char> odc;
@@ -103,16 +102,16 @@ static bool print_question(int i, int ii) {
     if (((i3 + 1) % 10) == 0) {
       odc.insert('0' + static_cast<char>((i3 + 1) / 10));
     }
-    sprintf(szBuffer, "|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
+    const auto l = fmt::sprintf("|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
             i3 + 1, vr.response, vr.numresponses,
             static_cast<float>(vr.numresponses) / static_cast<float>(t1) * 100.0);
-    bout.bpla(szBuffer , &abort);
+    bout.bpla(l , &abort);
   }
   bout.nl();
   if (abort) {
     bout.nl();
   }
-  return (abort) ? false : true;
+  return !abort;
 }
 
 static void vote_question(int i, int ii) {

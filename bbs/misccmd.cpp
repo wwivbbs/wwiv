@@ -363,21 +363,15 @@ void list_users(int mode) {
       if (user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300) {
         user.SetLastBaudRate(33600);
       }
-
-      char szCity[ 81 ];
-      if (user.GetCity()[0] == '\0') {
-        strcpy(szCity, "Unknown");
-      } else {
-        char s5[ 81 ];
-        strcpy(s5, user.GetCity());
-        s5[19] = '\0';
-        sprintf(szCity, "%s, %s", s5, user.GetState());
+      std::string city = "Unknown";
+      if (user.GetCity()[0] != '\0') {
+        city = fmt::format("{:.18}, {}", user.GetCity(), user.GetState());
       }
-      string properName = properize(user.GetName());
+      auto properName = properize(user.GetName());
       const auto line = fmt::sprintf("|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 "
                                      "%-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
                                      FRAME_COLOR, user_number, FRAME_COLOR, in_qscan ? '*' : ' ',
-                                     properName, FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(),
+                                     properName, FRAME_COLOR, city, FRAME_COLOR, user.GetLastOn(),
                                      FRAME_COLOR, user.GetLastBaudRate(), FRAME_COLOR);
       bout.bpla(line, &abort);
       num++;
@@ -531,10 +525,9 @@ void uudecode(const char *input_filename, const char *output_filename) {
   bout << "|#2Now UUDECODING " << input_filename;
   bout.nl();
 
-  char szCmdLine[MAX_PATH];
-  sprintf(szCmdLine, "UUDECODE %s %s", input_filename, output_filename);
-  ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
-  File::Remove(input_filename);        // delete the input file
+  auto cmdline = fmt::format("UUDECODE {} {}", input_filename, output_filename);
+  ExecuteExternalProgram(cmdline, EFLAG_NONE); 
+  File::Remove(input_filename);
 }
 
 void Packers() {

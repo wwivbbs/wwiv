@@ -30,6 +30,11 @@
 #include <string>
 
 // Keep all of these
+#ifdef _WIN32
+// This makes it clear that we want the POSIX names without
+// leading underscores  This makes resharper happy with fcntl.h too.
+#define _CRT_DECLARE_NONSTDC_NAMES 1
+#endif // _WIN32
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -77,8 +82,7 @@ using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace std::filesystem;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -120,9 +124,8 @@ path PathFilePath(const path& directory_name,
   return directory_name / file_name;
 }
 
-bool backup_file(const path& p) {
-  const path from{p};
-  path to{p};
+bool backup_file(const path& from) {
+  path to{from};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
@@ -139,13 +142,14 @@ File::File(std::filesystem::path full_path_name)
   : full_path_name_(std::move(full_path_name)) {
 }
 
-File::File(File&& other) : handle_(other.handle_) {
+File::File(File&& other) noexcept
+  : handle_(other.handle_) {
   other.handle_ = -1;
   full_path_name_.swap(other.full_path_name_);
   error_text_.swap(other.error_text_);
 }
 
-File& File::operator=(File&& other) {
+File& File::operator=(File&& other) noexcept {
   if (this != &other) {
     handle_ = other.handle_;
     full_path_name_.swap(other.full_path_name_);
@@ -250,23 +254,24 @@ ssize_t File::Write(const void* buffer, size_t size) {
   return r;
 }
 
-off_t File::Seek(off_t offset, Whence whence) {
+File::size_type File::Seek(size_type offset, Whence whence) {
   CHECK(whence == File::Whence::begin || whence == File::Whence::current ||
       whence == File::Whence::end);
   CHECK(File::IsFileHandleValid(handle_));
 
-  return lseek(handle_, offset, static_cast<int>(whence));
+  return static_cast<size_type>(lseek(handle_, offset, static_cast<int>(whence)));
 }
 
-off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
+File::size_type File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
 bool File::Exists() const noexcept {
   std::error_code ec;
   return exists(full_path_name_, ec);
 }
 
-void File::set_length(off_t l) {
-  [[maybe_unused]] auto _ = ftruncate(handle_, l);
+void File::set_length(size_type l) {
+  // TODO(rushfan): Use std::filesystem::set_size
+  (void) ftruncate(handle_, l);
 }
 
 // static
@@ -275,9 +280,9 @@ bool File::is_directory(const std::string& path) noexcept {
   return std::filesystem::is_directory(std::filesystem::path{path}, ec);
 }
 
-off_t File::length() noexcept {
+File::size_type File::length() const noexcept {
   std::error_code ec;
-  auto sz = static_cast<off_t>(file_size(full_path_name_, ec));
+  const auto sz = static_cast<size_type>(file_size(full_path_name_, ec));
   if (ec.value() != 0) {
     return 0;
   }
@@ -485,5 +490,4 @@ long File::freespace_for_path(const std::filesystem::path& p) {
   return static_cast<long>(devi.available / 1024);
 }
 
-} // namespace core
 } // namespace wwiv

@@ -46,9 +46,8 @@ static void print_quests() {
 
     votingrec v;
     file.Read(&v, sizeof(votingrec));
-    char szBuffer[255];
-    sprintf(szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
-    bout.bpla(szBuffer, &abort);
+    auto buffer = fmt::sprintf("|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
+    bout.bpla(buffer, &abort);
   }
   bout.nl();
   if (abort) {
@@ -57,8 +56,8 @@ static void print_quests() {
 }
 
 static void set_question(int ii) {
-  votingrec v;
-  voting_response vr;
+  votingrec v{};
+  voting_response vr{};
 
   bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
   auto question = input_text(75);

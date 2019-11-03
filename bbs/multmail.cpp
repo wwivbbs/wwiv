@@ -53,7 +53,7 @@ using namespace wwiv::strings;
 
 void multimail(int *pnUserNumber, int numu) {
   mailrec m, m1;
-  char s[255], s2[81];
+  char s[255];
   User user;
   memset(&m, 0, sizeof(mailrec));
 
@@ -130,8 +130,7 @@ void multimail(int *pnUserNumber, int numu) {
     bout.nl();
     if (show_all) {
       const string pnunn2 = a()->names()->UserName(pnUserNumber[cv]);
-      sprintf(s2, "%-22.22s  ", pnunn2.c_str());
-      s1.assign(s2);
+      s1 = fmt::sprintf("%-22.22s  ", pnunn2);
       j++;
       if (j >= 3) {
         lineadd(&m.msg, s1, "email");
@@ -157,9 +156,9 @@ void multimail(int *pnUserNumber, int numu) {
   m.status = status_multimail;
   m.daten = daten_t_now();
 
-  unique_ptr<File> pFileEmail(OpenEmailFile(true));
+  auto pFileEmail(OpenEmailFile(true));
   auto len = pFileEmail->length() / sizeof(mailrec);
-  int i = 0;
+  File::size_type i = 0;
   if (len != 0) {
     i = len - 1;
     pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
@@ -167,7 +166,7 @@ void multimail(int *pnUserNumber, int numu) {
     while ((i > 0) && (m1.tosys == 0) && (m1.touser == 0)) {
       --i;
       pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
-      int i1 = pFileEmail->Read(&m1, sizeof(mailrec));
+      auto i1 = pFileEmail->Read(&m1, sizeof(mailrec));
       if (i1 == -1) {
         bout << "|#6DIDN'T READ WRITE!\r\n";
       }
@@ -177,7 +176,7 @@ void multimail(int *pnUserNumber, int numu) {
     }
   }
   pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
-  for (int cv = 0; cv < numu; cv++) {
+  for (auto cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
       m.touser = static_cast<uint16_t>(pnUserNumber[cv]);
       pFileEmail->Write(&m, sizeof(mailrec));
@@ -295,7 +294,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 #define MAX_LIST 40
 
 void slash_e() {
-  int user_number[MAX_LIST], numu, i, i1;
+  int user_number[MAX_LIST], numu, i;
   char s[81], ch, *sss;
 
   mml_s = nullptr;
@@ -315,7 +314,7 @@ void slash_e() {
     bout << "You can't send mail.\r\n";
     return;
   }
-  bool done = false;
+  auto done = false;
   numu = 0;
   do {
     bout.nl(2);
@@ -362,7 +361,7 @@ void slash_e() {
         bout.nl();
         bout << "Unknown mailing list.\r\n\n";
       } else {
-        i1 = fileMailList.length();
+        auto i1 = fileMailList.length();
         mml_s = static_cast<char *>(BbsAllocA(i1 + 10L));
         fileMailList.Read(mml_s, i1);
         mml_s[i1] = '\n';
@@ -394,7 +393,7 @@ void slash_e() {
         i = to_number<int>(s);
         if ((i > 0) && (i <= numu)) {
           --numu;
-          for (i1 = i - 1; i1 < numu; i1++) {
+          for (auto i1 = i - 1; i1 < numu; i1++) {
             user_number[i1] = user_number[i1 + 1];
           }
         }

@@ -19,7 +19,6 @@
 #define __INCLUDED_CORE_DATAFILE_H__
 
 #include <vector>
-#include <sys/types.h>  // off_t
 #include "core/file.h"
 #include <filesystem>
 
@@ -106,12 +105,14 @@ public:
 
   bool Seek(int record_number) {
     return file_.Seek(record_number * SIZE, File::Whence::begin) ==
-           static_cast<off_t>(record_number * SIZE);
+           static_cast<File::size_type>(record_number * SIZE);
   }
 
-  [[nodiscard]] std::size_t number_of_records() { return file_.length() / SIZE; }
+  [[nodiscard]] std::size_t number_of_records() const noexcept {
+    return static_cast<std::size_t>(file_.length() / SIZE);
+  }
 
-  explicit operator bool() const { return file_.IsOpen(); }
+  explicit operator bool() const noexcept { return file_.IsOpen(); }
 
 private:
   File file_;

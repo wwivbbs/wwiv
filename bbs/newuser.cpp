@@ -1234,7 +1234,6 @@ void DoMinimalNewUser() {
   const auto u = a()->user();
 
   int m = 1, d = 1, y = 2000, ch = 0;
-  char m1[3], d1[3], y1[5];
   static const char* mon[12] = {"January",   "February", "March",    "April",
                                 "May",       "June",     "July",     "August",
                                 "September", "October",  "November", "December"};
@@ -1275,12 +1274,9 @@ void DoMinimalNewUser() {
         cln_nu();
         auto s = input_date_mmddyyyy("");
         if (s.size() == 10) {
-          sprintf(m1, "%c%c", s[0], s[1]);
-          sprintf(d1, "%c%c", s[3], s[4]);
-          sprintf(y1, "%c%c%c%c", s[6], s[7], s[8], s[9]);
-          m = to_number<int>(m1);
-          d = to_number<int>(d1);
-          y = to_number<int>(y1);
+          m = to_number<int>(StrCat(s[0], s[1]));
+          d = to_number<int>(StrCat(s[3], s[4]));
+          y = to_number<int>(StrCat(s[6], s[7], s[8], s[9]));
           ok = true;
           if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
               ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
@@ -1400,7 +1396,7 @@ void DoMinimalNewUser() {
       break;
     case 'B':
       u->SetAge(0);
-      // sprintf(s1, "%02d/%02d/%02d", u->GetBirthdayDay(), u->GetBirthdayMonth(),
+      // s1 = fmt::sprintf("%02d/%02d/%02d", u->GetBirthdayDay(), u->GetBirthdayMonth(),
       //        u->GetBirthdayYear());
       break;
     case 'C':

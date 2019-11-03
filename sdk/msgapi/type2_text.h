@@ -31,10 +31,10 @@ namespace sdk {
 namespace msgapi {
 
 typedef uint16_t gati_t;
-static constexpr uint32_t GAT_NUMBER_ELEMENTS = 2048;
-static constexpr uint32_t GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t);
-static constexpr uint32_t MSG_BLOCK_SIZE = 512;
-static constexpr uint32_t GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
+static constexpr int32_t GAT_NUMBER_ELEMENTS = 2048;
+static constexpr int32_t GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t);
+static constexpr int32_t MSG_BLOCK_SIZE = 512;
+static constexpr int32_t GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 static constexpr uint8_t STORAGE_TYPE = 2;
 
 

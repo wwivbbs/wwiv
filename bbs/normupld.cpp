@@ -254,7 +254,7 @@ void normalupload(int dn) {
         }
         if (ok) {
           if (ok == 1) {
-            u.numbytes = file.length();
+            u.numbytes = static_cast<daten_t>(file.length());
             file.Close();
             a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
             add_to_file_database(u.filename);

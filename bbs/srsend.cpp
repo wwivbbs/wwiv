@@ -222,7 +222,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, working_filename);
-  a()->localIO()->PutsXY(65, 2, fmt::sprintf("%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size)));
+  a()->localIO()->PutsXY(65, 2, fmt::format("{} - {}k", (file_size + 127) / 128, bytes_to_k(file_size)));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;

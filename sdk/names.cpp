@@ -73,7 +73,7 @@ bool Names::Add(const std::string name, uint32_t user_number) {
          ++it) {
   }
   smalrec sr{};
-  strcpy(reinterpret_cast<char*>(sr.name), upper_case_name.c_str());
+  strcpy((char*)sr.name, upper_case_name.c_str());
   sr.number = static_cast<uint16_t>(user_number);
   names_.insert(it, sr);
   return true;

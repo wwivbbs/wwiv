@@ -24,8 +24,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-// ReSharper disable once CppUnusedIncludeDirective
-#include <sys/types.h>   // off_t
 
 #include "core/file_lock.h"
 #include <filesystem>
@@ -98,13 +96,17 @@ public:
 
   static const char pathSeparatorChar;
 
+  // Types.  This should eventually switch to a type supporting
+  // Large files.   long is what off_t was.
+  using size_type = long;
+
   // Constructor/Destructor
 
   /** Constructs a file from a path. */
   explicit File(std::filesystem::path p);
   /** Destructs File. Closes any open file handles. */
-  File(File&& other);
-  File& operator=(File&& other);
+  File(File&& other) noexcept;
+  File& operator=(File&& other) noexcept;
 
   ~File();
 
@@ -126,10 +128,10 @@ public:
 
   ssize_t Writeln(const std::string& s) { return this->Writeln(s.c_str(), s.length()); }
 
-  [[nodiscard]] off_t length() noexcept;
-  off_t Seek(off_t lOffset, Whence whence);
-  void set_length(off_t lNewLength);
-  [[nodiscard]] off_t current_position() const;
+  [[nodiscard]] size_type length() const noexcept;
+  size_type Seek(size_type lOffset, Whence whence);
+  void set_length(size_type lNewLength);
+  [[nodiscard]] size_type current_position() const;
 
   [[nodiscard]] bool Exists() const noexcept;
 
