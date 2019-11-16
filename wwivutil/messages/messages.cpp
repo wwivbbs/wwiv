@@ -27,10 +27,8 @@
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
-#include "sdk/net.h"
 #include "sdk/networks.h"
 #include "wwivutil/util.h"
-#include <cstdio>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -54,8 +52,7 @@ using namespace wwiv::strings;
 
 constexpr char CD = 4;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 // TODO(rushfan): This was copied from post.cpp. Let's share it.
 static bool find_sub(wwiv::sdk::Subs& subs, const string& filename, subboard_t& sub) {
@@ -84,7 +81,7 @@ class DeleteMessageCommand : public UtilCommand {
 public:
   DeleteMessageCommand() : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
 
-  virtual ~DeleteMessageCommand() {}
+  virtual ~DeleteMessageCommand() = default;
 
   std::string GetUsage() const override final {
     std::ostringstream ss;
@@ -348,12 +345,12 @@ public:
       unique_ptr<MessageArea> newarea(api->Open(newsub, -1));
       auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
-        unique_ptr<Message> message(area->ReadMessage(i));
+        auto message(area->ReadMessage(i));
         if (!message) {
           LOG(ERROR) << "Unable to load message #" << i;
           continue;
         }
-        if (!newarea->AddMessage(*message.get(), {})) {
+        if (!newarea->AddMessage(*message, {})) {
           LOG(ERROR) << "Error adding message: " << message->header().title();
         } else {
           cout << "[" << i << "]";
@@ -597,5 +594,4 @@ int MessagesDumpHeaderCommand::Execute() {
   return ExecuteImpl(basename, start, end, all);
 }
 
-} // namespace wwivutil
 } // namespace wwiv

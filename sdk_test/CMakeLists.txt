@@ -18,6 +18,7 @@ set(test_sources
   qscan_test.cpp
   sdk_helper.cpp
   subxtr_test.cpp
+  type2_text_test.cpp
   user_test.cpp
   ansi/ansi_test.cpp
   ansi/framebuffer_test.cpp

@@ -100,8 +100,11 @@ public:
   // Constructor/Destructor
 
   /** Constructs a file from a path. */
-  explicit File(const std::filesystem::path& p);
+  explicit File(std::filesystem::path p);
   /** Destructs File. Closes any open file handles. */
+  File(File&& other);
+  File& operator=(File&& other);
+
   ~File();
 
   // Public Member functions
@@ -211,9 +214,12 @@ public:
    */
   static bool mkdirs(const File& dir) { return mkdirs(dir.full_pathname()); }
 
-  /** Returns the number of freespace in kilobytes. i.e. 1 = 1024 free bytes. */
+  /** Returns the number of free space in kilobytes. i.e. 1 = 1024 free bytes. */
   [[nodiscard]] static long freespace_for_path(const std::filesystem::path& p);
   [[nodiscard]] static bool is_directory(const std::string& path) noexcept;
+
+  /** For debugging and testing only */
+  int handle() const noexcept { return handle_; }
 
 private:
   // Helper functions
