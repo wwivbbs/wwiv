@@ -140,7 +140,8 @@ void user_editor(const wwiv::sdk::Config& config) {
   auto user_name_field =
       new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, EditLineMode::UPPER_ONLY);
   user_name_field->set_displayfn(
-      [&]() -> string { return fmt::format("{} #{}", user.name, current_usernum); });
+      // Not sure why but fmt::format("{} #{}"...) was crashing on linux.
+      [&]() -> string { return StrCat(user.name, " #", current_usernum); });
 
   auto birthday_field = new CustomEditItem(
       COL1_POSITION, 9, 10,
