@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_SYSCHAT_H__
 #define __INCLUDED_BBS_SYSCHAT_H__
 
+void toggle_chat_file();
 void RequestChat();
 void chat1(const char *chat_line, bool two_way);
 

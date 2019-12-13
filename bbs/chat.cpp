@@ -76,7 +76,6 @@ void secure_ch(int ch);
 void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
-void get_colors(char* color_string, IniFile* pIniFile);
 void load_actions(IniFile* pIniFile);
 void add_action(ch_action act);
 void free_actions();
@@ -154,8 +153,14 @@ static string StripName(const std::string& in) {
     return in;
   }
 
-  string::size_type space = in.find(' ', 1);
+  auto space = in.find(' ', 1);
   return in.substr(space);
+}
+
+// Sets color_string string for current node
+static void get_colors(char* color_string, const IniFile* pIniFile) {
+  const auto s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
+  strcpy(color_string, s.c_str());
 }
 
 void chat_room() {
@@ -325,27 +330,13 @@ bool check_action(const char* message, char* color_string, int loc) {
 
 int main_loop(const char* raw_message, char* from_message, char* color_string, char* messageSent,
               bool& bActionMode, int loc, int num_actions) {
-  char szText[300];
   User u;
 
   bool bActionHandled = true;
   if (bActionMode) {
     bActionHandled = !check_action(raw_message, color_string, loc);
   }
-  if (iequals(raw_message, "/r")) {
-    /* "Undocumented Feature" - the original alpha version of WMChat had a /r
-     * command to look up a user's registry from inside chat.  I took this
-     * out when I released the program, but am now putting it back in due to
-     * popular request.  However, most systems don't have a registry
-     * installed, so I couldn't just include the code.  If you do have a
-     * registry look-up function, put #define REG_IS_INSTALLED in your
-     * VARDEC.H file and rename the function to read_entry() */
-#ifdef REG_IS_INSTALLED
-    read_entry(1);
-    bout.nl();
-    bActionHandled = 0;
-#endif
-  } else if (iequals(raw_message, "/w")) {
+  if (iequals(raw_message, "/w")) {
     bActionHandled = 0;
     multi_instance();
     bout.nl();
@@ -374,12 +365,11 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     secure_ch(loc);
   } else if (iequals(raw_message, "/u")) {
     bActionHandled = 0;
-    char szFileName[MAX_PATH];
-    sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
-    if (File::Exists(szFileName)) {
-      File::Remove(szFileName);
-      sprintf(szFileName, "\r\n|#1[|#9%s has unsecured the channel|#1]", a()->user()->GetName());
-      out_msg(szFileName, loc);
+    const auto fn = fmt::format("CHANNEL.{}", (loc + 1 - INST_LOC_CH1));
+    if (File::Exists(fn)) {
+      File::Remove(fn);
+      const auto m = fmt::format("\r\n|#1[|#9{} has unsecured the channel|#1]", a()->user()->GetName());
+      out_msg(m, loc);
       bout << "|#1[|#9Channel Unsecured|#1]\r\n";
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
@@ -398,13 +388,13 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     bActionHandled = 0;
     int nUserNum = grabname(raw_message + 1, loc);
     if (nUserNum) {
-      string message = StripName(raw_message);
+      auto message = StripName(raw_message);
       ch_direct(message, loc, color_string, nUserNum);
     }
   } else if (bActionHandled && raw_message[0] == '/') {
     int nUserNum = grabname(raw_message + 1, 0);
     if (nUserNum) {
-      string message = StripName(raw_message);
+      auto message = StripName(raw_message);
       ch_whisper(message, color_string, nUserNum);
     }
     bActionHandled = 0;
@@ -417,8 +407,8 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     }
   }
   if (bActionHandled) {
-    sprintf(szText, from_message, a()->user()->GetName(), color_string, raw_message);
-    out_msg(szText, loc);
+    const auto t = fmt::sprintf(from_message, a()->user()->GetName(), color_string, raw_message);
+    out_msg(t, loc);
   }
   return loc;
 }
@@ -465,9 +455,8 @@ void intro(int loc) {
   } else {
     bout << "|#7You are the only one here.\r\n";
   }
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
-  if (loc != INST_LOC_CH1 && File::Exists(szFileName)) {
+  const auto fn = fmt::format("CHANNEL.{}", (loc + 1 - INST_LOC_CH1));
+  if (loc != INST_LOC_CH1 && File::Exists(fn)) {
     bout << "|#7This channel is |#1secured|#7.\r\n";
   }
   bout << "|#7Type ? for help.\r\n";
@@ -547,22 +536,22 @@ int wusrinst(char* n) {
 // Secures a channel
 
 void secure_ch(int ch) {
-  char szFileName[MAX_PATH];
   if (ch == INST_LOC_CH1) {
     bout << "|#1[|#9Cannot secure channel 1|#1]\r\n";
     return;
   }
-  sprintf(szFileName, "CHANNEL.%d", (ch + 1 - INST_LOC_CH1));
-  if (File::Exists(szFileName)) {
+  const auto fn = fmt::format("CHANNEL.{}", (ch + 1 - INST_LOC_CH1));
+  if (File::Exists(fn)) {
     bout << "|#1[|#9Channel already secured!|#1]\r\n";
   } else {
-    File file(szFileName);
-    file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
-    file.Write(a()->user()->GetName(), strlen(a()->user()->GetName()));
-    file.Close();
+    {
+      File file(fn);
+      file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
+      file.Write(a()->user()->GetName(), strlen(a()->user()->GetName()));
+    }
     bout << "|#1[|#9Channel Secured|#1]\r\n";
-    sprintf(szFileName, "\r\n|#1[|#9%s has secured the channel|#1]", a()->user()->GetName());
-    out_msg(szFileName, ch);
+    const auto msg = fmt::format("\r\n|#1[|#9{} has secured the channel|#1]", a()->user()->GetName());
+    out_msg(msg, ch);
   }
 }
 
@@ -570,14 +559,13 @@ void secure_ch(int ch) {
 
 void cleanup_chat() {
   int nodes[10];
-  char szFileName[MAX_PATH];
 
   for (int x = INST_LOC_CH2; x <= INST_LOC_CH10; x++) {
-    sprintf(szFileName, "CHANNEL.%d", (x + 1 - INST_LOC_CH1));
-    if (File::Exists(szFileName)) {
+    const auto fn = fmt::format("CHANNEL.%d", (x + 1 - INST_LOC_CH1));
+    if (File::Exists(fn)) {
       who_online(nodes, x);
       if (!nodes[0]) {
-        File::Remove(szFileName);
+        File::Remove(fn);
       }
     }
   }
@@ -586,7 +574,6 @@ void cleanup_chat() {
 // Pages a user
 
 void page_user(int loc) {
-  char s[200];
   instancerec ir;
   int i = 0;
 
@@ -597,8 +584,8 @@ void page_user(int loc) {
   while ((i < 1 || i > num_instances()) && !a()->hangup_) {
     CheckForHangup();
     bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
-    input(s, 2);
-    if (s[0] == 'Q') {
+    auto s = input(2);
+    if (!s.empty() && s.front() == 'Q') {
       return;
     }
     i = to_number<int>(s);
@@ -616,10 +603,10 @@ void page_user(int loc) {
       bout << "|#1[|#9That user is not available for chat!|#1]";
       return;
     }
-    sprintf(s,
-            "%s is paging you from Chatroom channel %d.  Type /C from the MAIN MENU to enter the "
-            "Chatroom.",
-            a()->user()->GetName(), loc);
+    const auto s = fmt::format(
+        "{} is paging you from Chatroom channel {}.  Type /C from the MAIN MENU to enter the "
+        "Chatroom.",
+        a()->user()->GetName(), loc);
     send_inst_str(i, s);
   }
   bout << "|#1[|#9Page Sent|#1]\r\n";
@@ -628,21 +615,14 @@ void page_user(int loc) {
 // Announces when a user has left a channel
 
 void moving(bool bOnline, int loc) {
-  char space[55];
-
-  if (!is_chat_invis()) {
-    sprintf(space, "|#6%s %s", a()->user()->GetName(),
-            (bOnline ? "is on the air." : "has signed off."));
-    out_msg(space, loc);
+  if (is_chat_invis()) {
+    return;
   }
+  const auto s = fmt::format("|#6{} {}", a()->user()->GetName(),
+          (bOnline ? "is on the air." : "has signed off."));
+  out_msg(s, loc);
 }
 
-// Sets color_string string for current node
-
-void get_colors(char* color_string, IniFile* pIniFile) {
-  const auto s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
-  strcpy(color_string, s.c_str());
-}
 
 // Loads the actions into memory
 

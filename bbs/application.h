@@ -413,7 +413,6 @@ public:
 
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
-  bool chat_file_{false};
   bool received_short_message_{false};
   bool emchg_{false};
   bool hangup_{false};

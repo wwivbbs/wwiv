@@ -447,7 +447,6 @@ void qwk_email_text(char* text, char* title, char* to) {
 
   if (un || sy) {
     messagerec msg;
-    char s2[81];
     net_system_list_rec* csne = nullptr;
 
     if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
@@ -460,7 +459,7 @@ void qwk_email_text(char* text, char* title, char* to) {
 
     if (ForwardMessage(&un, &sy)) {
       bout.nl();
-      bout.bputs("Mail Forwarded.]");
+      bout.bputs("Mail Forwarded.");
       bout.nl();
       if ((un == 0) && (sy == 0)) {
         bout.bputs("Forwarded to unknown user.");
@@ -477,33 +476,31 @@ void qwk_email_text(char* text, char* title, char* to) {
       csne = next_system(sy);
     }
 
+    std::string send_to_name;
     if (sy == 0) {
       set_net_num(0);
-      const string unn = a()->names()->UserName(un);
-      strcpy(s2, unn.c_str());
+      send_to_name = a()->names()->UserName(un);
     } else {
       std::string netname = (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
-      to_char_array(s2, username_system_net_as_string(un, a()->net_email_name, sy, netname));
+      send_to_name = username_system_net_as_string(un, a()->net_email_name, sy, netname);
     }
 
     if (sy != 0) {
       bout.nl();
-      bout << fmt::sprintf("Name of system: ");
-      bout.bputs(csne->name);
-      bout << fmt::sprintf("Number of hops:");
-      bout << fmt::sprintf("%d", csne->numhops);
+      bout << fmt::format("Name of system: {}", csne->name) << wwiv::endl;
+      bout << fmt::format("Number of hops: {}", csne->numhops);
       bout.nl(2);
     }
 
     bout.cls();
     bout.Color(2);
-    bout << fmt::sprintf("Sending to: %s", s2);
+    bout << fmt::format("Sending to: {}", send_to_name);
     bout.nl();
     bout.Color(2);
-    bout << fmt::sprintf("Titled    : %s", title);
+    bout << fmt::format("Titled    : {}", title);
     bout.nl(2);
     bout.Color(5);
-    bout << fmt::sprintf("Correct? ");
+    bout << "Correct? ";
 
     if (!yesno()) {
       return;

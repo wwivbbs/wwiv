@@ -72,6 +72,11 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 
   CHECK_NOTNULL(buffer);
   CHECK_NOTNULL(rollover);
+  if (buffer == nullptr || rollover == nullptr) {
+    // Should never happen from previous CHECKs but makes the static
+    // analysis happy in MSVC.
+    return false;
+  }
 
   int cm = a()->chatting_;
 

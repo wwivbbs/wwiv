@@ -41,7 +41,7 @@ namespace wwiv::net {
 
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) const {
   vector<TransferFile*> result;
-  const auto s_node_net = fmt::sprintf("s%d.net", destination_node);
+  const auto s_node_net = fmt::format("s{}.net", destination_node);
   const auto search_path = PathFilePath(dirs_.net_dir(), s_node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {

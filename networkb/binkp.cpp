@@ -227,9 +227,9 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
   if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
     LOG(INFO) << "       file finished; bytes_received: " << current_receive_file_->length();
 
-    string data_line =
-        fmt::sprintf("%s %u %u", current_receive_file_->filename(),
-                     current_receive_file_->length(), current_receive_file_->timestamp());
+    auto data_line =
+        fmt::format("{} {} {}", current_receive_file_->filename(), current_receive_file_->length(),
+                    current_receive_file_->timestamp());
 
     auto crc = current_receive_file_->crc();
     // If we want to use CRCs and we don't have a zero CRC.
@@ -401,7 +401,7 @@ BinkState BinkP::WaitConn() {
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
         }
-        network_addresses += fmt::sprintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name);
+        network_addresses += fmt::format("20000:20000/{}@{}", net.sysnum, lower_case_network_name);
       } else if (config_->config().is_5xx_or_later()) {
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
@@ -421,11 +421,10 @@ BinkState BinkP::WaitConn() {
     if (net.type == network_type_t::wwivnet) {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
-                          fmt::sprintf("WWIV @%u.%s", config_->callout_node_number(),
-                                       config_->callout_network_name()));
+                          fmt::format("WWIV @{}.{}", config_->callout_node_number(),
+                                      config_->callout_network_name()));
       const string lower_case_network_name = ToStringLowerCase(net.name);
-      network_addresses =
-          fmt::sprintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name);
+      network_addresses = fmt::format("20000:20000/{}@{}", net.sysnum, lower_case_network_name);
     } else if (config_->config().is_5xx_or_later()) {
       try {
         // Present single FTN address.

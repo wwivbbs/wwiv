@@ -65,6 +65,8 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
 static int wwiv_x1, wwiv_y1, wwiv_x2, wwiv_y2, cp0, cp1;
 static char (*side0)[MAXLEN], (*side1)[MAXLEN];
 
+static bool s_chat_file = false;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Makes various (local-only) sounds based upon input params. The params are:
@@ -77,6 +79,10 @@ static char (*side0)[MAXLEN], (*side1)[MAXLEN];
 //             sequence
 //     rp = number of times to play the whole sound sequence
 //
+
+void toggle_chat_file() {
+  s_chat_file = !s_chat_file;
+}
 
 void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
   for (int i1 = 0; i1 < rp; i1++) {
@@ -540,7 +546,6 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
  */
 
 void chat1(const char* chat_line, bool two_way) {
-  char s2[81];
   if (!okansi()) {
     two_way = false;
   }
@@ -590,7 +595,6 @@ void chat1(const char* chat_line, bool two_way) {
     bout.GotoXY(std::max<int>(x, 0), 12);
     bout << "|#4" << s;
     bout.GotoXY(1, 1);
-    s2[0] = '\0';
   }
   bout << "|#7" << sysop_name << "'s here...";
   bout.nl(2);
@@ -610,17 +614,15 @@ void chat1(const char* chat_line, bool two_way) {
     } else {
       inli(&s, &rollover, MAXLEN, true, false);
     }
-    if (a()->chat_file_ && !two_way) {
+    if (s_chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
         a()->localIO()->Puts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
           chatFile.Seek(0L, File::Whence::end);
-          string t = times();
-          string f = fulldate();
-          sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", f.c_str(), t.c_str());
-          chatFile.Write(s2, strlen(s2));
-          to_char_array(s2, "----------------------------------\r\n\r\n");
-          chatFile.Write(s2, strlen(s2));
+          const auto t = times();
+          const auto f = fulldate();
+          chatFile.Write(fmt::format("\r\n\r\nChat file opened {} {}\r\n", f, t));
+          chatFile.Write("----------------------------------\r\n\r\n");
         }
       }
       s.append("\r\n");
@@ -633,7 +635,7 @@ void chat1(const char* chat_line, bool two_way) {
     }
   } while (a()->chatting_);
 
-  a()->chat_file_ = false;
+  s_chat_file = false;
   if (side0) {
     delete[] side0;
     side0 = nullptr;

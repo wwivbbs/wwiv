@@ -365,7 +365,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case HOME: /* HOME */
         if (chatting_ == 1) {
-          chat_file_ = !chat_file_;
+          toggle_chat_file();
         }
         break;
       }
