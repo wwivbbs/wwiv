@@ -17,13 +17,6 @@
 /**************************************************************************/
 #include "sdk/contact.h"
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -33,6 +26,12 @@
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -45,8 +44,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 namespace {
 // Time
@@ -88,9 +86,12 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     contacts_.emplace(r.address, NetworkContact(r));
   }
 
-  if (!initialized_) {
+  if (!initialized_ && !contacts_.empty()) {
+    // No need to log on noo contacts, just if we had partial read.
     LOG(ERROR) << "failed to read the expected number of bytes: "
                << contacts_.size() * sizeof(NetworkContact);
+    // TODO(rushfan): Should we move the initialized_ = true into here or
+    // just remove it?
   }
   initialized_ = true;
 }
@@ -133,7 +134,7 @@ Contact::~Contact() {
 }
 
 static void fixup_long(daten_t& f) {
-  auto now = daten_t_now();
+  const auto now = daten_t_now();
   if (f > now) {
     f = now;
   }
@@ -293,5 +294,4 @@ network_contact_record to_network_contact_record(const net_contact_rec& n) {
   return ncr;
 }
 
-} // namespace sdk
-} // namespace wwiv
+} // namespace wwiv::sdk
