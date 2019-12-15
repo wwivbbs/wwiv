@@ -245,7 +245,6 @@ bool attempt_callout() {
 
 void print_pending_list() {
   int lines = 0;
-  char s1[81];
   auto ss = a()->user()->GetStatus();
 
   if (a()->net_networks.empty()) {
@@ -297,29 +296,22 @@ void print_pending_list() {
 
       std::string atc = (allowed_to_call(con, DateTime::now())) ? "|#5Yes" : "|#3---";
 
-      int32_t m = 0, h = 0;
+      std::string last_contact_sent{"|#6     -    "};
       if (r->lastcontactsent()) {
-        auto then = DateTime::from_time_t(r->lastcontactsent());
-        auto diff = current_time.to_system_clock() - then.to_system_clock();
-        to_char_array(s1, ctim(diff));
-      } else {
-        strcpy(s1, "|#6     -    ");
+        const auto then = DateTime::from_time_t(r->lastcontactsent());
+        const auto diff = current_time.to_system_clock() - then.to_system_clock();
+        last_contact_sent = ctim(diff);
       }
 
       auto bsent = fmt::format("{}k", (r->bytes_sent() + 1023) / 1024);
       auto brec = fmt::format("{}k", (r->bytes_received() + 1023) / 1024);
       auto bwait = fmt::format("{}k", (r->bytes_waiting() + 1023) / 1024);
 
-      if (m >= 30) {
-        h++;
-      }
-      if (m < 31) {
-        h--;
-      }
-
-      bout << fmt::sprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
-                   "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
-                   atc, a()->network_name().c_str(), r->systemnumber(), bsent, brec, bwait, r->numfails(), s1);
+      bout << fmt::format(
+          "|#7\xB3 {:>3} |#7\xB3 |#2{:<8} |#7\xB3 |#2{:>5} |#7\xB3|#2{:>8} |#7\xB3|#2{:>8} "
+          "|#7\xB3|#2{:>5} |#7\xB3|#2{:>4} |#7\xB3|#2{:>10} |#7\xB3|#7\r\n",
+          atc, a()->network_name(), r->systemnumber(), bsent, brec, bwait, r->numfails(),
+          last_contact_sent);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;
@@ -334,13 +326,13 @@ void print_pending_list() {
 
     File deadNetFile(PathFilePath(net.dir, DEAD_NET));
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      auto dead_net_file_size = deadNetFile.length();
+      const auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
-      auto deadk = fmt::format("{}k", (dead_net_file_size + 1023) / 1024);
-      bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
-                   "|#2------- |#7\xB3|#2%5s "
-                   "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   net.name, deadk);
+      const auto deadk = fmt::format("{}k", (dead_net_file_size + 1023) / 1024);
+      bout << fmt::format(
+          "|#7\xB3 |#3--- |#7\xB3 |#2{:>8} |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
+          "|#2------- |#7\xB3|#2{:>5} |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
+          net.name, deadk);
     }
   }
 
@@ -351,12 +343,13 @@ void print_pending_list() {
 
     File checkNetFile(PathFilePath(net.dir, CHECK_NET));
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      auto check_net_file_size = checkNetFile.length();
+      const auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
-      auto checkk = fmt::format("{}k", (check_net_file_size + 1023) / 1024);
-      bout << fmt::sprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
-                   "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   net.name, checkk);
+      const auto checkk = fmt::format("{}k", (check_net_file_size + 1023) / 1024);
+      bout << fmt::format(
+          "|#7\xB3 |#3--- |#7\xB3 |#2{:>8} |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
+          "|#2------- |#7\xB3|#2{:>5} |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
+          net.name, checkk);
     }
   }
 

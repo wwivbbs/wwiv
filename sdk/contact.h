@@ -18,17 +18,16 @@
 #ifndef __INCLUDED_SDK_CONTACT_H__
 #define __INCLUDED_SDK_CONTACT_H__
 
+#include "core/datetime.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
+#include "sdk/net.h"
 #include <ctime>
+#include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <string>
 #include <vector>
-
-#include "core/datetime.h"
-#include <filesystem>
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/net.h"
 
 namespace wwiv {
 namespace sdk {
@@ -52,17 +51,17 @@ public:
   explicit NetworkContact(const wwiv::sdk::network_contact_record& ncr): ncr_(ncr) {}
   ~NetworkContact() {}
 
-  const std::string address() const { return ncr_.address; }
-  uint16_t systemnumber() const { return ncr_.ncr.systemnumber; }
-  uint16_t numcontacts() const { return ncr_.ncr.numcontacts; }
-  uint16_t numfails() const { return ncr_.ncr.numfails; }
-  daten_t firstcontact() const { return ncr_.ncr.firstcontact; }
-  daten_t lastcontact() const { return ncr_.ncr.lastcontact; }
-  daten_t lastcontactsent() const { return ncr_.ncr.lastcontactsent; }
-  daten_t lasttry() const { return ncr_.ncr.lasttry; }
-  uint32_t bytes_received() const { return ncr_.ncr.bytes_received; }
-  uint32_t bytes_sent() const { return ncr_.ncr.bytes_sent; }
-  uint32_t bytes_waiting() const { return ncr_.ncr.bytes_waiting; }
+  [[nodiscard]] const std::string address() const { return ncr_.address; }
+  [[nodiscard]] uint16_t systemnumber() const { return ncr_.ncr.systemnumber; }
+  [[nodiscard]] uint16_t numcontacts() const { return ncr_.ncr.numcontacts; }
+  [[nodiscard]] uint16_t numfails() const { return ncr_.ncr.numfails; }
+  [[nodiscard]] daten_t firstcontact() const { return ncr_.ncr.firstcontact; }
+  [[nodiscard]] daten_t lastcontact() const { return ncr_.ncr.lastcontact; }
+  [[nodiscard]] daten_t lastcontactsent() const { return ncr_.ncr.lastcontactsent; }
+  [[nodiscard]] daten_t lasttry() const { return ncr_.ncr.lasttry; }
+  [[nodiscard]] uint32_t bytes_received() const { return ncr_.ncr.bytes_received; }
+  [[nodiscard]] uint32_t bytes_sent() const { return ncr_.ncr.bytes_sent; }
+  [[nodiscard]] uint32_t bytes_waiting() const { return ncr_.ncr.bytes_waiting; }
   void set_bytes_waiting(int32_t bw) { ncr_.ncr.bytes_waiting = bw; }
 
   void fixup();
@@ -95,10 +94,10 @@ class Contact {
   virtual ~Contact();
 
   // Was this list initialized properly.
-  bool IsInitialized() const { return initialized_; }
+  [[nodiscard]] bool IsInitialized() const { return initialized_; }
   // returns a mutable net_contact_rec for system number "node"
-  NetworkContact* contact_rec_for(uint16_t node);
-  NetworkContact* contact_rec_for(const std::string& node);
+  [[nodiscard]] NetworkContact* contact_rec_for(uint16_t node);
+  [[nodiscard]] NetworkContact* contact_rec_for(const std::string& node);
   void ensure_rec_for(uint16_t node);
   void ensure_rec_for(const std::string& node);
 
@@ -112,9 +111,9 @@ class Contact {
 
   bool Save();
   const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
-  std::string ToString() const;
-  std::string full_pathname() const noexcept;
-  std::filesystem::path path() const noexcept;
+  [[nodiscard]] std::string ToString() const;
+  [[nodiscard]] std::string full_pathname() const noexcept;
+  [[nodiscard]] std::filesystem::path path() const noexcept;
 
  private:
    /** add a contact. called by connect or failure. */
