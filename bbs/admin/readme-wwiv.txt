@@ -2,38 +2,38 @@ readme-wwiv.txt
 
                 *** Attention Windows Users ***
 
-    You may need to download the Visual Studio 2017 redistributable
+    You may need to download the Visual Studio 2019 redistributable
     files. 
     
     Here's the official link: 
-    https://go.microsoft.com/fwlink/?LinkId=746571
-    
-    If you have trouble with that link, it's also available here:
-    https://storage.googleapis.com/build-iv/redist/vc2017/vcredist_x86.exe
-    
-    If you see errors about missing DLL files, you may need to install this
-    package before using WWIV (init.exe, bbs.exe, everything).
+    https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
+        
+    If you see errors about missing DLL files, you may need to install this package before using WWIV (wwivconfig.exe, bbs.exe, everything).
 
 
-WWIV 5.3 Getting Started
+WWIV 5.x Getting Started
 ~~~~~~~~~~~~~~~~~~~~~~~~
 If you already have WWIV 4.3 or 5.x installed, just copy the EXE and DLL 
 files over your existing 4.3/5.x installation. Please backup your previous
 binaries and configuration files.
 
+init.exe was renamed to wwivconfig earlier in 5.x, so please delete the
+older init.exe if you have it still.
+
 The command line parameters have changed quite a bit, I suggest running
 "bbs -? | more" to see the list of changes.
 
-So far, WWIV 5.3 is still fully compatable with your existing WWIV 4.30
-and 5.x installations (Just drop it in and run init to upgrade the 
+So far, WWIV 5.5 is still fully compatable with your existing WWIV 4.30
+and 5.x installations (Just drop it in and run wwivconfig to upgrade the 
 data files and go).
 
-Run WWIVServer.exe and then select the menu Edit > Preferences and setup
+Run wwivconfig.exe and then select the menu WWIVD and setup
 the information for your configuration (paths, and the starting and ending
-node numbers to use for inbound telnet). Then choose File > Start Server.
-Now the WWIV5Server is listening on a socket and ready to spawn 
-instances of WWIV.  You do not need to keep multiple copies of WWIV running
-at all times, as the WTS will spawn them as required.
+node numbers to use for inbound telnet). Then launch wwivd to have it
+listen on a socket and ready to spawn instances of WWIV.  You do not
+need to keep any copies of WWIV running, as wwivd will spawn them as
+required and can also run the beginday event if configured so in
+wwivconfig.
 
 Full documentation is avalable online: http://docs.wwivbbs.org
 
@@ -47,11 +47,11 @@ DEVELOPMENT INFORMATION
 ~~~~~~~~~~~~~~~~~~~~~~~
 
     WWIV is compiled with the following compilers:
-        MS Visual C++ 2017 Community Edition.
-        GCC 6.3 on Debian 9 Linux
+        MS Visual C++ 2019 Community Edition.
+        GCC 8.3 or newer on Linux
 
-    I recommend using MSVC 2017 Community Edition on Windows.
-    It is available for free.
+    I recommend using MSVC 2019 Community Edition on Windows.
+    It is available for free as is gcc on Linux.
 
 
 ===============================================================================
