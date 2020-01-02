@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2019, WWIV Software Services             */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -592,7 +592,7 @@ void Application::read_gfile() {
 void Application::InitializeBBS() {
   Cls();
   std::clog << std::endl
-            << wwiv_version << beta_version << ", Copyright (c) 1998-2019, WWIV Software Services."
+            << wwiv_version << beta_version << ", Copyright (c) 1998-2020, WWIV Software Services."
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;

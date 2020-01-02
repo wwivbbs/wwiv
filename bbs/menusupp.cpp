@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2019, WWIV Software Services             */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -417,7 +417,7 @@ void ToggleExpert() {
 void WWIVVersion() {
   bout.cls();
   bout << "|#9WWIV Bulletin Board System " << wwiv_version << beta_version << wwiv::endl;
-  bout << "|#9Copyright (C) 1998-2019, WWIV Software Services.\r\n";
+  bout << "|#9Copyright (C) 1998-2020, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License, Version 2.0." << wwiv::endl;
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"

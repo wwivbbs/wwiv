@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
         if (argc != 2)
         {
                 printf("WWIV 5.X structure size test utility\r\n");
-                printf("Copyright 2000-2001 Rushfan\r\n\n");
+                printf("Copyright 2000-2020 WWIV Software Services\r\n\n");
                 printf("Usage:\n\tTESTSIZE <output filename>\n\n");
                 return EXIT_BAD_PARAMS;
         }

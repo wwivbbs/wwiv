@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                  WWIV Initialization Utility Version 5                 */
-/*             Copyright (C)1998-2019, WWIV Software Services             */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -32,7 +32,7 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
-static const char* copyrightString = "Copyright (c) 1998-2019, WWIV Software Services";
+static const char* copyrightString = "Copyright (c) 1998-2020, WWIV Software Services";
 
 #if defined ( _WIN32 )
 static HANDLE hConOut;
