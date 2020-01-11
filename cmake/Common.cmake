@@ -35,10 +35,6 @@ if (UNIX)
     set(LINUX TRUE)
   endif()
 
-  if (CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND CMAKE_CXX_FLAGS "-frtti -lstdc++fs")
-  endif()
-
 elseif (WIN32)
 
   if (MSVC)
