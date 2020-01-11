@@ -84,13 +84,20 @@
   #endif /* VC++ versions */
   #define static_assert_opt( expr, string ) \
 		  assert( expr )
-#elif defined( __GNUC__XXXX ) && \
+#elif defined( __GNUC__ ) && \
 	  ( ( __GNUC__ == 4 && __GNUC_MINOR__ >= 5 ) || ( __GNUC__ >= 5 ) ) 
   /* Supposedly built into gcc 4.5 and above (as usual for new gcc features
 	 this isn't really documented, but web comments indicate that it should 
 	 be present in 4.5 and above), however trying this with 4.5 produces
 	 assorted errors indicating that it isn't actually supported */
-  #define static_assert						_Static_assert
+ // #define static_assert						_Static_assert
+
+  #ifndef static_assert_opt
+  #define static_assert_opt( expr, string ) \
+                 assert( expr )
+  #endif  // ifndef static_assert_opt
+
+
 #else
   #define static_assert( expr, string ) \
 		  { enum { ASSERT_CONCAT( static_assert_, __COUNTER__ ) = 1 / ( !!( expr ) ) }; }
