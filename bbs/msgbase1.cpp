@@ -354,7 +354,9 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
     return {};
   }
   text.resize(cr);
-  if (a()->net_networks[network_number].type == network_type_t::ftn) {
+  // Don't assume that we have a valid network at the network_number position.
+  if (network_number < size_int(a()->net_networks) &&
+      a()->net_networks[network_number].type == network_type_t::ftn) {
     // 1st line of message is from.
     a()->net_email_name = text;
     return text;
