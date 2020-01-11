@@ -40,7 +40,7 @@ void extract_out(char *b, long len, const char *title) {
   // TODO Fix platform specific path issues...
 
   CHECK_NOTNULL(b);
-  char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
+  char s1[81], s2[81], s3[255], ch = 26, ch1, s4[81];
 
   print_help_file(MEXTRACT_NOEXT);
   bool done = false;
