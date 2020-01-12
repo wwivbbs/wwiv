@@ -326,7 +326,7 @@ Subs::Subs(const std::string& datadir,
     const std::vector<net_networks_rec>& net_networks)
   : datadir_(datadir), net_networks_(net_networks) {};
 
-Subs::~Subs() {}
+Subs::~Subs() = default;
 
 bool Subs::Load() {
   subs_t s;

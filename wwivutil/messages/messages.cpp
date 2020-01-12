@@ -21,6 +21,7 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
@@ -54,15 +55,22 @@ constexpr char CD = 4;
 
 namespace wwiv::wwivutil {
 
-// TODO(rushfan): This was copied from post.cpp. Let's share it.
-static bool find_sub(wwiv::sdk::Subs& subs, const string& filename, subboard_t& sub) {
+static subboard_t default_sub(const std::string& fn) {
+  subboard_t sub{};
+  sub.storage_type = 2;
+  sub.filename = fn;
+  return sub;
+}
+
+// N.B(rushfan): This is similar to the one in post.cpp.  But that one uses
+// network number and network name as key and not filename for sub file.
+static std::optional<subboard_t> find_sub(const wwiv::sdk::Subs& subs, const string& filename) {
   for (const auto& x : subs.subs()) {
     if (iequals(filename, x.filename)) {
-      sub = x;
-      return true;
+      return {x};
     }
   }
-  return false;
+  return std::nullopt;
 }
 
 OverflowStrategy overflow_strategy_from(const std::string& v) {
@@ -77,9 +85,45 @@ OverflowStrategy overflow_strategy_from(const std::string& v) {
   return OverflowStrategy::delete_none;
 }
 
-class DeleteMessageCommand : public UtilCommand {
+bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
+  const auto& datadir = config()->config()->datadir();
+  const auto& nets = config()->networks().networks();
+
+  subs_ = std::make_unique<Subs>(datadir, nets);
+  if (!subs_->Load()) {
+    LOG(ERROR) << "Unable to open subs. ";
+    return false;
+  }
+  if (!subs_->exists(basename)) {
+    LOG(ERROR) << "No sub exists with filename: " << basename;
+    return false;
+  }
+
+  const wwiv::sdk::msgapi::MessageApiOptions options;
+  auto x = new NullLastReadImpl();
+  sub_ = find_sub(*subs_, basename).value_or(default_sub(basename));
+
+  apis_[sub_.storage_type] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
+                                                            config()->networks().networks(), x);
+
+  if (!wwiv::stl::contains(apis_, 2)) {
+    // We always want to add type 2 
+    apis_[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
+                                                config()->networks().networks(), x);
+  }
+  if (!apis_[sub_.storage_type]->Exist(sub_)) {
+    clog << "Message area: '" << sub_.filename << "' does not exist." << endl;
+    return false;
+  }
+  return true;
+}
+
+BaseMessagesSubCommand::~BaseMessagesSubCommand() = default;
+
+
+class DeleteMessageCommand : public BaseMessagesSubCommand {
 public:
-  DeleteMessageCommand() : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
+  DeleteMessageCommand() : BaseMessagesSubCommand("delete", "Deletes message number specified by '--num'.") {}
 
   virtual ~DeleteMessageCommand() = default;
 
@@ -98,31 +142,19 @@ public:
     }
 
     const string basename(remaining().front());
-    std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
-
-    // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options;
-    apis[2] = make_unique<WWIVMessageApi>(options, *config()->config(),
-                                          config()->networks().networks(), new NullLastReadImpl());
-
-    subboard_t sub{};
-    const auto& datadir = config()->config()->datadir();
-    const auto& nets = config()->networks().networks();
-    Subs subs(datadir, nets);
-    if (!find_sub(subs, basename, sub)) {
-      // set default.
-      sub.storage_type = 2;
-      sub.filename = basename;
+    if (!CreateMessageApiMap(basename)) {
+      clog << "Error Creating message apis." << endl;
+      return 1;
     }
-
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
+    
+    unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
     if (!area) {
-      clog << "Unable to Open message area: '" << sub.filename << "'." << endl;
+      clog << "Unable to Open message area: '" << sub().filename << "'." << endl;
       return 1;
     }
 
-    int num_messages = area->number_of_messages();
-    int message_number = arg("num").as_int();
+    auto num_messages = area->number_of_messages();
+    auto message_number = arg("num").as_int();
     cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
     cout << string(72, '-') << endl;
 
@@ -130,7 +162,7 @@ public:
       LOG(ERROR) << "Invalid message number #" << message_number;
       return 1;
     }
-    bool success = area->DeleteMessage(message_number);
+    auto success = area->DeleteMessage(message_number);
     if (!success) {
       LOG(ERROR) << "Unable to delete message #" << message_number << "; Try packing this sub.";
       return 1;
@@ -145,9 +177,9 @@ public:
   }
 };
 
-class PostMessageCommand : public UtilCommand {
+class PostMessageCommand : public BaseMessagesSubCommand {
 public:
-  PostMessageCommand() : UtilCommand("post", "Posts a new message.") {}
+  PostMessageCommand() : BaseMessagesSubCommand("post", "Posts a new message.") {}
 
   bool AddSubCommands() override final {
     add_argument({"title", "message sub name to post on", ""});
@@ -171,7 +203,7 @@ public:
     return ss.str();
   }
 
-  virtual int Execute() {
+  int Execute() override {
     if (remaining().size() < 2) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp();
@@ -179,35 +211,12 @@ public:
     }
 
     const string basename(remaining().front());
-    const auto& datadir = config()->config()->datadir();
-    const auto& nets = config()->networks().networks();
-    Subs subs(datadir, nets);
-    if (!subs.Load()) {
-      LOG(ERROR) << "Unable to open subs. ";
+    if (!CreateMessageApiMap(basename)) {
+      clog << "Error Creating message apis." << endl;
       return 1;
     }
-    if (!subs.exists(basename)) {
-      LOG(ERROR) << "No sub exists with filename: " << basename;
-      return 1;
-    }
-
-    // TODO(rushfan): Load sub data here;
-    // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options;
-    options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
-
-    subboard_t sub{};
-    if (!find_sub(subs, basename, sub)) {
-      // set default.
-      sub.storage_type = 2;
-      sub.filename = basename;
-    }
-    std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
-
-    apis[2] = make_unique<WWIVMessageApi>(options, *config()->config(),
-                                          config()->networks().networks(), new NullLastReadImpl());
-
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
+    
+    unique_ptr<MessageArea> area(api().CreateOrOpen(sub_, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
@@ -238,8 +247,8 @@ public:
     }
 
     TextFile text_file(filename, "r");
-    string raw_text = text_file.ReadFileIntoString();
-    vector<string> lines = wwiv::strings::SplitString(raw_text, "\n", false);
+    auto raw_text = text_file.ReadFileIntoString();
+    auto lines = wwiv::strings::SplitString(raw_text, "\n", false);
 
     unique_ptr<Message> msg(area->CreateMessage());
     msg->header().set_from_system(0);
@@ -257,9 +266,9 @@ public:
   }
 };
 
-class PackMessageCommand : public UtilCommand {
+class PackMessageCommand : public BaseMessagesSubCommand {
 public:
-  PackMessageCommand() : UtilCommand("pack", "Packs a WWIV type-2 message area.") {}
+  PackMessageCommand() : BaseMessagesSubCommand("pack", "Packs a WWIV type-2 message area.") {}
 
   bool AddSubCommands() override final {
     add_argument(BooleanCommandLineArgument{"backup", "make a backup of the subs", true});
@@ -282,47 +291,23 @@ public:
     return sb && db;
   }
 
-  virtual int Execute() {
+   int Execute() override {
     if (remaining().size() < 1) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp();
       return 2;
     }
 
-    const auto& datadir = config()->config()->datadir();
-    const auto& nets = config()->networks().networks();
-    Subs subs(datadir, nets);
-    if (!subs.Load()) {
-      LOG(ERROR) << "Unable to open subs. ";
-      return 1;
-    }
-
     const string basename(remaining().front());
-    if (!subs.exists(basename)) {
-      LOG(ERROR) << "No sub exists with filename: " << basename;
+    if (!CreateMessageApiMap(basename)) {
+      clog << "Error Creating message apis." << endl;
       return 1;
     }
-
-    wwiv::sdk::msgapi::MessageApiOptions options;
-    options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
-    subboard_t sub{};
-    if (!find_sub(subs, basename, sub)) {
-      LOG(ERROR) << "Unable to find sub.";
-      // set default.
-      sub.filename = basename;
-    }
-
-    if (sub.storage_type != 2) {
-      LOG(ERROR) << "Can only pack type 2";
-    }
-
-    auto api = make_unique<WWIVMessageApi>(options, *config()->config(),
-                                           config()->networks().networks(), new NullLastReadImpl());
-
+    
     // Ensure we can open it.
     {
       try {
-        unique_ptr<MessageArea> area(api->CreateOrOpen(sub, -1));
+        unique_ptr<MessageArea> area(api().CreateOrOpen(sub(), -1));
       } catch (const bad_message_area&) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
@@ -333,16 +318,16 @@ public:
       backup(*config()->config(), basename);
     }
 
-    subboard_t newsub = sub;
-    sub.filename = StrCat(basename, ".new");
+    subboard_t newsub = sub();
+    newsub.filename = StrCat(basename, ".new");
     {
-      unique_ptr<MessageArea> area(api->Open(sub, -1));
-      auto created_newarea = api->Create(newsub, -1);
+      unique_ptr<MessageArea> area(api().Open(sub(), -1));
+      auto created_newarea = api().Create(newsub, -1);
       if (!created_newarea) {
         clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      unique_ptr<MessageArea> newarea(api->Open(newsub, -1));
+      unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
       auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         auto message(area->ReadMessage(i));
@@ -407,9 +392,9 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   return p.qscan;
 }
 
-class MessageAreasCommand : public UtilCommand {
+class MessageAreasCommand : public BaseMessagesSubCommand {
 public:
-  MessageAreasCommand() : UtilCommand("areas", "Lists the message areas") {}
+  MessageAreasCommand() : BaseMessagesSubCommand("areas", "Lists the message areas") {}
 
   virtual ~MessageAreasCommand() {}
 
@@ -420,8 +405,7 @@ public:
   }
 
   int Execute() override final {
-    Networks networks(*config()->config());
-    wwiv::sdk::Subs subs(config()->config()->datadir(), networks.networks());
+    wwiv::sdk::Subs subs(config()->config()->datadir(), config()->networks().networks());
     if (!subs.Load()) {
       LOG(ERROR) << "Unable to load subs";
       return 2;
@@ -448,7 +432,7 @@ public:
 };
 
 bool MessagesCommand::AddSubCommands() {
-  if (!add(make_unique<MessagesDumpHeaderCommand>())) {
+  if (!add(make_unique<MessagesDumpCommand>())) {
     return false;
   }
   if (!add(make_unique<DeleteMessageCommand>())) {
@@ -467,63 +451,40 @@ bool MessagesCommand::AddSubCommands() {
   return true;
 }
 
-MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
-    : UtilCommand("dump", "Displays message header and text information.") {}
+MessagesDumpCommand::MessagesDumpCommand()
+    : BaseMessagesSubCommand("dump", "Displays message header and text information.") {}
 
-std::string MessagesDumpHeaderCommand::GetUsage() const {
+std::string MessagesDumpCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   dump <base sub filename>" << endl;
   ss << "Example: dump general" << endl;
   return ss.str();
 }
 
-bool MessagesDumpHeaderCommand::AddSubCommands() {
+bool MessagesDumpCommand::AddSubCommands() {
   add_argument({"start", "Starting message number.", "1"});
-  add_argument({"end", "Last message number..", "-1"});
+  add_argument({"end", "Last message number.", "-1"});
+  add_argument({"start-date", "Date for starting message in format yyyy-mm-dd[ h:m:s].", ""});
+  add_argument({"end-date", "Date for ending message in format yyyy-mm-dd[ h:m:s].", ""});
   add_argument(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
 
   return true;
 }
 
-int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, int end, bool all) {
+int MessagesDumpCommand::ExecuteImpl(const string& basename, int start, int end, bool all) {
 
-  const auto& datadir = config()->config()->datadir();
-  const auto& nets = config()->networks().networks();
-
-  Subs subs(datadir, nets);
-  if (!subs.Load()) {
-    LOG(ERROR) << "Unable to open subs. ";
+  if (!CreateMessageApiMap(basename)) {
+    clog << "Error Creating message apis." << endl;
     return 1;
   }
-  if (!subs.exists(basename)) {
-    LOG(ERROR) << "No sub exists with filename: " << basename;
-    return 1;
-  }
-
-  const wwiv::sdk::msgapi::MessageApiOptions options;
-  auto x = new NullLastReadImpl();
-  subboard_t sub{};
-  if (!find_sub(subs, basename, sub)) {
-    // set default.
-    sub.storage_type = 2;
-    sub.filename = basename;
-  }
-  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
-
-  apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
-                                             config()->networks().networks(), x);
-  if (!apis[sub.storage_type]->Exist(sub)) {
-    clog << "Message area: '" << sub.filename << "' does not exist." << endl;
-    return 1;
-  }
-
-  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
+    
+  unique_ptr<MessageArea> area(api().Open(sub_, -1));
   if (!area) {
-    clog << "Error opening message area: '" << sub.filename << "'." << endl;
+    clog << "Error opening message area: '" << sub().filename << "'." << endl;
     return 1;
   }
-  area->set_storage_type(sub.storage_type);
-  area->set_max_messages(sub.maxmsgs);
+  area->set_storage_type(sub().storage_type);
+  area->set_max_messages(sub().maxmsgs);
 
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
@@ -580,7 +541,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   return 0;
 }
 
-int MessagesDumpHeaderCommand::Execute() {
+int MessagesDumpCommand::Execute() {
   if (remaining().empty()) {
     clog << "Missing sub basename." << endl;
     cout << GetUsage() << GetHelp();
@@ -588,8 +549,18 @@ int MessagesDumpHeaderCommand::Execute() {
   }
 
   const string basename(remaining().front());
-  const auto start = iarg("start");
+  auto start = iarg("start");
   auto end = iarg("end");
+
+  auto start_date = sarg("start-date");
+  auto end_date = sarg("end-date");
+
+  if (!start_date.empty()) {
+    // Find the closest message to the start date, or leave it -1
+  }
+  if (!end_date.empty()) {
+    // Find the closest message to the end date, or leave it -1
+  }
   const auto all = barg("all");
   return ExecuteImpl(basename, start, end, all);
 }
