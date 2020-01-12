@@ -464,8 +464,8 @@ std::string MessagesDumpCommand::GetUsage() const {
 bool MessagesDumpCommand::AddSubCommands() {
   add_argument({"start", "Starting message number.", "1"});
   add_argument({"end", "Last message number.", "-1"});
-  add_argument({"start-date", "Date for starting message in format yyyy-mm-dd[ h:m:s].", ""});
-  add_argument({"end-date", "Date for ending message in format yyyy-mm-dd[ h:m:s].", ""});
+  add_argument({"start_date", "Date for starting message in format yyyy-mm-dd[ h:m:s].", ""});
+  add_argument({"end_date", "Date for ending message in format yyyy-mm-dd[ h:m:s].", ""});
   add_argument(BooleanCommandLineArgument("all", "dumps everything, control lines too", false));
 
   return true;
@@ -545,8 +545,8 @@ int MessagesDumpCommand::Execute() {
   auto start = iarg("start");
   auto end = iarg("end");
 
-  auto start_date = sarg("start-date");
-  auto end_date = sarg("end-date");
+  auto start_date = sarg("start_date");
+  auto end_date = sarg("end_date");
   const auto all = barg("all");
 
   unique_ptr<MessageArea> area(api().Open(sub_, -1));
