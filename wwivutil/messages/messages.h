@@ -64,7 +64,7 @@ public:
   bool AddSubCommands() override final;
 
 protected:
-  int ExecuteImpl(const std::string& basename, int start, int end, bool all);
+  int ExecuteImpl(sdk::msgapi::MessageArea* area, const std::string& basename, int start, int end, bool all);
 };
 
 }  // namespace wwivutil

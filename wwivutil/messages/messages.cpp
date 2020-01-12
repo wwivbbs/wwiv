@@ -471,20 +471,8 @@ bool MessagesDumpCommand::AddSubCommands() {
   return true;
 }
 
-int MessagesDumpCommand::ExecuteImpl(const string& basename, int start, int end, bool all) {
+int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, int start, int end, bool all) {
 
-  if (!CreateMessageApiMap(basename)) {
-    clog << "Error Creating message apis." << endl;
-    return 1;
-  }
-    
-  unique_ptr<MessageArea> area(api().Open(sub_, -1));
-  if (!area) {
-    clog << "Error opening message area: '" << sub().filename << "'." << endl;
-    return 1;
-  }
-  area->set_storage_type(sub().storage_type);
-  area->set_max_messages(sub().maxmsgs);
 
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
@@ -549,20 +537,56 @@ int MessagesDumpCommand::Execute() {
   }
 
   const string basename(remaining().front());
+  if (!CreateMessageApiMap(basename)) {
+    clog << "Error Creating message apis." << endl;
+    return 1;
+  }
+    
   auto start = iarg("start");
   auto end = iarg("end");
 
   auto start_date = sarg("start-date");
   auto end_date = sarg("end-date");
+  const auto all = barg("all");
 
+  unique_ptr<MessageArea> area(api().Open(sub_, -1));
+  if (!area) {
+    clog << "Error opening message area: '" << sub().filename << "'." << endl;
+    return 1;
+  }
+  area->set_storage_type(sub().storage_type);
+  area->set_max_messages(sub().maxmsgs);
+
+  // If we have dates, update the start and end numbers based
+  // on the dates.
+  const auto last_message = (end >= 0) ? end : area->number_of_messages();
   if (!start_date.empty()) {
+    auto start_dt = parse_yyyymmdd_with_optional_hms(start_date).to_daten_t();
+    for (start = 1; start <= last_message; start++) {
+      auto h = area->ReadMessageHeader(start);
+      if (start_dt < h->daten()) {
+        // We're past the start date, so use last message number.
+        break;
+      }
+    }
     // Find the closest message to the start date, or leave it -1
   }
   if (!end_date.empty()) {
+    auto end_dt = parse_yyyymmdd_with_optional_hms(end_date).to_daten_t();
     // Find the closest message to the end date, or leave it -1
+    auto before_end = 1;
+    for (auto i = 1; i<= last_message; i++) {
+      auto h = area->ReadMessageHeader(i);
+      if (end_dt < h->daten()) {
+        // We're past the end date, so use last message number.
+        end = before_end;
+        break;
+      }
+      before_end = i;
+    }
   }
-  const auto all = barg("all");
-  return ExecuteImpl(basename, start, end, all);
+  VLOG(1) << "start: " << start << "; end: " << end << std::endl;
+  return ExecuteImpl(area.get(), basename, start, end, all);
 }
 
 } // namespace wwiv
