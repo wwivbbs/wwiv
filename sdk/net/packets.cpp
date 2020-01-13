@@ -582,11 +582,16 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
 
 // TODO(rushfan): Need to pass in the name of the pending network file to make
 // or at least pass in the network character to use in the filename.
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const net_header_rec& h,
                                  std::vector<uint16_t> list, const std::string& text) {
-  Packet gp(h, list, text);
-  const auto fn = create_pend(net.dir, false, '2');
-  if (!write_wwivnet_packet(fn, net, gp)) {
+  Packet p(h, list, text);
+  return write_wwivnet_packet_or_log(net, network_app_id, p);
+}
+
+
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const Packet& p) {
+  const auto fn = create_pend(net.dir, false, network_app_id);
+  if (!write_wwivnet_packet(fn, net, p)) {
     LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
     return false;
   } else {
@@ -606,6 +611,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
                               const subscribers_send_to_t& send_to) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
+  // TODO(rushfan): Replace '2' with a network_app_id passed in
+  char network_app_id = '2';
   for (const auto& subnet : sub.nets) {
     auto h = template_packet.nh;
     VLOG(1) << "DEBUG: Current network subtype: " << subnet.stype;
@@ -646,7 +653,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       h.tosys = FTN_FAKE_OUTBOUND_NODE;
       VLOG(1) << "current network is FTN";
       h.list_len = 0;
-      write_wwivnet_packet_or_log(current_net, h, {}, text);
+      write_wwivnet_packet_or_log(current_net, network_app_id, h, {}, text);
     } else if (current_net.type == network_type_t::wwivnet) {
       if (subnet.host == 0) {
         // We are the host.
@@ -674,7 +681,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
           h.list_len = static_cast<uint16_t>(subscribers.size());
           h.tosys = 0;
           write_wwivnet_packet_or_log(
-              current_net, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
+              current_net, network_app_id, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
         } else {
           LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
         }
@@ -682,7 +689,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
         // We are not the host.  Send message to host.
         h.tosys = subnet.host;
         h.list_len = 0;
-        write_wwivnet_packet_or_log(current_net, h, {}, text);
+        write_wwivnet_packet_or_log(current_net, network_app_id, h, {}, text);
       }
     }
   }

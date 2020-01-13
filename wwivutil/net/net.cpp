@@ -38,6 +38,7 @@
 #include "wwivutil/net/dump_subscribers.h"
 #include "wwivutil/net/list.h"
 #include "wwivutil/net/req.h"
+#include "wwivutil/net/send.h"
 
 using std::endl;
 using std::make_unique;
@@ -60,6 +61,7 @@ bool NetCommand::AddSubCommands() {
   add(make_unique<wwiv::wwivutil::net::DumpSubscribersCommand>());
   add(make_unique<SubReqCommand>());
   add(make_unique<NetListCommand>());
+  add(make_unique<wwiv::wwivutil::net::SubSendCommand>());
   return true;
 }
 

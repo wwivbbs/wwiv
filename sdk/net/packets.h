@@ -197,8 +197,9 @@ std::string get_subtype_from_packet_text(const std::string& text);
 Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
                                        const std::string& subtype, std::set<uint16_t> receipients);
 
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const net_header_rec& h,
                                  std::vector<uint16_t> list, const std::string& text);
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const Packet& p);
 
 enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,

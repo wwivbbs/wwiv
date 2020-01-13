@@ -1290,7 +1290,7 @@ discuss figuring out the routing.
   2 above. The actual name of the P*.NET can vary,
   depending on NETxx version and what program generates it.
   network.exe receives the file as p1-0-1.net. The "-0" in the
-  middle indicates that network.execreated the file (think
+  middle indicates that network.exe created the file (think
   of it as network0).  When other NETXX programs generate
   pending netmail files, the middle number indicates which
   program created it (network2, the local mail

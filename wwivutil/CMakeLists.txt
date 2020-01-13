@@ -24,6 +24,7 @@ set(COMMAND_SOURCES
   net/list.cpp
   net/net.cpp
   net/req.cpp
+  net/send.cpp
   print/print.cpp
   status/status.cpp
   util.cpp

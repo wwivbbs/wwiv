@@ -66,7 +66,7 @@ int SubReqCommand::Execute() {
 
   auto r = this->remaining();
   if (r.size() < 3) {
-    cout << GetUsage();
+    cout << GetUsage() << GetHelp();
     return 2;
   }
 
