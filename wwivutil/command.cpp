@@ -45,7 +45,7 @@ namespace wwivutil {
 
 UtilCommand::UtilCommand(const std::string& name, const std::string& description)
   : CommandLineCommand(name, description) {}
-UtilCommand::~UtilCommand() {}
+UtilCommand::~UtilCommand() = default;
 
 bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
   subcommands_.push_back(cmd);

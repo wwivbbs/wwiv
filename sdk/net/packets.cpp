@@ -54,10 +54,7 @@ bool send_network_email(const std::string& filename, const net_networks_rec& net
   ppt.set_sender(byname);
   ppt.set_text(text);
 
-  auto packet_text = ParsedPacketText::ToPacketText(ppt);
-  Packet p(nh, list, packet_text);
-  p.update_header();
-  return write_wwivnet_packet(filename, network, p);
+  return write_wwivnet_packet(filename, network, Packet(nh, list, ppt));
 }
 
 ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
@@ -251,7 +248,7 @@ static int number_of_header_lines(uint16_t main_type) {
   }
   return 0;
 }
-Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string t)
+Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::string t)
     : nh(h), list(l), text_(std::move(t)) {
   if (nh.list_len != list.size()) {
     LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
@@ -266,8 +263,7 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const st
 Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
     : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
 
-Packet::Packet() noexcept {
-}
+Packet::Packet() noexcept = default;
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {
@@ -402,7 +398,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   return text;
 }
 
-void rename_pend(const string& directory, const string& filename, char network_app_num) {
+void rename_pend(const string& directory, const string& filename, char network_app_id) {
   const auto pend_filename(PathFilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
@@ -412,7 +408,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
   const char prefix = (to_number<int>(num)) ? '1' : '0';
 
   for (int i = 0; i < 1000; i++) {
-    const auto new_basename = fmt::format("p{}-{}-{}.net", prefix, network_app_num, i);
+    const auto new_basename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
     const auto new_filename = PathFilePath(directory, new_basename);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
@@ -553,6 +549,7 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
   nh.minor_type = 0;
   nh.touser = 0;
 
+  // TODO(rushfan): Use ParsedPacketText here?
   // text is subtype<0>title<0>sender<cflr>date<crlf>body
   string text = subtype;
   text.push_back(0);
@@ -580,16 +577,8 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
   return result;
 }
 
-// TODO(rushfan): Need to pass in the name of the pending network file to make
-// or at least pass in the network character to use in the filename.
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const net_header_rec& h,
-                                 std::vector<uint16_t> list, const std::string& text) {
-  Packet p(h, list, text);
-  return write_wwivnet_packet_or_log(net, network_app_id, p);
-}
-
-
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const Packet& p) {
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id,
+                                 const Packet& p) {
   const auto fn = create_pend(net.dir, false, network_app_id);
   if (!write_wwivnet_packet(fn, net, p)) {
     LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
@@ -653,7 +642,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       h.tosys = FTN_FAKE_OUTBOUND_NODE;
       VLOG(1) << "current network is FTN";
       h.list_len = 0;
-      write_wwivnet_packet_or_log(current_net, network_app_id, h, {}, text);
+      write_wwivnet_packet_or_log(current_net, network_app_id, Packet(h, {}, text));
     } else if (current_net.type == network_type_t::wwivnet) {
       if (subnet.host == 0) {
         // We are the host.
@@ -681,7 +670,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
           h.list_len = static_cast<uint16_t>(subscribers.size());
           h.tosys = 0;
           write_wwivnet_packet_or_log(
-              current_net, network_app_id, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
+              current_net, network_app_id,
+              Packet(h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text));
         } else {
           LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
         }
@@ -689,7 +679,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
         // We are not the host.  Send message to host.
         h.tosys = subnet.host;
         h.list_len = 0;
-        write_wwivnet_packet_or_log(current_net, network_app_id, h, {}, text);
+        write_wwivnet_packet_or_log(current_net, network_app_id, Packet(h, {}, text));
       }
     }
   }

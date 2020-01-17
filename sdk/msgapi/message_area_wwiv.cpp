@@ -644,7 +644,7 @@ int WWIVMessageArea::DeleteExcess() {
   MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return *last_read_; }
 
   message_anonymous_t WWIVMessageArea::anonymous_type() const noexcept {
-    switch (sub_.anony & 0xf0) {
+    switch (sub_.anony & 0x0f) {
     case anony_none:
       return message_anonymous_t::anonymous_none;
     case anony_enable_anony:

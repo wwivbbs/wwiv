@@ -52,7 +52,7 @@ public:
 
 private:
   subfile_header_t header_{};
-  bool initialized_ = true;
+  bool initialized_{true};
 };
 
 class WWIVMessageAreaLastRead : public MessageAreaLastRead {

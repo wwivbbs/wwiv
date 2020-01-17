@@ -142,7 +142,6 @@ std::string to_string(duration<double> dd) {
 DateTime parse_yyyymmdd(const std::string& date_str) {
   // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
   std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})");
-  std::smatch result;
   if (!std::regex_match(date_str, date_time_regex)) {
     return DateTime::now();
   }
@@ -163,7 +162,6 @@ DateTime parse_yyyymmdd(const std::string& date_str) {
 DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str) {
   // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
   std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})\\s([0-9]{2}):([0-9]{2}):([0-9]{2})");
-  std::smatch result;
   if (!std::regex_match(date_str, date_time_regex)) {
     return parse_yyyymmdd(date_str);
   }

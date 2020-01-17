@@ -154,8 +154,8 @@ int SubSendCommand::Execute() {
     LOG(ERROR) << "Unable to open message area.";
     return 1;
   }
-  const auto start = std::max<int>(1, area->number_of_messages() - num);
-  for (int i = start; i <= area->number_of_messages(); i++) {
+  for (int i = std::max<int>(1, area->number_of_messages() - num); i <= area->number_of_messages();
+       i++) {
     auto message = area->ReadMessage(i);
     const auto* wm = dynamic_cast<const WWIVMessage*>(message.get());
     auto packet = create_packet_from_wwiv_message(*wm, subtype, {host});

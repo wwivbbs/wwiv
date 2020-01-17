@@ -47,7 +47,7 @@ class ParsedPacketText;
 
 class Packet final {
 public:
-  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string t);
+  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::string t);
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t);
 
   Packet() noexcept;
@@ -91,6 +91,10 @@ public:
 
 /**
  * Represents a parsed packet text for main types: email, email_name, and new_post.
+ * 
+ * That means the text portion here just includes the message body and not the 
+ * WWIV message fields encoded into the first few lines of message text that
+ * exists both in messagebase format as well as on the network.
  */
 class ParsedPacketText {
 public:
@@ -175,13 +179,13 @@ bool send_network_email(const std::string& filename, const net_networks_rec& net
 struct NetInfoFileInfo {
   std::string filename;
   std::string data;
-  bool overwrite = false;
-  bool valid = false;
+  bool overwrite{false};
+  bool valid{false};
 };
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
-void rename_pend(const std::string& directory, const std::string& filename, char network_app_num);
+void rename_pend(const std::string& directory, const std::string& filename, char network_app_id);
 std::string create_pend(const std::string& directory, bool local, char network_app_id);
 
 std::string main_type_name(uint16_t typ);
@@ -197,8 +201,8 @@ std::string get_subtype_from_packet_text(const std::string& text);
 Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
                                        const std::string& subtype, std::set<uint16_t> receipients);
 
-bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const net_header_rec& h,
-                                 std::vector<uint16_t> list, const std::string& text);
+// Writes out a WWIVnet packet to the pending file and logs success and failure to the 
+// system Logger.
 bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_id, const Packet& p);
 
 enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };

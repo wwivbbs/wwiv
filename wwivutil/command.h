@@ -43,7 +43,7 @@ public:
 
 private:
   const std::string bbsdir_;
-  wwiv::sdk::Config* config_;
+  wwiv::sdk::Config* config_{nullptr};
   wwiv::sdk::Networks networks_;
   bool initialized_{true};
 };
@@ -61,7 +61,7 @@ public:
   bool set_config(Configuration* config);
 
 private:
-  Configuration* config_;
+  Configuration* config_{nullptr};
   std::vector<std::shared_ptr<UtilCommand>> subcommands_;
 };
 

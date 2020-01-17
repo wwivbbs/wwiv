@@ -162,8 +162,8 @@ public:
       LOG(ERROR) << "Invalid message number #" << message_number;
       return 1;
     }
-    auto success = area->DeleteMessage(message_number);
-    if (!success) {
+    
+    if (auto success = area->DeleteMessage(message_number); !success) {
       LOG(ERROR) << "Unable to delete message #" << message_number << "; Try packing this sub.";
       return 1;
     }
@@ -239,8 +239,8 @@ public:
       }
     }
 //#endif // __unix__
-    string in_reply_to = arg("in_reply_to").as_string();
-    int from_usernum = arg("from_usernum").as_int();
+    auto in_reply_to = arg("in_reply_to").as_string();
+    auto from_usernum = arg("from_usernum").as_int();
     if (from_usernum >= 1 && from.empty()) {
       Names names(*config()->config());
       from = names.UserName(from_usernum);
@@ -322,13 +322,12 @@ public:
     newsub.filename = StrCat(basename, ".new");
     {
       unique_ptr<MessageArea> area(api().Open(sub(), -1));
-      auto created_newarea = api().Create(newsub, -1);
-      if (!created_newarea) {
+      if (!api().Create(newsub, -1)) {
         clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
       unique_ptr<MessageArea> newarea(api().Open(newsub, -1));
-      auto total = area->number_of_messages();
+      const auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         auto message(area->ReadMessage(i));
         if (!message) {
@@ -369,8 +368,7 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   // open file, and create it if necessary
   postrec p{};
 
-  const auto sub_fn = PathFilePath(datadir, StrCat(sub_filename, ".sub"));
-  if (!File::Exists(sub_fn)) {
+  if (const auto sub_fn = PathFilePath(datadir, StrCat(sub_filename, ".sub")); !File::Exists(sub_fn)) {
     return 1;
   }
   File subFile(PathFilePath(datadir, StrCat(sub_filename, ".sub")));
@@ -396,7 +394,7 @@ class MessageAreasCommand : public BaseMessagesSubCommand {
 public:
   MessageAreasCommand() : BaseMessagesSubCommand("areas", "Lists the message areas") {}
 
-  virtual ~MessageAreasCommand() {}
+  virtual ~MessageAreasCommand() = default;
 
   std::string GetUsage() const override final {
     std::ostringstream ss;
@@ -544,7 +542,6 @@ int MessagesDumpCommand::Execute() {
     
   auto start = iarg("start");
   auto end = iarg("end");
-
   auto start_date = sarg("start_date");
   auto end_date = sarg("end_date");
   const auto all = barg("all");
@@ -572,10 +569,9 @@ int MessagesDumpCommand::Execute() {
     // Find the closest message to the start date, or leave it -1
   }
   if (!end_date.empty()) {
-    auto end_dt = parse_yyyymmdd_with_optional_hms(end_date).to_daten_t();
+    const auto end_dt = parse_yyyymmdd_with_optional_hms(end_date).to_daten_t();
     // Find the closest message to the end date, or leave it -1
-    auto before_end = 1;
-    for (auto i = 1; i<= last_message; i++) {
+    for (auto i = 1, before_end = 1; i<= last_message; i++) {
       auto h = area->ReadMessageHeader(i);
       if (end_dt < h->daten()) {
         // We're past the end date, so use last message number.
