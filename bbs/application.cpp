@@ -105,7 +105,8 @@ Application::Application(LocalIO* localIO)
 
   tzset();
   std::random_device rd;
-  srand(rd());
+  rd.
+  srand(rd.entropy());
 
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
