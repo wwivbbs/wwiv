@@ -20,7 +20,6 @@
 
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
-#include "sdk/msgapi/message_area.h"
 #include "sdk/vardec.h"
 #include <cstdint>
 #include <string>

@@ -21,10 +21,8 @@
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/ansi/vscreen.h"
-
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 namespace wwiv {
 namespace sdk {
@@ -36,49 +34,50 @@ public:
   virtual ~LocalIOScreen() = default;
 
   /** Writes c using a, handles \r and \n */
-  virtual bool write(char c, uint8_t a) override {
+  bool write(char c, uint8_t a) override {
     return write(c);
   }
   /** Moves the cursor to x,y */
-  virtual bool gotoxy(int x, int y) override {
+  bool gotoxy(int x, int y) override {
     io_->GotoXY(x, y);
     return true;
   }
   // Like CLS, clears everything viewable.
-  virtual bool clear() override {
+  bool clear() override {
     io_->Cls();
     return true;
   }
   // clears from current position to the end of line.
-  virtual bool clear_eol() override {
+  bool clear_eol() override {
     io_->ClrEol();
     return true;
   }
   // Finalizes this frambuffer and shrinks the size to fit, etc.
-  virtual void close() override {}
+  void close() override {}
 
   /**
    * Puts c using a at cursor position pos.
    * Does not handle movement chars like \r or \n
    */
-  virtual bool put(int pos, char c, uint8_t a) override { 
-    int x = pos % cols_;
-    int y = pos / cols_;
+  bool put(int pos, char c, uint8_t a) override {
+    const auto x = pos % cols_;
+    const auto y = pos / cols_;
     io_->PutsXYA(x, y, a, std::string(1, c));
     return true;
   }
 
-  virtual bool write(char c) override {
+  bool write(char c) override {
     io_->Putch(c);
     return true;
   }
-  virtual void curatr(uint8_t a) override { curatr_provider_->curatr(a); }
 
-  virtual int cols() const noexcept override { return cols_; }
-  virtual int pos() const noexcept override { return (y() * cols()) + x(); }
-  virtual uint8_t curatr() const noexcept override { return curatr_provider_->curatr(); }
-  virtual int x() const noexcept override { return io_->WhereX(); }
-  virtual int y() const noexcept override { return io_->WhereY(); }
+  void curatr(uint8_t a) override { curatr_provider_->curatr(a); }
+
+  [[nodiscard]] int cols() const noexcept override { return cols_; }
+  [[nodiscard]] int pos() const noexcept override { return (y() * cols()) + x(); }
+  [[nodiscard]] uint8_t curatr() const noexcept override { return curatr_provider_->curatr(); }
+  [[nodiscard]] int x() const noexcept override { return io_->WhereX(); }
+  [[nodiscard]] int y() const noexcept override { return io_->WhereY(); }
 
 private:
   LocalIO* io_;

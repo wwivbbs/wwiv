@@ -87,10 +87,11 @@ std::optional<File> Type2Text::OpenMessageFile() const {
   return message_file;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 std::vector<gati_t> Type2Text::load_gat(File& file, int section) {
   std::vector<gati_t> gat(GAT_NUMBER_ELEMENTS);
   auto file_size = file.length();
-  auto section_pos = static_cast<File::size_type>(section * GATSECLEN);
+  const auto section_pos = static_cast<File::size_type>(section * static_cast<File::size_type>(GATSECLEN));
   if (file_size < section_pos) {
     file.set_length(section_pos);
     file_size = section_pos;

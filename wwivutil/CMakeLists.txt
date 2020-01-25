@@ -30,5 +30,7 @@ set(COMMAND_SOURCES
   util.cpp
   )
 
+set_max_warnings()
+
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})
 target_link_libraries(wwivutil core networkb_lib sdk)

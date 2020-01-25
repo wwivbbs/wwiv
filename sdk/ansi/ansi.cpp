@@ -22,29 +22,28 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/ansi/vscreen.h"
-
 #include <algorithm>
 #include <cctype>
 #include <sstream>
+#include <utility>
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 
 static const char clrlst[] = "04261537";
 
-Ansi::Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr)
-    : b_(b), callbacks_(callbacks), default_attr_(default_attr) {}
+Ansi::Ansi(VScreen* b, AnsiCallbacks callbacks, uint8_t default_attr)
+    : b_(b), callbacks_(std::move(callbacks)), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
   // wwiv::os::sleep_for(std::chrono::milliseconds(10));
   if (state_ == AnsiMode::not_in_sequence && c == 27) {
     state_ = AnsiMode::in_sequence;
     return write_in_sequence(c);
-  } else if (state_ == AnsiMode::in_sequence) {
+  }
+  if (state_ == AnsiMode::in_sequence) {
     return write_in_sequence(c);
   }
   return write_not_in_sequence(c);
@@ -67,8 +66,8 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   }
 
   if (list_size > 0 && list_size > defaults.size()) {
-    auto start = defaults.size();
-    auto end = list_size - defaults.size();
+    const auto start = defaults.size();
+    const auto end = list_size - defaults.size();
     for (auto i = start; i < end; i++) {
       const auto& c = list.at(i);
       if (!c.empty()) {
@@ -88,14 +87,13 @@ bool Ansi::write_in_sequence(char c) {
     }
     ansi_sequence_.push_back(c);
     return true;
-  } break;
+  };
   case '[': {
     if (ansi_sequence_.size() != 1) {
       return ansi_sequence_error(c);
     }
     ansi_sequence_.push_back(c);
     return true;
-    break;
   }
   case 'A': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
@@ -106,7 +104,7 @@ bool Ansi::write_in_sequence(char c) {
       callbacks_.move_(x, y);
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 'B': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     const auto x = b_->x();
@@ -116,7 +114,7 @@ bool Ansi::write_in_sequence(char c) {
       callbacks_.move_(x, y);
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 'C': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     const auto x = std::min(b_->cols() - 1, b_->x() + ns[0]);
@@ -126,7 +124,7 @@ bool Ansi::write_in_sequence(char c) {
       callbacks_.move_(x, y);
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 'D': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     const auto x = std::min(b_->cols() - 1, b_->x() - ns[0]);
@@ -136,26 +134,26 @@ bool Ansi::write_in_sequence(char c) {
       callbacks_.move_(x, y);
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 'H':
   case 'f': {
     auto ns = to_ansi_numbers(ansi_sequence_, 2, {1, 1});
     if (ns.size() < 2) {
       return ansi_sequence_error(c);
     }
-    auto x = ns[1] - 1;
-    auto y = ns[0] - 1;
+    const auto x = ns[1] - 1;
+    const auto y = ns[0] - 1;
     if (callbacks_.move_) {
       callbacks_.move_(x, y);
     }
     b_->gotoxy(x, y);
     return ansi_sequence_done();
-  } break;
+  }
   case 'h':
   case 'l': { // save or restore wrap at last column.
     // Were' ignoring this.
     return ansi_sequence_done();
-  } break;
+  }
   case 'J': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     if (ns.size() != 1 || ns.front() != 2) {
@@ -166,12 +164,12 @@ bool Ansi::write_in_sequence(char c) {
       callbacks_.move_(0, 0);
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 'K':
   case 'k': {
     b_->clear_eol();
     return ansi_sequence_done();
-  } break;
+  }
   case 'm': {
     auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_, 10, {});
     // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
@@ -195,27 +193,27 @@ bool Ansi::write_in_sequence(char c) {
         if (n >= 30 && n <= 37) {
           b_->curatr((a & 0xf8) | (clrlst[n - 30] - '0'));
         } else if (n >= 40 && n <= 47) {
-          uint8_t bg = (clrlst[n - 40] - '0') << 4;
-          uint8_t ct = (a & 0x8f) | bg;
+          const uint8_t bg = (clrlst[n - 40] - '0') << 4;
+          const uint8_t ct = (a & 0x8f) | bg;
           b_->curatr(ct);
         }
       }
       }
     }
     return ansi_sequence_done();
-  } break;
+  }
   case 's': { // Save
     saved_x_ = b_->x();
     saved_y_ = b_->y();
     return ansi_sequence_done();
-  } break;
+  }
   case 'u': {
     b_->gotoxy(saved_x_, saved_y_);
     if (callbacks_.move_) {
       callbacks_.move_(saved_x_, saved_y_);
     }
     return ansi_sequence_done();
-  } break;
+  }
   default: {
     if (ansi_sequence_.size() < 2) {
       return ansi_sequence_error(c);
@@ -238,7 +236,6 @@ bool Ansi::write_in_sequence(char c) {
 }
 
 bool Ansi::ansi_sequence_done() {
-
   state_ = AnsiMode::not_in_sequence;
   ansi_sequence_.clear();
   return true;
@@ -247,7 +244,7 @@ bool Ansi::ansi_sequence_done() {
 bool Ansi::ansi_sequence_error(char c) {
   std::ostringstream ss;
   ss << "Previous Sequence: ";
-  for (const char sc : ansi_sequence_) {
+  for (const auto sc : ansi_sequence_) {
     ss << "['" << sc << "':" << static_cast<int>(sc) << "]";
   }
   VLOG(2) << "Invalid ansi char: ['" << c << "':" << static_cast<int>(c) << "] ; " << ss.str();
@@ -272,8 +269,8 @@ bool Ansi::reset() {
   return true;
 }
 
-HeartCodeFilter::HeartCodeFilter(AnsiFilter* chain, const std::vector<uint8_t>& colors)
-    : chain_(chain), colors_(colors) {}
+HeartCodeFilter::HeartCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors)
+    : chain_(chain), colors_(std::move(colors)) {}
 
 bool HeartCodeFilter::write(char c) {
 
@@ -281,12 +278,12 @@ bool HeartCodeFilter::write(char c) {
     const uint8_t color = c - '0';
     has_heart_ = false;
     return attr(color);
-  } else if (c == 3) {
+  }
+  if (c == 3) {
     has_heart_ = true;
     return true;
-  } else {
-    return chain_->write(c);
   }
+  return chain_->write(c);
 }
 
 bool HeartCodeFilter::attr(uint8_t a) {
@@ -296,6 +293,4 @@ bool HeartCodeFilter::attr(uint8_t a) {
   return false;
 }
 
-} // namespace ansi
-} // namespace sdk
 } // namespace wwiv

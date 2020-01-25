@@ -42,10 +42,7 @@ set(COMMON_SOURCES
   wwivd_config.cpp
   )
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX) 
-   # TODO also add  -Wno-long-long -pedantic
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
- endif()
+set_max_warnings()
 
 add_library(sdk ${COMMON_SOURCES})
 target_link_libraries(sdk core local_io)

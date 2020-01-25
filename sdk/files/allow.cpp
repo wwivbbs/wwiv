@@ -17,11 +17,6 @@
 /**************************************************************************/
 #include "sdk/files/allow.h"
 
-#include <algorithm>
-#include <exception>
-#include <stdexcept>
-#include <string>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -29,15 +24,15 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+#include <algorithm>
+#include <string>
 
 using std::endl;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace files {
+namespace wwiv::sdk::files {
 
 static constexpr char SPACE = ' ';
 
@@ -45,7 +40,7 @@ static void align_char_filename(char* file_name) {
   // TODO Modify this to handle long filenames
   char szFileName[40], szExtension[40];
 
-  bool bInvalid = false;
+  auto bInvalid = false;
   if (file_name[0] == '.') {
     bInvalid = true;
   }
@@ -113,7 +108,7 @@ static void align_char_filename(char* file_name) {
   buffer[8] = '.';
   strcpy(&(buffer[9]), szExtension);
   strcpy(file_name, buffer);
-  for (int i5 = 0; i5 < 12; i5++) {
+  for (auto i5 = 0; i5 < 12; i5++) {
     file_name[i5] = to_upper_case<char>(file_name[i5]);
   }
 }
@@ -141,10 +136,10 @@ static std::string stripfn(const char* file_name) {
   }
   for (size_t i1 = 0; i1 < size(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
-      szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
+      szTempFileName[i1] = static_cast<char>(szTempFileName[i1] - 'A' + 'a');
     }
   }
-  int j = 0;
+  auto j = 0;
   while (szTempFileName[j] != 0) {
     if (szTempFileName[j] == SPACE) {
       strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
@@ -180,7 +175,7 @@ bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) {
 }
 
  bool Allow::Add(const std::string& unaligned_filename) {
-  auto fn = align_filename(unaligned_filename);
+   const auto fn = align_filename(unaligned_filename);
   if (fn.size() != 12) {
     LOG(ERROR) << "Can't add filename: '" << fn << "' to allow.dat, not 12 chars";
     return false;
@@ -191,8 +186,8 @@ bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) {
 }
 
 bool Allow::Remove(const std::string& unaligned_filename) {
-  auto e = to_allow_entry(align_filename(unaligned_filename));
-  auto it = std::find(std::begin(allow_), std::end(allow_), e);
+  const auto e = to_allow_entry(align_filename(unaligned_filename));
+  const auto it = std::find(std::begin(allow_), std::end(allow_), e);
   if (it != std::end(allow_)) {
     allow_.erase(it);
     return true;
@@ -235,9 +230,11 @@ Allow::~Allow() {
   if (!save_on_exit_) {
     return;
   }
-  Save();
+  try {
+    Save();
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Caught exception in Allow::~Allow: " << e.what();
+  }
 }
 
-} // namespace files
-} // namespace sdk
 } // namespace wwiv

@@ -131,7 +131,7 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
                                  std::filesystem::path text_filename,
                                  int subnum)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
-      sub_filename_(std::move(sub_filename)), header_{}, subnum_(subnum) {
+      sub_filename_(std::move(sub_filename)), header_{} {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!subfile) {
     // TODO: throw exception
@@ -192,9 +192,7 @@ int WWIVMessageArea::number_of_messages() {
   return msgs;
 }
 
-bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number,
-                                       string& from_username, string& date, string& to,
-                                       string& in_reply_to, string& text) {
+std::optional<wwiv_parsed_text_fieds>  WWIVMessageArea::ParseMessageText(const postrec& header, int message_number) {
 
   // Some of the message header information ends up in the text.
   // line1: From username (i.e. rushfan #1 @5161)
@@ -206,42 +204,43 @@ bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number
 
   auto o = readfile(header.msg);
   if (!o) {
-    return false;
+    return std::nullopt;
   }
   const auto raw_text = o.value();
 
+  wwiv_parsed_text_fieds r;
   // Use the 3 arg form of split string so we don't strip blank lines.
   auto lines = SplitString(raw_text, "\n", false);
   auto it = std::begin(lines);
   if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
-    return true;
+    return {r};
   }
 
-  from_username = StringTrim(*it++);
+  r.from_username = StringTrim(*it++);
   if (it == lines.end()) {
     VLOG(1) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
-    return true;
+    return {r};
   }
 
-  date = StringTrim(*it++);
+  r.date = StringTrim(*it++);
   if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
-    return true;
+    return {r};
   }
 
   for (; it != std::end(lines); ++it) {
     auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
-      text += line;
-      text += "\r\n";
+      r.text += line;
+      r.text += "\r\n";
     } else if (starts_with(line, "RE:")) {
-      in_reply_to = StringTrim(line.substr(3));
+      r.in_reply_to = StringTrim(line.substr(3));
     } else if (starts_with(line, "BY:")) {
-      to = StringTrim(line.substr(3));
+      r.to = StringTrim(line.substr(3));
     } else {
       // No more special lines, the rest is just text.
       for (; it != std::end(lines); ++it) {
@@ -258,14 +257,14 @@ bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number
         }
         StringTrim(&text_line);
         if (!text_line.empty()) {
-          text += text_line;
-          text += "\r\n";
+          r.text += text_line;
+          r.text += "\r\n";
         }
       }
       break;
     }
   }
-  return true;
+  return {r};
 }
 
 unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
@@ -289,14 +288,14 @@ unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
     return {};
   }
 
-  string from_username, date, to, in_reply_to, text;
-  if (!ParseMessageText(header, message_number, from_username, date, to, in_reply_to, text)) {
-    return {};
+  if (auto o = ParseMessageText(header, message_number)) {
+    auto r = o.value();
+    return make_unique<WWIVMessage>(
+        make_unique<WWIVMessageHeader>(header, r.from_username, r.to, r.in_reply_to, api_),
+        make_unique<WWIVMessageText>(r.text));
   }
+  return {};
 
-  return make_unique<WWIVMessage>(
-      make_unique<WWIVMessageHeader>(header, from_username, to, in_reply_to, api_),
-      make_unique<WWIVMessageText>(text));
 }
 
 unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
@@ -655,9 +654,10 @@ int WWIVMessageArea::DeleteExcess() {
       return message_anonymous_t::anonymous_forced;
     case anony_real_name:
       return message_anonymous_t::anonymous_real_names_only;
+    default:
+      // WTF CHECK?
+      return message_anonymous_t::anonymous_none;
     }
-    // WTF CHECK?
-    return message_anonymous_t::anonymous_none;
   }
 
   // Implementation Details

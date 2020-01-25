@@ -47,10 +47,10 @@ public:
   bool Save();
   bool IsAllowed(const std::string& filename);
 
-  const std::vector<allow_entry_t>& allow_vector() const { return allow_; }
-  std::size_t size() const { return allow_.size(); }
+  [[nodiscard]] const std::vector<allow_entry_t>& allow_vector() const { return allow_; }
+  [[nodiscard]] std::size_t size() const { return allow_.size(); }
   void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
-  bool save_on_exit() const { return save_on_exit_;  }
+  [[nodiscard]] bool save_on_exit() const { return save_on_exit_;  }
 
 private:
   const std::string data_directory_;

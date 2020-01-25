@@ -27,7 +27,7 @@ namespace sdk {
 namespace msgapi {
 
 /**
- * Representes a parsed (split into lines) message.  The format can either be in
+ * Represents a parsed (split into lines) message.  The format can either be in
  * WWIV native (control lines start with ^D0) or FTN (control lines start with ^A),
  * depending on the control_char specified.
  */
@@ -44,7 +44,7 @@ public:
    * returns true if a line was removed, false otherwise
    */
   bool remove_control_line(const std::string& start_of_line);
-  std::string to_string() const;
+  [[nodiscard]] std::string to_string() const;
 
 private:
   const std::string control_char_;

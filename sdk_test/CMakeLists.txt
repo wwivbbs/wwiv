@@ -33,6 +33,8 @@ if (WIN32)
   list(APPEND test_sources sdk_test_main.cpp)
 endif()
 
+set_max_warnings()
+
 add_executable(sdk_tests ${test_sources})
 
 if (UNIX)

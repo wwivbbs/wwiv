@@ -29,7 +29,7 @@ static constexpr int VSCREEN_DEFAULT_ATTRIBUTE = 0x07;
 
 class VScreen {
 public:
-  explicit VScreen(int cols);
+  explicit VScreen();
   virtual ~VScreen() = default;
 
   /** Writes c using a, handles \r and \n */
@@ -52,14 +52,12 @@ public:
   virtual bool write(char c) = 0;
   virtual void curatr(uint8_t a) = 0;
 
-  virtual int cols() const noexcept = 0;
-  virtual int pos() const noexcept = 0;
-  virtual uint8_t curatr() const noexcept = 0;
-  virtual int x() const noexcept = 0;
-  virtual int y() const noexcept = 0;
+  [[nodiscard]] virtual int cols() const noexcept = 0;
+  [[nodiscard]] virtual int pos() const noexcept = 0;
+  [[nodiscard]] virtual uint8_t curatr() const noexcept = 0;
+  [[nodiscard]] virtual int x() const noexcept = 0;
+  [[nodiscard]] virtual int y() const noexcept = 0;
 
-private:
-  int cols_;
 };
 
 } // namespace ansi

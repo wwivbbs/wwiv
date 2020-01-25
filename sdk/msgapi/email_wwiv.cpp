@@ -157,7 +157,7 @@ int WWIVEmail::number_of_messages() {
   return count;
 }
 
-int WWIVEmail::number_of_email_records() {
+int WWIVEmail::number_of_email_records() const {
   if (!open_ || !mail_file_) {
     return 0;
   }

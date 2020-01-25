@@ -18,10 +18,6 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREAS_H__
 #define __INCLUDED_SDK_MESSAGE_AREAS_H__
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "sdk/msgapi/message_area.h"
 
 namespace wwiv {

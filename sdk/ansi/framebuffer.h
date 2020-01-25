@@ -19,7 +19,6 @@
 #define __INCLUDED_SDK_FRAMEBUFFER_H__
 
 #include "sdk/ansi/vscreen.h"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -34,13 +33,13 @@ class FrameBufferCell {
 public:
   FrameBufferCell();
   FrameBufferCell(char c, uint8_t a);
-  char c() const noexcept { return c_; }
+  [[nodiscard]] char c() const noexcept { return c_; }
   void c(char ch) { c_ = ch; }
-  uint8_t a() const noexcept { return a_; }
+  [[nodiscard]] uint8_t a() const noexcept { return a_; }
   void a(uint8_t aa) { a_ = aa; }
 
   // As a composite word (high 8 bits are attribute, low are char)
-  uint16_t w() const noexcept { return (a_ << 8) | (c_ & 0xff); }
+  [[nodiscard]] uint16_t w() const noexcept { return (a_ << 8) | (c_ & 0xff); }
 
 private:
   uint8_t a_;
@@ -68,22 +67,22 @@ public:
   bool put(int pos, char c, uint8_t a) override;
 
   bool write(char c) override { return write(c, a_); }
-  inline void curatr(uint8_t a) override { a_ = a; }
+  void curatr(uint8_t a) override { a_ = a; }
 
-  inline int cols() const noexcept override { return cols_; }
-  inline int pos() const noexcept override { return pos_; }
-  inline uint8_t curatr() const noexcept { return a_; }
-  inline int x() const noexcept override { return pos_ % cols_; }
-  inline int y() const noexcept override { return pos_ / cols_; }
+  [[nodiscard]] int cols() const noexcept override { return cols_; }
+  [[nodiscard]] int pos() const noexcept override { return pos_; }
+  [[nodiscard]] uint8_t curatr() const noexcept override { return a_; }
+  [[nodiscard]] int x() const noexcept override { return pos_ % cols_; }
+  [[nodiscard]] int y() const noexcept override { return pos_ / cols_; }
 
   // Mostly used for debugging and tests.
 
   // Number of total rows after the framebuffer has been closed.
-  int rows() const { return b_.empty() ? 0 : (1 + (b_.size() / cols_)); }
+  [[nodiscard]] int rows() const;
   // The raw text (without attributes) for row # 'row'
-  std::string row_as_text(int row) const;
-  std::vector<uint16_t> row_char_and_attr(int row) const;
-  std::vector<std::string> to_screen_as_lines() const;
+  [[nodiscard]] std::string row_as_text(int row) const;
+  [[nodiscard]] std::vector<uint16_t> row_char_and_attr(int row) const;
+  [[nodiscard]] std::vector<std::string> to_screen_as_lines() const;
 
 private:
   bool grow(int pos);

@@ -17,18 +17,8 @@
 /**************************************************************************/
 #include "sdk/ansi/vscreen.h"
 
-#include "core/stl.h"
-#include <algorithm>
+namespace wwiv::sdk::ansi {
 
-using namespace wwiv::stl;
+VScreen::VScreen() = default;
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
-
-
-VScreen::VScreen(int cols) : cols_(cols) {}
-
-} // namespace ansi
-} // namespace sdk
 } // namespace wwiv

@@ -19,19 +19,16 @@
 
 #include "core/stl.h"
 #include "local_io/curatr_provider.h"
-#include <algorithm>
 
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 
 class LocalIOScreenCurAttrProvider : public wwiv::local_io::curatr_provider {
 public:
   LocalIOScreenCurAttrProvider(LocalIO* lio) : lio_(lio) {}
-  virtual int curatr() const noexcept override { return lio_->curatr(); }
-  virtual void curatr(int n) override { lio_->curatr(n); }
+  [[nodiscard]] int curatr() const noexcept override { return lio_->curatr(); }
+  void curatr(int n) override { lio_->curatr(n); }
 
 private:
   LocalIO* lio_;
@@ -39,9 +36,7 @@ private:
 
 
 LocalIOScreen::LocalIOScreen(LocalIO* io, int cols)
-    : VScreen(cols), io_(io), cols_(cols),
+    : VScreen(), io_(io), cols_(cols),
       curatr_provider_(std::make_unique<LocalIOScreenCurAttrProvider>(io)) {}
 
-} // namespace ansi
-} // namespace sdk
 } // namespace wwiv

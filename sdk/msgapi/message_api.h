@@ -18,14 +18,12 @@
 #ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
 
-#include <memory>
+#include "sdk/msgapi/message_area.h"
+#include "sdk/net.h"
+#include "sdk/subxtr.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "sdk/net.h"
-#include "sdk/subxtr.h"
-#include "sdk/msgapi/message_area.h"
 
 namespace wwiv {
 namespace sdk {
@@ -57,19 +55,19 @@ public:
     const std::vector<net_networks_rec>& net_networks);
 
   /** Checks to see if the files for a subboard exist. */
-  virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;
+  [[nodiscard]] virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
-  virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  [[nodiscard]] virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
-  virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  [[nodiscard]] virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Creates or Opens a message area. throwing bad_message_area if it exists but can not be opened.*/
-  virtual MessageArea* CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum);
+  [[nodiscard]] virtual MessageArea* CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum);
   /** Deletes the message area identified by filename: name */
-  virtual bool Remove(const std::string& name) = 0;
+  [[nodiscard]] virtual bool Remove(const std::string& name) = 0;
 
-  const std::vector<net_networks_rec>& network() const { return net_networks_; }
-  const std::string root_directory() const { return root_directory_; }
-  const MessageApiOptions options() const { return options_; }
+  [[nodiscard]] const std::vector<net_networks_rec>& network() const { return net_networks_; }
+  [[nodiscard]] std::string root_directory() const { return root_directory_; }
+  [[nodiscard]] MessageApiOptions options() const { return options_; }
 
   // TODO(rushfan): Here's where we add hooks to the lastread system
   // so that messageapi's created inside the bbs will share *qsc with

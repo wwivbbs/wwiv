@@ -3,10 +3,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(test_sources
   wwivd_non_http_test.cpp
 )
-
-if(UNIX) 
-  add_definitions ("-Wall")
-endif()
+set_max_warnings()
 
 if(NOT UNIX)
   list(APPEND test_sources wwivd_test_main.cpp)

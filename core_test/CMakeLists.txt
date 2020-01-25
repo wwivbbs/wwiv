@@ -25,11 +25,9 @@ set(test_sources
   transaction_test.cpp
 )
 
-if(UNIX) 
-  add_definitions ("-Wall")
-endif()
+set_max_warnings()
 
-add_library(core_fixtures ${fixture_sources}) 
+add_library(core_fixtures ${fixture_sources})
 
 target_link_libraries(core_fixtures core)
 if(NOT UNIX)

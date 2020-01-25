@@ -17,27 +17,23 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_api_wwiv.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "bbs/subacc.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+#include "sdk/msgapi/message_area_wwiv.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 WWIVMessageApi::WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
                                const wwiv::sdk::Config& config,
@@ -56,7 +52,7 @@ bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
 }
 
 bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
-                            const std::string& text_ext, int subnum) {
+                            const std::string& text_ext, int) {
   LOG(INFO) << "Creating: " << name;
   const auto fn = PathFilePath(subs_directory_, StrCat(name, sub_ext));
   if (File::Exists(fn)) {
@@ -74,7 +70,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
     return false;
   }
 
-  const std::string text_filename = StrCat(name, text_ext);
+  const auto text_filename = StrCat(name, text_ext);
   File msgs_file(PathFilePath(messages_directory_, text_filename));
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
@@ -94,7 +90,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
 
   if (name != EMAIL_NOEXT) {
     // Create 5.1 style sub header for subs, but not for email.
-    WWIVMessageAreaHeader header(wwiv_num_version, 0);
+    const WWIVMessageAreaHeader header(wwiv_num_version, 0);
     fileSub.Write(&header.header(), sizeof(subfile_header_t));
   }
   return true;
@@ -142,14 +138,14 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
 }
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
-  auto data = PathFilePath(subs_directory_, EMAIL_DAT);
-  auto text = PathFilePath(messages_directory_, EMAIL_DAT);
+  const auto data = PathFilePath(subs_directory_, EMAIL_DAT);
+  const auto text = PathFilePath(messages_directory_, EMAIL_DAT);
   {
     if (!File::Exists(data)) {
       // Create it if it doesn't exist.  We still can have an odd case
       // where 1 file exists, but that's not ever normal. so we'll
       // complain later about not being able to create this.
-      auto created = Create("email", ".dat", ".dat", 0);
+      const auto created = Create("email", ".dat", ".dat", 0);
       if (!created) {
         return nullptr;
       }
@@ -186,10 +182,8 @@ uint32_t WWIVMessageApi::last_read(int area) const {
 
 void WWIVMessageApi::set_last_read(int area, uint32_t last_read) {
   if (last_read_) {
-    return last_read_->set_last_read(area, last_read);
+    last_read_->set_last_read(area, last_read);
   }
 }
 
-} // namespace msgapi
-} // namespace sdk
 } // namespace wwiv

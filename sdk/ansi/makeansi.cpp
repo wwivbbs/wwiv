@@ -20,9 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 
 
 static void addto(std::string* ansi_str, int num) {
@@ -69,6 +67,4 @@ std::string makeansi(int attr, int current_attr) {
 }
 
 
-} // namespace ansi
-} // namespace sdk
 } // namespace wwiv

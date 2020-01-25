@@ -14,6 +14,7 @@ set(SOURCES
  transfer_file.cpp
  wfile_transfer_file.cpp
 )
+set_max_warnings()
 
 add_library(networkb_lib ${SOURCES})
 target_link_libraries(networkb_lib fmt::fmt-header-only)

@@ -6,6 +6,7 @@ set(NETWORK_MAIN
 	post.cpp
 	subs.cpp
 	)
+set_max_warnings()
 
 add_executable(network2 ${NETWORK_MAIN})
 target_link_libraries(network2 networkb_lib net_core core sdk)

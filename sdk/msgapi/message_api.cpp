@@ -17,24 +17,20 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_api.h"
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include "core/log.h"
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
   MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}
-MessageAreaLastRead::~MessageAreaLastRead() {}
+MessageAreaLastRead::~MessageAreaLastRead() = default;
 
 
-MessageArea::MessageArea(MessageApi* api): api_(api) {}
-MessageArea::~MessageArea() {}
+  MessageArea::MessageArea(MessageApi* api): api_(api) {}
+MessageArea::~MessageArea() = default;
 
-MessageApi::MessageApi(
+  MessageApi::MessageApi(
   const wwiv::sdk::msgapi::MessageApiOptions& options,
   const std::string& root_directory,
   const std::string& subs_directory,
@@ -55,6 +51,4 @@ MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subn
   return Open(sub, subnum);
 }
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace wwiv

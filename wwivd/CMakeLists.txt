@@ -21,6 +21,7 @@ elseif(WIN32)
     list(APPEND WWIVD_SOURCES wwivd_win.cpp)
 endif()
 
+set_max_warnings()
 
 add_library(wwivd_lib ${WWIVD_SOURCES})
 target_link_libraries(wwivd_lib sdk core sdk ${CMAKE_THREAD_LIBS_INIT})

@@ -18,9 +18,7 @@
 #ifndef __INCLUDED_SDK_ANSI_H__
 #define __INCLUDED_SDK_ANSI_H__
 
-#include "sdk/ansi/framebuffer.h"
 #include "sdk/ansi/vscreen.h"
-
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -40,18 +38,19 @@ struct AnsiCallbacks {
 
 class AnsiFilter {
 public:
+  virtual ~AnsiFilter() = default;
   virtual bool write(char c) = 0;
   virtual bool attr(uint8_t a) = 0;
 };
 
-class Ansi : public AnsiFilter {
+class Ansi final : public AnsiFilter {
 public:
-  Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr);
+  Ansi(VScreen* b, AnsiCallbacks callbacks, uint8_t default_attr);
   virtual ~Ansi() = default;
 
   bool write(char c) override;
   bool write(const std::string& s) {
-    bool result = true;
+    auto result = true;
     for (const auto c : s) {
       if (!write(c)) {
         result = false;
@@ -61,7 +60,7 @@ public:
   }
   bool attr(uint8_t a) override;
   bool reset();
-  AnsiMode state() const noexcept { return state_; }
+  [[nodiscard]] AnsiMode state() const noexcept { return state_; }
 
 private:
   bool write_in_sequence(char c);
@@ -85,9 +84,9 @@ private:
   int saved_y_{0};
 };
 
-class HeartCodeFilter : public AnsiFilter {
+class HeartCodeFilter final : public AnsiFilter {
 public:
-  HeartCodeFilter(AnsiFilter* chain, const std::vector<uint8_t>& colors);
+  HeartCodeFilter(AnsiFilter* chain, std::vector<uint8_t> colors);
   bool write(char c) override;
   bool attr(uint8_t a) override;
 

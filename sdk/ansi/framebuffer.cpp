@@ -23,19 +23,17 @@
 
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 
 FrameBufferCell::FrameBufferCell() : FrameBufferCell(0, FRAMEBUFFER_DEFAULT_ATTRIBUTE) {}
 
 FrameBufferCell::FrameBufferCell(char c, uint8_t a) : a_(a), c_(c) {}
 
-FrameBuffer::FrameBuffer(int cols) : VScreen(cols), cols_(cols) { b_.reserve(cols_ * 100); }
+FrameBuffer::FrameBuffer(int cols) : VScreen(), cols_(cols) { b_.reserve(cols_ * 100); }
 
 bool FrameBuffer::gotoxy(int x, int y) {
-  auto xx = std::max(x, 0);
-  auto yy = std::max(y, 0);
+  const auto xx = std::max(x, 0);
+  const auto yy = std::max(y, 0);
   pos_ = (yy * cols_) + xx;
   if (pos_ >= size_int(b_)) {
     return grow(pos_);
@@ -50,9 +48,9 @@ bool FrameBuffer::clear() {
 }
 
 bool FrameBuffer::clear_eol() {
-  int start = pos_;
-  int end = (y() + 1) * cols_;
-  auto a = curatr();
+  const auto start = pos_;
+  const auto end = (y() + 1) * cols_;
+  const auto a = curatr();
   for (auto i = start; i < end; i++) {
     put(i, ' ', a);
   }
@@ -77,14 +75,16 @@ bool FrameBuffer::write(char c, uint8_t a) {
   case 0: // NOP
     break;
   case '\r': {
-    auto line = y();
+    const auto line = y();
     return gotoxy(0, line);
-  } break;
+  }
   case '\n': {
-    auto line = y() + 1;
+    const auto line = y() + 1;
     return gotoxy(0, line);
-  } break;
-  default: { return put(pos_++, c, a); } break;
+  }
+  default: {
+    return put(pos_++, c, a);
+  }
   }
 
   return true;
@@ -103,7 +103,7 @@ void FrameBuffer::close() {
     }
   }
 
-  bool f = false;
+  auto f = false;
   for (auto i = size_int(b_) - 1; i >= 0; i--) {
     if (f && b_[i].c() == 0) {
       b_[i].c(' ');
@@ -118,18 +118,22 @@ void FrameBuffer::close() {
 }
 
 bool FrameBuffer::grow(int pos) {
-  auto e = std::max(pos + 1000, (y() + 1) * cols_);
+  const auto e = std::max(pos + 1000, (y() + 1) * cols_);
   b_.resize(e);
   return true;
 }
 
+int FrameBuffer::rows() const {
+  return b_.empty() ? 0 : 1 + wwiv::stl::ssize(b_) / cols_;
+}
+
 std::string FrameBuffer::row_as_text(int row) const {
-  int start = row * cols_;
-  int end = std::min(size_int(b_), ((row + 1) * cols_));
+  const auto start = row * cols_;
+  const auto end = std::min(size_int(b_), ((row + 1) * cols_));
 
   std::string s;
   s.reserve(end - start);
-  for (int i = start; i < end; i++) {
+  for (auto i = start; i < end; i++) {
     s.push_back(b_[i].c());
   }
   const auto last = s.find_last_not_of('\0');
@@ -143,12 +147,12 @@ std::string FrameBuffer::row_as_text(int row) const {
 }
 
 std::vector<uint16_t> FrameBuffer::row_char_and_attr(int row) const {
-  int start = row * cols_;
-  int end = std::min(size_int(b_), (row + 1) * cols_);
+  const auto start = row * cols_;
+  const auto end = std::min(size_int(b_), (row + 1) * cols_);
 
   std::vector<uint16_t> s;
   s.reserve(end - start);
-  for (int i = start; i < end; i++) {
+  for (auto i = start; i < end; i++) {
     s.push_back(b_[i].w());
   }
   return s;
@@ -158,7 +162,7 @@ std::vector<std::string> FrameBuffer::to_screen_as_lines() const {
   std::vector<std::string> lines;
   lines.reserve(rows());
   int attr = 7;
-  for (int i = 0; i < rows(); i++) {
+  for (auto i = 0; i < rows(); i++) {
     auto row = row_char_and_attr(i);
     std::ostringstream ss;
     for (auto cc : row) {
@@ -176,6 +180,4 @@ std::vector<std::string> FrameBuffer::to_screen_as_lines() const {
 }
 
 
-} // namespace ansi
-} // namespace sdk
 } // namespace wwiv

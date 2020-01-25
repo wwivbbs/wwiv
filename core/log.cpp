@@ -18,6 +18,15 @@
 
 #include "core/log.h"
 
+#include "core/command_line.h"
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "core/version.h"
+#include "fmt/core.h"
+#include "fmt/printf.h"
 #include <chrono>
 #include <cstdlib>
 #include <functional>
@@ -26,18 +35,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-
-#include "core/command_line.h"
-#include "core/datetime.h"
-#include "core/file.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/textfile.h"
-#include "core/version.h"
-
-#include "fmt/core.h"
-#include "fmt/printf.h"
-
 
 using std::ofstream;
 using std::string;
@@ -85,25 +82,33 @@ private:
 };
 
 static std::string FormatLogLevel(LoggerLevel l, int v) noexcept {
-  if (l == LoggerLevel::verbose) {
-    return StrCat("VER-", v);
+  try {
+    if (l == LoggerLevel::verbose) {
+      return StrCat("VER-", v);
+    }
+    static const std::unordered_map<LoggerLevel, std::string, stl::enum_hash> map = {
+        {LoggerLevel::ignored, ""},
+        {LoggerLevel::start, "START"},
+        {LoggerLevel::debug, "DEBUG"},
+        {LoggerLevel::verbose, "VER- "},
+        {LoggerLevel::error, "ERROR"},
+        {LoggerLevel::info, "INFO "},
+        {LoggerLevel::warning, "WARN "},
+        {LoggerLevel::fatal, "FATAL"},
+    };
+    return map.at(l);
+  } catch (...) {
+    return "";
   }
-  static const std::unordered_map<LoggerLevel, std::string, stl::enum_hash> map = {
-      {LoggerLevel::ignored, ""},
-      {LoggerLevel::start, "START"},
-      {LoggerLevel::debug, "DEBUG"},
-      {LoggerLevel::verbose, "VER- "},
-      {LoggerLevel::error, "ERROR"},
-      {LoggerLevel::info, "INFO "},
-      {LoggerLevel::warning, "WARN "},
-      {LoggerLevel::fatal, "FATAL"},
-  };
-  return map.at(l);
 }
 
 std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity,
                                      const std::string& msg) const noexcept {
-  return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
+  try {
+    return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
+  } catch (...) {
+    return msg;
+  }
 }
 
 Logger::Logger(LoggerLevel level, int verbosity) noexcept
@@ -111,24 +116,28 @@ Logger::Logger(LoggerLevel level, int verbosity) noexcept
 }
 
 Logger::~Logger() noexcept {
-  if (level_ == LoggerLevel::verbose) {
-    if (!vlog_is_on(verbosity_)) {
-      return;
+  try {
+    if (level_ == LoggerLevel::verbose) {
+      if (!vlog_is_on(verbosity_)) {
+        return;
+      }
     }
-  }
-  const auto msg = FormatLogMessage(level_, verbosity_, ss_.str());
-  const auto& appenders = config_.log_to[level_];
-  if (appenders.empty()) {
-    // probably should never happen.
-    if (console_appender) {
-      console_appender->append(StrCat("No appenders specified; : ", msg));
+    const auto msg = FormatLogMessage(level_, verbosity_, ss_.str());
+    const auto& appenders = config_.log_to[level_];
+    if (appenders.empty()) {
+      // probably should never happen.
+      if (console_appender) {
+        console_appender->append(StrCat("No appenders specified; : ", msg));
+      }
     }
-  }
-  for (auto a : appenders) {
-    a->append(msg);
-  }
-  if (level_ == LoggerLevel::fatal) {
-    abort();
+    for (const auto& a : appenders) {
+      a->append(msg);
+    }
+    if (level_ == LoggerLevel::fatal) {
+      abort();
+    }
+  } catch (...) {
+    // NOOP
   }
 }
 
@@ -234,15 +243,15 @@ LoggerConfig::LoggerConfig()
 }
 
 LoggerConfig::LoggerConfig(logdir_fn l)
-  : LoggerConfig(l, DefaultTimestamp) {
+  : LoggerConfig(std::move(l), DefaultTimestamp) {
 }
 
 LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t)
-  : logdir_fn_(l), timestamp_fn_(t) {
+  : logdir_fn_(std::move(l)), timestamp_fn_(std::move(t)) {
 }
 
 
-void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> appender) {
+void LoggerConfig::add_appender(LoggerLevel level, const std::shared_ptr<Appender>& appender) {
   log_to[level].emplace(appender);
 }
 

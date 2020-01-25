@@ -111,7 +111,7 @@ public:
   LoggerConfig();
   LoggerConfig(logdir_fn f);
   LoggerConfig(logdir_fn l, timestamp_fn t);
-  void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
+  void add_appender(LoggerLevel level, const std::shared_ptr<Appender>& appender);
   void reset();
 
   // Change to true to enabled the startup log globally for all binaries.
@@ -128,13 +128,13 @@ public:
 
 class NullLogger {
 public:
-  NullLogger() = default;
+  NullLogger() noexcept = default;
 
-  void operator&(std::ostream&) {
+  void operator&(std::ostream&) noexcept {
   }
 
-  template <class T> NullLogger& operator<<(const T& msg) { return *this; }
-  NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
+  template <class T> NullLogger& operator<<(const T& msg) noexcept { return *this; }
+  NullLogger& operator<<(ENDL_TYPE* m) noexcept { return *this; }
 };
 
 /**
@@ -175,21 +175,29 @@ public:
   static void set_cmdline_verbosity(int cmdline_verbosity);
 
   template <class T> Logger& operator<<(const T& msg) noexcept {
-    ss_ << msg;
+    try {
+      ss_ << msg;
+    } catch (...) {
+      // NOOP
+    }
     used_ = true;
     return *this;
   }
 
   Logger& operator<<(ENDL_TYPE* m) noexcept {
     used_ = true;
-    ss_ << m;
+    try {
+      ss_ << m;
+    } catch (...) {
+      // NOOP
+    }
     return *this;
   }
 
 private:
   static void StartupLog(int argc, char* argv[]);
-  std::string FormatLogMessage(LoggerLevel level, int verbosity,
-                               const std::string& msg) const noexcept;
+  [[nodiscard]] std::string FormatLogMessage(LoggerLevel level, int verbosity,
+                                             const std::string& msg) const noexcept;
   static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;
