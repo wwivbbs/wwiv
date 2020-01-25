@@ -18,8 +18,6 @@
 /**************************************************************************/
 #include "bbs/external_edit_qbbs.h"
 
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/message_editor_data.h"
@@ -28,8 +26,8 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-
 #include "sdk/filenames.h"
+#include <string>
 
 using std::string;
 using wwiv::core::ScopeExit;
@@ -45,7 +43,9 @@ static void RemoveEditorFileFromTemp(const string& filename) {
 
 std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }
 
-ExternalQBBSMessageEditor ::~ExternalQBBSMessageEditor() { this->CleanupControlFiles(); }
+ExternalQBBSMessageEditor ::~ExternalQBBSMessageEditor() {
+  this->ExternalQBBSMessageEditor::CleanupControlFiles();
+}
 
 void ExternalQBBSMessageEditor::CleanupControlFiles() {
   RemoveEditorFileFromTemp(MSGINF);
@@ -102,7 +102,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
-  const auto qfn = PathFilePath(a()->temp_directory(), QUOTES_TXT);
+  const auto qfn = PathFilePath(tmpdir, QUOTES_TXT);
   if (!File::Exists(qfn)) {
     return false;
   }
@@ -143,8 +143,8 @@ bool ExternalQBBSMessageEditor::After() {
   // TODO(rushfan): Let this function return an object with result and filename and anything
   // else that needs to be passed back.
   std::error_code ec;
-  std::filesystem::path from = PathFilePath(temp_directory_, MSGTMP);
-  std::filesystem::path to = PathFilePath(temp_directory_, INPUT_MSG);
+  const auto from = PathFilePath(temp_directory_, MSGTMP);
+  const auto to = PathFilePath(temp_directory_, INPUT_MSG);
   copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
   return true;
 }

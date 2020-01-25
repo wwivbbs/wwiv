@@ -39,8 +39,6 @@
 using std::string;
 using namespace wwiv::strings;
 
-extern CursesIO* out;
-
 static const int default_screen_bottom = 20;
 
 static void InitPairs() {
@@ -58,7 +56,7 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
-  window_.reset(new CursesWindow(nullptr, out->color_scheme(), num_lines, 80, 0, 0));
+  window_.reset(new CursesWindow(nullptr, curses_out->color_scheme(), num_lines, 80, 0, 0));
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, true);
   window_->Clear();
@@ -70,9 +68,9 @@ void CursesLocalIO::SetColor(int original_color) {
   bool bold = (original_color & 8) != 0;
   int color = original_color;
   int bg = (color >> 4) & 0x07;
-  int fg = color & 0x07;
+  auto fg = color & 0x07;
   color = (bg << 3) | fg;
-  attr_t attr = COLOR_PAIR(color);
+  auto attr = COLOR_PAIR(color);
   if (bold) {
     attr |= A_BOLD;
   }
@@ -147,7 +145,7 @@ void CursesLocalIO::PutsXY(int x, int y, const string& text) {
 }
 
 void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
-  auto old_color = curatr();
+  const auto old_color = curatr();
   curatr(a);
 
   GotoXY(x, y);
@@ -168,11 +166,11 @@ void CursesLocalIO::savescreen() {
   saved_screen.clear();
   window_->Refresh();
 
-  int width = window_->GetMaxX();
-  int height = window_->GetMaxY();
+  const auto width = window_->GetMaxX();
+  const auto height = window_->GetMaxY();
 
   for (int line = 0; line < height; line++) {
-    chtype* buf = new chtype[width];
+    auto buf = new chtype[width];
     auto* w = std::any_cast<WINDOW*>(window_->window());
     mvwinchnstr(w, line, 0, buf, width);
     saved_screen.push_back(buf);
@@ -180,8 +178,8 @@ void CursesLocalIO::savescreen() {
 }
 
 void CursesLocalIO::restorescreen() {
-  int width = window_->GetMaxX();
-  int y = 0;
+  const auto width = window_->GetMaxX();
+  auto y = 0;
   auto* w = std::any_cast<WINDOW*>(window_->window());
   for (auto line : saved_screen) {
     mvwaddchnstr(w, y++, 0, line, width);
@@ -259,7 +257,7 @@ static int CursesToWin32KeyCodes(int curses_code) {
 
 unsigned char CursesLocalIO::GetChar() {
   if (last_key_pressed != ERR) {
-    int ch = last_key_pressed;
+    const auto ch = last_key_pressed;
     if (ch > 255) {
       // special key
       switch (ch) {
@@ -325,9 +323,9 @@ static int GetEditLineStringLength(const char* text) {
 
 void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, int* returncode,
                              const char* pszAllowedSet) {
-  auto oldatr = curatr();
-  int cx = WhereX();
-  int cy = WhereY();
+  const auto oldatr = curatr();
+  const auto cx = WhereX();
+  const auto cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }

@@ -41,8 +41,8 @@ LocalIO::~LocalIO() = default;
 void LocalIO::set_curatr_provider(wwiv::local_io::curatr_provider* p) { curatr_ = p; }
 wwiv::local_io::curatr_provider* LocalIO::curatr_provider() { return curatr_; }
 
-int LocalIO::curatr() const { return curatr_->curatr(); }
-void LocalIO::curatr(int c) { curatr_->curatr(c); }
+uint8_t LocalIO::curatr() const { return curatr_->curatr(); }
+void LocalIO::curatr(uint8_t c) { curatr_->curatr(c); }
 
 int LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys,
                     const std::string& allowed_set_chars) {

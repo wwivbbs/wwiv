@@ -100,12 +100,12 @@ void extrn_editors(const wwiv::sdk::Config& config) {
 
   bool done = false;
   do {
-    out->Cls(ACS_CKBOARD);
+    curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (size_t i = 0; i < editors.size(); i++) {
       items.emplace_back(fmt::format("{}. {}", i + 1, editors[i].description));
     }
-    auto window = out->window();
+    auto window = curses_out->window();
     ListBox list(window, "Select Editor", items);
 
     list.selection_returns_hotkey(true);
@@ -126,11 +126,11 @@ void extrn_editors(const wwiv::sdk::Config& config) {
         } break;
         case 'I': {
           if (editors.size() >= 10) {
-            messagebox(out->window(), "Too many editors.");
+            messagebox(curses_out->window(), "Too many editors.");
             break;
           }
           string prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
-          size_t i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
+          size_t i = dialog_input_number(curses_out->window(), prompt, 1, editors.size() + 1);
           editorrec e{};
           memset(&e, 0, sizeof(editorrec));
           // N.B. i is one based, result.selected is 0 based.

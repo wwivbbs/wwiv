@@ -49,7 +49,7 @@ public:
     api.reset(a);
   }
 
-  bool Add(int from, int to, const std::string& title, const std::string& text) {
+  [[nodiscard]] bool Add(uint16_t from, uint16_t to, const std::string& title, const std::string& text) const {
     EmailData e{};
     e.title = title;
     e.text = text;

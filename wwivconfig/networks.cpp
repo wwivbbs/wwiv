@@ -155,8 +155,8 @@ public:
   virtual ~FidoNetworkConfigSubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     EditItems items{};
     switch (d_.type) {
     case network_type_t::wwivnet:
@@ -386,8 +386,8 @@ public:
   virtual ~FidoPacketConfigSubDialog() = default;
 
   virtual EditlineResult Run(CursesWindow* window) {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
@@ -525,8 +525,8 @@ public:
   virtual ~CalloutNetSubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
     auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
@@ -761,7 +761,7 @@ void networks(const wwiv::sdk::Config& config) {
       for (const auto& n : networks.networks()) {
         items.emplace_back(fmt::sprintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
       }
-      auto window = out->window();
+      auto window = curses_out->window();
       ListBox list(window, "Select Network", items);
 
       list.selection_returns_hotkey(true);

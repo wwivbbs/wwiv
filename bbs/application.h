@@ -27,7 +27,6 @@
 #include "sdk/vardec.h"
 #include <chrono>
 #include <filesystem>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -87,7 +86,7 @@ class WWIVMessageApi;
  * This is different from the BbsApp which holds global BBS information
  * associated with this instance of WWIV globally (not tied to a user)
  */
-class Application : public Runnable {
+class Application final : public Runnable {
   friend class BbsHelper;
 
 public:
@@ -105,12 +104,12 @@ public:
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
-  RemoteIO* remoteIO() const { return comm_.get(); }
-  LocalIO* localIO() const { return local_io_.get(); }
+  [[nodiscard]] RemoteIO* remoteIO() const { return comm_.get(); }
+  [[nodiscard]] LocalIO* localIO() const;
   bool reset_local_io(LocalIO* wlocal_io);
-  const std::string& GetAttachmentDirectory() const { return attach_dir_; }
-  int instance_number() const { return instance_number_; }
-  const std::string& network_extension() const { return network_extension_; }
+  [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
+  [[nodiscard]] int instance_number() const { return instance_number_; }
+  [[nodiscard]] const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
   void ClearTopScreenProtection();
@@ -132,58 +131,53 @@ public:
 
   void reset_effective_sl();
   void effective_sl(int nSl);
-  int effective_sl() const;
+  [[nodiscard]] int effective_sl() const;
   const slrec& effective_slrec() const;
 
-  int GetChatNameSelectionColor() const { return chatname_color_; }
+  [[nodiscard]] int GetChatNameSelectionColor() const { return chatname_color_; }
 
-  int GetMessageColor() const { return message_color_; }
+  [[nodiscard]] int GetMessageColor() const { return message_color_; }
 
-  uint16_t GetForcedReadSubNumber() const { return forced_read_subnum_; }
+  [[nodiscard]] uint16_t GetForcedReadSubNumber() const { return forced_read_subnum_; }
   void SetForcedReadSubNumber(uint16_t n) { forced_read_subnum_ = n; }
 
-  std::string GetCurrentSpeed() const { return current_speed_; }
+  [[nodiscard]] std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
 
-  const std::string network_name() const;
-  const std::string network_directory() const;
+  [[nodiscard]] std::string network_name() const;
+  [[nodiscard]] std::string network_directory() const;
 
-  bool IsCarbonCopyEnabled() const { return allow_cc_; }
+  [[nodiscard]] bool IsCarbonCopyEnabled() const { return allow_cc_; }
   void SetCarbonCopyEnabled(bool b) { allow_cc_ = b; }
 
-  bool IsUserOnline() const { return user_online_; }
+  [[nodiscard]] bool IsUserOnline() const { return user_online_; }
   void SetUserOnline(bool b) { user_online_ = b; }
 
-  int language_number() const { return m_nCurrentLanguageNumber; }
-  void set_language_number(int n) {
-    m_nCurrentLanguageNumber = n;
-    if (n >= 0 && n <= static_cast<int>(languages.size())) {
-      cur_lang_name = languages[n].name;
-      language_dir = languages[n].dir;
-    }
-  }
+  [[nodiscard]] int language_number() const;
 
-  bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
+  void set_language_number(int n);
+
+  [[nodiscard]] bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
   void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
 
-  int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
+  [[nodiscard]] int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
-  bool IsNewScanAtLogin() const { return newscan_at_login_; }
+  [[nodiscard]] bool IsNewScanAtLogin() const { return newscan_at_login_; }
   void SetNewScanAtLogin(bool b) { newscan_at_login_ = b; }
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
-  uint16_t current_user_dir_num() const { return user_dir_num_; }
+  [[nodiscard]] uint16_t current_user_dir_num() const { return user_dir_num_; }
   void set_current_user_dir_num(uint16_t n) { user_dir_num_ = n; }
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  uint16_t current_user_sub_num() const { return user_sub_num_; }
+  [[nodiscard]] uint16_t current_user_sub_num() const { return user_sub_num_; }
   void set_current_user_sub_num(uint16_t n) { user_sub_num_ = n; }
 
-  const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
-  const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
+  [[nodiscard]] const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
+  [[nodiscard]] const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
 
   // This is set by iscan1 (for the most part) and is the sub number the user is
   // currently scanning/reading.  Note. this is the subnumber from subboards
@@ -193,51 +187,51 @@ public:
   // if (a()->GetCurrentReadMessageArea() < 0) { ... }
 
   // Note: This may be set to -1 to mean no area.
-  int GetCurrentReadMessageArea() const { return current_read_message_area; }
+  [[nodiscard]] int GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
-  const wwiv::sdk::subboard_t& current_sub() const;
-  const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
+  [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
+  [[nodiscard]] const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
 
-  const net_networks_rec& current_net() const;
+  [[nodiscard]] const net_networks_rec& current_net() const;
 
-  uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
+  [[nodiscard]] uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
   void SetCurrentConferenceMessageArea(uint16_t n) { current_conf_msgarea_ = n; }
 
-  uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
+  [[nodiscard]] uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
   void SetCurrentConferenceFileArea(uint16_t n) { current_conf_filearea_ = n; }
 
-  bool IsUseInternalZmodem() const { return internal_zmodem_; }
+  [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
 
-  int GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
+  [[nodiscard]] int GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
 
-  int GetBeginDayNodeNumber() const { return beginday_node_number_; }
+  [[nodiscard]] int GetBeginDayNodeNumber() const { return beginday_node_number_; }
   void SetBeginDayNodeNumber(int n) { beginday_node_number_ = n; }
 
-  int GetExecChildProcessWaitTime() const { return exec_child_process_wait_time_; }
+  [[nodiscard]] int GetExecChildProcessWaitTime() const { return exec_child_process_wait_time_; }
   void SetExecChildProcessWaitTime(int n) { exec_child_process_wait_time_ = n; }
 
-  bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
+  [[nodiscard]] bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
 
-  bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
+  [[nodiscard]] bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
-  int net_num() const { return network_num_; }
+  [[nodiscard]] int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
-  wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
-  wwiv::sdk::UserManager* users() { return user_manager_.get(); }
+  [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
+  [[nodiscard]] wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
-  const std::string& temp_directory() const { return temp_directory_; }
-  const std::string& batch_directory() const { return batch_directory_; }
-  const uint8_t primary_port() const { return primary_port_; }
+  [[nodiscard]] const std::string& temp_directory() const { return temp_directory_; }
+  [[nodiscard]] const std::string& batch_directory() const { return batch_directory_; }
+  [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
-  const std::filesystem::path bbsdir() const noexcept;
-  const std::string bindir() const noexcept;
-  const std::string configdir() const noexcept;
-  const std::string logdir() const noexcept;
-  int verbose() const noexcept;
+  [[nodiscard]] std::filesystem::path bbsdir() const noexcept;
+  [[nodiscard]] std::string bindir() const noexcept;
+  [[nodiscard]] std::string configdir() const noexcept;
+  [[nodiscard]] std::string logdir() const noexcept;
+  [[nodiscard]] int verbose() const noexcept;
 
   /*! @function CdHome Changes directories back to the WWIV Home directory */
   void CdHome();
@@ -248,17 +242,17 @@ public:
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-  bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
+  [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
-  uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
+  [[nodiscard]] uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
 
-  bool IsCleanNetNeeded() const { return need_to_clean_net_; }
+  [[nodiscard]] bool IsCleanNetNeeded() const { return need_to_clean_net_; }
   void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
 
   void set_at_wfc(bool b) { at_wfc_ = b; }
-  bool at_wfc() const { return at_wfc_; }
+  [[nodiscard]] bool at_wfc() const { return at_wfc_; }
 
-  bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
+  [[nodiscard]] bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
   void SetChatReason(const std::string& chat_reason) {
     chat_reason_ = chat_reason;
@@ -266,33 +260,33 @@ public:
   }
 
   /** Is the chat call alert (user wanted to chat with the sysop. enabled? */
-  bool chatcall() const { return chatcall_; }
+  [[nodiscard]] bool chatcall() const { return chatcall_; }
   /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
   void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
-  wwiv::sdk::Config* config() const;
+  [[nodiscard]] wwiv::sdk::Config* config() const;
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config);
 
   /** Returns the WWIV Names.LST Config Object. */
-  wwiv::sdk::Names* names() const;
+  [[nodiscard]] wwiv::sdk::Names* names() const;
 
-  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const;
-  wwiv::sdk::msgapi::MessageApi* msgapi() const;
-  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
+  [[nodiscard]] wwiv::sdk::msgapi::MessageApi* msgapi(int type) const;
+  [[nodiscard]] wwiv::sdk::msgapi::MessageApi* msgapi() const;
+  [[nodiscard]] wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
 
   // Public subsystems
-  Batch& batch();
-  wwiv::sdk::Subs& subs();
+  [[nodiscard]] Batch& batch();
+  [[nodiscard]] wwiv::sdk::Subs& subs();
   const wwiv::sdk::Subs& subs() const;
 
   bool read_subs();
   bool create_message_api();
   void SetLogonTime();
-  std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
-  std::chrono::seconds duration_used_this_session() const;
+  [[nodiscard]] std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
+  [[nodiscard]] std::chrono::seconds duration_used_this_session() const;
 
-  std::chrono::seconds extratimecall() const;
+  [[nodiscard]] std::chrono::seconds extratimecall() const;
   std::chrono::seconds set_extratimecall(std::chrono::duration<double> et);
   std::chrono::seconds add_extratimecall(std::chrono::duration<double> et);
   std::chrono::seconds subtract_extratimecall(std::chrono::duration<double> et);
@@ -433,7 +427,7 @@ protected:
    * @function GotCaller login routines
    * @param ms Modem Speed (may be a locked speed)
    */
-  void GotCaller(unsigned int ms);
+  void GotCaller(int ms);
 
 private:
   void read_nextern();
@@ -451,8 +445,13 @@ private:
 
   // Private fields.
 private:
-  /*! The current working directory.*/
+  /*!
+   * The current working directory.
+   * Please note that bbs_dir_string_ must be updated along with bbs_dir_. This is so we can
+   * return a string version of it without risk of exception.
+   */
   std::filesystem::path bbs_dir_;
+  std::string bbs_dir_string_;
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;

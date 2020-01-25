@@ -124,11 +124,11 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
 
 void user_editor(const wwiv::sdk::Config& config) {
   int number_users = number_userrecs(config.datadir());
-  out->Cls(ACS_CKBOARD);
+  curses_out->Cls(ACS_CKBOARD);
   static constexpr int LABEL_WIDTH = 14;
 
   if (number_users < 1) {
-    unique_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
+    unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("User Editor", 18, 76));
     show_error_no_users(window.get());
     return;
   }

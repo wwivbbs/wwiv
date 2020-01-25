@@ -69,7 +69,7 @@ public:
   ListBoxResult Run() {
     this->DisplayFooter();
     ListBoxResult result = RunDialog();
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     return result;
   }
 

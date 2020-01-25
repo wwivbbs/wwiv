@@ -114,7 +114,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
 
   File file(PathFilePath(config.datadir(), ARCHIVER_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary)) {
-    if (!create_arcs(out->window(), config.datadir())) {
+    if (!create_arcs(curses_out->window(), config.datadir())) {
       return false;
     }
     file.Open(File::modeReadWrite | File::modeBinary);
@@ -123,12 +123,12 @@ bool edit_archivers(wwiv::sdk::Config& config) {
 
   bool done = false;
   do {
-    out->Cls(ACS_CKBOARD);
+    curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (auto& i : arc) {
       items.emplace_back(fmt::format("[{}] {}", i.extension, i.name));
     }
-    CursesWindow* window = out->window();
+    CursesWindow* window = curses_out->window();
     ListBox list(window, "Select Archiver", items);
 
     list.selection_returns_hotkey(true);

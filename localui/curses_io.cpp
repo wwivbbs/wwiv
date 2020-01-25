@@ -39,7 +39,7 @@ static HANDLE hConOut;
 static COORD originalConsoleSize;
 #endif
 
-CursesIO* out = nullptr;
+CursesIO* curses_out = nullptr;
 
 void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const {
   if (line < 0 || line > 1) {
@@ -195,14 +195,14 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 
 // static
 void CursesIO::Init(const std::string& title) {
-  const auto once_init = [=]() { out = new CursesIO(title); return true; };
+  const auto once_init = [=]() { curses_out = new CursesIO(title); return true; };
   // ReSharper disable once CppDeclaratorNeverUsed
   static auto initialized_once = once_init();
 }
 
 // static 
 CursesIO* CursesIO::Get() {
-  return out;
+  return curses_out;
 }
 
 

@@ -48,7 +48,9 @@
 #include "core/version.h"
 #include "fmt/printf.h"
 #include "local_io/local_io.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/local_io_curses.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
@@ -64,14 +66,17 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <random>
 
 #if defined(_WIN32)
 #include <crtdbg.h>
 // Needed for isatty
+// ReSharper disable once CppUnusedIncludeDirective
 #include <io.h>
 #include "bbs/remote_socket_io.h"
 #include "local_io/local_io_win32.h"
 #else
+// ReSharper disable once CppUnusedIncludeDirective
 #include <unistd.h>
 #endif // _WIN32
 
@@ -99,7 +104,8 @@ Application::Application(LocalIO* localIO)
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 
   tzset();
-  srand(static_cast<unsigned int>(time_t_now()));
+  std::random_device rd;
+  srand(rd());
 
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
@@ -108,6 +114,7 @@ Application::Application(LocalIO* localIO)
 
   // Set the home directory
   bbs_dir_ = File::current_directory();
+  bbs_dir_string_ = bbs_dir_.string();
   chains = std::make_unique<Chains>();
 }
 
@@ -120,11 +127,13 @@ Application::~Application() {
     local_io_->SetCursor(LocalIO::cursorNormal);
   }
   // CursesIO.
-  delete out;
-  out = nullptr;
+  delete curses_out;
+  curses_out = nullptr;
 }
 
 wwiv::bbs::SessionContext& Application::context() { return session_context_; }
+
+LocalIO* Application::localIO() const { return local_io_.get(); }
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
@@ -206,7 +215,7 @@ bool Application::WriteCurrentUser(int user_number) {
 }
 
 void Application::tleft(bool check_for_timeout) {
-  auto nsln = nsl();
+  const auto nsln = nsl();
 
   // Check for tineout 1st.
   if (check_for_timeout && IsUserOnline()) {
@@ -223,19 +232,19 @@ void Application::tleft(bool check_for_timeout) {
     return;
   }
 
-  bool temp_sysop = user()->GetSl() != 255 && effective_sl() == 255;
-  auto sysop_available = sysop1();
+  const auto temp_sysop = user()->GetSl() != 255 && effective_sl() == 255;
+  const auto sysop_available = sysop1();
 
-  int cx = localIO()->WhereX();
-  int cy = localIO()->WhereY();
-  int ctl = localIO()->GetTopLine();
-  int cc = bout.curatr();
+  const auto cx = localIO()->WhereX();
+  const auto cy = localIO()->WhereY();
+  const auto ctl = localIO()->GetTopLine();
+  const auto cc = bout.curatr();
   bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
-  auto line_number = (chatcall() && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  const auto line_number = (chatcall() && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   localIO()->PutsXY(1, line_number, GetCurrentSpeed());
-  for (int i = localIO()->WhereX(); i < 23; i++) {
+  for (auto i = localIO()->WhereX(); i < 23; i++) {
     localIO()->Putch(static_cast<unsigned char>('\xCD'));
   }
 
@@ -247,9 +256,9 @@ void Application::tleft(bool check_for_timeout) {
     localIO()->PutsXY(64, line_number, "Available");
   }
 
-  auto min_left = nsln / SECONDS_PER_MINUTE;
-  auto secs_left = nsln % SECONDS_PER_MINUTE;
-  auto tleft_display = fmt::sprintf("T-%4ldm %2lds", min_left, secs_left);
+  const auto min_left = nsln / SECONDS_PER_MINUTE;
+  const auto secs_left = nsln % SECONDS_PER_MINUTE;
+  const auto tleft_display = fmt::sprintf("T-%4ldm %2lds", min_left, secs_left);
   switch (topdata) {
   case LocalIO::topdataSystem: {
     if (IsUserOnline()) {
@@ -376,7 +385,7 @@ void Application::handle_sysop_key(uint8_t key) {
 void Application::DisplaySysopWorkingIndicator(bool displayWait) {
   const string waitString = "-=[WAIT]=-";
   auto nNumPrintableChars = waitString.length();
-  for (std::string::const_iterator iter = waitString.begin(); iter != waitString.end(); ++iter) {
+  for (auto iter = waitString.begin(); iter != waitString.end(); ++iter) {
     if (*iter == 3 && nNumPrintableChars > 1) {
       nNumPrintableChars -= 2;
     }
@@ -384,10 +393,10 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
 
   if (displayWait) {
     if (okansi()) {
-      int nSavedAttribute = bout.curatr();
+      const auto nSavedAttribute = bout.curatr();
       bout.SystemColor(user()->color(3));
       bout << waitString << "\x1b[" << nNumPrintableChars << "D";
-      bout.SystemColor(static_cast<unsigned char>(nSavedAttribute));
+      bout.SystemColor(nSavedAttribute);
     } else {
       bout << waitString;
     }
@@ -414,7 +423,7 @@ void Application::UpdateTopScreen() {
   char i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17];
 
-  int lll = bout.lines_listed();
+  auto lll = bout.lines_listed();
 
   if (so() && !a()->context().incom()) {
     topdata = LocalIO::topdataNone;
@@ -453,10 +462,10 @@ void Application::UpdateTopScreen() {
     screenlinest = defscreenbottom + 1 - localIO()->GetTopLine();
   }
 
-  int cx = localIO()->WhereX();
-  int cy = localIO()->WhereY();
-  int nOldTopLine = localIO()->GetTopLine();
-  int cc = bout.curatr();
+  auto cx = localIO()->WhereX();
+  auto cy = localIO()->WhereY();
+  auto nOldTopLine = localIO()->GetTopLine();
+  auto cc = bout.curatr();
   bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
   for (i = 0; i < 80; i++) {
@@ -479,7 +488,7 @@ void Application::UpdateTopScreen() {
             status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
             status->GetNumLocalPosts()));
 
-    const string username_num = names()->UserName(usernum);
+    const auto username_num = names()->UserName(usernum);
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                                    username_num, status->GetMinutesActiveToday(),
@@ -487,7 +496,7 @@ void Application::UpdateTopScreen() {
                                    status->GetNumEmailSentToday()));
 
     User sysop{};
-    int feedback_waiting = 0;
+    auto feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
@@ -586,23 +595,34 @@ void Application::ClearTopScreenProtection() {
   }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void Application::Cls() {
   localIO()->Cls();
   bout.clear_lines_listed();
 }
 
-const std::string Application::network_name() const {
+std::string Application::network_name() const {
   if (net_networks.empty()) {
     return {};
   }
   return net_networks[network_num_].name;
 }
 
-const std::string Application::network_directory() const {
+std::string Application::network_directory() const {
   if (net_networks.empty()) {
     return "";
   }
   return std::string(net_networks[network_num_].dir);
+}
+
+int Application::language_number() const { return m_nCurrentLanguageNumber; }
+
+void Application::set_language_number(int n) {
+  m_nCurrentLanguageNumber = n;
+  if (n >= 0 && n <= static_cast<int>(languages.size())) {
+    cur_lang_name = languages[n].name;
+    language_dir = languages[n].dir;
+  }
 }
 
 void Application::GetCaller() {
@@ -632,7 +652,7 @@ void Application::GetCaller() {
   }
   screenlinest = defscreenbottom + 1;
 
-  int lokb = wfc.doWFCEvents();
+  const auto lokb = wfc.doWFCEvents();
 
   if (lokb) {
     modem_speed_ = 38400;
@@ -649,7 +669,7 @@ void Application::GetCaller() {
   set_at_wfc(false);
 }
 
-void Application::GotCaller(unsigned int ms) {
+void Application::GotCaller(int ms) {
   frequent_init();
   wfc_cls(a());
   modem_speed_ = ms;
@@ -676,10 +696,10 @@ void Application::GotCaller(unsigned int ms) {
 
 void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
-const std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_.string(); }
-const std::string Application::bindir() const noexcept { return bindir_; }
-const std::string Application::configdir() const noexcept { return configdir_; }
-const std::string Application::logdir() const noexcept { return logdir_; }
+std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_string_; }
+std::string Application::bindir() const noexcept { return bindir_; }
+std::string Application::configdir() const noexcept { return configdir_; }
+std::string Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
 void Application::AbortBBS(bool bSkipShutdown) {
@@ -717,9 +737,9 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 int Application::Run(int argc, char* argv[]) {
-  unsigned int ui = 0;
-  bool ooneuser = false;
-  CommunicationType type = CommunicationType::NONE;
+  int ui = 0;
+  auto ooneuser = false;
+  auto type = CommunicationType::NONE;
 
 #ifdef _WIN32
   // Disble padding with 0xFE for all safe string functions.
@@ -770,6 +790,7 @@ int Application::Run(int argc, char* argv[]) {
   bout.curatr(0x07);
   // Set the directories.
   bbs_dir_ = cmdline.bbsdir();
+  bbs_dir_string_ = bbs_dir_.string();
   bindir_ = cmdline.bindir();
   logdir_ = cmdline.logdir();
   configdir_ = cmdline.configdir();
@@ -780,11 +801,11 @@ int Application::Run(int argc, char* argv[]) {
   errorlevel_ = cmdline.iarg("error_exit");
   const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
-  int num_min = cmdline.iarg("remaining_min");
+  auto num_min = cmdline.iarg("remaining_min");
   context().ok_modem_stuff(!cmdline.barg("no_modem"));
   instance_number_ = cmdline.iarg("instance");
 
-  uint16_t this_usernum_from_commandline = cmdline.iarg("user_num");
+  auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
   const auto x = cmdline.sarg("x");
   if (!x.empty()) {
     const auto xarg = to_upper_case<char>(x.at(0));

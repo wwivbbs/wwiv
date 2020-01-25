@@ -149,7 +149,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
       auto nn = input(30, true);
       auto user_number = finduser1(nn);
       if (user_number > 0) {
-        c.regby.erase(user_number);
+        c.regby.erase(static_cast<int16_t>(user_number));
       }
     } break;
     }

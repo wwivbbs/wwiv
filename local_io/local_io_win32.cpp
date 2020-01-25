@@ -616,9 +616,9 @@ static int GetEditLineStringLength(const char* text) {
 void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys,
                               int* returncode, const char* pszAllowedSet) {
 
-  int oldatr = curatr();
-  int cx = WhereX();
-  int cy = WhereY();
+  const auto oldatr = curatr();
+  const auto cx = WhereX();
+  const auto cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = char(0xb0); // 176
   }
@@ -626,9 +626,9 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
   curatr(GetEditLineColor());
   FastPuts(pszInOutText);
   GotoXY(cx, cy);
-  bool done = false;
-  int pos = 0;
-  bool insert = false;
+  auto done = false;
+  auto pos = 0;
+  auto insert = false;
   do {
     unsigned char ch = GetChar();
     if (ch == 0 || ch == 224) {

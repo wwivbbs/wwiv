@@ -138,7 +138,7 @@ public:
   virtual ~MenuItemsSubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     try {
       bool done = false;
       int selected = -1;
@@ -349,7 +349,7 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
         }
         items.emplace_back(m.name);
       }
-      CursesWindow* window = out->window();
+      CursesWindow* window = curses_out->window();
       auto title = StrCat("Select Menu from [", dir, "]");
       ListBox list(window, title, items);
       list.set_selected(selected);
@@ -390,7 +390,7 @@ void menus(const std::string& menu_dir) {
         }
         items.emplace_back(d.name);
       }
-      CursesWindow* window = out->window();
+      CursesWindow* window = curses_out->window();
       ListBox list(window, "Select Menu Set", items);
       list.set_selected(selected);
       list.selection_returns_hotkey(true);

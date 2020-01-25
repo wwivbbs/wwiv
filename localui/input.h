@@ -274,7 +274,7 @@ public:
   virtual ~ToggleEditItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
 
     window->GotoXY(this->x_, this->y_);
     auto return_code = EditlineResult::NEXT;
@@ -283,7 +283,7 @@ public:
     index = toggleitem(window, index, items, &return_code);
     *this->data_ = items_.at(index).first;
     DefaultDisplay(window);
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -317,7 +317,7 @@ public:
   virtual ~StringListItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     window->GotoXY(this->x_, this->y_);
     auto return_code = EditlineResult::NEXT;
     const auto it = std::find(items_.begin(), items_.end(), data_);
@@ -328,7 +328,7 @@ public:
     selection = toggleitem(window, static_cast<std::vector<std::string>::size_type>(selection),
                            items_, &return_code);
     data_ = items_.at(selection);
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -351,7 +351,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     auto return_code = EditlineResult::NEXT;
     std::vector<std::string>::size_type state = (*this->data_ & this->flag_) ? 1 : 0;
     state = toggleitem(window, state, this->items_, &return_code);
@@ -360,7 +360,7 @@ public:
     } else {
       *this->data_ |= this->flag_;
     }
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -448,7 +448,7 @@ public:
   virtual ~BooleanEditItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
 
     window->GotoXY(this->x_, this->y_);
@@ -457,7 +457,7 @@ public:
     data = toggleitem(window, data, boolean_strings, &return_code);
 
     *this->data_ = (data > 0) ? true : false;
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -622,7 +622,7 @@ public:
         result = i->x() + i->maxsize();
       }
     }
-    return std::min<int>(out->window()->GetMaxX(), result + 2); // 2 is padding
+    return std::min<int>(curses_out->window()->GetMaxX(), result + 2); // 2 is padding
   }
 
   [[nodiscard]] int max_display_height() {
@@ -637,7 +637,7 @@ public:
         result = i->y();
       }
     }
-    return std::min<int>(out->window()->GetMaxY(), result + 2);
+    return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
   }
 
   /** Returns the size of the longest label */

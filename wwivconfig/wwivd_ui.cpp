@@ -55,8 +55,8 @@ public:
   virtual ~SubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
     auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {

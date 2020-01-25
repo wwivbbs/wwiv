@@ -55,9 +55,9 @@ TEST_F(ContactTest, SimpleCase) {
   EXPECT_EQ(then.to_daten_t(), ncr1->lasttry());
   EXPECT_EQ(1, ncr1->numcontacts());
   EXPECT_EQ(0, ncr1->numfails());
-  EXPECT_EQ(100, ncr1->bytes_sent());
-  EXPECT_EQ(200, ncr1->bytes_received());
-  EXPECT_EQ(0, ncr1->bytes_waiting());
+  EXPECT_EQ(100u, ncr1->bytes_sent());
+  EXPECT_EQ(200u, ncr1->bytes_received());
+  EXPECT_EQ(0u, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, MultipleConnects) {
@@ -71,11 +71,11 @@ TEST_F(ContactTest, MultipleConnects) {
   EXPECT_EQ(now.to_daten_t(), ncr1->lastcontactsent());
   EXPECT_EQ(now.to_daten_t(), ncr1->lasttry());
   EXPECT_EQ(then.to_daten_t(), ncr1->firstcontact());
-  EXPECT_EQ(2, ncr1->numcontacts());
-  EXPECT_EQ(0, ncr1->numfails());
-  EXPECT_EQ(300, ncr1->bytes_sent());
-  EXPECT_EQ(500, ncr1->bytes_received());
-  EXPECT_EQ(0, ncr1->bytes_waiting());
+  EXPECT_EQ(2u, ncr1->numcontacts());
+  EXPECT_EQ(0u, ncr1->numfails());
+  EXPECT_EQ(300u, ncr1->bytes_sent());
+  EXPECT_EQ(500u, ncr1->bytes_received());
+  EXPECT_EQ(0u, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, WithFailure) {

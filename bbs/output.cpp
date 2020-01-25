@@ -48,7 +48,7 @@ void Output::SetLocalIO(LocalIO* local_io) {
   // have a live user when we create this.
   screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
   AnsiCallbacks cb;
-  cb.move_ = [&](int x, int y) { ansi_movement_occurred_ = true; };
+  cb.move_ = [&](int /* x */, int /* y */) { ansi_movement_occurred_ = true; };
   ansi_ = std::make_unique<Ansi>(screen_.get(), cb, 0x07);
 
   local_io_ = local_io;

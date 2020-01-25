@@ -56,7 +56,7 @@ struct user_config {
 
 static void ShowBanner(UIWindow* window, const std::string& m) {
   // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-  out->window()->Bkgd(' ');
+  curses_out->window()->Bkgd(' ');
   window->SetColor(SchemeId::INFO);
   window->Puts(StrCat(m, "\n"));
   window->SetColor(SchemeId::NORMAL);

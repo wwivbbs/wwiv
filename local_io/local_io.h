@@ -50,10 +50,10 @@ public:
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  int GetTopLine() const noexcept { return topline_; }
+  [[nodiscard]] int GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  int GetScreenBottom() const noexcept { return screen_bottom_; }
+  [[nodiscard]] int GetScreenBottom() const noexcept { return screen_bottom_; }
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
@@ -82,7 +82,7 @@ public:
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void WriteScreenBuffer(const char* buffer) = 0;
-  virtual int GetDefaultScreenBottom() const noexcept = 0;
+  [[nodiscard]] virtual int GetDefaultScreenBottom() const noexcept = 0;
   virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
                         const char* allowed_set_chars) = 0;
   virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys,
@@ -90,14 +90,14 @@ public:
   virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys);
   virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) = 0;
 
-  int GetTopScreenColor() const noexcept { return top_screen_color_; }
-  void SetTopScreenColor(int n) { top_screen_color_ = n; }
+  [[nodiscard]] uint8_t GetTopScreenColor() const noexcept { return top_screen_color_; }
+  void SetTopScreenColor(uint8_t n) { top_screen_color_ = n; }
 
-  int GetUserEditorColor() const noexcept { return user_editor_color_; }
-  void SetUserEditorColor(int n) { user_editor_color_ = n; }
+  [[nodiscard]] uint8_t GetUserEditorColor() const noexcept { return user_editor_color_; }
+  void SetUserEditorColor(uint8_t n) { user_editor_color_ = n; }
 
-  int GetEditLineColor() const noexcept { return edit_line_color_; }
-  void SetEditLineColor(int n) { edit_line_color_ = n; }
+  [[nodiscard]] uint8_t GetEditLineColor() const noexcept { return edit_line_color_; }
+  void SetEditLineColor(uint8_t n) { edit_line_color_ = n; }
 
   virtual void DisableLocalIO() {}
   virtual void ReenableLocalIO() {}
@@ -105,17 +105,17 @@ public:
   // curatr_provider interface
   virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
   virtual wwiv::local_io::curatr_provider* curatr_provider();
-  [[nodiscard]] virtual int curatr() const;
-  virtual void curatr(int c);
+  [[nodiscard]] virtual uint8_t curatr() const;
+  virtual void curatr(uint8_t c);
 
 private:
   virtual void FastPuts(const std::string& text) = 0;
 
   int topline_{0};
   int screen_bottom_{25}; // Just a default.
-  int top_screen_color_{27};
-  int user_editor_color_{9};
-  int edit_line_color_{31};
+  uint8_t top_screen_color_{27};
+  uint8_t user_editor_color_{9};
+  uint8_t edit_line_color_{31};
   wwiv::local_io::curatr_provider* curatr_;
 };
 

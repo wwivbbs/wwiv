@@ -45,7 +45,7 @@ static const int COL1_LINE = 2;
 static const int COL1_POSITION = 22;
 
 void create_sysop_account(wwiv::sdk::Config& config) {
-  out->Cls(ACS_CKBOARD);
+  curses_out->Cls(ACS_CKBOARD);
   // unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
 
   std::vector<uint8_t> newuser_colors{7, 11, 14, 13, 31, 10, 12, 9, 5, 3};

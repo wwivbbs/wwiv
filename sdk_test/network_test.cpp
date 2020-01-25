@@ -18,13 +18,6 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <cstring>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -33,6 +26,11 @@
 #include "sdk/net.h"
 #include "sdk/networks.h"
 #include "sdk_test/sdk_helper.h"
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace std;
 using namespace wwiv::core;
@@ -44,15 +42,14 @@ public:
   NetworkTest() : config_(helper.root()) {
     EXPECT_TRUE(config_.IsInitialized());
     EXPECT_TRUE(CreateNetworksDat({ "one", "two" }));
-    networks.reset(new Networks(config_));
-    EXPECT_TRUE(networks->IsInitialized());
+    networks_.reset(new Networks(config_));
+    EXPECT_TRUE(networks_->IsInitialized());
   }
 
-  virtual void SetUp() {
-    config_.IsInitialized();
+  void SetUp() override {
   }
 
-  bool CreateNetworksDat(std::vector<std::string> names) {
+  bool CreateNetworksDat(std::vector<std::string> names) const {
     std::clog << "Writing NETWORK.DAT to: " << config_.datadir() << std::endl;
     File file(PathFilePath(config_.datadir(), NETWORKS_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
@@ -62,7 +59,7 @@ public:
   
     uint16_t sysnum = 1;
     for (const auto& name : names) {
-      const auto dir = name;
+      const auto& dir = name;
       net_networks_rec_disk rec{};
       to_char_array(rec.name, name);
       to_char_array(rec.dir, dir);
@@ -73,25 +70,25 @@ public:
     return true;
   }
 
-  Networks& test_networks() const { return *networks.get(); }
+  [[nodiscard]] Networks& test_networks() const { return *networks_; }
 
   SdkHelper helper;
   Config config_;
-  unique_ptr<Networks> networks;
+  unique_ptr<Networks> networks_;
 };
 
 TEST_F(NetworkTest, Networks_At) {
-  const Networks& networks = test_networks();
+  const Networks& n = test_networks();
 
-  EXPECT_STREQ("two", networks.at(1).name);
-  EXPECT_STREQ("two", networks.at("two").name);
+  EXPECT_STREQ("two", n.at(1).name);
+  EXPECT_STREQ("two", n.at("two").name);
 }
 
 TEST_F(NetworkTest, Networks_Bracket) {
-  const Networks& networks = test_networks();
+  const Networks& n = test_networks();
 
-  EXPECT_STREQ("two", networks[1].name);
-  EXPECT_STREQ("two", networks["two"].name);
+  EXPECT_STREQ("two", n[1].name);
+  EXPECT_STREQ("two", n["two"].name);
 }
 
 TEST_F(NetworkTest, Networks_Dir) {
@@ -105,16 +102,16 @@ TEST_F(NetworkTest, Networks_Dir) {
 }
 
 TEST_F(NetworkTest, Networks_NetworkNumber) {
-  const Networks& networks = test_networks();
+  const Networks& n = test_networks();
 
-  EXPECT_EQ(0, networks.network_number("one"));
-  EXPECT_EQ(1, networks.network_number("two"));
-  EXPECT_EQ(-1, networks.network_number("not-here"));
+  EXPECT_EQ(0, n.network_number("one"));
+  EXPECT_EQ(1, n.network_number("two"));
+  EXPECT_EQ(-1, n.network_number("not-here"));
 }
 
 TEST_F(NetworkTest, Networks_Contains) {
-  const Networks& networks = test_networks();
+  const Networks& n = test_networks();
 
-  EXPECT_TRUE(networks.contains("one"));
-  EXPECT_FALSE(networks.contains("foo"));
+  EXPECT_TRUE(n.contains("one"));
+  EXPECT_FALSE(n.contains("foo"));
 }

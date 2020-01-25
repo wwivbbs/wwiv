@@ -17,14 +17,12 @@
 /**************************************************************************/
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
-#include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_util.h"
 #include "gtest/gtest.h"
-
-#include <cstdint>
 #include <ctime>
 #include <memory>
 #include <string>
@@ -53,12 +51,12 @@ protected:
 
 TEST_F(FloTest, FloFile_Exists) {
   {
-    FloFile flo(net, p);
+    const FloFile flo(net, p);
     ASSERT_TRUE(flo.exists());
   }
   { 
     p.replace_filename("00010063.flo");
-    FloFile flo(net, p);
+    const FloFile flo(net, p);
     ASSERT_FALSE(flo.exists());
   }
 }
@@ -66,7 +64,7 @@ TEST_F(FloTest, FloFile_Exists) {
 TEST_F(FloTest, FloFile_Smoke) {
   FloFile flo(net, p);
   EXPECT_FALSE(flo.poll());
-  ASSERT_EQ(1, flo.flo_entries().size());
+  ASSERT_EQ(1, wwiv::stl::ssize(flo.flo_entries()));
 
   {
     auto e = flo.flo_entries().front();

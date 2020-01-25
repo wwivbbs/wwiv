@@ -18,12 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstring>
-#include <type_traits>
-
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/fido/nodelist.h"
+#include <type_traits>
 
 using std::cout;
 using std::endl;
@@ -60,25 +58,27 @@ Host,261,Maryland_Central_Net,NC,Sysop_Name261,-Unpublished-,300,CM,XX,INA:bbs.w
 
 TEST(NodelistTest, Basic) {
   NodelistEntry e{};
-  bool ok = NodelistEntry::ParseDataLine(",1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
+  const auto ok = NodelistEntry::ParseDataLine(
+      ",1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
   ASSERT_TRUE(ok);
   EXPECT_EQ(e.name_, "system name");
 }
 
 TEST(NodelistTest, Zone) {
   NodelistEntry e{};
-  bool ok = NodelistEntry::ParseDataLine("Zone,1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
+  const auto ok = NodelistEntry::ParseDataLine(
+      "Zone,1,system_name,location,sysop_name,phone_number,baud_rate,CM,INA:host:port", e);
   ASSERT_TRUE(ok);
   EXPECT_EQ(e.keyword_, NodelistKeyword::zone);
 }
 
 TEST(NodelistTest, Smoke) {
-  std::vector<std::string> lines = SplitString(raw, "\n");
+  const auto lines = SplitString(raw, "\n");
 
   Nodelist nl(lines);
   ASSERT_TRUE(nl);
 
-  auto n1_261_1 = nl.entry(1, 261, 1);
+  const auto n1_261_1 = nl.entry(1, 261, 1);
   ASSERT_TRUE(n1_261_1 != nullptr);
   EXPECT_EQ("Weather Station Hub", n1_261_1->name_);
   EXPECT_EQ("Sysop Name261 1", n1_261_1->sysop_name_);
@@ -91,8 +91,8 @@ TEST(NodelistTest, Smoke) {
 }
 
 TEST(NodelistTest, ZoneNet) {
-  std::vector<std::string> lines = SplitString(raw, "\n");
-  Nodelist nl(lines);
+  const auto lines = SplitString(raw, "\n");
+  const Nodelist nl(lines);
   ASSERT_TRUE(nl);
 
   auto n261 = nl.entries(1, 261);
@@ -100,31 +100,31 @@ TEST(NodelistTest, ZoneNet) {
 }
 
 TEST(NodelistTest, Zones) {
-  std::vector<std::string> lines = SplitString(raw, "\n");
-  Nodelist nl(lines);
+  const auto lines = SplitString(raw, "\n");
+  const Nodelist nl(lines);
   ASSERT_TRUE(nl);
 
   auto zones = nl.zones();
-  EXPECT_EQ(1, zones.size());
+  EXPECT_EQ(1u, zones.size());
   EXPECT_EQ(1, zones.front());
 }
 
 TEST(NodelistTest, Nets) {
-  std::vector<std::string> lines = SplitString(raw, "\n");
-  Nodelist nl(lines);
+  const auto lines = SplitString(raw, "\n");
+  const Nodelist nl(lines);
   ASSERT_TRUE(nl);
 
-  auto nets = nl.nets(1);
-  std::vector<uint16_t>expected{10, 102 ,123, 261};
+  const auto nets = nl.nets(1);
+  const std::vector<uint16_t>expected{10, 102 ,123, 261};
   EXPECT_EQ(expected, nets);
 }
 
 TEST(NodelistTest, Nodes) {
-  std::vector<std::string> lines = SplitString(raw, "\n");
-  Nodelist nl(lines);
+  const auto lines = SplitString(raw, "\n");
+  const Nodelist nl(lines);
   ASSERT_TRUE(nl);
 
-  auto nets = nl.nodes(1, 261);
-  std::vector<uint16_t>expected{1, 1300};
+  const auto nets = nl.nodes(1, 261);
+  const std::vector<uint16_t>expected{1, 1300};
   EXPECT_EQ(expected, nets);
 }

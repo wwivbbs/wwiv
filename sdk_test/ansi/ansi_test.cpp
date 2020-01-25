@@ -18,14 +18,12 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/framebuffer.h"
 #include "sdk_test/sdk_helper.h"
+#include <string>
 
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
@@ -40,7 +38,7 @@ public:
   }
 
   void check(const std::vector<std::string>& lines) {
-    EXPECT_EQ(lines.size(), b.rows());
+    EXPECT_EQ(wwiv::stl::ssize(lines), b.rows());
     for (std::vector<std::string>::size_type i = 0; i < lines.size(); i++) {
       EXPECT_EQ(lines[i], b.row_as_text(i)) << "Line #" << i;
     }

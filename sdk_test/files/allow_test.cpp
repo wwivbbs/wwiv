@@ -18,17 +18,14 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/files/allow.h"
 #include "sdk_test/sdk_helper.h"
+#include <string>
 
 using namespace std;
 using namespace wwiv::core;
@@ -38,23 +35,22 @@ using namespace wwiv::strings;
 
 class AllowTest : public testing::Test {
 public:
-public:
   AllowTest() : config_(helper.root()) {
     EXPECT_TRUE(config_.IsInitialized());
     config_.set_paths_for_test(helper.data(), helper.msgs(), helper.gfiles(), helper.menus(),
                                helper.dloads(), helper.scripts());
   }
 
-  virtual void SetUp() { helper.SetUp(); }
+  void SetUp() override { helper.SetUp(); }
 
   SdkHelper helper;
   Config config_;
 };
 
 TEST_F(AllowTest, Empty) {
-  Allow a(config_);
-  const auto v = a.allow_vector();
-  EXPECT_EQ(0, v.size());
+  const Allow a(config_);
+  const auto& v = a.allow_vector();
+  EXPECT_EQ(0, wwiv::stl::ssize(v));
 }
 
 TEST_F(AllowTest, Add) {
@@ -63,10 +59,10 @@ TEST_F(AllowTest, Add) {
   a.Add("2.zip");
   a.Add("3.zip");
   const auto v = a.allow_vector();
-  ASSERT_EQ(3, v.size());
-  allow_entry_t f = to_allow_entry("1.zip");
+  ASSERT_EQ(3, wwiv::stl::ssize(v));
+  const auto f = to_allow_entry("1.zip");
   EXPECT_EQ(f, v.front());
-  allow_entry_t b = to_allow_entry("3.zip");
+  const auto b = to_allow_entry("3.zip");
   EXPECT_EQ(b, v.back());
 }
 
@@ -90,7 +86,7 @@ TEST_F(AllowTest, Remove) {
 
 TEST_F(AllowTest, Load) {
   const std::string contents("badworld.zip\0foobar2u.arc\0", 26);
-  auto path = helper.files().CreateTempFilePath("bbs/data/allow.dat");
+  const auto path = helper.files().CreateTempFilePath("bbs/data/allow.dat");
   {
     File f(path);
     ASSERT_TRUE(
@@ -99,7 +95,7 @@ TEST_F(AllowTest, Load) {
   }
   Allow a(config_);
   ASSERT_TRUE(a.Load());
-  EXPECT_EQ(2, a.allow_vector().size());
+  EXPECT_EQ(2, wwiv::stl::ssize(a.allow_vector()));
   EXPECT_EQ(to_allow_entry("badworld.zip"), a.allow_vector().front());
   EXPECT_FALSE(a.IsAllowed("foobar2u.arc"));
   EXPECT_TRUE(a.IsAllowed("foobar2u.zip"));

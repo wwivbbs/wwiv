@@ -18,15 +18,15 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <string>
-#include <vector>
-
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
 #include "sdk/subxtr.h"
 #include "sdk_test/sdk_helper.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -54,7 +54,8 @@ protected:
     subs_.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs_.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
-  const string dir() { return helper.files_.TempDir().string(); }
+
+  [[nodiscard]] string dir() const { return helper.files_.TempDir().string(); }
   void CreateTempFile(const string& name, const string& contents) {
     helper.files().CreateTempFile(name, contents);
   }
@@ -83,13 +84,17 @@ TEST_F(SubXtrTest, Write) {
 static bool equal(const xtrasubsnetrec& x1, const xtrasubsnetrec& x2) {
   if (x1.category != x2.category) {
     return false;
-  } else if (x1.flags != x2.flags) {
+  }
+  if (x1.flags != x2.flags) {
     return false;
-  } else if (x1.host != x2.host) {
+  }
+  if (x1.host != x2.host) {
     return false;
-  } else if (x1.net_num != x2.net_num) {
+  }
+  if (x1.net_num != x2.net_num) {
     return false;
-  } else return iequals(x1.stype_str, x2.stype_str);
+  }
+  return iequals(x1.stype_str, x2.stype_str);
 }
 
 static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {
@@ -140,7 +145,7 @@ TEST_F(SubXtrTest, JsonSmoke) {
   subs_t subs;
   ASSERT_TRUE(Subs::LoadFromJSON(dir(), "subs.json", subs));
 
-  ASSERT_EQ(1, subs.subs.size());
+  ASSERT_EQ(1, wwiv::stl::ssize(subs.subs));
   EXPECT_EQ("n1", subs.subs[0].name);
   EXPECT_EQ(2, subs.subs[0].storage_type);
 

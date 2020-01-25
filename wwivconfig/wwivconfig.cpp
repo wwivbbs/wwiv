@@ -121,8 +121,8 @@ WInitApp::WInitApp() = default;
 
 WInitApp::~WInitApp() {
   // Don't leak the localIO (also fix the color when the app exits)
-  delete out;
-  out = nullptr;
+  delete curses_out;
+  curses_out = nullptr;
 }
 
 int main(int argc, char* argv[]) {
@@ -155,9 +155,9 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
     }
   }
 
-  out->Cls(ACS_CKBOARD);
-  if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
-    messagebox(out->window(), "You will need to log in locally and manually create one");
+  curses_out->Cls(ACS_CKBOARD);
+  if (!dialog_yn(curses_out->window(), "Would you like to create a sysop account now?")) {
+    messagebox(curses_out->window(), "You will need to log in locally and manually create one");
     return true;
   }
 
@@ -176,7 +176,7 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
   if (file.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
 
-    if (!dialog_yn(out->window(), "Upgrade config.dat from 4.x format?")) {
+    if (!dialog_yn(curses_out->window(), "Upgrade config.dat from 4.x format?")) {
       return ShouldContinue::EXIT;
     }
     window->Bkgd(' ');
@@ -193,7 +193,7 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
     static const std::string expected_sig = "WWIV";
     if (expected_sig != cfg.header.header.signature) {
       // We don't have a 5.2 header, let's convert.
-      if (!dialog_yn(out->window(), "Upgrade config.dat to 5.2 format?")) {
+      if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2 format?")) {
         return ShouldContinue::EXIT;
       }
 
@@ -246,8 +246,8 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
   bool done = false;
   int selected = -1;
   do {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
+    curses_out->Cls(ACS_CKBOARD);
+    curses_out->footer()->SetDefaultFooter();
 
     vector<ListBoxItem> items = {{"N. Network Configuration", 'N'},
                                  {"U. User Editor", 'U'},
@@ -268,7 +268,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
         done = true;
       }
     }
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
 
     // It's easier to use the hotkey for this case statement so it's simple to know
     // which case statement matches which item.
@@ -294,7 +294,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
       messagebox(window, lines);
     } break;
     }
-    out->SetIndicatorMode(IndicatorMode::NONE);
+    curses_out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
 
   return true;
@@ -330,8 +330,8 @@ int WInitApp::main(int argc, char** argv) {
     window = new StdioWindow(nullptr, new ColorScheme());
   } else {
     CursesIO::Init(fmt::format("WWIV {}{} Configuration Program.", wwiv_version, beta_version));
-    window = out->window();
-    out->Cls(ACS_CKBOARD);
+    window = curses_out->window();
+    curses_out->Cls(ACS_CKBOARD);
     window->SetColor(SchemeId::NORMAL);
   }
 
@@ -352,8 +352,8 @@ int WInitApp::main(int argc, char** argv) {
 
   bool legacy_4xx_mode = false;
   if (cmdline.barg("menu_editor")) {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
+    curses_out->Cls(ACS_CKBOARD);
+    curses_out->footer()->SetDefaultFooter();
     auto menu_dir = config.menudir();
     auto menu_dir_arg = cmdline.sarg("menu_dir");
     if (!menu_dir_arg.empty()) {
@@ -362,13 +362,13 @@ int WInitApp::main(int argc, char** argv) {
     menus(menu_dir);
     return 0;
   } else if (cmdline.barg("user_editor")) {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
+    curses_out->Cls(ACS_CKBOARD);
+    curses_out->footer()->SetDefaultFooter();
     user_editor(config);
     return 0;
   } else if (cmdline.barg("network_editor")) {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
+    curses_out->Cls(ACS_CKBOARD);
+    curses_out->footer()->SetDefaultFooter();
     if (!config_offsets_matches_actual(config)) {
       return 1;
     }
@@ -410,8 +410,8 @@ int WInitApp::main(int argc, char** argv) {
   bool done = false;
   int selected = -1;
   do {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
+    curses_out->Cls(ACS_CKBOARD);
+    curses_out->footer()->SetDefaultFooter();
 
     vector<ListBoxItem> items = {{"G. General System Configuration", 'G'},
                                  {"P. System Paths", 'P'},
@@ -443,7 +443,7 @@ int WInitApp::main(int argc, char** argv) {
         done = true;
       }
     }
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
 
     // It's easier to use the hotkey for this case statement so it's simple to know
     // which case statement matches which item.
@@ -502,7 +502,7 @@ int WInitApp::main(int argc, char** argv) {
       messagebox(window, lines);
     } break;
     }
-    out->SetIndicatorMode(IndicatorMode::NONE);
+    curses_out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
 
   config.Save();

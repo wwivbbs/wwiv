@@ -91,12 +91,12 @@ static void edit_autoval(Config& config, int n) {
 void autoval_levs(wwiv::sdk::Config& config) {
   bool done = false;
   do {
-    out->Cls(ACS_CKBOARD);
+    curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (int i = 0; i < 10; i++) {
       items.emplace_back(create_autoval_line(config, i));
     }
-    CursesWindow* window(out->window());
+    CursesWindow* window(curses_out->window());
     ListBox list(window, "Select AutoVal", items);
 
     list.selection_returns_hotkey(true);

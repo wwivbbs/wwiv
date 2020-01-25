@@ -270,9 +270,9 @@ void Application::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
+  localIO()->SetTopScreenColor(ini.value<uint8_t>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
+  localIO()->SetUserEditorColor(ini.value<uint8_t>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
+  localIO()->SetEditLineColor(ini.value<uint8_t>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
   chatname_color_ = ini.value<int>(INI_STR_CHATSELCOLOR, GetChatNameSelectionColor());
 
   // pull out sizing options

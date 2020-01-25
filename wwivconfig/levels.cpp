@@ -97,7 +97,7 @@ void sec_levs(Config& config) {
                     new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Co-sysop:")});
 
   items.set_navigation_extra_help_items(create_extra_help_items());
-  out->Cls(ACS_CKBOARD);
+  curses_out->Cls(ACS_CKBOARD);
   items.create_window("Security Level Editor");
   items.Display();
 

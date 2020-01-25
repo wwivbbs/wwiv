@@ -86,7 +86,7 @@ void CustomEditItem::Display(CursesWindow* window) const {
 
 void EditItems::Run(const std::string& title) {
   if (!window_) {
-    out->Cls(ACS_CKBOARD);
+    curses_out->Cls(ACS_CKBOARD);
     create_window(title);
   }
   edit_mode_ = true;
@@ -95,9 +95,9 @@ void EditItems::Run(const std::string& title) {
   Display();
   for (;;) {
     const auto* item = items_[cp];
-    out->footer()->ShowContextHelp(item->help_text());
+    curses_out->footer()->ShowContextHelp(item->help_text());
     auto i1 = items_[cp]->Run(window_.get());
-    out->footer()->SetDefaultFooter();
+    curses_out->footer()->SetDefaultFooter();
     if (i1 == EditlineResult::PREV) {
       if (--cp < 0) {
         cp = size - 1;
@@ -107,7 +107,7 @@ void EditItems::Run(const std::string& title) {
         cp = 0;
       }
     } else if (i1 == EditlineResult::DONE) {
-      out->SetIndicatorMode(IndicatorMode::NONE);
+      curses_out->SetIndicatorMode(IndicatorMode::NONE);
       edit_mode_ = false;
       Display();
       return;
@@ -118,12 +118,12 @@ void EditItems::Run(const std::string& title) {
 void EditItems::Display() const {
   // Show help bar.
   if (edit_mode_) {
-    out->footer()->window()->Move(1, 0);
-    out->footer()->window()->ClrtoEol();
-    out->footer()->ShowHelpItems(0, editor_help_items_);
+    curses_out->footer()->window()->Move(1, 0);
+    curses_out->footer()->window()->ClrtoEol();
+    curses_out->footer()->ShowHelpItems(0, editor_help_items_);
   } else {
-    out->footer()->ShowHelpItems(0, navigation_help_items_);
-    out->footer()->ShowHelpItems(1, navigation_extra_help_items_);
+    curses_out->footer()->ShowHelpItems(0, navigation_help_items_);
+    curses_out->footer()->ShowHelpItems(1, navigation_extra_help_items_);
   }
 
   window_->SetColor(SchemeId::NORMAL);
@@ -167,7 +167,7 @@ BaseEditItem* EditItems::add(Label* label, BaseEditItem* item) {
 
 void EditItems::create_window(const std::string& title) {
   window_ = std::unique_ptr<CursesWindow>(
-      out->CreateBoxedWindow(title, max_display_height(), max_display_width()));
+      curses_out->CreateBoxedWindow(title, max_display_height(), max_display_width()));
 }
 
 EditItems::~EditItems() {
@@ -184,9 +184,9 @@ EditItems::~EditItems() {
   labels_.clear();
 
   // Clear the help bar on exit.
-  out->footer()->window()->Erase();
-  out->footer()->window()->Refresh();
-  out->SetIndicatorMode(IndicatorMode::NONE);
+  curses_out->footer()->window()->Erase();
+  curses_out->footer()->window()->Refresh();
+  curses_out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
@@ -196,12 +196,12 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const int starty = (maxy - height - 2) / 2;
   UIWindow* dialog;
   if (parent->IsGUI()) {
-    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), out->color_scheme(),
+    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), curses_out->color_scheme(),
                               height + 2, width + 4, starty, startx);
   } else {
-    dialog = new StdioWindow(parent, out->color_scheme());
+    dialog = new StdioWindow(parent, curses_out->color_scheme());
   }
-  dialog->Bkgd(out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
+  dialog->Bkgd(curses_out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
   dialog->SetColor(SchemeId::DIALOG_BOX);
   dialog->Box(0, 0);
   return dialog;
@@ -426,7 +426,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   s[len] = '\0';
   window->SetColor(SchemeId::EDITLINE);
   window->Puts(s);
-  out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+  curses_out->SetIndicatorMode(IndicatorMode::OVERWRITE);
   window->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
@@ -474,11 +474,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       if (status != EditLineMode::SET) {
         if (bInsert) {
           bInsert = false;
-          out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+          curses_out->SetIndicatorMode(IndicatorMode::OVERWRITE);
           window->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-          out->SetIndicatorMode(IndicatorMode::INSERT);
+          curses_out->SetIndicatorMode(IndicatorMode::INSERT);
           window->GotoXY(cx + pos, cy);
         }
       }

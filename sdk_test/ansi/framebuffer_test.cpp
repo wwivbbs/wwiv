@@ -73,8 +73,8 @@ TEST_F(FrameBufferTest, Goto) {
   EXPECT_EQ(11, b.rows());
   EXPECT_EQ("\xb0""ello", b.row_as_text(10));
   auto ca = b.row_char_and_attr(10);
-  EXPECT_EQ(5, ca.size());
-  uint8_t f = '\xb0';
+  EXPECT_EQ(5u, ca.size());
+  const auto f = static_cast<uint8_t>('\xb0');
   EXPECT_EQ((8 << 8) | f, ca[0]);
   EXPECT_EQ((8 << 8) | 'e', ca[1]);
   EXPECT_EQ((8 << 8) | 'l', ca[2]);

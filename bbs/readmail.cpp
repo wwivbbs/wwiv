@@ -555,7 +555,6 @@ void readmail(int mode) {
       }
       nn = network_number_from(&m);
       set_net_num(nn);
-      const auto& net = a()->net_networks[nn];
       int nFromSystem = 0;
       int nFromUser = 0;
       if (nn != 255) {
@@ -968,20 +967,18 @@ void readmail(int mode) {
                   a()->current_net().type == network_type_t::internet) {
                 to_char_array(s1, a()->net_email_name);
               } else {
-                std::string netname =
-                    (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
+                auto netname = (ssize(a()->net_networks) > 1) ? a()->network_name() : "";
                 to_char_array(s1, username_system_net_as_string(user_number, a()->net_email_name,
                                                                 system_number, netname));
               }
             } else {
               set_net_num(nn);
-              const auto& net = a()->net_networks[nn];
               to_char_array(s1, a()->names()->UserName(user_number, a()->current_net().sysnum));
             }
             if (ok_to_mail(user_number, system_number, false)) {
               bout << "|#5Forward to " << s1 << "? ";
               if (yesno()) {
-                unique_ptr<File> pFileEmail(OpenEmailFile(true));
+                auto pFileEmail(OpenEmailFile(true));
                 if (!pFileEmail->IsOpen()) {
                   break;
                 }

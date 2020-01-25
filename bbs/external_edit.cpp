@@ -18,9 +18,6 @@
 /**************************************************************************/
 #include "bbs/external_edit.h"
 
-#include <algorithm>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/execexternal.h"
@@ -29,15 +26,13 @@
 #include "bbs/make_abs_cmd.h"
 #include "bbs/message_editor_data.h"
 #include "bbs/pause.h"
+#include "bbs/stuffin.h"
 #include "bbs/utility.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-
-#include "bbs/stuffin.h"
-#include "local_io/wconstants.h"
-#include "sdk/filenames.h"
+#include <string>
 
 using std::string;
 using wwiv::core::ScopeExit;
@@ -105,7 +100,7 @@ CreateExternalMessageEditor(const editorrec& editor, MessageEditorData& data, in
                             int* setanon, const std::string& temp_directory) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     return std::make_unique<ExternalQBBSMessageEditor>(editor, data, maxli, setanon,
-                                                       a()->temp_directory());
+                                                       temp_directory);
   }
   return std::make_unique<ExternalWWIVMessageEditor>(editor, data, maxli, setanon,
                                                      a()->temp_directory());
