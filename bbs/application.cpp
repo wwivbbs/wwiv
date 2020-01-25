@@ -104,9 +104,6 @@ Application::Application(LocalIO* localIO)
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 
   tzset();
-  std::random_device rd;
-  rd.
-  srand(rd.entropy());
 
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
@@ -280,8 +277,6 @@ void Application::tleft(bool check_for_timeout) {
 }
 
 void Application::handle_sysop_key(uint8_t key) {
-  int i, i1;
-
   if (bout.okskey()) {
     if (key >= AF1 && key <= AF10) {
       set_autoval(key - 104);
@@ -320,14 +315,17 @@ void Application::handle_sysop_key(uint8_t key) {
         remoteIO()->disconnect();
         Hangup();
         break;
-      case SF5: /* Shift-F5 */
-        i1 = (rand() % 20) + 10;
-        for (i = 0; i < i1; i++) {
-          bout.bputch(static_cast<unsigned char>(rand() % 256));
+      case SF5: { /* Shift-F5 */
+        std::random_device rd;
+        std::mt19937 e{rd()};
+        std::uniform_int_distribution dist_len{10, 30};
+        std::uniform_int_distribution dist{1, 256};
+        for (auto i = 0; i < dist_len(e); i++) {
+          bout.bputch(static_cast<unsigned char>(dist(e)));
         }
         remoteIO()->disconnect();
         Hangup();
-        break;
+        } break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
         remoteIO()->disconnect();

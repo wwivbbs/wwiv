@@ -89,11 +89,11 @@ TEST_F(ContactTest, WithFailure) {
   EXPECT_EQ(now.to_daten_t(), ncr1->lasttry());
   EXPECT_EQ(then.to_daten_t(), ncr1->lastcontactsent());
   EXPECT_EQ(then.to_daten_t(), ncr1->firstcontact());
-  EXPECT_EQ(2, ncr1->numcontacts());
-  EXPECT_EQ(1, ncr1->numfails());
-  EXPECT_EQ(100, ncr1->bytes_sent());
-  EXPECT_EQ(200, ncr1->bytes_received());
-  EXPECT_EQ(0, ncr1->bytes_waiting());
+  EXPECT_EQ(2u, ncr1->numcontacts());
+  EXPECT_EQ(1u, ncr1->numfails());
+  EXPECT_EQ(100u, ncr1->bytes_sent());
+  EXPECT_EQ(200u, ncr1->bytes_received());
+  EXPECT_EQ(0u, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, EnsureBytesWaitingClears) {
@@ -102,13 +102,13 @@ TEST_F(ContactTest, EnsureBytesWaitingClears) {
 
   ncr1->set_bytes_waiting(100);
   c.add_connect(1, then, 100, 200);
-  EXPECT_EQ(0, ncr1->bytes_waiting());
+  EXPECT_EQ(0u, ncr1->bytes_waiting());
 
   ncr1->set_bytes_waiting(100);
   c.add_failure(1, now);
-  EXPECT_EQ(100, ncr1->bytes_waiting());
+  EXPECT_EQ(100u, ncr1->bytes_waiting());
 
   c.add_connect(1, now + 1s, 100, 200);
-  EXPECT_EQ(0, ncr1->bytes_waiting());
+  EXPECT_EQ(0u, ncr1->bytes_waiting());
 }
 

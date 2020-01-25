@@ -361,9 +361,9 @@ public:
   std::string dsz_logfile_name_;
   std::string download_filename_;
 
-  uint16_t usernum;
+  uint16_t usernum{};
 
-  asv_rec asv;
+  asv_rec asv{};
 
   uint16_t mail_who_field_len{0};
 
@@ -403,7 +403,7 @@ public:
   std::string terminal_command; // Terminal command
 
   // TODO(rushfan): Make this private. This is needed by WFC
-  uint16_t unx_;
+  uint16_t unx_{};
 
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
@@ -488,7 +488,7 @@ private:
   bool full_screen_read_prompt_{true};
   int last_read_user_number_{0};
   std::chrono::system_clock::time_point system_logon_time_;
-  std::chrono::duration<double> extratimecall_;
+  std::chrono::duration<double> extratimecall_{};
 };
 
 #endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

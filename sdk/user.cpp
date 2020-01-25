@@ -30,6 +30,8 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <random>
+#include "core/stl.h"
 
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -79,15 +81,14 @@ void User::FixUp() {
 void User::ZeroUserData() { memset(&data, 0, sizeof(userrec)); }
 
 bool User::CreateRandomPassword() {
+  std::string chars("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
+
+  std::random_device rd;
+  std::mt19937 e{rd()};
+  std::uniform_int_distribution<int> dist(0, wwiv::stl::ssize(chars) - 1);
   std::string password;
-  for (int i = 0; i < 6; i++) {
-    char ch = static_cast<char>(rand() % 36);
-    if (ch < 10) {
-      ch += '0';
-    } else {
-      ch += 'A' - 10;
-    }
-    password.push_back(ch);
+  for (auto i = 0; i < 6; i++) {
+    password.push_back(chars[dist(e)]);
   }
   SetPassword(password);
   return true;

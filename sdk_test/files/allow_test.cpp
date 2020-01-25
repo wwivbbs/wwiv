@@ -113,13 +113,13 @@ TEST_F(AllowTest, Save) {
   // Load default allow.data
   Allow a(config_);
   ASSERT_TRUE(a.Load());
-  EXPECT_EQ(2, a.allow_vector().size());
+  EXPECT_EQ(2, wwiv::stl::ssize(a.allow_vector()));
   // Add a new one then save the reload it
   a.Add("1.zip");
   ASSERT_TRUE(a.Save());
   ASSERT_TRUE(a.Load());
   // Now we are using the reloaded version.
-  EXPECT_EQ(3, a.allow_vector().size());
+  EXPECT_EQ(3, wwiv::stl::ssize(a.allow_vector()));
   EXPECT_FALSE(a.IsAllowed("1.zip"));
   EXPECT_TRUE(a.IsAllowed("2.zip"));
 }
