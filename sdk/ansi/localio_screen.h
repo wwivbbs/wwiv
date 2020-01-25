@@ -34,7 +34,7 @@ public:
   virtual ~LocalIOScreen() = default;
 
   /** Writes c using a, handles \r and \n */
-  bool write(char c, uint8_t a) override {
+  bool write(char c, uint8_t) override {
     return write(c);
   }
   /** Moves the cursor to x,y */

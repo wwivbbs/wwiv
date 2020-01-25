@@ -31,6 +31,7 @@
 #include "bbs/xferovl1.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include <string>

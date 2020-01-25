@@ -32,6 +32,7 @@
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include <algorithm>
 #include <chrono>

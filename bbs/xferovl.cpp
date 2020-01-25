@@ -17,14 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <string>
-
+#include "bbs/xferovl.h"
 #include "bbs/application.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -39,19 +36,17 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
-#include "local_io/keycodes.h"
-
 #include "core/findfiles.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
-#include "sdk/filenames.h"
 #include "sdk/files/allow.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;

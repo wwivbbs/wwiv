@@ -73,7 +73,7 @@ TEST_F(SubXtrTest, Write) {
   write_subs_xtr(helper.data(), net_networks_, xsubs);
   TextFile subs_xtr_file(PathFilePath(helper.data(), "subs.xtr"), "r");
   vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
-  ASSERT_EQ(4, actual.size());
+  ASSERT_EQ(4u, actual.size());
   vector<string> expected = {
     { "!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
   };

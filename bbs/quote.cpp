@@ -28,6 +28,7 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include <deque>

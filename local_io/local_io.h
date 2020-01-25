@@ -57,8 +57,8 @@ public:
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
-  virtual int WhereX() const noexcept = 0;
-  virtual int WhereY() const noexcept = 0;
+  [[nodiscard]] virtual int WhereX() const noexcept = 0;
+  [[nodiscard]] virtual int WhereY() const noexcept = 0;
   virtual void Lf() = 0;
   virtual void Cr() = 0;
   virtual void Cls() = 0;
@@ -105,7 +105,7 @@ public:
   // curatr_provider interface
   virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
   virtual wwiv::local_io::curatr_provider* curatr_provider();
-  virtual int curatr() const;
+  [[nodiscard]] virtual int curatr() const;
   virtual void curatr(int c);
 
 private:

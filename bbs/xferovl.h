@@ -18,6 +18,8 @@
 #ifndef __INCLUDED_BBS_XFEROVL_H__
 #define __INCLUDED_BBS_XFEROVL_H__
 
+#include <string>
+
 void move_file();
 void sortdir(int directory_num, int type);
 void sort_all(int type);

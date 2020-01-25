@@ -20,7 +20,6 @@
 #ifndef __INCLUDED_BBS_OUTPUT_H__
 #define __INCLUDED_BBS_OUTPUT_H__
 
-#include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/ansi/ansi.h"
@@ -175,8 +174,8 @@ public:
   void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
   // curatr_provider
-  [[nodiscard]] int curatr() const noexcept override { return curatr_; }
-  void curatr(int n) override { curatr_ = n; }
+  [[nodiscard]] uint8_t curatr() const noexcept override { return curatr_; }
+  void curatr(uint8_t n) override { curatr_ = n; }
 
   [[nodiscard]] bool okskey() const noexcept { return okskey_; }
   void okskey(bool n) { okskey_ = n; }
@@ -204,7 +203,7 @@ private:
   std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 
   bool ansi_movement_occurred_{false};
-  int curatr_{7};
+  uint8_t curatr_{7};
   bool okskey_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;

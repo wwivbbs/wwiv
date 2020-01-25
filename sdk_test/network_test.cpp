@@ -95,13 +95,13 @@ TEST_F(NetworkTest, Networks_Bracket) {
 }
 
 TEST_F(NetworkTest, Networks_Dir) {
-  const Networks& networks = test_networks();
+  const Networks& n = test_networks();
 
   const std::string expected_two_dir = "two";
-  EXPECT_EQ(expected_two_dir, networks.at(1).dir);
-  EXPECT_EQ(expected_two_dir, networks.at("two").dir);
-  EXPECT_EQ(expected_two_dir, networks[1].dir);
-  EXPECT_EQ(expected_two_dir, networks["two"].dir);
+  EXPECT_EQ(expected_two_dir, n.at(1).dir);
+  EXPECT_EQ(expected_two_dir, n.at("two").dir);
+  EXPECT_EQ(expected_two_dir, n[1].dir);
+  EXPECT_EQ(expected_two_dir, n["two"].dir);
 }
 
 TEST_F(NetworkTest, Networks_NetworkNumber) {

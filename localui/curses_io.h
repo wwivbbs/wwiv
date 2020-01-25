@@ -44,7 +44,7 @@ public:
   virtual void ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const;
   virtual void ShowContextHelp(const std::string& help_text) const;
   virtual void SetDefaultFooter() const;
-  virtual CursesWindow* window() const { return window_.get(); }
+  [[nodiscard]] virtual CursesWindow* window() const { return window_.get(); }
 
  private:
    std::unique_ptr<CursesWindow> window_;

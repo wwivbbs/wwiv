@@ -78,7 +78,7 @@ TEST_F(Type2TextTest, NotEmpty) {
 
   auto m = t_->savefile("Hello World");
   ASSERT_TRUE(m.has_value());
-  EXPECT_EQ(m->stored_as, 1);
+  EXPECT_EQ(m->stored_as, 1u);
 }
 
 TEST_F(Type2TextTest, Save_Then_Load) {

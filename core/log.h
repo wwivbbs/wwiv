@@ -134,7 +134,7 @@ public:
   }
 
   template <class T> NullLogger& operator<<(const T& msg) noexcept { return *this; }
-  NullLogger& operator<<(ENDL_TYPE* m) noexcept { return *this; }
+  NullLogger& operator<<(ENDL_TYPE*) noexcept { return *this; }
 };
 
 /**

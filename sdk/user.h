@@ -531,7 +531,7 @@ class User {
     if (n < 0 || n > 9) {
       return 7; // default color
     }
-    return HasAnsi() ? GetColor(n) : GetBWColor(n);
+    return static_cast<uint8_t>(HasAnsi() ? GetColor(n) : GetBWColor(n));
   }
 
   [[nodiscard]] std::vector<uint8_t> colors() const { 

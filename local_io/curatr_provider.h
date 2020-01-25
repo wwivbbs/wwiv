@@ -19,14 +19,16 @@
 #ifndef __INCLUDED_CURATR_PROVIDER_H__
 #define __INCLUDED_CURATR_PROVIDER_H__
 
+#include <cstdint>
+
 namespace wwiv {
 namespace local_io {
 
 class curatr_provider {
 public:
   virtual ~curatr_provider() = default;
-  virtual int curatr() const noexcept = 0;
-  virtual void curatr(int n) = 0;
+  [[nodiscard]] virtual uint8_t curatr() const noexcept = 0;
+  virtual void curatr(uint8_t n) = 0;
 };
 
 } // namespace local_io

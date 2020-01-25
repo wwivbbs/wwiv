@@ -27,8 +27,8 @@ namespace wwiv::sdk::ansi {
 class LocalIOScreenCurAttrProvider : public wwiv::local_io::curatr_provider {
 public:
   LocalIOScreenCurAttrProvider(LocalIO* lio) : lio_(lio) {}
-  [[nodiscard]] int curatr() const noexcept override { return lio_->curatr(); }
-  void curatr(int n) override { lio_->curatr(n); }
+  [[nodiscard]] uint8_t curatr() const noexcept override { return lio_->curatr(); }
+  void curatr(uint8_t n) override { lio_->curatr(n); }
 
 private:
   LocalIO* lio_;

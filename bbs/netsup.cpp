@@ -569,7 +569,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   a()->localIO()->PutsXYA(14, 3, color, fmt::format("{:<16}", a()->network_name()));
 }
 
-static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
+static void fill_call(uint8_t color, int row, const std::vector<CalloutEntry>& entries) {
   int x = 0, y = 0;
   char s1[6];
 

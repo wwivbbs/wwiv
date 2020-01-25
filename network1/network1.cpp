@@ -64,10 +64,6 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
   exit(1);
 }
 
-static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
-  return Packet::wwivnet_packet_name(net, node);
-}
-
 /**
  * Determines the filename for each of the nodes in list to forward to
  * and writes packets (calling write_wwivnet_packet) to each of them.

@@ -25,8 +25,8 @@ using namespace wwiv::strings;
 class DefaultCurAttrProvider final : public wwiv::local_io::curatr_provider {
 public:
   DefaultCurAttrProvider() = default;
-  [[nodiscard]] int curatr() const noexcept override { return a_; }
-  void curatr(int n) override { a_ = n; }
+  [[nodiscard]] uint8_t curatr() const noexcept override { return a_; }
+  void curatr(uint8_t n) override { a_ = n; }
 
 private:
   uint8_t a_{7};

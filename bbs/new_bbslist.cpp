@@ -18,38 +18,34 @@
 /**************************************************************************/
 #include "bbs/new_bbslist.h"
 
-#include <algorithm>
-#include <cstdio>
-#include <iostream>
+#include "bbs/application.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/com.h"
+#include "bbs/input.h"
+#include "bbs/pause.h"
+#include "bbs/sysopf.h"
+#include "core/file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "fmt/format.h"
+#include "sdk/config.h"
+#include "sdk/filenames.h"
 #include <iomanip>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/com.h"
-#include "bbs/input.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
-#include "bbs/sysopf.h"
-#include "bbs/application.h"
-#include "core/file.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/textfile.h"
-#include "sdk/filenames.h"
-#include "sdk/config.h"
-
 // This is defined in keycodes.h and breaks rapidjson since that is what is used
 // for the template variable.
 #undef CT
 
 #include <cereal/archives/json.hpp>
-#include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
-#include <cereal/types/map.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/vector.hpp>
 
 using std::left;
 using std::map;
@@ -63,11 +59,10 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace bbslist {
+namespace wwiv::bbslist {
 
 template <class Archive>
-void serialize(Archive & ar, wwiv::bbslist::BbsListEntry &b) {
+void serialize(Archive & ar, BbsListEntry &b) {
   ar(cereal::make_nvp("name", b.name));
   try {
     ar(cereal::make_nvp("software", b.software));
@@ -93,7 +88,7 @@ void serialize(Archive & ar, wwiv::bbslist::BbsListEntry &b) {
 }
 
 template <class Archive>
-void serialize(Archive & ar, wwiv::bbslist::BbsListAddress &a) {
+void serialize(Archive & ar, BbsListAddress &a) {
   ar(cereal::make_nvp("type", a.type));
   ar(cereal::make_nvp("address", a.address));
 }
@@ -352,5 +347,4 @@ void NewBBSList() {
   }
 }
 
-}  // bbslist
-}  // wwiv
+} // wwiv

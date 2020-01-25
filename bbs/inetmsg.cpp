@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"

@@ -17,10 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <string>
-
+#include "bbs/menuspec.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/chains.h"
 #include "bbs/com.h"
@@ -28,9 +26,7 @@
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"
-#include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
@@ -43,11 +39,13 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "sdk/config.h"
+#include "fmt/printf.h"
 #include "sdk/chains.h"
+#include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;

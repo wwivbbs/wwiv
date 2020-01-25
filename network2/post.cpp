@@ -173,7 +173,6 @@ bool handle_inbound_post(Context& context, Packet& p) {
 }
 
 std::string set_to_string(set<uint16_t> lines) {
-  bool first = true;
   std::ostringstream ss;
   for (const auto& line : lines) {
     ss << line << std::endl;
