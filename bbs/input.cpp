@@ -435,15 +435,16 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
           }
         }
         if (mode == InputMode::PROPER && pos) {
-          bool found = valid_letters.find(c) != std::string::npos;
+          const auto cc = static_cast<unsigned char>(c);
+          const auto found = valid_letters.find(cc) != std::string::npos;
           // if it's a valid char and the previous char was a space
           if (found && szTemp[pos - 1] != 32) {
-            c = locase(static_cast<unsigned char>(c));
+            c = locase(cc);
           }
         }
         if (mode == InputMode::DATE && (pos == 2 || pos == 5)) {
           bout.bputch(slash);
-          for (int i = nLength++; i >= pos; i--) {
+          for (auto i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = slash;
@@ -454,7 +455,7 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
           bout.bputch(dash);
-          for (int i = nLength++; i >= pos; i--) {
+          for (auto i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = dash;
@@ -515,7 +516,7 @@ void input(char* out_text, int max_length, bool auto_mpl) {
 
 // This will input an upper-case string
 string input(int max_length, bool auto_mpl) {
-  auto line = std::make_unique<char[]>(max_length + 1);
+  const auto line = std::make_unique<char[]>(max_length + 1);
   input(line.get(), max_length, auto_mpl);
   return line.get();
 }
@@ -599,11 +600,11 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
 
 input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
                                                 bool setdefault, const std::set<char>& hotkeys) {
-  const int max_length = max_length_for_number(maxv);
+  const auto max_length = max_length_for_number(maxv);
   std::string text;
   bout.mpl(max_length);
   auto allowed = hotkeys;
-  bool last_ok = false;
+  auto last_ok = false;
   allowed.insert(
       {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\r', '\n', '\b', '\x15', '\x17', '\x18'});
   bout.SavePosition();
@@ -672,10 +673,9 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
       }
       bout.mpl(max_length);
     } break;
-    default: {
+    default:
       // This is a hotkey.
       return {0, ch};
-    } break;
     }
   }
   return {0, 0};

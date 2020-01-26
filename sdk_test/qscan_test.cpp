@@ -18,18 +18,13 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/qscan.h"
 #include "sdk_test/sdk_helper.h"
+#include <vector>
 
 using namespace std;
-
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -39,8 +34,7 @@ public:
     EXPECT_TRUE(config_.IsInitialized());
   }
 
-  virtual void SetUp() {
-    config_.IsInitialized();
+  void SetUp() override {
   }
 
   SdkHelper helper;
@@ -48,13 +42,13 @@ public:
 };
 
 TEST_F(QScanTest, Smoke) {
-  const auto max_subs = 8;
-  const auto max_dirs = 10;
+  const size_t max_subs = 8u;
+  const size_t max_dirs = 10u;
   uint32_t q[100];
   memset(q, 0, sizeof(q));
   *q = 999;
   RawUserQScan qscan(&q[0], calculate_qscan_length(max_subs, max_dirs), max_subs, max_dirs);
-  ASSERT_EQ(999, *qscan.qsc());
+  ASSERT_EQ(999u, *qscan.qsc());
   ASSERT_EQ(max_subs, qscan.subs().max_size());
   ASSERT_EQ(max_dirs, qscan.dirs().max_size());
 }

@@ -49,7 +49,7 @@ void Output::SetLocalIO(LocalIO* local_io) {
   screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
   AnsiCallbacks cb;
   cb.move_ = [&](int /* x */, int /* y */) { ansi_movement_occurred_ = true; };
-  ansi_ = std::make_unique<Ansi>(screen_.get(), cb, 0x07);
+  ansi_ = std::make_unique<Ansi>(screen_.get(), cb, static_cast<uint8_t>(0x07));
 
   local_io_ = local_io;
   // Reset the curatr_provider on local_io since screen resets it.

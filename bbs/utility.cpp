@@ -213,8 +213,8 @@ char* stripfn(const char* file_name) {
   static char szStaticFileName[15];
   char szTempFileName[MAX_PATH];
 
-  size_t nSepIndex = -1;
-  for (size_t i = 0; i < size(file_name); i++) {
+  int nSepIndex = -1;
+  for (auto i = 0; i < size_int(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
@@ -224,12 +224,12 @@ char* stripfn(const char* file_name) {
   } else {
     strcpy(szTempFileName, file_name);
   }
-  for (size_t i1 = 0; i1 < size(szTempFileName); i1++) {
+  for (auto i1 = 0; i1 < size_int(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
       szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
     }
   }
-  int j = 0;
+  auto j = 0;
   while (szTempFileName[j] != 0) {
     if (szTempFileName[j] == SPACE) {
       strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
@@ -244,8 +244,7 @@ char* stripfn(const char* file_name) {
 void stripfn_inplace(char* file_name) { strcpy(file_name, stripfn(file_name)); }
 
 char* get_wildlist(char* file_mask) {
-  int mark = 0;
-  char *pszPath, t;
+  auto mark = 0;
 
   FindFiles ff(file_mask, FindFilesType::any);
   if (ff.empty()) {
@@ -265,13 +264,13 @@ char* get_wildlist(char* file_mask) {
       }
     }
   }
-  t = file_mask[mark];
+  auto t = file_mask[mark];
   file_mask[mark] = 0;
-  pszPath = file_mask;
+  auto* pszPath = file_mask;
   file_mask[mark] = t;
   t = static_cast<char>(size(pszPath));
   strcat(pszPath, f->name.c_str());
-  int i = 1;
+  auto i = 1;
   for (i = 1;; i++) {
     if (i % 5 == 0) {
       bout.nl();
@@ -279,7 +278,7 @@ char* get_wildlist(char* file_mask) {
     if (f == ff.end()) {
       break;
     }
-    f++;
+    ++f;
     bout << fmt::sprintf("%12.12s ", f->name);
     if (bout.getkey() == SPACE) {
       bout.nl();

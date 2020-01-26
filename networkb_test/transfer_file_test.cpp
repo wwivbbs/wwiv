@@ -17,14 +17,15 @@
 /**************************************************************************/
 
 #include "gtest/gtest.h"
-#include <filesystem>
+
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
+#include "fmt/printf.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
-
 #include <chrono>
-#include "fmt/printf.h"
+#include <filesystem>
 #include <string>
 
 using std::chrono::system_clock;
@@ -38,7 +39,7 @@ using namespace wwiv::strings;
 class TransferFileTest : public testing::Test {
 public:
   TransferFileTest() 
-    : filename("test1"), contents("ASDF"), now(system_clock::now()), file(filename, contents, system_clock::to_time_t(now)) {
+    : now(system_clock::now()), contents("ASDF"), filename("test1"), file(filename, contents, system_clock::to_time_t(now)) {
     full_filename = file_helper_.CreateTempFile(filename, contents);
   }
 
@@ -51,7 +52,7 @@ public:
 };
 
 TEST_F(TransferFileTest, AsPacketData) {
-  const string expected = fmt::format("test1 4 {} 0 67BC1E09", system_clock::to_time_t(now));
+  const auto expected = fmt::format("test1 4 {} 0 67BC1E09", system_clock::to_time_t(now));
   ASSERT_EQ(expected, file.as_packet_data(0));
 }
 
@@ -60,7 +61,7 @@ TEST_F(TransferFileTest, Filename) {
 }
 
 TEST_F(TransferFileTest, FileSize) {
-  ASSERT_EQ(contents.size(), file.file_size());
+  ASSERT_EQ(wwiv::stl::ssize(contents), file.file_size());
 }
 
 TEST_F(TransferFileTest, GetChunk) {
@@ -98,7 +99,7 @@ TEST_F(TransferFileTest, WriteChunk) {
 }
 
 TEST_F(TransferFileTest, WFileTest_Read) {
-  WFileTransferFile wfile_file(filename, unique_ptr<File>(new File(full_filename)));
+  WFileTransferFile wfile_file(filename, std::make_unique<File>(full_filename));
   ASSERT_EQ(filename, wfile_file.filename());
   ASSERT_EQ(contents.size(), wfile_file.file_size());
 
@@ -130,7 +131,7 @@ TEST_F(TransferFileTest, WFileTest_Write) {
   const string empty_filename = StrCat(filename, "_empty");
   const auto empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
   {
-    WFileTransferFile wfile_file(empty_filename, unique_ptr<File>(new File(empty_file_fullpath)));
+    WFileTransferFile wfile_file(empty_filename, std::make_unique<File>(empty_file_fullpath));
     EXPECT_EQ(empty_filename, wfile_file.filename());
     EXPECT_LE(wfile_file.file_size(), 0);
 

@@ -963,20 +963,20 @@ struct filestatusrec {
 // Execute Flags.  Used when spawning chains and external programs.
 
 // Default option, do nothing.
-#define EFLAG_NONE 0x0000
+constexpr uint16_t EFLAG_NONE = 0x0000;
 // don't check for hangup (typically used for the upload event)
-#define EFLAG_NOHUP 0x0004
+constexpr uint16_t  EFLAG_NOHUP = 0x0004;
 // redirect DOS IO to com port
-#define EFLAG_COMIO 0x0008
+constexpr uint16_t  EFLAG_COMIO = 0x0008;
 // try running out of net dir first
-#define EFLAG_NETPROG 0x0080
+constexpr uint16_t  EFLAG_NETPROG = 0x0080;
 // Use Win32 Emulated FOSSIL
-#define EFLAG_FOSSIL 0x0200
+constexpr uint16_t  EFLAG_FOSSIL = 0x0200;
 // Use STDIO based doors for Window/Linux.  This will set the stdin/stdout
 // file descriptors to the socket before spawning the chain.
-#define EFLAG_STDIO 0x0400
+constexpr uint16_t  EFLAG_STDIO = 0x0400;
 // Run out of the TEMP directory instead of the BBS directory
-#define EFLAG_TEMP_DIR 0x0800
+constexpr uint16_t  EFLAG_TEMP_DIR = 0x0800;
 
 ///////////////////////////////////////////////////////////////////////////////
 

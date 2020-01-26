@@ -74,9 +74,9 @@ public:
     : value_(s), default_(default_value) {
   }
 
-  std::string as_string() const noexcept { return value_; }
+  [[nodiscard]] std::string as_string() const noexcept { return value_; }
 
-  int as_int() const noexcept {
+  [[nodiscard]] int as_int() const noexcept {
     try {
       return std::stoi(value_);
     } catch (std::logic_error&) {
@@ -121,8 +121,8 @@ public:
     : CommandLineArgument(name, 0, help_text, "", "") {
   }
 
-  std::string help_text() const;
-  std::string default_value() const;
+  [[nodiscard]] std::string help_text() const;
+  [[nodiscard]] std::string default_value() const;
   const std::string name;
   const char key = 0;
   const std::string help_text_;
@@ -156,8 +156,8 @@ class Command {
 public:
   virtual ~Command() = default;
   virtual int Execute() = 0;
-  virtual std::string GetUsage() const = 0;
-  virtual std::string GetHelp() const = 0;
+  [[nodiscard]] virtual std::string GetUsage() const = 0;
+  [[nodiscard]] virtual std::string GetHelp() const = 0;
 };
 
 /** Generic command implementation for using the CommandLine support in core */
@@ -173,27 +173,27 @@ public:
     return true;
   }
 
-  std::string ArgNameForKey(char key);
+  [[nodiscard]] std::string ArgNameForKey(char key);
   virtual bool AddStandardArgs();
 
-  bool subcommand_selected() const { return command_ != nullptr; }
-  std::string name() const { return name_; }
-  std::string help_text() const { return help_text_; }
+  [[nodiscard]] bool subcommand_selected() const { return command_ != nullptr; }
+  [[nodiscard]] std::string name() const { return name_; }
+  [[nodiscard]] std::string help_text() const { return help_text_; }
 
-  CommandLineValue arg(const std::string& name) const;
-  bool contains_arg(const std::string& name) const noexcept;
-  std::string sarg(const std::string& name) const { return arg(name).as_string(); }
-  int iarg(const std::string name) const { return arg(name).as_int(); }
-  bool barg(const std::string name) const { return arg(name).as_bool(); }
-  bool help_requested() const { return barg("help"); }
-  const CommandLineCommand* command() const { return command_; }
-  std::vector<std::string> remaining() const { return remaining_; }
-  std::string ToString() const;
+  [[nodiscard]] CommandLineValue arg(const std::string& name) const;
+  [[nodiscard]] bool contains_arg(const std::string& name) const noexcept;
+  [[nodiscard]] std::string sarg(const std::string& name) const { return arg(name).as_string(); }
+  [[nodiscard]] int iarg(const std::string name) const { return arg(name).as_int(); }
+  [[nodiscard]] bool barg(const std::string name) const { return arg(name).as_bool(); }
+  [[nodiscard]] bool help_requested() const { return barg("help"); }
+  [[nodiscard]] const CommandLineCommand* command() const { return command_; }
+  [[nodiscard]] std::vector<std::string> remaining() const { return remaining_; }
+  [[nodiscard]] std::string ToString() const;
   int Execute() override;
-  std::string GetHelp() const override;
-  std::string GetUsage() const override { return ""; }
+  [[nodiscard]] std::string GetHelp() const override;
+  [[nodiscard]] std::string GetUsage() const override { return ""; }
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
-  bool unknown_args_allowed() const { return unknown_args_allowed_; }
+  [[nodiscard]] bool unknown_args_allowed() const { return unknown_args_allowed_; }
 
   /**
    * Sets a new default value. NetworkCommandLine will get these from

@@ -107,7 +107,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     auto irt = a()->context().irt();
     if (!irt.empty() && irt.front() != '\xAB') {
       string s1;
-      char ch = '\0';
+      auto ch = '\0';
       irt = stripcolors(StringTrim(a()->context().irt()));
       if (strncasecmp(irt.c_str(), "re:", 3) != 0) {
         if (data.silent_mode) {
@@ -405,7 +405,7 @@ static std::filesystem::path FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title, const string& to_name) {
-  if (a()->subs().subs().size() <= 0 && a()->GetCurrentReadMessageArea() <= 0) {
+  if (a()->subs().subs().empty() && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   if (is_email) {

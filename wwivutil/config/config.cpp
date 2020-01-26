@@ -65,7 +65,7 @@ void save_config(configrec& c) {
   }
 }
 
-static int set_version(const Config& config, int wwiv_ver, int revision) {
+static int set_version(const Config& config, uint16_t wwiv_ver, uint32_t revision) {
   if (!config.versioned_config_dat()) {
     cout << "Can only set the wwiv_ersion and config revision on a 5.1 or higher versioned "
             "config.dat"
@@ -109,12 +109,14 @@ public:
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
-    auto set_or_get = ToStringLowerCase(remaining().front());
+    const auto set_or_get = ToStringLowerCase(remaining().front());
 
     if (set_or_get == "get") {
       return show_version(*this->config()->config());
-    } else if (set_or_get == "set") {
-      return set_version(*this->config()->config(), iarg("wwiv_version"), iarg("revision"));
+    }
+    if (set_or_get == "set") {
+      return set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
+                         iarg("revision"));
     }
     return 1;
   }

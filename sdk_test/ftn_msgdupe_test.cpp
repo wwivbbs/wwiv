@@ -18,24 +18,22 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
 #include "sdk/ftn_msgdupe.h"
-#include "sdk/fido/fido_address.h"
 #include "sdk_test/sdk_helper.h"
+#include <cstdint>
+#include <cstring>
+#include <ctime>
+#include <string>
+#include <vector>
+#include "core/stl.h"
 
 using namespace std;
 
@@ -87,35 +85,35 @@ TEST_F(FtnMsgDupeTest, As64) {
 
   memcpy(&ids, &i, sizeof(i));
   LOG(INFO) << "header: " << ids.header << "; msgid: " << ids.msgid;
-  EXPECT_EQ(2, ids.header);
-  EXPECT_EQ(1, ids.msgid);
+  EXPECT_EQ(2u, ids.header);
+  EXPECT_EQ(1u, ids.msgid);
 }
 
 TEST_F(FtnMsgDupeTest, MsgId_NoExists) { 
-  FtnMessageDupe dupe(config_.datadir(), true); 
-  FidoAddress a{"1:2/3"};
-  auto now = time(nullptr);
-  auto line = dupe.CreateMessageID(a);
+  FtnMessageDupe dupe(config_.datadir(), true);
+  const FidoAddress a{"1:2/3"};
+  const auto now = time(nullptr);
+  const auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
-  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(2, wwiv::stl::ssize(parts));
   EXPECT_TRUE(starts_with(parts.at(0), "1:2/3"));
-  auto id = std::stol(parts.at(1), nullptr, 16);
+  const auto id = std::stol(parts.at(1), nullptr, 16);
 
   EXPECT_LT(std::abs(id - now), 11) << "id: " << id << "; now: " << now;
   EXPECT_TRUE(File::Exists(PathFilePath(config_.datadir(), MSGID_DAT)));
 }
 
 TEST_F(FtnMsgDupeTest, Exists) {
-  auto now = daten_t_now();
-  auto last_message_id = now + 10000;
+  const auto now = daten_t_now();
+  const auto last_message_id = now + 10000;
   ASSERT_TRUE(SetLastMessageId(last_message_id));
   ASSERT_TRUE(File::Exists(PathFilePath(config_.datadir(), MSGID_DAT)));
   FtnMessageDupe dupe(config_.datadir(), true);
   FidoAddress a{"1:2/3"};
-  auto line = dupe.CreateMessageID(a);
+  const auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
   ASSERT_EQ(2, parts.size());
-  auto id = static_cast<unsigned int>(std::stoul(parts.at(1), nullptr, 16));
+  const auto id = static_cast<unsigned int>(std::stoul(parts.at(1), nullptr, 16));
 
   EXPECT_EQ(id - last_message_id, 1) << "id: " << id << "; last_message_id: " << last_message_id
                                      << "; delta: " << (id - last_message_id);
