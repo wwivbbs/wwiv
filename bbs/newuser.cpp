@@ -160,7 +160,7 @@ void input_language() {
         string ss = mmkey(odc);
         ch = ss.front() - 1;
       }
-      if (ch >= 0 && ch < size_int(a()->languages)) {
+      if (ch >= 0 && ch < ssize(a()->languages)) {
         a()->user()->SetLanguage(a()->languages[ch].num);
       }
     } while ((a()->user()->GetLanguage() == 255) && (!a()->hangup_));

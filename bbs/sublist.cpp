@@ -45,7 +45,7 @@ void old_sublist() {
 
   bool abort = false;
   int sn = 0;
-  int en = size_int(a()->subconfs) - 1;
+  int en = ssize(a()->subconfs) - 1;
   if (okconf(a()->user())) {
     if (a()->uconfsub[1].confnum != -1) {
       bout.nl();
@@ -87,7 +87,7 @@ void old_sublist() {
       } else {
         os << "  ";
       }
-      if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks) > 1) {
+      if (a()->current_net().sysnum || wwiv::stl::ssize(a()->net_networks) > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
           std::string ss;
           if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
@@ -198,7 +198,7 @@ void SubList() {
                 : "|#6No ";
         iscan(i1);
         std::string net_info;
-        if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks) > 1) {
+        if (a()->current_net().sysnum || wwiv::stl::ssize(a()->net_networks) > 1) {
           if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
 	          std::string net_name;
             if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {

@@ -494,7 +494,7 @@ void add_temp_arc() {
     strcat(szInputFileMask, ".*");
   }
   strcpy(szFileMask, stripfn(szInputFileMask));
-  for (int i = 0; i < wwiv::strings::size_int(szFileMask); i++) {
+  for (int i = 0; i < wwiv::strings::ssize(szFileMask); i++) {
     if (szFileMask[i] == '|' || szFileMask[i] == '>' ||
         szFileMask[i] == '<' || szFileMask[i] == ';' ||
         szFileMask[i] == ' ' || szFileMask[i] == ':' ||
@@ -610,7 +610,7 @@ void temp_extract() {
             s1[0] = '\0';
           }
           i2 = 0;
-          for (i1 = 0; i1 < wwiv::strings::size_int(s1); i1++) {
+          for (i1 = 0; i1 < wwiv::strings::ssize(s1); i1++) {
             if ((s1[i1] == '|') || (s1[i1] == '>') || (s1[i1] == '<') || (s1[i1] == ';') || (s1[i1] == ' ')) {
               i2 = 1;
             }

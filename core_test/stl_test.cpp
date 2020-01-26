@@ -75,7 +75,7 @@ TEST(StlTest, Contains_MapConstStringStrings) {
 
 TEST(StlTest, SizeAsInt) {
   vector<int> v = {1, 2, 3};
-  auto vs = size_int(v);
+  auto vs = ssize(v);
   EXPECT_EQ(3, vs);
 }
 

@@ -457,7 +457,7 @@ void readmail(int mode) {
                 s1[a()->mail_who_field_len] = '\0';
               }
             } else {
-              if (wwiv::stl::size_int(a()->net_networks) > 1) {
+              if (wwiv::stl::ssize(a()->net_networks) > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, a()->net_networks[nn].name,
                         system_name.c_str());
               } else {
@@ -816,7 +816,7 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < size_int(a()->subs().subs())) && (a()->usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; (i1 < ssize(a()->subs().subs())) && (a()->usub[i1].subnum != -1); i1++) {
             if (ss1 == a()->usub[i1].keys) {
               i = i1;
             }

@@ -84,7 +84,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   }
   const auto& nws = networks_->networks();
 
-  if (network_number_ < 0 || network_number_ >= size_int(nws)) {
+  if (network_number_ < 0 || network_number_ >= ssize(nws)) {
     LOG(ERROR) << "network number must be between 0 and " << nws.size() << ".";
     initialized_ = false;
     return;

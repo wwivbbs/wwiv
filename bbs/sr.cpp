@@ -143,7 +143,7 @@ bool ok_prot(int num, xfertype xt) {
     return false;
   }
 
-  if (num > 0 && num < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+  if (num > 0 && num < (ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
     switch (num) {
     case WWIV_INTERNAL_PROT_ASCII:
       if (xt == xf_down || xt == xf_down_temp) {
@@ -255,7 +255,7 @@ std::string prot_name(int num) {
     return "Zmodem (Internal)";
   default:
     if (num >= WWIV_NUM_INTERNAL_PROTOCOLS &&
-        num < (size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+        num < (ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
       return a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].description;
     }
     return "-=>NONE<=-";
@@ -385,7 +385,7 @@ int get_protocol(xfertype xt) {
     } else {
       i1 = ch - BASE_CHAR + 10;
       a()->user()->SetDefaultProtocol(i1);
-      if (i1 < size_int(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
+      if (i1 < ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
         return ch - BASE_CHAR + 10;
       }
       for (size_t j = 3; j < a()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {

@@ -378,11 +378,11 @@ void tag_it() {
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
-  for (int i2 = 0; i2 < wwiv::strings::size_int(s3); i2++) {
+  for (int i2 = 0; i2 < wwiv::strings::ssize(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
     i4 = 0;
     bool bad = false;
-    for (i3 = 0; i3 < wwiv::strings::size_int(s1); i3++) {
+    for (i3 = 0; i3 < wwiv::strings::ssize(s1); i3++) {
       if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
         s1[i3] = 0;
         i4 = 1;
@@ -397,7 +397,7 @@ void tag_it() {
       break;
     }
     i--;
-    if (s1[0] && i >= 0 && i < size_int(a()->filelist)) {
+    if (s1[0] && i >= 0 && i < ssize(a()->filelist)) {
     auto& f = a()->filelist[i];
       if (check_batch_queue(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
@@ -539,7 +539,7 @@ void tag_files(bool& need_title) {
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
       input(s, 2, true);
       i = to_number<int>(s) - 1;
-      if (s[0] && i >= 0 && i < size_int(a()->filelist)) {
+      if (s[0] && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
         d = XFER_TIME(f.u.numbytes);
         bout.nl();
@@ -614,7 +614,7 @@ void tag_files(bool& need_title) {
       bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
       input(s, 2, true);
       i = to_number<int>(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < size_int(a()->filelist))) {
+      if ((s[0]) && (i >= 0) && (i < ssize(a()->filelist))) {
         auto& f = a()->filelist[i];
         sprintf(s1, "%s%s", a()->directories[f.directory].path,
                 stripfn(f.u.filename));
@@ -683,7 +683,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     if (dn == -1) {
       return 0;
     } else {
-      for (i = 0; i < wwiv::strings::size_int(description); i++) {
+      for (i = 0; i < wwiv::strings::ssize(description); i++) {
         if (description[i] == RETURN) {
           description[i] = SPACE;
         }
@@ -818,7 +818,7 @@ void download() {
       bout << "|#1 #  File Name    Size    Time      Directory\r\n";
       bout << "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < size_int(a()->batch().entry)) {
+    if (i < ssize(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
       if (b.sending) {
         const auto t = ctim(std::lround(b.time));
@@ -904,7 +904,7 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !a()->hangup_ && (i <= size_int(a()->batch().entry)));
+  } while (!done && !a()->hangup_ && (i <= ssize(a()->batch().entry)));
 
   if (!a()->batch().numbatchdl()) {
     return;

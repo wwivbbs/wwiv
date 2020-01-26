@@ -35,7 +35,7 @@ bool FrameBuffer::gotoxy(int x, int y) {
   const auto xx = std::max(x, 0);
   const auto yy = std::max(y, 0);
   pos_ = (yy * cols_) + xx;
-  if (pos_ >= size_int(b_)) {
+  if (pos_ >= ssize(b_)) {
     return grow(pos_);
   }
   return true;
@@ -59,7 +59,7 @@ bool FrameBuffer::clear_eol() {
 }
 
 bool FrameBuffer::put(int pos, char c, uint8_t a) {
-  if (pos >= size_int(b_)) {
+  if (pos >= ssize(b_)) {
     if (!grow(pos)) {
       return false;
     }
@@ -95,7 +95,7 @@ void FrameBuffer::close() {
   if (b_.empty()) {
     return;
   }
-  for (auto i = size_int(b_) - 1; i >= 0;i--) {
+  for (auto i = ssize(b_) - 1; i >= 0;i--) {
     if (b_[i].c() != 0) {
       // Were at the end.
       b_.resize(i + 1);
@@ -104,7 +104,7 @@ void FrameBuffer::close() {
   }
 
   auto f = false;
-  for (auto i = size_int(b_) - 1; i >= 0; i--) {
+  for (auto i = ssize(b_) - 1; i >= 0; i--) {
     if (f && b_[i].c() == 0) {
       b_[i].c(' ');
     } else if (!f && b_[i].c() != 0) {
@@ -129,7 +129,7 @@ int FrameBuffer::rows() const {
 
 std::string FrameBuffer::row_as_text(int row) const {
   const auto start = row * cols_;
-  const auto end = std::min(size_int(b_), ((row + 1) * cols_));
+  const auto end = std::min(ssize(b_), ((row + 1) * cols_));
 
   std::string s;
   s.reserve(end - start);
@@ -148,7 +148,7 @@ std::string FrameBuffer::row_as_text(int row) const {
 
 std::vector<uint16_t> FrameBuffer::row_char_and_attr(int row) const {
   const auto start = row * cols_;
-  const auto end = std::min(size_int(b_), (row + 1) * cols_);
+  const auto end = std::min(ssize(b_), (row + 1) * cols_);
 
   std::vector<uint16_t> s;
   s.reserve(end - start);

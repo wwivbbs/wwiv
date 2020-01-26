@@ -797,8 +797,8 @@ void networks(const wwiv::sdk::Config& config) {
           const auto prompt =
               fmt::format("Insert before which (1-%{} ? ", networks.networks().size() + 1);
           const auto net_num =
-              dialog_input_number(window, prompt, 1, wwiv::stl::size_int(networks.networks()) + 1);
-          if (net_num > 0 && net_num <= wwiv::stl::size_int(networks.networks()) + 1) {
+              dialog_input_number(window, prompt, 1, wwiv::stl::ssize(networks.networks()) + 1);
+          if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {
             if (dialog_yn(window, "Are you sure? ")) {
               insert_net(config, networks, net_num - 1);
             }

@@ -70,7 +70,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
                                  string* outLocation) {
   string netName;
 
-  if (wwiv::stl::size_int(a()->net_networks) > 1) {
+  if (wwiv::stl::ssize(a()->net_networks) > 1) {
     netName = StrCat(a()->current_net().name, "- ");
   }
 
@@ -420,7 +420,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
       int maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
-      if (size_int(loc) > maxlen) {
+      if (ssize(loc) > maxlen) {
         loc = loc.substr(0, maxlen);
       }
       bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
@@ -549,7 +549,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     // Do this so we don't pop up a pause for sure.
     bout.clear_lines_listed();
 
-    if (i >= size_int(lines)) {
+    if (i >= ssize(lines)) {
       break;
     }
     bout.GotoXY(1, i - start + lines_start);
@@ -563,7 +563,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     if (!l.empty() && l.front() == CB) {
       // Line starting with ^B is centered.
-      if (size_int(stripcolors(l)) >= screen_width) {
+      if (ssize(stripcolors(l)) >= screen_width) {
         // TODO(rushfan): This should be stripped size
         l = l.substr(1, screen_width);
       } else {

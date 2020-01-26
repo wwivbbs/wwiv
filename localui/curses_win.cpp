@@ -88,7 +88,7 @@ void CursesWindow::SetTitle(const std::string& title) {
   SetColor(SchemeId::WINDOW_TITLE);
   const auto max_title_size = GetMaxX() - 6;
   auto working_title = fmt::format(" {} ", title);
-  if (size_int(title) > max_title_size) {
+  if (ssize(title) > max_title_size) {
     working_title = fmt::format(" {} ", title.substr(0, max_title_size));
   }
 

@@ -119,7 +119,7 @@ static void DisplayNetInfo(size_t nSubNum) {
       const auto net_file_name = fmt::format("n{}.net", dir, n.stype);
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(PathFilePath(dir, net_file_name), subscribers);
-      auto num = size_int(subscribers);
+      auto num = ssize(subscribers);
       bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
                            a()->net_networks[n.net_num].name, n.stype, host, num,
                            (n.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
@@ -179,13 +179,13 @@ static void modify_sub(int n) {
     case '[':
       a()->subs().set_sub(n, r);
       if (--n < 0) {
-        n = size_int(a()->subs().subs()) - 1;
+        n = ssize(a()->subs().subs()) - 1;
       }
       r = a()->subs().sub(n);
       break;
     case ']':
       a()->subs().set_sub(n, r);
-      if (++n >= size_int(a()->subs().subs())) {
+      if (++n >= ssize(a()->subs().subs())) {
         n = 0;
       }
       r = a()->subs().sub(n);
@@ -350,7 +350,7 @@ static void modify_sub(int n) {
         char ch3 = onek(charstring.c_str());
         if (ch3 != ' ') {
           int i = ch3 - 'A';
-          if (i >= 0 && i < size_int(a()->subs().sub(n).nets)) {
+          if (i >= 0 && i < ssize(a()->subs().sub(n).nets)) {
             if (ch2 == 'D') {
               sub_xtr_del(n, i, 1);
             } else {
@@ -419,7 +419,7 @@ static void swap_subs(int sub1, int sub2) {
   subconf_t sub1conv = (subconf_t) sub1;
   subconf_t sub2conv = (subconf_t) sub2;
 
-  if (sub1 < 0 || sub1 >= size_int(a()->subs().subs()) || sub2 < 0 || sub2 >= size_int(a()->subs().subs())) {
+  if (sub1 < 0 || sub1 >= ssize(a()->subs().subs()) || sub2 < 0 || sub2 >= ssize(a()->subs().subs())) {
     return;
   }
 
@@ -471,7 +471,7 @@ static void insert_sub(int n) {
   uint32_t m1, m2, m3;
   subconf_t nconv = (subconf_t) n;
 
-  if (n < 0 || n > size_int(a()->subs().subs())) {
+  if (n < 0 || n > ssize(a()->subs().subs())) {
     return;
   }
 
@@ -514,12 +514,12 @@ static void insert_sub(int n) {
       (pTempQScan[0])++;
     }
 
-    for (i1 = size_int(a()->subs().subs()) - 1; i1 > n; i1--) {
+    for (i1 = ssize(a()->subs().subs()) - 1; i1 > n; i1--) {
       pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
     }
     pTempQScan_p[n] = 0;
 
-    for (i2 = size_int(a()->subs().subs()) / 32; i2 > n / 32; i2--) {
+    for (i2 = ssize(a()->subs().subs()) / 32; i2 > n / 32; i2--) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] << 1) | (pTempQScan_q[i2 - 1] >> 31);
     }
     pTempQScan_q[i2] = m1 | (m2 & (pTempQScan_q[i2] << 1)) | (m3 & pTempQScan_q[i2]);
@@ -538,7 +538,7 @@ static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   subconf_t nconv = static_cast<subconf_t>(n);
 
-  if (n < 0 || n >= size_int(a()->subs().subs())) {
+  if (n < 0 || n >= ssize(a()->subs().subs())) {
     return;
   }
 
@@ -546,7 +546,7 @@ static void delete_sub(int n) {
 
   n = static_cast<int>(nconv);
 
-  while (size_int(a()->subs().subs()) > n && !a()->subs().sub(n).nets.empty()) {
+  while (ssize(a()->subs().subs()) > n && !a()->subs().sub(n).nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
   a()->subs().erase(n);
@@ -571,14 +571,14 @@ static void delete_sub(int n) {
         pTempQScan[0]--;
       }
     }
-    for (i1 = n; i1 < size_int(a()->subs().subs()); i1++) {
+    for (i1 = n; i1 < ssize(a()->subs().subs()); i1++) {
       pTempQScan_p[i1] = pTempQScan_p[i1 + 1];
     }
 
     pTempQScan_q[n / 32] = (pTempQScan_q[n / 32] & m3) | ((pTempQScan_q[n / 32] >> 1) & m2) |
                             (pTempQScan_q[(n / 32) + 1] << 31);
 
-    for (i2 = (n / 32) + 1; i2 <= (size_int(a()->subs().subs()) / 32); i2++) {
+    for (i2 = (n / 32) + 1; i2 <= (ssize(a()->subs().subs()) / 32); i2++) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] >> 1) | (pTempQScan_q[i2 + 1] << 31);
     }
 
@@ -619,7 +619,7 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Sub number? ";
-      int subnum = input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
+      int subnum = input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         modify_sub(subnum);
       }
@@ -629,13 +629,13 @@ void boardedit() {
       if (a()->subs().subs().size() < a()->config()->max_subs()) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        int subnum1 = input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
+        int subnum1 = input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        int subnum2 = input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
+        int subnum2 = input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
         if (subnum2 <= 0) {
           break;
         }
@@ -664,11 +664,11 @@ void boardedit() {
       auto s = input(4);
       subconf_t subnum = 0;
       if (s[0] == '$') {
-        subnum = static_cast<subconf_t>(size_int(a()->subs().subs()));
+        subnum = static_cast<subconf_t>(ssize(a()->subs().subs()));
       } else {
         subnum = to_number<uint16_t>(s);
       }
-      if (!s.empty() && subnum >= 0 && subnum <= size_int(a()->subs().subs())) {
+      if (!s.empty() && subnum >= 0 && subnum <= ssize(a()->subs().subs())) {
         insert_sub(subnum);
         modify_sub(subnum);
         confchg = true;
@@ -696,7 +696,7 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      int subnum = input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
+      int subnum = input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";

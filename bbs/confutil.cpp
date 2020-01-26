@@ -173,7 +173,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= size_int(a()->subconfs)) {
+      if (which < 0 || which >= ssize(a()->subconfs)) {
         return false;
       }
       c = &(a()->subconfs[which]);
@@ -192,7 +192,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= size_int(a()->dirconfs)) {
+      if (which < 0 || which >= ssize(a()->dirconfs)) {
         return false;
       }
       c = &(a()->dirconfs[which]);

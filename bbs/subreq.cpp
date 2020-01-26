@@ -258,19 +258,19 @@ void sub_xtr_add(int n, int nn) {
   int onxi, gc;
 
   // nn may be -1
-  while (nn >= size_int(a()->subs().sub(n).nets)) {
+  while (nn >= ssize(a()->subs().sub(n).nets)) {
     a()->subs().sub(n).nets.push_back({});
   }
   subboard_network_data_t xnp = {};
   int network_number = -1;
 
-  if (wwiv::stl::size_int(a()->net_networks) > 1) {
+  if (wwiv::stl::ssize(a()->net_networks) > 1) {
     std::set<char> odc;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (int ii = 0; ii < wwiv::stl::size_int(a()->net_networks); ii++) {
+    for (int ii = 0; ii < wwiv::stl::ssize(a()->net_networks); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -282,7 +282,7 @@ void sub_xtr_add(int n, int nn) {
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (wwiv::stl::size_int(a()->net_networks) < 9) {
+    if (wwiv::stl::ssize(a()->net_networks) < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         network_number = -1;
@@ -297,7 +297,7 @@ void sub_xtr_add(int n, int nn) {
         network_number = to_number<int>(mmk) - 1;
       }
     }
-    if (network_number >= 0 && network_number < wwiv::stl::size_int(a()->net_networks)) {
+    if (network_number >= 0 && network_number < wwiv::stl::ssize(a()->net_networks)) {
       set_net_num(network_number);
     } else {
       return;
@@ -426,7 +426,7 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn == -1 || nn >= size_int(a()->subs().sub(n).nets)) {
+  if (nn == -1 || nn >= ssize(a()->subs().sub(n).nets)) {
     // nn will be -1 when adding a new sub.
     a()->subs().sub(n).nets.push_back(xnp);
   } else {

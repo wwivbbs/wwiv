@@ -55,7 +55,7 @@ static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
   case 5:
     return "Batch";
   default:
-    if (pn > 5 || pn < (size_int(externs) + 6)) {
+    if (pn > 5 || pn < (ssize(externs) + 6)) {
       return externs[pn - 6].description;
     }
   }
@@ -181,7 +181,7 @@ void extrn_prots(const std::string& datadir) {
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
     auto result = list.Run();
-    const int max_protocol_number = size_int(externs) -1 + 6;
+    const int max_protocol_number = ssize(externs) -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {

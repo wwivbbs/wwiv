@@ -109,7 +109,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
         }
         auto code_num = to_number<int>(code_str);
         const auto pos = result.selected;
-        if (pos >= 0 && pos < size_int(items)) {
+        if (pos >= 0 && pos < ssize(items)) {
           wwiv::stl::insert_at(b_.block_cc_countries, pos, code_num);
         } else {
           b_.block_cc_countries.push_back(code_num);
@@ -252,7 +252,7 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
         e.name = name;
         e.key = name.front();
         auto pos = result.selected;
-        if (pos >= 0 && pos < size_int(items)) {
+        if (pos >= 0 && pos < ssize(items)) {
           wwiv::stl::insert_at(c_.bbses, pos, e);
         } else {
           c_.bbses.push_back(e);

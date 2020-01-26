@@ -424,7 +424,7 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+                    if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
                         && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
                       a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       ++this_dir;
@@ -448,7 +448,7 @@ ADD_OR_REMOVE_BATCH:
                       --this_dir;
                     } else {
                       while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                             && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                             && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
                         a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       }
                       this_dir = a()->current_user_dir_num();
@@ -514,7 +514,7 @@ TOGGLE_EXTENDED:
               if (!changedir) {
                 done = true;
               } else if (changedir == 1) {
-                if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+                if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
                     && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
                   a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                 } else {
@@ -526,7 +526,7 @@ TOGGLE_EXTENDED:
                   a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
                 } else {
                   while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                         && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                         && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
                     a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                   }
                 }
@@ -539,7 +539,7 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+            if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
                 && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
               a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
             } else {
@@ -551,7 +551,7 @@ TOGGLE_EXTENDED:
               a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
             } else {
               while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                     && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                     && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
                 a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
               }
             }

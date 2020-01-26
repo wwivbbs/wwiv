@@ -92,11 +92,6 @@ int8_t size_int8(C const& c) {
   return static_cast<int8_t>(size);
 }
 
-template <typename C>
-signed int size_int(const C& c) {
-  return stl::size_int32(c);
-}
-
 // From https://en.cppreference.com/w/cpp/iterator/size (The C++20 version)
 template <class C>
 constexpr auto ssize(const C& c) 

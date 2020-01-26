@@ -90,7 +90,7 @@ void cleanup_net() {
   if (a()->net_networks.empty()) {
     return;
   }
-  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks) == 1) {
+  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::ssize(a()->net_networks) == 1) {
     return;
   }
   a()->hangup_ = false;
@@ -100,7 +100,7 @@ void cleanup_net() {
   }
 
   for (int nNetNumber = 0;
-       nNetNumber < wwiv::stl::size_int(a()->net_networks);
+       nNetNumber < wwiv::stl::ssize(a()->net_networks);
        nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
@@ -190,9 +190,9 @@ bool attempt_callout() {
   // Set the last connect time to now since we are attempting to connect.
   last_time_c_ = now;
   wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
-  vector<NodeAndWeight> to_call(wwiv::stl::size_int(a()->net_networks));
+  vector<NodeAndWeight> to_call(wwiv::stl::ssize(a()->net_networks));
 
-  for (int nn = 0; nn < wwiv::stl::size_int(a()->net_networks); nn++) {
+  for (int nn = 0; nn < wwiv::stl::ssize(a()->net_networks); nn++) {
     set_net_num(nn);
     const auto& net = a()->net_networks[nn];
     if (!net.sysnum) {
@@ -250,7 +250,7 @@ void print_pending_list() {
   if (a()->net_networks.empty()) {
     return;
   }
-  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks) == 1) {
+  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::ssize(a()->net_networks) == 1) {
     return;
   }
 
@@ -578,7 +578,7 @@ static void fill_call(uint8_t color, int row, const std::vector<CalloutEntry>& e
       x = 0;
       y++;
     }
-    if (i < size_int(entries)) {
+    if (i < ssize(entries)) {
       sprintf(s1, "%-5u", entries.at(i).node);
     } else {
       strcpy(s1, "     ");
@@ -622,7 +622,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
   int pos = 0, sn = 0, snn = 0;
   std::vector<CalloutEntry> entries;
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->net_networks); nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
     Callout callout(net);
@@ -691,7 +691,7 @@ static std::pair<uint16_t, int> ansicallout() {
       ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
       switch (ch) {
       case RARROW: // right arrow
-        if ((pos < size_int(entries) - 1) && (x < 63)) {
+        if ((pos < ssize(entries) - 1) && (x < 63)) {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
@@ -724,14 +724,14 @@ static std::pair<uint16_t, int> ansicallout() {
         }
         break;
       case DNARROW: // down arrow
-        if ((y < 5) && (pos + 10 < size_int(entries))) {
+        if ((y < 5) && (pos + 10 < ssize(entries))) {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
-        } else if ((rownum + 6) * 10 < size_int(entries)) {
+        } else if ((rownum + 6) * 10 < ssize(entries)) {
           rownum++;
           fill_call(color4, rownum, entries);
-          if (pos + 10 < size_int(entries)) {
+          if (pos + 10 < ssize(entries)) {
             pos += 10;
           } else {
             --y;
@@ -775,21 +775,21 @@ static std::pair<uint16_t, int> ansicallout() {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos += 10 * (5 - y);
           y = 5;
-          while (pos >= size_int(entries)) {
+          while (pos >= ssize(entries)) {
             pos -= 10;
             --y;
           }
           a()->localIO()->PutsXYA(6 + x, 5 + y, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
-        } else if ((rownum + 6) * 10 < size_int(entries)) {
+        } else if ((rownum + 6) * 10 < ssize(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
-            if ((rownum + 6) * 10 < size_int(entries)) {
+            if ((rownum + 6) * 10 < ssize(entries)) {
               rownum++;
               pos += 10;
             }
           }
           fill_call(color4, rownum, entries);
-          if (pos >= size_int(entries)) {
+          if (pos >= ssize(entries)) {
             pos -= 10;
             --y;
           }
@@ -808,7 +808,7 @@ static std::pair<uint16_t, int> ansicallout() {
 }
 
 static int FindNetworkNumberForNode(int sn) {
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->net_networks); nNetNumber++) {
     const auto net = a()->net_networks[nNetNumber];
     Callout callout(net);
     if (callout.net_call_out_for(sn) != nullptr) {

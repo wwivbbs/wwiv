@@ -245,7 +245,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
     case '!':
     {                        /* sub idx */
       curn = to_number<int>(line);
-      if (curn >= size_int(subs)) {
+      if (curn >= ssize(subs)) {
         // Bad number on ! line.
         curn = -1;
         break;

@@ -427,7 +427,7 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                                int start, int selected) {
   for (int i = 0; i < fs.message_height(); i++) {
-    if (i >= size_int(lines)) {
+    if (i >= ssize(lines)) {
       break;
     }
     bool is_selected = i == (selected - start);

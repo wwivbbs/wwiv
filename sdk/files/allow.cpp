@@ -124,7 +124,7 @@ static std::string stripfn(const char* file_name) {
   char szTempFileName[MAX_PATH];
 
   ssize_t nSepIndex = -1;
-  for (ssize_t i = 0; i < wwiv::strings::size_int(file_name); i++) {
+  for (ssize_t i = 0; i < wwiv::strings::ssize(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }

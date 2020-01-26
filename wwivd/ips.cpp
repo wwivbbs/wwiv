@@ -127,7 +127,7 @@ bool AutoBlocker::Connection(const std::string& ip) {
     }
   }
 
-  if (size_int(s) > auto_bl_sessions) {
+  if (ssize(s) > auto_bl_sessions) {
     LOG(INFO) << "Blocking since we have " << s.size() << " sessions within "
               << auto_bl_seconds << " seconds.";
     bip_->Block(ip);

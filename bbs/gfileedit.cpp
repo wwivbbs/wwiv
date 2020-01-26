@@ -112,7 +112,7 @@ void modify_sec(int n) {
       break;
     case ']':
       a()->gfilesec[n] = r;
-      if (++n >= size_int(a()->gfilesec)) {
+      if (++n >= ssize(a()->gfilesec)) {
         n = 0;
       }
       r = a()->gfilesec[n];
@@ -243,17 +243,17 @@ void gfileedit() {
       bout << "|#2Section number? ";
       input(s, 2);
       i = to_number<int>(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
+      if (s[0] != 0 && i >= 0 && i < ssize(a()->gfilesec)) {
         modify_sec(i);
       }
       break;
     case 'I':
-      if (size_int(a()->gfilesec) < a()->max_gfilesec) {
+      if (ssize(a()->gfilesec) < a()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
         i = to_number<int>(s);
-        if (s[0] != 0 && i >= 0 && i <= size_int(a()->gfilesec)) {
+        if (s[0] != 0 && i >= 0 && i <= ssize(a()->gfilesec)) {
           insert_sec(i);
         }
       }
@@ -263,7 +263,7 @@ void gfileedit() {
       bout << "|#2Delete which section? ";
       input(s, 2);
       i = to_number<int>(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
+      if (s[0] != 0 && i >= 0 && i < ssize(a()->gfilesec)) {
         bout.nl();
         bout << "|#5Delete " << a()->gfilesec[i].name << "?";
         if (yesno()) {

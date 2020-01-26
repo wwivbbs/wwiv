@@ -56,7 +56,7 @@ static std::string input_password_minimal(int max_length) {
 
     if (ch > 31) {
       ch = upcase(ch);
-      if (size_int(pw) < max_length && ch) {
+      if (ssize(pw) < max_length && ch) {
         pw.push_back(ch);
         bout.bputch(mask_char);
       }
@@ -618,7 +618,7 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
     auto ch = bout.getkey();
     if (std::isdigit(ch)) {
       // digit
-      if (size_int(text) < max_length && ch) {
+      if (ssize(text) < max_length && ch) {
         text.push_back(ch);
         bout.bputch(ch);
         result = to_number<int64_t>(text);

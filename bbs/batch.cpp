@@ -108,7 +108,7 @@ std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it) {
 
 // Deletes one item (index i) from the d/l batch queue.
 void delbatch(int num) {
-  if (num >= size_int(a()->batch().entry)) {
+  if (num >= ssize(a()->batch().entry)) {
     return;
   }
   erase_at(a()->batch().entry, static_cast<size_t>(num));
@@ -384,7 +384,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !a()->hangup_ && size_int(a()->batch().entry) > cur && !bRatioBad);
+  } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (ok && !a()->hangup_) {
     endbatch();
@@ -463,7 +463,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !a()->hangup_ && size_int(a()->batch().entry) > cur && !bRatioBad);
+  } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (ok && !a()->hangup_) {
     endbatch();
@@ -763,7 +763,7 @@ int batchdl(int mode) {
       bout << "|#9Remove which? ";
       string s = input(4);
       auto i = to_number<int>(s);
-      if (i > 0 && i <= size_int(a()->batch().entry)) {
+      if (i > 0 && i <= ssize(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i-1]);
         delbatch(i-1);
       }

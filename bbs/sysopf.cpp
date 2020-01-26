@@ -299,7 +299,7 @@ void print_net_listing(bool bForcePause) {
 
   a()->status_manager()->RefreshStatusCache();
 
-  if (!wwiv::stl::size_int(a()->net_networks)) {
+  if (!wwiv::stl::ssize(a()->net_networks)) {
     return;
   }
 
@@ -314,13 +314,13 @@ void print_net_listing(bool bForcePause) {
   bool done = false;
   while (!done && !a()->hangup_) {
     bout.cls();
-    if (wwiv::stl::size_int(a()->net_networks) > 1) {
+    if (wwiv::stl::ssize(a()->net_networks) > 1) {
       std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (int i = 0; i < size_int(a()->net_networks); i++) {
+      for (int i = 0; i < ssize(a()->net_networks); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -332,7 +332,7 @@ void print_net_listing(bool bForcePause) {
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (wwiv::stl::size_int(a()->net_networks) < 9) {
+      if (wwiv::stl::ssize(a()->net_networks) < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -352,7 +352,7 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if (current_net < 0 || current_net > size_int(a()->net_networks)) {
+      if (current_net < 0 || current_net > ssize(a()->net_networks)) {
         continue;
       }
     } else {
@@ -394,7 +394,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (wwiv::stl::size_int(a()->net_networks) < 2) {
+        if (wwiv::stl::ssize(a()->net_networks) < 2) {
           done = true;
         }
         done1 = true;

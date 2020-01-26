@@ -214,7 +214,7 @@ char* stripfn(const char* file_name) {
   char szTempFileName[MAX_PATH];
 
   int nSepIndex = -1;
-  for (auto i = 0; i < size_int(file_name); i++) {
+  for (auto i = 0; i < ssize(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
@@ -224,7 +224,7 @@ char* stripfn(const char* file_name) {
   } else {
     strcpy(szTempFileName, file_name);
   }
-  for (auto i1 = 0; i1 < size_int(szTempFileName); i1++) {
+  for (auto i1 = 0; i1 < ssize(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
       szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
     }
@@ -258,7 +258,7 @@ char* get_wildlist(char* file_mask) {
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
   } else {
-    for (int i = 0; i < size_int(file_mask); i++) {
+    for (int i = 0; i < ssize(file_mask); i++) {
       if (file_mask[i] == File::pathSeparatorChar) {
         mark = i + 1;
       }
@@ -415,7 +415,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
 
 bool okfsed() {
   return okansi() && a()->user()->GetDefaultEditor() > 0 &&
-         a()->user()->GetDefaultEditor() <= wwiv::stl::size_int(a()->editors);
+         a()->user()->GetDefaultEditor() <= wwiv::stl::ssize(a()->editors);
 }
 template <class _Ty>
 inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {

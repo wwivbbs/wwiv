@@ -87,7 +87,7 @@ void get_user_ppp_addr() {
     int j = 0;
     char szLocalUserName[255];
     strcpy(szLocalUserName, a()->user()->GetName());
-    for (int i = 0; (i < wwiv::strings::size_int(szLocalUserName)) && (i < 61); i++) {
+    for (int i = 0; (i < wwiv::strings::ssize(szLocalUserName)) && (i < 61); i++) {
       if (szLocalUserName[i] != '.') {
         szLine[ j++ ] = translate_table[(int)szLocalUserName[i] ];
       }

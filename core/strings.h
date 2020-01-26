@@ -157,7 +157,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::string::size_type size(const char* s);
 
   // String length without colors as an int
-  int size_int(const char* s);
+  int ssize(const char* s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
   std::string trim_to_size(const std::string& orig, std::string::size_type size);

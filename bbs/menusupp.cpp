@@ -834,7 +834,7 @@ void UpDirConf() {
 }
 
 void UpDir() {
-  if (a()->current_user_dir_num() < size_int(a()->directories) - 1
+  if (a()->current_user_dir_num() < ssize(a()->directories) - 1
       && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
     a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
   } else {
@@ -861,7 +861,7 @@ void DownDir() {
     a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
   } else {
     while (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0 &&
-           a()->current_user_dir_num() < size_int(a()->directories) - 1) {
+           a()->current_user_dir_num() < ssize(a()->directories) - 1) {
       a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
     }
   }

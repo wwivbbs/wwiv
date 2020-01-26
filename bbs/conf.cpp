@@ -494,7 +494,7 @@ static void modify_conf(ConferenceType conftype, int which) {
     } break;
     case ']':
       n++;
-      if (n >= size_int(info.confs)) {
+      if (n >= ssize(info.confs)) {
         n = 0;
       }
       break;
@@ -503,7 +503,7 @@ static void modify_conf(ConferenceType conftype, int which) {
       bout << "|#2New Designator: ";
       char ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
       ok = true;
-      for (int i = 0; i < size_int(info.confs); i++) {
+      for (int i = 0; i < ssize(info.confs); i++) {
         if (i == n) {
           i++;
         }

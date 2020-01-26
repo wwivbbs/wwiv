@@ -89,7 +89,7 @@ void select_editor() {
   string ss = mmkey(odc);
 
   int nEditor = to_number<int>(ss);
-  if (nEditor >= 1 && nEditor <= size_int(a()->editors)) {
+  if (nEditor >= 1 && nEditor <= ssize(a()->editors)) {
     a()->user()->SetDefaultEditor(nEditor);
   } else if (ss == "0") {
     a()->user()->SetDefaultEditor(0);
@@ -151,7 +151,7 @@ static void print_cur_stat() {
          << wwiv::endl;
 
     const auto nEditorNum = a()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= size_int(a()->editors))
+    const string editor_name = (nEditorNum > 0 && nEditorNum <= ssize(a()->editors))
                                    ? a()->editors[nEditorNum - 1].description
                                    : "None";
     bout << fmt::format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
@@ -1100,11 +1100,11 @@ void config_scan_plus(int type) {
         case 0:
           top += amount;
           if (type == 0) {
-            if (top >= size_int(a()->subs().subs())) {
+            if (top >= ssize(a()->subs().subs())) {
               top = 0;
             }
           } else {
-            if (top >= size_int(a()->directories)) {
+            if (top >= ssize(a()->directories)) {
               top = 0;
             }
           }

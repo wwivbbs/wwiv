@@ -118,7 +118,7 @@ bool CommandLine::Parse() {
 }
 
 bool CommandLine::ParseImpl() {
-  return CommandLineCommand::Parse(1) >= size_int(raw_args_);
+  return CommandLineCommand::Parse(1) >= ssize(raw_args_);
 }
 
 int CommandLine::Execute() { return CommandLineCommand::Execute(); }

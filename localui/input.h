@@ -159,9 +159,9 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const = 0;
   virtual void DefaultDisplayString(CursesWindow* window, const std::string& text) const {
     auto s = text;
-    if (wwiv::stl::size_int(s) > maxsize_) {
+    if (wwiv::stl::ssize(s) > maxsize_) {
       s = text.substr(0, maxsize_);
-    } else if (wwiv::stl::size_int(s) < maxsize_) {
+    } else if (wwiv::stl::ssize(s) < maxsize_) {
       s = text + std::string(static_cast<std::string::size_type>(maxsize_) - text.size(), ' ');
     }
 

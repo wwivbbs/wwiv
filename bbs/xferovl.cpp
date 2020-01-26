@@ -1114,7 +1114,7 @@ void finddescription() {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);
-        for (i2 = 0; i2 < size_int(s); i2++) {
+        for (i2 = 0; i2 < ssize(s); i2++) {
           s[i2] = upcase(s[i2]);
         }
         if (strstr(s, s1) != nullptr) {

@@ -102,7 +102,7 @@ void ListBox::DrawAllItems() {
 ListBoxResult ListBox::RunDialog() {
   if (selected_ < 0) {
     selected_ = 0;
-  } else if (selected_ >= size_int(items_)) {
+  } else if (selected_ >= ssize(items_)) {
     selected_ = items_.size();
   }
   // Move window top to furthest possible spot.

@@ -179,7 +179,7 @@ public:
             }
           } break;
           case 'I': {
-            if (num <= 0 || num >= size_int(items)) {
+            if (num <= 0 || num >= ssize(items)) {
               menu_items_.push_back({});
             }
             else {

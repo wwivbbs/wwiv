@@ -46,7 +46,7 @@ bool valid_system(int ts) {
 }
 
 void set_net_num(int network_number) {
-  if (network_number >= 0 && network_number < wwiv::stl::size_int(a()->net_networks)) {
+  if (network_number >= 0 && network_number < wwiv::stl::ssize(a()->net_networks)) {
     a()->set_net_num(network_number);
   }
 }
