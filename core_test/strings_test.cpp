@@ -18,9 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
-
 #include "core/strings.h"
 
 using std::cout;
@@ -405,4 +407,16 @@ TEST(StringsTest, TrimToSizeIgnoreColors) {
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16a", 1));
   EXPECT_EQ("|09|16a|09", trim_to_size_ignore_colors("|09|16a|09", 1));
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16aa|09", 1));
+}
+
+TEST(StringsTest, Test_Compiler_Supports_PutTime) {
+  using std::chrono::system_clock;
+
+  auto t = system_clock::to_time_t(system_clock::now());
+  auto tm = *std::localtime(&t);
+  std::ostringstream ss;
+  ss << std::put_time(&tm, "%Z");
+  const auto s = ss.str();
+
+  ASSERT_FALSE(s.empty());
 }

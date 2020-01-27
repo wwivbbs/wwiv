@@ -70,8 +70,8 @@ TEST_F(QScanTest, Dirs_Smoke) {
   ASSERT_TRUE(x.test(1));
   ASSERT_TRUE(x.test(3));
 
-  ASSERT_EQ(10, qscan.qsc()[1]);
-  ASSERT_EQ(max_dirs, x.max_size());
+  ASSERT_EQ(10u, qscan.qsc()[1]);
+  ASSERT_EQ(static_cast<unsigned>(max_dirs), x.max_size());
 }
 
 TEST_F(QScanTest, Subs_Smoke) {

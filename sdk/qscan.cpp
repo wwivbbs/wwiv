@@ -20,8 +20,7 @@
 #include <stdexcept>
 #include "core/log.h"
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 using namespace wwiv::core;
 
@@ -116,5 +115,4 @@ bool UserQScan::clear() {
   return false;
 }
 
-}
 }

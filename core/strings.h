@@ -20,7 +20,9 @@
 #define __INCLUDED_STRINGS_H__
 
 #include <cstdint>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cstring> // strncpy
+// ReSharper disable once CppUnusedIncludeDirective
 #include <ctime>   // struct tm
 #include <functional>
 #include <limits>
@@ -39,19 +41,19 @@ namespace strings {
 enum class JustificationType { LEFT, RIGHT };
 
 template <typename A> std::string StrCat(const A& a) noexcept {
-  std::ostringstream ss;
-  ss << a;
   try {
+    std::ostringstream ss;
+    ss << a;
     return ss.str();
   } catch (...) {
     return {};
   }
 }
 
-template <typename A, typename... Args> std::string StrCat(const A& a, const Args&... args) {
-  std::ostringstream ss;
-  ss << a << StrCat(args...);
+template <typename A, typename... Args> std::string StrCat(const A& a, const Args&... args) noexcept {
   try {
+    std::ostringstream ss;
+    ss << a << StrCat(args...);
     return ss.str();
   } catch (...) {
     return {};
@@ -131,13 +133,6 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
    * Joints the strings in lines, using end_of_line in between each line.
    */
   std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
-
-  // Time and STL things to come in C++14 or GCC5
-
-  /**
-   * Like std::put_time.  GCC 4.x doesn't support it.
-   */
-  std::string put_time(const struct tm* tm_info, const std::string& fmt_arg);
 
   // String length without colors
   std::string::size_type size_without_colors(const std::string& s);

@@ -112,7 +112,7 @@ TEST_F(FtnMsgDupeTest, Exists) {
   FidoAddress a{"1:2/3"};
   const auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
-  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(2u, parts.size());
   const auto id = static_cast<unsigned int>(std::stoul(parts.at(1), nullptr, 16));
 
   EXPECT_EQ(id - last_message_id, 1) << "id: " << id << "; last_message_id: " << last_message_id

@@ -19,7 +19,6 @@
 #define __INCLUDED_SDK_QSCAN_H__
 
 #include <memory>
-#include <stdexcept>
 #include "core/file.h"
 
 namespace wwiv {
@@ -42,11 +41,11 @@ public:
 
   void reset(size_t n);
 
-  bool test(size_t n) const;
+  [[nodiscard]] bool test(size_t n) const;
 
   void flip(size_t n);
 
-  size_t max_size() const;
+  [[nodiscard]] size_t max_size() const;
 
 private:
   uint32_t* q_;
@@ -65,9 +64,10 @@ public:
   qscan_bitset& dirs() { return dirs_; };
   qscan_bitset& subs() { return subs_; };
 
-  uint32_t lastread_pointer(int n) const { return lastread_pointer_[n]; }
+  [[nodiscard]] uint32_t lastread_pointer(int n) const { return lastread_pointer_[n]; }
+  // ReSharper disable once CppMemberFunctionMayBeConst
   void lastread_pointer(int n, uint32_t val) { lastread_pointer_[n] = val; }
-  uint32_t* qsc() const { return qscan_.get(); }
+  [[nodiscard]] uint32_t* qsc() const { return qscan_.get(); }
 
 private:
   std::unique_ptr<uint32_t[]> qscan_;
@@ -92,10 +92,11 @@ public:
 
 private:
   wwiv::core::File file_;
-  bool open_ = false;
+  bool open_{false};
 
 };
 
+// TODO(rushfan): Implement this
 class AllUserQScan {
 public:
   AllUserQScan(const std::string& filename, int max_users) {}

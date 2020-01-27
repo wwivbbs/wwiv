@@ -202,7 +202,11 @@ DateTime::DateTime()
   : DateTime(static_cast<time_t>(0)) {
 }
 
-std::string DateTime::to_string(const std::string& format) const { return put_time(&tm_, format); }
+std::string DateTime::to_string(const std::string& format) const {
+  std::ostringstream ss;
+  ss << std::put_time(&tm_, format.c_str());
+  return ss.str();
+}
 
 std::string DateTime::to_string() const {
   const auto t = asctime(&tm_);

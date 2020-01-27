@@ -137,7 +137,7 @@ TEST_F(TextFileTest, Insertion_TwoLines) {
   }
   const string actual = helper_.ReadFile(filename);
   auto lines = wwiv::strings::SplitString(actual, "\r\n", true);
-  EXPECT_EQ(2, lines.size());
+  EXPECT_EQ(2u, lines.size());
   EXPECT_EQ("Hello", lines.at(0));
   EXPECT_EQ("World", lines.at(1));
 }
