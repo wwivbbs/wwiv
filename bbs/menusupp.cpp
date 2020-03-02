@@ -1078,7 +1078,7 @@ void CleanUpCmd() {
     else {
       bout.nl();
       const auto cmd = stuff_in(a()->cleanup_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_CLEANUP));
     }
     bout.nl(2);
   }
