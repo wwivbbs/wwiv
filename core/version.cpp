@@ -23,7 +23,7 @@
 const char* wwiv_version = "5.5.0";
 
 // Build Information
-const char* beta_version = ".developer";
+const char* beta_version = ".development";
 
 // The statusrec.wwiv_version
 uint16_t wwiv_num_version = 520;
