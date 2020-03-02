@@ -24,6 +24,7 @@
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
@@ -38,6 +39,8 @@
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
+#include "bbs/dropfile.h"
+#include "bbs/execexternal.h"
 #include "bbs/external_edit.h"
 #include "bbs/finduser.h"
 #include "bbs/gfileedit.h"
@@ -59,6 +62,7 @@
 #include "bbs/quote.h"
 #include "bbs/pause.h"
 #include "bbs/readmail.h"
+#include "bbs/stuffin.h"
 #include "bbs/subedit.h"
 #include "bbs/sysoplog.h"
 #include "bbs/valscan.h"
@@ -710,6 +714,23 @@ void FastGoodBye() {
   if (okconf(a()->user())) {
     a()->user()->SetLastSubConf(a()->GetCurrentConferenceMessageArea());
     a()->user()->SetLastDirConf(a()->GetCurrentConferenceFileArea());
+  }
+    if (!a()->logoff_cmd.empty()) {
+    if (a()->logoff_cmd.front() == '@') {
+      // Let's see if we need to run a basic script.
+      const string BASIC_PREFIX = "@basic:";
+      if (starts_with(a()->logoff_cmd, BASIC_PREFIX)) {
+        const auto cmd = a()->logoff_cmd.substr(BASIC_PREFIX.size());
+        LOG(INFO) << "Running basic script: " << cmd;
+        wwiv::bbs::RunBasicScript(cmd);
+      }
+    }
+    else {
+      bout.nl();
+      const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
+    }
+    bout.nl(2);
   }
   Hangup();
 }
