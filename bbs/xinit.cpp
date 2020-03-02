@@ -286,6 +286,8 @@ void Application::ReadINIFile(IniFile& ini) {
   beginday_cmd = ini.value<string>(INI_STR_BEGINDAY_CMD);
   newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
   logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
+  logoff_cmd = ini.value<string>(INI_STR_LOGOFF_CMD);
+
   terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
 
   forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);

@@ -404,6 +404,7 @@ public:
 
   std::string beginday_cmd;     // beginday event
   std::string logon_cmd;        // logon event
+  std::string logoff_cmd;       // logoff event
   std::string newuser_cmd;      // newuser event
   std::string upload_cmd;       // upload event
   std::string terminal_command; // Terminal command

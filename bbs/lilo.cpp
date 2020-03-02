@@ -921,6 +921,24 @@ void logoff() {
     play_sdf(LOGOFF_NOEXT, false);
   }
 
+  if (!a()->logoff_cmd.empty()) {
+    if (a()->logoff_cmd.front() == '@') {
+      // Let's see if we need to run a basic script.
+      const string BASIC_PREFIX = "@basic:";
+      if (starts_with(a()->logoff_cmd, BASIC_PREFIX)) {
+        const auto cmd = a()->logoff_cmd.substr(BASIC_PREFIX.size());
+        LOG(INFO) << "Running basic script: " << cmd;
+        wwiv::bbs::RunBasicScript(cmd);
+      }
+    }
+    else {
+      bout.nl();
+      const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGON));
+    }
+    bout.nl(2);
+  }
+
   if (a()->usernum > 0) {
     if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
       broadcast(fmt::format("{} Just logged off!", a()->user()->GetName()));
