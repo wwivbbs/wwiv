@@ -36,6 +36,7 @@ constexpr const char* INI_STR_BEGINDAY_CMD = "BEGINDAY_CMD";
 constexpr const char* INI_STR_NEWUSER_CMD = "NEWUSER_CMD";
 constexpr const char* INI_STR_LOGON_CMD = "LOGON_CMD";
 constexpr const char* INI_STR_LOGOFF_CMD = "LOGOFF_CMD";
+constexpr const char* INI_STR_CLEANUP_CMD = "CLEANUP_CMD";
 constexpr const char* INI_STR_V_SCAN_CMD = "VSCAN_CMD";
 constexpr const char* INI_STR_TERMINAL_CMD = "TERMINAL_CMD";
 
