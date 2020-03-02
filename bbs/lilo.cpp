@@ -934,7 +934,7 @@ void logoff() {
     else {
       bout.nl();
       const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGON));
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
     }
     bout.nl(2);
   }
