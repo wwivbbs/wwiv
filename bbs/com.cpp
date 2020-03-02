@@ -56,7 +56,6 @@ void Hangup() {
     bout.nl();
     const auto cmd = stuff_in(a()->cleanup_cmd, "", "", "", "", "");
     ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_CLEANUP));
-    }
     bout.nl(2);
   }
   if (a()->hangup_) { return; }
