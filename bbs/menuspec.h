@@ -31,6 +31,5 @@ void SetDirConf(int iConf);
 void EnableConf();
 void DisableConf();
 void SetNewScanMsg();
-void LogOffCmd();
 
 #endif  // __INCLUDED_BBS_MENUSPEC_H__
