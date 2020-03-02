@@ -347,7 +347,6 @@ void GoodBye() {
         }
         LogOffCmd();
         Hangup();
-        CleanUpCmd();
         break;
       }
     } while (cycle == 0);
@@ -372,7 +371,6 @@ void GoodBye() {
       }
       LogOffCmd();
       Hangup();
-      CleanUpCmd();
     }
   }
 }
@@ -721,7 +719,6 @@ void FastGoodBye() {
   }
   LogOffCmd();
   Hangup();
-  CleanUpCmd();
 }
 
 void NewFilesAllConfs() {
@@ -1059,26 +1056,6 @@ void LogOffCmd() {
       bout.nl();
       const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
       ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
-    }
-    bout.nl(2);
-  }
-}
-
-void CleanUpCmd() {
-    if (!a()->cleanup_cmd.empty()) {
-    if (a()->cleanup_cmd.front() == '@') {
-      // Let's see if we need to run a basic script.
-      const string BASIC_PREFIX = "@basic:";
-      if (starts_with(a()->cleanup_cmd, BASIC_PREFIX)) {
-        const auto cmd = a()->cleanup_cmd.substr(BASIC_PREFIX.size());
-        LOG(INFO) << "Running basic script: " << cmd;
-        wwiv::bbs::RunBasicScript(cmd);
-      }
-    }
-    else {
-      bout.nl();
-      const auto cmd = stuff_in(a()->cleanup_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_CLEANUP));
     }
     bout.nl(2);
   }

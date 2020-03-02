@@ -50,6 +50,13 @@ bool CheckForHangup() {
 }
 
 void Hangup() {
+  if (!a()->cleanup_cmd.empty()) {
+    bout.nl();
+    const auto cmd = stuff_in(a()->cleanup_cmd, create_chain_file(), "", "", "", "");
+    ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_CLEANUP));
+    }
+    bout.nl(2);
+  }
   if (a()->hangup_) { return; }
   a()->hangup_ = true;
   VLOG(1) << "Invoked Hangup()";

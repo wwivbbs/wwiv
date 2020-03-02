@@ -122,7 +122,6 @@ void GuestApply();
 void AttachFile();
 bool GuestCheck();
 void LogOffCmd();
-void CleanUpCmd();
 void SetSubNumber(const char *pszSubKeys);
 void SetDirNumber(const char *pszDirectoryKeys);
 
