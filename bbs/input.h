@@ -65,7 +65,7 @@ std::string input_path(const std::string& orig_text, int max_length);
 std::string input_cmdline(const std::string& orig_text, int max_length);
 
 /**
- * Inputs phonenumber up to length max_length.
+ * Inputs phone number up to length max_length.
  */
 std::string input_phonenumber(const std::string& orig_text, int max_length);
 
@@ -118,14 +118,18 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
                                                 bool setdefault, const std::set<char>& hotkeys);
 
 
+//TODO(rushfan): Using an int64_t for the min/max both here and in input_number_or_key_raw
+//               is a bit wonky, but works for probably all case in WWIV since it won't be
+//               using int64_t user input most likely ever.  Otherwise need to wait till compilers
+//               are happy enough with auto everywhere to pass through caller types.
 /**
  * Inputs a number of type T within the range of min_value and max_value.
  * If set_default_value is true (the default) then the input box will have
- * the current_value prepopulated.
+ * the current_value populated.
  */
 template <typename T>
-T input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
-               int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
+T input_number(T current_value, int64_t min_value = std::numeric_limits<T>::min(),
+               int64_t max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
   auto r = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
   return (r.key != 0) ? current_value : static_cast<T>(r.num);
 }
