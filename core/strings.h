@@ -158,10 +158,20 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::string trim_to_size(const std::string& orig, std::string::size_type size);
 
   /** Typesafe version of toupper */
-  template <class T> T to_upper_case(const T a) { return static_cast<T>(::toupper(a)); }
+  template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
+  T to_upper_case(const T a) { return static_cast<T>(::toupper(a)); }
 
-  /** Typesafe version of tolower */
-  template <class T> T to_lower_case(const T a) { return static_cast<T>(::tolower(a)); }
+  template<class T>
+  std::enable_if_t<std::is_convertible_v<T, char>, char>
+  to_upper_case_char(const T a) { return static_cast<T>(::toupper(a)); }
+
+  /** Typesafe version of toupper */
+  template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
+  T to_lower_case(const T a) { return static_cast<T>(::tolower(a)); }
+
+  template<class T>
+  std::enable_if_t<std::is_convertible_v<T, char>, char>
+  to_lower_case_char(const T a) { return static_cast<T>(::tolower(a)); }
 
   template <typename T, typename R>
   static T StringToT(std::function<R(const std::string&, int)> f, const std::string& s, int b) {

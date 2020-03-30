@@ -672,7 +672,7 @@ static std::pair<uint16_t, int> ansicallout() {
 
   bool done = false;
   do {
-    char ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
+    char ch = to_upper_case_char(a()->localIO()->GetChar());
     switch (ch) {
     case ' ':
     case RETURN:
@@ -688,7 +688,7 @@ static std::pair<uint16_t, int> ansicallout() {
       break;
     case -32: // (224) I don't know MS's CRT returns this on arrow keys....
     case 0:
-      ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
+      ch = to_upper_case_char(a()->localIO()->GetChar());
       switch (ch) {
       case RARROW: // right arrow
         if ((pos < ssize(entries) - 1) && (x < 63)) {

@@ -834,7 +834,7 @@ int change_channels(int loc) {
     CheckForHangup();
     bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
     input(szMessage, 2);
-    if (to_upper_case<char>(szMessage[0]) == 'Q') {
+    if (to_upper_case_char(szMessage[0]) == 'Q') {
       return loc;
     }
     temploc = to_number<int>(szMessage);

@@ -101,7 +101,7 @@ TEST_F(TransferFileTest, WriteChunk) {
 TEST_F(TransferFileTest, WFileTest_Read) {
   WFileTransferFile wfile_file(filename, std::make_unique<File>(full_filename));
   ASSERT_EQ(filename, wfile_file.filename());
-  ASSERT_EQ(contents.size(), wfile_file.file_size());
+  ASSERT_EQ(wwiv::stl::ssize(contents), wfile_file.file_size());
 
   char chunk[100];
 

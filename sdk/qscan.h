@@ -45,7 +45,7 @@ public:
 
   void flip(size_t n);
 
-  [[nodiscard]] size_t max_size() const;
+  [[nodiscard]] size_t size() const noexcept;
 
 private:
   uint32_t* q_;

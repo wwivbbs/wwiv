@@ -45,6 +45,7 @@
 #include "core/command_line.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "core/strings-ng.h"
 #include "core/version.h"
 #include "fmt/printf.h"
 #include "local_io/local_io.h"
@@ -807,7 +808,7 @@ int Application::Run(int argc, char* argv[]) {
   auto this_usernum_from_commandline = static_cast<uint16_t>(cmdline.iarg("user_num"));
   const auto x = cmdline.sarg("x");
   if (!x.empty()) {
-    const auto xarg = to_upper_case<char>(x.at(0));
+    const auto xarg = to_upper_case_char(x.at(0));
     if (cmdline.arg("handle").is_default()) {
       clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;

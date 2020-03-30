@@ -69,7 +69,7 @@ bool yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!a()->hangup_) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!a()->hangup_) && ((ch = to_upper_case(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -88,7 +88,7 @@ bool noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!a()->hangup_) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!a()->hangup_) && ((ch = to_upper_case(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -105,7 +105,7 @@ char ynq() {
 
   bout.Color(1);
   while (!a()->hangup_ &&
-         (ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true)) &&
+         (ch = to_upper_case(bout.getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
          ch != *str_quit && ch != RETURN) {
     // NOP

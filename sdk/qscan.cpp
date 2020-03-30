@@ -63,7 +63,7 @@ void qscan_bitset::flip(size_t n) {
   q_[n / 32] ^= (1L << (n % 32));
 }
 
-size_t qscan_bitset::max_size() const { return max_size_; }
+size_t qscan_bitset::size() const noexcept { return max_size_; }
 
 // ReSharper restore CppMemberFunctionMayBeConst
 

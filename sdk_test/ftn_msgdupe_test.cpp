@@ -115,7 +115,7 @@ TEST_F(FtnMsgDupeTest, Exists) {
   ASSERT_EQ(2u, parts.size());
   const auto id = static_cast<unsigned int>(std::stoul(parts.at(1), nullptr, 16));
 
-  EXPECT_EQ(id - last_message_id, 1) << "id: " << id << "; last_message_id: " << last_message_id
+  EXPECT_EQ(id - last_message_id, 1u) << "id: " << id << "; last_message_id: " << last_message_id
                                      << "; delta: " << (id - last_message_id);
 }
 
