@@ -694,6 +694,7 @@ void Application::GotCaller(int ms) {
   }
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
 std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_string_; }
@@ -870,7 +871,7 @@ int Application::Run(int argc, char* argv[]) {
   InitializeBBS();
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
 
-  bool remote_opened = true;
+  auto remote_opened = true;
   // If we are telnet...
   if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
     context().ok_modem_stuff(true);
@@ -1008,7 +1009,7 @@ wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
   return msgapis_.at(current_sub().storage_type).get();
 }
 wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
-  return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
+  return dynamic_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
 }
 
 Batch& Application::batch() { return batch_; }

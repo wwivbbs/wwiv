@@ -16,25 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _WIN32
-// include this here so it won't get includes by local_io_win32.h
-#include "core/wwiv_windows.h"
-#endif  // WIN32
-
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <cstdarg>
-#include <exception>
-#include <stdexcept>
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
-#include "bbs/remote_socket_io.h"
 #include "bbs/sysoplog.h"
-#include "bbs/remote_io.h"
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -44,11 +27,12 @@
 #include "localui/curses_io.h"
 #include "sdk/config.h"
 
-#if defined( _WIN32 )
-#include "local_io/local_io_win32.h"
-#else
+#include <exception>
+#include <iostream>
+#include <string>
+#if !defined( _WIN32 )
 #include <unistd.h>
-#endif // _WIN32
+#endif // !_WIN32
 
 // Uncomment this line to use curses on Win32
 #define WWIV_WIN32_CURSES_IO
@@ -83,10 +67,10 @@ int bbsmain(int argc, char *argv[]) {
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     auto bbs = CreateSession(new StdioLocalIO());
-    const int return_code = bbs->Run(argc, argv);
+    const auto return_code = bbs->Run(argc, argv);
     bbs->ExitBBSImpl(return_code, false);
     return return_code;
-  } catch (const exception& e) {
+  } catch (const std::exception& e) {
     LOG(FATAL) << "BBS Terminated by exception: " << e.what();
     return 1;
   }
