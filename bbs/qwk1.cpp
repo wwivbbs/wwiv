@@ -105,10 +105,10 @@ void qwk_remove_email() {
     return;
   }
 
-  auto mfl = f->length() / sizeof(mailrec);
+  const auto mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
 
-  mailrec m;
+  mailrec m{};
   for (unsigned long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
@@ -142,27 +142,27 @@ void qwk_remove_email() {
 }
 
 void qwk_gather_email(struct qwk_junk* qwk_info) {
-  int i, mfl, curmail;
+  int i, curmail;
   bool done = false;
   char filename[201];
-  mailrec m;
-  postrec junk;
+  mailrec m{};
+  postrec junk{};
 
   a()->emchg_ = false;
   std::vector<tmpmailrec> mloc;
 
   const auto ss = a()->effective_slrec();
-  std::unique_ptr<File> f(OpenEmailFile(false));
+  auto f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
     bout.bputs("No mail file exists!");
     bout.nl();
     return;
   }
-  mfl = f->length() / sizeof(mailrec);
+  const int mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(((long)(i)) * (sizeof(mailrec)), File::Whence::begin);
+    f->Seek(static_cast<long>(i) * (sizeof(mailrec)), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == a()->usernum)) {
       tmpmailrec r = {};
@@ -188,12 +188,8 @@ void qwk_gather_email(struct qwk_junk* qwk_info) {
   bout.Color(7);
   bout.bputs("Gathering Email");
 
-  if (mw == 1) {
-    curmail = 0;
-  }
-
   curmail = 0;
-  done = 0;
+  done = false;
 
   qwk_info->in_email = 1;
 
@@ -392,7 +388,6 @@ static void process_reply_dat(const std::string& name) {
   qwk_record qwk{};
   int curpos = 0;
   int done = 0;
-  int to_email = 0;
 
   int repfile = open(name.c_str(), O_RDONLY | O_BINARY);
 
@@ -413,7 +408,7 @@ static void process_reply_dat(const std::string& name) {
   bout.cls();
 
   while (!done && !a()->hangup_) {
-    to_email = 0;
+    int to_email = 0;
 
     SET_BLOCK(repfile, curpos, sizeof(struct qwk_record));
     ++curpos;
@@ -593,7 +588,7 @@ void qwk_email_text(char* text, char* title, char* to) {
   clear_quotes();
 
   if (un || sy) {
-    messagerec msg;
+    messagerec msg{};
     net_system_list_rec* csne = nullptr;
 
     if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
@@ -704,11 +699,11 @@ void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* na
 }
 
 void qwk_post_text(char* text, char* title, int16_t sub) {
-  messagerec m;
+  messagerec m{};
   postrec p{};
 
   int dm, f, done = 0, pass = 0;
-  slrec ss;
+  slrec ss{};
   char user_name[101];
 
   while (!done && !a()->hangup_) {
@@ -1157,7 +1152,7 @@ void config_qwk_bw() {
       a()->user()->data.qwk_keep_routing = !a()->user()->data.qwk_keep_routing;
       break;
     case 8: {
-      struct qwk_junk qj;
+      qwk_junk qj{};
       memset(&qj, 0, sizeof(struct qwk_junk));
       bout.cls();
 

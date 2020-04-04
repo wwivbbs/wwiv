@@ -847,7 +847,7 @@ int Application::Run(int argc, char* argv[]) {
       // and also not passed in from the telnet handler, etc.  On Windows
       // We always have a local console, so this is *NIX specific.
       CursesIO::Init(fmt::sprintf("WWIV BBS %s%s", wwiv_version, beta_version));
-      reset_local_io(new CursesLocalIO(out->GetMaxY()));
+      reset_local_io(new CursesLocalIO(curses_out->GetMaxY()));
     } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
       reset_local_io(new NullLocalIO());
     }
