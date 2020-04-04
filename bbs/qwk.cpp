@@ -65,6 +65,8 @@
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
+void build_control_dat(struct qwk_junk *qwk_info);
+
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::bbs;
@@ -92,7 +94,7 @@ void build_qwk_packet() {
   bool save_conf = false;
   SaveQScanPointers save_qscan;
 
-  remove_from_temp("*.*", QWK_DIRECTORY, false);
+  remove_from_temp("*.*", a()->qwk_directory(), false);
 
   if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
     save_conf = true;
@@ -348,6 +350,133 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   }
 }
 
+static int _fieeetomsbin(float *src4, float *dest4) {
+  unsigned char *ieee = (unsigned char *)src4;
+  unsigned char *msbin = (unsigned char *)dest4;
+  unsigned char sign = 0x00;
+  unsigned char msbin_exp = 0x00;
+
+  /* See _fmsbintoieee() for details of formats   */
+  sign = ieee[3] & 0x80;
+  msbin_exp |= ieee[3] << 1;
+  msbin_exp |= ieee[2] >> 7;
+
+  /* An ieee exponent of 0xfe overflows in MBF    */
+  if (msbin_exp == 0xfe) {
+    return 1;
+  }
+
+  msbin_exp += 2;     /* actually, -127 + 128 + 1 */
+
+  for (int i = 0; i < 4; i++) {
+    msbin[i] = 0;
+  }
+
+  msbin[3] = msbin_exp;
+  msbin[2] |= sign;
+  msbin[2] |= ieee[2] & 0x7f;
+  msbin[1] = ieee[1];
+  msbin[0] = ieee[0];
+
+  return 0;
+}
+
+static void insert_after_routing(std::string& text, const std::string& text2insert) {
+  const auto text_to_insert_nc = StrCat(stripcolors(text2insert), "\xE3\xE3");
+
+  size_t pos = 0;
+  const auto len = text.size();
+  while (pos < len && text[pos] != 0) {
+    if (text[pos] == 4 && text[pos + 1] == '0') {
+      while (pos < len && text[pos] != '\xE3') {
+        ++pos;
+      }
+
+      if (text[pos] == '\xE3') {
+        ++pos;
+      }
+    } else if (pos < len) {
+      text.insert(pos, text_to_insert_nc);
+      return;
+    }
+  }
+}
+
+// Give us 3000 extra bytes to play with in the message text
+static constexpr int PAD_SPACE = 3000;
+
+// Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
+// And does other conversions as specified
+static std::string make_qwk_ready(const std::string& text, const std::string& address) {
+  std::string::size_type pos = 0;
+
+  std::string temp;
+  temp.reserve(text.size() + PAD_SPACE + 1);
+
+  while (pos < text.size()) {
+    const auto x = static_cast<unsigned char>(text[pos]);
+    const auto xo = text[pos];
+    if (x == 0) {
+      break;
+    }
+    if (x == 13) {
+      temp.push_back('\xE3');
+      ++pos;
+    } else if (x == 10 || x < 3) {
+      // Strip out Newlines, NULLS, 1's and 2's
+      ++pos;
+    } else if (a()->user()->data.qwk_remove_color && x == 3) {
+      pos += 2;
+    } else if (a()->user()->data.qwk_convert_color && x == 3) {
+      const auto save_curatr = bout.curatr();
+      bout.curatr(255);
+
+      const auto ansi_string = wwiv::sdk::ansi::makeansi(text[pos + 1] - '0', bout.curatr());
+      temp.append(ansi_string);
+
+      pos += 2;
+      bout.curatr(save_curatr);
+    } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
+      if (text[pos + 1] == 0) {
+        ++pos;
+      } else { 
+        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < text.size() && text[pos] != 0) {
+          ++pos;
+        }
+      }
+      ++pos;
+      if (text[pos] == '\n') {
+        ++pos;
+      }
+    } else if (x == 4 && text[pos + 1] != '0') {
+      pos += 2;
+    } else {
+      temp.push_back(xo);
+      ++pos;
+    }
+  }
+
+  // Only add address if it does not yet exist
+  if (temp.find("QWKFrom:") != std::string::npos) {
+    // Don't search for diamond or number, just text after that
+    insert_after_routing(temp, address);
+  }
+
+  temp.shrink_to_fit();
+  return temp;
+}
+
+static void qwk_remove_null(char *memory, int size) {
+  int pos = 0;
+
+  while (pos < size && !a()->hangup_) {
+    if (memory[pos] == 0) {
+      (memory)[pos] = ' ';
+    }
+    ++pos;
+  }
+}
+
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
   if (m1->status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
@@ -416,7 +545,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec.conf_num = a()->current_user_sub().subnum + 1;
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
-  if (append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
+  if (write(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = true; // Must be out of disk space
     bout.bputs("Write error");
     pausescr();
@@ -424,7 +553,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   // Save Qwk NDX
   qwk_info->qwk_ndx.pos = static_cast<float>(qwk_info->qwk_rec_pos);
-  float msbin;
+  float msbin = 0.0f;
   _fieeetomsbin(&qwk_info->qwk_ndx.pos, &msbin);
   qwk_info->qwk_ndx.pos = msbin;
   qwk_info->qwk_ndx.nouse = 0;
@@ -433,17 +562,18 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Create new index if it hasnt been already
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
-      const auto filename = fmt::sprintf("%s%03d.NDX", QWK_DIRECTORY, a()->current_user_sub().subnum + 1);
+      const auto filename =
+          fmt::sprintf("%s%03d.NDX", a()->qwk_directory(), a()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
       }
       qwk_info->index = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
 
-    append_block(qwk_info->index, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    write(qwk_info->index, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
   } else { // Write to email indexes
-    append_block(qwk_info->zero, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
-    append_block(qwk_info->personal, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    write(qwk_info->zero, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    write(qwk_info->personal, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
   }
 
   // Setup next NDX position
@@ -460,7 +590,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
       memmove(&qwk_info->qwk_rec, ss.data() + cur + this_pos, size);
     }
     // Save this block
-    append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
+    write(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
 
     this_pos += sizeof(qwk_info->qwk_rec);
     ++cur_block;
@@ -469,113 +599,14 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   ++qwk_info->qwk_rec_num;
 }
 
-static void insert_after_routing(std::string& text, const std::string& text2insert) {
-  const auto text_to_insert_nc = StrCat(stripcolors(text2insert), "\xE3\xE3");
-
-  size_t pos = 0;
-  const auto len = text.size();
-  while (pos < len && text[pos] != 0) {
-    if (text[pos] == 4 && text[pos + 1] == '0') {
-      while (pos < len && text[pos] != '\xE3') {
-        ++pos;
-      }
-
-      if (text[pos] == '\xE3') {
-        ++pos;
-      }
-    } else if (pos < len) {
-      text.insert(pos, text_to_insert_nc);
-      return;
-    }
-  }
-}
-
-
-// Give us 3000 extra bytes to play with in the message text
-static constexpr int PAD_SPACE = 3000;
-
-// Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
-// And does other conversions as specified
-std::string make_qwk_ready(const std::string& text, const std::string& address) {
-  std::string::size_type pos = 0;
-
-  std::string temp;
-  temp.reserve(text.size() + PAD_SPACE + 1);
-
-  while (pos < text.size()) {
-    const auto x = static_cast<unsigned char>(text[pos]);
-    const auto xo = text[pos];
-    if (x == 0) {
-      break;
-    }
-    if (x == 13) {
-      temp.push_back('\xE3');
-      ++pos;
-    } else if (x == 10 || x < 3) {
-      // Strip out Newlines, NULLS, 1's and 2's
-      ++pos;
-    } else if (a()->user()->data.qwk_remove_color && x == 3) {
-      pos += 2;
-    } else if (a()->user()->data.qwk_convert_color && x == 3) {
-      const auto save_curatr = bout.curatr();
-      bout.curatr(255);
-
-      const auto ansi_string = wwiv::sdk::ansi::makeansi(text[pos + 1] - '0', bout.curatr());
-      temp.append(ansi_string);
-
-      pos += 2;
-      bout.curatr(save_curatr);
-    } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
-      if (text[pos + 1] == 0) {
-        ++pos;
-      } else { 
-        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < text.size() && text[pos] != 0) {
-          ++pos;
-        }
-      }
-      ++pos;
-      if (text[pos] == '\n') {
-        ++pos;
-      }
-    } else if (x == 4 && text[pos + 1] != '0') {
-      pos += 2;
-    } else {
-      temp.push_back(xo);
-      ++pos;
-    }
-  }
-
-  // Only add address if it does not yet exist
-  if (temp.find("QWKFrom:") != std::string::npos) {
-    // Don't search for diamond or number, just text after that
-    insert_after_routing(temp, address);
-  }
-
-  temp.shrink_to_fit();
-  return temp;
-
-}
-
-void qwk_remove_null(char *memory, int size) {
-  int pos = 0;
-
-  while (pos < size && !a()->hangup_) {
-    if (memory[pos] == 0) {
-      (memory)[pos] = ' ';
-    }
-    ++pos;
-  }
-}
 
 void build_control_dat(struct qwk_junk *qwk_info) {
-  char file[201];
-
   const auto now = DateTime::now();
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
   const auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
 
-  sprintf(file, "%sCONTROL.DAT", QWK_DIRECTORY);
-  auto fp = fopen(file, "wb");
+  auto file = FilePath(a()->qwk_directory(), "CONTROL.DAT");
+  auto fp = fopen(file.c_str(), "wb");
 
   if (!fp) {
     return;
@@ -612,7 +643,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
       // however QWKE allows for 255 characters. This works fine in multimail which
       // is the only still maintained QWK reader I'm aware of at this time, so we'll
       // allow it to be the full length.
-      string sub_name = stripcolors(a()->subs().sub(a()->usub[cur].subnum).name);
+      auto sub_name = stripcolors(a()->subs().sub(a()->usub[cur].subnum).name);
 
       fprintf(fp, "%d\r\n", a()->usub[cur].subnum + 1);
       fprintf(fp, "%s\r\n", sub_name.c_str());
@@ -624,93 +655,6 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%s\r\n", qwk_cfg.bye.c_str());
 
   fclose(fp);
-}
-
-int _fmsbintoieee(float *src4, float *dest4) {
-  unsigned char *msbin = (unsigned char *)src4;
-  unsigned char *ieee = (unsigned char *)dest4;
-  unsigned char sign = 0x00;
-  unsigned char ieee_exp = 0x00;
-  int i;
-
-  /* MS Binary Format                         */
-  /* byte order =>    m3 | m2 | m1 | exponent */
-  /* m1 is most significant byte => sbbb|bbbb */
-  /* m3 is the least significant byte         */
-  /*      m = mantissa byte                   */
-  /*      s = sign bit                        */
-  /*      b = bit                             */
-
-  sign = msbin[2] & 0x80;      /* 1000|0000b  */
-
-  /* IEEE Single Precision Float Format       */
-  /*    m3        m2        m1     exponent   */
-  /* mmmm|mmmm mmmm|mmmm emmm|mmmm seee|eeee  */
-  /*          s = sign bit                    */
-  /*          e = exponent bit                */
-  /*          m = mantissa bit                */
-
-  for (i = 0; i < 4; i++) {
-    ieee[i] = 0;
-  }
-
-  /* any msbin w/ exponent of zero = zero */
-  if (msbin[3] == 0) {
-    return 0;
-  }
-
-  ieee[3] |= sign;
-
-  /* MBF is bias 128 and IEEE is bias 127. ALSO, MBF places   */
-  /* the decimal point before the assumed bit, while          */
-  /* IEEE places the decimal point after the assumed bit.     */
-
-  ieee_exp = msbin[3] - 2;    /* actually, msbin[3]-1-128+127 */
-
-  /* the first 7 bits of the exponent in ieee[3] */
-  ieee[3] |= ieee_exp >> 1;
-
-  /* the one remaining bit in first bin of ieee[2] */
-  ieee[2] |= ieee_exp << 7;
-
-  /* 0111|1111b : mask out the msbin sign bit */
-  ieee[2] |= msbin[2] & 0x7f;
-
-  ieee[1] = msbin[1];
-  ieee[0] = msbin[0];
-
-  return 0;
-}
-
-int _fieeetomsbin(float *src4, float *dest4) {
-  unsigned char *ieee = (unsigned char *)src4;
-  unsigned char *msbin = (unsigned char *)dest4;
-  unsigned char sign = 0x00;
-  unsigned char msbin_exp = 0x00;
-
-  /* See _fmsbintoieee() for details of formats   */
-  sign = ieee[3] & 0x80;
-  msbin_exp |= ieee[3] << 1;
-  msbin_exp |= ieee[2] >> 7;
-
-  /* An ieee exponent of 0xfe overflows in MBF    */
-  if (msbin_exp == 0xfe) {
-    return 1;
-  }
-
-  msbin_exp += 2;     /* actually, -127 + 128 + 1 */
-
-  for (int i = 0; i < 4; i++) {
-    msbin[i] = 0;
-  }
-
-  msbin[3] = msbin_exp;
-  msbin[2] |= sign;
-  msbin[2] |= ieee[2] & 0x7f;
-  msbin[1] = ieee[1];
-  msbin[0] = ieee[0];
-
-  return 0;
 }
 
 std::string qwk_system_name(const qwk_config& c) {
@@ -773,7 +717,7 @@ void qwk_menu() {
 
     case 'D': {
       sysoplog() << "Download QWK packet";
-      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(qwk_cfg), ".REP"));
+      auto namepath = FilePath(a()->qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -786,7 +730,7 @@ void qwk_menu() {
     case 'B': {
       sysoplog() << "Down/Up QWK/REP packet";
 
-      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(qwk_cfg), ".REP"));
+      auto namepath = FilePath(a()->qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -1012,7 +956,7 @@ void qwk_nscan() {
   bout.Color(3);
   bout.bputs("Building NEWFILES.DAT");
 
-  sprintf(s, "%s%s", QWK_DIRECTORY, "NEWFILES.DAT");
+  sprintf(s, "%s%s", a()->qwk_directory().c_str(), "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
     bout.bputs("Open Error");
@@ -1130,19 +1074,19 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     if (!qwk_cfg.hello.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
-      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.hello);
+      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.hello);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.news.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.news);
-      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.news);
+      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.news);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.bye.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
-      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.bye);
+      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.bye);
     }
 
     for (const auto& b : qwk_cfg.bulletins) {
@@ -1153,7 +1097,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       // If we want to only copy if bulletin is newer than the users laston date:
       // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
-      auto parem2 = PathFilePath(QWK_DIRECTORY, b.name);
+      auto parem2 = PathFilePath(a()->qwk_directory(), b.name);
       File::Copy(b.path, parem2);
     }
   }
@@ -1169,13 +1113,13 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
   string qwk_file_to_send;
   if (!qwk_info->abort) {
-    auto parem1 = FilePath(QWK_DIRECTORY, qwkname);
-    auto parem2 = FilePath(QWK_DIRECTORY, "*.*");
+    auto parem1 = FilePath(a()->qwk_directory(), qwkname);
+    auto parem2 = FilePath(a()->qwk_directory(), "*.*");
 
     auto command = stuff_in(a()->arcs[archiver].arca, parem1, parem2, "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = StrCat(QWK_DIRECTORY, qwkname);
+    qwk_file_to_send = StrCat(a()->qwk_directory(), qwkname);
     // TODO(rushfan): Should we just have a make abs path?
     make_abs_cmd(a()->bbsdir().string(), &qwk_file_to_send);
 
@@ -1240,7 +1184,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       }
     }
 
-    auto ofile = FilePath(QWK_DIRECTORY, qwkname);
+    auto ofile = FilePath(a()->qwk_directory(), qwkname);
     if (!replacefile(ofile, nfile)) {
       bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
       if (!noyes()) {

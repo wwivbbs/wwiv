@@ -82,6 +82,11 @@ using namespace wwiv::sdk::msgapi;
 
 #define qwk_iscan_literal(x) (iscan1(x))
 
+void qwk_email_text(char *text, char *title, char *to);
+void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
+void qwk_post_text(char *text, char *title, int16_t sub);
+
+
 extern const char* QWKFrom;
 extern int qwk_percent;
 
@@ -142,9 +147,8 @@ void qwk_remove_email() {
 }
 
 void qwk_gather_email(struct qwk_junk* qwk_info) {
-  int i, curmail;
+  int i;
   bool done = false;
-  char filename[201];
   mailrec m{};
   postrec junk{};
 
@@ -188,15 +192,15 @@ void qwk_gather_email(struct qwk_junk* qwk_info) {
   bout.Color(7);
   bout.bputs("Gathering Email");
 
-  curmail = 0;
+  int curmail = 0;
   done = false;
 
   qwk_info->in_email = 1;
 
-  sprintf(filename, "%sPERSONAL.NDX", QWK_DIRECTORY);
-  qwk_info->personal = open(filename, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  sprintf(filename, "%s000.NDX", QWK_DIRECTORY);
-  qwk_info->zero = open(filename, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  auto filename = FilePath(a()->qwk_directory(), "PERSONAL.NDX");
+  qwk_info->personal = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  filename = FilePath(a()->qwk_directory(), "000.NDX");
+  qwk_info->zero = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   do {
     read_same_email(mloc, mw, curmail, m, 0, 0);
@@ -345,7 +349,7 @@ static void ready_reply_packet(const std::string& packet_name, const std::string
   const auto archiver = match_archiver(packet_name.c_str());
   const auto command = stuff_in(a()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
-  File::set_current_directory(QWK_DIRECTORY);
+  File::set_current_directory(a()->qwk_directory());
   ExecuteExternalProgram(command, EFLAG_NONE);
   a()->CdHome();
 }
@@ -371,7 +375,7 @@ static std::unique_ptr<char[]> make_text_file(int filenumber, int curpos, int bl
   // 'addline' stuff
   auto text = std::make_unique<char[]>(blocks * sizeof(qwk_junk) + 2048);
 
-  SET_BLOCK(filenumber, curpos, sizeof(qwk_record));
+  lseek(filenumber, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
   read(filenumber, text.get(), sizeof(qwk_record) * blocks);
 
   make_text_ready(text.get(), sizeof(qwk_record) * blocks);
@@ -399,8 +403,8 @@ static void process_reply_dat(const std::string& name) {
     return;
   }
 
-  SET_BLOCK(repfile, curpos, sizeof(struct qwk_record));
-  read(repfile, &qwk, sizeof(struct qwk_record));
+  lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
+  read(repfile, &qwk, sizeof(qwk_record));
 
   // Should check to makesure first block contains our bbs id
   ++curpos;
@@ -410,10 +414,10 @@ static void process_reply_dat(const std::string& name) {
   while (!done && !a()->hangup_) {
     int to_email = 0;
 
-    SET_BLOCK(repfile, curpos, sizeof(struct qwk_record));
+  lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
     ++curpos;
 
-    if (read(repfile, &qwk, sizeof(struct qwk_record)) < 1) {
+    if (read(repfile, &qwk, sizeof(qwk_record)) < 1) {
       done = 1;
     } else {
       char blocks[7];
@@ -534,7 +538,7 @@ void upload_reply_packet() {
   auto name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
   bout << fmt::sprintf("Hit 'Y' to upload reply packet %s :", name);
-  const auto namepath = FilePath(QWK_DIRECTORY, name);
+  const auto namepath = FilePath(a()->qwk_directory(), name);
 
   const bool do_it = yesno();
 
@@ -939,18 +943,74 @@ void qwk_post_text(char* text, char* title, int16_t sub) {
   }
 }
 
-int find_qwk_sub(struct qwk_sub_conf* subs, int amount, int fromsub) {
-  int x = 0;
-  while (x < amount && !a()->hangup_) {
-    if (subs[x].import_num == fromsub) {
-      return subs[x].to_num;
+static void modify_bulletins(qwk_config& qwk_cfg) {
+  char s[101], t[101];
+
+  auto done = false;
+  while (!done && !a()->hangup_) {
+    bout.nl();
+    bout << "Add - Delete - ? List - Quit";
+    bout.mpl(1);
+
+    int key = onek("Q\rAD?");
+
+    switch (key) {
+    case 'Q':
+    case '\r':
+      return;
+    case 'D': {
+      bout.nl();
+      bout << "Which one?";
+      bout.mpl(2);
+
+      input(s, 2);
+      const int x = to_number<int>(s);
+      // Delete the one at the right position.
+      if (x >= 0 && x < ssize(qwk_cfg.bulletins)) {
+        erase_at(qwk_cfg.bulletins, x);
+        --qwk_cfg.amount_blts;
+      }
+    } break;
+    case 'A': {
+      bout.nl();
+      bout.bputs("Enter complete path to Bulletin");
+      input(s, 80);
+
+      if (!File::Exists(s)) {
+        bout << "File doesn't exist, continue?";
+        if (!yesno()) {
+          break;
+        }
+      }
+
+      bout.bputs("Now enter its bulletin name, in the format BLT-????.???");
+      input(t, BNAME_SIZE);
+
+      if (strncasecmp(t, "BLT-", 4) != 0) {
+        bout.bputs("Improper format");
+        break;
+      }
+
+      qwk_bulletin b{t, s};
+      qwk_cfg.bulletins.emplace_back(b);
+      ++qwk_cfg.amount_blts;
+    } break;
+    case '?': {
+      int x = 1;
+      for (const auto& b : qwk_cfg.bulletins) {
+        if (checka()) { break; }
+        bout << fmt::sprintf("[%d] %s Is copied over from", x++, b.name);
+        bout.nl();
+        bout.Color(7);
+        bout << string(78, '\xCD');
+        bout.nl();
+        bout << b.path;
+        bout.nl();
+      }
+    } break;
     }
-
-    ++x;
   }
-  return -1;
 }
-
 
 void qwk_sysop() {
   if (!so()) {
@@ -1022,73 +1082,86 @@ void qwk_sysop() {
   write_qwk_cfg(qwk_cfg);
 }
 
-void modify_bulletins(qwk_config& qwk_cfg) {
-  char s[101], t[101];
 
-  auto done = false;
-  while (!done && !a()->hangup_) {
-    bout.nl();
-    bout << "Add - Delete - ? List - Quit";
-    bout.mpl(1);
+static string qwk_current_text(int pos) {
+  static const char* yesorno[] = {"YES", "NO"};
 
-    int key = onek("Q\rAD?");
-
-    switch (key) {
-    case 'Q':
-    case '\r':
-      return;
-    case 'D': {
-      bout.nl();
-      bout << "Which one?";
-      bout.mpl(2);
-
-      input(s, 2);
-      const int x = to_number<int>(s);
-      // Delete the one at the right position.
-      if (x >= 0 && x < ssize(qwk_cfg.bulletins)) {
-        erase_at(qwk_cfg.bulletins, x);
-        --qwk_cfg.amount_blts;
-      }
-    } break;
-    case 'A': {
-      bout.nl();
-      bout.bputs("Enter complete path to Bulletin");
-      input(s, 80);
-
-      if (!File::Exists(s)) {
-        bout << "File doesn't exist, continue?";
-        if (!yesno()) {
-          break;
-        }
-      }
-
-      bout.bputs("Now enter its bulletin name, in the format BLT-????.???");
-      input(t, BNAME_SIZE);
-
-      if (strncasecmp(t, "BLT-", 4) != 0) {
-        bout.bputs("Improper format");
-        break;
-      }
-
-      qwk_bulletin b{t, s};
-      qwk_cfg.bulletins.emplace_back(b);
-      ++qwk_cfg.amount_blts;
-    } break;
-    case '?': {
-      int x = 1;
-      for (const auto& b : qwk_cfg.bulletins) {
-        if (checka()) { break; }
-        bout << fmt::sprintf("[%d] %s Is copied over from", x++, b.name);
-        bout.nl();
-        bout.Color(7);
-        bout << string(78, '\xCD');
-        bout.nl();
-        bout << b.path;
-        bout.nl();
-      }
-    } break;
+  switch (pos) {
+  case 0:
+    if (a()->user()->data.qwk_dont_scan_mail) {
+      return yesorno[1];
+    } else {
+      return yesorno[0];
     }
+  case 1:
+    if (a()->user()->data.qwk_delete_mail) {
+      return yesorno[0];
+    } else {
+      return yesorno[1];
+    }
+  case 2:
+    if (a()->user()->data.qwk_dontsetnscan) {
+      return yesorno[1];
+    } else {
+      return yesorno[0];
+    }
+  case 3:
+    if (a()->user()->data.qwk_remove_color) {
+      return yesorno[0];
+    } else {
+      return yesorno[1];
+    }
+  case 4:
+    if (a()->user()->data.qwk_convert_color) {
+      return yesorno[0];
+    } else {
+      return yesorno[1];
+    }
+
+  case 5:
+    if (a()->user()->data.qwk_leave_bulletin) {
+      return yesorno[1];
+    } else {
+      return yesorno[0];
+    }
+
+  case 6:
+    if (a()->user()->data.qwk_dontscanfiles) {
+      return yesorno[1];
+    } else {
+      return yesorno[0];
+    }
+
+  case 7:
+    if (a()->user()->data.qwk_keep_routing) {
+      return yesorno[1];
+    } else {
+      return yesorno[0];
+    }
+
+  case 8:
+    return qwk_which_zip();
+
+  case 9:
+    return qwk_which_protocol();
+
+  case 10:
+    if (!a()->user()->data.qwk_max_msgs_per_sub && !a()->user()->data.qwk_max_msgs) {
+      return "Unlimited/Unlimited";
+    } else if (!a()->user()->data.qwk_max_msgs_per_sub) {
+      return fmt::format("Unlimited/{}", a()->user()->data.qwk_max_msgs);
+    } else if (!a()->user()->data.qwk_max_msgs) {
+      return fmt::format("{}/Unlimited", a()->user()->data.qwk_max_msgs_per_sub);
+    } else {
+      return fmt::format("{}/{}", a()->user()->data.qwk_max_msgs,
+                         a()->user()->data.qwk_max_msgs_per_sub);
+    }
+
+  case 11:
+    return string("DONE");
   }
+
+  return nullptr;
 }
 
 void config_qwk_bw() {
@@ -1184,83 +1257,3 @@ void config_qwk_bw() {
   }
 }
 
-string qwk_current_text(int pos) {
-  static const char* yesorno[] = {"YES", "NO"};
-
-  switch (pos) {
-  case 0:
-    if (a()->user()->data.qwk_dont_scan_mail) {
-      return yesorno[1];
-    } else {
-      return yesorno[0];
-    }
-  case 1:
-    if (a()->user()->data.qwk_delete_mail) {
-      return yesorno[0];
-    } else {
-      return yesorno[1];
-    }
-  case 2:
-    if (a()->user()->data.qwk_dontsetnscan) {
-      return yesorno[1];
-    } else {
-      return yesorno[0];
-    }
-  case 3:
-    if (a()->user()->data.qwk_remove_color) {
-      return yesorno[0];
-    } else {
-      return yesorno[1];
-    }
-  case 4:
-    if (a()->user()->data.qwk_convert_color) {
-      return yesorno[0];
-    } else {
-      return yesorno[1];
-    }
-
-  case 5:
-    if (a()->user()->data.qwk_leave_bulletin) {
-      return yesorno[1];
-    } else {
-      return yesorno[0];
-    }
-
-  case 6:
-    if (a()->user()->data.qwk_dontscanfiles) {
-      return yesorno[1];
-    } else {
-      return yesorno[0];
-    }
-
-  case 7:
-    if (a()->user()->data.qwk_keep_routing) {
-      return yesorno[1];
-    } else {
-      return yesorno[0];
-    }
-
-  case 8:
-    return qwk_which_zip();
-
-  case 9:
-    return qwk_which_protocol();
-
-  case 10:
-    if (!a()->user()->data.qwk_max_msgs_per_sub && !a()->user()->data.qwk_max_msgs) {
-      return "Unlimited/Unlimited";
-    } else if (!a()->user()->data.qwk_max_msgs_per_sub) {
-      return fmt::format("Unlimited/{}", a()->user()->data.qwk_max_msgs);
-    } else if (!a()->user()->data.qwk_max_msgs) {
-      return fmt::format("{}/Unlimited", a()->user()->data.qwk_max_msgs_per_sub);
-    } else {
-      return fmt::format("{}/{}", a()->user()->data.qwk_max_msgs,
-                         a()->user()->data.qwk_max_msgs_per_sub);
-    }
-
-  case 11:
-    return string("DONE");
-  }
-
-  return nullptr;
-}

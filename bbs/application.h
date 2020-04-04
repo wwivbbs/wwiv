@@ -225,6 +225,11 @@ public:
 
   [[nodiscard]] const std::string& temp_directory() const { return temp_directory_; }
   [[nodiscard]] const std::string& batch_directory() const { return batch_directory_; }
+  /**
+   * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
+   * leave it open for changing in the future.
+   */
+  [[nodiscard]] const std::string& qwk_directory() const { return batch_directory_; }
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbsdir() const noexcept;

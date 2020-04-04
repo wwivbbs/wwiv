@@ -19,18 +19,12 @@
 #ifndef _QWK_H_
 #define _QWK_H_
 
-#include <ctime>
-#include <string>
-
 #include "core/datetime.h"
 #include "sdk/vardec.h"
 #include "printfile.h"
+#include <string>
 
-#define QWK_DIRECTORY (a()->batch_directory().c_str())
-
-#define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
-#define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
 
 #define MAX_BULLETINS 50
 #define BULL_SIZE     81
@@ -151,11 +145,6 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info);
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info);
 void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info);
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info);
-std::string make_qwk_ready(const std::string& text, const std::string& address);
-void qwk_remove_null(char *memory, int size);
-void build_control_dat(struct qwk_junk *qwk_info);
-int _fmsbintoieee(float *src4, float *dest4);
-int _fieeetomsbin(float *src4, float *dest4);
 std::string qwk_system_name(const qwk_config& c);
 void qwk_menu();
 unsigned short select_qwk_protocol(struct qwk_junk *qwk_info);
@@ -172,15 +161,8 @@ void qwk_remove_email();
 void qwk_gather_email(struct qwk_junk *qwk_info);
 int select_qwk_archiver(struct qwk_junk *qwk_info, int ask);
 std::string qwk_which_zip();
-std::string qwk_which_protocol();
 void upload_reply_packet();
-void qwk_email_text(char *text, char *title, char *to);
-void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
-void qwk_post_text(char *text, char *title, int16_t sub);
-int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
 void qwk_sysop();
-void modify_bulletins(qwk_config& qwk_cfg);
 void config_qwk_bw();
-std::string qwk_current_text(int pos);
 
 #endif  // _QWK_H_
