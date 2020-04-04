@@ -61,6 +61,8 @@
 #include <memory>
 #include <string>
 
+#include "read_message.h"
+
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
 using std::unique_ptr;
@@ -349,112 +351,75 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
 }
 
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
-  char n[205], d[81], temp[101];
-  char qwk_address[201];
-  char filename[255];
-
-  postrec* pr = get_post(msgnum);
-  if (pr == nullptr) {
-    return;
-  }
-
-  if (pr->status & (status_unvalidated | status_delete)) {
+  if (m1->status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
       return;
     }
   }
   memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
-  messagerec m = (m1->msg);
-  int cur = 0;
 
-  string ss;
-  if (!readfile(&m, fn, &ss)) {
+  auto m = read_type2_message(&m1->msg, static_cast<char>(m1->anony & 0x0f), true,
+                              fn, m1->ownersys, m1->owneruser);
+
+  int cur = 0;
+  if (m.message_text.empty() && m.title.empty()) {
+    // TODO(rushfan): Really read_type2_message should return an std::optional<Type2MessageData>
     bout << "File not found.";
     bout.nl();
     return;
   }
 
-  long len = ss.length();
-  int p = 0;
-  // n = name...
-  while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !a()->hangup_) {
-    n[p] = ss[p];
-    p++;
+  auto len = m.message_text.length();
+  if (len <= 0) {
+    std::cout << "we have no text for this message." << std::endl;
+    return;
   }
-  n[p] = 0;
-  ++p;
+  auto ss = m.message_text;
+  auto n = m.from_user_name;
+  auto d = m.date;
 
-  // if next is ascii 10 (linefeed?) go one more...
-  int p1 = 0;
-  if (ss[p] == 10) {
-    ++p;
-  }
-
-  // d = date
-  while ((ss[p + p1] != 13) && ((long)p + p1 < len) && (p1 < 60) && !a()->hangup_) {
-    d[p1] = ss[(p1) + p];
-    p1++;
-  }
-  d[p1] = 0;
-
-  // ss+cur now is where the text starts
-  cur = p + p1 + 1;
-
-  sprintf(qwk_address, "%s%s", QWKFrom, n);  // Copy wwivnet address to qwk_address
-  if (!strchr(qwk_address, '@')) {
-    sprintf(temp, "@%d", m1->ownersys);
-    strcat(qwk_address, temp);
+  auto qwk_address = StrCat(QWKFrom, n);  // Copy wwivnet address to qwk_address
+  if (qwk_address.find('@') != std::string::npos) {
+    qwk_address.append(fmt::format("@{}", m1->ownersys));
   }
 
   // Took the annonomouse stuff out right here
   if (!qwk_info->in_email) {
     memcpy(qwk_info->qwk_rec.to, "ALL", 3);
   } else {
-    strncpy(temp, a()->user()->GetName(), 25);
-    temp[25] = 0;
-    strupr(temp);
-
-    strncpy(qwk_info->qwk_rec.to, temp, 25);
+    auto temp = ToStringUpperCase(a()->user()->GetName());
+    strncpy(qwk_info->qwk_rec.to, temp.c_str(), 25);
   }
-  strncpy(qwk_info->qwk_rec.from, strupr(stripcolors(n)), 25);
+  auto temp_from = ToStringUpperCase(stripcolors(n));
+  strncpy(qwk_info->qwk_rec.from, temp_from.c_str(), 25);
 
   auto dt = DateTime::from_daten(m1->daten);
   auto date = dt.to_string("%m-%d-%y");
   // to_char_array uses strncpy_safe which expects buffer to be big enough for
   // a trailing 0.  Use memcpy instead.
   memcpy(qwk_info->qwk_rec.date, date.c_str(), sizeof(qwk_info->qwk_rec.date));
- 
-  p = 0;
-  p1 = 0;
 
-  len = len - cur;
-  if (len <= 0) {
-    std::cout << "we have no text for this message." << std::endl;
-    return;
-  }
-  unique_ptr<char[]> ss_temp = std::make_unique<char[]>(ss.size() + 1);
-  memcpy(ss_temp.get(), &ss[0], len);
-  make_qwk_ready(&ss_temp[cur], &len, qwk_address);
-  ss.assign(ss_temp.get(), cur + len);
-
-  int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
+  ss = make_qwk_ready(ss, qwk_address);
+  // Update length since we don't do it in make_qwk_ready anymore.
+  len = ss.length();
+  auto amount_blocks = static_cast<int>(len / sizeof(qwk_info->qwk_rec) + 2);
 
   // Save Qwk Record
   sprintf(qwk_info->qwk_rec.amount_blocks, "%d", amount_blocks);
   sprintf(qwk_info->qwk_rec.msgnum, "%d", msgnum);
 
   if (!qwk_info->in_email) {
-    strncpy(qwk_info->qwk_rec.subject, stripcolors(pr->title), 25);
+    strncpy(qwk_info->qwk_rec.subject, stripcolors(m1->title), 25);
   } else {
     strncpy(qwk_info->qwk_rec.subject,qwk_info->email_title, 25);
   }
 
-  qwk_remove_null((char *) &qwk_info->qwk_rec, 123);
+  qwk_remove_null(reinterpret_cast<char*>(&qwk_info->qwk_rec), 123);
   qwk_info->qwk_rec.conf_num = a()->current_user_sub().subnum + 1;
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
   if (append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
-    qwk_info->abort = 1; // Must be out of disk space
+    qwk_info->abort = true; // Must be out of disk space
     bout.bputs("Write error");
     pausescr();
   }
@@ -470,11 +435,11 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Create new index if it hasnt been already
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
-      sprintf(filename, "%s%03d.NDX", QWK_DIRECTORY, a()->current_user_sub().subnum + 1);
+      const auto filename = fmt::sprintf("%s%03d.NDX", QWK_DIRECTORY, a()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
       }
-      qwk_info->index = open(filename, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+      qwk_info->index = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
 
     append_block(qwk_info->index, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
@@ -488,9 +453,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   int cur_block = 2;
   while (cur_block <= amount_blocks && !a()->hangup_) {
-    int this_pos;
+    size_t this_pos;
     memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
-    this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
+    this_pos = (cur_block - 2) * sizeof(qwk_info->qwk_rec);
 
     if (this_pos < len) {
       size_t size = (this_pos + sizeof(qwk_info->qwk_rec) > static_cast<size_t>(len)) ? (len - this_pos - 1) : sizeof(qwk_info->qwk_rec);
@@ -506,54 +471,67 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   ++qwk_info->qwk_rec_num;
 }
 
+static void insert_after_routing(std::string& text, const std::string& text2insert) {
+  const auto text_to_insert_nc = StrCat(stripcolors(text2insert), "\xE3\xE3");
+
+  size_t pos = 0;
+  const auto len = text.size();
+  while (pos < len && text[pos] != 0) {
+    if (text[pos] == 4 && text[pos + 1] == '0') {
+      while (pos < len && text[pos] != '\xE3') {
+        ++pos;
+      }
+
+      if (text[pos] == '\xE3') {
+        ++pos;
+      }
+    } else if (pos < len) {
+      text.insert(pos, text_to_insert_nc);
+      return;
+    }
+  }
+}
+
+
 // Give us 3000 extra bytes to play with in the message text
 static constexpr int PAD_SPACE = 3000;
 
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
 // And does other conversions as specified
-void make_qwk_ready(char *text, long *len, char *address) {
-  int pos = 0;
-  int new_pos = 0;
-  unsigned char x;
-  long new_size = *len + PAD_SPACE + 1;
+std::string make_qwk_ready(const std::string& text, const std::string& address) {
+  std::string::size_type pos = 0;
 
-  char* temp = static_cast<char *>(malloc(new_size));
+  std::string temp;
+  temp.reserve(text.size() + PAD_SPACE + 1);
 
-  if (!temp) {
-    sysoplog() << "Couldn't allocate memory to make qwk ready";
-    return;
-  }
-  while (pos < *len && new_pos < new_size && !a()->hangup_) {
-    x = (unsigned char)text[pos];
+  while (pos < text.size()) {
+    const auto x = static_cast<unsigned char>(text[pos]);
+    const auto xo = text[pos];
     if (x == 0) {
       break;
-    } else if (x == 13) {
-      temp[new_pos] = '\xE3';
+    }
+    if (x == 13) {
+      temp.push_back('\xE3');
       ++pos;
-      ++new_pos;
     } else if (x == 10 || x < 3) {
-    // Strip out Newlines, NULLS, 1's and 2's
+      // Strip out Newlines, NULLS, 1's and 2's
       ++pos;
     } else if (a()->user()->data.qwk_remove_color && x == 3) {
       pos += 2;
     } else if (a()->user()->data.qwk_convert_color && x == 3) {
       const auto save_curatr = bout.curatr();
       bout.curatr(255);
-      // Only convert to ansi if we have memory for it, but still strip heart
-      // code even if we don't have the memory.
-      if (new_pos + 10 < new_size) {
-        const auto ansi_string = wwiv::sdk::ansi::makeansi(text[pos + 1], bout.curatr());
-        temp[new_pos] = 0;
-        strcat(temp, ansi_string.c_str());
-        new_pos = strlen(temp);
-      }
+
+      const auto ansi_string = wwiv::sdk::ansi::makeansi(text[pos + 1] - '0', bout.curatr());
+      temp.append(ansi_string);
+
       pos += 2;
       bout.curatr(save_curatr);
     } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;
       } else { 
-        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < *len && text[pos] != 0 && !a()->hangup_) {
+        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < text.size() && text[pos] != 0) {
           ++pos;
         }
       }
@@ -564,22 +542,20 @@ void make_qwk_ready(char *text, long *len, char *address) {
     } else if (x == 4 && text[pos + 1] != '0') {
       pos += 2;
     } else {
-      temp[new_pos] = x;
+      temp.push_back(xo);
       ++pos;
-      ++new_pos;
     }
   }
 
-  temp[new_pos] = 0;
-  strcpy(text, temp);
-  free(temp);
-
-  *len = new_pos;
+  temp.shrink_to_fit();
 
   // Only add address if it does not yet exist
-  if (!strstr(text, QWKFrom + 2)) { // Don't search for diamond or number, just text after that
-    insert_after_routing(text, address, len);
+  if (temp.find("QWKFrom:") != std::string::npos) {
+    // Don't search for diamond or number, just text after that
+    insert_after_routing(temp, address);
   }
+  return temp;
+
 }
 
 void qwk_remove_null(char *memory, int size) {
@@ -909,37 +885,6 @@ unsigned short select_qwk_protocol(struct qwk_junk *qwk_info) {
     qwk_info->abort = 1;
   }
   return protocol;
-}
-
-void insert_after_routing(char *text, char *text2insert, long *len) {
-  string temp = stripcolors(text2insert);
-  strcpy(text2insert, temp.c_str());
-
-  int pos = 0;
-  while (pos < *len && text[pos] != 0 && !a()->hangup_) {
-    if (text[pos] == 4 && text[pos + 1] == '0') {
-      while (pos < *len && text[pos] != '\xE3' && !a()->hangup_) {
-        ++pos;
-      }
-
-      if (text[pos] == '\xE3') {
-        ++pos;
-      }
-    } else if (pos < *len) {
-      strcat(text2insert, "\xE3\xE3");
-      int addsize = strlen(text2insert);
-
-      char* dst = text + pos + addsize;
-      char* src = text + pos;
-      long size = (*len) - pos + 1;
-
-      memmove(dst, src, size);
-      strncpy(src, text2insert, addsize);
-
-      *len = (*len) + addsize;
-      return;
-    }
-  }
 }
 
 void close_qwk_cfg(struct qwk_config *qwk_cfg) {

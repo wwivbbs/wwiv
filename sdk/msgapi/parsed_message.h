@@ -54,7 +54,7 @@ private:
 };
 
 /**
- * Representes a parsed (split into lines) message  in WWIV format (control
+ * Represents a parsed (split into lines) message  in WWIV format (control
  * lines start with ^D0) and end of line is "\r\n".
  */
 class WWIVParsedMessageText : public ParsedMessageText {

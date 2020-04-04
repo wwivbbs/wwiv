@@ -232,7 +232,7 @@ void qwk_gather_email(struct qwk_junk* qwk_info) {
 
     ++curmail;
     if (curmail >= mw) {
-      done = 1;
+      done = true;
     }
 
   } while ((!a()->hangup_) && (!done));

@@ -210,7 +210,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
   std::string s;
   while (it != end && num_chars-- > 0 && std::isdigit(static_cast<uint8_t>(*it))) {
     s.push_back(*it);
-    it++; 
+    ++it; 
   }
   return to_number<int>(s);
 }

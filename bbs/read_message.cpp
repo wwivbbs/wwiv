@@ -298,7 +298,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
     ++ptr;
   }
-  for (size_t start = ptr;
+  for (auto start = ptr;
        ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60;
        ptr++) {
     data.date.push_back(data.message_text[ptr]);
