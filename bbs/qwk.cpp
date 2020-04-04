@@ -265,9 +265,9 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
-    auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
-            bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
-            a()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
+    const auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
+                                      bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
+                                      a()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     bout.bputs(subinfo);
     bout.nl();
 
@@ -572,12 +572,12 @@ void qwk_remove_null(char *memory, int size) {
 void build_control_dat(struct qwk_junk *qwk_info) {
   char file[201];
 
-  auto now = DateTime::now();
+  const auto now = DateTime::now();
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
-  auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
+  const auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
 
   sprintf(file, "%sCONTROL.DAT", QWK_DIRECTORY);
-  FILE* fp = fopen(file, "wb");
+  auto fp = fopen(file, "wb");
 
   if (!fp) {
     return;
@@ -854,7 +854,7 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   }
   switch (protocol) {
   case -1:
-    *abort = 1;
+    *abort = true;
 
     break;
   case 0:
@@ -882,7 +882,7 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
 unsigned short select_qwk_protocol(struct qwk_junk *qwk_info) {
   const auto protocol = static_cast<unsigned short>(get_protocol(xf_down_temp));
   if (protocol == -1) {
-    qwk_info->abort = 1;
+    qwk_info->abort = true;
   }
   return protocol;
 }
