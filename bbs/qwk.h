@@ -95,8 +95,8 @@ struct qwk_bulletin {
 
 struct qwk_config_430 {
   daten_t fu;
-  long timesd;
-  long timesu;
+  int32_t timesd;
+  int32_t timesu;
   uint16_t max_msgs;
 
   char hello[13];
@@ -105,7 +105,7 @@ struct qwk_config_430 {
   char packet_name[9];
   char res[190];
 
-  int  amount_blts;
+  int32_t amount_blts;
   char unused_blt_res[8 * 50];
 };
 
