@@ -897,7 +897,9 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
               (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               a()->subs().sub(a()->usub[this_sub].subnum).name);
-      s[44] = '\0';
+      if (s.length() > 44) {
+        s.resize(44);
+      }
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
         bout << s;

@@ -521,17 +521,14 @@ static void process_reply_dat(const std::string& name) {
 void upload_reply_packet() {
   bool rec = true;
   int save_conf = 0;
-  qwk_config qwk_cfg{};
-
-  read_qwk_cfg(&qwk_cfg);
+  auto qwk_cfg = read_qwk_cfg();
 
   if (!qwk_cfg.fu) {
     qwk_cfg.fu = daten_t_now();
   }
 
   ++qwk_cfg.timesu;
-  write_qwk_cfg(&qwk_cfg);
-  close_qwk_cfg(&qwk_cfg);
+  write_qwk_cfg(qwk_cfg);
 
   const auto save_sub = a()->current_user_sub_num();
   if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
@@ -539,7 +536,7 @@ void upload_reply_packet() {
     tmp_disable_conf(true);
   }
 
-  auto name = StrCat(qwk_system_name(), ".REP");
+  auto name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
   bout << fmt::sprintf("Hit 'Y' to upload reply packet %s :", name);
   const auto namepath = FilePath(QWK_DIRECTORY, name);
@@ -553,7 +550,7 @@ void upload_reply_packet() {
     }
 
     if (rec) {
-      name = StrCat(qwk_system_name(), ".MSG");
+      name = StrCat(qwk_system_name(qwk_cfg), ".MSG");
       ready_reply_packet(namepath, name);
       process_reply_dat(namepath);
     } else {
@@ -961,17 +958,15 @@ int find_qwk_sub(struct qwk_sub_conf* subs, int amount, int fromsub) {
 
 
 void qwk_sysop() {
-  qwk_config qwk_cfg{};
-
   if (!so()) {
     return;
   }
 
-  read_qwk_cfg(&qwk_cfg);
+  auto qwk_cfg = read_qwk_cfg();
 
   bool done = false;
   while (!done && !a()->hangup_) {
-    auto sn = qwk_system_name();
+    auto sn = qwk_system_name(qwk_cfg);
     bout.cls();
     bout << fmt::sprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
     bout << fmt::sprintf("[2] News    file : %s\r\n", qwk_cfg.news);
@@ -991,18 +986,17 @@ void qwk_sysop() {
 
     switch (x) {
     case '1':
-      input(qwk_cfg.hello, 12);
+      qwk_cfg.hello = input(12);
       break;
     case '2':
-      input(qwk_cfg.news, 12);
+      qwk_cfg.news = input(12);
       break;
     case '3':
-      input(qwk_cfg.bye, 12);
+      qwk_cfg.bye = input(12);
       break;
-
-    case '4':
-      write_qwk_cfg(&qwk_cfg);
-      sn = qwk_system_name();
+    case '4': {
+      sn = qwk_system_name(qwk_cfg);
+      write_qwk_cfg(qwk_cfg);
       bout.nl();
       bout.Color(1);
       bout << fmt::sprintf("Current name : %s", sn);
@@ -1010,11 +1004,10 @@ void qwk_sysop() {
       bout << "Enter new packet name: ";
       sn = input(8);
       if (!sn.empty()) {
-        to_char_array(qwk_cfg.packet_name, sn);
+        qwk_cfg.packet_name = sn;
       }
-
-      write_qwk_cfg(&qwk_cfg);
-      break;
+      write_qwk_cfg(qwk_cfg);
+    } break;
 
     case '5': {
       bout.Color(1);
@@ -1024,18 +1017,17 @@ void qwk_sysop() {
       qwk_cfg.max_msgs = to_number<uint16_t>(tmp);
     } break;
     case '6':
-      modify_bulletins(&qwk_cfg);
+      modify_bulletins(qwk_cfg);
       break;
     default:
       done = true;
     }
   }
 
-  write_qwk_cfg(&qwk_cfg);
-  close_qwk_cfg(&qwk_cfg);
+  write_qwk_cfg(qwk_cfg);
 }
 
-void modify_bulletins(struct qwk_config* qwk_cfg) {
+void modify_bulletins(qwk_config& qwk_cfg) {
   char s[101], t[101];
 
   auto done = false;
@@ -1056,19 +1048,14 @@ void modify_bulletins(struct qwk_config* qwk_cfg) {
       bout.mpl(2);
 
       input(s, 2);
-      int x = to_number<int>(s);
-
-      if (x <= qwk_cfg->amount_blts) {
-        strcpy(qwk_cfg->blt[x], qwk_cfg->blt[qwk_cfg->amount_blts - 1]);
-        strcpy(qwk_cfg->bltname[x], qwk_cfg->bltname[qwk_cfg->amount_blts - 1]);
-
-        free(qwk_cfg->blt[qwk_cfg->amount_blts - 1]);
-        free(qwk_cfg->bltname[qwk_cfg->amount_blts - 1]);
-
-        --qwk_cfg->amount_blts;
+      const int x = to_number<int>(s);
+      // Delete the one at the right position.
+      if (x >= 0 && x < ssize(qwk_cfg.bulletins)) {
+        erase_at(qwk_cfg.bulletins, x);
+        --qwk_cfg.amount_blts;
       }
     } break;
-    case 'A':
+    case 'A': {
       bout.nl();
       bout.bputs("Enter complete path to Bulletin");
       input(s, 80);
@@ -1088,26 +1075,21 @@ void modify_bulletins(struct qwk_config* qwk_cfg) {
         break;
       }
 
-      qwk_cfg->blt[qwk_cfg->amount_blts] = (char*)calloc(BULL_SIZE, sizeof(char));
-      qwk_cfg->bltname[qwk_cfg->amount_blts] = (char*)calloc(BNAME_SIZE, sizeof(char));
-
-      strcpy(qwk_cfg->blt[qwk_cfg->amount_blts], s);
-      strcpy(qwk_cfg->bltname[qwk_cfg->amount_blts], t);
-      ++qwk_cfg->amount_blts;
-      break;
+      qwk_bulletin b{t, s};
+      qwk_cfg.bulletins.emplace_back(b);
+      ++qwk_cfg.amount_blts;
+    } break;
     case '?': {
-      bool abort = false;
-      int x = 0;
-      while (x < qwk_cfg->amount_blts && !abort && !a()->hangup_) {
-        bout << fmt::sprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
+      int x = 1;
+      for (const auto& b : qwk_cfg.bulletins) {
+        if (checka()) { break; }
+        bout << fmt::sprintf("[%d] %s Is copied over from", x++, b.name);
         bout.nl();
         bout.Color(7);
         bout << string(78, '\xCD');
         bout.nl();
-        bout << qwk_cfg->blt[x];
+        bout << b.path;
         bout.nl();
-        abort = checka();
-        ++x;
       }
     } break;
     }
@@ -1179,18 +1161,18 @@ void config_qwk_bw() {
       memset(&qj, 0, sizeof(struct qwk_junk));
       bout.cls();
 
-      unsigned short arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
+      auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
       if (!qj.abort) {
         a()->user()->data.qwk_archive = arcno;
       }
       break;
     }
     case 9: {
-      struct qwk_junk qj;
+      qwk_junk qj{};
       memset(&qj, 0, sizeof(struct qwk_junk));
       bout.cls();
 
-      unsigned short arcno = select_qwk_protocol(&qj);
+      const auto arcno = select_qwk_protocol(&qj);
       if (!qj.abort) {
         a()->user()->data.qwk_protocol = arcno;
       }

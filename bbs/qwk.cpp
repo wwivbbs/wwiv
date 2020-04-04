@@ -100,8 +100,7 @@ void build_qwk_packet() {
   }
   TempDisablePause disable_pause;
 
-  qwk_config qwk_cfg{};
-  read_qwk_cfg(&qwk_cfg);
+  auto qwk_cfg = read_qwk_cfg();
   max_msgs = qwk_cfg.max_msgs;
   if (a()->user()->data.qwk_max_msgs < max_msgs && a()->user()->data.qwk_max_msgs) {
     max_msgs = a()->user()->data.qwk_max_msgs;
@@ -112,8 +111,7 @@ void build_qwk_packet() {
   }
 
   ++qwk_cfg.timesd;
-  write_qwk_cfg(&qwk_cfg);
-  close_qwk_cfg(&qwk_cfg);
+  write_qwk_cfg(qwk_cfg);
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
@@ -547,13 +545,13 @@ std::string make_qwk_ready(const std::string& text, const std::string& address) 
     }
   }
 
-  temp.shrink_to_fit();
-
   // Only add address if it does not yet exist
   if (temp.find("QWKFrom:") != std::string::npos) {
     // Don't search for diamond or number, just text after that
     insert_after_routing(temp, address);
   }
+
+  temp.shrink_to_fit();
   return temp;
 
 }
@@ -583,9 +581,8 @@ void build_control_dat(struct qwk_junk *qwk_info) {
     return;
   }
 
-  qwk_config qwk_cfg{};
-  read_qwk_cfg(&qwk_cfg);
-  const auto system_name = qwk_system_name();
+  auto qwk_cfg = read_qwk_cfg();
+  const auto system_name = qwk_system_name(qwk_cfg);
 
   fprintf(fp, "%s.qwk\r\n", system_name.c_str());
   fprintf(fp, "%s\r\n", "");   // System City and State
@@ -622,12 +619,11 @@ void build_control_dat(struct qwk_junk *qwk_info) {
     }
   }
 
-  fprintf(fp, "%s\r\n", qwk_cfg.hello);
-  fprintf(fp, "%s\r\n", qwk_cfg.news);
-  fprintf(fp, "%s\r\n", qwk_cfg.bye);
+  fprintf(fp, "%s\r\n", qwk_cfg.hello.c_str());
+  fprintf(fp, "%s\r\n", qwk_cfg.news.c_str());
+  fprintf(fp, "%s\r\n", qwk_cfg.bye.c_str());
 
   fclose(fp);
-  close_qwk_cfg(&qwk_cfg);
 }
 
 int _fmsbintoieee(float *src4, float *dest4) {
@@ -717,28 +713,20 @@ int _fieeetomsbin(float *src4, float *dest4) {
   return 0;
 }
 
-std::string qwk_system_name() {
-  qwk_config qwk_cfg{};
-  read_qwk_cfg(&qwk_cfg);
-  std::string qwkname(qwk_cfg.packet_name);
-  close_qwk_cfg(&qwk_cfg);
-
-
-  if (qwkname.empty()) {
-    qwkname.assign(a()->config()->system_name());
-  }
+std::string qwk_system_name(const qwk_config& c) {
+  auto qwkname = !c.packet_name.empty() ? c.packet_name : a()->config()->system_name();
 
   if (qwkname.length() > 8) {
     qwkname.resize(8);
   }
   std::replace( qwkname.begin(), qwkname.end(), ' ', '-' );
   std::replace( qwkname.begin(), qwkname.end(), '.', '-' );
-  StringUpperCase(&qwkname);
-  return qwkname;
+  return ToStringUpperCase(qwkname);
 }
 
 void qwk_menu() {
   qwk_percent = 0;
+  const auto qwk_cfg = read_qwk_cfg();
 
   auto done = false;
   while (!done && !a()->hangup_) {
@@ -785,7 +773,7 @@ void qwk_menu() {
 
     case 'D': {
       sysoplog() << "Download QWK packet";
-      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(), ".REP"));
+      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -798,7 +786,7 @@ void qwk_menu() {
     case 'B': {
       sysoplog() << "Down/Up QWK/REP packet";
 
-      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(), ".REP"));
+      auto namepath = FilePath(QWK_DIRECTORY, StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -887,87 +875,100 @@ unsigned short select_qwk_protocol(struct qwk_junk *qwk_info) {
   return protocol;
 }
 
-void close_qwk_cfg(struct qwk_config *qwk_cfg) {
-  int x = 0;
-  while (x < qwk_cfg->amount_blts) {
-    if (qwk_cfg->blt[x]) {
-      free(qwk_cfg->blt[x]);
-    }
-    if (qwk_cfg->bltname[x]) {
-      free(qwk_cfg->bltname[x]);
-    }
-    ++x;
-  }
-}
-
-void read_qwk_cfg(struct qwk_config *qwk_cfg) {
-  memset(qwk_cfg, 0, sizeof(struct qwk_config));
+qwk_config read_qwk_cfg() {
+  qwk_config_430 o{};
 
   const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
   int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f < 0) {
-    return;
+    return {};
   }
-  read(f,  qwk_cfg, sizeof(struct qwk_config));
+  read(f,  &o, sizeof(qwk_config_430));
   int x = 0;
-  while (x < qwk_cfg->amount_blts) {
-    long pos = sizeof(struct qwk_config) + (x * BULL_SIZE);
-    lseek(f, pos, SEEK_SET);
-    qwk_cfg->blt[x] = (char *)malloc(BULL_SIZE);
-    read(f, qwk_cfg->blt[x], BULL_SIZE);
 
+  qwk_config c{};
+  while (x < o.amount_blts) {
+    long pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
+    lseek(f, pos, SEEK_SET);
+    char b[BULL_SIZE];
+    memset(b, 0, sizeof(b));
+    read(f, &b, BULL_SIZE);
+    qwk_bulletin bltn;
+    bltn.path = b;
+    c.bulletins.emplace_back(bltn);
     ++x;
   }
 
   x = 0;
-  while (x < qwk_cfg->amount_blts) {
-    long pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
+  for (auto& blt : c.bulletins) {
+    const long pos = sizeof(qwk_config_430) + (c.bulletins.size() * BULL_SIZE) + (x * BNAME_SIZE);
     lseek(f, pos, SEEK_SET);
-    qwk_cfg->bltname[x] = (char *)malloc(BNAME_SIZE * qwk_cfg->amount_blts);
-    read(f, qwk_cfg->bltname[x], BNAME_SIZE);
-
+    char b[BULL_SIZE];
+    memset(b, 0, sizeof(b));
+    read(f, &b, BULL_SIZE);
+    blt.name = b;
     ++x;
   }
   close(f);
+
+  c.fu = o.fu;
+  c.timesd = o.timesd;
+  c.timesu = o.timesu;
+  c.max_msgs = o.max_msgs;
+  c.hello = o.hello;
+  c.news = o.news;
+  c.bye = o.bye;
+  c.packet_name = o.packet_name;
+  c.amount_blts = o.amount_blts;
+  return c;
 }
 
-void write_qwk_cfg(struct qwk_config *qwk_cfg) {
+void write_qwk_cfg(const qwk_config& c) {
   const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
-  int f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  const int f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;
   }
 
-  write(f, qwk_cfg, sizeof(struct qwk_config));
+  qwk_config_430 o{};
+  o.fu = c.fu;
+  o.timesd = c.timesd;
+  o.timesu = c.timesu;
+  o.max_msgs = c.max_msgs;
+  to_char_array(o.hello, c.hello);
+  to_char_array(o.news, c.news);
+  to_char_array(o.bye, c.bye);
+  to_char_array(o.packet_name, c.packet_name);
+  o.amount_blts = c.bulletins.size();
+
+  write(f, &o, sizeof(qwk_config_430));
 
   int x = 0;
-  int new_amount = 0;
-  while (x < qwk_cfg->amount_blts) {
-    long pos = sizeof(struct qwk_config) + (new_amount * BULL_SIZE);
+  for (const auto& b : c.bulletins) {
+    const auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
 
-    if (qwk_cfg->blt[x]) {
-      write(f, qwk_cfg->blt[x], BULL_SIZE);
-      ++new_amount;
+    if (!b.path.empty()) {
+      char p[BULL_SIZE+1];
+      memset(&p, 0, BULL_SIZE);
+      to_char_array(p, b.path);
+      write(f, p, BULL_SIZE);
+      ++x;
     }
-    ++x;
   }
 
   x = 0;
-  while (x < qwk_cfg->amount_blts) {
-    long pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
+  for (const auto& b : c.bulletins) {
+    const auto pos = sizeof(qwk_config_430) + (c.bulletins.size() * BULL_SIZE) + (x++ * BNAME_SIZE);
     lseek(f, pos, SEEK_SET);
 
-    if (qwk_cfg->bltname[x]) {
-      write(f, qwk_cfg->bltname[x], BNAME_SIZE);
+    if (!b.name.empty()) {
+      char p[BNAME_SIZE+1];
+      memset(&p, 0, BNAME_SIZE);
+      to_char_array(p, b.name);
+      write(f, p, BNAME_SIZE);
     }
-
-    ++x;
   }
-
-  qwk_cfg->amount_blts = new_amount;
-  lseek(f, 0, SEEK_SET);
-  write(f, qwk_cfg, sizeof(struct qwk_config));
 
   close(f);
 }
@@ -1115,7 +1116,6 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   bool sent = false;
   long numbytes;
 
-  int x;
   bool done = false;
   int archiver;
 
@@ -1124,48 +1124,44 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     qwk_nscan();
   }
 
-  qwk_config qwk_cfg{};
-  read_qwk_cfg(&qwk_cfg);
+  auto qwk_cfg = read_qwk_cfg();
   if (!a()->user()->data.qwk_leave_bulletin) {
     bout.bputs("Grabbing hello/news/goodbye text files...");
 
-    if (qwk_cfg.hello[0]) {
+    if (!qwk_cfg.hello.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
       auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.hello);
       File::Copy(parem1, parem2);
     }
 
-    if (qwk_cfg.news[0]) {
+    if (!qwk_cfg.news.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.news);
-      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.hello);
+      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.news);
       File::Copy(parem1, parem2);
     }
 
-    if (qwk_cfg.bye[0]) {
+    if (!qwk_cfg.bye.empty()) {
       auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
-      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.hello);
+      auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.bye);
     }
 
-    x = 0;
-    while (x < qwk_cfg.amount_blts) {
-      if (File::Exists(qwk_cfg.blt[x])) {
-        // Only copy if bulletin is newer than the users laston date
+    for (const auto& b : qwk_cfg.bulletins) {
+      if (!File::Exists(b.path)) {
         // Don't have file_daten anymore
-        // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
-        {
-          auto parem2 = PathFilePath(QWK_DIRECTORY, qwk_cfg.bltname[x]);
-          File::Copy(qwk_cfg.blt[x], parem2);
-        }
-        ++x;
+        continue;
       }
+
+      // If we want to only copy if bulletin is newer than the users laston date:
+      // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
+      auto parem2 = PathFilePath(QWK_DIRECTORY, b.name);
+      File::Copy(b.path, parem2);
     }
   }
-  close_qwk_cfg(&qwk_cfg);
 
-  auto qwkname = StrCat(qwk_system_name(), ".qwk");
+  auto qwkname = StrCat(qwk_system_name(qwk_cfg), ".qwk");
 
-  if (!a()->user()->data.qwk_archive
-      || !a()->arcs[a()->user()->data.qwk_archive - 1].extension[0]) {
+  if (!a()->user()->data.qwk_archive ||
+      !a()->arcs[a()->user()->data.qwk_archive - 1].extension[0]) {
     archiver = select_qwk_archiver(qwk_info, 0) - 1;
   } else {
     archiver = a()->user()->data.qwk_archive - 1;

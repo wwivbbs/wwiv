@@ -88,7 +88,12 @@ struct qwk_junk {
   char email_title[25];
 };
 
-struct qwk_config {
+struct qwk_bulletin {
+  std::string name;
+  std::string path;
+};
+
+struct qwk_config_430 {
   daten_t fu;
   long timesd;
   long timesu;
@@ -104,6 +109,23 @@ struct qwk_config {
   char *blt[MAX_BULLETINS];
   char *bltname[MAX_BULLETINS];
 };
+
+struct qwk_config {
+  daten_t fu;
+  long timesd;
+  long timesu;
+  uint16_t max_msgs;
+
+  std::string hello;
+  std::string news;
+  std::string bye;
+  std::string packet_name;
+
+  int amount_blts;
+  std::vector<qwk_bulletin> bulletins;
+};
+
+static_assert(sizeof(qwk_config_430) == 656u, "qwk_config should be 656 bytes");
 
 struct qwk_sub_conf {
   int import_num;
@@ -135,12 +157,11 @@ void qwk_remove_null(char *memory, int size);
 void build_control_dat(struct qwk_junk *qwk_info);
 int _fmsbintoieee(float *src4, float *dest4);
 int _fieeetomsbin(float *src4, float *dest4);
-std::string qwk_system_name();
+std::string qwk_system_name(const qwk_config& c);
 void qwk_menu();
 unsigned short select_qwk_protocol(struct qwk_junk *qwk_info);
-void close_qwk_cfg(struct qwk_config *qwk_cfg);
-void read_qwk_cfg(struct qwk_config *qwk_cfg);
-void write_qwk_cfg(struct qwk_config *qwk_cfg);
+qwk_config read_qwk_cfg();
+void write_qwk_cfg(const qwk_config& qwk_cfg);
 int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 void qwk_nscan();
 void finish_qwk(struct qwk_junk *qwk_info);
@@ -159,7 +180,7 @@ void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *nam
 void qwk_post_text(char *text, char *title, int16_t sub);
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
 void qwk_sysop();
-void modify_bulletins(struct qwk_config *qwk_cfg);
+void modify_bulletins(qwk_config& qwk_cfg);
 void config_qwk_bw();
 std::string qwk_current_text(int pos);
 
