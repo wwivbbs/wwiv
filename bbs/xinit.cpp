@@ -169,7 +169,7 @@ static std::map<std::string, uint16_t> eventinfo = {
     {"ARCH_E", EFLAG_NONE},      {"ARCH_L", EFLAG_NONE},      {"ARCH_A", EFLAG_NONE},
     {"ARCH_D", EFLAG_NONE},      {"ARCH_K", EFLAG_NONE},      {"ARCH_T", EFLAG_NONE},
     {"NET_CMD1", EFLAG_NETPROG}, {"NET_CMD2", EFLAG_NETPROG}, {"LOGOFF", EFLAG_NONE},
-    {"NETWORK", EFLAG_NETPROG},
+    {"NETWORK", EFLAG_NETPROG},  {"CLEANUP", EFLAG_NONE},
 };
 
 // TODO(rushfan): If we nee this elsewhere add it into IniFile
@@ -286,6 +286,8 @@ void Application::ReadINIFile(IniFile& ini) {
   beginday_cmd = ini.value<string>(INI_STR_BEGINDAY_CMD);
   newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
   logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
+  logoff_cmd = ini.value<string>(INI_STR_LOGOFF_CMD);
+  cleanup_cmd = ini.value<string>(INI_STR_CLEANUP_CMD);
   terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
 
   forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);

@@ -20,6 +20,7 @@
 #include "bbs/menusupp.h"
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
+#include "bbs/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -35,6 +36,8 @@
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
+#include "bbs/dropfile.h"
+#include "bbs/execexternal.h"
 #include "bbs/external_edit.h"
 #include "bbs/finduser.h"
 #include "bbs/gfileedit.h"
@@ -54,6 +57,7 @@
 #include "bbs/printfile.h"
 #include "bbs/quote.h"
 #include "bbs/readmail.h"
+#include "bbs/stuffin.h"
 #include "bbs/subedit.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
@@ -334,6 +338,7 @@ void GoodBye() {
           a()->user()->SetLastSubConf(a()->GetCurrentConferenceMessageArea());
           a()->user()->SetLastDirConf(a()->GetCurrentConferenceFileArea());
         }
+        LogOffCmd();
         Hangup();
         break;
       }
@@ -357,6 +362,7 @@ void GoodBye() {
         a()->user()->SetLastSubConf(a()->GetCurrentConferenceMessageArea());
         a()->user()->SetLastDirConf(a()->GetCurrentConferenceFileArea());
       }
+      LogOffCmd();
       Hangup();
     }
   }
@@ -704,6 +710,7 @@ void FastGoodBye() {
     a()->user()->SetLastSubConf(a()->GetCurrentConferenceMessageArea());
     a()->user()->SetLastDirConf(a()->GetCurrentConferenceFileArea());
   }
+  LogOffCmd();
   Hangup();
 }
 
@@ -1024,5 +1031,25 @@ void SetDirNumber(const char *pszDirectoryKeys) {
     if (IsEquals(a()->udir[i].keys, pszDirectoryKeys)) {
       a()->set_current_user_dir_num(i);
     }
+  }
+}
+
+void LogOffCmd() {
+    if (!a()->logoff_cmd.empty()) {
+    if (a()->logoff_cmd.front() == '@') {
+      // Let's see if we need to run a basic script.
+      const string BASIC_PREFIX = "@basic:";
+      if (starts_with(a()->logoff_cmd, BASIC_PREFIX)) {
+        const auto cmd = a()->logoff_cmd.substr(BASIC_PREFIX.size());
+        LOG(INFO) << "Running basic script: " << cmd;
+        wwiv::bbs::RunBasicScript(cmd);
+      }
+    }
+    else {
+      bout.nl();
+      const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
+    }
+    bout.nl(2);
   }
 }

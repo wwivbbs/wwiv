@@ -984,6 +984,7 @@ constexpr const char* SPAWNOPT_TIMED = "TIMED";
 constexpr const char* SPAWNOPT_NEWUSER = "NEWUSER";
 constexpr const char* SPAWNOPT_BEGINDAY = "BEGINDAY";
 constexpr const char* SPAWNOPT_LOGON = "LOGON";
+constexpr const char* SPAWNOPT_CLEANUP = "CLEANUP";
 constexpr const char* SPAWNOPT_ULCHK = "ULCHK";
 constexpr const char* SPAWNOPT_PROT_SINGLE = "PROT_SINGLE";
 constexpr const char* SPAWNOPT_PROT_BATCH = "PROT_BATCH";
