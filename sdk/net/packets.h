@@ -50,7 +50,7 @@ public:
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::string t);
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t);
 
-  Packet() noexcept;
+  Packet();
   virtual ~Packet() {}
 
   virtual bool UpdateRouting(const net_networks_rec& net);

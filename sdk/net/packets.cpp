@@ -263,7 +263,7 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::str
 Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
     : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
 
-Packet::Packet() noexcept = default;
+Packet::Packet() = default;
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {
