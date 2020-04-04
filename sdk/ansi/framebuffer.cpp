@@ -129,7 +129,7 @@ int FrameBuffer::rows() const {
 
 std::string FrameBuffer::row_as_text(int row) const {
   const auto start = row * cols_;
-  const auto end = std::min(ssize(b_), ((row + 1) * cols_));
+  const auto end = std::min<int>(ssize(b_), ((row + 1) * cols_));
 
   std::string s;
   s.reserve(end - start);
@@ -148,7 +148,7 @@ std::string FrameBuffer::row_as_text(int row) const {
 
 std::vector<uint16_t> FrameBuffer::row_char_and_attr(int row) const {
   const auto start = row * cols_;
-  const auto end = std::min(ssize(b_), (row + 1) * cols_);
+  const auto end = std::min<int>(ssize(b_), (row + 1) * cols_);
 
   std::vector<uint16_t> s;
   s.reserve(end - start);
