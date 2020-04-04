@@ -106,8 +106,7 @@ struct qwk_config_430 {
   char res[190];
 
   int  amount_blts;
-  char *blt[MAX_BULLETINS];
-  char *bltname[MAX_BULLETINS];
+  char unused_blt_res[8 * 50];
 };
 
 struct qwk_config {
