@@ -191,8 +191,8 @@ void display_message_text(const std::string& text, bool* next) {
 
         if (printit || ansi || nLineLenPtr >= 80) {
           if (centre && (ctrld != -1)) {
-            int nSpacesToCenter = (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
-            bout.bputs(std::string(nSpacesToCenter, ' '), &abort, next);
+            const auto spaces_to_center = (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
+            bout.bputs(std::string(spaces_to_center, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
@@ -290,7 +290,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 
   // TODO(rushfan): Use get_control_line from networking code here.
 
-  size_t ptr = 0;
+  size_t ptr;
   for (ptr = 0; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
        ptr++) {
     data.from_user_name.push_back(data.message_text[ptr]);
@@ -298,7 +298,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
     ++ptr;
   }
-  for (auto start = ptr;
+  for (const auto start = ptr;
        ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60;
        ptr++) {
     data.date.push_back(data.message_text[ptr]);
@@ -314,18 +314,19 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     } catch (const std::out_of_range& e) {
       LOG(ERROR) << "Error getting message_text: " << e.what();
     }
-    ptr = 0;
+    // ptr = 0;
   }
 
   auto lines = SplitString(data.message_text, "\r");
   for (auto line : lines) {
     StringTrim(&line);
-    if (line.empty())
+    if (line.empty()) {
       continue;
+    }
     if (starts_with(line, "\004"
                           "0FidoAddr: ") &&
         line.size() > 12) {
-      string cl = line.substr(12);
+      auto cl = line.substr(12);
       if (!cl.empty()) {
         data.to_user_name = cl;
         break;
@@ -348,12 +349,12 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 }
 
 static FullScreenView display_type2_message_header(Type2MessageData& msg) {
-  auto oldcuratr = bout.curatr();
+  const auto oldcuratr = bout.curatr();
   static constexpr int COLUMN2 = 42;
-  int num_header_lines = 0;
+  auto num_header_lines = 0;
 
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
-    string msgarea = msg.message_area;
+    auto msgarea = msg.message_area;
     if (msgarea.size() > 35) {
       msgarea = msgarea.substr(0, 35);
     }
@@ -385,8 +386,8 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   }
   bout << "|#9From|#7: |#1" << from;
   if (a()->user()->GetScreenChars() >= 78) {
-    int used = 6 + from.size();
-    auto pad = COLUMN2 - used;
+    const int used = ssize(from) + 6;
+    const auto pad = COLUMN2 - used;
     bout << string(pad, ' ');
   } else {
     bout.nl();
@@ -410,8 +411,8 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     }
     bout << "|#9 Sys|#7: |#1" << sysname;
     if (a()->user()->GetScreenChars() >= 78) {
-      int used = 6 + sysname.size();
-      auto pad = COLUMN2 - used;
+      const auto used = 6 + ssize(sysname);
+      const auto pad = COLUMN2 - used;
       bout << string(pad, ' ');
     } else {
       bout.nl();
@@ -419,7 +420,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     }
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
-      int maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
+      const int maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
       if (ssize(loc) > maxlen) {
         loc = loc.substr(0, maxlen);
       }
@@ -462,18 +463,18 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     num_header_lines++;
   }
 
-  auto screen_width = a()->user()->GetScreenChars();
-  auto screen_length = a()->user()->GetScreenLines() - 1;
+  const auto screen_width = a()->user()->GetScreenChars();
+  const auto screen_length = a()->user()->GetScreenLines() - 1;
 
   bout.curatr(oldcuratr);
-  return FullScreenView(num_header_lines, screen_width, screen_length);
+  return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
 
 static std::vector<std::string> split_long_line(const std::string& text) {
   std::vector<std::string> lines;
   // use size_t since size_without_colors returns that.
   const size_t screen_width = a()->user()->GetScreenChars();
-  string s = text;
+  auto s = text;
   while (size_without_colors(s) > screen_width) {
     auto pos = screen_width;
     while (pos > 0 && s[pos] >= 27) {
@@ -493,13 +494,13 @@ static std::vector<std::string> split_long_line(const std::string& text) {
 
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text) {
   auto text(orig_text);
-  auto cz_pos = text.find(CZ);
+  const auto cz_pos = text.find(CZ);
   if (cz_pos != string::npos) {
     // We stop the message at control-Z if it exists.
     text = text.substr(0, cz_pos);
   }
 
-  std::vector<std::string> orig_lines = SplitString(text, "\r");
+  auto orig_lines = SplitString(text, "\r");
   std::vector<std::string> lines;
   for (auto line : orig_lines) {
     StringTrimCRLF(&line);
@@ -507,7 +508,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
     if (!line.empty()) {
       const auto optional_lines = a()->user()->GetOptionalVal();
       if (line.front() == CD) {
-        auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
+        const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
         if (level == 0) {
           // ^D0 lines are always skipped.
           continue;
@@ -544,7 +545,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start,
                                      int message_height, int screen_width, int lines_start) {
-  bool had_ansi = false;
+  auto had_ansi = false;
   for (int i = start; i < start + message_height; i++) {
     // Do this so we don't pop up a pause for sure.
     bout.clear_lines_listed();
@@ -588,22 +589,21 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   bout.cls();
   auto fs = display_type2_message_header(msg);
 
-  auto lines = split_wwiv_message(msg.message_text);
+  const auto lines = split_wwiv_message(msg.message_text);
 
   fs.DrawTopBar();
   fs.DrawBottomBar("");
 
   fs.GotoContentAreaTop();
-  const int first = 0;
-  const int last = std::max<int>(0, lines.size() - fs.message_height());
+  const auto first = 0;
+  const auto last = std::max<int>(0, lines.size() - fs.message_height());
 
-  int start = first;
-  bool done = false;
-  bool dirty = true;
+  auto start = first;
+  auto dirty = true;
   ReadMessageResult result{};
   result.lines_start = fs.lines_start();
   result.lines_end = fs.lines_end();
-  while (!done) {
+  for ( ;; ) {
     CheckForHangup();
 
     if (dirty) {
@@ -619,14 +619,14 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
 
       fs.ClearCommandLine();
+      bout.GotoXY(1, fs.command_line_y());
+      bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
     }
-    bout.GotoXY(1, fs.command_line_y());
     if (!msg.use_msg_command_handler) {
       result.option = ReadMessageOption::NEXT_MSG;
       return result;
     }
-    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) {
+    auto key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) {
       if (st == bgetch_timeout_status_t::WARNING) {
         fs.PrintTimeoutWarning(s);
       } else if (st == bgetch_timeout_status_t::CLEAR) {
@@ -662,7 +662,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       if (start + fs.message_height() < last) {
         dirty = true;
         start += fs.message_height();
-      } else {
+      } else if (start != last) {
+        // If start already == last, don't dirty the screen.
         dirty = true;
         start = last;
       }
@@ -675,14 +676,12 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     } break;
     case COMMAND_RIGHT: {
       result.option = ReadMessageOption::NEXT_MSG;
-      dirty = true;
       return result;
-    } break;
+    }
     case COMMAND_LEFT: {
       result.option = ReadMessageOption::PREV_MSG;
-      dirty = true;
       return result;
-    } break;
+    }
     case SOFTRETURN: {
       // Do nothing. SyncTerm sends CRLF on enter, not just CR
       // like we get from the local terminal. So we'll ignore the
@@ -691,9 +690,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     case RETURN: {
       if (start == last) {
         result.option = ReadMessageOption::NEXT_MSG;
-        dirty = true;
         return result;
-      } else if (start + fs.message_height() < last) {
+      }
+      if (start + fs.message_height() < last) {
         dirty = true;
         start += fs.message_height();
       } else if (start != last) {
@@ -741,13 +740,10 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     }
     }
   }
-
-  fs.ClearCommandLine();
-  return result;
 }
 
 void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
-  auto info = display_type2_message_header(msg);
+  const auto info = display_type2_message_header(msg);
   bout.lines_listed_ = info.num_header_lines();
   bout.clear_ansi_movement_occurred();
   *next = false;
@@ -808,14 +804,14 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
   } else {
     bout.nl();
   }
-  bool abort = false;
+  const bool abort = false;
   *next = false;
 
-  postrec p = *get_post(n);
-  bool bReadit =
+  auto p = *get_post(n);
+  const auto read_it =
       (lcs() || (a()->effective_slrec().ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
-  auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
+  auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), read_it,
                               cs.filename.c_str(), p.ownersys, p.owneruser);
   m.subboard_flags = cs.anony;
   if (a()->context().forcescansub()) {
@@ -858,7 +854,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
   }
   ReadMessageResult result{};
   if (!abort) {
-    int saved_net_num = a()->net_num();
+    const auto saved_net_num = a()->net_num();
 
     if (p.status & status_post_new_net) {
       set_net_num(network_number_from(&p));

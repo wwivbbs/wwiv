@@ -340,7 +340,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   bout << "|14      Num"
        << " " << std::left << std::setw(43) << "Title" << std::left << "From\r\n";
   bout.clear_lines_listed();
-  return FullScreenView(num_header_lines, screen_width, screen_length);
+  return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
 
 static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg, const int msgnum) {
@@ -481,22 +481,28 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
     CheckForHangup();
     auto lines = CreateMessageTitleVector(area.get(), window_top, height);
     if (need_redraw) {
+      // Full redraw of the screen
       display_titles_new(lines, fs, window_top, selected);
-      need_redraw = false;
     } else if (last_selected != selected) {
+      // Partial redraw of part of the screen
       display_title_new(lines, fs, (last_selected - window_top), false);
       display_title_new(lines, fs, (selected - window_top), true);
-      need_redraw = false;
     }
 
-    bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
-    fs.DrawBottomBar(StrCat("Selected: ", selected));
-    last_selected = selected;
+    if (last_selected != selected) {
+      // Do this for all cases, even if need_redraw isn' true.
+      bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
+      fs.DrawBottomBar(StrCat("Selected: ", selected));
+      last_selected = selected;
+    }
 
-    fs.ClearCommandLine();
-    bout.GotoXY(1, fs.command_line_y());
-    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key =
+    if (need_redraw) {
+      fs.ClearCommandLine();
+      bout.GotoXY(1, fs.command_line_y());
+      bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
+    }
+    need_redraw = false;
+    auto key =
         bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t status, int s) {
           if (status == bgetch_timeout_status_t::WARNING) {
             fs.PrintTimeoutWarning(s);
@@ -518,11 +524,15 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
       }
     } break;
     case COMMAND_PAGEUP: {
+      auto orig_window_top = window_top;
       window_top -= height;
       selected -= height;
       window_top = std::max<int>(window_top, window_top_min);
       selected = std::max<int>(selected, 1);
-      need_redraw = true;
+      if (orig_window_top != window_top) {
+        // Only redraw the screen if we've moved it.
+        need_redraw = true;
+      }
     } break;
     case COMMAND_HOME: {
       need_redraw = true;
@@ -541,11 +551,15 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
       }
     } break;
     case COMMAND_PAGEDN: {
+      auto orig_window_top = window_top;
       window_top += height;
       selected += height;
       window_top = std::min<int>(window_top, num_msgs_in_area - height + window_top_min);
       selected = std::min<int>(selected, num_msgs_in_area);
-      need_redraw = true;
+      if (orig_window_top != window_top) {
+        // Only redraw the screen if we've moved it.
+        need_redraw = true;
+      }
     } break;
     case COMMAND_END: {
       window_top = num_msgs_in_area - height + window_top_min;

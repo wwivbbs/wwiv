@@ -19,11 +19,12 @@
 #define __INCLUDED_BBS_FULL_SCREEN_H__
 
 #include <string>
-#include <set>
+
+class Output;
 
 class FullScreenView {
 public:
-  FullScreenView(int numlines, int swidth, int slength);
+  FullScreenView(Output& output, int numlines, int swidth, int slength);
   virtual ~FullScreenView();
 
   void PrintTimeoutWarning(int);
@@ -40,6 +41,9 @@ public:
   int command_line_y() const { return command_line_; }
   int screen_width() const { return screen_width_; }
 
+private:
+  Output& bout_;
+
   int num_header_lines_ = 0;
   int screen_width_ = 0;
   int screen_length_ = 0;
@@ -47,6 +51,7 @@ public:
   int lines_start_ = 0;
   int lines_end_ = 0;
   int command_line_ = 0;
+
 };
 
 
