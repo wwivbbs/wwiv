@@ -54,7 +54,7 @@ FullScreenView::~FullScreenView() {}
 void FullScreenView::PrintTimeoutWarning(int) {
   bout.GotoXY(1, command_line_);
   bout.clreol();
-  bout << "|12Are you there? ";
+  bout << "|12Press space if you are still there.";
 }
 
 void FullScreenView::ClearCommandLine() {
