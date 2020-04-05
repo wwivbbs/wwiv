@@ -24,12 +24,13 @@
 #include <chrono>
 #include <string>
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 using namespace wwiv::strings;
 
-SessionContext::SessionContext(Application* a) : a_(a) {}
+SessionContext::SessionContext(Application* a)
+  : irt_{}, a_(a) {
+}
 
 void SessionContext::InitalizeContext() {
   const auto c = a_->config();
@@ -77,5 +78,4 @@ void SessionContext::irt(const std::string& irt) {
   to_char_array(irt_, irt); 
 }
 
-}
 }

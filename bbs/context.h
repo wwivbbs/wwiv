@@ -31,7 +31,7 @@ namespace bbs {
 
 class SessionContext {
 public:
-  SessionContext(Application* a);
+  explicit SessionContext(Application* a);
   virtual ~SessionContext() = default;
 
   /**
@@ -85,7 +85,7 @@ public:
   // aka high message read pointer) for each sub.
   uint32_t* qsc_p{nullptr};
 
-  const std::string irt() const { return std::string(irt_); }
+  std::string irt() const { return std::string(irt_); }
   void irt(const std::string& irt);
   void clear_irt() { irt_[0] = '\0'; }
 
