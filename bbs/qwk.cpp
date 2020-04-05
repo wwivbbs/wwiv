@@ -37,7 +37,6 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/make_abs_cmd.h"
-#include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/save_qscan.h"
 #include "bbs/sr.h"
@@ -47,6 +46,7 @@
 #include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "fmt/printf.h"
@@ -57,7 +57,6 @@
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include <cctype>
 #include <memory>
 #include <string>
 
@@ -73,6 +72,7 @@ using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
@@ -240,7 +240,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
   if (qwk_percent || (!sd || sd > qscnptrx)) {
     const auto os = a()->current_user_sub_num();
     a()->set_current_user_sub_num(bn);
-    int i = 1;
+    int i;
 
     // Get total amount of messages in base
     if (!qwk_iscan(a()->current_user_sub_num())) {
@@ -259,7 +259,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
         temp_percent = 1.0;
       }
       i = a()->GetNumMessagesInCurrentMessageArea() - 
-          static_cast<int>(temp_percent * a()->GetNumMessagesInCurrentMessageArea());
+          static_cast<int>(std::floor(temp_percent * a()->GetNumMessagesInCurrentMessageArea()));
     }
 
     char thissub[81];
@@ -351,13 +351,12 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
 }
 
 static int _fieeetomsbin(float *src4, float *dest4) {
-  unsigned char *ieee = (unsigned char *)src4;
-  unsigned char *msbin = (unsigned char *)dest4;
-  unsigned char sign = 0x00;
+  const auto ieee = reinterpret_cast<unsigned char*>(src4);
+  const auto msbin = reinterpret_cast<unsigned char*>(dest4);
   unsigned char msbin_exp = 0x00;
 
   /* See _fmsbintoieee() for details of formats   */
-  sign = ieee[3] & 0x80;
+  const unsigned char sign = ieee[3] & 0x80;
   msbin_exp |= ieee[3] << 1;
   msbin_exp |= ieee[2] >> 7;
 
@@ -368,7 +367,7 @@ static int _fieeetomsbin(float *src4, float *dest4) {
 
   msbin_exp += 2;     /* actually, -127 + 128 + 1 */
 
-  for (int i = 0; i < 4; i++) {
+  for (auto i = 0; i < 4; i++) {
     msbin[i] = 0;
   }
 
@@ -621,7 +620,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%s\r\n", a()->config()->sysop_name().c_str());
   fprintf(fp, "%s,%s\r\n", "00000", system_name.c_str());
   fprintf(fp, "%s\r\n", date_time.c_str());
-  fprintf(fp, "%s\r\n", a()->user()->data.name);
+  fprintf(fp, "%s\r\n", reinterpret_cast<char*>(a()->user()->data.name));
   fprintf(fp, "%s\r\n", "");
   fprintf(fp, "%s\r\n", "0");
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
@@ -778,7 +777,7 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   *sent = false;
   *abort = false;
 
-  int protocol = -1;
+  auto protocol = -1;
   if (a()->user()->data.qwk_protocol <= 1) {
     protocol = get_protocol(xf_down_temp);
   } else {
@@ -832,7 +831,7 @@ qwk_config read_qwk_cfg() {
 
   qwk_config c{};
   while (x < o.amount_blts) {
-    long pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
+    auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
     char b[BULL_SIZE];
     memset(b, 0, sizeof(b));
@@ -845,7 +844,7 @@ qwk_config read_qwk_cfg() {
 
   x = 0;
   for (auto& blt : c.bulletins) {
-    const long pos = sizeof(qwk_config_430) + (c.bulletins.size() * BULL_SIZE) + (x * BNAME_SIZE);
+    const auto pos = sizeof(qwk_config_430) + (ssize(c.bulletins) * BULL_SIZE) + (x * BNAME_SIZE);
     lseek(f, pos, SEEK_SET);
     char b[BULL_SIZE];
     memset(b, 0, sizeof(b));
