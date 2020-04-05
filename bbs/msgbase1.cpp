@@ -73,7 +73,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   }
 
   int netnum;
-  int orig_netnum = a()->net_num();
+  const int orig_netnum = a()->net_num();
   if (pPostRecord->status & status_post_new_net) {
     netnum = pPostRecord->network.network_msg.net_number;
   } else if (!sub.nets.empty()) {
@@ -329,7 +329,7 @@ void add_ftn_msgid(const wwiv::sdk::Config& config, FidoAddress addr, const std:
                    MessageEditorData* data) {
   FtnMessageDupe dupe(config);
   if (dupe.IsInitialized()) {
-    auto new_msgid = dupe.CreateMessageID(addr);
+    const auto new_msgid = dupe.CreateMessageID(addr);
     WWIVParsedMessageText pmt(data->text);
     // TODO(rushfan): Should we keep removing them while they exist in case
     // there are more than 1??
@@ -349,7 +349,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
   if (!readfile(msg, file_name, &text)) {
     return {};
   }
-  string::size_type cr = text.find_first_of('\r');
+  auto cr = text.find_first_of('\r');
   if (cr == string::npos) {
     return {};
   }
@@ -361,7 +361,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
     a()->net_email_name = text;
     return text;
   }
-  const char* ss2 = text.c_str();
+  auto ss2 = text.c_str();
   if (text[0] == '`' && text[1] == '`') {
     for (const char* ss1 = ss2 + 2; *ss1; ss1++) {
       if (ss1[0] == '`' && ss1[1] == '`') {
@@ -378,7 +378,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
 }
 
 void qscan(uint16_t start_subnum, bool& nextsub) {
-  int sub_number = a()->usub[start_subnum].subnum;
+  const int sub_number = a()->usub[start_subnum].subnum;
   a()->context().made_find_str(false);
 
   if (a()->hangup_ || sub_number < 0) {
@@ -389,9 +389,9 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
 
   iscan1(sub_number);
 
-  uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
+  const auto on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
-    auto old_subnum = a()->current_user_sub_num();
+    const auto old_subnum = a()->current_user_sub_num();
     a()->set_current_user_sub_num(start_subnum);
 
     if (!iscan(a()->current_user_sub_num())) {

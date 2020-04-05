@@ -155,6 +155,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define QUOTE_NOEXT "quote"
 #define QUOTES_IND "quotes.ind"
 #define QUOTES_TXT "quotes.txt"
+#define QWK_CFG "qwk.cfg"
 
 #define REGIONS_DAT "regions.dat"
 #define REGIONS_DIR "regions"

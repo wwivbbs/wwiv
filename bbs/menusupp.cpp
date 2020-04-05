@@ -809,22 +809,11 @@ void UploadFilesBBS() {
   char ch = onek("Q12");
   bout.nl();
   if (ch != 'Q') {
-    int nType = 0;
     bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
     bout.mpl(77);
-    auto filespec = input_text(80);
-    switch (ch) {
-    case '1':
-      nType = 2;
-      break;
-    case '2':
-      nType = 0;
-      break;
-    default:
-      nType = 0;
-      break;
-    }
-    upload_files(filespec.c_str(), a()->current_user_dir_num(), nType);
+    const auto filespec = input_text(80);
+    const auto type = (ch == '1') ? 2 : 0;
+    upload_files(filespec.c_str(), a()->current_user_dir_num(), type);
   }
 }
 

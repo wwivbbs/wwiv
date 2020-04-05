@@ -47,7 +47,7 @@ DEVELOPMENT INFORMATION
 ~~~~~~~~~~~~~~~~~~~~~~~
 
     WWIV is compiled with the following compilers:
-        MS Visual C++ 2019 Community Edition.
+        MS Visual C++ 2019 Community Edition. (16.3 or later)
         GCC 8.3 or newer on Linux
 
     I recommend using MSVC 2019 Community Edition on Windows.

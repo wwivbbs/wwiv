@@ -821,7 +821,7 @@ unsigned short select_qwk_protocol(struct qwk_junk *qwk_info) {
 qwk_config read_qwk_cfg() {
   qwk_config_430 o{};
 
-  const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
+  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
   int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f < 0) {
     return {};
@@ -867,8 +867,8 @@ qwk_config read_qwk_cfg() {
 }
 
 void write_qwk_cfg(const qwk_config& c) {
-  const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
-  const int f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
+  const auto f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;
   }

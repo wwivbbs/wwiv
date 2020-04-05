@@ -18,8 +18,6 @@
 #ifndef __INCLUDED_MENUSUPP_H__
 #define __INCLUDED_MENUSUPP_H__
 
-#include "menu.h" // Only needed by Defaults
-
 void UnQScan();
 void DirList();
 void UpSubConf();
