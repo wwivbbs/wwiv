@@ -9,6 +9,27 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+What's New in WWIV 5.5 (2020)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Change message of warning from inactivity. (#1197)
+* Less screen redrawing in full screen message viewer for both
+  viewing messages and selecting messages.
+* Fixed //QWK from crashing
++ Merge pull request (#1204). You can now have a LOGOFF and CLEANUP command
+  in WWIV.INI to execute at logoff time, or post-logoff time to perform
+  any necessry post-user cleanup.
+* Fixed inputting WWIV registration number in (D)efaults (#1205)
++ Initial cut of wwivutil net send command:
+    This command will send the last few posts to another system. The
+    command line arguments are modeled closely from those used by AUTOSEND.
+! Use _ and not - in flag names for consistency
++ Added --start-date and --end-date to wwivutil messages dump
+* Fix crash saving email when you have no networks defined
+* Fixed a typo in wfndfile (#1200)
+* Update copyright to 2020
+* Fix output display problem for uint8_t in UserEditor. (#1199)
+
+
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * WWIV now requires GCC 8.3 or later and MSVC 2019 v16.3 or later.
