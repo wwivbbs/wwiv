@@ -92,12 +92,9 @@ static bool replacefile(const std::string& src, const std::string& dst) {
 }
 
 bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
-  const auto now = clock->Now();
-  // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
-  const auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
+  const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
   TextFile fp(FilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
-
   if (!fp) {
     return false;
   }
@@ -116,30 +113,25 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_in
   
   const auto max_size = a()->subs().subs().size();
   const qscan_bitset qb(a()->context().qsc_q, max_size);
-  auto amount = 0;
-  std::vector<std::string> subs_list;
+  std::vector<std::pair<int, std::string>> subs_list;
   for (size_t cur = 0; a()->usub[cur].subnum != -1 && cur < max_size; cur++) {
     const auto subnum = a()->usub[cur].subnum;
     if (qb.test(subnum)) {
-      ++amount;
-
-      // QWK support says this should be truncated to 10 or 13 characters
-      // however QWKE allows for 255 characters. This works fine in multimail which
-      // is the only still maintained QWK reader I'm aware of at this time, so we'll
-      // allow it to be the full length.
-      const auto sub_name = stripcolors(a()->subs().sub(subnum).name);
-      subs_list.push_back(std::to_string(subnum + 1));
-      subs_list.push_back(sub_name);
+      // QWK support says this should be truncated to 10 or 13 characters however QWKE allows for
+      // 255 characters. This works fine in multimail which is the only still maintained QWK
+      //  reader that I'm aware of at this time, so we'll allow it to be the full length.
+      subs_list.emplace_back(subnum + 1, stripcolors(a()->subs().sub(subnum).name));
     }
   }
-  fp.WriteLine(amount);
+  fp.WriteLine(subs_list.size());
   
   fp.WriteLine("0");
   fp.WriteLine("E-Mail");
 
-  // List the subs in the format of "Sub Number\r\nSub Name\r\n"
   for (const auto& s : subs_list) {
-    fp.WriteLine(s);
+  // Write the subs in the format of "Sub Number\r\nSub Name\r\n"
+    fp.WriteLine(s.first);
+    fp.WriteLine(s.second);
   }
 
   fp.WriteLine(qwk_cfg.hello);
@@ -149,12 +141,12 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_in
 }
 
 void build_qwk_packet() {
-  bool save_conf = false;
+  auto save_conf = false;
   SaveQScanPointers save_qscan;
 
   remove_from_temp("*.*", a()->qwk_directory(), false);
 
-  if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
+  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     save_conf = true;
     tmp_disable_conf(true);
   }
