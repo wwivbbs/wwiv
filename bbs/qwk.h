@@ -19,6 +19,8 @@
 #ifndef _QWK_H_
 #define _QWK_H_
 
+#include <optional>
+
 #include "core/datetime.h"
 #include "sdk/vardec.h"
 #include "printfile.h"
@@ -156,6 +158,8 @@ void finish_qwk(struct qwk_junk *qwk_info);
 
 
 /* File: qwk1.c */
+
+std::optional<std::string> get_qwk_from_message(const std::string& text);
 
 void qwk_remove_email();
 void qwk_gather_email(struct qwk_junk *qwk_info);

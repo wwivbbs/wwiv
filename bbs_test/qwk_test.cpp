@@ -24,11 +24,8 @@
 #include "bbs_test/bbs_helper.h"
 #include "core/datafile.h"
 #include "core/strings.h"
-#include "core_test/file_helper.h"
-#include "deps/googletest/googletest/include/gtest/gtest.h"
 #include "sdk/filenames.h"
 #include <iostream>
-#include <memory>
 #include <string>
 
 using std::cout;
@@ -149,4 +146,31 @@ TEST_F(QwkTest, ReadQwkConfig_Write_TwoBulletins) {
   ASSERT_TRUE(File::Exists(filename));
   File f(filename);
   EXPECT_EQ(656 + BULL_SIZE + BNAME_SIZE, f.length());
+}
+
+TEST(Qwk1Test, TestGetQwkFromMessage) {
+  const auto QWKFrom = "\x04""0QWKFrom:";
+
+  auto message = StrCat("\x3", "0Thisis a test\r\n", QWKFrom,
+                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
+  auto opt_to = get_qwk_from_message(message);
+  ASSERT_TRUE(opt_to.has_value());
+
+  const auto o = opt_to.value();
+  EXPECT_STREQ("RUSHFAN #1 @561", o.c_str());
+}
+
+TEST(Qwk1Test, TestGetQwkFromMessage_NotFound) {
+  auto message = StrCat("\x3", "0Thisis a test\r\n",
+                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
+  const auto opt_to = get_qwk_from_message(message);
+  ASSERT_FALSE(opt_to.has_value());
+}
+
+TEST(Qwk1Test, TestGetQwkFromMessage_Malformed_AtEndOfLine) {
+  const auto QWKFrom = "\x04""0QWKFrom:";
+  auto message = StrCat("\x3", "0Thisis a test\r\n",
+                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message", QWKFrom);
+  const auto opt_to = get_qwk_from_message(message);
+  ASSERT_FALSE(opt_to.has_value());
 }

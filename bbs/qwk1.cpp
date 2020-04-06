@@ -64,9 +64,9 @@
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include <cctype>
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <sstream>
 
 using std::string;
@@ -82,9 +82,9 @@ using namespace wwiv::sdk::msgapi;
 
 #define qwk_iscan_literal(x) (iscan1(x))
 
-void qwk_email_text(char *text, char *title, char *to);
+void qwk_email_text(const char *text, char *title, char *to);
 void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
-void qwk_post_text(char *text, char *title, int16_t sub);
+void qwk_post_text(const char *text, char *title, int16_t sub);
 
 
 extern const char* QWKFrom;
@@ -94,16 +94,36 @@ extern int qwk_percent;
 bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del,
                      unsigned short stat);
 
+std::optional<std::string> get_qwk_from_message(const std::string& text) {
+  auto qwk_from_start = strstr(text.c_str(), QWKFrom + 2);
+
+  if (qwk_from_start == nullptr) {
+    return std::nullopt;
+  }
+
+  qwk_from_start += strlen(QWKFrom + 2); // Get past 'QWKFrom:'
+  const auto qwk_from_end = strchr(qwk_from_start, '\r');
+
+  if (qwk_from_end && qwk_from_end > qwk_from_start) {
+    std::string temp(qwk_from_start, qwk_from_end - qwk_from_start);
+
+    StringTrim(&temp);
+    StringUpperCase(&temp);
+    return temp;
+  }
+  return std::nullopt;
+}
+
 void qwk_remove_email() {
   a()->emchg_ = false;
 
-  tmpmailrec* mloc = (tmpmailrec*)malloc(MAXMAIL * sizeof(tmpmailrec));
+  auto mloc = (tmpmailrec*)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
     bout.bputs("Not enough memory.");
     return;
   }
 
-  std::unique_ptr<File> f(OpenEmailFile(true));
+  auto f(OpenEmailFile(true));
 
   if (!f->IsOpen()) {
     free(mloc);
@@ -136,7 +156,7 @@ void qwk_remove_email() {
   int curmail = 0;
   bool done = false;
   do {
-    delmail(*f.get(), mloc[curmail].index);
+    delmail(*f, mloc[curmail].index);
 
     ++curmail;
     if (curmail >= mw) {
@@ -146,9 +166,8 @@ void qwk_remove_email() {
   } while (!a()->hangup_ && !done);
 }
 
-void qwk_gather_email(struct qwk_junk* qwk_info) {
+void qwk_gather_email(qwk_junk* qwk_info) {
   int i;
-  bool done = false;
   mailrec m{};
   postrec junk{};
 
@@ -166,10 +185,10 @@ void qwk_gather_email(struct qwk_junk* qwk_info) {
   const int mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(static_cast<long>(i) * (sizeof(mailrec)), File::Whence::begin);
+    f->Seek(static_cast<File::size_type>(i) * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == a()->usernum)) {
-      tmpmailrec r = {};
+      tmpmailrec r{};
       r.index = static_cast<int16_t>(i);
       r.fromsys = m.fromsys;
       r.fromuser = m.fromuser;
@@ -193,7 +212,7 @@ void qwk_gather_email(struct qwk_junk* qwk_info) {
   bout.bputs("Gathering Email");
 
   int curmail = 0;
-  done = false;
+  bool done = false;
 
   qwk_info->in_email = 1;
 
@@ -354,10 +373,11 @@ static void ready_reply_packet(const std::string& packet_name, const std::string
   a()->CdHome();
 }
 
-// Takes reply packet and converts '227' (ã) to '13'
-static void make_text_ready(char* text, long len) {
+// Takes reply packet and converts '227' (ã) to '13' and removes QWK style
+// space padding at the end.
+static std::string make_text_ready(const std::string& text, long len) {
   string temp;
-  for (ssize_t pos = 0; pos < len && !a()->hangup_; pos++) {
+  for (auto pos = 0; pos < len; pos++) {
     if (text[pos] == '\xE3') {
       temp.push_back(13);
       temp.push_back(10);
@@ -365,27 +385,22 @@ static void make_text_ready(char* text, long len) {
       temp.push_back(text[pos]);
     }
   }
-  memcpy(text, &temp[0], temp.size());
-  text[temp.size()] = 0;
+
+  // Remove trailing space character only. wwiv::strings::StringTrimEnd also removes other
+  // whitespace characters like \t and \r\n
+  const auto pos = temp.find_last_not_of(" ");
+  temp.erase(pos + 1);
+  return temp;
 }
 
-static std::unique_ptr<char[]> make_text_file(int filenumber, int curpos, int blocks) {
-  // This memory has to be freed later, after text is 'emailed' or 'posted'
-  // Enough memory is allocated for all blocks, plus 2k extra for other
-  // 'addline' stuff
-  auto text = std::make_unique<char[]>(blocks * sizeof(qwk_junk) + 2048);
+static std::string make_text_file(int filenumber, int curpos, int blocks) {
+  std::string text;
+  text.resize(sizeof(qwk_record) * blocks);
 
   lseek(filenumber, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
-  read(filenumber, text.get(), sizeof(qwk_record) * blocks);
+  read(filenumber, &text[0], sizeof(qwk_record) * blocks);
 
-  make_text_ready(text.get(), sizeof(qwk_record) * blocks);
-
-  auto size = strlen(text.get());
-  while (isspace(text[size - 1]) && size) {
-    --size;
-  }
-  text[size] = 0;
-  return std::move(text);
+  return make_text_ready(text, sizeof(qwk_record) * blocks);
 }
 
 static void process_reply_dat(const std::string& name) {
@@ -412,9 +427,9 @@ static void process_reply_dat(const std::string& name) {
   bout.cls();
 
   while (!done && !a()->hangup_) {
-    int to_email = 0;
+    bool to_email = false;
 
-  lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
+    lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
     ++curpos;
 
     if (read(repfile, &qwk, sizeof(qwk_record)) < 1) {
@@ -441,7 +456,7 @@ static void process_reply_dat(const std::string& name) {
 
       // If in sub 0 or not public, possibly route into email
       if (to_number<int>(tosub) == 0) {
-        to_email = 1;
+        to_email = true;
       } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
         bout.cls();
         bout.Color(1);
@@ -453,62 +468,47 @@ static void process_reply_dat(const std::string& name) {
         bout.Color(7);
         bout << "Route into E-Mail?";
         if (noyes()) {
-          to_email = 1;
+          to_email = true;
         }
       }
 
-      std::unique_ptr<char[]> text(make_text_file(repfile, curpos, to_number<int>(blocks) - 1));
-      if (!text) {
+      auto text = make_text_file(repfile, curpos, to_number<int>(blocks) - 1);
+      if (text.empty()) {
         curpos += to_number<int>(blocks) - 1;
         continue;
       }
 
       if (to_email) {
-        char* temp;
+        auto to_from_msg_opt = get_qwk_from_message(text);
+        if (to_from_msg_opt.has_value()) {
+          bout.nl();
+          bout.Color(3);
+          bout << fmt::sprintf("1) %s", to);
+          bout.nl();
+          bout.Color(3);
+          bout << fmt::sprintf("2) %s", to_from_msg_opt.value());
+          bout.nl(2);
 
-        if ((temp = strstr(text.get(), QWKFrom + 2)) != nullptr) {
+          bout << "Which address is correct?";
+          bout.mpl(1);
 
-          temp += strlen(QWKFrom + 2); // Get past 'QWKFrom:'
-          char* s = strchr(temp, '\r');
+          const int x = onek("12");
 
-          if (s) {
-
-            s[0] = 0;
-
-            StringTrim(temp);
-            strupr(temp);
-
-            if (strlen(s) != strlen(temp)) {
-              bout.nl();
-              bout.Color(3);
-              bout << fmt::sprintf("1) %s", to);
-              bout.nl();
-              bout.Color(3);
-              bout << fmt::sprintf("2) %s", temp);
-              bout.nl(2);
-
-              bout << "Which address is correct?";
-              bout.mpl(1);
-
-              int x = onek("12");
-
-              if (x == '2') {
-                strcpy(to, temp);
-              }
-            }
+          if (x == '2') {
+            to_char_array(to, to_from_msg_opt.value());
           }
         }
       }
 
       if (to_email) {
-        qwk_email_text(text.get(), title, to);
+        qwk_email_text(text.c_str(), title, to);
       } else if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
-        qwk_post_text(text.get(), title, to_number<int16_t>(tosub) - 1);
+        qwk_post_text(text.c_str(), title, to_number<int16_t>(tosub) - 1);
       }
       curpos += to_number<int>(blocks) - 1;
     }
@@ -566,7 +566,7 @@ void upload_reply_packet() {
   a()->set_current_user_sub_num(save_sub);
 }
 
-void qwk_email_text(char* text, char* title, char* to) {
+void qwk_email_text(const char* text, char* title, char* to) {
   strupr(to);
 
   // Remove text name from address, if it doesn't contain " AT " in it
@@ -627,7 +627,7 @@ void qwk_email_text(char* text, char* title, char* to) {
       set_net_num(0);
       send_to_name = a()->names()->UserName(un);
     } else {
-      std::string netname = (wwiv::stl::ssize(a()->net_networks) > 1) ? a()->network_name() : "";
+      const std::string netname = (wwiv::stl::ssize(a()->net_networks) > 1) ? a()->network_name() : "";
       send_to_name = username_system_net_as_string(un, a()->net_email_name, sy, netname);
     }
 
@@ -687,14 +687,13 @@ void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* na
     bout.charbuffer[0] = 0;
   });
 
-  messagerec m = *m1;
+  auto m = *m1;
   std::ostringstream ss;
   ss << name << "\r\n";
-
   ss << dt.to_string() << "\r\n";
   ss << text << "\r\n";
 
-  std::string message_text = ss.str();
+  auto message_text = ss.str();
   if (message_text.back() != CZ) {
     message_text.push_back(CZ);
   }
@@ -702,7 +701,7 @@ void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* na
   *m1 = m;
 }
 
-void qwk_post_text(char* text, char* title, int16_t sub) {
+void qwk_post_text(const char* text, char* title, int16_t sub) {
   messagerec m{};
   postrec p{};
 
@@ -1229,7 +1228,7 @@ void config_qwk_bw() {
       memset(&qj, 0, sizeof(struct qwk_junk));
       bout.cls();
 
-      auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
+      const auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
       if (!qj.abort) {
         a()->user()->data.qwk_archive = arcno;
       }

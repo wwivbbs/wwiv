@@ -164,7 +164,7 @@ ssize_t TextFile::WriteLine(const string& text) noexcept {
 }
 
 static void StripLineEnd(char* str) noexcept {
-  size_t i = strlen(str);
+  auto i = strlen(str);
   while ((i > 0) && ((str[i - 1] == 10) || str[i - 1] == 13)) {
     --i;
   }
@@ -206,7 +206,7 @@ std::string TextFile::ReadFileIntoString() {
   fseek(file_, 0, SEEK_END);
   contents.resize(static_cast<unsigned long>(ftell(file_)));
   rewind(file_);
-  auto num_read = fread(&contents[0], 1, contents.size(), file_);
+  const auto num_read = fread(&contents[0], 1, contents.size(), file_);
   contents.resize(num_read);
   return contents;
 }
