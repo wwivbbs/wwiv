@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/pause.h"
 #include "bbs/qwk.h"
@@ -31,6 +27,9 @@
 #include "core_test/file_helper.h"
 #include "deps/googletest/googletest/include/gtest/gtest.h"
 #include "sdk/filenames.h"
+#include <iostream>
+#include <memory>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -43,13 +42,17 @@ using namespace wwiv::strings;
 
 class QwkTest : public ::testing::Test {
 protected:
-  void SetUp() override { helper.SetUp(); }
+  void SetUp() override {
+    helper.SetUp();
+    filename = PathFilePath(helper.data(), QWK_CFG);
+  }
 
 protected:
   BbsHelper helper{};
+  std::filesystem::path filename;
 };
 
-TEST_F(QwkTest, ReadQwkConfig_NoBulletins) {
+TEST_F(QwkTest, ReadQwkConfig_Read_NoBulletins) {
 
   {
     const auto datadir = helper.data();
@@ -69,9 +72,7 @@ TEST_F(QwkTest, ReadQwkConfig_NoBulletins) {
 }
 
 
-TEST_F(QwkTest, ReadQwkConfig_TwoBulletins) {
-
-  const auto filename = PathFilePath(helper.data(), QWK_CFG);
+TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
   {
     const auto datadir = helper.data();
     DataFile<qwk_config_430> f(filename, 
@@ -111,5 +112,41 @@ TEST_F(QwkTest, ReadQwkConfig_TwoBulletins) {
   ++b;
   EXPECT_EQ(b->name, "name2");
   EXPECT_EQ(b->path, "path2");
+}
 
+TEST_F(QwkTest, ReadQwkConfig_Write_NoBulletins) {
+  qwk_config c{};
+  c.packet_name = "TESTPAKT";
+
+  ASSERT_FALSE(File::Exists(filename));
+  write_qwk_cfg(c);
+  ASSERT_TRUE(File::Exists(filename));
+
+  {
+    File f(filename);
+    EXPECT_EQ(656, f.length());
+  }
+
+  {
+    DataFile<qwk_config_430> f(filename, File::modeReadOnly | File::modeBinary);
+    ASSERT_TRUE(f);
+    qwk_config_430 q4{};
+    ASSERT_TRUE(f.Read(&q4));
+
+    EXPECT_STREQ("TESTPAKT", q4.packet_name);
+  }
+}
+
+TEST_F(QwkTest, ReadQwkConfig_Write_TwoBulletins) {
+  qwk_config c{};
+  c.packet_name = "TESTPAKT";
+  qwk_bulletin b{"name1", "path1"};
+  c.bulletins.emplace_back(b);
+
+  ASSERT_FALSE(File::Exists(filename));
+  write_qwk_cfg(c);
+
+  ASSERT_TRUE(File::Exists(filename));
+  File f(filename);
+  EXPECT_EQ(656 + BULL_SIZE + BNAME_SIZE, f.length());
 }

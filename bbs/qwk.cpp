@@ -60,11 +60,12 @@
 #include <memory>
 #include <string>
 
+
+#include "core/clock.h"
 #include "read_message.h"
+#include "sdk/qscan.h"
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
-
-void build_control_dat(struct qwk_junk *qwk_info);
 
 using std::unique_ptr;
 using std::string;
@@ -88,6 +89,63 @@ static bool replacefile(const std::string& src, const std::string& dst) {
     return false;
   }
   return File::Copy(src, dst);
+}
+
+bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
+  const auto now = clock->Now();
+  // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
+  const auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
+
+  TextFile fp(FilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
+
+  if (!fp) {
+    return false;
+  }
+
+  const auto system_name = qwk_system_name(qwk_cfg);
+  fp.WriteLine(fmt::format("{}.qwk", system_name));
+  fp.WriteLine();  // System City and State
+  fp.WriteLine(a()->config()->system_phone());
+  fp.WriteLine(a()->config()->sysop_name());
+  fp.WriteLine(fmt::format("00000,{}", system_name));
+  fp.WriteLine(date_time);
+  fp.WriteLine(a()->user()->GetName());
+  fp.WriteLine("");
+  fp.WriteLine("0");
+  fp.WriteLine(qwk_info->qwk_rec_num);
+  
+  const auto max_size = a()->subs().subs().size();
+  const qscan_bitset qb(a()->context().qsc_q, max_size);
+  auto amount = 0;
+  std::vector<std::string> subs_list;
+  for (size_t cur = 0; a()->usub[cur].subnum != -1 && cur < max_size; cur++) {
+    const auto subnum = a()->usub[cur].subnum;
+    if (qb.test(subnum)) {
+      ++amount;
+
+      // QWK support says this should be truncated to 10 or 13 characters
+      // however QWKE allows for 255 characters. This works fine in multimail which
+      // is the only still maintained QWK reader I'm aware of at this time, so we'll
+      // allow it to be the full length.
+      const auto sub_name = stripcolors(a()->subs().sub(subnum).name);
+      subs_list.push_back(std::to_string(subnum + 1));
+      subs_list.push_back(sub_name);
+    }
+  }
+  fp.WriteLine(amount);
+  
+  fp.WriteLine("0");
+  fp.WriteLine("E-Mail");
+
+  // List the subs in the format of "Sub Number\r\nSub Name\r\n"
+  for (const auto& s : subs_list) {
+    fp.WriteLine(s);
+  }
+
+  fp.WriteLine(qwk_cfg.hello);
+  fp.WriteLine(qwk_cfg.news);
+  fp.WriteLine(qwk_cfg.bye);
+  return fp.Close();
 }
 
 void build_qwk_packet() {
@@ -204,7 +262,8 @@ void build_qwk_packet() {
     qwk_info.zero = close(qwk_info.zero);
   }
   if (!qwk_info.abort) {
-    build_control_dat(&qwk_info);
+    SystemClock clock{};
+    build_control_dat(qwk_cfg, &clock, &qwk_info);
   }
   if (!qwk_info.abort) {
     finish_qwk(&qwk_info);
@@ -599,62 +658,6 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 }
 
 
-void build_control_dat(struct qwk_junk *qwk_info) {
-  const auto now = DateTime::now();
-  // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
-  const auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
-
-  auto file = FilePath(a()->qwk_directory(), "CONTROL.DAT");
-  auto fp = fopen(file.c_str(), "wb");
-
-  if (!fp) {
-    return;
-  }
-
-  auto qwk_cfg = read_qwk_cfg();
-  const auto system_name = qwk_system_name(qwk_cfg);
-
-  fprintf(fp, "%s.qwk\r\n", system_name.c_str());
-  fprintf(fp, "%s\r\n", "");   // System City and State
-  fprintf(fp, "%s\r\n", a()->config()->system_phone().c_str());
-  fprintf(fp, "%s\r\n", a()->config()->sysop_name().c_str());
-  fprintf(fp, "%s,%s\r\n", "00000", system_name.c_str());
-  fprintf(fp, "%s\r\n", date_time.c_str());
-  fprintf(fp, "%s\r\n", reinterpret_cast<char*>(a()->user()->data.name));
-  fprintf(fp, "%s\r\n", "");
-  fprintf(fp, "%s\r\n", "0");
-  fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
-  
-  int amount = 0;
-  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
-    if (a()->context().qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
-      ++amount;
-    }
-  }
-  fprintf(fp, "%d\r\n", amount);
-  
-  fprintf(fp, "0\r\n");
-  fprintf(fp, "E-Mail\r\n");
-
-  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
-    if (a()->context().qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
-      // QWK support says this should be truncated to 10 or 13 characters
-      // however QWKE allows for 255 characters. This works fine in multimail which
-      // is the only still maintained QWK reader I'm aware of at this time, so we'll
-      // allow it to be the full length.
-      auto sub_name = stripcolors(a()->subs().sub(a()->usub[cur].subnum).name);
-
-      fprintf(fp, "%d\r\n", a()->usub[cur].subnum + 1);
-      fprintf(fp, "%s\r\n", sub_name.c_str());
-    }
-  }
-
-  fprintf(fp, "%s\r\n", qwk_cfg.hello.c_str());
-  fprintf(fp, "%s\r\n", qwk_cfg.news.c_str());
-  fprintf(fp, "%s\r\n", qwk_cfg.bye.c_str());
-
-  fclose(fp);
-}
 
 std::string qwk_system_name(const qwk_config& c) {
   auto qwkname = !c.packet_name.empty() ? c.packet_name : a()->config()->system_name();

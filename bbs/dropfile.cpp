@@ -252,7 +252,7 @@ void CreatePCBoardSysDropFile() {
 // https://github.com/sdudley/maximus/blob/1cc413a28df645aeb7170ac7524a05abf501e6ab/mec/misc/callinfo.mec
 void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
-  string fileName = create_dropfile_filename(drop_file_t::CALLINFO_BBS);
+  const auto fileName = create_dropfile_filename(drop_file_t::CALLINFO_BBS);
   File::Remove(fileName);
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {

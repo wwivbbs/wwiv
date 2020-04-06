@@ -33,7 +33,7 @@ public:
     : date_time_(dt) {
   }
 
-  DateTime Now() const noexcept override;
+  [[nodiscard]] DateTime Now() const noexcept override;
   void tick(std::chrono::duration<double> inc);
 
 private:
