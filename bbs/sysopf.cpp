@@ -295,7 +295,7 @@ void print_net_listing(bool bForcePause) {
   char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
   bool bHadPause{false};
-  int current_net{1};
+  int current_net{0};
 
   a()->status_manager()->RefreshStatusCache();
 
@@ -356,8 +356,8 @@ void print_net_listing(bool bForcePause) {
         continue;
       }
     } else {
-      // current_net is the current network number, if there is only 1, they use it.
-      current_net = 1;
+      // current_net is the current network number, if there is only 1, thens use it.
+      current_net = 0;
     }
     const auto& net = a()->net_networks[current_net];
 
@@ -487,7 +487,7 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(net.dir);
+      auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
       if (bbslist.empty()) {
         bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
         pausescr();
@@ -634,101 +634,101 @@ void mailr() {
   mailrec m, m1;
   filestatusrec fsr;
 
-  unique_ptr<File> pFileEmail(OpenEmailFile(false));
-  if (pFileEmail->IsOpen()) {
-    auto nRecordNumber = (pFileEmail->length() / sizeof(mailrec)) - 1;
-    char c = ' ';
-    while (nRecordNumber >= 0 && c != 'Q' && !a()->hangup_) {
-      pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Read(&m, sizeof(mailrec));
-      if (m.touser != 0) {
-        pFileEmail->Close();
-        do {
-          User user;
-          a()->users()->readuser(&user, m.touser);
-          const string unn = a()->names()->UserName(m.touser);
-          bout << "|#9  To|#7: ";
-          bout.Color(a()->GetMessageColor());
-          bout << unn << wwiv::endl;
-          set_net_num(network_number_from(&m));
-          bout << "|#9Subj|#7: ";
-          bout.Color(a()->GetMessageColor());
-          bout << m.title << wwiv::endl;
-          if (m.status & status_file) {
-            File attachDat(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
-            if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
-              bool found = false;
-              auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
-              while (lAttachFileSize > 0 && !found) {
-                if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                  bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
-                  found = true;
-                }
-                if (!found) {
-                  lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
-                }
+  auto pFileEmail(OpenEmailFile(false));
+  if (!pFileEmail->IsOpen()) {
+    return;
+  }
+  auto nRecordNumber = (pFileEmail->length() / sizeof(mailrec)) - 1;
+  char c = ' ';
+  while (nRecordNumber >= 0 && c != 'Q' && !a()->hangup_) {
+    pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
+    pFileEmail->Read(&m, sizeof(mailrec));
+    if (m.touser != 0) {
+      pFileEmail->Close();
+      do {
+        User user;
+        a()->users()->readuser(&user, m.touser);
+        const string unn = a()->names()->UserName(m.touser);
+        bout << "|#9  To|#7: ";
+        bout.Color(a()->GetMessageColor());
+        bout << unn << wwiv::endl;
+        set_net_num(network_number_from(&m));
+        bout << "|#9Subj|#7: ";
+        bout.Color(a()->GetMessageColor());
+        bout << m.title << wwiv::endl;
+        if (m.status & status_file) {
+          File attachDat(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
+          if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
+            bool found = false;
+            auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
+            while (lAttachFileSize > 0 && !found) {
+              if (m.daten == static_cast<uint32_t>(fsr.id)) {
+                bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
+                found = true;
               }
               if (!found) {
-                bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
+                lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               }
-              attachDat.Close();
-            } else {
-              bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
             }
-          }
-          bool next;
-          auto msg = read_type2_message(&(m.msg), (char)(m.anony & 0x0f), true, "email", m.fromsys, m.fromuser);
-          display_type2_message(msg, &next);
-          bout << "|#2R,D,Q,<space>  : ";
-          if (next) {
-            c = ' ';
+            if (!found) {
+              bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
+            }
+            attachDat.Close();
           } else {
-            c = onek("QRD ");
+            bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
           }
-          if (c == 'D') {
-            pFileEmail = OpenEmailFile(true);
-            pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
-            pFileEmail->Read(&m1, sizeof(mailrec));
-            if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-              delmail(*pFileEmail.get(), nRecordNumber);
-              bool found = false;
-              if (m.status & status_file) {
-                File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
-                if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
-                  auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
-                  while (lAttachFileSize > 0 && !found) {
-                    if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                      found = true;
-                      fsr.id = 0;
-                      attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
-                      attachFile.Write(&fsr, sizeof(filestatusrec));
-                      File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
-                    } else {
-                      attachFile.Read(&fsr, sizeof(filestatusrec));
-                    }
-                  }
-                  attachFile.Close();
-                }
-              }
-            } else {
-              bout << "Mail file changed; try again.\r\n";
-            }
-            pFileEmail->Close();
-            if (!a()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
-              a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
-            }
-          }
-          bout.nl(2);
-        } while ((c == 'R') && (!a()->hangup_));
-
-        pFileEmail = OpenEmailFile(false);
-        if (!pFileEmail->IsOpen()) {
-          break;
         }
+        bool next;
+        auto msg = read_type2_message(&(m.msg), (char)(m.anony & 0x0f), true, "email", m.fromsys, m.fromuser);
+        display_type2_message(msg, &next);
+        bout << "|#2R,D,Q,<space>  : ";
+        if (next) {
+          c = ' ';
+        } else {
+          c = onek("QRD ");
+        }
+        if (c == 'D') {
+          pFileEmail = OpenEmailFile(true);
+          pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
+          pFileEmail->Read(&m1, sizeof(mailrec));
+          if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
+            delmail(*pFileEmail.get(), nRecordNumber);
+            bool found = false;
+            if (m.status & status_file) {
+              File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
+              if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
+                auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
+                while (lAttachFileSize > 0 && !found) {
+                  if (m.daten == static_cast<uint32_t>(fsr.id)) {
+                    found = true;
+                    fsr.id = 0;
+                    attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
+                    attachFile.Write(&fsr, sizeof(filestatusrec));
+                    File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
+                  } else {
+                    attachFile.Read(&fsr, sizeof(filestatusrec));
+                  }
+                }
+                attachFile.Close();
+              }
+            }
+          } else {
+            bout << "Mail file changed; try again.\r\n";
+          }
+          pFileEmail->Close();
+          if (!a()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
+            a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
+          }
+        }
+        bout.nl(2);
+      } while ((c == 'R') && (!a()->hangup_));
+
+      pFileEmail = OpenEmailFile(false);
+      if (!pFileEmail->IsOpen()) {
+        break;
       }
-      nRecordNumber -= 1;
     }
-    pFileEmail->Close();
+    nRecordNumber -= 1;
   }
 }
 
@@ -738,21 +738,21 @@ void chuser() {
   }
 
   bout << "|#9Enter user to change to: ";
-  auto userName = input(30, true);
-  auto user_number = finduser1(userName);
-  if (user_number > 0) {
-    a()->WriteCurrentUser();
-    write_qscn(a()->usernum, a()->context().qsc, false);
-    a()->ReadCurrentUser(user_number);
-    read_qscn(user_number, a()->context().qsc, false);
-    a()->usernum = static_cast<uint16_t>(user_number);
-    a()->effective_sl(255);
-    sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
-    changedsl();
-    a()->UpdateTopScreen();
-  } else {
+  const auto userName = input(30, true);
+  const auto user_number = finduser1(userName);
+  if (user_number <= 0) {
     bout << "|#6Unknown user.\r\n";
+    return;
   }
+  a()->WriteCurrentUser();
+  write_qscn(a()->usernum, a()->context().qsc, false);
+  a()->ReadCurrentUser(user_number);
+  read_qscn(user_number, a()->context().qsc, false);
+  a()->usernum = static_cast<uint16_t>(user_number);
+  a()->effective_sl(255);
+  sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
+  changedsl();
+  a()->UpdateTopScreen();
 }
 
 void zlog() {
