@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
@@ -239,7 +240,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
   int curn = -1;
   while (subs_xtr.ReadLine(&line)) {
     StringTrim(&line);
-    char identifier = line.front();
+    const char identifier = line.front();
     line = line.substr(1);
     switch (identifier) {
     case '!':
@@ -260,13 +261,17 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
       if (curn >= 0) {
         ParseXSubsLine(net_networks, line, xsubs[curn]);
       }
+    default:
+      // NOP
+      ;
     }
   }
 
   return true;
 }
 
-bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks,
+                    const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
   const auto sx = PathFilePath(datadir, SUBS_XTR);
   backup_file(sx);
@@ -276,17 +281,19 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
     return false;
   }
 
-  int i = 0;
+  auto i = 0;
   for (const auto& x : xsubs) {
     if (!x.nets.empty()) {
       f.Write(fmt::sprintf("!%u\n@%s\n#0\n", i, x.desc));
       for (const auto& n : x.nets) {
-        f.Write(fmt::sprintf("$%s %s %lu %u %u\n",
-          net_networks[n.net_num].name,
-          n.stype_str.c_str(),
-          n.flags,
-          n.host,
-          n.category));
+        if (ssize(net_networks) <= n.net_num) {
+          LOG(ERROR) << "Unable to write a subs.xtr line for network number: " << n.net_num
+                     << " for sub with description: " << x.desc;
+          continue;
+        }
+        const auto& net = net_networks[n.net_num];
+        f.Write(
+            fmt::sprintf("$%s %s %lu %u %u\n", net.name, n.stype_str, n.flags, n.host, n.category));
       }
     }
     i++;

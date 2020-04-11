@@ -111,25 +111,30 @@ static void DisplayNetInfo(size_t nSubNum) {
   bout << "\r\n|#9      Network      Type                 Host    Scrb   Flags\r\n";
   int i = 0;
   const auto& nets = a()->subs().sub(nSubNum).nets;
-  for (const auto& n : nets) {
-    std::string auto_info = (n.category) ? fmt::format(" Auto-Info({})", n.category) : " Auto-Info";
-    if (n.host == 0) {
+  for (const auto& sn : nets) {
+    const auto auto_info_text = (sn.category) ? fmt::format(" Auto-Info({})", sn.category) : " Auto-Info";
+    if (ssize(a()->net_networks) <= sn.net_num) {
+      bout << "      |#6No network exists at number: " << sn.net_num << " to display. \r\n";
+      continue;
+    }
+    const auto& net = a()->net_networks[sn.net_num];
+    if (sn.host == 0) {
       std::string host = "<HERE>";
-      const auto dir = a()->net_networks[n.net_num].dir;
-      const auto net_file_name = fmt::format("n{}.net", dir, n.stype);
+      const auto dir = net.dir;
+      const auto net_file_name = fmt::format("n{}.net", dir, sn.stype);
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(PathFilePath(dir, net_file_name), subscribers);
       auto num = ssize(subscribers);
       bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
-                           a()->net_networks[n.net_num].name, n.stype, host, num,
-                           (n.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
-                           (n.flags & XTRA_NET_AUTO_INFO) ? auto_info : "");
+                           net.name, sn.stype, host, num,
+                           (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
+                           (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     } else {
-      auto host = fmt::format("{} ", n.host);
+      auto host = fmt::format("{} ", sn.host);
       bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n", i + 'a',
-                           a()->net_networks[n.net_num].name, n.stype, host,
-                           (n.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
-                           (n.flags & XTRA_NET_AUTO_INFO) ? auto_info : "");
+                           net.name, sn.stype, host,
+                           (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
+                           (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     }
     ++i;
   }
