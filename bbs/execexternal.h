@@ -20,6 +20,15 @@
 
 #include <string>
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags);
+/**
+ * Executes an external program or am internal script.
+ *
+ * To execute a script, use prefix the command with @ and script type.
+ * For a basic script, use the following syntax for command_line:
+ * '@basic:[SCRIPT_NAME]'
+ *
+ * flags are the EFLAG_XXXX flags defined in vardec.h
+ */
+int ExecuteExternalProgram(const std::string& command_line, int flags);
 
 #endif  // __INCLUDED_BBS_EXECEXTERNAL_H__

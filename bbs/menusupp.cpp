@@ -1024,21 +1024,12 @@ void SetDirNumber(const char *pszDirectoryKeys) {
 }
 
 void LogOffCmd() {
-    if (!a()->logoff_cmd.empty()) {
-    if (a()->logoff_cmd.front() == '@') {
-      // Let's see if we need to run a basic script.
-      const string BASIC_PREFIX = "@basic:";
-      if (starts_with(a()->logoff_cmd, BASIC_PREFIX)) {
-        const auto cmd = a()->logoff_cmd.substr(BASIC_PREFIX.size());
-        LOG(INFO) << "Running basic script: " << cmd;
-        wwiv::bbs::RunBasicScript(cmd);
-      }
-    }
-    else {
-      bout.nl();
-      const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
-    }
-    bout.nl(2);
+  if (a()->logoff_cmd.empty()) {
+    return;
   }
+
+  bout.nl();
+  const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
+  ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
+  bout.nl(2);
 }

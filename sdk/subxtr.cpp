@@ -193,7 +193,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   string net_name;
   stream >> net_name;
   StringTrim(&net_name);
-  int net_num = FindNetworkByName(net_networks, net_name);
+  const int net_num = FindNetworkByName(net_networks, net_name);
   if (net_num == -1) {
     return false;
   }
@@ -240,7 +240,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
   int curn = -1;
   while (subs_xtr.ReadLine(&line)) {
     StringTrim(&line);
-    const char identifier = line.front();
+    const auto identifier = line.front();
     line = line.substr(1);
     switch (identifier) {
     case '!':

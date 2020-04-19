@@ -284,10 +284,9 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
           data.emplace_back(to_script_data(val));
         }
       }
-      wwiv_script_userdata_t* wwiv_userdata = nullptr;
       void* x;
       mb_get_userdata(bas, &x);
-      wwiv_userdata = (wwiv_script_userdata_t*)x;
+      wwiv_script_userdata_t* wwiv_userdata = static_cast<wwiv_script_userdata_t*>(x);
 
       if (!SaveData(wwiv_userdata->module, data)) {
         bout << "#6Error saving data.\r\n";
@@ -316,17 +315,16 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
         return MB_FUNC_WARNING;
       }
 
-      wwiv_script_userdata_t* wwiv_userdata = nullptr;
       void* x;
       mb_get_userdata(bas, &x);
-      wwiv_userdata = (wwiv_script_userdata_t*)x;
+      wwiv_script_userdata_t* wwiv_userdata = static_cast<wwiv_script_userdata_t*>(x);
 
       int current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
       std::vector<script_data_t> data = LoadData(wwiv_userdata->module);
       for (const auto& d : data) {
         mb_value_t val = to_mb_value(d);
-        mb_value_t idx{};
+        mb_value_t idx;
         mb_make_int(idx, current_count++);
         auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
@@ -524,14 +522,14 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
 }
 
 bool RunBasicScript(const std::string& script_name) {
-  static bool pnce = RegisterMyBasicGlobals();
+  [[maybe_unused]] static bool once = RegisterMyBasicGlobals();
 
-  auto path = PathFilePath(a()->config()->scriptdir(), script_name);
+  const auto path = PathFilePath(a()->config()->scriptdir(), script_name);
   if (!File::Exists(path)) {
     bout << "|#6Unable to locate script: " << script_name;
     return false;
   }
-  string basename = ToStringLowerCase(script_name);
+  auto basename = ToStringLowerCase(script_name);
   if (ends_with(basename, ".bas")) {
     basename = basename.substr(0, basename.find_last_of('.'));
   }
@@ -560,7 +558,7 @@ bool RunBasicScript(const std::string& script_name) {
     return false;
   }
 
-  auto ret = mb_run(bas, false);
+  const auto ret = mb_run(bas, false);
 
   mb_close(&bas);
   return ret == MB_FUNC_OK;

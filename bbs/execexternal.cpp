@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/execexternal.h"
 
+
+#include "basic.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/dropfile.h"
@@ -28,7 +30,7 @@
 
 using namespace wwiv::core;
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
+static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nFlags) {
   LOG(INFO) << "ExecuteExternalProgram: errno: " << errno;
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
@@ -63,7 +65,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
   a()->localIO()->DisableLocalIO();
-  auto return_code = exec_cmdline(commandLine, nFlags);
+  const auto return_code = exec_cmdline(commandLine, nFlags);
 
   // Re-engage the local IO engine if needed.
   a()->localIO()->ReenableLocalIO();
@@ -80,3 +82,23 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   return return_code;
 }
 
+int ExecuteExternalProgram(const std::string& command_line, int flags) {
+  if (command_line.front() != '@') {
+    return ExecuteExternalProgramNoScript(command_line, flags);
+  }
+
+  if (flags & EFLAG_NOSCRIPT) {
+    LOG(WARNING) << "Not running '" << command_line << "' as a script since EFLAG_NOSCRIPT is specified.";
+    return ExecuteExternalProgramNoScript(command_line, flags);
+  }
+ 
+  // Let's see if we need to run a basic script.
+  const std::string BASIC_PREFIX = "@basic:";
+  if (!wwiv::strings::starts_with(command_line, BASIC_PREFIX)) {
+    return 1;
+  }
+
+  const auto cmd = command_line.substr(BASIC_PREFIX.size());
+  LOG(INFO) << "Running basic script: " << cmd;
+  return wwiv::bbs::RunBasicScript(cmd) ? 0 : 1;
+}

@@ -964,6 +964,8 @@ struct filestatusrec {
 
 // Default option, do nothing.
 constexpr uint16_t EFLAG_NONE = 0x0000;
+// Don't allow running a basic script using the format: '@basic:scriptname.bas'
+constexpr uint16_t EFLAG_NOSCRIPT = 0x0001;
 // don't check for hangup (typically used for the upload event)
 constexpr uint16_t  EFLAG_NOHUP = 0x0004;
 // redirect DOS IO to com port

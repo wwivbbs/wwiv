@@ -112,13 +112,14 @@ void StatusManagerCallback(int i) {
   case WStatus::fileChangeNet: {
     set_net_num(a()->net_num());
   } break;
+  default: // NOP
+    ;
   }
 }
 
-// Turns a string into a bitmapped unsigned short flag for use with
-// ExecuteExternalProgram calls.
+// Turns a string into a bitmapped unsigned short flag for use with ExecuteExternalProgram.
 static uint16_t str2spawnopt(const std::string& s) {
-  uint16_t return_val = EFLAG_NONE;
+  auto return_val = EFLAG_NONE;
   auto ts = s;
   StringUpperCase(&ts);
 
@@ -129,13 +130,16 @@ static uint16_t str2spawnopt(const std::string& s) {
     return_val |= EFLAG_COMIO;
   }
   if (ts.find("FOSSIL") != std::string::npos) {
-    return_val |= EFLAG_FOSSIL; // RF20020929
+    return_val |= EFLAG_FOSSIL;
   }
   if (ts.find("NETPROG") != std::string::npos) {
     return_val |= EFLAG_NETPROG;
   }
   if (ts.find("STDIO") != std::string::npos) {
     return_val |= EFLAG_STDIO;
+  }
+  if (ts.find("NOSCRIPT") != std::string::npos) {
+    return_val |= EFLAG_NOSCRIPT;
   }
   return return_val;
 }
@@ -192,9 +196,9 @@ void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
   {                                                                                                \
     const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                   \
     if (!ss.empty()) {                                                                             \
-      f = func(ss);                                                                                \
+      (f) = func(ss);                                                                                \
     } else {                                                                                       \
-      f = d;                                                                                       \
+      (f) = d;                                                                                       \
     }                                                                                              \
   }
 
@@ -764,7 +768,7 @@ void Application::create_phone_file() {
   }
   auto file_size = file.length();
   file.Close();
-  int numOfRecords = static_cast<int>(file_size / sizeof(userrec));
+  const auto numOfRecords = static_cast<int16_t>(file_size / sizeof(userrec));
 
   File phoneNumFile(PathFilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |
