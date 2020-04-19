@@ -36,6 +36,7 @@
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
+#include "sdk/user.h"
 #include <cassert>
 
 #include <cereal/cereal.hpp>
@@ -51,40 +52,38 @@ using namespace wwiv::strings;
 
 namespace wwiv::bbs {
 
+namespace {
+  // Globals to be used from the interpreter before execution begins
+  std::string script_datadir;
+  std::string script_scriptdir;
+}
+
 static char* BasicStrDup(const std::string& s) {
   return mb_memdup(s.c_str(), s.size() + 1);
 }
 
-enum class script_data_type_t { STRING, INT, REAL };
-
 struct wwiv_script_userdata_t {
-  string module;
+  std::string datadir;
+  std::string module;
+  const sdk::User* user{};
+  bool mci_enabled{false};
 };
 
 #define SERIALIZE(field) { try { ar(cereal::make_nvp(#field, field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
 
-struct script_data_t {
-  script_data_type_t type;
-  string s;
-  int i;
-  float r;
-
   template <class Archive>
-  void serialize(Archive& ar) {
-    SERIALIZE(type);
-    if (type == script_data_type_t::INT) {
-      SERIALIZE(i);
+  void serialize(Archive& ar, script_data_t& t) {
+    SERIALIZE(t.type);
+    if (t.type == script_data_type_t::INT) {
+      SERIALIZE(t.i);
     }
-    else if (type == script_data_type_t::REAL) {
-      SERIALIZE(r);
+    else if (t.type == script_data_type_t::REAL) {
+      SERIALIZE(t.r);
     }
-    else if (type == script_data_type_t::STRING) {
-      SERIALIZE(s);
+    else if (t.type == script_data_type_t::STRING) {
+      SERIALIZE(t.s);
     }
   }
-
-
-};
 
 static mb_value_t to_mb_value(const script_data_t& f) {
   mb_value_t t{};
@@ -125,15 +124,15 @@ static script_data_t to_script_data(const mb_value_t& v) {
   return{};
 }
 
-static bool SaveData(const std::string basename, const std::vector<script_data_t>& data) {
-  const auto path = PathFilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
+static bool SaveData(const std::string& datadir, const std::string& basename, const std::vector<script_data_t>& data) {
+  const auto path = PathFilePath(datadir, StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   return json.Save();
 }
 
-static std::vector<script_data_t> LoadData(const std::string basename) {
+static std::vector<script_data_t> LoadData(const std::string& datadir, const std::string& basename) {
   std::vector<script_data_t> data;
-  const auto path = PathFilePath(a()->config()->datadir(), StrCat(basename, ".script.json"));
+  const auto path = PathFilePath(datadir, StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   json.Load();
   return data;
@@ -166,15 +165,13 @@ static bool RegisterMyBasicGlobals() {
   return true;
 }
 
-// bobby
-
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
     bout << "|#6Invalid script name: " << script_name << "\r\n";
   }
 
-  const auto path = PathFilePath(a()->config()->scriptdir(), script_name);
+  const auto path = PathFilePath(script_scriptdir, script_name);
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
     bout << "|#6Unable to locate script: " << script_name << "\r\n";
@@ -186,8 +183,8 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
     bout << "|#6Unable to read script: " << script_name << "\r\n";
   }
 
-  auto lines = file.ReadFileIntoString();
-  auto ret = mb_load_string(bas, lines.c_str(), true);
+  const auto lines = file.ReadFileIntoString();
+  const auto ret = mb_load_string(bas, lines.c_str(), true);
   return ret == MB_FUNC_OK;
 }
 
@@ -227,7 +224,7 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, c
 }
 
 static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, unsigned short row, unsigned short col) {
-  string file = (f) ? f : "(null)";
+  const string file = (f) ? f : "(null)";
   VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
 
   mb_unrefvar(s);
@@ -245,8 +242,9 @@ static int _version(struct mb_interpreter_t* bas, void** l) {
   return MB_FUNC_OK;
 }
 
-static bool RegisterNamespaceData(mb_interpreter_t* bas) {
+bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
   mb_begin_module(bas, "WWIV.DATA");
+  const auto datadir = config_.datadir();
 
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
@@ -277,7 +275,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
       // bout << " with size: " << count;
       std::vector<script_data_t> data;
       for (int i = 0; i < count; i++) {
-        mb_value_t idx{};
+        mb_value_t idx;
         mb_make_int(idx, i);
         mb_value_t val{};
         if (mb_get_coll(bas, l, arg, idx, &val) == MB_FUNC_OK) {
@@ -286,9 +284,9 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
       }
       void* x;
       mb_get_userdata(bas, &x);
-      wwiv_script_userdata_t* wwiv_userdata = static_cast<wwiv_script_userdata_t*>(x);
+      const auto d = static_cast<wwiv_script_userdata_t*>(x);
 
-      if (!SaveData(wwiv_userdata->module, data)) {
+      if (!SaveData(d->datadir, d->module, data)) {
         bout << "#6Error saving data.\r\n";
       }
     }
@@ -317,22 +315,22 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
 
       void* x;
       mb_get_userdata(bas, &x);
-      wwiv_script_userdata_t* wwiv_userdata = static_cast<wwiv_script_userdata_t*>(x);
+      const auto sd = static_cast<wwiv_script_userdata_t*>(x);
 
-      int current_count = 0;
+      auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
-      std::vector<script_data_t> data = LoadData(wwiv_userdata->module);
+      auto data = LoadData(sd->datadir, sd->module);
       for (const auto& d : data) {
-        mb_value_t val = to_mb_value(d);
+        const auto val = to_mb_value(d);
         mb_value_t idx;
         mb_make_int(idx, current_count++);
-        auto ret = mb_set_coll(bas, l, arg, idx, val);
+        const auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
           bout << "[oops] ";
         }
       }
 
-      if (!SaveData(wwiv_userdata->module, data)) {
+      if (!SaveData(sd->datadir, sd->module, data)) {
         bout << "#6Error loading data.\r\n";
       }
     }
@@ -511,7 +509,12 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     }
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
-    BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+
+    void* x;
+    mb_get_userdata(bas, &x);
+    const auto d = static_cast<wwiv_script_userdata_t*>(x);
+
+    BbsMacroContext ctx(d->user, d->mci_enabled);
     string s = ctx.interpret(*arg);
     mb_check(mb_attempt_close_bracket(bas, l));
     mb_push_string(bas, l, BasicStrDup(s));
@@ -521,10 +524,10 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
   return mb_end_module(bas) == MB_FUNC_OK;
 }
 
-bool RunBasicScript(const std::string& script_name) {
+bool Basic::RunScript(const std::string& script_name) {
   [[maybe_unused]] static bool once = RegisterMyBasicGlobals();
 
-  const auto path = PathFilePath(a()->config()->scriptdir(), script_name);
+  const auto path = PathFilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
     bout << "|#6Unable to locate script: " << script_name;
     return false;
@@ -534,14 +537,20 @@ bool RunBasicScript(const std::string& script_name) {
     basename = basename.substr(0, basename.find_last_of('.'));
   }
 
-  wwiv_script_userdata_t wwiv_userdata;
-  wwiv_userdata.module = basename;
+  wwiv_script_userdata_t d;
+  d.datadir = config_.datadir();
+  d.module = basename;
+  d.user = &user_;
+  d.mci_enabled = mci_enabled_;
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
-  mb_set_userdata(bas, &wwiv_userdata);
+  mb_set_userdata(bas, &d);
   // TODO(rushfan): Update to new syntax
-  // mb_debug_set_stepped_handler(bas, _on_stepped);
+  // mb_debug_set_stepped_handler(bas, _on_step-ped);
   mb_set_error_handler(bas, _on_error);
+
+  script_datadir = config_.datadir();
+  script_scriptdir = config_.scriptdir();
   mb_set_import_handler(bas, [](struct mb_interpreter_t* bas, const char* p) -> int {
     return (LoadBasicFile(bas, p)) ? MB_FUNC_OK : MB_FUNC_ERR;
   });
@@ -562,6 +571,12 @@ bool RunBasicScript(const std::string& script_name) {
 
   mb_close(&bas);
   return ret == MB_FUNC_OK;
+}
+
+
+bool RunBasicScript(const std::string& script_name) {
+  Basic basic(bout, *a()->config(), *a()->user(), a()->mci_enabled_);
+  return basic.RunScript(script_name);
 }
 
 }

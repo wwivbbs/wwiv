@@ -19,10 +19,46 @@
 #define __INCLUDED_BBS_BASIC_H__
 
 #include <string>
+#include <vector>
 
-namespace wwiv {
-namespace bbs {
+struct mb_interpreter_t;
+class Output;
+
+namespace wwiv::sdk {
+  class Config;
+  class User;
+}
+
+namespace wwiv::bbs {
+  enum class script_data_type_t { STRING, INT, REAL };
+  struct script_data_t {
+    script_data_type_t type;
+    ::std::string s;
+    int i;
+    float r;
+  };
+
+  class Basic {
+  public:
+    Basic(Output& bout, const wwiv::sdk::Config& config, const wwiv::sdk::User& user, bool mci_enabled)
+      : bout_(bout), config_(config), user_(user), mci_enabled_(mci_enabled) {
+    }
+
+  bool RunScript(const std::string& script_name);
+
+private:
+  bool RegisterNamespaceData(mb_interpreter_t* bas);
+
+private:
+  Output& bout_;
+  const wwiv::sdk::Config& config_;
+  const wwiv::sdk::User& user_;
+  const bool mci_enabled_;
+  };
+
   bool RunBasicScript(const std::string& script_name);
+
 }
-}
+
+
 #endif  // __INCLUDED_BBS_BASIC_H__

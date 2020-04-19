@@ -37,14 +37,14 @@ public:
 
 class BbsMacroContext : public MacroContext {
 public:
-  BbsMacroContext(wwiv::sdk::User* u, bool mci_enabled) : u_(u), mci_enabled_(mci_enabled) {}
+  BbsMacroContext(const wwiv::sdk::User* u, bool mci_enabled) : u_(u), mci_enabled_(mci_enabled) {}
   const wwiv::sdk::User& u() const override { return *u_; }
   const directoryrec& dir() const { return a()->current_dir(); }
   bool mci_enabled() const override { return mci_enabled_; }
 
 private:
-  wwiv::sdk::User* u_ = nullptr;
-  bool mci_enabled_{false};
+  const wwiv::sdk::User* u_;
+  bool mci_enabled_;
 };
 
 class BbsMacroFiilter : public wwiv::sdk::ansi::AnsiFilter {
