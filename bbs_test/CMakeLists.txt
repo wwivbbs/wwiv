@@ -3,6 +3,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../deps/cereal/include)
 
 set(test_sources
+  basic_test.cpp
   bbs_helper.cpp
   bputs_test.cpp
   bputch_test.cpp
