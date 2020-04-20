@@ -19,10 +19,12 @@
 #define __INCLUDED_BBS_BASIC_H__
 
 #include <string>
-#include <vector>
 
 struct mb_interpreter_t;
 class Output;
+
+// From interpret.h
+class MacroContext;
 
 namespace wwiv::sdk {
   class Config;
@@ -38,22 +40,31 @@ namespace wwiv::bbs {
     float r;
   };
 
+struct wwiv_script_userdata_t {
+  std::string datadir;
+  std::string module;
+  const MacroContext* ctx;
+};
+
+
   class Basic {
   public:
-    Basic(Output& bout, const wwiv::sdk::Config& config, const wwiv::sdk::User& user, bool mci_enabled)
-      : bout_(bout), config_(config), user_(user), mci_enabled_(mci_enabled) {
-    }
+    Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx);
 
-  bool RunScript(const std::string& script_name);
+    bool RunScript(const std::string& script_name);
+    bool RunScript(const std::string& module, const std::string& text);
+    mb_interpreter_t* bas() const noexcept { return bas_; }
 
-private:
-  bool RegisterNamespaceData(mb_interpreter_t* bas);
+  private:
+    bool RegisterDefaultNamespaces();
+    mb_interpreter_t* SetupBasicInterpreter();
 
-private:
-  Output& bout_;
-  const wwiv::sdk::Config& config_;
-  const wwiv::sdk::User& user_;
-  const bool mci_enabled_;
+    Output& bout_;
+    const wwiv::sdk::Config& config_;
+    const MacroContext* ctx_;
+    wwiv_script_userdata_t script_userdata_;
+
+    mb_interpreter_t* bas_;
   };
 
   bool RunBasicScript(const std::string& script_name);

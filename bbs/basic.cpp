@@ -20,8 +20,6 @@
 #include <cstdarg>
 #include <string>
 #include <vector>
-#include "bbs/application.h"
-#include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/input.h"
 #include "bbs/interpret.h"
@@ -36,14 +34,15 @@
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
-#include "sdk/user.h"
 #include <cassert>
+#include <mutex>
 
 #include <cereal/cereal.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/archives/json.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
+#include <optional>
 
 using std::string;
 using std::vector;
@@ -53,23 +52,43 @@ using namespace wwiv::strings;
 namespace wwiv::bbs {
 
 namespace {
+  std::mutex g_script_mutex;
   // Globals to be used from the interpreter before execution begins
   std::string script_datadir;
   std::string script_scriptdir;
+
+  Output* script_out_{nullptr};
+
+  void set_script_out(Output* o) { script_out_ = o; }
+
+  Output& script_out() {
+    return script_out_ != nullptr ? *script_out_ : bout;
+  }
 }
 
 static char* BasicStrDup(const std::string& s) {
   return mb_memdup(s.c_str(), s.size() + 1);
 }
 
-struct wwiv_script_userdata_t {
-  std::string datadir;
-  std::string module;
-  const sdk::User* user{};
-  bool mci_enabled{false};
-};
+/**
+ * Gets the WWIV script "userdata" (wwiv_script_userdata_t) that was applied at the
+ * script level for the interpreter session.
+ */
+static wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas) {
+  void* x;
+  const auto result = mb_get_userdata(bas, &x);
+  if (result != MB_FUNC_OK) {
+    LOG(ERROR) << "Error getting the script userdata";
+    return nullptr;
+  }
+  return static_cast<wwiv_script_userdata_t*>(x);
+}
 
-#define SERIALIZE(field) { try { ar(cereal::make_nvp(#field, field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+
+#define SERIALIZE(field) { \
+  try { ar(cereal::make_nvp(#field, field)); \
+  } catch(const cereal::Exception&) { ar.setNextName(nullptr); } \
+  } // NOLINT(cppcoreguidelines-macro-usage)
 
   template <class Archive>
   void serialize(Archive& ar, script_data_t& t) {
@@ -119,9 +138,26 @@ static script_data_t to_script_data(const mb_value_t& v) {
     result.type = script_data_type_t::STRING;
     result.s = v.value.string;
     return result;
+  case MB_DT_NIL: 
+  case MB_DT_UNKNOWN:
+  case MB_DT_NUM:
+  case MB_DT_TYPE:
+  case MB_DT_USERTYPE:
+  case MB_DT_USERTYPE_REF:
+  case MB_DT_ARRAY:
+  case MB_DT_LIST:
+  case MB_DT_LIST_IT:
+  case MB_DT_DICT:
+  case MB_DT_DICT_IT:
+  case MB_DT_COLLECTION:
+  case MB_DT_ITERATOR:
+  case MB_DT_CLASS:
+  case MB_DT_ROUTINE:
+  default: ;
+    LOG(ERROR) << "Unable to convert type (unknown) for basic type: " << v.type;
+    return{};
   }
 
-  return{};
 }
 
 static bool SaveData(const std::string& datadir, const std::string& basename, const std::vector<script_data_t>& data) {
@@ -146,16 +182,16 @@ int my_print(const char* fmt, ...) {
   vsnprintf(buf, sizeof(buf), fmt, argptr);
   va_end(argptr);
 
-  bout.bputs(buf);
-  bout.nl();
+  script_out().bputs(buf);
+  script_out().nl();
   return MB_FUNC_OK;
 }
 
 int my_input(const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
-    bout.bputs(prompt);
+    script_out().bputs(prompt);
   }
-  auto v = input_text("", size);
+  const auto v = input_text("", size);
   strcpy(buf, v.c_str());
   return v.size();
 }
@@ -165,26 +201,36 @@ static bool RegisterMyBasicGlobals() {
   return true;
 }
 
-static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
-  if (script_name.find("..") != std::string::npos) {
+static std::optional<std::string> ReadBasicFile(const std::string& script_name) {
+    if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
-    bout << "|#6Invalid script name: " << script_name << "\r\n";
+    script_out() << "|#6Invalid script name: " << script_name << "\r\n";
+    return std::nullopt;
   }
 
   const auto path = PathFilePath(script_scriptdir, script_name);
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
-    bout << "|#6Unable to locate script: " << script_name << "\r\n";
-    return false;
+    script_out() << "|#6Unable to locate script: " << script_name << "\r\n";
+    return std::nullopt;
   }
   TextFile file(path, "r");
   if (!file) {
     LOG(ERROR) << "Unable to read script: " << path;
-    bout << "|#6Unable to read script: " << script_name << "\r\n";
+    script_out() << "|#6Unable to read script: " << script_name << "\r\n";
+    return std::nullopt;
   }
-
   const auto lines = file.ReadFileIntoString();
-  const auto ret = mb_load_string(bas, lines.c_str(), true);
+  return {lines};
+}
+
+static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
+
+  auto o = ReadBasicFile(script_name);
+  if (!o) {
+    return false;
+  }
+  const auto ret = mb_load_string(bas, o.value().c_str(), true);
   return ret == MB_FUNC_OK;
 }
 
@@ -242,14 +288,13 @@ static int _version(struct mb_interpreter_t* bas, void** l) {
   return MB_FUNC_OK;
 }
 
-bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
+static bool RegisterNamespaceData(mb_interpreter_t* bas) {
   mb_begin_module(bas, "WWIV.DATA");
-  const auto datadir = config_.datadir();
 
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    bout << "wwiv.data\r\n";
+    script_out() << "wwiv.data\r\n";
     return MB_FUNC_OK;
   });
 
@@ -267,12 +312,12 @@ bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        bout << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        script_out() << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
         return MB_FUNC_WARNING;
       }
       int count = 0;
       mb_check(mb_count_coll(bas, l, arg, &count));
-      // bout << " with size: " << count;
+      // script_out() << " with size: " << count;
       std::vector<script_data_t> data;
       for (int i = 0; i < count; i++) {
         mb_value_t idx;
@@ -282,12 +327,10 @@ bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
           data.emplace_back(to_script_data(val));
         }
       }
-      void* x;
-      mb_get_userdata(bas, &x);
-      const auto d = static_cast<wwiv_script_userdata_t*>(x);
+      const auto d = get_wwiv_script_userdata(bas);
 
       if (!SaveData(d->datadir, d->module, data)) {
-        bout << "#6Error saving data.\r\n";
+        script_out() << "#6Error saving data.\r\n";
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -309,13 +352,11 @@ bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        bout << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        script_out() << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
         return MB_FUNC_WARNING;
       }
 
-      void* x;
-      mb_get_userdata(bas, &x);
-      const auto sd = static_cast<wwiv_script_userdata_t*>(x);
+      const auto sd = get_wwiv_script_userdata(bas);
 
       auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
@@ -326,12 +367,12 @@ bool Basic::RegisterNamespaceData(mb_interpreter_t* bas) {
         mb_make_int(idx, current_count++);
         const auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
-          bout << "[oops] ";
+          script_out() << "[oops] ";
         }
       }
 
       if (!SaveData(sd->datadir, sd->module, data)) {
-        bout << "#6Error loading data.\r\n";
+        script_out() << "#6Error loading data.\r\n";
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -348,7 +389,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    bout << "wwiv.io.test\r\n";
+    script_out() << "wwiv.io\r\n";
     return MB_FUNC_OK;
   });
 
@@ -357,7 +398,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      bout.bputs(arg);
+      script_out().bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
@@ -368,8 +409,8 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      bout.bputs(arg);
-      bout.nl();
+      script_out().bputs(arg);
+      script_out().nl();
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
@@ -388,13 +429,13 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
 
   mb_register_func(bas, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
-    int arg = 0;
+    auto arg = 0;
     if (mb_has_arg(bas, l)) {
       mb_check(mb_pop_int(bas, l, &arg));
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg > 0) {
-      string s = input_text("", arg);
+      const auto s = input_text("", arg);
       mb_push_string(bas, l, BasicStrDup(s));
     }
     return MB_FUNC_OK;
@@ -403,7 +444,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
   mb_register_func(bas, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    char ch = bout.getkey();
+    const auto ch = script_out().getkey();
     char s[2] = { ch, 0 };
     mb_push_string(bas, l, BasicStrDup(s));
     return MB_FUNC_OK;
@@ -411,7 +452,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
 
   mb_register_func(bas, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
-    bout.cls();
+    script_out().cls();
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
@@ -422,7 +463,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     if (mb_has_arg(bas, l)) {
       mb_check(mb_pop_int(bas, l, &num_lines));
     }
-    bout.nl(num_lines);
+    script_out().nl(num_lines);
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
@@ -432,10 +473,10 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      bout.bputs(arg);
+      script_out().bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
-    bool ret = yesno();
+    const auto ret = yesno();
 
     mb_push_int(bas, l, ret ? 1 : 0);
     return MB_FUNC_OK;
@@ -446,10 +487,10 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      bout.bputs(arg);
+      script_out().bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
-    bool ret = noyes();
+    const auto ret = noyes();
 
     mb_push_int(bas, l, ret ? 1 : 0);
     return MB_FUNC_OK;
@@ -472,7 +513,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    bout << "wwiv.test\r\n";
+    script_out() << "wwiv\r\n";
     return MB_FUNC_OK;
   }); 
 
@@ -510,12 +551,9 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
 
-    void* x;
-    mb_get_userdata(bas, &x);
-    const auto d = static_cast<wwiv_script_userdata_t*>(x);
+    const auto d = get_wwiv_script_userdata(bas);
 
-    BbsMacroContext ctx(d->user, d->mci_enabled);
-    string s = ctx.interpret(*arg);
+    const auto s = d->ctx->interpret(*arg);
     mb_check(mb_attempt_close_bracket(bas, l));
     mb_push_string(bas, l, BasicStrDup(s));
     return MB_FUNC_OK;
@@ -524,33 +562,42 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
   return mb_end_module(bas) == MB_FUNC_OK;
 }
 
-bool Basic::RunScript(const std::string& script_name) {
-  [[maybe_unused]] static bool once = RegisterMyBasicGlobals();
+Basic::Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx)
+  : bout_(o), config_(config), ctx_(ctx) {
+  // Set the static class level variables used in capture-less lambdas.
+  script_datadir = config_.datadir();
+  script_scriptdir = config_.scriptdir();
 
-  const auto path = PathFilePath(config_.scriptdir(), script_name);
-  if (!File::Exists(path)) {
-    bout << "|#6Unable to locate script: " << script_name;
-    return false;
-  }
-  auto basename = ToStringLowerCase(script_name);
+  // Creates the script user-data passed to the interpreter.  This data can be used
+  // by the implementation of custom functions.  Values derived from the script name
+  // must be set in RunScript.
+  script_userdata_.datadir = config_.datadir();
+  script_userdata_.ctx = ctx;
+  script_userdata_.module = "none";
+
+  [[maybe_unused]] static auto once = RegisterMyBasicGlobals();
+
+  bas_ = SetupBasicInterpreter();
+  RegisterDefaultNamespaces();
+
+}
+
+static std::string ScriptBaseName(const std::string& script_name) {
+ const auto basename = ToStringLowerCase(script_name);
   if (ends_with(basename, ".bas")) {
-    basename = basename.substr(0, basename.find_last_of('.'));
+    return basename.substr(0, basename.find_last_of('.'));
   }
+  return basename;
+}
 
-  wwiv_script_userdata_t d;
-  d.datadir = config_.datadir();
-  d.module = basename;
-  d.user = &user_;
-  d.mci_enabled = mci_enabled_;
+mb_interpreter_t* Basic::SetupBasicInterpreter() {
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
-  mb_set_userdata(bas, &d);
+
   // TODO(rushfan): Update to new syntax
   // mb_debug_set_stepped_handler(bas, _on_step-ped);
   mb_set_error_handler(bas, _on_error);
 
-  script_datadir = config_.datadir();
-  script_scriptdir = config_.scriptdir();
   mb_set_import_handler(bas, [](struct mb_interpreter_t* bas, const char* p) -> int {
     return (LoadBasicFile(bas, p)) ? MB_FUNC_OK : MB_FUNC_ERR;
   });
@@ -558,24 +605,55 @@ bool Basic::RunScript(const std::string& script_name) {
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);
 
-  RegisterNamespaceWWIV(bas);
-  RegisterNamespaceWWIVIO(bas);
-  RegisterNamespaceData(bas);
+  return bas;  
+}
 
-  if (!LoadBasicFile(bas, script_name)) {
-    bout << "|#6Unable to load script: " << script_name;
+bool Basic::RegisterDefaultNamespaces() {
+  RegisterNamespaceWWIV(bas_);
+  RegisterNamespaceWWIVIO(bas_);
+  RegisterNamespaceData(bas_);
+
+  return true;
+}
+
+bool Basic::RunScript(const std::string& module, const std::string& text) {
+
+  script_userdata_.module = module;
+  mb_set_userdata(bas_, &script_userdata_);
+
+  if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
+    LOG(ERROR) << "Unable to load text: '" << text << "'";
     return false;
   }
 
-  const auto ret = mb_run(bas, false);
+  std::lock_guard<std::mutex> guard(g_script_mutex);
+  set_script_out(&bout_);
+  const auto ret = mb_run(bas_, false);
+  mb_close(&bas_);
 
-  mb_close(&bas);
+  // We don't call mb_dispose since we only call mb_init once per execution.
   return ret == MB_FUNC_OK;
+}
+
+bool Basic::RunScript(const std::string& script_name) {
+  const auto path = PathFilePath(config_.scriptdir(), script_name);
+  if (!File::Exists(path)) {
+    script_out() << "|#6Unable to locate script: " << script_name;
+    return false;
+  }
+
+  const auto module = ScriptBaseName(script_name);
+  auto o = ReadBasicFile(script_name);
+  if (!o) {
+    return false;
+  }
+  return RunScript(module, o.value());
 }
 
 
 bool RunBasicScript(const std::string& script_name) {
-  Basic basic(bout, *a()->config(), *a()->user(), a()->mci_enabled_);
+  BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+  Basic basic(bout, *a()->config(), &ctx);
   return basic.RunScript(script_name);
 }
 
