@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 
 #include "bbs/trashcan.h"
-
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
@@ -33,9 +32,9 @@ using namespace wwiv::strings;
 
 class TrashcanTest : public testing::Test {
 protected:
-    virtual void SetUp() {
+  void SetUp() override {
       helper.SetUp();
-      string text = "all\n*end\nstart*\n*sub*\n";
+      const string text = "all\n*end\nstart*\n*sub*\n";
       helper.files().CreateTempFile(StrCat("gfiles/", TRASHCAN_TXT), text);
     }
 

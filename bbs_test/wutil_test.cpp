@@ -23,8 +23,8 @@
 using namespace wwiv::os;
 
 TEST(GetRandomNumberTest, Basic) {
-  int sum = 0;
-  for (int i=0; i < 100; i++) {
+  auto sum = 0;
+  for (auto i=0; i < 100; i++) {
     sum += random_number(1000);
   }
   ASSERT_NE(0, sum) << "Sum should not be zero";

@@ -18,16 +18,13 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "bbs/new_bbslist.h"
+#include "bbs_test/bbs_helper.h"
+#include "core_test/file_helper.h"
+#include <filesystem>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
-#include "bbs/new_bbslist.h"
-
-#include "bbs_test/bbs_helper.h"
-#include <filesystem>
-#include "core/strings.h"
-#include "core_test/file_helper.h"
 
 using std::cout;
 using std::endl;
@@ -48,12 +45,12 @@ static string FindAddressByType(const BbsListEntry& entry, const std::string& ty
 
 class NewBbsListTest : public testing::Test {
 protected:
-    virtual void SetUp() { helper.SetUp(); }
-    const string dir() { return helper.files().TempDir().string(); }
-    std::filesystem::path CreateTempFile(const string& name, const string& contents) {
-      return helper.files().CreateTempFile(name, contents);
-    }
-    BbsHelper helper;
+  void SetUp() override { helper.SetUp(); }
+  string dir() { return helper.files().TempDir().string(); }
+  std::filesystem::path CreateTempFile(const string& name, const string& contents) {
+    return helper.files().CreateTempFile(name, contents);
+  }
+  BbsHelper helper{};
 };
 
 TEST_F(NewBbsListTest, NoFile) {
@@ -62,7 +59,7 @@ TEST_F(NewBbsListTest, NoFile) {
 }
 
 TEST_F(NewBbsListTest, SingleItem_NoAddress) {
-  const string json = "{ \"bbslist\": [ { \"name\": \"n1\", \"software\": \"s1\" } ] }";
+  const string json = R"({ "bbslist": [ { "name": "n1", "software": "s1" } ] })";
   this->CreateTempFile("bbslist.json", json);
    
   vector<BbsListEntry> entries;
@@ -74,14 +71,14 @@ TEST_F(NewBbsListTest, SingleItem_NoAddress) {
 }
 
 TEST_F(NewBbsListTest, SingleItem_Address) {
-  const string json =
-    "{ \"bbslist\": "
-      "[ { \"name\": \"n1\", \"software\": \"s1\", "
-      "\"addresses\": [ "
-        "{ \"type\":\"telnet\", \"address\":\"example.com\" } "
-        "] } "
-      "] "
-    "}";
+  const string json = R"(
+    { "bbslist":
+      [ { "name": "n1", "software": "s1", 
+      "addresses": [ 
+        { "type":"telnet", "address":"example.com" } 
+        ] } 
+      ] 
+    } )";
   this->CreateTempFile("bbslist.json", json);
 
   vector<BbsListEntry> entries;
@@ -97,12 +94,12 @@ TEST_F(NewBbsListTest, SingleItem_Address) {
 
 TEST_F(NewBbsListTest, MultipleEntries) {
   const string json =
-    "{ \"bbslist\": ["
-      "{ \"name\": \"n1\", \"software\": \"s\", \"addresses\": [ { \"type\":\"telnet\", \"address\":\"example.com\" } ] }, "
-      "{ \"name\": \"n2\", \"software\": \"s\", \"addresses\": [ { \"type\":\"ssh\", \"address\":\"foobar.com\" } ] }, "
-      "{ \"name\": \"n3\", \"software\": \"s\", \"addresses\": [ { \"type\":\"modem\", \"address\":\"415-000-0000\" } ] } "
-      "] "
-    "}";
+      R"({ "bbslist": [
+      { "name": "n1", "software": "s", "addresses": [ { "type":"telnet", "address":"example.com" } ] }, 
+      { "name": "n2", "software": "s", "addresses": [ { "type":"ssh", "address":"foobar.com" } ] }, 
+      { "name": "n3", "software": "s", "addresses": [ { "type":"modem", "address":"415-000-0000" } ] } 
+      ] 
+    })";
   this->CreateTempFile("bbslist.json", json);
 
   vector<BbsListEntry> entries;

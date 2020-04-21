@@ -17,12 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/utility.h"
+#include "bbs_test/bbs_helper.h"
+#include "gtest/gtest.h"
 #include <ctime>
 #include <string>
-#include "gtest/gtest.h"
-#include "bbs_test/bbs_helper.h"
-
-#include "bbs/utility.h"
 
 static const time_t MAY_18_2014 = 1400461200;
 
@@ -32,9 +31,9 @@ using std::string;
 
 class UtilityTest : public ::testing::Test {
 protected:
-    virtual void SetUp() {
+  void SetUp() override {
       helper.SetUp();
     }
-    BbsHelper helper;
+    BbsHelper helper{};
 };
 

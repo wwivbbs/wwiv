@@ -149,10 +149,10 @@ TEST_F(QwkTest, ReadQwkConfig_Write_TwoBulletins) {
 }
 
 TEST(Qwk1Test, TestGetQwkFromMessage) {
-  const auto QWKFrom = "\x04""0QWKFrom:";
+  const auto* const QWKFrom = "\x04""0QWKFrom:";
 
-  auto message = StrCat("\x3", "0Thisis a test\r\n", QWKFrom,
-                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
+  const auto message = StrCat("\x3", "0Thisis a test\r\n", QWKFrom,
+                              " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
   auto opt_to = get_qwk_from_message(message);
   ASSERT_TRUE(opt_to.has_value());
 
@@ -161,16 +161,16 @@ TEST(Qwk1Test, TestGetQwkFromMessage) {
 }
 
 TEST(Qwk1Test, TestGetQwkFromMessage_NotFound) {
-  auto message = StrCat("\x3", "0Thisis a test\r\n",
-                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
+  const auto message = StrCat("\x3", "0Thisis a test\r\n",
+                              " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message");
   const auto opt_to = get_qwk_from_message(message);
   ASSERT_FALSE(opt_to.has_value());
 }
 
 TEST(Qwk1Test, TestGetQwkFromMessage_Malformed_AtEndOfLine) {
-  const auto QWKFrom = "\x04""0QWKFrom:";
-  auto message = StrCat("\x3", "0Thisis a test\r\n",
-                        " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message", QWKFrom);
+  const auto* const QWKFrom = "\x04""0QWKFrom:";
+  const auto message = StrCat("\x3", "0Thisis a test\r\n",
+                              " Rushfan #1 @561\r\nTitle\r\nDate\r\nThis is the message", QWKFrom);
   const auto opt_to = get_qwk_from_message(message);
   ASSERT_FALSE(opt_to.has_value());
 }

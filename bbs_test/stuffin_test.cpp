@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 
 #include "bbs/stuffin.h"
-
 #include "bbs_test/bbs_helper.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -33,37 +32,33 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-
 class StuffInTest : public testing::Test {
 protected:
-    virtual void SetUp() {
-      helper.SetUp();
-      a()->context().incom(false);
-      a()->modem_speed_ = 0;
-    }
+  void SetUp() override {
+    helper.SetUp();
+    a()->context().incom(false);
+    a()->modem_speed_ = 0;
+  }
 
 public:
-    const std::string t(const std::string name) { 
-      return FilePath(a()->temp_directory(), name);
-    }
+  static std::string t(const std::string& name) { return FilePath(a()->temp_directory(), name); }
 
-    BbsHelper helper;
+  BbsHelper helper;
 };
 
 TEST_F(StuffInTest, SimpleCase) {
-    const string actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
+  const auto actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
-    ostringstream os;
-    os << "foo one " << t(DROPFILE_CHAIN_TXT)
-      << " two " << helper.gfiles() << COMMENT_TXT;
-    string expected = os.str();
+  ostringstream os;
+  os << "foo one " << t(DROPFILE_CHAIN_TXT) << " two " << helper.gfiles() << COMMENT_TXT;
+  const auto expected = os.str();
 
-    EXPECT_EQ(expected, actual);
+  EXPECT_EQ(expected, actual);
 }
 
 TEST_F(StuffInTest, Empty) {
-    const string actual = stuff_in("", "", "", "", "", "");
-    EXPECT_EQ(0, actual.length());
+  const auto actual = stuff_in("", "", "", "", "", "");
+  EXPECT_EQ(0, actual.length());
 }
 
 // Param     Description                       Example
@@ -71,10 +66,10 @@ TEST_F(StuffInTest, Empty) {
 //  %%       A single '%'                      "%"
 //  %1-%5    Specified passed-in parameter
 TEST_F(StuffInTest, AllNumbers) {
-    const string actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
-    string expected = "12345%";
+  const auto actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
+  const string expected = "12345%";
 
-    EXPECT_EQ(expected, actual);
+  EXPECT_EQ(expected, actual);
 }
 
 // Param     Description                       Example
@@ -82,23 +77,19 @@ TEST_F(StuffInTest, AllNumbers) {
 //  %A       callinfo full pathname            "c:\wwiv\temp\callinfo.bbs"
 //  %C       chain.txt full pathname           "c:\wwiv\temp\chain.txt"
 //  %D       doorinfo full pathname            "c:\wwiv\temp\dorinfo1.def"
-//  %E       door32.sys full pathname          "C:\wwiv\temp\door32.sys"    string in = "foo %1 %c %2 %k";
-//  %O       pcboard full pathname             "c:\wwiv\temp\pcboard.sys"
-//  %R       door full pathname                "c:\wwiv\temp\door.sys"
+//  %E       door32.sys full pathname          "C:\wwiv\temp\door32.sys"    string in = "foo %1 %c
+//  %2 %k"; %O       pcboard full pathname             "c:\wwiv\temp\pcboard.sys" %R       door full
+//  pathname                "c:\wwiv\temp\door.sys"
 TEST_F(StuffInTest, AllDropFiles) {
-  const string actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
-    const string actual_upper = stuff_in("%A %C %D %E %O %R ", "", "", "", "", "");
+  const auto actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
+  const auto actual_upper = stuff_in("%A %C %D %E %O %R ", "", "", "", "", "");
 
-    ostringstream expected;
-    expected << t("callinfo.bbs")   << " " 
-             << t(DROPFILE_CHAIN_TXT) << " " 
-             << t("dorinfo1.def")   << " " 
-             << t("door32.sys")     << " "
-             << t("pcboard.sys")    << " "
-             << t("door.sys")       << " ";
+  ostringstream expected;
+  expected << t("callinfo.bbs") << " " << t(DROPFILE_CHAIN_TXT) << " " << t("dorinfo1.def") << " "
+           << t("door32.sys") << " " << t("pcboard.sys") << " " << t("door.sys") << " ";
 
-    EXPECT_EQ(expected.str(), actual_lower);
-    EXPECT_EQ(expected.str(), actual_upper);
+  EXPECT_EQ(expected.str(), actual_lower);
+  EXPECT_EQ(expected.str(), actual_upper);
 }
 
 // Param     Description                       Example
@@ -108,7 +99,7 @@ TEST_F(StuffInTest, AllDropFiles) {
 TEST_F(StuffInTest, PortAndNode) {
   a()->context().incom(false);
   EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
-    
+
   a()->context().incom(true);
   EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
@@ -127,5 +118,3 @@ TEST_F(StuffInTest, Speeds) {
   EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
   EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
 }
-
-
