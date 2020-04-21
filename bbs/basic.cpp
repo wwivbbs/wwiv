@@ -75,7 +75,7 @@ static char* BasicStrDup(const std::string& s) {
  * script level for the interpreter session.
  */
 static wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas) {
-  void* x;
+  void* x{};
   const auto result = mb_get_userdata(bas, &x);
   if (result != MB_FUNC_OK) {
     LOG(ERROR) << "Error getting the script userdata";
@@ -84,11 +84,10 @@ static wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t*
   return static_cast<wwiv_script_userdata_t*>(x);
 }
 
-
 #define SERIALIZE(field) { \
   try { ar(cereal::make_nvp(#field, field)); \
   } catch(const cereal::Exception&) { ar.setNextName(nullptr); } \
-  } // NOLINT(cppcoreguidelines-macro-usage)
+  } 
 
   template <class Archive>
   void serialize(Archive& ar, script_data_t& t) {
@@ -295,6 +294,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     script_out() << "wwiv.data\r\n";
+    mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.data")));
     return MB_FUNC_OK;
   });
 
@@ -319,7 +319,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
       mb_check(mb_count_coll(bas, l, arg, &count));
       // script_out() << " with size: " << count;
       std::vector<script_data_t> data;
-      for (int i = 0; i < count; i++) {
+      for (auto i = 0; i < count; i++) {
         mb_value_t idx;
         mb_make_int(idx, i);
         mb_value_t val{};
@@ -327,7 +327,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
           data.emplace_back(to_script_data(val));
         }
       }
-      const auto d = get_wwiv_script_userdata(bas);
+      const auto* d = get_wwiv_script_userdata(bas);
 
       if (!SaveData(d->datadir, d->module, data)) {
         script_out() << "#6Error saving data.\r\n";
@@ -356,7 +356,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
         return MB_FUNC_WARNING;
       }
 
-      const auto sd = get_wwiv_script_userdata(bas);
+      const auto* sd = get_wwiv_script_userdata(bas);
 
       auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
@@ -390,6 +390,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     script_out() << "wwiv.io\r\n";
+    mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.io")));
     return MB_FUNC_OK;
   });
 
@@ -514,6 +515,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     script_out() << "wwiv\r\n";
+    mb_check(mb_push_string(bas, l, BasicStrDup("wwiv")));
     return MB_FUNC_OK;
   }); 
 
@@ -530,18 +532,6 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  // TODO(rushfan): Remove this, it's in wwiv.io now.
-  mb_register_func(bas, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    if (mb_has_arg(bas, l)) {
-      char* arg = nullptr;
-      mb_check(mb_pop_string(bas, l, &arg));
-      printfile(arg);
-    }
-    mb_check(mb_attempt_close_bracket(bas, l));
-    return MB_FUNC_OK;
-  });
-
   // Crappy, awful API way to get data out of WWIVs' macros.
   mb_register_func(bas, "INTERPRET", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
@@ -551,7 +541,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
 
-    const auto d = get_wwiv_script_userdata(bas);
+    const auto* d = get_wwiv_script_userdata(bas);
 
     const auto s = d->ctx->interpret(*arg);
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -590,6 +580,7 @@ static std::string ScriptBaseName(const std::string& script_name) {
   return basename;
 }
 
+// static
 mb_interpreter_t* Basic::SetupBasicInterpreter() {
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
@@ -632,7 +623,11 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
   mb_close(&bas_);
 
   // We don't call mb_dispose since we only call mb_init once per execution.
-  return ret == MB_FUNC_OK;
+  if (ret != MB_FUNC_OK) {
+    LOG(INFO) << "Failure exiting script: '" << module << "' error code (MB_FUNC_XXXX) : " << ret;
+    return false;
+  }
+  return true;
 }
 
 bool Basic::RunScript(const std::string& script_name) {

@@ -72,10 +72,10 @@ void BbsHelper::SetUp() {
   dir_en_gfiles_ = File::FixPathSeparators(dir_en_gfiles_);
 #endif  // _WIN32
 
-  unique_ptr<configrec> sysconfig = make_unique<configrec>();
+  auto sysconfig = make_unique<configrec>();
 
   a()->language_dir = dir_en_gfiles_;
-  unique_ptr<Config> config = make_unique<Config>(temp);
+  auto config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
   config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);
   a()->set_config_for_test(move(config));

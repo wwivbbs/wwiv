@@ -37,7 +37,7 @@ Config::Config(const configrec& config) : config_430(config) { set_config(&confi
 Config::Config(const std::filesystem::path& root_directory)
     : initialized_(false), root_directory_(root_directory), config_430(root_directory) {
   if (!config_430.IsReadable()) {
-    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;
   }
   initialized_ = config_430.IsInitialized();
@@ -123,18 +123,18 @@ bool Config430::IsReadable() {
   DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
   }
   return true;
 }
 
 Config430::Config430(const std::filesystem::path& root_directory)
-    : initialized_(false), root_directory_(root_directory) {
+    : root_directory_(root_directory) {
   DataFile<configrec> configFile(PathFilePath(root_directory, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;
   }
   initialized_ = configFile.Read(&config_);
@@ -187,7 +187,7 @@ bool Config430::Load() {
   DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
   }
   if (!configFile.Read(&config_)) {

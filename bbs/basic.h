@@ -57,7 +57,7 @@ struct wwiv_script_userdata_t {
 
   private:
     bool RegisterDefaultNamespaces();
-    mb_interpreter_t* SetupBasicInterpreter();
+    static mb_interpreter_t* SetupBasicInterpreter();
 
     Output& bout_;
     const wwiv::sdk::Config& config_;

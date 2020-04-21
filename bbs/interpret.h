@@ -29,6 +29,7 @@
 
 class MacroContext {
 public:
+  virtual ~MacroContext() = default;
   virtual const wwiv::sdk::User& u() const = 0;
   virtual const directoryrec& dir() const = 0;
   virtual bool mci_enabled() const = 0;
