@@ -18,15 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
-#include "bbs/output.h"
 #include "bbs/bbs.h"
+#include "bbs/output.h"
 #include "bbs_test/bbs_helper.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
+#include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -34,18 +30,15 @@ using std::string;
 
 class BPutsTest : public ::testing::Test {
 protected:
-    virtual void SetUp() {
-        helper.SetUp();
-    }
+  void SetUp() override { helper.SetUp(); }
 
-    virtual int Puts(const string& s) {
-      auto size = bout.bputs(s);
-      std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
-      return size;
+  virtual int Puts(const string& s) {
+    const auto size = bout.bputs(s);
+    std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
+    return size;
+  }
 
-    }
-
-    BbsHelper helper;
+  BbsHelper helper{};
 };
 
 TEST_F(BPutsTest, SingleLetter) {

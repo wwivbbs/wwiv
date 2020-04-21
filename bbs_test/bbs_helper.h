@@ -19,12 +19,12 @@
 #ifndef __INCLUDED_BBS_HELPER_H__
 #define __INCLUDED_BBS_HELPER_H__
 
-#include <memory>
-#include <string>
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
 #include "local_io/local_io.h"
 #include "sdk/user.h"
+#include <memory>
+#include <string>
 
 class TestIO;
 
@@ -44,8 +44,8 @@ public:
 
     // Accessors for various directories
     FileHelper& files() { return files_; }
-    const std::string& data() { return dir_data_; }
-    const std::string& gfiles() { return dir_gfiles_; }
+    const std::string& data() const { return dir_data_; }
+    const std::string& gfiles() const { return dir_gfiles_; }
 
 public:
     FileHelper files_;
@@ -80,8 +80,8 @@ public:
   TestLocalIO(std::string* captured);
   void Putch(unsigned char ch) override;
   void GotoXY(int, int) override {}
-  int WhereX() const noexcept override { return 0; }
-  int WhereY() const noexcept override { return 0; }
+  [[nodiscard]] int WhereX() const noexcept override { return 0; }
+  [[nodiscard]] int WhereY() const noexcept override { return 0; }
   void Lf() override {}
   void Cr() override {}
   void Cls() override {}
@@ -95,12 +95,12 @@ public:
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
-  unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
+  [[nodiscard]] unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
   void MakeLocalWindow(int, int, int, int) override {}
   void SetCursor(int) override {}
   void ClrEol() override {}
   void WriteScreenBuffer(const char *) override {}
-  int GetDefaultScreenBottom() const noexcept override { return 25; }
+  [[nodiscard]] int GetDefaultScreenBottom() const noexcept override { return 25; }
   void EditLine(char *, int, AllowedKeys, int *, const char *) override {}
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override {}
 
@@ -110,7 +110,7 @@ public:
 class TestRemoteIO : public RemoteIO {
 public:
   TestRemoteIO(std::string* captured);
-  virtual ~TestRemoteIO() {}
+  virtual ~TestRemoteIO() = default;
 
   bool open() override { return true; }
   void close(bool) override {}
@@ -122,7 +122,7 @@ public:
   unsigned int read(char *, unsigned int) override { return 0; }
   bool connected() override { return true; }
   bool incoming() override { return false; }
-  unsigned int GetHandle() const override { return 0; }
+  [[nodiscard]] unsigned int GetHandle() const override { return 0; }
 
 private:
   std::string* captured_;

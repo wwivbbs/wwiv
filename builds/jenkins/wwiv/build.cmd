@@ -39,6 +39,7 @@ set WWIV_CMAKE_DIR=%WORKSPACE%\_build
 set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
+set CL32_DLL %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 
 @rem ===============================================================================
 
@@ -87,6 +88,7 @@ set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary
 @echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
 @echo WindowsLibPath        %WindowsLibPath%
 @echo INCLUDE               %INCLUDE%
+@echo CL32_DLL              %CL32_DLL%
 @echo =============================================================================
 
 @echo on
@@ -212,33 +214,33 @@ cd %STAGE_DIR%
 %ZIP_EXE% a -tzip -y %RELEASE_ZIP%
 
 cd %WWIV_CMAKE_DIR%\core_test
-del result.xml
+del result*.xml
 dir
 core_tests.exe --gtest_output=xml:result-core.xml
 
 cd %WWIV_CMAKE_DIR%\bbs_test
 copy /y/v %CL32_DLL% .
-del result.xml
+del result*.xml
 dir
 bbs_tests.exe --gtest_output=xml:result-bbs.xml
 
 cd %WWIV_CMAKE_DIR%\sdk_test
-del result.xml
+del result*.xml
 dir
 sdk_tests.exe --gtest_output=xml:result-sdk.xml
 
 cd %WWIV_CMAKE_DIR%\networkb_test
-del result.xml
+del result*.xml
 dir
 networkb_tests.exe --gtest_output=xml:result-networkb.xml
 
 cd %WWIV_CMAKE_DIR%\net_core_test
-del result.xml
+del result*.xml
 dir
 net_core_tests.exe --gtest_output=xml:result-net_core.xml
 
 cd %WWIV_CMAKE_DIR%\wwivd_test
-del result.xml
+del result*.xml
 dir
 wwivd_tests.exe --gtest_output=xml:result-wwivd.xml
 
