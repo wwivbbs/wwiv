@@ -39,7 +39,7 @@ set WWIV_CMAKE_DIR=%WORKSPACE%\_build
 set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
-set CL32_DLL %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
+set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 
 @rem ===============================================================================
 
