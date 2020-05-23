@@ -41,4 +41,4 @@ fi
 echo "Using Ninja Build Tool: ${NINJA}"
 echo "Using Source Root:      ${HERE}"
 
-cmake -DCMAKE_BUILD_TYPE:STRING=Debug -G "Ninja" ${HERE}
+cmake -G "Ninja" ${HERE}

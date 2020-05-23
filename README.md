@@ -4,8 +4,8 @@ WWIV BBS
 WWIV is compiled with the following compilers:
   
 - MS Visual C++ 2019 Community Edition.
-- GCC 6.3 (or later) on Linux 
-  (Debian9, Centos7 (with GCC 7) or Ubuntu)
+- GCC 8.3 (or later) on Linux 
+  (Debian10, Centos8 (with GCC 8 via SCL) or Ubuntu)
 
 You will need CMake 3.9 or later to build WWIV.
 
@@ -15,27 +15,36 @@ You will need CMake 3.9 or later to build WWIV.
 ***
 
 ## Windows Builds
-This assumes you already have github desktop installed.
+
+You will need [Git](https://git-scm.com) installed.  You can use the GitHub Desktop GUI, but it's also easy
+to use the commandline tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
+install it.  Make sure the ```git``` command is in your PATH.
+
 We prefer contributors to FORK ```wwivbbs``` repositories to their account
 and work from there.
 
-If you're on Windows this is likely in the folder: "Documents\GitHub\WWIV"
+If you are using GitHub Desktop, this is likely in the folder: "Documents\GitHub\WWIV".  Otherwise just
+create a directory and clone your fork.  You can follow instructions that are written by GitHub 
+[Here](https://help.github.com/en/github/getting-started-with-github/fork-a-repo). Just make sure that
+when you clone the repo, you have "Recurse Submodules" specified in the tool, or using 
+```--recurse-submodules``` on the commandline.
 
 ### Download Visual Studio
 WWIV is compiled with the VS2019 compiler for windows. You can download [Microsoft Visual Studio 2019 Community](https://www.visualstudio.com/downloads/)
 
 ### Install Visual Studio
-Choose a custom install and select the following components:
+Choose a custom install and select the ```Desktop development with C++``` workload.
+You also may want to optionally install the following "Individual Components":
 ```
-C++
-   Common Tools for C++
-Common Tools
-   Git Fow Windows <- You should have this already
-   GitHub for VS
+   Git For Windows (Only if you do not have this already)
+   GitHub extension for Visaul Studio
 ```
 
+
 ## Build WWIV
-* From the Visual Studio IDE, select File and then Open from Source Control
+* If you cloned a git repository for your fork of WWIV, then select File then Open and choose Folder.
+
+* If you are using the GitHub for Windows extension, then from the Visual Studio IDE, select File and then ```Open from Source Control```
 On the bottom, you should see your local GIT repositories already.
 Above that you will see Login to GitHub, do that.
 * Now in your Local repositories (Documents\GitHub\WWIV), open the
@@ -58,8 +67,12 @@ Package | Comments
 git | to grab the source code for compiling  
 ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
 cmake | 3.9 or later
-make | (unless you want to experiment with ninja)
-g++ 6.3.0 or later | 
+make | for cryptlib
+ninja-build | 1.8 or later, earlier versions probably work too
+g++ | 8.3.0 or later (easiest to install via build-essential on debian)
+
+If you are on debian, you can use ```/builds/jenkins/linux/install-prereqs.sh``` to ensure that
+the right software is installed.  This command should be executed as root (using sudo)
 
 ### Build Steps
 There are two primary ways to get the files for building; download a zip of the project or clone the repo.  In both cases, you will end up with the following files in the build directory:  
@@ -78,8 +91,8 @@ There are two primary ways to get the files for building; download a zip of the 
 
 #### Using a downloaded .zip (no git required)
 * If you don't want to worry about managing a git repo and just want the files, you can download the zipped project file from GitHub.  Go to 
-https://github.com/wwivbbs/wwiv and click on the [Download Zip](https://github.com/wwivbbs/wwiv/archive/master.zip) Button
-* unzip the zip file. It will create a wwiv-master directory in your current location
+https://github.com/wwivbbs/wwiv and click on [Download Zip](https://github.com/wwivbbs/wwiv/archive/master.zip)
+* unzip the file and it will create a wwiv-master directory
 * navigate to wwiv-master
 
 #### Using a git repository
@@ -92,7 +105,7 @@ If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repos
     chdir git
     # Clone your fork into the current directory (git).
     # Use your GitHub username instead of <em>YOUR-USERNAME</em>
-    git clone --recursive https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
+    git clone --recurse-submodules -j8 https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
     ```
 * Navigate to wwiv
 
@@ -106,12 +119,14 @@ You need to compile the dependencies first. Enter the cloned repository, change 
 make
 ```
 
-* If you want to create a debug version, run ```./debug.sh``` instead of
-  ```cmake ..``` in the next step.
-* run the following:
-  ```mkdir _build && cd _build && cmake .. && cmake --build . -- -j$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)``` 
-  (don't forget the ".")
-
+Now change directory back to the root ```/wwiv``` directory where you cloned the repository
+and run the following:
+  ```
+  mkdir _build
+  cd _build 
+  ../cmake-config.sh 
+  cmake --build . --config Debug
+  ```
 
 Now you can enter the ```bbs/admin/unix``` directory and run ```sudo ./install.sh```
 *** 

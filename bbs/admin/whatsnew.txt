@@ -28,6 +28,12 @@ What's New in WWIV 5.5 (2020)
 * Fixed a typo in wfndfile (#1200)
 * Update copyright to 2020
 * Fix output display problem for uint8_t in UserEditor. (#1199)
+! debug.sh has been renamed to cmake-config.sh since with the cmake 
+  Ninja generator is multi-config so the config is only used when
+  invoking cmake --build, not during generation time.  Updated the build
+  scripts and documentation to reflect this.
++ Documented install-prereqs.sh for debian installations. This makes it
+  easy to install the requirements to compile wwiv.
 
 
 What's New in WWIV 5.5 (2019)

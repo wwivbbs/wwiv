@@ -119,8 +119,8 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %WWIV_CMAKE_DIR%
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE% || exit /b
-cmake --build .   || exit /b
+cmake -G "Ninja" %WORKSPACE% || exit /b
+cmake --build . --config MinSizeRel || exit /b
 
 @rem Building bits from the build tree.
 @rem build InfoZIP Zip/UnZip
