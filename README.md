@@ -14,14 +14,15 @@ You will need CMake 3.9 or later to build WWIV.
 # Building WWIV BBS
 ***
 
-## Windows Builds
+We prefer contributors to FORK ```wwivbbs``` repositories to their account and work from there.
+
+## Building on Windows
+
+### Installing Git or GitHub Desktop
 
 You will need [Git](https://git-scm.com) installed.  You can use the GitHub Desktop GUI, but it's also easy
 to use the commandline tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
 install it.  Make sure the ```git``` command is in your PATH.
-
-We prefer contributors to FORK ```wwivbbs``` repositories to their account
-and work from there.
 
 If you are using GitHub Desktop, this is likely in the folder: "Documents\GitHub\WWIV".  Otherwise just
 create a directory and clone your fork.  You can follow instructions that are written by GitHub 
@@ -29,11 +30,11 @@ create a directory and clone your fork.  You can follow instructions that are wr
 when you clone the repo, you have "Recurse Submodules" specified in the tool, or using 
 ```--recurse-submodules``` on the commandline.
 
-### Download Visual Studio
-WWIV is compiled with the VS2019 compiler for windows. You can download [Microsoft Visual Studio 2019 Community](https://www.visualstudio.com/downloads/)
+### Download and Install Visual Studio
+WWIV is compiled with the VS2019 compiler for windows. 
+You can download [Microsoft Visual Studio 2019 Community](https://www.visualstudio.com/downloads/)
 
-### Install Visual Studio
-Choose a custom install and select the ```Desktop development with C++``` workload.
+Choose to installthe ```Desktop development with C++``` workload.
 You also may want to optionally install the following "Individual Components":
 ```
    Git For Windows (Only if you do not have this already)
@@ -41,7 +42,7 @@ You also may want to optionally install the following "Individual Components":
 ```
 
 
-## Build WWIV
+### Build WWIV (Windows)
 * If you cloned a git repository for your fork of WWIV, then select File then Open and choose Folder.
 
 * If you are using the GitHub for Windows extension, then from the Visual Studio IDE, select File and then ```Open from Source Control```
@@ -53,14 +54,15 @@ Above that you will see Login to GitHub, do that.
 * When VS says "READY" on the bottom, go to Build on the menu and select Build Solution(F7). If you have any build errors, run Build one more time and see if that resolves itself as there can be timing issues on some machines.
 * You select whether or not you are building DEBUG or RELEASE on the toolbar. Those binaries and other built files will be places in a \debug and \release folder along side your github source files. ex: ```Documents\GitHub\WWIV\debug``` or ```Documents\GitHub\WWIV\release```.
 
-## Linux Builds
+
+## Building on Linux
 This only builds the binaries, it does NOT include the supporting files.
 Please follow the
 [Linux Installation](http://docs.wwivbbs.org/en/latest/linux_installation/) instructions for getting the supporting files in place.
 
 ** NOTE:** Do these steps as a non-root user; your BBS user would be the easiest from a file permissions perspective later on.  root should never be used to compile binaries.
 
-### Things you need:
+### Install pre-requisite software
 
 Package | Comments
 ------- | ----------
@@ -74,8 +76,8 @@ g++ | 8.3.0 or later (easiest to install via build-essential on debian)
 If you are on debian, you can use ```/builds/jenkins/linux/install-prereqs.sh``` to ensure that
 the right software is installed.  This command should be executed as root (using sudo)
 
-### Build Steps
-There are two primary ways to get the files for building; download a zip of the project or clone the repo.  In both cases, you will end up with the following files in the build directory:  
+### WWIV Binaries
+Here's the list of binaries that will be built in the build directory:  
 
 * bbs/bbs  
 * wwivconfig/wwivconfig  
@@ -89,13 +91,7 @@ There are two primary ways to get the files for building; download a zip of the 
 * network2/network2
 * network3/network3
 
-#### Using a downloaded .zip (no git required)
-* If you don't want to worry about managing a git repo and just want the files, you can download the zipped project file from GitHub.  Go to 
-https://github.com/wwivbbs/wwiv and click on [Download Zip](https://github.com/wwivbbs/wwiv/archive/master.zip)
-* unzip the file and it will create a wwiv-master directory
-* navigate to wwiv-master
-
-#### Using a git repository
+#### Getting the source from GitHub
 If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repositories to their account and work from there.  
 * [Fork](https://help.github.com/articles/fork-a-repo/), then clone your fork
     
@@ -111,15 +107,8 @@ If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repos
 
 #### Compiling WWIV
 
-No matter which way you used (source zip or git repository), compiling WWIV is the same.
 
-You need to compile the dependencies first. Enter the cloned repository, change to the ```deps/cl342``` directory and then do
-
-```
-make
-```
-
-Now change directory back to the root ```/wwiv``` directory where you cloned the repository
+Now change directory to the ```/wwiv``` directory where you cloned the repository
 and run the following:
   ```
   mkdir _build
