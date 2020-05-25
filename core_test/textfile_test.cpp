@@ -23,7 +23,6 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 
-#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -34,14 +33,13 @@ using namespace wwiv::strings;
 
 class TextFileTest : public ::testing::Test {
 protected:
-  virtual void SetUp() {
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
+  void SetUp() override {
+    const auto* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     test_name_ = test_info->name();
     hello_world_path_ = helper_.CreateTempFile(test_name_, kHelloWorld);
   }
 
-  const string& test_name() const { return test_name_; }
+  [[nodiscard]] const string& test_name() const { return test_name_; }
 
   FileHelper helper_;
   std::filesystem::path hello_world_path_;
@@ -108,9 +106,8 @@ TEST_F(TextFileTest, Write) {
     TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.Write("Hello");
     filename = file.full_pathname();
-    // Let the textfile close.
   }
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello", actual);
 }
 
@@ -120,9 +117,8 @@ TEST_F(TextFileTest, Insertion_Basic) {
     TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file << "Hello" << " " << "World";
     filename = file.full_pathname();
-    // Let the textfile close.
   }
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello World", actual);
 }
 
@@ -133,9 +129,8 @@ TEST_F(TextFileTest, Insertion_TwoLines) {
     file << "Hello" << std::endl;
     file << "World" << std::endl;
     filename = file.full_pathname();
-    // Let the textfile close.
   }
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   auto lines = wwiv::strings::SplitString(actual, "\r\n", true);
   EXPECT_EQ(2u, lines.size());
   EXPECT_EQ("Hello", lines.at(0));
@@ -148,9 +143,8 @@ TEST_F(TextFileTest, WriteChar) {
     TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteChar('H');
     filename = file.full_pathname();
-    // Let the textfile close.
   }
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("H", actual);
 }
 
@@ -160,9 +154,9 @@ TEST_F(TextFileTest, WriteBinary) {
     TextFile file(PathFilePath(helper_.TempDir(), this->test_name()), "wt");
     file.WriteBinary(kHelloWorld.c_str(), kHelloWorld.size() - 1); // trim off \n
     filename = file.full_pathname();
-    // Let the textfile close.
+    // Let the file close.
   }
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello World", actual);
 }
 
@@ -208,6 +202,13 @@ TEST_F(TextFileTest, GetPosition) {
 TEST_F(TextFileTest, ReadFileIntoString) {
   const auto path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   TextFile file(path, "rt");
-  string s = file.ReadFileIntoString();
+  const auto s = file.ReadFileIntoString();
   EXPECT_EQ("a\nb\nc\n", s);
+}
+
+TEST_F(TextFileTest, ReadFileIntoString_EmptyFile) {
+  const auto path = helper_.CreateTempFile(this->test_name(), "");
+  TextFile file(path, "rt");
+  const auto s = file.ReadFileIntoString();
+  EXPECT_EQ("", s);
 }

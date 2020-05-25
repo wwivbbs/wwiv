@@ -30,7 +30,7 @@
 typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
 
 /**
- \class TextFile textfile.h "core/textfile.h"
+ \class TextFile
  \brief A class that represents a text file.
 
  Used to read and write text files.
@@ -123,7 +123,7 @@ public:
   }
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
-  [[nodiscard]] bool ReadLine(std::string* buffer) noexcept;
+  [[nodiscard]] bool ReadLine(std::string* out) noexcept;
   [[nodiscard]] wwiv::core::File::size_type position() const noexcept { return ftell(file_); }
   [[nodiscard]] const std::filesystem::path& path() const noexcept;
   [[nodiscard]] std::string full_pathname() const;

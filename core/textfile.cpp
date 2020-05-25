@@ -18,7 +18,11 @@
 /**************************************************************************/
 #include "core/textfile.h"
 
-#include <iostream>
+#include "core/file.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
 #include <cerrno>
 #include <chrono>
 #include <cstring>
@@ -27,15 +31,8 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "core/file.h"
-#include "core/log.h"
-#include "core/os.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-
 #ifdef _WIN32
 #include <io.h>
-#include <share.h>
 
 #else  // _WIN32
 #include <sys/file.h>
@@ -55,17 +52,16 @@ const int TRIES = 100;
 
 #ifdef _WIN32
 FILE* OpenImpl(const std::string& name, const std::string& mode) {
-  int share = SH_DENYWR;
-  int md = 0;
+  auto share = SH_DENYWR;
+  auto md = O_RDONLY;
   if (strchr(mode.c_str(), 'w') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT | O_TRUNC;
   } else if (strchr(mode.c_str(), 'a') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT;
-  } else {
-    md = O_RDONLY;
   }
+
   if (strchr(mode.c_str(), 'b') != nullptr) {
     md |= O_BINARY;
   }
@@ -75,9 +71,9 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
     share = SH_DENYRD;
   }
 
-  int fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
+  auto fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
   if (fd < 0) {
-    int count = 1;
+    auto count = 1;
     if (File::Exists(name)) {
       sleep_for(milliseconds(WAIT_TIME));
       fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
@@ -94,7 +90,7 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
       _lseek(fd, 0L, SEEK_END);
     }
 
-    FILE* hFile = _fdopen(fd, mode.c_str());
+    const auto hFile = _fdopen(fd, mode.c_str());
     if (!hFile) {
       _close(fd);
     }
@@ -119,7 +115,7 @@ static std::string fopen_compatible_mode(const std::string& m) noexcept {
   if (m.find('d') == std::string::npos) {
     return m;
   }
-  std::string s{m};
+  auto s{m};
   return StringReplace(&s, "d", "t");
 }
 
@@ -193,19 +189,25 @@ const std::filesystem::path& TextFile::path() const noexcept { return file_name_
 
 std::string TextFile::full_pathname() const { return file_name_.string(); }
 
-TextFile::~TextFile() {
+TextFile::~TextFile() noexcept {
   Close();
 }
 
 std::string TextFile::ReadFileIntoString() {
   VLOG(3) << "ReadFileIntoString: ";
   if (file_ == nullptr) {
-    return "";
+    return {};
   }
-  string contents;
+
   fseek(file_, 0, SEEK_END);
-  contents.resize(static_cast<unsigned long>(ftell(file_)));
+  const auto len = static_cast<unsigned long>(ftell(file_));
   rewind(file_);
+  if (len == 0) {
+    return {};
+  }
+
+  string contents;
+  contents.resize(len);
   const auto num_read = fread(&contents[0], 1, contents.size(), file_);
   contents.resize(num_read);
   return contents;
