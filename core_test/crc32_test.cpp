@@ -20,7 +20,6 @@
 #include "core/crc32.h"
 #include "core/file.h"
 #include "core_test/file_helper.h"
-
 #include <map>
 #include <string>
 #include <vector>
@@ -37,8 +36,8 @@ TEST(Crc32Test, Simple) {
 
   ASSERT_TRUE(File::Exists(path));
 
-  uint32_t crc = crc32file(path.string());
-  uint32_t expected = 0x4a17b156;
+  const auto crc = crc32file(path.string());
+  const uint32_t expected = 0x4a17b156;
 
   // use wwiv/scripts/crc32.py to generate golden values as needed.
   EXPECT_EQ(expected, crc) << " was " << std::hex << crc;

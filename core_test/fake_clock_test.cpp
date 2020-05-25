@@ -30,12 +30,12 @@ using namespace std::chrono_literals;
 using namespace wwiv::core;
 
 TEST(FakeClock, Simple) { 
-  FakeClock c{DateTime::now()}; 
-  auto start = c.Now();
+  FakeClock c{DateTime::now()};
+  const auto start = c.Now();
   c.tick(2s);
-  auto mid = c.Now();
+  const auto mid = c.Now();
   c.tick(3s);
-  auto end = c.Now();
+  const auto end = c.Now();
 
   auto duration = duration_cast<seconds>(mid.to_system_clock() - start.to_system_clock());
   EXPECT_EQ(2s, duration);

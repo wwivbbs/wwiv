@@ -16,17 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
 #include "core/command_line.h"
-
+#include "gtest/gtest.h"
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
-using std::map;
 using std::string;
-using std::vector;
 
 using namespace wwiv::core;
 
@@ -34,10 +30,10 @@ class CommandLineTest: public ::testing::Test {};
 
 class NoopCommandLineCommand: public CommandLineCommand {
 public:
-  NoopCommandLineCommand(const std::string& name)
+  explicit NoopCommandLineCommand(const std::string& name)
       : CommandLineCommand(name, name) {}
   int Execute() override final { return 0; }
-  std::string GetHelp() const override final { return ""; }
+  [[nodiscard]] std::string GetHelp() const override final { return ""; }
 };
 
 TEST_F(CommandLineTest, Basic) {

@@ -19,19 +19,16 @@
 #include "gtest/gtest.h"
 #include "core/clock.h"
 #include "core/datetime.h"
-
 #include <string>
 
-using std::map;
 using std::string;
-using std::vector;
 
 using namespace wwiv::core;
 
 TEST(Clock, Simple) {
-  const auto start = DateTime::now(); 
+  const auto start = DateTime::now();
 
-  SystemClock c{};
+  const SystemClock c{};
   const auto mid = c.Now();
 
   const auto end = DateTime::now();
