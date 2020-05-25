@@ -85,6 +85,9 @@ public:
   }
 
   bool WriteVector(const std::vector<RECORD>& records, std::size_t max_records = 0) {
+    if (records.empty()) {
+      return true;
+    }
     auto num = records.size();
     if (max_records != 0 && max_records < num) {
       num = max_records;
