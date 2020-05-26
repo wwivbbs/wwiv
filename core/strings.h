@@ -19,7 +19,6 @@
 #ifndef __INCLUDED_STRINGS_H__
 #define __INCLUDED_STRINGS_H__
 
-#include <cstdint>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cstring> // strncpy
 // ReSharper disable once CppUnusedIncludeDirective
@@ -88,7 +87,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
 
   // Comparisons
   bool IsEquals(const char* str1, const char* str2);
-  bool iequals(const char* s1, const char* s2);
+  bool iequals(const char* str1, const char* str2);
   bool iequals(const std::string& s1, const std::string& s2);
   int StringCompareIgnoreCase(const char* str1, const char* str2);
   int StringCompare(const char* str1, const char* str2);
@@ -222,10 +221,10 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
 
 #ifdef _WIN32
 
-#define strcasecmp(a, b) _stricmp(a, b)
-#define strncasecmp(a, b, c) _strnicmp(a, b, c)
+  #define strcasecmp(a, b) _stricmp(a, b)
+  #define strncasecmp(a, b, c) _strnicmp(a, b, c)
 
-  char* strcasestr(const char* str, const char* pszPattern);
+  char* strcasestr(const char* haystack, const char* needle);
 
 #else // _WIN32
   char* strupr(char* s);

@@ -21,7 +21,7 @@
 #define __INCLUDED_PLATFORM_WWIVPORT_H__
 
 // WWIV's daten type is a 32-bit unsigned int. It can never be used for date
-// arithemetic since negative values don't exist.  This will allow us to
+// arithmetic since negative values don't exist.  This will allow us to
 // truncate a 64-bit time_t value for use till 2106.
 #ifndef DATEN_T_DEFINED
 #include <cstdint>

@@ -24,7 +24,6 @@
 #include "core/strings.h"
 #include <algorithm>
 #include <cstring>
-#include <functional>
 #include <iterator>
 #include <map>
 #include <string>
@@ -42,13 +41,13 @@ bool contains(std::map<K, V, C, A> const& m, K const& key) {
   return m.find(key) != std::end(m);
 }
 
-// Partial specicialization for maps with string keys (allows using const char* for lookup values)
+// Partial specialization for maps with string keys (allows using const char* for lookup values)
 template <typename V, typename C, typename A>
 bool contains(std::map<std::string, V, C, A> const& m, const std::string& key) {
   return m.find(key) != std::end(m);
 }
 
-// Partial specicialization for maps with const string keys.
+// Partial specialization for maps with const string keys.
 template <typename V, typename C, typename A>
 bool contains(std::map<const std::string, V, C, A> const& m, const std::string& key) {
   return m.find(key) != std::end(m);

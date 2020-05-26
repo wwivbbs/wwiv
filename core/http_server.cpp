@@ -18,17 +18,40 @@
 /**************************************************************************/
 #include "core/http_server.h"
 
-#include <string>
-#include <vector>
-
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv::core {
+
+// Subset from https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1
+std::map<int, std::string> CreateHttpStatusMap() {
+  std::map<int, std::string> m = {
+      {200, "OK"},
+      {204, "No Content"},
+      {301, "Moved Permanently"},
+      {302, "Found"},
+      {304, "Not Modified"},
+      {307, "Temporary Redirect"},
+      {400, "Bad Request"},
+      {401, "Unauthorized"},
+      {403, "Forbidden"},
+      {404, "Not Found"},
+      {405, "Method Not Allowed"},
+      {406, "Not Acceptable"},
+      {408, "Request Time-out"},
+      {412, "Precondition Failed"},
+      {500, "Internal Server Error"},
+      {501, "Not Implemented"},
+      {503, "Service Unavailable"}
+  };
+  return m;
+}
 
 HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn)
   : conn_(std::move(conn)) {

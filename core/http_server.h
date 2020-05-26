@@ -23,6 +23,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/net.h"
@@ -34,30 +35,6 @@
 
 namespace wwiv {
 namespace core {
-
-// Subset from https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1
-static std::map<int, std::string> CreateHttpStatusMap() {
-  std::map<int, std::string> m = {
-      {200, "OK"},
-      {204, "No Content"},
-      {301, "Moved Permanently"},
-      {302, "Found"},
-      {304, "Not Modified"},
-      {307, "Temporary Redirect"},
-      {400, "Bad Request"},
-      {401, "Unauthorized"},
-      {403, "Forbidden"},
-      {404, "Not Found"},
-      {405, "Method Not Allowed"},
-      {406, "Not Acceptable"},
-      {408, "Request Time-out"},
-      {412, "Precondition Failed"},
-      {500, "Internal Server Error"},
-      {501, "Not Implemented"},
-      {503, "Service Unavailable"}
-  };
-  return m;
-}
 
 /** List of HTTP Methods */
 enum class HttpMethod {
@@ -72,20 +49,20 @@ enum class HttpMethod {
 };
 
 /**
- * Encapsulates an HTTP Resposne to send to a client.
+ * Encapsulates an HTTP Response to send to a client.
  */
 class HttpResponse {
 public:
-  HttpResponse(int s)
+  explicit HttpResponse(const int s)
     : status(s) {
   };
 
-  HttpResponse(int s, const std::string& t)
-    : status(s), text(t) {
+  HttpResponse(const int s, std::string t)
+    : status(s), text(std::move(t)) {
   };
 
-  HttpResponse(int s, std::map<std::string, std::string>& h, const std::string& t)
-    : status(s), headers(h), text(t) {
+  HttpResponse(int s, std::map<std::string, std::string>& h, std::string t)
+    : status(s), headers(h), text(std::move(t)) {
   };
 
   int status;
@@ -105,7 +82,7 @@ public:
  */
 class HttpServer {
 public:
-  HttpServer(std::unique_ptr<SocketConnection> conn);
+  explicit HttpServer(std::unique_ptr<SocketConnection> conn);
   virtual ~HttpServer();
   /** Adds a handler (handler) for method method and URL path root {root). */
   bool add(HttpMethod method, const std::string& root, HttpHandler* handler);
