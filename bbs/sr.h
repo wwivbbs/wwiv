@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_BBS_SR_H__
 #define __INCLUDED_BBS_SR_H__
 
-#include "sdk/vardec.h"
 #include <string>
 
 enum xfertype {
@@ -44,8 +43,6 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
                int dn,
                long fs);
 void receive_file(const std::string& file_name, int* received, const std::string& sfn, int dn);
-char end_batch1();
-void endbatch();
 
 
 #endif  // __INCLUDED_BBS_SR_H__

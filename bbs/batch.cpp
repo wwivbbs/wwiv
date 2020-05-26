@@ -386,15 +386,70 @@ void zmbatchdl(bool bHangupAfterDl) {
     }
   } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
-  if (ok && !a()->hangup_) {
-    endbatch();
-  }
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
   }
   if (bHangupAfterDl) {
     bihangup();
   }
+}
+
+
+char end_ymodem_batch1() {
+  char b[128];
+
+  memset(b, 0, 128);
+
+  bool done = false;
+  int  nerr = 0;
+  bool bAbort = false;
+  char ch = 0;
+  do {
+    send_block(b, 5, true, 0);
+    ch = gettimeout(5, &bAbort);
+    if (ch == CF || ch == CX) {
+      done = true;
+    } else {
+      ++nerr;
+      if (nerr >= 9) {
+        done = true;
+      }
+    }
+  } while (!done && !a()->hangup_ && !bAbort);
+  if (ch == CF) {
+    return CF;
+  }
+  if (ch == CX) {
+    return CX;
+  }
+  return CU;
+}
+
+static void end_ymodem_batch() {
+  bool abort = false;
+  int oldx = a()->localIO()->WhereX();
+  int oldy = a()->localIO()->WhereY();
+  bool ucrc = false;
+  if (!okstart(&ucrc, &abort)) {
+    abort = true;
+  }
+  if (!abort && !a()->hangup_) {
+    const char ch = end_ymodem_batch1();
+    if (ch == CX) {
+      abort = true;
+    }
+    if (ch == CU) {
+      const auto fn = PathFilePath(a()->temp_directory(),
+                               StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+      File::Remove(fn);
+      File nullFile(fn);
+      int terr = 0;
+      send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
+      abort = true;
+      File::Remove(fn);
+    }
+  }
+  a()->localIO()->GotoXY(oldx, oldy);
 }
 
 void ymbatchdl(bool bHangupAfterDl) {
@@ -466,7 +521,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (ok && !a()->hangup_) {
-    endbatch();
+    end_ymodem_batch();
   }
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n";

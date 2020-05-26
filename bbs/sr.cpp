@@ -323,7 +323,7 @@ int get_protocol(xfertype xt) {
   
   if (prot) {
     const auto ss = prot_name(prot);
-    prompt = fmt::format("Protocol (?=list, <C/R>={}}) : ", ss);
+    prompt = fmt::format("Protocol (?=list, <C/R>={}) : ", ss);
     allowable.push_back('\r');
   }
   if (!prot) {
@@ -627,62 +627,4 @@ void receive_file(const std::string& file_name, int* received, const std::string
     }
     break;
   }
-}
-
-char end_batch1() {
-  char b[128];
-
-  memset(b, 0, 128);
-
-  bool done = false;
-  int  nerr = 0;
-  bool bAbort = false;
-  char ch = 0;
-  do {
-    send_block(b, 5, 1, 0);
-    ch = gettimeout(5, &bAbort);
-    if (ch == CF || ch == CX) {
-      done = true;
-    } else {
-      ++nerr;
-      if (nerr >= 9) {
-        done = true;
-      }
-    }
-  } while (!done && !a()->hangup_ && !bAbort);
-  if (ch == CF) {
-    return CF;
-  }
-  if (ch == CX) {
-    return CX;
-  }
-  return CU;
-}
-
-
-void endbatch() {
-  bool abort = false;
-  int terr = 0;
-  int oldx = a()->localIO()->WhereX();
-  int oldy = a()->localIO()->WhereY();
-  bool ucrc = false;
-  if (!okstart(&ucrc, &abort)) {
-    abort = true;
-  }
-  if (!abort && !a()->hangup_) {
-    char ch = end_batch1();
-    if (ch == CX) {
-      abort = true;
-    }
-    if (ch == CU) {
-      const auto fn = PathFilePath(a()->temp_directory(),
-                               StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
-      File::Remove(fn);
-      File nullFile(fn);
-      send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
-      abort = true;
-      File::Remove(fn);
-    }
-  }
-  a()->localIO()->GotoXY(oldx, oldy);
 }

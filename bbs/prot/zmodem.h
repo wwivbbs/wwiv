@@ -60,7 +60,9 @@
 #define	MaxNoise	64	/* max "noise" characters before transmission
 				 * pauses */
 #define	MaxErrs		20	/* Max receive errors before cancel */
-#define	AlwaysSinit	1	/* always send ZSINIT header, even if not
+
+// Maybe not, this was causing a warning on syncterm.
+#define	AlwaysSinit	0	/* always send ZSINIT header, even if not
 				 * needed, this makes protocol more robust */
 
 #define SendOnly	0	/* compiles smaller version for send only */
