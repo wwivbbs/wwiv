@@ -238,7 +238,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
-  if (binary_mode() || bNoTranslation || !memchr(buffer, CHAR_TELNET_OPTION_IAC, count)) {
+  if (bNoTranslation || !memchr(buffer, CHAR_TELNET_OPTION_IAC, count)) {
     memcpy(tmp_buffer.get(), buffer, count);
   } else {
     // If there is a #255 then escape the #255's
