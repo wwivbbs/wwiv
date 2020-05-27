@@ -446,15 +446,20 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
 
 void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
   // Add the data to the input buffer
-  for (int num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
+  for (auto num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));
   }
 
   lock_guard<std::mutex> lock(mu_);
 
-  bool bBinaryMode = binary_mode();
-  for (int i = nStart; i < nEnd; i++) {
-    if ((static_cast<unsigned char>(buffer[i]) == 255)) {
+  if (binary_mode()) {
+    for (auto i = nStart; i < nEnd; i++) {
+      queue_.push(buffer[i]);
+    }
+    return;
+  }
+  for (auto i = nStart; i < nEnd; i++) {
+    if (static_cast<unsigned char>(buffer[i]) == 255) {
       if ((i + 1) < nEnd  && static_cast<unsigned char>(buffer[i + 1]) == 255) {
         queue_.push(buffer[i + 1]);
         i++;
@@ -464,11 +469,11 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) 
       } else {
         // ::OutputDebugString("WHAT THE HECK?!?!?!? 255 w/o any options or anything\r\n");
       }
-    } else if (bBinaryMode || buffer[i] != '\0') {
-      // I think the nulls in the input buffer were being bad... RF20020906
-      // This fixed the problem of telnetting with CRT to a linux machine and then telnetting from
-      // that linux box to the bbs... Hopefully this will fix the Win9x built-in telnet client as
-      // well as TetraTERM.
+    } else if (buffer[i] != '\0') {
+      // RF20020906: I think the nulls in the input buffer were being bad...
+      // This fixed the problem with CRT to a linux machine and then telnet from
+      // that linux box to the bbs... Hopefully this will fix the Win9x built-in
+      // telnet client as well as TetraTERM.
       queue_.push(buffer[i]);
     }
   }
