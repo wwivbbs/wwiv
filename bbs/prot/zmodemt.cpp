@@ -374,6 +374,7 @@ int ZmodemTFinish(ZModem* info) {
  * failure
  */
 int GotRinit(ZModem* info) {
+  zmodemlog("GotRinit");
   info->bufsize = info->hdrData[1] + info->hdrData[2] * 256;
   info->zrinitflags = info->hdrData[4] + info->hdrData[3] * 256;
   info->crc32 = info->zrinitflags & CANFC32;
@@ -440,9 +441,9 @@ int GotRinit(ZModem* info) {
     info->Streaming = ZModem::Segmented;
   }
 
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
   zmodemlog("GotRinit[%s]\n", sname(info));
-#endif
+//#endif
 
   if (AlwaysSinit || info->zsinitflags != 0 || info->attn != nullptr) {
     return SendZSInit(info);

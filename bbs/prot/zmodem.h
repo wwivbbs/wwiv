@@ -61,10 +61,11 @@
                     * pauses */
 #define MaxErrs 20 /* Max receive errors before cancel */
 
+/* always send ZSINIT header, even if not                                                      \
+ * needed, this makes protocol more robust */
 // Maybe not, this was causing a warning on syncterm.
-#define AlwaysSinit                                                                                \
-  0 /* always send ZSINIT header, even if not                                                      \
-     * needed, this makes protocol more robust */
+// Causing it to bail fast on Linux though.
+#define AlwaysSinit 1
 
 #define SendOnly 0 /* compiles smaller version for send only */
 #define RcvOnly 0  /* compiles smaller version for receive only */
