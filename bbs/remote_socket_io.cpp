@@ -234,12 +234,14 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
-  unique_ptr<char[]> tmp_buffer = make_unique<char[]>(count * 2 + 100);
+  auto tmp_buffer = make_unique<char[]>(count * 2 + 100);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
-  if (!bNoTranslation && (memchr(buffer, CHAR_TELNET_OPTION_IAC, count) != nullptr)) {
-    // If there is a #255 then excape the #255's
+  if (binary_mode() || bNoTranslation || !memchr(buffer, CHAR_TELNET_OPTION_IAC, count)) {
+    memcpy(tmp_buffer.get(), buffer, count);
+  } else {
+    // If there is a #255 then escape the #255's
     const char* p = buffer;
     char* p2 = tmp_buffer.get();
     for (unsigned int i = 0; i < count; i++) {
@@ -253,8 +255,6 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
       p++;
     }
     *p2++ = '\0';
-  } else {
-    memcpy(tmp_buffer.get(), buffer, count);
   }
 
   int num_sent = send(socket_, tmp_buffer.get(), nCount, 0);
