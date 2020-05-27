@@ -442,9 +442,7 @@ int GotRinit(ZModem* info) {
     info->Streaming = ZModem::Segmented;
   }
 
-//#if defined(_DEBUG)
   zmodemlog("GotRinit[%s]\n", sname(info));
-//#endif
 
   if (AlwaysSinit || info->zsinitflags != 0 || info->attn != nullptr) {
     return SendZSInit(info);
@@ -463,10 +461,7 @@ int SendZSInit(ZModem* info) {
    * activates the specified ESC modes before reading the following
    * data subpacket." What does that mean?
    */
-
-//#if defined(_DEBUG)
   zmodemlog("SendZSInit[%s]\n", sname(info));
-//#endif
 
   info->state = TInit;
   fbuf[0] = fbuf[1] = fbuf[2] = 0;

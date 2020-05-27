@@ -83,6 +83,7 @@ int ZDataReceived(ZModem* info, int crcGood);
 int ZmodemRcv(u_char* str, int len, ZModem* info) {
   int err;
 
+  zmodemlog("ZmodemRcv: [%s], len=%d; rcvlen=%d; InputState=%d", sname(info), len, info->rcvlen, info->InputState);
   info->rcvlen = len;
 
   while (--info->rcvlen >= 0) {
@@ -242,10 +243,9 @@ int HdrChar(u_char c, ZModem* info) {
     default:
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
-      zmodemlog("Calling ZXmitHdrHex ZNAK\n");
+      zmodemlog("Calling ZXmitHdrHex ZNAK; State [%s]\n", sname(info));
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
-    zmodemlog("HdrChar: !ZDLE; return 0 (should not happen)\r\n");
     return 0;
   }
 
@@ -312,7 +312,8 @@ int HdrChar(u_char c, ZModem* info) {
     }
     break;
   }
-  zmodemlog("HdrChar: [Return 0; Datatype: %d]\r\n", info->DataType);
+  //zmodemlog("HdrChar: [Return 0; Datatype: %d, char: %d, count: %d]\r\n", info->DataType, c,
+  //          info->chrCount);
   return 0;
 }
 
@@ -369,6 +370,9 @@ int DataChar(u_char c, ZModem* info) {
       return ZDataReceived(info, info->crc == 0xdebb20e3);
     }
     break;
+    case ZHEX: {
+      zmodemlog("DataChar: Received ZHEX");
+    } break;
   }
   return 0;
 }
@@ -568,11 +572,12 @@ const char* hdrnames[] = {
 
 int ZProtocol(ZModem* info) {
   StateTable* table;
-//#if defined(_DEBUG)
+#if defined(_DEBUG)
+  zmodemlog("ZProtocol: State [%s]", sname(info));
   zmodemlog("received %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[info->hdrData[0]],
             info->hdrData[1], info->hdrData[2], info->hdrData[3], info->hdrData[4],
             ZDec4(info->hdrData + 1));
-//#endif
+#endif
   /* Flags are sent in F3 F2 F1 F0 order.  Data is sent in P0 P1 P2 P3 */
 
   info->timeoutCount = 0;
@@ -582,10 +587,8 @@ int ZProtocol(ZModem* info) {
   while (table->type != 99 && table->type != info->hdrData[0]) {
     ++table;
   }
-//#if defined(_DEBUG)
   zmodemlog("  state %s => %s, iflush=%d, oflush=%d, call %x\n", sname(info),
             sname2(table->newstate), table->IFlush, table->OFlush, table->func);
-//#endif
   info->state = table->newstate;
   if (table->IFlush) {
     info->rcvlen = 0;
@@ -618,9 +621,7 @@ int ZDataReceived(ZModem* info, int crcGood) {
 int ZmodemTimeout(ZModem* info) {
   /* timed out while waiting for input */
   ++info->timeoutCount;
-//#if defined(_DEBUG)
-  zmodemlog("timeout %d [%s]\n", info->timeoutCount, sname(info));
-//#endif
+  //zmodemlog("timeout %d [%s]\n", info->timeoutCount, sname(info));
   switch (info->state) {
   /* receive */
   case RStart: /* waiting for INIT frame from other end */
@@ -696,6 +697,7 @@ int ZmodemAttention(ZModem* info) {
 }
 
 int ZmodemAbort(ZModem* info) {
+  zmodemlog("ZmodemAbort [%s]", sname(info));
   static u_char canistr[] = {CAN, CAN, CAN, CAN, CAN, CAN, CAN, CAN, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
   info->state = Done;
   ZIFlush(info);
@@ -710,13 +712,16 @@ int Ignore(ZModem* info) { return 0; }
 /* ignore header contents, return ZmDone */
 
 int RetDone(ZModem* info) {
-  zmodemlog("RetDone");
+  zmodemlog("RetDone: [%s]\n", sname(info));
   return ZmDone;
 }
 
 /* ignore header contents, return ZmErrCancel */
 
-int GotCancel(ZModem* info) { return ZmErrCancel; }
+int GotCancel(ZModem* info) {
+  zmodemlog("GotCancel [%s]", sname(info));
+  return ZmErrCancel;
+}
 
 /* utility: set up to receive a data packet */
 
@@ -742,6 +747,8 @@ int GotCommand(ZModem* info) {
 
 int GotCommandData(ZModem* info, int crcGood) {
   /* TODO */
+  zmodemlog("GotCommandData [%s]", sname(info));
+
   return 0;
 }
 
@@ -767,6 +774,7 @@ int GotStderrData(ZModem* info) {
 
 int ZPF(ZModem* info) {
   info->waitflag = 1; /* pause any in-progress transmission */
+  zmodemlog("ZPF [%s]", sname(info));
   ZStatus(ProtocolErr, info->hdrData[0], nullptr);
   return 0;
 }
@@ -774,6 +782,7 @@ int ZPF(ZModem* info) {
 int AnswerChallenge(ZModem* info) { return ZXmitHdrHex(ZACK, info->hdrData + 1, info); }
 
 int GotAbort(ZModem* info) {
+  zmodemlog("GotAbort [%s]", sname(info));
   ZStatus(RmtCancel, 0, nullptr);
   return ZXmitHdrHex(ZFIN, zeros, info);
 }

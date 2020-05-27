@@ -74,7 +74,7 @@ bool NewZModemSendFile(const std::string& fn) {
   ZmodemTInit(&info);
   int done = doIO(&info);
   if (done != ZmDone) {
-    // puts( "Returning False from doIO After ZModemTInit\r\n" );
+    zmodemlog("Returning False from doIO After ZModemTInit\r\n");
     return false;
   }
 
@@ -86,7 +86,9 @@ bool NewZModemSendFile(const std::string& fn) {
   int nBytesRem = 0;
   char file_name[255];
   to_char_array(file_name, fn);
+  zmodemlog("NewZModemSendFile: About to call ZmodemTFile\n");
   done = ZmodemTFile(file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info);
+  zmodemlog("NewZModemSendFile: After ZmodemTFile; done=%d\n", done);
   switch (done) {
   case 0:
     ZModemWindowXferStatus("Sending File: %s", file_name);
@@ -106,7 +108,7 @@ bool NewZModemSendFile(const std::string& fn) {
   if (!done) {
     done = doIO(&info);
 #if defined(_DEBUG)
-    zmodemlog("Returning %d from doIO After ZmodemTFile\r\n", done);
+    zmodemlog("Returning %d from doIO After ZmodemTFile\n", done);
 #endif
   }
   if (done != ZmDone) {
@@ -172,6 +174,9 @@ int ZModemWindowXferStatus(const char* fmt, ...) {
 
   va_start(ap, fmt);
   vsnprintf(szBuffer, sizeof(szBuffer), fmt, ap);
+#ifdef _DEBUG
+  //zmodemlog("Status: [%s]\n", szBuffer);
+#endif
   va_end(ap);
   int oldX = a()->localIO()->WhereX();
   int oldY = a()->localIO()->WhereY();
@@ -191,25 +196,18 @@ int doIO(ZModem* info) {
   bool doCancel = false; // %%TODO: make this true if the user aborts.
 
   while (!done) {
-    if (info->timeout > 0) {
-      //yield();
-    }
     time_t tThen = time(nullptr);
-#if defined(_DEBUG)
     if (info->timeout > 0) {
-      zmodemlog("[%ld] Then.  Timeout = %ld\r\n", tThen, info->timeout);
+      zmodemlog("[%ld] Timeout = %ld\n", tThen, info->timeout);
     }
-#endif
     // Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
     // performance < 1k/second vs. 8-9k/second locally
-    while ((info->timeout > 0) && !a()->remoteIO()->incoming() && !a()->hangup_) {
+    while (info->timeout > 0 && !a()->remoteIO()->incoming() && !a()->hangup_) {
       sleep_for(milliseconds(100));
       time_t tNow = time(nullptr);
       if ((tNow - tThen) > info->timeout) {
-#if defined(_DEBUG)
         zmodemlog("Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout,
                   (tNow - tThen));
-#endif
         break;
       }
       ProcessLocalKeyDuringZmodem();
@@ -223,6 +221,7 @@ int doIO(ZModem* info) {
     if (doCancel) {
       ZmodemAbort(info);
       fprintf(stderr, "cancelled by user\n");
+      zmodemlog("cancelled by user");
       // resetCom();
       //%%TODO: signal parent we aborted.
       return 1;
@@ -234,18 +233,15 @@ int doIO(ZModem* info) {
     } else {
       int len = a()->remoteIO()->read(reinterpret_cast<char*>(buffer), ZMODEM_RECEIVE_BUFFER_SIZE);
       done = ZmodemRcv(buffer, len, info);
-#if defined(_DEBUG)
-      zmodemlog("ZmodemRcv [%d chars] [done:%d]\r\n", len, done);
-#endif
+      zmodemlog("ZmodemRcv [%s] [%d chars] [done:%d]\n", sname(info), len, done);
     }
   }
+  zmodemlog("doIO: Done [%d]\n", done);
   return done;
 }
 
 int ZXmitStr(u_char* str, int len, ZModem* info) {
-#if defined(_DEBUG)
-  zmodemlog("ZXmitStr Size=[%d]\r\n", len);
-#endif
+  //zmodemlog("ZXmitStr Size=[%d]\n", len);
   a()->remoteIO()->write(reinterpret_cast<const char*>(str), len);
   return 0;
 }

@@ -128,10 +128,10 @@ int ZXmitHdrHex(int type, u_char data[4], ZModem* info) {
   u_char szBuffer[128];
   u_char* ptr = szBuffer;
 
-//#if defined(_DEBUG)
+#if defined(_DEBUG)
   zmodemlog("ZXmitHdrHex: sending  %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[type], data[0],
             data[1], data[2], data[3], ZDec4(data));
-//#endif
+#endif
 
   *ptr++ = ZPAD;
   *ptr++ = ZPAD;
