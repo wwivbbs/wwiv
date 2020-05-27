@@ -205,7 +205,6 @@ u_int rcvHex(u_int i, char c) {
 /* handle character input in a header */
 
 int HdrChar(u_char c, ZModem* info) {
-  zmodemlog("HdrChar");
   int i;
   int crc = 0;
 
@@ -213,6 +212,7 @@ int HdrChar(u_char c, ZModem* info) {
     info->escape = 1;
     return 0;
   }
+  zmodemlog("HdrChar: !ZDLE\r\n");
 
   if (info->escape) {
     info->escape = 0;
@@ -243,7 +243,7 @@ int HdrChar(u_char c, ZModem* info) {
     default:
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
-      zmodemlog("Calling ZXmitHdrHex ZNAK");
+      zmodemlog("Calling ZXmitHdrHex ZNAK\n");
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
     return 0;
@@ -255,7 +255,7 @@ int HdrChar(u_char c, ZModem* info) {
     if (info->chrCount <= 14 && !isxdigit(c)) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
-      zmodemlog("HdrChar: [DataType: ZHEX] Calling ZXmitHdrHex ZNAK");
+      zmodemlog("HdrChar: [DataType: ZHEX] Calling ZXmitHdrHex ZNAK\n");
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
     if (info->chrCount <= 14) {
@@ -270,10 +270,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if ((crc & 0xffff) != 0) {
-        zmodemlog("HdrChar: [ZHEX] Calling ZXmitHdrHex ZNAK");
+        zmodemlog("HdrChar: [ZHEX] Calling ZXmitHdrHex ZNAK\n");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
-        zmodemlog("HdrChar: [ZHEX] Calling ZProtocol");
+        zmodemlog("HdrChar: [ZHEX] Calling ZProtocol\n");
         return ZProtocol(info);
       }
     } else
@@ -287,10 +287,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if ((crc & 0xffff) != 0) {
-        zmodemlog("HdrChar: [ZBIN] Calling ZXmitHdrHex ZNAK");
+        zmodemlog("HdrChar: [ZBIN] Calling ZXmitHdrHex ZNAK\n");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
-        zmodemlog("HdrChar: [ZBIN] Calling ZProtocol");
+        zmodemlog("HdrChar: [ZBIN] Calling ZProtocol\n");
         return ZProtocol(info);
       }
     }
@@ -303,10 +303,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if (info->crc != 0xdebb20e3) { /* see note below */
-        zmodemlog("HdrChar: [ZBIN32] Calling ZXmitHdrHex ZNAK");
+        zmodemlog("HdrChar: [ZBIN32] Calling ZXmitHdrHex ZNAK\n");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
-        zmodemlog("HdrChar: [ZBIN32] Calling ZProtocol");
+        zmodemlog("HdrChar: [ZBIN32] Calling ZProtocol\n");
         return ZProtocol(info);
       }
     }
@@ -708,7 +708,10 @@ int Ignore(ZModem* info) { return 0; }
 
 /* ignore header contents, return ZmDone */
 
-int RetDone(ZModem* info) { return ZmDone; }
+int RetDone(ZModem* info) {
+  zmodemlog("RetDone");
+  return ZmDone;
+}
 
 /* ignore header contents, return ZmErrCancel */
 
