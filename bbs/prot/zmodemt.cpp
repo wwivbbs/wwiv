@@ -463,15 +463,16 @@ int SendZSInit(ZModem* info) {
    * data subpacket." What does that mean?
    */
 
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
   zmodemlog("SendZSInit[%s]\n", sname(info));
-#endif
+//#endif
 
   info->state = TInit;
   fbuf[0] = fbuf[1] = fbuf[2] = 0;
   fbuf[3] = info->zsinitflags;
   if ((err = ZXmitHdr(ZSINIT, ZBIN, fbuf, info)) ||
       (err = ZXmitData(ZBIN, strlen(at) + 1, ZCRCW, (u_char*)at, info))) {
+    zmodemlog("SendZSInit ERROR [%s] [%d]\n", sname(info), err);
     return err;
   }
   return 0;

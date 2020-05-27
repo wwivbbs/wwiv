@@ -205,6 +205,7 @@ u_int rcvHex(u_int i, char c) {
 /* handle character input in a header */
 
 int HdrChar(u_char c, ZModem* info) {
+  zmodemlog("HdrChar");
   int i;
   int crc = 0;
 
