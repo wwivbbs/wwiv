@@ -242,6 +242,7 @@ int HdrChar(u_char c, ZModem* info) {
     default:
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
+      zmodemlog("Calling ZXmitHdrHex ZNAK");
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
     return 0;
@@ -253,6 +254,7 @@ int HdrChar(u_char c, ZModem* info) {
     if (info->chrCount <= 14 && !isxdigit(c)) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
+      zmodemlog("HdrChar: [DataType: ZHEX] Calling ZXmitHdrHex ZNAK");
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
     if (info->chrCount <= 14) {
@@ -267,8 +269,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if ((crc & 0xffff) != 0) {
+        zmodemlog("HdrChar: [ZHEX] Calling ZXmitHdrHex ZNAK");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
+        zmodemlog("HdrChar: [ZHEX] Calling ZProtocol");
         return ZProtocol(info);
       }
     } else
@@ -282,8 +286,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if ((crc & 0xffff) != 0) {
+        zmodemlog("HdrChar: [ZBIN] Calling ZXmitHdrHex ZNAK");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
+        zmodemlog("HdrChar: [ZBIN] Calling ZProtocol");
         return ZProtocol(info);
       }
     }
@@ -296,8 +302,10 @@ int HdrChar(u_char c, ZModem* info) {
       info->InputState = ZModem::Idle;
       info->chrCount = 0;
       if (info->crc != 0xdebb20e3) { /* see note below */
+        zmodemlog("HdrChar: [ZBIN32] Calling ZXmitHdrHex ZNAK");
         return ZXmitHdrHex(ZNAK, zeros, info);
       } else {
+        zmodemlog("HdrChar: [ZBIN32] Calling ZProtocol");
         return ZProtocol(info);
       }
     }
@@ -558,11 +566,11 @@ const char* hdrnames[] = {
 
 int ZProtocol(ZModem* info) {
   StateTable* table;
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
   zmodemlog("received %s: %2.2x %2.2x %2.2x %2.2x = %lx\n", hdrnames[info->hdrData[0]],
             info->hdrData[1], info->hdrData[2], info->hdrData[3], info->hdrData[4],
             ZDec4(info->hdrData + 1));
-#endif
+//#endif
   /* Flags are sent in F3 F2 F1 F0 order.  Data is sent in P0 P1 P2 P3 */
 
   info->timeoutCount = 0;
@@ -572,10 +580,10 @@ int ZProtocol(ZModem* info) {
   while (table->type != 99 && table->type != info->hdrData[0]) {
     ++table;
   }
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
   zmodemlog("  state %s => %s, iflush=%d, oflush=%d, call %x\n", sname(info),
             sname2(table->newstate), table->IFlush, table->OFlush, table->func);
-#endif
+//#endif
   info->state = table->newstate;
   if (table->IFlush) {
     info->rcvlen = 0;
