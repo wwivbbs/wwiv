@@ -321,6 +321,7 @@ int sendFilename(ZModem* info) {
   u_char obuf[2048];
   u_char* ptr = obuf;
 
+  zmodemlog("sendFilename\n");
   info->state = FileWait;
 
   int err = ZXmitHdr(ZFILE, ZBIN, info->fileFlags, info);

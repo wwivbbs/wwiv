@@ -212,7 +212,6 @@ int HdrChar(u_char c, ZModem* info) {
     info->escape = 1;
     return 0;
   }
-  zmodemlog("HdrChar: !ZDLE\r\n");
 
   if (info->escape) {
     info->escape = 0;
@@ -246,6 +245,7 @@ int HdrChar(u_char c, ZModem* info) {
       zmodemlog("Calling ZXmitHdrHex ZNAK\n");
       return ZXmitHdrHex(ZNAK, zeros, info);
     }
+    zmodemlog("HdrChar: !ZDLE; return 0 (should not happen)\r\n");
     return 0;
   }
 
@@ -312,6 +312,7 @@ int HdrChar(u_char c, ZModem* info) {
     }
     break;
   }
+  zmodemlog("HdrChar: [Return 0; Datatype: %d]\r\n", info->DataType);
   return 0;
 }
 
@@ -617,9 +618,9 @@ int ZDataReceived(ZModem* info, int crcGood) {
 int ZmodemTimeout(ZModem* info) {
   /* timed out while waiting for input */
   ++info->timeoutCount;
-#if defined(_DEBUG)
+//#if defined(_DEBUG)
   zmodemlog("timeout %d [%s]\n", info->timeoutCount, sname(info));
-#endif
+//#endif
   switch (info->state) {
   /* receive */
   case RStart: /* waiting for INIT frame from other end */

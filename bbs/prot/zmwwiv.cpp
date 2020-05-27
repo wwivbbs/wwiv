@@ -191,9 +191,8 @@ int doIO(ZModem* info) {
   bool doCancel = false; // %%TODO: make this true if the user aborts.
 
   while (!done) {
-    yield();
     if (info->timeout > 0) {
-      yield();
+      //yield();
     }
     time_t tThen = time(nullptr);
 #if defined(_DEBUG)
@@ -252,7 +251,7 @@ int ZXmitStr(u_char* str, int len, ZModem* info) {
 }
 
 void ZIFlush(ZModem* info) {
-  sleep_for(milliseconds(100));
+  //sleep_for(milliseconds(100));
   // puts( "ZIFlush" );
   // if( connectionType == ConnectionSerial )
   //  SerialFlush( 0 );
@@ -271,7 +270,7 @@ int ZAttn(ZModem* info) {
   int cnt = 0;
   for (char* ptr = info->attn; *ptr != '\0'; ++ptr) {
     if (((cnt++) % 10) == 0) {
-      sleep_for(milliseconds(100));
+      sleep_for(milliseconds(1));
     }
     if (*ptr == ATTNBRK) {
       // SerialBreak();
@@ -279,7 +278,7 @@ int ZAttn(ZModem* info) {
 #if defined(_DEBUG)
       zmodemlog("ATTNPSE\r\n");
 #endif
-      sleep_for(milliseconds(100));
+      sleep_for(milliseconds(1));
     } else {
       bout.rputch(*ptr, true);
       // append_buffer(&outputBuf, ptr, 1, ofd);
