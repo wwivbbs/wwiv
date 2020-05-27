@@ -363,12 +363,12 @@ void zmbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, unalign(u.filename));
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, unalign(u.filename));
           // update the send filename and copy it from the cdrom
-          send_filename = PathFilePath(a()->temp_directory(), u.filename);
+          send_filename = PathFilePath(a()->temp_directory(), unalign(u.filename));
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
