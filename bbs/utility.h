@@ -19,12 +19,9 @@
 #ifndef __INCLUDED_UTILITY_H__
 #define __INCLUDED_UTILITY_H__
 
-#include <ctime>
+#include "sdk/net.h"
 #include <string>
 #include <vector>
-
-#include "sdk/net.h"
-#include "sdk/vardec.h"
 
 void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
 bool sysop1();
@@ -39,7 +36,6 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
 void giveup_timeslice();
 std::string stripfn(const std::string& file_name);
 char* stripfn(const char* file_name);
-void stripfn_inplace(char *file_name);
 char *get_wildlist(char *file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 bool okfsed();

@@ -62,8 +62,8 @@ inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& 
  * directories of WWIV.
  *
  * @param file_name       Wildcard file specification to delete
- * @param pszDirectoryName  Name of the directory to delete files from
- * @param bPrintStatus      Print out locally as files are deleted
+ * @param directory_name  Name of the directory to delete files from
+ * @param bPrintStatus    Print out locally as files are deleted
  */
 void remove_from_temp(const std::string& file_name, const std::string& directory_name,
                       bool bPrintStatus) {
@@ -240,8 +240,6 @@ char* stripfn(const char* file_name) {
   strcpy(szStaticFileName, szTempFileName);
   return szStaticFileName;
 }
-
-void stripfn_inplace(char* file_name) { strcpy(file_name, stripfn(file_name)); }
 
 char* get_wildlist(char* file_mask) {
   auto mark = 0;
