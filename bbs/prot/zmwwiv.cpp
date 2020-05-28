@@ -16,22 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-
-#include <chrono>
-#include <cstdarg>
-#include <cstdlib>
-#include <cstring>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsovl3.h"
 #include "bbs/remote_io.h"
-#include "bbs/utility.h"
-
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include <chrono>
+#include <cstdarg>
+#include <cstring>
 
 using std::chrono::milliseconds;
 using namespace wwiv::core;
@@ -60,7 +52,7 @@ static void ProcessLocalKeyDuringZmodem() {
 }
 
 bool NewZModemSendFile(const std::string& fn) {
-  ZModem info;
+  ZModem info{};
   info.ifd = info.ofd = -1;
   info.zrinitflags = 0;
   info.zsinitflags = 0;
@@ -126,7 +118,7 @@ bool NewZModemSendFile(const std::string& fn) {
 }
 
 bool NewZModemReceiveFile(const char* file_name) {
-  ZModem info;
+  ZModem info{};
   info.ifd = info.ofd = -1;
   info.zrinitflags = 0;
   info.zsinitflags = 0;
@@ -135,9 +127,9 @@ bool NewZModemReceiveFile(const char* file_name) {
   info.windowsize = 0;
   info.bufsize = 0;
 
-  int nDone = ZmodemRInit(&info);
+  auto nDone = ZmodemRInit(&info);
   nDone = doIO(&info);
-  bool ret = (nDone == ZmDone) ? true : false;
+  const auto ret = (nDone == ZmDone) ? true : false;
   if (ret) {
     const auto fn = ToStringRemoveWhitespace(file_name);
     const auto old_fn = PathFilePath(a()->temp_directory(), fn);
@@ -157,9 +149,11 @@ int ZModemWindowStatus(const char* fmt, ...) {
   va_start(ap, fmt);
   vsnprintf(szBuffer, sizeof(szBuffer), fmt, ap);
   va_end(ap);
-  int oldX = a()->localIO()->WhereX();
-  int oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXY(1, 10, StrCat(szBuffer, "                           "));
+  const auto oldX = a()->localIO()->WhereX();
+  const auto oldY = a()->localIO()->WhereY();
+  a()->localIO()->PutsXYA(0, 2, 12, szBuffer);
+  a()->localIO()->ClrEol();
+  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
   a()->localIO()->GotoXY(oldX, oldY);
   return 0;
 }
@@ -180,7 +174,10 @@ int ZModemWindowXferStatus(const char* fmt, ...) {
   va_end(ap);
   int oldX = a()->localIO()->WhereX();
   int oldY = a()->localIO()->WhereY();
-  a()->localIO()->PutsXY(1, 1, StrCat(szBuffer, "                           "));
+  a()->localIO()->PutsXYA(0, 0, 3, "ZModem Transfer Status: ");
+  a()->localIO()->PutsXYA(0, 1, 14, szBuffer);
+  a()->localIO()->ClrEol();
+  a()->localIO()->PutsXYA(0, 3, 9, std::string(79, '='));
   a()->localIO()->GotoXY(oldX, oldY);
   return 0;
 }
@@ -288,7 +285,7 @@ int ZAttn(ZModem* info) {
  * control was hardware, do not change it.  Otherwise, toggle
  * software flow control
  */
-void ZFlowControl(int onoff, ZModem* info) {
+void ZFlowControl(int /* onoff */, ZModem* /* info */) {
   // I don't think there is anything to do here.
 }
 
@@ -508,8 +505,8 @@ int ZWriteFile(u_char* buffer, int len, FILE* file, ZModem* info) {
   //}
   // else
   if (info->f0 == ZCNL) {
-#ifdef _WIN32
-    OutputDebugString("ZCNL\r\n");
+#ifdef _DEBUG
+    zmodemlog("ZCNL\n");
 #endif // _WIN32
   }
   return (fwrite(buffer, 1, len, file) == static_cast<unsigned int>(len)) ? 0 : ZmErrSys;

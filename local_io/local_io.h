@@ -66,9 +66,21 @@ public:
   virtual void Backspace() = 0;
   virtual void PutchRaw(unsigned char ch) = 0;
   // Overridden by TestLocalIO in tests.
+  /** Writes a single character 'ch' at the current position */
   virtual void Putch(unsigned char ch) = 0;
+  /** Writes text at the current position */
   virtual void Puts(const std::string& text) = 0;
+  /**
+   * Writes text at position (x, y) using the current color.
+   *
+   * Note that x and y are zero based and (0, 0) is the top left corner of the screen.
+   */
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
+  /**
+   * Writes text at position (x, y) using the color 'attr'.
+   *
+   * Note that x and y are zero based and (0, 0) is the top left corner of the screen.
+   */
   virtual void PutsXYA(int x, int y, int attr, const std::string& text) = 0;
   virtual void set_protect(int l) = 0;
   virtual void savescreen() = 0;

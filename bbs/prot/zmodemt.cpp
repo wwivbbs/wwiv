@@ -211,17 +211,18 @@ int ZmodemTInit(ZModem* info) {
    * size (largest packet will do)
    */
 
-  int i = info->packetsize * 2;
-  if (i < 1024)
+  auto i = info->packetsize * 2;
+  if (i < 1024) {
     i = 1024;
-  info->buffer = (u_char*)malloc(i);
+  }
+  info->buffer = static_cast<u_char*>(malloc(i));
 
   ZIFlush(info);
 
   /* optional: send "rz\r" to remote end */
   int err = 0;
   if (DoInitRZ) {
-    if ((err = ZXmitStr((u_char*)"rz\r", 3, info))) {
+    if ((err = ZXmitStr(reinterpret_cast<u_char*>("rz\r"), 3, info))) {
       return err;
     }
   }
@@ -291,7 +292,7 @@ int ZmodemTFile(const char* file_name, const char* pszRemoteFileName, u_int f0, 
   info->offset = info->lastOffset = 0;
   info->len = info->date = info->fileType = info->mode = 0;
   if (info->filename != nullptr) {
-    struct stat buf;
+    struct stat buf{};
     if (stat(info->filename, &buf) == 0) {
       info->len = buf.st_size;
       info->date = buf.st_mtime;

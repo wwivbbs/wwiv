@@ -33,8 +33,6 @@
  *	January, 1995
  */
 
-#include <cstdio>
-
 //
 // Constants,  typedefs, externals, globals, statics, macros, block data
 //
@@ -45,12 +43,11 @@
 // TODO: if received ZDATA while waiting for ZFILE/ZFIN, it's probably leftovers
 // TODO: enable flow control for zmodem, disable for X/YModem
 
-#include <cstring>
-#include <ctype.h>
-#include <errno.h>
-
 #include "crctab.h"
 #include "zmodem.h"
+#include <cstring>
+#include <cctype>
+#include <cerrno>
 
 static u_char zeros[4] = {0, 0, 0, 0};
 
@@ -311,6 +308,8 @@ int HdrChar(u_char c, ZModem* info) {
       }
     }
     break;
+  default: {
+  } break;
   }
   //zmodemlog("HdrChar: [Return 0; Datatype: %d, char: %d, count: %d]\r\n", info->DataType, c,
   //          info->chrCount);
@@ -372,6 +371,8 @@ int DataChar(u_char c, ZModem* info) {
     break;
     case ZHEX: {
       zmodemlog("DataChar: Received ZHEX");
+    } break;
+    default: {
     } break;
   }
   return 0;
