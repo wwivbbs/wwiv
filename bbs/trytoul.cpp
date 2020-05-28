@@ -95,29 +95,32 @@ static int try_to_ul_wh(const string& orig_file_name) {
           dn = 0;
         }
         done = true;
+        break;
+      }
+      // The sleep_for used to be a wait_sec_or_hit( 1 )
+      sleep_for(milliseconds(500));
+      bout << "\r\nUpload " << file_name << " to which dir? <CR>=0 ?=List \r\n";
+      input(temp, 5, true);
+      StringTrim(temp);
+      if (temp[0] == '?') {
+        dirlist(1);
+        break;
       } else {
-        // The sleep_for used to be a wait_sec_or_hit( 1 )
-        sleep_for(milliseconds(500));
-        bout << "\r\nUpload " << file_name << " to which dir? <CR>=0 ?=List \r\n";
-        input(temp, 5, true);
-        StringTrim(temp);
-        if (temp[0] == '?') {
-          dirlist(1);
-        } else if (!temp[0]) {
+        if (!temp[0]) {
           dn = 0;
           done = true;
-        } else {
-          int x = to_number<int>(temp);
-          if (a()->udir[x].subnum >= 0) {
-            dliscan1(a()->udir[x].subnum);
-            d = a()->directories[dn];
-            if ((d.mask & mask_no_uploads) && (!dcs())) {
-              bout << "Can't upload there...\r\n";
-              pausescr();
-            } else {
-              dn = a()->udir[x].subnum;
-              done = true;
-            }
+          break;
+        }
+        int x = to_number<int>(temp);
+        if (a()->udir[x].subnum >= 0) {
+          dliscan1(a()->udir[x].subnum);
+          d = a()->directories[dn];
+          if (d.mask & mask_no_uploads && !dcs()) {
+            bout << "Can't upload there...\r\n";
+            pausescr();
+          } else {
+            dn = a()->udir[x].subnum;
+            done = true;
           }
         }
       }
@@ -147,9 +150,9 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  string s = file_name;
-  align(&s);
-  if (contains(s, '?')) {
+  string aligned_file_name = file_name;
+  align(&aligned_file_name);
+  if (contains(aligned_file_name, '?')) {
     t2u_error(file_name, "Contains wildcards");
     return 1;
   }
@@ -160,7 +163,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       if (a()->arcs[i].extension[0] && a()->arcs[i].extension[0] != ' ') {
         if (!s1.empty()) s1 += ", ";
         s1 += a()->arcs[i].extension;
-        if (wwiv::strings::IsEquals(s.c_str() + 9, a()->arcs[i].extension)) {
+        if (wwiv::strings::IsEquals(aligned_file_name.c_str() + 9, a()->arcs[i].extension)) {
           ok = 1;
         }
       }
@@ -175,7 +178,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  to_char_array(u.filename, s);
+  to_char_array(u.filename, aligned_file_name);
   u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
@@ -186,7 +189,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   u.upby[36]  = '\0';
   to_char_array(u.date, date());
 
-  if (File::Exists(StrCat(d.path, s))) {
+  if (File::Exists(StrCat(d.path, unalign(aligned_file_name)))) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
@@ -327,7 +330,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bout.nl(3);
 
-  File file(PathFilePath(d.path, s));
+  File file(PathFilePath(d.path, unalign(aligned_file_name)));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {

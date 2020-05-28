@@ -63,7 +63,6 @@
 ***
 * TopScreen doesn't work with CursesIO
 * stop using localIO()->WhereX to determine remote position
-* Get ZModem working again
 
 ## Net52
 ***
