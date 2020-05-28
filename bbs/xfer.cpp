@@ -113,7 +113,7 @@ void get_ed_info() {
 }
 
 unsigned long bytes_to_k(unsigned long lBytes) {
-  return (lBytes) ? ((unsigned long)((lBytes + 1023) / 1024)) : 0L;
+  return lBytes ? static_cast<unsigned long>((lBytes + 1023) / 1024) : 0L;
 }
 
 int check_batch_queue(const char *file_name) {
@@ -147,34 +147,25 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   return true;
 }
 
-static const char *DeviceNames[] = {
+static const std::vector<std::string> device_names = {
   "KBD$", "PRN", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
   "COM8", "LPT1", "LPT2", "LPT3", "CLOCK$", "SCREEN$", "POINTER$", "MOUSE$"
 };
-
-const int NUM_DEVICES = 17; // length of DeviceNames
-
-static void finddevs(vector<string>* devices) {
-  devices->clear();
-  for (int i = 0; i < NUM_DEVICES; i++) {
-    devices->push_back(DeviceNames[i]);
-  }
-}
 
 bool okfn(const string& filename) {
   if (filename.empty()) {
     return false;
   }
 
-  string::size_type len = filename.length();
+  const auto len = filename.length();
   if (len == 0) {
     return false;
   }
   if (filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@') {
     return false;
   }
-  for (char c : filename) {
-    unsigned char ch = c;
+  for (auto c : filename) {
+    const unsigned char ch = c;
     if (ch == ' '  || ch == '/' || ch == '\\' || ch == ':'  ||
         ch == '>'  || ch == '<' || ch == '|'  || ch == '+'  ||
         ch == ','  || ch == ';' || ch == '^'  || ch == '\"' ||
@@ -183,11 +174,9 @@ bool okfn(const string& filename) {
     }
   }
 
-  std::vector<string> devices;
-  finddevs(&devices);
 
-  for (const auto& device : devices) {
-    string::size_type deviceLen = device.length();
+  for (const auto& device : device_names) {
+    const auto deviceLen = device.length();
     if (filename.length() >= deviceLen && filename.substr(0, deviceLen) == device) {
       if (filename[deviceLen] == '\0' || filename[deviceLen] == '.' || deviceLen == 8) {
         return false;
@@ -198,10 +187,7 @@ bool okfn(const string& filename) {
 }
 
 void print_devices() {
-  std::vector<string> devices;
-  finddevs(&devices);
-
-  for (const auto& device : devices) {
+  for (const auto& device : device_names) {
     bout << device;
     bout.nl();
   }
@@ -245,7 +231,7 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
       if (szArcCmd[0] == 0) {
         return;
       }
-      string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
+      auto command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
       make_abs_cmd(a()->bbsdir().string(), &command);
       strcpy(out_buffer, command.c_str());
       return;
@@ -309,10 +295,10 @@ bool ratio_ok() {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n",
-                                        "Your post/call ratio is", post_ratio(),
-                                        "You need a ratio of", a()->config()->post_to_call_ratio(),
-                                        "to download.");
+      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", 
+                           "Your post/call ratio is",
+                           post_ratio(), "You need a ratio of", a()->config()->post_to_call_ratio(),
+                           "to download.");
     }
   }
   return bRetValue;
@@ -327,7 +313,7 @@ void dliscan1(int directory_num) {
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   auto nNumRecords = fileDownload.length() / sizeof(uploadsrec);
-  uploadsrec u;
+  uploadsrec u{};
   if (nNumRecords == 0) {
     memset(&u, 0, sizeof(uploadsrec));
     to_char_array(u.filename, "|MARKER|");
@@ -361,9 +347,9 @@ void dliscan() {
 }
 
 void add_extended_description(const string& file_name, const string& description) {
-  ext_desc_type ed;
+  ext_desc_type ed{};
 
-  strcpy(ed.name, file_name.c_str());
+  to_char_array(ed.name, file_name);
   ed.len = static_cast<int16_t>(description.size());
 
   File file(a()->extended_description_filename_);
@@ -377,7 +363,7 @@ void add_extended_description(const string& file_name, const string& description
 }
 
 void delete_extended_description(const string& file_name) {
-  ext_desc_type ed;
+  ext_desc_type ed{};
 
   File fileExtDescr(a()->extended_description_filename_);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -723,7 +709,7 @@ void listfiles() {
   bool abort = false;
   for (int i = 1; i <= a()->numf && !abort && !a()->hangup_; i++) {
     FileAreaSetRecord(fileDownload, i);
-    uploadsrec u;
+    uploadsrec u{};
     fileDownload.Read(&u, sizeof(uploadsrec));
     if (compare(filemask.c_str(), u.filename)) {
       fileDownload.Close();

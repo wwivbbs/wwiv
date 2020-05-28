@@ -126,7 +126,7 @@ void move_file() {
           bout << "\r\nToo many files in that directory.\r\n";
         }
         if (File::freespace_for_path(a()->directories[d1].path) <
-            ((long)(u.numbytes / 1024L) + 3)) {
+            static_cast<long>(u.numbytes / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -579,7 +579,8 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
     while (ok && file->ReadLine(s, 250)) {
       if (s[0] < SPACE) {
         continue;
-      } else if (s[0] == SPACE) {
+      }
+      if (s[0] == SPACE) {
         if (last_fn[0]) {
           if (!ext) {
             ext = static_cast<char*>(BbsAllocA(4096L));

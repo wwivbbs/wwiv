@@ -31,6 +31,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -54,7 +55,7 @@ unsigned char checksum = 0;
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
 
-  crc ^= (((unsigned short)(b)) << 8);
+  crc ^= (static_cast<unsigned short>(b) << 8);
   for (int i = 0; i < 8; i++) {
     if (crc & 0x8000) {
       crc = (crc << 1);
@@ -72,10 +73,10 @@ char gettimeout(long ds, bool *abort) {
   }
 
   seconds d(ds);
-  auto d1 = steady_clock::now();
+  const auto d1 = steady_clock::now();
   while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->hangup_ && !*abort) {
     if (a()->localIO()->KeyPressed()) {
-      char ch = a()->localIO()->GetChar();
+      const char ch = a()->localIO()->GetChar();
       if (ch == 0) {
         a()->localIO()->GetChar();
       } else if (ch == ESC) {
@@ -117,6 +118,7 @@ int extern_prot(int num, const std::string& send_filename, bool bSending) {
   const auto command = stuff_in(s1, sx1, sx2, send_filename, sx3, "");
   if (!command.empty()) {
     a()->ClearTopScreenProtection();
+    ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
     const string unn = a()->names()->UserName(a()->usernum);
     sprintf(s2, "%s is currently online at %u bps", unn.c_str(), a()->modem_speed_);
     a()->localIO()->Puts(s2);
@@ -124,12 +126,7 @@ int extern_prot(int num, const std::string& send_filename, bool bSending) {
     a()->localIO()->Puts(command);
     a()->localIO()->Puts("\r\n");
     if (a()->context().incom()) {
-      int nRetCode = ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
-      a()->UpdateTopScreen();
-      return nRetCode;
-    } else {
-      a()->UpdateTopScreen();
-      return -5;
+      return ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
     }
   }
   return -5;
@@ -238,19 +235,14 @@ std::string prot_name(int num) {
   switch (num) {
   case WWIV_INTERNAL_PROT_ASCII:
     return "ASCII";
-    break;
   case WWIV_INTERNAL_PROT_XMODEM:
     return "Xmodem";
-    break;
   case WWIV_INTERNAL_PROT_XMODEMCRC:
     return "Xmodem-CRC";
-    break;
   case WWIV_INTERNAL_PROT_YMODEM:
     return "Ymodem";
-    break;
   case WWIV_INTERNAL_PROT_BATCH:
     return "Batch";
-    break;
   case WWIV_INTERNAL_PROT_ZMODEM:
     return "Zmodem (Internal)";
   default:
@@ -379,20 +371,18 @@ int get_protocol(xfertype xt) {
       a()->user()->SetDefaultProtocol(ch - '0');
     }
     return ch - '0';
-  } else {
-    if (ch == 'Q') {
-      return -1;
-    } else {
-      i1 = ch - BASE_CHAR + 10;
-      a()->user()->SetDefaultProtocol(i1);
-      if (i1 < ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
-        return ch - BASE_CHAR + 10;
-      }
-      for (size_t j = 3; j < a()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
-        if (prot_key(j) == ch) {
-          return j;
-        }
-      }
+  }
+  if (ch == 'Q') {
+    return -1;
+  }
+  i1 = ch - BASE_CHAR + 10;
+  a()->user()->SetDefaultProtocol(i1);
+  if (i1 < ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
+    return ch - BASE_CHAR + 10;
+  }
+  for (size_t j = 3; j < a()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
+    if (prot_key(j) == ch) {
+      return j;
     }
   }
   return -1;
@@ -437,10 +427,10 @@ void ascii_send(const std::string& file_name, bool* sent, double* percent) {
 
 void maybe_internal(const std::string& file_name, bool* xferred, double* percent, bool bSend,
                     int prot) {
-  if (a()->over_intern.size() > 0 
-      && (a()->over_intern[prot - 2].othr & othr_override_internal)
-      && ((bSend && a()->over_intern[prot - 2].sendfn[0]) ||
-          (!bSend && a()->over_intern[prot - 2].receivefn[0]))) {
+  if (!a()->over_intern.empty() 
+      && a()->over_intern[prot - 2].othr & othr_override_internal
+      && (bSend && a()->over_intern[prot - 2].sendfn[0] ||
+          !bSend && a()->over_intern[prot - 2].receivefn[0])) {
     if (extern_prot(-(prot - 1), file_name, bSend) == a()->over_intern[prot - 2].ok1) {
       *xferred = true;
     }
@@ -465,6 +455,7 @@ void maybe_internal(const std::string& file_name, bool* xferred, double* percent
     case WWIV_INTERNAL_PROT_ZMODEM:
       zmodem_send(file_name, xferred, percent);
       break;
+    default: ;
     }
   } else {
     switch (prot) {
@@ -478,6 +469,7 @@ void maybe_internal(const std::string& file_name, bool* xferred, double* percent
     case WWIV_INTERNAL_PROT_ZMODEM:
       zmodem_receive(file_name, xferred);
       break;
+    default: ;
     }
   }
 }
@@ -529,7 +521,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
         *sent = false;
         *abort = false;
       } else {
-        double t = (a()->modem_speed_) ? (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs)) : 0;
+        const auto t = (a()->modem_speed_) ? (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs)) : 0;
         if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
           bout.nl();
           bout << "Not enough time left in queue.\r\n\n";

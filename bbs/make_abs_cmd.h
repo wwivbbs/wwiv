@@ -25,6 +25,6 @@
  * Using the root directory, turn out into an absolute path
  * to a command.
  */
-void make_abs_cmd(const std::string root, std::string* out);
+void make_abs_cmd(const std::string& root, std::string* out);
 
 #endif // __INCLUDED_MAKE_ABS_CMD_H__

@@ -35,7 +35,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-void make_abs_cmd(const std::string root, std::string* out) {
+void make_abs_cmd(const std::string& root, std::string* out) {
   
   static const vector<string> exts{
     "",
@@ -69,7 +69,7 @@ void make_abs_cmd(const std::string root, std::string* out) {
     }
   }
 
-  char* ss = strchr(s1, ' ');
+  auto* ss = strchr(s1, ' ');
   if (ss) {
     *ss = '\0';
     _snprintf(s2, sizeof(s2), " %s", ss + 1);
@@ -77,7 +77,7 @@ void make_abs_cmd(const std::string root, std::string* out) {
     s2[0] = '\0';
   }
   for (const std::string& ext : exts) {
-    if (ext.size() == 0) {
+    if (ext.empty()) {
       const char* ss1 = strrchr(s1, '\\');
       if (!ss1) {
         ss1 = s1;
@@ -105,18 +105,17 @@ void make_abs_cmd(const std::string root, std::string* out) {
           *out = StrCat(root, s, s2);
         }
         return;
-      } else {
-        char szFoundPath[MAX_PATH];
-        _searchenv(s, "PATH", szFoundPath);
-        if (strlen(szFoundPath) > 0) {
-          *out = StrCat(szFoundPath, s2);
-          return;
-        }
+      }
+      char szFoundPath[MAX_PATH];
+      _searchenv(s, "PATH", szFoundPath);
+      if (strlen(szFoundPath) > 0) {
+        *out = StrCat(szFoundPath, s2);
+        return;
       }
     }
   }
 
-  auto maybe_dir = PathFilePath(root, s1);
+  const auto maybe_dir = PathFilePath(root, s1);
   std::error_code ec;
   if (File::Exists(maybe_dir) && std::filesystem::is_directory(maybe_dir, ec)) {
     *out = StrCat(maybe_dir.string(), s2);
