@@ -49,22 +49,35 @@ private:
   std::unique_ptr<core::Clock> clock_;
 };
 
-class FileRecord {
+class FileRecord final {
 public:
   explicit FileRecord(const uploadsrec& u) : u_(u) {};
-  virtual ~FileRecord() = default;
+  ~FileRecord() = default;
 
   uploadsrec& u() { return u_; }
 
-  bool set_filename(const std::string unaligned_filename);
-  std::string aligned_filename();
-  std::string unaligned_filename();
+  bool set_filename(const std::string& unaligned_filename);
+  std::string aligned_filename() const ;
+  std::string unaligned_filename() const ;
 
 private:
   uploadsrec u_;
 };
 
-class FileArea {
+class FileAreaHeader {
+public:
+  explicit FileAreaHeader(const uploadsrec& u);
+  ~FileAreaHeader() = default;
+
+  uint32_t num_files() const { return u_.numbytes; }
+  bool set_num_files(uint32_t n) { u_.numbytes = n; return true; }
+  bool FixHeader(const core::Clock& clock, uint32_t num_files);
+  uploadsrec& u() { return u_; }
+private:
+  uploadsrec u_;
+};
+
+class FileArea final {
 public:
   using iterator_category = std::forward_iterator_tag;
   using value_type = FileRecord;
@@ -74,10 +87,11 @@ public:
 
   FileArea(FileApi* api, std::string data_directory, const directoryrec& dir);
   FileArea(FileApi* api, std::string data_directory, const std::string& filename);
-  virtual ~FileArea() = default;
+  ~FileArea() = default;
   
   // File Header specific
   bool FixFileHeader();
+  FileAreaHeader& header() const;
 
   // File Dir Specific Operations
   bool Close();
@@ -104,6 +118,8 @@ protected:
   bool open_{false};
   std::vector<uploadsrec> files_;
   std::unique_ptr<core::Clock> clock_;
+
+  std::unique_ptr<FileAreaHeader> header_;
 };
 
 std::string align(const std::string& file_name);

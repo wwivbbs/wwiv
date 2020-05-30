@@ -29,6 +29,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/stl.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
@@ -50,9 +51,7 @@ using namespace wwiv::strings;
 
 constexpr char CD = 4;
 
-namespace wwiv {
-namespace wwivutil {
-namespace files {
+namespace wwiv::wwivutil::files {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
   DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
@@ -67,20 +66,20 @@ static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
   return true;
 }
 
-class AreasCommand: public UtilCommand {
+class AreasCommand final : public UtilCommand {
 public:
   AreasCommand()
     : UtilCommand("areas", "Lists the file areas") {}
 
   virtual ~AreasCommand() {}
 
-  std::string GetUsage() const override final {
+  std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   areas" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     vector<directoryrec> dirs;
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
@@ -99,26 +98,26 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
     return true;
   }
 };
 
-class ListCommand: public UtilCommand {
+class ListCommand final : public UtilCommand {
 public:
   ListCommand()
     : UtilCommand("list", "Lists the files in an area") {}
 
   virtual ~ListCommand() {}
 
-  std::string GetUsage() const override final {
+  std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   list [num]" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       clog << "Missing file areas #." << endl;
       cout << GetUsage() << GetHelp() << endl;
@@ -128,11 +127,11 @@ public:
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
-    int area_num = to_number<int>(remaining().front());
+    const auto area_num = to_number<int>(remaining().front());
 
     if (area_num < 0 || area_num >= ssize(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
-      auto max_size = std::max<int>(0, dirs.size() - 1);
+      const auto max_size = std::max<int>(0, dirs.size() - 1);
       LOG(ERROR) << "area_num must be between 0 and " << max_size;
       return 1;
     }
@@ -143,19 +142,28 @@ public:
       LOG(ERROR) << "Unable to open area: #" << area_num << "; filename: " << dir.filename;
       return 1;
     }
+
+    auto num_files = area->number_of_files();
+    cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
+    cout << std::endl;
+    const auto& h = area->header();
+    if (static_cast<int>(h.num_files()) != num_files) {
+      cout << fmt::format("WARNING: Header doesn't match header:{} vs. size:{}", h.num_files(),
+                          num_files)
+           << std::endl;
+    }
     cout << "#Num File Name   " << std::left << "Description" << std::endl;
     cout << string(78, '=') << endl;
-    auto num_files = area->number_of_files();
     for (auto num = 1; num <= num_files; num++) {
       auto f = area->ReadFile(num);
-      cout << "#" << std::setw(3) << std::left << num++ << " "
+      cout << "#" << std::setw(3) << std::left << num << " "
            << std::setw(8) << f.unaligned_filename() << " "
            << f.u().description << std::endl;
     }
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
     return true;
   }
@@ -185,57 +193,36 @@ public:
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
-    int area_num = to_number<int>(remaining().front());
+    const auto area_num = to_number<int>(remaining().front());
 
     if (area_num < 0 || area_num >= ssize(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
-      auto max_size = std::max<int>(0, dirs.size() - 1);
+      const auto max_size = std::max<int>(0, dirs.size() - 1);
       LOG(ERROR) << "area_num must be between 0 and " << max_size;
       return 1;
     }
 
     const auto& dir = dirs.at(area_num);
-    const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename),
-                              File::modeBinary | File::modeReadWrite);
-    if (!file) {
-      LOG(ERROR) << "Unable to open file: " << file.file();
-      return 1;
-    }
-    vector<uploadsrec> files;
-    if (!file.ReadVector(files)) {
-      LOG(ERROR) << "Unable to read dir entries from file: " << file.file();
+    sdk::files::FileApi api(config()->config()->datadir());
+    auto area = api.Open(dir);
+    if (!area) {
+      LOG(ERROR) << "Unable to open file: " << dir.filename;
       return 1;
     }
 
-    int file_number = arg("num").as_int();
-    if (file_number < 0 || file_number >= ssize(files)) {
-      LOG(ERROR) << "invalid file number '" << area_num << "' specified. ";
-      auto max_size = std::max<int>(0, ssize(files) - 1);
-      LOG(ERROR) << "num must be between 0 and " << max_size;
+    const auto file_number = arg("num").as_int();
+    if (file_number < 1 || file_number > area->number_of_files()) {
+      LOG(ERROR) << "invalid file number '" << file_number << "' specified. ";
+      LOG(ERROR) << "num must be between 1 and " << area->number_of_files();
       return 1;
     }
-
-    erase_at(files, file_number);
-
-    file.Seek(0);
-    if (!file.WriteVectorAndTruncate(files)) {
-      LOG(ERROR) << "Unable to write dir entries in file: " << file.file();
+    const auto f = area->ReadFile(file_number);
+    std::cout << "Attempting to delete file: " << f.unaligned_filename();
+    if (!area->DeleteFile(file_number)) {
+      LOG(ERROR) << "Unable to delete file.";
       return 1;
     }
-
-    uploadsrec header{};
-    if (file.Read(0, &header)) {
-      header.numbytes--;
-      if (header.numbytes == files.size() - 1) {
-        file.Write(0, &header);
-      } else {
-        LOG(ERROR) << "Expected #files to match, it doesn't. expected: "
-                   << header.numbytes << "; actual: " << files.size() - 1;
-      }
-    }
-
-    return 0;
+    return area->Close() ? 0: 1;
   }
 
   bool AddSubCommands() override final {
@@ -260,7 +247,4 @@ bool FilesCommand::AddSubCommands() {
   return true;
 }
 
-
-} // namespace files
-} // namespace wwivutil
-} // namespace wwiv
+} // namespace wwiv::wwivutil::files

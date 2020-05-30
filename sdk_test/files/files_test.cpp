@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/datafile.h"
+#include "core/fake_clock.h"
+
 
 #include "gtest/gtest.h"
 
@@ -82,6 +84,28 @@ TEST_F(FilesTest, Smoke) {
   const auto area = api.Open(name);
   ASSERT_TRUE(area);
   EXPECT_EQ(0, area->number_of_files());
+}
+
+TEST_F(FilesTest, Create) {
+  const string name = test_info_->name();
+
+  FileApi api(config_.datadir());
+  ASSERT_FALSE(File::Exists(path_for(name)));
+  ASSERT_TRUE(api.Create(name));
+  EXPECT_TRUE(File::Exists(path_for(name)));
+}
+
+TEST_F(FilesTest, Header) {
+  const string name = test_info_->name();
+
+  FileApi api(config_.datadir());
+  const auto dt = DateTime::now() - std::chrono::hours(1000);
+  api.set_clock(std::make_unique<FakeClock>(dt));
+  ASSERT_TRUE(api.Create(name));
+  const auto area = api.Open(name);
+  auto& h = area->header();
+  EXPECT_EQ(h.u().daten, dt.to_daten_t());
+  EXPECT_EQ(0u, h.u().numbytes);
 }
 
 TEST_F(FilesTest, Add) {

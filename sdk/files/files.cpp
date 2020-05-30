@@ -37,7 +37,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::files {
 
 static void _align(char* fn) {
-  // TODO Modify this to handle long filenames
+  // TODO Modify this to handle long file names
   char name[40], ext[40];
 
   bool invalid = false;
@@ -155,7 +155,8 @@ bool FileApi::Create(const std::string& filename) {
   }
 
   FileArea area(this, data_directory_, filename);
-  return area.FixFileHeader();
+  // Close should save and write header if needed.
+  return area.Close();
 }
 
 bool FileApi::Create(const directoryrec& dir) {
@@ -188,21 +189,33 @@ void FileApi::set_clock(std::unique_ptr<Clock> clock) {
 }
 
 
-bool FileRecord::set_filename(const std::string unaligned_filename) {
+bool FileRecord::set_filename(const std::string& unaligned_filename) {
   if (unaligned_filename.size() > 12) {
     return false;
   }
-  auto aligned = align(unaligned_filename);
-  to_char_array(u_.filename, aligned);
+  to_char_array(u_.filename, align(unaligned_filename));
   return true;
 }
 
-std::string FileRecord::aligned_filename() {
+std::string FileRecord::aligned_filename() const {
   return align(u_.filename);
 }
 
-std::string FileRecord::unaligned_filename() {
+std::string FileRecord::unaligned_filename() const {
   return unalign(u_.filename);
+}
+
+FileAreaHeader::FileAreaHeader(const uploadsrec& u) : u_(u) {}
+
+bool FileAreaHeader::FixHeader(const Clock& clock, uint32_t num_files) {
+  // Always overwrite marker.
+  to_char_array(u_.filename, "|MARKER|");
+  if (u_.daten == 0) {
+    const auto now = clock.Now();
+    u_.daten = now.to_daten_t();
+  }
+  u_.numbytes = num_files;
+  return true;
 }
 
 // Delegates to other constructor
@@ -215,36 +228,27 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const directoryrec&
 FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& filename)
     : api_(api), data_directory_(std::move(data_directory)), filename_(StrCat(filename, ".dir")) {
   DataFile<uploadsrec> file(path(), File::modeReadOnly | File::modeBinary);
-  if (!file) {
-    return;
+  if (file) {
+    if (file.ReadVector(files_)) {
+      open_ = true;
+    }
   }
-
-  if (file.ReadVector(files_)) {
-    open_ = true;
+  if (files_.empty()) {
+    files_.emplace_back();
+    open_ = dirty_ = true;
   }
+  header_ = std::make_unique<FileAreaHeader>(files_.front());
+  header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
 }
 
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool FileArea::FixFileHeader() {
-  DataFile<uploadsrec> file(path(),File::modeReadWrite | File::modeCreateFile | File::modeBinary);
-  uploadsrec h{};
+  return header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
+}
 
-  if (file.number_of_records() > 0) {
-    file.Read(0, &h);
-  }
-  // Always overwrite marker.
-  to_char_array(h.filename, "|MARKER|");
-  if (h.daten == 0) {
-    const auto now = api_->clock()->Now();
-    h.daten = now.to_daten_t();
-  }
-  if (h.numbytes != file.number_of_records() - 1) {
-    if (!file.Write(0, &h)) {
-      return false;
-    }
-  }
-  return true;
+FileAreaHeader& FileArea::header() const {
+  return *header_;
 }
 
 bool FileArea::Close() {
@@ -276,6 +280,7 @@ FileRecord FileArea::ReadFile(int num) {
 
 bool FileArea::AddFile(FileRecord& f) {
   files_.push_back(f.u());
+  header_->set_num_files(files_.size() - 1);
   dirty_ = true;
   return true;
 }
@@ -285,6 +290,8 @@ bool FileArea::DeleteFile(int file_number) {
     return false;
   }
   dirty_ = true;
+  header_->set_num_files(files_.empty() ? 0 : files_.size() - 1);
+
   return true;
 }
 
@@ -295,6 +302,10 @@ bool FileArea::Save() {
   if (!file) {
     return false;
   }
+
+  // Update Header
+  FixFileHeader();
+  files_.at(0) = header_->u();
 
   const auto result = file.WriteVectorAndTruncate(files_);
   if (result) {
