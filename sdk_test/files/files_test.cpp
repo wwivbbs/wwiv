@@ -115,3 +115,20 @@ TEST(FileRecordTest, Set_FileName) {
   EXPECT_EQ("BAR     .BAZ", f.aligned_filename());
   EXPECT_EQ("bar.baz", f.unaligned_filename());
 }
+
+TEST(FileAlignTest, Align) {
+  EXPECT_EQ("        .   ", align(""));
+  EXPECT_EQ("X       .   ", align("x"));
+  EXPECT_EQ("X       .Z  ", align("x.z"));
+  EXPECT_EQ("X       .ZZ ", align("x.zz"));
+  EXPECT_EQ("FILENAME.ZIP", align("FILENAME.ZIP"));
+  EXPECT_EQ("FILENAME.ZIP", align("filename.zip"));
+}
+
+TEST(FileAlignTest, UnAlign) {
+  EXPECT_EQ(unalign("        .   "), "");
+  EXPECT_EQ(unalign("X       .   "), "x");
+  EXPECT_EQ(unalign("X       .Z  "), "x.z");
+  EXPECT_EQ(unalign("X       .ZZ "), "x.zz");
+  EXPECT_EQ(unalign("FILENAME.ZIP"), "filename.zip");
+}

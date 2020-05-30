@@ -54,9 +54,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   auto full_pathname = PathFilePath(pszDirectoryName, strlwr(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFilesType::files);
   for (const auto& f : ff) {
-    s = f.name;
-    align(&s);
-    full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
+    full_pathname = StrCat("|#7[|#2", aligns(f.name), "|#7]|#1 ");
     if (bout.wherex() > static_cast<int>(a()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }

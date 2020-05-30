@@ -36,21 +36,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-
-std::string align(const std::string& file_name) {
-  auto f{file_name};
-  align(&f);
-  return f;
-}
-
-void align(std::string *file_name) {
-  char s[MAX_PATH];
-  to_char_array(s, *file_name);
-  _align(s);
-  file_name->assign(s);
-}
-
-void _align(char* fn) {
+static void _align(char* fn) {
   // TODO Modify this to handle long filenames
   char name[40], ext[40];
 
@@ -127,23 +113,26 @@ void _align(char* fn) {
   }
 }
 
-static char *unalign_char(char *file_name) {
-  char* temp = strstr(file_name, " ");
-  if (temp) {
-    *temp++ = '\0';
-    char* temp2 = strstr(temp, ".");
-    if (temp2) {
-      strcat(file_name, temp2);
-    }
+std::string align(const std::string& file_name) {
+  if (file_name.size() >= 1024) {
+    throw std::runtime_error("size to align >=1024 chars");
   }
-  return file_name;
+  char s[1024];
+  to_char_array(s, file_name);
+  _align(s);
+  return s;
 }
 
-std::string unalign(const std::string& file_name) { 
-  char s[1025];
-  to_char_array(s, file_name);
-  const auto r = unalign_char(s);
-  return ToStringLowerCase(r);
+std::string unalign(const std::string& file_name) {
+  auto s{file_name};
+  s.erase(remove(s.begin(), s.end(), ' '), s.end());
+  if (s.empty()) {
+    return {};
+  }
+  if (s.back() == '.') {
+    s.pop_back();
+  }
+  return ToStringLowerCase(s);
 }
 
 

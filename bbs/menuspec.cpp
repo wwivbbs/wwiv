@@ -45,6 +45,8 @@
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/files.h"
+
 #include <string>
 
 using std::string;
@@ -122,10 +124,10 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = PathFilePath(a()->directories[dn].path, unalign(u.filename));
+      auto s1 = PathFilePath(a()->directories[dn].path, files::unalign(u.filename));
       if (a()->directories[dn].mask & mask_cdrom) {
-        auto s2 = PathFilePath(a()->directories[dn].path, unalign(u.filename));
-        s1 = PathFilePath(a()->temp_directory(), unalign(u.filename));
+        auto s2 = PathFilePath(a()->directories[dn].path, files::unalign(u.filename));
+        s1 = PathFilePath(a()->temp_directory(), files::unalign(u.filename));
         if (!File::Exists(s1)) {
           File::Copy(s2, s1);
         }

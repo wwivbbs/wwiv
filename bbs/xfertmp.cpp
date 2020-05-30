@@ -532,8 +532,7 @@ void list_temp_dir() {
     if (iequals(f.name, DROPFILE_CHAIN_TXT) || iequals(f.name, "door.sys")) {
       continue;
     }
-    string filename = f.name;
-    align(&filename);
+    auto filename = aligns(f.name);
     bout.bputs(fmt::sprintf("%12s  %-8ld", filename, f.size));
   }
   if (ff.empty()) {

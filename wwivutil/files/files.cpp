@@ -18,8 +18,6 @@
 #include "wwivutil/files/files.h"
 
 #include <algorithm>
-#include <cstdio>
-#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -32,11 +30,9 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/net.h"
 #include "sdk/names.h"
-#include "sdk/networks.h"
+#include "sdk/files/files.h"
 #include "wwivutil/files/allow.h"
 
 using std::clog;
@@ -140,30 +136,21 @@ public:
       LOG(ERROR) << "area_num must be between 0 and " << max_size;
       return 1;
     }
-
+    sdk::files::FileApi api(config()->config()->datadir());
     const auto& dir = dirs.at(area_num);
-    const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(PathFilePath(config()->config()->datadir(), filename));
-    if (!file) {
-      LOG(ERROR) << "Unable to open file: " << file.file();
+    auto area = api.Open(dirs.at(area_num));
+    if (!area) {
+      LOG(ERROR) << "Unable to open area: #" << area_num << "; filename: " << dir.filename;
       return 1;
     }
-    vector<uploadsrec> files;
-    if (!file.ReadVector(files)) {
-      LOG(ERROR) << "Unable to read dir entries from file: " << file.file();
-      return 1;
-    }
-    int num = 0;
-    cout << "#Num FileName " << std::left << "Description" << std::endl;
+    cout << "#Num File Name   " << std::left << "Description" << std::endl;
     cout << string(78, '=') << endl;
-    for (const auto& f : files) {
-      if (num == 0) {
-        num = 1;
-        continue;
-      }
+    auto num_files = area->number_of_files();
+    for (auto num = 1; num <= num_files; num++) {
+      auto f = area->ReadFile(num);
       cout << "#" << std::setw(3) << std::left << num++ << " "
-        << std::setw(8) << f.filename << " "
-        << f.description << std::endl;
+           << std::setw(8) << f.unaligned_filename() << " "
+           << f.u().description << std::endl;
     }
     return 0;
   }

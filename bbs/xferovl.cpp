@@ -46,6 +46,8 @@
 #include "sdk/files/allow.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/files/files.h"
+
 #include <string>
 
 using std::string;
@@ -424,7 +426,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &u)) {
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
-    const auto unaligned_filename = unalign(file_name);
+    const auto unaligned_filename = files::unalign(file_name);
     const auto full_path = PathFilePath(d.path, unaligned_filename);
 
     File fileUpload(full_path);

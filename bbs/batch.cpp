@@ -47,6 +47,7 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/files.h"
 #include <algorithm>
 #include <chrono>
 #include <iterator>
@@ -55,6 +56,7 @@
 using std::begin;
 using std::end;
 using std::string;
+using wwiv::sdk::files::align;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -363,12 +365,12 @@ void zmbatchdl(bool bHangupAfterDl) {
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
         auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, unalign(u.filename));
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, files::unalign(u.filename));
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, unalign(u.filename));
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, files::unalign(u.filename));
           // update the send filename and copy it from the cdrom
-          send_filename = PathFilePath(a()->temp_directory(), unalign(u.filename));
+          send_filename = PathFilePath(a()->temp_directory(), files::unalign(u.filename));
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -546,7 +548,7 @@ static void handle_dszline(char *l) {
   }
 
   if (ss) {
-    const auto  filename = aligns(stripfn(ss));
+    const auto filename = aligns(stripfn(ss));
     
     switch (*l) {
     case 'Z':
@@ -946,26 +948,6 @@ void upload(int dn) {
     }
   } while (!done && !a()->hangup_);
 }
-
-static char *unalign_char(char *file_name) {
-  char* temp = strstr(file_name, " ");
-  if (temp) {
-    *temp++ = '\0';
-    char* temp2 = strstr(temp, ".");
-    if (temp2) {
-      strcat(file_name, temp2);
-    }
-  }
-  return file_name;
-}
-
-std::string unalign(const std::string& file_name) { 
-  char s[1025];
-  to_char_array(s, file_name);
-  const auto r = unalign_char(s);
-  return ToStringLowerCase(r);
-}
-
 
 bool Batch::delbatch(size_t pos) {
   if (pos >= entry.size()) {

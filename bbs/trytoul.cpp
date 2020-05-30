@@ -40,6 +40,7 @@
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/files/files.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -150,8 +151,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  string aligned_file_name = file_name;
-  align(&aligned_file_name);
+  string aligned_file_name = aligns(file_name);
   if (contains(aligned_file_name, '?')) {
     t2u_error(file_name, "Contains wildcards");
     return 1;
@@ -189,7 +189,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   u.upby[36]  = '\0';
   to_char_array(u.date, date());
 
-  if (File::Exists(StrCat(d.path, unalign(aligned_file_name)))) {
+  if (File::Exists(StrCat(d.path, files::unalign(aligned_file_name)))) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
@@ -330,7 +330,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bout.nl(3);
 
-  File file(PathFilePath(d.path, unalign(aligned_file_name)));
+  File file(PathFilePath(d.path, files::unalign(aligned_file_name)));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {

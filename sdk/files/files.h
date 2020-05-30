@@ -106,8 +106,6 @@ protected:
   std::unique_ptr<core::Clock> clock_;
 };
 
-void _align(char *fn);
-void align(std::string* file_name);
 std::string align(const std::string& file_name);
 std::string unalign(const std::string& file_name);
 

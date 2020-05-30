@@ -34,6 +34,8 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/files/files.h"
+
 #include <string>
 #include <vector>
 
@@ -312,7 +314,7 @@ ADD_OR_REMOVE_BATCH:
                         if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                           auto tf =
                               PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
-                                             unalign(file_recs[file_pos]->filename));
+                                             wwiv::sdk::files::unalign(file_recs[file_pos]->filename));
                           if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos]->numbytes);
@@ -385,7 +387,7 @@ ADD_OR_REMOVE_BATCH:
                           if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                             auto tf =
                                 PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
-                                         unalign(file_recs[file_pos]->filename));
+                                             wwiv::sdk::files::unalign(file_recs[file_pos]->filename));
                             if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                            file_recs[file_pos]->numbytes);

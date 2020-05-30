@@ -36,6 +36,8 @@
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/files/files.h"
+
 #include <string>
 
 using std::string;
@@ -133,7 +135,7 @@ void normalupload(int dn) {
       ok = 0;
     }
   }
-  const auto receive_fn = PathFilePath(d.path, unalign(szInputFileName));
+  const auto receive_fn = PathFilePath(d.path, files::unalign(szInputFileName));
   if (ok && yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {

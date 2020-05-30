@@ -319,7 +319,7 @@ int read_idz(int mode, int tempdir) {
     dliscan();
     s = file_mask();
   } else {
-    align(&s);
+    s = aligns(s);
     dliscan1(a()->udir[tempdir].subnum);
   }
   bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",

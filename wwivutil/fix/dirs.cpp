@@ -30,6 +30,7 @@
 
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+#include "sdk/files/files.h"
 
 using std::cout;
 using std::endl;
@@ -61,25 +62,6 @@ static bool checkDirExists(const std::string& dir, const char *desc) {
   //  }
   //}
   //return true;
-}
-
-// HACK - make string friendly unalign in BBS. This one is cribbed from batch.cpp
-static char *unalign(char *file_name) {
-	char* temp = strstr(file_name, " ");
-	if (temp) {
-		*temp++ = '\0';
-		char* temp2 = strstr(temp, ".");
-		if (temp2) {
-			strcat(file_name, temp2 );
-		}
-	}
-	return file_name;
-}
-
-static string Unalign(const char* filename) {
-    char s[MAX_PATH];
-    strcpy(s, filename);
-    return string(unalign(s));
 }
 
 void checkFileAreas(const std::string& datadir, bool verbose) {
@@ -158,7 +140,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                const auto dir_fn = PathFilePath(directories[i].path, Unalign(upload.filename));
+                const auto dir_fn = PathFilePath(directories[i].path, wwiv::sdk::files::unalign(upload.filename));
                 File file(dir_fn);
                 if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {

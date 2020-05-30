@@ -48,6 +48,8 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
+#include "sdk/files/files.h"
+
 #include <algorithm>
 #include <csignal>
 #include <string>
@@ -366,8 +368,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      auto stf =
-          PathFilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
+      auto stf = PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
+                              wwiv::sdk::files::unalign(u->filename));
       if (lp_config.check_exist) {
         if (!ListPlusExist(stf.string())) {
           buffer = "OFFLN";
@@ -626,7 +628,7 @@ int prep_search_rec(search_record* search_rec, int type) {
       search_rec->filemask += ".*";
     }
   }
-  align(&search_rec->filemask);
+  search_rec->filemask = aligns(search_rec->filemask);
   return 1;
 }
 
@@ -1186,9 +1188,10 @@ static int rename_filename(const char *file_name, int dn) {
     if (s.empty()) {
       return 1;
     }
-    if (!contains(s, '.')) s += ".*";
-    align(&s);
-    orig_aligned_filename = s;
+    if (!contains(s, '.')) {
+      s += ".*";
+    }
+    orig_aligned_filename = aligns(s);
   }
 
   int i = recno(orig_aligned_filename);
@@ -1220,11 +1223,11 @@ static int rename_filename(const char *file_name, int dn) {
       new_filename.clear();
     }
     if (!new_filename.empty()) {
-      align(&new_filename);
+      new_filename = aligns(new_filename);
       if (new_filename != "        .   ") {
         strcpy(s1, a()->directories[dn].path);
         strcpy(s2, s1);
-        strcat(s1, new_filename.c_str());
+        to_char_array(s1, new_filename);
         if (ListPlusExist(s1)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {

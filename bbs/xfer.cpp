@@ -40,6 +40,7 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
+#include "sdk/files/files.h"
 #include <cmath>
 #include <string>
 #include <vector>
@@ -496,94 +497,12 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
 }
 
 std::string aligns(const std::string& file_name) {
-  auto f{file_name};
-  align(&f);
-  return f;
-}
-
-void align(std::string *file_name) {
-  char s[MAX_PATH];
-  to_char_array(s, *file_name);
-  align(s);
-  file_name->assign(s);
+  return wwiv::sdk::files::align(file_name);
 }
 
 void align(char *file_name) {
-  // TODO Modify this to handle long filenames
-  char szFileName[40], szExtension[40];
-
-  bool bInvalid = false;
-  if (file_name[ 0 ] == '.') {
-    bInvalid = true;
-  }
-
-  for (size_t i = 0; i < size(file_name); i++) {
-    if (file_name[i] == '\\' || file_name[i] == '/' ||
-        file_name[i] == ':'  || file_name[i] == '<' ||
-        file_name[i] == '>'  || file_name[i] == '|') {
-      bInvalid = true;
-    }
-  }
-  if (bInvalid) {
-    strcpy(file_name, "        .   ");
-    return;
-  }
-  char* s2 = strrchr(file_name, '.');
-  if (s2 == nullptr || strrchr(file_name, '\\') > s2) {
-    szExtension[0] = '\0';
-  } else {
-    strcpy(szExtension, &(s2[1]));
-    szExtension[3]  = '\0';
-    s2[0]           = '\0';
-  }
-  strcpy(szFileName, file_name);
-
-  for (int j = strlen(szFileName); j < 8; j++) {
-    szFileName[j] = SPACE;
-  }
-  szFileName[8] = '\0';
-  bool bHasWildcard = false;
-  bool bHasSpace    = false;
-  for (int k = 0; k < 8; k++) {
-    if (szFileName[k] == '*') {
-      bHasWildcard = true;
-    }
-    if (szFileName[k] == ' ') {
-      bHasSpace = true;
-    }
-    if (bHasSpace) {
-      szFileName[k] = ' ';
-    }
-    if (bHasWildcard) {
-      szFileName[k] = '?';
-    }
-  }
-
-  for (int i2 = strlen(szExtension); i2 < 3; i2++) {
-    szExtension[ i2 ] = SPACE;
-  }
-  szExtension[ 3 ] = '\0';
-  bHasWildcard = false;
-  for (int i3 = 0; i3 < 3; i3++) {
-    if (szExtension[i3] == '*') {
-      bHasWildcard = true;
-    }
-    if (bHasWildcard) {
-      szExtension[i3] = '?';
-    }
-  }
-
-  char buffer[MAX_PATH];
-  for (int i4 = 0; i4 < 12; i4++) {
-    buffer[ i4 ] = SPACE;
-  }
-  strcpy(buffer, szFileName);
-  buffer[8] = '.';
-  strcpy(&(buffer[9]), szExtension);
-  strcpy(file_name, buffer);
-  for (int i5 = 0; i5 < 12; i5++) {
-    file_name[ i5 ] = to_upper_case<char>(file_name[ i5 ]);
-  }
+  const auto s = wwiv::sdk::files::align(file_name);
+  strcpy(file_name, s.c_str());
 }
 
 bool compare(const char *pszFileName1, const char *pszFileName2) {
@@ -688,9 +607,8 @@ std::string file_mask() {
   if (!contains(s, '.')) {
     s += ".*";
   }
-  align(&s);
   bout.nl();
-  return s;
+  return aligns(s);
 }
 
 void listfiles() {
