@@ -239,6 +239,42 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
   x.Close();
 }
 
+TEST(DataFileTest, WriteVectorAndTruncate) {
+  struct T { int a; int b; };
+  FileHelper file;
+  const auto& tmp = file.TempDir();
+
+  T t1{1, 2};
+  T t2{3, 4};
+  const auto path = PathFilePath(tmp, "WriteVectorAndTruncate");
+  File f(path); 
+
+  {
+    // Create file containing two files.
+    DataFile<T> datafile(path, File::modeCreateFile | File::modeBinary | File::modeReadWrite);
+    ASSERT_TRUE(static_cast<bool>(datafile));
+    std::vector<T> t = {t1, t2};
+    datafile.WriteVector(t);
+    ASSERT_EQ(f.length(), static_cast<File::size_type>(2 * sizeof(T)));
+  }
+
+  {
+    DataFile<T> datafile(path, File::modeBinary | File::modeReadWrite);
+    ASSERT_TRUE(static_cast<bool>(datafile));
+    datafile.WriteVector({t1});
+    // Should still 
+    ASSERT_EQ(f.length(), static_cast<File::size_type>(2 * sizeof(T)));
+  }
+
+  {
+    DataFile<T> datafile(path, File::modeBinary | File::modeReadWrite);
+    ASSERT_TRUE(static_cast<bool>(datafile));
+    datafile.WriteVectorAndTruncate({t1});
+    ASSERT_EQ(f.length(), static_cast<File::size_type>(sizeof(T)));
+  }
+
+}
+
 TEST(DataFileTest, Read_DoesNotExist) {
   struct T { int a; };
   const FileHelper file;

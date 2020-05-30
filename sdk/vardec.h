@@ -500,7 +500,7 @@ struct directoryrec {
   uint16_t type;
 };
 
-// QUICK REFERNCE TO FIND USER NUMBER FROM NAME
+// QUICK REFERENCE TO FIND USER NUMBER FROM NAME
 struct smalrec {
   // User name.
   unsigned char name[31];

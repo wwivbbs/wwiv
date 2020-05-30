@@ -232,14 +232,21 @@ public:
     erase_at(files, file_number);
 
     file.Seek(0);
-    if (!file.WriteVector(files)) {
+    if (!file.WriteVectorAndTruncate(files)) {
       LOG(ERROR) << "Unable to write dir entries in file: " << file.file();
       return 1;
     }
-    // TODO(rushfan): Push this into the DataFile class.
-    file.file().set_length(files.size() * sizeof(uploadsrec));
 
-    // TODO(rushfan): Set the # files in record 0.
+    uploadsrec header{};
+    if (file.Read(0, &header)) {
+      header.numbytes--;
+      if (header.numbytes == files.size() - 1) {
+        file.Write(0, &header);
+      } else {
+        LOG(ERROR) << "Expected #files to match, it doesn't. expected: "
+                   << header.numbytes << "; actual: " << files.size() - 1;
+      }
+    }
 
     return 0;
   }

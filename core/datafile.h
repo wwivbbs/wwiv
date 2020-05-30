@@ -95,6 +95,14 @@ public:
     return Write(&records[0], num);
   }
 
+  bool WriteVectorAndTruncate(const std::vector<RECORD>& records, std::size_t max_records = 0) {
+    if (!WriteVector(records, max_records)) {
+      return false;
+    }
+    file_.set_length(records.size() * SIZE);
+    return true;
+  }
+
   bool Write(const RECORD* record, int num_records = 1) {
     return file_.Write(record, num_records * SIZE) == static_cast<ssize_t>(num_records * SIZE);
   }

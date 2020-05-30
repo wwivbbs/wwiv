@@ -43,7 +43,6 @@ void dirlist(int mode) {
   bool next   = false;
   int oc      = a()->GetCurrentConferenceFileArea();
   int os      = a()->current_user_dir().subnum;
-  int tally   = 0;
   int nd      = 0;
   int sn      = a()->GetCurrentConferenceFileArea();
   int en      = a()->GetCurrentConferenceFileArea();
@@ -101,7 +100,6 @@ void dirlist(int mode) {
         } else {
           bout.bputs(stripcolors(s), &abort, &next);
         }
-        tally += a()->numf;
         int lastp = i1++;
         bout.nl();
         if (bout.lines_listed() >= a()->screenlinest - 2 && mode == 0) {
