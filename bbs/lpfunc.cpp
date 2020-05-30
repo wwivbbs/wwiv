@@ -104,7 +104,6 @@ static void load_listing() {
 }
 
 int listfiles_plus_function(int type) {
-  uploadsrec(*file_recs)[1];
   int file_handle[51];
   char vert_pos[51];
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
@@ -125,12 +124,8 @@ int listfiles_plus_function(int type) {
   vector<string> menu_items;
   prep_menu_items(&menu_items);
 
-  file_recs = (uploadsrec(*)[1])(BbsAllocA((a()->user()->GetScreenLines() + 20) * sizeof(uploadsrec)));
-  if (!file_recs) {
-    return 0;
-  }
+  std::vector<uploadsrec> file_recs(a()->user()->GetScreenLines() + 20);
   if (!prep_search_rec(&search_rec, type)) {
-    free(file_recs);
     return 0;
   }
   int max_lines = calc_max_lines();
@@ -181,18 +176,19 @@ int listfiles_plus_function(int type) {
           changedir = 0;
           bool force_menu = false;
           FileAreaSetRecord(fileDownload, first_file + amount);
-          fileDownload.Read(file_recs[matches], sizeof(uploadsrec));
-          if (compare_criteria(&search_rec, file_recs[matches])) {
+          fileDownload.Read(&file_recs[matches], sizeof(uploadsrec));
+          if (compare_criteria(&search_rec, &file_recs[matches])) {
             int lines_left = max_lines - lines;
-            int needed = check_lines_needed(file_recs[matches]);
+            int needed = check_lines_needed(&file_recs[matches]);
             if (needed <= lines_left) {
               if (!matches) {
                 printtitle_plus();
               }
               file_handle[matches] = first_file + amount;
               vert_pos[matches] = static_cast<char>(lines);
-              int lines_used = printinfo_plus(file_recs[matches], file_handle[matches],
-                                              check_batch_queue(file_recs[matches]->filename), lines_left, &search_rec);
+              int lines_used = printinfo_plus(&file_recs[matches], file_handle[matches],
+                                              check_batch_queue(file_recs[matches].filename),
+                                              lines_left, &search_rec);
               if (lines_used > 1 && lines_used < lines_left) {
                 bout.nl();
                 ++lines_used;
@@ -293,14 +289,14 @@ int listfiles_plus_function(int type) {
                     break;
                   case 2:
                     if (sysop_mode) {
-                      do_batch_sysop_command(SYSOP_DELETE, file_recs[file_pos]->filename);
+                      do_batch_sysop_command(SYSOP_DELETE, file_recs[file_pos].filename);
                       menu_done = true;
                       save_file_pos = file_pos = 0;
                       amount = lines = matches = 0;
                     } else {
 ADD_OR_REMOVE_BATCH:
-                      if (find_batch_queue(file_recs[file_pos]->filename) > -1) {
-                        remove_batch(file_recs[file_pos]->filename);
+                      if (find_batch_queue(file_recs[file_pos].filename) > -1) {
+                        remove_batch(file_recs[file_pos].filename);
                         redraw = false;
                       }
                       else if (!ratio_ok() && !sysop_mode) {
@@ -313,23 +309,23 @@ ADD_OR_REMOVE_BATCH:
                         if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                           auto tf =
                               PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
-                                             wwiv::sdk::files::unalign(file_recs[file_pos]->filename));
+                                             wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                           if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
-                            lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
-                                         file_recs[file_pos]->numbytes);
+                            lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
+                                         file_recs[file_pos].numbytes);
                           } else if (lp_config.request_file) {
                             menu_done = true;
                             amount = lines = matches = 0;
-                            request_file(file_recs[file_pos]->filename);
+                            request_file(file_recs[file_pos].filename);
                           }
                         } else {
-                          lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
-                                       file_recs[file_pos]->numbytes);
+                          lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
+                                       file_recs[file_pos].numbytes);
                         }
                       }
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
                       bout << fmt::sprintf("|%2d %c ", lp_config.tagged_color,
-                                                        check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
+                                                        check_batch_queue(file_recs[file_pos].filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
                       if (file_pos >= matches) {
@@ -341,12 +337,12 @@ ADD_OR_REMOVE_BATCH:
                     break;
                   case 3:
                     if (!sysop_mode) {
-                      show_fileinfo(file_recs[file_pos]);
+                      show_fileinfo(&file_recs[file_pos]);
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
                     } else {
-                      do_batch_sysop_command(SYSOP_RENAME, file_recs[file_pos]->filename);
+                      do_batch_sysop_command(SYSOP_RENAME, file_recs[file_pos].filename);
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
@@ -355,12 +351,12 @@ ADD_OR_REMOVE_BATCH:
                     break;
                   case 4:
                     if (!sysop_mode) {
-                      view_file(file_recs[file_pos]->filename);
+                      view_file(file_recs[file_pos].filename);
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
                     } else {
-                      do_batch_sysop_command(SYSOP_MOVE, file_recs[file_pos]->filename);
+                      do_batch_sysop_command(SYSOP_MOVE, file_recs[file_pos].filename);
                       menu_done = true;
                       save_file_pos = file_pos = 0;
                       amount = lines = matches = 0;
@@ -386,25 +382,25 @@ ADD_OR_REMOVE_BATCH:
                           if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                             auto tf =
                                 PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
-                                             wwiv::sdk::files::unalign(file_recs[file_pos]->filename));
+                                             wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                             if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
-                              lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
-                                           file_recs[file_pos]->numbytes);
+                              lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
+                                           file_recs[file_pos].numbytes);
                             } else if (lp_config.request_file) {
                               menu_done = true;
                               amount = lines = matches = 0;
-                              request_file(file_recs[file_pos]->filename);
+                              request_file(file_recs[file_pos].filename);
                             }
                           } else {
-                            lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
-                                         file_recs[file_pos]->numbytes);
+                            lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
+                                         file_recs[file_pos].numbytes);
                           }
-                          download_plus(file_recs[file_pos]->filename);
+                          download_plus(file_recs[file_pos].filename);
                         }
                       }
                       dliscan();
                     } else if (!sysop_mode) {
-                      do_batch_sysop_command(SYSOP_MOVE, file_recs[file_pos]->filename);
+                      do_batch_sysop_command(SYSOP_MOVE, file_recs[file_pos].filename);
                       menu_done = true;
                       save_file_pos = file_pos = 0;
                       amount = lines = matches = 0;
@@ -540,8 +536,8 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
-                && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
+            if (a()->current_user_dir_num() < ssize(a()->directories) - 1
+                && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
               a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
             } else {
               a()->set_current_user_dir_num(0);
@@ -563,8 +559,7 @@ TOGGLE_EXTENDED:
     }
   }
 
-  free(file_recs);
-  return (all_done) ? 1 : 0;
+  return all_done ? 1 : 0;
 }
 
 int compare_criteria(search_record * sr, uploadsrec * ur) {
