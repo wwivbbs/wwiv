@@ -237,7 +237,7 @@ int doIO(ZModem* info) {
   return done;
 }
 
-int ZXmitStr(u_char* str, int len, ZModem* info) {
+int ZXmitStr(const u_char* str, int len, ZModem* info) {
   //zmodemlog("ZXmitStr Size=[%d]\n", len);
   a()->remoteIO()->write(reinterpret_cast<const char*>(str), len);
   return 0;

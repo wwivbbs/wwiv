@@ -307,8 +307,7 @@ extern void zmodemlog(const char*, ...);
 
 /* caller-supplied functions: */
 
-extern int ZXmitChr(u_char c, ZModem* info);
-extern int ZXmitStr(u_char* str, int len, ZModem* info);
+extern int ZXmitStr(const u_char* str, int len, ZModem* info);
 extern void ZIFlush(ZModem* info);
 extern void ZOFlush(ZModem* info);
 extern int ZAttn(ZModem* info);

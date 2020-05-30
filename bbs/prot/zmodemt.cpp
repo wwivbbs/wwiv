@@ -222,7 +222,7 @@ int ZmodemTInit(ZModem* info) {
   /* optional: send "rz\r" to remote end */
   int err = 0;
   if (DoInitRZ) {
-    if ((err = ZXmitStr(reinterpret_cast<u_char*>("rz\r"), 3, info))) {
+    if ((err = ZXmitStr(reinterpret_cast<const u_char*>("rz\r"), 3, info))) {
       return err;
     }
   }
