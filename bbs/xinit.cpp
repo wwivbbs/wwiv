@@ -54,6 +54,7 @@
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
+#include "sdk/files/files.h"
 
 struct ini_flags_type {
   const char* strnum;
@@ -478,6 +479,7 @@ bool Application::create_message_api() {
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
       options, *config_.get(), net_networks, new BBSLastReadImpl());
 
+  fileapi_ = std::make_unique<wwiv::sdk::files::FileApi>(config_->datadir());
   return true;
 }
 

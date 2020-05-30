@@ -61,6 +61,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/files.h"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -1011,6 +1012,19 @@ wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
 wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
   return dynamic_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
 }
+
+wwiv::sdk::files::FileApi* Application::fileapi() const {
+  return fileapi_.get();
+}
+wwiv::sdk::files::FileArea* Application::current_file_area() const {
+  return file_area_.get();
+}
+
+void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileArea> a) {
+  file_area_ = std::move(a);
+}
+
+
 
 Batch& Application::batch() { return batch_; }
 

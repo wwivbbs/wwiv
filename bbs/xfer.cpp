@@ -310,37 +310,25 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".dir"));
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  auto nNumRecords = fileDownload.length() / sizeof(uploadsrec);
-  uploadsrec u{};
-  if (nNumRecords == 0) {
-    memset(&u, 0, sizeof(uploadsrec));
-    to_char_array(u.filename, "|MARKER|");
-    u.daten = daten_t_now();
-    FileAreaSetRecord(fileDownload, 0);
-    fileDownload.Write(&u, sizeof(uploadsrec));
-  } else {
-    FileAreaSetRecord(fileDownload, 0);
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    if (!IsEquals(u.filename, "|MARKER|")) {
-      a()->numf = u.numbytes;
-      memset(&u, 0, sizeof(uploadsrec));
-      to_char_array(u.filename, "|MARKER|");
-      u.daten = daten_t_now();
-      u.numbytes = a()->numf;
-      FileAreaSetRecord(fileDownload, 0);
-      fileDownload.Write(&u, sizeof(uploadsrec));
+  const std::string basename = a()->directories[directory_num].filename;
+  a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(basename, ".dir"));
+
+  if (!a()->fileapi()->Exist(basename)) {
+    if (!a()->fileapi()->Create(basename)) {
+      LOG(ERROR) << "Failed to create file area: " << basename;
     }
   }
-  fileDownload.Close();
-  a()->numf = u.numbytes;
-  this_date = u.daten;
+
+  auto area = a()->fileapi()->Open(a()->directories[directory_num]);
+
+  a()->numf = area->number_of_files();
+  this_date = area->header().daten();
 
   a()->extended_description_filename_ = 
       FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".ext"));
   zap_ed_info();
+
+  a()->set_current_file_area(std::move(area));
 }
 
 void dliscan() {

@@ -64,6 +64,15 @@ private:
   uploadsrec u_;
 };
 
+/**
+ * Represents a file area header.
+ * Internally this is stuffed into an uploadsrec re-purposing some
+ * of the fields:
+ *
+ * filename must contain "|MARKER|"
+ * numbytes is the total number of files in this area.
+ * daten is the date of the newest file.
+ */
 class FileAreaHeader {
 public:
   explicit FileAreaHeader(const uploadsrec& u);
@@ -73,6 +82,8 @@ public:
   bool set_num_files(uint32_t n) { u_.numbytes = n; return true; }
   bool FixHeader(const core::Clock& clock, uint32_t num_files);
   uploadsrec& u() { return u_; }
+  void set_daten(daten_t d);
+  daten_t daten() const;
 private:
   uploadsrec u_;
 };

@@ -71,6 +71,11 @@ struct subboard_t;
 class User;
 class UserManager;
 
+namespace files {
+class FileApi;
+class FileArea;
+} // namespace wwiv::sdk::files
+
 namespace msgapi {
 class MessageApi;
 class WWIVMessageApi;
@@ -280,6 +285,10 @@ public:
   [[nodiscard]] wwiv::sdk::msgapi::MessageApi* msgapi() const;
   [[nodiscard]] wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const;
 
+  [[nodiscard]] wwiv::sdk::files::FileApi* fileapi() const;
+  [[nodiscard]] wwiv::sdk::files::FileArea* current_file_area() const;
+  void set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileArea> a);
+
   // Public subsystems
   [[nodiscard]] Batch& batch();
   [[nodiscard]] wwiv::sdk::Subs& subs();
@@ -488,6 +497,8 @@ private:
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Names> names_;
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> msgapis_;
+  std::unique_ptr<wwiv::sdk::files::FileApi> fileapi_;
+  std::unique_ptr<wwiv::sdk::files::FileArea> file_area_;
 
   Batch batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;

@@ -218,6 +218,14 @@ bool FileAreaHeader::FixHeader(const Clock& clock, uint32_t num_files) {
   return true;
 }
 
+void FileAreaHeader::set_daten(daten_t d) {
+  u_.daten = d;
+}
+
+daten_t FileAreaHeader::daten() const {
+  return u_.daten;
+}
+
 // Delegates to other constructor
 FileArea::FileArea(FileApi* api, std::string data_directory, const directoryrec& dir)
     : FileArea(api, std::move(data_directory), dir.filename) {
@@ -281,6 +289,7 @@ FileRecord FileArea::ReadFile(int num) {
 bool FileArea::AddFile(FileRecord& f) {
   files_.push_back(f.u());
   header_->set_num_files(files_.size() - 1);
+  header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
   return true;
 }

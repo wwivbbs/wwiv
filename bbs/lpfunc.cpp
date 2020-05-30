@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/lpfunc.h"
 
-#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
@@ -137,7 +136,7 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (uint16_t this_dir = 0; (this_dir < a()->directories.size()) && (!a()->hangup_) && (a()->udir[this_dir].subnum != -1)
+  for (uint16_t this_dir = 0; this_dir < a()->directories.size() && (!a()->hangup_) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
@@ -152,7 +151,7 @@ int listfiles_plus_function(int type) {
         scan_dir = true;
       }
 
-      if ((search_rec.alldirs == ALL_DIRS) && (type != LP_NSCAN_NSCAN)) {
+      if (search_rec.alldirs == ALL_DIRS && (type != LP_NSCAN_NSCAN)) {
         scan_dir = true;
       }
     }
