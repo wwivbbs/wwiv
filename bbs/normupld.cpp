@@ -269,24 +269,11 @@ void normalupload(int dn) {
           time_t lCurrentTime;
           time(&lCurrentTime);
           u.daten = static_cast<uint32_t>(lCurrentTime);
-          File fileDownload(a()->download_filename_);
-          fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-          for (int j = a()->numf; j >= 1; j--) {
-            FileAreaSetRecord(fileDownload, j);
-            fileDownload.Read(&u1, sizeof(uploadsrec));
-            FileAreaSetRecord(fileDownload, j + 1);
-            fileDownload.Write(&u1, sizeof(uploadsrec));
+          auto* area = a()->current_file_area();
+          wwiv::sdk::files::FileRecord f(u);
+          if (area->AddFile(f)) {
+            area->Save();
           }
-          FileAreaSetRecord(fileDownload, 1);
-          fileDownload.Write(&u, sizeof(uploadsrec));
-          ++a()->numf;
-          FileAreaSetRecord(fileDownload, 0);
-          fileDownload.Read(&u1, sizeof(uploadsrec));
-          u1.numbytes = a()->numf;
-          u1.daten = static_cast<uint32_t>(lCurrentTime);
-          FileAreaSetRecord(fileDownload, 0);
-          fileDownload.Write(&u1, sizeof(uploadsrec));
-          fileDownload.Close();
           if (ok == 1) {
             a()->status_manager()->Run([](WStatus& s) {
               s.IncrementNumUploadsToday();

@@ -82,7 +82,6 @@ static int FindDN(const std::string& dl_fn) {
  */
 int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFreeDL, bool bTitle) {
   int bOkToDL;
-  uploadsrec u;
   User ur;
   bool abort = false;
 
@@ -98,25 +97,20 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     checka(&abort);
     if (abort) {
       return -1;
-    } else {
-      MenuSysopLog("DLFNF");                /* DL - FILE NOT FOUND */
-      return 0;
     }
+    MenuSysopLog("DLFNF"); /* DL - FILE NOT FOUND */
+    return 0;
   }
   bool ok = true;
-  while ((nRecordNumber > 0) && ok && !a()->hangup_) {
+  while (nRecordNumber > 0 && ok && !a()->hangup_) {
     a()->tleft(true);
-    File fileDownload(a()->download_filename_);
-    fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    FileAreaSetRecord(fileDownload, nRecordNumber);
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    fileDownload.Close();
+    auto f = a()->current_file_area()->ReadFile(nRecordNumber);
     bout.nl();
 
     if (bTitle) {
       bout << "Directory  : " << a()->directories[dn].name << wwiv::endl;
     }
-    bOkToDL = printfileinfo(&u, dn);
+    bOkToDL = printfileinfo(&f.u(), dn);
 
 
     if (!ratio_ok()) {
@@ -124,41 +118,40 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = PathFilePath(a()->directories[dn].path, files::unalign(u.filename));
+      auto s1 = PathFilePath(a()->directories[dn].path, f.unaligned_filename());
       if (a()->directories[dn].mask & mask_cdrom) {
-        auto s2 = PathFilePath(a()->directories[dn].path, files::unalign(u.filename));
-        s1 = PathFilePath(a()->temp_directory(), files::unalign(u.filename));
+        auto s2 = PathFilePath(a()->directories[dn].path, f.unaligned_filename());
+        s1 = PathFilePath(a()->temp_directory(), f.unaligned_filename());
         if (!File::Exists(s1)) {
           File::Copy(s2, s1);
         }
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1.string(), &sent, &abort, u.filename, dn, -2L);
+        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, -2L);
       } else {
-        send_file(s1.string(), &sent, &abort, u.filename, dn, u.numbytes);
+        send_file(s1.string(), &sent, &abort, f.aligned_filename(), dn, f.numbytes());
       }
 
       if (sent) {
         if (!bFreeDL) {
           a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-          a()->user()->SetDownloadK(a()->user()->GetDownloadK() + static_cast<int>
-              (bytes_to_k(u.numbytes)));
+          a()->user()->SetDownloadK(a()->user()->GetDownloadK() +
+                                    static_cast<int>(bytes_to_k(f.numbytes())));
         }
-        ++u.numdloads;
-        fileDownload.Open(File::modeBinary | File::modeReadWrite);
-        FileAreaSetRecord(fileDownload, nRecordNumber);
-        fileDownload.Write(&u, sizeof(uploadsrec));
-        fileDownload.Close();
+        ++f.u().numdloads;
+        if (a()->current_file_area()->UpdateFile(f, nRecordNumber)) {
+          a()->current_file_area()->Save();
+        }
 
-        sysoplog() << "Downloaded '" << u.filename << "'.";
+        sysoplog() << "Downloaded '" << f.aligned_filename() << "'.";
 
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
-          a()->users()->readuser(&ur, u.ownerusr);
+          a()->users()->readuser(&ur, f.u().ownerusr);
           if (!ur.IsUserDeleted()) {
-            if (date_to_daten(ur.GetFirstOn()) < u.daten) {
+            if (date_to_daten(ur.GetFirstOn()) < f.u().daten) {
               const string username_num = a()->names()->UserName(a()->usernum);
-              ssm(u.ownerusr) << username_num << " downloaded '" << u.filename << "' on " << date();
+              ssm(f.u().ownerusr) << username_num << " downloaded '" << f.aligned_filename() << "' on " << date();
             }
           }
         }

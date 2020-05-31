@@ -162,21 +162,16 @@ int listfiles_plus_function(int type) {
       int lines = 0;
       int changedir = 0;
 
-      File fileDownload(a()->download_filename_);
       while (!done && !a()->hangup_ && !all_done) {
         checka(&all_done);
         if (!amount) {
-          if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
-            done = true;
-            continue;
-          }
           print_searching(&search_rec);
         }
         if (a()->numf) {
           changedir = 0;
           bool force_menu = false;
-          FileAreaSetRecord(fileDownload, first_file + amount);
-          fileDownload.Read(&file_recs[matches], sizeof(uploadsrec));
+          auto f = a()->current_file_area()->ReadFile(first_file + amount);
+          file_recs[matches] = f.u();
           if (compare_criteria(&search_rec, &file_recs[matches])) {
             int lines_left = max_lines - lines;
             int needed = check_lines_needed(&file_recs[matches]);
@@ -204,7 +199,6 @@ int listfiles_plus_function(int type) {
           }
 
           if (lines >= max_lines || a()->numf < first_file + amount || force_menu) {
-            fileDownload.Close();
             if (matches) {
               file_pos = save_file_pos;
               drawfile(vert_pos[file_pos], file_handle[file_pos]);
@@ -532,7 +526,6 @@ TOGGLE_EXTENDED:
             }
           }
         } else {
-          fileDownload.Close();
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {

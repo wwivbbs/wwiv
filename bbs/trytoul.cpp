@@ -66,7 +66,6 @@ static void t2u_error(const string& file_name, const string& msg) {
 static int try_to_ul_wh(const string& orig_file_name) {
   directoryrec d = {};
   int i1, i2, i4, key, ok = 0, dn = 0;
-  uploadsrec u, u1;
 
   string file_name = orig_file_name;
   StringRemoveWhitespace(&file_name);
@@ -178,6 +177,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
+  uploadsrec u{};
   to_char_array(u.filename, aligned_file_name);
   u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
@@ -358,35 +358,22 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   auto current_daten = daten_t_now();
   u.daten = current_daten;
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (int i = a()->numf; i >= 1; i--) {
-    FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&u1, sizeof(uploadsrec));
-    FileAreaSetRecord(fileDownload, i + 1);
-    fileDownload.Write(&u1, sizeof(uploadsrec));
+  auto* area = a()->current_file_area();
+  wwiv::sdk::files::FileRecord f(u);
+  if (!area->AddFile(f)) {
+    LOG(ERROR) << "Error adding file: " << f.aligned_filename();
+  } else {
+    area->Save();
   }
+  add_to_file_database(f.aligned_filename());
 
-  FileAreaSetRecord(fileDownload, 1);
-  fileDownload.Write(&u, sizeof(uploadsrec));
-  ++a()->numf;
-  FileAreaSetRecord(fileDownload, 0);
-  fileDownload.Read(&u1, sizeof(uploadsrec));
-  u1.numbytes = a()->numf;
-  u1.daten = current_daten;
-  FileAreaSetRecord(fileDownload, 0);
-  fileDownload.Write(&u1, sizeof(uploadsrec));
-  fileDownload.Close();
-
-  add_to_file_database(u.filename);
-
-  a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(u.numbytes));
+  a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(f.numbytes()));
 
   auto status = a()->status_manager()->BeginTransaction();
   status->IncrementNumUploadsToday();
   status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   a()->status_manager()->CommitTransaction(std::move(status));
-  sysoplog() << fmt::sprintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
+  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f.aligned_filename(), a()->directories[dn].name);
   return 0;                                 // This means success
 }
 

@@ -164,7 +164,7 @@ bool FileApi::Create(const directoryrec& dir) {
 }
 
 
-bool FileApi::Remove(const std::string& filename) {
+bool FileApi::Remove(const std::string&) {
   // TODO(rushfan): Implement me.
   return false;
 }
@@ -188,12 +188,20 @@ void FileApi::set_clock(std::unique_ptr<Clock> clock) {
   clock_ = std::move(clock);
 }
 
+FileRecord::FileRecord() : FileRecord(uploadsrec{}) {
+}
+
 
 bool FileRecord::set_filename(const std::string& unaligned_filename) {
   if (unaligned_filename.size() > 12) {
     return false;
   }
   to_char_array(u_.filename, align(unaligned_filename));
+  return true;
+}
+
+bool FileRecord::set_description(const std::string& desc) {
+  to_char_array(u_.description, desc);
   return true;
 }
 
@@ -289,6 +297,13 @@ FileRecord FileArea::ReadFile(int num) {
 bool FileArea::AddFile(FileRecord& f) {
   files_.push_back(f.u());
   header_->set_num_files(files_.size() - 1);
+  header_->set_daten(std::max(header_->daten(), f.u().daten));
+  dirty_ = true;
+  return true;
+}
+
+bool FileArea::UpdateFile(FileRecord& f, int num) {
+  files_.at(num) = f.u();
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
   return true;

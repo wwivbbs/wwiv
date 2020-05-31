@@ -195,52 +195,57 @@ void print_devices() {
 }
 
 void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn) {
-  char szArcCmd[MAX_PATH];
+  const auto s = get_arc_cmd(pszArcFileName, cmd, ofn);
+  strcpy(out_buffer, s.c_str());
+}
 
-  out_buffer[0] = '\0';
-  const char* ss = strrchr(pszArcFileName, '.');
+std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::string& ofn) {
+
+  std::string cmd;
+
+  auto ss = strrchr(arc_fn.c_str(), '.');
   if (ss == nullptr) {
-    return;
+    return {};
   }
   ++ss;
   for (int i = 0; i < MAX_ARCS; i++) {
     if (iequals(ss, a()->arcs[i].extension)) {
-      switch (cmd) {
+      switch (cmdtype) {
       case 0:
-        strcpy(szArcCmd, a()->arcs[i].arcl);
+        cmd = a()->arcs[i].arcl;
         break;
       case 1:
-        strcpy(szArcCmd, a()->arcs[i].arce);
+        cmd = a()->arcs[i].arce;
         break;
       case 2:
-        strcpy(szArcCmd, a()->arcs[i].arca);
+        cmd = a()->arcs[i].arca;
         break;
       case 3:
-        strcpy(szArcCmd, a()->arcs[i].arcd);
+        cmd = a()->arcs[i].arcd;
         break;
       case 4:
-        strcpy(szArcCmd, a()->arcs[i].arck);
+        cmd = a()->arcs[i].arck;
         break;
       case 5:
-        strcpy(szArcCmd, a()->arcs[i].arct);
+        cmd = a()->arcs[i].arct;
         break;
       default:
         // Unknown type.
-        return;
+        return {};
       }
 
-      if (szArcCmd[0] == 0) {
-        return;
+      if (cmd.empty()) {
+        return {};
       }
-      auto command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      make_abs_cmd(a()->bbsdir().string(), &command);
-      strcpy(out_buffer, command.c_str());
-      return;
+      auto out = stuff_in(cmd, arc_fn, ofn, "", "", "");
+      make_abs_cmd(a()->bbsdir().string(), &out);
+      return out;
     }
   }
+  return {};
 }
 
-int list_arc_out(const char *file_name, const char *pszDirectory) {
+int list_arc_out(const std::string& file_name, const char *pszDirectory) {
   string name_to_delete;
 
   auto full_pathname = PathFilePath(pszDirectory, file_name);
@@ -606,26 +611,21 @@ void listfiles() {
   }
 
   dliscan();
-  string filemask = file_mask();
-  bool need_title = true;
+  const auto filemask = file_mask();
+  auto need_title = true;
   bout.clear_lines_listed();
 
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeReadOnly);
+  auto* area = a()->current_file_area();
   bool abort = false;
-  for (int i = 1; i <= a()->numf && !abort && !a()->hangup_; i++) {
-    FileAreaSetRecord(fileDownload, i);
-    uploadsrec u{};
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    if (compare(filemask.c_str(), u.filename)) {
-      fileDownload.Close();
-
+  for (int i = 1; i <= area->number_of_files() && !abort && !a()->hangup_; i++) {
+    auto f = area->ReadFile(i);
+    if (compare(filemask.c_str(), f.aligned_filename().c_str())) {
       if (need_title) {
         printtitle(&abort);
         need_title = false;
       }
 
-      printinfo(&u, &abort);
+      printinfo(&f.u(), &abort);
 
       // Moved to here from bputch.cpp
       if (bout.lines_listed() >= a()->screenlinest - 3) {
@@ -634,36 +634,28 @@ void listfiles() {
           bout.clear_lines_listed();
         }
       }
-
-      fileDownload.Open(File::modeBinary | File::modeReadOnly);
     } else if (bkbhit()) {
       checka(&abort);
     }
   }
-  fileDownload.Close();
   endlist(1);
 }
 
 void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
-  auto nOldCurDir = a()->current_user_dir_num();
+  const auto old_cur_dir = a()->current_user_dir_num();
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
   if (this_date >= a()->context().nscandate()) {
     if (okansi()) {
       *abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
-      a()->set_current_user_dir_num(nOldCurDir);
+      a()->set_current_user_dir_num(old_cur_dir);
       return;
     }
-    File fileDownload(a()->download_filename_);
-    fileDownload.Open(File::modeBinary | File::modeReadOnly);
+    auto* area = a()->current_file_area();
     for (int i = 1; i <= a()->numf && !(*abort) && !a()->hangup_; i++) {
       CheckForHangup();
-      FileAreaSetRecord(fileDownload, i);
-      uploadsrec u;
-      fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= a()->context().nscandate()) {
-        fileDownload.Close();
-
+      auto f = area->ReadFile(i);
+      if (f.u().daten >= a()->context().nscandate()) {
         if (need_title) {
           if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
             tag_files(need_title);
@@ -674,15 +666,13 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
           }
         }
 
-        printinfo(&u, abort);
-        fileDownload.Open(File::modeBinary | File::modeReadOnly);
+        printinfo(&f.u(), abort);
       } else if (bkbhit()) {
         checka(abort);
       }
     }
-    fileDownload.Close();
   }
-  a()->set_current_user_dir_num(nOldCurDir);
+  a()->set_current_user_dir_num(old_cur_dir);
 }
 
 void nscanall() {
@@ -754,11 +744,11 @@ void searchall() {
       tmp_disable_conf(true);
     }
   }
-  bool abort = false;
-  auto nOldCurDir = a()->current_user_dir_num();
+  auto abort = false;
+  const auto old_cur_dir = a()->current_user_dir_num();
   bout.nl(2);
   bout << "Search all a()->directories.\r\n";
-  string filemask = file_mask();
+  const auto filemask = file_mask();
   bout.nl();
   bout << "|#2Searching ";
   bout.clear_lines_listed();
@@ -791,14 +781,10 @@ void searchall() {
       a()->set_current_user_dir_num(i);
       dliscan();
       bool need_title = true;
-      File fileDownload(a()->download_filename_);
-      fileDownload.Open(File::modeBinary | File::modeReadOnly);
+      auto* area = a()->current_file_area();
       for (int i1 = 1; i1 <= a()->numf && !abort && !a()->hangup_; i1++) {
-        FileAreaSetRecord(fileDownload, i1);
-        uploadsrec u;
-        fileDownload.Read(&u, sizeof(uploadsrec));
-        if (compare(filemask.c_str(), u.filename)) {
-          fileDownload.Close();
+        auto f = area->ReadFile(i1);
+        if (compare(filemask.c_str(), f.aligned_filename().c_str())) {
           if (need_title) {
             if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
@@ -808,16 +794,14 @@ void searchall() {
               need_title = false;
             }
           }
-          printinfo(&u, &abort);
-          fileDownload.Open(File::modeBinary | File::modeReadOnly);
+          printinfo(&f.u(), &abort);
         } else if (bkbhit()) {
           checka(&abort);
         }
       }
-      fileDownload.Close();
     }
   }
-  a()->set_current_user_dir_num(nOldCurDir);
+  a()->set_current_user_dir_num(old_cur_dir);
   endlist(1);
   if (bScanAllConfs) {
     tmp_disable_conf(false);
@@ -828,28 +812,28 @@ int recno(const std::string& file_mask) {
   return nrecno(file_mask, 0);
 }
 
-int nrecno(const std::string& file_mask, int nStartingRec) {
-  int nRecNum = nStartingRec + 1;
-  if (a()->numf < 1 || nStartingRec >= a()->numf) {
+int nrecno(const std::string& file_mask, int start_recno) {
+  auto nRecNum = start_recno + 1;
+  auto* area = a()->current_file_area();
+  if (!area) {
     return -1;
   }
 
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeReadOnly);
-  FileAreaSetRecord(fileDownload, nRecNum);
-  uploadsrec u{};
-  fileDownload.Read(&u, sizeof(uploadsrec));
-  while ((nRecNum < a()->numf) && (compare(file_mask.c_str(), u.filename) == 0)) {
-    ++nRecNum;
-    FileAreaSetRecord(fileDownload, nRecNum);
-    fileDownload.Read(&u, sizeof(uploadsrec));
+  const auto numf = area->number_of_files();
+  if (numf < 1 || start_recno >= numf) {
+    return -1;
   }
-  fileDownload.Close();
-  return (compare(file_mask.c_str(), u.filename)) ? nRecNum : -1;
+
+  auto f = area->ReadFile(nRecNum);
+  while (nRecNum < a()->numf &&
+         compare(file_mask.c_str(), f.aligned_filename().c_str()) == 0) {
+    f = area->ReadFile(++nRecNum);
+  }
+  return compare(file_mask.c_str(), f.aligned_filename().c_str()) ? nRecNum : -1;
 }
 
 int printfileinfo(uploadsrec * u, int directory_num) {
-  double d = XFER_TIME(u->numbytes);
+  auto d = XFER_TIME(u->numbytes);
   bout << "Filename   : " << stripfn(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
   bout << "File size  : " << bytes_to_k(u->numbytes) << wwiv::endl;
@@ -866,9 +850,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  char file_name[MAX_PATH];
-  sprintf(file_name, "%s%s", a()->directories[directory_num].path, u->filename);
-  StringRemoveWhitespace(file_name);
+  const auto file_name = PathFilePath(a()->directories[directory_num].path, wwiv::sdk::files::unalign(u->filename));
   if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;

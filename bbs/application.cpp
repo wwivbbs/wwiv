@@ -803,7 +803,7 @@ int Application::Run(int argc, char* argv[]) {
   errorlevel_ = cmdline.iarg("error_exit");
   const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
-  auto num_min = cmdline.iarg("remaining_min");
+  //auto num_min = cmdline.iarg("remaining_min");
   context().ok_modem_stuff(!cmdline.barg("no_modem"));
   instance_number_ = cmdline.iarg("instance");
 

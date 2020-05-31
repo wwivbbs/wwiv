@@ -117,38 +117,36 @@ void delbatch(int num) {
 }
 
 static void downloaded(const string& file_name, long lCharsPerSecond) {
-  uploadsrec u;
 
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); it++) {
     const auto& b = *it;
     if (file_name == b.filename && b.sending) {
       dliscan1(b.dir);
-      int nRecNum = recno(b.filename);
+      auto area = a()->current_file_area();
+      auto nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        File file(a()->download_filename_);
-        file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-        FileAreaSetRecord(file, nRecNum);
-        file.Read(&u, sizeof(uploadsrec));
+        auto f = area->ReadFile(nRecNum);
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
         a()->user()->SetDownloadK(a()->user()->GetDownloadK() +
-            static_cast<int>(bytes_to_k(u.numbytes)));
-        ++u.numdloads;
-        FileAreaSetRecord(file, nRecNum);
-        file.Write(&u, sizeof(uploadsrec));
-        file.Close();
+            static_cast<int>(bytes_to_k(f.u().numbytes)));
+        ++f.u().numdloads;
+        if (area->UpdateFile(f, nRecNum)) {
+          area->Save();
+          a()->numf = area->number_of_files();
+        }
         if (lCharsPerSecond) {
-          sysoplog() << "Downloaded '" << u.filename << "' (" << lCharsPerSecond << " cps).";
+          sysoplog() << "Downloaded '" << f.aligned_filename() << "' (" << lCharsPerSecond << " cps).";
         } else {
-          sysoplog() << "Downloaded '" << u.filename << "'.";
+          sysoplog() << "Downloaded '" << f.aligned_filename() << "'.";
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           User user;
-          a()->users()->readuser(&user, u.ownerusr);
+          a()->users()->readuser(&user, f.u().ownerusr);
           if (!user.IsUserDeleted()) {
-            if (date_to_daten(user.GetFirstOn()) < u.daten) {
-              const string user_name_number = a()->names()->UserName(a()->usernum);
-              ssm(u.ownerusr) << user_name_number << " downloaded|#1 \"" << u.filename << 
-                "\" |#7on " << fulldate();
+            if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
+              const auto user_name_number = a()->names()->UserName(a()->usernum);
+              ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f.aligned_filename()
+                                  << "\" |#7on " << fulldate();
             }
           }
         }
@@ -161,73 +159,55 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
 }
 
 void didnt_upload(const batchrec& b) {
-  uploadsrec u;
-
   if (b.sending) {
     return;
   }
 
   dliscan1(b.dir);
-  int nRecNum = recno(b.filename);
-  if (nRecNum > 0) {
-    File file(a()->download_filename_);
-    file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite, File::shareDenyNone);
-    do {
-      FileAreaSetRecord(file, nRecNum);
-      file.Read(&u, sizeof(uploadsrec));
-      if (u.numbytes != 0) {
-        file.Close();
-        nRecNum = nrecno(b.filename, nRecNum);
-        file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite, File::shareDenyNone);
-      }
-    } while (nRecNum != -1 && u.numbytes != 0);
-
-    if (nRecNum != -1 && u.numbytes == 0) {
-      if (u.mask & mask_extended) {
-        delete_extended_description(u.filename);
-      }
-      for (int i1 = nRecNum; i1 < a()->numf; i1++) {
-        FileAreaSetRecord(file, i1 + 1);
-        file.Read(&u, sizeof(uploadsrec));
-        FileAreaSetRecord(file, i1);
-        file.Write(&u, sizeof(uploadsrec));
-      }
-      --nRecNum;
-      --a()->numf;
-      FileAreaSetRecord(file, 0);
-      file.Read(&u, sizeof(uploadsrec));
-      u.numbytes = a()->numf;
-      FileAreaSetRecord(file, 0);
-      file.Write(&u, sizeof(uploadsrec));
-      return;
-    }
+  auto* area = a()->current_file_area();
+  auto nRecNum = recno(b.filename);
+  if (nRecNum <= 0) {
+    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.filename);
+    return;
   }
-  sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
+  files::FileRecord f({});
+  do {
+    f = area->ReadFile(nRecNum);
+    if (f.numbytes() != 0) {
+      nRecNum = nrecno(b.filename, nRecNum);
+    }
+  } while (nRecNum != -1 && f.numbytes() != 0);
+
+  if (nRecNum == -1 || f.numbytes() != 0) {
+    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
+    return;  
+  }
+  if (f.u().mask & mask_extended) {
+    delete_extended_description(f.unaligned_filename());
+  }
+  area->DeleteFile(nRecNum);
+  area->Save();
 }
 
 static void uploaded(const string& file_name, long lCharsPerSecond) {
-  uploadsrec u;
-
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); it++) {
     const auto& b = *it;
     if (file_name == b.filename && !b.sending) {
       dliscan1(b.dir);
-      int nRecNum = recno(b.filename);
+      auto* area = a()->current_file_area();
+      auto nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        File downFile(a()->download_filename_);
-        downFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+        wwiv::sdk::files::FileRecord f({});
         do {
-          FileAreaSetRecord(downFile, nRecNum);
-          downFile.Read(&u, sizeof(uploadsrec));
-          if (u.numbytes != 0) {
+          f = area->ReadFile(nRecNum);
+          if (f.numbytes() != 0) {
             nRecNum = nrecno(b.filename, nRecNum);
           }
-        } while (nRecNum != -1 && u.numbytes != 0);
-        downFile.Close();
-        if (nRecNum != -1 && u.numbytes == 0) {
+        } while (nRecNum != -1 && f.numbytes() != 0);
+        if (nRecNum != -1 && f.numbytes() == 0) {
           auto source_filename = PathFilePath(a()->batch_directory(), file_name);
           auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
-        if (source_filename != dest_filename && File::Exists(source_filename)) {
+          if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
             File::Remove(source_filename);
           }
@@ -235,31 +215,31 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
             if (!a()->upload_cmd.empty()) {
               file.Close();
-              if (!check_ul_event(b.dir, &u)) {
+              if (!check_ul_event(b.dir, &f.u())) {
                 didnt_upload(b);
               } else {
                 file.Open(File::modeBinary | File::modeReadOnly);
               }
             }
             if (file.IsOpen()) {
-              u.numbytes = static_cast<daten_t>(file.length());
+              f.u().numbytes = static_cast<daten_t>(file.length());
               file.Close();
-              get_file_idz(&u, b.dir);
+              get_file_idz(&f.u(), b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
-              add_to_file_database(u.filename);
+              add_to_file_database(f.aligned_filename());
               a()->user()->SetUploadK(a()->user()->GetUploadK() +
-                  static_cast<int>(bytes_to_k(u.numbytes)));
+                  static_cast<int>(bytes_to_k(f.numbytes())));
               a()->status_manager()->Run([](WStatus& s) {
                 s.IncrementNumUploadsToday();
                 s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
               });
-              File fileDn(a()->download_filename_);
-              fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-              FileAreaSetRecord(fileDn, nRecNum);
-              fileDn.Write(&u, sizeof(uploadsrec));
-              fileDn.Close();
-              sysoplog() << fmt::sprintf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, a()->directories[b.dir].name, lCharsPerSecond);
-              bout << "Uploaded '" << u.filename << "' to "  << a()->directories[b.dir].name 
+              if (area->UpdateFile(f, nRecNum)) {
+                area->Save();
+                a()->numf = area->number_of_files();
+              }
+              sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
+                                         a()->directories[b.dir].name, lCharsPerSecond);
+              bout << "Uploaded '" << f.aligned_filename() << "' to "  << a()->directories[b.dir].name 
                    << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
@@ -319,14 +299,13 @@ static void bihangup() {
 
 void zmbatchdl(bool bHangupAfterDl) {
   int cur = 0;
-  uploadsrec u;
 
   if (!a()->context().incom()) {
     return;
   }
 
-  string message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(), 
-    " Time - ", ctim(a()->batch().dl_time_in_secs()));
+  auto message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(), 
+                        " Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -350,27 +329,23 @@ void zmbatchdl(bool bHangupAfterDl) {
       bRatioBad = false;
       ++cur;
     }
-    if ((nsl() >= a()->batch().entry[cur].time) && !bRatioBad) {
+    if (nsl() >= a()->batch().entry[cur].time && !bRatioBad) {
       dliscan1(a()->batch().entry[cur].dir);
-      int nRecordNumber = recno(a()->batch().entry[cur].filename);
+      const int nRecordNumber = recno(a()->batch().entry[cur].filename);
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        a()->localIO()->Puts(
-            StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
-              ctim(a()->batch().dl_time_in_secs()), "\r\n"));
-        File file(a()->download_filename_);
-        file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        FileAreaSetRecord(file, nRecordNumber);
-        file.Read(&u, sizeof(uploadsrec));
-        file.Close();
-        auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, files::unalign(u.filename));
+        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
+                                    ctim(a()->batch().dl_time_in_secs()), "\r\n"));
+        auto* area = a()->current_file_area();
+        auto f = area->ReadFile(nRecordNumber);
+        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
+                                          f.unaligned_filename());
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, files::unalign(u.filename));
+          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
+                                            f.unaligned_filename());
           // update the send filename and copy it from the cdrom
-          send_filename = PathFilePath(a()->temp_directory(), files::unalign(u.filename));
+          send_filename = PathFilePath(a()->temp_directory(), f.unaligned_filename());
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -380,7 +355,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         double percent;
         zmodem_send(send_fn, &ok, &percent);
         if (ok) {
-          downloaded(u.filename, 0);
+          downloaded(f.aligned_filename(), 0);
         }
       }
     } else {
@@ -456,13 +431,12 @@ static void end_ymodem_batch() {
 
 void ymbatchdl(bool bHangupAfterDl) {
   int cur = 0;
-  uploadsrec u;
 
   if (!a()->context().incom()) {
     return;
   }
-  string message = StrCat("Ymodem Download: Files - ", a()->batch().entry.size(),
-    ", Time - ", ctim(a()->batch().dl_time_in_secs()));
+  auto message = StrCat("Ymodem Download: Files - ", a()->batch().entry.size(),
+                        ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -486,26 +460,22 @@ void ymbatchdl(bool bHangupAfterDl) {
       bRatioBad = false;
       ++cur;
     }
-    if ((nsl() >= a()->batch().entry[cur].time) && !bRatioBad) {
+    if (nsl() >= a()->batch().entry[cur].time && !bRatioBad) {
       dliscan1(a()->batch().entry[cur].dir);
-      int nRecordNumber = recno(a()->batch().entry[cur].filename);
+      const auto nRecordNumber = recno(a()->batch().entry[cur].filename);
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        a()->localIO()->Puts(
-			      StrCat("Files left - ", a()->batch().entry.size(),
-              ", Time left - ", ctim(a()->batch().dl_time_in_secs()),"\r\n"));
-        File file(a()->download_filename_);
-        file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        FileAreaSetRecord(file, nRecordNumber);
-        file.Read(&u, sizeof(uploadsrec));
-        file.Close();
+        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
+                                    ctim(a()->batch().dl_time_in_secs()), "\r\n"));
+        auto* area = a()->current_file_area();
+        auto f = area->ReadFile(nRecordNumber);
         auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f.unaligned_filename());
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
-          send_filename = PathFilePath(a()->temp_directory(), u.filename);
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f.unaligned_filename());
+          send_filename = PathFilePath(a()->temp_directory(), f.unaligned_filename());
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -514,7 +484,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         double percent;
         xymodem_send(send_filename.string(), &ok, &percent, true, true, true);
         if (ok) {
-          downloaded(u.filename, 0);
+          downloaded(f.aligned_filename(), 0);
         }
       }
     } else {

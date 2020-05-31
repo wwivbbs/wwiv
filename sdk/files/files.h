@@ -51,12 +51,15 @@ private:
 
 class FileRecord final {
 public:
-  explicit FileRecord(const uploadsrec& u) : u_(u) {};
+  explicit FileRecord(const uploadsrec& u) : u_(u) {}
+  FileRecord();
   ~FileRecord() = default;
 
   uploadsrec& u() { return u_; }
+  uint32_t numbytes() const { return u_.numbytes; }
 
   bool set_filename(const std::string& unaligned_filename);
+  bool set_description(const std::string& desc);
   std::string aligned_filename() const ;
   std::string unaligned_filename() const ;
 
@@ -105,6 +108,7 @@ public:
   FileAreaHeader& header() const;
 
   // File Dir Specific Operations
+  bool Save();
   bool Close();
   bool Lock();
   bool Unlock();
@@ -113,10 +117,10 @@ public:
   // File specific
   FileRecord ReadFile(int num);
   bool AddFile(FileRecord& f);
+  bool UpdateFile(FileRecord& f, int num);
   bool DeleteFile(int file_number);
 
 protected:
-  bool Save();
   std::filesystem::path path() const noexcept;
 
   // Not owned.

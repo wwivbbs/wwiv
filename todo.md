@@ -73,6 +73,13 @@
 * Make the emailmessage extend the message so most things are common
   between them.
 
+# File Areas
+***
+* get rid of a()->numf
+* contunue to use file sdk and not a()->download_filename_
+* cleanup char[] usage
+* get rid of samedrive logic in move_file_t, it's not needed
+
 ## Open Questions
 ***
 
