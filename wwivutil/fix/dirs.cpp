@@ -157,31 +157,31 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                     LOG(INFO) << "Unable to open file '" << dir_fn
                               << "', error:" << file.last_error();
                   }
-								}
-								if (modified) {
-									recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
-									recordFile.Write(&upload, sizeof(uploadsrec));
-								}
-							}
-							if (extDesc != nullptr) {
-								free(extDesc);
+                }
+                if (modified) {
+                  recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
+                  recordFile.Write(&upload, sizeof(uploadsrec));
+                }
+              }
+              if (extDesc != nullptr) {
+                free(extDesc);
                 extDesc = nullptr;
-							}
-						}
-						recordFile.Close();
-					}
-				} else {
+              }
+            }
+            recordFile.Close();
+          }
+        } else {
           LOG(INFO) << "Directory '" << directories[i].name << "' missing file: " << record_path;
-				}
-			}
-		} else if (directories[i].mask & mask_offline) {
+        }
+      }
+    } else if (directories[i].mask & mask_offline) {
       LOG(INFO) << "Skipping directory '" << directories[i].name << "' [OFFLINE]";
-		} else if (directories[i].mask & mask_cdrom) {
+    } else if (directories[i].mask & mask_cdrom) {
       LOG(INFO) << "Skipping directory '" << directories[i].name << "' [CDROM]";
-		} else {
+    } else {
       LOG(INFO) << "Skipping directory '" << directories[i].name << "' [UNKNOWN MASK]";
-		}
-	}
+    }
+  }
 }
 
 std::string FixDirectoriesCommand::GetUsage() const {

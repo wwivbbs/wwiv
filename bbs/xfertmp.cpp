@@ -924,7 +924,7 @@ void removefile() {
               }
             }
           }
-          if (f.u().mask & mask_extended) {
+          if (f.has_extended_description()) {
             delete_extended_description(f.aligned_filename());
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),

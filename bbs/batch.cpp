@@ -181,7 +181,7 @@ void didnt_upload(const batchrec& b) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
     return;  
   }
-  if (f.u().mask & mask_extended) {
+  if (f.has_extended_description()) {
     delete_extended_description(f.unaligned_filename());
   }
   area->DeleteFile(nRecNum);

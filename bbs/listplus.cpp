@@ -1254,9 +1254,9 @@ static int rename_filename(const std::string& file_name, int dn) {
         bout << "|#5Delete it? ";
         if (yesno()) {
           delete_extended_description(f.aligned_filename());
-          f.u().mask &= ~mask_extended;
+          f.set_extended_description(false);
         } else {
-          f.u().mask |= mask_extended;
+          f.set_extended_description(true);
           modify_extended_description(&ss, a()->directories[dn].name);
           if (!ss.empty()) {
             delete_extended_description(f.aligned_filename());
@@ -1267,15 +1267,15 @@ static int rename_filename(const std::string& file_name, int dn) {
         modify_extended_description(&ss, a()->directories[dn].name);
         if (!ss.empty()) {
           add_extended_description(f.aligned_filename(), ss);
-          f.u().mask |= mask_extended;
+          f.set_extended_description(true);
         } else {
-          f.u().mask &= ~mask_extended;
+          f.set_extended_description(false);
         }
       }
     } else if (!ss.empty()) {
-      f.u().mask |= mask_extended;
+      f.set_extended_description(true);
     } else {
-      f.u().mask &= ~mask_extended;
+      f.set_extended_description(false);
     }
     if (a()->current_file_area()->UpdateFile(f, i)) {
       a()->current_file_area()->Save();
@@ -1344,7 +1344,7 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        if (f.u().mask & mask_extended) {
+        if (f.has_extended_description()) {
           delete_extended_description(f.aligned_filename());
         }
         sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;

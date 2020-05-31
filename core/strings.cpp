@@ -205,12 +205,12 @@ void StringTrim(string* s) {
 }
 
 /**
-* Removes spaces from the beginning and the end of the string s.
+* Removes CF and LF from the beginning and the end of the string s.
 * @param s the string from which to remove spaces
 * @return s with spaces removed.
 */
 void StringTrimCRLF(string* s) {
-  string::size_type pos = s->find_first_not_of(DELIMS_CRLF);
+  auto pos = s->find_first_not_of(DELIMS_CRLF);
   s->erase(0, pos);
 
   pos = s->find_last_not_of(DELIMS_CRLF);

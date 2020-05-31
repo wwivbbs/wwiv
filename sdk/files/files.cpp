@@ -192,6 +192,26 @@ FileRecord::FileRecord() : FileRecord(uploadsrec{}) {
 }
 
 
+bool FileRecord::has_extended_description() const noexcept {
+  return mask(mask_extended);
+}
+
+void FileRecord::set_extended_description(bool b) {
+  set_mask(mask_extended, b);
+}
+
+void FileRecord::set_mask(int mask, bool on) {
+  if (on) {
+    u_.mask |= mask;
+  } else {
+    u_.mask &= ~mask;
+  }
+}
+
+bool FileRecord::mask(int mask) const {
+  return u_.mask & mask;
+}
+
 bool FileRecord::set_filename(const std::string& unaligned_filename) {
   if (unaligned_filename.size() > 12) {
     return false;

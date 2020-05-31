@@ -20,6 +20,7 @@
 
 #include "core/clock.h"
 #include "sdk/config.h"
+#include "sdk/files/file_record.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -54,24 +55,6 @@ public:
 private:
   std::string data_directory_;
   std::unique_ptr<core::Clock> clock_;
-};
-
-class FileRecord final {
-public:
-  explicit FileRecord(const uploadsrec& u) : u_(u) {}
-  FileRecord();
-  ~FileRecord() = default;
-
-  uploadsrec& u() { return u_; }
-  uint32_t numbytes() const { return u_.numbytes; }
-
-  bool set_filename(const std::string& unaligned_filename);
-  bool set_description(const std::string& desc);
-  std::string aligned_filename() const ;
-  std::string unaligned_filename() const ;
-
-private:
-  uploadsrec u_;
 };
 
 /**
@@ -140,7 +123,6 @@ protected:
   bool dirty_{false};
   bool open_{false};
   std::vector<uploadsrec> files_;
-  std::unique_ptr<core::Clock> clock_;
 
   std::unique_ptr<FileAreaHeader> header_;
 };

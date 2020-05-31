@@ -34,6 +34,8 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/files/files.h"
+
+#include "sdk/files/files_ext.h"
 #include "wwivutil/files/allow.h"
 
 using std::clog;
@@ -109,9 +111,9 @@ public:
   ListCommand()
     : UtilCommand("list", "Lists the files in an area") {}
 
-  virtual ~ListCommand() {}
+  virtual ~ListCommand() = default;
 
-  std::string GetUsage() const override {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   list [num]" << endl;
     return ss.str();
@@ -137,12 +139,14 @@ public:
     }
     sdk::files::FileApi api(config()->config()->datadir());
     const auto& dir = dirs.at(area_num);
-    auto area = api.Open(dirs.at(area_num));
+    auto area = api.Open(dir);
     if (!area) {
       LOG(ERROR) << "Unable to open area: #" << area_num << "; filename: " << dir.filename;
       return 1;
     }
-
+    wwiv::sdk::files::FileAreaExtendedDesc ext(&api, config()->config()->datadir(), dir,
+                                               area->number_of_files());
+    auto ext_avail = ext.Load();
     auto num_files = area->number_of_files();
     cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
     cout << std::endl;
@@ -159,6 +163,16 @@ public:
       cout << "#" << std::setw(3) << std::left << num << " "
            << std::setw(8) << f.unaligned_filename() << " "
            << f.u().description << std::endl;
+      if (ext_avail && f.has_extended_description()) {
+        auto o = ext.ReadExtendedAsLines(f);
+        if (!o) {
+          continue;
+        }
+        auto lines = o.value();
+        for(auto l : lines) {
+          cout << std::string(17, ' ') << StringTrim(l) << std::endl;
+        }
+      }
     }
     return 0;
   }
