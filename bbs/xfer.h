@@ -22,8 +22,6 @@
 #include "sdk/vardec.h"
 #include <string>
 
-void zap_ed_info();
-void get_ed_info();
 unsigned long bytes_to_k(unsigned long lBytes);
 int  check_batch_queue(const char *file_name);
 bool check_ul_event(int directory_num, uploadsrec * upload_record);
@@ -36,9 +34,6 @@ bool ratio_ok();
 bool dcs();
 void dliscan1(int directory_num);
 void dliscan();
-void add_extended_description(const std::string& file_name, const std::string& description);
-void delete_extended_description(const std::string&file_name);
-std::string read_extended_description(const std::string& file_name);
 void print_extended(const char *file_name, bool *abort, int numlist, int indent);
 void align(char *file_name);
 std::string aligns(const std::string& file_name);

@@ -49,9 +49,13 @@ public:
 
   // File specific
   bool AddExtended(const FileRecord& f, const std::string& text);
+  bool AddExtended(const std::string& file_name, const std::string& text);
   bool DeleteExtended(const FileRecord& f);
+  bool DeleteExtended(const std::string& file_name);
   std::optional<std::string> ReadExtended(const FileRecord& f);
+  std::optional<std::string> ReadExtended(const std::string& file_name);
   std::optional<std::vector<std::string>> ReadExtendedAsLines(const FileRecord& f);
+  std::optional<std::vector<std::string>> ReadExtendedAsLines(const std::string& file_name);
   bool UpdateExtended(const FileRecord& f, const std::string& text);
 
 protected:

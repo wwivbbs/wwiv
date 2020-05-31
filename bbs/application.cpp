@@ -948,7 +948,6 @@ int Application::Run(int argc, char* argv[]) {
       while (!hangup_ && usernum > 0) {
         CheckForHangup();
         filelist.clear();
-        zap_ed_info();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
         try {
           wwiv::menus::mainmenu();

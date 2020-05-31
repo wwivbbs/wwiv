@@ -288,28 +288,29 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
     case 'B':
     {
+      auto* area = a()->current_file_area();
       bout.nl();
-      string ss = read_extended_description(u.filename);
+      string ss = area->ReadExtendedDescriptionAsString(u.filename).value_or("");
       bout << "|#5Modify extended description? ";
       if (yesno()) {
         bout.nl();
         if (!ss.empty()) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            delete_extended_description(u.filename);
+            area->DeleteExtendedDescription(u.filename);
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
             modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
             if (!ss.empty()) {
-              delete_extended_description(u.filename);
-              add_extended_description(u.filename, ss);
+              area->DeleteExtendedDescription(u.filename);
+              area->AddExtendedDescription(u.filename, ss);
             }
           }
         } else {
           modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
-            add_extended_description(u.filename, ss);
+            area->AddExtendedDescription(u.filename, ss);
             u.mask |= mask_extended;
           } else {
             u.mask &= ~mask_extended;
@@ -334,7 +335,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {
-      delete_extended_description(u.filename);
+      a()->current_file_area()->DeleteExtendedDescription(u.filename);
     }
     t2u_error(file_name, "DOS error - File not found.");
     return 1;
@@ -344,7 +345,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     bout << "Please wait...\r\n";
     if (!check_ul_event(dn, &u)) {
       if (u.mask & mask_extended) {
-        delete_extended_description(u.filename);
+        a()->current_file_area()->DeleteExtendedDescription(u.filename);
       }
       t2u_error(file_name, "Failed upload event");
       return 1;

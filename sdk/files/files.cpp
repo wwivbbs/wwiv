@@ -263,7 +263,8 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const directoryrec&
 
 // Real constructor that does all of the work.
 FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& filename)
-    : api_(api), data_directory_(std::move(data_directory)), filename_(StrCat(filename, ".dir")) {
+    : api_(api), data_directory_(std::move(data_directory)),
+      base_filename_(filename), filename_(StrCat(filename, ".dir")) {
   DataFile<uploadsrec> file(path(), File::modeReadOnly | File::modeBinary);
   if (file) {
     if (file.ReadVector(files_)) {
@@ -278,7 +279,8 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& 
   header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
 
   // Load up extended descriptions
-  ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, filename_, number_of_files());
+  ext_desc();
+  //ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, base_filename_, number_of_files());
 }
 
 
@@ -384,9 +386,67 @@ std::optional<FileAreaExtendedDesc*> FileArea::ext_desc() {
     return std::nullopt;
   }
   if (!ext_desc_) {
-    ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, filename_, number_of_files());
+    ext_desc_ = std::make_unique<FileAreaExtendedDesc>(
+      api_, data_directory_, base_filename_, number_of_files());
   }
   return {ext_desc_.get()};
+}
+
+bool FileArea::AddExtendedDescription(FileRecord& f, int num, const std::string& text) {
+  const auto r = AddExtendedDescription(f.aligned_filename(), text);
+  f.set_extended_description(true);
+  if (num > 0) {
+    UpdateFile(f, num);
+  }
+  return r;
+}
+
+bool FileArea::AddExtendedDescription(const std::string& file_name, const std::string& text) {
+  auto o = ext_desc();
+  if (!o) {
+    return false;
+  }
+  return o.value()->AddExtended(file_name, text);
+}
+
+bool FileArea::DeleteExtendedDescription(FileRecord& f, int num) {
+  const auto result = DeleteExtendedDescription(f.aligned_filename());
+  f.set_extended_description(false);
+  if (num > 0) {
+    UpdateFile(f, num);
+  }
+  return result;
+}
+
+bool FileArea::DeleteExtendedDescription(const std::string& file_name) {
+  auto o = ext_desc();
+  if (!o) {
+    return false;
+  }
+  return o.value()->DeleteExtended(file_name);
+}
+
+std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(FileRecord& f) {
+  return ReadExtendedDescriptionAsString(f.aligned_filename());
+}
+
+std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(
+    const std::string& aligned_name) {
+  auto o = ext_desc();
+  if (!o) {
+    return std::nullopt;
+  }
+  return o.value()->ReadExtended(aligned_name);
+}
+
+std::optional<int> FileArea::FindFile(const FileRecord& f) {
+  for (auto i = 0; i < wwiv::stl::ssize(files_); i++) {
+    const auto& c = files_.at(i);
+    if (f.aligned_filename() == c.filename) {
+      return {i};
+    }
+  }
+  return std::nullopt;
 }
 
 

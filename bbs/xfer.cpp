@@ -56,62 +56,8 @@ static const int INDENTION = 24;
 int foundany;
 daten_t this_date;
 
-static int ed_num, ed_got;
-static ext_desc_rec *ed_info;
-
 using std::string;
 using std::vector;
-
-void zap_ed_info() {
-  if (ed_info) {
-    free(ed_info);
-    ed_info = nullptr;
-  }
-  ed_num = 0;
-  ed_got = 0;
-}
-
-void get_ed_info() {
-  if (ed_got) {
-    return;
-  }
-
-  zap_ed_info();
-  ed_got = 1;
-
-  if (!a()->current_file_area()->number_of_files()) {
-    return;
-  }
-
-  long lCurFilePos = 0;
-  File fileExtDescr(a()->extended_description_filename_);
-  if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
-    auto file_size = fileExtDescr.length();
-    if (file_size > 0) {
-      ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(a()->current_file_area()->number_of_files()) * sizeof(ext_desc_rec)));
-      if (ed_info == nullptr) {
-        fileExtDescr.Close();
-        return;
-      }
-      ed_num = 0;
-      while (lCurFilePos < file_size && ed_num < a()->current_file_area()->number_of_files()) {
-        fileExtDescr.Seek(lCurFilePos, File::Whence::begin);
-        ext_desc_type ed;
-        int num_read = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-        if (num_read == sizeof(ext_desc_type)) {
-          strcpy(ed_info[ed_num].name, ed.name);
-          ed_info[ed_num].offset = lCurFilePos;
-          lCurFilePos += static_cast<long>(ed.len) + sizeof(ext_desc_type);
-          ed_num++;
-        }
-      }
-      if (lCurFilePos < file_size) {
-        ed_got = 2;
-      }
-    }
-    fileExtDescr.Close();
-  }
-}
 
 unsigned long bytes_to_k(unsigned long lBytes) {
   return lBytes ? static_cast<unsigned long>((lBytes + 1023) / 1024) : 0L;
@@ -315,7 +261,7 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  const std::string basename = a()->directories[directory_num].filename;
+  const std::string basename{a()->directories[directory_num].filename};
 
   if (!a()->fileapi()->Exist(basename)) {
     if (!a()->fileapi()->Create(basename)) {
@@ -324,13 +270,7 @@ void dliscan1(int directory_num) {
   }
 
   auto area = a()->fileapi()->Open(a()->directories[directory_num]);
-
   this_date = area->header().daten();
-
-  a()->extended_description_filename_ = 
-      FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".ext"));
-  zap_ed_info();
-
   a()->set_current_file_area(std::move(area));
 }
 
@@ -338,117 +278,19 @@ void dliscan() {
   dliscan1(a()->current_user_dir().subnum);
 }
 
-void add_extended_description(const string& file_name, const string& description) {
-  ext_desc_type ed{};
-
-  to_char_array(ed.name, file_name);
-  ed.len = static_cast<int16_t>(description.size());
-
-  File file(a()->extended_description_filename_);
-  file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  file.Seek(0L, File::Whence::end);
-  file.Write(&ed, sizeof(ext_desc_type));
-  file.Write(description.c_str(), ed.len);
-  file.Close();
-
-  zap_ed_info();
-}
-
-void delete_extended_description(const string& file_name) {
-  ext_desc_type ed{};
-
-  File fileExtDescr(a()->extended_description_filename_);
-  fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  auto file_size = fileExtDescr.length();
-  long r = 0, w = 0;
-  while (r < file_size) {
-    fileExtDescr.Seek(r, File::Whence::begin);
-    fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-    if (ed.len < 10000) {
-      auto ss = std::make_unique<char[]>(ed.len);
-      fileExtDescr.Read(ss.get(), ed.len);
-      if (file_name != ed.name) {
-        if (r != w) {
-          fileExtDescr.Seek(w, File::Whence::begin);
-          fileExtDescr.Write(&ed, sizeof(ext_desc_type));
-          fileExtDescr.Write(ss.get(), ed.len);
-        }
-        w += sizeof(ext_desc_type) + ed.len;
-      }
-    }
-    r += sizeof(ext_desc_type) + ed.len;
-  }
-  fileExtDescr.set_length(w);
-  fileExtDescr.Close();
-  zap_ed_info();
-}
-
-string read_extended_description(const string& file_name) {
-  get_ed_info();
-
-  if (ed_got && ed_info) {
-    for (int i = 0; i < ed_num; i++) {
-      if (file_name == ed_info[i].name) {
-        File fileExtDescr(a()->extended_description_filename_);
-        if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
-          return nullptr;
-        }
-        fileExtDescr.Seek(ed_info[i].offset, File::Whence::begin);
-        ext_desc_type ed;
-        int num_read = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-        if (num_read == sizeof(ext_desc_type) && file_name == ed.name) {
-          string ss;
-          ss.resize(ed.len);
-          fileExtDescr.Read(&ss[0], ed.len);
-          fileExtDescr.Close();
-          return ss;
-        } else {
-          zap_ed_info();
-          fileExtDescr.Close();
-          break;
-        }
-      }
-    }
-  }
-  if (ed_got != 1) {
-    File fileExtDescr(a()->extended_description_filename_);
-    if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
-      auto file_size = fileExtDescr.length();
-      long lCurPos = 0;
-      while (lCurPos < file_size) {
-        fileExtDescr.Seek(lCurPos, File::Whence::begin);
-        ext_desc_type ed;
-        lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
-        if (file_name == ed.name) {
-          string ss;
-          ss.resize(ed.len);
-          fileExtDescr.Read(&ss[0], ed.len);
-          fileExtDescr.Close();
-          return ss;
-        } else {
-          lCurPos += static_cast<long>(ed.len);
-        }
-      }
-      fileExtDescr.Close();
-    }
-  }
-  return "";
-}
-
 void print_extended(const char *file_name, bool *abort, int numlist, int indent) {
   bool next = false;
   int numl = 0;
   int cpos = 0;
-  char ch, s[81];
-  int i;
-
-  string ss = read_extended_description(file_name);
+  char s[81];
+  
+  string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
   if (!ss.empty()) {
-    ch = (indent != 2) ? 10 : 0;
+    char ch = (indent != 2) ? 10 : 0;
     while (ss[cpos] && !(*abort) && numl < numlist) {
       if (ch == SOFTRETURN) {
         if (indent == 1) {
-          for (i = 0; i < INDENTION; i++) {
+          for (int i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
               s[i] = (okansi() ? '\xBA' : ' '); // was |
             } else {
@@ -461,7 +303,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
           bout.Color(1);
         } else {
           if (indent == 2) {
-            for (i = 0; i < 13; i++) {
+            for (int i = 0; i < 13; i++) {
               s[i] = SPACE;
             }
             s[13] = '\0';
@@ -593,7 +435,7 @@ std::string file_mask() {
 }
 
 std::string file_mask(const std::string& prompt) {
-  if (prompt.empty()) {
+  if (!prompt.empty()) {
     bout.nl();
     bout << prompt;
   }

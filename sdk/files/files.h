@@ -115,6 +115,15 @@ public:
 
   // Extended Descriptions
   std::optional<FileAreaExtendedDesc*> ext_desc();
+  // Adds an extended description to file f at pos num.  If num is -1
+  // then don't update f.
+  bool AddExtendedDescription(FileRecord& f, int num, const std::string& text);
+  bool AddExtendedDescription(const std::string& file_name, const std::string& text);
+  bool DeleteExtendedDescription(FileRecord& f, int num);
+  bool DeleteExtendedDescription(const std::string& file_name);
+  std::optional<std::string> ReadExtendedDescriptionAsString(FileRecord& f);
+  std::optional<std::string> ReadExtendedDescriptionAsString(const std::string& aligned_name);
+  std::optional<int> FindFile(const FileRecord& f);
 
 protected:
   [[nodiscard]] std::filesystem::path path() const noexcept;
@@ -122,6 +131,7 @@ protected:
   // Not owned.
   FileApi* api_;
   const std::string data_directory_;
+  const std::string base_filename_;
   const std::string filename_;
   directoryrec dir_{};
 

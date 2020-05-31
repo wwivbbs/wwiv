@@ -93,10 +93,14 @@ int FileAreaExtendedDesc::number_of_ext_descriptions() {
 }
 
 bool FileAreaExtendedDesc::AddExtended(const FileRecord& f, const std::string& text) {
+  return AddExtended(f.aligned_filename(), text);
+}
+
+bool FileAreaExtendedDesc::AddExtended(const std::string& file_name, const std::string& text) {
   Close();
 
   ext_desc_type ed{};
-  to_char_array(ed.name, f.aligned_filename());
+  to_char_array(ed.name, file_name);
   ed.len = static_cast<int16_t>(text.size());
 
   {
@@ -113,6 +117,12 @@ bool FileAreaExtendedDesc::AddExtended(const FileRecord& f, const std::string& t
 }
 
 bool FileAreaExtendedDesc::DeleteExtended(const FileRecord& f) {
+  const auto file_name = f.aligned_filename();
+  return DeleteExtended(file_name);
+}
+
+bool FileAreaExtendedDesc::DeleteExtended(const std::string& file_name) {
+
   ext_desc_type ed{};
 
   File file(path());
@@ -120,7 +130,6 @@ bool FileAreaExtendedDesc::DeleteExtended(const FileRecord& f) {
     return false;
   }
   const auto file_size = file.length();
-  const auto file_name = f.aligned_filename();
   File::size_type r = 0, w = 0;
   while (r < file_size) {
     file.Seek(r, File::Whence::begin);
@@ -147,12 +156,15 @@ bool FileAreaExtendedDesc::DeleteExtended(const FileRecord& f) {
 }
 
 std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const FileRecord& f) {
-  if (!open_) {
+  return ReadExtended(f.aligned_filename());
+}
+
+std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const std::string& file_name) {
+    if (!open_) {
     if (!Load()) {
       return std::nullopt;
     }
   }
-  const auto file_name = f.aligned_filename();
   for (const auto& ext : ext_) {
     if (file_name != ext.name) {
       continue;
@@ -172,6 +184,8 @@ std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const FileRecord& 
     ss.resize(ed.len);
     file.Read(&ss[0], ed.len);
     file.Close();
+
+    StringTrimEnd(&ss);
     return {ss};
   }
   return std::nullopt;
@@ -179,7 +193,12 @@ std::optional<std::string> FileAreaExtendedDesc::ReadExtended(const FileRecord& 
 
 std::optional<std::vector<std::string>> FileAreaExtendedDesc::ReadExtendedAsLines(
     const FileRecord& f) {
-  auto o = ReadExtended(f);
+  return ReadExtendedAsLines(f.aligned_filename());
+}
+
+std::optional<std::vector<std::string>> FileAreaExtendedDesc::ReadExtendedAsLines(
+    const std::string& file_name) {
+  auto o = ReadExtended(file_name);
   if (!o) {
     return std::nullopt;
   }

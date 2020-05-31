@@ -219,7 +219,7 @@ void normalupload(int dn) {
       string ext_desc;
       modify_extended_description(&ext_desc, a()->directories[dn].name);
       if (!ext_desc.empty()) {
-        add_extended_description(u.filename, ext_desc);
+        a()->current_file_area()->AddExtendedDescription(u.filename, ext_desc);
         u.mask |= mask_extended;
       }
       bout.nl();
@@ -238,7 +238,7 @@ void normalupload(int dn) {
             bout.nl(2);
             bout << "OS error - File not found.\r\n\n";
             if (u.mask & mask_extended) {
-              delete_extended_description(u.filename);
+              a()->current_file_area()->DeleteExtendedDescription(u.filename);
             }
           }
           if (ok && !a()->upload_cmd.empty()) {
@@ -246,7 +246,7 @@ void normalupload(int dn) {
             bout << "Please wait...\r\n";
             if (!check_ul_event(dn, &u)) {
               if (u.mask & mask_extended) {
-                delete_extended_description(u.filename);
+                a()->current_file_area()->DeleteExtendedDescription(u.filename);
               }
               ok = 0;
             } else {
@@ -292,7 +292,7 @@ void normalupload(int dn) {
         bout.nl(2);
         bout << "File transmission aborted.\r\n\n";
         if (u.mask & mask_extended) {
-          delete_extended_description(u.filename);
+          a()->current_file_area()->DeleteExtendedDescription(u.filename);
         }
       }
     }

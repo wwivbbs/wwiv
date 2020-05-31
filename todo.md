@@ -79,6 +79,8 @@
 * get rid of samedrive logic in move_file_t, it's not needed
 * Add support for extended descriptions into the sdk (read_extended_description for example)
 * support moving file in sdk.
+* make DeleteFile delete ext desc too
+* Add version of DeleteFile that checks filename against position
 
 ## Open Questions
 ***

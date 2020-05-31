@@ -481,7 +481,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
 
   int will_fit = 80 - std::abs(indent) - 2;
 
-  string ss = read_extended_description(file_name);
+  string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
 
   if (ss.empty()) {
     return 0;
@@ -577,7 +577,7 @@ int check_lines_needed(uploadsrec * u) {
 
     string ss;
     if (ext_is_on && mask_extended & u->mask) {
-      ss = read_extended_description(u->filename);
+      ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
     }
 
     if (!ss.empty()) {
@@ -1179,7 +1179,7 @@ void config_file_list() {
 }
 
 static int rename_filename(const std::string& file_name, int dn) {
-  char s1[81], s2[81], ch;
+  char s1[81], s2[81];
   int ret = 1;
 
   dliscan1(dn);
@@ -1195,12 +1195,14 @@ static int rename_filename(const std::string& file_name, int dn) {
   int i = recno(orig_aligned_filename);
   while (i > 0) {
     int cp = i;
-    auto f = a()->current_file_area()->ReadFile(i);
+    int current_file_position = i;
+    auto* area = a()->current_file_area();
+    auto f = area->ReadFile(current_file_position);
     bout.nl();
     printfileinfo(&f.u(), dn);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
-    ch = ynq();
+    char ch = ynq();
     if (ch == 'Q') {
       ret = 0;
       break;
@@ -1224,15 +1226,18 @@ static int rename_filename(const std::string& file_name, int dn) {
         if (ListPlusExist(s1)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
+          // TODO(rushfan): This looks completely broken with s1/s2/etc
           strcat(s2, f.aligned_filename().c_str());
           File::Rename(s2, s1);
           if (ListPlusExist(s1)) {
-            auto ss = read_extended_description(f.aligned_filename());
+            auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
             if (!ss.empty()) {
-              delete_extended_description(f.aligned_filename());
-              add_extended_description(new_filename, ss);
+              // TODO(rushfan): Display error if these fail?
+              area->DeleteExtendedDescription(f, current_file_position);
+              area->AddExtendedDescription(new_filename, ss);
             }
             f.set_filename(new_filename);
+            f.set_extended_description(!ss.empty());
           } else {
             bout << "Bad filename.\r\n";
           }
@@ -1245,7 +1250,7 @@ static int rename_filename(const std::string& file_name, int dn) {
     if (!desc.empty()) {
       f.set_description(desc);
     }
-    auto ss = read_extended_description(f.aligned_filename());
+    auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
@@ -1253,20 +1258,20 @@ static int rename_filename(const std::string& file_name, int dn) {
       if (!ss.empty()) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          delete_extended_description(f.aligned_filename());
+          area->DeleteExtendedDescription(f, current_file_position);
           f.set_extended_description(false);
         } else {
           f.set_extended_description(true);
           modify_extended_description(&ss, a()->directories[dn].name);
           if (!ss.empty()) {
-            delete_extended_description(f.aligned_filename());
-            add_extended_description(f.aligned_filename(), ss);
+            area->DeleteExtendedDescription(f, current_file_position);
+            area->AddExtendedDescription(f, current_file_position, ss);
           }
         }
       } else {
         modify_extended_description(&ss, a()->directories[dn].name);
         if (!ss.empty()) {
-          add_extended_description(f.aligned_filename(), ss);
+          area->AddExtendedDescription(f, current_file_position, ss);
           f.set_extended_description(true);
         } else {
           f.set_extended_description(false);
@@ -1345,7 +1350,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           }
         }
         if (f.has_extended_description()) {
-          delete_extended_description(f.aligned_filename());
+          a()->current_file_area()->DeleteExtendedDescription(f, i);
         }
         sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;
         if (a()->current_file_area()->DeleteFile(i)) {
@@ -1461,20 +1466,27 @@ static int move_filename(const char *file_name, int dn) {
         f.u().daten = daten_t_now();
       }
       --cp;
+      auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
+      if (!ss.empty()) {
+        a()->current_file_area()->DeleteExtendedDescription(f, nRecNum);
+      }
       if (a()->current_file_area()->DeleteFile(nRecNum)) {
         a()->current_file_area()->Save();
       }
-      auto ss = read_extended_description(f.aligned_filename());
-      if (!ss.empty()) {
-        delete_extended_description(f.aligned_filename());
-      }
       auto dest_fn = StrCat(a()->directories[nDestDirNum].path, f.unaligned_filename());
       dliscan1(nDestDirNum);
-      if (!a()->current_file_area()->AddFile(f)) {
-        a()->current_file_area()->Save();
+      auto* area = a()->current_file_area();
+      if (area->AddFile(f)) {
+        area->Save();
       }
+      auto current_file_position = area->FindFile(f);
       if (!ss.empty()) {
-        add_extended_description(f.aligned_filename(), ss);
+        f.set_extended_description(true);
+        if (current_file_position.has_value()) {
+          area->AddExtendedDescription(f, current_file_position.value(), ss);
+        } else {
+          area->AddExtendedDescription(f.aligned_filename(), ss);
+        }
       }
       if (!iequals(src_fn, dest_fn) && ListPlusExist(src_fn)) {
         StringRemoveWhitespace(&src_fn);

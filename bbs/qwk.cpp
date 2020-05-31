@@ -1003,7 +1003,7 @@ void qwk_nscan() {
 #ifndef HUGE_TRAN
             if (u.mask & mask_extended) {
               int pos = 0;
-              string ext = read_extended_description(u.filename);
+              string ext = a()->current_file_area()->ReadExtentedDescription(u.filename).value_or("");
 
               if (!ext.empty(0)) {
                 int spos = 21, x;

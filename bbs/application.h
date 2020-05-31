@@ -370,7 +370,6 @@ public:
   std::string temp_directory_;
   std::string batch_directory_;
   uint8_t primary_port_{1};
-  std::string extended_description_filename_;
   std::string dsz_logfile_name_;
 
   uint16_t usernum{};

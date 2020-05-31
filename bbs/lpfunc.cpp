@@ -582,7 +582,7 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
     // extended description, then it will properly find the search
     string buff;
     if (sr->search_extended && ur->mask & mask_extended) {
-      buff = read_extended_description(ur->filename);
+      buff = a()->current_file_area()->ReadExtendedDescriptionAsString(ur->filename).value_or("");
     }
 
     desc_len = strlen(ur->description);

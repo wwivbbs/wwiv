@@ -182,7 +182,7 @@ void didnt_upload(const batchrec& b) {
     return;  
   }
   if (f.has_extended_description()) {
-    delete_extended_description(f.unaligned_filename());
+    area->DeleteExtendedDescription(f, nRecNum);
   }
   area->DeleteFile(nRecNum);
   area->Save();

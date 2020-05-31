@@ -807,12 +807,12 @@ void move_file_t() {
           f.u().daten = daten_t_now();
         }
         --nCurPos;
+        auto ext_desc = a()->current_file_area()->ReadExtendedDescriptionAsString(f);
+        if (ext_desc) {
+          a()->current_file_area()->DeleteExtendedDescription(f, nTempRecordNum);
+        }
         if (a()->current_file_area()->DeleteFile(nTempRecordNum)) {
           a()->current_file_area()->Save();
-        }
-        auto ext_desc = read_extended_description(f.aligned_filename());
-        if (!ext_desc.empty()) {
-          delete_extended_description(f.aligned_filename());
         }
         s2 = StrCat(a()->directories[d1].path, f.unaligned_filename());
         StringRemoveWhitespace(&s2);
@@ -821,31 +821,14 @@ void move_file_t() {
         if (a()->current_file_area()->AddFile(f)) {
           a()->current_file_area()->Save();
         }
-        if (!ext_desc.empty()) {
-          add_extended_description(f.aligned_filename(), ext_desc);
+        if (ext_desc) {
+          const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
+          a()->current_file_area()->AddExtendedDescription(f, pos, ext_desc.value());
         }
         StringRemoveWhitespace(&s1);
         StringRemoveWhitespace(&s2);
         if (!iequals(s1, s2) && File::Exists(s1)) {
-          bool bSameDrive = false;
-          if (s1[1] != ':' && s2[1] != ':') {
-            bSameDrive = true;
-          }
-          if (s1[1] == ':' && s2[1] == ':' && s1[0] == s2[0]) {
-            bSameDrive = true;
-          }
-          if (bSameDrive) {
-            File::Rename(s1, s2);
-            if (File::Exists(s2)) {
-              File::Remove(s1);
-            } else {
-              File::Copy(s1, s2);
-              File::Remove(s1);
-            }
-          } else {
-            File::Copy(s1, s2);
-            File::Remove(s1);
-          }
+          File::Rename(s1, s2);
           remlist(a()->batch().entry[nCurBatchPos].filename);
           didnt_upload(a()->batch().entry[nCurBatchPos]);
           delbatch(nCurBatchPos);
@@ -925,7 +908,7 @@ void removefile() {
             }
           }
           if (f.has_extended_description()) {
-            delete_extended_description(f.aligned_filename());
+            a()->current_file_area()->DeleteExtendedDescription(f, i);
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
                                     a()->directories[a()->current_user_dir().subnum].name);

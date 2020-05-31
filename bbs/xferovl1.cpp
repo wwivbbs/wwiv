@@ -236,11 +236,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
     sprintf(s, "%s%s", a()->temp_directory().c_str(), DESC_SDI);
   }
   if (File::Exists(s)) {
+    // TODO(rushfan): Change to TextFile::ReadTextIntoVector and parse that way.
     bout.nl();
     bout << "|#9Reading in |#2" << stripfn(s) << "|#9 as extended description...";
-    string ss = read_extended_description(u->filename);
+    string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
     if (!ss.empty()) {
-      delete_extended_description(u->filename);
+      a()->current_file_area()->DeleteExtendedDescription(u->filename);
     }
     if ((b = static_cast<char *>(BbsAllocA(a()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
@@ -282,7 +283,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
           ss[i] = '\x20';
         }
       }
-      add_extended_description(u->filename, ss);
+      a()->current_file_area()->AddExtendedDescription(u->filename, ss);
       u->mask |= mask_extended;
     }
     free(b);
@@ -558,14 +559,8 @@ void tag_files(bool& need_title) {
         bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
         bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
         if (f.u.mask & mask_extended) {
-          to_char_array(s1, a()->extended_description_filename_);
-          a()->extended_description_filename_ = 
-              FilePath(a()->config()->datadir(), StrCat(a()->directories[f.directory].filename, ".ext"));
-          zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
           print_extended(f.u.filename, &abort, a()->max_extend_lines, 2);
-          zap_ed_info();
-          a()->extended_description_filename_ = s1;
         }
         bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
         bout << "|#1Apprx. time: |#2" << ctim(std::lround(d)) << wwiv::endl;
@@ -1105,7 +1100,7 @@ void removefilesnotthere(int dn, int *autodel) {
           *autodel = 1;
         }
         if (f.has_extended_description()) {
-          delete_extended_description(f.aligned_filename());
+          a()->current_file_area()->DeleteExtendedDescription(f, i);
         }
         sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
                    << a()->directories[dn].name;

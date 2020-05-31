@@ -135,21 +135,23 @@ void move_file() {
         f.u().daten = daten_t_now();
       }
       --nCurrentPos;
-      if (a()->current_file_area()->DeleteFile(nCurRecNum)) {
-        a()->current_file_area()->Save();
+      auto* area = a()->current_file_area();
+      if (area->DeleteFile(nCurRecNum)) {
+        area->Save();
       }
-      string ss = read_extended_description(f.aligned_filename());
+      string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
       if (!ss.empty()) {
-        delete_extended_description(f.aligned_filename());
+        area->DeleteExtendedDescription(f.aligned_filename());
       }
 
       dliscan1(d1);
       auto dest_fn = StrCat(a()->directories[d1].path, f.unaligned_filename());
-      if (a()->current_file_area()->AddFile(f)) {
-        a()->current_file_area()->Save();
+      if (area->AddFile(f)) {
+        area->Save();
       }
       if (!ss.empty()) {
-        add_extended_description(f.aligned_filename(), ss);
+        const auto pos = area->FindFile(f).value_or(-1);
+        area->AddExtendedDescription(f, pos, ss);
       }
       StringRemoveWhitespace(&src_fn);
       StringRemoveWhitespace(&dest_fn);
@@ -244,10 +246,12 @@ void rename_file() {
           StringRemoveWhitespace(s2);
           File::Rename(s2, s1);
           if (File::Exists(s1)) {
-            string ss = read_extended_description(f.aligned_filename());
+            auto* area = a()->current_file_area();
+            string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
             if (!ss.empty()) {
-              delete_extended_description(f.aligned_filename());
-              add_extended_description(s, ss);
+              area->DeleteExtendedDescription(f, nCurRecNum);
+              area->AddExtendedDescription(s, ss);
+              f.set_extended_description(true);
             }
             f.set_filename(s);
           } else {
@@ -261,7 +265,8 @@ void rename_file() {
     if (!desc.empty()) {
       f.set_description(desc);
     }
-    string ss = read_extended_description(f.aligned_filename());
+    auto* area = a()->current_file_area();
+    string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
@@ -269,29 +274,29 @@ void rename_file() {
       if (!ss.empty()) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          delete_extended_description(f.aligned_filename());
-          f.u().mask &= ~mask_extended;
+          area->DeleteExtendedDescription(f, nCurRecNum);
+          f.set_extended_description(false);
         } else {
-          f.u().mask |= mask_extended;
+          f.set_extended_description(true);
           modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
-            delete_extended_description(f.aligned_filename());
-            add_extended_description(f.aligned_filename(), ss);
+            area->DeleteExtendedDescription(f, nCurRecNum);
+            area->AddExtendedDescription(f, nCurRecNum, ss);
           }
         }
       } else {
         modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
         if (!ss.empty()) {
-          add_extended_description(f.aligned_filename(), ss);
-          f.u().mask |= mask_extended;
+          area->AddExtendedDescription(f, nCurRecNum, ss);
+          f.set_extended_description(true);
         } else {
-          f.u().mask &= ~mask_extended;
+          f.set_extended_description(false);
         }
       }
     } else if (!ss.empty()) {
-      f.u().mask |= mask_extended;
+      f.set_extended_description(true);
     } else {
-      f.u().mask &= ~mask_extended;
+      f.set_extended_description(false);
     }
     if (a()->current_file_area()->UpdateFile(f, nRecNum)) {
       a()->current_file_area()->Save();
@@ -479,8 +484,8 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
             auto f = a()->current_file_area()->ReadFile(1);
             if (iequals(last_fn, f.aligned_filename())) {
               add_to_file_database(f.aligned_filename());
-              add_extended_description(last_fn, ext);
-              f.u().mask |= mask_extended;
+              a()->current_file_area()->AddExtendedDescription(f, 1, ext);
+              f.set_extended_description(true);
               if (a()->current_file_area()->UpdateFile(f, 1)) {
                 a()->current_file_area()->Save();
               }
@@ -510,8 +515,8 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
       auto f = a()->current_file_area()->ReadFile(1);
       if (iequals(last_fn, f.aligned_filename())) {
         add_to_file_database(f.aligned_filename());
-        add_extended_description(last_fn, ext);
-        f.u().mask |= mask_extended;
+        a()->current_file_area()->AddExtendedDescription(f, 1, ext);
+        f.set_extended_description(true);
         if (a()->current_file_area()->UpdateFile(f, 1)) {
           a()->current_file_area()->Save();
         }
