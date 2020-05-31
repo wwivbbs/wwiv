@@ -47,6 +47,8 @@
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/files/files.h"
+
 #include <cmath>
 #include <memory>
 #include <string>
@@ -307,9 +309,8 @@ int read_idz_all() {
 }
 
 int read_idz(int mode, int tempdir) {
-  int i, count = 0;
+  int count = 0;
   bool abort = false;
-  uploadsrec u;
 
   std::unique_ptr<TempDisablePause> disable_pause;
   std::string s = "*.*";
@@ -325,28 +326,27 @@ int read_idz(int mode, int tempdir) {
   bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
                                     a()->directories[a()->udir[tempdir].subnum].name,
                                     a()->udir[tempdir].keys);
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = 1; (i <= a()->numf) && (!a()->hangup_) && !abort; i++) {
-    FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    if ((compare(s.c_str(), u.filename)) &&
-        (strstr(u.filename, ".COM") == nullptr) &&
-        (strstr(u.filename, ".EXE") == nullptr)) {
+  auto* area = a()->current_file_area();
+  for (int i = 1; i <= a()->numf && !a()->hangup_ && !abort; i++) {
+    auto f = area->ReadFile(i);
+    if ((compare(s.c_str(), f.aligned_filename().c_str())) &&
+        (strstr(f.aligned_filename().c_str(), ".COM") == nullptr) &&
+        (strstr(f.aligned_filename().c_str(), ".EXE") == nullptr)) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      const auto file = PathFilePath(File::current_directory(), stripfn(u.filename));
+      const auto file = PathFilePath(File::current_directory(), 
+        stripfn(f.unaligned_filename()));
       a()->CdHome();
       if (!File::Exists(file)) {
-        if (get_file_idz(&u, a()->udir[tempdir].subnum)) {
+        if (get_file_idz(&f.u(), a()->udir[tempdir].subnum)) {
           count++;
         }
-        FileAreaSetRecord(fileDownload, i);
-        fileDownload.Write(&u, sizeof(uploadsrec));
+        if (area->UpdateFile(f, i)) {
+          area->Save();
+        }
       }
     }
     checka(&abort);
   }
-  fileDownload.Close();
   if (mode) {
     a()->UpdateTopScreen();
   }
@@ -663,7 +663,6 @@ void tag_files(bool& need_title) {
 
 
 int add_batch(char *description, const char *file_name, int dn, long fs) {
-  char ch;
   char s1[81], s2[81];
   int i;
 
@@ -673,7 +672,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
 
   double t = 0.0;
   if (a()->modem_speed_) {
-    t = (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs));
+    t = (12.656) / static_cast<double>(a()->modem_speed_) * static_cast<double>(fs);
   }
 
   if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
@@ -682,70 +681,68 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
   } else {
     if (dn == -1) {
       return 0;
-    } else {
-      for (i = 0; i < wwiv::strings::ssize(description); i++) {
-        if (description[i] == RETURN) {
-          description[i] = SPACE;
-        }
-      }
-      bout.backline();
-      bout << fmt::sprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
-                                        bytes_to_k(fs), stripcolors(description));
-      ch = onek_ncr("QYN\r");
-      bout.backline();
-      if (to_upper_case<char>(ch) == 'Y') {
-        if (a()->directories[dn].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
-          sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
-          if (!File::Exists(s1)) {
-            if (!File::Copy(s2, s1)) {
-              bout << "|#6 file unavailable... press any key.";
-              bout.getkey();
-            }
-            bout.backline();
-            bout.clreol();
-          }
-        } else {
-          sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
-          StringRemoveWhitespace(s2);
-          if ((!File::Exists(s2)) && (!so())) {
-            bout << "\r";
-            bout.clreol();
-            bout << "|#6 file unavailable... press any key.";
-            bout.getkey();
-            bout << "\r";
-            bout.clreol();
-            return 0;
-          }
-        }
-        batchrec b{};
-        strcpy(b.filename, file_name);
-        b.dir = static_cast<int16_t>(dn);
-        b.time = static_cast<float>(t);
-        b.sending = true;
-        b.len = fs;
-        bout << "\r";
-        const string bt = ctim(std::lround(b.time));
-        bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                     a()->batch().entry.size() + 1, b.filename, b.len,
-                     bt.c_str(),
-                     a()->directories[b.dir].name);
-        a()->batch().entry.emplace_back(b);
-        bout << "\r";
-        bout << "|#5    Continue search? ";
-        ch = onek_ncr("YN\r");
-        if (to_upper_case<char>(ch) == 'N') {
-          return -3;
-        } else {
-          return 1;
-        }
-      } else if (ch == 'Q') {
-        bout.backline();
-        return -3;
-      } else {
-        bout.backline();
+    }
+    for (i = 0; i < wwiv::strings::ssize(description); i++) {
+      if (description[i] == RETURN) {
+        description[i] = SPACE;
       }
     }
+    bout.backline();
+    bout << fmt::sprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
+                         bytes_to_k(fs), stripcolors(description));
+    char ch = onek_ncr("QYN\r");
+    bout.backline();
+    if (to_upper_case<char>(ch) == 'Y') {
+      if (a()->directories[dn].mask & mask_cdrom) {
+        sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
+        sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
+        if (!File::Exists(s1)) {
+          if (!File::Copy(s2, s1)) {
+            bout << "|#6 file unavailable... press any key.";
+            bout.getkey();
+          }
+          bout.backline();
+          bout.clreol();
+        }
+      } else {
+        sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
+        StringRemoveWhitespace(s2);
+        if (!File::Exists(s2) && !so()) {
+          bout << "\r";
+          bout.clreol();
+          bout << "|#6 file unavailable... press any key.";
+          bout.getkey();
+          bout << "\r";
+          bout.clreol();
+          return 0;
+        }
+      }
+      batchrec b{};
+      strcpy(b.filename, file_name);
+      b.dir = static_cast<int16_t>(dn);
+      b.time = static_cast<float>(t);
+      b.sending = true;
+      b.len = fs;
+      bout << "\r";
+      const string bt = ctim(std::lround(b.time));
+      bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
+                           a()->batch().entry.size() + 1, b.filename, b.len,
+                           bt.c_str(),
+                           a()->directories[b.dir].name);
+      a()->batch().entry.emplace_back(b);
+      bout << "\r";
+      bout << "|#5    Continue search? ";
+      ch = onek_ncr("YN\r");
+      if (to_upper_case<char>(ch) == 'N') {
+        return -3;
+      }
+      return 1;
+    }
+    if (ch == 'Q') {
+      bout.backline();
+      return -3;
+    }
+    bout.backline();
   }
   return 0;
 }
@@ -754,7 +751,6 @@ int try_to_download(const char *file_mask, int dn) {
   int rtn;
   bool abort = false;
   bool ok = false;
-  uploadsrec u;
   char s1[81], s3[81];
 
   dliscan1(dn);
@@ -767,21 +763,18 @@ int try_to_download(const char *file_mask, int dn) {
   foundany = 1;
   do {
     a()->tleft(true);
-    File fileDownload(a()->download_filename_);
-    fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    fileDownload.Close();
+    auto* area = a()->current_file_area();
+    auto f = area->ReadFile(i);
 
-    if (!(u.mask & mask_no_ratio) && !ratio_ok()) {
+    if (!(f.u().mask & mask_no_ratio) && !ratio_ok()) {
       return -2;
     }
 
     write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-    sprintf(s1, "%s%s", a()->directories[dn].path, u.filename);
-    sprintf(s3, "%-40.40s", u.description);
+    sprintf(s1, "%s%s", a()->directories[dn].path, f.unaligned_filename().c_str());
+    sprintf(s3, "%-40.40s", f.u().description);
     abort = false;
-    rtn = add_batch(s3, u.filename, dn, u.numbytes);
+    rtn = add_batch(s3, f.aligned_filename().c_str(), dn, f.numbytes());
     s3[0] = 0;
 
     if (abort || rtn == -3) {
@@ -795,9 +788,8 @@ int try_to_download(const char *file_mask, int dn) {
   }
   if (abort || rtn == -3) {
     return -1;
-  } else {
-    return 1;
   }
+  return 1;
 }
 
 void download() {
@@ -1089,8 +1081,6 @@ void SetNewFileScanDate() {
 
 void removefilesnotthere(int dn, int *autodel) {
   char ch = '\0';
-  uploadsrec u;
-
   dliscan1(dn);
   char szAllFilesFileMask[MAX_PATH];
   to_char_array(szAllFilesFileMask, "*.*");
@@ -1098,26 +1088,22 @@ void removefilesnotthere(int dn, int *autodel) {
   int i = recno(szAllFilesFileMask);
   bool abort = false;
   while (!a()->hangup_ && i > 0 && !abort) {
-    char szCandidateFileName[MAX_PATH];
-    File fileDownload(a()->download_filename_);
-    fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&u, sizeof(uploadsrec));
-    fileDownload.Close();
-    sprintf(szCandidateFileName, "%s%s", a()->directories[dn].path, u.filename);
-    StringRemoveWhitespace(szCandidateFileName);
-    if (!File::Exists(szCandidateFileName)) {
-      StringTrim(u.description);
-      sprintf(szCandidateFileName, "|#2%s :|#1 %-40.40s", u.filename, u.description);
+    auto area = a()->current_file_area();
+    auto f = area->ReadFile(i);
+    auto candidate_fn = StrCat(a()->directories[dn].path, f.unaligned_filename());
+    StringRemoveWhitespace(&candidate_fn);
+    if (!File::Exists(candidate_fn)) {
+      StringTrim(f.u().description);
+      candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.u().description);
       if (!*autodel) {
         bout.backline();
-        bout << szCandidateFileName;
+        bout << candidate_fn;
         bout.nl();
         bout << "|#5Remove Entry (Yes/No/Quit/All) : ";
         ch = onek_ncr("QYNA");
       } else {
         bout.nl();
-        bout << "|#1Removing entry " << szCandidateFileName;
+        bout << "|#1Removing entry " << candidate_fn;
         ch = 'Y';
       }
       if (ch == 'Y' || ch == 'A') {
@@ -1125,25 +1111,16 @@ void removefilesnotthere(int dn, int *autodel) {
           bout << "ll";
           *autodel = 1;
         }
-        if (u.mask & mask_extended) {
-          delete_extended_description(u.filename);
+        if (f.u().mask & mask_extended) {
+          delete_extended_description(f.aligned_filename());
         }
-        sysoplog() << "- '" << u.filename << "' Removed from " << a()->directories[dn].name;
-        fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i1 = i; i1 < a()->numf; i1++) {
-          FileAreaSetRecord(fileDownload, i1 + 1);
-          fileDownload.Read(&u, sizeof(uploadsrec));
-          FileAreaSetRecord(fileDownload, i1);
-          fileDownload.Write(&u, sizeof(uploadsrec));
+        sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
+                   << a()->directories[dn].name;
+        if (area->DeleteFile(i)) {
+          area->Save();
+          a()->numf = area->number_of_files();
         }
         --i;
-        --a()->numf;
-        FileAreaSetRecord(fileDownload, 0);
-        fileDownload.Read(&u, sizeof(uploadsrec));
-        u.numbytes = a()->numf;
-        FileAreaSetRecord(fileDownload, 0);
-        fileDownload.Write(&u, sizeof(uploadsrec));
-        fileDownload.Close();
       } else if (ch == 'Q') {
         abort = true;
       }

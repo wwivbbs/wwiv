@@ -934,6 +934,7 @@ void removefile() {
           if (a()->current_file_area()->DeleteFile(i)) {
             a()->current_file_area()->Save();
             a()->numf = a()->current_file_area()->number_of_files();
+            --i;
           }
         }
       }

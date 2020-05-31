@@ -1348,6 +1348,7 @@ static int remove_filename(const std::string& file_name, int dn) {
         sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;
         if (a()->current_file_area()->DeleteFile(i)) {
           a()->current_file_area()->Save();
+          --i;
         }
       }
     }
