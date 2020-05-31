@@ -45,6 +45,7 @@ std::string aligns(const std::string& file_name);
 bool compare(const char* pszFileName1, const char* pszFileName2);
 void printinfo(uploadsrec * upload_record, bool *abort);
 void printtitle(bool *abort);
+std::string file_mask(const std::string& prompt);
 std::string file_mask();
 void listfiles();
 void nscandir(uint16_t nDirNum, bool& need_title, bool *abort);
@@ -54,6 +55,5 @@ int  recno(const std::string& file_mask);
 int  nrecno(const std::string& file_mask, int start_recno);
 int  printfileinfo(uploadsrec* upload_record, int directory_num);
 void remlist(const char *file_name);
-int FileAreaSetRecord(wwiv::core::File& file, int nRecordNumber);
 
 #endif  // __INCLUDED_BBS_XFER_H__

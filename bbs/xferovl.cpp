@@ -61,15 +61,10 @@ void move_file() {
   int d1 = 0;
 
   bool ok = false;
-  bout.nl(2);
-  bout << "|#2Filename to move: ";
-  auto file_mask = input(12);
-  if (strchr(file_mask.c_str(), '.') == nullptr) {
-    file_mask += ".*";
-  }
-  file_mask = aligns(file_mask);
+  bout.nl();
+  auto fm = file_mask("|#2Filename to move: ");
   dliscan();
-  int nCurRecNum = recno(file_mask);
+  int nCurRecNum = recno(fm);
   if (nCurRecNum < 0) {
     bout << "\r\nFile not found.\r\n";
     return;
@@ -164,7 +159,7 @@ void move_file() {
       bout << "\r\nFile moved.\r\n";
     }
     dliscan();
-    nCurRecNum = nrecno(file_mask, nCurrentPos);
+    nCurRecNum = nrecno(fm, nCurrentPos);
   }
 
   tmp_disable_conf(false);

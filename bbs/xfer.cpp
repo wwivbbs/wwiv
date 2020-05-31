@@ -588,10 +588,15 @@ void printtitle(bool *abort) {
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
 }
-
 std::string file_mask() {
-  bout.nl();
-  bout << "|#2File mask: ";
+  return file_mask("|#2File mask: ");
+}
+
+std::string file_mask(const std::string& prompt) {
+  if (prompt.empty()) {
+    bout.nl();
+    bout << prompt;
+  }
   string s = input(12);
   if (s.empty()) {
     s = "*.*";
@@ -872,9 +877,4 @@ void remlist(const char *file_name) {
       return;
     }
   }
-}
-
-int FileAreaSetRecord(File &file, int nRecordNumber) {
-  const auto r = file.Seek(nRecordNumber * sizeof(uploadsrec), File::Whence::begin);
-  return static_cast<int>(r);
 }
