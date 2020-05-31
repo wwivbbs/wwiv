@@ -196,7 +196,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       auto* area = a()->current_file_area();
       auto nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        wwiv::sdk::files::FileRecord f({});
+        wwiv::sdk::files::FileRecord f{};
         do {
           f = area->ReadFile(nRecNum);
           if (f.numbytes() != 0) {
