@@ -18,6 +18,7 @@
 #include "sdk/files/files_ext.h"
 
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/files/file_record.h"
 #include "sdk/files/files.h"
@@ -41,7 +42,7 @@ FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api, std::string data_direct
 FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api, std::string data_directory,
                                            const std::string& filename, int num_files)
     : api_(api), data_directory_(std::move(data_directory)), filename_(StrCat(filename, ".ext")),
-      num_files_(num_files) {}
+      num_files_(std::max<int>(std::numeric_limits<int16_t>::max(), num_files)) {}
 
 bool FileAreaExtendedDesc::Load() {
   Close();
@@ -82,6 +83,13 @@ bool FileAreaExtendedDesc::Close() {
   ext_.clear();
   open_ = false;
   return true;
+}
+
+int FileAreaExtendedDesc::number_of_ext_descriptions() {
+  if (!open_) {
+    Load();
+  }
+  return wwiv::stl::ssize(ext_);
 }
 
 bool FileAreaExtendedDesc::AddExtended(const FileRecord& f, const std::string& text) {

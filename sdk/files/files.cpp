@@ -25,6 +25,7 @@
 #include "core/strings.h"
 #include "local_io/keycodes.h"
 #include "sdk/vardec.h"
+#include "sdk/files/files_ext.h"
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -275,6 +276,9 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& 
   }
   header_ = std::make_unique<FileAreaHeader>(files_.front());
   header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
+
+  // Load up extended descriptions
+  ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, filename_, number_of_files());
 }
 
 
@@ -289,7 +293,9 @@ FileAreaHeader& FileArea::header() const {
 
 bool FileArea::Close() {
   if (open_ && dirty_) {
-    return Save();
+    bool r = Save();
+    open_ = false;
+    return r;
   }
   return true;
 }
@@ -333,7 +339,7 @@ bool FileArea::Sort(FileAreaSortType type) {
   }
 
   static const auto compare_funcs = CreateSortFunctions();
-  auto f = compare_funcs.at(type);
+  const auto f = compare_funcs.at(type);
   std::sort(std::begin(files_) + 1, std::end(files_), f);
   dirty_ = true;
   return true;
@@ -344,7 +350,7 @@ FileRecord FileArea::ReadFile(int num) {
   return FileRecord(files_.at(num));
 }
 
-bool FileArea::AddFile(FileRecord& f) {
+bool FileArea::AddFile(const FileRecord& f) {
   if (files_.size() <= 1) {
     files_.push_back(f.u());
   } else {
@@ -371,6 +377,16 @@ bool FileArea::DeleteFile(int file_number) {
   header_->set_num_files(files_.empty() ? 0 : files_.size() - 1);
 
   return true;
+}
+
+std::optional<FileAreaExtendedDesc*> FileArea::ext_desc() {
+  if (!open_) {
+    return std::nullopt;
+  }
+  if (!ext_desc_) {
+    ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, filename_, number_of_files());
+  }
+  return {ext_desc_.get()};
 }
 
 

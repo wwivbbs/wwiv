@@ -30,6 +30,7 @@ public:
   ~FileRecord() = default;
 
   [[nodiscard]] uploadsrec& u() { return u_; }
+  [[nodiscard]] const uploadsrec& u() const { return u_; }
   [[nodiscard]] uint32_t numbytes() const noexcept { return u_.numbytes; }
   [[nodiscard]] bool has_extended_description() const noexcept;
   void set_extended_description(bool b);

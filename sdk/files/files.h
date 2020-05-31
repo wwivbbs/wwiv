@@ -21,7 +21,9 @@
 #include "core/clock.h"
 #include "sdk/config.h"
 #include "sdk/files/file_record.h"
+#include "sdk/files/files_ext.h"
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -39,7 +41,7 @@ enum class FileAreaSortType {
 class FileApi {
 public:
   virtual ~FileApi() = default;
-  FileApi(std::string data_directory);
+  explicit FileApi(std::string data_directory);
 
   [[nodiscard]] bool Exist(const std::string& filename) const;
   [[nodiscard]] bool Exist(const directoryrec& dir) const;
@@ -71,12 +73,12 @@ public:
   explicit FileAreaHeader(const uploadsrec& u);
   ~FileAreaHeader() = default;
 
-  uint32_t num_files() const { return u_.numbytes; }
+  [[nodiscard]] uint32_t num_files() const { return u_.numbytes; }
   bool set_num_files(uint32_t n) { u_.numbytes = n; return true; }
   bool FixHeader(const core::Clock& clock, uint32_t num_files);
   uploadsrec& u() { return u_; }
   void set_daten(daten_t d);
-  daten_t daten() const;
+  [[nodiscard]] daten_t daten() const;
 private:
   uploadsrec u_;
 };
@@ -95,24 +97,27 @@ public:
   
   // File Header specific
   bool FixFileHeader();
-  FileAreaHeader& header() const;
+  [[nodiscard]] FileAreaHeader& header() const;
 
   // File Dir Specific Operations
   bool Save();
   bool Close();
   bool Lock();
   bool Unlock();
-  int number_of_files() const;
+  [[nodiscard]] int number_of_files() const;
   bool Sort(FileAreaSortType type);
 
   // File specific
   FileRecord ReadFile(int num);
-  bool AddFile(FileRecord& f);
+  bool AddFile(const FileRecord& f);
   bool UpdateFile(FileRecord& f, int num);
   bool DeleteFile(int file_number);
 
+  // Extended Descriptions
+  std::optional<FileAreaExtendedDesc*> ext_desc();
+
 protected:
-  std::filesystem::path path() const noexcept;
+  [[nodiscard]] std::filesystem::path path() const noexcept;
 
   // Not owned.
   FileApi* api_;
@@ -125,6 +130,7 @@ protected:
   std::vector<uploadsrec> files_;
 
   std::unique_ptr<FileAreaHeader> header_;
+  std::unique_ptr<FileAreaExtendedDesc> ext_desc_;
 };
 
 std::string align(const std::string& file_name);

@@ -43,7 +43,8 @@ public:
   bool Close();
   bool Lock() { return true; }
   bool Unlock() { return true; }
-  int number_of_files() const { return num_files_; };
+  int max_number_of_files() const noexcept { return num_files_; };
+  int number_of_ext_descriptions();
   bool Compact() { return false; }
 
   // File specific
@@ -65,7 +66,7 @@ protected:
   bool dirty_{false};
   bool open_{false};
   std::vector<ext_desc_rec> ext_;
-  int num_files_;
+  int num_files_{0};
 };
 
 std::string align(const std::string& file_name);
