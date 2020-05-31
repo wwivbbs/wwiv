@@ -66,7 +66,12 @@ std::filesystem::path FileHelper::GetTestTempDir() {
   if (!basedir_.empty()) {
     return basedir_;
   }
-  return std::filesystem::canonical(std::filesystem::temp_directory_path());
+  const auto temp_path = canonical(std::filesystem::temp_directory_path());
+  auto path = temp_path / "wwiv_test_out";
+  if (!exists(path)) {
+    create_directories(path);
+  }
+  return path;
 }
 
 // static
