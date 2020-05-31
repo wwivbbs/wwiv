@@ -75,14 +75,10 @@
 
 # File Areas
 ***
-* get rid of a()->numf
-* contunue to use file sdk and not a()->download_filename_
 * cleanup char[] usage
 * get rid of samedrive logic in move_file_t, it's not needed
 * Add support for extended descriptions into the sdk (read_extended_description for example)
-* make sdk add file to first position on addfile
 * support moving file in sdk.
-* Add ability to sort into the SDK.
 
 ## Open Questions
 ***

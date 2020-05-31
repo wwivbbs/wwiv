@@ -118,7 +118,7 @@ void move_file() {
           ok = false;
           bout << "\r\nFilename already in use in that directory.\r\n";
         }
-        if (a()->numf >= a()->directories[d1].maxfiles) {
+        if (a()->current_file_area()->number_of_files() >= a()->directories[d1].maxfiles) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
@@ -152,7 +152,6 @@ void move_file() {
       auto dest_fn = StrCat(a()->directories[d1].path, f.unaligned_filename());
       if (a()->current_file_area()->AddFile(f)) {
         a()->current_file_area()->Save();
-        a()->numf = a()->current_file_area()->number_of_files();
       }
       if (!ss.empty()) {
         add_extended_description(f.aligned_filename(), ss);
@@ -171,78 +170,27 @@ void move_file() {
   tmp_disable_conf(false);
 }
 
-static int comparedl(uploadsrec* x, uploadsrec* y, int type) {
-  switch (type) {
-  case 0:
-    return StringCompare(x->filename, y->filename);
-  case 1:
-    if (x->daten < y->daten) {
-      return -1;
-    }
-    return (x->daten > y->daten) ? 1 : 0;
-  case 2:
-    if (x->daten < y->daten) {
-      return 1;
-    }
-    return ((x->daten > y->daten) ? -1 : 0);
-  }
-  return 0;
-}
-
-static void quicksort(int l, int r, int type) {
-  uploadsrec ua, a2, x;
-
-  int i = l;
-  int j = r;
-  File fileDownload(a()->download_filename_);
-  fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-
-  FileAreaSetRecord(fileDownload, ((l + r) / 2));
-  fileDownload.Read(&x, sizeof(uploadsrec));
-  do {
-    FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&ua, sizeof(uploadsrec));
-    while (comparedl(&ua, &x, type) < 0) {
-      FileAreaSetRecord(fileDownload, ++i);
-      fileDownload.Read(&ua, sizeof(uploadsrec));
-    }
-    FileAreaSetRecord(fileDownload, j);
-    fileDownload.Read(&a2, sizeof(uploadsrec));
-    while (comparedl(&a2, &x, type) > 0) {
-      FileAreaSetRecord(fileDownload, --j);
-      fileDownload.Read(&a2, sizeof(uploadsrec));
-    }
-    if (i <= j) {
-      if (i != j) {
-        FileAreaSetRecord(fileDownload, i);
-        fileDownload.Write(&a2, sizeof(uploadsrec));
-        FileAreaSetRecord(fileDownload, j);
-        fileDownload.Write(&a2, sizeof(uploadsrec));
-      }
-      i++;
-      j--;
-    }
-  } while (i < j);
-  fileDownload.Close();
-  if (l < j) {
-    quicksort(l, j, type);
-  }
-  if (i < r) {
-    quicksort(i, r, type);
-  }
+static wwiv::sdk::files::FileAreaSortType sort_type_from_wwiv_type(int t) {
+  switch (t) {
+    case 0: return files::FileAreaSortType::FILENAME_ASC;
+    case 1: return files::FileAreaSortType::DATE_ASC;
+    case 2: return files::FileAreaSortType::DATE_DESC;
+    default: return files::FileAreaSortType::FILENAME_ASC;
+  }  
 }
 
 void sortdir(int directory_num, int type) {
   dliscan1(directory_num);
-  if (a()->numf > 1) {
-    quicksort(1, a()->numf, type);
+
+  if (a()->current_file_area()->Sort(sort_type_from_wwiv_type(type))) {
+    a()->current_file_area()->Save();
   }
 }
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
-                     (!a()->localIO()->KeyPressed());
+  for (size_t i = 0;
+       i < a()->directories.size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed();
        i++) {
     bout << "\r\n|#1Sorting " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
@@ -415,7 +363,6 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     f.u().daten = daten_t_now();
     if (a()->current_file_area()->AddFile(f)) {
       a()->current_file_area()->Save();
-      a()->numf = a()->current_file_area()->number_of_files();
     }
     auto status = a()->status_manager()->BeginTransaction();
     status->IncrementNumUploadsToday();
@@ -598,7 +545,7 @@ bool uploadall(uint16_t directory_num) {
   bool abort = false;
   FindFiles ff(szPathName, FindFilesType::files);
   for (const auto& f : ff) {
-    if (checka() || a()->hangup_ || a()->numf >= maxf) {
+    if (checka() || a()->hangup_ || a()->current_file_area()->number_of_files() >= maxf) {
       break;
     }
     if (!maybe_upload(f.name, directory_num, nullptr)) {
@@ -609,7 +556,7 @@ bool uploadall(uint16_t directory_num) {
     bout << "|#6Aborted.\r\n";
     ok = false;
   }
-  if (a()->numf >= maxf) {
+  if (a()->current_file_area()->number_of_files() >= maxf) {
     bout << "directory full.\r\n";
   }
   return ok;
@@ -1016,7 +963,8 @@ void finddescription() {
       }
       a()->set_current_user_dir_num(i);
       dliscan();
-      for (auto i1 = 1; i1 <= a()->numf && !abort && !a()->hangup_; i1++) {
+      for (auto i1 = 1;
+           i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_; i1++) {
         auto f = a()->current_file_area()->ReadFile(i1);
         strcpy(s, f.u().description);
         for (int i2 = 0; i2 < ssize(s); i2++) {

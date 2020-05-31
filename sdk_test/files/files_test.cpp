@@ -37,12 +37,18 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::files;
 using namespace wwiv::strings;
 
-static uploadsrec ul(const std::string& fn, const std::string& desc, uint32_t size) {
+static uploadsrec ul(const std::string& fn, const std::string& desc, uint32_t size, daten_t daten) {
   uploadsrec u{};
   to_char_array(u.filename, align(fn));
   to_char_array(u.description, desc);
   u.numbytes = size;
+  u.daten = daten;
   return u;
+}
+
+static uploadsrec ul(const std::string& fn, const std::string& desc, uint32_t size) {
+  auto now = DateTime::now();
+  return ul(fn, desc, size, now.to_daten_t());
 }
 
 class FilesTest : public testing::Test {
@@ -125,11 +131,125 @@ TEST_F(FilesTest, Add) {
   EXPECT_STREQ(f.u().filename, cu.at(1).filename);
 }
 
+TEST_F(FilesTest, Add_Order) {
+  const string name = test_info_->name();
+  FileApi api(config_.datadir());
+  ASSERT_TRUE(api.Create(name));
+  auto area = api.Open(name);
+  ASSERT_TRUE(area);
+
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234)};
+  ASSERT_TRUE(area->AddFile(f1));
+  ASSERT_TRUE(area->AddFile(f2));
+  ASSERT_EQ(2, area->number_of_files());
+  area->Save();
+
+  EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0002.ZIP");
+  EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0001.ZIP");
+}
+
 TEST(FileRecordTest, Smoke) {
   FileRecord f(ul("foo.bar", "desc", 12345));
 
   EXPECT_EQ("FOO     .BAR", f.aligned_filename());
   EXPECT_EQ("foo.bar", f.unaligned_filename());
+}
+
+TEST_F(FilesTest, Add_Sort_FileName_Asc) {
+  const string name = test_info_->name();
+  FileApi api(config_.datadir());
+  ASSERT_TRUE(api.Create(name));
+  auto area = api.Open(name);
+  ASSERT_TRUE(area);
+
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234)};
+  ASSERT_TRUE(area->AddFile(f1));
+  ASSERT_TRUE(area->AddFile(f3));
+  ASSERT_TRUE(area->AddFile(f2));
+  area->Save();
+
+  ASSERT_TRUE(area->Sort(FileAreaSortType::FILENAME_ASC));
+  area->Save();
+
+  EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0001.ZIP");
+  EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0002.ZIP");
+  EXPECT_EQ(area->ReadFile(3).aligned_filename(), "FILE0003.ZIP");
+}
+
+TEST_F(FilesTest, Add_Sort_FileName_Desc) {
+  const string name = test_info_->name();
+  FileApi api(config_.datadir());
+  ASSERT_TRUE(api.Create(name));
+  auto area = api.Open(name);
+  ASSERT_TRUE(area);
+
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234)};
+  ASSERT_TRUE(area->AddFile(f1));
+  ASSERT_TRUE(area->AddFile(f3));
+  ASSERT_TRUE(area->AddFile(f2));
+  area->Save();
+
+  ASSERT_TRUE(area->Sort(FileAreaSortType::FILENAME_DESC));
+  area->Save();
+
+  EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0003.ZIP");
+  EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0002.ZIP");
+  EXPECT_EQ(area->ReadFile(3).aligned_filename(), "FILE0001.ZIP");
+}
+
+TEST_F(FilesTest, Add_Sort_FileDate_Asc) {
+  const string name = test_info_->name();
+  FileApi api(config_.datadir());
+  ASSERT_TRUE(api.Create(name));
+  auto area = api.Open(name);
+  ASSERT_TRUE(area);
+
+  auto now = DateTime::now().to_daten_t();
+
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 100)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 200)};
+  ASSERT_TRUE(area->AddFile(f1));
+  ASSERT_TRUE(area->AddFile(f3));
+  ASSERT_TRUE(area->AddFile(f2));
+  area->Save();
+
+  ASSERT_TRUE(area->Sort(FileAreaSortType::DATE_ASC));
+  area->Save();
+
+  EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0003.ZIP");
+  EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0002.ZIP");
+  EXPECT_EQ(area->ReadFile(3).aligned_filename(), "FILE0001.ZIP");
+}
+
+TEST_F(FilesTest, Add_Sort_FileDate_Desc) {
+  const string name = test_info_->name();
+  FileApi api(config_.datadir());
+  ASSERT_TRUE(api.Create(name));
+  auto area = api.Open(name);
+  ASSERT_TRUE(area);
+
+  auto now = DateTime::now().to_daten_t();
+
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  ASSERT_TRUE(area->AddFile(f1));
+  ASSERT_TRUE(area->AddFile(f3));
+  ASSERT_TRUE(area->AddFile(f2));
+  area->Save();
+
+  ASSERT_TRUE(area->Sort(FileAreaSortType::DATE_DESC));
+  area->Save();
+
+  EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0001.ZIP");
+  EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0003.ZIP");
+  EXPECT_EQ(area->ReadFile(3).aligned_filename(), "FILE0002.ZIP");
 }
 
 TEST(FileRecordTest, Set_FileName) {

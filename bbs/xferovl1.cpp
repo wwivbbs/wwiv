@@ -327,7 +327,7 @@ int read_idz(int mode, int tempdir) {
                                     a()->directories[a()->udir[tempdir].subnum].name,
                                     a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
-  for (int i = 1; i <= a()->numf && !a()->hangup_ && !abort; i++) {
+  for (int i = 1; i <= a()->current_file_area()->number_of_files() && !a()->hangup_ && !abort; i++) {
     auto f = area->ReadFile(i);
     if ((compare(s.c_str(), f.aligned_filename().c_str())) &&
         (strstr(f.aligned_filename().c_str(), ".COM") == nullptr) &&
@@ -662,11 +662,9 @@ void tag_files(bool& need_title) {
 }
 
 
-int add_batch(char *description, const char *file_name, int dn, long fs) {
-  char s1[81], s2[81];
-  int i;
+int add_batch(std::string& description, const std::string& file_name, int dn, long fs) {
 
-  if (find_batch_queue(file_name) > -1) {
+  if (find_batch_queue(file_name.c_str()) > -1) {
     return 0;
   }
 
@@ -682,10 +680,8 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     if (dn == -1) {
       return 0;
     }
-    for (i = 0; i < wwiv::strings::ssize(description); i++) {
-      if (description[i] == RETURN) {
-        description[i] = SPACE;
-      }
+    for (auto& c : description) {
+      if (c == '\r') c = ' ';
     }
     bout.backline();
     bout << fmt::sprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", file_name,
@@ -694,10 +690,10 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     bout.backline();
     if (to_upper_case<char>(ch) == 'Y') {
       if (a()->directories[dn].mask & mask_cdrom) {
-        sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
-        sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
-        if (!File::Exists(s1)) {
-          if (!File::Copy(s2, s1)) {
+        auto src = FilePath(a()->directories[dn].path, file_name);
+        auto dest = FilePath(a()->temp_directory(), file_name);
+        if (!File::Exists(dest)) {
+          if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
             bout.getkey();
           }
@@ -705,9 +701,9 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
           bout.clreol();
         }
       } else {
-        sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
-        StringRemoveWhitespace(s2);
-        if (!File::Exists(s2) && !so()) {
+        auto f = FilePath(a()->directories[dn].path, file_name);
+        StringRemoveWhitespace(&f);
+        if (!File::Exists(f) && !so()) {
           bout << "\r";
           bout.clreol();
           bout << "|#6 file unavailable... press any key.";
@@ -718,16 +714,16 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         }
       }
       batchrec b{};
-      strcpy(b.filename, file_name);
+      to_char_array(b.filename, file_name);
       b.dir = static_cast<int16_t>(dn);
       b.time = static_cast<float>(t);
       b.sending = true;
       b.len = fs;
       bout << "\r";
-      const string bt = ctim(std::lround(b.time));
+      const auto bt = ctim(std::lround(b.time));
       bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                            a()->batch().entry.size() + 1, b.filename, b.len,
-                           bt.c_str(),
+                           bt,
                            a()->directories[b.dir].name);
       a()->batch().entry.emplace_back(b);
       bout << "\r";
@@ -751,7 +747,6 @@ int try_to_download(const char *file_mask, int dn) {
   int rtn;
   bool abort = false;
   bool ok = false;
-  char s1[81], s3[81];
 
   dliscan1(dn);
   int i = recno(file_mask);
@@ -771,11 +766,9 @@ int try_to_download(const char *file_mask, int dn) {
     }
 
     write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-    sprintf(s1, "%s%s", a()->directories[dn].path, f.unaligned_filename().c_str());
-    sprintf(s3, "%-40.40s", f.u().description);
+    auto d = fmt::sprintf("%-40.40s", f.u().description);
     abort = false;
-    rtn = add_batch(s3, f.aligned_filename().c_str(), dn, f.numbytes());
-    s3[0] = 0;
+    rtn = add_batch(d, f.aligned_filename(), dn, f.numbytes());
 
     if (abort || rtn == -3) {
       ok = false;
@@ -1118,7 +1111,6 @@ void removefilesnotthere(int dn, int *autodel) {
                    << a()->directories[dn].name;
         if (area->DeleteFile(i)) {
           area->Save();
-          a()->numf = area->number_of_files();
         }
         --i;
       } else if (ch == 'Q') {

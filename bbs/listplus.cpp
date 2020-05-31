@@ -170,7 +170,8 @@ static void printtitle_plus_old() {
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-          a()->directories[a()->current_user_dir().subnum].name, a()->numf);
+          a()->directories[a()->current_user_dir().subnum].name, 
+        a()->current_file_area()->number_of_files());
   bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
@@ -191,7 +192,8 @@ void printtitle_plus() {
   } else {
     const auto buf =
         fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-            a()->directories[a()->current_user_dir().subnum].name, a()->numf);
+            a()->directories[a()->current_user_dir().subnum].name, 
+          a()->current_file_area()->number_of_files());
     bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
     bout.Color(0);
   }
@@ -1461,7 +1463,6 @@ static int move_filename(const char *file_name, int dn) {
       --cp;
       if (a()->current_file_area()->DeleteFile(nRecNum)) {
         a()->current_file_area()->Save();
-        a()->numf = a()->current_file_area()->number_of_files();
       }
       auto ss = read_extended_description(f.aligned_filename());
       if (!ss.empty()) {
@@ -1470,7 +1471,6 @@ static int move_filename(const char *file_name, int dn) {
       auto dest_fn = StrCat(a()->directories[nDestDirNum].path, f.unaligned_filename());
       dliscan1(nDestDirNum);
       if (!a()->current_file_area()->AddFile(f)) {
-        a()->numf = a()->current_file_area()->number_of_files();
         a()->current_file_area()->Save();
       }
       if (!ss.empty()) {
@@ -1697,8 +1697,6 @@ void view_file(const char *file_name) {
 int lp_try_to_download(const char *file_mask, int dn) {
   int rtn;
   bool abort = false;
-  uploadsrec u;
-  char s1[81], s3[81];
 
   dliscan1(dn);
   int i = recno(file_mask);
@@ -1714,18 +1712,16 @@ int lp_try_to_download(const char *file_mask, int dn) {
     auto f = a()->current_file_area()->ReadFile(i);
 
     int ok2 = 0;
-    if (!ok2 && !(u.mask & mask_no_ratio)) {
+    if (!ok2 && !(f.u().mask & mask_no_ratio)) {
       if (!ratio_ok()) {
         return -2;
       }
     }
 
     write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-    sprintf(s1, "%s%s", a()->directories[dn].path, u.filename);
-    sprintf(s3, "%-40.40s", u.description);
+    auto d = fmt::sprintf("%-40.40s", f.u().description);
     abort = false;
-    rtn = add_batch(s3, u.filename, dn, f.numbytes());
-    s3[0] = 0;
+    rtn = add_batch(d, f.aligned_filename(), dn, f.numbytes());
 
     if (abort || rtn == -3) {
       ok = false;

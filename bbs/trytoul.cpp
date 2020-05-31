@@ -129,7 +129,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   dliscan1(dn);
   d = a()->directories[dn];
-  if (a()->numf >= d.maxfiles) {
+  if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
   }

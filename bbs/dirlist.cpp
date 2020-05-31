@@ -28,6 +28,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
+#include "sdk/files/files.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,12 +89,13 @@ void dirlist(int mode) {
         if (a()->current_user_dir().subnum == a()->udir[i1].subnum) {
           s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
                            a()->udir[i1].keys, scanme, a()->directories[directory_number].name,
-                           a()->numf);
+                           a()->current_file_area()->number_of_files());
         } else {
-          s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
-                            a()->udir[i1].keys, scanme,
-                            (((mode == 1) && (a()->directories[a()->udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
-                            a()->directories[ directory_number ].name, a()->numf);
+          s = fmt::sprintf(
+              " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d", a()->udir[i1].keys,
+              scanme,
+              mode == 1 && a()->directories[a()->udir[i1].subnum].mask & mask_cdrom ? "|#9" : "|#1",
+              a()->directories[directory_number].name, a()->current_file_area()->number_of_files());
         }
         if (okansi()) {
           bout.bputs(s, &abort, &next);

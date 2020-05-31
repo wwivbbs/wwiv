@@ -351,7 +351,6 @@ public:
   int m_nMaxNumberFileAreas{0};
   int network_num_{0};
   int m_nMaxNetworkNumber{0};
-  int numf{0};
   int subchg{0};
   int topdata{0};
   int using_modem{0};
@@ -373,7 +372,6 @@ public:
   uint8_t primary_port_{1};
   std::string extended_description_filename_;
   std::string dsz_logfile_name_;
-  std::string download_filename_;
 
   uint16_t usernum{};
 

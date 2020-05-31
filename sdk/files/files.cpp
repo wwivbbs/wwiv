@@ -289,13 +289,47 @@ int FileArea::number_of_files() const {
   return wwiv::stl::size_int32(files_) - 1;
 }
 
+typedef std::function<bool(const uploadsrec& l, const uploadsrec& r)> UlrCompare;
+
+std::map<FileAreaSortType, UlrCompare> CreateSortFunctions() {
+  std::map<FileAreaSortType, UlrCompare> m;
+  m.emplace(FileAreaSortType::DATE_ASC, [](const uploadsrec& l, const uploadsrec& r){
+    return l.daten < r.daten;
+  });
+  m.emplace(FileAreaSortType::DATE_DESC, [](const uploadsrec& l, const uploadsrec& r){
+    return r.daten < l.daten;
+  });
+  m.emplace(FileAreaSortType::FILENAME_ASC, [](const uploadsrec& l, const uploadsrec& r){
+    return StringCompare(l.filename, r.filename) == -1;
+  });
+  m.emplace(FileAreaSortType::FILENAME_DESC, [](const uploadsrec& l, const uploadsrec& r){
+    return StringCompare(r.filename, l.filename) == -1;
+  });
+  return m;
+}
+bool FileArea::Sort(FileAreaSortType type) {
+  if (files_.size() <= 1) {
+    return false;
+  }
+
+  static const auto compare_funcs = CreateSortFunctions();
+  auto f = compare_funcs.at(type);
+  std::sort(std::begin(files_) + 1, std::end(files_), f);
+  dirty_ = true;
+  return true;
+}
+
 // File specific
 FileRecord FileArea::ReadFile(int num) {
   return FileRecord(files_.at(num));
 }
 
 bool FileArea::AddFile(FileRecord& f) {
-  files_.push_back(f.u());
+  if (files_.size() <= 1) {
+    files_.push_back(f.u());
+  } else {
+    files_.insert(std::begin(files_) + 1, f.u());
+  }
   header_->set_num_files(files_.size() - 1);
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;

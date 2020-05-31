@@ -28,6 +28,13 @@ namespace wwiv::sdk::files {
 
 class FileArea;
 
+enum class FileAreaSortType {
+  FILENAME_ASC,
+  FILENAME_DESC,
+  DATE_ASC,
+  DATE_DESC
+};
+
 class FileApi {
 public:
   virtual ~FileApi() = default;
@@ -113,6 +120,7 @@ public:
   bool Lock();
   bool Unlock();
   int number_of_files() const;
+  bool Sort(FileAreaSortType type);
 
   // File specific
   FileRecord ReadFile(int num);

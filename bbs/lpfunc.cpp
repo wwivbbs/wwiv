@@ -167,7 +167,7 @@ int listfiles_plus_function(int type) {
         if (!amount) {
           print_searching(&search_rec);
         }
-        if (a()->numf) {
+        if (a()->current_file_area()->number_of_files()) {
           changedir = 0;
           bool force_menu = false;
           auto f = a()->current_file_area()->ReadFile(first_file + amount);
@@ -198,7 +198,8 @@ int listfiles_plus_function(int type) {
             ++amount;
           }
 
-          if (lines >= max_lines || a()->numf < first_file + amount || force_menu) {
+          if (lines >= max_lines ||
+              a()->current_file_area()->number_of_files() < first_file + amount || force_menu) {
             if (matches) {
               file_pos = save_file_pos;
               drawfile(vert_pos[file_pos], file_handle[file_pos]);
@@ -262,7 +263,7 @@ int listfiles_plus_function(int type) {
                   case 0:
                     save_first_file = first_file;
                     first_file += amount;
-                    if (first_file > a()->numf) {
+                    if (first_file > a()->current_file_area()->number_of_files()) {
                       done = true;
                     }
                     menu_done = true;

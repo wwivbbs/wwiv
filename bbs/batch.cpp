@@ -132,7 +132,6 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         ++f.u().numdloads;
         if (area->UpdateFile(f, nRecNum)) {
           area->Save();
-          a()->numf = area->number_of_files();
         }
         if (lCharsPerSecond) {
           sysoplog() << "Downloaded '" << f.aligned_filename() << "' (" << lCharsPerSecond << " cps).";
@@ -235,7 +234,6 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               });
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();
-                a()->numf = area->number_of_files();
               }
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
                                          a()->directories[b.dir].name, lCharsPerSecond);

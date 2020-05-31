@@ -809,7 +809,6 @@ void move_file_t() {
         --nCurPos;
         if (a()->current_file_area()->DeleteFile(nTempRecordNum)) {
           a()->current_file_area()->Save();
-          a()->numf = a()->current_file_area()->number_of_files();
         }
         auto ext_desc = read_extended_description(f.aligned_filename());
         if (!ext_desc.empty()) {
@@ -821,7 +820,6 @@ void move_file_t() {
         // N.B. the current file area changes with calls to dliscan*
         if (a()->current_file_area()->AddFile(f)) {
           a()->current_file_area()->Save();
-          a()->numf = a()->current_file_area()->number_of_files();
         }
         if (!ext_desc.empty()) {
           add_extended_description(f.aligned_filename(), ext_desc);
@@ -933,7 +931,6 @@ void removefile() {
                                     a()->directories[a()->current_user_dir().subnum].name);
           if (a()->current_file_area()->DeleteFile(i)) {
             a()->current_file_area()->Save();
-            a()->numf = a()->current_file_area()->number_of_files();
             --i;
           }
         }

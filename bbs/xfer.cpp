@@ -79,7 +79,7 @@ void get_ed_info() {
   zap_ed_info();
   ed_got = 1;
 
-  if (!a()->numf) {
+  if (!a()->current_file_area()->number_of_files()) {
     return;
   }
 
@@ -88,13 +88,13 @@ void get_ed_info() {
   if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
     auto file_size = fileExtDescr.length();
     if (file_size > 0) {
-      ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(a()->numf) * sizeof(ext_desc_rec)));
+      ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(a()->current_file_area()->number_of_files()) * sizeof(ext_desc_rec)));
       if (ed_info == nullptr) {
         fileExtDescr.Close();
         return;
       }
       ed_num = 0;
-      while (lCurFilePos < file_size && ed_num < a()->numf) {
+      while (lCurFilePos < file_size && ed_num < a()->current_file_area()->number_of_files()) {
         fileExtDescr.Seek(lCurFilePos, File::Whence::begin);
         ext_desc_type ed;
         int num_read = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
@@ -316,7 +316,6 @@ bool dcs() {
 
 void dliscan1(int directory_num) {
   const std::string basename = a()->directories[directory_num].filename;
-  a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(basename, ".dir"));
 
   if (!a()->fileapi()->Exist(basename)) {
     if (!a()->fileapi()->Create(basename)) {
@@ -326,7 +325,6 @@ void dliscan1(int directory_num) {
 
   auto area = a()->fileapi()->Open(a()->directories[directory_num]);
 
-  a()->numf = area->number_of_files();
   this_date = area->header().daten();
 
   a()->extended_description_filename_ = 
@@ -584,7 +582,8 @@ void printtitle(bool *abort) {
   bout << "\r"
     << a()->directories[a()->current_user_dir().subnum].name
     << " - #" << a()->current_user_dir().keys << ", "
-    << a()->numf << " files." << wwiv::endl;
+    << a()->current_file_area()->number_of_files() << " files."
+    << wwiv::endl;
 
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
@@ -652,7 +651,8 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
       return;
     }
     auto* area = a()->current_file_area();
-    for (int i = 1; i <= a()->numf && !(*abort) && !a()->hangup_; i++) {
+    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->hangup_;
+         i++) {
       CheckForHangup();
       auto f = area->ReadFile(i);
       if (f.u().daten >= a()->context().nscandate()) {
@@ -782,7 +782,8 @@ void searchall() {
       dliscan();
       bool need_title = true;
       auto* area = a()->current_file_area();
-      for (int i1 = 1; i1 <= a()->numf && !abort && !a()->hangup_; i1++) {
+      for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_;
+           i1++) {
         auto f = area->ReadFile(i1);
         if (compare(filemask.c_str(), f.aligned_filename().c_str())) {
           if (need_title) {
@@ -825,7 +826,7 @@ int nrecno(const std::string& file_mask, int start_recno) {
   }
 
   auto f = area->ReadFile(nRecNum);
-  while (nRecNum < a()->numf &&
+  while (nRecNum < a()->current_file_area()->number_of_files() &&
          compare(file_mask.c_str(), f.aligned_filename().c_str()) == 0) {
     f = area->ReadFile(++nRecNum);
   }
