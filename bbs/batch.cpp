@@ -169,7 +169,7 @@ void didnt_upload(const batchrec& b) {
     sysoplog() << fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.filename);
     return;
   }
-  files::FileRecord f({});
+  files::FileRecord f{};
   do {
     f = area->ReadFile(nRecNum);
     if (f.numbytes() != 0) {
