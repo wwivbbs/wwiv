@@ -205,7 +205,19 @@ TEST_F(FilesTest, DeleteFile) {
 
   auto pos = area->FindFile(f1);
   ASSERT_EQ(3, pos.value());
-  EXPECT_TRUE(area->DeleteFile(pos.value()));
+  EXPECT_TRUE(area->DeleteFile(f1, pos.value()));
+}
+
+TEST_F(FilesTest, DeleteFile_WrongFile) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  auto pos = area->FindFile(f1);
+  EXPECT_FALSE(area->DeleteFile(f3, pos.value()));
 }
 
 TEST_F(FilesTest, DeleteFile_Ext) {
@@ -254,6 +266,27 @@ TEST_F(FilesTest, DeleteExtendedDescription) {
   EXPECT_TRUE(area->DeleteExtendedDescription(f1, pos.value()));
   EXPECT_FALSE(area->ext_desc().value()->ReadExtended(f1).has_value());
 }
+
+TEST_F(FilesTest, UpdateFile) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  auto pos = area->FindFile(f1);
+  f1.set_filename("foo.zip");
+  EXPECT_TRUE(area->UpdateFile(f1, pos.value()));
+
+  auto f = area->ReadFile(pos.value());
+  EXPECT_EQ(f.aligned_filename(), "FOO     .ZIP");
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// FileRecordTest
+//
 
 TEST(FileRecordTest, Smoke) {
   FileRecord f(ul("foo.bar", "desc", 12345));

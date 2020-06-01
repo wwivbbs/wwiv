@@ -808,7 +808,7 @@ void move_file_t() {
         }
         --nCurPos;
         auto ext_desc = a()->current_file_area()->ReadExtendedDescriptionAsString(f);
-        if (a()->current_file_area()->DeleteFile(nTempRecordNum)) {
+        if (a()->current_file_area()->DeleteFile(f, nTempRecordNum)) {
           a()->current_file_area()->Save();
         }
         s2 = StrCat(a()->directories[d1].path, f.unaligned_filename());
@@ -906,7 +906,7 @@ void removefile() {
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
                                     a()->directories[a()->current_user_dir().subnum].name);
-          if (a()->current_file_area()->DeleteFile(i)) {
+          if (a()->current_file_area()->DeleteFile(f, i)) {
             a()->current_file_area()->Save();
             --i;
           }

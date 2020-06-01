@@ -108,9 +108,12 @@ public:
   bool Sort(FileAreaSortType type);
 
   // File specific
+  std::optional<int> FindFile(const FileRecord& f);
+  std::optional<int> FindFile(const std::string& file_name);
   FileRecord ReadFile(int num);
   bool AddFile(const FileRecord& f);
   bool UpdateFile(FileRecord& f, int num);
+  bool DeleteFile(const FileRecord& f, int file_number);
   bool DeleteFile(int file_number);
 
   // Extended Descriptions
@@ -123,7 +126,6 @@ public:
   bool DeleteExtendedDescription(const std::string& file_name);
   std::optional<std::string> ReadExtendedDescriptionAsString(FileRecord& f);
   std::optional<std::string> ReadExtendedDescriptionAsString(const std::string& aligned_name);
-  std::optional<int> FindFile(const FileRecord& f);
 
 protected:
   [[nodiscard]] std::filesystem::path path() const noexcept;

@@ -1350,7 +1350,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           }
         }
         sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;
-        if (a()->current_file_area()->DeleteFile(i)) {
+        if (a()->current_file_area()->DeleteFile(f, i)) {
           a()->current_file_area()->Save();
           --i;
         }
@@ -1464,7 +1464,7 @@ static int move_filename(const char *file_name, int dn) {
       }
       --cp;
       auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
-      if (a()->current_file_area()->DeleteFile(nRecNum)) {
+      if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
         a()->current_file_area()->Save();
       }
       auto dest_fn = StrCat(a()->directories[nDestDirNum].path, f.unaligned_filename());

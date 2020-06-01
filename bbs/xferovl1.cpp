@@ -1101,7 +1101,7 @@ void removefilesnotthere(int dn, int *autodel) {
         }
         sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
                    << a()->directories[dn].name;
-        if (area->DeleteFile(i)) {
+        if (area->DeleteFile(f, i)) {
           area->Save();
         }
         --i;

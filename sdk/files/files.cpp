@@ -365,11 +365,17 @@ bool FileArea::AddFile(const FileRecord& f) {
 }
 
 bool FileArea::UpdateFile(FileRecord& f, int num) {
-  ValidateFileNum(f, num);
   files_.at(num) = f.u();
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
   return true;
+}
+
+bool FileArea::DeleteFile(const FileRecord& f, int file_number) {
+  if (!ValidateFileNum(f, file_number)) {
+    return false;
+  }
+  return DeleteFile(file_number);
 }
 
 bool FileArea::DeleteFile(int file_number) {
@@ -399,7 +405,9 @@ std::optional<FileAreaExtendedDesc*> FileArea::ext_desc() {
 }
 
 bool FileArea::AddExtendedDescription(FileRecord& f, int num, const std::string& text) {
-  ValidateFileNum(f, num);
+  if (!ValidateFileNum(f, num)) {
+    return false;
+  }
   const auto r = AddExtendedDescription(f.aligned_filename(), text);
   f.set_extended_description(true);
   if (num > 0) {
@@ -450,9 +458,13 @@ std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(
 }
 
 std::optional<int> FileArea::FindFile(const FileRecord& f) {
+  return FindFile(f.aligned_filename());
+}
+
+std::optional<int> FileArea::FindFile(const std::string& file_name) {
   for (auto i = 0; i < wwiv::stl::ssize(files_); i++) {
     const auto& c = files_.at(i);
-    if (f.aligned_filename() == c.filename) {
+    if (file_name == c.filename) {
       return {i};
     }
   }

@@ -183,8 +183,9 @@ void didnt_upload(const batchrec& b) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
     return;
   }
-  area->DeleteFile(nRecNum);
-  area->Save();
+  if (area->DeleteFile(f, nRecNum)) {
+    area->Save();
+  }
 }
 
 static void uploaded(const string& file_name, long lCharsPerSecond) {
