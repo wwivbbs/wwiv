@@ -78,7 +78,6 @@
 ***
 * cleanup char[] usage
 * support moving file in sdk. (Maybe FileApi::MoveFile(old_area, new_area))
-* Add version of DeleteFile that checks filename against position
 
 ## Open Questions
 ***
