@@ -706,7 +706,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
   return (nsl() >= d) ? 1 : 0;
 }
 
-void remlist(const char *file_name) {
+void remlist(const std::string& file_name) {
   const auto fn = aligns(file_name);
 
   if (a()->filelist.empty()) {

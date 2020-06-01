@@ -435,7 +435,7 @@ void CreateDoorSysDropFile() {
     sprintf(szLine, "%u\n%u\n%d\n%d\n%s\n%u\n%d\n",
             99, // max files dl/day
             0,  // files dl today so far
-            a()->user()->GetUploadK(), a()->user()->GetDownloadK(), a()->user()->GetNote().c_str(),
+            a()->user()->uk(), a()->user()->dk(), a()->user()->GetNote().c_str(),
             a()->user()->GetNumChainsRun(), a()->user()->GetNumMessagesPosted());
     file.Write(szLine);
     file.Close();
@@ -518,8 +518,8 @@ string create_chain_file() {
     }
     file.Write(fmt::sprintf("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n", a()->primary_port(),
                         a()->config()->system_name(), a()->config()->sysop_name(),
-                        start_second, seconds_used, a()->user()->GetUploadK(),
-                        a()->user()->GetFilesUploaded(), a()->user()->GetDownloadK(),
+                        start_second, seconds_used, a()->user()->uk(),
+                        a()->user()->GetFilesUploaded(), a()->user()->dk(),
                         a()->user()->GetFilesDownloaded(), "8N1", cspeed,
                         a()->current_net().sysnum));
     file.Write(fmt::sprintf("N\nN\nN\n"));

@@ -102,9 +102,9 @@ void YourInfo() {
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
-  bout << "|#9Uploads        : |#2" << a()->user()->GetUploadK() << "|#9k in|#2 "
+  bout << "|#9Uploads        : |#2" << a()->user()->uk() << "|#9k in|#2 "
        << a()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Downloads      : |#2" << a()->user()->GetDownloadK() << "|#9k in|#2 "
+  bout << "|#9Downloads      : |#2" << a()->user()->dk() << "|#9k in|#2 "
        << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();

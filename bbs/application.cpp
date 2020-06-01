@@ -540,7 +540,7 @@ void Application::UpdateTopScreen() {
     const auto username_num = names()->UserName(usernum);
     auto line =
         fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
-                     user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(),
+                     user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->uk(),
                      user()->GetSl(), user()->GetNumLogons(), user()->GetNumMessagesPosted());
     localIO()->PutsXYA(0, 0, bout.curatr(), line);
 
@@ -556,7 +556,7 @@ void Application::UpdateTopScreen() {
                       fmt::sprintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
                                    user()->GetRealName(), user()->GetVoicePhoneNumber(),
                                    callsign_or_regnum, user()->GetFilesDownloaded(),
-                                   user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
+                                   user()->dk(), user()->GetDsl(), minutes_used.count(),
                                    user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
 
     localIO()->PutsXY(0, 2,

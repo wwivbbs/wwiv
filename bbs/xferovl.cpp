@@ -359,7 +359,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     if (!(d.mask & mask_cdrom)) {
       add_to_file_database(f.aligned_filename());
     }
-    a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(fs));
+    a()->user()->set_uk(a()->user()->uk() + bytes_to_k(fs));
     f.u().daten = daten_t_now();
     if (a()->current_file_area()->AddFile(f)) {
       a()->current_file_area()->Save();

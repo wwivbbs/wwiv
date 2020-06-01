@@ -136,7 +136,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       if (sent) {
         if (!bFreeDL) {
           a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-          a()->user()->SetDownloadK(a()->user()->GetDownloadK() +
+          a()->user()->set_dk(a()->user()->dk() +
                                     static_cast<int>(bytes_to_k(f.numbytes())));
         }
         ++f.u().numdloads;

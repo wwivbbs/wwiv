@@ -260,7 +260,7 @@ void normalupload(int dn) {
             file.Close();
             a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
             add_to_file_database(u.filename);
-            a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(u.numbytes));
+            a()->user()->set_uk(a()->user()->uk() + bytes_to_k(u.numbytes));
 
             get_file_idz(&u, dn);
           } else {

@@ -40,6 +40,7 @@
 #include "bbs/xferovl1.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
@@ -56,7 +57,6 @@
 using std::begin;
 using std::end;
 using std::string;
-using wwiv::sdk::files::align;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -94,10 +94,10 @@ static void listbatch() {
     if (b.sending) {
       const string t = ctim(std::lround(b.time));
       buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
-          b.filename, t, a()->directories[b.dir].name);
+                            b.filename, t, a()->directories[b.dir].name);
     } else {
       buffer = fmt::sprintf("%d. %s %s             %s", current_num, "(U)",
-          b.filename, a()->directories[b.dir].name);
+                            b.filename, a()->directories[b.dir].name);
     }
     bout.bpla(buffer, &abort);
   }
@@ -118,7 +118,7 @@ void delbatch(int num) {
 
 static void downloaded(const string& file_name, long lCharsPerSecond) {
 
-  for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); it++) {
+  for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
     if (file_name == b.filename && b.sending) {
       dliscan1(b.dir);
@@ -127,14 +127,15 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
       if (nRecNum > 0) {
         auto f = area->ReadFile(nRecNum);
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-        a()->user()->SetDownloadK(a()->user()->GetDownloadK() +
-            static_cast<int>(bytes_to_k(f.u().numbytes)));
+        a()->user()->set_dk(a()->user()->dk() +
+                            static_cast<int>(bytes_to_k(f.u().numbytes)));
         ++f.u().numdloads;
         if (area->UpdateFile(f, nRecNum)) {
           area->Save();
         }
         if (lCharsPerSecond) {
-          sysoplog() << "Downloaded '" << f.aligned_filename() << "' (" << lCharsPerSecond << " cps).";
+          sysoplog() << "Downloaded '" << f.aligned_filename() << "' (" << lCharsPerSecond <<
+              " cps).";
         } else {
           sysoplog() << "Downloaded '" << f.aligned_filename() << "'.";
         }
@@ -145,7 +146,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
             if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
               const auto user_name_number = a()->names()->UserName(a()->usernum);
               ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f.aligned_filename()
-                                  << "\" |#7on " << fulldate();
+                  << "\" |#7on " << fulldate();
             }
           }
         }
@@ -175,11 +176,12 @@ void didnt_upload(const batchrec& b) {
     if (f.numbytes() != 0) {
       nRecNum = nrecno(b.filename, nRecNum);
     }
-  } while (nRecNum != -1 && f.numbytes() != 0);
+  }
+  while (nRecNum != -1 && f.numbytes() != 0);
 
   if (nRecNum == -1 || f.numbytes() != 0) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
-    return;  
+    return;
   }
   if (f.has_extended_description()) {
     area->DeleteExtendedDescription(f, nRecNum);
@@ -189,20 +191,21 @@ void didnt_upload(const batchrec& b) {
 }
 
 static void uploaded(const string& file_name, long lCharsPerSecond) {
-  for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); it++) {
+  for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
     if (file_name == b.filename && !b.sending) {
       dliscan1(b.dir);
       auto* area = a()->current_file_area();
       auto nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        wwiv::sdk::files::FileRecord f{};
+        files::FileRecord f{};
         do {
           f = area->ReadFile(nRecNum);
           if (f.numbytes() != 0) {
             nRecNum = nrecno(b.filename, nRecNum);
           }
-        } while (nRecNum != -1 && f.numbytes() != 0);
+        }
+        while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
           auto source_filename = PathFilePath(a()->batch_directory(), file_name);
           auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
@@ -226,9 +229,10 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               get_file_idz(&f.u(), b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
               add_to_file_database(f.aligned_filename());
-              a()->user()->SetUploadK(a()->user()->GetUploadK() +
-                  static_cast<int>(bytes_to_k(f.numbytes())));
-              a()->status_manager()->Run([](WStatus& s) {
+              a()->user()->set_uk(a()->user()->uk() +
+                                  static_cast<int>(bytes_to_k(f.numbytes())));
+              a()->status_manager()->Run([](WStatus& s)
+              {
                 s.IncrementNumUploadsToday();
                 s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
               });
@@ -236,9 +240,10 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
                 area->Save();
               }
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
-                                         a()->directories[b.dir].name, lCharsPerSecond);
-              bout << "Uploaded '" << f.aligned_filename() << "' to "  << a()->directories[b.dir].name 
-                   << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
+                                        a()->directories[b.dir].name, lCharsPerSecond);
+              bout << "Uploaded '" << f.aligned_filename() << "' to " << a()->directories[b.dir].
+                  name
+                  << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
           it = delbatch(it);
@@ -266,33 +271,31 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
 // beep is sounded.  After 10 seconds of inactivity, the user is hung up.
 static void bihangup() {
   bout.dump();
-  auto batch_lastchar = std::chrono::steady_clock::now();
+  const auto batch_lastchar = std::chrono::steady_clock::now();
   auto nextbeep = std::chrono::seconds(1);
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to a()->hangup_, or any other key to return to system.\r\n";
 
-  unsigned char ch = 0;
-  do {
-    while (!bkbhit() && !a()->hangup_) {
-      auto dd = std::chrono::steady_clock::now();
-      if ((dd - batch_lastchar) > nextbeep) {
-        nextbeep += std::chrono::seconds(1);
-      }
-      if ((dd - batch_lastchar) > std::chrono::seconds(10)) {
-        bout.nl();
-        bout << "Thank you for calling.";
-        bout.nl();
-        a()->remoteIO()->disconnect();
-        Hangup();
-      }
-      giveup_timeslice();
-      CheckForHangup();
+  while (!bkbhit() && !a()->hangup_) {
+    auto dd = std::chrono::steady_clock::now();
+    if (dd - batch_lastchar > nextbeep) {
+      nextbeep += std::chrono::seconds(1);
     }
-    ch = bout.getkey();
-    if (ch == 'h' || ch == 'H') {
+    if (dd - batch_lastchar > std::chrono::seconds(10)) {
+      bout.nl();
+      bout << "Thank you for calling.";
+      bout.nl();
+      a()->remoteIO()->disconnect();
       Hangup();
+      return;
     }
-  } while (!ch && !a()->hangup_);
+    giveup_timeslice();
+    CheckForHangup();
+  }
+  const auto ch = bout.getkey();
+  if (ch == 'h' || ch == 'H') {
+    Hangup();
+  }
 }
 
 void zmbatchdl(bool bHangupAfterDl) {
@@ -302,7 +305,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     return;
   }
 
-  auto message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(), 
+  auto message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(),
                         " Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
@@ -359,7 +362,8 @@ void zmbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
+  }
+  while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
@@ -376,7 +380,7 @@ char end_ymodem_batch1() {
   memset(b, 0, 128);
 
   bool done = false;
-  int  nerr = 0;
+  int nerr = 0;
   bool bAbort = false;
   char ch = 0;
   do {
@@ -390,7 +394,8 @@ char end_ymodem_batch1() {
         done = true;
       }
     }
-  } while (!done && !a()->hangup_ && !bAbort);
+  }
+  while (!done && !a()->hangup_ && !bAbort);
   if (ch == CF) {
     return CF;
   }
@@ -415,7 +420,7 @@ static void end_ymodem_batch() {
     }
     if (ch == CU) {
       const auto fn = PathFilePath(a()->temp_directory(),
-                               StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+                                   StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);
       int terr = 0;
@@ -469,10 +474,12 @@ void ymbatchdl(bool bHangupAfterDl) {
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
         auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f.unaligned_filename());
+            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
+                         f.unaligned_filename());
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f.unaligned_filename());
+              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
+                           f.unaligned_filename());
           send_filename = PathFilePath(a()->temp_directory(), f.unaligned_filename());
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
@@ -488,7 +495,8 @@ void ymbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
+  }
+  while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (ok && !a()->hangup_) {
     end_ymodem_batch();
@@ -501,7 +509,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
 }
 
-static void handle_dszline(char *l) {
+static void handle_dszline(char* l) {
   long lCharsPerSecond = 0;
 
   // find the filename
@@ -517,7 +525,7 @@ static void handle_dszline(char *l) {
 
   if (ss) {
     const auto filename = aligns(stripfn(ss));
-    
+
     switch (*l) {
     case 'Z':
     case 'r':
@@ -549,11 +557,11 @@ static void handle_dszline(char *l) {
 }
 
 static double ratio1(unsigned long xa) {
-  if (a()->user()->GetDownloadK() == 0 && a == 0) {
+  if (a()->user()->dk() == 0 && xa == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(a()->user()->GetUploadK()) /
-             static_cast<float>(a()->user()->GetDownloadK() + xa);
+  double r = static_cast<float>(a()->user()->uk()) /
+             static_cast<float>(a()->user()->dk() + xa);
   return std::min<double>(r, 99.998);
 }
 
@@ -565,79 +573,66 @@ static string make_ul_batch_list() {
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
 
-  File fileList(list_filename);
-  if (!fileList.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
-    return "";
-  }
+  TextFile tf(list_filename, "wt");
   for (const auto& b : a()->batch().entry) {
-    if (!b.sending) {
-      File::set_current_directory(a()->directories[b.dir].path);
-      File file(PathFilePath(File::current_directory(), stripfn(b.filename)));
-      a()->CdHome();
-      fileList.Write(StrCat(file.path().string(), "\r\n"));
+    if (b.sending) {
+      continue;
     }
+    auto line = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
+    tf.WriteLine(line);
   }
-  fileList.Close();
   return list_filename.string();
 }
 
 static string make_dl_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
-  const auto list_filename = FilePath(a()->bbsdir(), fn);
+  auto list_filename = FilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
 
-  File fileList(list_filename);
-  if (!fileList.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
-    return "";
-  }
+  TextFile tf(list_filename, "wt");
 
   double at = 0.0;
   unsigned long addk = 0;
   for (const auto& b : a()->batch().entry) {
-    if (b.sending) {
-      string filename_to_send;
-      if (a()->directories[b.dir].mask & mask_cdrom) {
-        File::set_current_directory(a()->temp_directory());
-        const auto current_dir = File::current_directory();
-        const auto fileToSend = FilePath(current_dir, stripfn(b.filename));
-        if (!File::Exists(fileToSend)) {
-          File::set_current_directory(a()->directories[b.dir].path);
-          File sourceFile(FilePath(File::current_directory(), stripfn(b.filename)));
-          File::Copy(sourceFile.path(), fileToSend);
-        }
-        filename_to_send = fileToSend;
-      } else {
-        File::set_current_directory(a()->directories[b.dir].path);
-        filename_to_send = FilePath(File::current_directory(), stripfn(b.filename));
+    if (!b.sending) {
+      continue;
+    }
+    string filename_to_send;
+    if (a()->directories[b.dir].mask & mask_cdrom) {
+      const auto fileToSend = FilePath(a()->temp_directory(), stripfn(b.filename));
+      if (!File::Exists(fileToSend)) {
+        auto sourceFile = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
+        File::Copy(sourceFile, fileToSend);
       }
-      bool ok = true;
-      a()->CdHome();
-      if (nsl() < (b.time + at)) {
-        ok = false;
-        bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
-      }
-      unsigned long thisk = bytes_to_k(b.len);
-      if ((a()->config()->req_ratio() > 0.0001) &&
-          (ratio1(addk + thisk) < a()->config()->req_ratio()) &&
-          !a()->user()->IsExemptRatio()) {
-        ok = false;
-        bout << "Cannot download " << b.filename << ": Ratio too low" << wwiv::endl;
-      }
-      if (ok) {
-        fileList.Write(StrCat(filename_to_send, "\r\n"));
-        at += b.time;
-        addk += thisk;
-      }
+      filename_to_send = fileToSend;
+    } else {
+      filename_to_send = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
+    }
+    bool ok = true;
+    if (nsl() < b.time + at) {
+      ok = false;
+      bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
+    }
+    const auto thisk = bytes_to_k(b.len);
+    if (a()->config()->req_ratio() > 0.0001 &&
+        ratio1(addk + thisk) < a()->config()->req_ratio() &&
+        !a()->user()->IsExemptRatio()) {
+      ok = false;
+      bout << "Cannot download " << b.filename << ": Ratio too low" << wwiv::endl;
+    }
+    if (ok) {
+      tf.WriteLine(filename_to_send);
+      at += b.time;
+      addk += thisk;
     }
   }
-  fileList.Close();
   return list_filename;
 }
 
 void ProcessDSZLogFile() {
-  const auto lines = static_cast<char **>(calloc((a()->max_batch * sizeof(char *) * 2) + 1, 1));
+  const auto lines = static_cast<char**>(calloc((a()->max_batch * sizeof(char*) * 2) + 1, 1));
 
   if (!lines) {
     return;
@@ -646,7 +641,7 @@ void ProcessDSZLogFile() {
   File fileDszLog(a()->dsz_logfile_name_);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     const auto nFileSize = fileDszLog.length();
-    auto ss = static_cast<char *>(calloc(nFileSize + 1, 1));
+    auto* ss = static_cast<char*>(calloc(nFileSize + 1, 1));
     if (ss) {
       const auto bytes_read = fileDszLog.Read(ss, nFileSize);
       if (bytes_read > 0) {
@@ -667,13 +662,14 @@ void ProcessDSZLogFile() {
   free(lines);
 }
 
-static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
+static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist,
+                    const string& dl, bool bHangupAfterDl) {
   string commandLine = stuff_in(orig_commandline,
-      std::to_string(std::min<int>(a()->modem_speed_, 57600)), 
-      std::to_string(a()->primary_port()),
-      downlist, 
-      std::to_string(std::min<int>(a()->modem_speed_, 57600)), 
-      uplist);
+                                std::to_string(std::min<int>(a()->modem_speed_, 57600)),
+                                std::to_string(a()->primary_port()),
+                                downlist,
+                                std::to_string(std::min<int>(a()->modem_speed_, 57600)),
+                                uplist);
 
   if (!commandLine.empty()) {
     make_abs_cmd(a()->bbsdir().string(), &commandLine);
@@ -707,10 +703,10 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 
-void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string& description) {
-  string download_log_entry = StrCat(description,
-      "%s BATCH Download: Files - ", a()->batch().entry.size(), 
-      ", Time - ", ctim(a()->batch().dl_time_in_secs()));
+void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string& description) {
+  auto download_log_entry = StrCat(description,
+                                   "%s BATCH Download: Files - ", a()->batch().entry.size(),
+                                   ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -724,9 +720,9 @@ void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string
   run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-static void dszbatchul(bool bHangupAfterDl, char *command_line, const std::string& description) {
+static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::string& description) {
   string download_log_entry = fmt::sprintf("%s BATCH Upload: Files - %d", description,
-          a()->batch().entry.size());
+                                           a()->batch().entry.size());
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -745,7 +741,6 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, const std::strin
 }
 
 int batchdl(int mode) {
-  bool bHangupAfterDl = false;
   bool done = false;
   do {
     char ch = 0;
@@ -754,7 +749,8 @@ int batchdl(int mode) {
     case 3:
       bout.nl();
       if (mode == 3) {
-        bout << "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
+        bout <<
+            "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
         ch = onek("QLRDC\r");
       } else {
         bout << "|#9Batch: L,R,Q,C,D,U,? : ";
@@ -789,14 +785,15 @@ int batchdl(int mode) {
       string s = input(4);
       auto i = to_number<int>(s);
       if (i > 0 && i <= ssize(a()->batch().entry)) {
-        didnt_upload(a()->batch().entry[i-1]);
-        delbatch(i-1);
+        didnt_upload(a()->batch().entry[i - 1]);
+        delbatch(i - 1);
       }
       if (a()->batch().entry.empty()) {
         bout << "\r\nBatch queue empty.\r\n\n";
         done = true;
       }
-    } break;
+    }
+    break;
     case 'C':
       bout << "|#5Clear queue? ";
       if (yesno()) {
@@ -814,19 +811,20 @@ int batchdl(int mode) {
       if (mode != 3) {
         bout.nl();
         bout << "|#5Hang up after transfer? ";
-        bHangupAfterDl = yesno();
+        auto hangup_after_dl = yesno();
         bout.nl(2);
         int i = get_protocol(xf_up_batch);
         if (i > 0) {
-          dszbatchul(bHangupAfterDl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
+          dszbatchul(hangup_after_dl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
-          if (!bHangupAfterDl) {
+          if (!hangup_after_dl) {
             bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
         }
         done = true;
       }
-    } break;
+    }
+    break;
     case 'D':
     case 13:
       if (mode != 3) {
@@ -842,25 +840,24 @@ int batchdl(int mode) {
           break;
         }
         bout << "|#5Hang up after transfer? ";
-        bHangupAfterDl = yesno();
+        const auto hangup_after_dl = yesno();
         bout.nl();
         int i = get_protocol(xf_down_batch);
         if (i > 0) {
           if (i == WWIV_INTERNAL_PROT_YMODEM) {
-            if (a()->over_intern.size() > 0 
-                && (a()->over_intern[2].othr & othr_override_internal) 
-                && (a()->over_intern[2].sendbatchfn[0])) {
-              dszbatchdl(bHangupAfterDl, a()->over_intern[2].sendbatchfn, prot_name(4));
+            if (!a()->over_intern.empty() && a()->over_intern[2].othr & othr_override_internal &&
+                a()->over_intern[2].sendbatchfn[0]) {
+              dszbatchdl(hangup_after_dl, a()->over_intern[2].sendbatchfn, prot_name(4));
             } else {
-              ymbatchdl(bHangupAfterDl);
+              ymbatchdl(hangup_after_dl);
             }
           } else if (i == WWIV_INTERNAL_PROT_ZMODEM) {
-            zmbatchdl(bHangupAfterDl);
+            zmbatchdl(hangup_after_dl);
           } else {
-            dszbatchdl(bHangupAfterDl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+            dszbatchdl(hangup_after_dl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
                        a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           }
-          if (!bHangupAfterDl) {
+          if (!hangup_after_dl) {
             bout.nl();
             bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
@@ -869,14 +866,15 @@ int batchdl(int mode) {
       done = true;
       break;
     }
-  } while (!done && !a()->hangup_);
+  }
+  while (!done && !a()->hangup_);
   return 0;
 }
 
 void upload(int dn) {
   dliscan1(dn);
   auto d = a()->directories[dn];
-  long free_space = File::freespace_for_path(d.path);
+  const long free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";
     return;
@@ -914,7 +912,8 @@ void upload(int dn) {
       done = false;
       break;
     }
-  } while (!done && !a()->hangup_);
+  }
+  while (!done && !a()->hangup_);
 }
 
 bool Batch::delbatch(size_t pos) {
@@ -925,13 +924,13 @@ bool Batch::delbatch(size_t pos) {
 }
 
 long Batch::dl_time_in_secs() const {
-  size_t r = 0;  
-  for (const auto& e : entry) { 
+  size_t r = 0;
+  for (const auto& e : entry) {
     if (e.sending) {
       r += e.len;
     }
   }
 
-  auto t =(12.656 * r) / a()->modem_speed_;
+  auto t = 12.656 * r / a()->modem_speed_;
   return std::lround(t);
 }

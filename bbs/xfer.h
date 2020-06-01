@@ -49,6 +49,6 @@ void searchall();
 int  recno(const std::string& file_mask);
 int  nrecno(const std::string& file_mask, int start_recno);
 int  printfileinfo(uploadsrec* upload_record, int directory_num);
-void remlist(const char *file_name);
+void remlist(const std::string& file_name);
 
 #endif  // __INCLUDED_BBS_XFER_H__

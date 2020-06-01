@@ -432,7 +432,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     if (sent) {
       if (count_against_xfer_ratio) {
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-        a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(file_size));
+        a()->user()->set_dk(a()->user()->dk() + bytes_to_k(file_size));
         bout.nl(2);
         bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
@@ -901,7 +901,7 @@ void removefile() {
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < f.u().daten) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
-                  uu.SetUploadK(uu.GetUploadK() - bytes_to_k(f.u().numbytes));
+                  uu.set_uk(uu.uk() - bytes_to_k(f.u().numbytes));
                   a()->users()->writeuser(&uu, f.u().ownerusr);
                 }
               }

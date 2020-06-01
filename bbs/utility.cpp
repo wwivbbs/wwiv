@@ -116,11 +116,11 @@ void frequent_init() {
  * Gets the current users upload/download ratio.
  */
 double ratio() {
-  if (a()->user()->GetDownloadK() == 0) {
+  if (a()->user()->dk() == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(a()->user()->GetUploadK()) /
-             static_cast<float>(a()->user()->GetDownloadK());
+  double r = static_cast<float>(a()->user()->uk()) /
+             static_cast<float>(a()->user()->dk());
 
   return (r > 99.998) ? 99.998 : r;
 }

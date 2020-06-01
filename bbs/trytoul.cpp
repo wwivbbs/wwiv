@@ -368,7 +368,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
   add_to_file_database(f.aligned_filename());
 
-  a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(f.numbytes()));
+  a()->user()->set_uk(a()->user()->uk() + bytes_to_k(f.numbytes()));
 
   auto status = a()->status_manager()->BeginTransaction();
   status->IncrementNumUploadsToday();

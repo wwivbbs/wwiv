@@ -1343,7 +1343,7 @@ static int remove_filename(const std::string& file_name, int dn) {
             if (!user.IsUserDeleted()) {
               if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
-                user.SetUploadK(user.GetUploadK() - bytes_to_k(f.numbytes()));
+                user.set_uk(user.uk() - bytes_to_k(f.numbytes()));
                 a()->users()->writeuser(&user, f.u().ownerusr);
               }
             }

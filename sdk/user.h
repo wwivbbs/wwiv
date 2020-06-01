@@ -20,15 +20,14 @@
 #ifndef __INCLUDED_WUSER_H__
 #define __INCLUDED_WUSER_H__
 
+#include "core/strings.h"
+#include "sdk/net.h"
+#include "sdk/vardec.h"
 #include <chrono>
-#include <sstream>
 #include <cstdint>
 #include <cstring>
 #include <string>
 #include <vector>
-#include "core/strings.h"
-#include "sdk/net.h"
-#include "sdk/vardec.h"
 
 //
 // ListPlus options from lp_options.
@@ -119,7 +118,7 @@ class User {
   ~User();
 
   User(const User& w);
-  explicit User(const userrec& data);
+  explicit User(const userrec& rhs);
   User& operator=(const User& rhs);
 
   //
@@ -786,16 +785,16 @@ class User {
   void SetNumMessagesRead(uint32_t l) {
     data.msgread = l;
   }
-  [[nodiscard]] uint32_t GetUploadK() const {
+  [[nodiscard]] uint32_t uk() const {
     return data.uk;
   }
-  void SetUploadK(uint32_t l) {
+  void set_uk(uint32_t l) {
     data.uk = l;
   }
-  [[nodiscard]] uint32_t GetDownloadK() const {
+  [[nodiscard]] uint32_t dk() const {
     return data.dk;
   }
-  void SetDownloadK(uint32_t l) {
+  void set_dk(uint32_t l) {
     data.dk = l;
   }
   [[nodiscard]] daten_t GetLastOnDateNumber() const {

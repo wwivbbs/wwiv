@@ -818,7 +818,7 @@ void download() {
         bout.newline = false;
         input(s, 12);
         bout.newline = onl;
-        if ((s[0]) && (s[0] != ' ')) {
+        if (s[0] && s[0] != ' ') {
           if (strchr(s, '.') == nullptr) {
             strcat(s, ".*");
           }
@@ -840,7 +840,7 @@ void download() {
             bout << s1;
             foundany = 0;
             size_t dn = 0;
-            while ((dn < a()->directories.size()) && (a()->udir[dn].subnum != -1)) {
+            while (dn < a()->directories.size() && a()->udir[dn].subnum != -1) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {

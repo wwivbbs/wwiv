@@ -414,7 +414,7 @@ void ascii_send(const std::string& file_name, bool* sent, double* percent) {
       *sent = true;
     } else {
       *sent = false;
-      a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(lTotalBytes));
+      a()->user()->set_dk(a()->user()->dk() + bytes_to_k(lTotalBytes));
     }
     *percent = static_cast<double>(lTotalBytes) / static_cast<double>(file_size);
   } else {
@@ -571,7 +571,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
 
 void receive_file(const std::string& file_name, int* received, const std::string& sfn, int dn) {
   bool bReceived;
-  int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
+  const int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
 
   switch (nProtocol) {
   case -1:
@@ -585,7 +585,7 @@ void receive_file(const std::string& file_name, int* received, const std::string
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
     maybe_internal(file_name, &bReceived, nullptr, false, nProtocol);
-    *received = (bReceived) ? 1 : 0;
+    *received = bReceived ? 1 : 0;
   }
   break;
   case WWIV_INTERNAL_PROT_BATCH:

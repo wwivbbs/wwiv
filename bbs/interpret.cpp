@@ -110,9 +110,9 @@ std::string MacroContext::interpret(char ch) const {
   case 'j':                               // Transfer conference
     return a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name;
   case 'K':                               // Kb uploaded
-    return to_string(u().GetUploadK());
+    return to_string(u().uk());
   case 'k':                               // Kb downloaded
-    return to_string(u().GetDownloadK());
+    return to_string(u().dk());
   case 'L':                               // Last call
     return u().GetLastOn();
   case 'l':                               // Number of logons

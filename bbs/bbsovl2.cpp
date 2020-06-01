@@ -79,8 +79,8 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.GetTimeBankMinutes()));
   a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.GetAssPoints()));
   a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.GetGold()));
-  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.GetUploadK()));
-  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.GetDownloadK()));
+  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.uk()));
+  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.dk()));
   a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.GetFilesUploaded()));
   a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", u.GetFilesDownloaded()));
   a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", u.GetNumMessagesPosted()));
@@ -166,16 +166,16 @@ void OnlineUserEditor() {
     } break;
     case 10: {
       a()->localIO()->GotoXY(wx + 22, wy + 8);
-      auto uk = std::to_string(u.GetUploadK());
+      auto uk = std::to_string(u.uk());
       rc = a()->localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY);
-      u.SetUploadK(to_number<uint32_t>(uk));
+      u.set_uk(to_number<uint32_t>(uk));
       a()->localIO()->Puts(fmt::format("{:7}", uk));
     } break;
     case 11: {
       a()->localIO()->GotoXY(wx + 50, wy + 8);
-      auto dk = std::to_string(u.GetDownloadK());
+      auto dk = std::to_string(u.dk());
       rc = a()->localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY);
-      u.SetDownloadK(to_number<uint32_t>(dk));
+      u.set_dk(to_number<uint32_t>(dk));
       a()->localIO()->Puts(fmt::format("{:7}", dk));
     } break;
     case 12: {
