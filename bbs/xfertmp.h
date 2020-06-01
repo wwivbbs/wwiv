@@ -18,8 +18,8 @@
 #ifndef __INCLUDED_BBS_XFERTMP_H__
 #define __INCLUDED_BBS_XFERTMP_H__
 
-bool bad_filename(const char *file_name);
-void add_arc(const char *arc, const char *file_name, int dos);
+bool bad_filename(const char* file_name);
+void add_arc(const char* arc, const char* file_name, int dos);
 void add_temp_arc();
 void del_temp();
 void list_temp_dir();

@@ -286,9 +286,9 @@ void attach_file(int mode) {
                     fsr.numbytes = static_cast<decltype(fsr.numbytes)>(attachmentFile.length());
                     attachmentFile.Close();
                     if (newname) {
-                      strcpy(fsr.filename, stripfn(szNewFileName));
+                      to_char_array(fsr.filename, stripfn(szNewFileName));
                     } else {
-                      strcpy(fsr.filename, stripfn(szFileToAttach));
+                      to_char_array(fsr.filename, stripfn(szFileToAttach));
                     }
                     fsr.id = m.daten;
                     bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";

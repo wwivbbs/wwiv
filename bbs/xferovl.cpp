@@ -26,7 +26,6 @@
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
@@ -62,7 +61,7 @@ void move_file() {
 
   bool ok = false;
   bout.nl();
-  auto fm = file_mask("|#2Filename to move: ");
+  const auto fm = file_mask("|#2Filename to move: ");
   dliscan();
   int nCurRecNum = recno(fm);
   if (nCurRecNum < 0) {
@@ -74,13 +73,12 @@ void move_file() {
 
   while (!a()->hangup_ && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
-    auto area = a()->current_file_area();
-    auto f = area->ReadFile(nCurRecNum);
+    auto f = a()->current_file_area()->ReadFile(nCurRecNum);
     bout.nl();
     printfileinfo(&f.u(), a()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
-    char ch = ynq();
+    const auto ch = ynq();
     std::string src_fn;
     if (ch == 'Q') {
       done = true;
@@ -95,7 +93,8 @@ void move_file() {
           dirlist(1);
           dliscan();
         }
-      } while (!a()->hangup_ && ss[0] == '?');
+      }
+      while (!a()->hangup_ && ss[0] == '?');
       d1 = -1;
       if (!ss.empty()) {
         for (size_t i1 = 0; i1 < a()->directories.size() && a()->udir[i1].subnum != -1; i1++) {
@@ -134,20 +133,19 @@ void move_file() {
         f.u().daten = daten_t_now();
       }
       --nCurrentPos;
-      auto* area = a()->current_file_area();
-      string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
-      if (area->DeleteFile(nCurRecNum)) {
-        area->Save();
+      string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
+      if (a()->current_file_area()->DeleteFile(nCurRecNum)) {
+        a()->current_file_area()->Save();
       }
 
       dliscan1(d1);
       auto dest_fn = FilePath(a()->directories[d1].path, f);
-      if (area->AddFile(f)) {
-        area->Save();
+      if (a()->current_file_area()->AddFile(f)) {
+        a()->current_file_area()->Save();
       }
       if (!ss.empty()) {
-        const auto pos = area->FindFile(f).value_or(-1);
-        area->AddExtendedDescription(f, pos, ss);
+        const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
+        a()->current_file_area()->AddExtendedDescription(f, pos, ss);
       }
       StringRemoveWhitespace(&src_fn);
       StringRemoveWhitespace(&dest_fn);
@@ -163,13 +161,17 @@ void move_file() {
   tmp_disable_conf(false);
 }
 
-static wwiv::sdk::files::FileAreaSortType sort_type_from_wwiv_type(int t) {
+static files::FileAreaSortType sort_type_from_wwiv_type(int t) {
   switch (t) {
-    case 0: return files::FileAreaSortType::FILENAME_ASC;
-    case 1: return files::FileAreaSortType::DATE_ASC;
-    case 2: return files::FileAreaSortType::DATE_DESC;
-    default: return files::FileAreaSortType::FILENAME_ASC;
-  }  
+  case 0:
+    return files::FileAreaSortType::FILENAME_ASC;
+  case 1:
+    return files::FileAreaSortType::DATE_ASC;
+  case 2:
+    return files::FileAreaSortType::DATE_DESC;
+  default:
+    return files::FileAreaSortType::FILENAME_ASC;
+  }
 }
 
 void sortdir(int directory_num, int type) {
@@ -230,7 +232,8 @@ void rename_file() {
     if (!s.empty()) {
       s = aligns(s);
       if (!iequals(s, "        .   ")) {
-        const std::string p = ToStringRemoveWhitespace(a()->directories[a()->current_user_dir().subnum].path);
+        const std::string p = ToStringRemoveWhitespace(
+            a()->directories[a()->current_user_dir().subnum].path);
         auto dest_fn = FilePath(p, s);
         if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
@@ -297,10 +300,11 @@ void rename_file() {
   }
 }
 
-static bool upload_file(const std::string& file_name, uint16_t directory_num, const char* description) {
+static bool upload_file(const std::string& file_name, uint16_t directory_num,
+                        const char* description) {
   auto d = a()->directories[directory_num];
   const auto temp_filename = aligns(file_name);
-  wwiv::sdk::files::FileRecord f{};
+  files::FileRecord f{};
   f.set_filename(temp_filename);
   f.u().ownerusr = static_cast<uint16_t>(a()->usernum);
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &f.u())) {
@@ -413,7 +417,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
  * the optional words (size, date/time) are ignored completely.
  */
 void upload_files(const char* file_name, uint16_t directory_num, int type) {
-  char s[255], *fn1 = nullptr, *description = nullptr,*ext = nullptr;
+  char s[255], *fn1, *description = nullptr, *ext = nullptr;
   bool abort = false;
   bool ok = true;
 
@@ -440,12 +444,13 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
             ext = static_cast<char*>(BbsAllocA(4096L));
             *ext = 0;
           }
-          for (description = s; (*description == ' ') || (*description == '\t'); description++)
+          for (description = s; *description == ' ' || *description == '\t'; description++)
             ;
           if (*description == '|') {
             do {
               description++;
-            } while ((*description == ' ') || (*description == '\t'));
+            }
+            while (*description == ' ' || *description == '\t');
           }
           fn1 = strchr(description, '\n');
           if (fn1) {
@@ -556,7 +561,7 @@ bool uploadall(uint16_t directory_num) {
 
 void relist() {
   char s[85], s1[40], s2[81];
-  bool next, abort = 0;
+  bool next, abort = false;
   int16_t tcd = -1;
 
   if (a()->filelist.empty()) {
@@ -696,16 +701,15 @@ void edit_database() {
       done = true;
       break;
     }
-  } while (!a()->hangup_ && !done);
+  }
+  while (!a()->hangup_ && !done);
 }
-
-#define ALLOW_BUFSIZE 61440
 
 void add_to_file_database(const std::string& file_name) {
   if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
-  wwiv::sdk::files::Allow allow(*a()->config());
+  files::Allow allow(*a()->config());
   allow.Add(file_name);
   allow.Save();
 }
@@ -718,7 +722,7 @@ void remove_from_file_database(const std::string& file_name) {
   if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
-  wwiv::sdk::files::Allow allow(*a()->config());
+  files::Allow allow(*a()->config());
   allow.Remove(file_name);
   allow.Save();
 }
@@ -731,7 +735,7 @@ bool is_uploadable(const std::string& file_name) {
   if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return true;
   }
-  wwiv::sdk::files::Allow allow(*a()->config());
+  files::Allow allow(*a()->config());
   return allow.IsAllowed(file_name);
 }
 
@@ -757,9 +761,8 @@ static void l_config_nscan() {
 
 static void config_nscan() {
   char s1[MAX_CONFERENCES + 2], ch;
-  int i1, oc, os;
+  int i1;
   bool abort = false;
-  bool done, done1;
 
   if (okansi()) {
     // ZU - SCONFIG
@@ -767,9 +770,9 @@ static void config_nscan() {
     return;                  // ZU - SCONFIG
   }                          // ZU - SCONFIG
 
-  done = done1 = false;
-  oc = a()->GetCurrentConferenceFileArea();
-  os = a()->current_user_dir().subnum;
+  bool done1 = false;
+  const int oc = a()->GetCurrentConferenceFileArea();
+  const int os = a()->current_user_dir().subnum;
 
   do {
     if (okconf(a()->user()) && a()->uconfdir[1].confnum != -1) {
@@ -810,7 +813,7 @@ static void config_nscan() {
         setuconf(ConferenceType::CONF_DIRS, i, -1);
       }
       l_config_nscan();
-      done = false;
+      bool done = false;
       do {
         bout.nl();
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
@@ -835,13 +838,15 @@ static void config_nscan() {
             l_config_nscan();
           }
         }
-      } while (!done && !a()->hangup_);
+      }
+      while (!done && !a()->hangup_);
       break;
     }
     if (!okconf(a()->user()) || a()->uconfdir[1].confnum == -1) {
       done1 = true;
     }
-  } while (!done1 && !a()->hangup_);
+  }
+  while (!done1 && !a()->hangup_);
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
@@ -849,7 +854,7 @@ static void config_nscan() {
 }
 
 void xfer_defaults() {
-  char s[81], ch;
+  char s[81];
   int i;
   bool done = false;
 
@@ -858,13 +863,13 @@ void xfer_defaults() {
     bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
     bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
     bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base ("
-         << YesNoString(a()->user()->IsNewScanFiles()) << ").\r\n";
+        << YesNoString(a()->user()->IsNewScanFiles()) << ").\r\n";
     bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print ["
-         << a()->user()->GetNumExtended() << " line(s)].\r\n";
+        << a()->user()->GetNumExtended() << " line(s)].\r\n";
     const std::string onek_options = "Q12345";
     bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
     bout << "|#5Which? ";
-    ch = onek(onek_options.c_str());
+    char ch = onek(onek_options.c_str());
     switch (ch) {
     case 'Q':
       done = true;
@@ -887,7 +892,7 @@ void xfer_defaults() {
       bout.nl(2);
       bout << "|#9How many lines of an extended description\r\n";
       bout << "|#9do you want to see when listing files (|#20-" << a()->max_extend_lines
-           << "|#7)\r\n";
+          << "|#7)\r\n";
       bout << "|#9Current # lines: |#2" << a()->user()->GetNumExtended() << wwiv::endl;
       bout << "|#7: ";
       input(s, 3);
@@ -899,7 +904,8 @@ void xfer_defaults() {
       }
       break;
     }
-  } while (!done && !a()->hangup_);
+  }
+  while (!done && !a()->hangup_);
 }
 
 void finddescription() {
@@ -1011,12 +1017,14 @@ void arc_l() {
     if (nRecordNum > 0) {
       auto f = a()->current_file_area()->ReadFile(nRecordNum);
       int i1 =
-          list_arc_out(stripfn(f.unaligned_filename()), a()->directories[a()->current_user_dir().subnum].path);
+          list_arc_out(stripfn(f.unaligned_filename()),
+                       a()->directories[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }
       checka(&abort);
       nRecordNum = nrecno(file_spec, nRecordNum);
     }
-  } while (nRecordNum > 0 && !a()->hangup_ && !abort);
+  }
+  while (nRecordNum > 0 && !a()->hangup_ && !abort);
 }

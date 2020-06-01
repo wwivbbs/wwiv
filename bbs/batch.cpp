@@ -92,7 +92,7 @@ static void listbatch() {
     string buffer;
     ++current_num;
     if (b.sending) {
-      const string t = ctim(std::lround(b.time));
+      const string t = ctim(b.time);
       buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
                             b.filename, t, a()->directories[b.dir].name);
     } else {
@@ -227,8 +227,8 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
                                         a()->directories[b.dir].name, lCharsPerSecond);
               bout << "Uploaded '" << f.aligned_filename() << "' to "
-                   << a()->directories[b.dir].name << " (" << lCharsPerSecond << " cps)"
-                   << wwiv::endl;
+                  << a()->directories[b.dir].name << " (" << lCharsPerSecond << " cps)"
+                  << wwiv::endl;
             }
           }
           it = a()->batch().delbatch(it);
@@ -355,7 +355,6 @@ void zmbatchdl(bool bHangupAfterDl) {
     bihangup();
   }
 }
-
 
 char end_ymodem_batch1() {
   char b[128];
@@ -494,8 +493,7 @@ static void handle_dszline(char* l) {
   // find the filename
   char* ss = strtok(l, " \t");
   for (int i = 0; i < 10 && ss; i++) {
-    switch (i) {
-    case 4:
+    if (i == 4) {
       lCharsPerSecond = to_number<long>(ss);
       break;
     }
@@ -539,8 +537,8 @@ static double ratio1(unsigned long xa) {
   if (a()->user()->dk() == 0 && xa == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(a()->user()->uk()) /
-             static_cast<float>(a()->user()->dk() + xa);
+  const double r = static_cast<double>(a()->user()->uk()) /
+                   static_cast<double>(a()->user()->dk() + xa);
   return std::min<double>(r, 99.998);
 }
 
@@ -572,7 +570,7 @@ static string make_dl_batch_list() {
 
   TextFile tf(list_filename, "wt");
 
-  double at = 0.0;
+  int32_t at = 0.0;
   unsigned long addk = 0;
   for (const auto& b : a()->batch().entry) {
     if (!b.sending) {
@@ -924,6 +922,11 @@ std::vector<batchrec>::iterator Batch::delbatch(std::vector<batchrec>::iterator 
 }
 
 long Batch::dl_time_in_secs() const {
+
+  if (a()->modem_speed_ == 0) {
+    return 0;
+  }
+
   size_t r = 0;
   for (const auto& e : entry) {
     if (e.sending) {

@@ -24,28 +24,28 @@
 
 unsigned long bytes_to_k(unsigned long lBytes);
 /** return true if file_name is in the queue */
-bool check_ul_event(int directory_num, uploadsrec * upload_record);
+bool check_ul_event(int directory_num, uploadsrec* upload_record);
 bool okfn(const std::string& fileName);
 void print_devices();
 std::string get_arc_cmd(const std::string& arc_fn, int cmd, const std::string& ofn);
-int  list_arc_out(const std::string& file_name, const char *pszDirectory);
+int list_arc_out(const std::string& file_name, const char* pszDirectory);
 bool ratio_ok();
 bool dcs();
 void dliscan1(int directory_num);
 void dliscan();
-void print_extended(const std::string& file_name, bool *abort, int numlist, int indent);
+void print_extended(const std::string& file_name, bool* abort, int numlist, int indent);
 std::string aligns(const std::string& file_name);
-void printinfo(uploadsrec * upload_record, bool *abort);
-void printtitle(bool *abort);
+void printinfo(uploadsrec* upload_record, bool* abort);
+void printtitle(bool* abort);
 std::string file_mask(const std::string& prompt);
 std::string file_mask();
 void listfiles();
-void nscandir(uint16_t nDirNum, bool& need_title, bool *abort);
+void nscandir(uint16_t nDirNum, bool& need_title, bool* abort);
 void nscanall();
 void searchall();
-int  recno(const std::string& file_mask);
-int  nrecno(const std::string& file_mask, int start_recno);
-int  printfileinfo(uploadsrec* upload_record, int directory_num);
+int recno(const std::string& file_mask);
+int nrecno(const std::string& file_mask, int start_recno);
+int printfileinfo(uploadsrec* upload_record, int directory_num);
 void remlist(const std::string& file_name);
 
 #endif  // __INCLUDED_BBS_XFER_H__

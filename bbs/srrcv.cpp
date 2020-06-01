@@ -158,7 +158,7 @@ int receive_block(char* b, unsigned char* bln, bool use_crc) {
 void xymodem_receive(const std::string& file_name, bool* received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
-  int i1, i2, i3;
+  int i2, i3;
 
   File::Remove(file_name);
   bool ok = true;
@@ -178,7 +178,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   time_t filedatetime = 0L;
   unsigned int bn = 1;
   bool done = false;
-  double tpb = (12.656) / ((double)(a()->modem_speed_));
+  double tpb = 12.656 / static_cast<double>(a()->modem_speed_);
   bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
   int nOldXPos = a()->localIO()->WhereX();
   int nOldYPos = a()->localIO()->WhereY();
@@ -234,7 +234,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
       if (bln == 0 && pos == 0L) {
-        i1 = strlen(b) + 1;
+        int i1 = strlen(b) + 1;
         i3 = i1;
         while (b[i3] >= '0' && b[i3] <= '9' && (i3 - i1) < 15) {
           x[i3 - i1] = b[i3];

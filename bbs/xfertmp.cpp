@@ -53,7 +53,7 @@
 #include <vector>
 
 // the archive type to use
-#define ARC_NUMBER 0
+static const int ARC_NUMBER = 0;
 
 using std::function;
 using std::string;
@@ -63,7 +63,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-bool bad_filename(const char *file_name) {
+bool bad_filename(const char* file_name) {
   // strings not to allow in a .zip file to extract from
   static const vector<string> bad_words = {
       "COMMAND",
@@ -79,7 +79,7 @@ bool bad_filename(const char *file_name) {
       "LHA",
       "LHARC",
       "PKPAK",
-    };
+  };
 
   for (const auto& bad_word : bad_words) {
     if (strstr(file_name, bad_word.c_str())) {
@@ -102,7 +102,7 @@ struct arch {
   int32_t size;
 };
 
-int check_for_files_arc(const char *file_name) {
+int check_for_files_arc(const char* file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
@@ -143,9 +143,8 @@ int check_for_files_arc(const char *file_name) {
         if (a.type != 0) {
           bout << stripfn(file_name) << " is not a valid .ARC file.";
           return 1;
-        } else {
-          lFilePos = file_size;
         }
+        lFilePos = file_size;
       }
     }
 
@@ -162,51 +161,51 @@ int check_for_files_arc(const char *file_name) {
 #define ZIP_CENT_END_SIG 0x06054b50
 
 struct zip_local_header {
-  uint32_t   signature;                  // 0x04034b50
-  uint16_t  extract_ver;
-  uint16_t  flags;
-  uint16_t  comp_meth;
-  uint16_t  mod_time;
-  uint16_t  mod_date;
-  uint32_t   crc_32;
-  uint32_t   comp_size;
-  uint32_t   uncomp_size;
-  uint16_t  filename_len;
-  uint16_t  extra_length;
+  uint32_t signature; // 0x04034b50
+  uint16_t extract_ver;
+  uint16_t flags;
+  uint16_t comp_meth;
+  uint16_t mod_time;
+  uint16_t mod_date;
+  uint32_t crc_32;
+  uint32_t comp_size;
+  uint32_t uncomp_size;
+  uint16_t filename_len;
+  uint16_t extra_length;
 };
 
 struct zip_central_dir {
-  uint32_t   signature;                  // 0x02014b50
-  uint16_t  made_ver;
-  uint16_t  extract_ver;
-  uint16_t  flags;
-  uint16_t  comp_meth;
-  uint16_t  mod_time;
-  uint16_t  mod_date;
-  uint32_t   crc_32;
-  uint32_t   comp_size;
-  uint32_t   uncomp_size;
-  uint16_t  filename_len;
-  uint16_t  extra_len;
-  uint16_t  comment_len;
-  uint16_t  disk_start;
-  uint16_t  int_attr;
-  uint32_t   ext_attr;
-  uint32_t   rel_ofs_header;
+  uint32_t signature; // 0x02014b50
+  uint16_t made_ver;
+  uint16_t extract_ver;
+  uint16_t flags;
+  uint16_t comp_meth;
+  uint16_t mod_time;
+  uint16_t mod_date;
+  uint32_t crc_32;
+  uint32_t comp_size;
+  uint32_t uncomp_size;
+  uint16_t filename_len;
+  uint16_t extra_len;
+  uint16_t comment_len;
+  uint16_t disk_start;
+  uint16_t int_attr;
+  uint32_t ext_attr;
+  uint32_t rel_ofs_header;
 };
 
 struct zip_end_dir {
-  uint32_t   signature;                  // 0x06054b50
-  uint16_t  disk_num;
-  uint16_t  cent_dir_disk_num;
-  uint16_t  total_entries_this_disk;
-  uint16_t  total_entries_total;
-  uint32_t   central_dir_size;
-  uint32_t   ofs_cent_dir;
-  uint16_t  comment_len;
+  uint32_t signature; // 0x06054b50
+  uint16_t disk_num;
+  uint16_t cent_dir_disk_num;
+  uint16_t total_entries_this_disk;
+  uint16_t total_entries_total;
+  uint32_t central_dir_size;
+  uint32_t ofs_cent_dir;
+  uint16_t comment_len;
 };
 
-int check_for_files_zip(const char *file_name) {
+int check_for_files_zip(const char* file_name) {
   zip_local_header zl;
   zip_central_dir zc;
   zip_end_dir ze;
@@ -265,17 +264,17 @@ int check_for_files_zip(const char *file_name) {
 
 
 struct lharc_header {
-  unsigned char     checksum;
-  char              ctype[5];
-  long              comp_size;
-  long              uncomp_size;
-  unsigned short    time;
-  unsigned short    date;
-  unsigned short    attr;
-  unsigned char     fn_len;
+  unsigned char checksum;
+  char ctype[5];
+  long comp_size;
+  long uncomp_size;
+  unsigned short time;
+  unsigned short date;
+  unsigned short attr;
+  unsigned char fn_len;
 };
 
-int check_for_files_lzh(const char *file_name) {
+int check_for_files_lzh(const char* file_name) {
   lharc_header a;
 
   File file(file_name);
@@ -319,7 +318,7 @@ int check_for_files_lzh(const char *file_name) {
   return err;
 }
 
-int check_for_files_arj(const char *file_name) {
+int check_for_files_arj(const char* file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     auto file_size = file.length();
@@ -375,17 +374,17 @@ int check_for_files_arj(const char *file_name) {
   return 1;
 }
 
-static bool check_for_files(const char *file_name) {
+static bool check_for_files(const char* file_name) {
   struct arc_testers {
-    const char *  arc_name;
+    const char* arc_name;
     function<int(const char*)> func;
   };
 
   static const vector<arc_testers> arc_t = {
-    {"ZIP", check_for_files_zip},
-    {"ARC", check_for_files_arc},
-    {"LZH", check_for_files_lzh},
-    {"ARJ", check_for_files_arj},
+      {"ZIP", check_for_files_zip},
+      {"ARC", check_for_files_arc},
+      {"LZH", check_for_files_lzh},
+      {"ARJ", check_for_files_arj},
   };
 
   const char* ss = strrchr(file_name, '.');
@@ -399,12 +398,12 @@ static bool check_for_files(const char *file_name) {
   } else {
     // no extension?
     bout << "No extension.\r\n";
-    return 1;
+    return true;
   }
-  return 0;
+  return false;
 }
 
-static bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
+static bool download_temp_arc(const char* file_name, bool count_against_xfer_ratio) {
   bout << "Downloading " << file_name << "." << a()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
   if (count_against_xfer_ratio && !ratio_ok()) {
     bout << "Ratio too low.\r\n";
@@ -449,12 +448,12 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
   return false;
 }
 
-void add_arc(const char *arc, const char *file_name, int dos) {
+void add_arc(const char* arc, const char* file_name, int dos) {
   const auto arc_fn = fmt::format("{}.{}", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
   if (iequals(file_name, DROPFILE_CHAIN_TXT) ||
       iequals(file_name, "door.sys") ||
-      iequals(file_name, "chain.*")  ||
+      iequals(file_name, "chain.*") ||
       iequals(file_name, "door.*")) {
     return;
   }
@@ -617,11 +616,13 @@ void temp_extract() {
             }
             if (!extract_cmd.empty()) {
               ExecuteExternalProgram(extract_cmd, a()->spawn_option(SPAWNOPT_ARCH_E));
-              sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn, f.aligned_filename());
+              sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn,
+                                        f.aligned_filename());
             }
             a()->CdHome();
           }
-        } while (!a()->hangup_ && ok && ok1);
+        }
+        while (!a()->hangup_ && ok && ok1);
       }
     } else {
       bout.nl();
@@ -708,7 +709,8 @@ void temporary_stuff() {
       print_help_file(TARCHIVE_NOEXT);
       break;
     }
-  } while (!a()->hangup_);
+  }
+  while (!a()->hangup_);
 }
 
 void move_file_t() {
@@ -756,7 +758,8 @@ void move_file_t() {
             dirlist(1);
             dliscan1(a()->batch().entry[nCurBatchPos].dir);
           }
-        } while (!a()->hangup_ && (dirnum.front() == '?'));
+        }
+        while (!a()->hangup_ && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
           for (size_t i1 = 0; i1 < a()->directories.size() && (a()->udir[i1].subnum != -1); i1++) {

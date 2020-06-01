@@ -479,7 +479,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
                long fs) {
   *sent = false;
   *abort = false;
-  int nProtocol = 0;
+  int nProtocol;
   if (fs < 0) {
     nProtocol = get_protocol(xf_none);
   } else {
@@ -521,7 +521,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
         *sent = false;
         *abort = false;
       } else {
-        const auto t = (a()->modem_speed_) ? (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs)) : 0;
+        const int32_t t = std::lround(a()->modem_speed_ ? 12.656 / static_cast<double>(a()->modem_speed_) * static_cast<double>(fs) : 0);
         if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
           bout.nl();
           bout << "Not enough time left in queue.\r\n\n";
@@ -535,9 +535,9 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
             *abort = false;
           } else {
             batchrec b{};
-            to_char_array(b.filename, sfn);
+            b.filename = sfn;
             b.dir = static_cast<int16_t>(dn);
-            b.time = static_cast<float>(t);
+            b.time = t;
             b.sending = true;
             b.len = fs;
             a()->batch().AddBatch(b);
@@ -597,7 +597,7 @@ void receive_file(const std::string& file_name, int* received, const std::string
       } else {
         *received = 2;
         batchrec b{};
-        to_char_array(b.filename, sfn);
+        b.filename = sfn;
         b.dir = static_cast<int16_t>(dn);
         b.time = 0;
         b.sending = false;

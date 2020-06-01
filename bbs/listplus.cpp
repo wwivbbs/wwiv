@@ -270,7 +270,7 @@ int listfiles_plus(int type) {
 }
 
 int lp_add_batch(const char *file_name, int dn, long fs) {
-  double t;
+  int32_t t;
 
   if (a()->batch().FindBatch(file_name) > -1) {
     return 0;
@@ -284,11 +284,11 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
     pausescr();
   } else {
     if (a()->modem_speed_ && fs) {
-      t = (9.0) / ((double)(a()->modem_speed_)) * ((double)(fs));
+      t = std::lround(9.0 / static_cast<double>(a()->modem_speed_) * fs);
     } else {
-      t = 0.0;
+      t = 0;
     }
-    if ((nsl() <= (a()->batch().dl_time_in_secs() + t)) && (!so())) {
+    if (nsl() <= a()->batch().dl_time_in_secs() + t && !so()) {
       bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
       bout << "Not enough time left in queue.\r\n";
       pausescr();
@@ -299,9 +299,9 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
         pausescr();
       } else {
         batchrec b{};
-        strcpy(b.filename, file_name);
+        b.filename = file_name;
         b.dir = static_cast<int16_t>(dn);
-        b.time = static_cast<float>(t);
+        b.time = t;
         b.sending = true;
         b.len = fs;
         a()->batch().AddBatch(b);
@@ -1361,7 +1361,7 @@ static int remove_filename(const std::string& file_name, int dn) {
   return ret;
 }
 
-static int move_filename(const char *file_name, int dn) {
+static int move_filename(const std::string& file_name, int dn) {
   int nDestDirNum = -1, ret = 1;
   const auto move_fn = aligns(file_name);
   dliscan1(dn);

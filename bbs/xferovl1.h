@@ -23,17 +23,17 @@
 
 void modify_extended_description(std::string* sss, const std::string& dest);
 bool valid_desc(const std::string& description);
-bool get_file_idz(uploadsrec * upload_record, int dn);
-int  read_idz_all();
-int  read_idz(int mode, int tempdir);
+bool get_file_idz(uploadsrec* upload_record, int dn);
+int read_idz_all();
+int read_idz(int mode, int tempdir);
 void tag_it();
 void tag_files(bool& need_title);
 int add_batch(std::string& description, const std::string& file_name, int dn, long fs);
-int  try_to_download(const char *file_mask, int dn);
+int try_to_download(const char* file_mask, int dn);
 void download();
 void endlist(int mode);
 void SetNewFileScanDate();
-void removefilesnotthere(int dn, int *autodel);
+void removefilesnotthere(int dn, int* autodel);
 void removenotthere();
 
 #endif  // __INCLUDED_BBS_XFEROVL1_H__
