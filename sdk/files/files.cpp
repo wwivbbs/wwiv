@@ -365,6 +365,7 @@ bool FileArea::AddFile(const FileRecord& f) {
 }
 
 bool FileArea::UpdateFile(FileRecord& f, int num) {
+  ValidateFileNum(f, num);
   files_.at(num) = f.u();
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
@@ -372,8 +373,13 @@ bool FileArea::UpdateFile(FileRecord& f, int num) {
 }
 
 bool FileArea::DeleteFile(int file_number) {
+  const auto old = files_.at(file_number);
   if (!wwiv::stl::erase_at(files_, file_number)) {
     return false;
+  }
+  // Attempt to delete the extended descriptions if they existed.
+  if (old.mask & mask_extended) {
+    DeleteExtendedDescription(old.filename);
   }
   dirty_ = true;
   header_->set_num_files(files_.empty() ? 0 : files_.size() - 1);
@@ -393,6 +399,7 @@ std::optional<FileAreaExtendedDesc*> FileArea::ext_desc() {
 }
 
 bool FileArea::AddExtendedDescription(FileRecord& f, int num, const std::string& text) {
+  ValidateFileNum(f, num);
   const auto r = AddExtendedDescription(f.aligned_filename(), text);
   f.set_extended_description(true);
   if (num > 0) {
@@ -410,6 +417,9 @@ bool FileArea::AddExtendedDescription(const std::string& file_name, const std::s
 }
 
 bool FileArea::DeleteExtendedDescription(FileRecord& f, int num) {
+  if (!ValidateFileNum(f, num)) {
+    return false;
+  }
   const auto result = DeleteExtendedDescription(f.aligned_filename());
   f.set_extended_description(false);
   if (num > 0) {
@@ -470,6 +480,16 @@ bool FileArea::Save() {
 
 std::filesystem::path FileArea::path() const noexcept {
   return PathFilePath(data_directory_, filename_);
+}
+
+bool FileArea::ValidateFileNum(const FileRecord& f, int num) {
+  const auto& o = files_.at(num);
+  if (f.aligned_filename() != o.filename) {
+    LOG(ERROR) << "Mismatched File call for " << f.aligned_filename() << " vs: " << o.filename
+               << " at pos: " << num;
+    return false;
+  }
+  return true;
 }
 
 

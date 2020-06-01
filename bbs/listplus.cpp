@@ -1349,9 +1349,6 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        if (f.has_extended_description()) {
-          a()->current_file_area()->DeleteExtendedDescription(f, i);
-        }
         sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;
         if (a()->current_file_area()->DeleteFile(i)) {
           a()->current_file_area()->Save();
@@ -1467,9 +1464,6 @@ static int move_filename(const char *file_name, int dn) {
       }
       --cp;
       auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
-      if (!ss.empty()) {
-        a()->current_file_area()->DeleteExtendedDescription(f, nRecNum);
-      }
       if (a()->current_file_area()->DeleteFile(nRecNum)) {
         a()->current_file_area()->Save();
       }

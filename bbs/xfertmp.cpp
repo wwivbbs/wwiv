@@ -808,9 +808,6 @@ void move_file_t() {
         }
         --nCurPos;
         auto ext_desc = a()->current_file_area()->ReadExtendedDescriptionAsString(f);
-        if (ext_desc) {
-          a()->current_file_area()->DeleteExtendedDescription(f, nTempRecordNum);
-        }
         if (a()->current_file_area()->DeleteFile(nTempRecordNum)) {
           a()->current_file_area()->Save();
         }
@@ -906,9 +903,6 @@ void removefile() {
                 }
               }
             }
-          }
-          if (f.has_extended_description()) {
-            a()->current_file_area()->DeleteExtendedDescription(f, i);
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
                                     a()->directories[a()->current_user_dir().subnum].name);

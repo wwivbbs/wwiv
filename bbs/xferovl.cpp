@@ -136,12 +136,9 @@ void move_file() {
       }
       --nCurrentPos;
       auto* area = a()->current_file_area();
+      string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
       if (area->DeleteFile(nCurRecNum)) {
         area->Save();
-      }
-      string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
-      if (!ss.empty()) {
-        area->DeleteExtendedDescription(f.aligned_filename());
       }
 
       dliscan1(d1);

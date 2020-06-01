@@ -73,9 +73,9 @@ public:
   AreasCommand()
     : UtilCommand("areas", "Lists the file areas") {}
 
-  virtual ~AreasCommand() {}
+  virtual ~AreasCommand() = default;
 
-  std::string GetUsage() const override {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   areas" << endl;
     return ss.str();
@@ -187,9 +187,9 @@ class DeleteFileCommand : public UtilCommand {
 public:
   DeleteFileCommand() : UtilCommand("delete", "Deleate a file in an area") {}
 
-  virtual ~DeleteFileCommand() {}
+  virtual ~DeleteFileCommand() = default;
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   delete --num=NN <sub #>" << endl;
     ss << "Example: delete --num=10 1" << endl;

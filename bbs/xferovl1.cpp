@@ -115,7 +115,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
-        for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
+        for (int i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
           if ((*sss)[i3] == 1) {
             (*sss)[i3] = ' ';
           }
@@ -1098,9 +1098,6 @@ void removefilesnotthere(int dn, int *autodel) {
         if (ch == 'A') {
           bout << "ll";
           *autodel = 1;
-        }
-        if (f.has_extended_description()) {
-          a()->current_file_area()->DeleteExtendedDescription(f, i);
         }
         sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
                    << a()->directories[dn].name;

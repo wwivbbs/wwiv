@@ -77,10 +77,7 @@
 # File Areas
 ***
 * cleanup char[] usage
-* get rid of samedrive logic in move_file_t, it's not needed
-* Add support for extended descriptions into the sdk (read_extended_description for example)
-* support moving file in sdk.
-* make DeleteFile delete ext desc too
+* support moving file in sdk. (Maybe FileApi::MoveFile(old_area, new_area))
 * Add version of DeleteFile that checks filename against position
 
 ## Open Questions

@@ -127,6 +127,7 @@ public:
 
 protected:
   [[nodiscard]] std::filesystem::path path() const noexcept;
+  bool ValidateFileNum(const FileRecord& f, int num);
 
   // Not owned.
   FileApi* api_;

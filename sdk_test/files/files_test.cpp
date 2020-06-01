@@ -45,15 +45,21 @@ public:
     EXPECT_TRUE(config_.IsInitialized());
     config_.set_paths_for_test(helper.data(), helper.msgs(), helper.gfiles(), helper.menus(),
                                helper.dloads(), helper.scripts());
+
+    files_.emplace_back(ul("FILE0001.ZIP", "", 1234));
+    files_.emplace_back(ul("FILE0002.ZIP", "", 2345));
+    files_.emplace_back(ul("FILE0003.ZIP", "", 3456));
   }
 
-  void SetUp() override { helper.SetUp(); }
+  void SetUp() override {
+    helper.SetUp();
+  }
 
-  std::filesystem::path path_for(const std::string& filename) const {
+  [[nodiscard]] std::filesystem::path path_for(const std::string& filename) const {
     return PathFilePath(config_.datadir(), StrCat(filename, ".dir"));
   }
 
-  std::vector<uploadsrec> read_dir(const std::string& filename) const {
+  [[nodiscard]] std::vector<uploadsrec> read_dir(const std::string& filename) const {
     DataFile<uploadsrec> file(path_for(filename));
     if (!file) {
       return {};
@@ -69,6 +75,7 @@ public:
   Config config_;
   FileApi api_;
   FilesApiHelper api_helper_;
+  std::vector<FileRecord> files_;
 };
 
 TEST_F(FilesTest, Smoke) {
@@ -123,12 +130,6 @@ TEST_F(FilesTest, Add_Order) {
   EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0001.ZIP");
 }
 
-TEST(FileRecordTest, Smoke) {
-  FileRecord f(ul("foo.bar", "desc", 12345));
-
-  EXPECT_EQ("FOO     .BAR", f.aligned_filename());
-  EXPECT_EQ("foo.bar", f.unaligned_filename());
-}
 
 TEST_F(FilesTest, Add_Sort_FileName_Asc) {
   const string name = test_info_->name();
@@ -192,6 +193,73 @@ TEST_F(FilesTest, Add_Sort_FileDate_Desc) {
   EXPECT_EQ(area->ReadFile(1).aligned_filename(), "FILE0001.ZIP");
   EXPECT_EQ(area->ReadFile(2).aligned_filename(), "FILE0003.ZIP");
   EXPECT_EQ(area->ReadFile(3).aligned_filename(), "FILE0002.ZIP");
+}
+
+TEST_F(FilesTest, DeleteFile) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  auto pos = area->FindFile(f1);
+  ASSERT_EQ(3, pos.value());
+  EXPECT_TRUE(area->DeleteFile(pos.value()));
+}
+
+TEST_F(FilesTest, DeleteFile_Ext) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  auto pos = area->FindFile(f1);
+  ASSERT_EQ(3, pos.value());
+  auto f = area->ReadFile(pos.value());
+  EXPECT_FALSE(f.has_extended_description());
+
+  EXPECT_TRUE(area->AddExtendedDescription(f, pos.value(), "Hello"));
+  f = area->ReadFile(pos.value());
+  EXPECT_TRUE(f.has_extended_description());
+  auto o = area->ext_desc().value()->ReadExtended(f);
+  EXPECT_TRUE(o.has_value());
+  EXPECT_STREQ("Hello", o.value().c_str());
+
+  // Try to delete the wrong one
+  EXPECT_FALSE(area->DeleteExtendedDescription(f3, pos.value()));
+
+  EXPECT_TRUE(area->DeleteFile(pos.value()));
+
+  EXPECT_FALSE(area->ext_desc().value()->ReadExtended("FILE0001.ZIP"));
+}
+
+TEST_F(FilesTest, DeleteExtendedDescription) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  auto pos = area->FindFile(f1);
+  EXPECT_TRUE(area->AddExtendedDescription(f1, pos.value(), "Hello"));
+  EXPECT_STREQ("Hello", area->ext_desc().value()->ReadExtended(f1).value().c_str());
+
+  // Try to delete the wrong one
+  EXPECT_FALSE(area->DeleteExtendedDescription(f3, pos.value()));
+  // Delete the right one
+  EXPECT_TRUE(area->DeleteExtendedDescription(f1, pos.value()));
+  EXPECT_FALSE(area->ext_desc().value()->ReadExtended(f1).has_value());
+}
+
+TEST(FileRecordTest, Smoke) {
+  FileRecord f(ul("foo.bar", "desc", 12345));
+
+  EXPECT_EQ("FOO     .BAR", f.aligned_filename());
+  EXPECT_EQ("foo.bar", f.unaligned_filename());
 }
 
 TEST(FileRecordTest, Set_FileName) {
