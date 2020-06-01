@@ -267,6 +267,33 @@ TEST_F(FilesTest, DeleteExtendedDescription) {
   EXPECT_FALSE(area->ext_desc().value()->ReadExtended(f1).has_value());
 }
 
+TEST_F(FilesTest, FindFile) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  EXPECT_EQ(3, area->FindFile(f1).value());
+  EXPECT_EQ(2, area->FindFile(f2).value());
+}
+
+TEST_F(FilesTest, SearchFile) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  FileRecord f2{ul("FILE0002.ZIP", "", 1234, now - 200)};
+  FileRecord f3{ul("FILE0003.ZIP", "", 1234, now - 100)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1, f2, f3});
+
+  EXPECT_EQ(1, area->SearchFile("F???????.ZIP").value());
+  EXPECT_EQ(1, area->SearchFile("F???????.ZIP", 1).value());
+  EXPECT_EQ(3, area->SearchFile("FILE0001.ZIP").value());
+  EXPECT_EQ(2, area->SearchFile("F???????.ZIP", 2).value());
+  EXPECT_FALSE(area->SearchFile("F???????.ZIP", 4).has_value());
+}
+
 TEST_F(FilesTest, UpdateFile) {
   const string name = test_info_->name();
   const auto now = DateTime::now().to_daten_t();
@@ -303,13 +330,26 @@ TEST(FileRecordTest, Set_FileName) {
   EXPECT_EQ("bar.baz", f.unaligned_filename());
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// FileAlignTest
+//
+
 TEST(FileAlignTest, Align) {
   EXPECT_EQ("        .   ", align(""));
   EXPECT_EQ("X       .   ", align("x"));
   EXPECT_EQ("X       .Z  ", align("x.z"));
   EXPECT_EQ("X       .ZZ ", align("x.zz"));
+  EXPECT_EQ("X       .ZZ ", align("x  x.zz"));
   EXPECT_EQ("FILENAME.ZIP", align("FILENAME.ZIP"));
   EXPECT_EQ("FILENAME.ZIP", align("filename.zip"));
+}
+
+TEST(FileAlignTest, Align_WildCard) {
+  EXPECT_EQ("X???????.Z  ", align("x*.z"));
+  EXPECT_EQ("X?      .Z  ", align("x?.z"));
+  EXPECT_EQ("FILENAME.Z??", align("filename.z*"));
+  EXPECT_EQ("FILENAME.Z? ", align("filename.z?"));
 }
 
 TEST(FileAlignTest, UnAlign) {

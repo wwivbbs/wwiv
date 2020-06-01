@@ -63,15 +63,6 @@ unsigned long bytes_to_k(unsigned long lBytes) {
   return lBytes ? static_cast<unsigned long>((lBytes + 1023) / 1024) : 0L;
 }
 
-int check_batch_queue(const char *file_name) {
-  for (const auto& b : a()->batch().entry) {
-    if (IsEquals(file_name, b.filename)) {
-      return b.sending ? 1 : -1;
-    }
-  }
-  return 0;
-}
-
 /**
  * returns true if everything is ok, false if the file
  */
@@ -140,11 +131,6 @@ void print_devices() {
   }
 }
 
-void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn) {
-  const auto s = get_arc_cmd(pszArcFileName, cmd, ofn);
-  strcpy(out_buffer, s.c_str());
-}
-
 std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::string& ofn) {
 
   std::string cmd;
@@ -203,18 +189,17 @@ int list_arc_out(const std::string& file_name, const char *pszDirectory) {
       name_to_delete = full_pathname.string();
     }
   }
-  char szArchiveCmd[MAX_PATH];
-  get_arc_cmd(szArchiveCmd, full_pathname.string().c_str(), 0, "");
+  auto arc_cmd = get_arc_cmd(full_pathname.string(), 0, "");
   if (!okfn(file_name)) {
-    szArchiveCmd[0] = 0;
+    arc_cmd.clear();
   }
 
-  int return_code = 0;
-  if (File::Exists(full_pathname) && (szArchiveCmd[0] != 0)) {
+  auto return_code = 0;
+  if (File::Exists(full_pathname) && !arc_cmd.empty()) {
     bout.nl(2);
     bout << "Archive listing for " << file_name;
     bout.nl(2);
-    return_code = ExecuteExternalProgram(szArchiveCmd, a()->spawn_option(SPAWNOPT_ARCH_L));
+    return_code = ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
   } else {
     bout.nl();
     bout << "Unknown archive: " << file_name;
@@ -225,7 +210,6 @@ int list_arc_out(const std::string& file_name, const char *pszDirectory) {
   if (!name_to_delete.empty()) {
     File::Remove(name_to_delete);
   }
-
   return return_code;
 }
 
@@ -278,7 +262,7 @@ void dliscan() {
   dliscan1(a()->current_user_dir().subnum);
 }
 
-void print_extended(const char *file_name, bool *abort, int numlist, int indent) {
+void print_extended(const std::string& file_name, bool *abort, int numlist, int indent) {
   bool next = false;
   int numl = 0;
   int cpos = 0;
@@ -292,7 +276,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
         if (indent == 1) {
           for (int i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
-              s[i] = (okansi() ? '\xBA' : ' '); // was |
+              s[i] = okansi() ? '\xBA' : ' '; // was |
             } else {
               s[i] = SPACE;
             }
@@ -333,20 +317,6 @@ std::string aligns(const std::string& file_name) {
   return wwiv::sdk::files::align(file_name);
 }
 
-void align(char *file_name) {
-  const auto s = wwiv::sdk::files::align(file_name);
-  strcpy(file_name, s.c_str());
-}
-
-bool compare(const char *pszFileName1, const char *pszFileName2) {
-  for (int i = 0; i < 12; i++) {
-    if (pszFileName1[i] != pszFileName2[i] && pszFileName1[i] != '?' && pszFileName2[i] != '?') {
-      return false;
-    }
-  }
-  return true;
-}
-
 void printinfo(uploadsrec * u, bool *abort) {
   char s[85], s1[40], s2[81];
   int i;
@@ -360,7 +330,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     t.dir_mask = a()->directories[subnum].mask;
     a()->filelist.emplace_back(std::move(t));
     sprintf(s, "\r|#%d%2d|#%d%c",
-            (check_batch_queue(u->filename)) ? 6 : 0,
+            a()->batch().contains_file(u->filename) ? 6 : 0,
             a()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
     bout.bputs(s, abort, &next);
   }
@@ -465,7 +435,7 @@ void listfiles() {
   bool abort = false;
   for (int i = 1; i <= area->number_of_files() && !abort && !a()->hangup_; i++) {
     auto f = area->ReadFile(i);
-    if (compare(filemask.c_str(), f.aligned_filename().c_str())) {
+    if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
       if (need_title) {
         printtitle(&abort);
         need_title = false;
@@ -632,7 +602,7 @@ void searchall() {
       for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_;
            i1++) {
         auto f = area->ReadFile(i1);
-        if (compare(filemask.c_str(), f.aligned_filename().c_str())) {
+        if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
           if (need_title) {
             if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
@@ -661,23 +631,8 @@ int recno(const std::string& file_mask) {
 }
 
 int nrecno(const std::string& file_mask, int start_recno) {
-  auto nRecNum = start_recno + 1;
   auto* area = a()->current_file_area();
-  if (!area) {
-    return -1;
-  }
-
-  const auto numf = area->number_of_files();
-  if (numf < 1 || start_recno >= numf) {
-    return -1;
-  }
-
-  auto f = area->ReadFile(nRecNum);
-  while (nRecNum < a()->current_file_area()->number_of_files() &&
-         compare(file_mask.c_str(), f.aligned_filename().c_str()) == 0) {
-    f = area->ReadFile(++nRecNum);
-  }
-  return compare(file_mask.c_str(), f.aligned_filename().c_str()) ? nRecNum : -1;
+  return !area ? -1 : area->SearchFile(file_mask, start_recno + 1).value_or(-1);
 }
 
 int printfileinfo(uploadsrec * u, int directory_num) {

@@ -41,7 +41,7 @@ static void _align(char* fn) {
   // TODO Modify this to handle long file names
   char name[40], ext[40];
 
-  bool invalid = false;
+  auto invalid = false;
   if (fn[0] == '.') {
     invalid = true;
   }
@@ -56,7 +56,7 @@ static void _align(char* fn) {
     strcpy(fn, "        .   ");
     return;
   }
-  char* s2 = strrchr(fn, '.');
+  auto s2 = strrchr(fn, '.');
   if (s2 == nullptr || strrchr(fn, '\\') > s2) {
     ext[0] = '\0';
   } else {
@@ -102,14 +102,14 @@ static void _align(char* fn) {
   }
 
   char buffer[MAX_PATH];
-  for (int i4 = 0; i4 < 12; i4++) {
+  for (auto i4 = 0; i4 < 12; i4++) {
     buffer[i4] = SPACE;
   }
   strcpy(buffer, name);
   buffer[8] = '.';
   strcpy(&(buffer[9]), ext);
   strcpy(fn, buffer);
-  for (int i5 = 0; i5 < 12; i5++) {
+  for (auto i5 = 0; i5 < 12; i5++) {
     fn[i5] = to_upper_case<char>(fn[i5]);
   }
 }
@@ -136,6 +136,20 @@ std::string unalign(const std::string& file_name) {
   return ToStringLowerCase(s);
 }
 
+std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f) {
+  if (directory_name.empty()) {
+    return f.unaligned_filename();
+  }
+  return PathFilePath(directory_name, f).string();
+}
+
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const FileRecord& f) {
+  if (directory_name.empty()) {
+    return f.unaligned_filename();
+  }
+  return directory_name / f.unaligned_filename();
+}
 
 FileApi::FileApi(std::string data_directory)
 : data_directory_(std::move(data_directory)) {
@@ -143,7 +157,7 @@ FileApi::FileApi(std::string data_directory)
 };
 
 bool FileApi::Exist(const std::string& filename) const {
-  return File::Exists(PathFilePath(data_directory_, StrCat(filename, ".dir")));
+  return File::Exists(::PathFilePath(data_directory_, StrCat(filename, ".dir")));
 }
 
 bool FileApi::Exist(const directoryrec& dir) const {
@@ -295,7 +309,7 @@ FileAreaHeader& FileArea::header() const {
 
 bool FileArea::Close() {
   if (open_ && dirty_) {
-    bool r = Save();
+    const auto r = Save();
     open_ = false;
     return r;
   }
@@ -335,6 +349,7 @@ std::map<FileAreaSortType, UlrCompare> CreateSortFunctions() {
   });
   return m;
 }
+
 bool FileArea::Sort(FileAreaSortType type) {
   if (files_.size() <= 1) {
     return false;
@@ -471,6 +486,34 @@ std::optional<int> FileArea::FindFile(const std::string& file_name) {
   return std::nullopt;
 }
 
+bool aligned_wildcard_match(const std::string& l, const std::string& r) {
+  if (l.size() != 12 || r.size() != 12) {
+    LOG(ERROR) << "Invalid params to aligned_wildcard_match: l:'" << l << "'; r:'" << r << "'";
+    return false;
+  }
+  for (auto i = 0; i < 12; i++) {
+    if (l[i] != r[i] && l[i] != '?' && r[i] != '?') {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::optional<int> FileArea::SearchFile(const std::string& filemask, int start_num) {
+  const auto numf = number_of_files();
+  if (numf < 1 || start_num >= numf) {
+    return std::nullopt;
+  }
+
+  for (auto i = start_num; i < wwiv::stl::ssize(files_); i++) {
+    const auto& c = files_.at(i);
+    if (aligned_wildcard_match(filemask, c.filename)) {
+      return {i};
+    }
+  }
+  return std::nullopt;
+}
+
 
 bool FileArea::Save() {
   DataFile<uploadsrec> file(path(), File::modeReadWrite | File::modeCreateFile | File::modeBinary);
@@ -491,7 +534,7 @@ bool FileArea::Save() {
 }
 
 std::filesystem::path FileArea::path() const noexcept {
-  return PathFilePath(data_directory_, filename_);
+  return ::PathFilePath(data_directory_, filename_);
 }
 
 bool FileArea::ValidateFileNum(const FileRecord& f, int num) {

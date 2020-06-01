@@ -30,14 +30,14 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static int check_arc(const char* filename) {
+static int check_arc(const std::string& filename) {
   File f(filename);
   if (!f.Open(File::modeReadOnly)) {
     return COMPRESSION_UNKNOWN;
   }
 
   char header[10];
-  auto num_read = f.Read(&header, 10);
+  const auto num_read = f.Read(&header, 10);
   if (num_read < 10) {
     return COMPRESSION_UNKNOWN;
   }
@@ -61,6 +61,8 @@ static int check_arc(const char* filename) {
     if (header[1] == 'O' && header[2] == 'O')
       return COMPRESSION_ZOO;
     break;
+  default: // FallThrough
+    ;
   }
   if (header[0] == 'P') {
     return COMPRESSION_UNKNOWN;
@@ -71,7 +73,7 @@ static int check_arc(const char* filename) {
   }
 
   // Guess on type, using extension to guess
-  const char* ext = strstr(filename, ".");
+  const char* ext = strstr(filename.c_str(), ".");
   if (!ext) {
     return COMPRESSION_UNKNOWN;
   }
@@ -109,7 +111,7 @@ static int check_arc(const char* filename) {
 // The reason being, PAK does all ARC does, plus a little more, I believe
 // PAK has its own special modes, but still look like an ARC, thus, an ARC
 // Will puke if it sees this
-int match_archiver(const char* filename) {
+int match_archiver(const std::string& filename) {
   char type[4];
   int x = check_arc(filename);
   if (x == COMPRESSION_UNKNOWN) {

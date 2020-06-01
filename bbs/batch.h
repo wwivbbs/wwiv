@@ -21,22 +21,40 @@
 #include <iterator>
 #include <string>
 #include <vector>
-#include "sdk/vardec.h"
+
+/**
+ * One Batch Upload/Download entry.
+ */
+struct batchrec {
+  bool sending;
+
+  char filename[13];
+
+  int16_t dir;
+
+  float time;
+
+  int32_t len;
+};
 
 class Batch {
 public:
   bool clear() { entry.clear(); return true; }
+  bool AddBatch(const batchrec& b) { entry.push_back(b); return true; }
+  int  FindBatch(const std::string& file_name);
+  bool RemoveBatch(const std::string& file_name);
   // deletes an entry by position;
   bool delbatch(size_t pos);
+  std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it);
+
   long dl_time_in_secs() const;
+  bool contains_file(const std::string& file_name);
   size_t numbatchdl() const { size_t r = 0;  for (const auto& e : entry) { if (e.sending) r++; } return r; }
   size_t numbatchul() const { size_t r = 0;  for (const auto& e : entry) { if (!e.sending) r++; } return r; }
   std::vector<batchrec> entry;
 };
 
 void upload(int dn);
-std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it);
-void delbatch(int nBatchEntryNum);
 void dszbatchdl(bool bHangupAfterDl, const char *command_line, const std::string& description);
 int  batchdl(int mode);
 void didnt_upload(const batchrec& b);

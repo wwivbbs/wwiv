@@ -450,9 +450,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
 }
 
 void add_arc(const char *arc, const char *file_name, int dos) {
-  char szAddArchiveCommand[MAX_PATH], szArchiveFileName[MAX_PATH];
-
-  sprintf(szArchiveFileName, "%s.%s", arc, a()->arcs[ARC_NUMBER].extension);
+  const auto arc_fn = fmt::format("{}.{}", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
   if (iequals(file_name, DROPFILE_CHAIN_TXT) ||
       iequals(file_name, "door.sys") ||
@@ -461,50 +459,45 @@ void add_arc(const char *arc, const char *file_name, int dos) {
     return;
   }
 
-  get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
-  if (szAddArchiveCommand[0]) {
+  const auto arc_cmd = get_arc_cmd(arc_fn, 2, file_name);
+  if (!arc_cmd.empty()) {
     File::set_current_directory(a()->temp_directory());
-    a()->localIO()->Puts(szAddArchiveCommand);
+    a()->localIO()->Puts(arc_cmd);
     a()->localIO()->Puts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, a()->spawn_option(SPAWNOPT_ARCH_A));
+      ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A));
     } else {
-      ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
+      ExecuteExternalProgram(arc_cmd, EFLAG_NONE);
       a()->UpdateTopScreen();
     }
     a()->CdHome();
-    sysoplog() << fmt::format("Added \"{}\" to {}", file_name, szArchiveFileName);
-
+    sysoplog() << fmt::format("Added \"{}\" to {}", file_name, arc_fn);
   } else {
     bout << "Sorry, can't add to temp archive.\r\n\n";
   }
 }
 
 void add_temp_arc() {
-  char szInputFileMask[MAX_PATH], szFileMask[MAX_PATH];
-
   bout.nl();
   bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
-  input(szInputFileMask, 12);
-  if (!okfn(szInputFileMask)) {
+  auto input_mask = input(12);
+  if (!okfn(input_mask)) {
     return;
   }
-  if (szInputFileMask[0] == '\0') {
+  if (input_mask.empty()) {
     return;
   }
-  if (strchr(szInputFileMask, '.') == nullptr) {
-    strcat(szInputFileMask, ".*");
+  if (strchr(input_mask.c_str(), '.') == nullptr) {
+    input_mask += ".*";
   }
-  strcpy(szFileMask, stripfn(szInputFileMask));
-  for (int i = 0; i < wwiv::strings::ssize(szFileMask); i++) {
-    if (szFileMask[i] == '|' || szFileMask[i] == '>' ||
-        szFileMask[i] == '<' || szFileMask[i] == ';' ||
-        szFileMask[i] == ' ' || szFileMask[i] == ':' ||
-        szFileMask[i] == '/' || szFileMask[i] == '\\') {
+  const auto file_mask = stripfn(input_mask);
+  for (auto c : file_mask) {
+    if (c == '|' || c == '>' || c == '<' || c == ';' || c == ' ' || c == ':' || c == '/' ||
+        c == '\\') {
       return;
     }
   }
-  add_arc("temp", szFileMask, 1);
+  add_arc("temp", file_mask.c_str(), 1);
 }
 
 void del_temp() {
@@ -546,29 +539,27 @@ void list_temp_dir() {
 }
 
 void temp_extract() {
-  char s[255];
-
   dliscan();
   bout.nl();
   bout << "Extract to temporary directory:\r\n\n";
   bout << "|#2Filename: ";
-  input(s, 12);
-  if (!okfn(s) || s[0] == '\0') {
+  auto s = input(12);
+  if (!okfn(s) || s.empty()) {
     return;
   }
-  if (strchr(s, '.') == nullptr) {
-    strcat(s, ".*");
+  if (strchr(s.c_str(), '.') == nullptr) {
+    s += ".*";
   }
-  align(s);
+  s = aligns(s);
   int i = recno(s);
   bool ok = true;
   while (i > 0 && ok && !a()->hangup_) {
     auto f = a()->current_file_area()->ReadFile(i);
-    auto tmppath = StrCat(a()->directories[a()->current_user_dir().subnum].path, f.unaligned_filename());
+    auto tmppath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
     StringRemoveWhitespace(&tmppath);
     if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-      auto curpath = StrCat(a()->directories[a()->current_user_dir().subnum].path, f.unaligned_filename());
-      tmppath = StrCat(a()->temp_directory().c_str(), f.unaligned_filename());
+      auto curpath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      tmppath = FilePath(a()->temp_directory(), f);
       StringRemoveWhitespace(&curpath);
       if (!File::Exists(tmppath)) {
         File::Copy(curpath, tmppath);
@@ -734,31 +725,28 @@ void move_file_t() {
   }
   // TODO(rushfan): rewrite using iterators.
   for (int nCurBatchPos = a()->batch().entry.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
-    bool ok = false;
-    char szCurBatchFileName[MAX_PATH];
-    strcpy(szCurBatchFileName, a()->batch().entry[nCurBatchPos].filename);
-    align(szCurBatchFileName);
+    bool ok;
+    auto cur_batch_fn = aligns(a()->batch().entry[nCurBatchPos].filename);
     dliscan1(a()->batch().entry[nCurBatchPos].dir);
-    int nTempRecordNum = recno(szCurBatchFileName);
+    int nTempRecordNum = recno(cur_batch_fn);
     if (nTempRecordNum < 0) {
       bout << "File not found.\r\n";
       pausescr();
     }
-    bool done = false;
     int nCurPos = 0;
-    while (!a()->hangup_ && nTempRecordNum > 0 && !done) {
+    while (!a()->hangup_ && nTempRecordNum > 0) {
       nCurPos = nTempRecordNum;
       auto f = a()->current_file_area()->ReadFile(nTempRecordNum);
       printfileinfo(&f.u(), a()->batch().entry[nCurBatchPos].dir);
       bout << "|#5Move this (Y/N/Q)? ";
-      char ch = ynq();
+      const char ch = ynq();
       if (ch == 'Q') {
         tmp_disable_conf(false);
         dliscan();
         return;
       }
       if (ch == 'Y') {
-        s1 = StrCat(a()->directories[a()->batch().entry[nCurBatchPos].dir].path, f.unaligned_filename());
+        s1 = FilePath(a()->directories[a()->batch().entry[nCurBatchPos].dir].path, f);
         StringRemoveWhitespace(&s1);
         string dirnum;
         do {
@@ -801,7 +789,7 @@ void move_file_t() {
       } else {
         ok = false;
       }
-      if (ok && !done) {
+      if (ok) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
           f.u().daten = daten_t_now();
@@ -811,7 +799,7 @@ void move_file_t() {
         if (a()->current_file_area()->DeleteFile(f, nTempRecordNum)) {
           a()->current_file_area()->Save();
         }
-        s2 = StrCat(a()->directories[d1].path, f.unaligned_filename());
+        s2 = FilePath(a()->directories[d1].path, f);
         StringRemoveWhitespace(&s2);
         dliscan1(d1);
         // N.B. the current file area changes with calls to dliscan*
@@ -828,39 +816,38 @@ void move_file_t() {
           File::Rename(s1, s2);
           remlist(a()->batch().entry[nCurBatchPos].filename);
           didnt_upload(a()->batch().entry[nCurBatchPos]);
-          delbatch(nCurBatchPos);
+          a()->batch().delbatch(nCurBatchPos);
         }
         bout << "File moved.\r\n";
       }
       dliscan();
-      nTempRecordNum = nrecno(szCurBatchFileName, nCurPos);
+      nTempRecordNum = nrecno(cur_batch_fn, nCurPos);
     }
   }
   tmp_disable_conf(false);
 }
 
 void removefile() {
-  User uu;
+  User uu{};
 
   dliscan();
   bout.nl();
   bout << "|#9Enter filename to remove.\r\n:";
-  char szFileToRemove[MAX_PATH];
-  input(szFileToRemove, 12, true);
-  if (szFileToRemove[0] == '\0') {
+  auto remove_fn = input(12, true);
+  if (remove_fn.empty()) {
     return;
   }
-  if (strchr(szFileToRemove, '.') == nullptr) {
-    strcat(szFileToRemove, ".*");
+  if (strchr(remove_fn.c_str(), '.') == nullptr) {
+    remove_fn += ".*";
   }
-  align(szFileToRemove);
-  int i = recno(szFileToRemove);
+  remove_fn = aligns(remove_fn);
+  int i = recno(remove_fn);
   bool abort = false;
   while (!a()->hangup_ && (i > 0) && !abort) {
     auto f = a()->current_file_area()->ReadFile(i);
     if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
       bout.nl();
-      if (check_batch_queue(f.aligned_filename().c_str())) {
+      if (a()->batch().contains_file(f.aligned_filename())) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
         printfileinfo(&f.u(), a()->current_user_dir().subnum);
@@ -890,7 +877,7 @@ void removefile() {
             remove_from_file_database(f.aligned_filename());
           }
           if (bDeleteFileToo) {
-            auto del_fn = StrCat(a()->directories[a()->current_user_dir().subnum].path, f.unaligned_filename());
+            auto del_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
             StringRemoveWhitespace(&del_fn);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
@@ -913,6 +900,6 @@ void removefile() {
         }
       }
     }
-    i = nrecno(szFileToRemove, i);
+    i = nrecno(remove_fn, i);
   }
 }

@@ -85,8 +85,7 @@ void move_file() {
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      src_fn =
-          StrCat(a()->directories[a()->current_user_dir().subnum].path, f.unaligned_filename());
+      src_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
       string ss;
       do {
         bout.nl(2);
@@ -142,7 +141,7 @@ void move_file() {
       }
 
       dliscan1(d1);
-      auto dest_fn = StrCat(a()->directories[d1].path, f.unaligned_filename());
+      auto dest_fn = FilePath(a()->directories[d1].path, f);
       if (area->AddFile(f)) {
         area->Save();
       }
@@ -193,21 +192,19 @@ void sort_all(int type) {
 }
 
 void rename_file() {
-  char s[81], s1[81], s2[81], s3[81];
-
   bout.nl(2);
   bout << "|#2File to rename: ";
-  input(s, 12);
-  if (s[0] == 0) {
+  auto s = input(12);
+  if (s.empty()) {
     return;
   }
-  if (strchr(s, '.') == nullptr) {
-    strcat(s, ".*");
+  if (strchr(s.c_str(), '.') == nullptr) {
+    s += ".*";
   }
-  align(s);
+  s = aligns(s);
   dliscan();
   bout.nl();
-  strcpy(s3, s);
+  const auto original_filename = s;
   int nRecNum = recno(s);
   while (nRecNum > 0 && !a()->hangup_) {
     int nCurRecNum = nRecNum;
@@ -216,35 +213,33 @@ void rename_file() {
     printfileinfo(&f.u(), a()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
-    char ch = ynq();
+    const char ch = ynq();
     if (ch == 'Q') {
       break;
-    } else if (ch == 'N') {
-      nRecNum = nrecno(s3, nCurRecNum);
+    }
+    if (ch == 'N') {
+      nRecNum = nrecno(original_filename, nCurRecNum);
       continue;
     }
     bout.nl();
     bout << "|#2New filename? ";
-    input(s, 12);
+    s = input(12);
     if (!okfn(s)) {
-      s[0] = 0;
+      s.clear();
     }
-    if (s[0]) {
-      align(s);
-      if (!IsEquals(s, "        .   ")) {
-        strcpy(s1, a()->directories[a()->current_user_dir().subnum].path);
-        strcpy(s2, s1);
-        strcat(s1, s);
-        StringRemoveWhitespace(s1);
-        if (File::Exists(s1)) {
+    if (!s.empty()) {
+      s = aligns(s);
+      if (!iequals(s, "        .   ")) {
+        const std::string p = ToStringRemoveWhitespace(a()->directories[a()->current_user_dir().subnum].path);
+        auto dest_fn = FilePath(p, s);
+        if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          strcat(s2, f.aligned_filename().c_str());
-          StringRemoveWhitespace(s2);
-          File::Rename(s2, s1);
-          if (File::Exists(s1)) {
+          auto orig_fn = FilePath(p, f);
+          File::Rename(orig_fn, dest_fn);
+          if (File::Exists(dest_fn)) {
             auto* area = a()->current_file_area();
-            string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
+            auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
             if (!ss.empty()) {
               area->DeleteExtendedDescription(f, nCurRecNum);
               area->AddExtendedDescription(s, ss);
@@ -258,11 +253,11 @@ void rename_file() {
       }
     }
     bout << "\r\nNew description:\r\n|#2: ";
+    auto* area = a()->current_file_area();
     auto desc = input_text(58);
     if (!desc.empty()) {
       f.set_description(desc);
     }
-    auto* area = a()->current_file_area();
     string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
     bout.nl(2);
     bout << "|#5Modify extended description? ";
@@ -298,7 +293,7 @@ void rename_file() {
     if (a()->current_file_area()->UpdateFile(f, nRecNum)) {
       a()->current_file_area()->Save();
     }
-    nRecNum = nrecno(s3, nCurRecNum);
+    nRecNum = nrecno(original_filename, nCurRecNum);
   }
 }
 
@@ -354,7 +349,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num, co
     get_file_idz(&f.u(), directory_num);
     a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
     if (!(d.mask & mask_cdrom)) {
-      add_to_file_database(f.aligned_filename());
+      add_to_file_database(f);
     }
     a()->user()->set_uk(a()->user()->uk() + bytes_to_k(fs));
     f.u().daten = daten_t_now();
@@ -418,11 +413,11 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
  * the optional words (size, date/time) are ignored completely.
  */
 void upload_files(const char* file_name, uint16_t directory_num, int type) {
-  char s[255], *fn1 = nullptr, *description = nullptr, last_fn[81], *ext = nullptr;
+  char s[255], *fn1 = nullptr, *description = nullptr,*ext = nullptr;
   bool abort = false;
   bool ok = true;
 
-  last_fn[0] = 0;
+  std::string last_fn;
   dliscan1(a()->udir[directory_num].subnum);
 
   auto file = std::make_unique<TextFile>(file_name, "r");
@@ -440,7 +435,7 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
         continue;
       }
       if (s[0] == SPACE) {
-        if (last_fn[0]) {
+        if (!last_fn.empty()) {
           if (!ext) {
             ext = static_cast<char*>(BbsAllocA(4096L));
             *ext = 0;
@@ -477,10 +472,10 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
           }
         }
         if (ok1) {
-          if (last_fn[0] && ext && *ext) {
+          if (!last_fn.empty() && ext && *ext) {
             auto f = a()->current_file_area()->ReadFile(1);
             if (iequals(last_fn, f.aligned_filename())) {
-              add_to_file_database(f.aligned_filename());
+              add_to_file_database(f);
               a()->current_file_area()->AddExtendedDescription(f, 1, ext);
               f.set_extended_description(true);
               if (a()->current_file_area()->UpdateFile(f, 1)) {
@@ -498,8 +493,8 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
             ok = false;
           }
           if (ok) {
-            strcpy(last_fn, fn1);
-            align(last_fn);
+            last_fn = fn1;
+            last_fn = aligns(last_fn);
             if (ext) {
               *ext = 0;
             }
@@ -511,7 +506,7 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
     if (ok && last_fn[0] && ext && *ext) {
       auto f = a()->current_file_area()->ReadFile(1);
       if (iequals(last_fn, f.aligned_filename())) {
-        add_to_file_database(f.aligned_filename());
+        add_to_file_database(f);
         a()->current_file_area()->AddExtendedDescription(f, 1, ext);
         f.set_extended_description(true);
         if (a()->current_file_area()->UpdateFile(f, 1)) {
@@ -599,7 +594,7 @@ void relist() {
         bout << string(78, '-') << wwiv::endl;
       }
     }
-    sprintf(s, "%c%d%2d%c%d%c", 0x03, check_batch_queue(f.u.filename) ? 6 : 0, i + 1, 0x03,
+    sprintf(s, "%c%d%2d%c%d%c", 0x03, a()->batch().contains_file(f.u.filename) ? 6 : 0, i + 1, 0x03,
             FRAME_COLOR,
             okansi() ? '\xBA' : ' '); // was |
     bout.bputs(s, &abort, &next);
@@ -607,7 +602,7 @@ void relist() {
     strncpy(s, f.u.filename, 8);
     s[8] = 0;
     bout.bputs(s, &abort, &next);
-    strncpy(s, &((f.u.filename)[8]), 4);
+    strncpy(s, &f.u.filename[8], 4);
     s[4] = 0;
     bout.Color(1);
     bout.bputs(s, &abort, &next);
@@ -653,7 +648,7 @@ void relist() {
 
     bout.Color(FRAME_COLOR);
     bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
-    sprintf(s, "%c%d%s", 0x03, (f.u.mask & mask_extended) ? 1 : 2, f.u.description);
+    sprintf(s, "%c%d%s", 0x03, f.u.mask & mask_extended ? 1 : 2, f.u.description);
     bout.bpla(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), &abort);
   }
   bout.Color(FRAME_COLOR);
@@ -713,6 +708,10 @@ void add_to_file_database(const std::string& file_name) {
   wwiv::sdk::files::Allow allow(*a()->config());
   allow.Add(file_name);
   allow.Save();
+}
+
+void add_to_file_database(const files::FileRecord& f) {
+  add_to_file_database(f.aligned_filename());
 }
 
 void remove_from_file_database(const std::string& file_name) {
@@ -994,21 +993,20 @@ void finddescription() {
 }
 
 void arc_l() {
-  char szFileSpec[MAX_PATH];
 
   bout.nl();
   bout << "|#2File for listing: ";
-  input(szFileSpec, 12);
-  if (strchr(szFileSpec, '.') == nullptr) {
-    strcat(szFileSpec, ".*");
+  auto file_spec = input(12);
+  if (strchr(file_spec.c_str(), '.') == nullptr) {
+    file_spec += ".*";
   }
-  if (!okfn(szFileSpec)) {
-    szFileSpec[0] = 0;
+  if (!okfn(file_spec)) {
+    file_spec.clear();
   }
-  align(szFileSpec);
+  file_spec = aligns(file_spec);
   dliscan();
   bool abort = false;
-  int nRecordNum = recno(szFileSpec);
+  int nRecordNum = recno(file_spec);
   do {
     if (nRecordNum > 0) {
       auto f = a()->current_file_area()->ReadFile(nRecordNum);
@@ -1018,7 +1016,7 @@ void arc_l() {
         abort = true;
       }
       checka(&abort);
-      nRecordNum = nrecno(szFileSpec, nRecordNum);
+      nRecordNum = nrecno(file_spec, nRecordNum);
     }
   } while (nRecordNum > 0 && !a()->hangup_ && !abort);
 }

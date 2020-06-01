@@ -365,7 +365,7 @@ static void qwk_receive_file(const std::string& fn, bool* received, int i) {
 }
 
 static void ready_reply_packet(const std::string& packet_name, const std::string& msg_name) {
-  const auto archiver = match_archiver(packet_name.c_str());
+  const auto archiver = match_archiver(packet_name);
   const auto command = stuff_in(a()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
   File::set_current_directory(a()->qwk_directory());

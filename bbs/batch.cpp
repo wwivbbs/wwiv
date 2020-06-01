@@ -104,25 +104,13 @@ static void listbatch() {
   bout.nl();
 }
 
-std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it) {
-  return a()->batch().entry.erase(it);
-}
-
-// Deletes one item (index i) from the d/l batch queue.
-void delbatch(int num) {
-  if (num >= ssize(a()->batch().entry)) {
-    return;
-  }
-  erase_at(a()->batch().entry, static_cast<size_t>(num));
-}
-
 static void downloaded(const string& file_name, long lCharsPerSecond) {
 
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
     if (file_name == b.filename && b.sending) {
       dliscan1(b.dir);
-      auto area = a()->current_file_area();
+      auto* area = a()->current_file_area();
       auto nRecNum = recno(b.filename);
       if (nRecNum > 0) {
         auto f = area->ReadFile(nRecNum);
@@ -151,7 +139,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           }
         }
       }
-      it = delbatch(it);
+      it = a()->batch().delbatch(it);
       return;
     }
   }
@@ -205,8 +193,8 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         }
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
-          auto source_filename = PathFilePath(a()->batch_directory(), file_name);
-          auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
+          const auto source_filename = PathFilePath(a()->batch_directory(), file_name);
+          const auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
             File::Remove(source_filename);
@@ -226,9 +214,8 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               file.Close();
               get_file_idz(&f.u(), b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
-              add_to_file_database(f.aligned_filename());
-              a()->user()->set_uk(a()->user()->uk() +
-                                  static_cast<int>(bytes_to_k(f.numbytes())));
+              add_to_file_database(f);
+              a()->user()->set_uk(a()->user()->uk() + static_cast<int>(bytes_to_k(f.numbytes())));
               a()->status_manager()->Run([](WStatus& s)
               {
                 s.IncrementNumUploadsToday();
@@ -239,16 +226,16 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               }
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
                                         a()->directories[b.dir].name, lCharsPerSecond);
-              bout << "Uploaded '" << f.aligned_filename() << "' to " << a()->directories[b.dir].
-                  name
-                  << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
+              bout << "Uploaded '" << f.aligned_filename() << "' to "
+                   << a()->directories[b.dir].name << " (" << lCharsPerSecond << " cps)"
+                   << wwiv::endl;
             }
           }
-          it = delbatch(it);
+          it = a()->batch().delbatch(it);
           return;
         }
       }
-      it = delbatch(it);
+      it = a()->batch().delbatch(it);
       if (try_to_ul(file_name)) {
         sysoplog() << fmt::sprintf("!!! Couldn't find file \"%s\" in directory.", file_name);
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
@@ -332,19 +319,17 @@ void zmbatchdl(bool bHangupAfterDl) {
       dliscan1(a()->batch().entry[cur].dir);
       const int nRecordNumber = recno(a()->batch().entry[cur].filename);
       if (nRecordNumber <= 0) {
-        delbatch(cur);
+        a()->batch().delbatch(cur);
       } else {
         a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
-                                          f.unaligned_filename());
+        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
-                                            f.unaligned_filename());
-          // update the send filename and copy it from the cdrom
-          send_filename = PathFilePath(a()->temp_directory(), f.unaligned_filename());
+          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
+          // update the send filename and copy it from the CD-ROM
+          send_filename = PathFilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -358,7 +343,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         }
       }
     } else {
-      delbatch(cur);
+      a()->batch().delbatch(cur);
     }
   }
   while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
@@ -465,20 +450,16 @@ void ymbatchdl(bool bHangupAfterDl) {
       dliscan1(a()->batch().entry[cur].dir);
       const auto nRecordNumber = recno(a()->batch().entry[cur].filename);
       if (nRecordNumber <= 0) {
-        delbatch(cur);
+        a()->batch().delbatch(cur);
       } else {
         a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename =
-            PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
-                         f.unaligned_filename());
+        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          auto orig_filename =
-              PathFilePath(a()->directories[a()->batch().entry[cur].dir].path,
-                           f.unaligned_filename());
-          send_filename = PathFilePath(a()->temp_directory(), f.unaligned_filename());
+          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
+          send_filename = PathFilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -491,7 +472,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         }
       }
     } else {
-      delbatch(cur);
+      a()->batch().delbatch(cur);
     }
   }
   while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
@@ -784,7 +765,7 @@ int batchdl(int mode) {
       auto i = to_number<int>(s);
       if (i > 0 && i <= ssize(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i - 1]);
-        delbatch(i - 1);
+        a()->batch().delbatch(i - 1);
       }
       if (a()->batch().entry.empty()) {
         bout << "\r\nBatch queue empty.\r\n\n";
@@ -913,11 +894,33 @@ void upload(int dn) {
   while (!done && !a()->hangup_);
 }
 
+int Batch::FindBatch(const std::string& file_name) {
+  for (size_t i = 0; i < entry.size(); i++) {
+    if (iequals(file_name, entry[i].filename)) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+bool Batch::RemoveBatch(const std::string& file_name) {
+  const auto n = FindBatch(file_name);
+  if (n < 0) {
+    return false;
+  }
+  return delbatch(n);
+}
+
 bool Batch::delbatch(size_t pos) {
   if (pos >= entry.size()) {
     return false;
   }
   return erase_at(entry, pos);
+}
+
+std::vector<batchrec>::iterator Batch::delbatch(std::vector<batchrec>::iterator it) {
+  return entry.erase(it);
 }
 
 long Batch::dl_time_in_secs() const {
@@ -928,6 +931,16 @@ long Batch::dl_time_in_secs() const {
     }
   }
 
-  auto t = 12.656 * r / a()->modem_speed_;
+  const auto t = 12.656 * r / a()->modem_speed_;
   return std::lround(t);
+}
+
+bool Batch::contains_file(const std::string& file_name) {
+  for (const auto& b : entry) {
+    if (iequals(file_name, b.filename)) {
+      return true;
+    }
+  }
+  return false;
+
 }

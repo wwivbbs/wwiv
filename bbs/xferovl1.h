@@ -35,7 +35,5 @@ void endlist(int mode);
 void SetNewFileScanDate();
 void removefilesnotthere(int dn, int *autodel);
 void removenotthere();
-int  find_batch_queue(const char *file_name);
-void remove_batch(const char *file_name);
 
 #endif  // __INCLUDED_BBS_XFEROVL1_H__

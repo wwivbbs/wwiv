@@ -272,7 +272,7 @@ int listfiles_plus(int type) {
 int lp_add_batch(const char *file_name, int dn, long fs) {
   double t;
 
-  if (find_batch_queue(file_name) > -1) {
+  if (a()->batch().FindBatch(file_name) > -1) {
     return 0;
   }
 
@@ -304,7 +304,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
         b.time = static_cast<float>(t);
         b.sending = true;
         b.len = fs;
-        a()->batch().entry.emplace_back(b);
+        a()->batch().AddBatch(b);
         return 1;
       }
     }
@@ -1336,7 +1336,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           remove_from_file_database(fn);
         }
         if (rm) {
-          File::Remove(PathFilePath(a()->directories[dn].path, f.unaligned_filename()));
+          File::Remove(PathFilePath(a()->directories[dn].path, f));
           if (rdlp && f.u().ownersys == 0) {
             User user;
             a()->users()->readuser(&user, f.u().ownerusr);
@@ -1378,7 +1378,7 @@ static int move_filename(const char *file_name, int dn) {
   while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
-    auto src_fn = StrCat(a()->directories[dn].path, f.unaligned_filename());
+    auto src_fn = FilePath(a()->directories[dn].path, f);
     bout.nl();
     printfileinfo(&f.u(), dn);
     bout.nl();
@@ -1467,7 +1467,7 @@ static int move_filename(const char *file_name, int dn) {
       if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
         a()->current_file_area()->Save();
       }
-      auto dest_fn = StrCat(a()->directories[nDestDirNum].path, f.unaligned_filename());
+      auto dest_fn = FilePath(a()->directories[nDestDirNum].path, f);
       dliscan1(nDestDirNum);
       auto* area = a()->current_file_area();
       if (area->AddFile(f)) {
@@ -1528,21 +1528,21 @@ void do_batch_sysop_command(int mode, const char *file_name) {
           if (!remove_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            it = delbatch(it);
+            it = a()->batch().delbatch(it);
           }
           break;
         case SYSOP_RENAME:
           if (!rename_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            it = delbatch(it);
+            it = a()->batch().delbatch(it);
           }
           break;
         case SYSOP_MOVE:
           if (!move_filename(b.filename, b.dir)) {
             done = true;
           } else {
-            it = delbatch(it);
+            it = a()->batch().delbatch(it);
           }
           break;
         }
@@ -1742,8 +1742,6 @@ int lp_try_to_download(const char *file_mask, int dn) {
 }
 
 void download_plus(const char *file_name) {
-  char szFileName[MAX_PATH];
-
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
@@ -1752,15 +1750,16 @@ void download_plus(const char *file_name) {
       return;
     }
   }
-  strcpy(szFileName, file_name);
-  if (szFileName[0] == '\0') {
+  if (!file_name[0]) {
     return;
   }
-  if (strchr(szFileName, '.') == nullptr) {
-    strcat(szFileName, ".*");
+  std::string fn = file_name;
+ 
+  if (strchr(fn.c_str(), '.') == nullptr) {
+    fn += ".*";
   }
-  align(szFileName);
-  if (lp_try_to_download(szFileName, a()->current_user_dir().subnum) == 0) {
+  fn = aligns(fn);
+  if (lp_try_to_download(fn.c_str(), a()->current_user_dir().subnum) == 0) {
     bout << "\r\nSearching all a()->directories.\r\n\n";
     size_t dn = 0;
     int count = 0;
@@ -1783,11 +1782,10 @@ void download_plus(const char *file_name) {
           color = 0;
         }
       }
-      if (lp_try_to_download(szFileName, a()->udir[dn].subnum) < 0) {
+      if (lp_try_to_download(fn.c_str(), a()->udir[dn].subnum) < 0) {
         break;
-      } else {
-        dn++;
       }
+      dn++;
     }
     if (!foundany) {
       bout << "File not found.\r\n\n";

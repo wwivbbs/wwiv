@@ -214,7 +214,7 @@ std::optional<std::vector<std::string>> FileAreaExtendedDesc::ReadExtendedAsLine
 }
 
 std::filesystem::path FileAreaExtendedDesc::path() const noexcept {
-  return PathFilePath(data_directory_, filename_);
+  return ::PathFilePath(data_directory_, filename_);
 }
 
 } // namespace wwiv::sdk::files

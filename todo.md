@@ -78,6 +78,10 @@
 ***
 * cleanup char[] usage
 * support moving file in sdk. (Maybe FileApi::MoveFile(old_area, new_area))
+* Move more batch code into batch class.
+* move FileList into context (for tagged files)
+* make batchrec use string and stop checking size since it's never saved
+  to disk.  Remove from vardec.h
 
 ## Open Questions
 ***

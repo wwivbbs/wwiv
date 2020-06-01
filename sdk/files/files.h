@@ -108,8 +108,14 @@ public:
   bool Sort(FileAreaSortType type);
 
   // File specific
+  /** Optionally returns the file position for any exact match */
   std::optional<int> FindFile(const FileRecord& f);
+  /** Optionally returns the file position for any exact match */
   std::optional<int> FindFile(const std::string& file_name);
+
+  /** Searches for a filemask on an aligned file. i.e. 'FOO?????.ZIP' */
+  std::optional<int> SearchFile(const std::string& filemask, int start_num = 1);
+
   FileRecord ReadFile(int num);
   bool AddFile(const FileRecord& f);
   bool UpdateFile(FileRecord& f, int num);
@@ -148,6 +154,18 @@ protected:
 
 std::string align(const std::string& file_name);
 std::string unalign(const std::string& file_name);
+
+/**
+ * Return true if two files {l, r} match each other either exactly or using
+ * aligned wildcards.
+ *
+ * An aligned wildcard is of the form: "[A-Z? ]{8}\.[A-Z? ]{3}"
+ */
+bool aligned_wildcard_match(const std::string& l, const std::string& r);
+
+std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f);
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const FileRecord& f);
 
 } // namespace wwiv::sdk::files
 

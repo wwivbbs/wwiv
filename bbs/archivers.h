@@ -19,6 +19,8 @@
 #ifndef _ARCHIVERS_H_
 #define _ARCHIVERS_H_
 
+#include <string>
+
 enum COMPRESSIONS {
   COMPRESSION_UNKNOWN,
   COMPRESSION_ARJ,
@@ -30,6 +32,6 @@ enum COMPRESSIONS {
 };
 
 
-int match_archiver(const char* filename);
+int match_archiver(const std::string& filename);
 
 #endif  // _ARCHIVERS_H_

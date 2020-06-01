@@ -62,33 +62,32 @@ void normalupload(int dn) {
     bout << "This directory is currently full.\r\n\n";
     return;
   }
-  if ((d.mask & mask_no_uploads) && !dcs()) {
+  if (d.mask & mask_no_uploads && !dcs()) {
     bout.nl(2);
     bout << "Uploads are not allowed to this directory.\r\n\n";
     return;
   }
   bout << "|#9Filename: ";
-  char szInputFileName[MAX_PATH];
-  input(szInputFileName, 12);
-  if (!okfn(szInputFileName)) {
-    szInputFileName[0] = '\0';
+  auto input_fn = input(12);
+  if (!okfn(input_fn)) {
+    input_fn.clear();
   } else {
-    if (!is_uploadable(szInputFileName)) {
+    if (!is_uploadable(input_fn)) {
       if (so()) {
         bout.nl();
         bout << "|#5In filename database - add anyway? ";
         if (!yesno()) {
-          szInputFileName[0] = '\0';
+          input_fn.clear();
         }
       } else {
-        szInputFileName[0] = '\0';
+        input_fn.clear();
         bout.nl();
         bout << "|#6File either already here or unwanted.\r\n";
       }
     }
   }
-  align(szInputFileName);
-  if (strchr(szInputFileName, '?')) {
+  input_fn = aligns(input_fn);
+  if (strchr(input_fn.c_str(), '?')) {
     return;
   }
   if (d.mask & mask_archive) {
@@ -100,7 +99,7 @@ void normalupload(int dn) {
           supportedExtensions += ", ";
         }
         supportedExtensions += a()->arcs[k].extension;
-        if (wwiv::strings::IsEquals(szInputFileName + 9, a()->arcs[k].extension)) {
+        if (iequals(input_fn.substr(9), a()->arcs[k].extension)) {
           ok = 1;
         }
       }
@@ -112,7 +111,7 @@ void normalupload(int dn) {
       return;
     }
   }
-  strcpy(u.filename, szInputFileName);
+  to_char_array(u.filename, input_fn);
   u.ownerusr = a()->usernum;
   u.ownersys = 0;
   u.numdloads = 0;
@@ -124,18 +123,18 @@ void normalupload(int dn) {
   bout.nl();
   ok = 1;
   bool xfer = true;
-  if (check_batch_queue(u.filename)) {
+  if (a()->batch().contains_file(u.filename)) {
     ok = 0;
     bout.nl();
     bout << "That file is already in the batch queue.\r\n\n";
   } else {
-    if (!wwiv::strings::IsEquals(szInputFileName, "        .   ")) {
-      bout << "|#5Upload '" << szInputFileName << "' to " << d.name << "? ";
+    if (!wwiv::strings::iequals(input_fn, "        .   ")) {
+      bout << "|#5Upload '" << input_fn << "' to " << d.name << "? ";
     } else {
       ok = 0;
     }
   }
-  const auto receive_fn = PathFilePath(d.path, files::unalign(szInputFileName));
+  const auto receive_fn = PathFilePath(d.path, files::unalign(input_fn));
   if (ok && yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {

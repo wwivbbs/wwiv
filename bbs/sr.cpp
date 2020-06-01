@@ -487,7 +487,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
   }
   bool ok = false;
   double percent = 0.0;
-  if (check_batch_queue(sfn.c_str())) {
+  if (a()->batch().contains_file(sfn)) {
     *sent = false;
     if (nProtocol > 0) {
       bout.nl();
@@ -540,7 +540,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
             b.time = static_cast<float>(t);
             b.sending = true;
             b.len = fs;
-            a()->batch().entry.emplace_back(b);
+            a()->batch().AddBatch(b);
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
             bout << "Batch: Files - " << a()->batch().entry.size()
@@ -602,7 +602,7 @@ void receive_file(const std::string& file_name, int* received, const std::string
         b.time = 0;
         b.sending = false;
         b.len = 0;
-        a()->batch().entry.emplace_back(b);
+        a()->batch().AddBatch(b);
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
         bout << "Batch upload: files - " << a()->batch().numbatchul() << "\r\n\n";

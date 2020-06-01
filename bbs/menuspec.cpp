@@ -118,10 +118,10 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = PathFilePath(a()->directories[dn].path, f.unaligned_filename());
+      auto s1 = PathFilePath(a()->directories[dn].path, f);
       if (a()->directories[dn].mask & mask_cdrom) {
-        auto s2 = PathFilePath(a()->directories[dn].path, f.unaligned_filename());
-        s1 = PathFilePath(a()->temp_directory(), f.unaligned_filename());
+        auto s2 = PathFilePath(a()->directories[dn].path, f);
+        s1 = PathFilePath(a()->temp_directory(), f);
         if (!File::Exists(s1)) {
           File::Copy(s2, s1);
         }

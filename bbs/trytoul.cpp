@@ -366,7 +366,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   } else {
     area->Save();
   }
-  add_to_file_database(f.aligned_filename());
+  add_to_file_database(f);
 
   a()->user()->set_uk(a()->user()->uk() + bytes_to_k(f.numbytes()));
 

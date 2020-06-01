@@ -23,21 +23,18 @@
 #include <string>
 
 unsigned long bytes_to_k(unsigned long lBytes);
-int  check_batch_queue(const char *file_name);
+/** return true if file_name is in the queue */
 bool check_ul_event(int directory_num, uploadsrec * upload_record);
 bool okfn(const std::string& fileName);
 void print_devices();
-void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const char *ofn);
 std::string get_arc_cmd(const std::string& arc_fn, int cmd, const std::string& ofn);
 int  list_arc_out(const std::string& file_name, const char *pszDirectory);
 bool ratio_ok();
 bool dcs();
 void dliscan1(int directory_num);
 void dliscan();
-void print_extended(const char *file_name, bool *abort, int numlist, int indent);
-void align(char *file_name);
+void print_extended(const std::string& file_name, bool *abort, int numlist, int indent);
 std::string aligns(const std::string& file_name);
-bool compare(const char* pszFileName1, const char* pszFileName2);
 void printinfo(uploadsrec * upload_record, bool *abort);
 void printtitle(bool *abort);
 std::string file_mask(const std::string& prompt);

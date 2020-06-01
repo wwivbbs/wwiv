@@ -36,6 +36,8 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
+#include "sdk/files/files.h"
+
 #include <string>
 #include <vector>
 
@@ -299,7 +301,7 @@ bool fill_sec(int sn) {
     to_char_array(s, aligns(f.name));
     i = 1;
     for (i1 = 0; i1 < nf; i1++) {
-      if (compare(f.name.c_str(), g[i1].filename)) {
+      if (wwiv::sdk::files::aligned_wildcard_match(f.name, g[i1].filename)) {
         i = 0;
       }
     }

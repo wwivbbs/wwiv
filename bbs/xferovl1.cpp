@@ -193,17 +193,17 @@ bool valid_desc(const string& description) {
 
 // TODO(rushfan): This is probably completely broken
 bool get_file_idz(uploadsrec * u, int dn) {
-  char *b, cmd[MAX_PATH], s[81];
+  char *b;
 
   if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
     return false;
   }
-  sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
-  auto t = DateTime::from_time_t(File::creation_time(s))
-               .to_string(DateTime::now().to_string("%m/%d/%y"));
+  const auto pfn = FilePath(a()->directories[dn].path, stripfn(u->filename));
+  const auto t = DateTime::from_time_t(File::creation_time(pfn))
+                     .to_string(DateTime::now().to_string("%m/%d/%y"));
   to_char_array(u->actualdate, t);
   {
-    char* ss = strchr(stripfn(u->filename), '.');
+    auto ss = strchr(stripfn(u->filename), '.');
     if (ss == nullptr) {
       return false;
     }
@@ -222,23 +222,24 @@ bool get_file_idz(uploadsrec * u, int dn) {
   File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
   File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
 
+  std::string cmd;
   File::set_current_directory(a()->directories[dn].path);
   {
     File file(PathFilePath(File::current_directory(), stripfn(u->filename)));
-	  a()->CdHome();
-	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
+    a()->CdHome();
+    cmd = get_arc_cmd(file.full_pathname(), 1, "FILE_ID.DIZ DESC.SDI");
   }
   File::set_current_directory(a()->temp_directory());
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   a()->CdHome();
-  sprintf(s, "%s%s", a()->temp_directory().c_str(), FILE_ID_DIZ);
-  if (!File::Exists(s)) {
-    sprintf(s, "%s%s", a()->temp_directory().c_str(), DESC_SDI);
+  auto diz_fn = FilePath(a()->temp_directory(), FILE_ID_DIZ);
+  if (!File::Exists(diz_fn)) {
+    diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
   }
-  if (File::Exists(s)) {
+  if (File::Exists(diz_fn)) {
     // TODO(rushfan): Change to TextFile::ReadTextIntoVector and parse that way.
     bout.nl();
-    bout << "|#9Reading in |#2" << stripfn(s) << "|#9 as extended description...";
+    bout << "|#9Reading in |#2" << stripfn(diz_fn) << "|#9 as extended description...";
     string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
     if (!ss.empty()) {
       a()->current_file_area()->DeleteExtendedDescription(u->filename);
@@ -246,7 +247,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if ((b = static_cast<char *>(BbsAllocA(a()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
     }
-    File file(s);
+    File file(diz_fn);
     file.Open(File::modeBinary | File::modeReadOnly);
     if (file.length() < (a()->max_extend_lines * 256)) {
       auto lFileLen = file.length();
@@ -260,9 +261,10 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (!ss.empty()) {
-        for (size_t i = 0; i < ss.size(); i++) {
-          if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
-            ss[i] = '\x20';
+        for (char& s : ss) {
+          if (strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), s) != nullptr &&
+              s != CZ) {
+            s = '\x20';
           }
         }
         if (!valid_desc(ss)) {
@@ -330,9 +332,8 @@ int read_idz(int mode, int tempdir) {
   auto* area = a()->current_file_area();
   for (int i = 1; i <= a()->current_file_area()->number_of_files() && !a()->hangup_ && !abort; i++) {
     auto f = area->ReadFile(i);
-    if ((compare(s.c_str(), f.aligned_filename().c_str())) &&
-        (strstr(f.aligned_filename().c_str(), ".COM") == nullptr) &&
-        (strstr(f.aligned_filename().c_str(), ".EXE") == nullptr)) {
+    const auto fn = f.aligned_filename();
+    if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
       const auto file = PathFilePath(File::current_directory(), 
         stripfn(f.unaligned_filename()));
@@ -355,7 +356,7 @@ int read_idz(int mode, int tempdir) {
 }
 
 void tag_it() {
-  int i, i3, i4;
+  int i;
   double t = 0.0;
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
@@ -381,10 +382,10 @@ void tag_it() {
   }
   for (int i2 = 0; i2 < wwiv::strings::ssize(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
-    i4 = 0;
+    int i4 = 0;
     bool bad = false;
-    for (i3 = 0; i3 < wwiv::strings::ssize(s1); i3++) {
-      if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
+    for (int i3 = 0; i3 < wwiv::strings::ssize(s1); i3++) {
+      if (s1[i3] == ' ' || s1[i3] == ',' || s1[i3] == ';') {
         s1[i3] = 0;
         i4 = 1;
       } else {
@@ -400,7 +401,7 @@ void tag_it() {
     i--;
     if (s1[0] && i >= 0 && i < ssize(a()->filelist)) {
     auto& f = a()->filelist[i];
-      if (check_batch_queue(f.u.filename)) {
+      if (a()->batch().contains_file(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
@@ -408,7 +409,7 @@ void tag_it() {
         bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
         bad = true;
       }
-      if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio()) &&
+      if (a()->config()->req_ratio() > 0.0001 && ratio() < a()->config()->req_ratio() &&
           !a()->user()->IsExemptRatio() && !bad) {
         bout << fmt::sprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
                                           ratio(), a()->config()->req_ratio());
@@ -448,7 +449,7 @@ void tag_it() {
         b.time = (float) t;
         b.sending = true;
         b.len = fs;
-        a()->batch().entry.emplace_back(b);
+        a()->batch().AddBatch(b);
         bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -487,10 +488,7 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
 }
 
 void tag_files(bool& need_title) {
-  int i;
-  char s[255], s1[255], s2[81], ch;
   bool had = false;
-  double d;
 
   if (bout.lines_listed() == 0) {
     return;
@@ -507,7 +505,7 @@ void tag_files(bool& need_title) {
   bool done = false;
   while (!done && !a()->hangup_) {
     bout.clear_lines_listed();
-    ch = fancy_prompt("File Tagging", "CDEMQRTV?");
+    char ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     bout.clear_lines_listed();
     switch (ch) {
     case '?':
@@ -538,11 +536,11 @@ void tag_files(bool& need_title) {
     {
       bout.clear_lines_listed();
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
-      input(s, 2, true);
-      i = to_number<int>(s) - 1;
-      if (s[0] && i >= 0 && i < ssize(a()->filelist)) {
+      auto s = input(2, true);
+      int i = to_number<int>(s) - 1;
+      if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        d = XFER_TIME(f.u.numbytes);
+        auto d = XFER_TIME(f.u.numbytes);
         bout.nl();
         size_t i2;
         for (i2 = 0; i2 < a()->directories.size(); i2++) {
@@ -571,8 +569,8 @@ void tag_files(bool& need_title) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          sprintf(s, "|#7%s%s", a()->directories[f.directory].path, f.u.filename);
-          if (!File::Exists(s)) {
+          auto fn = FilePath(a()->directories[f.directory].path, f.u.filename);
+          if (!File::Exists(fn)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
           }
@@ -587,7 +585,6 @@ void tag_files(bool& need_title) {
       if (dcs()) {
         move_file_t();
         if (a()->filelist.empty()) {
-          done = true;
           return;
         }
         relist();
@@ -597,7 +594,6 @@ void tag_files(bool& need_title) {
       a()->filelist.clear();
       bout.clear_lines_listed();
       need_title = false;
-      done = true;
       return;
     case 'R':
       relist();
@@ -605,19 +601,16 @@ void tag_files(bool& need_title) {
     case 'T':
       tag_it();
       break;
-    case 'V':
+    case 'V': {
       bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
-      input(s, 2, true);
-      i = to_number<int>(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < ssize(a()->filelist))) {
+      auto s = input(2, true);
+      int i = to_number<int>(s) - 1;
+      if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        sprintf(s1, "%s%s", a()->directories[f.directory].path,
-                stripfn(f.u.filename));
+        auto s1 = FilePath(a()->directories[f.directory].path, stripfn(f.u.filename));
         if (a()->directories[f.directory].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", a()->directories[f.directory].path,
-                  stripfn(f.u.filename));
-          sprintf(s1, "%s%s", a()->temp_directory().c_str(),
-                  stripfn(f.u.filename));
+          auto s2 = FilePath(a()->directories[f.directory].path, stripfn(f.u.filename));
+          s1 = FilePath(a()->temp_directory().c_str(), stripfn(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -627,13 +620,13 @@ void tag_files(bool& need_title) {
           pausescr();
           break;
         }
-        get_arc_cmd(s, s1, 0, "");
+        auto arc_cmd = get_arc_cmd(s1, 0, "");
         if (!okfn(stripfn(f.u.filename))) {
-          s[0] = 0;
+          arc_cmd.clear();
         }
-        if (s[0] != 0) {
+        if (!arc_cmd.empty()) {
           bout.nl();
-          ExecuteExternalProgram(s, a()->spawn_option(SPAWNOPT_ARCH_L));
+          ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
           a()->UpdateTopScreen();
@@ -645,7 +638,7 @@ void tag_files(bool& need_title) {
           break;
         }
       }
-      break;
+      } break;
     default:
       bout.cls();
       done = true;
@@ -658,8 +651,7 @@ void tag_files(bool& need_title) {
 
 
 int add_batch(std::string& description, const std::string& file_name, int dn, long fs) {
-
-  if (find_batch_queue(file_name.c_str()) > -1) {
+  if (a()->batch().FindBatch(file_name) > -1) {
     return 0;
   }
 
@@ -685,8 +677,8 @@ int add_batch(std::string& description, const std::string& file_name, int dn, lo
     bout.backline();
     if (to_upper_case<char>(ch) == 'Y') {
       if (a()->directories[dn].mask & mask_cdrom) {
-        auto src = FilePath(a()->directories[dn].path, file_name);
-        auto dest = FilePath(a()->temp_directory(), file_name);
+        const auto src = FilePath(a()->directories[dn].path, file_name);
+        const auto dest = FilePath(a()->temp_directory(), file_name);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
@@ -720,7 +712,7 @@ int add_batch(std::string& description, const std::string& file_name, int dn, lo
                            a()->batch().entry.size() + 1, b.filename, b.len,
                            bt,
                            a()->directories[b.dir].name);
-      a()->batch().entry.emplace_back(b);
+      a()->batch().AddBatch(b);
       bout << "\r";
       bout << "|#5    Continue search? ";
       ch = onek_ncr("YN\r");
@@ -781,13 +773,12 @@ int try_to_download(const char *file_mask, int dn) {
 }
 
 void download() {
-  char ch, s[81], s1[81];
-  int i = 0, color = 0, count;
+  int i = 0, color = 0;
   bool ok = true;
-  int ip, rtn = 0, useconf;
+  int rtn = 0;
   bool done = false;
 
-  useconf = 0;
+  int useconf = 0;
 
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " Batch Downloads"));
@@ -809,33 +800,33 @@ void download() {
       }
     } else {
       do {
-        count = 0;
+        int count = 0;
         ok = true;
         bout.backline();
         bout << fmt::sprintf("|#2%3d ", a()->batch().entry.size() + 1);
         bout.Color(1);
         bool onl = bout.newline;
         bout.newline = false;
-        input(s, 12);
+        auto s = input(12);
         bout.newline = onl;
-        if (s[0] && s[0] != ' ') {
-          if (strchr(s, '.') == nullptr) {
-            strcat(s, ".*");
+        if (!s.empty() && s.front() != ' ') {
+          if (strchr(s.c_str(), '.') == nullptr) {
+            s += ".*";
           }
-          align(s);
-          rtn = try_to_download(s, a()->current_user_dir().subnum);
+          s = aligns(s);
+          rtn = try_to_download(s.c_str(), a()->current_user_dir().subnum);
           if (rtn == 0) {
             if (a()->uconfdir[1].confnum != -10 && okconf(a()->user())) {
               bout.backline();
               bout << " |#5Search all conferences? ";
-              ch = onek_ncr("YN\r");
+              const auto ch = onek_ncr("YN\r");
               if (ch == '\r' || to_upper_case<char>(ch) == 'Y') {
                 tmp_disable_conf(true);
                 useconf = 1;
               }
             }
             bout.backline();
-            sprintf(s1, "%3d %s", a()->batch().entry.size() + 1, s);
+            auto s1 = fmt::sprintf("%3d %s", a()->batch().entry.size() + 1, s);
             bout.Color(1);
             bout << s1;
             foundany = 0;
@@ -856,12 +847,11 @@ void download() {
                   color = 0;
                 }
               }
-              rtn = try_to_download(s, a()->udir[dn].subnum);
+              rtn = try_to_download(s.c_str(), a()->udir[dn].subnum);
               if (rtn < 0) {
                 break;
-              } else {
-                dn++;
               }
+              dn++;
             }
             if (useconf) {
               tmp_disable_conf(false);
@@ -893,7 +883,6 @@ void download() {
   bout.nl();
   if (!ratio_ok()) {
     bout << "\r\nSorry, your ratio is too low.\r\n\n";
-    done = true;
     return;
   }
   bout.nl();
@@ -910,13 +899,13 @@ void download() {
   }
   bout << "|#5Hang up after transfer? ";
   bool had = yesno();
-  ip = get_protocol(xf_down_batch);
+  int ip = get_protocol(xf_down_batch);
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
-      if (a()->over_intern.size() > 0
-          && (a()->over_intern[2].othr & othr_override_internal)
-          && (a()->over_intern[2].sendbatchfn[0])) {
+      if (!a()->over_intern.empty()
+          && a()->over_intern[2].othr & othr_override_internal
+          && a()->over_intern[2].sendbatchfn[0]) {
         dszbatchdl(had, a()->over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
       } else {
         ymbatchdl(had);
@@ -1068,18 +1057,15 @@ void SetNewFileScanDate() {
 
 
 void removefilesnotthere(int dn, int *autodel) {
-  char ch = '\0';
+  char ch;
   dliscan1(dn);
-  char szAllFilesFileMask[MAX_PATH];
-  to_char_array(szAllFilesFileMask, "*.*");
-  align(szAllFilesFileMask);
-  int i = recno(szAllFilesFileMask);
+  const auto all_files = aligns("*.*");
+  int i = recno(all_files);
   bool abort = false;
   while (!a()->hangup_ && i > 0 && !abort) {
-    auto area = a()->current_file_area();
+    auto* area = a()->current_file_area();
     auto f = area->ReadFile(i);
-    auto candidate_fn = StrCat(a()->directories[dn].path, f.unaligned_filename());
-    StringRemoveWhitespace(&candidate_fn);
+    auto candidate_fn = FilePath(a()->directories[dn].path, f);
     if (!File::Exists(candidate_fn)) {
       StringTrim(f.u().description);
       candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.u().description);
@@ -1109,7 +1095,7 @@ void removefilesnotthere(int dn, int *autodel) {
         abort = true;
       }
     }
-    i = nrecno(szAllFilesFileMask, i);
+    i = nrecno(all_files, i);
     bool next = true;
     checka(&abort, &next);
     if (!next) {
@@ -1145,22 +1131,3 @@ void removenotthere() {
   tmp_disable_conf(false);
   a()->UpdateTopScreen();
 }
-
-int find_batch_queue(const char *file_name) {
-  for (size_t i = 0; i < a()->batch().entry.size(); i++) {
-    if (IsEquals(file_name, a()->batch().entry[i].filename)) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-// Removes a file off the batch queue specified by pszFileNam,e
-void remove_batch(const char *file_name) {
-  int batchNum = find_batch_queue(file_name);
-  if (batchNum > -1) {
-    delbatch(batchNum);
-  }
-}
-

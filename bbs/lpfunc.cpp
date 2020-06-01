@@ -181,8 +181,8 @@ int listfiles_plus_function(int type) {
               }
               file_handle[matches] = first_file + amount;
               vert_pos[matches] = static_cast<char>(lines);
-              int lines_used = printinfo_plus(&file_recs[matches], file_handle[matches],
-                                              check_batch_queue(file_recs[matches].filename),
+              auto marked = a()->batch().contains_file(file_recs[matches].filename);
+              int lines_used = printinfo_plus(&file_recs[matches], file_handle[matches], marked,
                                               lines_left, &search_rec);
               if (lines_used > 1 && lines_used < lines_left) {
                 bout.nl();
@@ -290,8 +290,8 @@ int listfiles_plus_function(int type) {
                       amount = lines = matches = 0;
                     } else {
 ADD_OR_REMOVE_BATCH:
-                      if (find_batch_queue(file_recs[file_pos].filename) > -1) {
-                        remove_batch(file_recs[file_pos].filename);
+                      if (a()->batch().FindBatch(file_recs[file_pos].filename) > -1) {
+                        a()->batch().RemoveBatch(file_recs[file_pos].filename);
                         redraw = false;
                       }
                       else if (!ratio_ok() && !sysop_mode) {
@@ -319,8 +319,9 @@ ADD_OR_REMOVE_BATCH:
                         }
                       }
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
-                      bout << fmt::sprintf("|%2d %c ", lp_config.tagged_color,
-                                                        check_batch_queue(file_recs[file_pos].filename) ? '\xFE' : ' ');
+                      bout << fmt::sprintf(
+                          "|%2d %c ", lp_config.tagged_color,
+                          a()->batch().contains_file(file_recs[file_pos].filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
                       if (file_pos >= matches) {
@@ -559,7 +560,7 @@ TOGGLE_EXTENDED:
 int compare_criteria(search_record * sr, uploadsrec * ur) {
   // "        .   "
   if (sr->filemask != "        .   ") {
-    if (!compare(sr->filemask.c_str(), ur->filename)) {
+    if (!wwiv::sdk::files::aligned_wildcard_match(sr->filemask, ur->filename)) {
       return 0;
     }
   }

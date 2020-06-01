@@ -20,6 +20,14 @@
 
 #include <string>
 
+namespace wwiv {
+namespace sdk {
+namespace files {
+class FileRecord;
+}
+}
+}
+
 void move_file();
 void sortdir(int directory_num, int type);
 void sort_all(int type);
@@ -30,6 +38,7 @@ bool uploadall(uint16_t directory_num);
 void relist();
 void edit_database();
 void add_to_file_database(const std::string& file_name);
+void add_to_file_database(const wwiv::sdk::files::FileRecord& f);
 void remove_from_file_database(const std::string& file_name);
 bool is_uploadable(const std::string& file_name);
 void xfer_defaults();
