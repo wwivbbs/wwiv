@@ -39,6 +39,7 @@
 * cleanup context class (doc comments, treat type-0 as email api
 * Move the userrec from User class to heap from stack.
 * Move the configrec from Config and Config430 class to heap from stack.
+* simplify names in WUser
 
 ## Networking Cleanup
 ***

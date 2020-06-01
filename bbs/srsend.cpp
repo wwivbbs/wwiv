@@ -289,12 +289,12 @@ void zmodem_send(const string& file_name, bool *sent, double *percent) {
   *sent = false;
   *percent = 0.0;
 
-  bool bOldBinaryMode = a()->remoteIO()->binary_mode();
+  const auto old_binary_mode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);
-  bool bResult = NewZModemSendFile(ToStringRemoveWhitespace(file_name));
-  a()->remoteIO()->set_binary_mode(bOldBinaryMode);
+  auto result = NewZModemSendFile(ToStringRemoveWhitespace(file_name));
+  a()->remoteIO()->set_binary_mode(old_binary_mode);
 
-  if (bResult) {
+  if (result) {
     *sent = true;
     *percent = 100.0;
   }

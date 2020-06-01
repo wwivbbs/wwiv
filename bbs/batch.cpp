@@ -382,7 +382,7 @@ char end_ymodem_batch1() {
   bool done = false;
   int nerr = 0;
   bool bAbort = false;
-  char ch = 0;
+  char ch;
   do {
     send_block(b, 5, true, 0);
     ch = gettimeout(5, &bAbort);
@@ -799,7 +799,6 @@ int batchdl(int mode) {
       if (yesno()) {
         for (const auto& b : a()->batch().entry) { didnt_upload(b); }
         a()->batch().entry.clear();
-        done = true;
         bout << "Queue cleared.\r\n";
         if (mode == 3) {
           return 1;
