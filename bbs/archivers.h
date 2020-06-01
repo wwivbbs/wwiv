@@ -30,6 +30,6 @@ enum COMPRESSIONS {
 };
 
 
-int match_archiver(const char *filename);
+int match_archiver(const char* filename);
 
 #endif  // _ARCHIVERS_H_
