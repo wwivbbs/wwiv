@@ -32,7 +32,6 @@
 #include "sdk/ansi/makeansi.h"
 #include <algorithm>
 #include <cctype>
-#include <cstdarg>
 #include <string>
 
 using std::ostream;
@@ -44,7 +43,7 @@ Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
 Output::~Output() = default;
 
 void Output::SetLocalIO(LocalIO* local_io) {
-  // We would use a()->user()->GetScreenChars() but I don't thik we
+  // We would use a()->user()->GetScreenChars() but I don't think we
   // have a live user when we create this.
   screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
   AnsiCallbacks cb;
@@ -109,7 +108,7 @@ void Output::RestorePosition() {
 }
 
 void Output::nl(int nNumLines) {
-  for (int i = 0; i < nNumLines; i++) {
+  for (auto i = 0; i < nNumLines; i++) {
     bputs("\r\n");
     // TODO Change this to fire a notification to a Subject
     // that we should process instant messages now.
@@ -132,8 +131,8 @@ void Output::SystemColor(int c) {
   bputs(MakeSystemColor(c));
 }
 
-std::string Output::MakeColor(int wwivcolor) {
-  auto c = a()->user()->color(wwivcolor);
+std::string Output::MakeColor(int wwiv_color) {
+  const auto c = a()->user()->color(wwiv_color);
   if (c == curatr()) {
     return "";
   }
@@ -142,14 +141,14 @@ std::string Output::MakeColor(int wwivcolor) {
   return MakeSystemColor(c);
 }
 
-std::string Output::MakeSystemColor(int c) {
+std::string Output::MakeSystemColor(int c) const {
   if (!okansi()) {
     return "";
   }
   return wwiv::sdk::ansi::makeansi(c, curatr());
 }
 
-std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
+std::string Output::MakeSystemColor(wwiv::sdk::Color c) const {
   return MakeSystemColor(static_cast<uint8_t>(c));
 }
 
@@ -219,33 +218,33 @@ int Output::bputs(const string& text) {
   CheckForHangup();
   if (text.empty() || a()->hangup_) { return 0; }
 
-  auto it = std::begin(text);
-  auto fin = std::end(text);
+  auto it = std::cbegin(text);
+  const auto fin = std::cend(text);
   while (it != fin) {
     // pipe codes.
     if (*it == '|') {
-      it++;
+      ++it;
       if (it == fin) { bputch('|', true);  break; }
       if (std::isdigit(*it)) {
-        int color = pipecode_int(it, fin, 2);
+        const auto color = pipecode_int(it, fin, 2);
         if (color < 16) {
           bputs(MakeSystemColor(color | (curatr() & 0xf0)));
         }
         else {
-          uint8_t bg = static_cast<uint8_t>(color) << 4;
-          uint8_t fg = curatr() & 0x0f;
+          const uint8_t bg = static_cast<uint8_t>(color) << 4;
+          const uint8_t fg = curatr() & 0x0f;
           bputs(MakeSystemColor(bg | fg));
         }
       }
       else if (*it == '@') {
-        it++;
+        ++it;
         BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
         auto s = ctx.interpret(*it++);
         bout.bputs(s);
       }
       else if (*it == '#') {
-        it++;
-        int color = pipecode_int(it, fin, 1);
+        ++it;
+        const int color = pipecode_int(it, fin, 1);
         bputs(MakeColor(color));
       }
       else {
@@ -253,17 +252,17 @@ int Output::bputs(const string& text) {
       }
     }
     else if (*it == CC) {
-      it++;
+      ++it;
       if (it == fin) { bputch(CC, true);  break; }
-      unsigned char c = *it++;
+      const unsigned char c = *it++;
       if (c >= SPACE && c <= 126) {
         bputs(MakeColor(c - '0'));
       }
     }
     else if (*it == CO) {
-      it++;
+      ++it;
       if (it == fin) { bputch(CO, true);  break; }
-      it++;
+      ++it;
       if (it == fin) { bputch(CO, true);  break; }
       BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
       auto s = ctx.interpret(*it++);
@@ -284,7 +283,7 @@ int Output::bputs(const string& text) {
 // it consistent.
 int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
-  int ret = bputs(text, abort, &dummy);
+  const auto ret = bputs(text, abort, &dummy);
   if (!checka(abort, &dummy)) {
     nl();
   }
@@ -295,7 +294,7 @@ int Output::bpla(const std::string& text, bool *abort) {
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
   CheckForHangup();
   checka(abort, next);
-  int ret = 0;
+  auto ret = 0;
   if (!checka(abort, next)) {
     ret = bputs(text);
   }

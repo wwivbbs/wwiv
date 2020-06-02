@@ -66,7 +66,6 @@ using namespace wwiv::strings;
 // This is used because of people who don't set there screenlines up correctly
 // It defines how far up from the users screenlines to put the menu
 static constexpr int STOP_LIST = 0;
-static constexpr int MAX_EXTENDED_SIZE = 1000;
 
 int bulk_move = 0;
 int bulk_dir = -1;
@@ -84,7 +83,8 @@ static bool ListPlusExist(const std::string& file_name) {
   return f.empty() ? false : File::Exists(f);
 }
 
-static void colorize_foundtext(char *text, search_record* search_rec, int color) {
+// TODO(rushfan): Convert this to use strings.
+static void colorize_foundtext(char* text, search_record* search_rec, int color) {
   char found_color[10], normal_color[10];
   char find[101], word[101];
 
@@ -118,8 +118,8 @@ static void colorize_foundtext(char *text, search_record* search_rec, int color)
   }
 }
 
-static void colorize_foundtext(string *text, search_record * search_rec, int color) {
-  std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]);  // extra padding for colorized
+static void colorize_foundtext(string* text, search_record* search_rec, int color) {
+  std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]); // extra padding for colorized
   strcpy(s.get(), text->c_str());
   colorize_foundtext(s.get(), search_rec, color);
   text->assign(s.get());
@@ -170,8 +170,8 @@ static void printtitle_plus_old() {
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-          a()->directories[a()->current_user_dir().subnum].name, 
-        a()->current_file_area()->number_of_files());
+                   a()->directories[a()->current_user_dir().subnum].name,
+                   a()->current_file_area()->number_of_files());
   bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
@@ -192,16 +192,18 @@ void printtitle_plus() {
   } else {
     const auto buf =
         fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-            a()->directories[a()->current_user_dir().subnum].name, 
-          a()->current_file_area()->number_of_files());
+                     a()->directories[a()->current_user_dir().subnum].name,
+                     a()->current_file_area()->number_of_files());
     bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
     bout.Color(0);
   }
 }
 
 static int lp_configured_lines() {
-  return (a()->user()->data.lp_options & cfl_date_uploaded || 
-          a()->user()->data.lp_options & cfl_upby) ? 3 : 2;
+  return (a()->user()->data.lp_options & cfl_date_uploaded ||
+          a()->user()->data.lp_options & cfl_upby)
+           ? 3
+           : 2;
 }
 
 int first_file_pos() {
@@ -224,7 +226,7 @@ void print_searching(search_record* search_rec) {
   bout << "|#9<Space> aborts  : ";
   bout.cls();
   bout << fmt::sprintf(" |17|15%-40.40s|16|#0\r",
-    a()->directories[a()->current_user_dir().subnum].name);
+                       a()->directories[a()->current_user_dir().subnum].name);
 }
 
 static void catch_divide_by_zero(int signum) {
@@ -258,7 +260,8 @@ int listfiles_plus(int type) {
 
   a()->user()->SetStatus(save_status);
 
-  if (type == LP_NSCAN_DIR || type == LP_SEARCH_ALL) {    // change Build3
+  if (type == LP_NSCAN_DIR || type == LP_SEARCH_ALL) {
+    // change Build3
     a()->set_current_user_dir_num(save_dir);
   }
   dliscan();
@@ -269,7 +272,7 @@ int listfiles_plus(int type) {
   return nReturn;
 }
 
-int lp_add_batch(const char *file_name, int dn, long fs) {
+int lp_add_batch(const std::string& file_name, int dn, long fs) {
   int32_t t;
 
   if (a()->batch().FindBatch(file_name) > -1) {
@@ -313,10 +316,11 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
 }
 
 
-int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, search_record * search_rec) {
+int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
+                   search_record* search_rec) {
   char szFileName[MAX_PATH], szFileExt[MAX_PATH];
   char element[150];
-  int chars_this_line = 0, numl = 0, will_fit = 78;
+  int numl = 0, will_fit = 78;
   int char_printed = 0, extdesc_pos;
 
   strcpy(szFileName, u->filename);
@@ -334,12 +338,12 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     strcpy(szFileExt, "   ");
   }
 
-  time_t tTimeNow = time(nullptr);
-  long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
+  auto now = DateTime::now().to_time_t();
+  long lDiffTime = static_cast<long>(difftime(now, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
-  string file_information = fmt::sprintf("|%02d %c |%02d%3d ", lp_config.tagged_color,
-                                         marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
+  auto file_information = fmt::sprintf("|%02d %c |%02d%3d ", lp_config.tagged_color,
+                                       marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
   bout.clear_lines_listed();
 
@@ -371,7 +375,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
       auto stf = PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
-                              wwiv::sdk::files::unalign(u->filename));
+                              files::unalign(u->filename));
       if (lp_config.check_exist) {
         if (!ListPlusExist(stf.string())) {
           buffer = "OFFLN";
@@ -419,15 +423,15 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       num_extended = lines_left;
     }
     if (ext_is_on && mask_extended & u->mask) {
-      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos, 
-        static_cast<Color>(a()->user()->data.lp_colors[10]), search_rec);
+      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos,
+                                          static_cast<Color>(a()->user()->data.lp_colors[10]),
+                                          search_rec);
     } else {
       lines_printed = 0;
     }
 
     if (lines_printed) {
       numl += lines_printed;
-      chars_this_line = 0;
       char_printed = 0;
     }
   }
@@ -455,7 +459,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
 
   if (a()->user()->data.lp_options & cfl_upby) {
     if (a()->user()->data.lp_options & cfl_date_uploaded) {
-      StringJustify(&file_information, file_information.size() + width, ' ', JustificationType::RIGHT);
+      StringJustify(&file_information, file_information.size() + width, ' ',
+                    JustificationType::RIGHT);
       bout << file_information;
       bout.nl();
       ++numl;
@@ -465,7 +470,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   }
 
   if (!buffer.empty()) {
-    StringJustify(&file_information, file_information.size() + width, ' ', JustificationType::RIGHT);
+    StringJustify(&file_information, file_information.size() + width, ' ',
+                  JustificationType::RIGHT);
     bout << file_information;
     bout.nl();
     ++numl;
@@ -473,44 +479,38 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   return numl;
 }
 
-int print_extended_plus(const char *file_name, int numlist, int indent, Color color,
+int print_extended_plus(const std::string& file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
   int numl = 0;
   int cpos = 0;
-  int chars_this_line = 0;
+  auto chars_this_line = 0;
 
-  int will_fit = 80 - std::abs(indent) - 2;
+  const int will_fit = 80 - std::abs(indent) - 2;
 
-  string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
+  auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
 
   if (ss.empty()) {
     return 0;
   }
   StringTrimEnd(&ss);
-  int nBufferSize = ss.size();
-  if (nBufferSize > MAX_EXTENDED_SIZE) {
-    nBufferSize = MAX_EXTENDED_SIZE;
-    ss.resize(MAX_EXTENDED_SIZE);
-  }
-  auto new_ss = std::make_unique<char[]>((nBufferSize * 4) + 30);
-  strcpy(new_ss.get(), ss.c_str());
   if (search_rec) {
-    colorize_foundtext(new_ss.get(), search_rec, static_cast<uint8_t>(color));
+    colorize_foundtext(&ss, search_rec, static_cast<uint8_t>(color));
   }
   if (indent > -1 && indent != 16) {
     bout << "  |#9Extended Description:\n\r";
   }
   char ch = SOFTRETURN;
 
-  while (new_ss[cpos] && numl < numlist && !a()->hangup_) {
+  while (cpos < ssize(ss) && numl < numlist && !a()->hangup_) {
     if (ch == SOFTRETURN && indent) {
       bout.SystemColor(static_cast<uint8_t>(color));
       bout.bputch('\r');
       bout.Right(std::abs(indent));
     }
     do {
-      ch = new_ss[cpos++];
-    } while (ch == '\r' && !a()->hangup_);
+      ch = ss[cpos++];
+    }
+    while (ch == '\r' && !a()->hangup_ && cpos < ssize(ss));
 
     if (ch == SOFTRETURN) {
       bout.nl();
@@ -518,8 +518,9 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
       ++numl;
     } else if (chars_this_line > will_fit) {
       do {
-        ch = new_ss[cpos++];
-      } while (ch != '\n' && ch != 0);
+        ch = ss[cpos++];
+      }
+      while (ch != '\n' && ch != 0 && cpos < ssize(ss));
       --cpos;
     } else {
       chars_this_line += bout.bputch(ch);
@@ -534,7 +535,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
   return numl;
 }
 
-void show_fileinfo(uploadsrec * u) {
+void show_fileinfo(uploadsrec* u) {
   bout.cls();
   bout.Color(7);
   bout << string(78, '\xCD');
@@ -554,91 +555,64 @@ void show_fileinfo(uploadsrec * u) {
   pausescr();
 }
 
-int check_lines_needed(uploadsrec * u) {
+int check_lines_needed(uploadsrec* u) {
+  const auto num_extended = std::max<int>(a()->user()->GetNumExtended(),
+                                          lp_config.show_at_least_extended);
+  const auto max_lines = std::min<int>(num_extended, calc_max_lines());
 
-  int max_lines = calc_max_lines();
-  int num_extended = a()->user()->GetNumExtended();
-
-  if (num_extended < lp_config.show_at_least_extended) {
-    num_extended = lp_config.show_at_least_extended;
-  }
-
-  if (max_lines > num_extended) {
-    max_lines = num_extended;
-  }
-
-  int elines = 0;
+  auto elines = 0;
   if (a()->user()->data.lp_options & cfl_description) {
-    int max_extended = a()->user()->GetNumExtended();
-
-    if (max_extended < lp_config.show_at_least_extended) {
-      max_extended = lp_config.show_at_least_extended;
-    }
-
-    string ss;
     if (ext_is_on && mask_extended & u->mask) {
-      ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
-    }
-
-    if (!ss.empty()) {
-      const char* tmp = ss.c_str();
-      while ((elines < max_extended) && ((tmp = strchr(tmp, '\r')) != nullptr)) {
-        ++elines;
-        ++tmp;
-      }
+      const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
+                           value_or("");
+      const auto lines = SplitString(ss, "\r");
+      elines = ssize(lines);
     }
   }
-  const int lc_lines_used = lp_configured_lines();
-  if (lc_lines_used + elines > max_lines) {
-    return max_lines - 1;
-  }
-
-  return lc_lines_used + elines;
+  const auto lc_lines_used = lp_configured_lines();
+  return std::min<int>(lc_lines_used + elines, max_lines - 1);
 }
 
-int prep_search_rec(search_record* search_rec, int type) {
-  search_rec->search_extended = lp_config.search_extended_on ? true : false;
+int prep_search_rec(search_record* r, int type) {
+  r->search_extended = lp_config.search_extended_on ? true : false;
 
   if (type == LP_LIST_DIR) {
-    search_rec->filemask = file_mask();
-    search_rec->alldirs = THIS_DIR;
+    r->filemask = file_mask();
+    r->alldirs = THIS_DIR;
   } else if (type == LP_SEARCH_ALL) {
-    search_rec->alldirs = ALL_DIRS;
-    if (!search_criteria(search_rec)) {
+    r->alldirs = ALL_DIRS;
+    if (!search_criteria(r)) {
       return 0;
     }
   } else if (type == LP_NSCAN_DIR) {
-    search_rec->alldirs = THIS_DIR;
-    search_rec->nscandate = a()->context().nscandate();
+    r->alldirs = THIS_DIR;
+    r->nscandate = a()->context().nscandate();
   } else if (type == LP_NSCAN_NSCAN) {
     a()->context().scanned_files(true);
-    search_rec->nscandate = a()->context().nscandate();
-    search_rec->alldirs = ALL_DIRS;
+    r->nscandate = a()->context().nscandate();
+    r->alldirs = ALL_DIRS;
   } else {
     sysoplog() << "Undef LP type";
     return 0;
   }
 
-  if (search_rec->filemask.empty() 
-      && !search_rec->nscandate
-      && !search_rec->search[0]) {
+  if (r->filemask.empty() && !r->nscandate && !r->search[0]) {
     return 0;
   }
 
-  if (!search_rec->filemask.empty()) {
-    if (!contains(search_rec->filemask, '.')) {
-      search_rec->filemask += ".*";
+  if (!r->filemask.empty()) {
+    if (!contains(r->filemask, '.')) {
+      r->filemask += ".*";
     }
   }
-  search_rec->filemask = aligns(search_rec->filemask);
+  r->filemask = aligns(r->filemask);
   return 1;
 }
 
 int calc_max_lines() {
   if (lp_config.max_screen_lines_to_show) {
-    return std::min<int>(a()->user()->GetScreenLines(),
-      lp_config.max_screen_lines_to_show) -
-      (first_file_pos() + 1 + STOP_LIST);
+    return std::min<int>(a()->user()->GetScreenLines(), lp_config.max_screen_lines_to_show) -
+           (first_file_pos() + 1 + STOP_LIST);
   }
   return a()->user()->GetScreenLines() - (first_file_pos() + 1 + STOP_LIST);
 }
@@ -665,7 +639,8 @@ static void check_lp_colors() {
 void save_lp_config() {
   if (lp_config_loaded) {
     File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
-    if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
+    if (fileConfig.Open(
+        File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
     }
@@ -678,29 +653,36 @@ void load_lp_config() {
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
-      lp_config.normal_highlight  = (static_cast<uint8_t>(Color::YELLOW) + (static_cast<uint8_t>(Color::BLACK) << 4));
-      lp_config.normal_menu_item  = (static_cast<uint8_t>(Color::CYAN) + (static_cast<uint8_t>(Color::BLACK) << 4));
-      lp_config.current_highlight = (static_cast<uint8_t>(Color::BLUE) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
-      lp_config.current_menu_item = (static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
+      lp_config.normal_highlight = (static_cast<uint8_t>(Color::YELLOW) + (
+                                      static_cast<uint8_t>(Color::BLACK) << 4));
+      lp_config.normal_menu_item = (static_cast<uint8_t>(Color::CYAN) + (
+                                      static_cast<uint8_t>(Color::BLACK) << 4));
+      lp_config.current_highlight = (static_cast<uint8_t>(Color::BLUE) + (
+                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
+      lp_config.current_menu_item = (static_cast<uint8_t>(Color::BLACK) + (
+                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
 
-      lp_config.tagged_color      = static_cast<uint8_t>(Color::LIGHTGRAY);
-      lp_config.file_num_color    = static_cast<uint8_t>(Color::GREEN);
+      lp_config.tagged_color = static_cast<uint8_t>(Color::LIGHTGRAY);
+      lp_config.file_num_color = static_cast<uint8_t>(Color::GREEN);
 
-      lp_config.found_fore_color  = static_cast<uint8_t>(Color::RED);
-      lp_config.found_back_color  = static_cast<uint8_t>(Color::LIGHTGRAY) + 16;
+      lp_config.found_fore_color = static_cast<uint8_t>(Color::RED);
+      lp_config.found_back_color = static_cast<uint8_t>(Color::LIGHTGRAY) + 16;
 
-      lp_config.current_file_color = static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
+      lp_config.current_file_color = static_cast<uint8_t>(Color::BLACK) + (
+                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
 
       lp_config.max_screen_lines_to_show = 24;
       lp_config.show_at_least_extended = 5;
 
-      lp_config.edit_enable = 1;            // Do or don't let users edit their config
-      lp_config.request_file = 1;           // Do or don't use file request
-      lp_config.colorize_found_text = 1;    // Do or don't colorize found text
-      lp_config.search_extended_on = 0;     // Defaults to either on or off in adv search, or is either on or off in simple search
-      lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
-      lp_config.no_configuration = 0;       // Toggles configurable menus on and off
-      lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
+      lp_config.edit_enable = 1;         // Do or don't let users edit their config
+      lp_config.request_file = 1;        // Do or don't use file request
+      lp_config.colorize_found_text = 1; // Do or don't colorize found text
+      lp_config.search_extended_on = 0;
+      // Defaults to either on or off in adv search, or is either on or off in simple search
+      lp_config.simple_search = 1; // Which one is entered when searching, can switch to other still
+      lp_config.no_configuration = 0; // Toggles configurable menus on and off
+      lp_config.check_exist = 1;
+      // Will check to see if the file exists on hardrive and put N/A if not
       lp_config_loaded = true;
       lp_config.forced_config = 0;
 
@@ -715,7 +697,6 @@ void load_lp_config() {
 }
 
 void sysop_configure() {
-  short color = 0;
   bool done = false;
   char s[201];
 
@@ -742,13 +723,13 @@ void sysop_configure() {
     bout << fmt::sprintf("%3d", lp_config.current_menu_item);
     bout.Color(0);
     bout.GotoXY(38, 6);
-    bout << fmt::sprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
+    bout << fmt::sprintf("|%02d%2d", lp_config.tagged_color, lp_config.tagged_color);
     bout.GotoXY(77, 6);
-    bout << fmt::sprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
+    bout << fmt::sprintf("|%02d%2d", lp_config.file_num_color, lp_config.file_num_color);
     bout.GotoXY(38, 7);
-    bout << fmt::sprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
+    bout << fmt::sprintf("|%02d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
     bout.GotoXY(77, 7);
-    bout << fmt::sprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
+    bout << fmt::sprintf("|%02d%2d", lp_config.found_back_color, lp_config.found_back_color);
     bout.GotoXY(38, 8);
     bout.SystemColor(lp_config.current_file_color);
     bout << fmt::sprintf("%3d", lp_config.current_file_color);
@@ -773,7 +754,7 @@ void sysop_configure() {
     bout << fmt::sprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
     bout.GotoXY(1, 19);
     bout << "|#9Q-Quit ";
-    char key = onek("Q\rABCDEFGHIJKLMNOPRS", true);
+    const auto key = onek("Q\rABCDEFGHIJKLMNOPRS", true);
     switch (key) {
     case 'Q':
     case '\r':
@@ -783,8 +764,8 @@ void sysop_configure() {
     case 'B':
     case 'C':
     case 'D':
-    case 'I':
-      color = SelectColor(2);
+    case 'I': {
+      auto color = SelectColor(2);
       if (color >= 0) {
         switch (key) {
         case 'A':
@@ -804,12 +785,12 @@ void sysop_configure() {
           break;
         }
       }
-      break;
+      } break;
     case 'E':
     case 'F':
     case 'G':
-    case 'H':
-      color = SelectColor(1);
+    case 'H': {
+      auto color = SelectColor(1);
       if (color >= 0) {
         switch (key) {
         case 'E':
@@ -826,7 +807,7 @@ void sysop_configure() {
           break;
         }
       }
-      break;
+      } break;
     case 'J':
       bout << "Enter max amount of lines to show (0=disabled) ";
       input(s, 2, true);
@@ -865,7 +846,7 @@ void sysop_configure() {
 }
 
 short SelectColor(int which) {
-  char ch, nc;
+  unsigned char nc = 0;
 
   bout.nl();
 
@@ -874,13 +855,13 @@ short SelectColor(int which) {
     bout.Color(0);
     bout.nl();
     bout << "|#2Foreground? ";
-    ch = onek("01234567");
+    unsigned char ch = onek("01234567");
     nc = ch - '0';
 
     if (which == 2) {
       bout << "|#2Background? ";
       ch = onek("01234567");
-      nc = nc | ((ch - '0') << 4);
+      nc |= (ch - '0') << 4;
     }
   } else {
     bout.nl();
@@ -889,7 +870,7 @@ short SelectColor(int which) {
       if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
         nc = 0 | ((a()->user()->GetBWColor(1) & 0x07) << 4);
       } else {
-        nc = (a()->user()->GetBWColor(1) & 0x70);
+        nc = a()->user()->GetBWColor(1) & 0x70;
       }
     } else {
       if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
@@ -926,31 +907,31 @@ short SelectColor(int which) {
 
 static void update_user_config_screen(uploadsrec* u, int which) {
   static const vector<string> lp_color_list{
-    "Black   ",
-    "Blue    ",
-    "Green   ",
-    "Cyan    ",
-    "Red     ",
-    "Purple  ",
-    "Brown   ",
-    "L-Gray  ",
-    "D-Gray  ",
-    "L-Blue  ",
-    "L-Green ",
-    "L-Cyan  ",
-    "L-Red   ",
-    "L-Purple",
-    "Yellow  ",
-    "White   "
+      "Black   ",
+      "Blue    ",
+      "Green   ",
+      "Cyan    ",
+      "Red     ",
+      "Purple  ",
+      "Brown   ",
+      "L-Gray  ",
+      "D-Gray  ",
+      "L-Blue  ",
+      "L-Green ",
+      "L-Cyan  ",
+      "L-Red   ",
+      "L-Purple",
+      "Yellow  ",
+      "White   "
   };
 
-  uint8_t color_background = static_cast<uint8_t>(Color::BLUE) << 4;
+  const uint8_t color_background = static_cast<uint8_t>(Color::BLUE) << 4;
   uint8_t color_selected = static_cast<uint8_t>(Color::LIGHTRED) | color_background;
   uint8_t color_notselected = static_cast<uint8_t>(Color::BLACK) | color_background;
-  uint8_t color_colortext = static_cast<uint8_t>(Color::LIGHTCYAN) | color_background;
+  const uint8_t color_colortext = static_cast<uint8_t>(Color::LIGHTCYAN) | color_background;
   auto& lpo = a()->user()->data.lp_options;
   auto& lpc = a()->user()->data.lp_colors;
-  
+
   if (which < 1 || which == 1) {
     bout.GotoXY(37, 4);
     bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
@@ -1035,7 +1016,7 @@ static void update_user_config_screen(uploadsrec* u, int which) {
 }
 
 void config_file_list() {
-  int key, which = -1;
+  int which = -1;
   unsigned long bit = 0L;
   char action[51];
   uploadsrec u = {};
@@ -1065,7 +1046,7 @@ void config_file_list() {
   bool done = false;
   while (!done && !a()->hangup_) {
     update_user_config_screen(&u, which);
-    key = onek("Q2346789H!@#$%^&*(");
+    int key = onek("Q2346789H!@#$%^&*(");
     switch (key) {
     case '2':
     case '3':
@@ -1349,7 +1330,8 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].name;
+        sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].
+            name;
         if (a()->current_file_area()->DeleteFile(f, i)) {
           a()->current_file_area()->Save();
           --i;
@@ -1406,7 +1388,8 @@ static int move_filename(const std::string& file_name, int dn) {
             dirlist(1);
             dliscan1(dn);
           }
-        } while (!a()->hangup_ && ss[0] == '?');
+        }
+        while (!a()->hangup_ && ss[0] == '?');
 
         nDestDirNum = -1;
         if (ss[0]) {
@@ -1514,13 +1497,13 @@ static int move_filename(const std::string& file_name, int dn) {
   return ret;
 }
 
-void do_batch_sysop_command(int mode, const char *file_name) {
+void do_batch_sysop_command(int mode, const char* file_name) {
   auto save_curdir = a()->current_user_dir_num();
   bout.cls();
 
   if (a()->batch().numbatchdl() > 0) {
     bool done = false;
-    for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry) && !done; it++) {
+    for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry) && !done; ++it) {
       const auto& b = *it;
       if (b.sending) {
         switch (mode) {
@@ -1566,13 +1549,12 @@ void do_batch_sysop_command(int mode, const char *file_name) {
   dliscan();
 }
 
-int search_criteria(search_record * sr) {
+int search_criteria(search_record* sr) {
   int x = 0;
   int all_conf = 1, useconf;
   char s1[81];
 
   useconf = (a()->uconfdir[1].confnum != -1 && okconf(a()->user()));
-
 
 LP_SEARCH_HELP:
   sr->search_extended = lp_config.search_extended_on ? true : false;
@@ -1596,11 +1578,18 @@ LP_SEARCH_HELP:
     } else {
       sprintf(s1, "%s", stripcolors(a()->directories[a()->current_user_dir().subnum].name));
     }
-    bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ?
-                       "All dirs" : "Dirs in NSCAN") << wwiv::endl;
-    to_char_array(s1, stripcolors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name));
-    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : s1) << wwiv::endl;
-    bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") << wwiv::endl;
+    bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR
+                                                        ? s1
+                                                        : sr->alldirs == ALL_DIRS
+                                                        ? "All dirs"
+                                                        : "Dirs in NSCAN") << wwiv::endl;
+    to_char_array(s1, stripcolors(
+                      a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].
+                      conf_name));
+    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : s1) <<
+        wwiv::endl;
+    bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") <<
+        wwiv::endl;
     bout.nl();
     bout << "|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ";
 
@@ -1671,15 +1660,15 @@ LP_SEARCH_HELP:
     sr->search[0] = 0;
   }
 
-
-  if (useconf && all_conf) {                // toggle conferences off
+  if (useconf && all_conf) {
+    // toggle conferences off
     tmp_disable_conf(true);
   }
 
   return x;
 }
 
-void view_file(const char *file_name) {
+void view_file(const char* file_name) {
   bout.cls();
   dliscan();
   bool abort = false;
@@ -1695,12 +1684,13 @@ void view_file(const char *file_name) {
       checka(&abort);
       i = nrecno(file_name, i);
     }
-  } while (i > 0 && !a()->hangup_ && !abort);
+  }
+  while (i > 0 && !a()->hangup_ && !abort);
   bout.nl();
   pausescr();
 }
 
-int lp_try_to_download(const char *file_mask, int dn) {
+int lp_try_to_download(const std::string& file_mask, int dn) {
   int rtn;
   bool abort = false;
 
@@ -1717,8 +1707,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
     a()->tleft(true);
     auto f = a()->current_file_area()->ReadFile(i);
 
-    int ok2 = 0;
-    if (!ok2 && !(f.u().mask & mask_no_ratio)) {
+    if (!(f.u().mask & mask_no_ratio)) {
       if (!ratio_ok()) {
         return -2;
       }
@@ -1734,14 +1723,15 @@ int lp_try_to_download(const char *file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  } while (i > 0 && ok && !a()->hangup_);
+  }
+  while (i > 0 && ok && !a()->hangup_);
   if (rtn == -2) {
     return -2;
   }
   return abort || rtn == -3 ? -1 : 1;
 }
 
-void download_plus(const char *file_name) {
+void download_plus(const std::string& file_name) {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
@@ -1750,16 +1740,16 @@ void download_plus(const char *file_name) {
       return;
     }
   }
-  if (!file_name[0]) {
+  if (file_name.empty()) {
     return;
   }
-  std::string fn = file_name;
- 
+  std::string fn{file_name};
+
   if (strchr(fn.c_str(), '.') == nullptr) {
     fn += ".*";
   }
   fn = aligns(fn);
-  if (lp_try_to_download(fn.c_str(), a()->current_user_dir().subnum) == 0) {
+  if (lp_try_to_download(fn, a()->current_user_dir().subnum) == 0) {
     bout << "\r\nSearching all a()->directories.\r\n\n";
     size_t dn = 0;
     int count = 0;
@@ -1782,7 +1772,7 @@ void download_plus(const char *file_name) {
           color = 0;
         }
       }
-      if (lp_try_to_download(fn.c_str(), a()->udir[dn].subnum) < 0) {
+      if (lp_try_to_download(fn, a()->udir[dn].subnum) < 0) {
         break;
       }
       dn++;
@@ -1793,7 +1783,7 @@ void download_plus(const char *file_name) {
   }
 }
 
-void request_file(const char *file_name) {
+void request_file(const char* file_name) {
   bout.cls();
   bout.nl();
 

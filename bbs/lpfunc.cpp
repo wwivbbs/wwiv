@@ -320,7 +320,7 @@ ADD_OR_REMOVE_BATCH:
                       }
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
                       bout << fmt::sprintf(
-                          "|%2d %c ", lp_config.tagged_color,
+                          "|%02d %c ", lp_config.tagged_color,
                           a()->batch().contains_file(file_recs[file_pos].filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;

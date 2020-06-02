@@ -282,10 +282,10 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     } else {
       rnum = std::to_string(i + 2);
       s5 = trim_to_size_ignore_colors(g[i + 1].description, 29);
-      const auto path_name =
+      const auto path_name2 =
           PathFilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i + 1].filename));
-      if (File::Exists(path_name)) {
-        File handle(path_name);
+      if (File::Exists(path_name2)) {
+        File handle(path_name2);
         rsize = StrCat(std::to_string(bytes_to_k(handle.length())), "k");
       } else {
         rsize = "OFL";

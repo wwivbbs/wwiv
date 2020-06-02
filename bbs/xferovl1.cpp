@@ -717,11 +717,10 @@ int add_batch(std::string& description, const std::string& file_name, int dn, lo
       b.sending = true;
       b.len = fs;
       bout << "\r";
-      const auto bt = ctim(std::lround(b.time));
-      bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                           a()->batch().entry.size() + 1, b.filename, b.len,
-                           bt,
-                           a()->directories[b.dir].name);
+      const auto bt = ctim(b.time);
+      bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
+                           a()->batch().entry.size() + 1,
+                           b.filename, b.len, bt, a()->directories[b.dir].name);
       a()->batch().AddBatch(b);
       bout << "\r";
       bout << "|#5    Continue search? ";
@@ -740,7 +739,7 @@ int add_batch(std::string& description, const std::string& file_name, int dn, lo
   return 0;
 }
 
-int try_to_download(const char* file_mask, int dn) {
+int try_to_download(const std::string& file_mask, int dn) {
   int rtn;
   bool abort = false;
   bool ok = false;
@@ -749,7 +748,7 @@ int try_to_download(const char* file_mask, int dn) {
   int i = recno(file_mask);
   if (i <= 0) {
     checka(&abort);
-    return ((abort) ? -1 : 0);
+    return abort ? -1 : 0;
   }
   ok = true;
   foundany = 1;
@@ -772,8 +771,8 @@ int try_to_download(const char* file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  }
-  while (i > 0 && ok && !a()->hangup_);
+  } while (i > 0 && ok && !a()->hangup_);
+
   if (rtn == -2) {
     return -2;
   }
@@ -804,7 +803,7 @@ void download() {
     if (i < ssize(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
       if (b.sending) {
-        const auto t = ctim(std::lround(b.time));
+        const auto t = ctim(b.time);
         bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                              i + 1, b.filename,
                              b.len, t.c_str(),
@@ -826,7 +825,7 @@ void download() {
             s += ".*";
           }
           s = aligns(s);
-          rtn = try_to_download(s.c_str(), a()->current_user_dir().subnum);
+          rtn = try_to_download(s, a()->current_user_dir().subnum);
           if (rtn == 0) {
             if (a()->uconfdir[1].confnum != -10 && okconf(a()->user())) {
               bout.backline();
@@ -859,7 +858,7 @@ void download() {
                   color = 0;
                 }
               }
-              rtn = try_to_download(s.c_str(), a()->udir[dn].subnum);
+              rtn = try_to_download(s, a()->udir[dn].subnum);
               if (rtn < 0) {
                 break;
               }
@@ -887,8 +886,7 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  }
-  while (!done && !a()->hangup_ && (i <= ssize(a()->batch().entry)));
+  } while (!done && !a()->hangup_ && i <= ssize(a()->batch().entry));
 
   if (!a()->batch().numbatchdl()) {
     return;

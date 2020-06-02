@@ -85,7 +85,6 @@ int main(int argc, char * argv[])
         WRITE_SIZE(editorrec);
         WRITE_SIZE(usersubrec);
         WRITE_SIZE(userconfrec);
-        WRITE_SIZE(batchrec);
         WRITE_SIZE(ext_desc_type);
         WRITE_SIZE(gfiledirrec);
         WRITE_SIZE(gfilerec);

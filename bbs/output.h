@@ -70,11 +70,11 @@ public:
   /* This sets the current color (both locally and remotely) to that
    * specified (in IBM format).
    */
-  void SystemColor(int nColor);
+  void SystemColor(int c);
   void SystemColor(wwiv::sdk::Color color);
-  std::string MakeColor(int wwiv_color);
-  std::string MakeSystemColor(int nColor);
-  std::string MakeSystemColor(wwiv::sdk::Color color);
+  [[nodiscard]] std::string MakeColor(int wwiv_color);
+  [[nodiscard]] std::string MakeSystemColor(int c) const;
+  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color) const;
 
   /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
@@ -104,7 +104,7 @@ public:
    * the cursor at the beginning of the input prompt area.  Of course, if the
    * user does not want ansi, this routine does nothing.
    */
-  void mpl(int numOfChars);
+  void mpl(int length);
 
   /**
    * This function outputs a string of characters to the screen (and remotely
@@ -113,7 +113,7 @@ public:
    */
   int bputs(const std::string& text);
 
-  // Prints an abortable string (contained in *text). Returns 1 in *abort if the
+  // Prints an abort-able string (contained in *text). Returns 1 in *abort if the
   // string was aborted, else *abort should be zero.
   int bpla(const std::string& text, bool* abort);
 
@@ -187,7 +187,7 @@ public:
   int lines_listed_{0};
   bool newline{true};
   int charbufferpointer_{0};
-  char charbuffer[255];
+  char charbuffer[255]{};
 
 private:
   std::string bputch_buffer_;
