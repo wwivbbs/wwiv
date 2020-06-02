@@ -35,6 +35,7 @@ set(COMMON_SOURCES
  diredit.cpp
  dirlist.cpp
  dropfile.cpp
+ dsz.cpp
  email.cpp
  execexternal.cpp
  external_edit.cpp

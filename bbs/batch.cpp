@@ -22,6 +22,7 @@
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/datetime.h"
+#include "bbs/dsz.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -249,6 +250,24 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
 
     File::Remove(PathFilePath(a()->batch_directory(), file_name));
   }
+}
+
+static void ProcessDSZLogFile(const std::string& path) {
+  ProcessDSZLogFile(path, [](dsz_logline_t t, std::string fn, int cps)
+  {
+    switch (t) {
+    case dsz_logline_t::download:
+      downloaded(fn, cps);
+      break;
+    case dsz_logline_t::upload:
+      uploaded(fn, cps);
+      break;
+    case dsz_logline_t::error:
+    default:
+      sysoplog() << fmt::format("Error transferring \"{}\"", fn);
+      break;
+    };
+  });
 }
 
 // This function returns one character from either the local keyboard or
@@ -487,58 +506,12 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
 }
 
-static void handle_dszline(char* l) {
-  long lCharsPerSecond = 0;
-
-  // find the filename
-  char* ss = strtok(l, " \t");
-  for (int i = 0; i < 10 && ss; i++) {
-    if (i == 4) {
-      lCharsPerSecond = to_number<long>(ss);
-      break;
-    }
-    ss = strtok(nullptr, " \t");
-  }
-
-  if (ss) {
-    const auto filename = aligns(stripfn(ss));
-
-    switch (*l) {
-    case 'Z':
-    case 'r':
-    case 'R':
-    case 'B':
-    case 'H':
-      // received a file
-      uploaded(filename, lCharsPerSecond);
-      break;
-    case 'z':
-    case 's':
-    case 'S':
-    case 'b':
-    case 'h':
-    case 'Q':
-      // sent a file
-      downloaded(filename, lCharsPerSecond);
-      break;
-    case 'E':
-    case 'e':
-    case 'L':
-    case 'l':
-    case 'U':
-      // error
-      sysoplog() << fmt::sprintf("Error transferring \"%s\"", ss);
-      break;
-    }
-  }
-}
-
 static double ratio1(unsigned long xa) {
   if (a()->user()->dk() == 0 && xa == 0) {
     return 99.999;
   }
-  const double r = static_cast<double>(a()->user()->uk()) /
-                   static_cast<double>(a()->user()->dk() + xa);
+  const auto r =
+      static_cast<double>(a()->user()->uk()) / static_cast<double>(a()->user()->dk() + xa);
   return std::min<double>(r, 99.998);
 }
 
@@ -570,7 +543,7 @@ static string make_dl_batch_list() {
 
   TextFile tf(list_filename, "wt");
 
-  int32_t at = 0.0;
+  int32_t at = 0;
   unsigned long addk = 0;
   for (const auto& b : a()->batch().entry) {
     if (!b.sending) {
@@ -608,37 +581,6 @@ static string make_dl_batch_list() {
   return list_filename;
 }
 
-void ProcessDSZLogFile() {
-  const auto lines = static_cast<char**>(calloc((a()->max_batch * sizeof(char*) * 2) + 1, 1));
-
-  if (!lines) {
-    return;
-  }
-
-  File fileDszLog(a()->dsz_logfile_name_);
-  if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
-    const auto nFileSize = fileDszLog.length();
-    auto* ss = static_cast<char*>(calloc(nFileSize + 1, 1));
-    if (ss) {
-      const auto bytes_read = fileDszLog.Read(ss, nFileSize);
-      if (bytes_read > 0) {
-        ss[bytes_read] = 0;
-        lines[0] = strtok(ss, "\r\n");
-        for (int i = 1; (i < a()->max_batch * 2 - 2) && (lines[i - 1]); i++) {
-          lines[i] = strtok(nullptr, "\n");
-        }
-        lines[a()->max_batch * 2 - 2] = nullptr;
-        for (int i1 = 0; lines[i1]; i1++) {
-          handle_dszline(lines[i1]);
-        }
-      }
-      free(ss);
-    }
-    fileDszLog.Close();
-  }
-  free(lines);
-}
-
 static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist,
                     const string& dl, bool bHangupAfterDl) {
   string commandLine = stuff_in(orig_commandline,
@@ -665,7 +607,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       } else {
         bout << "\r\n|#9Please wait...\r\n\n";
       }
-      ProcessDSZLogFile();
+      ProcessDSZLogFile(a()->dsz_logfile_name_);
       a()->UpdateTopScreen();
     }
   }
