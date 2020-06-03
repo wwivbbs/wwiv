@@ -56,7 +56,7 @@ std::atomic<bool> need_to_reload_config;
 // TODO(rushfan): Add tests for new stuff in here.
 
 static NetworkContact network_contact_from_last_time(const std::string& address,
-                                                     const wwiv::core::DateTime& t) {
+                                                     const DateTime& t) {
   network_contact_record ncr{};
   ncr.address = address;
   ncr.ncr.lastcontact = t.to_daten_t();
@@ -68,7 +68,7 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
                                 const wwivd_config_t& c, int network_number) {
   const wwiv::sdk::fido::FidoCallout callout(config, net);
 
-  // TODO(rushfan): 1. Right now we just keep the map of last callout
+  // TODO(rushfan): 1. Right now we just keep the map of last call-out
   // time in memory, but we should checkpoint this to disk and reload
   // on startup.
   // 2. Also we should look for files outbound to the node so that we can
@@ -82,12 +82,12 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
   for (const auto& kv : callout.node_configs_map()) {
     const auto address = kv.first.as_string();
     const auto& callout_config = kv.second.callout_config;
-    if (!wwiv::sdk::net::allowed_to_call(callout_config, DateTime::now())) {
-      // Is the callout bit set.
+    if (!allowed_to_call(callout_config, DateTime::now())) {
+      // Is the call out bit set.
       continue;
     }
     auto ncn = network_contact_from_last_time(address, DateTime::from_time_t(current_last_contact[address]));
-    if (!wwiv::sdk::net::should_call(ncn, callout_config, DateTime::now())) {
+    if (!should_call(ncn, callout_config, DateTime::now())) {
       // Has it been long enough, or do we have enough k waiting.
       continue;
     }
@@ -108,7 +108,7 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
   Contact contact(net);
   const Callout callout(net);
   for (const auto& kv : callout.callout_config()) {
-    const auto ncn = contact.contact_rec_for(kv.first);
+    auto* const ncn = contact.contact_rec_for(kv.first);
     if (ncn == nullptr) {
       continue;
     }

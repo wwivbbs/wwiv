@@ -77,12 +77,6 @@ static char _off_[] = "OFF";
 
 static bool lp_config_loaded = false;
 
-// TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
-static bool ListPlusExist(const std::string& file_name) {
-  auto f = ToStringRemoveWhitespace(file_name);
-  return f.empty() ? false : File::Exists(f);
-}
-
 // TODO(rushfan): Convert this to use strings.
 static void colorize_foundtext(char* text, search_record* search_rec, int color) {
   char found_color[10], normal_color[10];
@@ -236,9 +230,9 @@ static void catch_divide_by_zero(int signum) {
 }
 
 int listfiles_plus(int type) {
-  int save_topdata = a()->topdata;
-  auto save_dir = a()->current_user_dir_num();
-  long save_status = a()->user()->GetStatus();
+  const int save_topdata = a()->topdata;
+  const auto save_dir = a()->current_user_dir_num();
+  const long save_status = a()->user()->GetStatus();
 
   ext_is_on = a()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);
@@ -247,7 +241,7 @@ int listfiles_plus(int type) {
   a()->UpdateTopScreen();
   bout.cls();
 
-  int nReturn = listfiles_plus_function(type);
+  const int r = listfiles_plus_function(type);
   bout.Color(0);
   bout.GotoXY(1, a()->user()->GetScreenLines() - 3);
   bout.nl(3);
@@ -269,29 +263,23 @@ int listfiles_plus(int type) {
   a()->topdata = save_topdata;
   a()->UpdateTopScreen();
 
-  return nReturn;
+  return r;
 }
 
 int lp_add_batch(const std::string& file_name, int dn, long fs) {
-  int32_t t;
-
   if (a()->batch().FindBatch(file_name) > -1) {
     return 0;
   }
 
-  if (a()->batch().entry.size() >= a()->max_batch) {
+  if (a()->batch().size() >= a()->max_batch) {
     bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
     bout << "No room left in batch queue.\r\n";
     pausescr();
   } else if (!ratio_ok()) {
     pausescr();
   } else {
-    if (a()->modem_speed_ && fs) {
-      t = std::lround(9.0 / static_cast<double>(a()->modem_speed_) * fs);
-    } else {
-      t = 0;
-    }
-    if (nsl() <= a()->batch().dl_time_in_secs() + t && !so()) {
+    if (nsl() <= a()->batch().dl_time_in_secs() + time_to_transfer(a()->modem_speed_, fs).count() &&
+        !so()) {
       bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
       bout << "Not enough time left in queue.\r\n";
       pausescr();
@@ -301,10 +289,9 @@ int lp_add_batch(const std::string& file_name, int dn, long fs) {
         bout << "Can't add temporary file to batch queue.\r\n";
         pausescr();
       } else {
-        batchrec b{};
+        BatchEntry b{};
         b.filename = file_name;
         b.dir = static_cast<int16_t>(dn);
-        b.time = t;
         b.sending = true;
         b.len = fs;
         a()->batch().AddBatch(b);
@@ -377,7 +364,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       auto stf = PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
                               files::unalign(u->filename));
       if (lp_config.check_exist) {
-        if (!ListPlusExist(stf.string())) {
+        if (!File::Exists(stf.string())) {
           buffer = "OFFLN";
         }
       }
@@ -619,11 +606,11 @@ int calc_max_lines() {
 
 static void check_lp_colors() {
   bool needs_defaults = false;
-  auto u = a()->user();
-  for (int i = 0; i < 32; i++) {
-    if (!u->data.lp_colors[i]) {
+  auto* u = a()->user();
+  for (auto& c : u->data.lp_colors) {
+    if (!c) {
       needs_defaults = true;
-      u->data.lp_colors[i] = static_cast<uint8_t>(Color::CYAN);
+      c = static_cast<uint8_t>(Color::CYAN);
     }
   }
 
@@ -639,8 +626,8 @@ static void check_lp_colors() {
 void save_lp_config() {
   if (lp_config_loaded) {
     File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
-    if (fileConfig.Open(
-        File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
+    if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate |
+                        File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
     }
@@ -653,14 +640,14 @@ void load_lp_config() {
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
-      lp_config.normal_highlight = (static_cast<uint8_t>(Color::YELLOW) + (
-                                      static_cast<uint8_t>(Color::BLACK) << 4));
-      lp_config.normal_menu_item = (static_cast<uint8_t>(Color::CYAN) + (
-                                      static_cast<uint8_t>(Color::BLACK) << 4));
-      lp_config.current_highlight = (static_cast<uint8_t>(Color::BLUE) + (
-                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
-      lp_config.current_menu_item = (static_cast<uint8_t>(Color::BLACK) + (
-                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
+      lp_config.normal_highlight =
+          static_cast<uint8_t>(Color::YELLOW) + (static_cast<uint8_t>(Color::BLACK) << 4);
+      lp_config.normal_menu_item =
+          static_cast<uint8_t>(Color::CYAN) + (static_cast<uint8_t>(Color::BLACK) << 4);
+      lp_config.current_highlight =
+          static_cast<uint8_t>(Color::BLUE) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
+      lp_config.current_menu_item =
+          static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
 
       lp_config.tagged_color = static_cast<uint8_t>(Color::LIGHTGRAY);
       lp_config.file_num_color = static_cast<uint8_t>(Color::GREEN);
@@ -668,8 +655,8 @@ void load_lp_config() {
       lp_config.found_fore_color = static_cast<uint8_t>(Color::RED);
       lp_config.found_back_color = static_cast<uint8_t>(Color::LIGHTGRAY) + 16;
 
-      lp_config.current_file_color = static_cast<uint8_t>(Color::BLACK) + (
-                                       static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
+      lp_config.current_file_color =
+          static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
 
       lp_config.max_screen_lines_to_show = 24;
       lp_config.show_at_least_extended = 5;
@@ -1018,10 +1005,9 @@ static void update_user_config_screen(uploadsrec* u, int which) {
 void config_file_list() {
   int which = -1;
   unsigned long bit = 0L;
-  char action[51];
   uploadsrec u = {};
 
-  strcpy(u.filename, "WWIV52.ZIP");
+  strcpy(u.filename, "WWIV55.ZIP");
   strcpy(u.description, "This is a sample description!");
   to_char_array(u.date, date());
   const string username_num = a()->names()->UserName(a()->usernum);
@@ -1034,7 +1020,7 @@ void config_file_list() {
 
   bout.cls();
   printfile(LPCONFIG_NOEXT);
-  if (!a()->user()->data.lp_options & cfl_fname) {
+  if (!(a()->user()->data.lp_options & cfl_fname)) {
     a()->user()->data.lp_options |= cfl_fname;
   }
 
@@ -1042,7 +1028,6 @@ void config_file_list() {
     a()->user()->data.lp_options |= cfl_description;
   }
 
-  action[0] = '\0';
   bool done = false;
   while (!done && !a()->hangup_) {
     update_user_config_screen(&u, which);
@@ -1160,7 +1145,6 @@ void config_file_list() {
 }
 
 static int rename_filename(const std::string& file_name, int dn) {
-  char s1[81], s2[81];
   int ret = 1;
 
   dliscan1(dn);
@@ -1175,8 +1159,7 @@ static int rename_filename(const std::string& file_name, int dn) {
 
   int i = recno(orig_aligned_filename);
   while (i > 0) {
-    int cp = i;
-    int current_file_position = i;
+    const int current_file_position = i;
     auto* area = a()->current_file_area();
     auto f = area->ReadFile(current_file_position);
     bout.nl();
@@ -1189,7 +1172,7 @@ static int rename_filename(const std::string& file_name, int dn) {
       break;
     }
     if (ch == 'N') {
-      i = nrecno(orig_aligned_filename, cp);
+      i = nrecno(orig_aligned_filename, current_file_position);
       continue;
     }
     bout.nl();
@@ -1201,16 +1184,14 @@ static int rename_filename(const std::string& file_name, int dn) {
     if (!new_filename.empty()) {
       new_filename = aligns(new_filename);
       if (new_filename != "        .   ") {
-        strcpy(s1, a()->directories[dn].path);
-        strcpy(s2, s1);
-        to_char_array(s1, new_filename);
-        if (ListPlusExist(s1)) {
+        files::FileName nfn(new_filename);
+        auto new_fn = PathFilePath(a()->directories[dn].path, nfn);
+        if (File::Exists(new_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          // TODO(rushfan): This looks completely broken with s1/s2/etc
-          strcat(s2, f.aligned_filename().c_str());
-          File::Rename(s2, s1);
-          if (ListPlusExist(s1)) {
+          auto old_fn = PathFilePath(a()->directories[dn].path, f);
+          File::Rename(old_fn, new_fn);
+          if (File::Exists(new_fn)) {
             auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
             if (!ss.empty()) {
               // TODO(rushfan): Display error if these fail?
@@ -1266,7 +1247,7 @@ static int rename_filename(const std::string& file_name, int dn) {
     if (a()->current_file_area()->UpdateFile(f, i)) {
       a()->current_file_area()->Save();
     }
-    i = nrecno(orig_aligned_filename, cp);
+    i = nrecno(orig_aligned_filename, current_file_position);
   }
   return ret;
 }
@@ -1360,7 +1341,7 @@ static int move_filename(const std::string& file_name, int dn) {
   while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
-    auto src_fn = FilePath(a()->directories[dn].path, f);
+    auto src_fn = PathFilePath(a()->directories[dn].path, f);
     bout.nl();
     printfileinfo(&f.u(), dn);
     bout.nl();
@@ -1400,7 +1381,7 @@ static int move_filename(const std::string& file_name, int dn) {
           }
         }
 
-        if (a()->batch().entry.size() > 1) {
+        if (a()->batch().size() > 1) {
           bout << "|#5Move all tagged files? ";
           if (yesno()) {
             bulk_move = 1;
@@ -1450,7 +1431,7 @@ static int move_filename(const std::string& file_name, int dn) {
       if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
         a()->current_file_area()->Save();
       }
-      auto dest_fn = FilePath(a()->directories[nDestDirNum].path, f);
+      auto dest_fn = PathFilePath(a()->directories[nDestDirNum].path, f);
       dliscan1(nDestDirNum);
       auto* area = a()->current_file_area();
       if (area->AddFile(f)) {
@@ -1465,28 +1446,8 @@ static int move_filename(const std::string& file_name, int dn) {
           area->AddExtendedDescription(f.aligned_filename(), ss);
         }
       }
-      if (!iequals(src_fn, dest_fn) && ListPlusExist(src_fn)) {
-        StringRemoveWhitespace(&src_fn);
-        StringRemoveWhitespace(&dest_fn);
-        bool bSameDrive = false;
-        if (src_fn[1] != ':' && dest_fn[1] != ':') {
-          bSameDrive = true;
-        }
-        if (src_fn[1] == ':' && dest_fn[1] == ':' && src_fn[0] == dest_fn[0]) {
-          bSameDrive = true;
-        }
-        if (bSameDrive) {
-          File::Rename(src_fn, dest_fn);
-          if (ListPlusExist(dest_fn)) {
-            File::Remove(src_fn);
-          } else {
-            File::Copy(src_fn, dest_fn);
-            File::Remove(src_fn);
-          }
-        } else {
-          File::Copy(src_fn, dest_fn);
-          File::Remove(src_fn);
-        }
+      if (src_fn != dest_fn && File::Exists(src_fn)) {
+        File::Rename(src_fn, dest_fn);
       }
       bout << "\r\nFile moved.\r\n";
     }

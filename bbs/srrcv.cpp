@@ -28,6 +28,8 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "sdk/files/file_record.h"
+
 #include <chrono>
 #include <cmath>
 #include <string>
@@ -178,7 +180,6 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   time_t filedatetime = 0L;
   unsigned int bn = 1;
   bool done = false;
-  double tpb = 12.656 / static_cast<double>(a()->modem_speed_);
   bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
   int nOldXPos = a()->localIO()->WhereX();
   int nOldYPos = a()->localIO()->WhereY();
@@ -227,7 +228,8 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     a()->localIO()->PutsXY(69, 4, fmt::sprintf("%d  ", nConsecErrors));
     a()->localIO()->PutsXY(69, 5, std::to_string(nTotalErrors));
     a()->localIO()->PutsXY(65, 3, fmt::sprintf("%ld - %ldk", pos / 128 + 1, pos / 1024 + 1));
-    const string t = ctim(std::lround((reallen - pos) * tpb));
+    const auto tpb = time_to_transfer(reallen-pos, a()->modem_speed_);
+    const auto t = ctim(tpb);
     if (reallen) {
       a()->localIO()->PutsXY(65, 1, t);
     }
@@ -339,8 +341,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
 }
 
 void zmodem_receive(const string& filename, bool* received) {
-  string local_filename(filename);
-  wwiv::strings::StringRemoveWhitespace(&local_filename);
+  string local_filename(wwiv::sdk::files::unalign(filename));
 
   bool bOldBinaryMode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);

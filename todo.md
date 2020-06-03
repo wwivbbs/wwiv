@@ -40,6 +40,7 @@
 * Move the userrec from User class to heap from stack.
 * Move the configrec from Config and Config430 class to heap from stack.
 * simplify names in WUser
+* Get rid of FilePath (just use PathFilePath)
 
 ## Networking Cleanup
 ***
@@ -82,6 +83,11 @@
 * move FileList into context (for tagged files)
 * make batchrec use string and stop checking size since it's never saved
   to disk.  Remove from vardec.h
+* Create a FileName class from an aligned filename, and also unaligned, or path
+* make send_file, maybe_internal, and all of those use a fs::path for a fully qualified
+  pathname just a filename.
+* Batch::contains_file should take a FileName
+* send_file's sfn should be an aligned filename, so maybe use FileName
 
 ## Open Questions
 ***

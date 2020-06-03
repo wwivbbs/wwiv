@@ -1109,8 +1109,8 @@ bool check_zip(const std::string& zipcode, int mode) {
     return false;
   }
 
-  bool ok = true;
-  bool found = false;
+  auto ok = true;
+  auto found = false;
 
   const auto zipcity_dir = PathFilePath(a()->config()->datadir(), ZIPCITY_DIR);
   const auto fn = fmt::format("zip{}.dat", zipcode.front());
@@ -1119,7 +1119,7 @@ bool check_zip(const std::string& zipcode, int mode) {
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {
-      bout << "\r\n|#6" << FilePath(zipcity_dir, fn) << " not found\r\n";
+      bout << "\r\n|#6" << PathFilePath(zipcity_dir, fn).string() << " not found\r\n";
     }
   } else {
     char zip_buf[81];
@@ -1127,7 +1127,7 @@ bool check_zip(const std::string& zipcode, int mode) {
       single_space(zip_buf);
       if (strncmp(zip_buf, zipcode.c_str(), 5) == 0) {
         found = true;
-        char* ss = strtok(zip_buf, " ");
+        auto ss = strtok(zip_buf, " ");
         ss = strtok(nullptr, " ");
         StringTrim(ss);
         strcpy(state, ss);
@@ -1435,9 +1435,9 @@ void new_mail() {
   if (!File::Exists(file)) {
     return;
   }
-  int save_ed = a()->user()->GetDefaultEditor();
+  const auto save_ed = a()->user()->GetDefaultEditor();
   a()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.string(), true, true);
+  LoadFileIntoWorkspace(file, true, true);
   use_workspace = true;
 
   MessageEditorData data;

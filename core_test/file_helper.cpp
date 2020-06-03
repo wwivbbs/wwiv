@@ -98,7 +98,7 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
 
 std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) const {
   const auto name{File::FixPathSeparators(orig_name)};
-  return FilePath(TempDir(), name);
+  return PathFilePath(TempDir(), name);
 }
 
 std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) const {

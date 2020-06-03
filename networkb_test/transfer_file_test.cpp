@@ -136,7 +136,7 @@ TEST_F(TransferFileTest, WFileTest_Write) {
     EXPECT_LE(wfile_file.file_size(), 0);
 
     wfile_file.WriteChunk(contents.c_str(), contents.size());
-    EXPECT_EQ(contents.size(), wfile_file.file_size());
+    EXPECT_EQ(wwiv::stl::ssize(contents), wfile_file.file_size());
     wfile_file.Close();
   }
   // Needed wfile_file to go out of scope before the file can be read.

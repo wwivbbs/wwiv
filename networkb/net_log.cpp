@@ -99,7 +99,7 @@ bool NetworkLog::Log(time_t time, NetworkSide side, int16_t node, unsigned int b
 }
 
 std::string NetworkLog::ToString() const {
-  return wwiv::core::FilePath(gfiles_directory_, "net.log");
+  return wwiv::core::PathFilePath(gfiles_directory_, "net.log").string();
 }
 
 } // namespace wwiv

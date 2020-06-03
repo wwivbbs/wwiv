@@ -112,6 +112,10 @@ std::filesystem::path SdkHelper::CreatePath(const string& name) {
 }
 
 SdkHelper::~SdkHelper() {
-  auto dir = saved_dir_.string();
-  chdir(dir.c_str());
+  try {
+    const auto dir = saved_dir_.string();
+    (void) chdir(dir.c_str());
+  } catch (...) {
+    //
+  }
 }

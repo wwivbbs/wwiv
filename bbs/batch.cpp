@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// ReSharper disable CppClangTidyHicppMultiwayPathsCovered
 #include "bbs/batch.h"
 
 #include "bbs/bbs.h"
@@ -76,11 +77,11 @@ void normalupload(int dn);
 // download. Shows estimated time, by item, for files in the d/l queue.
 static void listbatch() {
   bout.nl();
-  if (a()->batch().entry.empty()) {
+  if (a()->batch().empty()) {
     return;
   }
   bool abort = false;
-  bout << "|#9Files - |#2" << a()->batch().entry.size() << "  ";
+  bout << "|#9Files - |#2" << a()->batch().size() << "  ";
   if (a()->batch().numbatchdl()) {
     bout << "|#9Time - |#2" << ctim(a()->batch().dl_time_in_secs());
   }
@@ -93,7 +94,7 @@ static void listbatch() {
     string buffer;
     ++current_num;
     if (b.sending) {
-      const string t = ctim(b.time);
+      const string t = ctim(b.time(a()->modem_speed_));
       buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
                             b.filename, t, a()->directories[b.dir].name);
     } else {
@@ -147,7 +148,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
   sysoplog() << "!!! Couldn't find \"" << file_name << "\" in DL batch queue.";
 }
 
-void didnt_upload(const batchrec& b) {
+void didnt_upload(const BatchEntry& b) {
   if (b.sending) {
     return;
   }
@@ -309,7 +310,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     return;
   }
 
-  auto message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(),
+  auto message = StrCat("ZModem Download: Files - ", a()->batch().size(),
                         " Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
@@ -334,16 +335,16 @@ void zmbatchdl(bool bHangupAfterDl) {
       bRatioBad = false;
       ++cur;
     }
-    if (nsl() >= a()->batch().entry[cur].time && !bRatioBad) {
+    if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
       dliscan1(a()->batch().entry[cur].dir);
-      const int nRecordNumber = recno(a()->batch().entry[cur].filename);
-      if (nRecordNumber <= 0) {
+      const int record_number = recno(a()->batch().entry[cur].filename);
+      if (record_number <= 0) {
         a()->batch().delbatch(cur);
       } else {
-        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
+        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
-        auto f = area->ReadFile(nRecordNumber);
+        auto f = area->ReadFile(record_number);
         auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
           auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
@@ -354,7 +355,7 @@ void zmbatchdl(bool bHangupAfterDl) {
           }
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-        const auto send_fn = ToStringRemoveWhitespace(send_filename.string());
+        const auto send_fn = send_filename.string();
         double percent;
         zmodem_send(send_fn, &ok, &percent);
         if (ok) {
@@ -439,7 +440,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (!a()->context().incom()) {
     return;
   }
-  auto message = StrCat("Ymodem Download: Files - ", a()->batch().entry.size(),
+  auto message = StrCat("Ymodem Download: Files - ", a()->batch().size(),
                         ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
@@ -464,13 +465,13 @@ void ymbatchdl(bool bHangupAfterDl) {
       bRatioBad = false;
       ++cur;
     }
-    if (nsl() >= a()->batch().entry[cur].time && !bRatioBad) {
+    if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
       dliscan1(a()->batch().entry[cur].dir);
       const auto nRecordNumber = recno(a()->batch().entry[cur].filename);
       if (nRecordNumber <= 0) {
         a()->batch().delbatch(cur);
       } else {
-        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
+        a()->localIO()->Puts(StrCat("Files left - ", a()->batch().size(), ", Time left - ",
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
@@ -528,15 +529,15 @@ static string make_ul_batch_list() {
     if (b.sending) {
       continue;
     }
-    auto line = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
-    tf.WriteLine(line);
+    auto line = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename));
+    tf.WriteLine(line.string());
   }
   return list_filename.string();
 }
 
-static string make_dl_batch_list() {
+static std::filesystem::path make_dl_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
-  auto list_filename = FilePath(a()->bbsdir(), fn);
+  auto list_filename = PathFilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -551,17 +552,17 @@ static string make_dl_batch_list() {
     }
     string filename_to_send;
     if (a()->directories[b.dir].mask & mask_cdrom) {
-      const auto fileToSend = FilePath(a()->temp_directory(), stripfn(b.filename));
+      const auto fileToSend = PathFilePath(a()->temp_directory(), stripfn(b.filename));
       if (!File::Exists(fileToSend)) {
-        auto sourceFile = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
+        auto sourceFile = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename));
         File::Copy(sourceFile, fileToSend);
       }
-      filename_to_send = fileToSend;
+      filename_to_send = fileToSend.string();
     } else {
-      filename_to_send = FilePath(a()->directories[b.dir].path, stripfn(b.filename));
+      filename_to_send = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename)).string();
     }
     bool ok = true;
-    if (nsl() < b.time + at) {
+    if (nsl() < b.time(a()->modem_speed_) + at) {
       ok = false;
       bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
     }
@@ -574,7 +575,7 @@ static string make_dl_batch_list() {
     }
     if (ok) {
       tf.WriteLine(filename_to_send);
-      at += b.time;
+      at += b.time(a()->modem_speed_);
       addk += thisk;
     }
   }
@@ -624,7 +625,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 
 void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string& description) {
   auto download_log_entry = StrCat(description,
-                                   "%s BATCH Download: Files - ", a()->batch().entry.size(),
+                                   "%s BATCH Download: Files - ", a()->batch().size(),
                                    ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
@@ -635,13 +636,13 @@ void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string
   bout.nl(2);
 
   write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-  const string list_filename = make_dl_batch_list();
-  run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
+  const auto list_filename = make_dl_batch_list();
+  run_cmd(command_line, list_filename.string(), "", download_log_entry, bHangupAfterDl);
 }
 
 static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::string& description) {
   string download_log_entry = fmt::sprintf("%s BATCH Upload: Files - %d", description,
-                                           a()->batch().entry.size());
+                                           a()->batch().size());
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -663,7 +664,7 @@ int batchdl(int mode) {
   bool done = false;
   do {
     char ch = 0;
-    switch (mode) {
+    switch (mode) {  // NOLINT(hicpp-multiway-paths-covered)
     case 0:
     case 3:
       bout.nl();
@@ -707,7 +708,7 @@ int batchdl(int mode) {
         didnt_upload(a()->batch().entry[i - 1]);
         a()->batch().delbatch(i - 1);
       }
-      if (a()->batch().entry.empty()) {
+      if (a()->batch().empty()) {
         bout << "\r\nBatch queue empty.\r\n\n";
         done = true;
       }
@@ -729,7 +730,7 @@ int batchdl(int mode) {
       if (mode != 3) {
         bout.nl();
         bout << "|#5Hang up after transfer? ";
-        auto hangup_after_dl = yesno();
+        const auto hangup_after_dl = yesno();
         bout.nl(2);
         int i = get_protocol(xf_up_batch);
         if (i > 0) {
@@ -809,7 +810,7 @@ void upload(int dn) {
     bout << "|#2Q|#7) |#1Quit\r\n\n";
     bout << "|#2Which |#7(|#2B,n,q,?|#7)|#1: ";
 
-    char key = onek("QB\rN?");
+    const char key = onek("QB\rN?");
     switch (key) {
     case 'B':
     case '\r':
@@ -832,6 +833,20 @@ void upload(int dn) {
     }
   }
   while (!done && !a()->hangup_);
+}
+
+std::chrono::seconds time_to_transfer(int32_t file_size, int32_t modem_speed) {
+  if (modem_speed == 0) {
+    return std::chrono::seconds(0);
+  }
+  const double ms = modem_speed;
+  const double fs = file_size;
+  return std::chrono::seconds(std::lround(12.656 * fs / ms));
+}
+
+int32_t BatchEntry::time(int modem_speed) const {
+  const auto d = time_to_transfer(modem_speed, len);
+  return static_cast<int32_t>(d.count());
 }
 
 int Batch::FindBatch(const std::string& file_name) {
@@ -859,7 +874,7 @@ bool Batch::delbatch(size_t pos) {
   return erase_at(entry, pos);
 }
 
-std::vector<batchrec>::iterator Batch::delbatch(std::vector<batchrec>::iterator it) {
+std::vector<BatchEntry>::iterator Batch::delbatch(std::vector<BatchEntry>::iterator it) {
   return entry.erase(it);
 }
 

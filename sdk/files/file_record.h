@@ -23,10 +23,27 @@
 
 namespace wwiv::sdk::files {
 
+class FileName final {
+public:
+  explicit FileName(std::string aligned_filename);
+  FileName(const FileName& that);
+  ~FileName() = default;
+
+  [[nodiscard]] const std::string& aligned_filename() const noexcept;
+  [[nodiscard]] const std::string& unaligned_filename() const noexcept;
+
+private:
+  const std::string aligned_filename_;
+  const std::string unaligned_filename_;
+};
+
+
 class FileRecord final {
 public:
   explicit FileRecord(const uploadsrec& u) : u_(u) {}
   FileRecord();
+  FileRecord(const FileRecord&);
+  FileRecord& operator=(const FileRecord&);
   ~FileRecord() = default;
 
   [[nodiscard]] uploadsrec& u() { return u_; }
@@ -43,12 +60,26 @@ public:
 
   bool set_filename(const std::string& unaligned_filename);
   bool set_description(const std::string& desc);
-  [[nodiscard]] std::string aligned_filename() const ;
-  [[nodiscard]] std::string unaligned_filename() const ;
+  [[nodiscard]] FileName filename() const;
+  [[nodiscard]] std::string aligned_filename() const;
+  [[nodiscard]] std::string unaligned_filename() const;
 
 private:
   uploadsrec u_;
 };
+
+std::string align(const std::string& file_name);
+std::string unalign(const std::string& file_name);
+
+std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f);
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const FileRecord& f);
+
+std::string FilePath(const std::filesystem::path& directory_name, const FileName& f);
+std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+                                   const FileName& f);
+
+
 
 } // namespace wwiv::sdk::files
 

@@ -18,10 +18,11 @@
 #ifndef __INCLUDED_BBS_WORKSPACE_H__
 #define __INCLUDED_BBS_WORKSPACE_H__
 
+#include <filesystem>
 #include <string>
 
 extern bool use_workspace;
 void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode = false);
-
+void LoadFileIntoWorkspace(const std::filesystem::path& file_path, bool no_edit_allowed, bool silent_mode = false);
 
 #endif  // __INCLUDED_BBS_WORKSPACE_H__

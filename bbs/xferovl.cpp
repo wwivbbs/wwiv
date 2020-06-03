@@ -79,11 +79,11 @@ void move_file() {
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
     const auto ch = ynq();
-    std::string src_fn;
+    std::filesystem::path src_fn;
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      src_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      src_fn = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
       string ss;
       do {
         bout.nl(2);
@@ -139,7 +139,7 @@ void move_file() {
       }
 
       dliscan1(d1);
-      auto dest_fn = FilePath(a()->directories[d1].path, f);
+      auto dest_fn = PathFilePath(a()->directories[d1].path, f);
       if (a()->current_file_area()->AddFile(f)) {
         a()->current_file_area()->Save();
       }
@@ -147,9 +147,7 @@ void move_file() {
         const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
         a()->current_file_area()->AddExtendedDescription(f, pos, ss);
       }
-      StringRemoveWhitespace(&src_fn);
-      StringRemoveWhitespace(&dest_fn);
-      if (!iequals(src_fn, dest_fn) && File::Exists(src_fn)) {
+      if (src_fn != dest_fn && File::Exists(src_fn)) {
         File::Rename(src_fn, dest_fn);
       }
       bout << "\r\nFile moved.\r\n";
@@ -232,13 +230,12 @@ void rename_file() {
     if (!s.empty()) {
       s = aligns(s);
       if (!iequals(s, "        .   ")) {
-        const std::string p = ToStringRemoveWhitespace(
-            a()->directories[a()->current_user_dir().subnum].path);
-        auto dest_fn = FilePath(p, s);
+        const std::string p = a()->directories[a()->current_user_dir().subnum].path;
+        auto dest_fn = PathFilePath(p, s);
         if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          auto orig_fn = FilePath(p, f);
+          auto orig_fn = PathFilePath(p, f);
           File::Rename(orig_fn, dest_fn);
           if (File::Exists(dest_fn)) {
             auto* area = a()->current_file_area();
@@ -261,7 +258,7 @@ void rename_file() {
     if (!desc.empty()) {
       f.set_description(desc);
     }
-    string ss = area->ReadExtendedDescriptionAsString(f).value_or("");
+    auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
@@ -560,7 +557,7 @@ bool uploadall(uint16_t directory_num) {
 }
 
 void relist() {
-  char s[85], s1[40], s2[81];
+  char s[85], s1[40];
   bool next, abort = false;
   int16_t tcd = -1;
 
@@ -582,7 +579,7 @@ void relist() {
           bout << "\r" << string(78, '-') << wwiv::endl;
         }
         tcd = f.directory;
-        int tcdi = -1;
+        auto tcdi = -1;
         for (size_t i1 = 0; i1 < a()->directories.size(); i1++) {
           if (a()->udir[i1].subnum == tcd) {
             tcdi = i1;
@@ -620,9 +617,9 @@ void relist() {
             bytes_to_k(f.u.numbytes));
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(a()->directories[tcd].mask & mask_cdrom)) {
-        sprintf(s2, "%s%s", a()->directories[tcd].path, f.u.filename);
-        StringRemoveWhitespace(s2);
-        if (!File::Exists(s2)) {
+        files::FileName fn(f.u.filename);
+        auto filepath = PathFilePath(a()->directories[tcd].path, fn);
+        if (!File::Exists(filepath)) {
           strcpy(s1, "N/A");
         }
       }

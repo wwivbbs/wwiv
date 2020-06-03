@@ -36,23 +36,23 @@ namespace menus {
 
 class MenuInstance {
 public:
-  MenuInstance(const std::string& menuDirectory, const std::string& menuName);
+  MenuInstance(std::string menuDirectory, std::string menuName);
   ~MenuInstance();
   void DisplayMenu() const;
-  static const std::string create_menu_filename(
+  static std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
   void RunMenu();
   std::vector<MenuRec> LoadMenuRecord(const std::string& command);
   void GenerateMenu() const;
 
-  const std::string menu_directory() { return menu_directory_; }
+  std::string menu_directory() { return menu_directory_; }
 
   bool finished = false;
   bool reload = false;  /* true if we are going to reload the menus */
 
   std::string prompt;
   std::vector<std::string> insertion_order_;
-  MenuHeader header;   /* Holds the header info for current menu set in memory */
+  MenuHeader header{};   /* Holds the header info for current menu set in memory */
 private:
   const std::string menu_directory_;
   const std::string menu_name_;
@@ -72,13 +72,13 @@ private:
 
 class MenuDescriptions {
 public:
-  MenuDescriptions(const std::string& menupath);
+  MenuDescriptions(const std::filesystem::path& menupath);
   ~MenuDescriptions();
-  const std::string description(const std::string& name) const;
+  std::string description(const std::string& name) const;
   bool set_description(const std::string& name, const std::string& description);
 
 private:
-  const std::string menupath_;
+  const std::filesystem::path menupath_;
   std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
 };
 

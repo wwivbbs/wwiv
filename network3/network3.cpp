@@ -150,7 +150,7 @@ static bool check_fido_host_networks(
         text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
         text << " ** Please fix it.\r\n\n";
       }
-      LOG(INFO) << "Checking FTN Subscribers in file " << FilePath(net.dir, filename);
+      LOG(INFO) << "Checking FTN Subscribers in file " << PathFilePath(net.dir, filename).string();
       auto subscribers = ReadFidoSubcriberFile(PathFilePath(net.dir, filename));
       if (subscribers.empty()) {
         text << "Unable to find any uplinks in subscriber file for echotag: " << n.stype << "\r\n";

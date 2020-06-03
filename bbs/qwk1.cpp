@@ -216,10 +216,10 @@ void qwk_gather_email(qwk_junk* qwk_info) {
 
   qwk_info->in_email = 1;
 
-  auto filename = FilePath(a()->qwk_directory(), "PERSONAL.NDX");
-  qwk_info->personal = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  filename = FilePath(a()->qwk_directory(), "000.NDX");
-  qwk_info->zero = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  auto filename = PathFilePath(a()->qwk_directory(), "PERSONAL.NDX");
+  qwk_info->personal = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  filename = PathFilePath(a()->qwk_directory(), "000.NDX");
+  qwk_info->zero = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   do {
     read_same_email(mloc, mw, curmail, m, 0, 0);
@@ -338,7 +338,7 @@ string qwk_which_protocol() {
 }
 
 static void qwk_receive_file(const std::string& fn, bool* received, int i) {
-  if ((i <= 1) || (i == 5)) {
+  if (i <= 1 || i == 5) {
     i = get_protocol(xf_up_temp);
   }
 
@@ -537,21 +537,21 @@ void upload_reply_packet() {
 
   auto name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
-  bout << fmt::sprintf("Hit 'Y' to upload reply packet %s :", name);
-  const auto namepath = FilePath(a()->qwk_directory(), name);
+  bout << fmt::format("Hit 'Y' to upload reply packet {} :", name);
+  const auto namepath = PathFilePath(a()->qwk_directory(), name);
 
   const bool do_it = yesno();
 
   if (do_it) {
     if (a()->context().incom()) {
-      qwk_receive_file(namepath, &rec, a()->user()->data.qwk_protocol);
+      qwk_receive_file(namepath.string(), &rec, a()->user()->data.qwk_protocol);
       sleep_for(milliseconds(500));
     }
 
     if (rec) {
       name = StrCat(qwk_system_name(qwk_cfg), ".MSG");
-      ready_reply_packet(namepath, name);
-      process_reply_dat(namepath);
+      ready_reply_packet(namepath.string(), name);
+      process_reply_dat(namepath.string());
     } else {
       sysoplog() << "Aborted";
       bout.nl();
@@ -570,7 +570,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
   strupr(to);
 
   // Remove text name from address, if it doesn't contain " AT " in it
-  char* st = strstr(to, " AT ");
+  auto st = strstr(to, " AT ");
   if (!st) {
     st = strchr(to, '#');
     if (st) {

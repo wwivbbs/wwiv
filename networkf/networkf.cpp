@@ -67,21 +67,21 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
-static string determine_arc_extension(const std::string& filename) {
+static string determine_arc_extension(const std::filesystem::path& filename) {
   File f(filename);
   if (!f.Open(File::modeReadOnly)) {
     return "";
   }
 
   char header[10];
-  auto num_read = f.Read(&header, 10);
+  const auto num_read = f.Read(&header, 10);
   if (num_read < 10) {
     return "";
   }
 
   switch (header[0]) {
   case 0x60:
-    if ((unsigned char)header[1] == (unsigned char)0xEA)
+    if (static_cast<unsigned char>(header[1]) == static_cast<unsigned char>(0xEA))
       return "ARJ";
     break;
   case 0x1a:
@@ -134,7 +134,7 @@ static string arc_stuff_in(const string& command_line, const string& a1, const s
   std::ostringstream os;
   for (auto it = command_line.begin(); it != command_line.end(); it++) {
     if (*it == '%') {
-      it++;
+      ++it;
       switch (*it) {
       case '%':
         os << "%";
@@ -341,20 +341,20 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
   File::set_current_directory(dirs.temp_inbound_dir());
 
   // were in the temp dir now.
-  auto arcs = read_arcs(config.datadir());
+  const auto arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return false;
   }
 
-  auto extension = determine_arc_extension(FilePath(dir, name));
+  auto extension = determine_arc_extension(PathFilePath(dir, name));
   if (extension.empty()) {
     LOG(INFO) << "Unable to determine archiver type for packet: " << name;
     extension = net.fido.packet_config.compression_type;
   }
   const auto& arc = find_arc(arcs, extension);
   // We have no parameter 2 since we're extracting everything.
-  auto unzip_cmd = arc_stuff_in(arc.arce, FilePath(dir, name), "");
+  auto unzip_cmd = arc_stuff_in(arc.arce, PathFilePath(dir, name).string(), "");
   // Execute the command
   LOG(INFO) << "Command: " << unzip_cmd;
   if (system(unzip_cmd.c_str()) != 0) {
@@ -480,7 +480,8 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     File::set_current_directory(dirs.temp_outbound_dir());
     LOG(INFO) << "Changed directory to: " << dirs.temp_outbound_dir();
     const auto& arc = find_arc(arcs, ctype);
-    const auto zip_cmd = arc_stuff_in(arc.arca, FilePath(dirs.outbound_dir(), bname), fido_packet_name);
+    const auto zip_cmd =
+        arc_stuff_in(arc.arca, PathFilePath(dirs.outbound_dir(), bname).string(), fido_packet_name);
     LOG(INFO) << "Command: " << zip_cmd;
     if (0 != system(zip_cmd.c_str())) {
       LOG(ERROR) << "Failed executing: " << zip_cmd;
@@ -912,7 +913,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
       LOG(ERROR) << "Unable to open FLO file: " << flo_file;
       return false;
     }
-    int num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename)));
+    const int num_written = flo_file.WriteLine(StrCat("^", PathFilePath(dirs.outbound_dir(), bundlename).string()));
     return num_written > 0;
 
   } catch (const semaphore_not_acquired& e) {
@@ -932,9 +933,9 @@ bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline, const FidoAddres
     LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << dirs.netmail_dir() << "'";
     return false;
   }
-  const auto bundlepath = FilePath(dirs.outbound_dir(), bundlename);
+  const auto bundlepath =PathFilePath(dirs.outbound_dir(), bundlename);
   if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), dest, netmail_filepath,
-                                  bundlepath, packet_config)) {
+                                  bundlepath.string(), packet_config)) {
     LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
     return false;
   }

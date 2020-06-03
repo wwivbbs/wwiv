@@ -515,14 +515,14 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
-      if (a()->batch().entry.size() >= a()->max_batch) {
+      if (a()->batch().size() >= a()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *sent = false;
         *abort = false;
       } else {
-        const int32_t t = std::lround(a()->modem_speed_ ? 12.656 / static_cast<double>(a()->modem_speed_) * static_cast<double>(fs) : 0);
-        if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
+        if (nsl() <=
+            a()->batch().dl_time_in_secs() + time_to_transfer(fs, a()->modem_speed_).count()) {
           bout.nl();
           bout << "Not enough time left in queue.\r\n\n";
           *sent = false;
@@ -534,16 +534,15 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
             *sent = false;
             *abort = false;
           } else {
-            batchrec b{};
+            BatchEntry b{};
             b.filename = sfn;
             b.dir = static_cast<int16_t>(dn);
-            b.time = t;
             b.sending = true;
             b.len = fs;
             a()->batch().AddBatch(b);
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
-            bout << "Batch: Files - " << a()->batch().entry.size()
+            bout << "Batch: Files - " << a()->batch().size()
                  << "  Time - " << ctim(a()->batch().dl_time_in_secs()) << "\r\n\n";
             *sent = false;
             *abort = false;
@@ -552,9 +551,9 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
       }
       break;
     default:
-      int nTempProt = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, true);
+      const int temp_prot = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, true);
       *abort = false;
-      if (nTempProt == a()->externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
+      if (temp_prot == a()->externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
         *sent = true;
       }
       break;
@@ -590,16 +589,15 @@ void receive_file(const std::string& file_name, int* received, const std::string
   break;
   case WWIV_INTERNAL_PROT_BATCH:
     if (dn != -1) {
-      if (a()->batch().entry.size() >= a()->max_batch) {
+      if (a()->batch().size() >= a()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *received = 0;
       } else {
         *received = 2;
-        batchrec b{};
+        BatchEntry b{};
         b.filename = sfn;
         b.dir = static_cast<int16_t>(dn);
-        b.time = 0;
         b.sending = false;
         b.len = 0;
         a()->batch().AddBatch(b);

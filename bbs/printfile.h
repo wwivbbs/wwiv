@@ -25,7 +25,8 @@
 /** [VisibleForTesting] */
 std::filesystem::path CreateFullPathToPrint(const std::string& basename);
 void print_local_file(const std::string& filename);
-bool printfile(const std::string& filename, bool bAbortable = true, bool bForcePause = true);
+bool printfile(const std::string& filename, bool abortable = true, bool force_pause = true);
+bool printfile_path(const std::filesystem::path& file_path, bool abortable = true, bool force_pause = true);
 bool print_help_file(const std::string& filename);
 bool printfile_random(const std::string& base_fn);
 

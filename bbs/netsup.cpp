@@ -69,7 +69,7 @@ std::chrono::steady_clock::time_point last_time_c_;
 /** Returns a full path to exe under the WWIV_DIR */
 static string CreateNetworkBinary(const std::string exe) {
   std::ostringstream ss;
-  ss << FilePath(a()->bindir(), exe);
+  ss << PathFilePath(a()->bindir(), exe).string();
   ss << " --v=" << a()->verbose();
   ss << " --bbsdir=" << a()->bbsdir();
   ss << " --bindir=" << a()->bindir();

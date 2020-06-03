@@ -283,9 +283,9 @@ std::string Contact::ToString() const {
   return ss.str();
 }
 
-std::string Contact::full_pathname() const noexcept { return FilePath(net_.dir, CONTACT_NET); }
-
 std::filesystem::path Contact::path() const noexcept { return PathFilePath(net_.dir, CONTACT_NET); }
+
+std::string Contact::full_pathname() const noexcept { return path().string(); }
 
 network_contact_record to_network_contact_record(const net_contact_rec& n) {
   network_contact_record ncr{};

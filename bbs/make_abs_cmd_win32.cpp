@@ -47,14 +47,15 @@ void make_abs_cmd(const std::string& root, std::string* out) {
   };
 
   // out_buffer must be at least MAX_PATH in size.
-  char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH];
+  char s1[MAX_PATH], s2[MAX_PATH];
   to_char_array(s1, *out);
 
+  char curdir[MAX_PATH];
   if (s1[1] == ':') {
     if (s1[2] != '\\') {
-      _getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, s, MAX_PATH);
-      if (s[0]) {
-        _snprintf(s1, sizeof(s1), "%c:\\%s\\%s", s1[0], s, out->substr(2).c_str());
+      (void)_getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, curdir, MAX_PATH);
+      if (curdir[0]) {
+        _snprintf(s1, sizeof(s1), "%c:\\%s\\%s", s1[0], curdir, out->substr(2).c_str());
       } else {
         _snprintf(s1, sizeof(s1), "%c:\\%s", s1[0], out->substr(2).c_str());
       }
@@ -76,7 +77,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
   } else {
     s2[0] = '\0';
   }
-  for (const std::string& ext : exts) {
+  for (const auto& ext : exts) {
     if (ext.empty()) {
       const char* ss1 = strrchr(s1, '\\');
       if (!ss1) {
@@ -86,11 +87,11 @@ void make_abs_cmd(const std::string& root, std::string* out) {
         continue;
       }
     }
-    _snprintf(s, sizeof(s), "%s%s", s1, ext.c_str());
+    auto s = StrCat(s1, ext);
     if (s1[1] == ':') {
       if (File::Exists(s)) {
         if (File::is_directory(s)) {
-          *out = FilePath(s, s2);
+          *out = PathFilePath(s, s2).string();
         } else {
           *out = StrCat(s, s2);
         }
@@ -100,14 +101,14 @@ void make_abs_cmd(const std::string& root, std::string* out) {
       if (File::Exists(s)) {
         std::error_code ec;
         if (File::is_directory(root) && !std::filesystem::is_directory(PathFilePath(root, s), ec)) {
-          *out = StrCat(FilePath(root, s), s2);
+          *out = StrCat(PathFilePath(root, s).string(), s2);
         } else {
           *out = StrCat(root, s, s2);
         }
         return;
       }
       char szFoundPath[MAX_PATH];
-      _searchenv(s, "PATH", szFoundPath);
+      _searchenv(s.c_str(), "PATH", szFoundPath);
       if (strlen(szFoundPath) > 0) {
         *out = StrCat(szFoundPath, s2);
         return;

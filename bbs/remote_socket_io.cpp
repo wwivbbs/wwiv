@@ -57,7 +57,7 @@ using namespace wwiv::strings;
 // N.B. mutex and yield are defines in Solaris.
 
 struct socket_error: public std::runtime_error {
-  socket_error(const string& message): std::runtime_error(message) {}
+  explicit socket_error(const string& message): std::runtime_error(message) {}
 };
 
 static bool socket_avail(SOCKET sock, int seconds) {
@@ -69,7 +69,7 @@ static bool socket_avail(SOCKET sock, int seconds) {
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
-  int result = select(sock + 1, &fds, 0, 0, &tv);
+  const auto result = select(sock + 1, &fds, 0, 0, &tv);
   if (result == SOCKET_ERROR) {
     throw socket_error("Error on select for socket.");
   }
@@ -80,7 +80,7 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
   : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
   // assigning the value to a static causes this only to be
   // initialized once.
-  static bool once = RemoteSocketIO::Initialize();
+  [[maybe_unused]] static bool once = RemoteSocketIO::Initialize();
 
   // Make sure our signal event is not set to the "signaled" state.
   stop_.store(false);
@@ -91,7 +91,7 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
     socket_ = INVALID_SOCKET;
     return;
   }
-  else if (socket_handle == INVALID_SOCKET) {
+  if (socket_handle == INVALID_SOCKET) {
     // Also exit early if we have an invalid handle.
     socket_ = INVALID_SOCKET;
     return;
@@ -174,8 +174,8 @@ unsigned int RemoteSocketIO::put(unsigned char ch) {
     szBuffer[1] = ch;
   }
 
-  int num_sent = send(socket_, reinterpret_cast<char*>(szBuffer),
-		      strlen(reinterpret_cast<char*>(szBuffer)), 0);
+  const auto num_sent = send(socket_, reinterpret_cast<char*>(szBuffer),
+                             strlen(reinterpret_cast<char*>(szBuffer)), 0);
   if (num_sent == SOCKET_ERROR) {
     return 0;
   }
@@ -217,16 +217,16 @@ unsigned int RemoteSocketIO::read(char *buffer, unsigned int count) {
   if (!valid_socket()) { return 0; }
 
   unsigned int num_read = 0;
-  char* temp = buffer;
+  auto* temp = buffer;
 
   std::lock_guard<std::mutex> lock(mu_);
   while (!queue_.empty() && num_read <= count) {
-    char ch = queue_.front();
+    const auto ch = queue_.front();
     queue_.pop();
     *temp++ = ch;
     num_read++;
   }
-  *temp++ = '\0';
+  *temp = '\0';
   return num_read;
 }
 
@@ -234,7 +234,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
-  auto tmp_buffer = make_unique<char[]>(count * 2 + 100);
+  const auto tmp_buffer = make_unique<char[]>(count * 2 + 100);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
   int nCount = count;
 
@@ -336,7 +336,7 @@ RemoteSocketIO::~RemoteSocketIO() {
 bool RemoteSocketIO::Initialize() {
 #ifdef _WIN32
   WSADATA wsaData;
-  int err = WSAStartup(0x0101, &wsaData);
+  const auto err = WSAStartup(0x0101, &wsaData);
 
   if (err != 0) {
     switch (err) {
@@ -368,7 +368,7 @@ bool RemoteSocketIO::Initialize() {
 
 void RemoteSocketIO::InboundTelnetProc() {
   constexpr size_t size = 4 * 1024;
-  unique_ptr<char[]> data = make_unique<char[]>(size);
+  auto data = make_unique<char[]>(size);
   try {
     while (true) {
       if (stop_.load()) {
@@ -377,13 +377,14 @@ void RemoteSocketIO::InboundTelnetProc() {
       if (!socket_avail(socket_, 1)) {
         continue;
       }
-      int num_read = recv(socket_, data.get(), size, 0);
+      const int num_read = recv(socket_, data.get(), size, 0);
       if (num_read == SOCKET_ERROR) {
         // Got Socket error.
         closesocket(socket_);
         socket_ = INVALID_SOCKET;
         return;
-      } else if (num_read == 0) {
+      }
+      if (num_read == 0) {
         // The other side has gracefully closed the socket.
         closesocket(socket_);
         socket_ = INVALID_SOCKET;

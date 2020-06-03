@@ -44,15 +44,13 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);
-
 /**
  * Reads the auto message
  */
 void read_automessage() {
   bout.nl();
-  auto current_status = a()->status_manager()->GetStatus();
-  bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
+  const auto current_status = a()->status_manager()->GetStatus();
+  const bool anonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(PathFilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
   string line;
@@ -63,8 +61,8 @@ void read_automessage() {
   }
 
   StringTrimEnd(&line);
-  string authorName = line;
-  if (bAutoMessageAnonymous) {
+  auto authorName = line;
+  if (anonymous) {
     if (a()->effective_slrec().ability & ability_read_post_anony) {
       stringstream ss;
       ss << "<<< " << line << " >>>";
@@ -128,40 +126,38 @@ static void write_automessage() {
 }
 
 
-char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
-  bool bCanWrite = false;
-  if (!a()->user()->IsRestrictionAutomessage() && !File::Exists(autoMessageLockFileName)) {
-    bCanWrite = (a()->effective_slrec().posts) ? true : false;
+static char ShowAMsgMenuAndGetInput(const std::filesystem::path& lock_file) {
+  auto bCanWrite = false;
+  if (!a()->user()->IsRestrictionAutomessage() && !File::Exists(lock_file)) {
+    bCanWrite = a()->effective_slrec().posts > 0;
   }
 
-  char cmdKey = 0;
   if (cs()) {
     bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
-    cmdKey = onek("QRWALDU", true);
-  } else if (bCanWrite) {
-    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
-    cmdKey = onek("QRWA", true);
-  } else {
-    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
-    cmdKey = onek("QRA", true);
+    return onek("QRWALDU", true);
   }
-  return cmdKey;
+  if (bCanWrite) {
+    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
+    return onek("QRWA", true);
+  }
+  bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
+  return onek("QRA", true);
 }
 
 /**
- * Main Automessage menu.  Displays the auto message then queries for input.
+ * Main Auto Message menu.  Displays the auto message then queries for input.
  */
 void do_automessage() {
-  auto automessageLockFile = FilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
-  auto autoMessageFile = FilePath(a()->config()->gfilesdir(), AUTO_MSG);
+  const auto lock_file = PathFilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
+  const auto file = PathFilePath(a()->config()->gfilesdir(), AUTO_MSG);
 
-  // initally show the auto message
+  // initially show the auto message
   read_automessage();
 
-  bool done = false;
+  auto done = false;
   do {
     bout.nl();
-    char cmdKey = ShowAMsgMenuAndGetInput(automessageLockFile);
+    const auto cmdKey = ShowAMsgMenuAndGetInput(lock_file);
     switch (cmdKey) {
     case 'Q':
       done = true;
@@ -174,7 +170,7 @@ void do_automessage() {
       break;
     case 'A': {
       clear_quotes();
-      auto status = a()->status_manager()->GetStatus();
+      const auto status = a()->status_manager()->GetStatus();
       if (status->GetAutoMessageAuthorUserNumber() > 0) {
         email("Re: AutoMessage", static_cast<uint16_t>(status->GetAutoMessageAuthorUserNumber()), 0,
               false, status->IsAutoMessageAnonymous() ? anony_sender : 0);
@@ -184,12 +180,12 @@ void do_automessage() {
     case 'D':
       bout << "\r\n|#3Delete Auto-message, Are you sure? ";
       if (yesno()) {
-        File::Remove(autoMessageFile);
+        File::Remove(file);
       }
       bout.nl(2);
       break;
     case 'L':
-      if (File::Exists(automessageLockFile)) {
+      if (File::Exists(lock_file)) {
         bout << "\r\n|#3Message is already locked.\r\n\n";
       } else {
         bout <<  "|#9Do you want to lock the Auto-message? ";
@@ -199,19 +195,19 @@ void do_automessage() {
           // to tell the board if it is locked or not. It consists
           // of a space.
           //
-          TextFile lockFile(automessageLockFile, "w+t");
+          TextFile lockFile(lock_file, "w+t");
           lockFile.WriteChar(' ');
           lockFile.Close();
         }
       }
       break;
     case 'U':
-      if (!File::Exists(automessageLockFile)) {
+      if (!File::Exists(lock_file)) {
         bout << "Message not locked.\r\n";
       } else {
         bout << "|#5Unlock message? ";
         if (yesno()) {
-          File::Remove(automessageLockFile);
+          File::Remove(lock_file);
         }
       }
       break;

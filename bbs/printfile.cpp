@@ -46,16 +46,16 @@ using namespace wwiv::strings;
 std::filesystem::path CreateFullPathToPrint(const string& basename) {
   std::vector<string> dirs{a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
-    const auto file{PathFilePath(base, basename)};
+    auto file{PathFilePath(base, basename)};
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (File::Exists(file)) {
         return file;
       }
-      // Since no wwiv filenames contain embedded dots skip to the next directory.
+      // Since no wwiv file names contain embedded dots skip to the next directory.
       continue;
     }
-    std::filesystem::path candidate{file};
+    auto candidate{file};
     if (a()->user()->HasAnsi()) {
       if (a()->user()->HasColor()) {
         // ANSI and color
@@ -84,31 +84,30 @@ std::filesystem::path CreateFullPathToPrint(const string& basename) {
  * Prints the file file_name.  Returns true if the file exists and is not
  * zero length.  Returns false if the file does not exist or is zero length
  *
- * @param filename Name of the file to display
+ * @param file_path Full path to the file to display
  * @param abortable If true, a keyboard input may abort the display
  * @param force_pause Should pauses be used even for ANSI files - Normally
  *        pause on screen is disabled for ANSI files.
  *
  * @return true if the file exists and is not zero length
  */
-bool printfile(const string& filename, bool abortable, bool force_pause) {
-  const auto full_path_name = CreateFullPathToPrint(filename);
-  if (!File::Exists(full_path_name)) {
+bool printfile_path(const std::filesystem::path& file_path, bool abortable, bool force_pause) {
+  if (!File::Exists(file_path)) {
     // No need to print a file that does not exist.
     return false;
   }
   std::error_code ec;
-  if (!std::filesystem::is_regular_file(full_path_name, ec)) {
+  if (!std::filesystem::is_regular_file(file_path, ec)) {
     // Not a file, no need to print a file that is not a file.
     return false;
   }
 
-  TextFile tf(full_path_name, "rb");
+  TextFile tf(file_path, "rb");
   const auto v = tf.ReadFileIntoVector();
   for (const auto& s : v) {
     bout.bputs(s);
     bout.nl();
-    auto has_ansi = contains(s, ESC);
+    const auto has_ansi = contains(s, ESC);
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
@@ -127,6 +126,11 @@ bool printfile(const string& filename, bool abortable, bool force_pause) {
   }
   bout.flush();
   return !v.empty();
+}
+
+bool printfile(const std::string& filename, bool abortable, bool force_pause) {
+  const auto full_path_name = CreateFullPathToPrint(filename);
+  return printfile_path(full_path_name, abortable, force_pause);
 }
 
 /**
@@ -156,16 +160,16 @@ bool printfile_random(const std::string& base_fn) {
   const auto& dir = a()->language_dir;
   const auto dot_zero = PathFilePath(dir, StrCat(base_fn, ".0"));
   if (File::Exists(dot_zero)) {
-    int numOfScreens = 0;
+    auto screens = 0;
     for (auto i = 0; i < 1000; i++) {
       const auto dot_n = PathFilePath(dir, StrCat(base_fn, ".", i));
       if (File::Exists(dot_n)) {
-        numOfScreens++;
+        screens++;
       } else {
         break;
       }
     }
-    printfile(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(numOfScreens))));
+    printfile_path(PathFilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
     return true;
   }
   return false;

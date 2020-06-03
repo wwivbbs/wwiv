@@ -135,7 +135,7 @@ bool iscan1(int sub_index) {
 
   // set sub filename
   const auto subfn = StrCat(a()->subs().sub(sub_index).filename, ".sub");
-  to_char_array(subdat_fn, FilePath(a()->config()->datadir(), subfn));
+  to_char_array(subdat_fn, PathFilePath(a()->config()->datadir(), subfn).string());
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {

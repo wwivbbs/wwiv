@@ -277,32 +277,6 @@ string ToStringLowerCase(const string& orig) {
   return s;
 }
 
-void StringRemoveWhitespace(string* str) {
-  str->erase(std::remove_if(str->begin(), str->end(), isspace), str->end());
-}
-
-std::string ToStringRemoveWhitespace(const std::string& orig) {
-  string s(orig);
-  StringRemoveWhitespace(&s);
-  return s;
-}
-
-
-char* StringRemoveWhitespace(char* str) {
-  CHECK(str != nullptr);
-
-  if (str) {
-    char* obuf,* nbuf;
-    for (obuf = str, nbuf = str; *obuf; ++obuf) {
-      if (!isspace(*obuf)) {
-        *nbuf++ = *obuf;
-      }
-    }
-    *nbuf = '\0';
-  }
-  return str;
-}
-
 char* StringRemoveChar(const char* str, char ch) {
   static char s_strip_string[255];
 

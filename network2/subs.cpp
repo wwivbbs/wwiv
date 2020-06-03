@@ -181,7 +181,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     const string base = (code == sub_adddrop_ok) ? "sa" : "sr";
     const auto response_file = StrCat(base, subtype, ".net");
     string text;
-    LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
+    LOG(INFO) << "Candidate sa file: " << PathFilePath(context.net.dir, response_file).string();
     if (File::Exists(PathFilePath(context.net.dir, response_file))) {
       TextFile tf(PathFilePath(context.net.dir, response_file), "r");
       LOG(INFO) << "Sending SA file: " << tf;

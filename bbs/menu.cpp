@@ -36,7 +36,6 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include <iomanip>
 #include <memory>
 #include <string>
 
@@ -49,12 +48,12 @@ using namespace wwiv::stl;
 
 namespace wwiv::menus {
 
-static string GetMenuDirectory() {
-  return FilePath(a()->language_dir, "menus");
+static std::filesystem::path GetMenuDirectory() {
+  return PathFilePath(a()->language_dir, "menus");
 }
 
-static string GetMenuDirectory(const string menuPath) {
-  return FilePath(GetMenuDirectory(), menuPath);
+static std::filesystem::path GetMenuDirectory(const string menu_path) {
+  return PathFilePath(GetMenuDirectory(), menu_path);
 }
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
@@ -232,9 +231,9 @@ void MenuInstance::RunMenu() {
   }
 }
 
-MenuInstance::MenuInstance(const std::string& menu_directory, const std::string& menu_name)
-    : menu_directory_(menu_directory), menu_name_(menu_name) {
-  // OpenImpl needs the class contructed, so this must happen in the constructor
+MenuInstance::MenuInstance(std::string menu_directory, std::string menu_name)
+    : menu_directory_(std::move(menu_directory)), menu_name_(std::move(menu_name)) {
+  // OpenImpl needs the class constructed, so this must happen in the constructor
   // and not in the initializer list.
   open_ = OpenImpl();
 }
@@ -242,12 +241,12 @@ MenuInstance::MenuInstance(const std::string& menu_directory, const std::string&
 MenuInstance::~MenuInstance() {}
 
 // static
-const std::string MenuInstance::create_menu_filename(const std::string& path,
-                                                     const std::string& menu,
-                                                     const std::string& extension) {
+std::string MenuInstance::create_menu_filename(const std::string& path,
+                                               const std::string& menu,
+                                               const std::string& extension) {
   const auto menu_with_ext = StrCat(menu, ".", extension);
   const auto base = PathFilePath(GetMenuDirectory(), path);
-  return FilePath(base, menu_with_ext);
+  return PathFilePath(base, menu_with_ext).string();
 }
 
 std::string MenuInstance::create_menu_filename(const string& extension) const {
@@ -321,12 +320,12 @@ bool MenuInstance::OpenImpl() {
 string MenuInstance::GetHelpFileName() const {
   if (a()->user()->HasAnsi()) {
     if (a()->user()->HasColor()) {
-      const auto filename = create_menu_filename("ans");
+      auto filename = create_menu_filename("ans");
       if (File::Exists(filename)) {
         return filename;
       }
     }
-    const auto filename = create_menu_filename("b&w");
+    auto filename = create_menu_filename("b&w");
     if (File::Exists(filename)) {
       return filename;
     }
@@ -464,10 +463,10 @@ void ConfigUserMenuSet() {
       auto r = ListMenuDirs();
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
-      int sel = input_number<int>(1, 1, r.size(), false);
-      const string menuSetName = r.at(sel);
+      auto sel = input_number<int>(1, 1, r.size(), false);
+      const auto menuSetName = r.at(sel);
       if (ValidateMenuSet(menuSetName)) {
-        wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
+        MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
         bout << "|#9Menu Set : |#2" << menuSetName << " :  |#1"
              << descriptions.description(menuSetName) << wwiv::endl;
@@ -526,7 +525,7 @@ string MenuInstance::GetCommand() const {
   }
 }
 
-MenuDescriptions::MenuDescriptions(const std::string& menupath) : menupath_(menupath) {
+MenuDescriptions::MenuDescriptions(const std::filesystem::path& menupath) : menupath_(menupath) {
   TextFile file(PathFilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
@@ -542,9 +541,9 @@ MenuDescriptions::MenuDescriptions(const std::string& menupath) : menupath_(menu
   }
 }
 
-MenuDescriptions::~MenuDescriptions() {}
+MenuDescriptions::~MenuDescriptions() = default;
 
-const std::string MenuDescriptions::description(const std::string& name) const {
+std::string MenuDescriptions::description(const std::string& name) const {
   if (contains(descriptions_, name)) {
     return descriptions_.at(name);
   }
@@ -602,10 +601,8 @@ void MenuInstance::GenerateMenu() const {
     }
     bout << fmt::sprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
                  "Guest Account Application");
-    ++lines_displayed;
   }
   bout.nl(2);
-  return;
 }
 
 } // namespace wwiv

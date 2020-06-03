@@ -93,7 +93,7 @@ public:
   const std::string system_phone() const { return config_.systemphone; }
   const std::string system_password() const { return config_.systempw; }
 
-  const std::string config_filename() const;
+  std::string config_filename() const;
 
   // Sets the value for required upload/download ratio.
   // This has been moved to the ini file.

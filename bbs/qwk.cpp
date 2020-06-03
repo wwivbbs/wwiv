@@ -94,7 +94,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
 bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
-  TextFile fp(FilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
+  TextFile fp(PathFilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
   if (!fp) {
     return false;
   }

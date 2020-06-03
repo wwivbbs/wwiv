@@ -86,7 +86,7 @@ void Config::set_config(const configrec* config, bool need_to_update_paths) {
   }
 }
 
-const std::string Config::config_filename() const { return FilePath(root_directory(), CONFIG_DAT); }
+std::string Config::config_filename() const { return PathFilePath(root_directory(), CONFIG_DAT).string(); }
 
 void Config::update_paths() {
   datadir_ = to_abs_path(config_.datadir);

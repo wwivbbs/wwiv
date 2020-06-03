@@ -67,8 +67,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   directoryrec d = {};
   int i1, i2, i4, key, ok = 0, dn = 0;
 
-  string file_name = orig_file_name;
-  StringRemoveWhitespace(&file_name);
+  auto file_name = files::unalign(orig_file_name);
 
   if (!okfn(file_name)) {
     t2u_error(file_name, "Bad filename");          // bad filename
@@ -133,7 +132,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
   }
-  if ((d.mask & mask_no_uploads) && (!dcs())) {
+  if (d.mask & mask_no_uploads && !dcs()) {
     t2u_error(file_name, "Uploads are not allowed to this directory.");
     return 1;
   }

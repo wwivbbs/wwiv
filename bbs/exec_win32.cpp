@@ -66,31 +66,33 @@ static void LogToSync(const std::string& s) {
   }
 }
 
-static string GetSyncFosTempFilePath() { return FilePath(a()->temp_directory(), "WWIVSYNC.ENV"); }
+static std::filesystem::path GetSyncFosTempFilePath() {
+  return PathFilePath(a()->temp_directory(), "WWIVSYNC.ENV");
+}
 
-static const string GetDosXtrnPath() {
-  return FilePath(a()->bindir(), "dosxtrn.exe");
+static std::filesystem::path GetDosXtrnPath() {
+  return PathFilePath(a()->bindir(), "dosxtrn.exe");
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
-  sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
+  sstream << GetDosXtrnPath().string() << " " << tempFilePath << " " << "NT" << " ";
   sstream << a()->instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   out->assign(sstream.str());
 }
 
 // returns true if the file is deleted.
 static bool DeleteSyncTempFile() {
-  const string tempFileName = GetSyncFosTempFilePath();
-  if (File::Exists(tempFileName)) {
-    File::Remove(tempFileName);
+  const auto fn = GetSyncFosTempFilePath();
+  if (File::Exists(fn)) {
+    File::Remove(fn);
     return true;
   }
   return false;
 }
 
 static bool CreateSyncTempFile(string *out, const string commandLine) {
-  out->assign(GetSyncFosTempFilePath());
+  out->assign(GetSyncFosTempFilePath().string());
   DeleteSyncTempFile();
 
   TextFile file(*out, "wt");
@@ -331,8 +333,8 @@ int exec_cmdline(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    const auto logfile_name = FilePath(a()->logdir(), "wwivsync.log");
-    hLogFile = fopen(logfile_name.c_str(), "at");
+    const auto logfile_name = PathFilePath(a()->logdir(), "wwivsync.log");
+    hLogFile = fopen(logfile_name.string().c_str(), "at");
     LogToSync(std::string(78, '='));
     LogToSync("\r\n\r\n");
   } else {

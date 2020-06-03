@@ -146,7 +146,7 @@ bool NetworkCommandLine::LoadNetIni(char net_cmd, const std::string& bbsdir) {
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
   const auto ini = std::make_unique<IniFile>(
-      FilePath(bbsdir, "net.ini"), std::initializer_list<const std::string>{net_tag_net, net_tag});
+      PathFilePath(bbsdir, "net.ini"), std::initializer_list<const std::string>{net_tag_net, net_tag});
   if (!ini || !ini->IsOpen()) {
     // This is fine and can happen.
     return true;

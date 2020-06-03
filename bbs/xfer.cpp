@@ -126,8 +126,7 @@ bool okfn(const string& filename) {
 
 void print_devices() {
   for (const auto& device : device_names) {
-    bout << device;
-    bout.nl();
+    bout << device << "\r\n";
   }
 }
 
@@ -135,12 +134,12 @@ std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::strin
 
   std::string cmd;
 
-  auto ss = strrchr(arc_fn.c_str(), '.');
+  const auto* ss = strrchr(arc_fn.c_str(), '.');
   if (ss == nullptr) {
     return {};
   }
   ++ss;
-  for (int i = 0; i < MAX_ARCS; i++) {
+  for (auto i = 0; i < MAX_ARCS; i++) {
     if (iequals(ss, a()->arcs[i].extension)) {
       switch (cmdtype) {
       case 0:
@@ -166,12 +165,11 @@ std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::strin
         return {};
       }
 
-      if (cmd.empty()) {
-        return {};
+      if (!cmd.empty()) {
+        auto out = stuff_in(cmd, arc_fn, ofn, "", "", "");
+        make_abs_cmd(a()->bbsdir().string(), &out);
+        return out;
       }
-      auto out = stuff_in(cmd, arc_fn, ofn, "", "", "");
-      make_abs_cmd(a()->bbsdir().string(), &out);
-      return out;
     }
   }
   return {};
@@ -180,15 +178,15 @@ std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::strin
 int list_arc_out(const std::string& file_name, const char *pszDirectory) {
   string name_to_delete;
 
-  auto full_pathname = PathFilePath(pszDirectory, file_name);
   if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    full_pathname = PathFilePath(a()->temp_directory(), file_name);
+    const auto full_pathname = PathFilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      auto name_in_dir = PathFilePath(pszDirectory, file_name);
+      const auto name_in_dir = PathFilePath(pszDirectory, file_name);
       File::Copy(name_in_dir, full_pathname);
       name_to_delete = full_pathname.string();
     }
   }
+  const auto full_pathname = PathFilePath(pszDirectory, file_name);
   auto arc_cmd = get_arc_cmd(full_pathname.string(), 0, "");
   if (!okfn(file_name)) {
     arc_cmd.clear();
@@ -196,14 +194,10 @@ int list_arc_out(const std::string& file_name, const char *pszDirectory) {
 
   auto return_code = 0;
   if (File::Exists(full_pathname) && !arc_cmd.empty()) {
-    bout.nl(2);
-    bout << "Archive listing for " << file_name;
-    bout.nl(2);
+    bout << "\r\n\nArchive listing for " << file_name << "\r\n\n";
     return_code = ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
   } else {
-    bout.nl();
-    bout << "Unknown archive: " << file_name;
-    bout.nl();
+    bout << "\r\nUnknown archive: " << file_name << "\r\n";
   }
   bout.nl();
 
@@ -226,13 +220,12 @@ bool ratio_ok() {
     }
   }
   if (!a()->user()->IsExemptPost()) {
-    if ((a()->config()->post_to_call_ratio() > 0.0001) &&
-        (post_ratio() < a()->config()->post_to_call_ratio())) {
+    if (a()->config()->post_to_call_ratio() > 0.0001 &&
+        post_ratio() < a()->config()->post_to_call_ratio()) {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", 
-                           "Your post/call ratio is",
+      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
                            post_ratio(), "You need a ratio of", a()->config()->post_to_call_ratio(),
                            "to download.");
     }
@@ -241,7 +234,7 @@ bool ratio_ok() {
 }
 
 bool dcs() {
-  return (cs() || a()->user()->GetDsl() >= 100) ? true : false;
+  return cs() || a()->user()->GetDsl() >= 100 ? true : false;
 }
 
 void dliscan1(int directory_num) {
@@ -270,11 +263,11 @@ void print_extended(const std::string& file_name, bool *abort, int numlist, int 
   
   string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
   if (!ss.empty()) {
-    char ch = (indent != 2) ? 10 : 0;
+    char ch = indent != 2 ? 10 : 0;
     while (ss[cpos] && !(*abort) && numl < numlist) {
       if (ch == SOFTRETURN) {
         if (indent == 1) {
-          for (int i = 0; i < INDENTION; i++) {
+          for (auto i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
               s[i] = okansi() ? '\xBA' : ' '; // was |
             } else {
@@ -323,7 +316,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bool next;
 
   {
-    tagrec_t t;
+    tagrec_t t{};
     t.u = *u;
     auto subnum = a()->current_user_dir().subnum;
     t.directory = subnum;

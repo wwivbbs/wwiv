@@ -428,8 +428,8 @@ void gfile_sec(int sn) {
     } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
-      auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
-      i1 = printfile(file_name);
+      auto file_name = PathFilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
+      i1 = printfile_path(file_name);
       a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
         sysoplog() << "Read G-file '" << g[i - 1].filename << "'";

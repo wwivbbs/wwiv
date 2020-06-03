@@ -28,6 +28,8 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "sdk/files/file_record.h"
+
 #include <chrono>
 #include <cmath>
 #include <string>
@@ -291,7 +293,7 @@ void zmodem_send(const string& file_name, bool *sent, double *percent) {
 
   const auto old_binary_mode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);
-  auto result = NewZModemSendFile(ToStringRemoveWhitespace(file_name));
+  auto result = NewZModemSendFile(wwiv::sdk::files::unalign(file_name));
   a()->remoteIO()->set_binary_mode(old_binary_mode);
 
   if (result) {

@@ -31,7 +31,8 @@ bool use_workspace;
 using std::unique_ptr;
 using namespace wwiv::core;
 
-void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, bool silent_mode) {
+// TODO(rushfan): Rewrite this using TextFile::ReadFileIntoString
+void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode) {
   File fileOrig(filename);
   if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "\r\nFile not found.\r\n\n";
@@ -51,7 +52,7 @@ void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, boo
   fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();
 
-  use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
+  use_workspace = (no_edit_allowed || !okfsed()) ? true : false;
 
   if (!silent_mode) {
     bout << "\r\nFile loaded into workspace.\r\n\n";
@@ -59,4 +60,8 @@ void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, boo
       bout << "Editing will be allowed.\r\n";
     }
   }
+}
+
+void LoadFileIntoWorkspace(const std::filesystem::path& file_path, bool no_edit_allowed, bool silent_mode) {
+  LoadFileIntoWorkspace(file_path.string(), no_edit_allowed, silent_mode);
 }

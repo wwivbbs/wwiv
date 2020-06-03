@@ -70,7 +70,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   VLOG(1) << "CreateFtnTransferFileList: " << dirs_.outbound_dir();
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
-    VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name);
+    VLOG(1) << "Looking for FLO file named: " << PathFilePath(dirs_.outbound_dir(), name).string();
     if (File::Exists(PathFilePath(dirs_.outbound_dir(), name))) {
       LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
       const auto path = PathFilePath(dirs_.outbound_dir(), name);

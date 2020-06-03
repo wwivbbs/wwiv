@@ -415,7 +415,7 @@ int WFC::doWFCEvents() {
         Clear();
         a_->usernum = 1;
         bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-        auto buffer = input(50);
+        auto buffer = input_path(50);
         LoadFileIntoWorkspace(buffer, false);
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
@@ -483,8 +483,8 @@ int WFC::doWFCEvents() {
         break;
       case 'U': {
         // User edit
-        const auto exe = FilePath(a()->bindir(), "wwivconfig");
-        const auto cmd = StrCat(exe, " --user_editor");
+        const auto exe = PathFilePath(a()->bindir(), "wwivconfig");
+        const auto cmd = StrCat(exe.string(), " --user_editor");
         exec_cmdline(cmd, INST_FLAGS_NONE);
       } break;
       case 'V': {

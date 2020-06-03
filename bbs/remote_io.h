@@ -63,16 +63,16 @@ class RemoteIO {
   virtual bool connected() = 0;
   virtual bool incoming() = 0;
 
-  virtual unsigned int GetHandle() const = 0;
-  virtual unsigned int GetDoorHandle() const { return GetHandle(); }
+  [[nodiscard]] virtual unsigned int GetHandle() const = 0;
+  [[nodiscard]] virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
   void set_binary_mode(bool b) { binary_mode_ = b; }
-  bool binary_mode() const { return binary_mode_; }
+  [[nodiscard]] bool binary_mode() const { return binary_mode_; }
 
   virtual RemoteInfo& remote_info() { return remote_info_; }
 
 protected:
-  bool binary_mode_ = false;
+  bool binary_mode_{false};
 
   static std::string GetLastErrorText();
 

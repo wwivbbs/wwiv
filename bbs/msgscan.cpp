@@ -140,9 +140,9 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     if (fn.empty()) {
       return;
     }
-    auto full_pathname = FilePath(a()->config()->gfilesdir(), StrCat(fn, ".frm"));
+    auto full_pathname = PathFilePath(a()->config()->gfilesdir(), StrCat(fn, ".frm"));
     if (!File::Exists(full_pathname)) {
-      full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
+      full_pathname = PathFilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
@@ -184,7 +184,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     case '2': {
       if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
         string b;
-        readfile(&(post->msg), (a()->current_sub().filename), &b);
+        readfile(&post->msg, a()->current_sub().filename, &b);
         string filename = "EXTRACT.TMP";
         if (File::Exists(filename)) {
           File::Remove(filename);
@@ -219,9 +219,9 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        filename = FilePath(a()->temp_directory(), INPUT_MSG);
-        if (File::Exists(filename)) {
-          File::Remove(filename);
+        auto tmpfn = PathFilePath(a()->temp_directory(), INPUT_MSG);
+        if (File::Exists(tmpfn)) {
+          File::Remove(tmpfn);
         }
       }
       scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;

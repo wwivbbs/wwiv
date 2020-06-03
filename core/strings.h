@@ -120,11 +120,8 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::string ToStringUpperCase(const std::string& s);
   void StringLowerCase(std::string* s);
   std::string ToStringLowerCase(const std::string& s);
-  void StringRemoveWhitespace(std::string* s);
-  std::string ToStringRemoveWhitespace(const std::string& s);
 
-  char* StringRemoveWhitespace(char* str);
-  // Strips the string from the first occurence of ch
+// Strips the string from the first occurence of ch
   // Doesn't seem to be used anywhere. Maybe it should be removed.
   char* StringRemoveChar(const char* str, char ch);
 

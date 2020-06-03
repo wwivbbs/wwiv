@@ -152,9 +152,6 @@ protected:
   std::unique_ptr<FileAreaExtendedDesc> ext_desc_;
 };
 
-std::string align(const std::string& file_name);
-std::string unalign(const std::string& file_name);
-
 /**
  * Return true if two files {l, r} match each other either exactly or using
  * aligned wildcards.
@@ -162,10 +159,6 @@ std::string unalign(const std::string& file_name);
  * An aligned wildcard is of the form: "[A-Z? ]{8}\.[A-Z? ]{3}"
  */
 bool aligned_wildcard_match(const std::string& l, const std::string& r);
-
-std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f);
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
-                                   const FileRecord& f);
 
 } // namespace wwiv::sdk::files
 

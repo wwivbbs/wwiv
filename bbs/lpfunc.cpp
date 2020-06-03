@@ -27,7 +27,6 @@
 #include "bbs/printfile.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "bbs/xferovl1.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -417,8 +416,8 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
-                        && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
+                    if (a()->current_user_dir_num() < ssize(a()->directories) - 1
+                        && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
                       a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       ++this_dir;
                     } else {

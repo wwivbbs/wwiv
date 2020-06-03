@@ -554,17 +554,15 @@ void temp_extract() {
   bool ok = true;
   while (i > 0 && ok && !a()->hangup_) {
     auto f = a()->current_file_area()->ReadFile(i);
-    auto tmppath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
-    StringRemoveWhitespace(&tmppath);
+    auto tmppath = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
     if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-      auto curpath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
-      tmppath = FilePath(a()->temp_directory(), f);
-      StringRemoveWhitespace(&curpath);
+      auto curpath = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      tmppath = PathFilePath(a()->temp_directory(), f);
       if (!File::Exists(tmppath)) {
         File::Copy(curpath, tmppath);
       }
     }
-    auto curpath = get_arc_cmd(tmppath, 1, "");
+    auto curpath = get_arc_cmd(tmppath.string(), 1, "");
     if (!curpath.empty() && File::Exists(tmppath)) {
       bout.nl(2);
       bool abort = false;
@@ -715,18 +713,17 @@ void temporary_stuff() {
 
 void move_file_t() {
   int d1 = -1;
-  std::string s1, s2;
 
   tmp_disable_conf(true);
 
   bout.nl();
-  if (a()->batch().entry.empty()) {
+  if (a()->batch().empty()) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
     pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (int nCurBatchPos = a()->batch().entry.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  for (int nCurBatchPos = a()->batch().size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok;
     auto cur_batch_fn = aligns(a()->batch().entry[nCurBatchPos].filename);
     dliscan1(a()->batch().entry[nCurBatchPos].dir);
@@ -747,9 +744,9 @@ void move_file_t() {
         dliscan();
         return;
       }
+      std::filesystem::path s1;
       if (ch == 'Y') {
-        s1 = FilePath(a()->directories[a()->batch().entry[nCurBatchPos].dir].path, f);
-        StringRemoveWhitespace(&s1);
+        s1 = PathFilePath(a()->directories[a()->batch().entry[nCurBatchPos].dir].path, f);
         string dirnum;
         do {
           bout << "|#2To which directory? ";
@@ -802,8 +799,7 @@ void move_file_t() {
         if (a()->current_file_area()->DeleteFile(f, nTempRecordNum)) {
           a()->current_file_area()->Save();
         }
-        s2 = FilePath(a()->directories[d1].path, f);
-        StringRemoveWhitespace(&s2);
+        auto s2 = PathFilePath(a()->directories[d1].path, f);
         dliscan1(d1);
         // N.B. the current file area changes with calls to dliscan*
         if (a()->current_file_area()->AddFile(f)) {
@@ -813,9 +809,7 @@ void move_file_t() {
           const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
           a()->current_file_area()->AddExtendedDescription(f, pos, ext_desc.value());
         }
-        StringRemoveWhitespace(&s1);
-        StringRemoveWhitespace(&s2);
-        if (!iequals(s1, s2) && File::Exists(s1)) {
+        if (s1 != s2 && File::Exists(s1)) {
           File::Rename(s1, s2);
           remlist(a()->batch().entry[nCurBatchPos].filename);
           didnt_upload(a()->batch().entry[nCurBatchPos]);
@@ -880,8 +874,7 @@ void removefile() {
             remove_from_file_database(f.aligned_filename());
           }
           if (bDeleteFileToo) {
-            auto del_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
-            StringRemoveWhitespace(&del_fn);
+            auto del_fn = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
               a()->users()->readuser(&uu, f.u().ownerusr);

@@ -33,7 +33,7 @@ enum class drop_file_t {
  * Creates a dropfile of type dropfile_type, and returns the string form
  * of the filename.
  */
-const std::string create_dropfile_filename(drop_file_t dropfile_type);
+std::string create_dropfile_filename(drop_file_t dropfile_type);
 /**
  * Creates a dropfile of type chain.txt, and returns the string form
  * of the filename.

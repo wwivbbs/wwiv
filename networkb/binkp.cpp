@@ -72,7 +72,7 @@ using namespace wwiv::os;
 namespace wwiv::net {
 
 static int System(const string& bbsdir, const string& cmd) {
-  const auto path = FilePath(bbsdir, cmd);
+  const auto path = PathFilePath(bbsdir, cmd).string();
 
   const auto err = system(path.c_str());
   VLOG(1) << "       executed: '" << path << "' with an error code: " << err;

@@ -280,8 +280,8 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
-        const auto autosend = FilePath(a()->bindir(), "autosend");
-        const auto cmd = StrCat(autosend, " ", subtype, " ", system_number, " .", network_number);
+        const auto autosend = PathFilePath(a()->bindir(), "autosend");
+        const auto cmd = StrCat(autosend.string(), " ", subtype, " ", system_number, " .", network_number);
         ExecuteExternalProgram(cmd, EFLAG_NONE);
       }
     }
@@ -718,7 +718,7 @@ void readmail(int mode) {
             fn = PathFilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
           }
           if (File::Exists(fn)) {
-            LoadFileIntoWorkspace(fn.string(), true);
+            LoadFileIntoWorkspace(fn, true);
             num_mail = a()->user()->GetNumFeedbackSent() + a()->user()->GetNumEmailSent() +
                        a()->user()->GetNumNetEmailSent();
             clear_quotes();
@@ -1165,7 +1165,7 @@ void readmail(int mode) {
           break;
         }
         bout << "\r\n|#2Filename: ";
-        string fileName = input(50);
+        string fileName = input_path(50);
         if (!fileName.empty()) {
           bout.nl();
           bout << "|#5Allow editing? ";
@@ -1187,7 +1187,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName.c_str())) {
             break;
           }
-          const auto fn = FilePath(a()->temp_directory(), downloadFileName);
+          const auto fn = PathFilePath(a()->temp_directory(), downloadFileName);
           File::Remove(fn);
           {
             File fileTemp(fn);
@@ -1197,7 +1197,7 @@ void readmail(int mode) {
           }
           bool bSent;
           bool bAbort;
-          send_file(fn, &bSent, &bAbort, fn, -1, b.size());
+          send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, b.size());
           if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog() << "Downloaded E-mail";

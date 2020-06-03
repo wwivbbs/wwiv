@@ -21,6 +21,8 @@
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "sdk/files/file_record.h"
+
 #include <chrono>
 #include <cstdarg>
 #include <cstring>
@@ -44,9 +46,9 @@ static void ProcessLocalKeyDuringZmodem() {
   if (!a()->localIO()->KeyPressed()) {
     return;
   }
-  char localChar = a()->localIO()->GetChar();
+  const auto c = a()->localIO()->GetChar();
   bout.SetLastKeyLocal(true);
-  if (!localChar) {
+  if (!c) {
     a()->handle_sysop_key(a()->localIO()->GetChar());
   }
 }
@@ -127,11 +129,10 @@ bool NewZModemReceiveFile(const char* file_name) {
   info.windowsize = 0;
   info.bufsize = 0;
 
-  auto nDone = ZmodemRInit(&info);
-  nDone = doIO(&info);
-  const auto ret = (nDone == ZmDone) ? true : false;
+  ZmodemRInit(&info);
+  const auto ret = doIO(&info) == ZmDone;
   if (ret) {
-    const auto fn = ToStringRemoveWhitespace(file_name);
+    const auto fn = wwiv::sdk::files::unalign(file_name);
     const auto old_fn = PathFilePath(a()->temp_directory(), fn);
     File::Move(old_fn, fn);
   }
@@ -182,10 +183,9 @@ int ZModemWindowXferStatus(const char* fmt, ...) {
   return 0;
 }
 
-#define ZMODEM_RECEIVE_BUFFER_SIZE 8132
-//#define ZMODEM_RECEIVE_BUFFER_SIZE 1024
+static constexpr int ZMODEM_RECEIVE_BUFFER_SIZE = 8132;
 // 21 here is just an arbitrary number
-#define ZMODEM_RECEIVE_BUFFER_PADDING 21
+static constexpr int ZMODEM_RECEIVE_BUFFER_PADDING = 21;
 
 int doIO(ZModem* info) {
   u_char buffer[ZMODEM_RECEIVE_BUFFER_SIZE + ZMODEM_RECEIVE_BUFFER_PADDING];

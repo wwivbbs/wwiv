@@ -223,33 +223,6 @@ TEST(StringsTest, String_uint8_t) {
   EXPECT_EQ(0, to_number<uint8_t>("ASDF"));
 }
 
-TEST(StringsTest, StringRemoveWhitespace_NoSpace) {
-  string s("HelloWorld");
-  string expected(s);
-  StringRemoveWhitespace(&s);
-  EXPECT_EQ(expected, s);
-}
-
-TEST(StringsTest, StringRemoveWhitespace_InnerSpace) {
-  string expected("HelloWorld");
-  string s("Hello World");
-  StringRemoveWhitespace(&s);
-  EXPECT_EQ(expected, s);
-}
-
-TEST(StringsTest, StringRemoveWhitespace_Trailing) {
-  string expected("HelloWorld");
-  string s("Hello World  ");
-  StringRemoveWhitespace(&s);
-  EXPECT_EQ(expected, s);
-}
-
-TEST(StringsTest, StringRemoveWhitespace_Leading) {
-  string expected("HelloWorld");
-  string s("  Hello World");
-  StringRemoveWhitespace(&s);
-  EXPECT_EQ(expected, s);
-}
 
 TEST(StringsTest, StartsWith) {
   EXPECT_TRUE(starts_with("--foo", "--"));
@@ -355,20 +328,9 @@ TEST(StringsTest, StringLowerCase) {
   EXPECT_EQ("ab", a);
 }
 
-TEST(StringsTest, StringRemoveWhitespace_charstar) {
-  char s[81];
-  strcpy(s, " h e l l o ");
-  EXPECT_STREQ("hello", StringRemoveWhitespace(s));
-  EXPECT_STREQ("hello", s);
+TEST(StringsTest, StringRemoveChar) {
+  EXPECT_STREQ("he", StringRemoveChar("hello world", 'l'));
 }
-
-TEST(StringsTest, StringRemoveWhitespace_str) {
-  string s = " h e l l o ";
-  StringRemoveWhitespace(&s);
-  EXPECT_STREQ("hello", s.c_str());
-}
-
-TEST(StringsTest, StringRemoveChar) { EXPECT_STREQ("he", StringRemoveChar("hello world", 'l')); }
 
 TEST(StringsTest, IEQuals_charstar) {
   EXPECT_TRUE(iequals("foo", "foo"));
