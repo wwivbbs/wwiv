@@ -47,14 +47,15 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 void attach_file(int mode) {
-  bool bFound;
-  char szFullPathName[MAX_PATH], szNewFileName[MAX_PATH], szFileToAttach[MAX_PATH];
+  bool found;
+  std::string full_pathname;
+  std::string file_to_attach;
   User u;
   filestatusrec fsr{};
 
   bout.nl();
   bool bDirectionForward = true;
-  unique_ptr<File> pFileEmail(OpenEmailFile(true));
+  auto pFileEmail(OpenEmailFile(true));
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
     pFileEmail->Close();
@@ -107,18 +108,18 @@ void attach_file(int mode) {
         if (m.status & status_file) {
           File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
-            bFound = false;
+            found = false;
             auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
-            while (lNumRead > 0 && !bFound) {
+            while (lNumRead > 0 && !found) {
               if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
-                bFound = true;
+                found = true;
               }
-              if (!bFound) {
+              if (!found) {
                 lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               }
             }
-            if (!bFound) {
+            if (!found) {
               bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
             }
             fileAttach.Close();
@@ -141,8 +142,8 @@ void attach_file(int mode) {
           done = true;
           break;
         case 'A': {
-          bool newname    = false;
-          bool done2      = false;
+          bool newname = false;
+          bool done2 = false;
           if (m.status & status_file) {
             bout << "|#6File already attached, (D)elete, (O)verwrite, or (Q)uit? : ";
             char ch1 = onek("QDO");
@@ -157,16 +158,16 @@ void attach_file(int mode) {
               pFileEmail->Write(&m, sizeof(mailrec));
               File attachFile(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
               if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
-                bFound = false;
+                found = false;
                 auto lNumRead = attachFile.Read(&fsr, sizeof(fsr));
-                while (lNumRead > 0 && !bFound) {
+                while (lNumRead > 0 && !found) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
                     File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
                     attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
-                  if (!bFound) {
+                  if (!found) {
                     lNumRead = attachFile.Read(&fsr, sizeof(fsr));
                   }
                 }
@@ -185,7 +186,7 @@ void attach_file(int mode) {
           } else {
             if (!done2) {
               bool bRemoteUpload = false;
-              bFound = false;
+              found = false;
               bout.nl();
               if (so()) {
                 if (a()->context().incom()) {
@@ -196,50 +197,51 @@ void attach_file(int mode) {
                 }
                 if (!bRemoteUpload) {
                   bout << "|#5Path/filename (wildcards okay) : \r\n";
-                  input(szFileToAttach, 35, true);
-                  if (szFileToAttach[0]) {
+                  file_to_attach = input(35, true);
+                  if (!file_to_attach.empty()) {
                     bout.nl();
-                    if (strchr(szFileToAttach, '*') != nullptr || strchr(szFileToAttach, '?') != nullptr) {
-                      strcpy(szFileToAttach, get_wildlist(szFileToAttach));
+                    if (strchr(file_to_attach.c_str(), '*') != nullptr || strchr(file_to_attach.c_str(), '?') != nullptr) {
+                      file_to_attach = get_wildlist(file_to_attach);
                     }
-                    if (!File::Exists(szFileToAttach)) {
-                      bFound = true;
+                    if (!File::Exists(file_to_attach)) {
+                      found = true;
                     }
-                    if (!okfn(stripfn(szFileToAttach)) || strchr(szFileToAttach, '?')) {
-                      bFound = true;
+                    if (!okfn(stripfn(file_to_attach)) || strchr(file_to_attach.c_str(), '?')) {
+                      found = true;
                     }
                   }
-                  if (!bFound && szFileToAttach[0]) {
-                    sprintf(szFullPathName, "%s%s", a()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
+                  if (!found && !file_to_attach.empty()) {
+                    full_pathname = FilePath(a()->GetAttachmentDirectory(), stripfn(file_to_attach));
                     bout.nl();
-                    bout << "|#5" << szFileToAttach << "? ";
+                    bout << "|#5" << file_to_attach << "? ";
                     if (!yesno()) {
-                      bFound = true;
+                      found = true;
                     }
                   }
                 }
               }
+              std::string new_filename;
               if (!so() || bRemoteUpload) {
                 bout << "|#2Filename: ";
-                input(szFileToAttach, 12, true);
-                sprintf(szFullPathName, "%s%s", a()->GetAttachmentDirectory().c_str(), szFileToAttach);
-                if (!okfn(szFileToAttach) || strchr(szFileToAttach, '?')) {
-                  bFound = true;
+                file_to_attach = input(12, true);
+                new_filename = FilePath(a()->GetAttachmentDirectory(), file_to_attach);
+                if (!okfn(file_to_attach) || strchr(file_to_attach.c_str(), '?')) {
+                  found = true;
                 }
               }
-              if (File::Exists(szFullPathName)) {
+              if (File::Exists(new_filename)) {
                 bout << "Target file exists.\r\n";
                 bool done3 = false;
                 do {
-                  bFound = true;
+                  found = true;
                   bout << "|#5New name? ";
                   if (yesno()) {
                     bout << "|#5Filename: ";
-                    input(szNewFileName, 12, true);
-                    sprintf(szFullPathName, "%s%s", a()->GetAttachmentDirectory().c_str(), szNewFileName);
-                    if (okfn(szNewFileName) && !strchr(szNewFileName, '?') && !File::Exists(szFullPathName)) {
-                      bFound   = false;
-                      done3   = true;
+                    new_filename = input(12, true);
+                    full_pathname = FilePath(a()->GetAttachmentDirectory(), new_filename);
+                    if (okfn(new_filename) && !strchr(new_filename.c_str(), '?') && !File::Exists(new_filename)) {
+                      found = false;
+                      done3 = true;
                       newname = true;
                     } else {
                       bout << "Try Again.\r\n";
@@ -252,21 +254,21 @@ void attach_file(int mode) {
               File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
                 auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
-                while (lNumRead > 0 && !bFound) {
+                while (lNumRead > 0 && !found) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
-                    bFound = true;
+                    found = true;
                   } else {
                     lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                   }
                 }
                 fileAttach.Close();
               }
-              if (bFound) {
+              if (found) {
                 bout << "File already exists or invalid filename.\r\n";
               } else {
                 if (so() && !bRemoteUpload) {
                   std::error_code ec;
-                  if (!std::filesystem::copy_file(szFileToAttach, szFullPathName, ec)) {
+                  if (!std::filesystem::copy_file(file_to_attach, full_pathname, ec)) {
                     bout << "done.\r\n";
                     ok = 1;
                   } else {
@@ -274,11 +276,11 @@ void attach_file(int mode) {
                     bout.getkey();
                   }
                 } else {
-                  const auto full_path = PathFilePath(a()->GetAttachmentDirectory(), szFileToAttach);
+                  const auto full_path = PathFilePath(a()->GetAttachmentDirectory(), file_to_attach);
                   receive_file(full_path.string(), &ok, "", 0);
                 }
                 if (ok) {
-                  File attachmentFile(szFullPathName);
+                  File attachmentFile(full_pathname);
                   if (!attachmentFile.Open(File::modeReadOnly | File::modeBinary)) {
                     ok = 0;
                     bout << "\r\n\nDOS error - File not bFound.\r\n\n";
@@ -286,9 +288,9 @@ void attach_file(int mode) {
                     fsr.numbytes = static_cast<decltype(fsr.numbytes)>(attachmentFile.length());
                     attachmentFile.Close();
                     if (newname) {
-                      to_char_array(fsr.filename, stripfn(szNewFileName));
+                      to_char_array(fsr.filename, stripfn(new_filename));
                     } else {
-                      to_char_array(fsr.filename, stripfn(szFileToAttach));
+                      to_char_array(fsr.filename, stripfn(file_to_attach));
                     }
                     fsr.id = m.daten;
                     bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
@@ -353,19 +355,19 @@ void attach_file(int mode) {
           if (m.status & status_file) {
             File f(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
             if (f.Open(File::modeReadOnly | File::modeBinary)) {
-              bFound = false;
+              found = false;
               auto num_read = f.Read(&fsr, sizeof(fsr));
-              while (num_read > 0 && !bFound) {
+              while (num_read > 0 && !found) {
                 if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
                   bout.nl();
-                  bFound = true;
+                  found = true;
                 }
-                if (!bFound) {
+                if (!found) {
                   num_read = f.Read(&fsr, sizeof(fsr));
                 }
               }
-              if (!bFound) {
+              if (!found) {
                 bout << "File attached but attachment data missing.  Alert sysop!\r\n";
               }
               f.Close();

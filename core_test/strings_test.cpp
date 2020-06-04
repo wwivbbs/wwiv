@@ -382,3 +382,19 @@ TEST(StringsTest, Test_Compiler_Supports_PutTime) {
 
   ASSERT_FALSE(s.empty());
 }
+
+TEST(StringsTest, Size) {
+  EXPECT_EQ(3u, wwiv::strings::size("Yo!"));
+  EXPECT_EQ(0u, wwiv::strings::size(""));
+  const std::string yo = "Yo!";
+  EXPECT_EQ(3u, wwiv::strings::size(yo));
+  EXPECT_EQ(0, wwiv::strings::size(std::string("")));
+}
+
+TEST(StringsTest, SSize) {
+  EXPECT_EQ(3, wwiv::strings::ssize("Yo!"));
+  EXPECT_EQ(0, wwiv::strings::ssize(""));
+  const std::string yo = "Yo!";
+  EXPECT_EQ(3, wwiv::strings::ssize(yo));
+  EXPECT_EQ(0, wwiv::strings::ssize(std::string("")));
+}

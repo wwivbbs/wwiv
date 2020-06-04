@@ -206,7 +206,7 @@ void giveup_timeslice() {
 }
 
 std::string stripfn(const std::string& file_name) {
-  return std::string(stripfn(file_name.c_str()));
+  return std::string(stripfn(file_name));
 }
 
 char* stripfn(const char* file_name) {
@@ -241,14 +241,15 @@ char* stripfn(const char* file_name) {
   return szStaticFileName;
 }
 
-char* get_wildlist(char* file_mask) {
+std::string get_wildlist(const std::string& orig_file_mask) {
+  char file_mask[1024];
+  to_char_array(file_mask, orig_file_mask);
   auto mark = 0;
 
   FindFiles ff(file_mask, FindFilesType::any);
   if (ff.empty()) {
     bout << "No files found\r\n";
-    file_mask[0] = '\0';
-    return file_mask;
+    return {};
   }
   auto f = ff.begin();
   bout << fmt::sprintf("%12.12s ", f->name);
@@ -289,10 +290,9 @@ char* get_wildlist(char* file_mask) {
     bout << "Use this file? ";
     if (yesno()) {
       return pszPath;
-    } else {
-      pszPath[0] = '\0';
-      return pszPath;
     }
+    pszPath[0] = '\0';
+    return pszPath;
   }
   pszPath[t] = '\0';
   bout << "Filename: ";

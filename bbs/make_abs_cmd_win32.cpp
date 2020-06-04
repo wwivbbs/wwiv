@@ -51,7 +51,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
   std::string s2;
   if (is_abs_with_drive) {
     if (s1.at(2) != '\\') {
-      auto* curdir = _getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, nullptr, MAX_PATH);
+      auto* curdir = _getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, nullptr, 0);
       if (curdir && *curdir) {
         s1 = fmt::format("{}:\\{}\\{}", s1.front(), curdir, s1.substr(2));
       } else {

@@ -46,6 +46,7 @@
 #include <vector>
 
 using std::string;
+using wwiv::sdk::files::FileName;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -73,10 +74,10 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   const auto comport = std::to_string(a()->context().incom() ? a()->primary_port() : 0);
   const auto cmdLine =
       stuff_in(a()->upload_cmd, create_chain_file(), a()->directories[directory_num].path,
-               stripfn(u->filename), comport, "");
+               FileName(u->filename).unaligned_filename(), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = PathFilePath(a()->directories[directory_num].path, stripfn(u->filename));
+  const auto file = PathFilePath(a()->directories[directory_num].path, FileName(u->filename));
   if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
@@ -630,7 +631,7 @@ int nrecno(const std::string& file_mask, int start_recno) {
 
 int printfileinfo(uploadsrec * u, int directory_num) {
   auto d = XFER_TIME(u->numbytes);
-  bout << "Filename   : " << stripfn(u->filename) << wwiv::endl;
+  bout << "Filename   : " << FileName(u->filename).unaligned_filename() << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
   bout << "File size  : " << bytes_to_k(u->numbytes) << wwiv::endl;
   bout << "Apprx. time: " << ctim(std::lround(d)) << wwiv::endl;

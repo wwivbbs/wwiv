@@ -88,6 +88,8 @@
   pathname just a filename.
 * Batch::contains_file should take a FileName
 * send_file's sfn should be an aligned filename, so maybe use FileName
+* get rid of stripfn
+
 
 ## Open Questions
 ***

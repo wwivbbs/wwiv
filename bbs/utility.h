@@ -36,7 +36,7 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
 void giveup_timeslice();
 std::string stripfn(const std::string& file_name);
 char* stripfn(const char* file_name);
-char *get_wildlist(char *file_mask);
+std::string get_wildlist(const std::string& file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 bool okfsed();
 int ansir_to_flags(uint8_t ansir);

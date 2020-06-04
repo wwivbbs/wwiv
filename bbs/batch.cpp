@@ -529,7 +529,7 @@ static string make_ul_batch_list() {
     if (b.sending) {
       continue;
     }
-    auto line = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename));
+    auto line = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename));
     tf.WriteLine(line.string());
   }
   return list_filename.string();
@@ -552,14 +552,14 @@ static std::filesystem::path make_dl_batch_list() {
     }
     string filename_to_send;
     if (a()->directories[b.dir].mask & mask_cdrom) {
-      const auto fileToSend = PathFilePath(a()->temp_directory(), stripfn(b.filename));
+      const auto fileToSend = PathFilePath(a()->temp_directory(), files::FileName(b.filename));
       if (!File::Exists(fileToSend)) {
-        auto sourceFile = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename));
+        auto sourceFile = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename));
         File::Copy(sourceFile, fileToSend);
       }
       filename_to_send = fileToSend.string();
     } else {
-      filename_to_send = PathFilePath(a()->directories[b.dir].path, stripfn(b.filename)).string();
+      filename_to_send = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename)).string();
     }
     bool ok = true;
     if (nsl() < b.time(a()->modem_speed_) + at) {

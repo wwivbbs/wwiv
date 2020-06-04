@@ -131,7 +131,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
 
   // String length without colors
-  std::string::size_type size_without_colors(const std::string& s);
+  int size_without_colors(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
   std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size);
@@ -141,14 +141,17 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
    */
   std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size);
 
-  // String length without colors
+  // String length
   std::string::size_type size(const std::string& s);
 
-  // String length without colors
+  // String length
   std::string::size_type size(const char* s);
 
-  // String length without colors as an int
+  // String length as an int
   int ssize(const char* s);
+
+  // String length as an int
+  int ssize(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
   std::string trim_to_size(const std::string& orig, std::string::size_type size);

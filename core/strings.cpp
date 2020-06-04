@@ -311,7 +311,7 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
   return out;
 }
 
-std::string::size_type size_without_colors(const std::string& s) {
+int size_without_colors(const std::string& s) {
   const auto stripped = stripcolors(s);
   return stripped.size();
 }
@@ -346,6 +346,9 @@ std::string::size_type size(const char* s) {
 // String length without colors as an int
 int ssize(const char* s) { return static_cast<int>(size(s)); }
 
+int ssize(const std::string& s) {
+  return static_cast<int>(s.size());
+}
 
 std::string trim_to_size(const std::string& orig, std::string::size_type max_size) {
   string s(orig);

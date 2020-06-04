@@ -1013,9 +1013,8 @@ void arc_l() {
   do {
     if (nRecordNum > 0) {
       auto f = a()->current_file_area()->ReadFile(nRecordNum);
-      int i1 =
-          list_arc_out(stripfn(f.unaligned_filename()),
-                       a()->directories[a()->current_user_dir().subnum].path);
+      int i1 = list_arc_out(f.unaligned_filename(),
+                            a()->directories[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }

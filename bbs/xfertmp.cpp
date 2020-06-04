@@ -573,7 +573,7 @@ void temp_extract() {
       } else {
         File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
-      File file(PathFilePath(File::current_directory(), stripfn(f.unaligned_filename())));
+      File file(PathFilePath(File::current_directory(), f));
       a()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1;
@@ -585,7 +585,7 @@ void temp_extract() {
             ok1 = false;
           }
           if (iequals(extract_fn, "?")) {
-            list_arc_out(stripfn(f.unaligned_filename()),
+            list_arc_out(f.unaligned_filename(),
                          a()->directories[a()->current_user_dir().subnum].path);
             extract_fn.clear();
           }
@@ -643,7 +643,7 @@ void list_temp_text() {
     if (!contains(fn, '.')) {
       fn += ".*";
     }
-    const auto fmask = PathFilePath(a()->temp_directory(), stripfn(fn.c_str()));
+    const auto fmask = PathFilePath(a()->temp_directory(), stripfn(fn));
     FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
     for (const auto& f : ff) {

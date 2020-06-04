@@ -160,7 +160,6 @@ int receive_block(char* b, unsigned char* bln, bool use_crc) {
 void xymodem_receive(const std::string& file_name, bool* received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
-  int i2, i3;
 
   File::Remove(file_name);
   bool ok = true;
@@ -237,7 +236,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     if (i == 0 || i == 1) {
       if (bln == 0 && pos == 0L) {
         int i1 = strlen(b) + 1;
-        i3 = i1;
+        int i3 = i1;
         while (b[i3] >= '0' && b[i3] <= '9' && (i3 - i1) < 15) {
           x[i3 - i1] = b[i3];
           i3++;
@@ -260,7 +259,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {
         file.Seek(pos, File::Whence::begin);
         long lx = reallen - pos;
-        i2 = (i == 0) ? 128 : 1024;
+        int i2 = (i == 0) ? 128 : 1024;
         if ((static_cast<long>(i2) > lx) && reallen) {
           i2 = static_cast<int>(lx);
         }

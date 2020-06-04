@@ -150,7 +150,9 @@ static std::string stripfn(const char* file_name) {
   return szTempFileName;
 }
 
-static std::string stripfn(const std::string& file_name) { return stripfn(file_name.c_str()); }
+static std::string stripfn(const std::string& file_name) {
+  return stripfn(file_name.c_str());
+}
 
 Allow::Allow(const wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
   loaded_ = Load();

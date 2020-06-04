@@ -62,6 +62,7 @@ static const unsigned char* invalid_chars =
     (unsigned char*)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using std::string;
+using wwiv::sdk::files::FileName;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -198,12 +199,13 @@ bool get_file_idz(uploadsrec* u, int dn) {
   if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
     return false;
   }
-  const auto pfn = PathFilePath(a()->directories[dn].path, stripfn(u->filename));
+  const auto pfn = PathFilePath(a()->directories[dn].path, FileName(u->filename));
   const auto t = DateTime::from_time_t(File::creation_time(pfn))
       .to_string(DateTime::now().to_string("%m/%d/%y"));
   to_char_array(u->actualdate, t);
   {
-    auto* ss = strchr(stripfn(u->filename), '.');
+    auto ufn = FileName(u->filename).unaligned_filename();
+    auto* ss = strchr(ufn.c_str(), '.');
     if (ss == nullptr) {
       return false;
     }
@@ -225,7 +227,7 @@ bool get_file_idz(uploadsrec* u, int dn) {
   std::string cmd;
   File::set_current_directory(a()->directories[dn].path);
   {
-    File file(PathFilePath(File::current_directory(), stripfn(u->filename)));
+    File file(PathFilePath(File::current_directory(), FileName(u->filename)));
     a()->CdHome();
     cmd = get_arc_cmd(file.full_pathname(), 1, "FILE_ID.DIZ DESC.SDI");
   }
@@ -239,7 +241,7 @@ bool get_file_idz(uploadsrec* u, int dn) {
   if (File::Exists(diz_fn)) {
     // TODO(rushfan): Change to TextFile::ReadTextIntoVector and parse that way.
     bout.nl();
-    bout << "|#9Reading in |#2" << stripfn(diz_fn.string()) << "|#9 as extended description...";
+    bout << "|#9Reading in |#2" << diz_fn.filename().string() << "|#9 as extended description...";
     string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
     if (!ss.empty()) {
       a()->current_file_area()->DeleteExtendedDescription(u->filename);
@@ -340,8 +342,7 @@ int read_idz(int mode, int tempdir) {
     const auto fn = f.aligned_filename();
     if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      const auto file = PathFilePath(File::current_directory(),
-                                     stripfn(f.unaligned_filename()));
+      const auto file = PathFilePath(File::current_directory(), f);
       a()->CdHome();
       if (!File::Exists(file)) {
         if (get_file_idz(&f.u(), a()->udir[tempdir].subnum)) {
@@ -361,8 +362,6 @@ int read_idz(int mode, int tempdir) {
 }
 
 void tag_it() {
-  int i;
-  char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
 
   if (a()->batch().size() >= a()->max_batch) {
@@ -372,25 +371,25 @@ void tag_it() {
   }
   bout << "|#2Which file(s) (1-" << a()->filelist.size()
       << ", *=All, 0=Quit)? ";
-  input(s3, 30, true);
-  if (s3[0] == '*') {
-    s3[0] = '\0';
+  auto s3 = input(30, true);
+  if (!s3.empty() && s3.front() == '*') {
+    s3.clear();
     for (size_t i2 = 0; i2 < a()->filelist.size() && i2 < 78; i2++) {
-      sprintf(s2, "%u ", i2 + 1);
-      strcat(s3, s2);
-      if (strlen(s3) > sizeof(s3) - 10) {
+      auto s2 = fmt::format("{} ", i2 + 1);
+      s3 += s2;
+      if (s3.size() > 250 /* was sizeof(s3)-10 */) {
         break;
       }
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
   for (int i2 = 0; i2 < wwiv::strings::ssize(s3); i2++) {
-    sprintf(s1, "%s", s3 + i2);
+    auto s1 = s3.substr(i2);
     int i4 = 0;
     bool bad = false;
     for (int i3 = 0; i3 < wwiv::strings::ssize(s1); i3++) {
       if (s1[i3] == ' ' || s1[i3] == ',' || s1[i3] == ';') {
-        s1[i3] = 0;
+        s1 = s1.substr(0, i3);
         i4 = 1;
       } else {
         if (i4 == 0) {
@@ -398,12 +397,12 @@ void tag_it() {
         }
       }
     }
-    i = to_number<int>(s1);
+    int i = to_number<int>(s1);
     if (i == 0) {
       break;
     }
     i--;
-    if (s1[0] && i >= 0 && i < ssize(a()->filelist)) {
+    if (!s1.empty() && i >= 0 && i < ssize(a()->filelist)) {
       auto& f = a()->filelist[i];
       if (a()->batch().contains_file(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
@@ -421,19 +420,17 @@ void tag_it() {
         bad = true;
       }
       if (!bad) {
-        sprintf(s, "%s%s", a()->directories[f.directory].path,
-                stripfn(f.u.filename));
+        auto s = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
-          sprintf(s2, "%s%s", a()->directories[f.directory].path,
-                  stripfn(f.u.filename));
-          sprintf(s, "%s%s", a()->temp_directory().c_str(), stripfn(f.u.filename));
+          auto s2 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+          s = PathFilePath(a()->temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s)) {
             File::Copy(s2, s);
           }
         }
         File fp(s);
         if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
-          bout << "|#6The file " << stripfn(f.u.filename) << " is not there.\r\n";
+          bout << "|#6The file " << FileName(f.u.filename).unaligned_filename() << " is not there.\r\n";
           bad = true;
         } else {
           fs = fp.length();
@@ -613,10 +610,10 @@ void tag_files(bool& need_title) {
       int i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        auto s1 = PathFilePath(a()->directories[f.directory].path, stripfn(f.u.filename));
+        auto s1 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
         if (a()->directories[f.directory].mask & mask_cdrom) {
-          auto s2 = PathFilePath(a()->directories[f.directory].path, stripfn(f.u.filename));
-          s1 = PathFilePath(a()->temp_directory().c_str(), stripfn(f.u.filename));
+          auto s2 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+          s1 = PathFilePath(a()->temp_directory().c_str(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -627,7 +624,7 @@ void tag_files(bool& need_title) {
           break;
         }
         auto arc_cmd = get_arc_cmd(s1.string(), 0, "");
-        if (!okfn(stripfn(f.u.filename))) {
+        if (!okfn(FileName(f.u.filename).unaligned_filename())) {
           arc_cmd.clear();
         }
         if (!arc_cmd.empty()) {
