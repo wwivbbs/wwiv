@@ -58,6 +58,7 @@ static const int ARC_NUMBER = 0;
 using std::function;
 using std::string;
 using std::vector;
+using wwiv::sdk::files::FileName;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -102,22 +103,22 @@ struct arch {
   int32_t size;
 };
 
-int check_for_files_arc(const char* file_name) {
-  File file(file_name);
+static bool check_for_files_arc(const std::filesystem::path& file_path) {
+  File file(file_path);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    arch a;
-    auto file_size = file.length();
+    arch a{};
+    const auto file_size = file.length();
     long lFilePos = 1;
     file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
     if (a.type != 26) {
       file.Close();
-      bout << stripfn(file_name) << " is not a valid .ARC file.";
-      return 1;
+      bout << file_path.filename().string() << " is not a valid .ARC file.";
+      return false;
     }
     while (lFilePos < file_size) {
       file.Seek(lFilePos, File::Whence::begin);
-      auto num_read = file.Read(&a, sizeof(arch));
+      const auto num_read = file.Read(&a, sizeof(arch));
       if (num_read == sizeof(arch)) {
         lFilePos += sizeof(arch);
         if (a.type == 1) {
@@ -133,7 +134,7 @@ int check_for_files_arc(const char* file_name) {
           strupr(szArcFileName);
           if (bad_filename(szArcFileName)) {
             file.Close();
-            return 1;
+            return false;
           }
         } else {
           lFilePos = file_size;
@@ -141,18 +142,18 @@ int check_for_files_arc(const char* file_name) {
       } else {
         file.Close();
         if (a.type != 0) {
-          bout << stripfn(file_name) << " is not a valid .ARC file.";
-          return 1;
+          bout << file_path.filename().string() << " is not a valid .ARC file.";
+          return false;
         }
         lFilePos = file_size;
       }
     }
 
     file.Close();
-    return 0;
+    return true;
   }
-  bout << "File not found: " << stripfn(file_name) << wwiv::endl;
-  return 1;
+  bout << "File not found: " << file_path.filename().string() << wwiv::endl;
+  return false;
 }
 
 // .ZIP structures and defines
@@ -205,7 +206,7 @@ struct zip_end_dir {
   uint16_t comment_len;
 };
 
-int check_for_files_zip(const char* file_name) {
+bool check_for_files_zip(const std::filesystem::path& path) {
   zip_local_header zl;
   zip_central_dir zc;
   zip_end_dir ze;
@@ -213,10 +214,11 @@ int check_for_files_zip(const char* file_name) {
 
 #define READ_FN( ln ) { file.Read( s, ln ); s[ ln ] = '\0'; }
 
-  File file(file_name);
+  const auto fn = path.filename().string();
+  File file(path);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long l = 0;
-    auto len = file.length();
+    const auto len = file.length();
     while (l < len) {
       long sig = 0;
       file.Seek(l, File::Whence::begin);
@@ -229,7 +231,7 @@ int check_for_files_zip(const char* file_name) {
         strupr(s);
         if (bad_filename(s)) {
           file.Close();
-          return 1;
+          return false;
         }
         l += sizeof(zl);
         l += zl.comp_size + zl.filename_len + zl.extra_length;
@@ -240,7 +242,7 @@ int check_for_files_zip(const char* file_name) {
         strupr(s);
         if (bad_filename(s)) {
           file.Close();
-          return 1;
+          return false;
         }
         l += sizeof(zc);
         l += zc.filename_len + zc.extra_len;
@@ -248,18 +250,18 @@ int check_for_files_zip(const char* file_name) {
       case ZIP_CENT_END_SIG:
         file.Read(&ze, sizeof(ze));
         file.Close();
-        return 0;
+        return true;
       default:
         file.Close();
         bout << "Error examining that; can't extract from it.\r\n";
-        return 1;
+        return false;
       }
     }
     file.Close();
-    return 0;
+    return true;
   }
-  bout << "File not found: " << stripfn(file_name) << wwiv::endl;
-  return 1;
+  bout << "File not found: " << fn << wwiv::endl;
+  return false;
 }
 
 
@@ -274,17 +276,17 @@ struct lharc_header {
   unsigned char fn_len;
 };
 
-int check_for_files_lzh(const char* file_name) {
-  lharc_header a;
+bool check_for_files_lzh(const std::filesystem::path& path) {
+  lharc_header a{};
 
-  File file(file_name);
+  const auto fn = path.filename().string();
+  File file(path);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "File not found: " << stripfn(file_name) << wwiv::endl;
-    return 1;
+    bout << "File not found: " << fn << wwiv::endl;
+    return false;
   }
-  auto file_size = file.length();
+  const auto file_size = file.length();
   unsigned short nCrc;
-  int err = 0;
   for (long l = 0; l < file_size;
        l += a.fn_len + a.comp_size + sizeof(lharc_header) + file.Read(&nCrc, sizeof(nCrc)) + 1) {
     file.Seek(l, File::Whence::begin);
@@ -296,42 +298,40 @@ int check_for_files_lzh(const char* file_name) {
     }
     auto num_read = file.Read(&a, sizeof(lharc_header));
     if (num_read != sizeof(lharc_header)) {
-      bout << stripfn(file_name) << " is not a valid .LZH file.";
-      err = 1;
-      break;
+      bout << fn << " is not a valid .LZH file.";
+      return false;
     }
     char buffer[256];
     num_read = file.Read(buffer, a.fn_len);
     if (num_read != a.fn_len) {
-      bout << stripfn(file_name) << " is not a valid .LZH file.";
-      err = 1;
-      break;
+      bout << fn << " is not a valid .LZH file.";
+      return false;
     }
     buffer[a.fn_len] = '\0';
     strupr(buffer);
     if (bad_filename(buffer)) {
-      err = 1;
-      break;
+      return false;
     }
   }
   file.Close();
-  return err;
+  return true;
 }
 
-int check_for_files_arj(const char* file_name) {
-  File file(file_name);
+bool check_for_files_arj(const std::filesystem::path& path) {
+  const auto fn = path.filename().string();
+  File file(path);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    auto file_size = file.length();
+    const auto file_size = file.length();
     long lCurPos = 0;
     file.Seek(0L, File::Whence::begin);
     while (lCurPos < file_size) {
       file.Seek(lCurPos, File::Whence::begin);
       unsigned short sh;
-      int num_read = file.Read(&sh, 2);
+      const int num_read = file.Read(&sh, 2);
       if (num_read != 2 || sh != 0xea60) {
         file.Close();
-        bout << stripfn(file_name) << " is not a valid .ARJ file.";
-        return 1;
+        bout << fn << " is not a valid .ARJ file.";
+        return false;
       }
       lCurPos += num_read + 2;
       file.Read(&sh, 2);
@@ -346,8 +346,8 @@ int check_for_files_arj(const char* file_name) {
       buffer[250] = '\0';
       if (strlen(buffer) > 240) {
         file.Close();
-        bout << stripfn(file_name) << " is not a valid .ARJ file.";
-        return 1;
+        bout << fn << " is not a valid .ARJ file.";
+        return false;
       }
       lCurPos += 4 + static_cast<long>(sh);
       file.Seek(lCurPos, File::Whence::begin);
@@ -362,22 +362,21 @@ int check_for_files_arj(const char* file_name) {
       strupr(buffer);
       if (bad_filename(buffer)) {
         file.Close();
-        return 1;
+        return false;
       }
     }
-
     file.Close();
-    return 0;
+    return true;
   }
 
-  bout << "File not found: " << stripfn(file_name);
-  return 1;
+  bout << "File not found: " << fn;
+  return false;
 }
 
-static bool check_for_files(const char* file_name) {
+static bool check_for_files(const std::filesystem::path& path) {
   struct arc_testers {
     const char* arc_name;
-    function<int(const char*)> func;
+    function<int(const std::filesystem::path&)> func;
   };
 
   static const vector<arc_testers> arc_t = {
@@ -387,18 +386,20 @@ static bool check_for_files(const char* file_name) {
       {"ARJ", check_for_files_arj},
   };
 
-  const char* ss = strrchr(file_name, '.');
-  if (ss) {
-    ss++;
-    for (const auto& t : arc_t) {
-      if (iequals(ss, t.arc_name)) {
-        return t.func(file_name) == 0;
-      }
-    }
-  } else {
+  if (!path.has_extension()) {
     // no extension?
     bout << "No extension.\r\n";
     return true;
+  }
+  auto ext = ToStringUpperCase(path.extension().string());
+  if (ext.front() == '.') {
+    // trim leading . for extension
+    ext = ext.substr(1);
+  }
+  for (const auto& t : arc_t) {
+    if (iequals(ext, t.arc_name)) {
+      return t.func(path) == 0;
+    }
   }
   return false;
 }
@@ -575,7 +576,7 @@ void temp_extract() {
       }
       File file(PathFilePath(File::current_directory(), f));
       a()->CdHome();
-      if (check_for_files(file.full_pathname().c_str())) {
+      if (check_for_files(file.path())) {
         bool ok1;
         do {
           bout << "|#2Extract what (?=list,Q=abort) ? ";

@@ -87,7 +87,8 @@
 * make send_file, maybe_internal, and all of those use a fs::path for a fully qualified
   pathname just a filename.
 * Batch::contains_file should take a FileName
-* send_file's sfn should be an aligned filename, so maybe use FileName
+* send_file's sfn should be an aligned filename, so maybe use FileName Also use path
+  where appropriate for send_file, xymodem_send, maybe_internal, etc.
 * get rid of stripfn
 
 
