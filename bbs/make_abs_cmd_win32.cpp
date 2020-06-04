@@ -23,11 +23,10 @@
 
 #include <string>
 #include <vector>
-
 #include <direct.h>
-
 #include "core/strings.h"
 #include "core/file.h"
+#include "fmt/format.h"
 
 using std::string;
 using std::vector;
@@ -46,44 +45,44 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     ".cmd",
   };
 
-  // out_buffer must be at least MAX_PATH in size.
-  char s1[MAX_PATH], s2[MAX_PATH];
-  to_char_array(s1, *out);
+  auto s1 = *out;
+  const auto is_abs_with_drive = s1.size() > 2 && s1.at(1) == ':';
 
-  char curdir[MAX_PATH];
-  if (s1[1] == ':') {
-    if (s1[2] != '\\') {
-      (void)_getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, curdir, MAX_PATH);
-      if (curdir[0]) {
-        _snprintf(s1, sizeof(s1), "%c:\\%s\\%s", s1[0], curdir, out->substr(2).c_str());
+  std::string s2;
+  if (is_abs_with_drive) {
+    if (s1.at(2) != '\\') {
+      auto* curdir = _getdcwd(to_upper_case_char(s1[0]) - 'A' + 1, nullptr, MAX_PATH);
+      if (curdir && *curdir) {
+        s1 = fmt::format("{}:\\{}\\{}", s1.front(), curdir, s1.substr(2));
       } else {
-        _snprintf(s1, sizeof(s1), "%c:\\%s", s1[0], out->substr(2).c_str());
+        s1 = fmt::format("{}:\\{}", s1.front(), s1.substr(2));
       }
+      free(curdir);
     }
-  } else if (s1[0] == '\\') {
-    _snprintf(s1, sizeof(s1), "%c:%s", root.front(), out->c_str());
+  } else if (s1.front() == '\\') {
+    s1 = fmt::format("{}:{}", root.front(), s1);
   } else {
-    to_char_array(s2, s1);
-    strtok(s2, " \t");
-    if (strchr(s2, '\\')) {
-      _snprintf(s1, sizeof(s1), "%s%s", root.c_str(), out->c_str());
+    s2 = s1;
+    const auto wsidx = s2.find_first_of(" \t");
+    if (wsidx != std::string::npos) {
+      if (s2.find(File::pathSeparatorChar) != std::string::npos) {
+        s1 = FilePath(root, s1);
+      }
     }
   }
 
-  auto* ss = strchr(s1, ' ');
-  if (ss) {
-    *ss = '\0';
-    _snprintf(s2, sizeof(s2), " %s", ss + 1);
+  const auto idx = s1.find(' ');
+  if (idx != std::string::npos) {
+    s2 = fmt::format(" {}", s1.substr(idx + 1));
+    s1 = s1.substr(0, idx);
   } else {
-    s2[0] = '\0';
+    s2.clear();
   }
   for (const auto& ext : exts) {
     if (ext.empty()) {
-      const char* ss1 = strrchr(s1, '\\');
-      if (!ss1) {
-        ss1 = s1;
-      }
-      if (strchr(ss1, '.') == 0) {
+      const auto last_slash = s1.find_last_of(File::pathSeparatorChar);
+      auto t = last_slash == std::string::npos ? s1 : s1.substr(last_slash + 1);
+      if (strchr(t.c_str(), '.') == nullptr) {
         continue;
       }
     }
@@ -103,13 +102,13 @@ void make_abs_cmd(const std::string& root, std::string* out) {
         if (File::is_directory(root) && !std::filesystem::is_directory(PathFilePath(root, s), ec)) {
           *out = StrCat(PathFilePath(root, s).string(), s2);
         } else {
-          *out = StrCat(root, s, s2);
+          *out = FilePath(root, StrCat(s, s2));
         }
         return;
       }
-      char szFoundPath[MAX_PATH];
-      _searchenv(s.c_str(), "PATH", szFoundPath);
-      if (strlen(szFoundPath) > 0) {
+      char szFoundPath[4096];
+      const auto err = _searchenv_s(s.c_str(), "PATH", szFoundPath);
+      if (err == 0 && strlen(szFoundPath) > 0) {
         *out = StrCat(szFoundPath, s2);
         return;
       }
@@ -118,10 +117,10 @@ void make_abs_cmd(const std::string& root, std::string* out) {
 
   const auto maybe_dir = PathFilePath(root, s1);
   std::error_code ec;
-  if (File::Exists(maybe_dir) && std::filesystem::is_directory(maybe_dir, ec)) {
+  if (File::Exists(maybe_dir) && is_directory(maybe_dir, ec)) {
     *out = StrCat(maybe_dir.string(), s2);
   } else {
-    *out = StrCat(root, s1, s2);
+    *out = FilePath(root, StrCat(s1, s2));
   }
 }
 

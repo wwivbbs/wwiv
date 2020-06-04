@@ -61,6 +61,40 @@ TEST_F(MakeAbsTest, UnderRoot) {
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
+TEST_F(MakeAbsTest, UnderRoot_WithExt) {
+  const auto foo = helper.files().CreateTempFile("foo.exe", "");
+  const auto expected = StrCat(foo.string(), " bar");
+  string cmdline = "foo.exe bar";
+  make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
+}
+
+TEST_F(MakeAbsTest, UnderRoot_SlashInParam) {
+  const auto foo = helper.files().CreateTempFile("foo.exe", "");
+  const auto arg = StrCat(" bar", File::pathSeparatorChar, "baz");
+  const auto expected = StrCat(foo.string(), arg);
+  auto cmdline = StrCat("foo", arg);
+  make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
+}
+
+TEST_F(MakeAbsTest, UnderRoot_SlashInParam_DoesNotExist) {
+  const auto foo = helper.files().CreateTempFilePath("foo");
+  const auto arg = StrCat(" bar", File::pathSeparatorChar, "baz");
+  const auto expected = StrCat(foo.string(), arg);
+  auto cmdline = StrCat("foo", arg);
+  make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
+}
+
+TEST_F(MakeAbsTest, DoesNotExist) {
+  const auto foo = helper.files().CreateTempFilePath("foo");
+  const auto expected = StrCat(foo.string(), " bar");
+  string cmdline = "foo bar";
+  make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
+}
+
 #else 
 
 TEST_F(MakeAbsTest, Smoke) {
