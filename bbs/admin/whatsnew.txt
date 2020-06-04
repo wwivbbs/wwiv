@@ -37,6 +37,17 @@ What's New in WWIV 5.5 (2020)
 + File transfers now work on case sensitive file systems.  Please make sure
   that all of the files in the file transfer section have filename in lower
   case on disk.
+* default unzip commandlines now overwrite by default, fixing a pause on
+  processing file_id.diz.
++ The WWIV SDK now includes support for file areas, file lists, and dsz
+  log file parsing (minimal).
+! Log files from the unit tests are now under ${TEMP}/wwiv_test_out by
+  default and not  ${TEMP}
++ wwivutil files list will now also display extended file descriptions
+  in addition to short ones.
++ wwivutil files delete will also delete extended descriptions.
++ Internal ZModem performance is 5-10x faster.
+
 
 
 What's New in WWIV 5.5 (2019)
