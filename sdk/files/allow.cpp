@@ -209,7 +209,7 @@ bool Allow::Load() {
 
 bool Allow::Save() {
   DataFile<allow_entry_t> file(PathFilePath(data_directory_, ALLOW_DAT),
-                               File::modeReadWrite | File::modeBinary | File::modeTruncate);
+                               File::modeReadWrite | File::modeBinary | File::modeTruncate | File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Error saving allow.dat";
     return false;
