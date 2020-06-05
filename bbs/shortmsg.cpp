@@ -93,55 +93,55 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   }
 }
 
-static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText) {
+static void SendLocalShortMessage(int usernum, const std::string& messageText) {
   User user;
-  a()->users()->readuser(&user, nUserNum);
+  a()->users()->readuser(&user, usernum);
   if (!user.IsUserDeleted()) {
     File file(PathFilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
-    int nTotalMsgsInFile = static_cast<int>(file.length() / sizeof(shortmsgrec));
-    int nNewMsgPos = nTotalMsgsInFile - 1;
-    shortmsgrec sm;
-    if (nNewMsgPos >= 0) {
-      file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
+    auto total_msgs_in_file = static_cast<int>(file.length() / sizeof(shortmsgrec));
+    auto new_msg_pos = total_msgs_in_file - 1;
+    shortmsgrec sm{};
+    if (new_msg_pos >= 0) {
+      file.Seek(new_msg_pos * sizeof(shortmsgrec), File::Whence::begin);
       file.Read(&sm, sizeof(shortmsgrec));
-      while (sm.tosys == 0 && sm.touser == 0 && nNewMsgPos > 0) {
-        --nNewMsgPos;
-        file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
+      while (sm.tosys == 0 && sm.touser == 0 && new_msg_pos > 0) {
+        --new_msg_pos;
+        file.Seek(new_msg_pos * sizeof(shortmsgrec), File::Whence::begin);
         file.Read(&sm, sizeof(shortmsgrec));
       }
       if (sm.tosys != 0 || sm.touser != 0) {
-        nNewMsgPos++;
+        new_msg_pos++;
       }
     } else {
-      nNewMsgPos = 0;
+      new_msg_pos = 0;
     }
     sm.tosys = 0;  // 0 means local
-    sm.touser = static_cast<uint16_t>(nUserNum);
+    sm.touser = static_cast<uint16_t>(usernum);
     to_char_array(sm.message, messageText);
     sm.message[80] = '\0';
-    file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
+    file.Seek(new_msg_pos * sizeof(shortmsgrec), File::Whence::begin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(User::SMW);
-    a()->users()->writeuser(&user, nUserNum);
+    a()->users()->writeuser(&user, usernum);
   }
 }
 
-static void SendRemoteShortMessage(uint16_t user_num, uint16_t system_num, const std::string text,
+static void SendRemoteShortMessage(int user_num, int system_num, const std::string& text,
                                    const net_networks_rec& net) {
-  net_header_rec nh;
-  nh.tosys = system_num;
-  nh.touser = user_num;
+  net_header_rec nh{};
+  nh.tosys = static_cast<uint16_t>(system_num);
+  nh.touser = static_cast<uint16_t>(user_num);
   nh.fromsys = net.sysnum;
   nh.fromuser = static_cast<uint16_t>(a()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = daten_t_now();
-  string msg = text;
+  auto msg = text;
   if (msg.size() > 79) {
     msg.resize(79);
   }
@@ -156,20 +156,24 @@ static void SendRemoteShortMessage(uint16_t user_num, uint16_t system_num, const
 }
 
 ssm::~ssm() {
-  if (un_ == 65535 || un_ == 0 || sn_ == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
-    return;
-  }
-
-  const auto& s = stream_.str();
-
-  if (sn_ == 0) {
-    SendLocalShortMessage(un_, s.c_str());
-  } else {
-    if (net_ != nullptr) {
-      SendRemoteShortMessage(un_, sn_, s, *net_);
-    } else {
-      LOG(ERROR) << "Tried to send remote SSM when net_ was null: " << s;
+  try {
+    if (un_ == 65535 || un_ == 0 || sn_ == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
+      return;
     }
+
+    const auto& s = stream_.str();
+
+    if (sn_ == 0) {
+      SendLocalShortMessage(un_, s);
+    } else {
+      if (net_ != nullptr) {
+        SendRemoteShortMessage(un_, sn_, s, *net_);
+      } else {
+        LOG(ERROR) << "Tried to send remote SSM when net_ was null: " << s;
+      }
+    }
+  } catch (const std::exception& e) {
+    LOG(INFO) << "~ssm exception: " << e.what();
   }
 }
 

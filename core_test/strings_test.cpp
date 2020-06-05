@@ -349,18 +349,18 @@ TEST(StringsTest, IEQuals) {
 }
 
 TEST(StringsTest, SizeWithoutColors) {
-  EXPECT_EQ(1u, size_without_colors("a"));
-  EXPECT_EQ(1u, size_without_colors("|#1a"));
-  EXPECT_EQ(1u, size_without_colors("|09a"));
-  EXPECT_EQ(1u, size_without_colors("|17|10a"));
+  EXPECT_EQ(1, size_without_colors("a"));
+  EXPECT_EQ(1, size_without_colors("|#1a"));
+  EXPECT_EQ(1, size_without_colors("|09a"));
+  EXPECT_EQ(1, size_without_colors("|17|10a"));
 }
 
 TEST(StringsTest, SizeWithoutColors_AnsiStr) {
-  EXPECT_EQ(0u, size_without_colors("\x1b[0m"));
-  EXPECT_EQ(0u, size_without_colors("\x1b[0;33;46;1m"));
-  EXPECT_EQ(1u, size_without_colors("|\x1b[0;33;46;1m"));
-  EXPECT_EQ(3u, size_without_colors("|15\x1b[0;33;46;1mabc"));
-  EXPECT_EQ(3u, size_without_colors("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m"));
+  EXPECT_EQ(0, size_without_colors("\x1b[0m"));
+  EXPECT_EQ(0, size_without_colors("\x1b[0;33;46;1m"));
+  EXPECT_EQ(1, size_without_colors("|\x1b[0;33;46;1m"));
+  EXPECT_EQ(3, size_without_colors("|15\x1b[0;33;46;1mabc"));
+  EXPECT_EQ(3, size_without_colors("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m"));
 }
 
 TEST(StringsTest, TrimToSizeIgnoreColors) {
@@ -388,7 +388,7 @@ TEST(StringsTest, Size) {
   EXPECT_EQ(0u, wwiv::strings::size(""));
   const std::string yo = "Yo!";
   EXPECT_EQ(3u, wwiv::strings::size(yo));
-  EXPECT_EQ(0, wwiv::strings::size(std::string("")));
+  EXPECT_EQ(0u, wwiv::strings::size(std::string("")));
 }
 
 TEST(StringsTest, SSize) {

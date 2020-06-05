@@ -18,14 +18,12 @@
 /**************************************************************************/
 #ifndef __INCLUDED_WWIV_CORE_OS_H__
 #define __INCLUDED_WWIV_CORE_OS_H__
-#pragma once
 
+#include "core/wwivport.h"
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <string>
-
-#include "core/wwivport.h"
 
 namespace wwiv {
 namespace os {

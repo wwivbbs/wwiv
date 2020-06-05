@@ -43,8 +43,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 // [[ VisibleForTesting ]]
 bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
@@ -55,7 +54,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
   con->min_hr = -1;
   con->max_hr = -1;
 
-  for (auto iter = ss.cbegin(); iter != ss.cend(); iter++) {
+  for (auto iter = ss.cbegin(); iter != ss.cend(); ++iter) {
     switch (*iter) {
     case '@': {
       con->sysnum = to_number<decltype(con->sysnum)>(string(++iter, ss.end()));
@@ -155,7 +154,7 @@ std::string WriteCalloutNetLine(const net_call_out_rec& con) {
     ss << " %" << static_cast<int>(con.macnum);
   }
   if (con.call_every_x_minutes > 0) {
-    int c = std::max(10, static_cast<int>(con.call_every_x_minutes));
+    const int c = std::max(10, static_cast<int>(con.call_every_x_minutes));
     ss << " /" << c;
   }
   if (con.min_hr > 0) {
@@ -191,7 +190,7 @@ std::string CalloutOptionsToString(uint16_t options) {
 }
 
 static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map,
-                             const string network_dir) {
+                             const string& network_dir) {
   TextFile node_config_file(PathFilePath(network_dir, CALLOUT_NET), "rt");
   if (!node_config_file.IsOpen()) {
     return false;
@@ -220,11 +219,11 @@ Callout::Callout(std::initializer_list<net_call_out_rec> l) : net_() {
   }
 }
 
-Callout::~Callout() {}
+Callout::~Callout() = default;
 
 const net_call_out_rec* Callout::net_call_out_for(int node) const {
   VLOG(2) << "Callout::net_call_out_for(" << node << ")";
-  auto iter = node_config_.find(node);
+  const auto iter = node_config_.find(static_cast<uint16_t>(node));
   if (iter != end(node_config_)) {
     return &iter->second;
   }
@@ -241,7 +240,7 @@ const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const
   return net_call_out_for(to_number<int>(node));
 }
 
-bool Callout::insert(uint16_t node, const net_call_out_rec& orig) {
+bool Callout::insert(uint16_t , const net_call_out_rec& orig) {
   net_call_out_rec c{orig};
   c.ftn_address = StrCat("20000:20000/", c.sysnum);
   node_config_.erase(c.sysnum);
@@ -298,5 +297,4 @@ std::string Callout::ToString() const {
   return ss.str();
 }
 
-} // namespace sdk
 } // namespace wwiv

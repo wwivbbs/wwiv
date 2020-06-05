@@ -201,7 +201,7 @@ public:
   [[nodiscard]] const net_networks_rec& current_net() const;
 
   [[nodiscard]] uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
-  void SetCurrentConferenceMessageArea(uint16_t n) { current_conf_msgarea_ = n; }
+  void SetCurrentConferenceMessageArea(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
   void SetCurrentConferenceFileArea(uint16_t n) { current_conf_filearea_ = n; }

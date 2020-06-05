@@ -156,12 +156,12 @@ bool ends_with(const std::string& input, const std::string& match) {
  *      RIGHT
  * @return the justified text.
  */
-void StringJustify(string* s, string::size_type length, char bg, JustificationType just_type) {
-  if (s->size() > length) {
+void StringJustify(string* s, int length, char bg, JustificationType just_type) {
+  if (ssize(*s) > length) {
     *s = s->substr(0, length);
     return;
   }
-  if (s->size() == length) {
+  if (ssize(*s) == length) {
     return;
   }
 
@@ -316,7 +316,7 @@ int size_without_colors(const std::string& s) {
   return stripped.size();
 }
 
-std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size) {
+std::string trim_to_size_ignore_colors(const std::string& orig, int size) {
   string s{orig};
   while (size_without_colors(s) > size) {
     s.pop_back();
@@ -324,7 +324,7 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
   return s;
 }
 
-std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size) {
+std::string pad_to_ignore_colors(const std::string& orig, int size) {
   const auto len = size_without_colors(orig);
   if (size <= len) {
     return orig;
@@ -350,9 +350,9 @@ int ssize(const std::string& s) {
   return static_cast<int>(s.size());
 }
 
-std::string trim_to_size(const std::string& orig, std::string::size_type max_size) {
+std::string trim_to_size(const std::string& orig, int max_size) {
   string s(orig);
-  while (size(s) > max_size) {
+  while (ssize(s) > max_size) {
     s.pop_back();
   }
   return s;

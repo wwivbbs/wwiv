@@ -128,12 +128,12 @@ void cleanup_net() {
   a()->Cls();
 }
 
-static void do_callout(const net_networks_rec& net, uint16_t sn) {
-  Callout callout(net);
+static void do_callout(const net_networks_rec& net, int sn) {
+  const Callout callout(net);
   Contact contact(net, false);
   Binkp binkp(net.dir);
 
-  const net_call_out_rec* callout_rec = callout.net_call_out_for(sn); // i con
+  const auto* const callout_rec = callout.net_call_out_for(sn); // i con
   if (callout_rec == nullptr) {
     return;
   }
@@ -142,7 +142,7 @@ static void do_callout(const net_networks_rec& net, uint16_t sn) {
   if (!contact_rec) {
     return;
   }
-  net_system_list_rec* csne = next_system(callout_rec->sysnum);
+  const auto csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
   }
@@ -164,7 +164,7 @@ static void do_callout(const net_networks_rec& net, uint16_t sn) {
 
 class NodeAndWeight {
 public:
-  NodeAndWeight() {}
+  NodeAndWeight() = default;
   NodeAndWeight(int net_num, uint16_t node_num, uint64_t weight)
       : net_num_(net_num), node_num_(node_num), weight_(weight) {}
   int net_num_ = 0;
@@ -175,7 +175,7 @@ public:
 bool attempt_callout() {
   a()->status_manager()->RefreshStatusCache();
 
-  auto now = steady_clock::now();
+  const auto now = steady_clock::now();
   if (last_time_c_ == steady_clock::time_point::min()) {
     // Set it to 11s ago, so we try a callout right away.
     last_time_c_ = now - seconds(11);
@@ -189,10 +189,10 @@ bool attempt_callout() {
 
   // Set the last connect time to now since we are attempting to connect.
   last_time_c_ = now;
-  wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
+  ScopeExit set_net_num_zero([&]() { set_net_num(0); });
   vector<NodeAndWeight> to_call(wwiv::stl::ssize(a()->net_networks));
 
-  for (int nn = 0; nn < wwiv::stl::ssize(a()->net_networks); nn++) {
+  for (auto nn = 0; nn < wwiv::stl::ssize(a()->net_networks); nn++) {
     set_net_num(nn);
     const auto& net = a()->net_networks[nn];
     if (!net.sysnum) {
@@ -203,7 +203,7 @@ bool attempt_callout() {
     Contact contact(net, false);
 
     for (const auto& p : callout.callout_config()) {
-      const net_call_out_rec& ncor = p.second;
+      const auto& ncor = p.second;
       const NetworkContact* ncr = contact.contact_rec_for(p.first);
       if (!ncr) {
         VLOG(2) << "skipping because: !ncr || !ncor";
@@ -214,14 +214,14 @@ bool attempt_callout() {
       }
 
       auto diff = time(nullptr) - ncr->lasttry();
-      auto time_weight = std::max<int64_t>(diff, 0);
+      const auto time_weight = std::max<int64_t>(diff, 0);
 
       if (ncr->bytes_waiting() == 0L) {
         if (to_call.at(nn).weight_ < time_weight) {
           to_call[nn] = NodeAndWeight(nn, ncor.sysnum, time_weight);
         }
       } else {
-        auto bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
+        const auto bytes_weight = static_cast<int64_t>(ncr->bytes_waiting()) * 60 + time_weight;
         if (to_call.at(nn).weight_ < bytes_weight) {
           to_call[nn] = NodeAndWeight(nn, ncor.sysnum, bytes_weight);
         }
@@ -570,7 +570,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   a()->localIO()->PutsXYA(14, 3, color, fmt::format("{:<16}", a()->network_name()));
 }
 
-static void fill_call(uint8_t color, int row, const std::vector<CalloutEntry>& entries) {
+static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
   int x = 0, y = 0;
   char s1[6];
 
@@ -590,11 +590,11 @@ static void fill_call(uint8_t color, int row, const std::vector<CalloutEntry>& e
   }
 }
 
-static std::pair<uint16_t, int> ansicallout() {
-  static bool callout_ansi = true;
+static std::pair<int, int> ansicallout() {
+  static auto callout_ansi = true;
   static int color1, color2, color3, color4;
-  static bool got_info = false;
-  int rownum = 0;
+  static auto got_info = false;
+  auto rownum = 0;
   a()->localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
     got_info = true;
@@ -617,25 +617,26 @@ static std::pair<uint16_t, int> ansicallout() {
   if (!callout_ansi) {
     bout.nl();
     bout << "|#2Which system: ";
-    uint16_t sn = input_number<uint16_t>(0, 0, 32767);
+    auto sn = input_number<uint16_t>(0, 0, 32767);
     a()->localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
   }
   int pos = 0, sn = 0, snn = 0;
   std::vector<CalloutEntry> entries;
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->net_networks); nNetNumber++) {
-    set_net_num(nNetNumber);
-    const auto& net = a()->net_networks[nNetNumber];
+  for (int nn = 0; nn < wwiv::stl::ssize(a()->net_networks); nn++) {
+    set_net_num(nn);
+    const auto& net = a()->net_networks[nn];
     Callout callout(net);
     Contact contact(net, false);
 
     const auto& nodemap = callout.callout_config();
     for (const auto& p : nodemap) {
-      auto con = contact.contact_rec_for(p.first);
-      if (!con)
+      auto* const con = contact.contact_rec_for(p.first);
+      if (!con) {
         continue;
-      if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
-        entries.emplace_back(con->systemnumber(), nNetNumber);
+      }
+      if (!(p.second.options & options_hide_pend) && valid_system(p.second.sysnum)) {
+        entries.emplace_back(con->systemnumber(), nn);
       }
     }
     if (entries.size() > MAX_CONNECTS) {
@@ -692,7 +693,7 @@ static std::pair<uint16_t, int> ansicallout() {
       ch = to_upper_case_char(a()->localIO()->GetChar());
       switch (ch) {
       case RARROW: // right arrow
-        if ((pos < ssize(entries) - 1) && (x < 63)) {
+        if (pos < ssize(entries) - 1 && x < 63) {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
@@ -750,7 +751,7 @@ static std::pair<uint16_t, int> ansicallout() {
           fill_call(color4, rownum, entries);
           a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
-        }
+        } break;
       case PAGEUP: // page up
         if (y > 0) {
           a()->localIO()->PutsXYA(6 + x, 5 + y, color4, fmt::sprintf("%-5u", entries[pos].node));
@@ -820,7 +821,7 @@ static int FindNetworkNumberForNode(int sn) {
 }
 
 void force_callout() {
-  auto sn = ansicallout();
+  const auto sn = ansicallout();
   if (sn.first <= 0) {
     return;
   }
@@ -835,7 +836,7 @@ void force_callout() {
   const auto& net = a()->net_networks[network_number];
 
   set_net_num(network_number);
-  Callout callout(net);
+  const Callout callout(net);
 
   if (!allowed_to_call(*callout.net_call_out_for(sn.first), DateTime::now())) {
     return;

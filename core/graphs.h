@@ -18,7 +18,6 @@
 /**************************************************************************/
 #ifndef __INCLUDED_WWIV_GRAPHS_OS_H__
 #define __INCLUDED_WWIV_GRAPHS_OS_H__
-#pragma once
 
 #include <cstdint>
 #include <list>

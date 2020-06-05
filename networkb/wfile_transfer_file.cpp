@@ -17,20 +17,15 @@
 /**************************************************************************/
 #include "networkb/wfile_transfer_file.h"
 
-#include <algorithm>
-#include <chrono>
-#include <cstddef>
-#include <cstring>
-#include <fcntl.h>
-#include <iostream>
-#include <string>
-
 #include "core/crc32.h"
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
-
-#include "core/datetime.h"
 #include "sdk/fido/fido_util.h"
+#include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <string>
 
 using std::clog;
 using std::endl;
@@ -42,8 +37,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<File>&& file)
     : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(),
@@ -81,7 +75,7 @@ bool WFileTransferFile::Delete() {
   return flo_file_->Save();
 }
 
-bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
+bool WFileTransferFile::GetChunk(char* chunk, int start, int size) {
   if (!file_->IsOpen()) {
     if (!file_->Open(File::modeBinary | File::modeReadOnly)) {
       return false;
@@ -102,7 +96,7 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   return file_->Read(chunk, size) == size;
 }
 
-bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
+bool WFileTransferFile::WriteChunk(const char* chunk, int size) {
   if (!file_->IsOpen()) {
     if (file_->Exists()) {
       // Don't overwrite an existing file.  Rename it away to: FILENAME.timestamp
@@ -114,8 +108,7 @@ bool WFileTransferFile::WriteChunk(const char* chunk, size_t size) {
       return false;
     }
   }
-  auto num_written = file_->Write(chunk, size);
-  return num_written == size;
+  return file_->Write(chunk, size) == size;
 }
 
 bool WFileTransferFile::Close() {
@@ -123,5 +116,4 @@ bool WFileTransferFile::Close() {
   return true;
 }
 
-} // namespace net
 } // namespace wwiv

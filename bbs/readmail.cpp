@@ -489,15 +489,15 @@ void readmail(int mode) {
           trim_to_size_ignore_colors(ss.str(), a()->user()->GetScreenChars() - 1);
       bout.bpla(current_line, &abort);
 
-      if ((i == (mw - 1)) && (a()->user()->GetScreenChars() >= 80) && (!abort) &&
-          (a()->mail_who_field_len)) {
-        (okansi()) ? strcpy(s1, "\xC1\xC3\xC4") : strcpy(s1, "++-");
-        std::ostringstream ss;
-        ss << "|#7" << std::string(4, s1[2]) << s1[0];
-        ss << std::string(a()->mail_who_field_len - 4, s1[2]);
-        ss << std::string(1, s1[0]);
-        ss << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]);
-        bout.bpla(ss.str(), &abort);
+      if (i == mw - 1 && a()->user()->GetScreenChars() >= 80 && !abort &&
+          a()->mail_who_field_len) {
+        okansi() ? strcpy(s1, "\xC1\xC3\xC4") : strcpy(s1, "++-");
+        std::ostringstream ss1;
+        ss1 << "|#7" << std::string(4, s1[2]) << s1[0];
+        ss1 << std::string(a()->mail_who_field_len - 4, s1[2]);
+        ss1 << std::string(1, s1[0]);
+        ss1 << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]);
+        bout.bpla(ss1.str(), &abort);
       }
     }
     bout.nl();
@@ -622,7 +622,7 @@ void readmail(int mode) {
       string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       set_net_num(nn);
-      const auto& net = a()->net_networks[nn];
+      auto& net = a()->net_networks[nn];
       i1 = 1;
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
@@ -874,13 +874,13 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             iscan(a()->current_user_sub_num());
             bout << "\r\n\n|#9Message moved.\r\n\n";
-            int nTempNumMsgs = a()->GetNumMessagesInCurrentMessageArea();
-            resynch(&nTempNumMsgs, &p);
-            a()->SetNumMessagesInCurrentMessageArea(nTempNumMsgs);
+            auto temp_num_msgs = a()->GetNumMessagesInCurrentMessageArea();
+            resynch(&temp_num_msgs, &p);
+            a()->SetNumMessagesInCurrentMessageArea(temp_num_msgs);
           } else {
             tmp_disable_conf(false);
           }
-        }
+        } break;
       case 'D': {
         string message;
         if (!okmail) {
@@ -906,7 +906,7 @@ void readmail(int mode) {
         if (!(m.status & status_source_verified) && nn != 255) {
           ssm(m.fromuser, m.fromsys, &net) << message;
         }
-      }
+      } break;
       case 'Z':
         if (!okmail) {
           break;
@@ -1017,7 +1017,7 @@ void readmail(int mode) {
                 auto s = fmt::sprintf("\r\nForwarded to %s from %s.", s1, fwd_name);
 
                 set_net_num(nn);
-                const auto& net = a()->net_networks[nn];
+                net = a()->net_networks[nn];
                 lineadd(&m.msg, s, "email");
                 s = StrCat(fwd_name, "forwarded your mail to", s1);
                 if (!(m.status & status_source_verified)) {

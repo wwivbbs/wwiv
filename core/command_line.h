@@ -18,7 +18,6 @@
 /**************************************************************************/
 #ifndef __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
 #define __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
-#pragma once
 
 #include <map>
 #include <memory>

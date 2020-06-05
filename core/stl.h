@@ -18,12 +18,10 @@
 /**************************************************************************/
 #ifndef __INCLUDED_WWIV_CORE_STL_H__
 #define __INCLUDED_WWIV_CORE_STL_H__
-#pragma once
 
 #include "core/log.h"
 #include "core/strings.h"
 #include <algorithm>
-#include <cstring>
 #include <iterator>
 #include <map>
 #include <string>

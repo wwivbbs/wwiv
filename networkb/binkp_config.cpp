@@ -101,9 +101,9 @@ static net_networks_rec test_net(const string& network_dir) {
 }
 
 // For testing
-BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
+BinkConfig::BinkConfig(int node_number, const wwiv::sdk::Config& config,
                        const string& network_dir)
-    : config_(config), callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number),
+    : config_(config), callout_wwivnet_node_(node_number),
       networks_({test_net(network_dir)}) {
   binkp_.reset(new Binkp(network_dir));
   system_name_ = config.system_name();
@@ -111,7 +111,7 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
   gfiles_directory_ = config.gfilesdir();
 }
 
-BinkConfig::~BinkConfig() {}
+BinkConfig::~BinkConfig() = default;
 
 const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::string& node) const {
   static binkp_session_config_t static_session{};

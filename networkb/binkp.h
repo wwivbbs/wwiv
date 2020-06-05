@@ -97,7 +97,7 @@ private:
   bool process_data(int16_t length, std::chrono::duration<double> d);
 
   bool send_command_packet(uint8_t command_id, const std::string& data);
-  bool send_data_packet(const char* data, std::size_t size);
+  bool send_data_packet(const char* data, int size);
 
   void process_network_files(const wwiv::core::CommandLine& cmdline) const;
 

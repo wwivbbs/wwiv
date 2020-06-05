@@ -27,6 +27,7 @@
 #include <initializer_list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace wwiv {
@@ -48,10 +49,10 @@ public:
   }
   explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
   explicit NetworkContact(const net_contact_rec& ncr): ncr_(to_network_contact_record(ncr)) {}
-  explicit NetworkContact(const wwiv::sdk::network_contact_record& ncr): ncr_(ncr) {}
-  ~NetworkContact() {}
+  explicit NetworkContact(wwiv::sdk::network_contact_record ncr): ncr_(std::move(ncr)) {}
+  ~NetworkContact() = default;
 
-  [[nodiscard]] const std::string address() const { return ncr_.address; }
+  [[nodiscard]] std::string address() const { return ncr_.address; }
   [[nodiscard]] uint16_t systemnumber() const { return ncr_.ncr.systemnumber; }
   [[nodiscard]] uint16_t numcontacts() const { return ncr_.ncr.numcontacts; }
   [[nodiscard]] uint16_t numfails() const { return ncr_.ncr.numfails; }
@@ -69,10 +70,9 @@ public:
   void AddConnect(const wwiv::core::DateTime& t, uint32_t bytes_sent, uint32_t bytes_received);
   void AddFailure(const wwiv::core::DateTime& t);
 
-  const net_contact_rec& ncr() const { return ncr_.ncr; }
+  [[nodiscard]] const net_contact_rec& ncr() const { return ncr_.ncr; }
 
-public:
-  static std::string CreateFakeFtnAddress(uint16_t node);
+  static std::string CreateFakeFtnAddress(int node);
 
 private:
   network_contact_record ncr_{};
@@ -96,7 +96,7 @@ class Contact {
   // Was this list initialized properly.
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   // returns a mutable net_contact_rec for system number "node"
-  [[nodiscard]] NetworkContact* contact_rec_for(uint16_t node);
+  [[nodiscard]] NetworkContact* contact_rec_for(int node);
   [[nodiscard]] NetworkContact* contact_rec_for(const std::string& node);
   void ensure_rec_for(uint16_t node);
   void ensure_rec_for(const std::string& node);
@@ -110,7 +110,7 @@ class Contact {
   void add_failure(const std::string& node, const wwiv::core::DateTime& time);
 
   bool Save();
-  const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
+  [[nodiscard]] const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
   [[nodiscard]] std::string ToString() const;
   [[nodiscard]] std::string full_pathname() const noexcept;
   [[nodiscard]] std::filesystem::path path() const noexcept;

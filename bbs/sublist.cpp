@@ -80,12 +80,12 @@ void old_sublist() {
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
-      std::ostringstream os;
-      os << fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
+      std::ostringstream os1;
+      os1 << fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
       if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
-        os << " - ";
+        os1 << " - ";
       } else {
-        os << "  ";
+        os1 << "  ";
       }
       if (a()->current_net().sysnum || wwiv::stl::ssize(a()->net_networks) > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
@@ -97,17 +97,17 @@ void old_sublist() {
           }
 
           if (a()->subs().sub(a()->usub[i1].subnum).anony & anony_val_net) {
-            os << fmt::sprintf("|17|15[%-8.8s]|#9 ", ss);
+            os1 << fmt::sprintf("|17|15[%-8.8s]|#9 ", ss);
           } else {
-            os << fmt::sprintf("|17|15<%-8.8s>|#9 ", ss);
+            os1 << fmt::sprintf("|17|15<%-8.8s>|#9 ", ss);
           }
         } else {
-          os << std::string(11, ' ');
+          os1 << std::string(11, ' ');
         }
-        os << "|#9";
+        os1 << "|#9";
       }
-      os << stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
-      bout.bpla(os.str(), &abort);
+      os1 << stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
+      bout.bpla(os1.str(), &abort);
       i1++;
     }
     i++;

@@ -15,7 +15,6 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
 #ifndef __INCLUDED_SDK_BINKP_H__
 #define __INCLUDED_SDK_BINKP_H__
 

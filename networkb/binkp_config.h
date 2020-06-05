@@ -75,7 +75,7 @@ private:
   uint16_t callout_wwivnet_node_ = 0;
   std::string callout_fido_node_;
   std::string system_name_;
-  std::string callout_network_name_;
+  std::string callout_network_name_ = "wwivnet";
   std::string sysop_name_;
   std::string gfiles_directory_;
   const wwiv::sdk::Networks networks_;

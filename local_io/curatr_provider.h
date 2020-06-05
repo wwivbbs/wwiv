@@ -28,7 +28,7 @@ class curatr_provider {
 public:
   virtual ~curatr_provider() = default;
   [[nodiscard]] virtual uint8_t curatr() const noexcept = 0;
-  virtual void curatr(uint8_t n) = 0;
+  virtual void curatr(int n) = 0;
 };
 
 } // namespace local_io

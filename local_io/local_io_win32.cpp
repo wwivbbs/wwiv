@@ -292,7 +292,7 @@ void Win32ConsoleIO::PutsXY(int x, int y, const string& text) {
 void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
   GotoXY(x, y);
 
-  auto old_color = curatr();
+  const auto old_color = curatr();
   curatr(a);
   FastPuts(text);
 

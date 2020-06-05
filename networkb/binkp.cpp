@@ -337,7 +337,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   return true;
 }
 
-bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
+bool BinkP::send_data_packet(const char* data, int packet_length) {
   if (!conn_->is_open()) {
     return false;
   }
@@ -392,7 +392,7 @@ BinkState BinkP::WaitConn() {
   string network_addresses;
   if (side_ == BinkSide::ANSWERING) {
     // Present all addresses on answering side.
-    for (const auto net : config_->networks().networks()) {
+    for (const auto& net : config_->networks().networks()) {
       if (net.type == network_type_t::wwivnet) {
         string lower_case_network_name = net.name;
         StringLowerCase(&lower_case_network_name);
@@ -527,8 +527,8 @@ BinkState BinkP::PasswordAck() {
   send_command_packet(BinkpCommands::M_ERR,
                       "Incorrect password received.  Please check your configuration.");
   // Log it if we're in debug logging mode.
-  VLOG(1) << "Password doesn't match.  Received '" << remote_password_ << "' expected '",
-      expected_password, "'.";
+  VLOG(1) << "Password doesn't match.  Received '" << remote_password_ << "' expected '"
+          << expected_password << "'.";
   return BinkState::DONE;
 }
 
@@ -808,10 +808,10 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 bool BinkP::HandleFileGotRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
-  const auto filename = s.at(0);
+  const auto& filename = s.at(0);
   const auto length = to_number<int>(s.at(1));
 
-  auto iter = files_to_send_.find(filename);
+  const auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
     LOG(ERROR) << "File not found: " << filename;
     return false;
@@ -914,10 +914,10 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     }
 
     // Log to net.log
-    auto sec = duration_cast<seconds>(end_time - start_time);
+    const auto sec = duration_cast<seconds>(end_time - start_time);
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
-    NetworkSide network_log_side =
-        (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
+    const auto network_log_side =
+        side_ == BinkSide::ORIGINATING ? NetworkSide::TO : NetworkSide::FROM;
     NetworkLog net_log(config_->gfiles_directory());
     net_log.Log(system_clock::to_time_t(start_time), network_log_side, remote_.wwivnet_node(),
                 bytes_sent_, bytes_received_, sec, remote_.network_name());
@@ -981,9 +981,9 @@ static bool need_network3(const string& dir, int network_version) {
 }
 
 void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const {
-  const string network_name = remote_.network_name();
+  const auto network_name = remote_.network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;
-  int network_number = config_->networks().network_number(network_name);
+  const auto network_number = config_->networks().network_number(network_name);
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
   }
@@ -992,7 +992,7 @@ void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const 
 
 bool ParseFileRequestLine(const string& request_line, string* filename, long* length,
                           time_t* timestamp, long* offset, uint32_t* crc) {
-  vector<string> s = SplitString(request_line, " ");
+  auto s = SplitString(request_line, " ");
   if (s.size() < 3) {
     LOG(ERROR) << "ERROR: INVALID request_line: " << request_line
                << "; had < 3 parts.  # parts: " << s.size();

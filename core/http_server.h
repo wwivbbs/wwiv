@@ -18,7 +18,6 @@
 /**************************************************************************/
 #ifndef __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
 #define __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
-#pragma once
 
 #include <map>
 #include <memory>

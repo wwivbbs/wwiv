@@ -252,7 +252,7 @@ BbsListNet::BbsListNet(std::initializer_list<net_system_list_rec> l) {
 BbsListNet::~BbsListNet() = default;
 
 std::optional<net_system_list_rec> BbsListNet::node_config_for(int node) const {
-  const auto iter = node_config_.find(node);
+  const auto iter = node_config_.find(static_cast<uint16_t>(node));
   if (iter != end(node_config_)) {
     return {iter->second};
   }

@@ -40,7 +40,7 @@ namespace net {
  * 01/03/15 20:26:23 To     1, S : 4k, R : 3k,             0.1 min  wwivnet
  */
 
-enum NetworkSide { FROM, TO };
+enum class NetworkSide { FROM, TO };
 
 class NetworkLog {
  public:

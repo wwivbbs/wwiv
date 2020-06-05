@@ -21,15 +21,12 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include <algorithm>
 #include <chrono>
-#include <cstddef>
 #include <cstring>
 #include <string>
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
-using std::endl;
 using std::string;
 using namespace wwiv::strings;
 
@@ -41,7 +38,7 @@ TransferFile::TransferFile(const string& filename, time_t timestamp, uint32_t cr
 TransferFile::~TransferFile() = default;
 
 string TransferFile::as_packet_data(int size, int offset) const {
-  string dataline = fmt::format("{} {} {} {}", filename_, size, timestamp_, offset);
+  auto dataline = fmt::format("{} {} {} {}", filename_, size, timestamp_, offset);
   if (crc_ != 0) {
     dataline += fmt::sprintf(" %08X", crc_);
   }
@@ -57,18 +54,18 @@ InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const st
 
 InMemoryTransferFile::~InMemoryTransferFile() = default;
 
-bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
-  if ((start + size) > contents_.size()) {
+bool InMemoryTransferFile::GetChunk(char* chunk, int start, int size) {
+  if (start + size > wwiv::strings::ssize(contents_)) {
     LOG(ERROR) << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
         << "values[ start: " << start << "; size: " << size
 	      << "; file_size(): " << file_size() << " ]";
     return false;
   }
-  memcpy(chunk, &contents_.data()[start], size);
+  memcpy(chunk, &contents_[start], size);
   return true;
 }
 
-bool InMemoryTransferFile::WriteChunk(const char* chunk, size_t size) {
+bool InMemoryTransferFile::WriteChunk(const char* chunk, int size) {
   contents_.append(string(chunk, size));
   return true;
 }

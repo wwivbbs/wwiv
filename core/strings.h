@@ -106,7 +106,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   bool starts_with(const std::string& input, const std::string& match);
   bool ends_with(const std::string& input, const std::string& match);
 
-  void StringJustify(std::string* s, std::string::size_type length, char bg,
+  void StringJustify(std::string* s, int length, char bg,
                      JustificationType just_type);
   void StringTrim(char* str);
   void StringTrim(std::string* s);
@@ -134,12 +134,12 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   int size_without_colors(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
-  std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size);
+  std::string trim_to_size_ignore_colors(const std::string& orig, int size);
 
   /**
    * Returns orig padded to size, excluding color codes.
    */
-  std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size);
+  std::string pad_to_ignore_colors(const std::string& orig, int size);
 
   // String length
   std::string::size_type size(const std::string& s);
@@ -154,7 +154,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   int ssize(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
-  std::string trim_to_size(const std::string& orig, std::string::size_type size);
+  std::string trim_to_size(const std::string& orig, int size);
 
   /** Typesafe version of toupper */
   template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>

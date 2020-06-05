@@ -404,7 +404,7 @@ static std::filesystem::path FindTagFileName() {
   return {};
 }
 
-static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title, const string& to_name) {
+static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& to_name) {
   if (a()->subs().subs().empty() && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
@@ -651,7 +651,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-    UpdateMessageBufferTagLine(b, data.is_email(), data.title, data.to_name);
+    UpdateMessageBufferTagLine(b, data.is_email(), data.to_name);
   }
 
   data.text = ostringstream_to_wwivtext(b);

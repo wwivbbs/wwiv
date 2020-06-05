@@ -47,7 +47,7 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
   for (const auto& item : items) {
     longest_line = std::max<int>(longest_line, item.text().size());
     if (item.hotkey() > 0) {
-      hotkeys_.push_back(to_upper_case<char>(item.hotkey()));
+      hotkeys_.push_back(static_cast<char>(item.hotkey()));
     }
   }
   width_ = std::min<int>(max_x, longest_line);
@@ -178,7 +178,7 @@ ListBoxResult ListBox::RunDialog() {
       return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0};
     default:
       ch = toupper(ch);
-      if (hotkeys_.find(ch) != string::npos) {
+      if (hotkeys_.find(static_cast<char>(ch & 0xff)) != string::npos) {
         // Since a hotkey was pressed, update selected_ to match the index
         // of the item containing the hotkey.
         for (size_t i = 0; i < items_.size(); i++) {

@@ -18,10 +18,7 @@
 /**************************************************************************/
 #include "bbs/subreq.h"
 
-#include <string>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
@@ -29,13 +26,13 @@
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
-#include "sdk/subxtr.h"
-
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -87,13 +84,13 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype,
   nh.fromsys = net.sysnum;
   nh.fromuser = 1;
   nh.main_type = main_type;
-  // always use 0 since we use the stype
+  // always use 0 since we use the "stype" field
   nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = daten_t_now();
   nh.method = 0;
   // This is an alphanumeric sub type.
-  string text = stype;
+  auto text = stype;
   text.push_back(0);
   nh.length = text.size();
   send_net(&nh, {}, text, "");
@@ -107,11 +104,11 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype,
   pausescr();
 }
 
-#define OPTION_AUTO 0x0001
-#define OPTION_NO_TAG 0x0002
-#define OPTION_GATED 0x0004
-#define OPTION_NETVAL 0x0008
-#define OPTION_ANSI 0x0010
+static constexpr short OPTION_AUTO = 0x0001;
+static constexpr short OPTION_NO_TAG = 0x0002;
+static constexpr short OPTION_GATED = 0x0004;
+static constexpr short OPTION_NETVAL = 0x0008;
+static constexpr short OPTION_ANSI = 0x0010;
 
 static int find_hostfor(const net_networks_rec& net, const std::string& type, short* ui,
                         char* description, short* opt) {
@@ -230,7 +227,7 @@ void sub_xtr_del(int n, int nn, int f) {
 
   if (xn.host != 0 && valid_system(xn.host)) {
     short opt;
-    int ok = find_hostfor(net, xn.stype, &xn.host, nullptr, &opt);
+    const auto ok = find_hostfor(net, xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
         bout << "|#5Attempt automated drop request? ";
@@ -303,11 +300,11 @@ void sub_xtr_add(int n, int nn) {
       return;
     }
   }
-  xnp.net_num = network_number;
+  xnp.net_num = static_cast<int16_t>(network_number);
   const auto& net = a()->net_networks[network_number];
 
   bout.nl();
-  int stype_len = 7;
+  auto stype_len = 7;
   if (net.type == network_type_t::ftn) {
     bout << "|#2What echomail area: ";
     stype_len = 40;

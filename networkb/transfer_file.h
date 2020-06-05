@@ -21,10 +21,7 @@
 
 #include <chrono>
 #include <cstdint>
-#include <map>
-#include <memory>
 #include <string>
-#include <vector>
 
 namespace wwiv {
 namespace net {
@@ -34,19 +31,19 @@ public:
   TransferFile(const std::string& filename, time_t timestamp, uint32_t crc);
   virtual ~TransferFile();
 
-  const std::string filename() const { return filename_; }
-  virtual const std::string as_packet_data(int offset) const {
+  [[nodiscard]] std::string filename() const { return filename_; }
+  [[nodiscard]] std::string as_packet_data(int offset) const {
     return as_packet_data(file_size(), offset);
   }
 
-  virtual int file_size() const = 0;
+  [[nodiscard]] virtual int file_size() const = 0;
   virtual bool Delete() = 0;
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) = 0;
-  virtual bool WriteChunk(const char* chunk, std::size_t size) = 0;
+  virtual bool GetChunk(char* chunk, int start, int size) = 0;
+  virtual bool WriteChunk(const char* chunk, int size) = 0;
   virtual bool Close() = 0;
 
  protected:
-  virtual std::string as_packet_data(int size, int offset) const final;
+  [[nodiscard]] std::string as_packet_data(int size, int offset) const;
 
   const std::string filename_;
   const time_t timestamp_ = 0;
@@ -61,12 +58,12 @@ public:
   virtual ~InMemoryTransferFile();
 
   // for testing.
-  virtual const std::string& contents() const final { return contents_; }
+  [[nodiscard]] virtual const std::string& contents() const final { return contents_; }
 
-  int file_size() const override final { return contents_.length(); }
-  virtual bool Delete() { contents_.clear(); return true; }
-  bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
-  bool WriteChunk(const char* chunk, std::size_t size) override final;
+  [[nodiscard]] int file_size() const override final { return contents_.length(); }
+  bool Delete() override { contents_.clear(); return true; }
+  bool GetChunk(char* chunk, int start, int size) override final;
+  bool WriteChunk(const char* chunk, int size) override final;
   bool Close() override final;
 
 private:

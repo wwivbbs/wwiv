@@ -74,6 +74,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
 
   bool ii = !sss->empty();
   int i4 = 0;
+  bout << "File Name: " << dest << wwiv::endl;
   do {
     if (ii) {
       bout.nl();

@@ -175,7 +175,7 @@ public:
 
   // curatr_provider
   [[nodiscard]] uint8_t curatr() const noexcept override { return curatr_; }
-  void curatr(uint8_t n) override { curatr_ = n; }
+  void curatr(int n) override { curatr_ = static_cast<uint8_t>(n); }
 
   [[nodiscard]] bool okskey() const noexcept { return okskey_; }
   void okskey(bool n) { okskey_ = n; }

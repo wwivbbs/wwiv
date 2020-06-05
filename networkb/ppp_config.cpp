@@ -27,6 +27,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 using std::map;
 using std::string;
@@ -90,15 +91,15 @@ PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& conf
   ParseAddressesFile(&node_config_, net.dir);
 }
 
-PPPConfig::PPPConfig(int node_number, const string& system_name, const string& network_dir) 
-    : node_(node_number), system_name_(system_name) {
+PPPConfig::PPPConfig(int node_number, string system_name, const string& network_dir)
+    : node_(static_cast<uint16_t>(node_number)), system_name_(std::move(system_name)) {
   ParseAddressesFile(&node_config_, network_dir);
 }
 
-PPPConfig::~PPPConfig() {}
+PPPConfig::~PPPConfig() = default;
 
 const PPPNodeConfig* PPPConfig::ppp_node_config_for(int node) const {
-  auto iter = node_config_.find(node);
+  const auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
   }

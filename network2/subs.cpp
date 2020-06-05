@@ -177,7 +177,7 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 
 bool handle_sub_add_req(Context& context, Packet& p) {
   const auto subtype = SubTypeFromText(p.text());
-  const auto resp = [&](int code) -> bool {
+  const auto resp = [&](uint8_t code) -> bool {
     const string base = (code == sub_adddrop_ok) ? "sa" : "sr";
     const auto response_file = StrCat(base, subtype, ".net");
     string text;
@@ -217,7 +217,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
 
 bool handle_sub_drop_req(Context& context, Packet& p) {
   const auto subtype = SubTypeFromText(p.text());
-  const auto resp = [&](int code) -> bool { 
+  const auto resp = [&](uint8_t code) -> bool { 
     return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype, ""); 
   };
   if (subtype.empty()) {

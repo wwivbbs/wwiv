@@ -56,7 +56,7 @@ constexpr long SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 } // namespace
 
 // static
-std::string NetworkContact::CreateFakeFtnAddress(uint16_t node) {
+std::string NetworkContact::CreateFakeFtnAddress(int node) {
   return wwiv::strings::StrCat("20000:20000/", node);
 }
 
@@ -176,8 +176,8 @@ void NetworkContact::AddFailure(const wwiv::core::DateTime& t) {
   ncr_.ncr.numfails++;
 }
 
-NetworkContact* Contact::contact_rec_for(uint16_t node) {
-  auto key = NetworkContact::CreateFakeFtnAddress(node);
+NetworkContact* Contact::contact_rec_for(int node) {
+  const auto key = NetworkContact::CreateFakeFtnAddress(node);
   return contact_rec_for(key);
 }
 

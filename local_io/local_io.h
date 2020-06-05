@@ -118,7 +118,7 @@ public:
   virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
   virtual wwiv::local_io::curatr_provider* curatr_provider();
   [[nodiscard]] virtual uint8_t curatr() const;
-  virtual void curatr(uint8_t c);
+  virtual void curatr(int c);
 
 private:
   virtual void FastPuts(const std::string& text) = 0;

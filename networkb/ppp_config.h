@@ -42,7 +42,7 @@ class PPPConfig {
  public:
   PPPConfig(const std::string& network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
   // For Testing
-  PPPConfig(int node_number, const std::string& system_name, const std::string& network_dir);
+  PPPConfig(int node_number, std::string system_name, const std::string& network_dir);
   virtual ~PPPConfig();
   const PPPNodeConfig* ppp_node_config_for(int node) const;
 
