@@ -881,6 +881,7 @@ struct userconfrec {
 #define ansir_temp_dir 0x10
 #define ansir_local_only 0x20
 #define ansir_multi_user 0x40
+#define ansir_binary 0x80
 
 // newexternalrec.othr
 #define othr_error_correct 0x0001
@@ -958,6 +959,8 @@ constexpr uint16_t EFLAG_NOSCRIPT = 0x0001;
 constexpr uint16_t  EFLAG_NOHUP = 0x0004;
 // redirect DOS IO to com port
 constexpr uint16_t  EFLAG_COMIO = 0x0008;
+// Binary Mode: Don't expand telnet IAC or LF -> CR/LF Translation
+constexpr uint16_t  EFLAG_BINARY = 0x0010;
 // try running out of net dir first
 constexpr uint16_t  EFLAG_NETPROG = 0x0080;
 // Use Win32 Emulated FOSSIL

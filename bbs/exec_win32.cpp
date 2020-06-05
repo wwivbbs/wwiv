@@ -297,6 +297,8 @@ int exec_cmdline(const string commandLine, int flags) {
   ZeroMemory(&pi, sizeof(pi));
   string workingCommandLine;
 
+  const auto saved_binary_mode = a()->remoteIO()->binary_mode();
+
   bool bShouldUseSync = false;
   bool bUsingSync = false;
   int nSyncMode = 0;
@@ -368,17 +370,10 @@ int exec_cmdline(const string commandLine, int flags) {
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
   to_char_array(szTempWorkingCommandline, workingCommandLine);
-  auto bRetCP = CreateProcess(
-                  nullptr,
-                  szTempWorkingCommandline,
-                  nullptr,
-                  nullptr,
-                  TRUE,
-                  dwCreationFlags,
-                  nullptr, // a()->xenviron not using nullptr causes things to not work.
-                  current_directory.c_str(),
-                  &si,
-                  &pi);
+  const auto bRetCP =
+      CreateProcess(nullptr, szTempWorkingCommandline, nullptr, nullptr, TRUE, dwCreationFlags,
+                    nullptr, // a()->xenviron not using nullptr causes things to not work.
+                    current_directory.c_str(), &si, &pi);
 
   if (!bRetCP) {
     sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
@@ -387,6 +382,8 @@ int exec_cmdline(const string commandLine, int flags) {
     if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
       a()->remoteIO()->open();
     }
+    // Restore old binary mode.
+    a()->remoteIO()->set_binary_mode(saved_binary_mode);
     return -1;
   }
 
@@ -401,7 +398,6 @@ int exec_cmdline(const string commandLine, int flags) {
   CloseHandle(pi.hThread);
 
   if (bUsingSync) {
-    const auto saved_binary_mode = a()->remoteIO()->binary_mode();
     a()->remoteIO()->set_binary_mode(true);
     const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
@@ -415,7 +411,6 @@ int exec_cmdline(const string commandLine, int flags) {
         TerminateProcess(pi.hProcess, 0);
       }
     }
-    a()->remoteIO()->set_binary_mode(saved_binary_mode);
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
@@ -426,6 +421,9 @@ int exec_cmdline(const string commandLine, int flags) {
 
   // Close process and thread handles.
   CloseHandle(pi.hProcess);
+
+  // Restore old binary mode.
+  a()->remoteIO()->set_binary_mode(saved_binary_mode);
 
   // reengage comm stuff
   if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {

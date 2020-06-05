@@ -434,5 +434,8 @@ int ansir_to_flags(uint8_t ansir) {
   if (ansir & ansir_stdio) {
     flags |= EFLAG_STDIO;
   }
+  if (ansir & ansir_binary) {
+    flags |= EFLAG_BINARY;
+  }
   return flags;
 }

@@ -127,8 +127,11 @@ static uint16_t str2spawnopt(const std::string& s) {
   if (ts.find("NOHUP") != std::string::npos) {
     return_val |= EFLAG_NOHUP;
   }
-  if (ts.find("COMIP") != std::string::npos) {
+  if (ts.find("COMIO") != std::string::npos) {
     return_val |= EFLAG_COMIO;
+  }
+  if (ts.find("BINARY") != std::string::npos) {
+    return_val |= EFLAG_BINARY;
   }
   if (ts.find("FOSSIL") != std::string::npos) {
     return_val |= EFLAG_FOSSIL;
