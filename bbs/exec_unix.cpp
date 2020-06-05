@@ -45,6 +45,70 @@
 
 static const char SHELL[] = "/bin/bash";
 
+static int ReadWriteNonBinary(int sock, int master_fd, fd_set& rfd) {
+  if (FD_ISSET(sock, &rfd)) {
+    char input{};
+    read(sock, &input, 1);
+    if (static_cast<uint8_t>(input) == 0xff) {
+      // IAC, skip over them so we ignore them for now
+      // This was causing the do suppress GA (255, 253, 3)
+      // to get interpreted as a SIGINT by dosemu on startup.
+      LOG(INFO) << "IAC";
+      read(sock, &input, 1);
+      read(sock, &input, 1);
+      return 0;
+    }
+    if (input == 3) {
+      LOG(INFO) << "control-c from user, skipping.";
+      return 0;
+    }
+    VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
+	    << "]";
+    write(master_fd, &input, 1);
+    VLOG(3) << "read from socket, write to term: '" << input << "'";
+  }
+  if (FD_ISSET(master_fd, &rfd)) {
+    char input{};
+    read(master_fd, &input, 1);
+    if (input == '\n') {
+      VLOG(1) << "Performed LF -> CRLF translation.";
+      write(sock, "\r\n", 2);
+    } else {
+      VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input)
+	      << "]";
+      write(sock, &input, 1);
+    }
+  }
+  return 0;
+}
+
+static constexpr int READ_SIZE = 1024;
+static int ReadWriteBinary(int sock, int master_fd, fd_set& rfd) {
+  LOG(INFO) << "ReadWriteBinary Loop: << sock: " << sock
+	    << "; master_fd: " << master_fd;
+  if (FD_ISSET(sock, &rfd)) {
+    char input[READ_SIZE + 10];
+    const int num_read = read(sock, &input, READ_SIZE);
+    if (num_read > 0) {
+      const auto w = write(master_fd, &input, num_read);
+      LOG(INFO) << "wrote[master_fd]: " << num_read << ";w:" << w;
+    } else {
+      LOG(ERROR) << "num_read[sock] <= 0; " << num_read;
+    }
+  }
+  if (FD_ISSET(master_fd, &rfd)) {
+    char input[READ_SIZE + 10];
+    const int num_read = read(master_fd, &input, READ_SIZE);
+    if (num_read > 0) {
+      const auto w = write(sock, &input, num_read);
+      LOG(INFO) << "wrote[sock]: " << num_read << ";w:" << w;
+    } else {
+      LOG(ERROR) << "num_read[master_fd] <= 0; " << num_read;
+    }
+  }
+  return 0;
+}
+
 static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   if (cmd.empty()) {
     return 1;
@@ -118,39 +182,13 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
       LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
       break;
     }
-    bool dump = false;
-    if (FD_ISSET(sock, &rfd)) {
-      char input{};
-      read(sock, &input, 1);
-      if (!binary && static_cast<uint8_t>(input) == 0xff) {
-        // IAC, skip over them so we ignore them for now
-        // This was causing the do suppress GA (255, 253, 3)
-        // to get interpreted as a SIGINT by dosemu on startup.
-        LOG(INFO) << "IAC";
-        read(sock, &input, 1);
-        read(sock, &input, 1);
-        continue;
-      }
-      if (!binary && input == 3) {
-        LOG(INFO) << "control-c from user, skipping.";
-        dump = true;
-        continue;
-      }
-      VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
-              << "]";
-      write(master_fd, &input, 1);
-      VLOG(3) << "read from socket, write to term: '" << input << "'";
-    }
-    if (FD_ISSET(master_fd, &rfd)) {
-      char input{};
-      read(master_fd, &input, 1);
-      if (!binary && input == '\n') {
-	VLOG(1) << "Performed LF -> CRLF translation.";
-        write(sock, "\r\n", 2);
+
+    if (master_fd != -1) {
+      // Only do this in STDIO mode.
+      if (binary) {
+	ReadWriteBinary(sock, master_fd, rfd);
       } else {
-        VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input)
-                << "]";
-        write(sock, &input, 1);
+	ReadWriteNonBinary(sock, master_fd, rfd);
       }
     }
   }
