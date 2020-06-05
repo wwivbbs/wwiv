@@ -370,7 +370,8 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
-  const auto& net = a()->net_networks[nFromNetworkNumber];
+  const auto& from_net = a()->net_networks[nFromNetworkNumber];
+  const auto& to_net = a()->net_networks[nNetNumber];
 
   if (strlen(messageText) >= 80) {
     return;
@@ -393,27 +394,27 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
     qn[0] = on[0] = '\0';
 
-    if (nFromNetworkNumber == -1 || nh->fromsys == net.sysnum) {
+    if (nFromNetworkNumber == -1 || nh->fromsys == from_net.sysnum) {
 
       strcpy(newname, nm);
       ss = strrchr(newname, '@');
       if (ss) {
-        sprintf(ss + 1, "%u", net.sysnum);
+        sprintf(ss + 1, "%u", to_net.sysnum);
         ss = strrchr(nm, '@');
         if (ss) {
           ++ss;
-          while ((*ss >= '0') && (*ss <= '9')) {
+          while (*ss >= '0' && *ss <= '9') {
             ++ss;
           }
           strcat(newname, ss);
         }
         strcat(newname, "\r\n");
-        nh->fromsys = net.sysnum;
+        nh->fromsys = to_net.sysnum;
       }
     } else {
-      if ((nm[0] == '`') && (nm[1] == '`')) {
+      if (nm[0] == '`' && nm[1] == '`') {
         for (i = strlen(nm) - 2; i > 0; i--) {
-          if ((nm[i] == '`') && (nm[i + 1] == '`')) {
+          if (nm[i] == '`' && nm[i + 1] == '`') {
             break;
           }
         }
@@ -429,10 +430,10 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       if (qn[0] == 0) {
         ss = strrchr(nm, '#');
         if (ss) {
-          if ((ss[1] >= '0') && (ss[1] <= '9')) {
+          if (ss[1] >= '0' && ss[1] <= '9') {
             *ss = 0;
             ss--;
-            while ((ss > nm) && (*ss == ' ')) {
+            while (ss > nm && *ss == ' ') {
               *ss = 0;
               ss--;
             }
@@ -446,26 +447,26 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
           }
         }
       }
-      if ((on[0] == 0) && (nh->fromuser == 0)) {
+      if (on[0] == 0 && nh->fromuser == 0) {
         strcpy(on, nm + i);
       }
-      if (net.sysnum == 1 && on[0] &&
-          net.type == network_type_t::internet) {
+      if (from_net.sysnum == 1 && on[0] &&
+          from_net.type == network_type_t::internet) {
         sprintf(newname, "%s%s", qn, on);
-      } else if (net.sysnum == 1 && on[0] &&
-                 net.type == network_type_t::news) {
+      } else if (from_net.sysnum == 1 && on[0] &&
+                 from_net.type == network_type_t::news) {
         sprintf(newname, "%s%s", qn, on);
       }
       else {
         if (on[0]) {
           sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
-                  net.name);
+                  from_net.name);
         } else {
           sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
-                  net.name);
+                  from_net.name);
         }
       }
-      nh->fromsys = net.sysnum;
+      nh->fromsys = to_net.sysnum;
       nh->fromuser = 0;
     }
 
@@ -473,7 +474,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
       nh->length += subtype_or_author.size() + 1;
     }
-    const auto packet_filename = StrCat(net.dir, "p1", a()->network_extension());
+    const auto packet_filename = StrCat(to_net.dir, "p1", a()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       file.Seek(0L, File::Whence::end);
@@ -487,7 +488,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       if (nh->list_len) {
         file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
       }
-      if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
+      if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
         file.Write(subtype_or_author.c_str(), subtype_or_author.size() + 1);
       }
       file.Write(pszOriginalText, strlen(pszOriginalText) + 1);
