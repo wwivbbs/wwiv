@@ -45,14 +45,18 @@
 
 static const char SHELL[] = "/bin/bash";
 
-static int UnixSpawn(const std::string& cmd, int flags) {
+static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   if (cmd.empty()) {
     return 1;
   }
   LOG(INFO) << "Exec: '" << cmd << "' errno: " << errno;
-  const int sock = a()->remoteIO()->GetDoorHandle();
+
   int pid = -1;
   int master_fd = -1;
+  bool binary = (flags & EFLAG_BINARY);
+  if (binary) {
+    LOG(INFO) << "Binary mode.";
+  }
   if (flags & EFLAG_STDIO) {
     LOG(INFO) << "Exec using STDIO: '" << cmd << "' errno: " << errno;
     struct winsize ws {};
@@ -118,7 +122,7 @@ static int UnixSpawn(const std::string& cmd, int flags) {
     if (FD_ISSET(sock, &rfd)) {
       char input{};
       read(sock, &input, 1);
-      if (static_cast<uint8_t>(input) == 0xff) {
+      if (!binary && static_cast<uint8_t>(input) == 0xff) {
         // IAC, skip over them so we ignore them for now
         // This was causing the do suppress GA (255, 253, 3)
         // to get interpreted as a SIGINT by dosemu on startup.
@@ -127,7 +131,7 @@ static int UnixSpawn(const std::string& cmd, int flags) {
         read(sock, &input, 1);
         continue;
       }
-      if (input == 3) {
+      if (!binary && input == 3) {
         LOG(INFO) << "control-c from user, skipping.";
         dump = true;
         continue;
@@ -140,7 +144,8 @@ static int UnixSpawn(const std::string& cmd, int flags) {
     if (FD_ISSET(master_fd, &rfd)) {
       char input{};
       read(master_fd, &input, 1);
-      if (input == '\n') {
+      if (!binary && input == '\n') {
+	VLOG(1) << "Performed LF -> CRLF translation.";
         write(sock, "\r\n", 2);
       } else {
         VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input)
@@ -179,7 +184,7 @@ int exec_cmdline(const std::string cmdline, int flags) {
     a()->remoteIO()->close(true);
   }
 
-  auto i = UnixSpawn(cmdline, flags);
+  auto i = UnixSpawn(cmdline, flags, a()->remoteIO()->GetDoorHandle());
 
   // reengage comm stuff
   if (a()->context().ok_modem_stuff()) {
