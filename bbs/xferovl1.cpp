@@ -58,8 +58,7 @@
 static const int INDENTION = 24;
 
 extern int foundany;
-static const unsigned char* invalid_chars =
-    (unsigned char*)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
+static const char* invalid_chars = "Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using std::string;
 using wwiv::sdk::files::FileName;
@@ -192,87 +191,76 @@ bool valid_desc(const string& description) {
   return false;
 }
 
+static std::string fixup_diz_string(const std::string& orig) {
+  auto s{orig};
+  std::replace(s.begin(), s.end(), '\x0c', ' ');
+  std::replace(s.begin(), s.end(), '\x1a', ' ');
+  return s;
+}
+
+static bool has_arc_cmd_for_ext(const std::string& ext) {
+  for (auto i = 0; i < MAX_ARCS; i++) {
+    if (iequals(ext, a()->arcs[i].extension)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // TODO(rushfan): This is probably completely broken
 bool get_file_idz(uploadsrec* u, int dn) {
-  char* b;
-
+  auto success = false;
   if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
     return false;
   }
   const auto pfn = PathFilePath(a()->directories[dn].path, FileName(u->filename));
-  const auto t = DateTime::from_time_t(File::creation_time(pfn))
-      .to_string(DateTime::now().to_string("%m/%d/%y"));
+  const auto t = DateTime::from_time_t(File::creation_time(pfn)).to_string("%m/%d/%y");
   to_char_array(u->actualdate, t);
-  {
-    auto ufn = FileName(u->filename).unaligned_filename();
-    auto* ss = strchr(ufn.c_str(), '.');
-    if (ss == nullptr) {
-      return false;
-    }
-    ++ss;
-    bool ok = false;
-    for (auto i = 0; i < MAX_ARCS; i++) {
-      if (!ok) {
-        ok = iequals(ss, a()->arcs[i].extension);
-      }
-    }
-    if (!ok) {
-      return false;
-    }
+  auto ufn = std::filesystem::path(FileName(u->filename).unaligned_filename());
+  if (!ufn.has_extension()) {
+    return false;
+  }
+  if (!has_arc_cmd_for_ext(ufn.extension().string().substr(1))) {
+    return false;
   }
 
   File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
   File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
 
-  std::string cmd;
-  File::set_current_directory(a()->directories[dn].path);
-  {
-    File file(PathFilePath(File::current_directory(), FileName(u->filename)));
-    a()->CdHome();
-    cmd = get_arc_cmd(file.full_pathname(), 1, "FILE_ID.DIZ DESC.SDI");
-  }
-  File::set_current_directory(a()->temp_directory());
-  ExecuteExternalProgram(cmd, EFLAG_NOHUP);
+  const auto p = PathFilePath(a()->directories[dn].path, FileName(u->filename));
+  const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
+
+  ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   a()->CdHome();
   auto diz_fn = PathFilePath(a()->temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
     diz_fn = PathFilePath(a()->temp_directory(), DESC_SDI);
   }
   if (File::Exists(diz_fn)) {
-    // TODO(rushfan): Change to TextFile::ReadTextIntoVector and parse that way.
     bout.nl();
     bout << "|#9Reading in |#2" << diz_fn.filename().string() << "|#9 as extended description...";
-    string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
-    if (!ss.empty()) {
+    auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
+    if (!old_ext.empty()) {
       a()->current_file_area()->DeleteExtendedDescription(u->filename);
     }
-    if ((b = static_cast<char*>(BbsAllocA(a()->max_extend_lines * 256 + 1))) == nullptr) {
+    TextFile file(diz_fn, "rt");
+    auto lines = file.ReadFileIntoVector();
+    if (lines.empty()) {
       return false;
     }
-    File file(diz_fn);
-    file.Open(File::modeBinary | File::modeReadOnly);
-    if (file.length() < (a()->max_extend_lines * 256)) {
-      auto lFileLen = file.length();
-      file.Read(b, lFileLen);
-      b[lFileLen] = 0;
-    } else {
-      file.Read(b, a()->max_extend_lines * 256);
-      b[a()->max_extend_lines * 256] = 0;
-    }
-    file.Close();
+    auto iter = std::begin(lines);
     if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
-      ss = strtok(b, "\n");
+      auto ss = *iter;
       if (!ss.empty()) {
         for (auto& s : ss) {
-          if (strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), s) !=
-              nullptr &&
-              s != CZ) {
-            s = '\x20';
+          if (strchr((char*)invalid_chars, s) != nullptr && s != CZ) {
+            s = ' ';
           }
         }
         if (!valid_desc(ss)) {
           do {
-            ss = strtok(nullptr, "\n");
+            ++iter;
+            ss = *iter;
           }
           while (!valid_desc(ss));
         }
@@ -280,26 +268,26 @@ bool get_file_idz(uploadsrec* u, int dn) {
       if (ss.back() == '\r') {
         ss.pop_back();
       }
+      success = true;
       sprintf(u->description, "%.55s", ss.c_str());
-      ss = strtok(nullptr, "");
+      ++iter;
     } else {
-      ss = b;
+      iter = std::begin(lines);
+    }
+    std::string ss;
+    for (; iter != std::end(lines); ++iter) {
+      ss.append(fixup_diz_string(*iter));
     }
     if (!ss.empty()) {
-      for (auto i = ss.size() - 1; i > 0; i--) {
-        if (ss[i] == CZ || ss[i] == 12) {
-          ss[i] = '\x20';
-        }
-      }
       a()->current_file_area()->AddExtendedDescription(u->filename, ss);
       u->mask |= mask_extended;
     }
-    free(b);
+    success = true;
     bout << "Done!\r\n";
   }
   File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
   File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
-  return true;
+  return success;
 }
 
 int read_idz_all() {
@@ -900,7 +888,7 @@ void download() {
   }
   bout << "|#5Hang up after transfer? ";
   bool had = yesno();
-  int ip = get_protocol(xf_down_batch);
+  int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {

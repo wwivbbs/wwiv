@@ -206,7 +206,7 @@ void giveup_timeslice() {
 }
 
 std::string stripfn(const std::string& file_name) {
-  return std::string(stripfn(file_name));
+  return std::string(stripfn(file_name.c_str()));
 }
 
 char* stripfn(const char* file_name) {

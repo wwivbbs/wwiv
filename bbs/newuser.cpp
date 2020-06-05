@@ -738,9 +738,9 @@ void DoFullNewUser() {
   if (yesno()) {
     bout.nl();
     bout << "Enter your default protocol, or 0 for none.\r\n\n";
-    int nDefProtocol = get_protocol(xf_down);
-    if (nDefProtocol) {
-      u->SetDefaultProtocol(nDefProtocol);
+    const auto protocol = get_protocol(xfertype::xf_down);
+    if (protocol) {
+      u->SetDefaultProtocol(protocol);
     }
   }
 }

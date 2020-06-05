@@ -54,11 +54,12 @@ const unsigned int GetTimeLeft();
  *  %%       A single '%'                          "%"
  *  %1-%5    Specified passed-in parameter
  *  %A       callinfo full pathname                "c:\wwiv\temp\callinfo.bbs"
+ *  %B       Full path to BATCH instance directory "C:\wwiv\e\1\batch"
  *  %C       chain.txt full pathname               "c:\wwiv\temp\chain.txt"
  *  %D       doorinfo full pathname                "c:\wwiv\temp\dorinfo1.def"
  *  %E       door32.sys full pathname              "C:\wwiv\temp\door32.sys"
  *  %H       Socket Handle                         "1234"
- *  %I       Full Path to TEMP instance directory  "C:\wwiv\temp"
+ *  %I       Full Path to TEMP instance directory  "C:\wwiv\e\1\temp"
  *  %K       gfiles comment file for archives      "c:\wwiv\gfiles\comment.txt"
  *  %M       Modem BPS rate                         "38400"
  *  %N       Instance number                       "1"
@@ -95,6 +96,9 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
       // call-specific numbers
       case 'A':
         os << create_dropfile_filename(drop_file_t::CALLINFO_BBS);
+        break;
+      case 'B':
+        os << a()->batch_directory();
         break;
       case 'C':
         os << create_dropfile_filename(drop_file_t::CHAIN_TXT);

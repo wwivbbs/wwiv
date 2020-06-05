@@ -39,7 +39,8 @@ std::tuple<dsz_logline_t, std::string, int> handle_dszline(const std::string& l)
   }
   const auto code = parts.at(0).front();
   const auto cps = to_number<int>(parts.at(4));
-  const auto fn = wwiv::sdk::files::align(parts.at(10));
+  const std::filesystem::path p(parts.at(10));
+  const auto fn = p.has_filename() ? wwiv::sdk::files::align(p.filename().string()) : "";
 
   switch (code) {
   case 'Z':

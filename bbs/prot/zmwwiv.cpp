@@ -26,6 +26,7 @@
 #include <chrono>
 #include <cstdarg>
 #include <cstring>
+#include <filesystem>
 
 using std::chrono::milliseconds;
 using namespace wwiv::core;
@@ -53,7 +54,7 @@ static void ProcessLocalKeyDuringZmodem() {
   }
 }
 
-bool NewZModemSendFile(const std::string& fn) {
+bool NewZModemSendFile(const std::filesystem::path& path) {
   ZModem info{};
   info.ifd = info.ofd = -1;
   info.zrinitflags = 0;
@@ -78,8 +79,8 @@ bool NewZModemSendFile(const std::string& fn) {
   int f3 = 0;
   int nFilesRem = 0;
   int nBytesRem = 0;
-  char file_name[255];
-  to_char_array(file_name, fn);
+  char file_name[1024]; // was MAX_PATH
+  to_char_array(file_name, path.string());
   zmodemlog("NewZModemSendFile: About to call ZmodemTFile\n");
   done = ZmodemTFile(file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info);
   zmodemlog("NewZModemSendFile: After ZmodemTFile; done=%d\n", done);
@@ -116,10 +117,10 @@ bool NewZModemSendFile(const std::string& fn) {
     done = doIO(&info);
   }
 
-  return (done == ZmDone) ? true : false;
+  return done == ZmDone;
 }
 
-bool NewZModemReceiveFile(const char* file_name) {
+bool NewZModemReceiveFile(const std::string& file_name) {
   ZModem info{};
   info.ifd = info.ofd = -1;
   info.zrinitflags = 0;

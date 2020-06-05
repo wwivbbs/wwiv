@@ -877,7 +877,7 @@ void xfer_defaults() {
     case '2':
       bout.nl(2);
       bout << "|#9Enter your default protocol, |#20|#9 for none.\r\n\n";
-      i = get_protocol(xf_down);
+      i = get_protocol(xfertype::xf_down);
       if (i >= 0) {
         a()->user()->SetDefaultProtocol(i);
       }

@@ -40,7 +40,8 @@ using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-bool NewZModemSendFile(const std::string& file_name);
+// TODO(rushfan) Make zmwwiv.h?
+bool NewZModemSendFile(const std::filesystem::path& path);
 
 // from sr.cpp
 extern unsigned char checksum;
@@ -82,7 +83,7 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   crc = 0;
   checksum = 0;
   for (int i = 0; i < nBlockSize; i++) {
-    char ch = b[i];
+    const char ch = b[i];
     bout.rputch(ch);
     calc_CRC(ch);
   }
@@ -96,7 +97,7 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   bout.dump();
 }
 
-char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const std::string& file_name,
+char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const wwiv::sdk::files::FileName& file_name,
             int *terr, bool *abort) {
   char b[1025];
 
@@ -109,18 +110,18 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   }
   if (nb) {
     file.Seek(pos, File::Whence::begin);
-    auto num_read = file.Read(b, nb);
+    const auto num_read = file.Read(b, nb);
     for (int i = num_read; i < nb; i++) {
       b[i] = '\0';
     }
   } else if (block_type == 5) {
     memset(b, 0, 128);
     nb = 128;
-    to_char_array(b, stripfn(file_name));
+    to_char_array(b, file_name.unaligned_filename());
     // We needed this cast to (long) to compile with XCode 1.5 on OS X
     const auto sb = fmt::sprintf("%ld %ld", pos, static_cast<long>(file.last_write_time()));
 
-    strcpy(&(b[strlen(b) + 1]), sb.c_str());
+    strcpy(&b[strlen(b) + 1], sb.c_str());
     b[127] = static_cast<unsigned char>((static_cast<int>(pos + 127) / 128) >> 8);
     b[126] = static_cast<unsigned char>((static_cast<int>(pos + 127) / 128) & 0x00ff);
   }
@@ -160,9 +161,9 @@ bool okstart(bool *use_crc, bool *abort) {
   bool ok = false;
   bool done = false;
 
-  seconds s90(90);
+  const seconds s90(90);
   while (steady_clock::now() - d < s90 && !done && !a()->hangup_ && !*abort) {
-    char ch = gettimeout(91, abort);
+    const char ch = gettimeout(91, abort);
     if (ch == 'C') {
       *use_crc = true;
       ok = true;
@@ -182,10 +183,10 @@ bool okstart(bool *use_crc, bool *abort) {
 }
 
 static int GetXYModemBlockSize(bool bBlockSize1K) {
-  return (bBlockSize1K) ? 1024 : 128;
+  return bBlockSize1K ? 1024 : 128;
 }
 
-void xymodem_send(const std::string& file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
+void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent, bool use_crc, bool use_ymodem,
                   bool use_ymodemBatch) {
   char ch;
 
@@ -193,8 +194,9 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
   char byBlockNumber = 1;
   bool abort = false;
   int terr = 0;
-  const auto working_filename = stripfn(file_name);
-  File file(working_filename);
+  wwiv::sdk::files::FileName fn(wwiv::sdk::files::align(path.filename().string()));
+
+  File file(path);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     if (!use_ymodemBatch) {
       bout << "\r\nFile not found.\r\n\n";
@@ -208,7 +210,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
     file_size = 1;
   }
 
-  double tpb = (12.656f / static_cast<double>(a()->modem_speed_));
+  const auto tpb = 12.656f / static_cast<double>(a()->modem_speed_);
 
   if (!use_ymodemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
@@ -223,19 +225,19 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
   a()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  a()->localIO()->PutsXY(65, 0, working_filename);
+  a()->localIO()->PutsXY(65, 0, path.filename().string());
   a()->localIO()->PutsXY(65, 2, fmt::format("{} - {}k", (file_size + 127) / 128, bytes_to_k(file_size)));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;
   }
   if (use_ymodem && !abort && !a()->hangup_) {
-    ch = send_b(file, file_size, 5, 0, &use_crc, working_filename, &terr, &abort);
+    ch = send_b(file, file_size, 5, 0, &use_crc, fn, &terr, &abort);
     if (ch == CX) {
       abort = true;
     }
     if (ch == CU) {
-      send_b(file, 0L, 3, 0, &use_crc, working_filename, &terr, &abort);
+      send_b(file, 0L, 3, 0, &use_crc, fn, &terr, &abort);
       abort = true;
     }
   }
@@ -250,14 +252,14 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
     a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");
 
-    ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, working_filename, &terr,
+    ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, fn, &terr,
                 &abort);
     if (ch == CX) {
       abort = true;
     } else if (ch == CU) {
       sleep_for(seconds(1));
       bout.dump();
-      send_b(file, 0L, 3, 0, &use_crc, working_filename, &terr, &abort);
+      send_b(file, 0L, 3, 0, &use_crc, fn, &terr, &abort);
       abort = true;
     } else {
       ++byBlockNumber;
@@ -265,7 +267,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
     }
   }
   if (!a()->hangup_ && !abort) {
-    send_b(file, 0L, 2, 0, &use_crc, working_filename, &terr, &abort);
+    send_b(file, 0L, 2, 0, &use_crc, fn, &terr, &abort);
   }
   if (!abort) {
     *sent = true;
@@ -277,7 +279,7 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
       *percent = 1.0;
     } else {
       cp -= GetXYModemBlockSize(bUse1kBlocks);
-      *percent = ((double)(cp)) / ((double) file_size);
+      *percent = static_cast<double>(cp) / static_cast<double>(file_size);
     }
   }
   file.Close();
@@ -287,13 +289,13 @@ void xymodem_send(const std::string& file_name, bool *sent, double *percent, boo
   }
 }
 
-void zmodem_send(const string& file_name, bool *sent, double *percent) {
+void zmodem_send(const std::filesystem::path& path, bool *sent, double *percent) {
   *sent = false;
   *percent = 0.0;
 
   const auto old_binary_mode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);
-  auto result = NewZModemSendFile(wwiv::sdk::files::unalign(file_name));
+  const auto result = NewZModemSendFile(path);
   a()->remoteIO()->set_binary_mode(old_binary_mode);
 
   if (result) {

@@ -50,9 +50,6 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   if (nFlags & EFLAG_NETPROG) {
     write_inst(INST_LOC_NET, a()->net_num() + 1, INST_FLAGS_NONE);
   }
-
-  // Make sure our working dir is back to the BBS dir.
-  a()->CdHome();
   
   if (nFlags & EFLAG_TEMP_DIR) {
     // If EFLAG_TEMP_DIR is specified, we should set the working directory
@@ -60,6 +57,9 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
     if (!File::set_current_directory(a()->temp_directory())) {
       LOG(ERROR) << "Unable to set working directory to: " << a()->temp_directory();
     }
+  } else {
+    // Make sure our working dir is back to the BBS dir.
+    a()->CdHome();
   }
 
   // Some LocalIO implementations (Curses) needs to disable itself before

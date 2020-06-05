@@ -40,7 +40,7 @@ using namespace std::chrono;
 using namespace wwiv::strings;
 
 // From zmwwiv.cpp
-bool NewZModemReceiveFile(const char* file_name);
+bool NewZModemReceiveFile(const std::string& file_name);
 
 // from sr.cpp
 extern unsigned char checksum;
@@ -339,12 +339,12 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
   }
 }
 
-void zmodem_receive(const string& filename, bool* received) {
-  string local_filename(wwiv::sdk::files::unalign(filename));
+void zmodem_receive(const std::string& filename, bool* received) {
+  const auto local_filename(wwiv::sdk::files::unalign(filename));
 
-  bool bOldBinaryMode = a()->remoteIO()->binary_mode();
+  const bool bOldBinaryMode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);
-  bool bResult = NewZModemReceiveFile(local_filename.c_str());
+  const bool bResult = NewZModemReceiveFile(local_filename);
   a()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   *received = (bResult) ? true : false;

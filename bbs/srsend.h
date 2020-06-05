@@ -19,13 +19,15 @@
 #define __INCLUDED_BBS_SRSEND_H__
 
 #include "core/file.h"
+#include "sdk/files/file_record.h"
+#include <filesystem>
 
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber);
 char send_b(wwiv::core::File& file, long pos, int block_type, char byBlockNumber, bool* use_crc,
-            const std::string& file_name, int* terr, bool* abort);
+            const wwiv::sdk::files::FileName& file_name, int* terr, bool* abort);
 bool okstart(bool *use_crc, bool *abort);
-void xymodem_send(const std::string& file_name, bool* sent, double* percent, bool use_crc,
+void xymodem_send(const std::filesystem::path& path, bool* sent, double* percent, bool use_crc,
                   bool use_ymodem, bool use_ymodemBatch);
-void zmodem_send(const std::string& file_name, bool *sent, double *percent);
+void zmodem_send(const std::filesystem::path& path, bool *sent, double *percent);
 
 #endif  // __INCLUDED_BBS_SRSEND_H__

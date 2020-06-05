@@ -426,7 +426,7 @@ static void end_ymodem_batch() {
       File::Remove(fn);
       File nullFile(fn);
       int terr = 0;
-      send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
+      send_b(nullFile, 0L, 3, 0, &ucrc, files::FileName(""), &terr, &abort);
       abort = true;
       File::Remove(fn);
     }
@@ -732,7 +732,7 @@ int batchdl(int mode) {
         bout << "|#5Hang up after transfer? ";
         const auto hangup_after_dl = yesno();
         bout.nl(2);
-        int i = get_protocol(xf_up_batch);
+        int i = get_protocol(xfertype::xf_up_batch);
         if (i > 0) {
           dszbatchul(hangup_after_dl, a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      a()->externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
@@ -761,7 +761,7 @@ int batchdl(int mode) {
         bout << "|#5Hang up after transfer? ";
         const auto hangup_after_dl = yesno();
         bout.nl();
-        int i = get_protocol(xf_down_batch);
+        int i = get_protocol(xfertype::xf_down_batch);
         if (i > 0) {
           if (i == WWIV_INTERNAL_PROT_YMODEM) {
             if (!a()->over_intern.empty() && a()->over_intern[2].othr & othr_override_internal &&

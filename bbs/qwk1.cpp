@@ -229,7 +229,7 @@ void qwk_gather_email(qwk_junk* qwk_info) {
     // had crash in stripcolors since this won't null terminate.
     // qwk_info->email_title[25] = 0;
 
-    i = ((ability_read_email_anony & ss.ability) != 0);
+    i = (ability_read_email_anony & ss.ability) != 0;
 
     if ((m.fromsys) && (!m.fromuser)) {
       grab_user_name(&(m.msg), "email", network_number_from(&m));
@@ -339,7 +339,7 @@ string qwk_which_protocol() {
 
 static void qwk_receive_file(const std::string& fn, bool* received, int i) {
   if (i <= 1 || i == 5) {
-    i = get_protocol(xf_up_temp);
+    i = get_protocol(xfertype::xf_up_temp);
   }
 
   switch (i) {

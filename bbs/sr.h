@@ -18,9 +18,10 @@
 #ifndef __INCLUDED_BBS_SR_H__
 #define __INCLUDED_BBS_SR_H__
 
+#include <filesystem>
 #include <string>
 
-enum xfertype {
+enum class xfertype {
   xf_up,
   xf_down,
   xf_up_temp,
@@ -32,17 +33,16 @@ enum xfertype {
 
 void calc_CRC(unsigned char b);
 char gettimeout(long d, bool *abort);
-int extern_prot(int nProtocolNum, const std::string& pfile_nameToSend, bool bSending);
+int extern_prot(int nProtocolNum, const std::filesystem::path& path, bool bSending);
 bool ok_prot(int nProtocolNum, xfertype xt);
 std::string prot_name(int num);
 int  get_protocol(xfertype xt);
-void ascii_send(const std::string& file_name, bool* sent, double* percent);
-void maybe_internal(const std::string& file_name, bool* xferred, double* percent, bool bSend,
+void ascii_send(const std::filesystem::path& path, bool* sent, double* percent);
+void maybe_internal(const std::filesystem::path& path, bool* xferred, double* percent, bool bSend,
                     int prot);
-void send_file(const std::string& file_name, bool* sent, bool* abort, const std::string& sfn,
-               int dn,
-               long fs);
-void receive_file(const std::string& file_name, int* received, const std::string& sfn, int dn);
+void send_file(const std::filesystem::path& path, bool* sent, bool* abort,
+               const std::string& sfn, int dn, long fs);
+void receive_file(const std::filesystem::path& path, int* received, const std::string& sfn, int dn);
 
 
 #endif  // __INCLUDED_BBS_SR_H__

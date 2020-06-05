@@ -90,6 +90,7 @@
 * send_file's sfn should be an aligned filename, so maybe use FileName Also use path
   where appropriate for send_file, xymodem_send, maybe_internal, etc.
 * get rid of stripfn
+* fix get_file_idz
 
 
 ## Open Questions

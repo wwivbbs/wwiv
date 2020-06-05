@@ -774,7 +774,7 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
 
   auto protocol = -1;
   if (a()->user()->data.qwk_protocol <= 1) {
-    protocol = get_protocol(xf_down_temp);
+    protocol = get_protocol(xfertype::xf_down_temp);
   } else {
     protocol = a()->user()->data.qwk_protocol;
   }
@@ -805,12 +805,12 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   }
 }
 
-unsigned short select_qwk_protocol(struct qwk_junk *qwk_info) {
-  const auto protocol = static_cast<unsigned short>(get_protocol(xf_down_temp));
+unsigned short select_qwk_protocol(qwk_junk *qwk_info) {
+  const auto protocol = get_protocol(xfertype::xf_down_temp);
   if (protocol == -1) {
     qwk_info->abort = true;
   }
-  return protocol;
+  return static_cast<unsigned short>(protocol);
 }
 
 qwk_config read_qwk_cfg() {

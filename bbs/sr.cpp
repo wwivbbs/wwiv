@@ -37,10 +37,10 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
-#include "sdk/config.h"
 #include "sdk/names.h"
 #include <algorithm>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -56,12 +56,12 @@ void calc_CRC(unsigned char b) {
   checksum = checksum + b;
 
   crc ^= (static_cast<unsigned short>(b) << 8);
-  for (int i = 0; i < 8; i++) {
+  for (auto i = 0; i < 8; i++) {
     if (crc & 0x8000) {
-      crc = (crc << 1);
+      crc = crc << 1;
       crc ^= 0x1021;
     } else {
-      crc = (crc << 1);
+      crc = crc << 1;
     }
   }
 }
@@ -72,7 +72,7 @@ char gettimeout(long ds, bool *abort) {
     return bgetchraw();
   }
 
-  seconds d(ds);
+  const seconds d(ds);
   const auto d1 = steady_clock::now();
   while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->hangup_ && !*abort) {
     if (a()->localIO()->KeyPressed()) {
@@ -85,11 +85,11 @@ char gettimeout(long ds, bool *abort) {
     }
     CheckForHangup();
   }
-  return (bkbhitraw()) ? bgetchraw() : 0;
+  return bkbhitraw() ? bgetchraw() : 0;
 }
 
 
-int extern_prot(int num, const std::string& send_filename, bool bSending) {
+int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
   char s1[81], s2[81], sx1[21], sx2[21], sx3[21];
 
   if (bSending) {
@@ -98,7 +98,7 @@ int extern_prot(int num, const std::string& send_filename, bool bSending) {
     if (num < 0) {
       strcpy(s1, a()->over_intern[(-num) - 1].sendfn);
     } else {
-      strcpy(s1, (a()->externs[num].sendfn));
+      strcpy(s1, a()->externs[num].sendfn);
     }
   } else {
     bout.nl();
@@ -110,12 +110,12 @@ int extern_prot(int num, const std::string& send_filename, bool bSending) {
     }
   }
   // Use this since fdsz doesn't like 115200
-  auto xfer_speed = std::min<int>(a()->modem_speed_, 57600);
+  const auto xfer_speed = std::min<int>(a()->modem_speed_, 57600);
   sprintf(sx1, "%d", xfer_speed);
   sprintf(sx3, "%d", xfer_speed);
   sx2[0] = '0' + a()->primary_port();
   sx2[1] = '\0';
-  const auto command = stuff_in(s1, sx1, sx2, send_filename, sx3, "");
+  const auto command = stuff_in(s1, sx1, sx2, path.string(), sx3, "");
   if (!command.empty()) {
     a()->ClearTopScreenProtection();
     ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
@@ -134,96 +134,89 @@ int extern_prot(int num, const std::string& send_filename, bool bSending) {
 
 
 bool ok_prot(int num, xfertype xt) {
-  bool ok = false;
-
-  if (xt == xf_none) {
+  if (xt == xfertype::xf_none) {
     return false;
   }
 
-  if (num > 0 && num < (ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS)) {
+  if (num > 0 && num < ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
     switch (num) {
     case WWIV_INTERNAL_PROT_ASCII:
-      if (xt == xf_down || xt == xf_down_temp) {
-        ok = true;
+      if (xt == xfertype::xf_down || xt == xfertype::xf_down_temp) {
+        return true;
       }
       break;
     // Stop using the legacy XModem
     case WWIV_INTERNAL_PROT_XMODEM:
-      ok = false;
-      break;
+      return false;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
     case WWIV_INTERNAL_PROT_ZMODEM:
-      if (xt != xf_up_batch && xt != xf_down_batch) {
-        ok = true;
+      if (xt != xfertype::xf_up_batch && xt != xfertype::xf_down_batch) {
+        return true;
       }
-      if (num == WWIV_INTERNAL_PROT_YMODEM && xt == xf_down_batch) {
-        ok = true;
+      if (num == WWIV_INTERNAL_PROT_YMODEM && xt == xfertype::xf_down_batch) {
+        return true;
       }
-      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_down_batch) {
-        ok = true;
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xfertype::xf_down_batch) {
+        return true;
       }
-      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_temp) {
-        ok = true;
-      }
-      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_batch) {
-        // TODO(rushfan): Internal ZModem doesn't support internal batch uploads
-        // ok = true;
+      if (num == WWIV_INTERNAL_PROT_ZMODEM && xt == xfertype::xf_up_temp) {
+        return true;
       }
       if (num == WWIV_INTERNAL_PROT_ZMODEM && !a()->IsUseInternalZmodem()) {
         // If AllowInternalZmodem is not true, don't allow it.
-        ok = false;
+        return false;
       }
       break;
     case WWIV_INTERNAL_PROT_BATCH:
-      if (xt == xf_up) {
+      if (xt == xfertype::xf_up) {
         for (const auto& e : a()->externs) {
           if (e.receivebatchfn[0]) {
-            ok = true;
+            return true;
           }
         }
-      } else if (xt == xf_down) {
+      } else if (xt == xfertype::xf_down) {
         for (const auto& e : a()->externs) {
           if (e.sendbatchfn[0]) {
-            ok = true;
+            return true;
           }
         }
       }
-      if (xt == xf_up || xt == xf_down) {
-        ok = true;
+      if (xt == xfertype::xf_up || xt == xfertype::xf_down) {
+        return true;
       }
       break;
     default:
       switch (xt) {
-      case xf_up:
-      case xf_up_temp:
+      case xfertype::xf_up:
+      case xfertype::xf_up_temp:
         if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].receivefn[0]) {
-          ok = true;
+          return true;
         }
         break;
-      case xf_down:
-      case xf_down_temp:
+      case xfertype::xf_down:
+      case xfertype::xf_down_temp:
         if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].sendfn[0]) {
-          ok = true;
+          return true;
         }
         break;
-      case xf_up_batch:
+      case xfertype::xf_up_batch:
         if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn[0]) {
-          ok = true;
+          return true;
         }
         break;
-      case xf_down_batch:
+      case xfertype::xf_down_batch:
         if (a()->externs[num - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
-          ok = true;
+          return true;
         }
         break;
-      case xf_none:
+      case xfertype::xf_none:
         break;
       }
       break;
     }
   }
-  return ok;
+  return false;
 }
 
 static char prot_key(int num) {
@@ -255,143 +248,126 @@ std::string prot_name(int num) {
 
 }
 
+struct AvailableProtocol {
+  int protocol_number{-1};
+  char key{0};
+  std::string name;
+};
 
-#define BASE_CHAR '!'
+static constexpr char BASE_CHAR = '!';
 
-int get_protocol(xfertype xt) {
-  char oks[81], ch, oks1[81], ch1, fl[80];
-  int prot;
-
-  if (ok_prot(a()->user()->GetDefaultProtocol(), xt)) {
-    prot = a()->user()->GetDefaultProtocol();
-  } else {
-    prot = 0;
+static char create_default_key(int i) {
+  if (i < 10) {
+    return static_cast<char>('0' + i);
   }
-
-  int cyColorSave = a()->user()->color(8);
-  a()->user()->SetColor(8, 1);
-  int oks1p = 0;
-  oks1[0] = '\0';
-  strcpy(oks, "Q?0");
-  int i1 = strlen(oks);
-  int only = 0;
-  int maxprot = (WWIV_NUM_INTERNAL_PROTOCOLS - 1) + a()->externs.size();
-  for (int i = 1; i <= maxprot; i++) {
-    fl[i] = '\0';
-    if (ok_prot(i, xt)) {
-      if (i < 10) {
-        oks[i1++] = static_cast<char>('0' + i);
-      } else {
-        oks[i1++] = static_cast<char>(BASE_CHAR + i - 10);
-      }
-      if (only == 0) {
-        only = i;
-      } else {
-        only = -1;
-      }
-      if (i >= 3) {
-        ch1 = prot_key(i);
-        if (strchr(oks1, ch1) == 0) {
-          oks1[oks1p++] = ch1;
-          oks1[oks1p] = 0;
-          fl[i] = 1;
-        }
-      }
-    }
-  }
-  oks[i1] = 0;
-  strcat(oks, oks1);
-  if (only > 0) {
-    prot = only;
-  }
-
-  if (only == 0 && xt != xf_none) {
-    bout.nl();
-    bout << "No protocols available for that.\r\n\n";
-    return -1;
-  }
-  std::string allowable{oks};
-  std::string prompt = "Protocol (?=list) : ";
-  
-  if (prot) {
-    const auto ss = prot_name(prot);
-    prompt = fmt::format("Protocol (?=list, <C/R>={}) : ", ss);
-    allowable.push_back('\r');
-  }
-  if (!prot) {
-    bout.nl();
-    bout << "|#3Available Protocols :|#1\r\n\n";
-    bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
-    bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
-    for (int j = 1; j <= maxprot; j++) {
-      if (ok_prot(j, xt)) {
-        ch1 = prot_key(j);
-        if (fl[j] == 0) {
-          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
-                                            prot_name(j));
-        } else {
-          bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
-        }
-      }
-    }
-    bout.nl();
-  }
-  bool done = false;
-  do {
-    bout.nl();
-    bout << "|#7" << prompt;
-    ch = onek(allowable);
-    if (ch == '?') {
-      bout.nl();
-      bout << "|#3Available Protocols :|#1\r\n\n";
-      bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
-      bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
-      for (int j = 1; j <= maxprot; j++) {
-        if (ok_prot(j, xt)) {
-          ch1 = prot_key(j);
-          if (fl[ j ] == 0) {
-            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
-                                              prot_name(j));
-          } else {
-            bout << fmt::sprintf("|#8[|#7%c|#8] |#1%s\r\n", prot_key(j), prot_name(j));
-          }
-        }
-      }
-      bout.nl();
-    } else {
-      done = true;
-    }
-  } while (!done && !a()->hangup_);
-  a()->user()->SetColor(8, cyColorSave);
-  if (ch == RETURN) {
-    return prot;
-  }
-  if (ch >= '0' && ch <= '9') {
-    if (ch != '0') {
-      a()->user()->SetDefaultProtocol(ch - '0');
-    }
-    return ch - '0';
-  }
-  if (ch == 'Q') {
-    return -1;
-  }
-  i1 = ch - BASE_CHAR + 10;
-  a()->user()->SetDefaultProtocol(i1);
-  if (i1 < ssize(a()->externs) + WWIV_NUM_INTERNAL_PROTOCOLS) {
-    return ch - BASE_CHAR + 10;
-  }
-  for (size_t j = 3; j < a()->externs.size() + WWIV_NUM_INTERNAL_PROTOCOLS; j++) {
-    if (prot_key(j) == ch) {
-      return j;
-    }
-  }
-  return -1;
+  return static_cast<char>(BASE_CHAR + i - 10);
 }
 
-void ascii_send(const std::string& file_name, bool* sent, double* percent) {
+class AvailableProtocols {
+public:
+  AvailableProtocols(xfertype t, const std::vector<newexternalrec>& e, wwiv::sdk::User& user)
+      : xt(t), externs(e), u(user) {
+    if (ok_prot(u.GetDefaultProtocol(), xt)) {
+      default_protocol = u.GetDefaultProtocol();
+    }
+
+    const auto maxprot = WWIV_NUM_INTERNAL_PROTOCOLS - 1 + ssize(a()->externs);
+    std::set<char> override_keys;
+    for (auto i = 1; i <= maxprot; i++) {
+      if (!ok_prot(i, xt)) {
+        continue;
+      }
+      auto key = prot_key(i);
+      auto [_, inserted] = override_keys.insert(key);
+      if (!inserted) {
+        key = create_default_key(i);
+      }
+      allowed_keys.push_back(key);
+      AvailableProtocol a;
+      a.key = key;
+      a.name = prot_name(i);
+      a.protocol_number = i;
+      prots.emplace_back(a);
+    }
+
+    if (!default_protocol) {
+      default_protocol = only().value_or(0);
+    }
+    if (default_protocol) {
+      allowed_keys.push_back('\r');
+    }
+  }
+
+  std::optional<int> only() {
+    if (prots.size() != 1) {
+      return std::nullopt;
+    }
+    return prots.front().protocol_number;
+  }
+
+  std::optional<int> protocol_for_key(char key) {
+    if (key == '0' || key == 'Q') {
+      return std::nullopt;
+    }
+    if (key == '\r') {
+      return default_protocol;
+    }
+    for (const auto& p : prots) {
+      if (key == p.key) {
+        if (!u.GetDefaultProtocol()) {
+          u.SetDefaultProtocol(p.protocol_number);
+        }
+        return {p.protocol_number};
+      }
+    }
+    return std::nullopt;
+  }
+
+  int default_protocol{0};
+  std::string allowed_keys{"Q?0"};
+  std::vector<AvailableProtocol> prots;
+  xfertype xt{xfertype::xf_none};
+  const std::vector<newexternalrec> &externs;
+  wwiv::sdk::User& u;
+};
+
+bool show_protocols(const std::vector<AvailableProtocol>& prots) {
+  bout << "|#1Available Protocols:\r\n\n";
+  bout << "|#9[|#2Q|#9] |#9Abort Transfer(s)\r\n";
+  bout << "|#9[|#20|#9] |#9Don't Transfer\r\n";
+
+  for (const auto& p : prots) {
+    bout << fmt::format("|#9[|#2{}|#9] |#9{}\r\n", p.key, p.name);
+  }
+  bout.nl(2);
+  return true;
+}
+
+int get_protocol(xfertype xt) {
+  AvailableProtocols avail(xt, a()->externs, *a()->user());
+  show_protocols(avail.prots);
+
+  while (true) {
+    std::string prompt = "Protocol (?=list) : ";
+
+    if (avail.default_protocol) {
+      const auto dname = prot_name(avail.default_protocol);
+      prompt = fmt::format("Protocol (?=list, <C/R>={}) : ", dname);
+    }
+
+    bout << "|#7" << prompt;
+    const auto ch = onek(avail.allowed_keys);
+    if (ch != '?') {
+      return avail.protocol_for_key(ch).value_or(-1);
+    }
+    show_protocols(avail.prots);
+  }
+}
+
+void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) {
   char b[2048];
 
-  File file(file_name);
+  File file(path);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     auto file_size = file.length();
     file_size = std::max<File::size_type>(file_size, 1);
@@ -425,13 +401,13 @@ void ascii_send(const std::string& file_name, bool* sent, double* percent) {
   }
 }
 
-void maybe_internal(const std::string& file_name, bool* xferred, double* percent, bool bSend,
+void maybe_internal(const std::filesystem::path& path, bool* xferred, double* percent, bool bSend,
                     int prot) {
   if (!a()->over_intern.empty() 
       && a()->over_intern[prot - 2].othr & othr_override_internal
-      && (bSend && a()->over_intern[prot - 2].sendfn[0] ||
-          !bSend && a()->over_intern[prot - 2].receivefn[0])) {
-    if (extern_prot(-(prot - 1), file_name, bSend) == a()->over_intern[prot - 2].ok1) {
+      && ((bSend && a()->over_intern[prot - 2].sendfn[0]) ||
+          (!bSend && a()->over_intern[prot - 2].receivefn[0]))) {
+    if (extern_prot(-(prot - 1), path, bSend) == a()->over_intern[prot - 2].ok1) {
       *xferred = true;
     }
     return;
@@ -444,46 +420,46 @@ void maybe_internal(const std::string& file_name, bool* xferred, double* percent
   if (bSend) {
     switch (prot) {
     case WWIV_INTERNAL_PROT_XMODEM:
-      xymodem_send(file_name, xferred, percent, false, false, false);
+      xymodem_send(path, xferred, percent, false, false, false);
       break;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
-      xymodem_send(file_name, xferred, percent, true, false, false);
+      xymodem_send(path, xferred, percent, true, false, false);
       break;
     case WWIV_INTERNAL_PROT_YMODEM:
-      xymodem_send(file_name, xferred, percent, true, true, false);
+      xymodem_send(path, xferred, percent, true, true, false);
       break;
     case WWIV_INTERNAL_PROT_ZMODEM:
-      zmodem_send(file_name, xferred, percent);
+      zmodem_send(path, xferred, percent);
       break;
     default: ;
     }
   } else {
     switch (prot) {
     case WWIV_INTERNAL_PROT_XMODEM:
-      xymodem_receive(file_name, xferred, false);
+      xymodem_receive(path.filename().string(), xferred, false);
       break;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
+      [[fallthrough]];
     case WWIV_INTERNAL_PROT_YMODEM:
-      xymodem_receive(file_name, xferred, true);
+      xymodem_receive(path.filename().string(), xferred, true);
       break;
     case WWIV_INTERNAL_PROT_ZMODEM:
-      zmodem_receive(file_name, xferred);
+      zmodem_receive(path.filename().string(), xferred);
       break;
-    default: ;
+    default: break;
     }
   }
 }
 
-void send_file(const std::string& file_name, bool* sent, bool* abort, const std::string& sfn,
-               int dn,
-               long fs) {
+void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const std::string& sfn,
+               int dn, long fs) {
   *sent = false;
   *abort = false;
   int nProtocol;
   if (fs < 0) {
-    nProtocol = get_protocol(xf_none);
+    nProtocol = get_protocol(xfertype::xf_none);
   } else {
-    nProtocol = (dn == -1) ? get_protocol(xf_down_temp) : get_protocol(xf_down);
+    nProtocol = get_protocol(dn == -1 ? xfertype::xf_down_temp : xfertype::xf_down);
   }
   bool ok = false;
   double percent = 0.0;
@@ -505,13 +481,13 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
       ok = true;
       break;
     case WWIV_INTERNAL_PROT_ASCII:
-      ascii_send(file_name, sent, &percent);
+      ascii_send(path, sent, &percent);
       break;
     case WWIV_INTERNAL_PROT_XMODEM:
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
     case WWIV_INTERNAL_PROT_ZMODEM:
-      maybe_internal(file_name, sent, &percent, true, nProtocol);
+      maybe_internal(path, sent, &percent, true, nProtocol);
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
@@ -534,7 +510,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
             *sent = false;
             *abort = false;
           } else {
-            BatchEntry b{};
+            BatchEntry b;
             b.filename = sfn;
             b.dir = static_cast<int16_t>(dn);
             b.sending = true;
@@ -551,7 +527,7 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
       }
       break;
     default:
-      const int temp_prot = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, true);
+      const int temp_prot = extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, path, true);
       *abort = false;
       if (temp_prot == a()->externs[nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
         *sent = true;
@@ -563,14 +539,15 @@ void send_file(const std::string& file_name, bool* sent, bool* abort, const std:
     if (percent == 1.0) {
       *sent = true;
     } else {
-      sysoplog() << fmt::sprintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
+      const auto fn = path.filename().string();
+      sysoplog() << fmt::sprintf("Tried D/L \"%s\" %3.2f%%", fn, percent * 100.0);
     }
   }
 }
 
-void receive_file(const std::string& file_name, int* received, const std::string& sfn, int dn) {
+void receive_file(const std::filesystem::path& path, int* received, const std::string& sfn, int dn) {
   bool bReceived;
-  const int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
+  const int nProtocol = get_protocol(dn == -1 ? xfertype::xf_up_temp : xfertype::xf_up);
 
   switch (nProtocol) {
   case -1:
@@ -583,7 +560,7 @@ void receive_file(const std::string& file_name, int* received, const std::string
   case WWIV_INTERNAL_PROT_XMODEMCRC:
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
-    maybe_internal(file_name, &bReceived, nullptr, false, nProtocol);
+    maybe_internal(path, &bReceived, nullptr, false, nProtocol);
     *received = bReceived ? 1 : 0;
   }
   break;
@@ -595,7 +572,7 @@ void receive_file(const std::string& file_name, int* received, const std::string
         *received = 0;
       } else {
         *received = 2;
-        BatchEntry b{};
+        BatchEntry b;
         b.filename = sfn;
         b.dir = static_cast<int16_t>(dn);
         b.sending = false;
@@ -612,8 +589,8 @@ void receive_file(const std::string& file_name, int* received, const std::string
     break;
   default:
     if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && a()->context().incom()) {
-      extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, false);
-      *received = File::Exists(file_name);
+      extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, path, false);
+      *received = File::Exists(path);
     }
     break;
   }
