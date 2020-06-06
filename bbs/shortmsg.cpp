@@ -54,7 +54,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   auto bShownAllMessages = true;
   const auto number_of_records = file.number_of_records();
   shortmsgrec sm{};
-  for (size_t cur = 0; cur < number_of_records; cur++) {
+  for (auto cur = 0; cur < number_of_records; cur++) {
     file.Read(cur, &sm);
     if (sm.touser == nUserNum && sm.tosys == 0) {
       bout << "|#9" << sm.message << "\r\n";

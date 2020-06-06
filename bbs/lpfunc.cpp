@@ -33,7 +33,6 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/files/files.h"
-
 #include <string>
 #include <vector>
 
@@ -556,6 +555,13 @@ TOGGLE_EXTENDED:
   return all_done ? 1 : 0;
 }
 
+static constexpr char STR_AND = '&';
+static constexpr char STR_SPC = ' ';
+static constexpr char STR_OR = '|';
+static constexpr char STR_NOT = '!';
+static constexpr char STR_OPEN_PAREN = '(';
+static constexpr char STR_CLOSE_PAREN = ')';
+
 int compare_criteria(search_record * sr, uploadsrec * ur) {
   // "        .   "
   if (sr->filemask != "        .   ") {
@@ -576,7 +582,7 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
   if (sr->search[0]) {
     int desc_len = 0, fname_len = 0, ext_len = 0;
 
-    // we want to seach the filename, description and ext description
+    // we want to search the filename, description and ext description
     // as one unit, that way, if you specify something like 'one & two
     // and one is located in the description and two is in the
     // extended description, then it will properly find the search

@@ -18,9 +18,11 @@
 #ifndef __INCLUDED_CORE_DATAFILE_H__
 #define __INCLUDED_CORE_DATAFILE_H__
 
-#include <vector>
 #include "core/file.h"
+#include "core/stl.h"
+#include "core/wwivport.h"
 #include <filesystem>
+#include <vector>
 
 namespace wwiv {
 namespace core {
@@ -37,7 +39,7 @@ namespace core {
  *   if (!f.ReadVector(emails) { LOG(FATAL) << "unable to load email.dat"; }
  *   // No need to close f since when f goes out of scope it'll close automatically.
  */
-template <typename RECORD, std::size_t SIZE = sizeof(RECORD)> class DataFile final {
+template <typename RECORD, ssize_t SIZE = sizeof(RECORD)> class DataFile final {
 public:
   DataFile(const std::filesystem::path& full_file_name,
            int nFileMode = File::modeDefault,
@@ -54,7 +56,7 @@ public:
 
   [[nodiscard]] bool ok() const { return file_.IsOpen(); }
 
-  bool ReadVector(std::vector<RECORD>& records, std::size_t max_records = 0) {
+  bool ReadVector(std::vector<RECORD>& records, ssize_t max_records = 0) {
     auto num_to_read = number_of_records();
     if (num_to_read == 0) {
       // Reading nothing is always successful.
@@ -63,7 +65,7 @@ public:
     if (max_records != 0 && max_records < num_to_read) {
       num_to_read = max_records;
     }
-    if (records.size() < num_to_read) {
+    if (wwiv::stl::ssize(records) < num_to_read) {
       records.resize(num_to_read);
     }
     return Read(&records[0], num_to_read);
@@ -84,18 +86,18 @@ public:
     return Read(record);
   }
 
-  bool WriteVector(const std::vector<RECORD>& records, std::size_t max_records = 0) {
+  bool WriteVector(const std::vector<RECORD>& records, ssize_t max_records = 0) {
     if (records.empty()) {
       return true;
     }
-    auto num = records.size();
+    auto num = wwiv::stl::ssize(records);
     if (max_records != 0 && max_records < num) {
       num = max_records;
     }
     return Write(&records[0], num);
   }
 
-  bool WriteVectorAndTruncate(const std::vector<RECORD>& records, std::size_t max_records = 0) {
+  bool WriteVectorAndTruncate(const std::vector<RECORD>& records, ssize_t max_records = 0) {
     if (!WriteVector(records, max_records)) {
       return false;
     }
@@ -104,7 +106,7 @@ public:
   }
 
   bool Write(const RECORD* record, int num_records = 1) {
-    return file_.Write(record, num_records * SIZE) == static_cast<ssize_t>(num_records * SIZE);
+    return file_.Write(record, num_records * SIZE) == (num_records * SIZE);
   }
 
   bool Write(int record_number, const RECORD* record) {
@@ -119,8 +121,8 @@ public:
            static_cast<File::size_type>(record_number * SIZE);
   }
 
-  [[nodiscard]] std::size_t number_of_records() const noexcept {
-    return static_cast<std::size_t>(file_.length() / SIZE);
+  [[nodiscard]] int number_of_records() const noexcept {
+    return static_cast<int>(file_.length() / SIZE);
   }
 
   explicit operator bool() const noexcept { return file_.IsOpen(); }

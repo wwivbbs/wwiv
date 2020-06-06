@@ -135,8 +135,8 @@ public:
 
   [[nodiscard]] bool Exists() const noexcept;
 
-  [[nodiscard]] time_t creation_time() const noexcept;
-  [[nodiscard]] time_t last_write_time() const noexcept;
+  [[nodiscard]] time_t creation_time() const;
+  [[nodiscard]] time_t last_write_time() const;
   bool set_last_write_time(time_t last_write_time) noexcept;
 
   std::unique_ptr<FileLock> lock(FileLockType lock_type);

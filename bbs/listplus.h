@@ -28,23 +28,12 @@ struct uploadsrec;
 // This is the place the first file will be printed, which defaults to line
 // 3, if you modify the file listing header, this will need to be changed
 // depending on where the file will need to start after your modification
-#define FIRST_FILE_POS 3
-
-// Defines for searching
-#define SR_MATCH 0
-#define SR_DONTMATCH 1
-
-#define SR_OR 1
-#define SR_AND 0
-
-#define SR_NEWER 0
-#define SR_OLDER 1
-#define SR_EQUAL 2
+static constexpr int FIRST_FILE_POS = 3;
 
 // Defines for the sysop commands
-#define SYSOP_DELETE 1
-#define SYSOP_RENAME 2
-#define SYSOP_MOVE 3
+static constexpr int SYSOP_DELETE = 1;
+static constexpr int SYSOP_RENAME = 2;
+static constexpr int SYSOP_MOVE = 3;
 
 #pragma pack(push, 1)
 
@@ -89,18 +78,11 @@ struct listplus_config {
 
 extern listplus_config lp_config;
 
-#define STR_AND '&'
-#define STR_SPC ' '
-#define STR_OR '|'
-#define STR_NOT '!'
-#define STR_OPEN_PAREN '('
-#define STR_CLOSE_PAREN ')'
-
 void printtitle_plus();
 int first_file_pos();
 void print_searching(search_record* search_rec);
 int listfiles_plus(int type);
-int lp_add_batch(const std::string& file_name, int dn, long fs);
+int lp_add_batch(const std::string& file_name, int dn, int fs);
 int printinfo_plus(uploadsrec* upload_record, int filenum, int marked, int LinesLeft,
                    search_record* search_rec);
 int print_extended_plus(const std::string& file_name, int numlist, int indent,
@@ -114,11 +96,11 @@ void save_lp_config();
 void sysop_configure();
 short SelectColor(int which);
 void config_file_list();
-void do_batch_sysop_command(int mode, const char* file_name);
+void do_batch_sysop_command(int mode, const std::string& file_name);
 int search_criteria(search_record* sr);
-void view_file(const char* file_name);
+void view_file(const std::string& aligned_file_name);
 int lp_try_to_download(const std::string& file_mask, int dn);
 void download_plus(const std::string& file_name);
-void request_file(const char* file_name);
+void request_file(const std::string& file_name);
 
 #endif // __INCLUDED_LISTPLUS_H__

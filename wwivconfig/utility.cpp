@@ -49,8 +49,8 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs(const std::string& datadir) {
-  DataFile<userrec> file(PathFilePath(datadir, USER_LST),
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+  const DataFile<userrec> file(PathFilePath(datadir, USER_LST),
+                               File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (file) {
     return static_cast<int>(file.number_of_records()) - 1;
   }

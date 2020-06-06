@@ -22,7 +22,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
-#include "bbs/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
@@ -49,7 +48,6 @@
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
 #include "sdk/files/files.h"
-
 #include <algorithm>
 #include <csignal>
 #include <string>
@@ -266,7 +264,7 @@ int listfiles_plus(int type) {
   return r;
 }
 
-int lp_add_batch(const std::string& file_name, int dn, long fs) {
+int lp_add_batch(const std::string& file_name, int dn, int fs) {
   if (a()->batch().FindBatch(file_name) > -1) {
     return 0;
   }
@@ -1453,8 +1451,8 @@ static int move_filename(const std::string& file_name, int dn) {
   return ret;
 }
 
-void do_batch_sysop_command(int mode, const char* file_name) {
-  auto save_curdir = a()->current_user_dir_num();
+void do_batch_sysop_command(int mode, const std::string& file_name) {
+  const auto save_curdir = a()->current_user_dir_num();
   bout.cls();
 
   if (a()->batch().numbatchdl() > 0) {
@@ -1624,21 +1622,21 @@ LP_SEARCH_HELP:
   return x;
 }
 
-void view_file(const char* file_name) {
+void view_file(const std::string& aligned_file_name) {
   bout.cls();
   dliscan();
   bool abort = false;
-  int i = recno(file_name);
+  int i = recno(aligned_file_name);
   do {
     if (i > 0) {
       auto f = a()->current_file_area()->ReadFile(i);
-      int i1 = list_arc_out(stripfn(f.unaligned_filename()),
-                            a()->directories[a()->current_user_dir().subnum].path);
+      const auto i1 = list_arc_out(stripfn(f.unaligned_filename()),
+                                   a()->directories[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }
       checka(&abort);
-      i = nrecno(file_name, i);
+      i = nrecno(aligned_file_name, i);
     }
   }
   while (i > 0 && !a()->hangup_ && !abort);
@@ -1739,7 +1737,7 @@ void download_plus(const std::string& file_name) {
   }
 }
 
-void request_file(const char* file_name) {
+void request_file(const std::string& file_name) {
   bout.cls();
   bout.nl();
 

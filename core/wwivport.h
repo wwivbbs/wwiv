@@ -42,7 +42,7 @@ typedef uint32_t daten_t;
 #ifdef _WIN64
 typedef int64_t ssize_t;
 #else
-typedef int32_t ssize_t;
+typedef int ssize_t;
 #endif // _WIN64
 
 #ifdef _WIN32

@@ -42,7 +42,7 @@
 #include <utility>
 #ifdef _WIN32
 #include "sys/utime.h"
-#include <direct.h>
+//#include <direct.h>
 #include <io.h>
 #include <share.h>
 
@@ -65,10 +65,6 @@ static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
 static constexpr int LOCK_UN = 8;
-static constexpr int F_OK = 0;
-
-#define S_ISREG(m) (((m)&S_IFMT) == _S_IFREG)
-#define S_ISDIR(m) (((m)&S_IFMT) == _S_IFDIR)
 
 #else
 
@@ -233,7 +229,7 @@ void File::Close() noexcept {
 // Member functions
 
 ssize_t File::Read(void* buffer, size_t size) {
-  const ssize_t ret = read(handle_, buffer, size);
+  const auto ret = read(handle_, buffer, size);
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG: Read errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
@@ -289,9 +285,9 @@ File::size_type File::length() const noexcept {
   return sz;
 }
 
-time_t File::creation_time() const noexcept { return creation_time(full_path_name_); }
+time_t File::creation_time() const { return creation_time(full_path_name_); }
 
-time_t File::last_write_time() const noexcept { return last_write_time(full_path_name_); }
+time_t File::last_write_time() const { return last_write_time(full_path_name_); }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions

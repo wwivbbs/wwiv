@@ -43,7 +43,7 @@ TEST(DataFileTest, Read) {
   {
     DataFile<T> datafile(PathFilePath(tmp, "Read"), File::modeReadOnly);
     ASSERT_TRUE(static_cast<bool>(datafile));
-    EXPECT_EQ(static_cast<size_t>(2), datafile.number_of_records());
+    EXPECT_EQ(2, datafile.number_of_records());
     T t{0, 0};
     EXPECT_TRUE(datafile.Read(&t));
     EXPECT_EQ(1, t.a);
@@ -81,7 +81,7 @@ TEST(DataFileTest, ReadVector) {
   {
     DataFile<T> datafile(PathFilePath(tmp, "ReadVector"), File::modeReadOnly);
     ASSERT_TRUE(static_cast<bool>(datafile));
-    EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
+    EXPECT_EQ(3, datafile.number_of_records());
     std::vector<T> t;
     EXPECT_TRUE(datafile.ReadVector(t));
     EXPECT_EQ(static_cast<size_t>(3), t.size());
@@ -96,7 +96,7 @@ TEST(DataFileTest, ReadVector) {
 
 TEST(DataFileTest, ReadVector_Empty) {
   struct T { int a; int b; };
-  FileHelper file;
+  FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {
@@ -107,7 +107,7 @@ TEST(DataFileTest, ReadVector_Empty) {
 
   DataFile<T> datafile(PathFilePath(tmp, "ReadVector_Empty"), File::modeReadOnly);
   ASSERT_TRUE(static_cast<bool>(datafile));
-  EXPECT_EQ(static_cast<size_t>(0), datafile.number_of_records());
+  EXPECT_EQ(0, datafile.number_of_records());
   std::vector<T> t{};
   EXPECT_TRUE(datafile.ReadVector(t));
   EXPECT_EQ(static_cast<size_t>(0), t.size());
@@ -131,7 +131,7 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
   {
     DataFile<T> datafile(PathFilePath(tmp, "ReadVector_MaxRecords"), File::modeReadOnly);
     ASSERT_TRUE(static_cast<bool>(datafile));
-    EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
+    EXPECT_EQ(3, datafile.number_of_records());
     std::vector<T> t;
     EXPECT_TRUE(datafile.ReadVector(t, 2));
     EXPECT_EQ(static_cast<size_t>(2), t.size());
@@ -196,14 +196,14 @@ TEST(DataFileTest, WriteVector) {
 
 TEST(DataFileTest, WriteVector_Empty) {
   struct T { int a; int b; };
-  FileHelper file;
+  FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {
     DataFile<T> datafile(PathFilePath(tmp, "WriteVector_Empty"),
         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE(static_cast<bool>(datafile));
-    std::vector<T> t{};
+    const std::vector<T> t{};
     EXPECT_TRUE(datafile.WriteVector(t));
   }
   File x(PathFilePath(tmp, "WriteVector_Empty"));
