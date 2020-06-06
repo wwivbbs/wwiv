@@ -37,7 +37,7 @@ enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
 #ifndef EDITLINE_FILENAME_CASE
 #ifdef __unix__
-static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL
+static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 #else
 static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 #endif // __unix__
