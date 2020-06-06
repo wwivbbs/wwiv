@@ -23,7 +23,7 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/vardec.h"
+#include "sdk/files/file_record.h"
 #include <algorithm>
 #include <string>
 
@@ -34,124 +34,14 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-static constexpr char SPACE = ' ';
-
-static void align_char_filename(char* file_name) {
-  // TODO Modify this to handle long filenames
-  char szFileName[40], szExtension[40];
-
-  auto bInvalid = false;
-  if (file_name[0] == '.') {
-    bInvalid = true;
+// TODO(rushfan): Maybe move this to files_record.h and
+// get rid of the one un bbs/utility
+static std::string _stripfn(const std::string& file_name) {
+  const std::filesystem::path p(file_name);
+  if (!p.has_filename()) {
+    return {};
   }
-
-  for (size_t i = 0; i < size(file_name); i++) {
-    if (file_name[i] == '\\' || file_name[i] == '/' || file_name[i] == ':' || file_name[i] == '<' ||
-        file_name[i] == '>' || file_name[i] == '|') {
-      bInvalid = true;
-    }
-  }
-  if (bInvalid) {
-    strcpy(file_name, "        .   ");
-    return;
-  }
-  char* s2 = strrchr(file_name, '.');
-  if (s2 == nullptr || strrchr(file_name, '\\') > s2) {
-    szExtension[0] = '\0';
-  } else {
-    strcpy(szExtension, &(s2[1]));
-    szExtension[3] = '\0';
-    s2[0] = '\0';
-  }
-  strcpy(szFileName, file_name);
-
-  for (int j = strlen(szFileName); j < 8; j++) {
-    szFileName[j] = SPACE;
-  }
-  szFileName[8] = '\0';
-  bool bHasWildcard = false;
-  bool bHasSpace = false;
-  for (int k = 0; k < 8; k++) {
-    if (szFileName[k] == '*') {
-      bHasWildcard = true;
-    }
-    if (szFileName[k] == ' ') {
-      bHasSpace = true;
-    }
-    if (bHasSpace) {
-      szFileName[k] = ' ';
-    }
-    if (bHasWildcard) {
-      szFileName[k] = '?';
-    }
-  }
-
-  for (int i2 = strlen(szExtension); i2 < 3; i2++) {
-    szExtension[i2] = SPACE;
-  }
-  szExtension[3] = '\0';
-  bHasWildcard = false;
-  for (int i3 = 0; i3 < 3; i3++) {
-    if (szExtension[i3] == '*') {
-      bHasWildcard = true;
-    }
-    if (bHasWildcard) {
-      szExtension[i3] = '?';
-    }
-  }
-
-  char buffer[MAX_PATH];
-  for (int i4 = 0; i4 < 12; i4++) {
-    buffer[i4] = SPACE;
-  }
-  strcpy(buffer, szFileName);
-  buffer[8] = '.';
-  strcpy(&(buffer[9]), szExtension);
-  strcpy(file_name, buffer);
-  for (auto i5 = 0; i5 < 12; i5++) {
-    file_name[i5] = to_upper_case<char>(file_name[i5]);
-  }
-}
-
-static std::string align_filename(const std::string& file_name) {
-  char s[MAX_PATH];
-  to_char_array(s, file_name);
-  align_char_filename(s);
-  return s;
-}
-
-static std::string stripfn(const char* file_name) {
-  char szTempFileName[MAX_PATH];
-
-  ssize_t nSepIndex = -1;
-  for (ssize_t i = 0; i < wwiv::strings::ssize(file_name); i++) {
-    if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
-      nSepIndex = i;
-    }
-  }
-  if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(file_name[nSepIndex + 1]));
-  } else {
-    to_char_array(szTempFileName, file_name);
-  }
-  for (size_t i1 = 0; i1 < size(szTempFileName); i1++) {
-    if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
-      szTempFileName[i1] = static_cast<char>(szTempFileName[i1] - 'A' + 'a');
-    }
-  }
-  auto j = 0;
-  while (szTempFileName[j] != 0) {
-    if (szTempFileName[j] == SPACE) {
-      strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
-    } else {
-      ++j;
-    }
-  }
-  return szTempFileName;
-}
-
-static std::string stripfn(const std::string& file_name) {
-  return stripfn(file_name.c_str());
+  return wwiv::sdk::files::unalign(p.filename().string());
 }
 
 Allow::Allow(const wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
@@ -168,7 +58,7 @@ static bool icompare_lessthan(const allow_entry_t& i, const allow_entry_t& j) {
 
 allow_entry_t to_allow_entry(const std::string& fn) {
   allow_entry_t e{};
-  to_char_array(e.a, stripfn(fn));
+  to_char_array(e.a, _stripfn(fn));
   return e;
 }
 
@@ -177,7 +67,7 @@ bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) {
 }
 
  bool Allow::Add(const std::string& unaligned_filename) {
-   const auto fn = align_filename(unaligned_filename);
+   const auto fn = align(unaligned_filename);
   if (fn.size() != 12) {
     LOG(ERROR) << "Can't add filename: '" << fn << "' to allow.dat, not 12 chars";
     return false;
@@ -188,7 +78,7 @@ bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) {
 }
 
 bool Allow::Remove(const std::string& unaligned_filename) {
-  const auto e = to_allow_entry(align_filename(unaligned_filename));
+  const auto e = to_allow_entry(align(unaligned_filename));
   const auto it = std::find(std::begin(allow_), std::end(allow_), e);
   if (it != std::end(allow_)) {
     allow_.erase(it);
@@ -198,7 +88,7 @@ bool Allow::Remove(const std::string& unaligned_filename) {
 }
 
 bool Allow::Load() {
-  DataFile<allow_entry_t> file(PathFilePath(data_directory_, ALLOW_DAT));
+  DataFile<allow_entry_t> file(wwiv::core::PathFilePath(data_directory_, ALLOW_DAT));
   if (!file) {
     // Handle empty file for the 1st time.  This is fine.
     return true;
@@ -208,7 +98,7 @@ bool Allow::Load() {
 }
 
 bool Allow::Save() {
-  DataFile<allow_entry_t> file(PathFilePath(data_directory_, ALLOW_DAT),
+  DataFile<allow_entry_t> file(wwiv::core::PathFilePath(data_directory_, ALLOW_DAT),
                                File::modeReadWrite | File::modeBinary | File::modeTruncate | File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Error saving allow.dat";
@@ -224,7 +114,7 @@ bool Allow::IsAllowed(const std::string& unaligned_filename) {
     LOG(ERROR) << "Allow::IsAllowed called when !loaded_";
     return false;
   }
-  auto e = to_allow_entry(align_filename(unaligned_filename));
+  const auto e = to_allow_entry(align(unaligned_filename));
   return !std::binary_search(std::begin(allow_), std::end(allow_), e, icompare_lessthan);
 }
 

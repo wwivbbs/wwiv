@@ -29,6 +29,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
+/*
 class UtilityTest : public ::testing::Test {
 protected:
   void SetUp() override {
@@ -36,4 +37,22 @@ protected:
     }
     BbsHelper helper{};
 };
+*/
 
+TEST(UtilityTest, StripFnSmoke) {
+  EXPECT_EQ("", stripfn(""));
+  EXPECT_EQ("", stripfn("/"));
+  EXPECT_EQ("", stripfn("///"));
+  EXPECT_EQ("", stripfn("C:\\"));
+
+  EXPECT_EQ("foo.zip", stripfn("foo     .zip"));
+  EXPECT_EQ("foo.zip", stripfn("foo.zip"));
+  EXPECT_EQ("foo.zip", stripfn("FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("X\\FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("X/FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("/X/FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("//X/FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("C:\\X\\FOO.ZIP"));
+  EXPECT_EQ("foo.zip", stripfn("C:\\X\\FOO  .ZIP"));
+  EXPECT_EQ("foo", stripfn("C:\\X\\FOO"));
+}

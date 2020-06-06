@@ -206,39 +206,11 @@ void giveup_timeslice() {
 }
 
 std::string stripfn(const std::string& file_name) {
-  return std::string(stripfn(file_name.c_str()));
-}
-
-char* stripfn(const char* file_name) {
-  static char szStaticFileName[15];
-  char szTempFileName[MAX_PATH];
-
-  int nSepIndex = -1;
-  for (auto i = 0; i < ssize(file_name); i++) {
-    if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
-      nSepIndex = i;
-    }
+  std::filesystem::path p(file_name);
+  if (!p.has_filename()) {
+    return {};
   }
-  if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(file_name[nSepIndex + 1]));
-  } else {
-    strcpy(szTempFileName, file_name);
-  }
-  for (auto i1 = 0; i1 < ssize(szTempFileName); i1++) {
-    if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
-      szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
-    }
-  }
-  auto j = 0;
-  while (szTempFileName[j] != 0) {
-    if (szTempFileName[j] == SPACE) {
-      strcpy(&szTempFileName[j], &szTempFileName[j + 1]);
-    } else {
-      ++j;
-    }
-  }
-  strcpy(szStaticFileName, szTempFileName);
-  return szStaticFileName;
+  return wwiv::sdk::files::unalign(p.filename().string());
 }
 
 std::string get_wildlist(const std::string& orig_file_mask) {
