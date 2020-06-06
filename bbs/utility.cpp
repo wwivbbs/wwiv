@@ -210,7 +210,17 @@ std::string stripfn(const std::string& file_name) {
   if (!p.has_filename()) {
     return {};
   }
-  return wwiv::sdk::files::unalign(p.filename().string());
+  auto orig = wwiv::sdk::files::unalign(p.filename().string());
+  // Since WWIV has a heavy DOS legacy, sometimes we have files in
+  // DOS slash format.  On Windows std::filesystem handles both since
+  // Windows uses either format internally.
+#if !defined (_WIN32)
+  const auto idx = orig.rfind("\\");
+  if (idx != std::string::npos) {
+    orig = orig.substr(idx + 1);
+  }
+#endif  // !defined(_WIN32)
+  return orig;
 }
 
 std::string get_wildlist(const std::string& orig_file_mask) {
