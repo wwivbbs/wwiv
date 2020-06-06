@@ -42,7 +42,7 @@ public:
   int FindUser(const std::string& username);
 
   const std::vector<smalrec>& names_vector() const { return names_;  }
-  std::size_t size() const { return names_.size(); }
+  int size() const { return static_cast<int>(names_.size()); }
   void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
   bool save_on_exit() const { return save_on_exit_;  }
 

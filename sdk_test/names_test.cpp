@@ -18,13 +18,6 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <cstring>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -32,6 +25,9 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk_test/sdk_helper.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace std;
 using namespace wwiv::core;
@@ -46,11 +42,7 @@ public:
     names_.reset(new Names(config_));
   }
 
-  virtual void SetUp() {
-    config_.IsInitialized();
-  }
-
-  bool CreateNames() {
+  [[nodiscard]] bool CreateNames() const {
     File file(PathFilePath(config_.datadir(), NAMES_LST));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
@@ -80,10 +72,10 @@ TEST_F(NamesTest, UserName) {
 TEST_F(NamesTest, Remove) {
   // Force a save/load and make sure it's there.
   names_->set_save_on_exit(true);
-  ASSERT_EQ(3u, names_->size());
+  ASSERT_EQ(3, names_->size());
 
   EXPECT_TRUE(names_->Remove(2));
-  EXPECT_EQ(2u, names_->size());
+  EXPECT_EQ(2, names_->size());
   EXPECT_TRUE(names_->UserName(2).empty());
 
   // already removed, so nothing do to.
@@ -93,24 +85,24 @@ TEST_F(NamesTest, Remove) {
   names_.reset();
   names_.reset(new Names(config_));
   // Should still have 2.
-  EXPECT_EQ(2u, names_->size());
+  EXPECT_EQ(2, names_->size());
 }
 
 TEST_F(NamesTest, Insert) {
   // Force a save/load and make sure it's there.
   names_->set_save_on_exit(true);
 
-  ASSERT_EQ(3u, names_->size());
+  ASSERT_EQ(3, names_->size());
 
   EXPECT_TRUE(names_->Add("Z", 26));
-  EXPECT_EQ(4u, names_->size());
+  EXPECT_EQ(4, names_->size());
 
   EXPECT_EQ("Z #26", names_->UserName(26));
 
   // Release the old names 1st.
   names_.reset();
   names_.reset(new Names(config_));
-  EXPECT_EQ(4u, names_->size());
+  EXPECT_EQ(4, names_->size());
 }
 
 TEST_F(NamesTest, SaveOnExit) {

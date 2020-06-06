@@ -24,9 +24,13 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_m
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization::non_member_load_save_minimal);
 
+#include "core/stl.h"
+#include "sdk/net.h"
+#include <string>
+
 namespace cereal {
 
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
 
 template <typename T> inline
 std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
@@ -40,7 +44,7 @@ std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
 template <typename T> inline
 T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
   try {
-    for (size_t i = 0; i < names.size(); i++) {
+    for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
       if (v == names.at(i)) {
         return static_cast<T>(i);
       }
@@ -167,7 +171,7 @@ void serialize(Archive & ar, net_networks_rec& n) {
   SERIALIZE(n, dir);
   SERIALIZE(n, sysnum);
 
-  // Seralize the Fido config
+  // Serialize the Fido config
   if (n.type == network_type_t::ftn) {
     SERIALIZE(n, fido);
   }

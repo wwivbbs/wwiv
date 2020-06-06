@@ -51,8 +51,8 @@ public:
   [[nodiscard]] size_type network_number(const std::string& network_name) const;
   [[nodiscard]] bool contains(const std::string& network_name) const;
 
-  bool insert(std::size_t n, net_networks_rec r);
-  bool erase(std::size_t n);
+  bool insert(int n, net_networks_rec r);
+  bool erase(int n);
   bool Load();
   bool Save();
 

@@ -99,7 +99,7 @@ private:
 // TODO(rushfan): Implement this
 class AllUserQScan {
 public:
-  AllUserQScan(const std::string& filename, int max_users) {}
+  AllUserQScan(const std::string& /*filename*/, int /*max_users*/) {}
   void swap_dir(int num);
   void swap_sub(int num);
   bool insert(int pos);

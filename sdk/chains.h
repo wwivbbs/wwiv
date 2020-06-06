@@ -79,8 +79,8 @@ public:
   //chain_t& operator[](size_type num) { return at(num); }
   //const chain_t& operator[](int num) const { return at(num); }
 
-  bool insert(std::size_t n, chain_t r);
-  bool erase(std::size_t n);
+  bool insert(int n, chain_t r);
+  bool erase(int n);
   bool Load();
   bool Save();
 

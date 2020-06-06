@@ -20,10 +20,10 @@
 #ifndef __INCLUDED_SUBXTR_H__
 #define __INCLUDED_SUBXTR_H__
 
-#include <vector>
-
 #include "sdk/net.h"
 #include "sdk/vardec.h"
+#include <string>
+#include <vector>
 
 namespace wwiv {
 namespace sdk {
@@ -81,8 +81,8 @@ public:
   bool Load();
   bool Save();
 
-  const subboard_t& sub(std::size_t n) const { return subs_.at(n); }
-  const subboard_t& sub(const std::string& filename) const;
+  [[nodiscard]] const subboard_t& sub(std::size_t n) const { return subs_.at(n); }
+  [[nodiscard]] const subboard_t& sub(const std::string& filename) const;
   subboard_t& sub(std::size_t n) { return subs_[n]; }
   subboard_t& sub(const std::string& filename);
 
@@ -91,13 +91,13 @@ public:
   subboard_t& operator[](std::size_t n) { return sub(n); }
   subboard_t& operator[](const std::string& filename) { return sub(filename); }
 
-  bool exists(const std::string& filename) const;
+  [[nodiscard]] bool exists(const std::string& filename) const;
 
-  void set_sub(std::size_t n, subboard_t s) { subs_[n] = s; }
-  const std::vector<subboard_t> subs() const { return subs_; }
-  bool insert(std::size_t n, subboard_t r);
-  bool erase(std::size_t n);
-  std::vector<net_networks_rec>::size_type size() const { return subs_.size(); }
+  void set_sub(int n, subboard_t s) { subs_[n] = s; }
+  [[nodiscard]] const std::vector<subboard_t>& subs() const { return subs_; }
+  bool insert(int n, subboard_t r);
+  bool erase(int n);
+  [[nodiscard]] int size() const { return subs_.size(); }
 
   static bool LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& entries);
   static bool SaveToJSON(const std::string& dir, const std::string& filename, const subs_t& entries);

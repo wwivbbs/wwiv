@@ -78,7 +78,7 @@ static void load_protocols(const std::string& datadir, vector<newexternalrec>& e
     if (file) {
       file.ReadVector(over_intern, 3);
     } else {
-      for (size_t i = 0; i < 3; i++) {
+      for (auto i = 0; i < 3; i++) {
         over_intern.push_back({});
       }
     }
@@ -171,7 +171,7 @@ void extrn_prots(const std::string& datadir) {
     items.emplace_back("2. XModem (Internal)", 0, 2);
     items.emplace_back("X. XModem CRC (Internal)", 0, 3);
     items.emplace_back("Y. YModem (Internal)", 0, 4);
-    for (size_t i = 0; i < externs.size(); i++) {
+    for (auto i = 0; i < wwiv::stl::ssize(externs); i++) {
       items.emplace_back(fmt::format("{}. {} (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(curses_out->window());
@@ -196,7 +196,7 @@ void extrn_prots(const std::string& datadir) {
           if (!yn) {
             break;
           }
-          size_t pos = result.selected - 3; // 3 is the number of internal protocols listed.
+          auto pos = result.selected - 3; // 3 is the number of internal protocols listed.
           erase_at(externs, pos);
         }
       } break;
@@ -205,9 +205,9 @@ void extrn_prots(const std::string& datadir) {
           messagebox(curses_out->window(), "Too many external protocols.");
           break;
         }
-        string prompt = fmt::format("Insert before which (6-{}) ? ", max_protocol_number + 1);
-        size_t pos = dialog_input_number(curses_out->window(), prompt, 2, max_protocol_number + 1);
-        if (pos >= 6 && pos <= externs.size() + 6) {
+        auto prompt = fmt::format("Insert before which (6-{}) ? ", max_protocol_number + 1);
+        auto pos = dialog_input_number(curses_out->window(), prompt, 2, max_protocol_number + 1);
+        if (pos >= 6 && pos <= wwiv::stl::ssize(externs) + 6) {
           size_t extern_pos = pos - 6;
           newexternalrec e{};
           memset(&e, 0, sizeof(newexternalrec));

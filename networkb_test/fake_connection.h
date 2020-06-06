@@ -15,18 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
 #ifndef __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
 #define __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
 
+#include "core/connection.h"
 #include <chrono>
 #include <cstdint>
 #include <mutex>
-#include <string>
-#include <thread>
 #include <queue>
-
-#include "core/connection.h"
+#include <string>
 
 class FakeBinkpPacket {
 public:
@@ -34,12 +31,12 @@ public:
   FakeBinkpPacket(const FakeBinkpPacket& o);
   ~FakeBinkpPacket();
 
-  bool is_command() const { return is_command_; }
-  uint8_t command() const { return command_; }
-  uint16_t header() const { return header_; }
-  std::string data() const { return data_; }
+  [[nodiscard]] bool is_command() const { return is_command_; }
+  [[nodiscard]] uint8_t command() const { return command_; }
+  [[nodiscard]] uint16_t header() const { return header_; }
+  [[nodiscard]] std::string data() const { return data_; }
 
-  std::string debug_string() const;
+  [[nodiscard]] std::string debug_string() const;
 
 private:
   bool is_command_;
@@ -75,7 +72,7 @@ public:
   std::queue<FakeBinkpPacket> send_queue_;
 private:
   mutable std::mutex mu_;
-  bool open_;
+  bool open_{};
 };
 
 #endif  // __INCLUDED_NETWORKB_FAKE_CONNECTION_H__

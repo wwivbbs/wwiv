@@ -112,8 +112,8 @@ public:
 
   /** Writes a binary blob as binary data. */
   // ReSharper disable once CppMemberFunctionMayBeConst
-  ssize_t WriteBinary(const void* buffer, size_t nSize) noexcept {
-    return static_cast<int>(fwrite(buffer, nSize, 1, file_));
+  ssize_t WriteBinary(const void* buffer, ssize_t num) noexcept {
+    return static_cast<int>(fwrite(buffer, num, 1, file_));
   }
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */

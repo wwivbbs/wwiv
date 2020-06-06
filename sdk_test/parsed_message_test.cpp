@@ -46,28 +46,28 @@ protected:
       cd("\004"),
       cz(string(1, static_cast<char>(CZ))) {}
 
-  virtual void SetUp() {
-    expected_list_.push_back("Title");
+  void SetUp() override {
+    expected_list_.emplace_back("Title");
     expected_list_.push_back(daten_to_wwivnet_time(daten_t_now()));
     expected_list_.push_back(ca + "PID");
     expected_list_.push_back(ca + "MSGID 1234");
     expected_list_.push_back(ca + "TZUTC");
-    expected_list_.push_back("Line of text");
+    expected_list_.emplace_back("Line of text");
 
-    expected_list_new_msgid_.push_back("Title");
+    expected_list_new_msgid_.emplace_back("Title");
     expected_list_new_msgid_.push_back(daten_to_wwivnet_time(daten_t_now()));
     expected_list_new_msgid_.push_back(ca + "PID");
     expected_list_new_msgid_.push_back(ca + "MSGID 5678");
     expected_list_new_msgid_.push_back(ca + "TZUTC");
-    expected_list_new_msgid_.push_back("Line of text");
+    expected_list_new_msgid_.emplace_back("Line of text");
 
 
-    expected_list_wwiv_.push_back("Title");
+    expected_list_wwiv_.emplace_back("Title");
     expected_list_wwiv_.push_back(daten_to_wwivnet_time(daten_t_now()));
     expected_list_wwiv_.push_back(cd + "0PID");
     expected_list_wwiv_.push_back(cd + "0MSGID 1234");
     expected_list_wwiv_.push_back(cd + "0TZUTC");
-    expected_list_wwiv_.push_back("Line of text");
+    expected_list_wwiv_.emplace_back("Line of text");
   }
 
   std::string expected_string(size_t pos, const std::string& val) {
@@ -85,7 +85,7 @@ protected:
     return JoinStrings(expected_list_wwiv_, "\r\n") + cz;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     expected_list_.clear();
     expected_list_wwiv_.clear();
   }
@@ -103,7 +103,7 @@ TEST_F(ParsedMessageTest, AfterMsgID) {
   const std::string kReply = ca + "REPLY";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
   p.add_control_line_after("MSGID", "REPLY");
-  auto actual_string = p.to_string();
+  const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string(4, kReply), actual_string);
 }
@@ -117,39 +117,39 @@ TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   // Remove original msgid
   p.remove_control_line("MSGID");
   p.add_control_line_after("MSGID", "REPLY");
-  auto actual_string = p.to_string();
+  const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_new_msgid(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
-  const std::string kReply = cd + "0REPLY";
+  const auto kReply = cd + "0REPLY";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
                       split_wwiv_style_message_text, "\r\n");
   p.add_control_line_after("MSGID", "REPLY");
-  auto actual_string = p.to_string();
+  const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_wwiv(4, kReply), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines) {
-  const std::string kControlLineWithControlChar = ca + "DUDE";
+  const auto kControlLineWithControlChar = ca + "DUDE";
   const std::string kControlLine = "DUDE";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
                       "\r\n");
   p.add_control_line(kControlLine);
-  auto actual_string = p.to_string();
+  const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string(5, kControlLineWithControlChar), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
   const std::string kControlLine = "DUDE";
-  const std::string kControlLineWithControlChar = cd + "0DUDE";
+  const auto kControlLineWithControlChar = cd + "0DUDE";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
                       split_wwiv_style_message_text, "\r\n");
   p.add_control_line(kControlLine);
-  auto actual_string = p.to_string();
+  const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_wwiv(5, kControlLineWithControlChar), actual_string);
 }

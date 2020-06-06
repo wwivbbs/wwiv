@@ -40,8 +40,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 static bool checkDirExists(const std::string& dir, const char *desc) {
   if (File::Exists(dir)) {
@@ -79,54 +78,54 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
   }
 
   LOG(INFO) << "Checking " << directories.size() << " directories.";
-  for (size_t i = 0; i < directories.size(); i++) {
-    if (!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
-      if (checkDirExists(directories[i].path, directories[i].name)) {
-        LOG(INFO) << "Checking directory: " << directories[i].name;
-        const auto filename = StrCat(directories[i].filename, ".dir");
+  for (auto& d : directories) {
+    if (!(d.mask & mask_cdrom) && !(d.mask & mask_offline)) {
+      if (checkDirExists(d.path, d.name)) {
+        LOG(INFO) << "Checking directory: " << d.name;
+        const auto filename = StrCat(d.filename, ".dir");
         const auto record_path = PathFilePath(datadir, filename);
         if (File::Exists(record_path)) {
           File recordFile(record_path);
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
             LOG(INFO) << "Unable to open:" << recordFile;
           } else {
-            unsigned int numFiles = recordFile.length() / sizeof(uploadsrec);
-            uploadsrec upload;
+            auto numFiles = static_cast<int>(recordFile.length() / sizeof(uploadsrec));
+            uploadsrec upload{};
             recordFile.Read(&upload, sizeof(uploadsrec));
-            if (upload.numbytes != numFiles) {
-              LOG(INFO) << "Corrected # of files in: " << directories[i].name;
+            if (static_cast<int>(upload.numbytes) != numFiles) {
+              LOG(INFO) << "Corrected # of files in: " << d.name;
               upload.numbytes = numFiles;
               recordFile.Seek(0L, File::Whence::begin);
               recordFile.Write(&upload, sizeof(uploadsrec));
             }
             if (numFiles >= 1) {
               ext_desc_rec *extDesc = nullptr;
-              unsigned int recNo = 0;
-              const auto fn = PathFilePath(datadir, StrCat(directories[i].filename, ".ext"));
+              int recNo = 0;
+              const auto fn = PathFilePath(datadir, StrCat(d.filename, ".ext"));
               if (File::Exists(fn)) {
                 File extDescFile(fn);
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
-                  extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
-                  size_t offs = 0;
-                  while (offs < (unsigned long)extDescFile.length() && recNo < numFiles) {
-                    ext_desc_type ed;
+                  extDesc = static_cast<ext_desc_rec*>(malloc(numFiles * sizeof(ext_desc_rec)));
+                  auto offs = 0;
+                  while (offs < extDescFile.length() && recNo < numFiles) {
+                    ext_desc_type ed{};
                     extDescFile.Seek(offs, File::Whence::begin);
                     if (extDescFile.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
                       strcpy(extDesc[recNo].name, ed.name);
                       extDesc[recNo].offset = offs;
-                      offs += ed.len + sizeof(ext_desc_type);
-                      recNo++;
+                      offs += static_cast<int>(ed.len + sizeof(ext_desc_type));
+                      ++recNo;
                     }
                   }
                 }
                 extDescFile.Close();
               }
-              for (size_t fileNo = 1; fileNo < numFiles; fileNo++) {
+              for (int file_no = 1; file_no < numFiles; file_no++) {
                 bool modified = false;
-                recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
+                recordFile.Seek(sizeof(uploadsrec) * file_no, File::Whence::begin);
                 recordFile.Read(&upload, sizeof(uploadsrec));
                 bool extDescFound = false;
-                for (unsigned int desc = 0; desc < recNo; desc++) {
+                for (auto desc = 0; desc < recNo; desc++) {
                   if (strcmp(upload.filename, extDesc[desc].name) == 0) {
                     extDescFound = true;
                   }
@@ -140,7 +139,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                const auto dir_fn = PathFilePath(directories[i].path, wwiv::sdk::files::unalign(upload.filename));
+                const auto dir_fn = PathFilePath(d.path, wwiv::sdk::files::unalign(upload.filename));
                 File file(dir_fn);
                 if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {
@@ -159,7 +158,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   }
                 }
                 if (modified) {
-                  recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
+                  recordFile.Seek(sizeof(uploadsrec) * file_no, File::Whence::begin);
                   recordFile.Write(&upload, sizeof(uploadsrec));
                 }
               }
@@ -171,15 +170,15 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             recordFile.Close();
           }
         } else {
-          LOG(INFO) << "Directory '" << directories[i].name << "' missing file: " << record_path;
+          LOG(INFO) << "Directory '" << d.name << "' missing file: " << record_path;
         }
       }
-    } else if (directories[i].mask & mask_offline) {
-      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [OFFLINE]";
-    } else if (directories[i].mask & mask_cdrom) {
-      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [CDROM]";
+    } else if (d.mask & mask_offline) {
+      LOG(INFO) << "Skipping directory '" << d.name << "' [OFFLINE]";
+    } else if (d.mask & mask_cdrom) {
+      LOG(INFO) << "Skipping directory '" << d.name << "' [CDROM]";
     } else {
-      LOG(INFO) << "Skipping directory '" << directories[i].name << "' [UNKNOWN MASK]";
+      LOG(INFO) << "Skipping directory '" << d.name << "' [UNKNOWN MASK]";
     }
   }
 }
@@ -204,6 +203,5 @@ int FixDirectoriesCommand::Execute() {
   return 0;
 }
 
-}  // namespace wwivutil
-}  // namespavce wwiv
+} // namespavce wwiv
 

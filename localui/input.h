@@ -25,7 +25,6 @@
 #include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
-#include <cstring>
 #include <functional>
 #include <limits>
 #include <stdexcept>
@@ -38,9 +37,9 @@ enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
 #ifndef EDITLINE_FILENAME_CASE
 #ifdef __unix__
-#define EDITLINE_FILENAME_CASE EditLineMode::ALL
+static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL
 #else
-#define EDITLINE_FILENAME_CASE EditLineMode::ALL
+static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 #endif // __unix__
 #endif // EDITLINE_FILENAME_CASE
 
@@ -71,9 +70,9 @@ int messagebox(UIWindow* window, const std::vector<std::string>& text);
 void trimstrpath(char* s);
 
 template <typename T>
-static std::string to_restriction_string(T data, std::size_t size, const std::string& res) {
+static std::string to_restriction_string(T data, int size, const std::string& res) {
   std::string s;
-  for (size_t i = 0; i < size; i++) {
+  for (auto i = 0; i < size; i++) {
     if (data & (1 << i)) {
       s.push_back(res[i]);
     } else {
@@ -254,8 +253,8 @@ std::vector<std::string> item_list(const std::vector<std::pair<T, std::string>>&
 }
 
 template <typename T>
-std::size_t index_of(T& haystack, const std::vector<std::pair<T, std::string>>& needle) {
-  for (std::string::size_type i = 0; i < needle.size(); i++) {
+int index_of(T& haystack, const std::vector<std::pair<T, std::string>>& needle) {
+  for (int i = 0; i < wwiv::stl::ssize(needle); i++) {
     if (haystack == needle.at(i).first) {
       return i;
     }
@@ -268,7 +267,7 @@ public:
   ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data)
       : EditItem<T*>(x, y, 0, data), items_(items) {
     for (const auto& item : items) {
-      this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.second.size());
+      this->maxsize_ = std::max<int>(this->maxsize_, wwiv::strings::ssize(item.second));
     }
   }
   virtual ~ToggleEditItem() = default;
@@ -613,7 +612,7 @@ public:
   void create_window(const std::string& title);
 
   [[nodiscard]] CursesWindow* window() const { return window_.get(); }
-  [[nodiscard]] size_t size() const noexcept { return static_cast<size_t>(items_.size()); }
+  [[nodiscard]] int size() const noexcept { return static_cast<int>(items_.size()); }
 
   [[nodiscard]] int max_display_width() const {
     int result = 0;

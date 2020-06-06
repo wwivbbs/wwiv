@@ -186,7 +186,7 @@ std::string CommandLineCommand::ArgNameForKey(char key) {
 }
 
 int CommandLineCommand::Parse(int start_pos) {
-  for (size_t i = start_pos; i < raw_args_.size(); i++) {
+  for (auto i = start_pos; i < wwiv::stl::ssize(raw_args_); i++) {
     const string& s{raw_args_[i]};
     if (starts_with(s, "--")) {
       const auto delims = SplitString(s, "=");
@@ -226,7 +226,7 @@ int CommandLineCommand::Parse(int start_pos) {
       } else {
         // Add all residue to list of remaining args.
         // These usually are the positional arguments.
-        for (; i < raw_args_.size(); i++) {
+        for (; i < wwiv::stl::ssize(raw_args_); i++) {
           remaining_.emplace_back(raw_args_[i]);
         }
       }

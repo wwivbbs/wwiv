@@ -53,9 +53,9 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   // TODO(rushfan) assert that this starts_with(as, "\x1b["))?
   auto list = SplitString(as.substr(2), ";", false);
   std::vector<int> out;
-  const auto list_size = list.size();
-  for (size_t i = 0; i < defaults.size(); i++) {
-    if (i < list.size()) {
+  const auto list_size = std::min<int>(max_args, wwiv::stl::ssize(list));
+  for (auto i = 0; i < wwiv::stl::ssize(defaults); i++) {
+    if (i < list_size) {
       const auto& c = list.at(i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));
@@ -65,7 +65,7 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
     out.push_back(defaults.at(i));
   }
 
-  if (list_size > 0 && list_size > defaults.size()) {
+  if (list_size > 0 && list_size > wwiv::stl::ssize(defaults)) {
     const auto start = defaults.size();
     const auto end = list_size - defaults.size();
     for (auto i = start; i < end; i++) {
@@ -186,7 +186,7 @@ bool Ansi::write_in_sequence(char c) {
         b_->curatr(a | 0x80);
         break;
       case 7: { // Reverse Video
-        const auto ptr = a & 0x77;
+        const auto ptr = static_cast<uint8_t>(a & 0x77);
         b_->curatr((a & 0x88) | (ptr << 4) | (ptr >> 4));
       } break;
       default: {

@@ -619,8 +619,8 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
   const auto oldatr = curatr();
   const auto cx = WhereX();
   const auto cy = WhereY();
-  for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
-    pszInOutText[i] = char(0xb0); // 176
+  for (auto i = wwiv::strings::ssize(pszInOutText); i < len; i++) {
+    pszInOutText[i] = '\xb0'; // 176
   }
   pszInOutText[len] = '\0';
   curatr(GetEditLineColor());
@@ -677,7 +677,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
           for (int i = pos; i < len; i++) {
             pszInOutText[i] = pszInOutText[i + 1];
           }
-          pszInOutText[len - 1] = char(0xb0); // 176
+          pszInOutText[len - 1] = '\xb0'; // 176
           PutsXY(cx, cy, pszInOutText);
           GotoXY(cx + pos, cy);
         }
@@ -752,7 +752,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
               for (int i = pos - 1; i < len; i++) {
                 pszInOutText[i] = pszInOutText[i + 1];
               }
-              pszInOutText[len - 1] = char(0xb0); // 176
+              pszInOutText[len - 1] = '\xb0'; // 176
               pos--;
               PutsXY(cx, cy, pszInOutText);
               GotoXY(cx + pos, cy);
@@ -760,7 +760,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
               const auto ell = GetEditLineStringLength(pszInOutText);
               pos--;
               if (pos == (ell - 1)) {
-                pszInOutText[pos] = char(0xb0); // 176
+                pszInOutText[pos] = '\xb0'; // 176
               } else {
                 pszInOutText[pos] = SPACE;
               }

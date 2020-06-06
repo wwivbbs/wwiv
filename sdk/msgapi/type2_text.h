@@ -43,7 +43,7 @@ public:
   explicit Type2Text(std::filesystem::path text_filename);
 
   [[nodiscard]] std::vector<gati_t> load_gat(wwiv::core::File& file, int section);
-  void save_gat(core::File& f, size_t section, const std::vector<gati_t>& gat);
+  void save_gat(core::File& f, int section, const std::vector<gati_t>& gat);
   [[nodiscard]] std::optional<std::string> readfile(const messagerec& msg);
   [[nodiscard]] std::optional<messagerec> savefile(const std::string& text);
   [[nodiscard]] bool remove_link(const messagerec& msg);

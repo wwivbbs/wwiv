@@ -41,7 +41,7 @@ static void _align(char* fn) {
     invalid = true;
   }
 
-  for (size_t i = 0; i < size(fn); i++) {
+  for (int i = 0; i < ssize(fn); i++) {
     if (fn[i] == '\\' || fn[i] == '/' || fn[i] == ':' || fn[i] == '<' || fn[i] == '>' ||
         fn[i] == '|') {
       invalid = true;

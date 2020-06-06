@@ -141,7 +141,7 @@ Connect::Connect(std::initializer_list<net_interconnect_rec> l) {
 Connect::~Connect() = default;
 
 const net_interconnect_rec* Connect::node_config_for(int node) const {
-  auto iter = node_config_.find(node);
+  const auto iter = node_config_.find(static_cast<uint16_t>(node));
   if (iter != end(node_config_)) {
     return &iter->second;
   }

@@ -54,7 +54,7 @@ bool Type2Text::remove_link(const messagerec& msg) {
   if (!file || !file->IsOpen()) {
     return false;
   }
-  const size_t section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
+  const auto section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
   auto gat = load_gat(*file, section);
   auto current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
@@ -107,7 +107,7 @@ std::vector<gati_t> Type2Text::load_gat(File& file, int section) {
   return gat;
 }
 
-void Type2Text::save_gat(File& file, size_t section, const std::vector<gati_t>& gat) {
+void Type2Text::save_gat(File& file, int section, const std::vector<gati_t>& gat) {
   auto section_pos = section * GATSECLEN;
   file.Seek(section_pos, File::Whence::begin);
   file.Write(&gat[0], GAT_SECTION_SIZE);
@@ -167,21 +167,22 @@ std::optional<messagerec> Type2Text::savefile(const string& text) {
     // Unable to write to the message file.
     return std::nullopt;
   }
-  size_t section;
-  for (section = 0; section < 1024; section++) {
+  int section = 0;
+  for (; section < 1024; section++) {
     auto gat = load_gat(*msgfile, section);
-    const auto nNumBlocksRequired = static_cast<int>((text.length() + MSG_BLOCK_SIZE - 1) / MSG_BLOCK_SIZE);
+    const auto num_blocks_required = static_cast<int>((text.length() + MSG_BLOCK_SIZE - 1) / MSG_BLOCK_SIZE);
     gati_t i4 = 1;
     gati.clear();
-    while (ssize(gati) < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
+    while (ssize(gati) < num_blocks_required && i4 < GAT_NUMBER_ELEMENTS) {
       if (gat[i4] == 0) {
         gati.push_back(i4);
       }
       ++i4;
     }
-    if (ssize(gati) >= nNumBlocksRequired) {
-      gati.push_back(-1);
-      for (auto i = 0; i < nNumBlocksRequired; i++) {
+    if (ssize(gati) >= num_blocks_required) {
+      constexpr auto none = static_cast<uint16_t>(-1);
+      gati.push_back(none);
+      for (auto i = 0; i < num_blocks_required; i++) {
         msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
         msgfile->Write(&text[i * MSG_BLOCK_SIZE], MSG_BLOCK_SIZE);
         gat[gati[i]] = gati[i + 1];

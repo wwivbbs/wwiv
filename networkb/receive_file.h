@@ -18,26 +18,27 @@
 #ifndef __INCLUDED_NETORKB_RECEIVE_FILE_H__
 #define __INCLUDED_NETORKB_RECEIVE_FILE_H__
 
+#include "core/strings.h"
+#include "networkb/transfer_file.h"
 #include <cstdint>
 #include <ctime>
 #include <memory>
 #include <string>
-
-#include "networkb/transfer_file.h"
+#include <utility>
 
 namespace wwiv {
 namespace net {
 
-class  ReceiveFile {
+class ReceiveFile {
  public:
- 	ReceiveFile(TransferFile* file, const std::string& filename, 
+ 	ReceiveFile(TransferFile* file, std::string filename, 
               long expected_length, time_t timestamp, uint32_t crc)
-      : file_(file), filename_(filename), expected_length_(expected_length), 
+      : file_(file), filename_(std::move(filename)), expected_length_(expected_length), 
         timestamp_(timestamp), length_(0), crc_(crc) {}
- 	~ReceiveFile() {}
+ 	~ReceiveFile() = default;
 
-  bool WriteChunk(const char* chunk, size_t size) {
-    bool ok = file_->WriteChunk(chunk, size);
+  bool WriteChunk(const char* chunk, int size) {
+    const auto ok = file_->WriteChunk(chunk, size);
     if (ok) {
       length_ += size;
     }
@@ -45,26 +46,27 @@ class  ReceiveFile {
   }
 
   bool WriteChunk(const std::string& chunk) {
-    bool ok = file_->WriteChunk(chunk.data(), chunk.size());
-    if (ok) {
-      length_ += chunk.size();
+    const auto cs = wwiv::strings::ssize(chunk);
+    if (!file_->WriteChunk(chunk.data(), cs)) {
+      return false;
     }
-    return ok;
+    length_ += cs;
+    return true;
   }
 
-  const std::string filename() const { return filename_; }
-  long expected_length() const { return expected_length_; }
-  long length() const { return length_; }
-  time_t timestamp() const { return timestamp_; }
+  [[nodiscard]] std::string filename() const { return filename_; }
+  [[nodiscard]] long expected_length() const { return expected_length_; }
+  [[nodiscard]] long length() const { return length_; }
+  [[nodiscard]] time_t timestamp() const { return timestamp_; }
   bool Close() { return file_->Close(); }
-  uint32_t crc() const { return crc_; }
+  [[nodiscard]] uint32_t crc() const { return crc_; }
 
   std::unique_ptr<TransferFile> file_;
   std::string filename_;
-  long expected_length_ = 0;
-  time_t timestamp_ = 0;
-  long length_ = 0;
-  uint32_t crc_ = 0;
+  long expected_length_{0};
+  time_t timestamp_{0};
+  long length_{0};
+  uint32_t crc_{0};
 };
 
 }  // namespace net

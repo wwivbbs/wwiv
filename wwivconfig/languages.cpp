@@ -66,7 +66,7 @@ static void edit_lang(const std::string& base, languagerec& n) {
 static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   uint8_t max_num = 1;
   std::set<uint8_t> nums;
-  for (std::size_t i = 0; i < languages.size(); i++) {
+  for (auto i = 0; i < wwiv::stl::ssize(languages); i++) {
     const auto& l = languages[i];
     max_num = std::max<uint8_t>(max_num, l.num);
     nums.insert(l.num);
@@ -99,7 +99,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
   do {
     curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    for (std::size_t i = 0; i < languages.size(); i++) {
+    for (auto i = 0; i < wwiv::stl::ssize(languages); i++) {
       items.emplace_back(fmt::format("{} {} ({})", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = curses_out->window();

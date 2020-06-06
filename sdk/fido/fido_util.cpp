@@ -339,7 +339,7 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
     }
 
     // Strip out WWIV color codes.
-    for (std::size_t i = 0; i < line.length(); i++) {
+    for (auto i = 0; i < ssize(line); i++) {
       if (line[i] == 0x03) {
         i++;
         continue;

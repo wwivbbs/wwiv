@@ -110,13 +110,11 @@ bool Networks::contains(const std::string& network_name) const {
   return false;
 }
 
-// TODO(rushfan): Since should we make this algo available 
-// in wwiv::sdk since we do it on all containers often.
-bool Networks::insert(std::size_t n, net_networks_rec r) {
+bool Networks::insert(int n, net_networks_rec r) {
   return insert_at(networks_, n, r);
 }
 
-bool Networks::erase(std::size_t n) {
+bool Networks::erase(int n) {
   return erase_at(networks_, n);
 }
 

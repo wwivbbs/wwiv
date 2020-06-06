@@ -48,7 +48,7 @@ public:
   void rename_ftn_pending_files();
 
 private:
-  std::vector<TransferFile*> CreateWWIVnetTransferFileList(uint16_t destination_node) const;
+  std::vector<TransferFile*> CreateWWIVnetTransferFileList(int destination_node) const;
   std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
 
   const net_networks_rec net_;

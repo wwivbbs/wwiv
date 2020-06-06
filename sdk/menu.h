@@ -46,7 +46,7 @@ constexpr uint8_t MENU_HELP_LAST = 3;
 constexpr uint16_t MENU_HIDE_REGULAR = 2;
 constexpr uint16_t MENU_HIDE_BOTH = 3;
 
-constexpr size_t MENU_MAX_KEYS = 10;
+constexpr int MENU_MAX_KEYS = 10;
 
 #pragma pack(push, 1)
 

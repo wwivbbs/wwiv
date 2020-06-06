@@ -103,8 +103,8 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
   }
 }
 
-static void one_net_wwivnet_callout(const Config& config, const net_networks_rec& net,
-                                    const wwivd_config_t& c, int network_number) {
+static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_config_t& c,
+                                    int network_number) {
   Contact contact(net);
   const Callout callout(net);
   for (const auto& kv : callout.callout_config()) {
@@ -136,7 +136,7 @@ static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
   int network_number = 0;
   for (const auto& net : nets) {
     if (net.type == network_type_t::wwivnet) {
-      one_net_wwivnet_callout(config, net, c, network_number++);
+      one_net_wwivnet_callout(net, c, network_number++);
     } else if (net.type == network_type_t::ftn) {
       one_net_ftn_callout(config, net, c, network_number++);
     }

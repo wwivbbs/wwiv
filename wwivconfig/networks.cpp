@@ -63,8 +63,8 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
   }
 
   // TODO(rushfan): Ensure that no subs are using it.
-  for (size_t i = 0; i < subs.subs().size(); i++) {
-    size_t i2;
+  for (auto i = 0; i < wwiv::stl::ssize(subs.subs()); i++) {
+    int i2;
     for (i2 = 0; i2 < i; i2++) {
       if (subs.sub(i).filename == subs.sub(i2).filename) {
         break;
@@ -95,8 +95,8 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
   // Now we update the email.
   File emailfile(PathFilePath(config.datadir(), EMAIL_DAT));
   if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
-    auto t = emailfile.length() / sizeof(mailrec);
-    for (size_t r = 0; r < t; r++) {
+    auto t = static_cast<int>(emailfile.length() / sizeof(mailrec));
+    for (auto r = 0; r < t; r++) {
       mailrec m = {};
       emailfile.Seek(r * sizeof(mailrec), File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
@@ -669,8 +669,8 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
     return false;
   }
 
-  for (size_t i = 0; i < subs.subs().size(); i++) {
-    size_t i2 = 0;
+  for (auto i = 0; i < wwiv::stl::ssize(subs.subs()); i++) {
+    auto i2 = 0;
     for (i2 = 0; i2 < i; i2++) {
       if (subs.sub(i).filename == subs.sub(i2).filename) {
         break;
@@ -699,12 +699,12 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   // wwiv::sdk::write_subs(config.datadir(), subboards);
   File emailfile(PathFilePath(config.datadir(), EMAIL_DAT));
   if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
-    auto t = emailfile.length() / sizeof(mailrec);
-    for (size_t r = 0; r < t; r++) {
+    auto t = static_cast<int>(emailfile.length() / sizeof(mailrec));
+    for (auto r = 0; r < t; r++) {
       mailrec m{};
       emailfile.Seek(sizeof(mailrec) * r, File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
-      if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
+      if ((m.tosys != 0 || m.touser != 0) && m.fromsys) {
         if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
           // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
           m.title[71] = 0;
@@ -726,8 +726,8 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   }
 
   userrec u{};
-  int nu = number_userrecs(config.datadir());
-  for (int i = 1; i <= nu; i++) {
+  auto nu = number_userrecs(config.datadir());
+  for (auto i = 1; i <= nu; i++) {
     read_user(config, i, &u);
     if (u.net_num >= nn) {
       u.net_num++;

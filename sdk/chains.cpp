@@ -66,7 +66,7 @@ namespace cereal {
 template <typename T>
 inline std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   try {
-    return names.at(static_cast<size_t>(t));
+    return names.at(static_cast<int>(t));
   } catch (std::out_of_range&) {
     return names.at(0);
   }
@@ -75,7 +75,7 @@ inline std::string to_enum_string(const T& t, const std::vector<std::string>& na
 template <typename T>
 inline T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
   try {
-    for (size_t i = 0; i < names.size(); i++) {
+    for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
       if (v == names.at(i)) {
         return static_cast<T>(i);
       }
@@ -169,11 +169,11 @@ Chains::Chains(const Config& config) : datadir_(config.datadir()) {
   }
 }
 
-Chains::~Chains() {}
+Chains::~Chains() = default;
 
-bool Chains::insert(std::size_t n, chain_t r) { return insert_at(chains_, n, r); }
+bool Chains::insert(int n, chain_t r) { return insert_at(chains_, n, r); }
 
-bool Chains::erase(std::size_t n) { return erase_at(chains_, n); }
+bool Chains::erase(int n) { return erase_at(chains_, n); }
 
 bool Chains::Load() {
   if (LoadFromJSON()) {
@@ -205,7 +205,7 @@ bool Chains::LoadFromDat() {
   }
   regfile.ReadVector(reg);
 
-  for (std::size_t i = 0; i < old.size(); i++) {
+  for (auto i = 0; i < wwiv::stl::ssize(old); i++) {
     const auto& o = old.at(i);
     chain_t c{};
     c.filename = o.filename;
@@ -226,7 +226,7 @@ bool Chains::LoadFromDat() {
     c.sl = o.sl;
     c.ar = o.ar;
 
-    if (i < reg.size()) {
+    if (i < wwiv::stl::ssize(reg)) {
       // We have a chain.reg entry
       const auto& r = reg.at(i);
       for (int rb = 0; rb < 5; rb++) {

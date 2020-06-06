@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::files {
 
 // TODO(rushfan): Maybe move this to files_record.h and
-// get rid of the one un bbs/utility
+// get rid of the one in bbs/utility
 static std::string _stripfn(const std::string& file_name) {
   const std::filesystem::path p(file_name);
   if (!p.has_filename()) {
@@ -116,6 +116,10 @@ bool Allow::IsAllowed(const std::string& unaligned_filename) {
   }
   const auto e = to_allow_entry(align(unaligned_filename));
   return !std::binary_search(std::begin(allow_), std::end(allow_), e, icompare_lessthan);
+}
+
+int Allow::size() const {
+  return wwiv::stl::ssize(allow_);
 }
 
 Allow::~Allow() {

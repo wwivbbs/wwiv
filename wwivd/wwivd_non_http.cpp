@@ -36,6 +36,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace wwiv::wwivd {
@@ -176,11 +177,10 @@ std::string Color(int c, bool ansi) {
   return s;
 }
 
-ConnectionHandler::ConnectionHandler(const ConnectionData& d, accepted_socket_t a)
-    : data(d), r(a) {}
+ConnectionHandler::ConnectionHandler(ConnectionData d, accepted_socket_t a)
+    : data(std::move(d)), r(a) {}
 
-wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
-                                                      const wwivd_config_t& c) {
+wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const wwivd_config_t& c) {
 
   SocketConnection conn(r.client_socket, SocketConnection::ExitMode::LEAVE_SOCKET_OPEN);
   if (c.bbses.empty()) {
@@ -395,7 +395,7 @@ void ConnectionHandler::HandleConnection() {
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
-      bbs = DoMatrixLogon(*data.config, *data.c);
+      bbs = DoMatrixLogon(*data.c);
     } else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
     }

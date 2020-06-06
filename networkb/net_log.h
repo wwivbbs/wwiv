@@ -48,7 +48,7 @@ class NetworkLog {
   virtual ~NetworkLog();
 
   bool Log(
-    time_t time, NetworkSide side, int16_t node,
+    time_t time, NetworkSide side, int node,
     unsigned int bytes_sent, unsigned int bytes_received,
     std::chrono::seconds seconds_elapsed, const std::string& network_name);
   std::string GetContents() const;
@@ -56,8 +56,8 @@ class NetworkLog {
   std::string ToString() const;
 
    std::string CreateLogLine(
-     time_t time, NetworkSide side, int16_t node,
-     unsigned int bytes_sent, unsigned int bytes_received,
+     time_t time, NetworkSide side, int node,
+     int bytes_sent, int bytes_received,
      std::chrono::seconds seconds_elapsed, const std::string& network_name);
    
 private:

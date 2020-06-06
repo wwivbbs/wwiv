@@ -228,7 +228,7 @@ void File::Close() noexcept {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-ssize_t File::Read(void* buffer, size_t size) {
+ssize_t File::Read(void* buffer, ssize_t size) {
   const auto ret = read(handle_, buffer, size);
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG: Read errno: " << errno << " filename: " << full_path_name_
@@ -239,8 +239,8 @@ ssize_t File::Read(void* buffer, size_t size) {
   return ret;
 }
 
-ssize_t File::Write(const void* buffer, size_t size) {
-  const ssize_t r = write(handle_, buffer, size);
+ssize_t File::Write(const void* buffer, ssize_t size) {
+  const auto r = write(handle_, buffer, size);
   if (r == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;

@@ -180,7 +180,7 @@ bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const
 }
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
-  for (size_t i = 0; i < net_networks.size(); i++) {
+  for (auto i = 0; i < wwiv::stl::ssize(net_networks); i++) {
     if (iequals(net_networks[i].name, name.c_str())) {
       return i;
     }
@@ -436,11 +436,11 @@ bool Subs::Save() {
   return true;
 }
 
-bool Subs::insert(std::size_t n, subboard_t r) {
+bool Subs::insert(int n, subboard_t r) {
   return insert_at(subs_, n, r);
 }
 
-bool Subs::erase(std::size_t n) {
+bool Subs::erase(int n) {
   return erase_at(subs_, n);
 }
 

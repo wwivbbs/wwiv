@@ -62,13 +62,15 @@ CursesLocalIO::CursesLocalIO(int num_lines) {
   window_->Clear();
 }
 
-CursesLocalIO::~CursesLocalIO() { SetCursor(LocalIO::cursorNormal); }
+CursesLocalIO::~CursesLocalIO() {
+  CursesLocalIO::SetCursor(LocalIO::cursorNormal);
+}
 
 void CursesLocalIO::SetColor(int original_color) {
-  bool bold = (original_color & 8) != 0;
-  int color = original_color;
-  int bg = (color >> 4) & 0x07;
-  auto fg = color & 0x07;
+  const auto bold = (original_color & 8) != 0;
+  auto color = original_color;
+  const auto bg = (color >> 4) & 0x07;
+  const auto fg = color & 0x07;
   color = (bg << 3) | fg;
   auto attr = COLOR_PAIR(color);
   if (bold) {
@@ -98,7 +100,7 @@ void CursesLocalIO::Lf() {
 }
 
 void CursesLocalIO::Cr() {
-  int y = WhereY();
+  auto y = WhereY();
   window_->GotoXY(0, y);
 }
 
@@ -240,7 +242,6 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_RIGHT:
     return RARROW;
   case KEY_DELETE:
-    return BACKSPACE;
   case KEY_BACKSPACE:
     return BACKSPACE;
   case KEY_PPAGE:
@@ -308,10 +309,10 @@ void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
 int CursesLocalIO::GetDefaultScreenBottom() const noexcept { return window_->GetMaxY() - 1; }
 
 // copied from local_io_win32.cpp
-#define PREV 1
-#define NEXT 2
-#define DONE 4
-#define ABORTED 8
+static constexpr int PREV = 1;
+static constexpr int NEXT = 2;
+static constexpr int DONE = 4;
+static constexpr int ABORTED = 8;
 
 static int GetEditLineStringLength(const char* text) {
   int i = strlen(text);
@@ -326,8 +327,8 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
   const auto oldatr = curatr();
   const auto cx = WhereX();
   const auto cy = WhereY();
-  for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
-    pszInOutText[i] = static_cast<unsigned char>(176);
+  for (auto i = ssize(pszInOutText); i < len; i++) {
+    pszInOutText[i] = '\xb0';
   }
   pszInOutText[len] = '\0';
   curatr(GetEditLineColor());
@@ -384,7 +385,7 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
           for (int i = pos; i < len; i++) {
             pszInOutText[i] = pszInOutText[i + 1];
           }
-          pszInOutText[len - 1] = static_cast<unsigned char>(176);
+          pszInOutText[len - 1] = '\xb0';
           PutsXY(cx, cy, pszInOutText);
           GotoXY(cx + pos, cy);
         }
@@ -425,11 +426,11 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
             for (int i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];
             }
-            pszInOutText[pos++] = ch;
+            pszInOutText[pos++] = static_cast<char>(ch);
             PutsXY(cx, cy, pszInOutText);
             GotoXY(cx + pos, cy);
           } else {
-            pszInOutText[pos++] = ch;
+            pszInOutText[pos++] = static_cast<char>(ch);
             Putch(ch);
           }
         }
@@ -459,15 +460,15 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
               for (int i = pos - 1; i < len; i++) {
                 pszInOutText[i] = pszInOutText[i + 1];
               }
-              pszInOutText[len - 1] = static_cast<unsigned char>(176);
+              pszInOutText[len - 1] = '\xb0';
               pos--;
               PutsXY(cx, cy, pszInOutText);
               GotoXY(cx + pos, cy);
             } else {
-              int nStringLen = GetEditLineStringLength(pszInOutText);
+              auto string_len = GetEditLineStringLength(pszInOutText);
               pos--;
-              if (pos == (nStringLen - 1)) {
-                pszInOutText[pos] = static_cast<unsigned char>(176);
+              if (pos == (string_len - 1)) {
+                pszInOutText[pos] = '\xb0';
               } else {
                 pszInOutText[pos] = SPACE;
               }

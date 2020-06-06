@@ -285,7 +285,7 @@ char* StringRemoveChar(const char* str, char ch) {
 
   int i1 = 0;
   for (size_t i = 0; i < strlen(str); i++) {
-    if (str[i] != ch) {
+    if (ch != str[i]) {
       s_strip_string[i1] = str[i];
       i1++;
     } else {

@@ -83,6 +83,7 @@
 * move FileList into context (for tagged files)
 * get rid of stripfn
 * fix get_file_idz
+* make wwivutil fix use filesapi for extended descriptions.
 
 
 ## Open Questions

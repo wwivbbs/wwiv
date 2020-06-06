@@ -190,8 +190,8 @@ NetworkContact* Contact::contact_rec_for(const std::string& node) {
   return &it->second;
 }
 
-void Contact::ensure_rec_for(uint16_t node) {
-  auto key = NetworkContact::CreateFakeFtnAddress(node);
+void Contact::ensure_rec_for(int node) {
+  const auto key = NetworkContact::CreateFakeFtnAddress(node);
   return ensure_rec_for(key);
 }
 

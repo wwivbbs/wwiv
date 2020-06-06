@@ -39,7 +39,7 @@ using namespace wwiv::sdk::fido;
 
 namespace wwiv::net {
 
-vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) const {
+vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination_node) const {
   vector<TransferFile*> result;
   const auto s_node_net = fmt::format("s{}.net", destination_node);
   const auto search_path = PathFilePath(dirs_.net_dir(), s_node_net);

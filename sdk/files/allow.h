@@ -48,7 +48,7 @@ public:
   bool IsAllowed(const std::string& filename);
 
   [[nodiscard]] const std::vector<allow_entry_t>& allow_vector() const { return allow_; }
-  [[nodiscard]] std::size_t size() const { return allow_.size(); }
+  [[nodiscard]] int size() const;
   void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
   [[nodiscard]] bool save_on_exit() const { return save_on_exit_;  }
 

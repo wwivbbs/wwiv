@@ -52,7 +52,7 @@ public:
   };
 
   ConnectionHandler() = delete;
-  ConnectionHandler(const ConnectionData& d, wwiv::core::accepted_socket_t a);
+  ConnectionHandler(ConnectionData d, wwiv::core::accepted_socket_t a);
 
   void HandleConnection();
   void HandleBinkPConnection();
@@ -60,8 +60,7 @@ public:
 private:
   MailerModeResult DoMailerMode();
   BlockedConnectionResult CheckForBlockedConnection();
-  wwiv::sdk::wwivd_matrix_entry_t DoMatrixLogon(const wwiv::sdk::Config& config,
-                                                const wwiv::sdk::wwivd_config_t& c);
+  wwiv::sdk::wwivd_matrix_entry_t DoMatrixLogon(const wwiv::sdk::wwivd_config_t& c);
   ConnectionData data;
   wwiv::core::accepted_socket_t r;
 };

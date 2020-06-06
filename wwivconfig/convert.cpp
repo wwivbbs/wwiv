@@ -231,9 +231,9 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   }
 
   // merge in data from user_config
-  for (size_t i = 0; i < users.size(); i++) {
+  for (auto i = 0; i < wwiv::stl::ssize(users); i++) {
     auto& u = users.at(i);
-    if (i >= second_config.size()) {
+    if (i >= wwiv::stl::ssize(second_config)) {
       continue;
     }
     const auto& c = second_config.at(i);

@@ -17,29 +17,19 @@
 /**************************************************************************/
 #include "networkb_test/fake_connection.h"
 
-#include <stdexcept>
-#include <chrono>
-#include <cstring>
-#include <memory>
-#include <iostream>
-#include <sstream>
-#include <thread>
-
-#ifndef _WIN32
-#define NO_ERROR 0
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-
-#endif  // _WIN32
-
 #include "core/os.h"
 #include "core/scope_exit.h"
+#include "core/socket_exceptions.h"
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
-#include "core/socket_exceptions.h"
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
 
 using std::string;
-using std::make_unique;
 using std::unique_ptr;
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -48,7 +38,7 @@ using namespace wwiv::strings;
 using namespace wwiv::net;
 
 FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
-  const char *p = reinterpret_cast<const char*>(data);
+  auto p = static_cast<const char*>(data);
   header_ = (*p++) << 8;
   header_ = header_ | *p++;
   is_command_ = (header_ | 0x8000) != 0;
@@ -61,15 +51,17 @@ FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
   data_ = string(p, size - 2);  
 }
 
-FakeBinkpPacket::~FakeBinkpPacket() {}
-FakeBinkpPacket::FakeBinkpPacket(const FakeBinkpPacket& o) : is_command_(o.is_command_), command_(o.command_), header_(o.header_), data_(o.data_) {}
+FakeBinkpPacket::~FakeBinkpPacket() = default;
+
+FakeBinkpPacket::FakeBinkpPacket(const FakeBinkpPacket& o)
+    : is_command_(o.is_command_), command_(o.command_), header_(o.header_), data_(o.data_) {}
 
 
 std::string FakeBinkpPacket::debug_string() const {
   // since data_ doesn't have a trailing nullptr, use stringstream.
   std::stringstream ss;
   if (is_command_) {
-    const string s = (data_.size() > 0) ? data_.substr(1) : data_;
+    const auto s = !data_.empty() ? data_.substr(1) : data_;
     ss << "[" << BinkpCommands::command_id_to_name(command_) << "] data ='" << s << "'";
   } else {
     ss << "[DATA] data = '" << data_ << "'";
@@ -77,8 +69,8 @@ std::string FakeBinkpPacket::debug_string() const {
   return ss.str();
 }
 
-FakeConnection::FakeConnection() {}
-FakeConnection::~FakeConnection() {}
+FakeConnection::FakeConnection() = default;
+FakeConnection::~FakeConnection() = default;
 
 uint16_t FakeConnection::read_uint16(std::chrono::duration<double> d) {
   auto predicate = [&]() { 
@@ -90,7 +82,7 @@ uint16_t FakeConnection::read_uint16(std::chrono::duration<double> d) {
   }
   std::lock_guard<std::mutex> lock(mu_);
   const auto& packet = receive_queue_.front();
-  uint16_t header = packet.header();
+  auto header = packet.header();
   if (packet.is_command()) {
     header |= 0x8000;
   }
@@ -163,19 +155,19 @@ FakeBinkpPacket FakeConnection::GetNextPacket() {
 
 // Reply to the BinkP with a command.
 void FakeConnection::ReplyCommand(int8_t command_id, const string& data) {
-  const std::size_t size = 3 + data.size(); /* header + command + data + null*/
+  const int size = 3u + data.size(); /* header + command + data + null*/
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
-  // And for sending a commmand this will be 2 less than our actual packet size.
-  uint16_t packet_length = static_cast<uint16_t>(data.size() + sizeof(uint8_t)) | 0x8000;
-  uint8_t b0 = ((packet_length & 0xff00) >> 8) | 0x80;
-  uint8_t b1 = packet_length & 0x00ff;
+  // And for sending a command this will be 2 less than our actual packet size.
+  const uint16_t packet_length = static_cast<uint16_t>(data.size() + sizeof(uint8_t)) | 0x8000;
+  const uint8_t b0 = ((packet_length & 0xff00) >> 8) | 0x80;
+  const uint8_t b1 = packet_length & 0x00ff;
 
-  char *p = packet.get();
+  auto* p = packet.get();
   *p++ = b0;
   *p++ = b1;
   *p++ = command_id;
-  memcpy(p, data.data(), data.size());
+  memcpy(p, data.data(), data.size());  // NOLINT(bugprone-not-null-terminated-result)
 
   std::lock_guard<std::mutex> lock(mu_);
   receive_queue_.push(FakeBinkpPacket(packet.get(), size));

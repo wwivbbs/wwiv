@@ -181,7 +181,7 @@ ListBoxResult ListBox::RunDialog() {
       if (hotkeys_.find(static_cast<char>(ch & 0xff)) != string::npos) {
         // Since a hotkey was pressed, update selected_ to match the index
         // of the item containing the hotkey.
-        for (size_t i = 0; i < items_.size(); i++) {
+        for (auto i = 0; i < wwiv::stl::ssize(items_); i++) {
           if (items_.at(i).hotkey() == ch) {
             selected_ = i;
             break;

@@ -98,7 +98,7 @@ class Contact {
   // returns a mutable net_contact_rec for system number "node"
   [[nodiscard]] NetworkContact* contact_rec_for(int node);
   [[nodiscard]] NetworkContact* contact_rec_for(const std::string& node);
-  void ensure_rec_for(uint16_t node);
+  void ensure_rec_for(int node);
   void ensure_rec_for(const std::string& node);
 
   /** add a connection to node, including bytes send and received. */

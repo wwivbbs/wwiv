@@ -144,7 +144,7 @@ public:
       int selected = -1;
       do {
         vector<ListBoxItem> items;
-        for (size_t i = 1; i < menu_items_.size(); i++) {
+        for (auto i = 1; i < wwiv::stl::ssize(menu_items_); i++) {
           const auto& m = menu_items_.at(i);
           auto key = fmt::format("({})", m.szKey);
           const auto s = fmt::format("#{} {:<12} '{}' [{}]", i, key, m.szMenuText, m.szExecute);
@@ -422,7 +422,7 @@ void menus(const std::string& menu_dir) {
           break;
         case 'I':
           const auto prompt = fmt::format("Insert before which (1-{}) ? ", networks.networks().size() + 1);
-          const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
+          const auto net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
           if (net_num > 0 && net_num <= networks.networks().size() + 1) {
             if (dialog_yn(window, "Are you sure? ")) {
               insert_net(config, networks, net_num - 1);

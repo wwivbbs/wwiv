@@ -100,16 +100,16 @@ static bool equal(const xtrasubsnetrec& x1, const xtrasubsnetrec& x2) {
 static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {
   if (!IsEquals(x1.desc, x2.desc)) {
     return false;
-  } else if (x1.nets.size() != x2.nets.size()) {
-    return false;
-  } else {
-    for (std::size_t i = 0; i < x1.nets.size(); i++) {
-      if (!equal(x1.nets[i], x2.nets[i])) {
-        return false;
-      }
-    }
-    return true;
   }
+  if (x1.nets.size() != x2.nets.size()) {
+    return false;
+  }
+  for (auto i = 0; i < wwiv::stl::ssize(x1.nets); i++) {
+    if (!equal(x1.nets[i], x2.nets[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 TEST_F(SubXtrTest, Read) {
@@ -132,7 +132,7 @@ TEST_F(SubXtrTest, Read) {
   read_subs_xtr(helper.data(), net_networks_, subs_, actual);
   ASSERT_EQ(subs_.size(), actual.size());
   ASSERT_EQ(expected.size(), actual.size());
-  for (std::size_t i = 0; i < subs_.size(); i++) {
+  for (auto i = 0; i < wwiv::stl::ssize(subs_); i++) {
     EXPECT_TRUE(equal(expected.at(i), actual.at(i)));
   }
 }

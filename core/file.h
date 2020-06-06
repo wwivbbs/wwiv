@@ -115,13 +115,13 @@ public:
   void Close() noexcept;
   [[nodiscard]] bool IsOpen() const noexcept;
 
-  ssize_t Read(void* buf, size_t count);
-  ssize_t Write(const void* buf, size_t count);
+  ssize_t Read(void* buf, ssize_t count);
+  ssize_t Write(const void* buf, ssize_t count);
 
   ssize_t Write(const std::string& s) { return this->Write(s.data(), s.length()); }
 
-  ssize_t Writeln(const void* buffer, size_t nCount) {
-    auto ret = this->Write(buffer, nCount);
+  ssize_t Writeln(const void* buffer, ssize_t count) {
+    auto ret = this->Write(buffer, count);
     ret += this->Write("\r\n", 2);
     return ret;
   }

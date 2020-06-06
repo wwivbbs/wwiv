@@ -45,8 +45,8 @@ namespace wwiv::net {
 NetworkLog::NetworkLog(const std::string& gfiles_directory) : gfiles_directory_(gfiles_directory) {}
 NetworkLog::~NetworkLog() = default;
 
-std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int16_t node,
-                                      unsigned int bytes_sent, unsigned int bytes_received,
+std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int node,
+                                      int bytes_sent, int bytes_received,
                                       std::chrono::seconds seconds_elapsed,
                                       const std::string& network_name) {
 
@@ -63,8 +63,8 @@ std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int16_t nod
     ss << "To ";
   }
   ss << fmt::sprintf("%5d", node);
-  ss << fmt::sprintf(", S:%4uk", (bytes_sent + 1023) / 1024);
-  ss << fmt::sprintf(", R:%4uk", (bytes_received + 1023) / 1024);
+  ss << fmt::sprintf(", S:%4dk", (bytes_sent + 1023) / 1024);
+  ss << fmt::sprintf(", R:%4dk", (bytes_received + 1023) / 1024);
   ss << "          "; // should be ", %4.0f cps";
   ss << " ";          // last space before time.
 
@@ -84,7 +84,7 @@ std::string NetworkLog::GetContents() const {
   return file.ReadFileIntoString();
 }
 
-bool NetworkLog::Log(time_t time, NetworkSide side, int16_t node, unsigned int bytes_sent,
+bool NetworkLog::Log(time_t time, NetworkSide side, int node, unsigned int bytes_sent,
                      unsigned int bytes_received, std::chrono::seconds seconds_elapsed,
                      const std::string& network_name) {
 

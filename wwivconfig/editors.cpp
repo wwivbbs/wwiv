@@ -133,14 +133,15 @@ void extrn_editors(const wwiv::sdk::Config& config) {
             messagebox(curses_out->window(), "Too many editors.");
             break;
           }
-          string prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
-          size_t i = dialog_input_number(curses_out->window(), prompt, 1, editors.size() + 1);
+          auto prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
+          auto i = dialog_input_number(curses_out->window(), prompt, 1, editors.size() + 1);
           editorrec e{};
           memset(&e, 0, sizeof(editorrec));
           // N.B. i is one based, result.selected is 0 based.
-          if (i <= 0 || i > editors.size() + 1) {
+          if (i <= 0 || i > wwiv::stl::ssize(editors) + 1) {
             break;
-          } else if (i > editors.size()) {
+          }
+          if (i > wwiv::stl::ssize(editors)) {
             editors.push_back(e);
             edit_editor(editors.back());
           } else {
