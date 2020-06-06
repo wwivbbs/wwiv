@@ -145,6 +145,11 @@ const std::string& FileName::unaligned_filename() const noexcept {
   return unaligned_filename_;
 }
 
+//static
+std::optional<FileName> FileName::FromUnaligned(const std::string& unaligned_name) {
+  return {FileName(align(unaligned_name))};
+}
+
 FileRecord::FileRecord() : FileRecord(uploadsrec{}) {}
 
 FileRecord::FileRecord(const FileRecord& that) : u_(that.u()) {}

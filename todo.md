@@ -81,14 +81,6 @@
 * support moving file in sdk. (Maybe FileApi::MoveFile(old_area, new_area))
 * Move more batch code into batch class.
 * move FileList into context (for tagged files)
-* make batchrec use string and stop checking size since it's never saved
-  to disk.  Remove from vardec.h
-* Create a FileName class from an aligned filename, and also unaligned, or path
-* make send_file, maybe_internal, and all of those use a fs::path for a fully qualified
-  pathname just a filename.
-* Batch::contains_file should take a FileName
-* send_file's sfn should be an aligned filename, so maybe use FileName Also use path
-  where appropriate for send_file, xymodem_send, maybe_internal, etc.
 * get rid of stripfn
 * fix get_file_idz
 

@@ -968,9 +968,9 @@ int Application::Run(int argc, char* argv[]) {
       // post_logoff_cleanup
       remove_from_temp("*.*", temp_directory(), false);
       remove_from_temp("*.*", batch_directory(), false);
-      if (!batch().entry.empty() && (batch().entry.size() != batch().numbatchdl())) {
+      if (!batch().entry.empty() && batch().ssize() != batch().numbatchdl()) {
         for (const auto& b : batch().entry) {
-          if (!b.sending) {
+          if (!b.sending()) {
             didnt_upload(b);
           }
         }

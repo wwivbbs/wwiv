@@ -36,7 +36,7 @@ class WWIVMessageApi;
 class WWIVMessageAreaHeader : public MessageAreaHeader {
 public:
   explicit WWIVMessageAreaHeader(subfile_header_t& header) : header_(header) {}
-  WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t active_message_count);
+  WWIVMessageAreaHeader(int ver, uint32_t num_messages);
 
   [[nodiscard]] const subfile_header_t& header() const { return header_; }
   [[nodiscard]] uint16_t active_message_count() const { return header_.active_message_count; }
@@ -77,7 +77,7 @@ struct wwiv_parsed_text_fieds {
 
 class WWIVMessageArea final : public MessageArea, private Type2Text {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
+  WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                   std::filesystem::path sub_filename,
                   std::filesystem::path text_filename, int subnum);
   virtual ~WWIVMessageArea();
@@ -127,6 +127,7 @@ private:
   bool open_{false};
   subfile_header_t header_;
   std::unique_ptr<MessageAreaLastRead> last_read_;
+  int nonce_{0};
 };
 
 } // namespace msgapi

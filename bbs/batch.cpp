@@ -55,6 +55,7 @@
 #include <chrono>
 #include <iterator>
 #include <string>
+#include <utility>
 
 using std::begin;
 using std::end;
@@ -93,13 +94,13 @@ static void listbatch() {
     }
     string buffer;
     ++current_num;
-    if (b.sending) {
-      const string t = ctim(b.time(a()->modem_speed_));
-      buffer = fmt::sprintf("%d. %s %s   %s  %s", current_num, "(D)",
-                            b.filename, t, a()->directories[b.dir].name);
+    if (b.sending()) {
+      const auto t = ctim(b.time(a()->modem_speed_));
+      buffer = fmt::format("{}. (D) {}   {}  {}", current_num, b.aligned_filename(), t,
+                           a()->directories[b.dir()].name);
     } else {
-      buffer = fmt::sprintf("%d. %s %s             %s", current_num, "(U)",
-                            b.filename, a()->directories[b.dir].name);
+      buffer = fmt::format("{}. (U) {}             {}", current_num, b.aligned_filename(),
+                           a()->directories[b.dir()].name);
     }
     bout.bpla(buffer, &abort);
   }
@@ -110,10 +111,10 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
 
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
-    if (file_name == b.filename && b.sending) {
-      dliscan1(b.dir);
+    if (file_name == b.aligned_filename() && b.sending()) {
+      dliscan1(b.dir());
       auto* area = a()->current_file_area();
-      auto nRecNum = recno(b.filename);
+      auto nRecNum = recno(b.aligned_filename());
       if (nRecNum > 0) {
         auto f = area->ReadFile(nRecNum);
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
@@ -149,28 +150,28 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
 }
 
 void didnt_upload(const BatchEntry& b) {
-  if (b.sending) {
+  if (b.sending()) {
     return;
   }
 
-  dliscan1(b.dir);
+  dliscan1(b.dir());
   auto* area = a()->current_file_area();
-  auto nRecNum = recno(b.filename);
+  auto nRecNum = recno(b.aligned_filename());
   if (nRecNum <= 0) {
-    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.filename);
+    sysoplog() << fmt::format("!!! Couldn't find \"{}\" in transfer area.", b.aligned_filename());
     return;
   }
   files::FileRecord f{};
   do {
     f = area->ReadFile(nRecNum);
     if (f.numbytes() != 0) {
-      nRecNum = nrecno(b.filename, nRecNum);
+      nRecNum = nrecno(b.aligned_filename(), nRecNum);
     }
   }
   while (nRecNum != -1 && f.numbytes() != 0);
 
   if (nRecNum == -1 || f.numbytes() != 0) {
-    sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
+    sysoplog() << fmt::format("!!! Couldn't find \"\" in transfer area.", b.aligned_filename());
     return;
   }
   if (area->DeleteFile(f, nRecNum)) {
@@ -181,22 +182,22 @@ void didnt_upload(const BatchEntry& b) {
 static void uploaded(const string& file_name, long lCharsPerSecond) {
   for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry); ++it) {
     const auto& b = *it;
-    if (file_name == b.filename && !b.sending) {
-      dliscan1(b.dir);
+    if (file_name == b.aligned_filename() && !b.sending()) {
+      dliscan1(b.dir());
       auto* area = a()->current_file_area();
-      auto nRecNum = recno(b.filename);
+      auto nRecNum = recno(b.aligned_filename());
       if (nRecNum > 0) {
         files::FileRecord f{};
         do {
           f = area->ReadFile(nRecNum);
           if (f.numbytes() != 0) {
-            nRecNum = nrecno(b.filename, nRecNum);
+            nRecNum = nrecno(b.aligned_filename(), nRecNum);
           }
         }
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
           const auto source_filename = PathFilePath(a()->batch_directory(), file_name);
-          const auto dest_filename = PathFilePath(a()->directories[b.dir].path, file_name);
+          const auto dest_filename = PathFilePath(a()->directories[b.dir()].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
             File::Remove(source_filename);
@@ -205,7 +206,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
             if (!a()->upload_cmd.empty()) {
               file.Close();
-              if (!check_ul_event(b.dir, &f.u())) {
+              if (!check_ul_event(b.dir(), &f.u())) {
                 didnt_upload(b);
               } else {
                 file.Open(File::modeBinary | File::modeReadOnly);
@@ -214,7 +215,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
             if (file.IsOpen()) {
               f.u().numbytes = static_cast<daten_t>(file.length());
               file.Close();
-              get_file_idz(&f.u(), b.dir);
+              get_file_idz(&f.u(), b.dir());
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
               add_to_file_database(f);
               a()->user()->set_uk(a()->user()->uk() + static_cast<int>(bytes_to_k(f.numbytes())));
@@ -227,9 +228,9 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
                 area->Save();
               }
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
-                                        a()->directories[b.dir].name, lCharsPerSecond);
+                                        a()->directories[b.dir()].name, lCharsPerSecond);
               bout << "Uploaded '" << f.aligned_filename() << "' to "
-                  << a()->directories[b.dir].name << " (" << lCharsPerSecond << " cps)"
+                  << a()->directories[b.dir()].name << " (" << lCharsPerSecond << " cps)"
                   << wwiv::endl;
             }
           }
@@ -331,13 +332,13 @@ void zmbatchdl(bool bHangupAfterDl) {
     if (a()->user()->IsExemptRatio()) {
       bRatioBad = false;
     }
-    if (!a()->batch().entry[cur].sending) {
+    if (!a()->batch().entry[cur].sending()) {
       bRatioBad = false;
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      dliscan1(a()->batch().entry[cur].dir);
-      const int record_number = recno(a()->batch().entry[cur].filename);
+      dliscan1(a()->batch().entry[cur].dir());
+      const int record_number = recno(a()->batch().entry[cur].aligned_filename());
       if (record_number <= 0) {
         a()->batch().delbatch(cur);
       } else {
@@ -345,9 +346,9 @@ void zmbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
-        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
-        if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
+        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
+          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
           // update the send filename and copy it from the CD-ROM
           send_filename = PathFilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
@@ -461,13 +462,13 @@ void ymbatchdl(bool bHangupAfterDl) {
     if (a()->user()->IsExemptRatio()) {
       bRatioBad = false;
     }
-    if (!a()->batch().entry[cur].sending) {
+    if (!a()->batch().entry[cur].sending()) {
       bRatioBad = false;
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      dliscan1(a()->batch().entry[cur].dir);
-      const auto nRecordNumber = recno(a()->batch().entry[cur].filename);
+      dliscan1(a()->batch().entry[cur].dir());
+      const auto nRecordNumber = recno(a()->batch().entry[cur].aligned_filename());
       if (nRecordNumber <= 0) {
         a()->batch().delbatch(cur);
       } else {
@@ -475,9 +476,9 @@ void ymbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
-        if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir].path, f);
+        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
+          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
           send_filename = PathFilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
@@ -526,10 +527,10 @@ static string make_ul_batch_list() {
 
   TextFile tf(list_filename, "wt");
   for (const auto& b : a()->batch().entry) {
-    if (b.sending) {
+    if (b.sending()) {
       continue;
     }
-    auto line = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename));
+    auto line = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
     tf.WriteLine(line.string());
   }
   return list_filename.string();
@@ -547,31 +548,31 @@ static std::filesystem::path make_dl_batch_list() {
   int32_t at = 0;
   unsigned long addk = 0;
   for (const auto& b : a()->batch().entry) {
-    if (!b.sending) {
+    if (!b.sending()) {
       continue;
     }
     string filename_to_send;
-    if (a()->directories[b.dir].mask & mask_cdrom) {
-      const auto fileToSend = PathFilePath(a()->temp_directory(), files::FileName(b.filename));
+    if (a()->directories[b.dir()].mask & mask_cdrom) {
+      const auto fileToSend = PathFilePath(a()->temp_directory(), files::FileName(b.aligned_filename()));
       if (!File::Exists(fileToSend)) {
-        auto sourceFile = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename));
+        auto sourceFile = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
         File::Copy(sourceFile, fileToSend);
       }
       filename_to_send = fileToSend.string();
     } else {
-      filename_to_send = PathFilePath(a()->directories[b.dir].path, files::FileName(b.filename)).string();
+      filename_to_send = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename())).string();
     }
     bool ok = true;
     if (nsl() < b.time(a()->modem_speed_) + at) {
       ok = false;
-      bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
+      bout << "Cannot download " << b.aligned_filename() << ": Not enough time" << wwiv::endl;
     }
-    const auto thisk = bytes_to_k(b.len);
+    const auto thisk = bytes_to_k(b.len());
     if (a()->config()->req_ratio() > 0.0001 &&
         ratio1(addk + thisk) < a()->config()->req_ratio() &&
         !a()->user()->IsExemptRatio()) {
       ok = false;
-      bout << "Cannot download " << b.filename << ": Ratio too low" << wwiv::endl;
+      bout << "Cannot download " << b.aligned_filename() << ": Ratio too low" << wwiv::endl;
     }
     if (ok) {
       tf.WriteLine(filename_to_send);
@@ -844,14 +845,21 @@ std::chrono::seconds time_to_transfer(int32_t file_size, int32_t modem_speed) {
   return std::chrono::seconds(std::lround(12.656 * fs / ms));
 }
 
+BatchEntry::BatchEntry(std::string fn, int d, int l, bool s)
+: filename_(std::move(fn)), dir_(static_cast<int16_t>(d)), len_(l), sending_(s) {}
+BatchEntry::BatchEntry(const files::FileName& fn, int d, int l, bool s)
+: BatchEntry(fn.aligned_filename(), d, l, s) {}
+
+BatchEntry::BatchEntry() = default;
+
 int32_t BatchEntry::time(int modem_speed) const {
-  const auto d = time_to_transfer(modem_speed, len);
+  const auto d = time_to_transfer(modem_speed, len());
   return static_cast<int32_t>(d.count());
 }
 
 int Batch::FindBatch(const std::string& file_name) {
   for (size_t i = 0; i < entry.size(); i++) {
-    if (iequals(file_name, entry[i].filename)) {
+    if (iequals(file_name, entry[i].aligned_filename())) {
       return i;
     }
   }
@@ -874,7 +882,7 @@ bool Batch::delbatch(size_t pos) {
   return erase_at(entry, pos);
 }
 
-std::vector<BatchEntry>::iterator Batch::delbatch(std::vector<BatchEntry>::iterator it) {
+std::vector<BatchEntry>::iterator Batch::delbatch(std::vector<BatchEntry>::iterator& it) {
   return entry.erase(it);
 }
 
@@ -886,8 +894,8 @@ long Batch::dl_time_in_secs() const {
 
   size_t r = 0;
   for (const auto& e : entry) {
-    if (e.sending) {
-      r += e.len;
+    if (e.sending()) {
+      r += e.len();
     }
   }
 
@@ -895,12 +903,16 @@ long Batch::dl_time_in_secs() const {
   return std::lround(t);
 }
 
-bool Batch::contains_file(const std::string& file_name) {
+bool Batch::contains_file(const std::string& file_name) const {
   for (const auto& b : entry) {
-    if (iequals(file_name, b.filename)) {
+    if (iequals(file_name, b.aligned_filename())) {
       return true;
     }
   }
   return false;
 
+}
+
+bool Batch::contains_file(const files::FileName& fn) const {
+  return contains_file(fn.aligned_filename());
 }

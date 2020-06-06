@@ -116,17 +116,16 @@ bool WWIVMessageAreaLastRead::set_last_read(int, uint32_t last_read, uint32_t hi
 
 bool WWIVMessageAreaLastRead::Close() { return false; }
 
-WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
-                                             uint32_t num_messages)
+WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
     : header_(subfile_header_t()) {
   to_char_array(header_.signature, "WWIV\x1A");
   header_.revision = 1;
-  header_.wwiv_version = expected_wwiv_num_version;
+  header_.wwiv_version = static_cast<uint16_t>(ver);
   header_.daten_created = DateTime::now().to_daten_t();
   header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 
-WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
+WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path sub_filename,
                                  std::filesystem::path text_filename,
                                  int subnum)
@@ -136,7 +135,7 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
   if (!subfile) {
     // TODO: throw exception
   } else {
-    auto h = ReadHeader(subfile);
+    const auto h = ReadHeader(subfile);
     header_ = h->raw_header();
   }
   open_ = true;
@@ -681,6 +680,8 @@ int WWIVMessageArea::DeleteExcess() {
     if (!sub.Write(msgnum, &post)) {
       return false;
     }
+    // No reason other than make sure we're not const.
+    ++nonce_;
     // Write the header now.
     return WriteHeader(sub, *wwiv_header);
   }

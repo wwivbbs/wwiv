@@ -461,9 +461,17 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
   } else {
     nProtocol = get_protocol(dn == -1 ? xfertype::xf_down_temp : xfertype::xf_down);
   }
-  bool ok = false;
-  double percent = 0.0;
-  if (a()->batch().contains_file(sfn)) {
+  auto ok = false;
+  auto percent = 0.0;
+  auto opt = wwiv::sdk::files::FileName::FromUnaligned(sfn);
+  if (!opt) {
+    LOG(ERROR) << "Failed to align filename: " << sfn;
+    *abort = true;
+    bout.nl();
+    bout << "Internal Error: " << "Failed to align filename: " << sfn;
+    return;
+  }
+  if (a()->batch().contains_file(opt.value())) {
     *sent = false;
     if (nProtocol > 0) {
       bout.nl();
@@ -510,12 +518,8 @@ void send_file(const std::filesystem::path& path, bool* sent, bool* abort, const
             *sent = false;
             *abort = false;
           } else {
-            BatchEntry b;
-            b.filename = sfn;
-            b.dir = static_cast<int16_t>(dn);
-            b.sending = true;
-            b.len = fs;
-            a()->batch().AddBatch(b);
+            const BatchEntry b(sfn, dn, fs, true);
+            a()->batch().AddBatch(std::move(b));
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
             bout << "Batch: Files - " << a()->batch().size()
@@ -572,12 +576,8 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
         *received = 0;
       } else {
         *received = 2;
-        BatchEntry b;
-        b.filename = sfn;
-        b.dir = static_cast<int16_t>(dn);
-        b.sending = false;
-        b.len = 0;
-        a()->batch().AddBatch(b);
+        const BatchEntry b(sfn, dn, 0, false);
+        a()->batch().AddBatch(std::move(b));
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
         bout << "Batch upload: files - " << a()->batch().numbatchul() << "\r\n\n";

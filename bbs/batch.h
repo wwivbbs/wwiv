@@ -20,6 +20,7 @@
 
 #include "core/stl.h"
 #include "core/wwivport.h"
+#include "sdk/files/file_record.h"
 #include <chrono>
 #include <string>
 #include <vector>
@@ -29,17 +30,28 @@
  */
 class BatchEntry {
 public:
+  BatchEntry();
+  BatchEntry(std::string fn, int d, int l, bool s);
+  BatchEntry(const wwiv::sdk::files::FileName& fn, int d, int l, bool s);
+
   [[nodiscard]] int32_t time(int modem_speed) const;
-  bool sending{false};
 
   /** Aligned filename */
-  std::string filename;
+  [[nodiscard]] std::string aligned_filename() const { return filename_; }
 
   /** The read directory number (as in directoryrec) */
-  int16_t dir{-1};
+  [[nodiscard]] int16_t dir() const { return dir_; } 
 
   /** Size of the file*/
-  int32_t len{0};
+  [[nodiscard]] int32_t len() const { return len_; }
+
+  [[nodiscard]] bool sending() const { return sending_; }
+
+private:
+  std::string filename_;
+  int16_t dir_{-1};
+  int32_t len_{0};
+  bool sending_{false};
 };
 
 class Batch {
@@ -54,19 +66,25 @@ public:
     return true;
   }
 
+  bool AddBatch(BatchEntry&& b) {
+    entry.emplace_back(b);
+    return true;
+  }
+
   [[nodiscard]] int FindBatch(const std::string& file_name);
   bool RemoveBatch(const std::string& file_name);
   // deletes an entry by position;
   bool delbatch(size_t pos);
-  std::vector<BatchEntry>::iterator delbatch(std::vector<BatchEntry>::iterator it);
+  std::vector<BatchEntry>::iterator delbatch(std::vector<BatchEntry>::iterator& it);
 
   [[nodiscard]] long dl_time_in_secs() const;
-  bool contains_file(const std::string& file_name);
+  [[nodiscard]] bool contains_file(const std::string& file_name) const;
+  [[nodiscard]] bool contains_file(const wwiv::sdk::files::FileName& fn) const;
 
-  [[nodiscard]] size_t numbatchdl() const {
-    size_t r = 0;
+  [[nodiscard]] int numbatchdl() const {
+    auto r = 0;
     for (const auto& e : entry) {
-      if (e.sending)
+      if (e.sending())
         r++;
     }
     return r;
@@ -75,13 +93,13 @@ public:
   [[nodiscard]] size_t numbatchul() const noexcept {
     size_t r = 0;
     for (const auto& e : entry) {
-      if (!e.sending)
+      if (!e.sending())
         r++;
     }
     return r;
   }
 
-  [[nodiscard]] size_t size() const noexcept {
+  [[nodiscard]] int size() const noexcept {
     return entry.size();
   }
 

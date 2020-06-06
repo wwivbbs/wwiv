@@ -434,12 +434,8 @@ void tag_it() {
         }
       }
       if (!bad) {
-        BatchEntry b{};
-        b.filename = f.u.filename;
-        b.dir = f.directory;
-        b.sending = true;
-        b.len = fs;
-        a()->batch().AddBatch(b);
+        const BatchEntry b(f.u.filename, f.directory, fs, true);
+        a()->batch().AddBatch(std::move(b));
         bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -691,16 +687,12 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
           return 0;
         }
       }
-      BatchEntry b{};
-      b.filename = aligned_file_name;
-      b.dir = static_cast<int16_t>(dn);
-      b.sending = true;
-      b.len = fs;
+      const BatchEntry b(aligned_file_name, dn, fs, true);
       bout << "\r";
       const auto bt = ctim(b.time(a()->modem_speed_));
       bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                            a()->batch().size() + 1,
-                           b.filename, b.len, bt, a()->directories[b.dir].name);
+                           b.aligned_filename(), b.len(), bt, a()->directories[b.dir()].name);
       a()->batch().AddBatch(b);
       bout << "\r";
       bout << "|#5    Continue search? ";
@@ -782,10 +774,10 @@ void download() {
     }
     if (i < ssize(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
-      if (b.sending) {
+      if (b.sending()) {
         const auto t = ctim(b.time(a()->modem_speed_));
         bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
-                             i + 1, b.filename, b.len, t, a()->directories[b.dir].name);
+                             i + 1, b.aligned_filename(), b.len(), t, a()->directories[b.dir()].name);
       }
     } else {
       do {

@@ -100,11 +100,11 @@ public:
   static constexpr int exitLevelNotOK = 1;
   static constexpr int exitLevelQuit = 2;
 
-  Application(LocalIO* localIO);
+  explicit Application(LocalIO* localIO);
   virtual ~Application();
 
-  wwiv::sdk::User* user() { return thisuser_.get(); }
-  wwiv::bbs::SessionContext& context();
+  [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
+  [[nodiscard]] wwiv::bbs::SessionContext& context();
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -137,14 +137,14 @@ public:
   void reset_effective_sl();
   void effective_sl(int nSl);
   [[nodiscard]] int effective_sl() const;
-  const slrec& effective_slrec() const;
+  [[nodiscard]] const slrec& effective_slrec() const;
 
   [[nodiscard]] int GetChatNameSelectionColor() const { return chatname_color_; }
 
   [[nodiscard]] int GetMessageColor() const { return message_color_; }
 
   [[nodiscard]] uint16_t GetForcedReadSubNumber() const { return forced_read_subnum_; }
-  void SetForcedReadSubNumber(uint16_t n) { forced_read_subnum_ = n; }
+  void SetForcedReadSubNumber(int n) { forced_read_subnum_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
@@ -174,12 +174,12 @@ public:
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
   [[nodiscard]] uint16_t current_user_dir_num() const { return user_dir_num_; }
-  void set_current_user_dir_num(uint16_t n) { user_dir_num_ = n; }
+  void set_current_user_dir_num(int n) { user_dir_num_ = static_cast<uint16_t>(n); }
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
   [[nodiscard]] uint16_t current_user_sub_num() const { return user_sub_num_; }
-  void set_current_user_sub_num(uint16_t n) { user_sub_num_ = n; }
+  void set_current_user_sub_num(int n) { user_sub_num_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
   [[nodiscard]] const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
@@ -204,7 +204,7 @@ public:
   void SetCurrentConferenceMessageArea(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
-  void SetCurrentConferenceFileArea(uint16_t n) { current_conf_filearea_ = n; }
+  void SetCurrentConferenceFileArea(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
 
@@ -225,8 +225,8 @@ public:
   [[nodiscard]] int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
-  [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
-  [[nodiscard]] wwiv::sdk::UserManager* users() { return user_manager_.get(); }
+  [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() const { return statusMgr.get(); }
+  [[nodiscard]] wwiv::sdk::UserManager* users() const { return user_manager_.get(); }
 
   [[nodiscard]] const std::string& temp_directory() const { return temp_directory_; }
   [[nodiscard]] const std::string& batch_directory() const { return batch_directory_; }
@@ -292,7 +292,7 @@ public:
   // Public subsystems
   [[nodiscard]] Batch& batch();
   [[nodiscard]] wwiv::sdk::Subs& subs();
-  const wwiv::sdk::Subs& subs() const;
+  [[nodiscard]] const wwiv::sdk::Subs& subs() const;
 
   bool read_subs();
   bool create_message_api();
@@ -311,7 +311,7 @@ public:
    * @param argc The number of arguments
    * @param argv arguments
    */
-  int Run(int argc, char* argv[]);
+  int Run(int argc, char* argv[]) override;
 
   void ExitBBSImpl(int exit_level, bool perform_shutdown);
 

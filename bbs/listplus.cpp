@@ -289,12 +289,7 @@ int lp_add_batch(const std::string& file_name, int dn, long fs) {
         bout << "Can't add temporary file to batch queue.\r\n";
         pausescr();
       } else {
-        BatchEntry b{};
-        b.filename = file_name;
-        b.dir = static_cast<int16_t>(dn);
-        b.sending = true;
-        b.len = fs;
-        a()->batch().AddBatch(b);
+        a()->batch().AddBatch({file_name, dn, fs, true});
         return 1;
       }
     }
@@ -1466,24 +1461,24 @@ void do_batch_sysop_command(int mode, const char* file_name) {
     bool done = false;
     for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry) && !done; ++it) {
       const auto& b = *it;
-      if (b.sending) {
+      if (b.sending()) {
         switch (mode) {
         case SYSOP_DELETE:
-          if (!remove_filename(b.filename, b.dir)) {
+          if (!remove_filename(b.aligned_filename(), b.dir())) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);
           }
           break;
         case SYSOP_RENAME:
-          if (!rename_filename(b.filename, b.dir)) {
+          if (!rename_filename(b.aligned_filename(), b.dir())) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);
           }
           break;
         case SYSOP_MOVE:
-          if (!move_filename(b.filename, b.dir)) {
+          if (!move_filename(b.aligned_filename(), b.dir())) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);

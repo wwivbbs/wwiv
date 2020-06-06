@@ -834,7 +834,7 @@ class User {
   void SetExtraTime(float f) {
     data.extratime = f;
   }
-  /** Adds extra time to the user, returns the new total exta time. */
+  /** Adds extra time to the user, returns the new total extra time. */
   std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
   /** Subtracts extra time to the user, returns the new total extra time. */
   std::chrono::seconds subtract_extratime(std::chrono::duration<double> extra);

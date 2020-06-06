@@ -81,7 +81,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
     // Create new Message Text (.DAT ) file.
     msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     // I think we can skip this too since it doesn't do anything as we
-    // setlength the file which fills it with zeros.
+    // set the length on the file which fills it with zeros.
     uint16_t gat[GAT_NUMBER_ELEMENTS] = {0};
     msgs_file.Write(gat, GAT_SECTION_SIZE);
 

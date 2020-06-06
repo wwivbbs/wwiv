@@ -19,6 +19,8 @@
 #define __INCLUDED_SDK_FILES_FILE_RECORD_H__
 
 #include "sdk/config.h"
+
+#include <optional>
 #include <string>
 
 namespace wwiv::sdk::files {
@@ -31,6 +33,8 @@ public:
 
   [[nodiscard]] const std::string& aligned_filename() const noexcept;
   [[nodiscard]] const std::string& unaligned_filename() const noexcept;
+
+  static std::optional<FileName> FromUnaligned(const std::string& unaligned_name);
 
 private:
   const std::string aligned_filename_;

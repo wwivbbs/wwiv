@@ -64,7 +64,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-bool bad_filename(const char* file_name) {
+bool bad_filename(const std::string& file_name) {
   // strings not to allow in a .zip file to extract from
   static const vector<string> bad_words = {
       "COMMAND",
@@ -83,7 +83,7 @@ bool bad_filename(const char* file_name) {
   };
 
   for (const auto& bad_word : bad_words) {
-    if (strstr(file_name, bad_word.c_str())) {
+    if (strstr(file_name.c_str(), bad_word.c_str())) {
       bout << "Can't extract from that because it has " << file_name << wwiv::endl;
       return true;
     }
@@ -108,44 +108,38 @@ static bool check_for_files_arc(const std::filesystem::path& file_path) {
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a{};
     const auto file_size = file.length();
-    long lFilePos = 1;
+    long pos = 1;
     file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
     if (a.type != 26) {
-      file.Close();
       bout << file_path.filename().string() << " is not a valid .ARC file.";
       return false;
     }
-    while (lFilePos < file_size) {
-      file.Seek(lFilePos, File::Whence::begin);
+    while (pos < file_size) {
+      file.Seek(pos, File::Whence::begin);
       const auto num_read = file.Read(&a, sizeof(arch));
       if (num_read == sizeof(arch)) {
-        lFilePos += sizeof(arch);
+        pos += sizeof(arch);
         if (a.type == 1) {
-          lFilePos -= 4;
+          pos -= 4;
           a.size = a.len;
         }
         if (a.type) {
-          lFilePos += a.len;
-          ++lFilePos;
-          char szArcFileName[MAX_PATH];
-          strncpy(szArcFileName, a.name, 13);
-          szArcFileName[13] = 0;
-          strupr(szArcFileName);
-          if (bad_filename(szArcFileName)) {
-            file.Close();
+          pos += a.len;
+          ++pos;
+          auto arc_fn = ToStringUpperCase(trim_to_size(a.name, 13));
+          if (bad_filename(arc_fn)) {
             return false;
           }
         } else {
-          lFilePos = file_size;
+          pos = file_size;
         }
       } else {
-        file.Close();
         if (a.type != 0) {
           bout << file_path.filename().string() << " is not a valid .ARC file.";
           return false;
         }
-        lFilePos = file_size;
+        pos = file_size;
       }
     }
 
@@ -207,12 +201,10 @@ struct zip_end_dir {
 };
 
 bool check_for_files_zip(const std::filesystem::path& path) {
-  zip_local_header zl;
-  zip_central_dir zc;
-  zip_end_dir ze;
+  zip_local_header zl{};
+  zip_central_dir zc{};
+  zip_end_dir ze{};
   char s[MAX_PATH];
-
-#define READ_FN( ln ) { file.Read( s, ln ); s[ ln ] = '\0'; }
 
   const auto fn = path.filename().string();
   File file(path);
@@ -227,10 +219,9 @@ bool check_for_files_zip(const std::filesystem::path& path) {
       switch (sig) {
       case ZIP_LOCAL_SIG:
         file.Read(&zl, sizeof(zl));
-        READ_FN(zl.filename_len);
+        file.Read( s, zl.filename_len ); s[ zl.filename_len ] = '\0';
         strupr(s);
         if (bad_filename(s)) {
-          file.Close();
           return false;
         }
         l += sizeof(zl);
@@ -238,10 +229,9 @@ bool check_for_files_zip(const std::filesystem::path& path) {
         break;
       case ZIP_CENT_START_SIG:
         file.Read(&zc, sizeof(zc));
-        READ_FN(zc.filename_len);
+        file.Read( s, zl.filename_len ); s[ zl.filename_len ] = '\0';
         strupr(s);
         if (bad_filename(s)) {
-          file.Close();
           return false;
         }
         l += sizeof(zc);
@@ -249,10 +239,8 @@ bool check_for_files_zip(const std::filesystem::path& path) {
         break;
       case ZIP_CENT_END_SIG:
         file.Read(&ze, sizeof(ze));
-        file.Close();
         return true;
       default:
-        file.Close();
         bout << "Error examining that; can't extract from it.\r\n";
         return false;
       }
@@ -287,13 +275,13 @@ bool check_for_files_lzh(const std::filesystem::path& path) {
   }
   const auto file_size = file.length();
   unsigned short nCrc;
-  for (long l = 0; l < file_size;
-       l += a.fn_len + a.comp_size + sizeof(lharc_header) + file.Read(&nCrc, sizeof(nCrc)) + 1) {
+  for (long l = 0; l < file_size; l += a.fn_len + a.comp_size +
+                                       static_cast<long>(sizeof(lharc_header)) +
+                                       file.Read(&nCrc, sizeof(nCrc)) + 1) {
     file.Seek(l, File::Whence::begin);
     char flag;
     file.Read(&flag, 1);
     if (!flag) {
-      l = file_size;
       break;
     }
     auto num_read = file.Read(&a, sizeof(lharc_header));
@@ -313,7 +301,6 @@ bool check_for_files_lzh(const std::filesystem::path& path) {
       return false;
     }
   }
-  file.Close();
   return true;
 }
 
@@ -326,10 +313,9 @@ bool check_for_files_arj(const std::filesystem::path& path) {
     file.Seek(0L, File::Whence::begin);
     while (lCurPos < file_size) {
       file.Seek(lCurPos, File::Whence::begin);
-      unsigned short sh;
-      const int num_read = file.Read(&sh, 2);
+      uint16_t sh;
+      const auto num_read = file.Read(&sh, 2);
       if (num_read != 2 || sh != 0xea60) {
-        file.Close();
         bout << fn << " is not a valid .ARJ file.";
         return false;
       }
@@ -449,7 +435,7 @@ static bool download_temp_arc(const char* file_name, bool count_against_xfer_rat
   return false;
 }
 
-void add_arc(const char* arc, const char* file_name, int dos) {
+void add_arc(const char* arc, const std::string& file_name) {
   const auto arc_fn = fmt::format("{}.{}", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
   if (iequals(file_name, DROPFILE_CHAIN_TXT) ||
@@ -464,12 +450,8 @@ void add_arc(const char* arc, const char* file_name, int dos) {
     File::set_current_directory(a()->temp_directory());
     a()->localIO()->Puts(arc_cmd);
     a()->localIO()->Puts("\r\n");
-    if (dos) {
-      ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A));
-    } else {
-      ExecuteExternalProgram(arc_cmd, EFLAG_NONE);
-      a()->UpdateTopScreen();
-    }
+    ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A));
+    a()->UpdateTopScreen();
     a()->CdHome();
     sysoplog() << fmt::format("Added \"{}\" to {}", file_name, arc_fn);
   } else {
@@ -497,24 +479,20 @@ void add_temp_arc() {
       return;
     }
   }
-  add_arc("temp", file_mask.c_str(), 1);
+  add_arc("temp", file_mask);
 }
 
 void del_temp() {
-  char szFileName[MAX_PATH];
-
   bout.nl();
   bout << "|#9Enter file name to delete: ";
-  input(szFileName, 12, true);
-  if (!okfn(szFileName)) {
+  auto fn = input(12, true);
+  if (fn.empty() || !okfn(fn)) {
     return;
   }
-  if (szFileName[0]) {
-    if (strchr(szFileName, '.') == nullptr) {
-      strcat(szFileName, ".*");
-    }
-    remove_from_temp(szFileName, a()->temp_directory(), true);
+  if (strchr(fn.c_str(), '.') == nullptr) {
+    fn += ".*";
   }
+  remove_from_temp(fn, a()->temp_directory(), true);
 }
 
 void list_temp_dir() {
@@ -724,22 +702,21 @@ void move_file_t() {
     pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (int nCurBatchPos = a()->batch().size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  for (int pos = a()->batch().ssize() - 1; pos >= 0; pos--) {
     bool ok;
-    auto cur_batch_fn = aligns(a()->batch().entry[nCurBatchPos].filename);
-    dliscan1(a()->batch().entry[nCurBatchPos].dir);
-    int nTempRecordNum = recno(cur_batch_fn);
-    if (nTempRecordNum < 0) {
+    auto cur_batch_fn = aligns(a()->batch().entry[pos].aligned_filename());
+    dliscan1(a()->batch().entry[pos].dir());
+    int temp_record_num = recno(cur_batch_fn);
+    if (temp_record_num < 0) {
       bout << "File not found.\r\n";
       pausescr();
     }
-    int nCurPos = 0;
-    while (!a()->hangup_ && nTempRecordNum > 0) {
-      nCurPos = nTempRecordNum;
-      auto f = a()->current_file_area()->ReadFile(nTempRecordNum);
-      printfileinfo(&f.u(), a()->batch().entry[nCurBatchPos].dir);
+    while (!a()->hangup_ && temp_record_num > 0) {
+      auto cur_pos = temp_record_num;
+      auto f = a()->current_file_area()->ReadFile(temp_record_num);
+      printfileinfo(&f.u(), a()->batch().entry[pos].dir());
       bout << "|#5Move this (Y/N/Q)? ";
-      const char ch = ynq();
+      const auto ch = ynq();
       if (ch == 'Q') {
         tmp_disable_conf(false);
         dliscan();
@@ -747,20 +724,20 @@ void move_file_t() {
       }
       std::filesystem::path s1;
       if (ch == 'Y') {
-        s1 = PathFilePath(a()->directories[a()->batch().entry[nCurBatchPos].dir].path, f);
+        s1 = PathFilePath(a()->directories[a()->batch().entry[pos].dir()].path, f);
         string dirnum;
         do {
           bout << "|#2To which directory? ";
           dirnum = mmkey(MMKeyAreaType::dirs);
           if (dirnum.front() == '?') {
             dirlist(1);
-            dliscan1(a()->batch().entry[nCurBatchPos].dir);
+            dliscan1(a()->batch().entry[pos].dir());
           }
         }
         while (!a()->hangup_ && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
-          for (size_t i1 = 0; i1 < a()->directories.size() && (a()->udir[i1].subnum != -1); i1++) {
+          for (auto i1 = 0; i1 < wwiv::stl::ssize(a()->directories) && a()->udir[i1].subnum != -1; i1++) {
             if (dirnum == a()->udir[i1].keys) {
               d1 = i1;
             }
@@ -795,9 +772,9 @@ void move_file_t() {
         if (yesno()) {
           f.u().daten = daten_t_now();
         }
-        --nCurPos;
+        --cur_pos;
         auto ext_desc = a()->current_file_area()->ReadExtendedDescriptionAsString(f);
-        if (a()->current_file_area()->DeleteFile(f, nTempRecordNum)) {
+        if (a()->current_file_area()->DeleteFile(f, temp_record_num)) {
           a()->current_file_area()->Save();
         }
         auto s2 = PathFilePath(a()->directories[d1].path, f);
@@ -807,19 +784,19 @@ void move_file_t() {
           a()->current_file_area()->Save();
         }
         if (ext_desc) {
-          const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
-          a()->current_file_area()->AddExtendedDescription(f, pos, ext_desc.value());
+          const auto fpos = a()->current_file_area()->FindFile(f).value_or(-1);
+          a()->current_file_area()->AddExtendedDescription(f, fpos, ext_desc.value());
         }
         if (s1 != s2 && File::Exists(s1)) {
           File::Rename(s1, s2);
-          remlist(a()->batch().entry[nCurBatchPos].filename);
-          didnt_upload(a()->batch().entry[nCurBatchPos]);
-          a()->batch().delbatch(nCurBatchPos);
+          remlist(a()->batch().entry[pos].aligned_filename());
+          didnt_upload(a()->batch().entry[pos]);
+          a()->batch().delbatch(pos);
         }
         bout << "File moved.\r\n";
       }
       dliscan();
-      nTempRecordNum = nrecno(cur_batch_fn, nCurPos);
+      temp_record_num = nrecno(cur_batch_fn, cur_pos);
     }
   }
   tmp_disable_conf(false);
@@ -839,18 +816,18 @@ void removefile() {
     remove_fn += ".*";
   }
   remove_fn = aligns(remove_fn);
-  int i = recno(remove_fn);
-  bool abort = false;
-  while (!a()->hangup_ && (i > 0) && !abort) {
-    auto f = a()->current_file_area()->ReadFile(i);
-    if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
+  auto record_num = recno(remove_fn);
+  auto abort = false;
+  while (!a()->hangup_ && (record_num > 0) && !abort) {
+    auto f = a()->current_file_area()->ReadFile(record_num);
+    if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->usernum)) {
       bout.nl();
-      if (a()->batch().contains_file(f.aligned_filename())) {
+      if (a()->batch().contains_file(f.filename())) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
         printfileinfo(&f.u(), a()->current_user_dir().subnum);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
-        char ch = ynq();
+        auto ch = ynq();
         if (ch == 'Q') {
           abort = true;
         } else if (ch == 'Y') {
@@ -890,13 +867,13 @@ void removefile() {
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
                                     a()->directories[a()->current_user_dir().subnum].name);
-          if (a()->current_file_area()->DeleteFile(f, i)) {
+          if (a()->current_file_area()->DeleteFile(f, record_num)) {
             a()->current_file_area()->Save();
-            --i;
+            --record_num;
           }
         }
       }
     }
-    i = nrecno(remove_fn, i);
+    record_num = nrecno(remove_fn, record_num);
   }
 }

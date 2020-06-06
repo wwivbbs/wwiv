@@ -334,14 +334,14 @@ int messagebox(UIWindow* window, const vector<string>& text) {
     dialog->PutsXY(2, curline++, s);
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
-  const int x = (maxlen - prompt.length()) / 2;
+  const auto x = (maxlen - ssize(prompt)) / 2;
   dialog->PutsXY(x + 2, wwiv::stl::ssize(text) + 2, prompt);
   dialog->Refresh();
   return dialog->GetChar();
 }
 
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
-                                size_t max_length) {
+                                int max_length) {
   unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, wwiv::stl::ssize(prompt) + 4 + max_length));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
@@ -382,7 +382,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
 }
 
 char onek(CursesWindow* window, const char* pszKeys) {
-  char ch = 0;
+  char ch;
 
   while (!strchr(pszKeys, ch = to_upper_case<char>(static_cast<char>(window->GetChar())))) {
     // NOP
@@ -431,8 +431,8 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   int pos = 0;
   bool bInsert = false;
   do {
-    int ch = window->GetChar();
-    switch (ch) {
+    int raw_ch = window->GetChar();
+    switch (raw_ch) {
     case KEY_F(1): // curses
       done = true;
       rc = EditlineResult::DONE;
@@ -493,13 +493,14 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         window->GotoXY(cx + pos, cy);
       }
       break;
-    default:
-      if (ch > 31) {
+    default: {
+      if (raw_ch > 31) {
+        auto ch = static_cast<char>(raw_ch & 0xff);
         if (status == EditLineMode::UPPER_ONLY) {
-          ch = to_upper_case<char>(static_cast<char>(ch));
+          ch = to_upper_case<char>(ch);
         }
         if (status == EditLineMode::SET) {
-          ch = to_upper_case<char>(static_cast<char>(ch));
+          ch = to_upper_case<char>(ch);
           if (ch != ' ') {
             bool bLookingForSpace = true;
             for (int i = 0; i < len; i++) {
@@ -519,25 +520,26 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
             }
           }
         }
-        if ((pos < len) &&
-            (status == EditLineMode::ALL || (status == EditLineMode::UPPER_ONLY) ||
-             (status == EditLineMode::SET) ||
-             ((status == EditLineMode::NUM_ONLY) &&
-              (((ch >= '0') && (ch <= '9')) || (ch == ' ') || (pos == 0) && (ch == '-'))))) {
+        // ReSharper disable CppRedundantParentheses
+        if (pos < len &&
+            (status == EditLineMode::ALL || status == EditLineMode::UPPER_ONLY ||
+             status == EditLineMode::SET ||
+             (status == EditLineMode::NUM_ONLY &&
+             ((ch >= '0' && ch <= '9') || ch == ' ' || (pos == 0 && ch == '-'))))) {
           if (bInsert) {
-            for (int i = len - 1; i > pos; i--) {
+            for (auto i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];
             }
-            s[pos++] = static_cast<char>(ch);
+            s[pos++] = ch;
             window->PutsXY(cx, cy, s);
             window->GotoXY(cx + pos, cy);
           } else {
-            s[pos++] = static_cast<char>(ch);
+            s[pos++] = ch;
             window->Putch(ch);
           }
         }
       }
-      break;
+    } break;
     case KEY_ENTER:
 #ifdef PADENTER
     case PADENTER:
@@ -609,8 +611,8 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
-  int cx = window->GetcurX();
-  int cy = window->GetcurY();
+  const int cx = window->GetcurX();
+  const int cy = window->GetcurY();
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   bool done = false;
@@ -624,9 +626,6 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
       *rc = EditlineResult::NEXT;
       break;
     case ESC:
-      done = true;
-      *rc = EditlineResult::DONE;
-      break;
     case KEY_F(1): // F1
       done = true;
       *rc = EditlineResult::DONE;

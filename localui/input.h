@@ -50,7 +50,7 @@ enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
 bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
-std::string dialog_input_string(CursesWindow* window, const std::string& prompt, size_t max_length);
+std::string dialog_input_string(CursesWindow* window, const std::string& prompt, int max_length);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value,
                         int max_value);
 char onek(CursesWindow* window, const char* s);
@@ -281,7 +281,7 @@ public:
     auto index = index_of(*this->data_, items_);
     const auto items = item_list(items_);
     index = toggleitem(window, index, items, &return_code);
-    *this->data_ = items_.at(index).first;
+    *this->data_ = static_cast<T>(items_.at(index).first);
     DefaultDisplay(window);
     curses_out->footer()->SetDefaultFooter();
     return return_code;

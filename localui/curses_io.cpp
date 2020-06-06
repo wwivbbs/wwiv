@@ -169,17 +169,13 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   if (mode == indicator_mode_) {
     return;
   }
-  int x = max_x_ - 5;
   std::string s = "   ";
-  switch (mode) {
-  case IndicatorMode::INSERT:
+  if (mode == IndicatorMode::INSERT) {
     s = "INS";
-    break;
-  case IndicatorMode::OVERWRITE:
+  } else if (mode == IndicatorMode::OVERWRITE) {
     s = "OVR";
-    break;
   }
-  header_->PutsXY(x, 1, s.c_str());
+  header_->PutsXY(max_x_ - 5, 1, s);
   header_->Refresh();
   indicator_mode_ = mode;
 }
@@ -196,8 +192,7 @@ CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, 
 // static
 void CursesIO::Init(const std::string& title) {
   const auto once_init = [=]() { curses_out = new CursesIO(title); return true; };
-  // ReSharper disable once CppDeclaratorNeverUsed
-  static auto initialized_once = once_init();
+  [[maybe_unused]] static auto initialized_once = once_init();
 }
 
 // static 

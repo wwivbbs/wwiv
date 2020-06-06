@@ -42,7 +42,11 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void edit_editor(editorrec& e) {
-  const vector<std::pair<uint8_t, string>> bbs_types = {{0u, "WWIV"}, {1u,"QuickBBS"}};
+  constexpr uint8_t bbs_type_wwiv = 0;
+  constexpr uint8_t bbs_type_quickbbs = 1;
+
+  const std::vector<std::pair<uint8_t, string>> bbs_types = {{bbs_type_wwiv, "WWIV"},
+                                                             {bbs_type_quickbbs, "QuickBBS"}};
   constexpr int LABEL1_POSITION = 2;
   constexpr int LABEL1_WIDTH = 29;
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
