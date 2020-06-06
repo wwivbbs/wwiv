@@ -18,7 +18,10 @@
 /**************************************************************************/
 #include "bbs/mmkey.h"
 
+
+#include "bbsovl3.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
 #include "bbs/input.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -31,18 +34,38 @@ using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
+static bool mmkey_use_bgetch_event = true;
+
+static char mmkey_getch() {
+  if (!mmkey_use_bgetch_event) {
+    return bout.getkey(false);
+  }
+  const auto bge = bgetch_event(numlock_status_t::NUMBERS);
+  if (do_sysop_command(bge)) {
+    // Handle local sysop commands.
+    return 0;
+  }
+  if (bge == COMMAND_DELETE || bge == COMMAND_LEFT) {
+    return BACKSPACE;
+  }
+  if (bge >= 255) {
+    return 0;
+  }
+  return static_cast<char>(bge & 0xff);
+}
+
 string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
-  char ch;
+  unsigned char ch;
   string cmd1;
 
   do {
     do {
-      ch = bout.getkey();
+      ch = mmkey_getch();
       if (bListOption && (ch == RETURN || ch == SPACE)) {
         ch = upcase(ch);
         return string(1, ch);
       }
-    } while ((ch <= ' ' || ch == RETURN || ch > 126) && !a()->hangup_);
+    } while ((ch <= ' ' || ch > 126) && !a()->hangup_);
     ch = upcase(ch);
     bout.bputch(ch);
     if (ch == RETURN) {
@@ -64,30 +87,30 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
     int cp = 1;
     do {
       do {
-        ch = bout.getkey();
-      } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !a()->hangup_);
+        ch = mmkey_getch();
+      } while (((ch < ' ' && ch != RETURN && ch != BACKSPACE) || ch > 126) && !a()->hangup_);
       ch = upcase(ch);
       if (ch == RETURN) {
         bout.nl();
         bout.newline = true;
         return cmd1;
+      }
+      if (ch == BACKSPACE) {
+        bout.bs();
+        cmd1.pop_back();
+        cp--;
       } else {
-        if (ch == BACKSPACE) {
-          bout.bs();
-          cmd1.pop_back();
-          cp--;
-        } else {
-          cmd1.push_back(ch);
-          bout.bputch(ch);
-          cp++;
-          if (ch == '/' && cmd1[0] == '/') {
-            bout.newline = true;
-            return input_upper(50);
-          } else if (cp == p + 1) {
-            bout.nl();
-            bout.newline = true;
-            return cmd1;
-          }
+        cmd1.push_back(ch);
+        bout.bputch(ch);
+        cp++;
+        if (ch == '/' && cmd1[0] == '/') {
+          bout.newline = true;
+          return input_upper(50);
+        }
+        if (cp == p + 1) {
+          bout.nl();
+          bout.newline = true;
+          return cmd1;
         }
       }
     } while (cp > 0);
