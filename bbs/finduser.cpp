@@ -81,22 +81,23 @@ int finduser1(const string& searchString) {
   if (searchString.empty()) {
     return 0;
   }
-  auto un = finduser(searchString);
+  const auto un = finduser(searchString);
   if (un > 0) {
     return un;
   }
 
-  auto name_part = ToStringUpperCase(searchString);
+  const auto name_part = ToStringUpperCase(searchString);
   for (const auto& n : a()->names()->names_vector()) {
     if (strstr(reinterpret_cast<const char*>(n.name), name_part.c_str()) == nullptr) {
       continue;
     }
 
     bout << "|#5Do you mean " << a()->names()->UserName(n.number) << " (Y/N/Q)? ";
-    char ch = ynq();
+    const auto ch = ynq();
     if (ch == 'Y') {
       return n.number;
-    } else if (ch == 'Q') {
+    }
+    if (ch == 'Q') {
       return 0;
     }
   }

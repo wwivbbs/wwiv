@@ -375,14 +375,18 @@ int bgetch_handle_escape(int key) {
 int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   if (key == CBACKSPACE) {
     return COMMAND_DELETE;
-  } else if (key == CV) {
+  }
+  if (key == CV) {
     return COMMAND_INSERT;
-  } else if (key == RETURN || key == CL) {
+  }
+  if (key == RETURN || key == CL) {
     return EXECUTE;
-  } else if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
+  }
+  if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
     // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
     return a()->localIO()->GetChar() + 256;
-  } else if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+  }
+  if (numlock_mode == numlock_status_t::NOTNUMBERS) {
     auto ret = get_numpad_command(key);
     if (ret)
       return ret;
@@ -421,17 +425,19 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
     if (!bkbhitraw() && !a()->localIO()->KeyPressed()) {
       giveup_timeslice();
       continue;
-    } else if (beepyet) {
+    }
+    if (beepyet) {
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
     if (!a()->context().incom() || a()->localIO()->KeyPressed()) {
       // Check for local keys
       return bgetch_handle_key_translation(a()->localIO()->GetChar(), numlock_mode);
-    } else if (bkbhitraw()) {
+    }
+    if (bkbhitraw()) {
       auto key = static_cast<int>(bout.getkey(true));
       return (key == ESC) ? bgetch_handle_escape(key)
-                          : bgetch_handle_key_translation(key, numlock_mode);
+               : bgetch_handle_key_translation(key, numlock_mode);
     }
   }
   return 0; // must have hung up

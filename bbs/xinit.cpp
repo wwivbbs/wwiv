@@ -57,7 +57,7 @@
 #include "sdk/files/files.h"
 
 struct ini_flags_type {
-  const char* strnum;
+  const std::string strnum;
   uint32_t value;
 };
 
