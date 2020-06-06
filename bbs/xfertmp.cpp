@@ -361,7 +361,7 @@ bool check_for_files_arj(const std::filesystem::path& path) {
 
 static bool check_for_files(const std::filesystem::path& path) {
   struct arc_testers {
-    const char* arc_name;
+    const std::string arc_name;
     function<int(const std::filesystem::path&)> func;
   };
 

@@ -36,7 +36,7 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-void extract_out(char *b, long len, const char *title) {
+void extract_out(char *b, long len, const std::string& title) {
   // TODO Fix platform specific path issues...
 
   CHECK_NOTNULL(b);
@@ -138,7 +138,7 @@ void extract_out(char *b, long len, const char *title) {
               file.Seek(-1L, File::Whence::end);
             }
           }
-          file.Write(title, strlen(title));
+          file.Write(title.c_str(), title.size());
           file.Write("\r\n", 2);
           file.Write(b, len);
           file.Write(&ch, 1);

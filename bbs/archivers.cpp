@@ -73,11 +73,12 @@ static int check_arc(const std::string& filename) {
   }
 
   // Guess on type, using extension to guess
-  const char* ext = strstr(filename.c_str(), ".");
-  if (!ext) {
+  auto p = std::filesystem::path(filename);
+  auto ext = p.has_extension() ? p.extension().string() : "";
+  if (ext.empty()) {
     return COMPRESSION_UNKNOWN;
   }
-  ++ext;
+  ext = ext.substr(1);
   if (iequals(ext, "ZIP")) {
     return COMPRESSION_ZIP;
   }
@@ -112,32 +113,32 @@ static int check_arc(const std::string& filename) {
 // PAK has its own special modes, but still look like an ARC, thus, an ARC
 // Will puke if it sees this
 int match_archiver(const std::string& filename) {
-  char type[4];
-  int x = check_arc(filename);
+  auto x = check_arc(filename);
   if (x == COMPRESSION_UNKNOWN) {
     return 0;
   }
+  std::string type;
   switch (x) {
   case COMPRESSION_ZIP:
-    to_char_array(type, "ZIP");
+    type = "ZIP";
     break;
   case COMPRESSION_LHA:
-    to_char_array(type, "LHA");
+    type = "LHA";
     break;
   case COMPRESSION_ARJ:
-    to_char_array(type, "ARJ");
+    type = "ARJ";
     break;
   case COMPRESSION_PAK:
-    to_char_array(type, "PAK");
+    type =  "PAK";
     break;
   case COMPRESSION_ZOO:
-    to_char_array(type, "ZOO");
+    type = "ZOO";
     break;
   case COMPRESSION_RAR:
-    to_char_array(type, "RAR");
+    type = "RAR";
     break;
   default:
-    to_char_array(type, "ZIP");
+    type = "ZIP";
     break;
   }
 

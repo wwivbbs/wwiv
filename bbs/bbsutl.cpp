@@ -407,12 +407,12 @@ int check_ansi() {
   }
 
   bout.rputs("\x1b[6n");
-  auto now = steady_clock::now();
+  const auto now = steady_clock::now();
   auto l = now + seconds(3);
 
   while (steady_clock::now() < l) {
     CheckForHangup();
-    char ch = bgetchraw();
+    auto ch = bgetchraw();
     if (ch == '\x1b') {
       l = steady_clock::now() + seconds(1);
       while (steady_clock::now() < l) {
@@ -484,8 +484,8 @@ bool set_language(int n) {
   return true;
 }
 
-const char *YesNoString(bool bYesNo) {
-  return (bYesNo) ? str_yes : str_no;
+std::string YesNoString(bool bYesNo) {
+  return bYesNo ? str_yes : str_no;
 }
 
 /*

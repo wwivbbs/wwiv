@@ -55,4 +55,8 @@ TEST(UtilityTest, StripFnSmoke) {
   EXPECT_EQ("foo.zip", stripfn("C:\\X\\FOO.ZIP"));
   EXPECT_EQ("foo.zip", stripfn("C:\\X\\FOO  .ZIP"));
   EXPECT_EQ("foo", stripfn("C:\\X\\FOO"));
+
+
+  EXPECT_EQ("*", stripfn("*"));
+  EXPECT_EQ(".*", stripfn(".*"));
 }

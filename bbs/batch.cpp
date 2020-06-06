@@ -624,10 +624,9 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 }
 
 
-void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string& description) {
-  auto download_log_entry = StrCat(description,
-                                   "%s BATCH Download: Files - ", a()->batch().size(),
-                                   ", Time - ", ctim(a()->batch().dl_time_in_secs()));
+void dszbatchdl(bool bHangupAfterDl, const std::string& command_line, const std::string& description) {
+  auto download_log_entry = fmt::format("{} BATCH Download: Files - {}, Time - ()", 
+        description, a()->batch().size(), ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -642,8 +641,8 @@ void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string
 }
 
 static void dszbatchul(bool bHangupAfterDl, char* command_line, const std::string& description) {
-  string download_log_entry = fmt::sprintf("%s BATCH Upload: Files - %d", description,
-                                           a()->batch().size());
+  auto download_log_entry =
+      fmt::format("{} BATCH Upload: Files - {}", description, a()->batch().size());
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }

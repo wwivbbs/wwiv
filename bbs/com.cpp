@@ -77,16 +77,16 @@ bool yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!a()->hangup_) && ((ch = to_upper_case(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
-         && (ch != RETURN))
+  while (!a()->hangup_ && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
-  if (ch == *(YesNoString(true))) {
+  if (ch == YesNoString(true)[0]) {
     print_yn(true);
   } else {
     print_yn(false);
   }
-  return (ch == *(YesNoString(true))) ? true : false;
+  return (ch == YesNoString(true)[0]) ? true : false;
 }
 
 /**
@@ -96,16 +96,16 @@ bool noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!a()->hangup_) && ((ch = to_upper_case(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
-         && (ch != RETURN))
+  while (!a()->hangup_ && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
-  if (ch == *(YesNoString(false))) {
+  if (ch == YesNoString(false)[0]) {
     print_yn(false);
   } else {
     print_yn(true);
   }
-  return ch == *(YesNoString(true)) || ch == RETURN;
+  return ch == YesNoString(true)[0] || ch == RETURN;
 }
 
 char ynq() {
@@ -113,13 +113,13 @@ char ynq() {
 
   bout.Color(1);
   while (!a()->hangup_ &&
-         (ch = to_upper_case(bout.getkey())) != *(YesNoString(true)) &&
-         ch != *(YesNoString(false)) &&
+         (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] &&
          ch != *str_quit && ch != RETURN) {
     // NOP
     ;
   }
-  if (ch == *(YesNoString(true))) {
+  if (ch == YesNoString(true)[0]) {
     ch = 'Y';
     print_yn(true);
   } else if (ch == *str_quit) {

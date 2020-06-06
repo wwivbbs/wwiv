@@ -115,7 +115,7 @@ public:
 };
 
 void upload(int dn);
-void dszbatchdl(bool bHangupAfterDl, const char* command_line, const std::string& description);
+void dszbatchdl(bool bHangupAfterDl, const std::string& command_line, const std::string& description);
 int batchdl(int mode);
 void didnt_upload(const BatchEntry& b);
 void ymbatchdl(bool bHangupAfterDl);

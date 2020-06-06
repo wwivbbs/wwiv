@@ -269,8 +269,8 @@ static void modify_sub(int n) {
       string allowed("NYDFR");
       bout.nl();
       bout << "|#2New Anony (Y,N,D,F,R) ? ";
-      const char Y = *YesNoString(true);
-      const char N = *YesNoString(false);
+      const char Y = YesNoString(true)[0];
+      const char N = YesNoString(false)[0];
       allowed.push_back(Y);
       allowed.push_back(N);
       char ch2 = onek(allowed.c_str(), true);

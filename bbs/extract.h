@@ -18,8 +18,8 @@
 #ifndef __INCLUDED_BBS_EXTRACT_H__
 #define __INCLUDED_BBS_EXTRACT_H__
 
-#include <ctime>
+#include <string>
 
-void extract_out(char *b, long nLength, const char *title);
+void extract_out(char *b, long nLength, const std::string& title);
 
 #endif  // __INCLUDED_BBS_EXTRACT_H__

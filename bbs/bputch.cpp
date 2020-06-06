@@ -109,10 +109,10 @@ int Output::bputch(char c, bool use_buffer) {
 /* This function outputs a string to the com port.  This is mainly used
  * for modem commands
  */
-void Output::rputs(const char *text) {
+void Output::rputs(const std::string& text) {
   // Rushfan fix for COM/IP weirdness
   if (a()->context().ok_modem_stuff()) {
-    a()->remoteIO()->write(text, strlen(text));
+    a()->remoteIO()->write(text.c_str(), text.size());
   }
 }
 

@@ -145,7 +145,7 @@ public:
   int bputch(char c, bool use_buffer = false);
   void flush();
   void rputch(char ch, bool use_buffer = false);
-  void rputs(const char* text);
+  void rputs(const std::string& text);
   char getkey(bool allow_extended_input = false);
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();

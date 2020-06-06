@@ -35,7 +35,7 @@ bool sysop2();
 int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);
-const char *YesNoString(bool bYesNo);
+std::string YesNoString(bool bYesNo);
 bool okconf(wwiv::sdk::User *pUser);
 void* BbsAllocA(size_t num_bytes);
 

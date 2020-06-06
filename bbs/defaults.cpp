@@ -487,7 +487,7 @@ static void list_macro(const std::string& s) {
   int i = 0;
   const char* macro_text = s.c_str();
 
-  while ((i < 80) && (macro_text[i] != 0)) {
+  while (i < 80 && macro_text[i] != 0) {
     if (macro_text[i] >= 32) {
       bout.bputch(macro_text[i]);
     } else {
