@@ -24,6 +24,7 @@
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
 #include "bbs/application.h"
+#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 
 bool use_workspace;

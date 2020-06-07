@@ -142,7 +142,7 @@ static void do_callout(const net_networks_rec& net, int sn) {
   if (!contact_rec) {
     return;
   }
-  const auto csne = next_system(callout_rec->sysnum);
+  auto* const csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
   }
@@ -413,7 +413,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       }
     } else {
       if (nm[0] == '`' && nm[1] == '`') {
-        for (i = strlen(nm) - 2; i > 0; i--) {
+        for (i = wwiv::strings::ssize(nm) - 2; i > 0; i--) {
           if (nm[i] == '`' && nm[i + 1] == '`') {
             break;
           }
@@ -471,7 +471,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     }
 
     nh->length += strlen(newname);
-    if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
+    if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
       nh->length += subtype_or_author.size() + 1;
     }
     const auto packet_filename = StrCat(to_net.dir, "p1", a()->network_extension());

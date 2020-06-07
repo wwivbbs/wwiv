@@ -34,6 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/framebuffer.h"
 #include "sdk/config.h"
@@ -350,7 +351,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 
 static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   const auto oldcuratr = bout.curatr();
-  static constexpr int COLUMN2 = 42;
+  static constexpr const auto COLUMN2 = 42;
   auto num_header_lines = 0;
 
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
@@ -362,7 +363,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     bout.Color(a()->GetMessageColor());
     bout << msgarea;
     if (a()->user()->GetScreenChars() >= 78) {
-      auto pad = COLUMN2 - (6 + msgarea.size());
+      const auto pad = COLUMN2 - (6 + msgarea.size());
       bout << string(pad, ' ');
     } else {
       bout.nl();
@@ -380,7 +381,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     num_header_lines++;
   }
 
-  string from = msg.from_user_name;
+  auto from = msg.from_user_name;
   if (from.size() > 35) {
     from = from.substr(0, 35);
   }

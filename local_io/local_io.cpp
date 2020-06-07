@@ -44,16 +44,16 @@ wwiv::local_io::curatr_provider* LocalIO::curatr_provider() { return curatr_; }
 uint8_t LocalIO::curatr() const { return curatr_->curatr(); }
 void LocalIO::curatr(int c) { curatr_->curatr(c); }
 
-int LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys,
+EditlineResult LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys,
                     const std::string& allowed_set_chars) {
   char p[1024];
   to_char_array(p, s);
-  auto rc{0};
+  auto rc{EditlineResult::PREV};
   EditLine(p, len, allowed_keys, &rc, allowed_set_chars.c_str());
   s = p;
   return rc;
 }
 
-int LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys) {
+EditlineResult LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys) {
   return EditLine(s, len, allowed_keys, {});
 }

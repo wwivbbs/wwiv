@@ -18,15 +18,7 @@
 /**************************************************************************/
 #include "bbs/wfc.h"
 
-#include <cctype>
-#include <chrono>
-#include <memory>
-#include <string>
-#include <vector>
-
-// If this is gone, we get errors on CY and other things in wtypes.h
-#include "core/stl.h"
-
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
@@ -52,8 +44,6 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "local_io/local_io.h"
-#include "bbs/application.h"
 #include "bbs/voteedit.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
@@ -64,12 +54,19 @@
 #include "core/version.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "sdk/names.h"
+#include <cctype>
+#include <chrono>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -96,8 +93,7 @@ void wfc_cls(Application* a) {
   bout.clear_lines_listed();
 }
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 static void wfc_update() {
   // Every time we update the WFC, reset the lines listed.
@@ -165,12 +161,12 @@ void WFC::DrawScreen() {
     a()->localIO()->WriteScreenBuffer(screen_buffer.get());
     const auto title = fmt::format("Activity and Statistics of {} Node {}",
                                    a()->config()->system_name(), a()->instance_number());
-    a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
+    a()->localIO()->PutsXYA(1 + (76 - wwiv::strings::ssize(title)) / 2, 4, 15, title);
     a()->localIO()->PutsXYA(8, 1, 14, fulldate());
     a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
     a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->GetNumCallsToday()));
     User sysop{};
-    int feedback_waiting = 0;
+    auto feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
@@ -204,7 +200,7 @@ void WFC::DrawScreen() {
 
     get_inst_info(a()->instance_number(), &ir);
     if (ir.user < a()->config()->max_users() && ir.user > 0) {
-      const string unn = a()->names()->UserName(ir.user);
+      const auto unn = a()->names()->UserName(ir.user);
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", unn));
     } else {
       a()->localIO()->PutsXYA(33, 16, 14, fmt::format("{:<20}", "Nobody"));
@@ -215,8 +211,8 @@ void WFC::DrawScreen() {
     poll_time = wfc_time = steady_clock::now();
   } else {
     auto screen_saver_time = seconds(a()->screen_saver_time);
-    if ((a()->screen_saver_time == 0) || (steady_clock::now() - wfc_time < screen_saver_time)) {
-      string t = times();
+    if (a()->screen_saver_time == 0 || steady_clock::now() - wfc_time < screen_saver_time) {
+      auto t = times();
       a()->localIO()->PutsXYA(28, 1, 14, t);
       a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (steady_clock::now() - poll_time > seconds(10)) {
@@ -245,14 +241,14 @@ WFC::WFC(Application* a) : a_(a) {
   Clear();
 }
 
-WFC::~WFC() {}
+WFC::~WFC() = default;
 
 int WFC::doWFCEvents() {
   unsigned char ch = 0;
   int lokb = 0;
   LocalIO* io = a_->localIO();
 
-  auto last_date_status = a()->status_manager()->GetStatus();
+  const auto last_date_status = a()->status_manager()->GetStatus();
   do {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     a_->set_net_num(0);
@@ -261,8 +257,8 @@ int WFC::doWFCEvents() {
 
     // If the date has changed since we last checked, then then run the beginday event.
     if (date() != last_date_status->GetLastDate()) {
-      if ((a_->GetBeginDayNodeNumber() == 0) ||
-          (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
+      if (a_->GetBeginDayNodeNumber() == 0 ||
+          a_->instance_number() == a_->GetBeginDayNodeNumber()) {
         beginday(true);
         Clear();
       }
@@ -271,7 +267,7 @@ int WFC::doWFCEvents() {
     lokb = 0;
     a_->SetCurrentSpeed("KB");
     auto current_time = steady_clock::now();
-    auto node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
+    const auto node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
     // try to check for packets to send every minute.
     auto diff_time = current_time - last_network_attempt();
     auto time_to_call = diff_time > minutes(1); // was 1200
@@ -619,5 +615,4 @@ int WFC::LocalLogon() {
   return lokb;
 }
 
-} // namespace bbs
 } // namespace wwiv

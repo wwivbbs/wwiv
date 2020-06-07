@@ -32,6 +32,7 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "localui/wwiv_curses.h"
@@ -308,12 +309,6 @@ void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
 
 int CursesLocalIO::GetDefaultScreenBottom() const noexcept { return window_->GetMaxY() - 1; }
 
-// copied from local_io_win32.cpp
-static constexpr int PREV = 1;
-static constexpr int NEXT = 2;
-static constexpr int DONE = 4;
-static constexpr int ABORTED = 8;
-
 static int GetEditLineStringLength(const char* text) {
   int i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == 176)) {
@@ -322,7 +317,7 @@ static int GetEditLineStringLength(const char* text) {
   return i;
 }
 
-void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, int* returncode,
+void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
                              const char* pszAllowedSet) {
   const auto oldatr = curatr();
   const auto cx = WhereX();
@@ -344,7 +339,7 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
       switch (ch) {
       case F1:
         done = true;
-        *returncode = DONE;
+        *returncode = EditlineResult::DONE;
         break;
       case HOME:
         pos = 0;
@@ -369,11 +364,11 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
       case UARROW:
       case CO:
         done = true;
-        *returncode = PREV;
+        *returncode = EditlineResult::PREV;
         break;
       case DARROW:
         done = true;
-        *returncode = NEXT;
+        *returncode = EditlineResult::NEXT;
         break;
       case INSERT:
         if (allowed_keys != AllowedKeys::SET) {
@@ -440,11 +435,11 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
         case RETURN:
         case TAB:
           done = true;
-          *returncode = NEXT;
+          *returncode = EditlineResult::NEXT;
           break;
         case ESC:
           done = true;
-          *returncode = ABORTED;
+          *returncode = EditlineResult::ABORTED;
           break;
         case CA:
           pos = 0;
@@ -465,7 +460,7 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
               PutsXY(cx, cy, pszInOutText);
               GotoXY(cx + pos, cy);
             } else {
-              auto string_len = GetEditLineStringLength(pszInOutText);
+              const auto string_len = GetEditLineStringLength(pszInOutText);
               pos--;
               if (pos == (string_len - 1)) {
                 pszInOutText[pos] = '\xb0';

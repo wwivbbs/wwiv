@@ -25,6 +25,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "local_io/local_io.h"
 #include "sdk/names.h"
 #include <chrono>
 #include <string>
@@ -35,10 +36,6 @@ using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-#define PREV 1
-#define NEXT 2
-#define DONE 4
-#define ABORTED 8
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
@@ -92,7 +89,7 @@ void OnlineUserEditor() {
   bool done = false;
   int cp = 0;
   while (!done) {
-    int rc = ABORTED;
+    auto rc = EditlineResult::ABORTED;
     switch (cp) {
     case 0: {
       a()->localIO()->GotoXY(wx + 22, wy + 1);
@@ -215,20 +212,20 @@ void OnlineUserEditor() {
     } break;
     default: {
       LOG(ERROR) << "Unknown case: " << cp;
-      rc = ABORTED;
+      rc = EditlineResult::ABORTED;
     } break;
     }
     switch (rc) {
-    case ABORTED:
+    case EditlineResult::ABORTED:
       done = true;
       break;
-    case DONE:
+    case EditlineResult::DONE:
       done = true;
       break;
-    case NEXT:
+    case EditlineResult::NEXT:
       cp = (cp + 1) % 17;
       break;
-    case PREV:
+    case EditlineResult::PREV:
       cp--;
       if (cp < 0) {
         cp = 16;

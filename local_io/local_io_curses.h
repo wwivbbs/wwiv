@@ -64,13 +64,13 @@ public:
   void WriteScreenBuffer(const char* buffer) override;
   int GetDefaultScreenBottom() const noexcept override;
 
-  void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
+  void EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
                 const char* ss) override;
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
   virtual void ResetColors();
 
-  virtual void DisableLocalIO();
-  virtual void ReenableLocalIO();
+  void DisableLocalIO() override;
+  void ReenableLocalIO() override;
 
 private:
   void FastPuts(const std::string& text) override;

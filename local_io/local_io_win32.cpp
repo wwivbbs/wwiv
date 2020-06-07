@@ -41,11 +41,6 @@ using std::chrono::milliseconds;
 using namespace wwiv::strings;
 using wwiv::os::sound;
 
-#define PREV 1
-#define NEXT 2
-#define DONE 4
-#define ABORTED 8
-
 struct screentype {
   short x1, y1, topline1, curatr1;
   CHAR_INFO* scrn1;
@@ -614,7 +609,7 @@ static int GetEditLineStringLength(const char* text) {
 }
 
 void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys,
-                              int* returncode, const char* pszAllowedSet) {
+                              EditlineResult* returncode, const char* pszAllowedSet) {
 
   const auto oldatr = curatr();
   const auto cx = WhereX();
@@ -636,7 +631,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
       switch (ch) {
       case F1:
         done = true;
-        *returncode = DONE;
+        *returncode = EditlineResult::DONE;
         break;
       case HOME:
         pos = 0;
@@ -661,11 +656,11 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
       case UARROW:
       case CO:
         done = true;
-        *returncode = PREV;
+        *returncode = EditlineResult::PREV;
         break;
       case DARROW:
         done = true;
-        *returncode = NEXT;
+        *returncode = EditlineResult::NEXT;
         break;
       case INSERT:
         if (allowed_keys != AllowedKeys::SET) {
@@ -709,13 +704,13 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
             }
           }
         }
-        if ((pos < len) &&
-            ((allowed_keys == AllowedKeys::ALL) || (allowed_keys == AllowedKeys::UPPER_ONLY) ||
-             (allowed_keys == AllowedKeys::SET) ||
-             ((allowed_keys == AllowedKeys::NUM_ONLY) &&
-              (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
+        if (pos < len &&
+            (allowed_keys == AllowedKeys::ALL || allowed_keys == AllowedKeys::UPPER_ONLY ||
+             allowed_keys == AllowedKeys::SET ||
+             allowed_keys == AllowedKeys::NUM_ONLY &&
+             (ch >= '0' && ch <= '9' || ch == SPACE))) {
           if (insert) {
-            for (int i = len - 1; i > pos; i--) {
+            for (auto i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];
             }
             pszInOutText[pos++] = ch;
@@ -732,11 +727,11 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
         case RETURN:
         case TAB:
           done = true;
-          *returncode = NEXT;
+          *returncode = EditlineResult::NEXT;
           break;
         case ESC:
           done = true;
-          *returncode = ABORTED;
+          *returncode = EditlineResult::ABORTED;
           break;
         case CA:
           pos = 0;

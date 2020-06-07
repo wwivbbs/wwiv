@@ -22,7 +22,6 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
@@ -33,7 +32,6 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "local_io/keycodes.h"
-#include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
@@ -51,8 +49,6 @@ using namespace wwiv::strings;
 
 // module private functions
 void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
-
-#define ABORTED 8
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -152,8 +148,8 @@ static std::string select_chat_name() {
   a()->localIO()->PutsXY(31, 6, std::string(30, SPACE));
 
   a()->localIO()->GotoXY(31, 6);
-  int rc = a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL);
-  if (rc != ABORTED) {
+  auto rc = a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL);
+  if (rc != EditlineResult::ABORTED) { // ABORTED
     StringTrimEnd(&sysop_name);
     auto user_number = to_number<int>(sysop_name);
     if (user_number > 0 && user_number <= a()->config()->max_users()) {
@@ -195,7 +191,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
   }
   bool done = false;
   int side = 0;
-  unsigned char ch = 0;
+  char ch;
   do {
     ch = bout.getkey();
     if (bout.IsLastKeyLocal()) {
@@ -204,11 +200,11 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
-        const string unn = a()->names()->UserName(a()->usernum);
+        const auto unn = a()->names()->UserName(a()->usernum);
         sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name.c_str(), unn.c_str());
-        int nNumCharsToMove = (((a()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
-        if (nNumCharsToMove) {
-          strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
+        const auto chars_to_move = (a()->user()->GetScreenChars() - ssize(stripcolors(temp1))) / 2;
+        if (chars_to_move) {
+          strncpy(&s2[chars_to_move - 1], temp1, (strlen(temp1)));
         } else {
           to_char_array(s2, std::string(a()->user()->GetScreenChars() - 1, '\xCD'));
         }
@@ -219,7 +215,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         for (int cntr = 1; cntr < 12; cntr++) {
           sprintf(s2, "\x1b[%d;%dH", cntr, 1);
           bout << s2;
-          if ((cntr >= 0) && (cntr < 5)) {
+          if (cntr >= 0 && cntr < 5) {
             bout.Color(1);
             bout << side0[cntr + 6];
           }
@@ -566,7 +562,7 @@ void chat1(const char* chat_line, bool two_way) {
   auto tc_start = steady_clock::now();
   File chatFile(PathFilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
 
-  SavedLine line = bout.SaveCurrentLine();
+  auto line = bout.SaveCurrentLine();
 
   bout.nl(2);
   int nSaveTopData = a()->topdata;
@@ -586,10 +582,10 @@ void chat1(const char* chat_line, bool two_way) {
     bout.GotoXY(1, 12);
     bout.Color(7);
     for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
-      bout.bputch(static_cast<unsigned char>(205), true);
+      bout.bputch('\xCD', true);
     }
     bout.flush();
-    const string unn = a()->names()->UserName(a()->usernum);
+    const auto unn = a()->names()->UserName(a()->usernum);
     auto s = fmt::format(" {} chatting with {} ", sysop_name, unn);
     auto x = (a()->user()->GetScreenChars() - stripcolors(s).size()) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);

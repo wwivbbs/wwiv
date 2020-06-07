@@ -44,6 +44,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"

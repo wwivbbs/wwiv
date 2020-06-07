@@ -19,14 +19,9 @@
 #ifndef __INCLUDED_PLATFORM_LOCALIO_H__
 #define __INCLUDED_PLATFORM_LOCALIO_H__
 
-#include <string>
-
 #include "core/file.h"
 #include "local_io/curatr_provider.h"
-#include "local_io/keycodes.h"
-
-// This C++ class should encompass all Local Input/Output from The BBS.
-// You should use a routine in here instead of using printf, puts, etc.
+#include <string>
 
 enum class AllowedKeys { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
@@ -35,6 +30,13 @@ struct LocalIOData {
   std::string system_name;
 };
 
+enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
+
+
+/**
+ * Encompasses all Local Input/Output from The BBS.
+ * You should use a routine in here instead of using printf, puts, etc.
+ */
 class LocalIO {
 public:
   // Constructor/Destructor
@@ -95,11 +97,11 @@ public:
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void WriteScreenBuffer(const char* buffer) = 0;
   [[nodiscard]] virtual int GetDefaultScreenBottom() const noexcept = 0;
-  virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
+  virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
                         const char* allowed_set_chars) = 0;
-  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys,
+  virtual EditlineResult EditLine(std::string& s, int len, AllowedKeys allowed_keys,
                        const std::string& allowed_set_chars);
-  virtual int EditLine(std::string& s, int len, AllowedKeys allowed_keys);
+  virtual EditlineResult EditLine(std::string& s, int len, AllowedKeys allowed_keys);
   virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) = 0;
 
   [[nodiscard]] uint8_t GetTopScreenColor() const noexcept { return top_screen_color_; }

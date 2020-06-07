@@ -58,6 +58,7 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"

@@ -22,6 +22,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/type2_text.h"
@@ -74,14 +75,14 @@ static void set_gat_section(File& file, int section) {
     return;
   }
   auto file_size = file.length();
-  auto section_pos = static_cast<File::size_type>(section * GATSECLEN);
+  const auto section_pos = section * GATSECLEN;
   if (file_size < section_pos) {
     file.set_length(section_pos);
     file_size = section_pos;
   }
   file.Seek(section_pos, File::Whence::begin);
   if (file_size < (section_pos + GAT_SECTION_SIZE)) {
-    for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
+    for (auto i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
       gat[i] = 0;
     }
     file.Write(gat, GAT_SECTION_SIZE);
@@ -92,7 +93,7 @@ static void set_gat_section(File& file, int section) {
 }
 
 static void save_gat(File& file) {
-  auto section_pos = static_cast<File::size_type>(gat_section * GATSECLEN);
+  const auto section_pos = gat_section * GATSECLEN;
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
   a()->status_manager()->Run([](WStatus& s) {
