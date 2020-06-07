@@ -66,7 +66,7 @@ int bbsmain(int argc, char *argv[]) {
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
-    auto bbs = CreateSession(new StdioLocalIO());
+    auto* bbs = CreateSession(new StdioLocalIO());
     const auto return_code = bbs->Run(argc, argv);
     bbs->ExitBBSImpl(return_code, false);
     return return_code;

@@ -52,6 +52,9 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/local_io_curses.h"
 // ReSharper disable once CppUnusedIncludeDirective
+#include "chnedit.h"
+#include "diredit.h"
+#include "subedit.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
@@ -766,6 +769,7 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
   cmdline.add_argument(BooleanCommandLineArgument{"no_hangup", 'z',
                                                   "Do not hang up on user when at log off", false});
+  cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
 
   if (!cmdline.Parse()) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
@@ -897,6 +901,38 @@ int Application::Run(int argc, char* argv[]) {
       sleep_for(seconds(2));
     }
     ExitBBSImpl(oklevel_, true);
+  }
+  const auto sysop_cmd = cmdline.sarg("sysop_cmd");
+  if (!sysop_cmd.empty()) {
+    LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
+    remoteIO()->remote_info().clear();
+    frequent_init();
+    ReadCurrentUser(1);
+    reset_effective_sl();
+
+    usernum = 0;
+    // Since hang_it_up sets hangup_ = true, let's ensure we're always
+    // not in this state when we enter the WFC.
+    hangup_ = false;
+    set_at_wfc(true);
+    char cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
+    switch (cmd) {
+    case 'B':
+      boardedit();
+      break;
+    case 'C':
+      chainedit();
+      break;
+    case 'D':
+      dlboardedit();
+      break;
+    default:
+      LOG(ERROR) << "Unknown Sysop Command: '" << sysop_cmd;
+      ExitBBSImpl(errorlevel_, true);
+      break;
+    }
+    ExitBBSImpl(oklevel_, true);
+    return -1;
   }
 
   do {
