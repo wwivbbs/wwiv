@@ -48,6 +48,7 @@
 #include "core/strings-ng.h"
 #include "core/version.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/local_io_curses.h"
