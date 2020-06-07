@@ -22,7 +22,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
@@ -56,11 +55,6 @@
 #include "bbs/xinitini.h"
 #include "sdk/files/files.h"
 
-struct ini_flags_type {
-  const std::string strnum;
-  uint32_t value;
-};
-
 using std::string;
 using std::chrono::duration;
 using std::chrono::duration_cast;
@@ -70,27 +64,6 @@ using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-
-template <typename T>
-static T GetFlagsFromIniFile(IniFile& ini, const std::vector<ini_flags_type>& flag_definitions,
-                             T flags) {
-  for (const auto& fs : flag_definitions) {
-    const std::string key = fs.strnum;
-    if (key.empty()) {
-      continue;
-    }
-    const auto val = ini.value<string>(key);
-    if (val.empty()) {
-      continue;
-    }
-    if (ini.value<bool>(key)) {
-      flags |= fs.value;
-    } else {
-      flags &= ~fs.value;
-    }
-  }
-  return flags;
-}
 
 void StatusManagerCallback(int i) {
   switch (i) {
@@ -152,12 +125,11 @@ static uint16_t str2spawnopt(const std::string& s) {
 static uint16_t str2restrict(const std::string& s) {
   char s1[81];
 
-  to_char_array(s1, s);
-  strupr(s1);
+  to_char_array(s1, ToStringUpperCase(s));
   uint16_t r = 0;
-  for (int i = strlen(restrict_string) - 1; i >= 0; i--) {
+  for (auto i = ssize(restrict_string) - 1; i >= 0; i--) {
     if (strchr(s1, restrict_string[i])) {
-      r |= (1 << i);
+      r |= 1 << i;
     }
   }
 
@@ -262,7 +234,7 @@ void Application::ReadINIFile(IniFile& ini) {
     }
   }
 
-  // pull out newuser colors
+  // pull out new user colors
   for (int i = 0; i < 10; i++) {
     auto index = std::to_string(i);
     auto num = ini.value<uint8_t>(to_array_key(INI_STR_NUCOLOR, index));
@@ -306,7 +278,7 @@ void Application::ReadINIFile(IniFile& ini) {
   beginday_node_number_ = ini.value<int>(INI_STR_BEGINDAYNODENUMBER, 1);
 
   // pull out sysinfo_flags
-  flags_ = GetFlagsFromIniFile(ini, sysinfo_flags, flags_);
+  flags_ = ini.GetFlags(sysinfo_flags, flags_);
 
   // allow override of Application::message_color_
   message_color_ = ini.value<int>(INI_STR_MSG_COLOR, GetMessageColor());
@@ -322,7 +294,7 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   // sysconfig flags
-  config()->set_sysconfig(GetFlagsFromIniFile(ini, sysconfig_flags, config()->sysconfig_flags()));
+  config()->set_sysconfig(ini.GetFlags(sysconfig_flags, config()->sysconfig_flags()));
 
   // misc stuff
   auto num = ini.value<uint16_t>(INI_STR_MAIL_WHO_LEN);
@@ -357,11 +329,11 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   temp_directory = File::FixPathSeparators(temp_directory);
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-  string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
+  auto batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
   batch_directory = File::FixPathSeparators(batch_directory);
 
   // Replace %n with instance number value.
-  auto instance_num_string = std::to_string(instance_number);
+  const auto instance_num_string = std::to_string(instance_number);
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
@@ -389,7 +361,7 @@ bool Application::ReadConfig() {
               << " to the most recent version.\r\n";
     LOG(ERROR) << "Please run wwivconfig to upgrade " << CONFIG_DAT
                << " to the most recent version.";
-    wwiv::os::sleep_for(seconds(2));
+    sleep_for(seconds(2));
     return false;
   }
 
@@ -403,8 +375,7 @@ bool Application::ReadConfig() {
     AbortBBS();
   }
   ReadINIFile(ini);
-  auto config_ovr_read = ReadInstanceSettings(instance_number(), ini);
-  if (!config_ovr_read) {
+  if (!ReadInstanceSettings(instance_number(), ini)) {
     return false;
   }
 
@@ -454,19 +425,19 @@ bool Application::read_subs() {
 }
 
 class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
-  uint32_t last_read(int area) const { return a()->context().qsc_p[area]; }
+  [[nodiscard]] uint32_t last_read(int area) const override { return a()->context().qsc_p[area]; }
 
-  void set_last_read(int area, uint32_t last_read) {
+  void set_last_read(int area, uint32_t last_read) override {
     if (area >= 0) {
       a()->context().qsc_p[area] = last_read;
     }
   }
 
-  void Load() {
+  void Load() override {
     // Handled by the BBS in read_qscn(usernum, qsc, false);
   }
 
-  void Save() {
+  void Save() override {
     // Handled by the BBS in write_qscn(usernum, qsc, false);
   }
 };
@@ -480,7 +451,7 @@ bool Application::create_message_api() {
 
   // We only support type-2
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
-      options, *config_.get(), net_networks, new BBSLastReadImpl());
+      options, *config_, net_networks, new BBSLastReadImpl());
 
   fileapi_ = std::make_unique<wwiv::sdk::files::FileApi>(config_->datadir());
   return true;
@@ -546,7 +517,7 @@ void Application::read_networks() {
 
 bool Application::read_names() {
   // Load the SDK Names class too.
-  names_.reset(new Names(*config_.get()));
+  names_.reset(new Names(*config_));
   return true;
 }
 
@@ -743,7 +714,7 @@ void Application::InitializeBBS() {
   read_all_conferences();
 
   if (!user_already_on_) {
-    sysoplog(false);
+    sysoplog(false) << "";
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
   }

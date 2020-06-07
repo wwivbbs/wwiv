@@ -57,7 +57,7 @@
 #include "wwivconfig/user_editor.h"
 #include "wwivconfig/wwivd_ui.h"
 #include <cstdlib>
-#include <locale.h>
+#include <clocale>
 #include <memory>
 
 using std::string;
@@ -66,7 +66,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static bool CreateConfigOvr(const string& bbsdir) {
+static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
   auto num_instances = oini.value("NUM_INSTANCES", 4);
 
@@ -113,6 +113,33 @@ static bool CreateConfigOvr(const string& bbsdir) {
     LOG(ERROR) << "Unable to write to CONFIG.OVR.";
     return false;
   }
+
+  // Duplicated from xinit.cpp
+  // Since we never save config.dat from the BBS, we need to also
+  // update them here so they'll get saved back to config.dat for
+  // legacy applications that use it.  This still needs to happen
+  // in the BBS anyway since we use the values there.
+  constexpr auto INI_STR_2WAY_CHAT = "2WAY_CHAT";
+  constexpr auto INI_STR_NO_NEWUSER_FEEDBACK = "NO_NEWUSER_FEEDBACK";
+  constexpr auto INI_STR_TITLEBAR = "TITLEBAR";
+  constexpr auto INI_STR_LOG_DOWNLOADS = "LOG_DOWNLOADS";
+  constexpr auto INI_STR_CLOSE_XFER = "CLOSE_XFER";
+  constexpr auto INI_STR_ALL_UL_TO_SYSOP = "ALL_UL_TO_SYSOP";
+  constexpr auto INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";
+  constexpr auto INI_STR_FREE_PHONE = "FREE_PHONE";
+  constexpr auto INI_STR_EXTENDED_USERINFO = "EXTENDED_USERINFO";
+  static std::vector<ini_flags_type> sysconfig_flags = {
+    {INI_STR_2WAY_CHAT, sysconfig_2_way},
+    {INI_STR_NO_NEWUSER_FEEDBACK, sysconfig_no_newuser_feedback},
+    {INI_STR_TITLEBAR, sysconfig_titlebar},
+    {INI_STR_LOG_DOWNLOADS, sysconfig_log_dl},
+    {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
+    {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
+    {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
+    {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
+    {INI_STR_FREE_PHONE, sysconfig_free_phone}};
+
+  config.set_sysconfig(oini.GetFlags(sysconfig_flags, config.sysconfig_flags()));
 
   return true;
 }
@@ -390,7 +417,7 @@ int WInitApp::main(int argc, char** argv) {
     legacy_4xx_menu(config, window);
     return 0;
   }
-  CreateConfigOvr(bbsdir);
+  CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
 
   {
     File archiverfile(PathFilePath(config.datadir(), ARCHIVER_DAT));

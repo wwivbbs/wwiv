@@ -29,6 +29,12 @@
 namespace wwiv {
 namespace core {
 
+struct ini_flags_type {
+  const std::string strnum;
+  uint32_t value;
+};
+
+
 class IniFile final {
 public:
   IniFile(std::filesystem::path filename, std::initializer_list<const char*> sections);
@@ -51,8 +57,28 @@ public:
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
-  std::string full_pathname() const noexcept { return path_.string(); }
-  std::filesystem::path path() const noexcept { return path_; }
+  [[nodiscard]] std::string full_pathname() const noexcept { return path_.string(); }
+  [[nodiscard]] std::filesystem::path path() const noexcept { return path_; }
+
+template <typename T>
+  T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) {
+  for (const auto& fs : flag_definitions) {
+    const auto key = fs.strnum;
+    if (key.empty()) {
+      continue;
+    }
+    const auto val = value<std::string>(key);
+    if (val.empty()) {
+      continue;
+    }
+    if (value<bool>(key)) {
+      flags |= fs.value;
+    } else {
+      flags &= ~fs.value;
+    }
+  }
+  return flags;
+}
 
 private:
   // This class should not be assignable via '=' so remove the implicit operator=
@@ -61,9 +87,9 @@ private:
   IniFile& operator=(const IniFile& other) = delete;
   const char* GetValue(const std::string& key, const char* default_value = nullptr) const;
 
-  std::string GetStringValue(const std::string& key, const std::string& default_value) const;
-  long GetNumericValueT(const std::string& key, long default_value = 0) const;
-  bool GetBooleanValue(const std::string& key, bool default_value = false) const;
+  [[nodiscard]] std::string GetStringValue(const std::string& key, const std::string& default_value) const;
+  [[nodiscard]] long GetNumericValueT(const std::string& key, long default_value = 0) const;
+  [[nodiscard]] bool GetBooleanValue(const std::string& key, bool default_value = false) const;
 
   const std::filesystem::path path_;
   bool open_{false};
@@ -72,16 +98,16 @@ private:
 };
 
 template <>
-std::string IniFile::value<std::string>(const std::string& key,
-                                        const std::string& default_value) const;
+[[nodiscard]] std::string IniFile::value<std::string>(const std::string& key,
+                                                      const std::string& default_value) const;
 
 template <>
-std::string IniFile::value<std::string>(const std::string& key) const;
+[[nodiscard]] std::string IniFile::value<std::string>(const std::string& key) const;
 
 template <>
-bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
+[[nodiscard]] bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
 template <>
-bool IniFile::value<bool>(const std::string& key) const;
+[[nodiscard]] bool IniFile::value<bool>(const std::string& key) const;
 
 
 } // namespace core

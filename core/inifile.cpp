@@ -135,9 +135,9 @@ GetStringValue(const std::string& key, const std::string& default_value) const {
   return (s != nullptr) ? s : default_value;
 }
 
-bool IniFile::GetBooleanValue(const string& key, bool defaultValue) const {
+bool IniFile::GetBooleanValue(const string& key, bool default_value) const {
   const auto s = GetValue(key);
-  return (s != nullptr) ? StringToBoolean(s) : defaultValue;
+  return (s != nullptr) ? StringToBoolean(s) : default_value;
 }
 
 long IniFile::GetNumericValueT(const string& key, long default_value) const {
