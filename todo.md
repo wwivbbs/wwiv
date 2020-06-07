@@ -25,8 +25,6 @@
 
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* Update syscfg.sysconfig in init and save it back, since
-  wwiv never saves config.dat anymore.
 * stop using strncpy, strcpy.
 * Create a SDK QScan class to wrap interacting with the WWIV qscan
   variables and also load/save user.qsc
