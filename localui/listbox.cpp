@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <sstream>
 
 using std::string;
 using namespace wwiv::stl;
@@ -42,8 +41,8 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
     : title_(title), items_(items), color_scheme_(scheme),
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
-  int window_height = 2 + height_ + window_top_min_ - 1;
-  int longest_line = std::max<int>(2, title.size() + 4);
+  const auto window_height = 2 + height_ + window_top_min_ - 1;
+  auto longest_line = std::max<int>(2, title.size() + 4);
   for (const auto& item : items) {
     longest_line = std::max<int>(longest_line, item.text().size());
     if (item.hotkey() > 0) {
@@ -54,12 +53,12 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
   int window_width = 4 + width_;
   int maxx = parent->GetMaxX();
   int maxy = parent->GetMaxY();
-  int begin_x = ((maxx - window_width) / 2);
-  int begin_y = ((maxy - window_height) / 2);
+  int begin_x = (maxx - window_width) / 2;
+  int begin_y = (maxy - window_height) / 2;
 
   CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
 
-  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), curses_out->color_scheme(),
+  window_.reset(new CursesWindow(dynamic_cast<CursesWindow*>(parent), curses_out->color_scheme(),
                                  window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);

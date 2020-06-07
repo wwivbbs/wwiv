@@ -50,12 +50,47 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
+static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfig& config) {
+  auto keys = config.keys_;
+  keys.push_back(config.dn);
+  keys.push_back(config.down10);
+  keys.push_back(config.up);
+  keys.push_back(config.up10);
+  if (config.quit) {
+    keys.push_back(config.quit);
+    keys.push_back('\x1b');
+  }
+  for (;;) {
+    const auto key = window->GetChar();
+    if (has_key(key)) {
+      switch (key) {
+      case KEY_PPAGE:
+        return config.up10;
+      case KEY_NPAGE:
+        return config.down10;
+      case KEY_LEFT:
+      case KEY_UP:
+        return config.up;
+      case KEY_RIGHT:
+      case KEY_DOWN:
+        return config.dn;
+      default:
+        continue;
+      }
+    }
+    const auto ch = static_cast<char>(std::toupper(key));
+    if (keys.find(ch) != std::string::npos) {
+      return ch;
+    }
+  }
+}
+
 void Label::Display(CursesWindow* window) { Display(window, x_, y_); }
 
 void Label::Display(CursesWindow* window, int x, int y) {
   window->GotoXY(x, y);
   if (right_justify_) {
-    auto pad = std::max<int>(0, width_ - text_.size());
+    const auto pad = std::max<int>(0, width_ - text_.size());
     window->Puts(std::string(pad, ' '));
   }
   window->Puts(text_);
@@ -65,7 +100,7 @@ EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   auto s = to_field_();
 
-  auto return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
+  const auto return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
   from_field_(s);
   return return_code;
 }
@@ -73,13 +108,13 @@ EditlineResult CustomEditItem::Run(CursesWindow* window) {
 void CustomEditItem::Display(CursesWindow* window) const {
   window->GotoXY(x_, y_);
   const string blanks(maxsize_, ' ');
-  window->Puts(blanks.c_str());
+  window->Puts(blanks);
 
-  string s = to_field_();
+  const auto s = to_field_();
   if (display_) {
     display_(s);
   } else {
-    window->PutsXY(x_, y_, s.c_str());
+    window->PutsXY(x_, y_, s);
   }
 }
 
@@ -95,7 +130,7 @@ void EditItems::Run(const std::string& title) {
   for (;;) {
     const auto* item = items_[cp];
     curses_out->footer()->ShowContextHelp(item->help_text());
-    auto i1 = items_[cp]->Run(window_.get());
+    const auto i1 = items_[cp]->Run(window_.get());
     curses_out->footer()->SetDefaultFooter();
     if (i1 == EditlineResult::PREV) {
       if (--cp < 0) {
@@ -169,15 +204,19 @@ void EditItems::create_window(const std::string& title) {
       curses_out->CreateBoxedWindow(title, max_display_height(), max_display_width()));
 }
 
+char EditItems::GetKeyWithNavigation(const NavigationKeyConfig& config) const {
+  return _GetKeyWithNavigation(window(), config);
+}
+
 EditItems::~EditItems() {
   // Since we added raw pointers we must cleanup.  Since AFAIK there is
   // no easy way to convert from std::initializer_list<T> to
   // std::initializer_list<unique_ptr<T>>
-  for (auto item : items_) {
+  for (auto* item : items_) {
     delete item;
   }
   items_.clear();
-  for (auto l : labels_) {
+  for (auto* l : labels_) {
     delete l;
   }
   labels_.clear();
@@ -195,7 +234,7 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const int starty = (maxy - height - 2) / 2;
   UIWindow* dialog;
   if (parent->IsGUI()) {
-    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), curses_out->color_scheme(),
+    dialog = new CursesWindow(dynamic_cast<CursesWindow*>(parent), curses_out->color_scheme(),
                               height + 2, width + 4, starty, startx);
   } else {
     dialog = new StdioWindow(parent, curses_out->color_scheme());
@@ -381,14 +420,22 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   }
 }
 
-char onek(CursesWindow* window, const char* pszKeys) {
-  char ch;
-
-  while (!strchr(pszKeys, ch = to_upper_case<char>(static_cast<char>(window->GetChar())))) {
-    // NOP
+int onek(CursesWindow* window, const char* allowed, bool allow_keycodes) {
+  for (;;) {
+    const auto key = window->GetChar();
+    if (has_key(key)) {
+      if (allow_keycodes) {
+        return key;
+      }
+      continue;
+    }
+    const auto ch = static_cast<char>(std::toupper(key));
+    if (strchr(allowed, ch)) {
+      return ch;
+    }
   }
-  return ch;
 }
+
 
 static const int background_character = 32;
 ;

@@ -93,8 +93,8 @@ bool okansi() { return a()->user()->HasAnsi(); }
 void frequent_init() {
   setiia(seconds(5));
 
-  // Context Globals to move to Appliction
-  // Context Globals in Appliction
+  // Context Globals to move to Application
+  // Context Globals in Application
   a()->context().reset();
   use_workspace = false;
 
@@ -251,7 +251,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   file_mask[mark] = t;
   t = static_cast<char>(size(pszPath));
   strcat(pszPath, f->name.c_str());
-  auto i = 1;
+  int i;
   for (i = 1;; i++) {
     if (i % 5 == 0) {
       bout.nl();
@@ -292,7 +292,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   if (bNeedsRedraw) {
     amount = 1;
     positions[0] = xpos;
-    for (const string& menu_item : menu_items) {
+    for (const auto& menu_item : menu_items) {
       positions[amount] = positions[amount - 1] + menu_item.length() + 2;
       ++amount;
     }
@@ -355,7 +355,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.SystemColor(smc->normal_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
         if (!*menu_pos) {
-          *menu_pos = menu_items.size() - 1;
+          *menu_pos = wwiv::stl::ssize(menu_items) - 1;
         } else {
           --*menu_pos;
         }
@@ -398,7 +398,7 @@ bool okfsed() {
          a()->user()->GetDefaultEditor() <= wwiv::stl::ssize(a()->editors);
 }
 template <class _Ty>
-inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
+const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
   return std::max(std::min(maxValue, value), minValue);
 }
 

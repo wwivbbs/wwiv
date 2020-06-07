@@ -214,8 +214,9 @@ void user_editor(const wwiv::sdk::Config& config) {
   items.Display();
   show_user(&items, &user);
 
+  const NavigationKeyConfig nav("DJR\r");
   for (;;) {
-    char ch = onek(items.window(), "\033DJRQ[]{}\r");
+    const auto ch = items.GetKeyWithNavigation(nav);
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
@@ -245,7 +246,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       }
     } break;
     case 'J': {
-      int user_number = JumpToUser(items.window(), config.datadir());
+      auto user_number = JumpToUser(items.window(), config.datadir());
       if (user_number >= 1) {
         current_usernum = user_number;
       }
@@ -262,7 +263,6 @@ void user_editor(const wwiv::sdk::Config& config) {
       }
     } break;
     case 'Q':
-    case '\033':
       return;
     case ']':
       if (++current_usernum > number_users) {
@@ -286,6 +286,8 @@ void user_editor(const wwiv::sdk::Config& config) {
         current_usernum = 1;
       }
       break;
+    default:
+      continue;
     }
 
     read_user(config, current_usernum, &user);

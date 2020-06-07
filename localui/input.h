@@ -47,12 +47,26 @@ static constexpr EditLineMode EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 
 enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
+class NavigationKeyConfig {
+public:
+  explicit NavigationKeyConfig(std::string keys) : keys_(std::move(keys)) {}
+  ~NavigationKeyConfig() = default;
+
+  char up{'['};
+  char dn{']'};
+  char up10{'{'};
+  char down10{'}'};
+  char quit{'Q'};
+  const std::string keys_;
+};
+
 bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
-bool dialog_yn(CursesWindow* window, const std::string& prompt);
+bool dialog_yn(CursesWindow* window, const std::string& text);
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt, int max_length);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value,
                         int max_value);
-char onek(CursesWindow* window, const char* s);
+int onek(CursesWindow* window, const char* allowed, bool allow_keycodes = false);
+
 EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                         const char* ss);
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
@@ -610,6 +624,12 @@ public:
   /** Adds a label on the same line as item */
   BaseEditItem* add(Label* label, BaseEditItem* item);
   void create_window(const std::string& title);
+
+  /**
+   * Gets a key and automatically includes all navigation related keys
+   * from config.
+   */
+  [[nodiscard]] char GetKeyWithNavigation(const NavigationKeyConfig& config) const;
 
   [[nodiscard]] CursesWindow* window() const { return window_.get(); }
   [[nodiscard]] int size() const noexcept { return static_cast<int>(items_.size()); }

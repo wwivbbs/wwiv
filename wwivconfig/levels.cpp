@@ -101,8 +101,10 @@ void sec_levs(Config& config) {
   items.create_window("Security Level Editor");
   items.Display();
 
+  const NavigationKeyConfig nav("J\r");
+
   for (;;) {
-    auto ch = onek(items.window(), "\033JQ[]{}\r");
+    const auto ch = items.GetKeyWithNavigation(nav);
     switch (ch) {
     case '\r': {
       items.Run();
@@ -110,13 +112,12 @@ void sec_levs(Config& config) {
       items.window()->Refresh();
     } break;
     case 'J': {
-      auto sl_number = JumpToSl(items.window());
+      const auto sl_number = JumpToSl(items.window());
       if (sl_number >= MIN_SL) {
         cursl = sl_number;
       }
     } break;
     case 'Q':
-    case '\033':
       return;
     case ']':
       if (++cursl > MAX_SL) {
@@ -137,6 +138,8 @@ void sec_levs(Config& config) {
       // Auto wraps
       cursl -= 10;
       break;
+    default:
+      continue;
     }
     sl = config.sl(cursl);
     items.Display();
