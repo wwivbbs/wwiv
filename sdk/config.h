@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_CONFIG_H__
 
 #include <filesystem>
+#include <memory>
 #include "sdk/vardec.h"
 
 namespace wwiv {
@@ -32,6 +33,7 @@ public:
   explicit Config430(const Config& config);
   explicit Config430(const configrec& config);
   explicit Config430(const std::filesystem::path& root_directory);
+  ~Config430();
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const configrec* config, bool update_paths);
@@ -60,7 +62,9 @@ private:
 class Config {
 public:
   explicit Config(const configrec& config);
+  explicit Config(const Config& c);
   explicit Config(const std::filesystem::path& root_directory);
+  ~Config();
 
   bool Load();
   bool Save();
@@ -166,7 +170,6 @@ private:
   void update_paths();
 
   bool initialized_{false};
-  configrec config_{};
   const std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
   uint32_t config_revision_number_{0};
@@ -180,7 +183,8 @@ private:
   std::string script_dir_;
   std::string log_dir_;
 
-  Config430 config_430;
+  std::unique_ptr<Config430> config_430_;
+  configrec config_{};
 };
 
 /**

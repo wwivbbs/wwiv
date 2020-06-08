@@ -106,7 +106,7 @@ SdkHelper::SdkHelper()
 }
 
 std::filesystem::path SdkHelper::CreatePath(const string& name) {
-  const auto path = files_.CreateTempFilePath(FilePath("bbs", name));
+  const auto path = files_.CreateTempFilePath(PathFilePath("bbs", name).string());
   File::mkdirs(path);
   return path;
 }

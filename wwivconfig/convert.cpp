@@ -135,14 +135,14 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  std::filesystem::path users_lst = PathFilePath(config.datadir(), USER_LST);
+  auto users_lst = PathFilePath(config.datadir(), USER_LST);
   auto backup_file = users_lst;
   backup_file += ".backup.pre-wwivconfig-upgrade";
 
   // Make a backup file.
   std::error_code ec;
   // Note we ignore the ec since we fail open.
-  std::filesystem::copy_file(users_lst, backup_file, ec);
+  copy_file(users_lst, backup_file, ec);
 
   DataFile<userrec> usersFile(PathFilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,
@@ -198,7 +198,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
       return false;
     }
     configrec syscfg53{};
-    if (file.Read(&syscfg53, sizeof(configrec)) < sizeof(configrec)) {
+    if (file.Read(&syscfg53, sizeof(configrec)) < static_cast<int>(sizeof(configrec))) {
       return false;
     }
     memset(syscfg53.res, 0, sizeof(syscfg53.res));
@@ -286,7 +286,7 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   configrec syscfg53{};
   file.Read(&syscfg53, sizeof(configrec));
   auto menus_dir = File::EnsureTrailingSlash("menus");
-  to_char_array(syscfg53.menudir, FilePath(syscfg53.gfilesdir, menus_dir));
+  to_char_array(syscfg53.menudir, PathFilePath(syscfg53.gfilesdir, menus_dir).string());
 
   arcrec arc[MAX_ARCS];
   for (int i = 0; i < MAX_ARCS; i++) {

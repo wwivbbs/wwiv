@@ -29,8 +29,7 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace os {
+namespace wwiv::os {
 
 void sleep_for(duration<double> d) {
   // usleep is microseconds.
@@ -44,7 +43,7 @@ void sound(uint32_t frequency, duration<double> d) {
 
 std::string os_version_string() {
 #if defined ( __linux__ )
-  const auto fn = FilePath("/proc/sys/kernel", "osrelease");
+  const auto fn = PathFilePath("/proc/sys/kernel", "osrelease").string();
   if (File::Exists(fn)) {
     File info(fn);
     FILE* kernel_file;
@@ -112,5 +111,4 @@ pid_t get_pid() {
 }
 
 
-} // namespace os
 } // namespace wwiv

@@ -402,7 +402,7 @@ string File::absolute(const std::string& base, const std::string& relative) {
   if (r.is_absolute()) {
     return relative;
   }
-  return FilePath(base, relative);
+  return PathFilePath(base, relative).string();
 }
 
 // static

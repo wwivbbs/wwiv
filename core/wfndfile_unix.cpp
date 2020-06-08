@@ -122,8 +122,8 @@ bool WFindFile::next() {
   file_type_ = DTTOIF(entry->d_type);
 
 #else
-  struct stat s;
-  auto fullpath = FilePath(dir_, entry->d_name);
+  struct stat s{};
+  auto fullpath = PathFilePath(dir_, entry->d_name).string();
   if (stat(fullpath.c_str(), &s) == 0) {
     file_type_ = s.st_mode;
   } else {

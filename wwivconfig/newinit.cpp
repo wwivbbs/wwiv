@@ -142,16 +142,12 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       sl.emails = 20;
     }
 
-    if (i <= 10) {
+    if (i <= 25) {
       sl.posts = 10;
-    } else if (i <= 25) {
-      sl.posts = 10;
-    } else if (i <= 39) {
-      sl.posts = 4;
     } else if (i <= 79) {
-      sl.posts = 10;
+      sl.posts = 20;
     } else {
-      sl.posts = 25;
+      sl.posts = 50;
     }
 
     sl.ability = 0;
@@ -220,7 +216,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   auto qsc = std::make_unique<uint32_t[]>(config.qscn_len() / sizeof(uint32_t));
 
   save_status(datadir.string(), statusrec);
-  userrec u = {};
+  userrec u{};
   memset(&u, 0, sizeof(u));
   write_user(config, 0, &u);
   write_qscn(config, 0, qsc.get());
@@ -251,7 +247,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   }
   {
-    subboard_t r = {};
+    subboard_t r{};
     r.name = "General";
     r.filename = "GENERAL";
     r.readsl = 10;
@@ -330,7 +326,7 @@ bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
-    const bool chdir_ok = File::set_current_directory(dirname);
+    const auto chdir_ok = File::set_current_directory(dirname);
     if (!chdir_ok) {
       if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);

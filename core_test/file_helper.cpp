@@ -36,14 +36,14 @@ using namespace wwiv::strings;
 std::filesystem::path FileHelper::basedir_;
 
 FileHelper::FileHelper() {
-  const auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+  const auto* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
   const auto dir = StrCat(test_info->test_case_name(), "_", test_info->name());
   tmp_ = CreateTempDir(dir);
 }
 
 string FileHelper::DirName(const string& oname) const {
   const auto name = File::FixPathSeparators(oname);
-  const auto tmpname = FilePath(tmp_, name);
+  const auto tmpname = PathFilePath(tmp_, name).string();
   return File::EnsureTrailingSlash(tmpname);
 }
 
@@ -79,7 +79,7 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
 #ifdef _WIN32
-  const auto dir = wwiv::core::PathFilePath(temp_path, StrCat(base, ".", time_t_now()));
+  auto dir = wwiv::core::PathFilePath(temp_path, StrCat(base, ".", time_t_now()));
   std::error_code ec;
   if (std::filesystem::create_directories(dir, ec)) {
     return dir;
@@ -104,7 +104,7 @@ std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) co
 std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) const {
   const auto path = CreateTempFilePath(orig_name);
   const auto fn = path.string();
-  auto fp = fopen(fn.c_str(), "wt");
+  auto* fp = fopen(fn.c_str(), "wt");
   assert(fp);
   return std::make_tuple(fp, path);
 }
@@ -122,7 +122,7 @@ std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const 
 string FileHelper::ReadFile(const std::filesystem::path& name) const {
   const auto name_string = name.string();
   // ReSharper disable once CppLocalVariableMayBeConst
-  auto fp = fopen(name_string.c_str(), "rt");
+  auto* fp = fopen(name_string.c_str(), "rt");
   if (!fp) {
     const auto msg = StrCat("Unable to open file: ", name_string, "; errno: ", errno);
     throw std::runtime_error(msg);

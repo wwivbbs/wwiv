@@ -27,44 +27,50 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 static const int CONFIG_DAT_SIZE_424 = 5660;
 
-Config::Config(const configrec& config) : config_430(config) { set_config(&config, true); }
+Config::Config(const configrec& config) : config_430_(std::make_unique<Config430>(config)), config_(config) {
+  update_paths();
+}
+
+Config::Config(const Config& c) : Config(*c.config()) {
+}
+
+Config::~Config() = default;
 
 Config::Config(const std::filesystem::path& root_directory)
-    : initialized_(false), root_directory_(root_directory), config_430(root_directory) {
-  if (!config_430.IsReadable()) {
+    : root_directory_(root_directory), config_430_(std::make_unique<Config430>(root_directory)) {
+  if (!config_430_->IsReadable()) {
     //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;
   }
-  initialized_ = config_430.IsInitialized();
-  set_config(config_430.config(), true);
+  initialized_ = config_430_->IsInitialized();
+  set_config(config_430_->config(), true);
 
   if (initialized_) {
     // We've initialized something. Update absolute paths.
     update_paths();
-    versioned_config_dat_ = config_430.versioned_config_dat();
-    config_revision_number_ = config_430.config_revision_number();
-    written_by_wwiv_num_version_ = config_430.written_by_wwiv_num_version();
+    versioned_config_dat_ = config_430_->versioned_config_dat();
+    config_revision_number_ = config_430_->config_revision_number();
+    written_by_wwiv_num_version_ = config_430_->written_by_wwiv_num_version();
   }
 }
 
 bool Config::Load() { 
-  if (!config_430.Load()) {
+  if (!config_430_->Load()) {
     return false;
   }
   // After we load, reset our config.
-  set_config(config_430.config(), true);
+  set_config(config_430_->config(), true);
 
   if (initialized_) {
     // We've initialized something. Update absolute paths.
     update_paths();
-    versioned_config_dat_ = config_430.versioned_config_dat();
-    config_revision_number_ = config_430.config_revision_number();
-    written_by_wwiv_num_version_ = config_430.written_by_wwiv_num_version();
+    versioned_config_dat_ = config_430_->versioned_config_dat();
+    config_revision_number_ = config_430_->config_revision_number();
+    written_by_wwiv_num_version_ = config_430_->written_by_wwiv_num_version();
   }
   
   return true;
@@ -73,8 +79,8 @@ bool Config::Load() {
 
 bool Config::Save() { 
   // Before we save, update the config on the 4.3x config.
-  config_430.set_config(config(), true);
-  return config_430.Save();
+  config_430_->set_config(config(), true);
+  return config_430_->Save();
 }
 
 void Config::set_config(const configrec* config, bool need_to_update_paths) {
@@ -164,6 +170,8 @@ Config430::Config430(const std::filesystem::path& root_directory)
   }
 }
 
+Config430::~Config430() = default;
+
 std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_.string(), dir); }
 
 void Config430::update_paths() {
@@ -213,5 +221,4 @@ std::string LogDirFromConfig(const std::string& bbsdir) {
   return config.logdir();
 }
 
-} // namespace sdk
 } // namespace wwiv

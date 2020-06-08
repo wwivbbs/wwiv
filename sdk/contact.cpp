@@ -108,7 +108,7 @@ bool Contact::Save() {
     return false;
   }
 
-  VLOG(2) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET);
+  VLOG(2) << "Saving contact.net to: " << PathFilePath(net_.dir, CONTACT_NET).string();
   DataFile<net_contact_rec> file(PathFilePath(net_.dir, CONTACT_NET),
                  File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite);

@@ -74,19 +74,19 @@ TEST(FileTest, ExistsWildCard_Extension) {
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
-  auto wildcard_path = FilePath(helper.TempDir(), "msg*.001");
+  auto wildcard_path = PathFilePath(helper.TempDir(), "msg*.001").string();
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = FilePath(helper.TempDir(), "msg*.??1");
+  wildcard_path = PathFilePath(helper.TempDir(), "msg*.??1").string();
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 }
 
 TEST(FileTest, Exists_Static) {
-  FileHelper file;
-  auto tmp = file.TempDir();
+  FileHelper file{};
+  const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  File dne(PathFilePath(tmp, "newdir"));
+  const File dne(PathFilePath(tmp, "newdir"));
   ASSERT_TRUE(File::Exists(dne.path())) << dne.path();
 }
 
@@ -256,16 +256,16 @@ TEST(FileTest, RealPath_Different) {
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   // Add an extra ./ into the path.
-  const auto suffix = FilePath(".", kFileName);
-  const auto full = FilePath(helper.TempDir(), suffix);
+  const auto suffix = PathFilePath(".", kFileName).string();
+  const auto full = PathFilePath(helper.TempDir(), suffix).string();
   const auto canonical = File::canonical(full);
   EXPECT_EQ(path, canonical);
 }
 
 TEST(FileTest, mkdir) {
-  FileHelper helper;
+  const FileHelper helper{};
   const auto path = PathFilePath(helper.TempDir(), "a");
-  const auto l = FilePath("b", "c");
+  const auto l = PathFilePath("b", "c").string();
 
   const auto path_missing_middle = PathFilePath(path, l);
   ASSERT_FALSE(File::Exists(path));
@@ -280,8 +280,8 @@ TEST(FileTest, mkdir) {
 TEST(FileTest, mkdirs) {
   FileHelper helper;
   const auto f = PathFilePath(helper.TempDir(), "a");
-  const auto l = FilePath("b", "c");
-  const auto path = PathFilePath(f, l);
+  const auto l = PathFilePath("b", "c");
+  const auto path = PathFilePath(f, l.string());
   ASSERT_FALSE(File::Exists(path));
 
   ASSERT_TRUE(File::mkdirs(path));
@@ -291,7 +291,7 @@ TEST(FileTest, mkdirs) {
 }
 
 TEST(FileTest, Stream) {
-  FileHelper file;
+  FileHelper file{};
   File f(PathFilePath(file.TempDir(), "newdir"));
   std::stringstream s;
   s << f;
