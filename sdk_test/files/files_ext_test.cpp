@@ -51,7 +51,7 @@ public:
   void SetUp() override { helper.SetUp(); }
 
   [[nodiscard]] std::filesystem::path path_for(const std::string& filename) const {
-    return PathFilePath(config_.datadir(), StrCat(filename, ".dir"));
+    return FilePath(config_.datadir(), StrCat(filename, ".dir"));
   }
 
   [[nodiscard]] std::vector<uploadsrec> read_dir(const std::string& filename) const {

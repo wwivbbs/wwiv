@@ -147,7 +147,7 @@ void serialize(Archive & ar, subs_t& s) {
 
 bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& s) {
   s.subs.clear();
-  TextFile file(PathFilePath(dir, filename), "r");
+  TextFile file(FilePath(dir, filename), "r");
   if (!file.IsOpen()) {
     return false;
   }
@@ -168,7 +168,7 @@ bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const
     save(cereal::make_nvp("subs", s.subs));
   }
 
-  TextFile file(PathFilePath(dir, filename), "w");
+  TextFile file(FilePath(dir, filename), "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -221,11 +221,11 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
   xsubs.resize(subs.size());
 
   // subs.xtr may not exist on new installs.
-  if (!File::Exists(PathFilePath(datadir, SUBS_XTR))) {
+  if (!File::Exists(FilePath(datadir, SUBS_XTR))) {
     return true;
   }
 
-  TextFile subs_xtr(PathFilePath(datadir, SUBS_XTR), "rt");
+  TextFile subs_xtr(FilePath(datadir, SUBS_XTR), "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
   }
@@ -273,7 +273,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks,
                     const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
-  const auto sx = PathFilePath(datadir, SUBS_XTR);
+  const auto sx = FilePath(datadir, SUBS_XTR);
   backup_file(sx);
 
   TextFile f(sx, "w");
@@ -302,7 +302,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
 }
 
 vector<subboardrec_422_t> read_subs(const string &datadir) {
-  DataFile<subboardrec_422_t> file(PathFilePath(datadir, SUBS_DAT));
+  DataFile<subboardrec_422_t> file(FilePath(datadir, SUBS_DAT));
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
     //LOG(ERROR) << file.file() << " NOT FOUND.";
@@ -316,7 +316,7 @@ vector<subboardrec_422_t> read_subs(const string &datadir) {
 }
 
 bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboards) {
-  DataFile<subboardrec_422_t> subsfile(PathFilePath(datadir, SUBS_DAT),
+  DataFile<subboardrec_422_t> subsfile(FilePath(datadir, SUBS_DAT),
                                        File::modeBinary | File::modeReadWrite |
                                            File::modeCreateFile | File::modeTruncate,
                                        File::shareDenyReadWrite);
@@ -426,7 +426,7 @@ bool Subs::Save() {
 
   {
     // Backup subs.json
-    backup_file(PathFilePath(datadir_, SUBS_JSON));
+    backup_file(FilePath(datadir_, SUBS_JSON));
 
     // Save subs.
     subs_t t;

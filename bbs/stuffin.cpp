@@ -116,7 +116,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << a()->temp_directory();
         break;
       case 'K':
-        os << PathFilePath(a()->config()->gfilesdir(), COMMENT_TXT).string();
+        os << FilePath(a()->config()->gfilesdir(), COMMENT_TXT).string();
         break;
       case 'M':
         os << a()->modem_speed_;

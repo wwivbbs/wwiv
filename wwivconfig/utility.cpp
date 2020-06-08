@@ -49,7 +49,7 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs(const std::string& datadir) {
-  const DataFile<userrec> file(PathFilePath(datadir, USER_LST),
+  const DataFile<userrec> file(FilePath(datadir, USER_LST),
                                File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (file) {
     return static_cast<int>(file.number_of_records()) - 1;
@@ -58,7 +58,7 @@ int number_userrecs(const std::string& datadir) {
 }
 
 void read_user(const Config& config, int un, userrec* u) {
-  DataFile<userrec> file(PathFilePath(config.datadir(), USER_LST),
+  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {
     u->inact = inact_deleted;
@@ -82,7 +82,7 @@ void write_user(const Config& config, int un, userrec* u) {
     return;
   }
 
-  DataFile<userrec> file(PathFilePath(config.datadir(), USER_LST),
+  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (file) {
     file.Seek(un);
@@ -91,7 +91,7 @@ void write_user(const Config& config, int un, userrec* u) {
 }
 
 void save_status(const std::string& datadir, const statusrec_t& statusrec) {
-  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   if (file) {
     file.Write(&statusrec);
@@ -100,7 +100,7 @@ void save_status(const std::string& datadir, const statusrec_t& statusrec) {
 
 /** returns true if "status.dat" is read correctly */
 bool read_status(const std::string& datadir, statusrec_t& statusrec) {
-  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
   if (file) {
     return file.Read(&statusrec);

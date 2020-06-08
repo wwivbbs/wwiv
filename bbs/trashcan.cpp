@@ -34,7 +34,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 Trashcan::Trashcan(wwiv::sdk::Config& config)
-    : file_(PathFilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
+    : file_(FilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
 
 Trashcan::~Trashcan() = default;
 

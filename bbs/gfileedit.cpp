@@ -129,7 +129,7 @@ void modify_sec(int n) {
     } break;
     case 'B': {
       bout.nl();
-      if (File::Exists(PathFilePath(a()->config()->gfilesdir(), r.filename))) {
+      if (File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
         bout << "\r\nThere is currently a directory for this g-file section.\r\n";
         bout << "If you change the filename, the directory will still be there.\r\n\n";
       }
@@ -138,11 +138,11 @@ void modify_sec(int n) {
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
-        if (!File::Exists(PathFilePath(a()->config()->gfilesdir(), r.filename))) {
+        if (!File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            File dir(PathFilePath(a()->config()->gfilesdir(), r.filename));
+            File dir(FilePath(a()->config()->gfilesdir(), r.filename));
             File::mkdirs(dir);
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
@@ -276,7 +276,7 @@ void gfileedit() {
     }
   } while (!done && !a()->hangup_);
 
-  DataFile<gfiledirrec> file(PathFilePath(a()->config()->datadir(), GFILE_DAT),
+  DataFile<gfiledirrec> file(FilePath(a()->config()->datadir(), GFILE_DAT),
 	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
   if (file) {
     file.WriteVector(a()->gfilesec);
@@ -289,8 +289,8 @@ bool fill_sec(int sn) {
   char s[81];
 
   gfilerec *g = read_sec(sn, &n1);
-  const auto path = PathFilePath(a()->config()->gfilesdir(), a()->gfilesec[sn].filename);
-  const auto filespec = PathFilePath(path, "*.*");
+  const auto path = FilePath(a()->config()->gfilesdir(), a()->gfilesec[sn].filename);
+  const auto filespec = FilePath(path, "*.*");
   FindFiles ff(filespec, FindFilesType::files);
   bool ok{true};
   int chd = 0;
@@ -336,7 +336,7 @@ bool fill_sec(int sn) {
   }
   if (chd) {
     auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-    File gflFile(PathFilePath(a()->config()->datadir(), file_name));
+    File gflFile(FilePath(a()->config()->datadir(), file_name));
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();

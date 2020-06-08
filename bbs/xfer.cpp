@@ -77,7 +77,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
                FileName(u->filename).unaligned_filename(), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = PathFilePath(a()->directories[directory_num].path, FileName(u->filename));
+  const auto file = FilePath(a()->directories[directory_num].path, FileName(u->filename));
   if (!File::Exists(file)) {
     sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
@@ -180,14 +180,14 @@ int list_arc_out(const std::string& file_name, const char *pszDirectory) {
   string name_to_delete;
 
   if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    const auto full_pathname = PathFilePath(a()->temp_directory(), file_name);
+    const auto full_pathname = FilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      const auto name_in_dir = PathFilePath(pszDirectory, file_name);
+      const auto name_in_dir = FilePath(pszDirectory, file_name);
       File::Copy(name_in_dir, full_pathname);
       name_to_delete = full_pathname.string();
     }
   }
-  const auto full_pathname = PathFilePath(pszDirectory, file_name);
+  const auto full_pathname = FilePath(pszDirectory, file_name);
   auto arc_cmd = get_arc_cmd(full_pathname.string(), 0, "");
   if (!okfn(file_name)) {
     arc_cmd.clear();
@@ -647,7 +647,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  const auto file_name = PathFilePath(a()->directories[directory_num].path, wwiv::sdk::files::unalign(u->filename));
+  const auto file_name = FilePath(a()->directories[directory_num].path, wwiv::sdk::files::unalign(u->filename));
   if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;

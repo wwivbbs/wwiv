@@ -66,7 +66,7 @@ static bool checkDirExists(const std::string& dir, const char *desc) {
 void checkFileAreas(const std::string& datadir, bool verbose) {
   vector<directoryrec> directories;
   {
-    DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
+    DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
     if (!file) {
       // TODO(rushfan): show error?
       return;
@@ -83,7 +83,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
       if (checkDirExists(d.path, d.name)) {
         LOG(INFO) << "Checking directory: " << d.name;
         const auto filename = StrCat(d.filename, ".dir");
-        const auto record_path = PathFilePath(datadir, filename);
+        const auto record_path = FilePath(datadir, filename);
         if (File::Exists(record_path)) {
           File recordFile(record_path);
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -101,7 +101,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             if (numFiles >= 1) {
               ext_desc_rec *extDesc = nullptr;
               int recNo = 0;
-              const auto fn = PathFilePath(datadir, StrCat(d.filename, ".ext"));
+              const auto fn = FilePath(datadir, StrCat(d.filename, ".ext"));
               if (File::Exists(fn)) {
                 File extDescFile(fn);
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -139,7 +139,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                const auto dir_fn = PathFilePath(d.path, wwiv::sdk::files::unalign(upload.filename));
+                const auto dir_fn = FilePath(d.path, wwiv::sdk::files::unalign(upload.filename));
                 File file(dir_fn);
                 if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {

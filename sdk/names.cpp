@@ -100,7 +100,7 @@ bool Names::Remove(uint32_t user_number) {
 }
 
 bool Names::Load() {
-  DataFile<smalrec> file(PathFilePath(data_directory_, NAMES_LST));
+  DataFile<smalrec> file(FilePath(data_directory_, NAMES_LST));
   if (!file) {
     return false;
   }
@@ -109,7 +109,7 @@ bool Names::Load() {
 }
 
 bool Names::Save() {
-  DataFile<smalrec> file(PathFilePath(data_directory_, NAMES_LST),
+  DataFile<smalrec> file(FilePath(data_directory_, NAMES_LST),
                          File::modeReadWrite | File::modeBinary | File::modeTruncate);
   if (!file) {
     LOG(ERROR) << "Error saving NAMES.LST";

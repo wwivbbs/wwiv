@@ -197,8 +197,8 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         }
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
-          const auto source_filename = PathFilePath(a()->batch_directory(), file_name);
-          const auto dest_filename = PathFilePath(a()->directories[b.dir()].path, file_name);
+          const auto source_filename = FilePath(a()->batch_directory(), file_name);
+          const auto dest_filename = FilePath(a()->directories[b.dir()].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
             File::Remove(source_filename);
@@ -251,7 +251,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(PathFilePath(a()->batch_directory(), file_name));
+    File::Remove(FilePath(a()->batch_directory(), file_name));
   }
 }
 
@@ -347,11 +347,11 @@ void zmbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
-        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        auto send_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
         if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
-          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+          auto orig_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
           // update the send filename and copy it from the CD-ROM
-          send_filename = PathFilePath(a()->temp_directory(), f);
+          send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -423,7 +423,7 @@ static void end_ymodem_batch() {
       abort = true;
     }
     if (ch == CU) {
-      const auto fn = PathFilePath(a()->temp_directory(),
+      const auto fn = FilePath(a()->temp_directory(),
                                    StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);
@@ -477,10 +477,10 @@ void ymbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        auto send_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
         if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
-          auto orig_filename = PathFilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
-          send_filename = PathFilePath(a()->temp_directory(), f);
+          auto orig_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+          send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -521,7 +521,7 @@ static double ratio1(unsigned long xa) {
 static string make_ul_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
   // TODO(rushfan): This should move to a temp directory.
-  const auto list_filename = PathFilePath(a()->bbsdir(), fn);
+  const auto list_filename = FilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -531,7 +531,7 @@ static string make_ul_batch_list() {
     if (b.sending()) {
       continue;
     }
-    auto line = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
+    auto line = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
     tf.WriteLine(line.string());
   }
   return list_filename.string();
@@ -539,7 +539,7 @@ static string make_ul_batch_list() {
 
 static std::filesystem::path make_dl_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
-  auto list_filename = PathFilePath(a()->bbsdir(), fn);
+  auto list_filename = FilePath(a()->bbsdir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -554,14 +554,14 @@ static std::filesystem::path make_dl_batch_list() {
     }
     string filename_to_send;
     if (a()->directories[b.dir()].mask & mask_cdrom) {
-      const auto fileToSend = PathFilePath(a()->temp_directory(), files::FileName(b.aligned_filename()));
+      const auto fileToSend = FilePath(a()->temp_directory(), files::FileName(b.aligned_filename()));
       if (!File::Exists(fileToSend)) {
-        auto sourceFile = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
+        auto sourceFile = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
         File::Copy(sourceFile, fileToSend);
       }
       filename_to_send = fileToSend.string();
     } else {
-      filename_to_send = PathFilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename())).string();
+      filename_to_send = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename())).string();
     }
     bool ok = true;
     if (nsl() < b.time(a()->modem_speed_) + at) {

@@ -354,7 +354,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      auto stf = PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
+      auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path,
                               files::unalign(u->filename));
       if (lp_config.check_exist) {
         if (!File::Exists(stf.string())) {
@@ -618,7 +618,7 @@ static void check_lp_colors() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate |
                         File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
@@ -629,7 +629,7 @@ void save_lp_config() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    File fileConfig(PathFilePath(a()->config()->datadir(), LISTPLUS_CFG));
+    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
@@ -1178,11 +1178,11 @@ static int rename_filename(const std::string& file_name, int dn) {
       new_filename = aligns(new_filename);
       if (new_filename != "        .   ") {
         files::FileName nfn(new_filename);
-        auto new_fn = PathFilePath(a()->directories[dn].path, nfn);
+        auto new_fn = FilePath(a()->directories[dn].path, nfn);
         if (File::Exists(new_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          auto old_fn = PathFilePath(a()->directories[dn].path, f);
+          auto old_fn = FilePath(a()->directories[dn].path, f);
           File::Rename(old_fn, new_fn);
           if (File::Exists(new_fn)) {
             auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
@@ -1291,7 +1291,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           remove_from_file_database(fn);
         }
         if (rm) {
-          File::Remove(PathFilePath(a()->directories[dn].path, f));
+          File::Remove(FilePath(a()->directories[dn].path, f));
           if (rdlp && f.u().ownersys == 0) {
             User user;
             a()->users()->readuser(&user, f.u().ownerusr);
@@ -1334,7 +1334,7 @@ static int move_filename(const std::string& file_name, int dn) {
   while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
-    auto src_fn = PathFilePath(a()->directories[dn].path, f);
+    auto src_fn = FilePath(a()->directories[dn].path, f);
     bout.nl();
     printfileinfo(&f.u(), dn);
     bout.nl();
@@ -1424,7 +1424,7 @@ static int move_filename(const std::string& file_name, int dn) {
       if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
         a()->current_file_area()->Save();
       }
-      auto dest_fn = PathFilePath(a()->directories[nDestDirNum].path, f);
+      auto dest_fn = FilePath(a()->directories[nDestDirNum].path, f);
       dliscan1(nDestDirNum);
       auto* area = a()->current_file_area();
       if (area->AddFile(f)) {

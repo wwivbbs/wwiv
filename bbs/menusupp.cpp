@@ -298,9 +298,9 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  auto filename = PathFilePath(a()->language_dir, LOGOFF_MAT);
+  auto filename = FilePath(a()->language_dir, LOGOFF_MAT);
   if (!File::Exists(filename)) {
-    filename = PathFilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
+    filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
   if (File::Exists(filename)) {
     cycle = 0;

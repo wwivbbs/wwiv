@@ -116,7 +116,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
                << " nh.length = " << p.nh.length;
     return false;
   }
-  File file(PathFilePath(net.dir, filename));
+  File file(FilePath(net.dir, filename));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename << "Unable to open file.";
     return false;
@@ -399,7 +399,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
 }
 
 void rename_pend(const string& directory, const string& filename, char network_app_id) {
-  const auto pend_filename(PathFilePath(directory, filename));
+  const auto pend_filename(FilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
     return;
@@ -409,7 +409,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
 
   for (int i = 0; i < 1000; i++) {
     const auto new_basename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
-    const auto new_filename = PathFilePath(directory, new_basename);
+    const auto new_filename = FilePath(directory, new_basename);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
@@ -422,7 +422,7 @@ std::string create_pend(const string& directory, bool local, char network_app_id
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     const auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
-    const auto pend_fn = PathFilePath(directory, filename);
+    const auto pend_fn = FilePath(directory, filename);
     if (File::Exists(pend_fn)) {
       continue;
     }
@@ -648,7 +648,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
         // We are the host.
         std::set<uint16_t> subscribers;
         bool subscribers_read =
-            ReadSubcriberFile(PathFilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
+            ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
         if (subscribers_read) {
           // Remove the original sender from the set of systems
           // that we will resend this to.

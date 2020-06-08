@@ -334,7 +334,7 @@ void slash_e() {
       add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
-      FindFiles ff(PathFilePath(a()->config()->datadir(), "*.mml"), FindFilesType::any);
+      FindFiles ff(FilePath(a()->config()->datadir(), "*.mml"), FindFilesType::any);
       if (ff.empty()) {
         bout.nl();
         bout << "No mailing lists available.\r\n\n";
@@ -356,7 +356,7 @@ void slash_e() {
       bout << "|#2Which? ";
       input(s, 8);
 
-      File fileMailList(PathFilePath(a()->config()->datadir(), s));
+      File fileMailList(FilePath(a()->config()->datadir(), s));
       if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
         bout.nl();
         bout << "Unknown mailing list.\r\n\n";

@@ -79,7 +79,7 @@ static bool modify_email_waiting(const Config& config, uint16_t email_usernum, i
 
 static bool increment_email_counters(const Config& config, uint16_t email_usernum) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(PathFilePath(config.datadir(), STATUS_DAT),
+  DataFile<statusrec_t> file(FilePath(config.datadir(), STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
   if (!file) {
     return false;

@@ -201,7 +201,7 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   if (last_slash != string::npos) {
     filename = filename.substr(last_slash + 1);
   }
-  config_.log_filename = PathFilePath(logdir, StrCat(filename, ".log")).string();
+  config_.log_filename = FilePath(logdir, StrCat(filename, ".log")).string();
   config_.exit_filename = filename;
 
   // Setup the default appenders.

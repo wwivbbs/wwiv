@@ -56,7 +56,7 @@ constexpr char CD = 4;
 namespace wwiv::wwivutil::files {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
-  DataFile<directoryrec> file(PathFilePath(datadir, DIRS_DAT));
+  DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
   if (!file) {
     LOG(ERROR) << "Unable to open file: " << file.file();
     return false;

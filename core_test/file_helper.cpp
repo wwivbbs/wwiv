@@ -43,13 +43,13 @@ FileHelper::FileHelper() {
 
 string FileHelper::DirName(const string& oname) const {
   const auto name = File::FixPathSeparators(oname);
-  const auto tmpname = PathFilePath(tmp_, name).string();
+  const auto tmpname = FilePath(tmp_, name).string();
   return File::EnsureTrailingSlash(tmpname);
 }
 
 std::filesystem::path FileHelper::Dir(const string& oname) const {
   const auto name = File::FixPathSeparators(oname);
-  return PathFilePath(tmp_, name);
+  return FilePath(tmp_, name);
 }
 
 bool FileHelper::Mkdir(const string& oname) const {
@@ -79,7 +79,7 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
 #ifdef _WIN32
-  auto dir = wwiv::core::PathFilePath(temp_path, StrCat(base, ".", time_t_now()));
+  auto dir = wwiv::core::FilePath(temp_path, StrCat(base, ".", time_t_now()));
   std::error_code ec;
   if (std::filesystem::create_directories(dir, ec)) {
     return dir;
@@ -98,7 +98,7 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
 
 std::filesystem::path FileHelper::CreateTempFilePath(const string& orig_name) const {
   const auto name{File::FixPathSeparators(orig_name)};
-  return PathFilePath(TempDir(), name);
+  return FilePath(TempDir(), name);
 }
 
 std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& orig_name) const {

@@ -150,7 +150,7 @@ void WFC::DrawScreen() {
     a()->Cls();
     if (!screen_buffer) {
       screen_buffer = std::make_unique<char[]>(80 * 25 * sizeof(uint16_t));
-      File wfcFile(PathFilePath(a()->config()->datadir(), WFC_DAT));
+      File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile << " NOT FOUND.";
@@ -479,7 +479,7 @@ int WFC::doWFCEvents() {
         break;
       case 'U': {
         // User edit
-        const auto exe = PathFilePath(a()->bindir(), "wwivconfig");
+        const auto exe = FilePath(a()->bindir(), "wwivconfig");
         const auto cmd = StrCat(exe.string(), " --user_editor");
         exec_cmdline(cmd, INST_FLAGS_NONE);
       } break;

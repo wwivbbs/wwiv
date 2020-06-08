@@ -45,18 +45,13 @@
 namespace wwiv {
 namespace core {
 
-/**
- * Creates a full pathname of directory_name + file_name ensuring that any
- * path separators are added as needed.
- */
-std::string FilePath(const std::filesystem::path& directory_name, const std::string& file_name);
 
 /**
  * Creates a full std::filesystem::path of directory_name + file_name ensuring that any
  * path separators are added as needed.
  */
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
-                                   const std::string& file_name);
+std::filesystem::path FilePath(const std::filesystem::path& directory_name,
+                                   const std::filesystem::path& file_name);
 
 /**
  * File: Provides a high level, cross-platform common wrapper for file handling using C++.

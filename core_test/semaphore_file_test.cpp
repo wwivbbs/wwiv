@@ -37,7 +37,7 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
   {
     // Will throw if it can't acquire.
     auto ok =
-        SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+        SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
     path = ok.path();
     LOG(INFO) << "fd: " << ok.fd() << "; fn: " << path;
@@ -46,7 +46,7 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
 
     try {
       auto nok =
-          SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
+          SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
       FAIL() << "semaphore_not_acquired expected";
     } catch (const wwiv::core::semaphore_not_acquired&) {
       // expected to happen.
@@ -60,7 +60,7 @@ TEST(SemaphoreFileTest, Smoke) {
   auto tmp = file.TempDir();
   // Will throw if it can't acquire.
   auto ok =
-      SemaphoreFile::try_acquire(PathFilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+      SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
   auto fn = ok.path();
   LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;

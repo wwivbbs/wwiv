@@ -420,7 +420,7 @@ int WInitApp::main(int argc, char** argv) {
   CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
 
   {
-    File archiverfile(PathFilePath(config.datadir(), ARCHIVER_DAT));
+    File archiverfile(FilePath(config.datadir(), ARCHIVER_DAT));
     if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
       create_arcs(window, config.datadir());
     }

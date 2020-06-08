@@ -134,7 +134,7 @@ void normalupload(int dn) {
       ok = 0;
     }
   }
-  const auto receive_fn = PathFilePath(d.path, files::unalign(input_fn));
+  const auto receive_fn = FilePath(d.path, files::unalign(input_fn));
   if (ok && yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {

@@ -62,7 +62,7 @@ bool is_chat_invis() {
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
   const auto fn = fmt::sprintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
-  File file(PathFilePath(a()->config()->datadir(), fn));
+  File file(FilePath(a()->config()->datadir(), fn));
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::Whence::end);
     if (ih->msg_size > 0 && msg.empty()) {
@@ -76,7 +76,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
 
     for (int i = 0; i < 1000; i++) {
       const auto dest =
-          PathFilePath(a()->config()->datadir(), fmt::sprintf("msg%5.5d.%3.3d", i, ih->dest_inst));
+          FilePath(a()->config()->datadir(), fmt::sprintf("msg%5.5d.%3.3d", i, ih->dest_inst));
       if (!File::Rename(file.path(), dest) || (errno != EACCES)) {
         break;
       }
@@ -206,7 +206,7 @@ void process_inst_msgs() {
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->hangup_) { break; }
-    File file(PathFilePath(a()->config()->datadir(), f.name));
+    File file(FilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file;
       continue;
@@ -240,7 +240,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
@@ -286,7 +286,7 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
+  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -428,7 +428,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write) {
     ti.last_update = daten_t_now();
-    File instFile(PathFilePath(a()->config()->datadir(), INSTANCE_DAT));
+    File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);
       instFile.Write(&ti, sizeof(instancerec));
@@ -449,7 +449,7 @@ bool inst_msg_waiting() {
   }
 
   const string filename = fmt::sprintf("msg*.%3.3u", a()->instance_number());
-  if (!File::ExistsWildcard(PathFilePath(a()->config()->datadir(), filename))) {
+  if (!File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
     last_iia = l;
     return false;
   }

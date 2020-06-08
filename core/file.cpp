@@ -105,15 +105,8 @@ static constexpr int TRIES = 100;
 
 using namespace strings;
 
-string FilePath(const path& directory_name, const string& file_name) {
-  if (directory_name.empty()) {
-    return file_name;
-  }
-  return PathFilePath(directory_name, file_name).string();
-}
-
-path PathFilePath(const path& directory_name,
-                  const string& file_name) {
+path FilePath(const path& directory_name,
+                  const path& file_name) {
   if (directory_name.empty()) {
     return file_name;
   }
@@ -402,7 +395,7 @@ string File::absolute(const std::string& base, const std::string& relative) {
   if (r.is_absolute()) {
     return relative;
   }
-  return PathFilePath(base, relative).string();
+  return FilePath(base, relative).string();
 }
 
 // static

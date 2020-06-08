@@ -280,7 +280,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
-        const auto autosend = PathFilePath(a()->bindir(), "autosend");
+        const auto autosend = FilePath(a()->bindir(), "autosend");
         const auto cmd = StrCat(autosend.string(), " ", subtype, " ", system_number, " .", network_number);
         ExecuteExternalProgram(cmd, EFLAG_NONE);
       }
@@ -293,7 +293,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   filestatusrec fsr;
 
   bool found = false;
-  File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
+  File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
   if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
     auto l = fileAttach.Read(&fsr, sizeof(fsr));
     while (l > 0 && !found) {
@@ -310,7 +310,7 @@ void delete_attachment(unsigned long daten, int forceit) {
           }
         }
         if (delfile) {
-          File::Remove(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename));
+          File::Remove(FilePath(a()->GetAttachmentDirectory(), fsr.filename));
         } else {
           bout << "\r\nOrphaned attach " << fsr.filename << " remains in "
                << a()->GetAttachmentDirectory() << wwiv::endl;
@@ -589,13 +589,13 @@ void readmail(int mode) {
       found = false;
       attach_exists = false;
       if (m.status & status_file) {
-        File fileAttach(PathFilePath(a()->config()->datadir(), ATTACH_DAT));
+        File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
-              if (File::Exists(PathFilePath(a()->GetAttachmentDirectory(), fsr.filename))) {
+              if (File::Exists(FilePath(a()->GetAttachmentDirectory(), fsr.filename))) {
                 bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes
                      << " bytes).\r\n";
                 attach_exists = true;
@@ -672,7 +672,7 @@ void readmail(int mode) {
       switch (ch) {
       case 'T': {
         bout.nl();
-        auto fn = PathFilePath(a()->GetAttachmentDirectory(), fsr.filename);
+        auto fn = FilePath(a()->GetAttachmentDirectory(), fsr.filename);
         bool sentt;
         bool abortt;
         send_file(fn.string(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
@@ -713,9 +713,9 @@ void readmail(int mode) {
           if (user_input.empty()) {
             break;
           }
-          auto fn = PathFilePath(a()->config()->gfilesdir(), StrCat(user_input, ".frm"));
+          auto fn = FilePath(a()->config()->gfilesdir(), StrCat(user_input, ".frm"));
           if (!File::Exists(fn)) {
-            fn = PathFilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
+            fn = FilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
           }
           if (File::Exists(fn)) {
             LoadFileIntoWorkspace(fn, true);
@@ -752,7 +752,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(PathFilePath(a()->temp_directory(), INPUT_MSG));
+              File::Remove(FilePath(a()->temp_directory(), INPUT_MSG));
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";
@@ -1187,7 +1187,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName.c_str())) {
             break;
           }
-          const auto fn = PathFilePath(a()->temp_directory(), downloadFileName);
+          const auto fn = FilePath(a()->temp_directory(), downloadFileName);
           File::Remove(fn);
           {
             File fileTemp(fn);

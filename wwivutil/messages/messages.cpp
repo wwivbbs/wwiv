@@ -286,8 +286,8 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    bool sb = backup_file(PathFilePath(config.datadir(), StrCat(name, ".sub")));
-    bool db = backup_file(PathFilePath(config.msgsdir(), StrCat(name, ".dat")));
+    bool sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
+    bool db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
     return sb && db;
   }
 
@@ -343,16 +343,16 @@ public:
     }
 
     // Copy "new" versions back to sub and dat
-    const auto orig_sub_fn = PathFilePath(config()->config()->datadir(), StrCat(basename, ".sub"));
+    const auto orig_sub_fn = FilePath(config()->config()->datadir(), StrCat(basename, ".sub"));
     const auto new_sub_fn =
-        PathFilePath(config()->config()->datadir(), StrCat(newsub.filename, ".sub"));
+        FilePath(config()->config()->datadir(), StrCat(newsub.filename, ".sub"));
     File::Remove(orig_sub_fn);
     if (!File::Rename(new_sub_fn, orig_sub_fn)) {
       clog << "Unable to move sub";
     }
-    const auto orig_dat_fn = PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
+    const auto orig_dat_fn = FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     const auto new_dat_fn =
-        PathFilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
+        FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     File::Remove(orig_dat_fn);
     if (!File::Rename(new_dat_fn, orig_dat_fn)) {
       clog << "Unable to move dat";
@@ -368,10 +368,10 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   // open file, and create it if necessary
   postrec p{};
 
-  if (const auto sub_fn = PathFilePath(datadir, StrCat(sub_filename, ".sub")); !File::Exists(sub_fn)) {
+  if (const auto sub_fn = FilePath(datadir, StrCat(sub_filename, ".sub")); !File::Exists(sub_fn)) {
     return 1;
   }
-  File subFile(PathFilePath(datadir, StrCat(sub_filename, ".sub")));
+  File subFile(FilePath(datadir, StrCat(sub_filename, ".sub")));
   if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
     return 0;
   }

@@ -52,7 +52,7 @@ void read_automessage() {
   const auto current_status = a()->status_manager()->GetStatus();
   const bool anonymous = current_status->IsAutoMessageAnonymous();
 
-  TextFile autoMessageFile(PathFilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
+  TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
   string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     bout << "|#3No auto-message.\r\n";
@@ -112,7 +112,7 @@ static void write_automessage() {
       s.SetAutoMessageAuthorUserNumber(a()->usernum);
     });
 
-    TextFile file(PathFilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
+    TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
     const string authorName = a()->names()->UserName(a()->usernum);
     file.WriteLine(authorName);
     sysoplog() << "Changed Auto-message";
@@ -148,8 +148,8 @@ static char ShowAMsgMenuAndGetInput(const std::filesystem::path& lock_file) {
  * Main Auto Message menu.  Displays the auto message then queries for input.
  */
 void do_automessage() {
-  const auto lock_file = PathFilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
-  const auto file = PathFilePath(a()->config()->gfilesdir(), AUTO_MSG);
+  const auto lock_file = FilePath(a()->config()->gfilesdir(), LOCKAUTO_MSG);
+  const auto file = FilePath(a()->config()->gfilesdir(), AUTO_MSG);
 
   // initially show the auto message
   read_automessage();

@@ -318,7 +318,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   std::filesystem::path full_pathname;
   // append gfilesdir if no path specified
   if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
-    full_pathname = PathFilePath(a()->config()->gfilesdir(), sound_filename);
+    full_pathname = FilePath(a()->config()->gfilesdir(), sound_filename);
   } else {
     full_pathname = sound_filename;
   }
@@ -372,7 +372,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
  * @param nAreaCode The area code to describe
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(PathFilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
+  TextFile file(FilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
@@ -399,9 +399,9 @@ string describe_area_code(int nAreaCode) {
  * @return the description for the specified area code.
  */
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
-  const auto regions_dir = PathFilePath(a()->config()->datadir(), REGIONS_DIR);
+  const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
   const auto filename = fmt::sprintf("%s.%-3d", REGIONS_DIR, nAreaCode);
-  TextFile file(PathFilePath(regions_dir, filename), "rt");
+  TextFile file(FilePath(regions_dir, filename), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

@@ -87,7 +87,7 @@ static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
   statusrec_t status{};
-  DataFile<statusrec_t> file(PathFilePath(datadir, STATUS_DAT),
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
                              File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
@@ -135,7 +135,7 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
-  const auto fn = PathFilePath(net.dir, info.filename);
+  const auto fn = FilePath(net.dir, info.filename);
   if (!info.overwrite && File::Exists(fn)) {
     LOG(ERROR) << "    ! ERROR File [" << fn << "] already exists, and packet not set to overwrite; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -266,7 +266,7 @@ static bool handle_packet(
 }
 
 static bool handle_file(Context& context, const string& name) {
-  File f(PathFilePath(context.net.dir, name));
+  File f(FilePath(context.net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
     return false;
@@ -292,7 +292,7 @@ static bool handle_file(Context& context, const string& name) {
 int network2_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto& net = net_cmdline.network();
-    if (!File::Exists(PathFilePath(net.dir, LOCAL_NET))) {
+    if (!File::Exists(FilePath(net.dir, LOCAL_NET))) {
       LOG(INFO) << "No local.net exists. exiting.";
       return 0;
     }
@@ -317,10 +317,10 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
       if (net_cmdline.skip_delete()) {
-        backup_file(PathFilePath(net.dir, LOCAL_NET));
+        backup_file(FilePath(net.dir, LOCAL_NET));
       }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
-      if (!File::Remove(PathFilePath(net.dir, LOCAL_NET))) {
+      if (!File::Remove(FilePath(net.dir, LOCAL_NET))) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);

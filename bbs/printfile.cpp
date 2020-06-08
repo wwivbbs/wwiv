@@ -46,7 +46,7 @@ using namespace wwiv::strings;
 std::filesystem::path CreateFullPathToPrint(const string& basename) {
   std::vector<string> dirs{a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
-    auto file{PathFilePath(base, basename)};
+    auto file{FilePath(base, basename)};
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (File::Exists(file)) {
@@ -158,18 +158,18 @@ void print_local_file(const string& filename) {
 
 bool printfile_random(const std::string& base_fn) {
   const auto& dir = a()->language_dir;
-  const auto dot_zero = PathFilePath(dir, StrCat(base_fn, ".0"));
+  const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
   if (File::Exists(dot_zero)) {
     auto screens = 0;
     for (auto i = 0; i < 1000; i++) {
-      const auto dot_n = PathFilePath(dir, StrCat(base_fn, ".", i));
+      const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
       if (File::Exists(dot_n)) {
         screens++;
       } else {
         break;
       }
     }
-    printfile_path(PathFilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
+    printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
     return true;
   }
   return false;

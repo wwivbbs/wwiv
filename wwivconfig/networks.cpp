@@ -93,7 +93,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
   }
 
   // Now we update the email.
-  File emailfile(PathFilePath(config.datadir(), EMAIL_DAT));
+  File emailfile(FilePath(config.datadir(), EMAIL_DAT));
   if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
     auto t = static_cast<int>(emailfile.length() / sizeof(mailrec));
     for (auto r = 0; r < t; r++) {
@@ -697,7 +697,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
 
   // same as del_net, don't think we need to do this here.
   // wwiv::sdk::write_subs(config.datadir(), subboards);
-  File emailfile(PathFilePath(config.datadir(), EMAIL_DAT));
+  File emailfile(FilePath(config.datadir(), EMAIL_DAT));
   if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
     auto t = static_cast<int>(emailfile.length() / sizeof(mailrec));
     for (auto r = 0; r < t; r++) {

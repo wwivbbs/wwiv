@@ -72,7 +72,7 @@ using namespace wwiv::os;
 namespace wwiv::net {
 
 static int System(const string& bbsdir, const string& cmd) {
-  const auto path = PathFilePath(bbsdir, cmd).string();
+  const auto path = FilePath(bbsdir, cmd).string();
 
   const auto err = system(path.c_str());
   VLOG(1) << "       executed: '" << path << "' with an error code: " << err;
@@ -246,7 +246,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     // If we have a crc; check it.
     if (crc_ && crc != 0) {
       auto dir = config_->network_dir(remote_.network_name());
-      File received_file(PathFilePath(dir, current_receive_file_->filename()));
+      File received_file(FilePath(dir, current_receive_file_->filename()));
       auto file_crc = crc32file(received_file.full_pathname());
       if (file_crc == 0) {
         LOG(ERROR) << "Error calculating CRC32 of: " << current_receive_file_->filename();
@@ -944,19 +944,19 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  const auto fn = PathFilePath(dir, filename);
+  const auto fn = FilePath(dir, filename);
   File file(fn);
   return (file.Open(File::modeReadOnly)) ? File::last_write_time(fn) > tFileTime + 2 : true;
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(PathFilePath(dir, BBSLIST_NET))) {
+  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(PathFilePath(dir, CONNECT_NET))) {
+  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(PathFilePath(dir, CALLOUT_NET))) {
+  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
@@ -966,7 +966,7 @@ static bool need_network3(const string& dir, int network_version) {
               << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  const auto bbsdata_fn = PathFilePath(dir, BBSDATA_NET);
+  const auto bbsdata_fn = FilePath(dir, BBSDATA_NET);
   {
     File bbsdataNet(bbsdata_fn);
     if (!bbsdataNet.Open(File::modeReadOnly)) {

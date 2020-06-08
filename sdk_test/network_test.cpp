@@ -51,7 +51,7 @@ public:
 
   bool CreateNetworksDat(std::vector<std::string> names) const {
     std::clog << "Writing NETWORK.DAT to: " << config_.datadir() << std::endl;
-    File file(PathFilePath(config_.datadir(), NETWORKS_DAT));
+    File file(FilePath(config_.datadir(), NETWORKS_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;

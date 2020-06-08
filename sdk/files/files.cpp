@@ -43,7 +43,7 @@ FileApi::FileApi(std::string data_directory)
 };
 
 bool FileApi::Exist(const std::string& filename) const {
-  return File::Exists(::PathFilePath(data_directory_, StrCat(filename, ".dir")));
+  return File::Exists(::FilePath(data_directory_, StrCat(filename, ".dir")));
 }
 
 bool FileApi::Exist(const directoryrec& dir) const {
@@ -375,7 +375,7 @@ bool FileArea::Save() {
 }
 
 std::filesystem::path FileArea::path() const noexcept {
-  return ::PathFilePath(data_directory_, filename_);
+  return ::FilePath(data_directory_, filename_);
 }
 
 bool FileArea::ValidateFileNum(const FileRecord& f, int num) {

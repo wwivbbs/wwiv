@@ -51,7 +51,7 @@ static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
   a()->status_manager()->RefreshStatusCache();
 
   const auto filename =
-      PathFilePath(a()->config()->msgsdir(), StrCat(messageAreaFileName, FILENAME_DAT_EXTENSION));
+      FilePath(a()->config()->msgsdir(), StrCat(messageAreaFileName, FILENAME_DAT_EXTENSION));
   auto file = std::make_unique<File>(filename);
   if (!file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.

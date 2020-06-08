@@ -217,9 +217,9 @@ void qwk_gather_email(qwk_junk* qwk_info) {
 
   qwk_info->in_email = 1;
 
-  auto filename = PathFilePath(a()->qwk_directory(), "PERSONAL.NDX");
+  auto filename = FilePath(a()->qwk_directory(), "PERSONAL.NDX");
   qwk_info->personal = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  filename = PathFilePath(a()->qwk_directory(), "000.NDX");
+  filename = FilePath(a()->qwk_directory(), "000.NDX");
   qwk_info->zero = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   do {
@@ -539,7 +539,7 @@ void upload_reply_packet() {
   auto name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
   bout << fmt::format("Hit 'Y' to upload reply packet {} :", name);
-  const auto namepath = PathFilePath(a()->qwk_directory(), name);
+  const auto namepath = FilePath(a()->qwk_directory(), name);
 
   const bool do_it = yesno();
 

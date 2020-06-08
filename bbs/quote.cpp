@@ -119,8 +119,8 @@ string GetQuoteInitials(const string& orig_name) {
 }
 
 void clear_quotes() {
-  auto quotes_txt_fn = PathFilePath(a()->temp_directory(), QUOTES_TXT);
-  auto quotes_ind_fn = PathFilePath(a()->temp_directory(), QUOTES_IND);
+  auto quotes_txt_fn = FilePath(a()->temp_directory(), QUOTES_TXT);
+  auto quotes_ind_fn = FilePath(a()->temp_directory(), QUOTES_IND);
 
   File::SetFilePermissions(quotes_txt_fn, File::permReadWrite);
   File::Remove(quotes_txt_fn);
@@ -144,8 +144,8 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
 
   clear_quotes();
 
-  auto quotes_txt_fn = PathFilePath(a()->temp_directory(), QUOTES_TXT);
-  auto quotes_ind_fn = PathFilePath(a()->temp_directory(), QUOTES_IND);
+  auto quotes_txt_fn = FilePath(a()->temp_directory(), QUOTES_TXT);
+  auto quotes_ind_fn = FilePath(a()->temp_directory(), QUOTES_IND);
 
   auto pfx = StrCat(GetQuoteInitials(to_name), "> ");
 
@@ -312,7 +312,7 @@ static string CreateDateString(time_t t) {
 void auto_quote(char* org, const std::string& to_name, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255], *p = org, *b = org, b1[81];
 
-  const auto fn = PathFilePath(a()->temp_directory(), INPUT_MSG);
+  const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
   File::Remove(fn);
   File fileInputMsg(fn);
   if (!a()->hangup_) {

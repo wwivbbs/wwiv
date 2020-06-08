@@ -107,7 +107,7 @@ static std::string network_cmd_name(char net_cmd) {
 }
 
 std::filesystem::path NetworkCommandLine::semaphore_path() const noexcept {
-  return PathFilePath(network_.dir, StrCat(network_cmd_name(net_cmd_), ".bsy"));
+  return FilePath(network_.dir, StrCat(network_cmd_name(net_cmd_), ".bsy"));
 }
 
 static void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
@@ -146,7 +146,7 @@ bool NetworkCommandLine::LoadNetIni(char net_cmd, const std::string& bbsdir) {
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
   const auto ini = std::make_unique<IniFile>(
-      PathFilePath(bbsdir, "net.ini"), std::initializer_list<const std::string>{net_tag_net, net_tag});
+      FilePath(bbsdir, "net.ini"), std::initializer_list<const std::string>{net_tag_net, net_tag});
   if (!ini || !ini->IsOpen()) {
     // This is fine and can happen.
     return true;

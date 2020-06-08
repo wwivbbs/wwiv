@@ -140,9 +140,9 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     if (fn.empty()) {
       return;
     }
-    auto full_pathname = PathFilePath(a()->config()->gfilesdir(), StrCat(fn, ".frm"));
+    auto full_pathname = FilePath(a()->config()->gfilesdir(), StrCat(fn, ".frm"));
     if (!File::Exists(full_pathname)) {
-      full_pathname = PathFilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
+      full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
@@ -219,7 +219,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        auto tmpfn = PathFilePath(a()->temp_directory(), INPUT_MSG);
+        auto tmpfn = FilePath(a()->temp_directory(), INPUT_MSG);
         if (File::Exists(tmpfn)) {
           File::Remove(tmpfn);
         }
@@ -665,7 +665,7 @@ static void HandleMessageDownload(int msgnum) {
     if (!okfn(filename)) {
       return;
     }
-    const auto f = PathFilePath(a()->temp_directory(), filename);
+    const auto f = FilePath(a()->temp_directory(), filename);
     File::Remove(f);
     {
       File fileTemp(f);

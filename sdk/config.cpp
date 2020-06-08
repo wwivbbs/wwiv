@@ -92,7 +92,7 @@ void Config::set_config(const configrec* config, bool need_to_update_paths) {
   }
 }
 
-std::string Config::config_filename() const { return PathFilePath(root_directory(), CONFIG_DAT).string(); }
+std::string Config::config_filename() const { return FilePath(root_directory(), CONFIG_DAT).string(); }
 
 void Config::update_paths() {
   datadir_ = to_abs_path(config_.datadir);
@@ -126,7 +126,7 @@ Config430::Config430(const Config& config) : Config430(config.root_directory()) 
 Config430::Config430(const configrec& config) { set_config(&config, true); }
 
 bool Config430::IsReadable() {
-  DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
+  DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -137,7 +137,7 @@ bool Config430::IsReadable() {
 
 Config430::Config430(const std::filesystem::path& root_directory)
     : root_directory_(root_directory) {
-  DataFile<configrec> configFile(PathFilePath(root_directory, CONFIG_DAT),
+  DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -192,7 +192,7 @@ void Config430::set_config(const configrec* config, bool need_to_update_paths) {
 const configrec* Config430::config() const { return &config_; }
 
 bool Config430::Load() {
-  DataFile<configrec> configFile(PathFilePath(root_directory_, CONFIG_DAT),
+  DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -206,7 +206,7 @@ bool Config430::Load() {
 }
 
 bool Config430::Save() {
-  File file(PathFilePath(root_directory_, CONFIG_DAT));
+  File file(FilePath(root_directory_, CONFIG_DAT));
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
   }

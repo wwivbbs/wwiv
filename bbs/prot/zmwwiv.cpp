@@ -134,7 +134,7 @@ bool NewZModemReceiveFile(const std::string& file_name) {
   const auto ret = doIO(&info) == ZmDone;
   if (ret) {
     const auto fn = wwiv::sdk::files::unalign(file_name);
-    const auto old_fn = PathFilePath(a()->temp_directory(), fn);
+    const auto old_fn = FilePath(a()->temp_directory(), fn);
     File::Move(old_fn, fn);
   }
   return ret;

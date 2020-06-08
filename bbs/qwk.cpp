@@ -94,7 +94,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
 bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
-  TextFile fp(PathFilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
+  TextFile fp(FilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
   if (!fp) {
     return false;
   }
@@ -167,7 +167,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const auto filename = FilePath(a()->batch_directory(), MESSAGES_DAT);
+  const auto filename = FilePath(a()->batch_directory(), MESSAGES_DAT).string();
   qwk_junk qwk_info{};
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
@@ -816,7 +816,7 @@ unsigned short select_qwk_protocol(qwk_junk *qwk_info) {
 qwk_config read_qwk_cfg() {
   qwk_config_430 o{};
 
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
+  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
   int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f < 0) {
     return {};
@@ -862,7 +862,7 @@ qwk_config read_qwk_cfg() {
 }
 
 void write_qwk_cfg(const qwk_config& c) {
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
+  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
   const auto f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;
@@ -1067,20 +1067,20 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     bout.bputs("Grabbing hello/news/goodbye text files...");
 
     if (!qwk_cfg.hello.empty()) {
-      auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
-      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.hello);
+      auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
+      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.hello);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.news.empty()) {
-      auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.news);
-      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.news);
+      auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.news);
+      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.news);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.bye.empty()) {
-      auto parem1 = PathFilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
-      auto parem2 = PathFilePath(a()->qwk_directory(), qwk_cfg.bye);
+      auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
+      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.bye);
     }
 
     for (const auto& b : qwk_cfg.bulletins) {
@@ -1091,7 +1091,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       // If we want to only copy if bulletin is newer than the users laston date:
       // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
-      auto parem2 = PathFilePath(a()->qwk_directory(), b.name);
+      auto parem2 = FilePath(a()->qwk_directory(), b.name);
       File::Copy(b.path, parem2);
     }
   }
@@ -1110,7 +1110,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     auto parem1 = FilePath(a()->qwk_directory(), qwkname);
     auto parem2 = FilePath(a()->qwk_directory(), "*.*");
 
-    auto command = stuff_in(a()->arcs[archiver].arca, parem1, parem2, "", "", "");
+    auto command = stuff_in(a()->arcs[archiver].arca, parem1.string(), parem2.string(), "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = StrCat(a()->qwk_directory(), qwkname);
@@ -1179,7 +1179,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     }
 
     auto ofile = FilePath(a()->qwk_directory(), qwkname);
-    if (!replacefile(ofile, nfile)) {
+    if (!replacefile(ofile.string(), nfile.string())) {
       bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
       if (!noyes()) {
         qwk_info->abort = true;

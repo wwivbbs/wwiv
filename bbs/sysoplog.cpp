@@ -59,11 +59,11 @@ std::string GetTemporaryInstanceLogFileName() {
 */
 void catsl() {
   auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-  auto instance_logfilename = PathFilePath(a()->config()->gfilesdir(), temporary_log_filename);
+  auto instance_logfilename = FilePath(a()->config()->gfilesdir(), temporary_log_filename);
 
   if (File::Exists(instance_logfilename)) {
     auto basename = GetSysopLogFileName(date());
-    File wholeLogFile(PathFilePath(a()->config()->gfilesdir(), basename));
+    File wholeLogFile(FilePath(a()->config()->gfilesdir(), basename));
 
     auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
     if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -99,7 +99,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     return;
   }
   const static auto s_sysoplog_filename =
-      PathFilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
+      FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
 
   switch (cmd) {
   case LOG_STRING: {  // Write line to sysop's log

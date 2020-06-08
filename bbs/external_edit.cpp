@@ -72,7 +72,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
     on_exit.swap([=] { File::set_current_directory(original_directory); });
   }
 
-  const auto tft_fn = PathFilePath(File::current_directory(), strippedFileName);
+  const auto tft_fn = FilePath(File::current_directory(), strippedFileName);
   File fileTempForTime(tft_fn);
   time_t tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 

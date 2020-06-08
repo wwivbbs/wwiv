@@ -158,8 +158,8 @@ Chains::Chains(const Config& config) : datadir_(config.datadir()) {
     return;
   }
 
-  if (!File::Exists(PathFilePath(datadir_, CHAINS_JSON)) &&
-      !File::Exists(PathFilePath(datadir_, CHAINS_DAT))) {
+  if (!File::Exists(FilePath(datadir_, CHAINS_JSON)) &&
+      !File::Exists(FilePath(datadir_, CHAINS_DAT))) {
     return;
   }
 
@@ -184,14 +184,14 @@ bool Chains::Load() {
 
 bool Chains::LoadFromJSON() {
   chains_.clear();
-  JsonFile<decltype(chains_)> json(PathFilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile<decltype(chains_)> json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
   return json.Load();
 }
 
 bool Chains::LoadFromDat() {
-  DataFile<chainfilerec> old_chains(PathFilePath(datadir_, CHAINS_DAT),
+  DataFile<chainfilerec> old_chains(FilePath(datadir_, CHAINS_DAT),
                                     File::modeBinary | File::modeReadOnly, File::shareDenyNone);
-  DataFile<chainregrec> regfile(PathFilePath(datadir_, CHAINS_REG),
+  DataFile<chainregrec> regfile(FilePath(datadir_, CHAINS_REG),
                                 File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!old_chains) {
     return false;
@@ -253,7 +253,7 @@ bool Chains::Save() {
 }
 
 bool Chains::SaveToJSON() {
-  JsonFile<decltype(chains_)> json(PathFilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile<decltype(chains_)> json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
   return json.Save();
 }
 
@@ -285,7 +285,7 @@ bool Chains::SaveToDat() {
   bool cwritten{false};
   bool rwritten{false};
   {
-    DataFile<chainfilerec> cfile(PathFilePath(datadir_, CHAINS_DAT),
+    DataFile<chainfilerec> cfile(FilePath(datadir_, CHAINS_DAT),
                                  File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                                      File::modeTruncate,
                                  File::shareDenyReadWrite);
@@ -295,7 +295,7 @@ bool Chains::SaveToDat() {
     cwritten = cfile.WriteVector(cdisk);
   }
   {
-    DataFile<chainregrec> rfile(PathFilePath(datadir_, CHAINS_REG),
+    DataFile<chainregrec> rfile(FilePath(datadir_, CHAINS_REG),
                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                                     File::modeTruncate,
                                 File::shareDenyReadWrite);

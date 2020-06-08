@@ -173,16 +173,16 @@ bool FidoCallout::erase(const FidoAddress& a) {
 bool FidoCallout::Load() {
   node_configs_.clear();
   const string dir = File::absolute(root_dir_, net_.dir);
-  if (!File::Exists(PathFilePath(dir, FIDO_CALLOUT_JSON))) {
+  if (!File::Exists(FilePath(dir, FIDO_CALLOUT_JSON))) {
     return true;
   }
-  JsonFile<decltype(node_configs_)> json(PathFilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
+  JsonFile<decltype(node_configs_)> json(FilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
   return json.Load();
 }
 
 bool FidoCallout::Save() {
   const string dir = File::absolute(root_dir_, net_.dir);
-  JsonFile<decltype(node_configs_)> json(PathFilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
+  JsonFile<decltype(node_configs_)> json(FilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
   return json.Save();
 }
 

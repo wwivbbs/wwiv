@@ -68,14 +68,14 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
   const auto pattern = fmt::sprintf("p*.%03d", instance_number);
   LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
-  FindFiles ff(PathFilePath(dir, pattern), FindFilesType::files);
+  FindFiles ff(FilePath(dir, pattern), FindFilesType::files);
   for (const auto& f : ff) {
     rename_pend(dir, f.name, 'c');
   }
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, const string& cmd) {
-  const auto path = PathFilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
+  const auto path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path;
@@ -102,7 +102,7 @@ static int System(const string& cmd) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  const auto fn = PathFilePath(dir, filename);
+  const auto fn = FilePath(dir, filename);
   File file(fn);
 
   if (file.Open(File::modeReadOnly)) {
@@ -113,13 +113,13 @@ static bool checkup2(const time_t tFileTime, string dir, string filename) {
 }
 
 static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(PathFilePath(dir, BBSLIST_NET))) {
+  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
     return false;
   }
-  if (!File::Exists(PathFilePath(dir, CONNECT_NET))) {
+  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
     return false;
   }
-  if (!File::Exists(PathFilePath(dir, CALLOUT_NET))) {
+  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
     return false;
   }
 
@@ -129,7 +129,7 @@ static bool need_network3(const string& dir, int network_version) {
               << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(PathFilePath(dir, BBSDATA_NET));
+  File bbsdataNet(FilePath(dir, BBSDATA_NET));
   if (!bbsdataNet.Open(File::modeReadOnly)) {
     return false;
   }
@@ -160,7 +160,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       }
 
       // Pending files, call network1 to put them into s* or local.net.
-      if (File::ExistsWildcard(PathFilePath(net.dir, "p*.net"))) {
+      if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
         System(create_network_cmdline(net_cmdline, '1', ""));
         found = true;
@@ -170,7 +170,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       if (net.type == network_type_t::ftn) {
         wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
         // Import everything into local.net
-        if (File::ExistsWildcard(PathFilePath(dirs.inbound_dir(), "*.*"))) {
+        if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
           VLOG(2) << "Trying to FTN import";
           System(create_network_cmdline(net_cmdline, 'f', "import"));
         }
@@ -182,14 +182,14 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
         // Export everything to FTN bundles
         const auto fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-        if (File::Exists(PathFilePath(net.dir, fido_out))) {
+        if (File::Exists(FilePath(net.dir, fido_out))) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
           System(create_network_cmdline(net_cmdline, 'f', "export"));
         }
       }
 
       // Process local mail with network2.
-      if (File::Exists(PathFilePath(net.dir, LOCAL_NET))) {
+      if (File::Exists(FilePath(net.dir, LOCAL_NET))) {
         VLOG(2) << "Found: " << LOCAL_NET;
         System(create_network_cmdline(net_cmdline, '2', ""));
         found = true;

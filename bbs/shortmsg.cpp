@@ -45,7 +45,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   if (!pUser->HasShortMessage()) {
     return;
   }
-  DataFile<shortmsgrec> file(PathFilePath(a()->config()->datadir(), SMW_DAT),
+  DataFile<shortmsgrec> file(FilePath(a()->config()->datadir(), SMW_DAT),
                              File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return;
@@ -97,7 +97,7 @@ static void SendLocalShortMessage(int usernum, const std::string& messageText) {
   User user;
   a()->users()->readuser(&user, usernum);
   if (!user.IsUserDeleted()) {
-    File file(PathFilePath(a()->config()->datadir(), SMW_DAT));
+    File file(FilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
@@ -147,7 +147,7 @@ static void SendRemoteShortMessage(int user_num, int system_num, const std::stri
   }
   nh.length = msg.size();
   nh.method = 0;
-  File file(PathFilePath(net.dir, StrCat("p0", a()->network_extension())));
+  File file(FilePath(net.dir, StrCat("p0", a()->network_extension())));
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);
   file.Write(&nh, sizeof(net_header_rec));

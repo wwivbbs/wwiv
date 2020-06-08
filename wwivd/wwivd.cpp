@@ -135,14 +135,14 @@ int Main(CommandLine& cmdline) {
 
   ConnectionData data(&config, &c, &nodes, concurrent_connections);
   if (c.blocking.use_goodip_txt) {
-    data.good_ips_ = std::make_shared<GoodIp>(PathFilePath(config.datadir(), "goodip.txt"));
+    data.good_ips_ = std::make_shared<GoodIp>(FilePath(config.datadir(), "goodip.txt"));
   }
   if (c.blocking.use_badip_txt) {
-    data.bad_ips_ = std::make_shared<BadIp>(PathFilePath(config.datadir(), "badip.txt"));
+    data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
   }
   if (c.blocking.auto_blacklist) {
     if (!data.bad_ips_) {
-      data.bad_ips_ = std::make_shared<BadIp>(PathFilePath(config.datadir(), "badip.txt"));
+      data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
     }
     data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking);
   }

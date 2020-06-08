@@ -94,20 +94,20 @@ static int GetDoor32Emulation() { return (okansi()) ? 1 : 0; }
 std::filesystem::path create_dropfile_path(drop_file_t dropfile_type) {
   switch (dropfile_type) {
   case drop_file_t::CHAIN_TXT:
-    return PathFilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
+    return FilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
   case drop_file_t::DORINFO_DEF:
-    return PathFilePath(a()->temp_directory(), "dorinfo1.def");
+    return FilePath(a()->temp_directory(), "dorinfo1.def");
   case drop_file_t::PCBOARD_SYS:
-    return PathFilePath(a()->temp_directory(), "pcboard.sys");
+    return FilePath(a()->temp_directory(), "pcboard.sys");
   case drop_file_t::CALLINFO_BBS:
-    return PathFilePath(a()->temp_directory(), "callinfo.bbs");
+    return FilePath(a()->temp_directory(), "callinfo.bbs");
   case drop_file_t::DOOR_SYS:
-    return PathFilePath(a()->temp_directory(), "door.sys");
+    return FilePath(a()->temp_directory(), "door.sys");
   case drop_file_t::DOOR32_SYS:
-    return PathFilePath(a()->temp_directory(), "door32.sys");
+    return FilePath(a()->temp_directory(), "door32.sys");
   default:
     // Default to CHAIN.TXT since this is the native WWIV format
-    return PathFilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
+    return FilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
   }
 }
 

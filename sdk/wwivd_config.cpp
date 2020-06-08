@@ -104,12 +104,12 @@ void serialize(Archive & ar, wwivd_config_t &a) {
 }
 
 bool wwivd_config_t::Load(const Config & config) {
-  JsonFile<wwivd_config_t> file(PathFilePath(config.datadir(), "wwivd.json"), "wwivd", *this);
+  JsonFile<wwivd_config_t> file(FilePath(config.datadir(), "wwivd.json"), "wwivd", *this);
   return file.Load();
 }
 
 bool wwivd_config_t::Save(const Config & config) {
-  JsonFile<wwivd_config_t> file(PathFilePath(config.datadir(), "wwivd.json"), "wwivd", *this);
+  JsonFile<wwivd_config_t> file(FilePath(config.datadir(), "wwivd.json"), "wwivd", *this);
   return file.Save();
 }
 

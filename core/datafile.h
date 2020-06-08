@@ -34,7 +34,7 @@ namespace core {
  *
  * Example:
  *   vector<mailrec> emails;
- *   DataFile<mailrec> f(PathFilePath("/home/wwiv/bbs/data", "email.dat"));
+ *   DataFile<mailrec> f(FilePath("/home/wwiv/bbs/data", "email.dat"));
  *   if (!f) { LOG(FATAL) << "email.dat does not exist!" << endl; }
  *   if (!f.ReadVector(emails) { LOG(FATAL) << "unable to load email.dat"; }
  *   // No need to close f since when f goes out of scope it'll close automatically.

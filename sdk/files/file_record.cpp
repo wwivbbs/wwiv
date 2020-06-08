@@ -205,15 +205,7 @@ std::string FileRecord::unaligned_filename() const {
   return unalign(u_.filename);
 }
 
-
-std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f) {
-  if (directory_name.empty()) {
-    return f.unaligned_filename();
-  }
-  return PathFilePath(directory_name, f).string();
-}
-
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+std::filesystem::path FilePath(const std::filesystem::path& directory_name,
                                    const FileRecord& f) {
   if (directory_name.empty()) {
     return f.unaligned_filename();
@@ -221,14 +213,7 @@ std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
   return directory_name / f.unaligned_filename();
 }
 
-std::string FilePath(const std::filesystem::path& directory_name, const FileName& f) {
-  if (directory_name.empty()) {
-    return f.unaligned_filename();
-  }
-  return PathFilePath(directory_name, f).string();
-}
-
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+std::filesystem::path FilePath(const std::filesystem::path& directory_name,
                                    const FileName& f) {
   if (directory_name.empty()) {
     return f.unaligned_filename();

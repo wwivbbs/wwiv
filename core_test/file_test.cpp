@@ -33,7 +33,7 @@ TEST(FileTest, DoesNotExist) {
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
-  const auto fn = PathFilePath(tmp, "doesnotexist");
+  const auto fn = FilePath(tmp, "doesnotexist");
   ASSERT_FALSE(File::Exists(fn));
 }
 
@@ -41,7 +41,7 @@ TEST(FileTest, DoesNotExist_Static) {
   FileHelper file;
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
-  File dne(PathFilePath(tmp, "doesnotexist"));
+  File dne(FilePath(tmp, "doesnotexist"));
   ASSERT_FALSE(File::Exists(dne.path()));
 }
 
@@ -50,7 +50,7 @@ TEST(FileTest, Exists) {
   const auto tmp{file.TempDir()};
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  const auto f{PathFilePath(tmp, "newdir")};
+  const auto f{FilePath(tmp, "newdir")};
   ASSERT_TRUE(File::Exists(f)) << f;
 }
 
@@ -59,13 +59,13 @@ TEST(FileTest, ExistsWildCard) {
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
-  auto wildcard_path = PathFilePath(helper.TempDir(), "msg*");
+  auto wildcard_path = FilePath(helper.TempDir(), "msg*");
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = PathFilePath(helper.TempDir(), "msg*.*");
+  wildcard_path = FilePath(helper.TempDir(), "msg*.*");
   EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = PathFilePath(helper.TempDir(), "msg*.???");
+  wildcard_path = FilePath(helper.TempDir(), "msg*.???");
   EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 }
 
@@ -74,10 +74,10 @@ TEST(FileTest, ExistsWildCard_Extension) {
   const auto path = helper.CreateTempFile("msg00000.001", "msg00000.001");
   ASSERT_TRUE(File::Exists(path));
 
-  auto wildcard_path = PathFilePath(helper.TempDir(), "msg*.001").string();
+  auto wildcard_path = FilePath(helper.TempDir(), "msg*.001").string();
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 
-  wildcard_path = PathFilePath(helper.TempDir(), "msg*.??1").string();
+  wildcard_path = FilePath(helper.TempDir(), "msg*.??1").string();
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 }
 
@@ -86,7 +86,7 @@ TEST(FileTest, Exists_Static) {
   const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  const File dne(PathFilePath(tmp, "newdir"));
+  const File dne(FilePath(tmp, "newdir"));
   ASSERT_TRUE(File::Exists(dne.path())) << dne.path();
 }
 
@@ -95,7 +95,7 @@ TEST(FileTest, Exists_TrailingSlash) {
   const auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  File dne(PathFilePath(tmp, "newdir"));
+  File dne(FilePath(tmp, "newdir"));
   const auto path = File::EnsureTrailingSlash(dne.full_pathname());
   ASSERT_TRUE(File::Exists(path)) << path;
   ASSERT_EQ(File::pathSeparatorChar, path.back());
@@ -256,18 +256,18 @@ TEST(FileTest, RealPath_Different) {
   const auto path = helper.CreateTempFile(kFileName, "Hello World");
 
   // Add an extra ./ into the path.
-  const auto suffix = PathFilePath(".", kFileName).string();
-  const auto full = PathFilePath(helper.TempDir(), suffix).string();
+  const auto suffix = FilePath(".", kFileName).string();
+  const auto full = FilePath(helper.TempDir(), suffix).string();
   const auto canonical = File::canonical(full);
   EXPECT_EQ(path, canonical);
 }
 
 TEST(FileTest, mkdir) {
   const FileHelper helper{};
-  const auto path = PathFilePath(helper.TempDir(), "a");
-  const auto l = PathFilePath("b", "c").string();
+  const auto path = FilePath(helper.TempDir(), "a");
+  const auto l = FilePath("b", "c").string();
 
-  const auto path_missing_middle = PathFilePath(path, l);
+  const auto path_missing_middle = FilePath(path, l);
   ASSERT_FALSE(File::Exists(path));
 
   ASSERT_TRUE(File::mkdir(path));
@@ -279,9 +279,9 @@ TEST(FileTest, mkdir) {
 
 TEST(FileTest, mkdirs) {
   FileHelper helper;
-  const auto f = PathFilePath(helper.TempDir(), "a");
-  const auto l = PathFilePath("b", "c");
-  const auto path = PathFilePath(f, l.string());
+  const auto f = FilePath(helper.TempDir(), "a");
+  const auto l = FilePath("b", "c");
+  const auto path = FilePath(f, l.string());
   ASSERT_FALSE(File::Exists(path));
 
   ASSERT_TRUE(File::mkdirs(path));
@@ -292,7 +292,7 @@ TEST(FileTest, mkdirs) {
 
 TEST(FileTest, Stream) {
   FileHelper file{};
-  File f(PathFilePath(file.TempDir(), "newdir"));
+  File f(FilePath(file.TempDir(), "newdir"));
   std::stringstream s;
   s << f;
   ASSERT_EQ(f.full_pathname(), s.str());
@@ -356,14 +356,14 @@ TEST(FileTest, FsCopyFile) {
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto from = PathFilePath(tmp, "f1");
+  auto from = FilePath(tmp, "f1");
   File f(from);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto to = PathFilePath(tmp, "f2");
+  auto to = FilePath(tmp, "f2");
   std::error_code ec;
   EXPECT_FALSE(File::Exists(to.string()));
   copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
@@ -375,14 +375,14 @@ TEST(FileTest, CopyFile) {
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto f1 = PathFilePath(tmp, "f1");
+  auto f1 = FilePath(tmp, "f1");
   File f(f1);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto f2 = PathFilePath(tmp, "f2");
+  auto f2 = FilePath(tmp, "f2");
   EXPECT_FALSE(File::Exists(f2));
   File::Copy(f1, f2);
   EXPECT_TRUE(File::Exists(f2));
@@ -393,14 +393,14 @@ TEST(FileTest, MoveFile) {
   auto tmp = file.TempDir();
   GTEST_ASSERT_NE("", tmp);
   ASSERT_TRUE(file.Mkdir("newdir"));
-  auto f1 = PathFilePath(tmp, "f1");
+  auto f1 = FilePath(tmp, "f1");
   File f(f1);
   f.Open(File::modeWriteOnly | File::modeCreateFile);
   f.Write("ok");
   f.Close();
   ASSERT_TRUE(File::Exists(f.path())) << f.full_pathname();
 
-  auto f2 = PathFilePath(tmp, "f2");
+  auto f2 = FilePath(tmp, "f2");
   EXPECT_TRUE(File::Exists(f1)) << f1;
   EXPECT_FALSE(File::Exists(f2));
   File::Move(f1, f2);
@@ -494,3 +494,11 @@ TEST(FileSystemTest, Path_WithWildCard) {
   EXPECT_FALSE(wwiv::stl::contains(p.string(), File::pathSeparatorChar)) << "p: " << p.string();
   EXPECT_TRUE(wwiv::strings::ends_with(p.string(), "hello.*")) << "p: " << p.string();
 }
+
+TEST(FileSystemTest, PathFilePath_Nested) {
+  auto p = FilePath("foo", FilePath("bar", "baz"));
+  auto expected = StrCat("foo", File::pathSeparatorChar, "bar", File::pathSeparatorChar, "baz");
+  EXPECT_EQ(expected, p.string());
+}
+
+

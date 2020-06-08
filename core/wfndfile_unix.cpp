@@ -55,7 +55,7 @@ static int fname_ok(const struct dirent* ent) {
     mode = DTTOIF(ent->d_type);
 #else
     struct stat s;
-    auto fullpath = PathFilePath(s_path, ent->d_name).string();
+    auto fullpath = FilePath(s_path, ent->d_name).string();
     stat(fullpath.c_str(), &s);
     mode = s.st_mode;
 #endif  // _DIRENT_HAVE_D_TYPE
@@ -123,7 +123,7 @@ bool WFindFile::next() {
 
 #else
   struct stat s{};
-  auto fullpath = PathFilePath(dir_, entry->d_name).string();
+  auto fullpath = FilePath(dir_, entry->d_name).string();
   if (stat(fullpath.c_str(), &s) == 0) {
     file_type_ = s.st_mode;
   } else {

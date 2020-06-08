@@ -38,7 +38,7 @@
 * Move the userrec from User class to heap from stack.
 * Move the configrec from Config and Config430 class to heap from stack.
 * simplify names in WUser
-* Get rid of FilePath (just use PathFilePath)
+* Get rid of FilePath (just use FilePath)
 
 ## Networking Cleanup
 ***

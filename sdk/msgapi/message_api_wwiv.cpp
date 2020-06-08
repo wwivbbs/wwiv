@@ -44,7 +44,7 @@ WWIVMessageApi::WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& optio
       last_read_(last_read), config_(config) {}
 
 bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
-  return File::Exists(PathFilePath(subs_directory_, StrCat(sub.filename, ".sub")));
+  return File::Exists(FilePath(subs_directory_, StrCat(sub.filename, ".sub")));
 }
 
 bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
@@ -54,7 +54,7 @@ bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
 bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
                             const std::string& text_ext, int) {
   LOG(INFO) << "Creating: " << name;
-  const auto fn = PathFilePath(subs_directory_, StrCat(name, sub_ext));
+  const auto fn = FilePath(subs_directory_, StrCat(name, sub_ext));
   if (File::Exists(fn)) {
     // Don't create if it already exists.
     return false;
@@ -71,7 +71,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
   }
 
   const auto text_filename = StrCat(name, text_ext);
-  File msgs_file(PathFilePath(messages_directory_, text_filename));
+  File msgs_file(FilePath(messages_directory_, text_filename));
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
     return false;
@@ -107,8 +107,8 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
   std::filesystem::path sub_fullpath;
   std::filesystem::path msgs_fullpath;
   {
-    const auto sub_fn = PathFilePath(subs_directory_, StrCat(sub.filename, ".sub"));
-    const auto msgs_fn = PathFilePath(messages_directory_, StrCat(sub.filename, ".dat"));
+    const auto sub_fn = FilePath(subs_directory_, StrCat(sub.filename, ".sub"));
+    const auto msgs_fn = FilePath(messages_directory_, StrCat(sub.filename, ".dat"));
     if (!File::Exists(sub_fn)) {
       throw bad_message_area(sub.filename);
     }
@@ -118,7 +118,7 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
     }
 
     if (!File::Exists(msgs_fn)) {
-      File create_msgs_file(PathFilePath(messages_directory_, StrCat(sub.filename, ".dat")));
+      File create_msgs_file(FilePath(messages_directory_, StrCat(sub.filename, ".dat")));
       if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         throw bad_message_area(sub.filename);
       }
@@ -138,8 +138,8 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
 }
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
-  const auto data = PathFilePath(subs_directory_, EMAIL_DAT);
-  const auto text = PathFilePath(messages_directory_, EMAIL_DAT);
+  const auto data = FilePath(subs_directory_, EMAIL_DAT);
+  const auto text = FilePath(messages_directory_, EMAIL_DAT);
   {
     if (!File::Exists(data)) {
       // Create it if it doesn't exist.  We still can have an odd case

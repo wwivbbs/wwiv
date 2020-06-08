@@ -75,12 +75,10 @@ private:
 std::string align(const std::string& file_name);
 std::string unalign(const std::string& file_name);
 
-std::string FilePath(const std::filesystem::path& directory_name, const FileRecord& f);
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+std::filesystem::path FilePath(const std::filesystem::path& directory_name,
                                    const FileRecord& f);
 
-std::string FilePath(const std::filesystem::path& directory_name, const FileName& f);
-std::filesystem::path PathFilePath(const std::filesystem::path& directory_name,
+std::filesystem::path FilePath(const std::filesystem::path& directory_name,
                                    const FileName& f);
 
 

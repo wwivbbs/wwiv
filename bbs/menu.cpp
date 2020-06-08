@@ -49,16 +49,16 @@ using namespace wwiv::stl;
 namespace wwiv::menus {
 
 static std::filesystem::path GetMenuDirectory() {
-  return PathFilePath(a()->language_dir, "menus");
+  return FilePath(a()->language_dir, "menus");
 }
 
 static std::filesystem::path GetMenuDirectory(const string menu_path) {
-  return PathFilePath(GetMenuDirectory(), menu_path);
+  return FilePath(GetMenuDirectory(), menu_path);
 }
 
 static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
-  return File::Exists(PathFilePath(GetMenuDirectory(menu_dir), "main.mnu"));
+  return File::Exists(FilePath(GetMenuDirectory(menu_dir), "main.mnu"));
 }
 
 static bool CheckMenuPassword(const string& original_password) {
@@ -245,8 +245,8 @@ std::string MenuInstance::create_menu_filename(const std::string& path,
                                                const std::string& menu,
                                                const std::string& extension) {
   const auto menu_with_ext = StrCat(menu, ".", extension);
-  const auto base = PathFilePath(GetMenuDirectory(), path);
-  return PathFilePath(base, menu_with_ext).string();
+  const auto base = FilePath(GetMenuDirectory(), path);
+  return FilePath(base, menu_with_ext).string();
 }
 
 std::string MenuInstance::create_menu_filename(const string& extension) const {
@@ -362,7 +362,7 @@ static std::map<int, std::string> ListMenuDirs() {
        << "|#9============================" << wwiv::endl;
 
   int num = 1;
-  auto menus = FindFiles(PathFilePath(menu_directory, "*"), FindFilesType::directories);
+  auto menus = FindFiles(FilePath(menu_directory, "*"), FindFilesType::directories);
 
   for (const auto& m : menus) {
     const auto& filename = m.name;
@@ -526,7 +526,7 @@ string MenuInstance::GetCommand() const {
 }
 
 MenuDescriptions::MenuDescriptions(const std::filesystem::path& menupath) : menupath_(menupath) {
-  TextFile file(PathFilePath(menupath, DESCRIPT_ION), "rt");
+  TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
     while (file.ReadLine(&s)) {
@@ -553,7 +553,7 @@ std::string MenuDescriptions::description(const std::string& name) const {
 bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
   descriptions_[name] = description;
 
-  TextFile file(PathFilePath(menupath_, DESCRIPT_ION), "wt");
+  TextFile file(FilePath(menupath_, DESCRIPT_ION), "wt");
   if (!file.IsOpen()) {
     return false;
   }

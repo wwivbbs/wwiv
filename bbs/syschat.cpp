@@ -560,7 +560,7 @@ void chat1(const char* chat_line, bool two_way) {
     a()->chatting_ = 1;
   }
   auto tc_start = steady_clock::now();
-  File chatFile(PathFilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
+  File chatFile(FilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
 
   auto line = bout.SaveCurrentLine();
 

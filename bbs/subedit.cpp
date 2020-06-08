@@ -123,7 +123,7 @@ static void DisplayNetInfo(size_t nSubNum) {
       const auto dir = net.dir;
       const auto net_file_name = fmt::format("n{}.net", dir, sn.stype);
       std::set<uint16_t> subscribers;
-      ReadSubcriberFile(PathFilePath(dir, net_file_name), subscribers);
+      ReadSubcriberFile(FilePath(dir, net_file_name), subscribers);
       auto num = ssize(subscribers);
       bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
                            net.name, sn.stype, host, num,
@@ -209,7 +209,7 @@ static void modify_sub(int n) {
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
-      auto new_sub_fullpath = PathFilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
+      auto new_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();
@@ -230,10 +230,10 @@ static void modify_sub(int n) {
       }
 
       const auto old_sub_fullpath =
-          PathFilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
+          FilePath(a()->config()->datadir(), StrCat(old_subname, ".sub"));
       const auto old_msg_fullpath =
-          PathFilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
-      const auto new_msg_fullpath = PathFilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
+          FilePath(a()->config()->msgsdir(), StrCat(old_subname, ".dat"));
+      const auto new_msg_fullpath = FilePath(a()->config()->msgsdir(), StrCat(new_fn, ".dat"));
 
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
         && new_fn != "NONAME" && old_subname != "NONAME") {
@@ -712,8 +712,8 @@ void boardedit() {
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(PathFilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
-            File::Remove(PathFilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
+            File::Remove(FilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
           }
         }
       }

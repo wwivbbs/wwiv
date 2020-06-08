@@ -88,7 +88,7 @@ bool Allow::Remove(const std::string& unaligned_filename) {
 }
 
 bool Allow::Load() {
-  DataFile<allow_entry_t> file(wwiv::core::PathFilePath(data_directory_, ALLOW_DAT));
+  DataFile<allow_entry_t> file(wwiv::core::FilePath(data_directory_, ALLOW_DAT));
   if (!file) {
     // Handle empty file for the 1st time.  This is fine.
     return true;
@@ -98,7 +98,7 @@ bool Allow::Load() {
 }
 
 bool Allow::Save() {
-  DataFile<allow_entry_t> file(wwiv::core::PathFilePath(data_directory_, ALLOW_DAT),
+  DataFile<allow_entry_t> file(wwiv::core::FilePath(data_directory_, ALLOW_DAT),
                                File::modeReadWrite | File::modeBinary | File::modeTruncate | File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Error saving allow.dat";

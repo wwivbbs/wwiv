@@ -47,7 +47,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void write_qscn(const Config& config, unsigned int un, uint32_t* qscn) {
-  File file(PathFilePath(config.datadir(), USER_QSC));
+  File file(FilePath(config.datadir(), USER_QSC));
   if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     file.Seek(config.qscn_len() * un, File::Whence::begin);
     file.Write(qscn, config.qscn_len());
@@ -66,8 +66,8 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
       window->Puts("ERROR Unable to unzip file.\n");
     }
 
-    const auto sysop_dir = PathFilePath("dloads", "sysop");
-    File::Rename(zipfile, PathFilePath(sysop_dir, zipfile));
+    const auto sysop_dir = FilePath("dloads", "sysop");
+    File::Rename(zipfile, FilePath(sysop_dir, zipfile));
     return true;
   }
   return false;
@@ -105,8 +105,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   to_char_array(cfg430.msgsdir, "msgs");
   to_char_array(cfg430.gfilesdir, "gfiles");
   to_char_array(cfg430.dloadsdir, "dloads");
-  to_char_array(cfg430.tempdir, FilePath("temp", "1"));
-  to_char_array(cfg430.menudir, FilePath("gfiles", "menus"));
+  to_char_array(cfg430.tempdir, FilePath("temp", "1").string());
+  to_char_array(cfg430.menudir, FilePath("gfiles", "menus").string());
   to_char_array(cfg430.scriptdir, "scripts");
 
   cfg430.newusersl = 10;
@@ -197,7 +197,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   // cfg430 is done
   Config config(cfg430);
 
-  const auto datadir = PathFilePath(bbsdir, "data");
+  const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);
   statusrec_t statusrec{};
   memset(&statusrec, 0, sizeof(statusrec_t));
@@ -243,7 +243,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_user(config, 1, &u);
   write_qscn(config, 1, qsc.get());
   {
-    File namesfile(PathFilePath("data", NAMES_LST));
+    File namesfile(FilePath("data", NAMES_LST));
     namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   }
   {
@@ -266,12 +266,12 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     memset(&d1, 0, sizeof(directoryrec));
     to_char_array(d1.name, "Sysop");
     to_char_array(d1.filename, "SYSOP");
-    to_char_array(d1.path, File::EnsureTrailingSlash(FilePath("dloads", "sysop")));
+    to_char_array(d1.path, File::EnsureTrailingSlash(FilePath("dloads", "sysop").string()));
     File::mkdir(d1.path);
     d1.dsl = 100;
     d1.maxfiles = 50;
     d1.type = 65535;
-    File dirsfile(PathFilePath("data", DIRS_DAT));
+    File dirsfile(FilePath("data", DIRS_DAT));
     dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 
@@ -279,7 +279,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     to_char_array(d1.name, "Miscellaneous");
     to_char_array(d1.filename, "misc");
     auto last = File::EnsureTrailingSlash("misc");
-    to_char_array(d1.path, FilePath("dloads", last));
+    to_char_array(d1.path, FilePath("dloads", last).string());
     File::mkdir(d1.path);
     d1.dsl = 10;
     d1.age = 0;

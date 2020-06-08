@@ -384,19 +384,19 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
 static std::filesystem::path FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
     auto nd = a()->net_networks[xnp.net_num].dir;
-    auto filename = PathFilePath(nd, StrCat(xnp.stype, ".tag"));
+    auto filename = FilePath(nd, StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = PathFilePath(nd, GENERAL_TAG);
+    filename = FilePath(nd, GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = PathFilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
+    filename = FilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = PathFilePath(a()->config()->datadir(), GENERAL_TAG);
+    filename = FilePath(a()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
@@ -456,7 +456,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const auto quotes_filename = PathFilePath(a()->temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = FilePath(a()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -472,7 +472,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const auto msginf_filename = PathFilePath(a()->temp_directory(), "msginf");
+  const auto msginf_filename = FilePath(a()->temp_directory(), "msginf");
   File::Copy(quotes_filename, msginf_filename);
 }
 
@@ -543,7 +543,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = PathFilePath(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = FilePath(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }

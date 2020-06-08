@@ -397,7 +397,7 @@ static bool download_temp_arc(const char* file_name, bool count_against_xfer_rat
     return false;
   }
   const auto file_to_send = StrCat(file_name, ".", a()->arcs[ARC_NUMBER].extension);
-  const auto dl_filename = PathFilePath(a()->temp_directory(), file_to_send);
+  const auto dl_filename = FilePath(a()->temp_directory(), file_to_send);
   File file(dl_filename);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -496,7 +496,7 @@ void del_temp() {
 }
 
 void list_temp_dir() {
-  FindFiles ff(PathFilePath(a()->temp_directory(), "*"), FindFilesType::any);
+  FindFiles ff(FilePath(a()->temp_directory(), "*"), FindFilesType::any);
   bout.nl();
   bout << "Files in temporary directory:\r\n\n";
   for (const auto& f : ff) {
@@ -533,10 +533,10 @@ void temp_extract() {
   bool ok = true;
   while (i > 0 && ok && !a()->hangup_) {
     auto f = a()->current_file_area()->ReadFile(i);
-    auto tmppath = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+    auto tmppath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
     if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-      auto curpath = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
-      tmppath = PathFilePath(a()->temp_directory(), f);
+      auto curpath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      tmppath = FilePath(a()->temp_directory(), f);
       if (!File::Exists(tmppath)) {
         File::Copy(curpath, tmppath);
       }
@@ -552,7 +552,7 @@ void temp_extract() {
       } else {
         File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
-      File file(PathFilePath(File::current_directory(), f));
+      File file(FilePath(File::current_directory(), f));
       a()->CdHome();
       if (check_for_files(file.path())) {
         bool ok1;
@@ -622,11 +622,11 @@ void list_temp_text() {
     if (!contains(fn, '.')) {
       fn += ".*";
     }
-    const auto fmask = PathFilePath(a()->temp_directory(), stripfn(fn));
+    const auto fmask = FilePath(a()->temp_directory(), stripfn(fn));
     FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
     for (const auto& f : ff) {
-      const auto s = PathFilePath(a()->temp_directory(), f.name);
+      const auto s = FilePath(a()->temp_directory(), f.name);
       if (iequals(f.name, "door.sys") || iequals(f.name, DROPFILE_CHAIN_TXT)) {
         continue;
       }
@@ -724,7 +724,7 @@ void move_file_t() {
       }
       std::filesystem::path s1;
       if (ch == 'Y') {
-        s1 = PathFilePath(a()->directories[a()->batch().entry[pos].dir()].path, f);
+        s1 = FilePath(a()->directories[a()->batch().entry[pos].dir()].path, f);
         string dirnum;
         do {
           bout << "|#2To which directory? ";
@@ -777,7 +777,7 @@ void move_file_t() {
         if (a()->current_file_area()->DeleteFile(f, temp_record_num)) {
           a()->current_file_area()->Save();
         }
-        auto s2 = PathFilePath(a()->directories[d1].path, f);
+        auto s2 = FilePath(a()->directories[d1].path, f);
         dliscan1(d1);
         // N.B. the current file area changes with calls to dliscan*
         if (a()->current_file_area()->AddFile(f)) {
@@ -852,7 +852,7 @@ void removefile() {
             remove_from_file_database(f.aligned_filename());
           }
           if (bDeleteFileToo) {
-            auto del_fn = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+            auto del_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
               a()->users()->readuser(&uu, f.u().ownerusr);

@@ -66,7 +66,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     const auto wsidx = s2.find_first_of(" \t");
     if (wsidx != std::string::npos) {
       if (s2.find(File::pathSeparatorChar) != std::string::npos) {
-        s1 = FilePath(root, s1);
+        s1 = FilePath(root, s1).string();
       }
     }
   }
@@ -90,7 +90,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     if (s1[1] == ':') {
       if (File::Exists(s)) {
         if (File::is_directory(s)) {
-          *out = PathFilePath(s, s2).string();
+          *out = FilePath(s, s2).string();
         } else {
           *out = StrCat(s, s2);
         }
@@ -99,10 +99,10 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     } else {
       if (File::Exists(s)) {
         std::error_code ec;
-        if (File::is_directory(root) && !std::filesystem::is_directory(PathFilePath(root, s), ec)) {
-          *out = StrCat(PathFilePath(root, s).string(), s2);
+        if (File::is_directory(root) && !std::filesystem::is_directory(FilePath(root, s), ec)) {
+          *out = StrCat(FilePath(root, s).string(), s2);
         } else {
-          *out = FilePath(root, StrCat(s, s2));
+          *out = FilePath(root, StrCat(s, s2)).string();
         }
         return;
       }
@@ -115,12 +115,12 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     }
   }
 
-  const auto maybe_dir = PathFilePath(root, s1);
+  const auto maybe_dir = FilePath(root, s1);
   std::error_code ec;
   if (File::Exists(maybe_dir) && is_directory(maybe_dir, ec)) {
     *out = StrCat(maybe_dir.string(), s2);
   } else {
-    *out = FilePath(root, StrCat(s1, s2));
+    *out = FilePath(root, StrCat(s1, s2)).string();
   }
 }
 

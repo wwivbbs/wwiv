@@ -126,7 +126,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(PathFilePath(a()->temp_directory(), INPUT_MSG));
+  File file(FilePath(a()->temp_directory(), INPUT_MSG));
   auto lMaxBytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;

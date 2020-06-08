@@ -86,7 +86,7 @@ SdkHelper::SdkHelper()
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 
-    File cfile(PathFilePath(root_, CONFIG_DAT));
+    File cfile(FilePath(root_, CONFIG_DAT));
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");
     }
@@ -95,7 +95,7 @@ SdkHelper::SdkHelper()
   }
 
   {
-    File sfile(PathFilePath(data_, STATUS_DAT));
+    File sfile(FilePath(data_, STATUS_DAT));
     if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
       throw std::runtime_error("failed to create status.dat");
     }
@@ -106,7 +106,7 @@ SdkHelper::SdkHelper()
 }
 
 std::filesystem::path SdkHelper::CreatePath(const string& name) {
-  const auto path = files_.CreateTempFilePath(PathFilePath("bbs", name).string());
+  const auto path = files_.CreateTempFilePath(FilePath("bbs", name).string());
   File::mkdirs(path);
   return path;
 }

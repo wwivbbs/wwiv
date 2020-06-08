@@ -43,7 +43,7 @@ void sound(uint32_t frequency, duration<double> d) {
 
 std::string os_version_string() {
 #if defined ( __linux__ )
-  const auto fn = PathFilePath("/proc/sys/kernel", "osrelease").string();
+  const auto fn = FilePath("/proc/sys/kernel", "osrelease").string();
   if (File::Exists(fn)) {
     File info(fn);
     FILE* kernel_file;

@@ -54,11 +54,11 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
   }
 
   {
-    DataFile<net_networks_rec_disk> file_dat(PathFilePath(datadir_, NETWORKS_DAT),
+    DataFile<net_networks_rec_disk> file_dat(FilePath(datadir_, NETWORKS_DAT),
                                              File::modeBinary | File::modeReadOnly,
                                              File::shareDenyNone);
-    if (!File::Exists(PathFilePath(datadir_, NETWORKS_JSON)) &&
-        !File::Exists(PathFilePath(datadir_, NETWORKS_DAT))) {
+    if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
+        !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
       return;
     }
   }
@@ -127,12 +127,12 @@ bool Networks::Load() {
 
 bool Networks::LoadFromJSON() {
   networks_.clear();
-  JsonFile<decltype(networks_)> json(PathFilePath(datadir_, NETWORKS_JSON), "networks", networks_);
+  JsonFile<decltype(networks_)> json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
   return json.Load();
 }
 
 bool Networks::LoadFromDat() {
-  DataFile<net_networks_rec_disk> file(PathFilePath(datadir_, NETWORKS_DAT),
+  DataFile<net_networks_rec_disk> file(FilePath(datadir_, NETWORKS_DAT),
                                        File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return false;
@@ -162,7 +162,7 @@ bool Networks::Save() {
 }
 
 bool Networks::SaveToJSON() {
-  JsonFile<decltype(networks_)> json(PathFilePath(datadir_, NETWORKS_JSON), "networks", networks_);
+  JsonFile<decltype(networks_)> json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
   return json.Save();
 }
 
@@ -178,7 +178,7 @@ bool Networks::SaveToDat() {
     disk.emplace_back(to);
   }
 
-  DataFile<net_networks_rec_disk> file(PathFilePath(datadir_, NETWORKS_DAT),
+  DataFile<net_networks_rec_disk> file(FilePath(datadir_, NETWORKS_DAT),
                                        File::modeBinary | File::modeReadWrite |
                                        File::modeCreateFile | File::modeTruncate,
                                        File::shareDenyReadWrite);

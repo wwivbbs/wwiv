@@ -160,14 +160,14 @@ static script_data_t to_script_data(const mb_value_t& v) {
 }
 
 static bool SaveData(const std::string& datadir, const std::string& basename, const std::vector<script_data_t>& data) {
-  const auto path = PathFilePath(datadir, StrCat(basename, ".script.json"));
+  const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   return json.Save();
 }
 
 static std::vector<script_data_t> LoadData(const std::string& datadir, const std::string& basename) {
   std::vector<script_data_t> data;
-  const auto path = PathFilePath(datadir, StrCat(basename, ".script.json"));
+  const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
   JsonFile<decltype(data)> json(path, "data", data);
   json.Load();
   return data;
@@ -207,7 +207,7 @@ static std::optional<std::string> ReadBasicFile(const std::string& script_name) 
     return std::nullopt;
   }
 
-  const auto path = PathFilePath(script_scriptdir, script_name);
+  const auto path = FilePath(script_scriptdir, script_name);
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
     script_out() << "|#6Unable to locate script: " << script_name << "\r\n";
@@ -631,7 +631,7 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 }
 
 bool Basic::RunScript(const std::string& script_name) {
-  const auto path = PathFilePath(config_.scriptdir(), script_name);
+  const auto path = FilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
     script_out() << "|#6Unable to locate script: " << script_name;
     return false;

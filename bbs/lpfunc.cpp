@@ -301,7 +301,7 @@ ADD_OR_REMOVE_BATCH:
                         redraw = false;
                         if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                           auto tf =
-                              PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
+                              FilePath(a()->directories[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                           if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
@@ -375,7 +375,7 @@ ADD_OR_REMOVE_BATCH:
                           redraw = false;
                           if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                             auto tf =
-                                PathFilePath(a()->directories[a()->current_user_dir().subnum].path,
+                                FilePath(a()->directories[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                             if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,

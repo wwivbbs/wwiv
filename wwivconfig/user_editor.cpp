@@ -96,7 +96,7 @@ static vector<HelpItem> create_extra_help_items() {
 static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
   vector<ListBoxItem> items;
   {
-    DataFile<smalrec> file(PathFilePath(datadir, NAMES_LST), File::modeReadOnly | File::modeBinary,
+    DataFile<smalrec> file(FilePath(datadir, NAMES_LST), File::modeReadOnly | File::modeBinary,
                            File::shareDenyWrite);
     if (!file) {
       show_error_no_users(window);

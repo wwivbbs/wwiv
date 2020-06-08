@@ -95,10 +95,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "w");
+        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(PathFilePath(a()->temp_directory(), "extended.dsc"));
+        File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
       }
 
       const int saved_screen_chars = a()->user()->GetScreenChars();
@@ -110,7 +110,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
                                         a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(PathFilePath(a()->temp_directory(), "extended.dsc"), "r");
+        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
@@ -214,7 +214,7 @@ bool get_file_idz(uploadsrec* u, int dn) {
   if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
     return false;
   }
-  const auto pfn = PathFilePath(a()->directories[dn].path, FileName(u->filename));
+  const auto pfn = FilePath(a()->directories[dn].path, FileName(u->filename));
   const auto t = DateTime::from_time_t(File::creation_time(pfn)).to_string("%m/%d/%y");
   to_char_array(u->actualdate, t);
   auto ufn = std::filesystem::path(FileName(u->filename).unaligned_filename());
@@ -225,17 +225,17 @@ bool get_file_idz(uploadsrec* u, int dn) {
     return false;
   }
 
-  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
+  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
 
-  const auto p = PathFilePath(a()->directories[dn].path, FileName(u->filename));
+  const auto p = FilePath(a()->directories[dn].path, FileName(u->filename));
   const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
 
   ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   a()->CdHome();
-  auto diz_fn = PathFilePath(a()->temp_directory(), FILE_ID_DIZ);
+  auto diz_fn = FilePath(a()->temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
-    diz_fn = PathFilePath(a()->temp_directory(), DESC_SDI);
+    diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
   }
   if (File::Exists(diz_fn)) {
     bout.nl();
@@ -286,8 +286,8 @@ bool get_file_idz(uploadsrec* u, int dn) {
     success = true;
     bout << "Done!\r\n";
   }
-  File::Remove(PathFilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(PathFilePath(a()->temp_directory(), DESC_SDI));
+  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
   return success;
 }
 
@@ -331,7 +331,7 @@ int read_idz(int mode, int tempdir) {
     const auto fn = f.aligned_filename();
     if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      const auto file = PathFilePath(File::current_directory(), f);
+      const auto file = FilePath(File::current_directory(), f);
       a()->CdHome();
       if (!File::Exists(file)) {
         if (get_file_idz(&f.u(), a()->udir[tempdir].subnum)) {
@@ -409,10 +409,10 @@ void tag_it() {
         bad = true;
       }
       if (!bad) {
-        auto s = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+        auto s = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
-          auto s2 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
-          s = PathFilePath(a()->temp_directory(), FileName(f.u.filename));
+          auto s2 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+          s = FilePath(a()->temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s)) {
             File::Copy(s2, s);
           }
@@ -556,7 +556,7 @@ void tag_files(bool& need_title) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          auto fn = PathFilePath(a()->directories[f.directory].path, f.u.filename);
+          auto fn = FilePath(a()->directories[f.directory].path, f.u.filename);
           if (!File::Exists(fn)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
@@ -595,10 +595,10 @@ void tag_files(bool& need_title) {
       int i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        auto s1 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+        auto s1 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
         if (a()->directories[f.directory].mask & mask_cdrom) {
-          auto s2 = PathFilePath(a()->directories[f.directory].path, FileName(f.u.filename));
-          s1 = PathFilePath(a()->temp_directory().c_str(), FileName(f.u.filename));
+          auto s2 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+          s1 = FilePath(a()->temp_directory().c_str(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -665,8 +665,8 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
     const auto ufn = wwiv::sdk::files::unalign(aligned_file_name);
     if (to_upper_case<char>(ch) == 'Y') {
       if (a()->directories[dn].mask & mask_cdrom) {
-        const auto src = PathFilePath(a()->directories[dn].path, ufn);
-        const auto dest = PathFilePath(a()->temp_directory(), ufn);
+        const auto src = FilePath(a()->directories[dn].path, ufn);
+        const auto dest = FilePath(a()->temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
@@ -676,7 +676,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
           bout.clreol();
         }
       } else {
-        auto f = PathFilePath(a()->directories[dn].path, ufn);
+        auto f = FilePath(a()->directories[dn].path, ufn);
         if (!File::Exists(f) && !so()) {
           bout << "\r";
           bout.clreol();
@@ -1051,7 +1051,7 @@ void removefilesnotthere(int dn, int* autodel) {
   while (!a()->hangup_ && i > 0 && !abort) {
     auto* area = a()->current_file_area();
     auto f = area->ReadFile(i);
-    auto candidate_fn = PathFilePath(a()->directories[dn].path, f);
+    auto candidate_fn = FilePath(a()->directories[dn].path, f);
     if (!File::Exists(candidate_fn)) {
       StringTrim(f.u().description);
       candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.u().description);

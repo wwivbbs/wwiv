@@ -83,7 +83,7 @@ void move_file() {
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      src_fn = PathFilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      src_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
       string ss;
       do {
         bout.nl(2);
@@ -139,7 +139,7 @@ void move_file() {
       }
 
       dliscan1(d1);
-      auto dest_fn = PathFilePath(a()->directories[d1].path, f);
+      auto dest_fn = FilePath(a()->directories[d1].path, f);
       if (a()->current_file_area()->AddFile(f)) {
         a()->current_file_area()->Save();
       }
@@ -231,11 +231,11 @@ void rename_file() {
       s = aligns(s);
       if (!iequals(s, "        .   ")) {
         const std::string p = a()->directories[a()->current_user_dir().subnum].path;
-        auto dest_fn = PathFilePath(p, s);
+        auto dest_fn = FilePath(p, s);
         if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          auto orig_fn = PathFilePath(p, f);
+          auto orig_fn = FilePath(p, f);
           File::Rename(orig_fn, dest_fn);
           if (File::Exists(dest_fn)) {
             auto* area = a()->current_file_area();
@@ -308,7 +308,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
     const auto unaligned_filename = files::unalign(file_name);
-    const auto full_path = PathFilePath(d.path, unaligned_filename);
+    const auto full_path = FilePath(d.path, unaligned_filename);
 
     File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
@@ -382,7 +382,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
       if (ch == YesNoString(false)[0]) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          File::Remove(PathFilePath(a()->directories[directory_num].path, file_name));
+          File::Remove(FilePath(a()->directories[directory_num].path, file_name));
           bout.nl();
           return true;
         }
@@ -618,7 +618,7 @@ void relist() {
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(a()->directories[tcd].mask & mask_cdrom)) {
         files::FileName fn(f.u.filename);
-        auto filepath = PathFilePath(a()->directories[tcd].path, fn);
+        auto filepath = FilePath(a()->directories[tcd].path, fn);
         if (!File::Exists(filepath)) {
           strcpy(s1, "N/A");
         }

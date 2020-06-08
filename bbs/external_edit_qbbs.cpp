@@ -36,7 +36,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  auto f = PathFilePath(a()->temp_directory(), filename);
+  auto f = FilePath(a()->temp_directory(), filename);
   File::SetFilePermissions(f, File::permReadWrite);
   File::Remove(f);
 }
@@ -66,7 +66,7 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
                         const string& to_name) {
-  TextFile file(PathFilePath(a()->temp_directory(), MSGINF), "wd");
+  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wd");
   if (!file.IsOpen()) {
     return false;
   }
@@ -102,7 +102,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
-  const auto qfn = PathFilePath(tmpdir, QUOTES_TXT);
+  const auto qfn = FilePath(tmpdir, QUOTES_TXT);
   if (!File::Exists(qfn)) {
     return false;
   }
@@ -111,7 +111,7 @@ static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
   if (!in) {
     return false; 
   }
-  File out(PathFilePath(a()->temp_directory(), MSGTMP));
+  File out(FilePath(a()->temp_directory(), MSGTMP));
   if (!out.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                 File::modeTruncate)) {
     return false;
@@ -143,8 +143,8 @@ bool ExternalQBBSMessageEditor::After() {
   // TODO(rushfan): Let this function return an object with result and filename and anything
   // else that needs to be passed back.
   std::error_code ec;
-  const auto from = PathFilePath(temp_directory_, MSGTMP);
-  const auto to = PathFilePath(temp_directory_, INPUT_MSG);
+  const auto from = FilePath(temp_directory_, MSGTMP);
+  const auto to = FilePath(temp_directory_, INPUT_MSG);
   copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
   return true;
 }

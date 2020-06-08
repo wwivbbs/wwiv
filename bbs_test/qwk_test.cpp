@@ -41,7 +41,7 @@ class QwkTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    filename = PathFilePath(helper.data(), QWK_CFG);
+    filename = FilePath(helper.data(), QWK_CFG);
   }
 
 protected:
@@ -53,7 +53,7 @@ TEST_F(QwkTest, ReadQwkConfig_Read_NoBulletins) {
 
   {
     const auto datadir = helper.data();
-    DataFile<qwk_config_430> f(PathFilePath(helper.data(), QWK_CFG), 
+    DataFile<qwk_config_430> f(FilePath(helper.data(), QWK_CFG), 
 	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     ASSERT_TRUE(f);
     qwk_config_430 qc{};

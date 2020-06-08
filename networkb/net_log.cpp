@@ -77,7 +77,7 @@ std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int node,
 }
 
 std::string NetworkLog::GetContents() const {
-  TextFile file(PathFilePath(gfiles_directory_, "net.log"), "r");
+  TextFile file(FilePath(gfiles_directory_, "net.log"), "r");
   if (!file.IsOpen()) {
     return "";
   }
@@ -92,14 +92,14 @@ bool NetworkLog::Log(time_t time, NetworkSide side, int node, unsigned int bytes
       CreateLogLine(time, side, node, bytes_sent, bytes_received, seconds_elapsed, network_name);
 
   // Opening for "w" should truncate the existing file.
-  TextFile file(PathFilePath(gfiles_directory_, "net.log"), "a+t");
+  TextFile file(FilePath(gfiles_directory_, "net.log"), "a+t");
   file.WriteLine(log_line);
 
   return true;
 }
 
 std::string NetworkLog::ToString() const {
-  return wwiv::core::PathFilePath(gfiles_directory_, "net.log").string();
+  return wwiv::core::FilePath(gfiles_directory_, "net.log").string();
 }
 
 } // namespace wwiv
