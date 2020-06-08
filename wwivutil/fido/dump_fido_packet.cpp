@@ -129,7 +129,7 @@ static int dump_packet_file(const std::string& filename) {
   bool done = false;
   packet_header_2p_t header = {};
   auto num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
-  if (num_header_read < sizeof(packet_header_2p_t)) {
+  if (num_header_read < static_cast<int>(sizeof(packet_header_2p_t))) {
     LOG(ERROR) << "Read less than packet header";
     return 1;
   }

@@ -51,7 +51,7 @@ static const char enter_to_edit[] = "[Press Enter to Edit]";
 template <class T> class SubDialog : public BaseEditItem {
 public:
   SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
-      : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), fn_(fn), t_(t){};
+    : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), t_(t), fn_(fn) {};
   virtual ~SubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {

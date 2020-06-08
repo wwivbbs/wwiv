@@ -44,6 +44,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <signal.h>
 #include <string>
 #include <vector>
 
@@ -177,7 +178,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
 
 static int Main(const NetworkCommandLine& net_cmdline) {
   try {
-    static bool initialized = wwiv::core::InitializeSockets();
+    [[maybe_unused]] static bool initialized = wwiv::core::InitializeSockets();
 
     const int port = net_cmdline.cmdline().iarg("port");
     const bool skip_net = net_cmdline.skip_net();
