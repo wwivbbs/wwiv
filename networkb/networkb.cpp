@@ -18,15 +18,6 @@
 
 // WWIV BINKP Network Stack. (networkb.exe)
 
-#include <chrono>
-#include <csignal>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -34,24 +25,27 @@
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/semaphore_file.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/version.h"
-
-#include "core/connection.h"
 #include "core/socket_connection.h"
 #include "core/socket_exceptions.h"
+#include "core/stl.h"
+#include "core/strings.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "net_core/net_cmdline.h"
+#include "networkb/config_exceptions.h"
 #include "networkb/wfile_transfer_file.h"
-
+#include "net_core/net_cmdline.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
-#include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
+#include "sdk/fido/fido_callout.h"
+#include <chrono>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -117,7 +111,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
       }
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
                                                             const string& filename) {
-        const net_networks_rec& net = bink_config.networks()[network_name];
+        const auto& net = bink_config.networks()[network_name];
         return new WFileTransferFile(filename,
                                      std::make_unique<File>(PathFilePath(net.dir, filename)));
       };
@@ -154,7 +148,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
 
     auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
     if (net.type == network_type_t::wwivnet) {
-      auto wwivnet_node = to_number<uint16_t>(sendto_node);
+      auto wwivnet_node = to_number<int>(sendto_node);
       contact.add_failure(wwivnet_node, dt);
     } else {
       contact.add_failure(sendto_node, dt);
@@ -174,7 +168,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   } else if (net.type == network_type_t::ftn) {
     sendto_ftn_node = sendto_node;
   } else {
-    throw config_error("BinkP only supports wwivnet or ftn networks.");
+    throw wwiv::net::config_error("BinkP only supports wwivnet or ftn networks.");
   }
   BinkP binkp(c.get(), &bink_config, BinkSide::ORIGINATING, sendto_ftn_node, factory);
   binkp.Run(cmdline);

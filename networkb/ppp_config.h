@@ -46,15 +46,15 @@ class PPPConfig {
   virtual ~PPPConfig();
   const PPPNodeConfig* ppp_node_config_for(int node) const;
 
-  uint16_t callout_node_number() const { return node_; }
+  int callout_node_number() const { return node_; }
   const std::string& system_name() const { return system_name_; }
   const std::string& callout_network_name() const { return callout_network_name_; }
 
  private:
-  std::map<uint16_t, PPPNodeConfig> node_config_;
+  std::map<int, PPPNodeConfig> node_config_;
   std::string home_dir_;
 
-  uint16_t node_;
+  int node_;
   std::string system_name_;
   std::string callout_network_name_;
 };

@@ -57,7 +57,7 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
   return true;
 }
 
-static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_map, const string network_dir) {
+static bool ParseAddressesFile(std::map<int, PPPNodeConfig>* node_config_map, const string& network_dir) {
   TextFile node_config_file(PathFilePath(network_dir, ADDRESS_NET), "rt");
   if (!node_config_file.IsOpen()) {
     return false;
@@ -92,7 +92,7 @@ PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& conf
 }
 
 PPPConfig::PPPConfig(int node_number, string system_name, const string& network_dir)
-    : node_(static_cast<uint16_t>(node_number)), system_name_(std::move(system_name)) {
+    : node_(node_number), system_name_(std::move(system_name)) {
   ParseAddressesFile(&node_config_, network_dir);
 }
 

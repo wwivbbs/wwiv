@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "networkb/binkp_config.h"
 
+
+#include "config_exceptions.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -87,7 +89,7 @@ const net_networks_rec& BinkConfig::callout_network() const {
   return network(callout_network_name_);
 }
 
-const std::string BinkConfig::network_dir(const std::string& network_name) const {
+std::string BinkConfig::network_dir(const std::string& network_name) const {
   return network(network_name).dir;
 }
 

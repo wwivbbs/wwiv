@@ -17,22 +17,20 @@
 /**************************************************************************/
 #include "sdk/connect.h"
 
-#include <algorithm>
-#include <cctype>
-#include <cfloat>
-#include <iostream>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <string>
-
-#include "core/strings.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/log.h"
+#include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include <algorithm>
+#include <cctype>
+#include <cfloat>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
 
 using std::endl;
 using std::map;
@@ -69,7 +67,7 @@ template <typename I, typename C>
 static void SkipWhiteSpace(I& iter, const C& c) {
   while (iter != std::end(c) && std::isspace(*iter)) {
     // skip whitespace
-    iter++;
+    ++iter;
   }
 }
 

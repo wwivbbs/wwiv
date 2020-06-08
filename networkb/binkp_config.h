@@ -15,22 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
 #ifndef __INCLUDED_NETWORKB_BINKP_CONFIG_H__
 #define __INCLUDED_NETWORKB_BINKP_CONFIG_H__
 
-#include <cstdint>
-#include <exception>
-#include <map>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
-#include "core/inifile.h"
-#include "networkb/config_exceptions.h"
 #include "sdk/binkp.h"
 #include "sdk/callout.h"
 #include "sdk/networks.h"
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
 
 namespace wwiv {
 namespace net {
@@ -46,13 +40,13 @@ public:
   // Gets the binkp_session_config_t or nullptr if one can not be found.
   const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
-  uint16_t callout_node_number() const { return callout_wwivnet_node_; }
-  const std::string callout_fido_address() const { return callout_fido_node_; }
-  const std::string system_name() const { return system_name_; }
-  const std::string sysop_name() const { return sysop_name_; }
-  const std::string gfiles_directory() const { return gfiles_directory_; }
-  const std::string callout_network_name() const { return callout_network_name_; }
-  const std::string network_dir(const std::string& network_name) const;
+  int callout_node_number() const { return callout_wwivnet_node_; }
+  std::string callout_fido_address() const { return callout_fido_node_; }
+  std::string system_name() const { return system_name_; }
+  std::string sysop_name() const { return sysop_name_; }
+  std::string gfiles_directory() const { return gfiles_directory_; }
+  std::string callout_network_name() const { return callout_network_name_; }
+  std::string network_dir(const std::string& network_name) const;
   const net_networks_rec& network(const std::string& network_name) const;
   const net_networks_rec& callout_network() const;
   const wwiv::sdk::Networks& networks() { return networks_; }
@@ -72,7 +66,7 @@ private:
   const wwiv::sdk::Config& config_;
   std::string home_dir_;
 
-  uint16_t callout_wwivnet_node_ = 0;
+  int callout_wwivnet_node_ = 0;
   std::string callout_fido_node_;
   std::string system_name_;
   std::string callout_network_name_ = "wwivnet";
