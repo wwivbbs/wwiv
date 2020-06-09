@@ -110,7 +110,7 @@ static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> 
   }
 
   const auto cmd = CreateCommandLine(raw_cmd, params);
-  const bool result = ExecCommandAndWait(cmd, pid, node_number, sock);
+  const auto result = ExecCommandAndWait(cmd, pid, node_number, sock);
 
   nodes->ReleaseNode(node_number);
 
@@ -119,7 +119,7 @@ static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> 
 
 static bool launch_node(const Config& config, const std::string& raw_cmd,
                         std::shared_ptr<NodeManager> nodes, int node_number, int sock,
-                        ConnectionType connection_type, const string remote_peer) {
+                        ConnectionType connection_type, const string& remote_peer) {
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -143,11 +143,14 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
 static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
   if (port == c.telnet_port) {
     return ConnectionType::TELNET;
-  } else if (port == c.binkp_port) {
+  }
+  if (port == c.binkp_port) {
     return ConnectionType::BINKP;
-  } else if (port == c.ssh_port) {
+  }
+  if (port == c.ssh_port) {
     return ConnectionType::SSH;
-  } else if (port == c.http_port) {
+  }
+  if (port == c.http_port) {
     return ConnectionType::HTTP;
   }
   // TODO(rushfan) ???
@@ -155,7 +158,7 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 }
 
 static bool check_ansi(SocketConnection& conn) {
-  auto d = 3s;
+  const auto d = 3s;
   conn.send("Checking for ANSI Graphics... ", d);
   conn.send("\x1b[6n", d);
   auto res = conn.receive_upto(10, d);
@@ -168,7 +171,7 @@ static bool check_ansi(SocketConnection& conn) {
 }
 
 std::string Color(int c, bool ansi) {
-  static int wwivd_curatr = 7;
+  static auto wwivd_curatr = 7;
   if (!ansi) {
     return "";
   }
@@ -271,7 +274,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
 
   // Check for country blocking if we have a DNS cc server defined.
   if (b.use_dns_cc && !b.dns_cc_server.empty()) {
-    auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
+    const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
     LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
               << "; coutry code: " << cc;
     if (contains(data.c->blocking.block_cc_countries, cc)) {
@@ -339,8 +342,8 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
   LOG(INFO) << "In DoMailerMode.";
   conn.send_line(text, 10s);
 
-  auto end = system_clock::now() + 10s;
-  int num_escapes = 0;
+  const auto end = system_clock::now() + 10s;
+  auto num_escapes = 0;
   while (system_clock::now() < end && num_escapes < 2) {
     conn.send(".", 1s);
     auto received = conn.receive_upto(1, 1s);
@@ -410,7 +413,7 @@ void ConnectionHandler::HandleConnection() {
     auto& nodemgr = data.nodes->at(bbs.name);
 
     // Telnet or SSH connection.  Find open node number and launch the child.
-    int node = -1;
+    auto node = -1;
     if (nodemgr->AcquireNode(node)) {
       const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
       launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, result.remote_peer);

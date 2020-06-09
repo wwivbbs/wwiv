@@ -251,7 +251,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   // s1 and s2 should remain set,they are used below
   File::Move(src, dest);
-  strcpy(u.description, "NO DESCRIPTION GIVEN");
+  to_char_array(u.description, "NO DESCRIPTION GIVEN");
   bool file_id_avail = get_file_idz(&u, dn);
   done = false;
 

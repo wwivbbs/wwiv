@@ -400,29 +400,28 @@ void config_qscan() {
     return;
   }
 
-  int oc = a()->GetCurrentConferenceMessageArea();
-  int os = a()->current_user_sub().subnum;
+  const auto oc = a()->GetCurrentConferenceMessageArea();
+  const auto os = a()->current_user_sub().subnum;
 
-  bool done = false;
+  bool done;
   bool done1 = false;
   do {
     char ch;
     if (okconf(a()->user()) && a()->uconfsub[1].confnum != -1) {
-      char szConfList[MAX_CONFERENCES + 2];
+      std::string conf_list{" "};
       bool abort = false;
-      strcpy(szConfList, " ");
       bout << "\r\nSelect Conference: \r\n\n";
       size_t i = 0;
       while (i < a()->subconfs.size() && a()->uconfsub[i].confnum != -1 && !abort) {
         bout.bpla(StrCat(a()->subconfs[a()->uconfsub[i].confnum].designator, ") ",
                 stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name)), &abort);
-        szConfList[i + 1] = a()->subconfs[a()->uconfsub[i].confnum].designator;
-        szConfList[i + 2] = 0;
+        const auto c = static_cast<char>(a()->subconfs[a()->uconfsub[i].confnum].designator);
+        conf_list.push_back(c);
         i++;
       }
       bout.nl();
-      bout << "Select [" << &szConfList[1] << ", <space> to quit]: ";
-      ch = onek(szConfList);
+      bout << "Select [" << conf_list.substr(1) << ", <space> to quit]: ";
+      ch = onek(conf_list);
     } else {
       ch = '-';
     }

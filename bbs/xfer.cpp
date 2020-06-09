@@ -312,7 +312,7 @@ std::string aligns(const std::string& file_name) {
 }
 
 void printinfo(uploadsrec * u, bool *abort) {
-  char s[85], s1[40], s2[81];
+  char s[85], s1[40];
   int i;
   bool next;
 
@@ -341,10 +341,9 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
-  if (!(a()->directories[ a()->udir[ a()->current_user_dir_num() ].subnum ].mask & mask_cdrom)) {
-    strcpy(s2, a()->directories[ a()->udir[ a()->current_user_dir_num() ].subnum ].path);
-    strcat(s2, u->filename);
-    if (!File::Exists(s2)) {
+  const auto& dir = a()->directories[a()->udir[a()->current_user_dir_num()].subnum];
+  if (!(dir.mask & mask_cdrom)) {
+    if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
       to_char_array(s1, "N/A");
     }
   }

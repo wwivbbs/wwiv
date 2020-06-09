@@ -1050,7 +1050,7 @@ int wordcount(const string& instr, const char* delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   int i = 0;
 
-  strcpy(szTempBuffer, instr.c_str());
+  to_char_array(szTempBuffer, instr);
   for (char* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
     i++;
   }
@@ -1069,7 +1069,7 @@ std::string extractword(int ww, const string& instr, const char* delimstr) {
     return {};
   }
 
-  strcpy(szTempBuffer, instr.c_str());
+  to_char_array(szTempBuffer, instr);
   for (auto s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
     if (i == ww) {
       return string(s);

@@ -434,7 +434,7 @@ void tag_it() {
         }
       }
       if (!bad) {
-        const BatchEntry b(f.u.filename, f.directory, fs, true);
+        BatchEntry b(f.u.filename, f.directory, fs, true);
         a()->batch().AddBatch(std::move(b));
         bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
       }
@@ -447,7 +447,7 @@ void tag_it() {
 
 static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
   char s1[81], s2[81], s3[81];
-  char ch = 0;
+  char ch;
 
   a()->tleft(true);
   sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
@@ -474,8 +474,6 @@ static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
 }
 
 void tag_files(bool& need_title) {
-  bool had = false;
-
   if (bout.lines_listed() == 0) {
     return;
   }
@@ -511,11 +509,9 @@ void tag_files(bool& need_title) {
       break;
     case 'D':
       batchdl(1);
-      if (!had) {
-        bout.nl();
-        pausescr();
-        bout.cls();
-      }
+      bout.nl();
+      pausescr();
+      bout.cls();
       done = true;
       break;
     case 'E': {
@@ -714,7 +710,6 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
 int try_to_download(const std::string& file_mask, int dn) {
   int rtn;
   bool abort = false;
-  bool ok = false;
 
   dliscan1(dn);
   int i = recno(file_mask);
@@ -722,7 +717,7 @@ int try_to_download(const std::string& file_mask, int dn) {
     checka(&abort);
     return abort ? -1 : 0;
   }
-  ok = true;
+  bool ok = true;
   foundany = 1;
   do {
     a()->tleft(true);
@@ -756,7 +751,7 @@ int try_to_download(const std::string& file_mask, int dn) {
 
 void download() {
   int i = 0, color = 0;
-  bool ok = true;
+  bool ok;
   int rtn = 0;
   bool done = false;
 

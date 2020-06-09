@@ -36,9 +36,7 @@
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
 * cleanup context class (doc comments, treat type-0 as email api
 * Move the userrec from User class to heap from stack.
-* Move the configrec from Config and Config430 class to heap from stack.
 * simplify names in WUser
-* Get rid of FilePath (just use FilePath)
 
 ## Networking Cleanup
 ***

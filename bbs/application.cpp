@@ -1068,9 +1068,9 @@ const wwiv::sdk::subboard_t& Application::current_sub() const {
   return subs().sub(GetCurrentReadMessageArea());
 }
 
-wwiv::sdk::Subs& Application::subs() { return *subs_.get(); }
+wwiv::sdk::Subs& Application::subs() { return *subs_; }
 
-const wwiv::sdk::Subs& Application::subs() const { return *subs_.get(); }
+const wwiv::sdk::Subs& Application::subs() const { return *subs_; }
 
 const net_networks_rec& Application::current_net() const {
   const static net_networks_rec empty_rec{};

@@ -94,11 +94,11 @@ static void colorize_foundtext(char* text, search_record* search_rec, int color)
 
       while (pszTempBuffer && word[0]) {
         if ((pszTempBuffer = strcasestr(pszTempBuffer, word)) != nullptr) {
-          int size = strlen(pszTempBuffer) + 1;
+          int size = ssize(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, found_color, 6);
           pszTempBuffer += strlen(word) + 6;
-          size = strlen(pszTempBuffer) + 1;
+          size = ssize(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, normal_color, 6);
           pszTempBuffer += 6;
@@ -151,7 +151,7 @@ static void build_header() {
     header += "Who uploaded";
   }
   if (!header.empty()) {
-    StringJustify(&header, desc_pos + header.size(), ' ', JustificationType::RIGHT);
+    StringJustify(&header, desc_pos + ssize(header), ' ', JustificationType::RIGHT);
     StringJustify(&header, 79, ' ', JustificationType::LEFT);
     bout << "|23|01" << header << wwiv::endl;
   }
@@ -298,29 +298,26 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
 
 int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
                    search_record* search_rec) {
-  char szFileName[MAX_PATH], szFileExt[MAX_PATH];
-  char element[150];
   int numl = 0, will_fit = 78;
   int char_printed = 0, extdesc_pos;
 
-  strcpy(szFileName, u->filename);
-  if (!szFileName[0]) {
+  files::FileName filename(u->filename);
+  const auto& fn = filename.aligned_filename();
+  if (fn.empty()) {
     // Make sure the filename isn't empty, if it is then lets bail!
-    return numl;
+    return 0; 
   }
-
-  char* str = strchr(szFileName, '.');
-  if (str && *str) {
-    str[0] = 0;
-    ++str;
-    strcpy(szFileExt, str);
-  } else {
-    strcpy(szFileExt, "   ");
-  }
+  std::filesystem::path p{fn};
+  const auto dot_idx = fn.find('.');
+  const auto extension =
+      fmt::format("{:<3}", dot_idx == std::string::npos ? "" : fn.substr(dot_idx + 1));
+  // stem includes " around the filename.
+  const auto basename =
+      fmt::format("{:<8}", dot_idx == std::string::npos ? fn : fn.substr(0, dot_idx));
 
   auto now = DateTime::now().to_time_t();
-  long lDiffTime = static_cast<long>(difftime(now, u->daten));
-  int nDaysOld = lDiffTime / SECONDS_PER_DAY;
+  auto diff_time = static_cast<long>(difftime(now, u->daten));
+  int days_old = diff_time / SECONDS_PER_DAY;
 
   auto file_information = fmt::sprintf("|%02d %c |%02d%3d ", lp_config.tagged_color,
                                        marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
@@ -329,22 +326,19 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
 
   string buffer;
   if (a()->user()->data.lp_options & cfl_fname) {
-    buffer = szFileName;
-    StringJustify(&buffer, 8, ' ', JustificationType::LEFT);
+    buffer = basename;
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[0]);
     }
-    file_information += fmt::sprintf("|%02d%s", a()->user()->data.lp_colors[0], buffer);
+    file_information += fmt::format("|{:0<2}{}", a()->user()->data.lp_colors[0], buffer);
     width += 8;
   }
   if (a()->user()->data.lp_options & cfl_extension) {
-    buffer = szFileExt;
-    StringJustify(&buffer, 3, ' ', JustificationType::LEFT);
+    buffer = extension;
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[1]);
     }
-    sprintf(element, "|%02d.%s", a()->user()->data.lp_colors[1], buffer.c_str());
-    file_information += element;
+    file_information += fmt::sprintf("|%02d.%s", a()->user()->data.lp_colors[1], buffer);
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_dloads) {
@@ -355,21 +349,19 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
       auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path,
-                              files::unalign(u->filename));
+                          files::FileName(u->filename));
       if (lp_config.check_exist) {
         if (!File::Exists(stf.string())) {
           buffer = "OFFLN";
         }
       }
     }
-    sprintf(element, " |%02d%s", a()->user()->data.lp_colors[3], buffer.c_str());
-    file_information += element;
+    file_information += fmt::sprintf(" |%02d%s", a()->user()->data.lp_colors[3], buffer);
     width += 6;
   }
 
   if (a()->user()->data.lp_options & cfl_days_old) {
-    sprintf(element, " |%02d%3d", a()->user()->data.lp_colors[6], nDaysOld);
-    file_information += element;
+    file_information += fmt::sprintf(" |%02d%3d", a()->user()->data.lp_colors[6], days_old);
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_description) {
@@ -378,14 +370,13 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[10]);
     }
-    sprintf(element, " |%02d%s", a()->user()->data.lp_colors[10], buffer.c_str());
-    file_information += element;
+    file_information += fmt::sprintf(" |%02d%s", a()->user()->data.lp_colors[10], buffer);
     extdesc_pos = width;
   } else {
     extdesc_pos = -1;
   }
 
-  string fi = trim_to_size_ignore_colors(file_information, will_fit);
+  auto fi = trim_to_size_ignore_colors(file_information, will_fit);
   fi += "\r\n";
   bout.bputs(fi);
   numl++;
@@ -433,24 +424,23 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       buffer = fmt::sprintf("UL: %s", u->date);
       StringJustify(&buffer, 12, ' ', JustificationType::LEFT);
     }
-    sprintf(element, "|%02d%s  ", a()->user()->data.lp_colors[4], buffer.c_str());
-    file_information += element;
+    file_information += fmt::sprintf("|%02d%s  ", a()->user()->data.lp_colors[4], buffer);
   }
 
   if (a()->user()->data.lp_options & cfl_upby) {
     if (a()->user()->data.lp_options & cfl_date_uploaded) {
-      StringJustify(&file_information, file_information.size() + width, ' ',
+      StringJustify(&file_information, ssize(file_information) + width, ' ',
                     JustificationType::RIGHT);
       bout << file_information;
       bout.nl();
       ++numl;
     }
-    string tmp = properize(string(u->upby));
+    auto tmp = properize(string(u->upby));
     file_information = fmt::sprintf("|%02dUpby: %-15s", a()->user()->data.lp_colors[7], tmp);
   }
 
   if (!buffer.empty()) {
-    StringJustify(&file_information, file_information.size() + width, ' ',
+    StringJustify(&file_information, ssize(file_information) + width, ' ',
                   JustificationType::RIGHT);
     bout << file_information;
     bout.nl();
@@ -826,7 +816,7 @@ void sysop_configure() {
 }
 
 short SelectColor(int which) {
-  unsigned char nc = 0;
+  unsigned char nc;
 
   bout.nl();
 
@@ -905,10 +895,10 @@ static void update_user_config_screen(uploadsrec* u, int which) {
       "White   "
   };
 
-  const uint8_t color_background = static_cast<uint8_t>(Color::BLUE) << 4;
-  uint8_t color_selected = static_cast<uint8_t>(Color::LIGHTRED) | color_background;
-  uint8_t color_notselected = static_cast<uint8_t>(Color::BLACK) | color_background;
-  const uint8_t color_colortext = static_cast<uint8_t>(Color::LIGHTCYAN) | color_background;
+  const auto color_background = static_cast<uint8_t>(Color::BLUE) << 4;
+  auto color_selected = static_cast<uint8_t>(Color::LIGHTRED) | color_background;
+  auto color_notselected = static_cast<uint8_t>(Color::BLACK) | color_background;
+  const auto color_colortext = static_cast<uint8_t>(Color::LIGHTCYAN) | color_background;
   auto& lpo = a()->user()->data.lp_options;
   auto& lpc = a()->user()->data.lp_colors;
 
@@ -1000,8 +990,8 @@ void config_file_list() {
   unsigned long bit = 0L;
   uploadsrec u = {};
 
-  strcpy(u.filename, "WWIV55.ZIP");
-  strcpy(u.description, "This is a sample description!");
+  to_char_array(u.filename, "WWIV55.ZIP");
+  to_char_array(u.description, "This is a sample description!");
   to_char_array(u.date, date());
   const string username_num = a()->names()->UserName(a()->usernum);
   to_char_array(u.upby, username_num);
@@ -1527,16 +1517,10 @@ LP_SEARCH_HELP:
 
     bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
     bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
-    if (okconf(a()->user())) {
-      sprintf(s1, "%s", stripcolors(a()->directories[a()->current_user_dir().subnum].name));
-    } else {
-      sprintf(s1, "%s", stripcolors(a()->directories[a()->current_user_dir().subnum].name));
-    }
-    bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR
-                                                        ? s1
-                                                        : sr->alldirs == ALL_DIRS
-                                                        ? "All dirs"
-                                                        : "Dirs in NSCAN") << wwiv::endl;
+    sprintf(s1, "%s", stripcolors(a()->directories[a()->current_user_dir().subnum].name));
+    bout << "|#9C)|#2 Which Directories    :|#2 "
+         << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
+         << wwiv::endl;
     to_char_array(s1, stripcolors(
                       a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].
                       conf_name));

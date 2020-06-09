@@ -130,7 +130,7 @@ int Main(CommandLine& cmdline) {
     }
   }
 
-  auto concurrent_connections =
+  const auto concurrent_connections =
       std::make_shared<ConcurrentConnections>(c.blocking.max_concurrent_sessions);
 
   ConnectionData data(&config, &c, &nodes, concurrent_connections);

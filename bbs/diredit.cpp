@@ -122,7 +122,7 @@ void modify_dir(int n) {
     bout << "|#9O) WWIV Reg   : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
-    char ch = onek("QABCDEFGHIJKLMNO[]", true);
+    const auto ch = onek("QABCDEFGHIJKLMNO[]", true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -276,11 +276,11 @@ void swap_dirs(int dir1, int dir2) {
 
   int nNumUserRecords = a()->users()->num_user_records();
 
-  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
+  auto pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
-      uint32_t* pTempQScan_n = pTempQScan + 1;
+      auto pTempQScan_n = pTempQScan + 1;
 
       int i1 = 0;
       if (pTempQScan_n[dir1 / 32] & (1L << (dir1 % 32))) {
@@ -309,7 +309,7 @@ void insert_dir(int n) {
   if (n < 0 || n > ssize(a()->directories)) {
     return;
   }
-  subconf_t nconv = static_cast<subconf_t>(n);
+  auto nconv = static_cast<subconf_t>(n);
 
   update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
@@ -395,8 +395,8 @@ void delete_dir(int n) {
 }
 
 void dlboardedit() {
-  int i1, i2, confchg = 0;
-  char s[81], ch;
+  int i2, confchg = 0;
+  char s[81];
 
   if (!ValidateSysopPassword()) {
     return;
@@ -406,7 +406,7 @@ void dlboardedit() {
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapDirs : ";
-    ch = onek("QSDIM?");
+    char ch = onek("QSDIM?");
     switch (ch) {
     case '?':
       showdirs();
@@ -429,7 +429,7 @@ void dlboardedit() {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
-        i1 = to_number<int>(s);
+        int i1 = to_number<int>(s);
         if (!s[0] || i1 < 0 || i1 >= ssize(a()->directories)) {
           break;
         }
@@ -437,7 +437,7 @@ void dlboardedit() {
         bout << "|#2And put before dir number? ";
         input(s, 4);
         i2 = to_number<int>(s);
-        if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > ssize(a()->directories)) || (i1 == i2)) {
+        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > ssize(a()->directories) || i1 == i2) {
           break;
         }
         bout.nl();
@@ -455,13 +455,13 @@ void dlboardedit() {
         bout << "\r\n|#6You must increase the number of dirs in wwivconfig first.\r\n";
       }
       break;
-    case 'I':
+    case 'I': {
       if (a()->directories.size() < a()->config()->max_dirs()) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
-        subconf_t i = to_number<uint16_t>(s);
-        if ((s[0] != 0) && (i >= 0) && (i <= ssize(a()->directories))) {
+        auto i = to_number<subconf_t>(s);
+        if (s[0] != 0 && i >= 0 && i <= ssize(a()->directories)) {
           insert_dir(i);
           modify_dir(i);
           confchg = 1;
@@ -481,25 +481,25 @@ void dlboardedit() {
           }
         }
       }
-      break;
+    } break;
     case 'D':
     {
       bout.nl();
       bout << "|#2Delete which dir? ";
       input(s, 4);
-      auto i = to_number<int>(s);
-      if ((s[0] != 0) && (i >= 0) && (i < ssize(a()->directories))) {
+      const auto i = to_number<int>(s);
+      if (s[0] != 0 && i >= 0 && i < ssize(a()->directories)) {
         bout.nl();
         bout << "|#5Delete " << a()->directories[i].name << "? ";
         if (yesno()) {
-          strcpy(s, a()->directories[i].filename);
+          std::string fn = a()->directories[i].filename;
           delete_dir(i);
           confchg = 1;
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".dir")));
-            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".ext")));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".dir")));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".ext")));
           }
         }
       }

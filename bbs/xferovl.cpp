@@ -525,35 +525,32 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
 
 // returns false on abort
 bool uploadall(uint16_t directory_num) {
-  dliscan1(a()->udir[directory_num].subnum);
+  const auto actual_num = a()->udir[directory_num].subnum;
+  dliscan1(actual_num);
+  const auto& dir = a()->directories[actual_num];
 
-  char szDefaultFileSpec[MAX_PATH];
-  strcpy(szDefaultFileSpec, "*.*");
+  const auto path_mask = FilePath(dir.path, "*.*");
+  const int maxf = dir.maxfiles;
 
-  char szPathName[MAX_PATH];
-  sprintf(szPathName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path,
-          szDefaultFileSpec);
-  int maxf = a()->directories[a()->udir[directory_num].subnum].maxfiles;
-
-  bool ok = true;
-  bool abort = false;
-  FindFiles ff(szPathName, FindFilesType::files);
+  FindFiles ff(path_mask, FindFilesType::files);
+  auto aborted = false;
   for (const auto& f : ff) {
-    if (checka() || a()->hangup_ || a()->current_file_area()->number_of_files() >= maxf) {
+    aborted = checka();
+    if (aborted || a()->hangup_ || a()->current_file_area()->number_of_files() >= maxf) {
       break;
     }
     if (!maybe_upload(f.name, directory_num, nullptr)) {
       break;
     }
   }
-  if (!ok || abort) {
+  if (aborted) {
     bout << "|#6Aborted.\r\n";
-    ok = false;
+    return false;
   }
   if (a()->current_file_area()->number_of_files() >= maxf) {
     bout << "directory full.\r\n";
   }
-  return ok;
+  return true;
 }
 
 void relist() {
@@ -737,36 +734,29 @@ bool is_uploadable(const std::string& file_name) {
 }
 
 static void l_config_nscan() {
-  char s[81], s2[81];
-
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
   for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort);
        i++) {
-    size_t i1 = a()->udir[i].subnum;
+    const int i1 = a()->udir[i].subnum;
+    std::string s{"  "};
     if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
-      strcpy(s, "* ");
-    } else {
-      strcpy(s, "  ");
+      s = "* ";
     }
-    sprintf(s2, "%s%s. %s", s, a()->udir[i].keys, a()->directories[i1].name);
-    bout.bpla(s2, &abort);
+    bout.bpla(fmt::format("{}{}. {}", s, a()->udir[i].keys, a()->directories[i1].name), &abort);
   }
   bout.nl(2);
 }
 
 static void config_nscan() {
-  char s1[MAX_CONFERENCES + 2], ch;
-  int i1;
+  char ch;
   bool abort = false;
 
   if (okansi()) {
-    // ZU - SCONFIG
-    config_scan_plus(NSCAN); // ZU - SCONFIG
-    return;                  // ZU - SCONFIG
-  }                          // ZU - SCONFIG
-
+    config_scan_plus(NSCAN);
+    return;
+  }
   bool done1 = false;
   const int oc = a()->GetCurrentConferenceFileArea();
   const int os = a()->current_user_dir().subnum;
@@ -774,7 +764,7 @@ static void config_nscan() {
   do {
     if (okconf(a()->user()) && a()->uconfdir[1].confnum != -1) {
       abort = false;
-      strcpy(s1, " ");
+      std::string s1 = " ";
       bout.nl();
       bout << "Select Conference: \r\n\n";
       size_t i = 0;
@@ -782,12 +772,11 @@ static void config_nscan() {
         const auto cn = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
         const auto s2 = StrCat(a()->dirconfs[a()->uconfdir[i].confnum].designator, ") ", cn);
         bout.bpla(s2, &abort);
-        s1[i + 1] = a()->dirconfs[a()->uconfdir[i].confnum].designator;
-        s1[i + 2] = 0;
+        s1.push_back(static_cast<char>(a()->dirconfs[a()->uconfdir[i].confnum].designator));
         i++;
       }
       bout.nl();
-      bout << " Select [" << &s1[1] << ", <space> to quit]: ";
+      bout << " Select [" << s1.substr(1) << ", <space> to quit]: ";
       ch = onek(s1);
     } else {
       ch = '-';
@@ -817,7 +806,7 @@ static void config_nscan() {
         auto s = mmkey(MMKeyAreaType::dirs);
         if (s[0]) {
           for (size_t i = 0; i < a()->directories.size(); i++) {
-            i1 = a()->udir[i].subnum;
+            const int i1 = a()->udir[i].subnum;
             if (s == a()->udir[i].keys) {
               a()->context().qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
@@ -906,8 +895,6 @@ void xfer_defaults() {
 }
 
 void finddescription() {
-  char s[81], s1[81];
-
   if (okansi()) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
@@ -924,8 +911,8 @@ void finddescription() {
   }
   bout << "\r\nFind description -\r\n\n";
   bout << "Enter string to search for in file description:\r\n:";
-  input(s1, 58);
-  if (s1[0] == 0) {
+  auto search_string = input(58);
+  if (search_string.empty()) {
     tmp_disable_conf(false);
     return;
   }
@@ -935,12 +922,12 @@ void finddescription() {
   int color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (uint16_t i = 0;
-       (i < a()->directories.size()) && !abort && !a()->hangup_ && (a()->udir[i].subnum != -1);
+  for (auto i = 0;
+       i < wwiv::stl::ssize(a()->directories) && !abort && !a()->hangup_ && (a()->udir[i].subnum != -1);
        i++) {
     auto ii1 = a()->udir[i].subnum;
     int pts;
-    bool need_title = true;
+    auto need_title = true;
     if (a()->context().qsc_n[ii1 / 32] & (1L << (ii1 % 32))) {
       pts = 1;
     }
@@ -965,12 +952,9 @@ void finddescription() {
       for (auto i1 = 1;
            i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_; i1++) {
         auto f = a()->current_file_area()->ReadFile(i1);
-        strcpy(s, f.u().description);
-        for (int i2 = 0; i2 < ssize(s); i2++) {
-          s[i2] = upcase(s[i2]);
-        }
-        if (strstr(s, s1) != nullptr) {
+        auto desc = ToStringUpperCase(f.u().description);
 
+        if (desc.find(search_string) != std::string::npos) {
           if (need_title) {
             if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
@@ -996,11 +980,10 @@ void finddescription() {
 }
 
 void arc_l() {
-
   bout.nl();
   bout << "|#2File for listing: ";
   auto file_spec = input(12);
-  if (strchr(file_spec.c_str(), '.') == nullptr) {
+  if (file_spec.find('.') == std::string::npos) {
     file_spec += ".*";
   }
   if (!okfn(file_spec)) {

@@ -31,7 +31,6 @@
 #include <cmath>
 #include <iterator>
 #include <map>
-#include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -40,7 +39,6 @@ using std::endl;
 using std::map;
 using std::string;
 using std::stringstream;
-using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -115,7 +113,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
         while (iter != ss.end() && !isspace(*iter)) {
           phone_number.push_back(*iter++);
         }
-        strncpy(con->phone, phone_number.c_str(), sizeof(con->phone));
+        to_char_array(con->phone, phone_number);
       }
       break;
       case '#': {
@@ -136,7 +134,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
         while (iter != ss.end() && *iter != '\"') {
           name.push_back(*iter++);
         }
-        strncpy(con->name, name.c_str(), sizeof(con->name));
+        to_char_array(con->name, name);
       }
       break;
       default:
