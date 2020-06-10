@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_FILES_FILES_H__
 #define __INCLUDED_SDK_FILES_FILES_H__
 
+#include "dirs.h"
 #include "core/clock.h"
 #include "sdk/config.h"
 #include "sdk/files/file_record.h"
@@ -44,12 +45,12 @@ public:
   explicit FileApi(std::string data_directory);
 
   [[nodiscard]] bool Exist(const std::string& filename) const;
-  [[nodiscard]] bool Exist(const directoryrec_422_t& dir) const;
+  [[nodiscard]] bool Exist(const directory_t& dir) const;
   [[nodiscard]] bool Create(const std::string& filename);
-  [[nodiscard]] bool Create(const directoryrec_422_t& dir);
+  [[nodiscard]] bool Create(const directory_t& dir);
   [[nodiscard]] bool Remove(const std::string& filename);
   [[nodiscard]] std::unique_ptr<FileArea> Open(const std::string& filename);
-  [[nodiscard]] std::unique_ptr<FileArea> Open(const directoryrec_422_t& dir);
+  [[nodiscard]] std::unique_ptr<FileArea> Open(const directory_t& dir);
 
   [[nodiscard]] const core::Clock* clock() const noexcept;
   void set_clock(std::unique_ptr<core::Clock> clock);
@@ -91,7 +92,7 @@ public:
   using pointer = FileRecord*;
   using reference = FileRecord&;
 
-  FileArea(FileApi* api, std::string data_directory, const directoryrec_422_t& dir);
+  FileArea(FileApi* api, std::string data_directory, const directory_t& dir);
   FileArea(FileApi* api, std::string data_directory, const std::string& filename);
   ~FileArea() = default;
   
@@ -142,7 +143,7 @@ protected:
   const std::string data_directory_;
   const std::string base_filename_;
   const std::string filename_;
-  directoryrec_422_t dir_{};
+  directory_t dir_{};
 
   bool dirty_{false};
   bool open_{false};

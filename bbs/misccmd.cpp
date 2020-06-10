@@ -220,7 +220,7 @@ void kill_old_email() {
 
 void list_users(int mode) {
   subboard_t s = {};
-  directoryrec_422_t d = {};
+  wwiv::sdk::files::directory_t d{};
   User user;
   char szFindText[21];
 
@@ -251,7 +251,7 @@ void list_users(int mode) {
   if (mode == LIST_USERS_MESSAGE_AREA) {
     s = a()->subs().sub(a()->current_user_sub().subnum);
   } else {
-    d = a()->directories[a()->current_user_dir().subnum];
+    d = a()->dirs()[a()->current_user_dir().subnum];
   }
 
   bool abort  = false;

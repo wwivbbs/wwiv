@@ -56,8 +56,8 @@ void dirlist(int mode) {
     int i = sn;
 
     while (i <= en && a()->uconfdir[i].confnum != -1 && !abort) {
-      size_t i1 = 0;
-      while (i1 < a()->directories.size() && a()->udir[i1].subnum != -1 && !abort) {
+      auto i1 = 0;
+      while (i1 < a()->dirs().size() && a()->udir[i1].subnum != -1 && !abort) {
         std::string s;
         size_t firstp = 0;
         if (p && mode == 0) {
@@ -88,14 +88,14 @@ void dirlist(int mode) {
         dliscan1(directory_number);
         if (a()->current_user_dir().subnum == a()->udir[i1].subnum) {
           s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
-                           a()->udir[i1].keys, scanme, a()->directories[directory_number].name,
+                           a()->udir[i1].keys, scanme, a()->dirs()[directory_number].name,
                            a()->current_file_area()->number_of_files());
         } else {
           s = fmt::sprintf(
               " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d", a()->udir[i1].keys,
               scanme,
-              mode == 1 && a()->directories[a()->udir[i1].subnum].mask & mask_cdrom ? "|#9" : "|#1",
-              a()->directories[directory_number].name, a()->current_file_area()->number_of_files());
+              mode == 1 && a()->dirs()[a()->udir[i1].subnum].mask & mask_cdrom ? "|#9" : "|#1",
+              a()->dirs()[directory_number].name, a()->current_file_area()->number_of_files());
         }
         if (okansi()) {
           bout.bputs(s, &abort, &next);
@@ -112,7 +112,7 @@ void dirlist(int mode) {
                                             is ? firstp : firstp + 1, lastp);
           std::string ss = mmkey(MMKeyAreaType::dirs, true);
           if (isdigit(ss[0])) {
-            for (uint16_t i3 = 0; i3 < static_cast<uint16_t>(a()->directories.size()); i3++) {
+            for (uint16_t i3 = 0; i3 < static_cast<uint16_t>(a()->dirs().size()); i3++) {
               if (ss == a()->udir[i3].keys) {
                 a()->set_current_user_dir_num(i3);
                 os = a()->current_user_dir().subnum;
@@ -178,7 +178,7 @@ void dirlist(int mode) {
         is = false;
       }
       if (isdigit(ss.front())) {
-        for (uint16_t i3 = 0; i3 < a()->directories.size(); i3++) {
+        for (uint16_t i3 = 0; i3 < a()->dirs().size(); i3++) {
           if (ss == a()->udir[i3].keys) {
             a()->set_current_user_dir_num(i3);
             os = a()->current_user_dir().subnum;

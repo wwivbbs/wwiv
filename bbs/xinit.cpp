@@ -420,7 +420,7 @@ void Application::read_nintern() {
 }
 
 bool Application::read_subs() {
-  subs_.reset(new wwiv::sdk::Subs(config_->datadir(), net_networks));
+  subs_ = std::make_unique<Subs>(config_->datadir(), net_networks);
   return subs_->Load();
 }
 
@@ -459,25 +459,25 @@ bool Application::create_message_api() {
 
 void Application::SetLogonTime() { system_logon_time_ = std::chrono::system_clock::now(); }
 
-std::chrono::seconds Application::duration_used_this_session() const {
+seconds Application::duration_used_this_session() const {
   return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
-std::chrono::seconds Application::extratimecall() const {
+seconds Application::extratimecall() const {
   return duration_cast<seconds>(extratimecall_);
 }
 
-std::chrono::seconds Application::set_extratimecall(std::chrono::duration<double> et) {
+seconds Application::set_extratimecall(duration<double> et) {
   extratimecall_ = et;
   return duration_cast<seconds>(extratimecall_);
 }
 
-std::chrono::seconds Application::add_extratimecall(std::chrono::duration<double> et) {
+seconds Application::add_extratimecall(duration<double> et) {
   extratimecall_ += et;
   return duration_cast<seconds>(extratimecall_);
 }
 
-std::chrono::seconds Application::subtract_extratimecall(std::chrono::duration<double> et) {
+seconds Application::subtract_extratimecall(duration<double> et) {
   extratimecall_ -= et;
   return duration_cast<seconds>(extratimecall_);
 }
@@ -501,7 +501,7 @@ void Application::read_networks() {
     SetInternetUseRealNames(ini.value<bool>("REALNAME"));
   }
 
-  wwiv::sdk::Networks networks(*config());
+  Networks networks(*config());
   if (networks.IsInitialized()) {
     net_networks = networks.networks();
   }
@@ -522,14 +522,8 @@ bool Application::read_names() {
 }
 
 bool Application::read_dirs() {
-  directories.clear();
-  DataFile<directoryrec_422_t> file(FilePath(config()->datadir(), DIRS_DAT));
-  if (!file) {
-    LOG(ERROR) << file.file() << " NOT FOUND.";
-    return false;
-  }
-  file.ReadVector(directories, config()->max_dirs());
-  return true;
+  dirs_ = std::make_unique<wwiv::sdk::files::Dirs>(config_->datadir());
+  return dirs_->Load();
 }
 
 void Application::read_chains() {

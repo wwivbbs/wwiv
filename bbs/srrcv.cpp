@@ -25,13 +25,12 @@
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/files/file_record.h"
-
 #include <chrono>
-#include <cmath>
 #include <string>
 
 using std::string;

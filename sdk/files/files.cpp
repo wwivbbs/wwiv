@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "sdk/files/files.h"
 
+
+#include "dirs.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -46,7 +48,7 @@ bool FileApi::Exist(const std::string& filename) const {
   return File::Exists(::FilePath(data_directory_, StrCat(filename, ".dir")));
 }
 
-bool FileApi::Exist(const directoryrec_422_t& dir) const {
+bool FileApi::Exist(const directory_t& dir) const {
   return Exist(dir.filename);
 }
 
@@ -60,7 +62,7 @@ bool FileApi::Create(const std::string& filename) {
   return area.Close();
 }
 
-bool FileApi::Create(const directoryrec_422_t& dir) {
+bool FileApi::Create(const directory_t& dir) {
   return Create(dir.filename);  
 }
 
@@ -77,7 +79,7 @@ std::unique_ptr<FileArea> FileApi::Open(const std::string& filename) {
   return std::make_unique<FileArea>(this, data_directory_, filename);
 }
 
-std::unique_ptr<FileArea> FileApi::Open(const directoryrec_422_t& dir) {
+std::unique_ptr<FileArea> FileApi::Open(const directory_t& dir) {
   return Open(dir.filename);
 }
 
@@ -111,7 +113,7 @@ daten_t FileAreaHeader::daten() const {
 }
 
 // Delegates to other constructor
-FileArea::FileArea(FileApi* api, std::string data_directory, const directoryrec_422_t& dir)
+FileArea::FileArea(FileApi* api, std::string data_directory, const directory_t& dir)
     : FileArea(api, std::move(data_directory), dir.filename) {
   dir_ = dir; 
 }

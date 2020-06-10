@@ -34,8 +34,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
@@ -43,7 +42,6 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
 std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
 
-}
 }
 
 class SubXtrTest: public testing::Test {
@@ -73,7 +71,7 @@ TEST_F(SubXtrTest, Write) {
 
   write_subs_xtr(helper.data(), net_networks_, xsubs);
   TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
-  vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
+  auto actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4u, actual.size());
   vector<string> expected = {
     { "!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
@@ -139,14 +137,18 @@ TEST_F(SubXtrTest, Read) {
 
 
 TEST_F(SubXtrTest, JsonSmoke) {
-  const string json = "{ \"subs\": [ { \"name\": \"n1\", \"storage_type\": 2 } ] }";
+  const string json = R"(
+  { "subs": [
+    { "name": "n1", "storage_type": 2 }
+  ] }
+ )";
   this->CreateTempFile("subs.json", json);
 
-  subs_t subs;
+  std::vector<subboard_t> subs;
   ASSERT_TRUE(Subs::LoadFromJSON(dir(), "subs.json", subs));
 
-  ASSERT_EQ(1, wwiv::stl::ssize(subs.subs));
-  EXPECT_EQ("n1", subs.subs[0].name);
-  EXPECT_EQ(2, subs.subs[0].storage_type);
+  ASSERT_EQ(1, wwiv::stl::ssize(subs));
+  EXPECT_EQ("n1", subs[0].name);
+  EXPECT_EQ(2, subs[0].storage_type);
 
 }

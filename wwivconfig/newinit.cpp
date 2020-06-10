@@ -32,6 +32,7 @@
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
+#include "sdk/files/dirs.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>
@@ -262,33 +263,32 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   }
 
   {
-    directoryrec_422_t d1{};
-    memset(&d1, 0, sizeof(directoryrec_422_t));
-    to_char_array(d1.name, "Sysop");
-    to_char_array(d1.filename, "SYSOP");
-    to_char_array(d1.path, File::EnsureTrailingSlash(FilePath("dloads", "sysop").string()));
-    File::mkdir(d1.path);
-    d1.dsl = 100;
-    d1.maxfiles = 50;
-    d1.type = 65535;
-    File dirsfile(FilePath("data", DIRS_DAT));
-    dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    dirsfile.Write(&d1, sizeof(directoryrec_422_t));
+    wwiv::sdk::files::Dirs dirs("data/");
+    {
+      files::directory_t d1{};
+      d1.name = "Sysop";
+      d1.filename = "SYSOP";
+      d1.path = File::EnsureTrailingSlash(FilePath("dloads", "sysop").string());
+      File::mkdir(d1.path);
+      d1.dsl = 100;
+      d1.maxfiles = 50;
 
-    memset(&d1, 0, sizeof(directoryrec_422_t));
-    to_char_array(d1.name, "Miscellaneous");
-    to_char_array(d1.filename, "misc");
-    auto last = File::EnsureTrailingSlash("misc");
-    to_char_array(d1.path, FilePath("dloads", last).string());
-    File::mkdir(d1.path);
-    d1.dsl = 10;
-    d1.age = 0;
-    d1.dar = 0;
-    d1.maxfiles = 50;
-    d1.mask = 0;
-    d1.type = 0;
-    dirsfile.Write(&d1, sizeof(directoryrec_422_t));
-    dirsfile.Close();
+      dirs.insert(0, d1);
+    }
+    {
+      files::directory_t d1{};
+      d1.name = "Miscellaneous";
+      d1.filename = "misc";
+      d1.path = File::EnsureTrailingSlash(FilePath("dloads", "misc").string());
+      File::mkdir(d1.path);
+      d1.dsl = 10;
+      d1.age = 0;
+      d1.dar = 0;
+      d1.maxfiles = 50;
+      d1.mask = 0;
+      dirs.insert(1, d1);
+    }
+    dirs.Save();
   }
 
   window->Puts(".\n");

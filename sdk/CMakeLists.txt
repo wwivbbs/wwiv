@@ -20,6 +20,7 @@ set(COMMON_SOURCES
   fido/fido_util.cpp
   fido/nodelist.cpp
   files/allow.cpp
+  files/dirs.cpp
   files/file_record.cpp
   files/files.cpp
   files/files_ext.cpp

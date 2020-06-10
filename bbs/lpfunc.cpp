@@ -126,7 +126,7 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (uint16_t this_dir = 0; this_dir < a()->directories.size() && (!a()->hangup_) && (a()->udir[this_dir].subnum != -1)
+  for (uint16_t this_dir = 0; this_dir < a()->dirs().size() && (!a()->hangup_) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
@@ -296,9 +296,9 @@ ADD_OR_REMOVE_BATCH:
                         pausescr();
                       } else {
                         redraw = false;
-                        if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
+                        if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                           auto tf =
-                              FilePath(a()->directories[a()->current_user_dir().subnum].path,
+                              FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                           if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
@@ -370,9 +370,9 @@ ADD_OR_REMOVE_BATCH:
                           pausescr();
                         } else {
                           redraw = false;
-                          if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
+                          if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
                             auto tf =
-                                FilePath(a()->directories[a()->current_user_dir().subnum].path,
+                                FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
                             if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
@@ -412,7 +412,7 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if (a()->current_user_dir_num() < ssize(a()->directories) - 1
+                    if (a()->current_user_dir_num() < a()->dirs().size() - 1
                         && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
                       a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       ++this_dir;
@@ -436,7 +436,7 @@ ADD_OR_REMOVE_BATCH:
                       --this_dir;
                     } else {
                       while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                             && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
+                             && (a()->current_user_dir_num() < a()->dirs().size() - 1)) {
                         a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       }
                       this_dir = a()->current_user_dir_num();
@@ -502,7 +502,7 @@ TOGGLE_EXTENDED:
               if (!changedir) {
                 done = true;
               } else if (changedir == 1) {
-                if ((a()->current_user_dir_num() < ssize(a()->directories) - 1)
+                if ((a()->current_user_dir_num() < a()->dirs().size() - 1)
                     && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
                   a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                 } else {
@@ -514,7 +514,7 @@ TOGGLE_EXTENDED:
                   a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
                 } else {
                   while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                         && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
+                         && (a()->current_user_dir_num() < a()->dirs().size() - 1)) {
                     a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                   }
                 }
@@ -526,7 +526,7 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if (a()->current_user_dir_num() < ssize(a()->directories) - 1
+            if (a()->current_user_dir_num() < a()->dirs().size() - 1
                 && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
               a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
             } else {
@@ -538,7 +538,7 @@ TOGGLE_EXTENDED:
               a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
             } else {
               while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
-                     && (a()->current_user_dir_num() < ssize(a()->directories) - 1)) {
+                     && (a()->current_user_dir_num() < a()->dirs().size() - 1)) {
                 a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
               }
             }

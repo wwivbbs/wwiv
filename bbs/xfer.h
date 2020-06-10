@@ -22,13 +22,12 @@
 #include "sdk/vardec.h"
 #include <string>
 
-unsigned long bytes_to_k(unsigned long lBytes);
 /** return true if file_name is in the queue */
 bool check_ul_event(int directory_num, uploadsrec* upload_record);
 bool okfn(const std::string& fileName);
 void print_devices();
 std::string get_arc_cmd(const std::string& arc_fn, int cmd, const std::string& ofn);
-int list_arc_out(const std::string& file_name, const char* pszDirectory);
+int list_arc_out(const std::string& file_name, const std::string& dir);
 bool ratio_ok();
 bool dcs();
 void dliscan1(int directory_num);

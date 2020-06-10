@@ -25,6 +25,8 @@
 #include "bbs/output.h"
 #include "bbs/runnable.h"
 #include "sdk/vardec.h"
+#include "sdk/files/dirs.h"
+
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -196,7 +198,7 @@ public:
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
-  [[nodiscard]] const directoryrec_422_t& current_dir() const { return directories[current_user_dir().subnum]; }
+  [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const { return dirs()[current_user_dir().subnum]; }
 
   [[nodiscard]] const net_networks_rec& current_net() const;
 
@@ -293,6 +295,9 @@ public:
   [[nodiscard]] Batch& batch();
   [[nodiscard]] wwiv::sdk::Subs& subs();
   [[nodiscard]] const wwiv::sdk::Subs& subs() const;
+
+  [[nodiscard]] wwiv::sdk::files::Dirs& dirs();
+  [[nodiscard]] const wwiv::sdk::files::Dirs& dirs() const;
 
   bool read_subs();
   bool create_message_api();
@@ -397,7 +402,6 @@ public:
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
-  std::vector<directoryrec_422_t> directories;
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
   std::vector<tagrec_t> filelist;
@@ -499,6 +503,7 @@ private:
 
   Batch batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;
+  std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};

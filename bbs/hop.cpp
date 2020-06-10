@@ -133,8 +133,8 @@ void HopDir() {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
     uint16_t i = 0;
-    while ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort)) {
-      auto subname = ToStringUpperCase(a()->directories[a()->udir[i].subnum].name);
+    while ((i < a()->dirs().size()) && (a()->udir[i].subnum != -1) && (!abort)) {
+      auto subname = ToStringUpperCase(a()->dirs()[a()->udir[i].subnum].name);
       if (subname.find(partial) != std::string::npos) {
         if (okansi()) {
           bout.clear_whole_line();
@@ -142,7 +142,7 @@ void HopDir() {
           bout.nl();
         }
         bout << "|#5Do you mean \""
-             << a()->directories[a()->udir[i].subnum].name
+             << a()->dirs()[a()->udir[i].subnum].name
              << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {

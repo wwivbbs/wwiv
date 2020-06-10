@@ -987,7 +987,7 @@ void qwk_nscan() {
       dliscan();
       if (this_date >= a()->context().nscandate()) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
-                a()->directories[a()->current_user_dir().subnum].name,
+                a()->dirs()[a()->current_user_dir().subnum].name,
                 a()->current_user_dir().keys, numf, "files");
         write(newfile,  s, strlen(s));
 

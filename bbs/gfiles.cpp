@@ -31,6 +31,7 @@
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/datetime.h"
+#include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"

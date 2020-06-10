@@ -39,6 +39,7 @@
 #include "bbs/xfertmp.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -211,10 +212,10 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
 // TODO(rushfan): This is probably completely broken
 bool get_file_idz(uploadsrec* u, int dn) {
   auto success = false;
-  if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
+  if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->dirs()[dn].mask & mask_cdrom)) {
     return false;
   }
-  const auto pfn = FilePath(a()->directories[dn].path, FileName(u->filename));
+  const auto pfn = FilePath(a()->dirs()[dn].path, FileName(u->filename));
   const auto t = DateTime::from_time_t(File::creation_time(pfn)).to_string("%m/%d/%y");
   to_char_array(u->actualdate, t);
   auto ufn = std::filesystem::path(FileName(u->filename).unaligned_filename());
@@ -228,7 +229,7 @@ bool get_file_idz(uploadsrec* u, int dn) {
   File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
   File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
 
-  const auto p = FilePath(a()->directories[dn].path, FileName(u->filename));
+  const auto p = FilePath(a()->dirs()[dn].path, FileName(u->filename));
   const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
 
   ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
@@ -297,8 +298,8 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
   a()->ClearTopScreenProtection();
-  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
-                     (!a()->localIO()->KeyPressed()); i++) {
+  for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 &&
+                     !a()->localIO()->KeyPressed(); i++) {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
@@ -322,7 +323,7 @@ int read_idz(int mode, int tempdir) {
     dliscan1(a()->udir[tempdir].subnum);
   }
   bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
-                       a()->directories[a()->udir[tempdir].subnum].name,
+                       a()->dirs()[a()->udir[tempdir].subnum].name,
                        a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
   for (int i = 1; i <= a()->current_file_area()->number_of_files() && !a()->hangup_ && !abort;
@@ -330,7 +331,7 @@ int read_idz(int mode, int tempdir) {
     auto f = area->ReadFile(i);
     const auto fn = f.aligned_filename();
     if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
-      File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
+      File::set_current_directory(a()->dirs()[a()->udir[tempdir].subnum].path);
       const auto file = FilePath(File::current_directory(), f);
       a()->CdHome();
       if (!File::Exists(file)) {
@@ -409,9 +410,9 @@ void tag_it() {
         bad = true;
       }
       if (!bad) {
-        auto s = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+        auto s = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
-          auto s2 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+          auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
           s = FilePath(a()->temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s)) {
             File::Copy(s2, s);
@@ -523,18 +524,18 @@ void tag_files(bool& need_title) {
         auto& f = a()->filelist[i];
         auto d = XFER_TIME(f.u.numbytes);
         bout.nl();
-        size_t i2;
-        for (i2 = 0; i2 < a()->directories.size(); i2++) {
+        int i2;
+        for (i2 = 0; i2 < a()->dirs().size(); i2++) {
           if (a()->udir[i2].subnum == f.directory) {
             break;
           }
         }
-        if (i2 < a()->directories.size()) {
-          bout << "|#1Directory  : |#2#" << a()->udir[i2].keys << ", " << a()->directories[f.
+        if (i2 < a()->dirs().size()) {
+          bout << "|#1Directory  : |#2#" << a()->udir[i2].keys << ", " << a()->dirs()[f.
                 directory].name <<
               wwiv::endl;
         } else {
-          bout << "|#1Directory  : |#2#" << "??" << ", " << a()->directories[f.directory].name <<
+          bout << "|#1Directory  : |#2#" << "??" << ", " << a()->dirs()[f.directory].name <<
               wwiv::endl;
         }
         bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
@@ -548,11 +549,11 @@ void tag_files(bool& need_title) {
         bout << "|#1Uploaded on: |#2" << f.u.date << wwiv::endl;
         bout << "|#1Uploaded by: |#2" << f.u.upby << wwiv::endl;
         bout << "|#1Times D/L'd: |#2" << f.u.numdloads << wwiv::endl;
-        if (a()->directories[f.directory].mask & mask_cdrom) {
+        if (a()->dirs()[f.directory].mask & mask_cdrom) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          auto fn = FilePath(a()->directories[f.directory].path, f.u.filename);
+          auto fn = FilePath(a()->dirs()[f.directory].path, f.u.filename);
           if (!File::Exists(fn)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
@@ -591,9 +592,9 @@ void tag_files(bool& need_title) {
       int i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        auto s1 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
-        if (a()->directories[f.directory].mask & mask_cdrom) {
-          auto s2 = FilePath(a()->directories[f.directory].path, FileName(f.u.filename));
+        auto s1 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
+        if (a()->dirs()[f.directory].mask & mask_cdrom) {
+          auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
           s1 = FilePath(a()->temp_directory().c_str(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
@@ -660,8 +661,8 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
     bout.backline();
     const auto ufn = wwiv::sdk::files::unalign(aligned_file_name);
     if (to_upper_case<char>(ch) == 'Y') {
-      if (a()->directories[dn].mask & mask_cdrom) {
-        const auto src = FilePath(a()->directories[dn].path, ufn);
+      if (a()->dirs()[dn].mask & mask_cdrom) {
+        const auto src = FilePath(a()->dirs()[dn].path, ufn);
         const auto dest = FilePath(a()->temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
@@ -672,7 +673,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
           bout.clreol();
         }
       } else {
-        auto f = FilePath(a()->directories[dn].path, ufn);
+        auto f = FilePath(a()->dirs()[dn].path, ufn);
         if (!File::Exists(f) && !so()) {
           bout << "\r";
           bout.clreol();
@@ -688,7 +689,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
       const auto bt = ctim(b.time(a()->modem_speed_));
       bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                            a()->batch().size() + 1,
-                           b.aligned_filename(), b.len(), bt, a()->directories[b.dir()].name);
+                           b.aligned_filename(), b.len(), bt, a()->dirs()[b.dir()].name);
       a()->batch().AddBatch(b);
       bout << "\r";
       bout << "|#5    Continue search? ";
@@ -772,7 +773,7 @@ void download() {
       if (b.sending()) {
         const auto t = ctim(b.time(a()->modem_speed_));
         bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
-                             i + 1, b.aligned_filename(), b.len(), t, a()->directories[b.dir()].name);
+                             i + 1, b.aligned_filename(), b.len(), t, a()->dirs()[b.dir()].name);
       }
     } else {
       do {
@@ -806,8 +807,8 @@ void download() {
             bout.Color(1);
             bout << s1;
             foundany = 0;
-            size_t dn = 0;
-            while (dn < a()->directories.size() && a()->udir[dn].subnum != -1) {
+            int dn = 0;
+            while (dn < a()->dirs().size() && a()->udir[dn].subnum != -1) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {
@@ -875,8 +876,8 @@ void download() {
     return;
   }
   bout << "|#5Hang up after transfer? ";
-  bool had = yesno();
-  int ip = get_protocol(xfertype::xf_down_batch);
+  const bool had = yesno();
+  const int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
@@ -1046,7 +1047,7 @@ void removefilesnotthere(int dn, int* autodel) {
   while (!a()->hangup_ && i > 0 && !abort) {
     auto* area = a()->current_file_area();
     auto f = area->ReadFile(i);
-    auto candidate_fn = FilePath(a()->directories[dn].path, f);
+    auto candidate_fn = FilePath(a()->dirs()[dn].path, f);
     if (!File::Exists(candidate_fn)) {
       StringTrim(f.u().description);
       candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.u().description);
@@ -1067,7 +1068,7 @@ void removefilesnotthere(int dn, int* autodel) {
           *autodel = 1;
         }
         sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
-            << a()->directories[dn].name;
+            << a()->dirs()[dn].name;
         if (area->DeleteFile(f, i)) {
           area->Save();
         }
@@ -1094,18 +1095,18 @@ void removenotthere() {
   TempDisablePause disable_pause;
   int autodel = 0;
   bout.nl();
-  bout << "|#5Remove N/A files in all a()->directories? ";
+  bout << "|#5Remove N/A files in all directories? ";
   if (yesno()) {
-    for (size_t i = 0; ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
-                        (!a()->localIO()->KeyPressed())); i++) {
+    for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 &&
+                     !a()->localIO()->KeyPressed(); i++) {
       bout.nl();
-      bout << "|#1Removing N/A|#0 in " << a()->directories[a()->udir[i].subnum].name;
+      bout << "|#1Removing N/A|#0 in " << a()->dirs()[a()->udir[i].subnum].name;
       bout.nl(2);
       removefilesnotthere(a()->udir[i].subnum, &autodel);
     }
   } else {
     bout.nl();
-    bout << "Removing N/A|#0 in " << a()->directories[a()->current_user_dir().subnum].name;
+    bout << "Removing N/A|#0 in " << a()->dirs()[a()->current_user_dir().subnum].name;
     bout.nl(2);
     removefilesnotthere(a()->current_user_dir().subnum, &autodel);
   }

@@ -430,9 +430,8 @@ static string rename_fido_packet(const string& dir, const string& origname) {
 }
 
 static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout,
-                              const FidoAddress& dest, const FidoAddress& route_to,
-                              const net_networks_rec& net, const string& fido_packet_name,
-                              std::string& out_bundle_name) {
+                              const FidoAddress& route_to, const net_networks_rec& net,
+                              const string& fido_packet_name, std::string& out_bundle_name) {
   // were in the temp dir now.
   auto arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
@@ -445,7 +444,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   const auto saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
 
-  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
+  FtnDirectories dirs(config.root_directory(), net);
   const auto ctype = fido_callout.packet_config_for(route_to).compression_type;
 
   if (ctype == "PKT") {
@@ -504,7 +503,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
 
 static bool CleanupWWIVName(std::string& sender_name) {
   // #NN, @NODE or (FIDO_ADDR)
-  auto idx = sender_name.find_first_of("#@(");
+  const auto idx = sender_name.find_first_of("#@(");
   if (idx != string::npos) {
     sender_name = sender_name.substr(0, idx);
   }
@@ -801,7 +800,7 @@ static bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline,
   }
   LOG(INFO) << "Created packet: " << FilePath(dirs.temp_outbound_dir(), fido_packet_name);
 
-  if (!create_ftn_bundle(net_cmdline.config(), fido_callout, dest, route_to, net, fido_packet_name,
+  if (!create_ftn_bundle(net_cmdline.config(), fido_callout, route_to, net, fido_packet_name,
                          bundlename)) {
     LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net, p);

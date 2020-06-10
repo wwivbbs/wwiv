@@ -25,6 +25,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -33,6 +34,7 @@
 #include "sdk/filenames.h"
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using cereal::make_nvp;
@@ -140,43 +142,18 @@ void serialize(Archive & ar, subboard_t& s) {
   }
 }
 
-template <class Archive>
-void serialize(Archive & ar, subs_t& s) {
-  ar(cereal::make_nvp("subs", s.subs));
-}
-
-bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& s) {
-  s.subs.clear();
-  TextFile file(FilePath(dir, filename), "r");
-  if (!file.IsOpen()) {
-    return false;
-  }
-  string text = file.ReadFileIntoString();
-  std::stringstream ss;
-  ss << text;
-  cereal::JSONInputArchive load(ss);
-  load(cereal::make_nvp("subs", s.subs));
-
-  return true;
+bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, std::vector<subboard_t>& s) {
+  s.clear();
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", s);
+  return f.Load();
 }
 
 //static 
-bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const subs_t& s) {
-  std::ostringstream ss;
-  {
-    cereal::JSONOutputArchive save(ss);
-    save(cereal::make_nvp("subs", s.subs));
-  }
-
-  TextFile file(FilePath(dir, filename), "w");
-  if (!file.IsOpen()) {
-    // rapidjson will assert if the file does not exist, so we need to 
-    // verify that the file exists first.
-    return false;
-  }
-
-  file.Write(ss.str());
-  return true;
+bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const std::vector<subboard_t>& s) {
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", s);
+  return f.Save();
 }
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
@@ -193,7 +170,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   string net_name;
   stream >> net_name;
   StringTrim(&net_name);
-  const int net_num = FindNetworkByName(net_networks, net_name);
+  const auto net_num = FindNetworkByName(net_networks, net_name);
   if (net_num == -1) {
     return false;
   }
@@ -237,7 +214,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
 
   // Only load the configuration file if it exists.
   string line;
-  int curn = -1;
+  auto curn = -1;
   while (subs_xtr.ReadLine(&line)) {
     StringTrim(&line);
     const auto identifier = line.front();
@@ -260,7 +237,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
     case '$':                         /* net info */
       if (curn >= 0) {
         ParseXSubsLine(net_networks, line, xsubs[curn]);
-      }
+      } break;
     default:
       // NOP
       ;
@@ -329,19 +306,16 @@ bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboard
 
 // Classes
 
-Subs::Subs(const std::string& datadir, 
-    const std::vector<net_networks_rec>& net_networks)
-  : datadir_(datadir), net_networks_(net_networks) {};
+Subs::Subs(std::string datadir, 
+           const std::vector<net_networks_rec>& net_networks)
+  : datadir_(std::move(datadir)), net_networks_(net_networks) {};
 
 Subs::~Subs() = default;
 
 bool Subs::Load() {
-  subs_t s;
-  if (!LoadFromJSON(datadir_, SUBS_JSON, s)) {
+  if (!LoadFromJSON(datadir_, SUBS_JSON, subs_)) {
     return LoadLegacy();
   }
-  // Assign the subs.
-  subs_ = s.subs;
   return true;
 }
 
@@ -424,16 +398,11 @@ bool Subs::Save() {
     return false;
   }
 
-  {
-    // Backup subs.json
-    backup_file(FilePath(datadir_, SUBS_JSON));
+  // Backup subs.json
+  backup_file(FilePath(datadir_, SUBS_JSON));
 
-    // Save subs.
-    subs_t t;
-    t.subs = subs_;
-    SaveToJSON(datadir_, SUBS_JSON, t);
-  }
-  return true;
+  // Save subs.
+  return SaveToJSON(datadir_, SUBS_JSON, subs_);
 }
 
 bool Subs::insert(int n, subboard_t r) {
@@ -445,7 +414,7 @@ bool Subs::erase(int n) {
 }
 
 const subboard_t& Subs::sub(const std::string& filename) const {
-  for (auto& n : subs_) {
+  for (const auto& n : subs_) {
     if (iequals(filename, n.filename)) {
       return n;
     }
@@ -463,7 +432,7 @@ subboard_t& Subs::sub(const std::string& filename) {
 }
 
 bool Subs::exists(const std::string& filename) const {
-  for (auto& n : subs_) {
+  for (const auto& n : subs_) {
     if (iequals(filename, n.filename)) {
       return true;
     }

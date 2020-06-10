@@ -50,9 +50,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_EMAIL: return string("Sending Email");
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
-      if (so() && ir.subloc < a()->directories.size()) {
+      if (so() && ir.subloc < a()->dirs().size()) {
         return fmt::format("Transfer Area: Dir : {}",
-                           stripcolors(a()->directories[ir.subloc].name));
+                           stripcolors(a()->dirs()[ir.subloc].name));
       }
       return "Transfer Area";
     case INST_LOC_CHAINS:

@@ -22,12 +22,11 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/socket_connection.h"
-#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include <atomic>
 #include <iostream>
-#include <signal.h>
+#include <csignal>
 #include <string>
 
 using namespace wwiv::core;
@@ -71,7 +70,7 @@ void BeforeStartServer() {
   std::cerr << "set signal handlers" << std::endl;
 }
 
-void SwitchToNonRootUser(const std::string& wwiv_user) {
+void SwitchToNonRootUser(const std::string&) {
 }
 
 bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock) {
@@ -85,7 +84,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
 
   const DWORD creation_flags = CREATE_NEW_CONSOLE;
 
-  auto ok = CreateProcess(
+  const auto ok = CreateProcess(
     nullptr, 
     cmdstr,
     nullptr,

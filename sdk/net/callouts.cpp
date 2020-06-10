@@ -18,6 +18,7 @@
 #include "sdk/net/callouts.h"
 
 #include "core/log.h"
+#include "core/numbers.h"
 
 #include <algorithm>
 #include <chrono>
@@ -28,15 +29,7 @@ using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
-namespace net {
-
-// TODO(rushfan): Move this to core?
-template<typename T>
-T bytes_to_k(T b) {
-  return (b) ? static_cast<T>((b + 1023) / 1024) : static_cast<T>(0);
-}
+namespace wwiv::sdk::net {
 
 network_callout_config_t to_network_callout_config_t(const net_call_out_rec& con) {
   network_callout_config_t c{};
@@ -46,7 +39,7 @@ network_callout_config_t to_network_callout_config_t(const net_call_out_rec& con
   return c;
 }
 
-bool allowed_to_call(const network_callout_config_t& con, const DateTime& dt) { 
+bool allowed_to_call(const network_callout_config_t& con) { 
   return con.auto_callouts;
 }
 
@@ -57,19 +50,18 @@ bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
     return false;
   }
 
-  auto l = con.min_hr;
-  auto h = con.max_hr;
-  auto n = dt.hour();
+  const auto l = con.min_hr;
+  const auto h = con.max_hr;
+  const auto n = dt.hour();
   if (l < 0 || h <= 0 || l == h) {
     return true;
   }
   if (l < h) {
     // Case where we want to allow it from say 0200-2000
-    return (n >= l && n < h);
-  } else {
-    // Case where we want to allow it from say 2000-0200
-    return (n >= h && n < l);
+    return n >= l && n < h;
   }
+  // Case where we want to allow it from say 2000-0200
+  return n >= h && n < l;
 }
 
 /**
@@ -77,26 +69,26 @@ bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
  * is ok to call and does not violate any constraints.
  */
 bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const DateTime& dt) {
-  auto callout = to_network_callout_config_t(con);
+  const auto callout = to_network_callout_config_t(con);
   return should_call(ncn, callout, dt);
 }
 
-bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_config_t& callout,
-                  const wwiv::core::DateTime& dt) {
+bool should_call(const NetworkContact& ncn, const network_callout_config_t& callout,
+                 const DateTime& dt) {
 
-  if (!allowed_to_call(callout, dt)) {
+  if (!allowed_to_call(callout)) {
     VLOG(2) << "!allowed_to_call; skipping";
     return false;
   }
 
-  auto now = dt.to_system_clock();
+  const auto now = dt.to_system_clock();
   if (ncn.bytes_waiting() == 0L && !callout.call_every_x_minutes) {
     VLOG(2) << "Skipping: No bytes waiting and !call anyway";
     return false;
   }
-  auto min_minutes = std::max<int>(callout.call_every_x_minutes, 1);
-  auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
-  auto next_contact_time = last_contact + minutes(min_minutes);
+  const auto min_minutes = std::max<int>(callout.call_every_x_minutes, 1);
+  const auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
+  const auto next_contact_time = last_contact + minutes(min_minutes);
 
   if (callout.call_every_x_minutes && now >= next_contact_time) {
     VLOG(1) << "Calling anyway since it's been time: ";
@@ -115,7 +107,4 @@ bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_con
 }
 
 
-
-} // namespace net
-} // namespace sdk
 } // namespace wwiv

@@ -500,7 +500,7 @@ struct directoryrec_422_t {
   // file type mask
   uint16_t mask;
   // 4 digit directory type
-  uint16_t type;
+  uint16_t unused_legacy_dirtype;
 };
 
 // QUICK REFERENCE TO FIND USER NUMBER FROM NAME

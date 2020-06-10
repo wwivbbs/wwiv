@@ -88,7 +88,7 @@ conf_info_t get_conf_info(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_DIRS) {
     conf_info_t ret(a()->dirconfs, a()->uconfdir);
     ret.file_name = FilePath(a()->config()->datadir(), DIRS_CNF).string();
-    ret.num_subs_or_dirs = a()->directories.size();
+    ret.num_subs_or_dirs = a()->dirs().size();
     return ret;
   }
 
@@ -288,7 +288,7 @@ static void showsubconfs(ConferenceType conftype, confrec* c) {
     } break;
     case ConferenceType::CONF_DIRS: {
       const auto s = fmt::sprintf("|#2%3d |#9%-39.39s |#1%s", i,
-                                  stripcolors(a()->directories[i].name), confstr);
+                                  stripcolors(a()->dirs()[i].name), confstr);
       bout.bpla(s, &abort);
     } break;
     }
@@ -832,7 +832,7 @@ void list_confs(ConferenceType conftype, int ssc) {
                   fmt::sprintf("%s%-3d : %s", "Sub #", sub, stripcolors(a()->subs().sub(sub).name));
               break;
             case ConferenceType::CONF_DIRS:
-              l2 = fmt::sprintf("%s%-3d : %s", "Dir #", sub, stripcolors(a()->directories[sub].name));
+              l2 = fmt::sprintf("%s%-3d : %s", "Dir #", sub, stripcolors(a()->dirs()[sub].name));
               break;
             }
             bout.bpla(StrCat(l1, l2), &abort);

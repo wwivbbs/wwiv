@@ -22,14 +22,13 @@
 #include "bbs/datetime.h"
 #include "bbs/remote_io.h"
 #include "bbs/sr.h"
-#include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "core/numbers.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/files/file_record.h"
-
 #include <chrono>
 #include <cmath>
 #include <string>
@@ -226,7 +225,8 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, path.filename().string());
-  a()->localIO()->PutsXY(65, 2, fmt::format("{} - {}k", (file_size + 127) / 128, bytes_to_k(file_size)));
+  a()->localIO()->PutsXY(65, 2,
+                         fmt::format("{} - {}k", (file_size + 127) / 128, bytes_to_k(file_size)));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;

@@ -102,7 +102,7 @@ static bool access_sub(User& u, int sl, const subboard_t& s) {
   return true;
 }
 
-static bool access_dir(User& u, int sl, directoryrec_422_t& d) {
+static bool access_dir(User& u, int sl, wwiv::sdk::files::directory_t& d) {
   if (u.GetDsl() < d.dsl) {
     return false;
   }
@@ -183,7 +183,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     }
     break;
   case ConferenceType::CONF_DIRS:
-    ns = a()->directories.size();
+    ns = a()->dirs().size();
     if (old_subnum == -1) {
       osub = a()->current_user_dir().subnum;
     } else {
@@ -223,7 +223,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         break;
       case ConferenceType::CONF_DIRS:
         if (access_dir(*a()->user(), a()->effective_sl(),
-                       a()->directories[sub])) {
+                       a()->dirs()[sub])) {
           addusub(ss1, ns, sub, 0);
         }
         break;
@@ -250,7 +250,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         if (access_conf(a()->user(), a()->effective_sl(), &conf)) {
           for (const auto& sub : conf.subs) {
             if (access_dir(*a()->user(), a()->effective_sl(),
-                           a()->directories[sub])) {
+                           a()->dirs()[sub])) {
               addusub(ss1, ns, sub, 0);
             }
           }

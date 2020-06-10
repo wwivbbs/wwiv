@@ -79,7 +79,7 @@ public:
   uint32_t* qsc{nullptr};
   // A bitfield controlling if the directory should be included in the new scan.
   uint32_t* qsc_n{nullptr};
-  // A bitfield contrlling if the sub should be included in the new scan.
+  // A bitfield contorlling if the sub should be included in the new scan.
   uint32_t* qsc_q{nullptr};
   // Array of 32-bit unsigned integers for the qscan pointer value
   // aka high message read pointer) for each sub.

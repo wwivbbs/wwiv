@@ -161,14 +161,14 @@ static script_data_t to_script_data(const mb_value_t& v) {
 
 static bool SaveData(const std::string& datadir, const std::string& basename, const std::vector<script_data_t>& data) {
   const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
-  JsonFile<decltype(data)> json(path, "data", data);
+  JsonFile json(path, "data", data);
   return json.Save();
 }
 
 static std::vector<script_data_t> LoadData(const std::string& datadir, const std::string& basename) {
   std::vector<script_data_t> data;
   const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
-  JsonFile<decltype(data)> json(path, "data", data);
+  JsonFile json(path, "data", data);
   json.Load();
   return data;
 }
