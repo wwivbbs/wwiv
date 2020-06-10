@@ -270,7 +270,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     File::mkdir(d1.path);
     d1.dsl = 100;
     d1.maxfiles = 50;
-    d1.type = 65535;
+    d1.unused_legacy_dirtype = 65535;
     File dirsfile(FilePath("data", DIRS_DAT));
     dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec_422_t));
@@ -286,7 +286,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.dar = 0;
     d1.maxfiles = 50;
     d1.mask = 0;
-    d1.type = 0;
+    d1.unused_legacy_dirtype = 0;
     dirsfile.Write(&d1, sizeof(directoryrec_422_t));
     dirsfile.Close();
   }

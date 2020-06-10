@@ -39,6 +39,7 @@
 #include "bbs/xfertmp.h"
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"

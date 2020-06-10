@@ -31,6 +31,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "core/numbers.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"

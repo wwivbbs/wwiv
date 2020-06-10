@@ -22,7 +22,6 @@
 #include "sdk/vardec.h"
 #include <string>
 
-unsigned long bytes_to_k(unsigned long lBytes);
 /** return true if file_name is in the queue */
 bool check_ul_event(int directory_num, uploadsrec* upload_record);
 bool okfn(const std::string& fileName);

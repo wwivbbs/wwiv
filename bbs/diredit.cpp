@@ -111,7 +111,6 @@ void modify_dir(int n) {
     bout << "|#9F) Max Files  : |#2" << r.maxfiles << wwiv::endl;
     bout << "|#9G) DAR        : |#2" << GetAttributeString(r)  << wwiv::endl;
     bout << "|#9H) Require PD : |#2" << YesNoString((r.mask & mask_PD) ? true : false) << wwiv::endl;
-    bout << "|#9I) Dir Type   : |#2" <<  r.type << wwiv::endl;
     bout << "|#9J) Uploads    : |#2" << ((r.mask & mask_no_uploads) ? "Disallowed" : "Allowed") << wwiv::endl;
     bout << "|#9K) Arch. only : |#2" << YesNoString((r.mask & mask_archive) ? true : false) << wwiv::endl;
     bout << "|#9L) Drive Type : |#2" << ((r.mask & mask_cdrom) ? "|#3CD ROM" : "HARD DRIVE") << wwiv::endl;
@@ -122,7 +121,7 @@ void modify_dir(int n) {
     bout << "|#9O) WWIV Reg   : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
-    const auto ch = onek("QABCDEFGHIJKLMNO[]", true);
+    const auto ch = onek("QABCDEFGHJKLMNO[]", true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -219,10 +218,6 @@ void modify_dir(int n) {
     } break;
     case 'H':
       r.mask ^= mask_PD;
-      break;
-    case 'I':
-      bout << "|#2New Dir Type? ";
-      r.type = input_number(r.type, 0, 9999);
       break;
     case 'J':
       r.mask ^= mask_no_uploads;
@@ -323,23 +318,23 @@ void insert_dir(int n) {
   r.age = 0;
   r.maxfiles = 50;
   r.dar = 0;
-  r.type = 0;
+  r.unused_legacy_dirtype = 0;
   r.mask = 0;
 
   {
     insert_at(a()->directories, n, r);
   }
-  int nNumUserRecords = a()->users()->num_user_records();
+  const auto num_user_records = a()->users()->num_user_records();
 
-  uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
+  auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
   if (pTempQScan) {
-   uint32_t* pTempQScan_n = pTempQScan + 1;
+    uint32_t* pTempQScan_n = pTempQScan + 1;
 
-    uint32_t m1 = 1L << (n % 32);
-    uint32_t m2 = 0xffffffff << ((n % 32) + 1);
-    uint32_t m3 = 0xffffffff >> (32 - (n % 32));
+    const uint32_t m1 = 1L << (n % 32);
+    const uint32_t m2 = 0xffffffff << ((n % 32) + 1);
+    const uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
-    for (int i = 1; i <= nNumUserRecords; i++) {
+    for (int i = 1; i <= num_user_records; i++) {
       read_qscn(i, pTempQScan, true);
 
       int i1;
@@ -356,10 +351,9 @@ void insert_dir(int n) {
 }
 
 void delete_dir(int n) {
-  uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
   subconf_t nconv{static_cast<subconf_t>(n)};
 
-  if ((n < 0) || (n >= ssize(a()->directories))) {
+  if (n < 0 || n >= ssize(a()->directories)) {
     return;
   }
 
@@ -368,17 +362,17 @@ void delete_dir(int n) {
   n = static_cast<int>(nconv);
   erase_at(a()->directories, n);
 
-  auto num_users = a()->users()->num_user_records();
+  const auto num_users = a()->users()->num_user_records();
 
-  pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
   if (pTempQScan) {
-    pTempQScan_n = pTempQScan + 1;
+    auto* pTempQScan_n = pTempQScan.get() + 1;
 
-    m2 = 0xffffffff << (n % 32);
-    m3 = 0xffffffff >> (32 - (n % 32));
+    uint32_t m2 = 0xffffffff << (n % 32);
+    uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
-    for (int i = 1; i <= num_users; i++) {
-      read_qscn(i, pTempQScan, true);
+    for (auto i = 1; i <= num_users; i++) {
+      read_qscn(i, pTempQScan.get(), true);
 
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
                              (pTempQScan_n[(n / 32) + 1] << 31);
@@ -387,10 +381,9 @@ void delete_dir(int n) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
       }
 
-      write_qscn(i, pTempQScan, true);
+      write_qscn(i, pTempQScan.get(), true);
     }
     close_qscn();
-    free(pTempQScan);
   }
 }
 

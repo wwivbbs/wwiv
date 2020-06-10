@@ -37,6 +37,7 @@
 #include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
 #include "core/findfiles.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"

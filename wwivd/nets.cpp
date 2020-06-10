@@ -82,7 +82,7 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
   for (const auto& kv : callout.node_configs_map()) {
     const auto address = kv.first.as_string();
     const auto& callout_config = kv.second.callout_config;
-    if (!allowed_to_call(callout_config, DateTime::now())) {
+    if (!allowed_to_call(callout_config)) {
       // Is the call out bit set.
       continue;
     }
@@ -112,10 +112,10 @@ static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_con
     if (ncn == nullptr) {
       continue;
     }
-    if (!wwiv::sdk::net::allowed_to_call(kv.second, DateTime::now())) {
+    if (!allowed_to_call(kv.second, DateTime::now())) {
       continue;
     }
-    if (!wwiv::sdk::net::should_call(*ncn, kv.second, DateTime::now())) {
+    if (!should_call(*ncn, kv.second, DateTime::now())) {
       continue;
     }
     // Call it.

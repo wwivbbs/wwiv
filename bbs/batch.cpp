@@ -40,6 +40,7 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"

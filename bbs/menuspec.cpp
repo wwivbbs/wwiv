@@ -24,7 +24,6 @@
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
@@ -36,6 +35,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -46,7 +46,6 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
-
 #include <string>
 
 using std::string;

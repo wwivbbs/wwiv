@@ -34,6 +34,7 @@
 #include "bbs/utility.h"
 #include "bbs/xfer_common.h"
 #include "bbs/xferovl1.h"
+#include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -59,10 +60,6 @@ daten_t this_date;
 
 using std::string;
 using std::vector;
-
-unsigned long bytes_to_k(unsigned long lBytes) {
-  return lBytes ? static_cast<unsigned long>((lBytes + 1023) / 1024) : 0L;
-}
 
 /**
  * returns true if everything is ok, false if the file

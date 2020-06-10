@@ -37,6 +37,7 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
 #include "core/findfiles.h"
+#include "core/numbers.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
@@ -608,10 +609,7 @@ void relist() {
     bout.Color(FRAME_COLOR);
     bout.bputs((okansi() ? "\xBA" : ":"), &abort, &next);
 
-    sprintf(s1,
-            "%ld"
-            "k",
-            bytes_to_k(f.u.numbytes));
+    sprintf(s1, "%u""k", bytes_to_k(f.u.numbytes));
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(a()->directories[tcd].mask & mask_cdrom)) {
         files::FileName fn(f.u.filename);
