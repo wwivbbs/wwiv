@@ -204,6 +204,23 @@ void Output::mpl(int length) {
   bout.Left(length);
 }
 
+int Output::PutsXY(int x, int y, const std::string& text) {
+  GotoXY(x, y);
+  return bputs(text);
+}
+
+int Output::PutsXYSC(int x, int y, int a, const std::string& text) {
+  GotoXY(x, y);
+  SystemColor(a);
+  return bputs(text);
+}
+
+int Output::PutsXYA(int x, int y, int color, const std::string& text) {
+  GotoXY(x, y);
+  Color(color);
+  return bputs(text);
+}
+
 template <typename T>
 static int pipecode_int(T& it, const T end, int num_chars) {
   std::string s;

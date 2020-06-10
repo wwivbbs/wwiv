@@ -498,8 +498,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
 
     if (need_redraw) {
       fs.ClearCommandLine();
-      bout.GotoXY(1, fs.command_line_y());
-      bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
+      bout.PutsXY(1, fs.command_line_y(), "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
     }
     need_redraw = false;
     auto key =

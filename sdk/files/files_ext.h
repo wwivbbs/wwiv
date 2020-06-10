@@ -33,7 +33,7 @@ class FileRecord;
 class FileAreaExtendedDesc final {
 public:
 
-  FileAreaExtendedDesc(FileApi* api, std::string data_directory, const directoryrec& dir, int num_files);
+  FileAreaExtendedDesc(FileApi* api, std::string data_directory, const directoryrec_422_t& dir, int num_files);
   FileAreaExtendedDesc(FileApi* api, std::string data_directory, const std::string& filename, int num_files);
   ~FileAreaExtendedDesc() = default;
   
@@ -65,7 +65,7 @@ protected:
   FileApi* api_;
   const std::string data_directory_;
   const std::string filename_;
-  directoryrec dir_{};
+  directoryrec_422_t dir_{};
 
   bool dirty_{false};
   bool open_{false};

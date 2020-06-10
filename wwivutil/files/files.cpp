@@ -55,8 +55,8 @@ constexpr char CD = 4;
 
 namespace wwiv::wwivutil::files {
 
-static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
-  DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+static bool ReadAreas(const std::string& datadir, vector<directoryrec_422_t>& dirs) {
+  DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
   if (!file) {
     LOG(ERROR) << "Unable to open file: " << file.file();
     return false;
@@ -82,7 +82,7 @@ public:
   }
 
   int Execute() override {
-    vector<directoryrec> dirs;
+    vector<directoryrec_422_t> dirs;
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
@@ -125,7 +125,7 @@ public:
       cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
-    vector<directoryrec> dirs;
+    vector<directoryrec_422_t> dirs;
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
@@ -203,7 +203,7 @@ public:
       return 2;
     }
 
-    vector<directoryrec> dirs;
+    vector<directoryrec_422_t> dirs;
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }

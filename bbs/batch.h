@@ -39,7 +39,7 @@ public:
   /** Aligned filename */
   [[nodiscard]] std::string aligned_filename() const { return filename_; }
 
-  /** The read directory number (as in directoryrec) */
+  /** The read directory number (as in directoryrec_422_t) */
   [[nodiscard]] int16_t dir() const { return dir_; } 
 
   /** Size of the file*/

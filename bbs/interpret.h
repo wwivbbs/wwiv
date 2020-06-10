@@ -31,7 +31,7 @@ class MacroContext {
 public:
   virtual ~MacroContext() = default;
   virtual const wwiv::sdk::User& u() const = 0;
-  virtual const directoryrec& dir() const = 0;
+  virtual const directoryrec_422_t& dir() const = 0;
   virtual bool mci_enabled() const = 0;
   virtual std::string interpret(char c) const;
 };
@@ -40,7 +40,7 @@ class BbsMacroContext : public MacroContext {
 public:
   BbsMacroContext(const wwiv::sdk::User* u, bool mci_enabled) : u_(u), mci_enabled_(mci_enabled) {}
   const wwiv::sdk::User& u() const override { return *u_; }
-  const directoryrec& dir() const { return a()->current_dir(); }
+  const directoryrec_422_t& dir() const { return a()->current_dir(); }
   bool mci_enabled() const override { return mci_enabled_; }
 
 private:

@@ -44,12 +44,12 @@ public:
   explicit FileApi(std::string data_directory);
 
   [[nodiscard]] bool Exist(const std::string& filename) const;
-  [[nodiscard]] bool Exist(const directoryrec& dir) const;
+  [[nodiscard]] bool Exist(const directoryrec_422_t& dir) const;
   [[nodiscard]] bool Create(const std::string& filename);
-  [[nodiscard]] bool Create(const directoryrec& dir);
+  [[nodiscard]] bool Create(const directoryrec_422_t& dir);
   [[nodiscard]] bool Remove(const std::string& filename);
   [[nodiscard]] std::unique_ptr<FileArea> Open(const std::string& filename);
-  [[nodiscard]] std::unique_ptr<FileArea> Open(const directoryrec& dir);
+  [[nodiscard]] std::unique_ptr<FileArea> Open(const directoryrec_422_t& dir);
 
   [[nodiscard]] const core::Clock* clock() const noexcept;
   void set_clock(std::unique_ptr<core::Clock> clock);
@@ -91,7 +91,7 @@ public:
   using pointer = FileRecord*;
   using reference = FileRecord&;
 
-  FileArea(FileApi* api, std::string data_directory, const directoryrec& dir);
+  FileArea(FileApi* api, std::string data_directory, const directoryrec_422_t& dir);
   FileArea(FileApi* api, std::string data_directory, const std::string& filename);
   ~FileArea() = default;
   
@@ -142,7 +142,7 @@ protected:
   const std::string data_directory_;
   const std::string base_filename_;
   const std::string filename_;
-  directoryrec dir_{};
+  directoryrec_422_t dir_{};
 
   bool dirty_{false};
   bool open_{false};

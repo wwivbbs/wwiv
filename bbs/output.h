@@ -107,9 +107,36 @@ public:
   void mpl(int length);
 
   /**
+   * Writes text at position (x, y) using the current color.
+   *
+   * Note that x and y are zero based and (0, 0) is the top left corner of the screen.
+   *
+   * Returns the number of characters displayed.
+   */
+  int PutsXY(int x, int y, const std::string& text);
+
+  /**
+   * Writes text at position (x, y) using the system color attribute specified by a.
+   *
+   * Note that x and y are zero based and (0, 0) is the top left corner of the screen.
+   *
+   * Returns the number of characters displayed.
+   */
+  int PutsXYSC(int x, int y, int a, const std::string& text);
+
+  /**
+   * Writes text at position (x, y) using the user color specified by color.
+   *
+   * Note that x and y are zero based and (0, 0) is the top left corner of the screen.
+   *
+   * Returns the number of characters displayed.
+   */
+  int PutsXYA(int x, int y, int color, const std::string& text);
+
+  /**
    * This function outputs a string of characters to the screen (and remotely
    * if applicable).  The com port is also checked first to see if a remote
-   * user has hung up
+   * user has hung up.  Returns the number of characters displayed.
    */
   int bputs(const std::string& text);
 

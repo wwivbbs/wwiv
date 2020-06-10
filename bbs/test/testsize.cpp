@@ -68,7 +68,7 @@ int main(int argc, char * argv[])
         WRITE_SIZE(statusrec);
         WRITE_SIZE(colorrec);
         WRITE_SIZE(subboardrec);
-        WRITE_SIZE(directoryrec);
+        WRITE_SIZE(directoryrec_422_t);
         WRITE_SIZE(smalrec);
         WRITE_SIZE(messagerec);
         WRITE_SIZE(postrec);

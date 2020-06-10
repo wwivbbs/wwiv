@@ -64,7 +64,7 @@ static void t2u_error(const string& file_name, const string& msg) {
 }
 
 static int try_to_ul_wh(const string& orig_file_name) {
-  directoryrec d = {};
+  directoryrec_422_t d = {};
   int i1, i2, i4, key, ok = 0, dn = 0;
 
   auto file_name = files::unalign(orig_file_name);

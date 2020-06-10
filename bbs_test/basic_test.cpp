@@ -41,11 +41,11 @@ class TestMacroContext final : public MacroContext {
 public:
   explicit TestMacroContext(BbsHelper& helper) : helper_(helper) {}
   [[nodiscard]] const wwiv::sdk::User& u() const override { return *helper_.user(); }
-  [[nodiscard]] const directoryrec& dir() const override { return dir_; }
+  [[nodiscard]] const directoryrec_422_t& dir() const override { return dir_; }
   [[nodiscard]] bool mci_enabled() const override { return true; };
 
   BbsHelper& helper_;
-  directoryrec dir_{};
+  directoryrec_422_t dir_{};
 };
 
 class BasicTest : public ::testing::Test {

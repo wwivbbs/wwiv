@@ -220,7 +220,7 @@ void kill_old_email() {
 
 void list_users(int mode) {
   subboard_t s = {};
-  directoryrec d = {};
+  directoryrec_422_t d = {};
   User user;
   char szFindText[21];
 

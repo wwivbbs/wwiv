@@ -523,7 +523,7 @@ bool Application::read_names() {
 
 bool Application::read_dirs() {
   directories.clear();
-  DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
+  DataFile<directoryrec_422_t> file(FilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
     LOG(ERROR) << file.file() << " NOT FOUND.";
     return false;

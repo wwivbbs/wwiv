@@ -57,7 +57,7 @@ void delete_dir(int n);
 
 static std::string dirdata(int n) {
   char x = 0;
-  directoryrec r = a()->directories[n];
+  directoryrec_422_t r = a()->directories[n];
   if (r.dar == 0) {
     x = 32;
   } else {
@@ -86,7 +86,7 @@ static void showdirs() {
   }
 }
 
-static string GetAttributeString(const directoryrec& r) {
+static string GetAttributeString(const directoryrec_422_t& r) {
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
@@ -98,7 +98,7 @@ static string GetAttributeString(const directoryrec& r) {
 }
 
 void modify_dir(int n) {
-  directoryrec r = a()->directories[n];
+  directoryrec_422_t r = a()->directories[n];
   bool done = false;
   do {
     bout.cls();
@@ -300,7 +300,7 @@ void swap_dirs(int dir1, int dir2) {
     close_qscn();
     free(pTempQScan);
   }
-  directoryrec drt = a()->directories[dir1];
+  directoryrec_422_t drt = a()->directories[dir1];
   a()->directories[dir1] = a()->directories[dir2];
   a()->directories[dir2] = drt;
 }
@@ -315,7 +315,7 @@ void insert_dir(int n) {
 
   n = static_cast<int>(nconv);
 
-  directoryrec r{};
+  directoryrec_422_t r{};
   to_char_array(r.name, "** NEW DIR **");
   to_char_array(r.filename, "noname");
   to_char_array(r.path, a()->config()->dloadsdir());
@@ -506,7 +506,7 @@ void dlboardedit() {
     } break;
     }
   } while (!done && !a()->hangup_);
-  DataFile<directoryrec> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
+  DataFile<directoryrec_422_t> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";

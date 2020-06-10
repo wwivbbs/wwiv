@@ -478,8 +478,11 @@ struct subboardrec_422_t {
   uint16_t unused_legacy_type;
 };
 
-// UPLOAD DIRECTORY INFORMATION
-struct directoryrec {
+/**
+ * ON DISK format for UPLOAD DIRECTORY INFORMATION (DIRS.DAT)
+ * This has been the same since *at least* 4.22.
+ */
+struct directoryrec_422_t {
   // directory name
   char name[41];
   // direct database filename
@@ -823,7 +826,7 @@ struct userconfrec {
 #define anony_receiver_da 0x20
 #define anony_receiver_pp 0x40
 
-// directoryrec.mask
+// directoryrec_422_t.mask
 #define mask_PD 0x0001
 #define mask_no_uploads 0x0004
 #define mask_archive 0x0008
@@ -1053,7 +1056,7 @@ static_assert(sizeof(configrec) == 6228, "configrec == 6228");
 static_assert(sizeof(legacy_configovrrec_424_t) == 512, "legacy_configovrrec_424_t == 512");
 static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
 static_assert(sizeof(subboardrec_422_t) == 63, "subboardrec_422_t == 63");
-static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
+static_assert(sizeof(directoryrec_422_t) == 141, "directoryrec_422_t == 141");
 static_assert(sizeof(smalrec) == 33, "smalrec == 33");
 static_assert(sizeof(messagerec) == 5, "messagerec == 5");
 static_assert(sizeof(postrec) == 100, "postrec == 100");

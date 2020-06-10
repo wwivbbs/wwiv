@@ -262,8 +262,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   }
 
   {
-    directoryrec d1{};
-    memset(&d1, 0, sizeof(directoryrec));
+    directoryrec_422_t d1{};
+    memset(&d1, 0, sizeof(directoryrec_422_t));
     to_char_array(d1.name, "Sysop");
     to_char_array(d1.filename, "SYSOP");
     to_char_array(d1.path, File::EnsureTrailingSlash(FilePath("dloads", "sysop").string()));
@@ -273,9 +273,9 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.type = 65535;
     File dirsfile(FilePath("data", DIRS_DAT));
     dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    dirsfile.Write(&d1, sizeof(directoryrec));
+    dirsfile.Write(&d1, sizeof(directoryrec_422_t));
 
-    memset(&d1, 0, sizeof(directoryrec));
+    memset(&d1, 0, sizeof(directoryrec_422_t));
     to_char_array(d1.name, "Miscellaneous");
     to_char_array(d1.filename, "misc");
     auto last = File::EnsureTrailingSlash("misc");
@@ -287,7 +287,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.maxfiles = 50;
     d1.mask = 0;
     d1.type = 0;
-    dirsfile.Write(&d1, sizeof(directoryrec));
+    dirsfile.Write(&d1, sizeof(directoryrec_422_t));
     dirsfile.Close();
   }
 

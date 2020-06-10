@@ -64,9 +64,9 @@ static bool checkDirExists(const std::string& dir, const char *desc) {
 }
 
 void checkFileAreas(const std::string& datadir, bool verbose) {
-  vector<directoryrec> directories;
+  vector<directoryrec_422_t> directories;
   {
-    DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
+    DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
     if (!file) {
       // TODO(rushfan): show error?
       return;

@@ -56,7 +56,7 @@ void normalupload(int dn) {
   int ok = 1;
 
   dliscan1(dn);
-  directoryrec d = a()->directories[dn];
+  directoryrec_422_t d = a()->directories[dn];
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";

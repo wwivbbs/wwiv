@@ -102,7 +102,7 @@ static bool access_sub(User& u, int sl, const subboard_t& s) {
   return true;
 }
 
-static bool access_dir(User& u, int sl, directoryrec& d) {
+static bool access_dir(User& u, int sl, directoryrec_422_t& d) {
   if (u.GetDsl() < d.dsl) {
     return false;
   }
