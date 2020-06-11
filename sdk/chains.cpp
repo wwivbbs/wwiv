@@ -24,11 +24,8 @@
 #include <vector>
 
 #include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
-#include <cereal/types/memory.hpp>
 #include <cereal/types/set.hpp>
-#include <cereal/types/vector.hpp>
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -184,7 +181,7 @@ bool Chains::Load() {
 
 bool Chains::LoadFromJSON() {
   chains_.clear();
-  JsonFile<decltype(chains_)> json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
   return json.Load();
 }
 
@@ -246,14 +243,14 @@ bool Chains::LoadFromDat() {
 }
 
 bool Chains::Save() {
-  bool dat = SaveToDat();
-  bool json = SaveToJSON();
+  const auto dat = SaveToDat();
+  const auto json = SaveToJSON();
 
   return dat && json;
 }
 
 bool Chains::SaveToJSON() {
-  JsonFile<decltype(chains_)> json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
   return json.Save();
 }
 
@@ -282,8 +279,8 @@ bool Chains::SaveToDat() {
     cdisk.emplace_back(c);
     rdisk.emplace_back(r);
   }
-  bool cwritten{false};
-  bool rwritten{false};
+  auto cwritten{false};
+  auto rwritten{false};
   {
     DataFile<chainfilerec> cfile(FilePath(datadir_, CHAINS_DAT),
                                  File::modeBinary | File::modeReadWrite | File::modeCreateFile |

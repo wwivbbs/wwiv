@@ -25,20 +25,33 @@
 #include <filesystem>
 #include "core/log.h"
 #include "core/textfile.h"
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/access.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/set.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/vector.hpp>
+
 #include <utility>
 
 namespace wwiv::core {
 
 template <typename T>
-class JsonFile {
+class JsonFile final {
 public:
-  JsonFile(std::filesystem::path file_name, const std::string& key, T& t)
-    : file_name_(std::move(file_name)), key_(key), t_(t) {
+  JsonFile(std::filesystem::path file_name, std::string key, T& t)
+    : file_name_(std::move(file_name)), key_(std::move(key)), t_(t) {
   }
+  JsonFile(const JsonFile&) = delete;
+  JsonFile(JsonFile&&) = delete;
+  JsonFile& operator=(const JsonFile&) = delete;
+  JsonFile& operator=(JsonFile&&) = delete;
 
-  virtual ~JsonFile() = default;
+  ~JsonFile() = default;
 
   bool Load() {
     try {
@@ -77,8 +90,7 @@ public:
       return false;
     }
 
-    file.Write(ss.str());
-    return true;
+    return file.Write(ss.str());
   }
 
 private:
@@ -89,4 +101,4 @@ private:
 
 }
 
-#endif // __INCLUDED_JSONFILE_H__
+#endif

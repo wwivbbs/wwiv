@@ -127,7 +127,7 @@ bool Networks::Load() {
 
 bool Networks::LoadFromJSON() {
   networks_.clear();
-  JsonFile<decltype(networks_)> json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
+  JsonFile json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
   return json.Load();
 }
 
@@ -162,7 +162,7 @@ bool Networks::Save() {
 }
 
 bool Networks::SaveToJSON() {
-  JsonFile<decltype(networks_)> json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
+  JsonFile json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
   return json.Save();
 }
 
