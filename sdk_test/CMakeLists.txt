@@ -1,4 +1,5 @@
 include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(../deps/cereal/include)
 
 set(test_sources
   callout_test.cpp
@@ -24,6 +25,7 @@ set(test_sources
   ansi/framebuffer_test.cpp
   ansi/makeansi_test.cpp
   files/allow_test.cpp
+  files/dirs_test.cpp
   files/files_test.cpp
   files/files_ext_test.cpp
   fido/fido_address_test.cpp

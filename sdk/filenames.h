@@ -74,6 +74,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 
 #define DIRS_DAT "dirs.dat"
 #define DIRS_CNF "dirs.cnf"
+#define DIRS_JSON "dirs.json"
 #define DISABLE_TAG "disable.tag"
 
 #define DOWNLOAD_NOEXT "download"

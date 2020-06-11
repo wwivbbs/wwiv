@@ -1082,7 +1082,7 @@ void config_scan_plus(int type) {
         else {
           bool sysdir = IsEquals(a()->udir[0].keys, "0");
           for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-            const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
+            const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
               a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
@@ -1129,15 +1129,16 @@ void config_scan_plus(int type) {
                 (1L << (a()->usub[top + pos].subnum % 32));
           } else {
             bool sysdir = IsEquals(a()->udir[0].keys, "0");
-            for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-              const string s = fmt::sprintf("%d", sysdir ? top + pos : top + pos + 1);
+            for (int this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
+              const auto s = fmt::format("{}", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
                 a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
             }
           }
-          drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+          drawscan(pos, type ? is_inscan(top + pos)
+                             : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
                                    (1L << (a()->usub[top + pos].subnum % 32)));
           redraw = false;
           break;
@@ -1151,7 +1152,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (size_t this_dir = 0; this_dir < a()->directories.size(); this_dir++) {
+            for (auto this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
               if (a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
                   (1L << (a()->udir[this_dir].subnum % 32))) {
                 a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
@@ -1165,7 +1166,7 @@ void config_scan_plus(int type) {
           break;
         case 4:
           if (type == 0) {
-            for (size_t this_sub = 0; this_sub < a()->subs().subs().size(); this_sub++) {
+            for (auto this_sub = 0; this_sub < ssize(a()->subs().subs()); this_sub++) {
               if (!(a()->context().qsc_q[a()->usub[this_sub].subnum / 32] &
                     (1L << (a()->usub[this_sub].subnum % 32)))) {
                 a()->context().qsc_q[a()->usub[this_sub].subnum / 32] ^=
@@ -1173,7 +1174,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (size_t this_dir = 0; this_dir < a()->directories.size(); this_dir++) {
+            for (auto this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
               if (!(a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
                     (1L << (a()->udir[this_dir].subnum % 32)))) {
                 a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
@@ -1214,8 +1215,8 @@ void config_scan_plus(int type) {
               if (a()->GetCurrentConferenceFileArea() > 0) {
                 a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() - 1);
               } else {
-                while ((a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0) &&
-                       (a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1)) {
+                while (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0 &&
+                       a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1) {
                   a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
                 }
               }

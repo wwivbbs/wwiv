@@ -295,7 +295,7 @@ void swap_dirs(int dir1, int dir2) {
     close_qscn();
     free(pTempQScan);
   }
-  directoryrec_422_t drt = a()->directories[dir1];
+  const auto drt = a()->directories[dir1];
   a()->directories[dir1] = a()->directories[dir2];
   a()->directories[dir2] = drt;
 }
@@ -351,7 +351,7 @@ void insert_dir(int n) {
 }
 
 void delete_dir(int n) {
-  subconf_t nconv{static_cast<subconf_t>(n)};
+  auto nconv{static_cast<subconf_t>(n)};
 
   if (n < 0 || n >= ssize(a()->directories)) {
     return;

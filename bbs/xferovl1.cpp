@@ -807,8 +807,8 @@ void download() {
             bout.Color(1);
             bout << s1;
             foundany = 0;
-            size_t dn = 0;
-            while (dn < a()->directories.size() && a()->udir[dn].subnum != -1) {
+            int dn = 0;
+            while (dn < ssize(a()->directories) && a()->udir[dn].subnum != -1) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {
@@ -876,8 +876,8 @@ void download() {
     return;
   }
   bout << "|#5Hang up after transfer? ";
-  bool had = yesno();
-  int ip = get_protocol(xfertype::xf_down_batch);
+  const bool had = yesno();
+  const int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {

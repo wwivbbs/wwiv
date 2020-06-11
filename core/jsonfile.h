@@ -27,18 +27,18 @@
 #include "core/textfile.h"
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
+#include <utility>
 
 namespace wwiv::core {
 
 template <typename T>
 class JsonFile {
 public:
-  JsonFile(const std::filesystem::path& file_name, const std::string& key, T& t)
-    : file_name_(file_name), key_(key), t_(t) {
+  JsonFile(std::filesystem::path file_name, const std::string& key, T& t)
+    : file_name_(std::move(file_name)), key_(key), t_(t) {
   }
 
-  virtual ~JsonFile() {
-  }
+  virtual ~JsonFile() = default;
 
   bool Load() {
     try {

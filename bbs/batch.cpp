@@ -339,7 +339,8 @@ void zmbatchdl(bool bHangupAfterDl) {
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      dliscan1(a()->batch().entry[cur].dir());
+      const auto dir = a()->batch().entry[cur].dir();
+      dliscan1(dir);
       const int record_number = recno(a()->batch().entry[cur].aligned_filename());
       if (record_number <= 0) {
         a()->batch().delbatch(cur);
@@ -348,9 +349,9 @@ void zmbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
-        auto send_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
-        if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        auto send_filename = FilePath(a()->directories[dir].path, f);
+        if (a()->directories[dir].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->directories[dir].path, f);
           // update the send filename and copy it from the CD-ROM
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
@@ -469,7 +470,8 @@ void ymbatchdl(bool bHangupAfterDl) {
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      dliscan1(a()->batch().entry[cur].dir());
+      const auto dir = a()->batch().entry[cur].dir();
+      dliscan1(dir);
       const auto nRecordNumber = recno(a()->batch().entry[cur].aligned_filename());
       if (nRecordNumber <= 0) {
         a()->batch().delbatch(cur);
@@ -478,9 +480,9 @@ void ymbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
-        if (a()->directories[a()->batch().entry[cur].dir()].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->directories[a()->batch().entry[cur].dir()].path, f);
+        auto send_filename = FilePath(a()->directories[dir].path, f);
+        if (a()->directories[dir].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->directories[dir].path, f);
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);

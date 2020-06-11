@@ -737,7 +737,7 @@ void sysop_configure() {
     case 'F':
     case 'G':
     case 'H': {
-      auto color = SelectColor(1);
+      const auto color = SelectColor(1);
       if (color >= 0) {
         switch (key) {
         case 'E':
@@ -1471,11 +1471,9 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
 }
 
 int search_criteria(search_record* sr) {
-  int x = 0;
-  int all_conf = 1, useconf;
-  char s1[81];
+  int all_conf = 1;
 
-  useconf = (a()->uconfdir[1].confnum != -1 && okconf(a()->user()));
+  const auto useconf = (a()->uconfdir[1].confnum != -1 && okconf(a()->user()));
 
 LP_SEARCH_HELP:
   sr->search_extended = lp_config.search_extended_on ? true : false;
@@ -1484,9 +1482,10 @@ LP_SEARCH_HELP:
   printfile(LPSEARCH_NOEXT);
 
   bool done = false;
+  char x{0};
   while (!done) {
     bout.GotoXY(1, 15);
-    for (int i = 0; i < 9; i++) {
+    for (auto i = 0; i < 9; i++) {
       bout.GotoXY(1, 15 + i);
       bout.clreol();
     }
@@ -1494,14 +1493,13 @@ LP_SEARCH_HELP:
 
     bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
     bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
-    sprintf(s1, "%s", stripcolors(a()->directories[a()->current_user_dir().subnum].name));
+    const std::string dir_name = stripcolors(a()->directories[a()->current_user_dir().subnum].name);
     bout << "|#9C)|#2 Which Directories    :|#2 "
-         << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
+         << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
          << wwiv::endl;
-    to_char_array(s1, stripcolors(
-                      a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].
-                      conf_name));
-    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : s1) <<
+    const auto conf_name = stripcolors(
+        a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name);
+    bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : conf_name) <<
         wwiv::endl;
     bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") <<
         wwiv::endl;
