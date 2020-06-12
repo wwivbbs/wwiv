@@ -71,7 +71,7 @@ TEST_F(SubXtrTest, Write) {
 
   write_subs_xtr(helper.data(), net_networks_, xsubs);
   TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
-  vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
+  auto actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4u, actual.size());
   vector<string> expected = {
     { "!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
@@ -137,14 +137,18 @@ TEST_F(SubXtrTest, Read) {
 
 
 TEST_F(SubXtrTest, JsonSmoke) {
-  const string json = "{ \"subs\": [ { \"name\": \"n1\", \"storage_type\": 2 } ] }";
+  const string json = R"(
+  { "subs": [
+    { "name": "n1", "storage_type": 2 }
+  ] }
+ )";
   this->CreateTempFile("subs.json", json);
 
-  subs_t subs;
+  std::vector<subboard_t> subs;
   ASSERT_TRUE(Subs::LoadFromJSON(dir(), "subs.json", subs));
 
-  ASSERT_EQ(1, wwiv::stl::ssize(subs.subs));
-  EXPECT_EQ("n1", subs.subs[0].name);
-  EXPECT_EQ(2, subs.subs[0].storage_type);
+  ASSERT_EQ(1, wwiv::stl::ssize(subs));
+  EXPECT_EQ("n1", subs[0].name);
+  EXPECT_EQ(2, subs[0].storage_type);
 
 }

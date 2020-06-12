@@ -64,7 +64,7 @@ static void t2u_error(const string& file_name, const string& msg) {
 }
 
 static int try_to_ul_wh(const string& orig_file_name) {
-  directoryrec_422_t d = {};
+  wwiv::sdk::files::directory_t d{};
   int i1, i2, i4, key, ok = 0, dn = 0;
 
   auto file_name = files::unalign(orig_file_name);
@@ -79,7 +79,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bool done = false;
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
-    dn = (a()->config()->new_uploads_dir() < a()->directories.size()) 
+    dn = (a()->config()->new_uploads_dir() < a()->dirs().size()) 
       ? a()->config()->new_uploads_dir() : 0;
   } else {
     char temp[10];
@@ -88,7 +88,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     done = false;
     while (!done) {
       if (a()->hangup_) {
-        if (a()->config()->new_uploads_dir() < a()->directories.size()) {
+        if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
           dn = a()->config()->new_uploads_dir();
         } else {
           dn = 0;
@@ -113,7 +113,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
         int x = to_number<int>(temp);
         if (a()->udir[x].subnum >= 0) {
           dliscan1(a()->udir[x].subnum);
-          d = a()->directories[dn];
+          d = a()->dirs()[dn];
           if (d.mask & mask_no_uploads && !dcs()) {
             bout << "Can't upload there...\r\n";
             pausescr();
@@ -127,7 +127,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
 
   dliscan1(dn);
-  d = a()->directories[dn];
+  d = a()->dirs()[dn];
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
@@ -203,11 +203,11 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
   if (ok && (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
     bout.nl();
-    bout << "Checking for same file in other a()->directories...\r\n\n";
+    bout << "Checking for same file in other directories...\r\n\n";
     i2 = 0;
 
-    for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1); i++) {
-      string s1 = StrCat("Scanning ", a()->directories[a()->udir[i].subnum].name);
+    for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1; i++) {
+      string s1 = StrCat("Scanning ", a()->dirs()[a()->udir[i].subnum].name);
 
       i4 = s1.size();
       //s1 += string(i3 - i2, ' ');
@@ -220,7 +220,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       i1 = recno(u.filename);
       if (i1 >= 0) {
         bout.nl();
-        bout << "Same file found on " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
+        bout << "Same file found on " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
 
         if (dcs()) {
           bout.nl();
@@ -300,14 +300,14 @@ static int try_to_ul_wh(const string& orig_file_name) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
+            modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
             if (!ss.empty()) {
               area->DeleteExtendedDescription(u.filename);
               area->AddExtendedDescription(u.filename, ss);
             }
           }
         } else {
-          modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
+          modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
             area->AddExtendedDescription(u.filename, ss);
             u.mask |= mask_extended;
@@ -373,7 +373,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   status->IncrementNumUploadsToday();
   status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   a()->status_manager()->CommitTransaction(std::move(status));
-  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f.aligned_filename(), a()->directories[dn].name);
+  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f.aligned_filename(), a()->dirs()[dn].name);
   return 0;                                 // This means success
 }
 

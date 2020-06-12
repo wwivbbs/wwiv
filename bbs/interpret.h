@@ -18,20 +18,16 @@
 #ifndef __INCLUDED_BBS_INTERPRET_H__
 #define __INCLUDED_BBS_INTERPRET_H__
 
-#include <string>
-
-#include "sdk/user.h"
-#include "sdk/vardec.h"
-
-// for a()
 #include "bbs/bbs.h"
 #include "sdk/ansi/ansi.h"
+#include "sdk/user.h"
+#include <string>
 
 class MacroContext {
 public:
   virtual ~MacroContext() = default;
   virtual const wwiv::sdk::User& u() const = 0;
-  virtual const directoryrec_422_t& dir() const = 0;
+  virtual const wwiv::sdk::files::directory_t& dir() const = 0;
   virtual bool mci_enabled() const = 0;
   virtual std::string interpret(char c) const;
 };
@@ -40,7 +36,7 @@ class BbsMacroContext : public MacroContext {
 public:
   BbsMacroContext(const wwiv::sdk::User* u, bool mci_enabled) : u_(u), mci_enabled_(mci_enabled) {}
   const wwiv::sdk::User& u() const override { return *u_; }
-  const directoryrec_422_t& dir() const { return a()->current_dir(); }
+  const wwiv::sdk::files::directory_t& dir() const override { return a()->current_dir(); }
   bool mci_enabled() const override { return mci_enabled_; }
 
 private:

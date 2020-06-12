@@ -862,7 +862,7 @@ static int GetMaxLinesToShowForScanPlus() {
           a()->user()->GetScreenLines() - (4 + STOP_LIST));
 }
 
-static void list_config_scan_plus(unsigned int first, int *amount, int type) {
+static void list_config_scan_plus(int first, int *amount, int type) {
 
   bool bUseConf = (a()->subconfs.size() > 1 && okconf(a()->user())) ? true : false;
 
@@ -909,14 +909,14 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
       ++*amount;
     }
   } else {
-    for (size_t this_dir = first; (this_dir < a()->directories.size()) && (a()->udir[this_dir].subnum != -1) &&
+    for (auto this_dir = first; this_dir < a()->dirs().size() && a()->udir[this_dir].subnum != -1 &&
          *amount < max_lines * 2; this_dir++) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
                             a()->context().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
                                                                                             : ' ',
-        a()->directories[alias_dir].name);
+        a()->dirs()[alias_dir].name);
       s[44] = 0;
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
@@ -968,11 +968,11 @@ static long is_inscan(int dir) {
     sysdir = true;
   }
 
-  for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
-    const string key = fmt::sprintf("%d", (sysdir ? dir : (dir + 1)));
+  for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+    const auto key = std::to_string(sysdir ? dir : dir + 1);
     if (key == a()->udir[this_dir].keys) {
-      int16_t ad = a()->udir[this_dir].subnum;
-      return (a()->context().qsc_n[ad / 32] & (1L << ad % 32));
+      const auto ad = a()->udir[this_dir].subnum;
+      return a()->context().qsc_n[ad / 32] & 1L << ad % 32;
     }
   }
   return 0;
@@ -1080,8 +1080,8 @@ void config_scan_plus(int type) {
               (1L << (a()->usub[top + pos].subnum % 32));
         }
         else {
-          bool sysdir = IsEquals(a()->udir[0].keys, "0");
-          for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
+          auto sysdir = IsEquals(a()->udir[0].keys, "0");
+          for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
             const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
@@ -1105,7 +1105,7 @@ void config_scan_plus(int type) {
               top = 0;
             }
           } else {
-            if (top >= ssize(a()->directories)) {
+            if (top >= a()->dirs().size()) {
               top = 0;
             }
           }
@@ -1129,7 +1129,7 @@ void config_scan_plus(int type) {
                 (1L << (a()->usub[top + pos].subnum % 32));
           } else {
             bool sysdir = IsEquals(a()->udir[0].keys, "0");
-            for (int this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
+            for (int this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
               const auto s = fmt::format("{}", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
@@ -1152,7 +1152,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (auto this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
+            for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
               if (a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
                   (1L << (a()->udir[this_dir].subnum % 32))) {
                 a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
@@ -1174,7 +1174,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (auto this_dir = 0; this_dir < ssize(a()->directories); this_dir++) {
+            for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
               if (!(a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
                     (1L << (a()->udir[this_dir].subnum % 32)))) {
                 a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=

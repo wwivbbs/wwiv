@@ -534,9 +534,9 @@ void temp_extract() {
   bool ok = true;
   while (i > 0 && ok && !a()->hangup_) {
     auto f = a()->current_file_area()->ReadFile(i);
-    auto tmppath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
-    if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-      auto curpath = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+    auto tmppath = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
+    if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
+      auto curpath = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
       tmppath = FilePath(a()->temp_directory(), f);
       if (!File::Exists(tmppath)) {
         File::Copy(curpath, tmppath);
@@ -548,10 +548,10 @@ void temp_extract() {
       bool abort = false;
       printinfo(&f.u(), &abort);
       bout.nl();
-      if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
+      if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
         File::set_current_directory(a()->temp_directory());
       } else {
-        File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
+        File::set_current_directory(a()->dirs()[a()->current_user_dir().subnum].path);
       }
       File file(FilePath(File::current_directory(), f));
       a()->CdHome();
@@ -566,7 +566,7 @@ void temp_extract() {
           }
           if (iequals(extract_fn, "?")) {
             list_arc_out(f.unaligned_filename(),
-                         a()->directories[a()->current_user_dir().subnum].path);
+                         a()->dirs()[a()->current_user_dir().subnum].path);
             extract_fn.clear();
           }
           if (iequals(extract_fn, "Q")) {
@@ -651,7 +651,7 @@ void list_temp_arc() {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "temp.%s", a()->arcs[ARC_NUMBER].extension);
-  list_arc_out(szFileName, a()->temp_directory().c_str());
+  list_arc_out(szFileName, a()->temp_directory());
   bout.nl();
 }
 
@@ -725,7 +725,7 @@ void move_file_t() {
       }
       std::filesystem::path s1;
       if (ch == 'Y') {
-        s1 = FilePath(a()->directories[a()->batch().entry[pos].dir()].path, f);
+        s1 = FilePath(a()->dirs()[a()->batch().entry[pos].dir()].path, f);
         string dirnum;
         do {
           bout << "|#2To which directory? ";
@@ -738,7 +738,7 @@ void move_file_t() {
         while (!a()->hangup_ && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
-          for (auto i1 = 0; i1 < wwiv::stl::ssize(a()->directories) && a()->udir[i1].subnum != -1; i1++) {
+          for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
             if (dirnum == a()->udir[i1].keys) {
               d1 = i1;
             }
@@ -752,11 +752,11 @@ void move_file_t() {
             ok = false;
             bout << "Filename already in use in that directory.\r\n";
           }
-          if (a()->current_file_area()->number_of_files() >= a()->directories[d1].maxfiles) {
+          if (a()->current_file_area()->number_of_files() >= a()->dirs()[d1].maxfiles) {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (File::freespace_for_path(a()->directories[d1].path) <
+          if (File::freespace_for_path(a()->dirs()[d1].path) <
               static_cast<long>(f.u().numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
@@ -778,7 +778,7 @@ void move_file_t() {
         if (a()->current_file_area()->DeleteFile(f, temp_record_num)) {
           a()->current_file_area()->Save();
         }
-        auto s2 = FilePath(a()->directories[d1].path, f);
+        auto s2 = FilePath(a()->dirs()[d1].path, f);
         dliscan1(d1);
         // N.B. the current file area changes with calls to dliscan*
         if (a()->current_file_area()->AddFile(f)) {
@@ -853,7 +853,7 @@ void removefile() {
             remove_from_file_database(f.aligned_filename());
           }
           if (bDeleteFileToo) {
-            auto del_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+            auto del_fn = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
               a()->users()->readuser(&uu, f.u().ownerusr);
@@ -867,7 +867,7 @@ void removefile() {
             }
           }
           sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
-                                    a()->directories[a()->current_user_dir().subnum].name);
+                                    a()->dirs()[a()->current_user_dir().subnum].name);
           if (a()->current_file_area()->DeleteFile(f, record_num)) {
             a()->current_file_area()->Save();
             --record_num;

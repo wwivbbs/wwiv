@@ -34,7 +34,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::files {
 
 FileAreaExtendedDesc::FileAreaExtendedDesc(FileApi* api, std::string data_directory,
-                                           const directoryrec_422_t& dir, int num_files)
+                                           const directory_t& dir, int num_files)
     : FileAreaExtendedDesc(api, std::move(data_directory), dir.filename, num_files) {
   dir_ = dir;
 }

@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_FILES_FILES_EXT_H__
 #define __INCLUDED_SDK_FILES_FILES_EXT_H__
 
+#include "dirs.h"
 #include "sdk/files/file_record.h"
 #include <filesystem>
 #include <optional>
@@ -33,7 +34,7 @@ class FileRecord;
 class FileAreaExtendedDesc final {
 public:
 
-  FileAreaExtendedDesc(FileApi* api, std::string data_directory, const directoryrec_422_t& dir, int num_files);
+  FileAreaExtendedDesc(FileApi* api, std::string data_directory, const directory_t& dir, int num_files);
   FileAreaExtendedDesc(FileApi* api, std::string data_directory, const std::string& filename, int num_files);
   ~FileAreaExtendedDesc() = default;
   
@@ -65,7 +66,7 @@ protected:
   FileApi* api_;
   const std::string data_directory_;
   const std::string filename_;
-  directoryrec_422_t dir_{};
+  directory_t dir_{};
 
   bool dirty_{false};
   bool open_{false};

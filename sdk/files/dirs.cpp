@@ -25,6 +25,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -47,9 +48,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-std::vector<directoryrec_422_t> read_dirs(const std::string &datadir);
-bool write_dirs(const std::filesystem::path& datadir, const std::vector<directoryrec_422_t>& dirs);
-
 template <class Archive>
 void serialize(Archive & ar, directory_t& s) {
   ar(make_nvp("name", s.name));
@@ -62,43 +60,16 @@ void serialize(Archive & ar, directory_t& s) {
   ar(make_nvp("area_tag", s.area_tag));
 }
 
-template <class Archive>
-void serialize(Archive & ar, dirs_t& d) {
-  ar(cereal::make_nvp("dirs", d.dirs));
-}
-
-bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, dirs_t& s) {
-  s.dirs.clear();
-  TextFile file(FilePath(dir, filename), "r");
-  if (!file.IsOpen()) {
-    return false;
-  }
-  const auto text = file.ReadFileIntoString();
-  std::stringstream ss;
-  ss << text;
-  cereal::JSONInputArchive load(ss);
-  load(cereal::make_nvp("dirs", s.dirs));
-
-  return true;
+bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries) {
+  entries.clear();
+  JsonFile f(FilePath(dir, filename), "dirs", entries);
+  return f.Load();
 }
 
 //static 
-bool Dirs::SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const dirs_t& s) {
-  std::ostringstream ss;
-  {
-    cereal::JSONOutputArchive save(ss);
-    save(cereal::make_nvp("dirs", s.dirs));
-  }
-
-  TextFile file(FilePath(dir, filename), "w");
-  if (!file.IsOpen()) {
-    // rapidjson will assert if the file does not exist, so we need to 
-    // verify that the file exists first.
-    return false;
-  }
-
-  file.Write(ss.str());
-  return true;
+bool Dirs::SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<directory_t>& entries) {
+  JsonFile f(FilePath(dir, filename), "dirs", entries);
+  return f.Save();
 }
 
 bool Dirs::set_dirs(const std::vector<directory_t>& dirs) {
@@ -109,8 +80,7 @@ bool Dirs::set_dirs(const std::vector<directory_t>& dirs) {
 vector<directoryrec_422_t> read_dirs(const std::filesystem::path& datadir) {
   DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
   if (!file) {
-    // TODO(rushfan): Figure out why this caused link errors. What's missing?
-    //LOG(ERROR) << file.file() << " NOT FOUND.";
+    // LOG(ERROR) << file.file() << " NOT FOUND.";
     return{};
   }
   std::vector<directoryrec_422_t> dirs;
@@ -139,16 +109,14 @@ Dirs::Dirs(std::filesystem::path datadir) : datadir_(std::move(datadir)){};
 Dirs::~Dirs() = default;
 
 bool Dirs::Load() {
-  dirs_t s;
-  if (!LoadFromJSON(datadir_.string(), DIRS_JSON, s)) {
+  if (!LoadFromJSON(datadir_.string(), DIRS_JSON, dirs_)) {
     return LoadLegacy();
   }
-  // Assign the dirs.
-  dirs_ = s.dirs;
   return true;
 }
 
 bool Dirs::LoadLegacy() {
+  LOG(INFO) << "Reading Legacy Dirs";
   auto old_dirs = read_dirs(datadir_);
 
   dirs_.clear();
@@ -193,9 +161,7 @@ bool Dirs::Save() {
   backup_file(FilePath(datadir_, DIRS_JSON));
 
   // Save dirs.
-  dirs_t t{};
-  t.dirs = dirs_;
-  return SaveToJSON(datadir_, DIRS_JSON, t);
+  return SaveToJSON(datadir_, DIRS_JSON, dirs_);
 }
 
 bool Dirs::insert(int n, directory_t r) {

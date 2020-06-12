@@ -99,10 +99,10 @@ static void listbatch() {
     if (b.sending()) {
       const auto t = ctim(b.time(a()->modem_speed_));
       buffer = fmt::format("{}. (D) {}   {}  {}", current_num, b.aligned_filename(), t,
-                           a()->directories[b.dir()].name);
+                           a()->dirs()[b.dir()].name);
     } else {
       buffer = fmt::format("{}. (U) {}             {}", current_num, b.aligned_filename(),
-                           a()->directories[b.dir()].name);
+                           a()->dirs()[b.dir()].name);
     }
     bout.bpla(buffer, &abort);
   }
@@ -199,7 +199,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
           const auto source_filename = FilePath(a()->batch_directory(), file_name);
-          const auto dest_filename = FilePath(a()->directories[b.dir()].path, file_name);
+          const auto dest_filename = FilePath(a()->dirs()[b.dir()].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
             File::Remove(source_filename);
@@ -230,9 +230,9 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
                 area->Save();
               }
               sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
-                                        a()->directories[b.dir()].name, lCharsPerSecond);
+                                        a()->dirs()[b.dir()].name, lCharsPerSecond);
               bout << "Uploaded '" << f.aligned_filename() << "' to "
-                  << a()->directories[b.dir()].name << " (" << lCharsPerSecond << " cps)"
+                  << a()->dirs()[b.dir()].name << " (" << lCharsPerSecond << " cps)"
                   << wwiv::endl;
             }
           }
@@ -349,9 +349,9 @@ void zmbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
-        auto send_filename = FilePath(a()->directories[dir].path, f);
-        if (a()->directories[dir].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->directories[dir].path, f);
+        auto send_filename = FilePath(a()->dirs()[dir].path, f);
+        if (a()->dirs()[dir].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->dirs()[dir].path, f);
           // update the send filename and copy it from the CD-ROM
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
@@ -480,9 +480,9 @@ void ymbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = FilePath(a()->directories[dir].path, f);
-        if (a()->directories[dir].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->directories[dir].path, f);
+        auto send_filename = FilePath(a()->dirs()[dir].path, f);
+        if (a()->dirs()[dir].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->dirs()[dir].path, f);
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
@@ -534,7 +534,7 @@ static string make_ul_batch_list() {
     if (b.sending()) {
       continue;
     }
-    auto line = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
+    auto line = FilePath(a()->dirs()[b.dir()].path, files::FileName(b.aligned_filename()));
     tf.WriteLine(line.string());
   }
   return list_filename.string();
@@ -556,15 +556,15 @@ static std::filesystem::path make_dl_batch_list() {
       continue;
     }
     string filename_to_send;
-    if (a()->directories[b.dir()].mask & mask_cdrom) {
+    if (a()->dirs()[b.dir()].mask & mask_cdrom) {
       const auto fileToSend = FilePath(a()->temp_directory(), files::FileName(b.aligned_filename()));
       if (!File::Exists(fileToSend)) {
-        auto sourceFile = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename()));
+        auto sourceFile = FilePath(a()->dirs()[b.dir()].path, files::FileName(b.aligned_filename()));
         File::Copy(sourceFile, fileToSend);
       }
       filename_to_send = fileToSend.string();
     } else {
-      filename_to_send = FilePath(a()->directories[b.dir()].path, files::FileName(b.aligned_filename())).string();
+      filename_to_send = FilePath(a()->dirs()[b.dir()].path, files::FileName(b.aligned_filename())).string();
     }
     bool ok = true;
     if (nsl() < b.time(a()->modem_speed_) + at) {
@@ -796,7 +796,7 @@ int batchdl(int mode) {
 
 void upload(int dn) {
   dliscan1(dn);
-  auto d = a()->directories[dn];
+  const auto& d = a()->dirs()[dn];
   const long free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";

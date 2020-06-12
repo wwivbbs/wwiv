@@ -63,8 +63,8 @@ using namespace wwiv::strings;
 /* ---------------------------------------------------------------------- */
 
 static int FindDN(const std::string& dl_fn) {
-  for (size_t i = 0; (i < a()->directories.size()); i++) {
-    if (iequals(a()->directories[i].filename, dl_fn)) {
+  for (auto i = 0; i < a()->dirs().size(); i++) {
+    if (iequals(a()->dirs()[i].filename, dl_fn)) {
       return i;
     }
   }
@@ -107,7 +107,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     bout.nl();
 
     if (bTitle) {
-      bout << "Directory  : " << a()->directories[dn].name << wwiv::endl;
+      bout << "Directory  : " << a()->dirs()[dn].name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&f.u(), dn);
 
@@ -117,9 +117,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = FilePath(a()->directories[dn].path, f);
-      if (a()->directories[dn].mask & mask_cdrom) {
-        auto s2 = FilePath(a()->directories[dn].path, f);
+      auto s1 = FilePath(a()->dirs()[dn].path, f);
+      if (a()->dirs()[dn].mask & mask_cdrom) {
+        auto s2 = FilePath(a()->dirs()[dn].path, f);
         s1 = FilePath(a()->temp_directory(), f);
         if (!File::Exists(s1)) {
           File::Copy(s2, s1);
@@ -273,7 +273,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (uint16_t i = 0; i < a()->directories.size(); i++) {
+    for (uint16_t i = 0; i < a()->dirs().size(); i++) {
       if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;

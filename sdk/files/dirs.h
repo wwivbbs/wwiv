@@ -48,10 +48,6 @@ struct directory_t {
   std::string area_tag;
 };
 
-struct dirs_t {
-  std::vector<directory_t> dirs;
-};
-
 class Dirs {
 public:
   Dirs(std::filesystem::path datadir);
@@ -79,8 +75,8 @@ public:
   bool erase(int n);
   [[nodiscard]] int size() const { return dirs_.size(); }
 
-  static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, dirs_t& entries);
-  static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const dirs_t& entries);
+  static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries);
+  static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<directory_t>& entries);
 
   bool set_dirs(const std::vector<directory_t>& dirs);
 

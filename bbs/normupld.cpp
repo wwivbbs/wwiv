@@ -54,7 +54,7 @@ void normalupload(int dn) {
   int ok = 1;
 
   dliscan1(dn);
-  directoryrec_422_t d = a()->directories[dn];
+  wwiv::sdk::files::directory_t d = a()->dirs()[dn];
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
@@ -170,11 +170,11 @@ void normalupload(int dn) {
     }
     if (ok && !a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
       bout.nl();
-      bout << "Checking for same file in other a()->directories...\r\n\n";
+      bout << "Checking for same file in other directories...\r\n\n";
       int nLastLineLength = 0;
-      for (size_t i = 0; i < a()->directories.size() && a()->udir[i].subnum != -1; i++) {
+      for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
-        buffer += a()->directories[a()->udir[i].subnum].name;
+        buffer += a()->dirs()[a()->udir[i].subnum].name;
         int nBufferLen = buffer.length();
         for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
           buffer += " ";
@@ -185,7 +185,7 @@ void normalupload(int dn) {
         int i1 = recno(u.filename);
         if (i1 >= 0) {
           bout.nl();
-          bout << "Same file found on " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
+          bout << "Same file found on " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
           if (dcs()) {
             bout.nl();
             bout << "|#5Upload anyway? ";
@@ -214,7 +214,7 @@ void normalupload(int dn) {
       to_char_array(u.description, desc);
       bout.nl();
       string ext_desc;
-      modify_extended_description(&ext_desc, a()->directories[dn].name);
+      modify_extended_description(&ext_desc, a()->dirs()[dn].name);
       if (!ext_desc.empty()) {
         a()->current_file_area()->AddExtendedDescription(u.filename, ext_desc);
         u.mask |= mask_extended;
@@ -276,7 +276,7 @@ void normalupload(int dn) {
               s.IncrementNumUploadsToday();
               s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
             });
-            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", u.filename, a()->directories[dn].name);
+            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", u.filename, a()->dirs()[dn].name);
             bout.nl(2);
             bout << fmt::sprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);

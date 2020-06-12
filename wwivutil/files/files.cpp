@@ -24,17 +24,13 @@
 #include <string>
 #include <vector>
 #include "core/command_line.h"
-#include "core/datafile.h"
-#include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/stl.h"
 #include "fmt/format.h"
 #include "sdk/config.h"
-#include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/files/files.h"
-
 #include "sdk/files/files_ext.h"
 #include "wwivutil/files/allow.h"
 
@@ -55,17 +51,12 @@ constexpr char CD = 4;
 
 namespace wwiv::wwivutil::files {
 
-static bool ReadAreas(const std::string& datadir, vector<directoryrec_422_t>& dirs) {
-  DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
-  if (!file) {
-    LOG(ERROR) << "Unable to open file: " << file.file();
-    return false;
+static std::optional<vector<sdk::files::directory_t>> ReadAreas(const std::string& datadir) {
+  sdk::files::Dirs dirs(datadir);
+  if (dirs.Load()) {
+    return {dirs.dirs()};
   }
-  if (!file.ReadVector(dirs)) {
-    LOG(ERROR) << "Unable to read from file: " << file.file();
-    return false;
-  }
-  return true;
+  return std::nullopt;
 }
 
 class AreasCommand final : public UtilCommand {
@@ -82,20 +73,20 @@ public:
   }
 
   int Execute() override {
-    vector<directoryrec_422_t> dirs;
-    if (!ReadAreas(config()->config()->datadir(), dirs)) {
+    auto dirs = ReadAreas(config()->config()->datadir());
+    if (!dirs) {
       return 2;
     }
 
     int num = 0;
     cout << "#Num FileName " << std::setw(30) << std::left << "Name" << " " 
-      << "Path" << std::endl;
+         << "Path" << std::endl;
     cout << string(78, '=') << endl;
-    for (const auto& d : dirs) {
+    for (const auto& d : dirs.value()) {
       cout << "#" << std::setw(3) << std::left << num++ << " "
-        << std::setw(8) << d.filename << " " 
-        << std::setw(30) << d.name << " " << d.path
-        << std::endl;
+           << std::setw(8) << d.filename << " " 
+           << std::setw(30) << d.name << " " << d.path
+           << std::endl;
     }
     return 0;
   }
@@ -125,11 +116,12 @@ public:
       cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
-    vector<directoryrec_422_t> dirs;
-    if (!ReadAreas(config()->config()->datadir(), dirs)) {
+    auto o = ReadAreas(config()->config()->datadir());
+    if (!o) {
       return 2;
     }
     const auto area_num = to_number<int>(remaining().front());
+    auto dirs = o.value();
 
     if (area_num < 0 || area_num >= ssize(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
@@ -146,7 +138,7 @@ public:
     }
     wwiv::sdk::files::FileAreaExtendedDesc ext(&api, config()->config()->datadir(), dir,
                                                area->number_of_files());
-    auto ext_avail = ext.Load();
+    const auto ext_avail = ext.Load();
     auto num_files = area->number_of_files();
     cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
     cout << std::endl;
@@ -164,12 +156,12 @@ public:
            << std::setw(8) << f.unaligned_filename() << " "
            << f.u().description << std::endl;
       if (ext_avail && f.has_extended_description()) {
-        auto o = ext.ReadExtendedAsLines(f);
-        if (!o) {
+        auto so = ext.ReadExtendedAsLines(f);
+        if (!so) {
           continue;
         }
-        auto lines = o.value();
-        for(auto l : lines) {
+        auto lines = so.value();
+        for(const auto& l : lines) {
           cout << std::string(17, ' ') << StringTrim(l) << std::endl;
         }
       }
@@ -203,12 +195,12 @@ public:
       return 2;
     }
 
-    vector<directoryrec_422_t> dirs;
-    if (!ReadAreas(config()->config()->datadir(), dirs)) {
+    auto o = ReadAreas(config()->config()->datadir());
+    if (!o) {
       return 2;
     }
     const auto area_num = to_number<int>(remaining().front());
-
+    const auto dirs = o.value();
     if (area_num < 0 || area_num >= ssize(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
       const auto max_size = std::max<int>(0, dirs.size() - 1);

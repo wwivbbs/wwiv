@@ -27,13 +27,11 @@
 #include "local_io/keycodes.h"
 #include "bbs/bbs.h"
 #include "bbs/pause.h"
-#include "bbs/sysoplog.h"
 #include "bbs/wqscn.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/filenames.h"
 #include "sdk/usermanager.h"
 #include "sdk/user.h"
 
@@ -57,7 +55,7 @@ void delete_dir(int n);
 
 static std::string dirdata(int n) {
   char x = 0;
-  directoryrec_422_t r = a()->directories[n];
+  auto r = a()->dirs()[n];
   if (r.dar == 0) {
     x = 32;
   } else {
@@ -78,15 +76,15 @@ static void showdirs() {
   bool abort = false;
   bout.bpla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
-  for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
-    auto text = StrCat(a()->directories[i].name, " ", a()->directories[i].filename);
+  for (auto i = 0; i < a()->dirs().size() && !abort; i++) {
+    auto text = StrCat(a()->dirs()[i].name, " ", a()->dirs()[i].filename);
     if (ifind_first(text, pattern)) {
       bout.bpla(dirdata(i), &abort);
     }
   }
 }
 
-static string GetAttributeString(const directoryrec_422_t& r) {
+static string GetAttributeString(const wwiv::sdk::files::directory_t& r) {
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
@@ -98,7 +96,7 @@ static string GetAttributeString(const directoryrec_422_t& r) {
 }
 
 void modify_dir(int n) {
-  directoryrec_422_t r = a()->directories[n];
+  auto r = a()->dirs()[n];
   bool done = false;
   do {
     bout.cls();
@@ -127,18 +125,18 @@ void modify_dir(int n) {
       done = true;
       break;
     case '[':
-      a()->directories[n] = r;
+      a()->dirs()[n] = r;
       if (--n < 0) {
-        n = ssize(a()->directories) - 1;
+        n = a()->dirs().size() - 1;
       }
-      r = a()->directories[n];
+      r = a()->dirs()[n];
       break;
     case ']':
-      a()->directories[n] = r;
-      if (++n >= ssize(a()->directories)) {
+      a()->dirs()[n] = r;
+      if (++n >= a()->dirs().size()) {
         n = 0;
       }
-      r = a()->directories[n];
+      r = a()->dirs()[n];
       break;
     case 'A':
     {
@@ -146,7 +144,7 @@ void modify_dir(int n) {
       bout << "|#2New name? ";
       auto s = input_text(r.name, 40);
       if (!s.empty()) {
-        to_char_array(r.name, s);
+        r.name = s;
       }
     } break;
     case 'B':
@@ -155,7 +153,7 @@ void modify_dir(int n) {
       bout << "|#2New filename? ";
       auto s = input_filename(r.filename, 8);
       if (!s.empty() && !contains(s, '.')) {
-        to_char_array(r.filename, s);
+        r.filename = s;
       }
     } break;
     case 'C':
@@ -179,7 +177,7 @@ void modify_dir(int n) {
         }
         if (!s.empty()) {
           s = File::EnsureTrailingSlash(s);
-          to_char_array(r.path, s);
+          r.path = s;
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";
           bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
@@ -252,7 +250,7 @@ void modify_dir(int n) {
     }
   } while (!done && !a()->hangup_);
 
-  a()->directories[n] = r;
+  a()->dirs()[n] = r;
 }
 
 
@@ -260,7 +258,7 @@ void swap_dirs(int dir1, int dir2) {
   subconf_t dir1conv = static_cast<subconf_t>(dir1);
   subconf_t dir2conv = static_cast<subconf_t>(dir2);
 
-  if (dir1 < 0 || dir1 >= ssize(a()->directories) || dir2 < 0 || dir2 >= ssize(a()->directories)) {
+  if (dir1 < 0 || dir1 >= a()->dirs().size() || dir2 < 0 || dir2 >= a()->dirs().size()) {
     return;
   }
 
@@ -295,13 +293,13 @@ void swap_dirs(int dir1, int dir2) {
     close_qscn();
     free(pTempQScan);
   }
-  const auto drt = a()->directories[dir1];
-  a()->directories[dir1] = a()->directories[dir2];
-  a()->directories[dir2] = drt;
+  const auto drt = a()->dirs()[dir1];
+  a()->dirs()[dir1] = a()->dirs()[dir2];
+  a()->dirs()[dir2] = drt;
 }
 
 void insert_dir(int n) {
-  if (n < 0 || n > ssize(a()->directories)) {
+  if (n < 0 || n > a()->dirs().size()) {
     return;
   }
   auto nconv = static_cast<subconf_t>(n);
@@ -310,20 +308,17 @@ void insert_dir(int n) {
 
   n = static_cast<int>(nconv);
 
-  directoryrec_422_t r{};
-  to_char_array(r.name, "** NEW DIR **");
-  to_char_array(r.filename, "noname");
-  to_char_array(r.path, a()->config()->dloadsdir());
+  wwiv::sdk::files::directory_t r{};
+  r.name = "** NEW DIR **";
+  r.filename = "noname";
+  r.path = a()->config()->dloadsdir();
   r.dsl = 10;
   r.age = 0;
   r.maxfiles = 50;
   r.dar = 0;
-  r.unused_legacy_dirtype = 0;
   r.mask = 0;
 
-  {
-    insert_at(a()->directories, n, r);
-  }
+  a()->dirs().insert(n, r);
   const auto num_user_records = a()->users()->num_user_records();
 
   auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
@@ -338,7 +333,7 @@ void insert_dir(int n) {
       read_qscn(i, pTempQScan, true);
 
       int i1;
-      for (i1 = ssize(a()->directories) / 32; i1 > n / 32; i1--) {
+      for (i1 = a()->dirs().size() / 32; i1 > n / 32; i1--) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] << 1) | (pTempQScan_n[i1 - 1] >> 31);
       }
       pTempQScan_n[i1] = m1 | (m2 & (pTempQScan_n[i1] << 1)) | (m3 & pTempQScan_n[i1]);
@@ -353,14 +348,14 @@ void insert_dir(int n) {
 void delete_dir(int n) {
   auto nconv{static_cast<subconf_t>(n)};
 
-  if (n < 0 || n >= ssize(a()->directories)) {
+  if (n < 0 || n >= a()->dirs().size()) {
     return;
   }
 
   update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
-  erase_at(a()->directories, n);
+  a()->dirs().erase(n);
 
   const auto num_users = a()->users()->num_user_records();
 
@@ -377,7 +372,7 @@ void delete_dir(int n) {
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
                              (pTempQScan_n[(n / 32) + 1] << 31);
 
-      for (size_t i1 = (n / 32) + 1; i1 <= (a()->directories.size() / 32); i1++) {
+      for (auto i1 = (n / 32) + 1; i1 <= a()->dirs().size() / 32; i1++) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
       }
 
@@ -411,26 +406,26 @@ void dlboardedit() {
     {
       bout.nl();
       bout << "|#2(Q=Quit) Dir number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 0, ssize(a()->directories));
+      auto r = input_number_hotkey(0, {'Q'}, 0, a()->dirs().size());
       if (r.key == 'Q') {
         break;
       }
       modify_dir(r.num);
     } break;
     case 'S':
-      if (a()->directories.size() < a()->config()->max_dirs()) {
+      if (a()->dirs().size() < a()->config()->max_dirs()) {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
         int i1 = to_number<int>(s);
-        if (!s[0] || i1 < 0 || i1 >= ssize(a()->directories)) {
+        if (!s[0] || i1 < 0 || i1 >= a()->dirs().size()) {
           break;
         }
         bout.nl();
         bout << "|#2And put before dir number? ";
         input(s, 4);
         i2 = to_number<int>(s);
-        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > ssize(a()->directories) || i1 == i2) {
+        if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > a()->dirs().size() || i1 == i2) {
           break;
         }
         bout.nl();
@@ -449,12 +444,12 @@ void dlboardedit() {
       }
       break;
     case 'I': {
-      if (a()->directories.size() < a()->config()->max_dirs()) {
+      if (a()->dirs().size() < a()->config()->max_dirs()) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
         auto i = to_number<subconf_t>(s);
-        if (s[0] != 0 && i >= 0 && i <= ssize(a()->directories)) {
+        if (s[0] != 0 && i >= 0 && i <= a()->dirs().size()) {
           insert_dir(i);
           modify_dir(i);
           confchg = 1;
@@ -481,11 +476,11 @@ void dlboardedit() {
       bout << "|#2Delete which dir? ";
       input(s, 4);
       const auto i = to_number<int>(s);
-      if (s[0] != 0 && i >= 0 && i < ssize(a()->directories)) {
+      if (s[0] != 0 && i >= 0 && i < a()->dirs().size()) {
         bout.nl();
-        bout << "|#5Delete " << a()->directories[i].name << "? ";
+        bout << "|#5Delete " << a()->dirs()[i].name << "? ";
         if (yesno()) {
-          std::string fn = a()->directories[i].filename;
+          std::string fn = a()->dirs()[i].filename;
           delete_dir(i);
           confchg = 1;
           bout.nl();
@@ -499,13 +494,7 @@ void dlboardedit() {
     } break;
     }
   } while (!done && !a()->hangup_);
-  DataFile<directoryrec_422_t> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
-      File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
-  if (!dirsFile) {
-    sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";
-  } else {
-    dirsFile.WriteVector(a()->directories);
-  }
+  a()->dirs().Save();
   if (confchg) {
     save_confs(ConferenceType::CONF_DIRS);
   }

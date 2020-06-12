@@ -84,7 +84,7 @@ void move_file() {
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      src_fn = FilePath(a()->directories[a()->current_user_dir().subnum].path, f);
+      src_fn = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
       string ss;
       do {
         bout.nl(2);
@@ -98,7 +98,7 @@ void move_file() {
       while (!a()->hangup_ && ss[0] == '?');
       d1 = -1;
       if (!ss.empty()) {
-        for (size_t i1 = 0; i1 < a()->directories.size() && a()->udir[i1].subnum != -1; i1++) {
+        for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
           if (ss == a()->udir[i1].keys) {
             d1 = i1;
           }
@@ -112,11 +112,11 @@ void move_file() {
           ok = false;
           bout << "\r\nFilename already in use in that directory.\r\n";
         }
-        if (a()->current_file_area()->number_of_files() >= a()->directories[d1].maxfiles) {
+        if (a()->current_file_area()->number_of_files() >= a()->dirs()[d1].maxfiles) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (File::freespace_for_path(a()->directories[d1].path) <
+        if (File::freespace_for_path(a()->dirs()[d1].path) <
             static_cast<long>(f.numbytes() / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
@@ -140,7 +140,7 @@ void move_file() {
       }
 
       dliscan1(d1);
-      auto dest_fn = FilePath(a()->directories[d1].path, f);
+      auto dest_fn = FilePath(a()->dirs()[d1].path, f);
       if (a()->current_file_area()->AddFile(f)) {
         a()->current_file_area()->Save();
       }
@@ -183,10 +183,10 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (size_t i = 0;
-       i < a()->directories.size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed();
+  for (auto i = 0;
+       i < a()->dirs().size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed();
        i++) {
-    bout << "\r\n|#1Sorting " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
+    bout << "\r\n|#1Sorting " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -231,7 +231,7 @@ void rename_file() {
     if (!s.empty()) {
       s = aligns(s);
       if (!iequals(s, "        .   ")) {
-        const std::string p = a()->directories[a()->current_user_dir().subnum].path;
+        const std::string p = a()->dirs()[a()->current_user_dir().subnum].path;
         auto dest_fn = FilePath(p, s);
         if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
@@ -271,14 +271,14 @@ void rename_file() {
           f.set_extended_description(false);
         } else {
           f.set_extended_description(true);
-          modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
+          modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
             area->DeleteExtendedDescription(f, nCurRecNum);
             area->AddExtendedDescription(f, nCurRecNum, ss);
           }
         }
       } else {
-        modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
+        modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
         if (!ss.empty()) {
           area->AddExtendedDescription(f, nCurRecNum, ss);
           f.set_extended_description(true);
@@ -300,7 +300,7 @@ void rename_file() {
 
 static bool upload_file(const std::string& file_name, uint16_t directory_num,
                         const char* description) {
-  auto d = a()->directories[directory_num];
+  auto d = a()->dirs()[directory_num];
   const auto temp_filename = aligns(file_name);
   files::FileRecord f{};
   f.set_filename(temp_filename);
@@ -383,7 +383,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
       if (ch == YesNoString(false)[0]) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          File::Remove(FilePath(a()->directories[directory_num].path, file_name));
+          File::Remove(FilePath(a()->dirs()[directory_num].path, file_name));
           bout.nl();
           return true;
         }
@@ -424,10 +424,8 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
 
   auto file = std::make_unique<TextFile>(file_name, "r");
   if (!file->IsOpen()) {
-    char szDefaultFileName[MAX_PATH];
-    sprintf(szDefaultFileName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path,
-            file_name);
-    file.reset(new TextFile(szDefaultFileName, "r"));
+    const auto default_fn = FilePath(a()->dirs()[a()->udir[directory_num].subnum].path, file_name);
+    file.reset(new TextFile(default_fn, "r"));
   }
   if (!file->IsOpen()) {
     bout << file_name << ": not found.\r\n";
@@ -528,7 +526,7 @@ void upload_files(const char* file_name, uint16_t directory_num, int type) {
 bool uploadall(uint16_t directory_num) {
   const auto actual_num = a()->udir[directory_num].subnum;
   dliscan1(actual_num);
-  const auto& dir = a()->directories[actual_num];
+  const auto& dir = a()->dirs()[actual_num];
 
   const auto path_mask = FilePath(dir.path, "*.*");
   const int maxf = dir.maxfiles;
@@ -578,7 +576,7 @@ void relist() {
         }
         tcd = f.directory;
         auto tcdi = -1;
-        for (size_t i1 = 0; i1 < a()->directories.size(); i1++) {
+        for (auto i1 = 0; i1 < a()->dirs().size(); i1++) {
           if (a()->udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
@@ -586,9 +584,9 @@ void relist() {
         }
         bout.Color(2);
         if (tcdi == -1) {
-          bout << a()->directories[tcd].name << "." << wwiv::endl;
+          bout << a()->dirs()[tcd].name << "." << wwiv::endl;
         } else {
-          bout << a()->directories[tcd].name << " - #" << a()->udir[tcdi].keys << ".\r\n";
+          bout << a()->dirs()[tcd].name << " - #" << a()->udir[tcdi].keys << ".\r\n";
         }
         bout.Color(FRAME_COLOR);
         bout << string(78, '-') << wwiv::endl;
@@ -611,9 +609,9 @@ void relist() {
 
     sprintf(s1, "%u""k", bytes_to_k(f.u.numbytes));
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (!(a()->directories[tcd].mask & mask_cdrom)) {
+      if (!(a()->dirs()[tcd].mask & mask_cdrom)) {
         files::FileName fn(f.u.filename);
-        auto filepath = FilePath(a()->directories[tcd].path, fn);
+        auto filepath = FilePath(a()->dirs()[tcd].path, fn);
         if (!File::Exists(filepath)) {
           strcpy(s1, "N/A");
         }
@@ -735,14 +733,14 @@ static void l_config_nscan() {
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort);
+  for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 && !abort;
        i++) {
     const int i1 = a()->udir[i].subnum;
     std::string s{"  "};
     if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       s = "* ";
     }
-    bout.bpla(fmt::format("{}{}. {}", s, a()->udir[i].keys, a()->directories[i1].name), &abort);
+    bout.bpla(fmt::format("{}{}. {}", s, a()->udir[i].keys, a()->dirs()[i1].name), &abort);
   }
   bout.nl(2);
 }
@@ -803,7 +801,7 @@ static void config_nscan() {
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         auto s = mmkey(MMKeyAreaType::dirs);
         if (s[0]) {
-          for (size_t i = 0; i < a()->directories.size(); i++) {
+          for (auto i = 0; i < a()->dirs().size(); i++) {
             const int i1 = a()->udir[i].subnum;
             if (s == a()->udir[i].keys) {
               a()->context().qsc_n[i1 / 32] ^= 1L << (i1 % 32);
@@ -914,23 +912,22 @@ void finddescription() {
     tmp_disable_conf(false);
     return;
   }
-  auto ocd = a()->current_user_dir_num();
-  bool abort = false;
-  int count = 0;
-  int color = 3;
+  const auto ocd = a()->current_user_dir_num();
+  auto abort = false;
+  auto count = 0;
+  auto color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (auto i = 0;
-       i < wwiv::stl::ssize(a()->directories) && !abort && !a()->hangup_ && (a()->udir[i].subnum != -1);
+  for (auto i = 0; i < a()->dirs().size() && !abort && !a()->hangup_ && (a()->udir[i].subnum != -1);
        i++) {
-    auto ii1 = a()->udir[i].subnum;
+    const auto ii1 = a()->udir[i].subnum;
     int pts;
     auto need_title = true;
     if (a()->context().qsc_n[ii1 / 32] & (1L << (ii1 % 32))) {
       pts = 1;
     }
     pts = 1;
-    // remove pts=1 to search only marked a()->directories
+    // remove pts=1 to search only marked directories
     if (pts && !abort) {
       count++;
       bout << static_cast<char>(3) << color << ".";
@@ -995,7 +992,7 @@ void arc_l() {
     if (nRecordNum > 0) {
       auto f = a()->current_file_area()->ReadFile(nRecordNum);
       int i1 = list_arc_out(f.unaligned_filename(),
-                            a()->directories[a()->current_user_dir().subnum].path);
+                            a()->dirs()[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }

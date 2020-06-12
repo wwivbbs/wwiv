@@ -70,13 +70,13 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   }
   const auto comport = std::to_string(a()->context().incom() ? a()->primary_port() : 0);
   const auto cmdLine =
-      stuff_in(a()->upload_cmd, create_chain_file(), a()->directories[directory_num].path,
+      stuff_in(a()->upload_cmd, create_chain_file(), a()->dirs()[directory_num].path,
                FileName(u->filename).unaligned_filename(), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
-  const auto file = FilePath(a()->directories[directory_num].path, FileName(u->filename));
+  const auto file = FilePath(a()->dirs()[directory_num].path, FileName(u->filename));
   if (!File::Exists(file)) {
-    sysoplog() << "File \"" << u->filename << "\" to " << a()->directories[directory_num].name << " deleted by UL event.";
+    sysoplog() << "File \"" << u->filename << "\" to " << a()->dirs()[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }
@@ -173,18 +173,18 @@ std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::strin
   return {};
 }
 
-int list_arc_out(const std::string& file_name, const char *pszDirectory) {
+int list_arc_out(const std::string& file_name, const std::string& dir) {
   string name_to_delete;
 
-  if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
+  if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
     const auto full_pathname = FilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      const auto name_in_dir = FilePath(pszDirectory, file_name);
+      const auto name_in_dir = FilePath(dir, file_name);
       File::Copy(name_in_dir, full_pathname);
       name_to_delete = full_pathname.string();
     }
   }
-  const auto full_pathname = FilePath(pszDirectory, file_name);
+  const auto full_pathname = FilePath(dir, file_name);
   auto arc_cmd = get_arc_cmd(full_pathname.string(), 0, "");
   if (!okfn(file_name)) {
     arc_cmd.clear();
@@ -236,7 +236,7 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  const std::string basename{a()->directories[directory_num].filename};
+  const std::string basename{a()->dirs()[directory_num].filename};
 
   if (!a()->fileapi()->Exist(basename)) {
     if (!a()->fileapi()->Create(basename)) {
@@ -244,7 +244,7 @@ void dliscan1(int directory_num) {
     }
   }
 
-  auto area = a()->fileapi()->Open(a()->directories[directory_num]);
+  auto area = a()->fileapi()->Open(a()->dirs()[directory_num]);
   this_date = area->header().daten();
   a()->set_current_file_area(std::move(area));
 }
@@ -318,7 +318,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     t.u = *u;
     auto subnum = a()->current_user_dir().subnum;
     t.directory = subnum;
-    t.dir_mask = a()->directories[subnum].mask;
+    t.dir_mask = a()->dirs()[subnum].mask;
     a()->filelist.emplace_back(std::move(t));
     sprintf(s, "\r|#%d%2d|#%d%c",
             a()->batch().contains_file(u->filename) ? 6 : 0,
@@ -338,7 +338,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
-  const auto& dir = a()->directories[a()->udir[a()->current_user_dir_num()].subnum];
+  const auto& dir = a()->dirs()[a()->udir[a()->current_user_dir_num()].subnum];
   if (!(dir.mask & mask_cdrom)) {
     if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
       to_char_array(s1, "N/A");
@@ -382,7 +382,7 @@ void printtitle(bool *abort) {
   checka(abort);
   bout.Color(2);
   bout << "\r"
-    << a()->directories[a()->current_user_dir().subnum].name
+    << a()->dirs()[a()->current_user_dir().subnum].name
     << " - #" << a()->current_user_dir().keys << ", "
     << a()->current_file_area()->number_of_files() << " files."
     << wwiv::endl;
@@ -508,7 +508,7 @@ void nscanall() {
   int count = 0;
   int color = 3;
   bout << "\r|#2Searching ";
-  for (uint16_t i = 0; i < a()->directories.size() && !abort && a()->udir[i].subnum != -1; i++) {
+  for (uint16_t i = 0; i < a()->dirs().size() && !abort && a()->udir[i].subnum != -1; i++) {
     count++;
     bout.Color(color);
     bout << ".";
@@ -554,14 +554,14 @@ void searchall() {
   auto abort = false;
   const auto old_cur_dir = a()->current_user_dir_num();
   bout.nl(2);
-  bout << "Search all a()->directories.\r\n";
+  bout << "Search all directories.\r\n";
   const auto filemask = file_mask();
   bout.nl();
   bout << "|#2Searching ";
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (uint16_t i = 0; i < a()->directories.size() && !abort && !a()->hangup_
+  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->hangup_
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;
@@ -569,7 +569,7 @@ void searchall() {
       bIsDirMarked = true;
     }
     bIsDirMarked = true;
-    // remove bIsDirMarked=true to search only marked a()->directories
+    // remove bIsDirMarked=true to search only marked directories
     if (bIsDirMarked) {
       count++;
       bout.Color(color);
@@ -643,7 +643,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
     bout << "Extended Description: \r\n";
     print_extended(u->filename, &abort, 255, 0);
   }
-  const auto file_name = FilePath(a()->directories[directory_num].path, wwiv::sdk::files::unalign(u->filename));
+  const auto file_name = FilePath(a()->dirs()[directory_num].path, wwiv::sdk::files::unalign(u->filename));
   if (!File::Exists(file_name)) {
     bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
     return -1;

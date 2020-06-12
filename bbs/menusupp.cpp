@@ -744,8 +744,8 @@ void RemoveNotThere() {
 void UploadAllDirs() {
   bout.nl(2);
   bool ok = true;
-  for (uint16_t nDirNum = 0; nDirNum < a()->directories.size() && a()->udir[nDirNum].subnum >= 0 && ok && !a()->hangup_; nDirNum++) {
-    bout << "|#9Now uploading files for: |#2" << a()->directories[a()->udir[nDirNum].subnum].name << wwiv::endl;
+  for (uint16_t nDirNum = 0; nDirNum < a()->dirs().size() && a()->udir[nDirNum].subnum >= 0 && ok && !a()->hangup_; nDirNum++) {
+    bout << "|#9Now uploading files for: |#2" << a()->dirs()[a()->udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
 }
@@ -830,7 +830,7 @@ void UpDirConf() {
 }
 
 void UpDir() {
-  if (a()->current_user_dir_num() < ssize(a()->directories) - 1
+  if (a()->current_user_dir_num() < a()->dirs().size() - 1
       && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
     a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
   } else {
@@ -857,7 +857,7 @@ void DownDir() {
     a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
   } else {
     while (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0 &&
-           a()->current_user_dir_num() < ssize(a()->directories) - 1) {
+           a()->current_user_dir_num() < a()->dirs().size() - 1) {
       a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
     }
   }
@@ -962,7 +962,7 @@ void Upload() {
   printfile(UPLOAD_NOEXT);
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
-    if (a()->config()->new_uploads_dir() < a()->directories.size()) {
+    if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
       upload(static_cast<int>(a()->config()->new_uploads_dir()));
     } else {
       upload(0);
@@ -1016,7 +1016,7 @@ void SetSubNumber(const char *pszSubKeys) {
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (uint16_t i = 0; i < a()->directories.size(); i++) {
+  for (uint16_t i = 0; i < a()->dirs().size(); i++) {
     if (IsEquals(a()->udir[i].keys, pszDirectoryKeys)) {
       a()->set_current_user_dir_num(i);
     }

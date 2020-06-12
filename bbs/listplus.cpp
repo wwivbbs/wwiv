@@ -163,7 +163,7 @@ static void printtitle_plus_old() {
 
   const auto buf =
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-                   a()->directories[a()->current_user_dir().subnum].name,
+                   a()->dirs()[a()->current_user_dir().subnum].name,
                    a()->current_file_area()->number_of_files());
   bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
@@ -185,7 +185,7 @@ void printtitle_plus() {
   } else {
     const auto buf =
         fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-                     a()->directories[a()->current_user_dir().subnum].name,
+                     a()->dirs()[a()->current_user_dir().subnum].name,
                      a()->current_file_area()->number_of_files());
     bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
     bout.Color(0);
@@ -219,7 +219,7 @@ void print_searching(search_record* search_rec) {
   bout << "|#9<Space> aborts  : ";
   bout.cls();
   bout << fmt::sprintf(" |17|15%-40.40s|16|#0\r",
-                       a()->directories[a()->current_user_dir().subnum].name);
+                       a()->dirs()[a()->current_user_dir().subnum].name);
 }
 
 static void catch_divide_by_zero(int signum) {
@@ -348,8 +348,8 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   }
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
-    if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path,
+    if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom)) {
+      auto stf = FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                           files::FileName(u->filename));
       if (lp_config.check_exist) {
         if (!File::Exists(stf.string())) {
@@ -1145,11 +1145,11 @@ static int rename_filename(const std::string& file_name, int dn) {
       new_filename = aligns(new_filename);
       if (new_filename != "        .   ") {
         files::FileName nfn(new_filename);
-        auto new_fn = FilePath(a()->directories[dn].path, nfn);
+        auto new_fn = FilePath(a()->dirs()[dn].path, nfn);
         if (File::Exists(new_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          auto old_fn = FilePath(a()->directories[dn].path, f);
+          auto old_fn = FilePath(a()->dirs()[dn].path, f);
           File::Rename(old_fn, new_fn);
           if (File::Exists(new_fn)) {
             auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
@@ -1184,14 +1184,14 @@ static int rename_filename(const std::string& file_name, int dn) {
           f.set_extended_description(false);
         } else {
           f.set_extended_description(true);
-          modify_extended_description(&ss, a()->directories[dn].name);
+          modify_extended_description(&ss, a()->dirs()[dn].name);
           if (!ss.empty()) {
             area->DeleteExtendedDescription(f, current_file_position);
             area->AddExtendedDescription(f, current_file_position, ss);
           }
         }
       } else {
-        modify_extended_description(&ss, a()->directories[dn].name);
+        modify_extended_description(&ss, a()->dirs()[dn].name);
         if (!ss.empty()) {
           area->AddExtendedDescription(f, current_file_position, ss);
           f.set_extended_description(true);
@@ -1258,7 +1258,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           remove_from_file_database(fn);
         }
         if (rm) {
-          File::Remove(FilePath(a()->directories[dn].path, f));
+          File::Remove(FilePath(a()->dirs()[dn].path, f));
           if (rdlp && f.u().ownersys == 0) {
             User user;
             a()->users()->readuser(&user, f.u().ownerusr);
@@ -1271,7 +1271,7 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->directories[dn].
+        sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->dirs()[dn].
             name;
         if (a()->current_file_area()->DeleteFile(f, i)) {
           a()->current_file_area()->Save();
@@ -1301,7 +1301,7 @@ static int move_filename(const std::string& file_name, int dn) {
   while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
-    auto src_fn = FilePath(a()->directories[dn].path, f);
+    auto src_fn = FilePath(a()->dirs()[dn].path, f);
     bout.nl();
     printfileinfo(&f.u(), dn);
     bout.nl();
@@ -1334,7 +1334,7 @@ static int move_filename(const std::string& file_name, int dn) {
 
         nDestDirNum = -1;
         if (ss[0]) {
-          for (size_t i1 = 0; i1 < a()->directories.size() && (a()->udir[i1].subnum != -1); i1++) {
+          for (auto i1 = 0; i1 < a()->dirs().size() && (a()->udir[i1].subnum != -1); i1++) {
             if (ss == a()->udir[i1].keys) {
               nDestDirNum = i1;
             }
@@ -1361,11 +1361,11 @@ static int move_filename(const std::string& file_name, int dn) {
           bout.nl();
           bout << "Filename already in use in that directory.\r\n";
         }
-        if (a()->current_file_area()->number_of_files() >= a()->directories[nDestDirNum].maxfiles) {
+        if (a()->current_file_area()->number_of_files() >= a()->dirs()[nDestDirNum].maxfiles) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (File::freespace_for_path(a()->directories[nDestDirNum].path) <
+        if (File::freespace_for_path(a()->dirs()[nDestDirNum].path) <
             static_cast<long>(f.u().numbytes / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
@@ -1391,7 +1391,7 @@ static int move_filename(const std::string& file_name, int dn) {
       if (a()->current_file_area()->DeleteFile(f, nRecNum)) {
         a()->current_file_area()->Save();
       }
-      auto dest_fn = FilePath(a()->directories[nDestDirNum].path, f);
+      auto dest_fn = FilePath(a()->dirs()[nDestDirNum].path, f);
       dliscan1(nDestDirNum);
       auto* area = a()->current_file_area();
       if (area->AddFile(f)) {
@@ -1493,7 +1493,7 @@ LP_SEARCH_HELP:
 
     bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
     bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
-    const std::string dir_name = stripcolors(a()->directories[a()->current_user_dir().subnum].name);
+    const std::string dir_name = stripcolors(a()->dirs()[a()->current_user_dir().subnum].name);
     bout << "|#9C)|#2 Which Directories    :|#2 "
          << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
          << wwiv::endl;
@@ -1590,7 +1590,7 @@ void view_file(const std::string& aligned_file_name) {
     if (i > 0) {
       auto f = a()->current_file_area()->ReadFile(i);
       const auto i1 = list_arc_out(stripfn(f.unaligned_filename()),
-                                   a()->directories[a()->current_user_dir().subnum].path);
+                                   a()->dirs()[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }
@@ -1656,20 +1656,20 @@ void download_plus(const std::string& file_name) {
   if (file_name.empty()) {
     return;
   }
-  std::string fn{file_name};
+  auto fn{file_name};
 
   if (strchr(fn.c_str(), '.') == nullptr) {
     fn += ".*";
   }
   fn = aligns(fn);
   if (lp_try_to_download(fn, a()->current_user_dir().subnum) == 0) {
-    bout << "\r\nSearching all a()->directories.\r\n\n";
-    size_t dn = 0;
-    int count = 0;
-    int color = 3;
+    bout << "\r\nSearching all directories.\r\n\n";
+    auto dn = 0;
+    auto count = 0;
+    auto color = 3;
     foundany = 0;
     bout << "\r|#2Searching ";
-    while (dn < a()->directories.size() && a()->udir[dn].subnum != -1) {
+    while (dn < a()->dirs().size() && a()->udir[dn].subnum != -1) {
       count++;
       bout.Color(color);
       bout << ".";
