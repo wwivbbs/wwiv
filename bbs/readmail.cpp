@@ -906,7 +906,8 @@ void readmail(int mode) {
         if (!(m.status & status_source_verified) && nn != 255) {
           ssm(m.fromuser, m.fromsys, &net) << message;
         }
-      } break;
+      } 
+      [[fallthrough]];
       case 'Z':
         if (!okmail) {
           break;
