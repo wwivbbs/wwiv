@@ -18,12 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/log.h"
-
-#include <map>
+#include "core/stl.h"
 #include <string>
 #include <vector>
 
-using std::map;
 using std::string;
 using std::vector;
 
@@ -64,7 +62,7 @@ protected:
 
 TEST_F(LogTest, Smoke) {
   LOG(INFO) << "Hello World!";
-  EXPECT_EQ(1, info->log_lines.size());
+  EXPECT_EQ(1, wwiv::stl::ssize(info->log_lines));
   EXPECT_EQ("2018-01-01 21:12:00,530 INFO  Hello World!", info->log_lines.front());
   EXPECT_TRUE(warning->log_lines.empty());
 }
