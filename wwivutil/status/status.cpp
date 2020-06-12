@@ -90,7 +90,7 @@ public:
         return 2;
       }
       const auto s = remaining().at(1);
-      uint32_t v = std::strtoul(s.c_str(), nullptr, 0);
+      const auto v = to_number<uint32_t>(s);
       if (v <= 0) {
         std::cout << "invalid value: '" << s << "' (" << v << ")" << endl;
         return 1;

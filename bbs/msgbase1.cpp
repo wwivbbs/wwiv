@@ -475,8 +475,8 @@ void ScanMessageTitles() {
     bout << "No subs available.\r\n";
     return;
   }
-  bout << fmt::sprintf("|#2%d |#9messages in area |#2%s\r\n", a()->GetNumMessagesInCurrentMessageArea(),
-               a()->current_sub().name.c_str());
+  bout << fmt::sprintf("|#2%d |#9messages in area |#2%s\r\n",
+                       a()->GetNumMessagesInCurrentMessageArea(), a()->current_sub().name);
   if (a()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }

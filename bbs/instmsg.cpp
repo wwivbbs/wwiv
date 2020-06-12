@@ -174,9 +174,8 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
         return ih->main;
       }
       if (ih->main == INST_MSG_STRING) {
-        const string from_user_name = a()->names()->UserName(ih->from_user);
-        bout << fmt::sprintf("|#1%.12s (%d)|#0> |#2", 
-          from_user_name.c_str(), ih->from_inst);
+        const auto from_user_name = a()->names()->UserName(ih->from_user);
+        bout << fmt::sprintf("|#1%.12s (%d)|#0> |#2", from_user_name, ih->from_inst);
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }

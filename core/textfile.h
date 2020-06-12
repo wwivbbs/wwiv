@@ -168,6 +168,7 @@ public:
 private:
   const std::filesystem::path file_name_;
   mutable FILE* file_;
+  bool open_{false};
   const bool dos_mode_{false};
 };
 

@@ -164,7 +164,7 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::FULL_PATH_NAME: {
           string disallowed =
               (lc == InputMode::FILENAME) ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
-          if (strchr(disallowed.c_str(), chCurrent)) {
+          if (disallowed.find(chCurrent) != std::string::npos) {
             chCurrent = 0;
           } else {
 #ifdef _WIN32

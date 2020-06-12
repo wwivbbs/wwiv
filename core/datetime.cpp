@@ -44,8 +44,8 @@ daten_t date_to_daten(const std::string& datet) {
     return 0;
   }
 
-  time_t t = time_t_now();
-  struct tm* pTm = localtime(&t);
+  auto t = time_t_now();
+  auto pTm = localtime(&t);
   pTm->tm_mon = to_number<int>(datet) - 1;
   pTm->tm_mday = atoi(datet.c_str() + 3);
   // N.B. tm_year is years since 1900

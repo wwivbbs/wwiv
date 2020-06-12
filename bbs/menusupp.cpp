@@ -813,7 +813,7 @@ void UploadFilesBBS() {
     bout.mpl(77);
     const auto filespec = input_text(80);
     const auto type = (ch == '1') ? 2 : 0;
-    upload_files(filespec.c_str(), a()->current_user_dir_num(), type);
+    upload_files(filespec, a()->current_user_dir_num(), type);
   }
 }
 

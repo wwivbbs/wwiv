@@ -90,7 +90,7 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
       _lseek(fd, 0L, SEEK_END);
     }
 
-    const auto hFile = _fdopen(fd, mode.c_str());
+    auto* hFile = _fdopen(fd, mode.c_str());
     if (!hFile) {
       _close(fd);
     }
@@ -121,7 +121,7 @@ static std::string fopen_compatible_mode(const std::string& m) noexcept {
 
 TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode) noexcept
   : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
-    dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {
+    dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr), open_(file_ != nullptr) {
 }
 
 bool TextFile::Close() noexcept {
@@ -130,6 +130,7 @@ bool TextFile::Close() noexcept {
   }
   fclose(file_);
   file_ = nullptr;
+  open_ = false;
   return true;
 }
 

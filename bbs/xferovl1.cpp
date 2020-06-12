@@ -107,14 +107,14 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      bool bEditOK = external_text_edit("extended.dsc", a()->temp_directory(),
-                                        a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
+      const auto edit_ok = external_text_edit("extended.dsc", a()->temp_directory(),
+                                              a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
-      if (bEditOK) {
+      if (edit_ok) {
         TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
-        for (int i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
+        for (auto i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
           if ((*sss)[i3] == 1) {
             (*sss)[i3] = ' ';
           }
@@ -447,14 +447,13 @@ void tag_it() {
 }
 
 static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
-  char s1[81], s2[81], s3[81];
   char ch;
 
   a()->tleft(true);
-  sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
-  sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
-  int i1 = strlen(s2);
-  sprintf(s3, "%s%s", pszAcceptChars, " \r");
+  const auto s1 = fmt::format("\r|#2{} (|#1{}|#2)? |#0", pszPrompt, pszAcceptChars);
+  const auto s2 = fmt::format("{} ({})? ", pszPrompt, pszAcceptChars);
+  const int i1 = ssize(s2);
+  const auto s3 = StrCat(pszAcceptChars," \r");
   a()->tleft(true);
   if (okansi()) {
     bout << s1;
@@ -467,7 +466,7 @@ static char fancy_prompt(const char* pszPrompt, const char* pszAcceptChars) {
   } else {
     bout << s2;
     ch = onek_ncr(s3);
-    for (int i = 0; i < i1; i++) {
+    for (auto i = 0; i < i1; i++) {
       bout.bs();
     }
   }

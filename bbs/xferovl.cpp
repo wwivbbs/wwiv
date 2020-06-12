@@ -299,7 +299,7 @@ void rename_file() {
 }
 
 static bool upload_file(const std::string& file_name, uint16_t directory_num,
-                        const char* description) {
+                        const std::string& description) {
   auto d = a()->dirs()[directory_num];
   const auto temp_filename = aligns(file_name);
   files::FileRecord f{};
@@ -313,7 +313,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
 
     File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
-      if (description && (*description)) {
+      if (!description.empty()) {
         bout << "ERR: " << unaligned_filename << ":" << description << wwiv::endl;
       } else {
         bout << "|#1" << unaligned_filename << " does not exist." << wwiv::endl;
@@ -336,7 +336,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
 
     bout << "|#9File name   : |#2" << f.unaligned_filename() << wwiv::endl;
     bout << "|#9File size   : |#2" << bytes_to_k(f.numbytes()) << wwiv::endl;
-    if (description && *description) {
+    if (!description.empty()) {
       f.set_description(description);
       bout << "|#1 Description: " << f.u().description << wwiv::endl;
     } else {
@@ -368,7 +368,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
   return true;
 }
 
-bool maybe_upload(const std::string& file_name, uint16_t directory_num, const char* description) {
+bool maybe_upload(const std::string& file_name, uint16_t directory_num, const std::string& description) {
   bool abort = false;
   bool ok = true;
   int i = recno(aligns(file_name));
@@ -414,7 +414,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const ch
  * the number of optional words between the filename and description.
  * the optional words (size, date/time) are ignored completely.
  */
-void upload_files(const char* file_name, uint16_t directory_num, int type) {
+void upload_files(const std::string& file_name, uint16_t directory_num, int type) {
   char s[255], *fn1, *description = nullptr, *ext = nullptr;
   bool abort = false;
   bool ok = true;
@@ -538,7 +538,7 @@ bool uploadall(uint16_t directory_num) {
     if (aborted || a()->hangup_ || a()->current_file_area()->number_of_files() >= maxf) {
       break;
     }
-    if (!maybe_upload(f.name, directory_num, nullptr)) {
+    if (!maybe_upload(f.name, directory_num, "")) {
       break;
     }
   }

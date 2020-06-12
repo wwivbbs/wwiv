@@ -86,7 +86,7 @@ static int GetUserNumber(const std::string name, UserManager& um) {
     if (!um.readuser_nocache(&u, i)) {
       continue;
     }
-    if (iequals(name.c_str(), u.GetName())) {
+    if (iequals(name, u.GetName())) {
       return i;
     }
   }

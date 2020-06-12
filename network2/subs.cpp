@@ -165,7 +165,7 @@ static bool send_sub_add_drop_resp(Context& context,
 static bool IsHostedHere(Context& context, const std::string& subtype) {
   for (const auto x : context.subs.subs()) {
     for (const auto n : x.nets) {
-      if (iequals(subtype.c_str(), n.stype.c_str()) 
+      if (iequals(subtype, n.stype) 
           && n.host == 0
           && n.net_num == context.network_number) {
         return true;
