@@ -396,7 +396,7 @@ BinkState BinkP::WaitConn() {
       if (net.type == network_type_t::wwivnet) {
         string lower_case_network_name = net.name;
         StringLowerCase(&lower_case_network_name);
-        send_command_packet(BinkpCommands::M_NUL, fmt::sprintf("WWIV @%u.%s", net.sysnum,
+        send_command_packet(BinkpCommands::M_NUL, fmt::format("WWIV @{}.{}", net.sysnum,
                                                                lower_case_network_name));
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
@@ -432,7 +432,7 @@ BinkState BinkP::WaitConn() {
         network_addresses = address.as_string();
       } catch (const bad_fidonet_address& e) {
         LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
-                     << net.name << "'.";
+                     << net.name << "'." << "; exception: " << e.what();
         // We should terminate here, so rethrow the exception after
         // letting the user know the network name that is borked.
         throw;
@@ -567,7 +567,7 @@ BinkState BinkP::WaitOk() {
 BinkState BinkP::IfSecure() {
   VLOG(1) << "STATE: IfSecure";
   // Wait for OK if we sent a password.
-  // Log an unsecure session of there is no password.
+  // Log an insecure session of there is no password.
   return BinkState::WAIT_OK;
 }
 
@@ -617,13 +617,12 @@ BinkState BinkP::AuthRemote() {
   VLOG(1) << "       expected_ftn: '" << expected_remote_node_ << "'";
   if (remote_.address_list().find(expected_remote_node_) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ? BinkState::IF_SECURE : BinkState::WAIT_PWD;
-  } else {
-    send_command_packet(BinkpCommands::M_ERR,
-                        StrCat("Error (NETWORKB-0001): Unexpected Addresses: '",
-                               remote_.address_list(), "'; expected: '", expected_remote_node_,
-                               "'"));
-    return BinkState::FATAL_ERROR;
   }
+  send_command_packet(
+      BinkpCommands::M_ERR,
+      fmt::format("Error (NETWORKB-0001): Unexpected Addresses: '{}'; expected: '{}'",
+                  remote_.address_list(), expected_remote_node_));
+  return BinkState::FATAL_ERROR;
 }
 
 BinkState BinkP::TransferFiles() {
@@ -635,7 +634,7 @@ BinkState BinkP::TransferFiles() {
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
   const auto list = file_manager_->CreateTransferFileList(remote_);
-  for (auto file : list) {
+  for (auto* file : list) {
     SendFilePacket(file);
   }
 
@@ -666,7 +665,7 @@ BinkState BinkP::TransferFiles() {
 
 BinkState BinkP::Unknown() {
   VLOG(1) << "STATE: Unknown";
-  int count = 0;
+  auto count = 0;
   auto predicate = [&]() -> bool { return count++ > 4; };
   process_frames(predicate, seconds(3));
   return BinkState::DONE;
@@ -674,7 +673,7 @@ BinkState BinkP::Unknown() {
 
 BinkState BinkP::FatalError() {
   LOG(ERROR) << "STATE: FatalError";
-  int count = 0;
+  auto count = 0;
   auto predicate = [&]() -> bool { return count++ > 4; };
   process_frames(predicate, seconds(3));
   return BinkState::DONE;
@@ -688,10 +687,10 @@ BinkState BinkP::WaitEob() {
     return BinkState::DONE;
   }
 
-  const int eob_retries = 12;
-  const int eob_wait_seconds = 5;
+  const auto eob_retries = 12;
+  const auto eob_wait_seconds = 5;
   for (int count = 1; count < eob_retries; count++) {
-    // Loop for up to one minute swaiting for an EOB before exiting.
+    // Loop for up to one minute waiting for an EOB before exiting.
     try {
       process_frames([&]() -> bool { return eob_received_; }, seconds(eob_wait_seconds));
       if (eob_received_) {
@@ -707,7 +706,7 @@ BinkState BinkP::WaitEob() {
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
-  const string filename(file->filename());
+  const auto filename(file->filename());
   LOG(INFO) << "       SendFilePacket: " << filename;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(BinkpCommands::M_FILE, file->as_packet_data(0));
@@ -724,15 +723,15 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 bool BinkP::SendFileData(TransferFile* file) {
   LOG(INFO) << "       SendFileData: " << file->filename();
   const auto file_length = file->file_size();
-  const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
-  auto chunk = std::make_unique<char[]>(chunk_size);
+  const auto chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
+  const auto chunk = std::make_unique<char[]>(chunk_size);
   for (long start = 0; start < file_length; start += chunk_size) {
     const auto size = min<int>(chunk_size, file_length - start);
     if (!file->GetChunk(chunk.get(), start, size)) {
       // Bad chunk. Abort
     }
     send_data_packet(chunk.get(), size);
-    // sending multichunk files was not reliable.  check after each frame if we have
+    // sending multi-chunk files was not reliable.  check after each frame if we have
     // an inbound command.
     process_frames(seconds(1));
   }
@@ -755,7 +754,7 @@ bool BinkP::HandlePassword(const string& password_line) {
                         "CRAM authentication required, no common hash function");
     return false;
   }
-  string hashed_password = password_line.substr(CRAM_MD5_PREFIX.size());
+  const auto hashed_password = password_line.substr(CRAM_MD5_PREFIX.size());
   LOG(INFO) << "        HandlePassword: Received CRAM-MD5 hashed password";
   auth_type_ = AuthType::CRAM_MD5;
   remote_password_ = hashed_password;
@@ -765,7 +764,7 @@ bool BinkP::HandlePassword(const string& password_line) {
 // M_FILE received.
 bool BinkP::HandleFileRequest(const string& request_line) {
   VLOG(1) << "       HandleFileRequest; request_line: " << request_line;
-  ReceiveFile* old_file = current_receive_file_.release();
+  auto* old_file = current_receive_file_.release();
   if (old_file != nullptr) {
     LOG(ERROR) << "** ERROR: Got HandleFileRequest while still having an open receive file!";
   }
@@ -837,8 +836,8 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 
 void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
   VLOG(1) << "STATE: Run(): side:" << static_cast<int>(side_);
-  BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
-  auto start_time = system_clock::now();
+  auto state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
+  const auto start_time = system_clock::now();
   try {
     bool done = false;
     while (!done) {
