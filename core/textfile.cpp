@@ -96,6 +96,7 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
     }
     return hFile;
   }
+  VLOG(1) << "TextFile::OpenImpl; fopen failed on file: '" << name;  
   return nullptr;
 }
 
@@ -105,7 +106,7 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
   if (f != nullptr) {
     flock(fileno(f), (strpbrk(mode.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
   } else {
-    VLOG(1) << "TextFile::OpenImpl; fopen failed; errno: " << errno << std::endl;    
+    VLOG(1) << "TextFile::OpenImpl; fopen failed on file: '" << name << "'; errno: " << errno;
   }
   return f;
 }

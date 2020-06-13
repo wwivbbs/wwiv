@@ -50,7 +50,8 @@ What's New in WWIV 5.5 (2020)
 * dirs.json is now the source of truth for directory data (before, dirs.dat
   was the source of truth.  WWIV will automatically convert dirs.dat into
   dirs.json the first time it encounters dirs.dat without dirs.json.
-
+* Fixed bug where callouts were not happening as expected from wwivd due to 
+  the list of networks not loading sporatically.
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

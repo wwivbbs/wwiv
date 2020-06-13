@@ -154,6 +154,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
 
   StatusMgr sm(config.datadir(), [](int) {});
   auto e = need_to_exit.load();
+  auto last_callout = DateTime::now().to_system_clock();
   while (!e) {
     // Reload the config if we've gotten a HUP?
     if (need_to_reload_config.load()) {
@@ -162,12 +163,16 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
       c.Load(config);
     }
     if (c.do_network_callouts) {
-      one_callout_loop(config, c);
+      auto now = DateTime::now().to_system_clock();
+      if (now - last_callout > 60s) {
+        last_callout = DateTime::now().to_system_clock();
+        one_callout_loop(config, c);
+      }
     }
     if (need_to_exit.load()) {
       return;
     }
-    sleep_for(15s);
+    sleep_for(5s);
     e = need_to_exit.load();
 
     if (c.do_beginday_event) {
