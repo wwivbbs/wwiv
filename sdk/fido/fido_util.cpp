@@ -94,7 +94,7 @@ std::string dow_extension(int dow_num, int bundle_number) {
 
 bool is_bundle_file(const std::string& name) {
   static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa"};
-  auto dot = name.find_last_of('.');
+  const auto dot = name.find_last_of('.');
   if (dot == string::npos) {
     return false;
   }
@@ -108,7 +108,7 @@ bool is_bundle_file(const std::string& name) {
 }
 
 bool is_packet_file(const std::string& name) {
-  auto dot = name.find_last_of('.');
+  const auto dot = name.find_last_of('.');
   if (dot == string::npos) {
     return false;
   }

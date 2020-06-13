@@ -154,6 +154,7 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, bad_packets_dir);
   SERIALIZE(n, origin_line);
   SERIALIZE(n, packet_config);
+  SERIALIZE(n, process_tic);
 }
 
 // This has to be in the cereal or default to match net_networks_rec which

@@ -227,6 +227,7 @@ public:
       };
       items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
                                                          &n->packet_config.netmail_status));
+      items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic));
 
       window->GotoXY(x_, y_);
       const int ch = window->GetChar();
@@ -252,7 +253,9 @@ public:
         dy = dy_start_;
         items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
                           new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
-                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:")});
+                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:"),
+                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :")
+        });
         items.Run(title_);
         window->RedrawWin();
         return EditlineResult::NEXT;

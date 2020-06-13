@@ -72,10 +72,8 @@ public:
   typedef std::function<TransferFile*(
       const std::string& network_name, const std::string& filename)>
       received_transfer_file_factory_t;
-  BinkP(wwiv::core::Connection* conn,
-        BinkConfig* config,
-	      BinkSide side, 
-	      const std::string& expected_remote_node,
+  BinkP(wwiv::core::Connection* conn, BinkConfig* config, BinkSide side,
+        const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
   virtual ~BinkP();
 

@@ -101,13 +101,13 @@ static int System(const string& cmd) {
   return system(cmd.c_str());
 }
 
-static bool checkup2(const time_t tFileTime, string dir, string filename) {
+static bool checkup2(const time_t tFileTime, const string& dir, const string& filename) {
   const auto fn = FilePath(dir, filename);
   File file(fn);
 
   if (file.Open(File::modeReadOnly)) {
     const auto tNewFileTime = File::last_write_time(fn);
-    return tNewFileTime > (tFileTime + 2);
+    return tNewFileTime > tFileTime + 2;
   }
   return true;
 }
@@ -134,7 +134,7 @@ static bool need_network3(const string& dir, int network_version) {
     return false;
   }
 
-  time_t bbsdata_time = bbsdataNet.last_write_time();
+  const time_t bbsdata_time = bbsdataNet.last_write_time();
   bbsdataNet.Close();
 
   return checkup2(bbsdata_time, dir, BBSLIST_NET) || checkup2(bbsdata_time, dir, CONNECT_NET) ||
@@ -147,10 +147,10 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    auto status = sm.GetStatus();
+    const auto status = sm.GetStatus();
 
-    int num_tries = 0;
-    bool found = false;
+    auto num_tries = 0;
+    bool found;
     do {
       found = false;
       if (process_instance > 0) {
@@ -168,12 +168,15 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
       // If the network type is a FTN network.
       if (net.type == network_type_t::ftn) {
-        wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+        FtnDirectories dirs(net_cmdline.config().root_directory(), net);
         // Import everything into local.net
         if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
           VLOG(2) << "Trying to FTN import";
           System(create_network_cmdline(net_cmdline, 'f', "import"));
         }
+
+        // Check to see if TIC files exist.
+
 
         if (exists_bundle(net_cmdline.config(), net)) {
           VLOG(2) << "Trying to FTN export";
@@ -218,7 +221,7 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
 
-  NetworkCommandLine net_cmdline(cmdline, 'c');
+  const NetworkCommandLine net_cmdline(cmdline, 'c');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;

@@ -901,7 +901,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     LOG(ERROR) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
 
-  auto end_time = system_clock::now();
+  const auto end_time = system_clock::now();
   if (remote_.network().type == network_type_t::wwivnet) {
     // Handle WWIVnet inbound files.
     if (file_manager_) {
@@ -923,7 +923,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
 
     // Update contact.net
     Contact c(config_->network(remote_.network_name()), true);
-    auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
+    const auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
     if (error_received_) {
       c.add_failure(remote_.wwivnet_node(), dt);
     } else {

@@ -435,6 +435,8 @@ struct fido_network_config_t {
   std::string bad_packets_dir;
   // Default Origin line to use for this network.
   std::string origin_line;
+  // Process TIC files/
+  bool process_tic{false};
 };
 
 enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news };

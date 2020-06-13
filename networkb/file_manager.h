@@ -39,17 +39,17 @@ class FileManager {
 public:
   explicit FileManager(const std::string& root_directory, const net_networks_rec& net)
       : net_(net), dirs_(root_directory, net) {}
-  virtual ~FileManager() {}
+  virtual ~FileManager() = default;
 
-  std::vector<TransferFile*> CreateTransferFileList(const Remote& remote) const;
+  [[nodiscard]] std::vector<TransferFile*> CreateTransferFileList(const Remote& remote) const;
   void ReceiveFile(const std::string& filename);
-  const std::vector<std::string>& received_files() const { return received_files_; }
+  [[nodiscard]] const std::vector<std::string>& received_files() const { return received_files_; }
   void rename_wwivnet_pending_files();
   void rename_ftn_pending_files();
 
 private:
-  std::vector<TransferFile*> CreateWWIVnetTransferFileList(int destination_node) const;
-  std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
+  [[nodiscard]] std::vector<TransferFile*> CreateWWIVnetTransferFileList(int destination_node) const;
+  [[nodiscard]] std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
 
   const net_networks_rec net_;
   const wwiv::sdk::fido::FtnDirectories dirs_;
