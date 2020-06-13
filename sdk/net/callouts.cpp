@@ -83,7 +83,7 @@ bool should_call(const NetworkContact& ncn, const network_callout_config_t& call
 
   const auto now = dt.to_system_clock();
   if (ncn.bytes_waiting() == 0L && !callout.call_every_x_minutes) {
-    VLOG(2) << "Skipping: No bytes waiting and !call anyway";
+    VLOG(2) << "Skipping: No bytes waiting and !call_every_x_minutes";
     return false;
   }
   const auto min_minutes = std::max<int>(callout.call_every_x_minutes, 1);

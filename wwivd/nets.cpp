@@ -110,12 +110,15 @@ static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_con
   for (const auto& kv : callout.callout_config()) {
     auto* const ncn = contact.contact_rec_for(kv.first);
     if (ncn == nullptr) {
+      VLOG(2) << "ncn == nullptr for node @" << kv.first;
       continue;
     }
     if (!allowed_to_call(kv.second, DateTime::now())) {
+      VLOG(2) << "!allowed_to_call: #" << kv.second.sysnum;
       continue;
     }
     if (!should_call(*ncn, kv.second, DateTime::now())) {
+      VLOG(2) << "!should_call: #" << kv.second.sysnum;
       continue;
     }
     // Call it.

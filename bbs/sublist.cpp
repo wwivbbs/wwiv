@@ -275,7 +275,7 @@ void SubList() {
         }
         bout.bputs(sdf, &abort, &next);
         bout.nl();
-        size_t lastp = i1++;
+        auto lastp = i1++;
         if (bout.lines_listed() >= a()->screenlinest - 2) {
           p = 1;
           bout.clear_lines_listed();
