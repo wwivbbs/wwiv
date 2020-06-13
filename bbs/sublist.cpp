@@ -127,6 +127,44 @@ void old_sublist() {
   }
 }
 
+/**
+ * Gets the count of new posts in subnum.
+ *
+ * Starts at the end and will search backwards from the midpoint before starting
+ * from the front.  This assumes most people have read most of the messages, and
+ * will prioritize performance for those people. Afterwards will start at the
+ * start and search forward.
+ *
+ * If we need to optimize more ever, we can use a binary search if needed or just
+ * load all of the postrecs and search in memory.
+ */
+int get_new_posts_count(int subnum) {
+  const auto num = a()->GetNumMessagesInCurrentMessageArea();
+  const auto q = a()->context().qsc_p[subnum];
+  if (num == 0) {
+    return 0;
+  }
+  const int midpoint = num / 2;
+  int msgIndex = num;
+  int64_t last_qscan = 0;
+  while(msgIndex > midpoint) {
+    const auto cur = get_post(msgIndex)->qscan;
+    if (cur <= q) {
+      last_qscan = cur;
+      ++msgIndex;
+      break;
+    }
+    --msgIndex;
+  }
+  if (last_qscan < static_cast<int64_t>(q)) {
+    msgIndex = 1;
+    while (msgIndex <= a()->GetNumMessagesInCurrentMessageArea() &&
+           get_post(msgIndex)->qscan <= a()->context().qsc_p[subnum]) {
+      ++msgIndex;
+    }
+  }
+  return a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
+}
 
 void SubList() {
   int p,
@@ -220,25 +258,20 @@ void SubList() {
         } else {
           net_info = "|#7>|#1LOCAL|#7<  ";
         }
-        int msgIndex = 1;
-        while ((msgIndex <= a()->GetNumMessagesInCurrentMessageArea()) &&
-               (get_post(msgIndex)->qscan <= a()->context().qsc_p[a()->usub[i1].subnum])) {
-          ++msgIndex;
-        }
-        int newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
+        const auto num_new_posts = get_new_posts_count(a()->usub[i1].subnum);
         std::string sdf;
         if (a()->current_user_sub().subnum == a()->usub[i1].subnum) {
           sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 "
                              "|#9%5d |#9\xB3 |#%c%5u |#9",
                              i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
-                             a()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3',
-                             newTally);
+                             a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
+                             num_new_posts);
         } else {
           sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 "
                              "|#9%5d |#9\xB3 |#%c%5u |#9",
                              i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
-                             a()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3',
-                             newTally);
+                             a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
+                             num_new_posts);
         }
         bout.bputs(sdf, &abort, &next);
         bout.nl();
