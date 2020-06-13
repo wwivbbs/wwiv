@@ -46,6 +46,8 @@
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/dirs.h"
+
 #include <sstream>
 #include <string>
 #include <vector>

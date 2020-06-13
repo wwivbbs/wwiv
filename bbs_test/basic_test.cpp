@@ -26,6 +26,7 @@
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "fmt/format.h"
+#include "sdk/files/dirs.h"
 
 #include <iostream>
 #include <string>

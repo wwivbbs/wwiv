@@ -48,6 +48,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
+#include "sdk/files/dirs.h"
 #include "sdk/files/files.h"
 #include <algorithm>
 #include <csignal>

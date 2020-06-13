@@ -29,6 +29,7 @@
 #include "core/datetime.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
+#include "sdk/files/dirs.h"
 
 using std::string;
 using std::to_string;

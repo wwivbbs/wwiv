@@ -874,8 +874,13 @@ int Application::Run(int argc, char* argv[]) {
     AbortBBS(true);
   }
 
+  const auto sysop_cmd = cmdline.sarg("sysop_cmd");
+  if (!sysop_cmd.empty()) {
+    // HACK for now, pass arg into InitializeBBS
+    user_already_on_ = true;
+  }
   CreateComm(hSockOrComm, type);
-  InitializeBBS();
+  InitializeBBS(!user_already_on_ && sysop_cmd.empty());
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
 
   auto remote_opened = true;
@@ -904,7 +909,6 @@ int Application::Run(int argc, char* argv[]) {
     }
     ExitBBSImpl(oklevel_, true);
   }
-  const auto sysop_cmd = cmdline.sarg("sysop_cmd");
   if (!sysop_cmd.empty()) {
     LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
     remoteIO()->remote_info().clear();
@@ -1067,6 +1071,10 @@ Batch& Application::batch() { return batch_; }
 
 const wwiv::sdk::subboard_t& Application::current_sub() const {
   return subs().sub(GetCurrentReadMessageArea());
+}
+
+const wwiv::sdk::files::directory_t& Application::current_dir() const {
+ return dirs()[current_user_dir().subnum];
 }
 
 wwiv::sdk::Subs& Application::subs() { return *subs_; }

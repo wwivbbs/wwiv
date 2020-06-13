@@ -34,6 +34,8 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
+#include "sdk/files/dirs.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <string>

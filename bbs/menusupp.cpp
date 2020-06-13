@@ -82,7 +82,7 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include <iomanip>
+#include "sdk/files/dirs.h"
 #include <memory>
 #include <string>
 
@@ -99,7 +99,7 @@ using namespace wwiv::strings;
 void UnQScan() {
   bout.nl();
   bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
-  char ch = onek("QAC\r");
+  const char ch = onek("QAC\r");
   switch (ch) {
   case 'Q':
   case RETURN:
@@ -175,8 +175,8 @@ void UpSub() {
 void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
-  string userName = input_upper(30);
-  int nUserNum = finduser1(userName);
+  const string userName = input_upper(30);
+  const int nUserNum = finduser1(userName);
   if (nUserNum > 0) {
     sysoplog() << "@ Validated user #" << nUserNum;
     valuser(nUserNum);
@@ -263,7 +263,7 @@ void LastCallers() {
   } else {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
   }
-  char filler_char = okansi() ? '\xCD' : '=';
+  const char filler_char = okansi() ? '\xCD' : '=';
   bout << "|#7" << string(79, filler_char) << wwiv::endl;
   printfile(LASTON_TXT);
 }
@@ -288,8 +288,6 @@ void NewMessageScan() {
 }
 
 void GoodBye() {
-  int cycle;
-  int ch;
 
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
@@ -303,11 +301,11 @@ void GoodBye() {
     filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
   if (File::Exists(filename)) {
-    cycle = 0;
+    int cycle = 0;
     do {
       bout.cls();
       printfile(filename.string());
-      ch = onek("QFTO", true);
+      int ch = onek("QFTO", true);
       switch (ch) {
       case 'Q':
         cycle = 1;
@@ -349,8 +347,8 @@ void GoodBye() {
     if (yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       bout.cls();
-      auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
-      auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
+      const auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
+      const auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
       bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
       {
         TempDisablePause disable_pause;
@@ -427,7 +425,7 @@ void WWIVVersion() {
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
   if (!a()->net_networks.empty()) {
-    auto status = a()->status_manager()->GetStatus();
+    const auto status = a()->status_manager()->GetStatus();
     a()->status_manager()->RefreshStatusCache();
     //bout << wwiv::endl;
     bout << "|#9Networks      : |#2" << "net" << status->GetNetworkVersion() << wwiv::endl;
@@ -462,9 +460,9 @@ void ChainEdit() {
 
 void ToggleChat() {
   bout.nl(2);
-  bool bOldAvail = sysop2();
+  const bool bOldAvail = sysop2();
   ToggleScrollLockKey();
-  bool bNewAvail = sysop2();
+  const bool bNewAvail = sysop2();
   if (bOldAvail != bNewAvail) {
     bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
     sysoplog() << "@ Changed sysop available status";
@@ -488,7 +486,7 @@ void DirEdit() {
 void LoadTextFile() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  auto fileName = input_path("", 50);
+  const auto fileName = input_path("", 50);
   if (!fileName.empty()) {
     bout.nl();
     bout << "|#5Allow editing? ";
@@ -506,7 +504,7 @@ void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   bout.nl();
   bout << "|#7Enter Filespec: ";
-  auto fn = input_path(50);
+  const auto fn = input_path(50);
   if (!fn.empty()) {
     external_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
   }
@@ -546,7 +544,7 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  auto status = a()->status_manager()->GetStatus();
+  const auto status = a()->status_manager()->GetStatus();
   bout.nl();
   bout << "Qscanptr        : " << status->GetQScanPointer() << wwiv::endl;
 }
@@ -586,7 +584,7 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  auto status = a()->status_manager()->GetStatus();
+  const auto status = a()->status_manager()->GetStatus();
   print_local_file(status->GetLogFileName(1));
 }
 
@@ -1009,14 +1007,14 @@ bool GuestCheck() {
 
 void SetSubNumber(const char *pszSubKeys) {
   for (uint16_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
-    if (wwiv::strings::IsEquals(a()->usub[i].keys, pszSubKeys)) {
+    if (IsEquals(a()->usub[i].keys, pszSubKeys)) {
       a()->set_current_user_sub_num(i);
     }
   }
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (uint16_t i = 0; i < a()->dirs().size(); i++) {
+  for (auto i = 0; i < ssize(a()->dirs()); i++) {
     if (IsEquals(a()->udir[i].keys, pszDirectoryKeys)) {
       a()->set_current_user_dir_num(i);
     }

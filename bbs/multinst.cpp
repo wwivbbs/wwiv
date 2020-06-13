@@ -32,6 +32,7 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/subxtr.h"
+#include "sdk/files/dirs.h"
 
 using std::string;
 using namespace wwiv::core;

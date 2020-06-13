@@ -25,6 +25,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "sdk/subxtr.h"
+#include "sdk/files/dirs.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

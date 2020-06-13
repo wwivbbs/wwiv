@@ -25,7 +25,6 @@
 #include "bbs/output.h"
 #include "bbs/runnable.h"
 #include "sdk/vardec.h"
-#include "sdk/files/dirs.h"
 
 #include <chrono>
 #include <filesystem>
@@ -74,8 +73,10 @@ class User;
 class UserManager;
 
 namespace files {
+class Dirs;
 class FileApi;
 class FileArea;
+struct directory_t;
 } // namespace wwiv::sdk::files
 
 namespace msgapi {
@@ -198,7 +199,7 @@ public:
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
-  [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const { return dirs()[current_user_dir().subnum]; }
+  [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;
 
   [[nodiscard]] const net_networks_rec& current_net() const;
 
@@ -321,7 +322,7 @@ public:
 
   void ExitBBSImpl(int exit_level, bool perform_shutdown);
 
-  void InitializeBBS();                       // old init() method
+  void InitializeBBS(bool cleanup_network); // old init() method
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
   bool ReadConfig();

@@ -36,6 +36,7 @@
 #include "fmt/printf.h"
 #include "sdk/usermanager.h"
 #include "sdk/user.h"
+#include "sdk/files/dirs.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -69,8 +70,8 @@ static std::string dirdata(int n) {
       }
     }
   }
-  return fmt::sprintf("|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s", n, x,
-                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, tail(r.path, 9));
+  return fmt::sprintf("|#2%4d |#9%1c   |#1%-29.29s |#2%-8s |#9%-3d %-3d %-3d %s", n, x,
+                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, tail(r.path, 19));
 }
 
 static void showdirs() {
@@ -78,8 +79,8 @@ static void showdirs() {
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
   const auto pattern = input_text(20);
   bool abort = false;
-  bout.bpla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
-  bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
+  bout.bpla("|#2##   DAR Area Description              FileName DSL AGE FIL PATH", &abort);
+  bout.bpla("|#7==== --- ============================= -------- === --- === -------------------", &abort);
   for (auto i = 0; i < a()->dirs().size() && !abort; i++) {
     auto text = StrCat(a()->dirs()[i].name, " ", a()->dirs()[i].filename);
     if (ifind_first(text, pattern)) {
@@ -116,7 +117,7 @@ void modify_dir(int n) {
     bout << "|#9O) WWIV Reg     : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
     bout << "|#9T) FTN Area Tag : |#2" << r.area_tag << wwiv::endl;
     bout.nl();
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[T#7,|#1[|#7,|#1]|#7) : ";
     const auto ch = onek("QABCDEFGHJKLMNOT[]", true);
     switch (ch) {
     case 'Q':
@@ -272,13 +273,13 @@ void swap_dirs(int dir1, int dir2) {
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
 
-  int nNumUserRecords = a()->users()->num_user_records();
+  const int num_user_records = a()->users()->num_user_records();
 
-  auto pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
+  auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
   if (pTempQScan) {
-    for (int i = 1; i <= nNumUserRecords; i++) {
+    for (auto i = 1; i <= num_user_records; i++) {
       read_qscn(i, pTempQScan, true);
-      auto pTempQScan_n = pTempQScan + 1;
+      auto* pTempQScan_n = pTempQScan + 1;
 
       int i1 = 0;
       if (pTempQScan_n[dir1 / 32] & (1L << (dir1 % 32))) {
@@ -328,7 +329,7 @@ void insert_dir(int n) {
 
   auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
   if (pTempQScan) {
-    uint32_t* pTempQScan_n = pTempQScan + 1;
+    auto* pTempQScan_n = pTempQScan + 1;
 
     const uint32_t m1 = 1L << (n % 32);
     const uint32_t m2 = 0xffffffff << ((n % 32) + 1);

@@ -565,7 +565,7 @@ void Application::read_gfile() {
   }
 }
 
-void Application::InitializeBBS() {
+void Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
             << wwiv_version << beta_version << ", Copyright (c) 1998-2020, WWIV Software Services."
@@ -697,17 +697,15 @@ void Application::InitializeBBS() {
   }
 
   frequent_init();
-  if (!user_already_on_) {
-    TempDisablePause disable_pause;
-    remove_from_temp("*.*", temp_directory(), false);
-    remove_from_temp("*.*", batch_directory(), false);
-    cleanup_net();
-  }
-
   VLOG(1) << "Reading Conferences.";
   read_all_conferences();
 
-  if (!user_already_on_) {
+  TempDisablePause disable_pause;
+  remove_from_temp("*.*", temp_directory(), false);
+  remove_from_temp("*.*", batch_directory(), false);
+
+  if (cleanup_network) {
+    cleanup_net();
     sysoplog(false) << "";
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
