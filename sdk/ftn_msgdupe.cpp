@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <ctime>
 #include <string>
+#include <utility>
 #include <vector>
 
 using std::string;
@@ -41,8 +42,8 @@ namespace wwiv::sdk {
 
 FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir(), true) {}
 
-FtnMessageDupe::FtnMessageDupe(const std::string& datadir, bool use_filesystem)
-    : datadir_(datadir), use_filesystem_(use_filesystem) {
+FtnMessageDupe::FtnMessageDupe(std::string datadir, bool use_filesystem)
+    : datadir_(std::move(datadir)), use_filesystem_(use_filesystem) {
   if (!datadir_.empty()) {
     initialized_ = Load();
   } else {
@@ -61,7 +62,7 @@ bool FtnMessageDupe::Load() {
     return false;
   }
 
-  const int num_records = file.number_of_records();
+  const auto num_records = file.number_of_records();
   if (num_records == 0) {
     // nothing to read.
     return true;
@@ -216,9 +217,8 @@ bool FtnMessageDupe::remove(uint32_t header_crc32, uint32_t msgid_crc32) {
       header_dupes_.erase(header_crc32);
       msgid_dupes_.erase(msgid_crc32);
       return Save();
-    } else {
-      ++it;
     }
+    ++it;
   }
   return false;
 }

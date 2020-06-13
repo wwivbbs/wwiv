@@ -22,7 +22,6 @@
 #include <set>
 #include <vector>
 #include "sdk/config.h"
-#include "sdk/vardec.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_packets.h"
 
@@ -39,7 +38,7 @@ namespace sdk {
 class FtnMessageDupe {
 public:
   explicit FtnMessageDupe(const Config& config);
-  FtnMessageDupe(const std::string& datadir, bool use_filesystem);
+  FtnMessageDupe(std::string datadir, bool use_filesystem);
   virtual ~FtnMessageDupe() = default;
 
   bool IsInitialized() const { return initialized_; }

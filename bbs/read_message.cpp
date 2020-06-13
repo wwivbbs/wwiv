@@ -324,9 +324,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     if (line.empty()) {
       continue;
     }
-    if (starts_with(line, "\004"
-                          "0FidoAddr: ") &&
-        line.size() > 12) {
+    if (starts_with(line, "\004" "0FidoAddr: ") && line.size() > 12) {
       auto cl = line.substr(12);
       if (!cl.empty()) {
         data.to_user_name = cl;
@@ -493,7 +491,7 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   return lines;
 }
 
-static std::vector<std::string> split_wwiv_message(const std::string& orig_text) {
+static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {
   auto text(orig_text);
   const auto cz_pos = text.find(CZ);
   if (cz_pos != string::npos) {
@@ -511,8 +509,12 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
       if (line.front() == CD) {
         const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
         if (level == 0) {
-          // ^D0 lines are always skipped.
-          continue;
+          // ^D0 lines are always skipped unless explicitly requested.
+          if (controlcodes) {
+            line = StrCat("@", line.substr(2));
+          } else {
+            continue;
+          }
         } else {
           line = line.substr(2);
         }
@@ -590,7 +592,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   bout.cls();
   auto fs = display_type2_message_header(msg);
 
-  const auto lines = split_wwiv_message(msg.message_text);
+  const auto controlcodes = a()->user()->HasStatusFlag(User::msg_show_controlcodes);
+  const auto lines = split_wwiv_message(msg.message_text, controlcodes);
 
   fs.DrawTopBar();
   fs.DrawBottomBar("");
@@ -711,7 +714,11 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           result.option = ReadMessageOption::JUMP_TO_MSG;
         } else if (key == 'T') {
           result.option = ReadMessageOption::LIST_TITLES;
+        } else if (key == 'K') {
+          result.option = ReadMessageOption::NONE;
+          a()->user()->ToggleStatusFlag(User::msg_show_controlcodes);
         } else if (key == '?') {
+          result.option = ReadMessageOption::NONE;
           fs.ClearMessageArea();
           if (!print_help_file(MBFSED_NOEXT)) {
             fs.ClearCommandLine();
@@ -756,9 +763,9 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
-  auto fsreader_enabled =
+  const auto fsreader_enabled =
       a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
-  auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
+  const auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub && !msg.email) {
     // N.B.: We don't use the full screen reader for email yet since
     // It does not work.  Need to figure out how to rearrange email

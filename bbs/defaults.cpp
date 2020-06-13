@@ -166,6 +166,7 @@ static void print_cur_stat() {
       ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
   bout << fmt::format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
   bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
+  bout << fmt::format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->HasStatusFlag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
@@ -744,14 +745,14 @@ void defaults(bool& need_menu_reload) {
     char ch;
     if (okansi()) {
       bout << "|#9Defaults: ";
-      string allowable = "Q?123456789ABCIKLMSTUW";
+      string allowable = "Q?123456789ABCDIKLMSTUW";
       if (a()->fullscreen_read_prompt()) {
         allowable.push_back('G');
       }
       ch = onek(allowable, true);
     } else {
       bout << "|#9Defaults: ";
-      ch = onek("Q?1234567BCIKLMTUW", true);
+      ch = onek("Q?1234567BCDIKLMTUW", true);
     }
     switch (ch) {
     case 'Q':
@@ -796,6 +797,9 @@ void defaults(bool& need_menu_reload) {
     case 'C':
       a()->user()->ToggleStatusFlag(User::conference);
       changedsl();
+      break;
+    case 'D':
+      a()->user()->ToggleStatusFlag(User::msg_show_controlcodes);
       break;
     case 'G':
       a()->user()->ToggleStatusFlag(User::fullScreenReader);

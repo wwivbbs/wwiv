@@ -93,7 +93,7 @@ class User {
   static constexpr int nscanFileSystem            = 0x00000080;
   static constexpr int extraColor                 = 0x00000100;
   static constexpr int clearScreen                = 0x00000200;
-  static constexpr int upperASCII                 = 0x00000400;
+  static constexpr int msg_show_controlcodes      = 0x00000400;
   static constexpr int unused_noTag               = 0x00000800;
   static constexpr int conference                 = 0x00001000;
   static constexpr int noChat                     = 0x00002000;
