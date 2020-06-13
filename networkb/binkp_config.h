@@ -29,12 +29,12 @@
 namespace wwiv {
 namespace net {
 
-class BinkConfig {
+class BinkConfig final {
 public:
   BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config,
              const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
-  virtual ~BinkConfig();
+  ~BinkConfig();
   // Gets the binkp_session_config_t or nullptr if one can not be found.
   const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
   // Gets the binkp_session_config_t or nullptr if one can not be found.

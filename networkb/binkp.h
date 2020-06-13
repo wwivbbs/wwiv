@@ -18,23 +18,19 @@
 #ifndef __INCLUDED_NETWORKB_BINKP_H__
 #define __INCLUDED_NETWORKB_BINKP_H__
 
+#include "core/command_line.h"
+#include "core/connection.h"
+#include "networkb/cram.h"
+#include "networkb/file_manager.h"
+#include "networkb/receive_file.h"
+#include "networkb/remote.h"
+#include "sdk/callout.h"
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
-
-#include "core/command_line.h"
-#include "core/connection.h"
-#include "sdk/callout.h"
-#include "networkb/cram.h"
-#include "networkb/file_manager.h"
-#include "networkb/remote.h"
-#include "net_core/net_cmdline.h"
-#include "networkb/receive_file.h"
 
 namespace wwiv {
 namespace net {
@@ -90,7 +86,7 @@ private:
   bool process_frames(std::chrono::duration<double> d);
   // Process frames until predicate is satisfied (returns true) or we time out waiting
   // for a new frame.
-  bool process_frames(std::function<bool()> predicate, std::chrono::duration<double> d);
+  bool process_frames(const std::function<bool()>& predicate, std::chrono::duration<double> d);
  
   bool process_opt(const std::string& opt);
   bool process_command(int16_t length, std::chrono::duration<double> d);

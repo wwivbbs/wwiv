@@ -23,8 +23,7 @@
 using std::map;
 using std::string;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 const int BinkpCommands::M_NUL;
 const int BinkpCommands::M_ADR;
@@ -57,5 +56,4 @@ string BinkpCommands::command_id_to_name(int command_id) {
 }
 
 
-}  // namespace net
 } // namespace wwiv

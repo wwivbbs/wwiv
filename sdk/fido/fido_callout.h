@@ -39,27 +39,27 @@ public:
   // [[ VisibleForTesting ]]
   virtual ~FidoCallout();
 
-  bool IsInitialized() const { return initialized_; }
+  [[nodiscard]] bool IsInitialized() const { return initialized_; }
 
-  fido_node_config_t fido_node_config_for(const FidoAddress& a) const;
-  fido_packet_config_t packet_config_for(const FidoAddress& a) const;
-  fido_packet_config_t packet_override_for(const FidoAddress& a) const;
+  [[nodiscard]] fido_node_config_t fido_node_config_for(const FidoAddress& a) const;
+  [[nodiscard]] fido_packet_config_t packet_config_for(const FidoAddress& a) const;
+  [[nodiscard]] fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 
   // wwiv::sdk::Callout implementation
-  const net_call_out_rec* net_call_out_for(int node) const override;
-  const net_call_out_rec* net_call_out_for(const FidoAddress& node) const;
-  const net_call_out_rec* net_call_out_for(const std::string& node) const;
+  [[nodiscard]] const net_call_out_rec* net_call_out_for(int node) const override;
+  [[nodiscard]] const net_call_out_rec* net_call_out_for(const FidoAddress& node) const;
+  [[nodiscard]] const net_call_out_rec* net_call_out_for(const std::string& node) const override;
 
   bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);
-  bool Load();
-  bool Save();
-  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_map() const {
+  [[nodiscard]]bool Load();
+  [[nodiscard]]bool Save() override;
+  [[nodiscard]] std::map<FidoAddress, fido_node_config_t> node_configs_map() const {
     return node_configs_;
   }
 
 private:
-  bool initialized_ = false;
+  bool initialized_{false};
   const std::string root_dir_;
   net_networks_rec net_;
   std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_;

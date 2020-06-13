@@ -15,9 +15,6 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-
-// WWIV BINKP Network Stack. (networkb.exe)
-
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -41,10 +38,10 @@
 #include "sdk/status.h"
 #include "sdk/fido/fido_callout.h"
 #include <chrono>
+#include <csignal>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <signal.h>
 #include <string>
 #include <vector>
 
@@ -81,10 +78,10 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 }
 
 static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int port) {
-  BinkSide side = BinkSide::ANSWERING;
-  bool loop = false;
-  SOCKET sock = INVALID_SOCKET;
-  bool socket_connected = false;
+  auto side = BinkSide::ANSWERING;
+  auto loop = false;
+  auto sock = INVALID_SOCKET;
+  auto socket_connected = false;
   if (cmdline.iarg("handle")) {
     sock = static_cast<SOCKET>(cmdline.iarg("handle"));
     LOG(INFO) << "BinkP receive; existing socket; handle: " << sock;
@@ -94,7 +91,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
     loop = cmdline.barg("daemon");
   }
 
-  do {
+  do {  // NOLINT(bugprone-infinite-loop)
     try {
       string ip;
       if (wwiv::core::GetRemotePeerAddress(sock, ip)) {
@@ -155,7 +152,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
       contact.add_failure(sendto_node, dt);
     }
 
-    throw e;
+    throw;
   }
 
   const net_networks_rec net = bink_config.networks()[network_name];
@@ -169,7 +166,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   } else if (net.type == network_type_t::ftn) {
     sendto_ftn_node = sendto_node;
   } else {
-    throw wwiv::net::config_error("BinkP only supports wwivnet or ftn networks.");
+    throw config_error("BinkP only supports wwivnet or ftn networks.");
   }
   BinkP binkp(c.get(), &bink_config, BinkSide::ORIGINATING, sendto_ftn_node, factory);
   binkp.Run(cmdline);
@@ -180,11 +177,11 @@ static int Main(const NetworkCommandLine& net_cmdline) {
   try {
     [[maybe_unused]] static bool initialized = wwiv::core::InitializeSockets();
 
-    const int port = net_cmdline.cmdline().iarg("port");
-    const bool skip_net = net_cmdline.skip_net();
+    const auto port = net_cmdline.cmdline().iarg("port");
+    const auto skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    auto status = sm.GetStatus();
+    const auto status = sm.GetStatus();
 
     const auto& network_name = net_cmdline.network_name();
 
@@ -198,11 +195,11 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     for (const auto& n : bink_config.networks().networks()) {
       const auto lower_case_network_name = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
-        bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
+        bink_config.callouts()[lower_case_network_name] = std::make_unique<Callout>(n);
       } else if (n.type == network_type_t::ftn) {
         LOG(INFO) << "Adding FidoCallout for " << n.name;
         bink_config.callouts()[lower_case_network_name] =
-            std::unique_ptr<Callout>(new FidoCallout(net_cmdline.config(), n));
+            std::make_unique<FidoCallout>(net_cmdline.config(), n);
       }
     }
 
@@ -231,7 +228,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
-  wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+  ScopeExit at_exit(Logger::ExitLogger);
 
 #ifdef __unix__
   // Let the socket library handle EPIPE
@@ -240,7 +237,7 @@ int main(int argc, char** argv) {
 
   CommandLine cmdline(argc, argv, "net");
   RegisterNetworkBCommands(cmdline);
-  NetworkCommandLine net_cmdline(cmdline, 'b');
+  const NetworkCommandLine net_cmdline(cmdline, 'b');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;

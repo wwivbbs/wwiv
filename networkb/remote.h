@@ -18,40 +18,32 @@
 #ifndef __INCLUDED_NETWORKB_REMOTE_USER_H__
 #define __INCLUDED_NETWORKB_REMOTE_USER_H__
 
-#include <chrono>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "networkb/binkp_config.h"
-#include "networkb/transfer_file.h"
+#include <cstdint>
+#include <string>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
   
 class Remote {
 public:
   Remote(BinkConfig* config, bool caller, const std::string& expected_remote_node);
-  virtual ~Remote() {}
+  virtual ~Remote() = default;
 
   void set_system_name(const std::string& s) { system_name_ = s; }
   void set_sysop_name(const std::string& s) { sysop_name_ = s; }
   void set_version(const std::string& v) { version_ = v; }
   void set_address_list(const std::string& a);
-  const std::string address_list() const { return address_list_; }
-  const std::string network_name() const;
-  const net_networks_rec& network() const;
+  [[nodiscard]] std::string address_list() const { return address_list_; }
+  [[nodiscard]] const std::string network_name() const;
+  [[nodiscard]] const net_networks_rec& network() const;
 
-  int wwivnet_node() const { return wwivnet_node_; }
-  std::string ftn_address() const { return ftn_address_; }
+  [[nodiscard]] int wwivnet_node() const { return wwivnet_node_; }
+  [[nodiscard]] std::string ftn_address() const { return ftn_address_; }
 
 private:
   BinkConfig* config_;
   const std::string default_network_name_;
+  bool is_caller_;
   const std::string expected_remote_node_;
 
   std::string system_name_;
@@ -61,7 +53,6 @@ private:
   uint16_t wwivnet_node_;
   std::string network_name_;
   std::string address_list_;
-  bool is_caller_;
 };
 
 std::string ftn_address_from_address_list(const std::string& network_list, const std::string& network_name);
@@ -77,8 +68,6 @@ std::string ftn_address_from_address_list(const std::string& address_list, const
 // (such as "20000:20000/1@wwivnet")
 std::string network_name_from_single_address(const std::string& address_list);
 
-
-}  // namespace net
-}  // namespace wwiv
+}  // namespace wwiv::net
 
 #endif  // __INCLUDED_NETWORKB_REMOTE_USER_H__

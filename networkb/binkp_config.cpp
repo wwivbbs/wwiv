@@ -17,15 +17,14 @@
 /**************************************************************************/
 #include "networkb/binkp_config.h"
 
-
-#include "config_exceptions.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "networkb/config_exceptions.h"
+#include "sdk/networks.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/networks.h"
 #include <map>
 #include <memory>
 #include <string>

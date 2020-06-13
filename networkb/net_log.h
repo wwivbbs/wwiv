@@ -44,7 +44,7 @@ enum class NetworkSide { FROM, TO };
 
 class NetworkLog {
  public:
-  explicit NetworkLog(const std::string& gfiles_directory);
+  explicit NetworkLog(std::string gfiles_directory);
   virtual ~NetworkLog();
 
   bool Log(
@@ -58,7 +58,7 @@ class NetworkLog {
    std::string CreateLogLine(
      time_t time, NetworkSide side, int node,
      int bytes_sent, int bytes_received,
-     std::chrono::seconds seconds_elapsed, const std::string& network_name);
+     std::chrono::seconds seconds_elapsed, const std::string& network_name) const;
    
 private:
   std::string gfiles_directory_;

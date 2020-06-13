@@ -34,23 +34,23 @@ class Callout {
   // VisibleForTesting
   Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
-  virtual const net_call_out_rec* net_call_out_for(int node) const;
-  virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
+  [[nodiscard]]virtual const net_call_out_rec* net_call_out_for(int node) const;
+  [[nodiscard]]virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
   Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
 
-  bool insert(uint16_t node, const net_call_out_rec& c);
+  [[nodiscard]]bool insert(uint16_t node, const net_call_out_rec& c);
   bool erase(uint16_t node);
-  bool Save();
+  virtual bool Save();
 
-  const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
-  std::string ToString() const;
+  [[nodiscard]]const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
+  [[nodiscard]]std::string ToString() const;
 
  private:
   net_networks_rec net_;
   std::map<uint16_t, net_call_out_rec> node_config_;
 };
 
-bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
+[[nodiscard]] bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
 std::string WriteCalloutNetLine(const net_call_out_rec& con);
 std::string CalloutOptionsToString(uint16_t options);
 

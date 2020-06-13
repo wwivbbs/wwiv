@@ -18,18 +18,13 @@
 /**************************************************************************/
 #include "networkb/remote.h"
 
-#include <cstring>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include "core/file.h"
-#include "core/md5.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "networkb/binkp_config.h"
 #include "sdk/fido/fido_address.h"
+#include <string>
 
 using std::string;
 using std::vector;
@@ -38,12 +33,11 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 std::string ftn_address_from_address_list(const string& network_list, const string& network_name) {
   VLOG(1) << "       ftn_address_from_address_list: '" << network_list << "'; network_name: " << network_name;
-  vector<string> v = SplitString(network_list, " ");
+  auto v = SplitString(network_list, " ");
   string first;
   for (auto s : v) {
     StringTrim(&s);
@@ -72,12 +66,12 @@ std::string ftn_address_from_address_list(const string& network_list, const stri
 // are in answering mode, where a single address is presented) or the empty
 // string if no address is present.
 string network_name_from_single_address(const string& network_list) {
-  vector<string> v = SplitString(network_list, " ");
+  auto v = SplitString(network_list, " ");
   if (v.empty()) {
     return "";
   }
-  auto s = v.front();
-  auto index = s.find_last_of("@");
+  const auto s = v.front();
+  const auto index = s.find_last_of("@");
   if (index == string::npos) {
     return {};
   }
@@ -145,7 +139,4 @@ const net_networks_rec& Remote::network() const {
   return config_->network(network_name());
 }
 
-
-
-}
 }

@@ -133,7 +133,7 @@ public:
   void operator&(std::ostream&) noexcept {
   }
 
-  template <class T> NullLogger& operator<<(const T& msg) noexcept { return *this; }
+  template <class T> NullLogger& operator<<(const T&) noexcept { return *this; }
   NullLogger& operator<<(ENDL_TYPE*) noexcept { return *this; }
 };
 

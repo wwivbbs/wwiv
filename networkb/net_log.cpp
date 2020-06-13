@@ -29,6 +29,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 using std::endl;
 using std::map;
@@ -42,13 +43,14 @@ using namespace wwiv::sdk;
 
 namespace wwiv::net {
 
-NetworkLog::NetworkLog(const std::string& gfiles_directory) : gfiles_directory_(gfiles_directory) {}
+NetworkLog::NetworkLog(std::string gfiles_directory)
+    : gfiles_directory_(std::move(gfiles_directory)) {}
 NetworkLog::~NetworkLog() = default;
 
 std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int node,
                                       int bytes_sent, int bytes_received,
                                       std::chrono::seconds seconds_elapsed,
-                                      const std::string& network_name) {
+                                      const std::string& network_name) const {
 
   // Format: 01/03/15 20:26:23 To     1, S: 419k, R: 223k,           0.1 min  wwivnet
   // sprintf(s2, "S:%4ldk, R:%4ldk,", sent, recd);
@@ -88,7 +90,7 @@ bool NetworkLog::Log(time_t time, NetworkSide side, int node, unsigned int bytes
                      unsigned int bytes_received, std::chrono::seconds seconds_elapsed,
                      const std::string& network_name) {
 
-  string log_line =
+  const auto log_line =
       CreateLogLine(time, side, node, bytes_sent, bytes_received, seconds_elapsed, network_name);
 
   // Opening for "w" should truncate the existing file.
@@ -99,7 +101,7 @@ bool NetworkLog::Log(time_t time, NetworkSide side, int node, unsigned int bytes
 }
 
 std::string NetworkLog::ToString() const {
-  return wwiv::core::FilePath(gfiles_directory_, "net.log").string();
+  return FilePath(gfiles_directory_, "net.log").string();
 }
 
 } // namespace wwiv

@@ -15,21 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
 #ifndef __INCLUDED_NETWORKB_PPP_CONFIG_H__
 #define __INCLUDED_NETWORKB_PPP_CONFIG_H__
 
-#include <cstdint>
-#include <exception>
-#include <map>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
-#include "core/inifile.h"
-#include "networkb/config_exceptions.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
+#include <cstdint>
+#include <map>
+#include <string>
 
 namespace wwiv {
 namespace net {
@@ -44,16 +37,15 @@ class PPPConfig {
   // For Testing
   PPPConfig(int node_number, std::string system_name, const std::string& network_dir);
   virtual ~PPPConfig();
-  const PPPNodeConfig* ppp_node_config_for(int node) const;
+  [[nodiscard]] const PPPNodeConfig* ppp_node_config_for(int node) const;
 
-  int callout_node_number() const { return node_; }
-  const std::string& system_name() const { return system_name_; }
-  const std::string& callout_network_name() const { return callout_network_name_; }
+  [[nodiscard]] int callout_node_number() const { return node_; }
+  [[nodiscard]] const std::string& system_name() const { return system_name_; }
+  [[nodiscard]] const std::string& callout_network_name() const { return callout_network_name_; }
 
  private:
   std::map<int, PPPNodeConfig> node_config_;
   std::string home_dir_;
-
   int node_;
   std::string system_name_;
   std::string callout_network_name_;

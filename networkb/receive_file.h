@@ -30,12 +30,12 @@ namespace wwiv {
 namespace net {
 
 class ReceiveFile {
- public:
- 	ReceiveFile(TransferFile* file, std::string filename, 
-              long expected_length, time_t timestamp, uint32_t crc)
-      : file_(file), filename_(std::move(filename)), expected_length_(expected_length), 
+public:
+  ReceiveFile(TransferFile* file, std::string filename, long expected_length, time_t timestamp,
+              uint32_t crc)
+      : file_(file), filename_(std::move(filename)), expected_length_(expected_length),
         timestamp_(timestamp), length_(0), crc_(crc) {}
- 	~ReceiveFile() = default;
+  ~ReceiveFile() = default;
 
   bool WriteChunk(const char* chunk, int size) {
     const auto ok = file_->WriteChunk(chunk, size);
@@ -58,7 +58,7 @@ class ReceiveFile {
   [[nodiscard]] long expected_length() const { return expected_length_; }
   [[nodiscard]] long length() const { return length_; }
   [[nodiscard]] time_t timestamp() const { return timestamp_; }
-  bool Close() { return file_->Close(); }
+  [[nodiscard]] bool Close() { return file_->Close(); }
   [[nodiscard]] uint32_t crc() const { return crc_; }
 
   std::unique_ptr<TransferFile> file_;
@@ -69,7 +69,7 @@ class ReceiveFile {
   uint32_t crc_{0};
 };
 
-}  // namespace net
+} // namespace net
 } // namespace wwiv
 
-#endif  // __INCLUDED_NETORKB_RECEIVE_FILE_H__
+#endif // __INCLUDED_NETORKB_RECEIVE_FILE_H__

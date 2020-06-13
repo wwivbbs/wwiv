@@ -21,6 +21,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
+#include "networkb/config_exceptions.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include <map>
