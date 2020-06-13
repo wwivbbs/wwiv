@@ -31,7 +31,7 @@ public:
   CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                int begin_y = -1, int begin_x = -1);
   CursesWindow(const CursesWindow& copy) = delete;
-  virtual ~CursesWindow();
+  ~CursesWindow();
 
   void SetTitle(const std::string& title) override;
 
@@ -40,19 +40,19 @@ public:
   int TouchWin() override;
   int Refresh() override;
   int Move(int y, int x) override;
-  int GetcurX() const override;
-  int GetcurY() const override;
+  [[nodiscard]] int GetcurX() const override;
+  [[nodiscard]] int GetcurY() const override;
   int Clear() override;
   int Erase() override;
   int AttrSet(uint32_t attrs) override;
   int Keypad(bool b) override;
-  int GetMaxX() const override;
-  int GetMaxY() const override;
+  [[nodiscard]] int GetMaxX() const override;
+  [[nodiscard]] int GetMaxY() const override;
   int ClrtoEol() override;
   int AttrGet(uint32_t* a, short* c) const override;
   int Box(uint32_t vert_ch, uint32_t horiz_ch) override;
 
-  int GetChar() const override;
+  [[nodiscard]] int GetChar() const override;
   void GotoXY(int x, int y) override;
   void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
@@ -60,10 +60,10 @@ public:
 
   void SetColor(SchemeId id) override;
 
-  std::any window() const;
-  CursesWindow* parent() const;
+  [[nodiscard]] std::any window() const;
+  [[nodiscard]] CursesWindow* parent() const override;
 
-  bool IsGUI() const override;
+  [[nodiscard]] bool IsGUI() const override;
 
 private:
   std::any window_;

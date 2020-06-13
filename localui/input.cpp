@@ -80,6 +80,9 @@ static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfi
     }
     const auto ch = static_cast<char>(std::toupper(key));
     if (keys.find(ch) != std::string::npos) {
+      if (ch == '\x1b') {
+        return config.quit;
+      }
       return ch;
     }
   }

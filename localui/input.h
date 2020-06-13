@@ -506,10 +506,16 @@ public:
       : EditItem<char*>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
+  FilePathItem() = delete;
+  FilePathItem(FilePathItem&&) = delete;
+  FilePathItem& operator=(const FilePathItem&) = delete;
+  FilePathItem& operator=(FilePathItem&&) = delete;
   virtual ~FilePathItem() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
+    const auto p= wwiv::core::File::FixPathSeparators(this->data_);
+    strcpy(this->data_, p.c_str());
     const auto return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
 

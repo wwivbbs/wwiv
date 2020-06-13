@@ -19,7 +19,6 @@
 #ifndef __INCLUDED_PLATFORM_CURSES_IO_H__
 #define __INCLUDED_PLATFORM_CURSES_IO_H__
 
-#include <map>
 #include <memory>
 #include "curses_win.h"
 #include "colors.h"

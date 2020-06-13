@@ -32,7 +32,7 @@ using namespace wwiv::strings;
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                            int begin_y, int begin_x)
     : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme) {
-  WINDOW* window = nullptr;
+  WINDOW* window;
   if (parent != nullptr) {
     if (ncols > parent->GetMaxX()) {
       ncols = parent->GetMaxX();
@@ -66,12 +66,16 @@ CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int 
 }
 
 CursesWindow::~CursesWindow() {
-  auto* w = std::any_cast<WINDOW*>(window_);
-  delwin(w);
-  if (parent_) {
-    parent_->RedrawWin();
-    parent_->Refresh();
-    doupdate();
+  try {
+    auto* w = std::any_cast<WINDOW*>(window_);
+    delwin(w);
+    if (parent_) {
+      parent_->RedrawWin();
+      parent_->Refresh();
+      doupdate();
+    }
+  } catch (...) {
+    // NOP
   }
 }
 
@@ -84,7 +88,7 @@ CursesWindow* CursesWindow::parent() const { return parent_; }
 bool CursesWindow::IsGUI() const { return true; }
 
 void CursesWindow::SetTitle(const std::string& title) {
-  auto saved_scheme(this->current_scheme_id());
+  const auto saved_scheme(this->current_scheme_id());
   SetColor(SchemeId::WINDOW_TITLE);
   const auto max_title_size = GetMaxX() - 6;
   auto working_title = fmt::format(" {} ", title);

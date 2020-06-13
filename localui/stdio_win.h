@@ -21,7 +21,6 @@
 
 #include "localui/colors.h"
 #include "localui/ui_win.h"
-#include <map>
 #include <string>
 
 #ifdef INSERT // defined in wconstants.h
@@ -33,22 +32,25 @@ class StdioWindow : public UIWindow {
 public:
   // Constructor/Destructor
   StdioWindow(UIWindow* parent, ColorScheme* color_scheme) : UIWindow(parent, color_scheme) {}
-  StdioWindow(const UIWindow& copy) = delete;
-  virtual ~StdioWindow() {}
+  StdioWindow(const UIWindow&) = delete;
+  StdioWindow() = delete;
+  StdioWindow(UIWindow&&) = delete;
 
-  virtual void GotoXY(int, int) {}
+  virtual ~StdioWindow() = default;
+
+  void GotoXY(int, int) override {}
 
   // Still used by some curses code
 
-  virtual int GetChar() const;
-  virtual void Putch(uint32_t ch);
-  virtual void Puts(const std::string& text);
-  virtual void PutsXY(int x, int y, const std::string& text);
+  [[nodiscard]] int GetChar() const override;
+  void Putch(uint32_t ch) override;
+  void Puts(const std::string& text) override;
+  void PutsXY(int x, int y, const std::string& text) override;
 
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */
-  virtual bool IsGUI() const { return false; }
+  [[nodiscard]] bool IsGUI() const override { return false; }
 };
 
 #endif // __INCLUDED_LOCALUI_STDIO_WIN_H__
