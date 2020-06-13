@@ -305,10 +305,10 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
 static bool import_packets(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout,
                            const net_networks_rec& net, const std::string& dir,
                            const std::string& mask, bool skip_delete) {
-  VLOG(1) << "Importing packets from: " << dir;
+  VLOG(1) << "Importing packets from: " << dir << "' mask: '" << mask << "'";
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   if (files.empty()) {
-    LOG(INFO) << "No packets to import in: " << dir;
+    LOG(INFO) << "No packets to import in: '" << dir << "' mask: '" << mask << "'";
   }
   for (const auto& f : files) {
     if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
@@ -471,7 +471,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   }
 
   FidoAddress orig(net.fido.fido_address);
-  for (int i = 0; i < 35; i++) {
+  for (auto i = 0; i < 35; i++) {
     auto bname = bundle_name(orig, route_to, dow, i);
     if (File::Exists(FilePath(dirs.outbound_dir(), bname))) {
       VLOG(1) << "Skipping candidate bundle: " << FilePath(dirs.outbound_dir(), bname);
@@ -565,7 +565,7 @@ static bool iter_starts_with(const C& c, I& iter, const string& expected) {
     if (*iter != ch) {
       return false;
     }
-    iter++;
+    ++iter;
   }
   return true;
 }
@@ -584,7 +584,7 @@ static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_ad
   header.dest_node = dest.node();
   header.dest_point = dest.point();
 
-  auto tm = now.to_tm();
+  const auto tm = now.to_tm();
   header.year = static_cast<uint16_t>(tm.tm_year);
   header.month = static_cast<uint16_t>(tm.tm_mon);
   header.day = static_cast<uint16_t>(tm.tm_mday);
@@ -651,8 +651,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       return false;
     }
 
-    bool is_email = (wwivnet_packet.nh.main_type == main_type_email ||
-                     wwivnet_packet.nh.main_type == main_type_email_name);
+    auto is_email = wwivnet_packet.nh.main_type == main_type_email ||
+                    wwivnet_packet.nh.main_type == main_type_email_name;
     const auto raw_text = wwivnet_packet.text();
     auto iter = raw_text.cbegin();
 
@@ -699,7 +699,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     FtnMessageDupe dupe(config);
     auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(raw_text);
-    bool needs_msgid = false;
+    auto needs_msgid = false;
     if (msgid.empty()) {
       // Create a new MSGID if the BBS didn't put one in there already.
       msgid = dupe.CreateMessageID(from_address);

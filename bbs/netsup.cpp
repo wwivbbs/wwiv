@@ -67,9 +67,14 @@ constexpr int MAX_CONNECTS = 1000;
 std::chrono::steady_clock::time_point last_time_c_;
 
 /** Returns a full path to exe under the WWIV_DIR */
-static string CreateNetworkBinary(const std::string exe) {
+static string CreateNetworkBinary(const std::string& exe) {
   std::ostringstream ss;
   ss << FilePath(a()->bindir(), exe).string();
+#ifdef _WIN32
+  // CreateProcess is failing on Windows with the .exe extension, and since
+  // we don't use MakeAbsCmd on this, it's without .exe.
+  ss << ".exe";
+#endif  // _WIN32
   ss << " --v=" << a()->verbose();
   ss << " --bbsdir=" << a()->bbsdir();
   ss << " --bindir=" << a()->bindir();
@@ -377,10 +382,10 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     return;
   }
 
-  char* pszOriginalText = messageText;
+  auto* pszOriginalText = messageText;
   messageText += strlen(pszOriginalText) + 1;
   auto ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
-  auto ss = strchr(messageText, '\r');
+  auto* ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
     nm[ss - messageText] = 0;
@@ -499,8 +504,6 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
   }
 }
 
-// begin callout additions
-
 static std::string to_difftime_string(daten_t now, daten_t then) {
   if (then == 0) {
     return fmt::format("{:<16}", "NEVER");
@@ -523,14 +526,14 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   if (!ncn) {
     return;
   }
-  auto csne = next_system(sn);
+  auto* csne = next_system(sn);
   if (!csne) {
     return;
   }
 
   if (!got_color) {
     got_color = 1;
-    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+    IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
@@ -557,7 +560,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   const auto ncns = fmt::format("{:<16}", ncn->numcontacts());
   a()->localIO()->PutsXYA(23, 15, color,  ncns);
   a()->localIO()->PutsXYA(41, 3, color, fmt::format("{:<30}", csne->name, 30));
-  auto binkp_node = binkp.binkp_session_config_for(csne->sysnum);
+  auto* binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   string hostname = csne->phone;
   auto speed = StrCat(to_string(csne->speed), " BPS");
   if (binkp_node != nullptr) {
@@ -602,7 +605,7 @@ static std::pair<int, int> ansicallout() {
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+    IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       callout_ansi = ini.value<bool>("CALLOUT_ANSI");
@@ -672,7 +675,7 @@ static std::pair<int, int> ansicallout() {
   a()->localIO()->PutsXYA(6, 5, color2, fmt::sprintf("%-5u", entries[pos].node));
   print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
 
-  bool done = false;
+  auto done = false;
   do {
     char ch = to_upper_case_char(a()->localIO()->GetChar());
     switch (ch) {

@@ -286,9 +286,28 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   return true;
 }
 
+
+// last_error as a std::string.
+static std::string ErrorAsString(DWORD last_error) {
+  LPSTR messageBuffer{nullptr};
+  const auto size = FormatMessageA(
+      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+      nullptr, 
+    last_error, 
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+    reinterpret_cast<LPSTR>(&messageBuffer), 
+    0, 
+    nullptr);
+
+  std::string message{messageBuffer, size};
+
+  // Free the buffer.
+  LocalFree(messageBuffer);
+  return fmt::format("({}): {}", last_error, message);
+}
 //  Main code that launches external programs and handle sbbsexec support
 
-int exec_cmdline(const string commandLine, int flags) {
+int exec_cmdline(const string& commandLine, int flags) {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
 
@@ -364,7 +383,7 @@ int exec_cmdline(const string commandLine, int flags) {
     SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
     ::Sleep(250);
   }
-
+   
   const auto current_directory = File::current_directory().string();
 
   // Need a non-const string for the commandline
@@ -376,7 +395,10 @@ int exec_cmdline(const string commandLine, int flags) {
                     current_directory.c_str(), &si, &pi);
 
   if (!bRetCP) {
-    sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
+    const auto error_code = ::GetLastError();
+    const auto error_message = ErrorAsString(error_code);
+    LOG(ERROR) << "CreateProcessFailed: error: " << error_message;
+    sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Message: " << error_message;
 
     // If we return here, we may have to reopen the communications port.
     if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {

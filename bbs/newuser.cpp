@@ -652,7 +652,7 @@ bool CanCreateNewUserAccountHere() {
 }
 
 bool UseMinimalNewUserInfo() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     return ini.value<bool>("NEWUSER_MIN");
@@ -746,7 +746,7 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
-  IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
+  IniFile ini(FilePath(a()->bbspath(), WWIV_INI),
               {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     return;

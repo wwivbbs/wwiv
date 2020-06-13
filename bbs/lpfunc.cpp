@@ -61,7 +61,7 @@ static void drawfile(int filepos, int filenum) {
 
 static void undrawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
-  bout.PutsXY(4, filepos + first_file_pos(), fmt::format("|{:02<%02d%3d|#0", lp_config.file_num_color, filenum));
+  bout.PutsXYSC(4, filepos + first_file_pos(), lp_config.file_num_color, fmt::format("{:>3}|#0", filenum));
 }
 
 static void prep_menu_items(vector<string>* menu_items) {
@@ -91,9 +91,9 @@ static void load_listing() {
   a()->user()->data.lp_options |= cfl_fname;
   a()->user()->data.lp_options |= cfl_description;
 
-  for (int i = 0; i < 32; i++) {
-    if (a()->user()->data.lp_colors[i] == 0) {
-      a()->user()->data.lp_colors[i] = 7;
+  for (auto& lp_color : a()->user()->data.lp_colors) {
+    if (lp_color == 0) {
+      lp_color = 7;
     }
   }
 }
@@ -576,42 +576,36 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
   }
 
   // the above test was passed if it got here
-  if (sr->search[0]) {
-    int desc_len = 0, fname_len = 0, ext_len = 0;
-
-    // we want to search the filename, description and ext description
-    // as one unit, that way, if you specify something like 'one & two
-    // and one is located in the description and two is in the
-    // extended description, then it will properly find the search
-    string buff;
-    if (sr->search_extended && ur->mask & mask_extended) {
-      buff = a()->current_file_area()->ReadExtendedDescriptionAsString(ur->filename).value_or("");
-    }
-
-    desc_len = strlen(ur->description);
-
-    if (!buff.empty()) {
-      ext_len = buff.size();
-    } else {
-      // Something had something.
-      return 0;
-    }
-    fname_len = strlen(ur->filename);
-
-    // tag the file name and description on to the end of the extended
-    // description (if there is one)
-    buff += StrCat(" ", ur->filename, " ", ur->description);
-
-    if (lp_compare_strings(buff.c_str(), sr->search.c_str())) {
-      return 1;
-    }
-
-    return 0;                               // if we get here, we failed search test, so exit with 0 */
-
+  if (!sr->search[0]) {
+    // this is return 1 because top two tests were passed
+    // and we are not searching on text, so it is assume to
+    // have passed the test
+    return 1;                                 
   }
-  return 1;                                 // this is return 1 becuase top two tests were passed */
-  // and we are not searching on text, so it is assume to
-  // have passed the test
+  // we want to search the filename, description and ext description
+  // as one unit, that way, if you specify something like 'one & two
+  // and one is located in the description and two is in the
+  // extended description, then it will properly find the search
+  string buff;
+  if (sr->search_extended && ur->mask & mask_extended) {
+    buff = a()->current_file_area()->ReadExtendedDescriptionAsString(ur->filename).value_or("");
+  }
+
+  if (buff.empty()) {
+    // Something had something.
+    return 0;
+  }
+
+  // tag the file name and description on to the end of the extended
+  // description (if there is one)
+  buff += StrCat(" ", ur->filename, " ", ur->description);
+
+  if (lp_compare_strings(buff.c_str(), sr->search.c_str())) {
+    return 1;
+  }
+
+  // failed search test, so exit with 0
+  return 0;
 }
 
 bool lp_compare_strings(const char *raw, const char *formula) {
@@ -659,7 +653,7 @@ int lp_get_token(const char *formula, unsigned *pos) {
   }
 
   if (isalpha(formula[*pos])) {
-    // remove isspace to delemit on a by word basis
+    // remove isspace to split by word basis
     while (isalnum(formula[*pos]) || isspace(formula[*pos])) {
       ++tpos;
       ++*pos;
@@ -739,9 +733,8 @@ OPERATOR_CHECK_1:
 
   if (ifind_first(raw, szBuffer)) {
     return (sign ? 1 : 0);
-  } else {
-    return (sign ? 0 : 1);
   }
+  return (sign ? 0 : 1);
 }
 
 

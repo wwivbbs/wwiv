@@ -209,7 +209,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   return -1;
 }
 
-int exec_cmdline(const std::string cmdline, int flags) {
+int exec_cmdline(const std::string& cmdline, int flags) {
   if (flags & EFLAG_FOSSIL) {
     LOG(ERROR) << "EFLAG_FOSSIL is not supported on UNIX";
   }

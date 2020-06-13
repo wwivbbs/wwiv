@@ -16,15 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <iostream>
-#include <string>
-
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
-
-#include "bbs/utility.h"
 #include "bbs/make_abs_cmd.h"
 #include "core/strings.h"
+#include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -36,11 +33,11 @@ using namespace wwiv::core;
 
 class MakeAbsTest : public ::testing::Test {
 protected:
-  virtual void SetUp() {
+  void SetUp() override {
     helper.SetUp();
-    root = helper.app_->bbsdir().string();
+    root = helper.app_->bbsdir();
   }
-  BbsHelper helper;
+  BbsHelper helper{};
   string root;
 };
 

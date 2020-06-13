@@ -702,7 +702,8 @@ void Application::GotCaller(int ms) {
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Application::CdHome() { File::set_current_directory(bbs_dir_); }
 
-std::filesystem::path Application::bbsdir() const noexcept { return bbs_dir_string_; }
+std::filesystem::path Application::bbspath() const noexcept { return bbs_dir_; }
+std::string Application::bbsdir() const noexcept { return bbs_dir_string_; }
 std::string Application::bindir() const noexcept { return bindir_; }
 std::string Application::configdir() const noexcept { return configdir_; }
 std::string Application::logdir() const noexcept { return logdir_; }

@@ -62,7 +62,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
     }
   }
 
-  make_abs_cmd(a()->bbsdir().string(), &editorCommand);
+  make_abs_cmd(a()->bbsdir(), &editorCommand);
 
   auto strippedFileName{stripfn(edit_filename)};
   ScopeExit on_exit;

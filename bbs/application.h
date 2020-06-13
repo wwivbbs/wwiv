@@ -239,7 +239,8 @@ public:
   [[nodiscard]] const std::string& qwk_directory() const { return batch_directory_; }
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
-  [[nodiscard]] std::filesystem::path bbsdir() const noexcept;
+  [[nodiscard]] std::filesystem::path bbspath() const noexcept;
+  [[nodiscard]] std::string bbsdir() const noexcept;
   [[nodiscard]] std::string bindir() const noexcept;
   [[nodiscard]] std::string configdir() const noexcept;
   [[nodiscard]] std::string logdir() const noexcept;

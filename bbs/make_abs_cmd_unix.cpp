@@ -34,7 +34,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
   if (out->find("/") == std::string::npos) {
 	// Use current path of we don't have an abs path.
     std::string s(*out);
-    File f(FilePath(a()->bbsdir(), s));
+    File f(FilePath(a()->bbspath(), s));
     *out = f.full_pathname();
   }
 }

@@ -165,7 +165,7 @@ std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::strin
 
       if (!cmd.empty()) {
         auto out = stuff_in(cmd, arc_fn, ofn, "", "", "");
-        make_abs_cmd(a()->bbsdir().string(), &out);
+        make_abs_cmd(a()->bbsdir(), &out);
         return out;
       }
     }
