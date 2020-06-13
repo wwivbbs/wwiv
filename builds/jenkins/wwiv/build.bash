@@ -48,7 +48,7 @@ build_binaries() {
     fi
     
     pushd ${CMAKE_BUILD}
-    ${CMAKE_BIN} -G "Ninja" ..
+    ${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug ..
     ${CMAKE_BIN} --build . --config Debug
     popd > /dev/null
 }
