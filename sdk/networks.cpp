@@ -17,17 +17,6 @@
 /**************************************************************************/
 #include "sdk/networks.h"
 
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-#include <cereal/cereal.hpp>
-// ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
-// ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/archives/json.hpp>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -36,6 +25,9 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::stl;
@@ -53,14 +45,9 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
     return;
   }
 
-  {
-    DataFile<net_networks_rec_disk> file_dat(FilePath(datadir_, NETWORKS_DAT),
-                                             File::modeBinary | File::modeReadOnly,
-                                             File::shareDenyNone);
-    if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
-        !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
-      return;
-    }
+  if (!File::Exists(FilePath(datadir_, NETWORKS_JSON)) &&
+      !File::Exists(FilePath(datadir_, NETWORKS_DAT))) {
+    return;
   }
 
   initialized_ = Load();
@@ -71,7 +58,7 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
 }
 
 const net_networks_rec& Networks::at(const std::string& name) const {
-  for (auto& n : networks_) {
+  for (const auto& n : networks_) {
     if (iequals(name.c_str(), n.name)) {
       return n;
     }
@@ -88,10 +75,10 @@ net_networks_rec& Networks::at(const std::string& name) {
   throw std::out_of_range(StrCat("Unable to find network named: ", name));
 }
 
-Networks::~Networks() {}
+Networks::~Networks() = default;
 
  auto Networks::network_number(const std::string& network_name) const -> size_type {
-  Networks::size_type i = 0;
+   auto i = 0;
   for (const auto& n : networks_) {
     if (iequals(network_name, n.name)) {
       return i;
@@ -155,8 +142,8 @@ bool Networks::LoadFromDat() {
 }
 
 bool Networks::Save() {
-  auto dat = SaveToDat();
-  auto json = SaveToJSON();
+  const auto dat = SaveToDat();
+  const auto json = SaveToJSON();
 
   return dat && json;
 }

@@ -105,9 +105,11 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
 
 static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_config_t& c,
                                     int network_number) {
+  VLOG(2) << "one_net_wwivnet_callout: @" << net.sysnum << "; name: " << net.name;
   Contact contact(net);
   const Callout callout(net);
   for (const auto& kv : callout.callout_config()) {
+    VLOG(2) << "one_net_wwivnet_callout: node @" << kv.first;
     auto* const ncn = contact.contact_rec_for(kv.first);
     if (ncn == nullptr) {
       VLOG(2) << "ncn == nullptr for node @" << kv.first;

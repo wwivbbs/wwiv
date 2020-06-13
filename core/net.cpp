@@ -247,7 +247,7 @@ bool SocketSet::RunOnce() {
   } else {
     status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
   }
-  VLOG(2) << "After select.";
+  VLOG(3) << "After select.";
   if (status < 0 && errno == EINTR) {
     LOG(ERROR) << "Caught signal calling select";
     // return true so we can check for exit signal.

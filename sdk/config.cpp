@@ -31,11 +31,14 @@ namespace wwiv::sdk {
 
 static const int CONFIG_DAT_SIZE_424 = 5660;
 
-Config::Config(const configrec& config) : config_430_(std::make_unique<Config430>(config)), config_(config) {
+Config::Config(const configrec& config) : initialized_(true), config_430_(std::make_unique<Config430>(config)), config_(config) {
   update_paths();
 }
 
 Config::Config(const Config& c) : Config(*c.config()) {
+  // Chained constructor sets initialized to true, but we want to
+  // match it from the copy.
+  initialized_ = c.IsInitialized();
 }
 
 Config::~Config() = default;
