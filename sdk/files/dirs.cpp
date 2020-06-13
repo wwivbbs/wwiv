@@ -48,16 +48,19 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
+#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
+
 template <class Archive>
 void serialize(Archive & ar, directory_t& s) {
-  ar(make_nvp("name", s.name));
-  ar(make_nvp("filename", s.filename));
-  ar(make_nvp("dsl", s.dsl));
-  ar(make_nvp("age", s.age));
-  ar(make_nvp("dar", s.dar));
-  ar(make_nvp("maxfiles", s.maxfiles));
-  ar(make_nvp("mask", s.mask));
-  ar(make_nvp("area_tag", s.area_tag));
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, path);
+  SERIALIZE(s, dsl);
+  SERIALIZE(s, age);
+  SERIALIZE(s, dar);
+  SERIALIZE(s, maxfiles);
+  SERIALIZE(s, mask);
+  SERIALIZE(s, area_tag);
 }
 
 bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries) {

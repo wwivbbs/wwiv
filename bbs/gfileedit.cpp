@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/gfileedit.h"
 
+
+#include "arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
@@ -75,14 +77,7 @@ static void showsec() {
 }
 
 static string GetArString(gfiledirrec r) {
-  if (r.ar != 0) {
-    for (int i = 0; i < 16; i++) {
-      if ((1 << i) & r.ar) {
-        return string(1, static_cast<char>('A' + i));
-      }
-    }
-  }
-  return "None.";
+  return word_to_arstr(r.ar, "None.");
 }
 
 void modify_sec(int n) {

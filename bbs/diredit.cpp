@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "arword.h"
+
 #include <string>
 
 #include "bbs/bbsutl.h"
@@ -35,7 +37,6 @@
 #include "sdk/usermanager.h"
 #include "sdk/user.h"
 
-
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::core::DataFile;
@@ -52,27 +53,30 @@ void swap_dirs(int dir1, int dir2);
 void insert_dir(int n);
 void delete_dir(int n);
 
+static std::string tail(const std::string& s, int len) {
+  return len >= ssize(s) ? s: s.substr(s.size() - len);
+}
 
 static std::string dirdata(int n) {
   char x = 0;
-  auto r = a()->dirs()[n];
+  const auto& r = a()->dirs()[n];
   if (r.dar == 0) {
     x = 32;
   } else {
-    for (int i = 0; i < 16; i++) {
+    for (auto i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
         x = static_cast<char>('A' + i);
       }
     }
   }
   return fmt::sprintf("|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s", n, x,
-                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, r.path);
+                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, tail(r.path, 9));
 }
 
 static void showdirs() {
   bout.cls();
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
-  auto pattern = input_text(20);
+  const auto pattern = input_text(20);
   bool abort = false;
   bout.bpla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
@@ -85,14 +89,7 @@ static void showdirs() {
 }
 
 static string GetAttributeString(const wwiv::sdk::files::directory_t& r) {
-  if (r.dar != 0) {
-    for (int i = 0; i < 16; i++) {
-      if ((1 << i) & r.dar) {
-        return string(1, static_cast<char>('A' + i));
-      }
-    }
-  }
-  return "None.";
+  return word_to_arstr(r.dar, "None.");
 }
 
 void modify_dir(int n) {
@@ -101,25 +98,26 @@ void modify_dir(int n) {
   do {
     bout.cls();
     bout.litebar(StrCat("Editing File Area #", n));
-    bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-    bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-    bout << "|#9C) Path       : |#2" << r.path << wwiv::endl;
-    bout << "|#9D) DSL        : |#2" << static_cast<int>(r.dsl) << wwiv::endl;
-    bout << "|#9E) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
-    bout << "|#9F) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-    bout << "|#9G) DAR        : |#2" << GetAttributeString(r)  << wwiv::endl;
-    bout << "|#9H) Require PD : |#2" << YesNoString((r.mask & mask_PD) ? true : false) << wwiv::endl;
-    bout << "|#9J) Uploads    : |#2" << ((r.mask & mask_no_uploads) ? "Disallowed" : "Allowed") << wwiv::endl;
-    bout << "|#9K) Arch. only : |#2" << YesNoString((r.mask & mask_archive) ? true : false) << wwiv::endl;
-    bout << "|#9L) Drive Type : |#2" << ((r.mask & mask_cdrom) ? "|#3CD ROM" : "HARD DRIVE") << wwiv::endl;
+    bout << "|#9A) Name         : |#2" << r.name << wwiv::endl;
+    bout << "|#9B) Filename     : |#2" << r.filename << wwiv::endl;
+    bout << "|#9C) Path         : |#2" << r.path << wwiv::endl;
+    bout << "|#9D) DSL          : |#2" << static_cast<int>(r.dsl) << wwiv::endl;
+    bout << "|#9E) Min. Age     : |#2" << static_cast<int>(r.age) << wwiv::endl;
+    bout << "|#9F) Max Files    : |#2" << r.maxfiles << wwiv::endl;
+    bout << "|#9G) DAR          : |#2" << GetAttributeString(r)  << wwiv::endl;
+    bout << "|#9H) Require PD   : |#2" << YesNoString((r.mask & mask_PD) ? true : false) << wwiv::endl;
+    bout << "|#9J) Uploads      : |#2" << ((r.mask & mask_no_uploads) ? "Disallowed" : "Allowed") << wwiv::endl;
+    bout << "|#9K) Arch. only   : |#2" << YesNoString((r.mask & mask_archive) ? true : false) << wwiv::endl;
+    bout << "|#9L) Drive Type   : |#2" << ((r.mask & mask_cdrom) ? "|#3CD ROM" : "HARD DRIVE") << wwiv::endl;
     if (r.mask & mask_cdrom) {
-      bout << "|#9M) Available  : |#2" << YesNoString((r.mask & mask_offline) ? true : false) << wwiv::endl;
+      bout << "|#9M) Available    : |#2" << YesNoString((r.mask & mask_offline) ? true : false) << wwiv::endl;
     }
-    bout << "|#9N) //UPLOADALL: |#2" << YesNoString((r.mask & mask_uploadall) ? true : false) << wwiv::endl;
-    bout << "|#9O) WWIV Reg   : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
+    bout << "|#9N) //UPLOADALL  : |#2" << YesNoString((r.mask & mask_uploadall) ? true : false) << wwiv::endl;
+    bout << "|#9O) WWIV Reg     : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
+    bout << "|#9T) FTN Area Tag : |#2" << r.area_tag << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
-    const auto ch = onek("QABCDEFGHJKLMNO[]", true);
+    const auto ch = onek("QABCDEFGHJKLMNOT[]", true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -138,8 +136,7 @@ void modify_dir(int n) {
       }
       r = a()->dirs()[n];
       break;
-    case 'A':
-    {
+    case 'A': {
       bout.nl();
       bout << "|#2New name? ";
       auto s = input_text(r.name, 40);
@@ -247,6 +244,14 @@ void modify_dir(int n) {
         r.mask |= mask_wwivreg;
       }
       break;
+    case 'T': {
+      bout.nl();
+      bout << "|#2New FTN Area Tag? ";
+      auto s = input_text(r.area_tag, 20);
+      if (!s.empty()) {
+        r.area_tag= s;
+      }
+    } break;
     }
   } while (!done && !a()->hangup_);
 
@@ -255,8 +260,8 @@ void modify_dir(int n) {
 
 
 void swap_dirs(int dir1, int dir2) {
-  subconf_t dir1conv = static_cast<subconf_t>(dir1);
-  subconf_t dir2conv = static_cast<subconf_t>(dir2);
+  auto dir1conv = static_cast<subconf_t>(dir1);
+  auto dir2conv = static_cast<subconf_t>(dir2);
 
   if (dir1 < 0 || dir1 >= a()->dirs().size() || dir2 < 0 || dir2 >= a()->dirs().size()) {
     return;
