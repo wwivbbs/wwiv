@@ -104,7 +104,7 @@ bool BinkP::process_opt(const std::string& opt) {
   LOG(INFO) << "OPT line: '" << opt << "'";
 
   const auto opts = SplitString(opt, " ");
-  for (auto s : opts) {
+  for (const auto& s : opts) {
     if (starts_with(s, "CRAM")) {
       LOG(INFO) << "       CRAM Requested by Remote Side.";
       // CRAM Support http://ftsc.org/docs/fts-1027.001
@@ -177,7 +177,11 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
   } break;
   case BinkpCommands::M_ADR: {
     remote_.set_address_list(s);
-    file_manager_.reset(new FileManager(config_->config().root_directory(), remote_.network()));
+    const auto rdir = config_->receive_dir(remote_.network().name);
+    VLOG(1) << "Creating file manager for network: " << remote_.network().name << "; dir: " << rdir;
+    file_manager_ =
+        std::make_unique<FileManager>(config_->config().root_directory(), remote_.network(),
+                                      rdir);
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;
@@ -235,7 +239,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
       data_line += fmt::sprintf(" %08X", current_receive_file_->crc());
     }
 
-    // Increment the nubmer of bytes received.
+    // Increment the number of bytes received.
     bytes_received_ += current_receive_file_->length();
 
     // Close the current file, add the name to the list of received files.
@@ -245,7 +249,8 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
 
     // If we have a crc; check it.
     if (crc_ && crc != 0) {
-      const auto dir = config_->network_dir(remote_.network_name());
+      const auto rdir = config_->receive_dir(remote_.network_name());
+      const auto dir = File::absolute(config_->config().root_directory(), rdir);
       const File received_file(FilePath(dir, current_receive_file_->filename()));
       const auto file_crc = crc32file(received_file.full_pathname());
       if (file_crc == 0) {
@@ -627,10 +632,12 @@ BinkState BinkP::AuthRemote() {
 
 BinkState BinkP::TransferFiles() {
   if (remote_.network().type == network_type_t::wwivnet) {
-    VLOG(1) << "STATE: TransferFiles to node: " << remote_.wwivnet_node();
+    VLOG(1) << "STATE: TransferFiles to node: " << remote_.wwivnet_node() << " :" << remote_.network_name();
   } else {
-    VLOG(1) << "STATE: TransferFiles to node: " << remote_.ftn_address();
+    VLOG(1) << "STATE: TransferFiles to node: " << remote_.ftn_address() << " :" << remote_.network_name();
   }
+  VLOG(1) << "receive dir: " << config_->receive_dir(remote_.network_name());
+
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
   const auto list = file_manager_->CreateTransferFileList(remote_);
@@ -835,6 +842,10 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 }
 
 void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
+  const auto now = DateTime::now();
+  config_->session_identifier(fmt::format("in-{}", now.to_time_t()));
+  LOG(INFO) << "session id:  " << config_->session_identifier();
+
   VLOG(1) << "STATE: Run(): side:" << static_cast<int>(side_);
   auto state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   const auto start_time = system_clock::now();
@@ -940,6 +951,15 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       }
     }
   }
+
+  // Cleanup receive directory if it's not empty.
+  const auto rdir = config_->receive_dir(remote_.network_name());
+  if (!rdir.empty()) {
+    if (!File::Remove(rdir)) {
+      LOG(ERROR) << "Unable to remove directory: " << rdir;
+    }
+  }
+
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {

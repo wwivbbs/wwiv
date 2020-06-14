@@ -109,9 +109,8 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
       }
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
                                                             const string& filename) {
-        const auto& net = bink_config.networks()[network_name];
-        return new WFileTransferFile(filename,
-                                     std::make_unique<File>(FilePath(net.dir, filename)));
+        const auto dir = bink_config.receive_dir(network_name);
+        return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));
       };
       BinkP binkp(c.get(), &bink_config, side, "0", factory);
       binkp.Run(cmdline);
@@ -152,12 +151,13 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
       contact.add_failure(sendto_node, dt);
     }
 
-    throw;
+    throw e;
   }
 
   const net_networks_rec net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
-    return new WFileTransferFile(filename, std::make_unique<File>(FilePath(net.dir, filename)));
+    const auto dir = bink_config.receive_dir(network_name);
+    return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));
   };
 
   string sendto_ftn_node;
@@ -207,6 +207,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       Receive(net_cmdline.cmdline(), bink_config, port);
     } else if (net_cmdline.cmdline().barg("send")) {
       if (Send(net_cmdline.cmdline(), bink_config, sendto_node, network_name)) {
+        LOG(INFO) << "Normal Exit";
         return 0;
       }
       return 1;
@@ -220,6 +221,8 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     LOG(ERROR) << "SOCKET ERROR: [networkb]: " << e.what();
   } catch (const exception& e) {
     LOG(ERROR) << "ERROR: [networkb]: " << e.what();
+  } catch (...) {
+    LOG(ERROR) << "ERROR: [networkb]: (Unknown)";
   }
   return 0;
 }
@@ -249,5 +252,12 @@ int main(int argc, char** argv) {
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
                << "]: Unable to Acquire Network Semaphore: " << e.what();
+    return 3;
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Caught uncaught exception: " << e.what();
+    return 2;
+  } catch (...) {
+    LOG(ERROR) << "Caught uncaught throwable that doesn't extend std::exception: ";
+    return 1;
   }
 }

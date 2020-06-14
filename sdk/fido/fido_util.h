@@ -118,27 +118,34 @@ private:
 
 class FtnDirectories {
 public:
-	FtnDirectories(const std::string& bbsdir, const net_networks_rec& net);
-	virtual ~FtnDirectories();
+  FtnDirectories(const std::string& bbsdir, const net_networks_rec& net, std::string receive_dir);
+  FtnDirectories(const std::string& bbsdir, const net_networks_rec& net);
+  virtual ~FtnDirectories();
 
-  const std::string& net_dir() const;
-  const std::string& inbound_dir() const;
-  const std::string& temp_inbound_dir() const;
-  const std::string& temp_outbound_dir() const;
-  const std::string& outbound_dir() const;
-  const std::string& netmail_dir() const;
-  const std::string& bad_packets_dir() const;
+  [[nodiscard]] const std::string& net_dir() const;
+  [[nodiscard]] const std::string& inbound_dir() const;
+  [[nodiscard]] const std::string& temp_inbound_dir() const;
+  [[nodiscard]] const std::string& temp_outbound_dir() const;
+  [[nodiscard]] const std::string& outbound_dir() const;
+  [[nodiscard]] const std::string& netmail_dir() const;
+  [[nodiscard]] const std::string& bad_packets_dir() const;
+  [[nodiscard]] const std::string& receive_dir() const;
+  [[nodiscard]] const std::string& tic_dir() const;
+  [[nodiscard]] const std::string& unknown_dir() const;
 
 private:
-	const std::string bbsdir_;
-	const net_networks_rec net_;
-	const std::string net_dir_;
+  const std::string bbsdir_;
+  const net_networks_rec net_;
+  const std::string net_dir_;
   const std::string inbound_dir_;
   const std::string temp_inbound_dir_;
   const std::string temp_outbound_dir_;
   const std::string outbound_dir_;
   const std::string netmail_dir_;
   const std::string bad_packets_dir_;
+  const std::string receive_dir_;
+  const std::string tic_dir_;
+  const std::string unknown_dir_;
 };
 }  // namespace fido
 }  // namespace net

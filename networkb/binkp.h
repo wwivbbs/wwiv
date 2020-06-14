@@ -112,7 +112,7 @@ private:
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
-  bool HandlePassword(const std::string& request_line);
+  bool HandlePassword(const std::string& password_line);
   bool HandleFileRequest(const std::string& request_line);
 
   BinkConfig* config_ = nullptr;

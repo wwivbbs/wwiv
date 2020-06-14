@@ -37,8 +37,8 @@ namespace net {
   
 class FileManager {
 public:
-  explicit FileManager(const std::string& root_directory, const net_networks_rec& net)
-      : net_(net), dirs_(root_directory, net) {}
+  explicit FileManager(const std::string& root_directory, const net_networks_rec& net,
+                       const std::string& receive_dir);
   virtual ~FileManager() = default;
 
   [[nodiscard]] std::vector<TransferFile*> CreateTransferFileList(const Remote& remote) const;

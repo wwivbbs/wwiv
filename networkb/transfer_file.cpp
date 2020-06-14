@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cstring>
 #include <string>
+#include <utility>
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
@@ -32,8 +33,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::net {
 
-TransferFile::TransferFile(const string& filename, time_t timestamp, uint32_t crc)
-  : filename_(filename), timestamp_(timestamp), crc_(crc) {}
+TransferFile::TransferFile(string filename, time_t timestamp, uint32_t crc)
+  : filename_(std::move(filename)), timestamp_(timestamp), crc_(crc) {}
 
 TransferFile::~TransferFile() = default;
 

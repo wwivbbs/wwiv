@@ -43,6 +43,7 @@ WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<Fil
     : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(),
                    crc32file(file->full_pathname())),
       file_(std::move(file)) {
+  LOG(INFO) << "WFileTransferFile: " << filename;
   if (filename.find(File::pathSeparatorChar) != string::npos) {
     // Don't allow filenames with slashes in it.
     throw std::invalid_argument("filename can not be relative pathed");
@@ -97,10 +98,11 @@ bool WFileTransferFile::GetChunk(char* chunk, int start, int size) {
 }
 
 bool WFileTransferFile::WriteChunk(const char* chunk, int size) {
+  VLOG(3) << "WFileTransferFile::WriteChunk";
   if (!file_->IsOpen()) {
     if (file_->Exists()) {
       // Don't overwrite an existing file.  Rename it away to: FILENAME.timestamp
-      std::filesystem::path newpath = file_->path();
+      auto newpath = file_->path();
       newpath += StrCat(".", system_clock::to_time_t(system_clock::now()));
       File::Rename(file_->path(), newpath);
     }
@@ -112,6 +114,7 @@ bool WFileTransferFile::WriteChunk(const char* chunk, int size) {
 }
 
 bool WFileTransferFile::Close() {
+  VLOG(1) << "WFileTransferFile::Close " << file_->path().string();
   file_->Close();
   return true;
 }

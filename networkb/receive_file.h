@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETORKB_RECEIVE_FILE_H__
 #define __INCLUDED_NETORKB_RECEIVE_FILE_H__
 
+#include "core/log.h"
 #include "core/strings.h"
 #include "networkb/transfer_file.h"
 #include <cstdint>
@@ -34,7 +35,9 @@ public:
   ReceiveFile(TransferFile* file, std::string filename, long expected_length, time_t timestamp,
               uint32_t crc)
       : file_(file), filename_(std::move(filename)), expected_length_(expected_length),
-        timestamp_(timestamp), length_(0), crc_(crc) {}
+        timestamp_(timestamp), length_(0), crc_(crc) {
+    VLOG(1) << "ReceiveFile: " << filename;
+  }
   ~ReceiveFile() = default;
 
   bool WriteChunk(const char* chunk, int size) {

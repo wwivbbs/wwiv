@@ -18,6 +18,7 @@
 #include "networkb/binkp_config.h"
 
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
@@ -88,8 +89,19 @@ const net_networks_rec& BinkConfig::callout_network() const {
   return network(callout_network_name_);
 }
 
+void BinkConfig::session_identifier(std::string id) {
+  session_identifier_ = std::move(id);
+}
+
 std::string BinkConfig::network_dir(const std::string& network_name) const {
   return network(network_name).dir;
+}
+
+std::string BinkConfig::receive_dir(const std::string& network_name) const {
+  const auto rdir = wwiv::core::FilePath(network_dir(network_name), session_identifier_).string();
+  const auto dir = core::File::absolute(config().root_directory(), rdir);
+  LOG(INFO) << "BinkConfig::receive_dir: " << dir;
+  return dir;
 }
 
 static net_networks_rec test_net(const string& network_dir) {

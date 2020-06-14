@@ -34,16 +34,16 @@ class Callout {
   // VisibleForTesting
   Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
-  [[nodiscard]]virtual const net_call_out_rec* net_call_out_for(int node) const;
-  [[nodiscard]]virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
+  [[nodiscard]] virtual const net_call_out_rec* net_call_out_for(int node) const;
+  [[nodiscard]] virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
   Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
 
-  [[nodiscard]]bool insert(uint16_t node, const net_call_out_rec& c);
+  bool insert(uint16_t node, const net_call_out_rec& c);
   bool erase(uint16_t node);
   virtual bool Save();
 
-  [[nodiscard]]const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
-  [[nodiscard]]std::string ToString() const;
+  [[nodiscard]] const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
+  [[nodiscard]] std::string ToString() const;
 
  private:
   net_networks_rec net_;

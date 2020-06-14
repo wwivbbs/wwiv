@@ -169,7 +169,7 @@ public:
       constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
       constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
       constexpr int MAX_STRING_LEN = 56;
-      auto n = &d_.fido;
+      auto* n = &d_.fido;
       auto y = 1;
 
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
@@ -188,6 +188,10 @@ public:
           new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
       items.add(
           new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->tic_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->unknown_dir));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line,
                                                  EditLineMode::ALL));
 
@@ -241,6 +245,8 @@ public:
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Outbound Dir:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "NetMail Dir:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BadPacket Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "TIC Dir      :"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Unknown Dir  :"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Origin Line:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Mailer:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:"),

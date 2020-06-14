@@ -28,7 +28,7 @@ namespace net {
   
 class TransferFile {
 public:
-  TransferFile(const std::string& filename, time_t timestamp, uint32_t crc);
+  TransferFile(std::string filename, time_t timestamp, uint32_t crc);
   virtual ~TransferFile();
 
   [[nodiscard]] std::string filename() const { return filename_; }

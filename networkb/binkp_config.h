@@ -36,31 +36,38 @@ public:
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   ~BinkConfig();
   // Gets the binkp_session_config_t or nullptr if one can not be found.
-  const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
+  [[nodiscard]] const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
   // Gets the binkp_session_config_t or nullptr if one can not be found.
-  const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
+  [[nodiscard]] const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
-  int callout_node_number() const { return callout_wwivnet_node_; }
-  std::string callout_fido_address() const { return callout_fido_node_; }
-  std::string system_name() const { return system_name_; }
-  std::string sysop_name() const { return sysop_name_; }
-  std::string gfiles_directory() const { return gfiles_directory_; }
-  std::string callout_network_name() const { return callout_network_name_; }
-  std::string network_dir(const std::string& network_name) const;
-  const net_networks_rec& network(const std::string& network_name) const;
-  const net_networks_rec& callout_network() const;
-  const wwiv::sdk::Networks& networks() { return networks_; }
+  [[nodiscard]] int callout_node_number() const { return callout_wwivnet_node_; }
+  [[nodiscard]] std::string callout_fido_address() const { return callout_fido_node_; }
+  [[nodiscard]] std::string system_name() const { return system_name_; }
+  [[nodiscard]] std::string sysop_name() const { return sysop_name_; }
+  [[nodiscard]] std::string gfiles_directory() const { return gfiles_directory_; }
+  [[nodiscard]] std::string callout_network_name() const { return callout_network_name_; }
+  /** Gets net.dir for the network named network_name */
+  [[nodiscard]] std::string network_dir(const std::string& network_name) const;
+  /** Get the directory to receive files into for network named network_name */
+  [[nodiscard]] std::string receive_dir(const std::string& network_name) const;
+
+  [[nodiscard]] const net_networks_rec& network(const std::string& network_name) const;
+  [[nodiscard]] const net_networks_rec& callout_network() const;
+  [[nodiscard]] const wwiv::sdk::Networks& networks() { return networks_; }
   std::map<const std::string, std::unique_ptr<wwiv::sdk::Callout>>& callouts() { return callouts_; }
 
   void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
-  bool skip_net() const { return skip_net_; }
+  [[nodiscard]] bool skip_net() const { return skip_net_; }
   void set_verbose(int verbose) { verbose_ = verbose; }
-  int verbose() const { return verbose_; }
+  [[nodiscard]] int verbose() const { return verbose_; }
   void set_network_version(int network_version) { network_version_ = network_version; }
-  int network_version() const { return network_version_; }
-  bool crc() const { return crc_; }
-  bool cram_md5() const { return cram_md5_; }
-  const wwiv::sdk::Config& config() const { return config_; }
+  [[nodiscard]] int network_version() const { return network_version_; }
+  [[nodiscard]] bool crc() const { return crc_; }
+  [[nodiscard]] bool cram_md5() const { return cram_md5_; }
+  [[nodiscard]] const wwiv::sdk::Config& config() const { return config_; }
+
+  [[nodiscard]] std::string session_identifier() const { return session_identifier_; }
+  void session_identifier(std::string id);
 
 private:
   const wwiv::sdk::Config& config_;
@@ -81,6 +88,7 @@ private:
   int network_version_ = 38;
   bool crc_ = false;
   bool cram_md5_ = true;
+  std::string session_identifier_;
 };
 
 } // namespace net

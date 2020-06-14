@@ -636,24 +636,36 @@ bool FloFile::Save() {
       f.Writeln(StrCat(dr, name));
     }
     return true;
-  } else if (File::Exists(path_)) {
+  }
+  if (File::Exists(path_)) {
     return File::Remove(path_);
   }
   return true;
 }
 
-FidoAddress FloFile::destination_address() const { return *dest_.get(); }
+FidoAddress FloFile::destination_address() const { return *dest_; }
 
 FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net)
+  : FtnDirectories(bbsdir, net, net.dir) {}
+
+// Receive dirs is relative to BBS home.
+FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net,
+                               std::string receive_dir)
     : bbsdir_(bbsdir), net_(net), net_dir_(File::absolute(bbsdir, net.dir)),
       inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
       temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
       temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
       outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
       netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
-      bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)) {}
+      bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)),
+      receive_dir_(std::move(receive_dir)),
+      tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
+      unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir))
+{
+  VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;
+}
 
-FtnDirectories::~FtnDirectories() {}
+FtnDirectories::~FtnDirectories() = default;
 
 const std::string& FtnDirectories::net_dir() const { return net_dir_; }
 const std::string& FtnDirectories::inbound_dir() const { return inbound_dir_; }
@@ -662,5 +674,9 @@ const std::string& FtnDirectories::temp_outbound_dir() const { return temp_outbo
 const std::string& FtnDirectories::outbound_dir() const { return outbound_dir_; }
 const std::string& FtnDirectories::netmail_dir() const { return netmail_dir_; }
 const std::string& FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
+const std::string& FtnDirectories::receive_dir() const { return receive_dir_; }
+
+const std::string& FtnDirectories::tic_dir() const { return tic_dir_; }
+const std::string& FtnDirectories::unknown_dir() const { return unknown_dir_; }
 
 } // namespace wwiv

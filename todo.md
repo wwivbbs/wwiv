@@ -41,6 +41,9 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark.
+* Create new directory (temp dir) to receive files into, not
+  into the main net.dir anymore.
+  
 
 ## core::File Improvements
 ***

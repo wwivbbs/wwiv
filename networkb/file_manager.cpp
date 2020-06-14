@@ -41,15 +41,14 @@ namespace wwiv::net {
 
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination_node) const {
   vector<TransferFile*> result;
-  const auto s_node_net = fmt::format("s{}.net", destination_node);
-  const auto search_path = FilePath(dirs_.net_dir(), s_node_net);
-  VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
-  if (File::Exists(search_path)) {
-    File file(search_path);
-    const auto basename = file.path().filename().string();
-    result.push_back(new WFileTransferFile(
-        basename, std::make_unique<File>(FilePath(dirs_.net_dir(), basename))));
-    LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
+  const auto node_net = fmt::format("s{}.net", destination_node);
+  const auto path = FilePath(dirs_.net_dir(), node_net);
+  VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << path;
+  if (File::Exists(path)) {
+    const auto fn = path.filename().string();
+    result.push_back(
+        new WFileTransferFile(fn, std::make_unique<File>(FilePath(dirs_.net_dir(), fn))));
+    LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << fn;
   }
   return result;
 }
@@ -67,13 +66,14 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   map<string, TransferFile*> result_map;
 
   FidoAddress dest(address);
-  VLOG(1) << "CreateFtnTransferFileList: " << dirs_.outbound_dir();
+  const auto dir = dirs_.outbound_dir();
+  VLOG(1) << "CreateFtnTransferFileList: " << dir;
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
-    VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name).string();
-    if (File::Exists(FilePath(dirs_.outbound_dir(), name))) {
-      LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
-      const auto path = FilePath(dirs_.outbound_dir(), name);
+    VLOG(1) << "Looking for FLO file named: " << FilePath(dir, name).string();
+    if (File::Exists(FilePath(dir, name))) {
+      LOG(INFO) << "Found file file: " << dir << "; name: " << name;
+      const auto path = FilePath(dir, name);
       FloFile flo(net_, path);
       if (!flo.Load()) {
         continue;
@@ -81,7 +81,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
       for (const auto& e : flo.flo_entries()) {
         File f(e.first);
         const auto basename = f.path().filename().string();
-        auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
+        auto* w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
         w->set_flo_file(std::make_unique<FloFile>(net_, path));
         // emplace won't add another entry if one exists already.
         result_map.emplace(basename, w);
@@ -97,21 +97,36 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   return result;
 }
 
+FileManager::FileManager(const std::string& root_directory, const net_networks_rec& net,
+                         const std::string& receive_dir)
+  : net_(net), dirs_(root_directory, net, receive_dir) {
+  const auto dir = dirs_.receive_dir();
+  VLOG(1) << "FileManager: receive_dir: " << dir << "(" << receive_dir << ")";
+  if (!File::Exists(dir)) {
+    LOG(INFO) << "Creating receive directory for session: '" << dir << "'";
+    if (!File::mkdirs(dir)) {
+      LOG(ERROR) << "Failed to create receive directory: " << dir;
+    }
+  }
+}
+
 std::vector<TransferFile*> FileManager::CreateTransferFileList(const Remote& remote) const {
   if (net_.type == network_type_t::wwivnet) {
     return CreateWWIVnetTransferFileList(remote.wwivnet_node());
-  } else if (net_.type == network_type_t::ftn) {
+  }
+  if (net_.type == network_type_t::ftn) {
     return CreateFtnTransferFileList(remote.ftn_address());
   }
   return{};
 }
 
 void FileManager::ReceiveFile(const std::string& filename) {
+  VLOG(1) << "FileManager::ReceiveFile: " << filename;
   received_files_.push_back(filename);
 }
 
-static void rename_wwivnet_pend(const string& directory, const string& filename) {
-  const auto pend_filename = FilePath(directory, filename);
+static void rename_wwivnet_pend(const string& receive_directory, const std::string& net_dir, const string& filename) {
+  const auto pend_filename = FilePath(receive_directory, filename);
   if (!File::Exists(pend_filename)) {
     LOG(ERROR) << " pending file does not exist: " << pend_filename;
     return;
@@ -121,7 +136,7 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
 
   for (int i = 0; i < 1000; i++) {
     const auto new_basename = fmt::format("p{}-0-{}.net", prefix, i);
-    const auto new_filename = FilePath(directory, new_basename);
+    const auto new_filename = FilePath(net_dir, new_basename);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
@@ -134,24 +149,52 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
 void FileManager::rename_wwivnet_pending_files() {
   VLOG(1) << "STATE: rename_wwivnet_pending_files";
   for (const auto& file : received_files()) {
-    LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
-    rename_wwivnet_pend(dirs_.net_dir(), file);
+    const auto rdir = dirs_.receive_dir();
+    const auto net_dir = dirs_.net_dir();
+    LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
+    rename_wwivnet_pend(rdir, net_dir, file);
   }
 }
 
 void FileManager::rename_ftn_pending_files() {
   VLOG(1) << "STATE: rename_ftn_pending_files";
+  const auto rdir = dirs_.receive_dir();
   for (const auto& file : received_files()) {
+    const auto ipath = FilePath(dirs_.inbound_dir(), file);
+    const auto rpath = FilePath(rdir, file);
+    const auto tpath = FilePath(dirs_.tic_dir(), file);
+    const auto upath = FilePath(dirs_.unknown_dir(), file);
+    if (!File::Exists(rpath)) {
+      VLOG(1) << "rfile does not exist: " << rpath;
+      continue;
+    }
     if (is_bundle_file(file) || is_packet_file(file)) {
-      LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
-      if (!File::Exists(FilePath(dirs_.inbound_dir(), file))) {
-        File::Move(FilePath(dirs_.net_dir(), file), FilePath(dirs_.inbound_dir(), file));
+      LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
+      if (!File::Exists(ipath)) {
+        File::Move(rpath, ipath);
       } else {
         LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";
       }
     } else {
-      LOG(ERROR) << "       unknown file received: " << file;
+      // TODO: here is where we can do the TIC support.
+      // If TIC file, process tic file and move it and archive to the net_dir
+      // then pass to networkt to process. For now HACK - let's just move all unknown
+      // to the tick dir.
+      LOG(ERROR) << "       unknown file received: '" << file << "' moving to TIC dir.";
     }
+  }
+  // pass 2: anything remaining move to unknown dir.
+  for (const auto& file : received_files()) {
+    const auto rpath = FilePath(rdir, file);
+    const auto upath = FilePath(dirs_.unknown_dir(), file);
+    if (!File::Exists(rpath)) {
+      VLOG(1) << "rfile does not exist: " << rpath;
+      continue;
+    }
+    if (File::Exists(rpath)) {
+      File::Move(rpath, upath);
+    }
+
   }
 }
 

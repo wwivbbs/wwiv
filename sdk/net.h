@@ -433,9 +433,14 @@ struct fido_network_config_t {
   fido_packet_config_t packet_config;
   // Location to move bad packets
   std::string bad_packets_dir;
+  // Place tic files here.  based off of net_dir.
+  std::string tic_dir;
+  // Unknown files go here.  based off of net_dir.
+  std::string unknown_dir;
   // Default Origin line to use for this network.
   std::string origin_line;
-  // Process TIC files/
+  
+  // Process TIC files
   bool process_tic{false};
 };
 

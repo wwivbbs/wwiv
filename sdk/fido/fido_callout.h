@@ -52,8 +52,8 @@ public:
 
   bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);
-  [[nodiscard]]bool Load();
-  [[nodiscard]]bool Save() override;
+  bool Load();
+  bool Save() override;
   [[nodiscard]] std::map<FidoAddress, fido_node_config_t> node_configs_map() const {
     return node_configs_;
   }
