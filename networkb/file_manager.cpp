@@ -25,6 +25,8 @@
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_util.h"
+#include "sdk/files/tic.h"
+
 #include <map>
 #include <string>
 #include <vector>
@@ -101,7 +103,7 @@ FileManager::FileManager(const std::string& root_directory, const net_networks_r
                          const std::string& receive_dir)
   : net_(net), dirs_(root_directory, net, receive_dir) {
   const auto dir = dirs_.receive_dir();
-  VLOG(1) << "FileManager: receive_dir: " << dir << "(" << receive_dir << ")";
+  VLOG(1) << "FileManager: receive_dir: " << dir;
   if (!File::Exists(dir)) {
     LOG(INFO) << "Creating receive directory for session: '" << dir << "'";
     if (!File::mkdirs(dir)) {
@@ -156,6 +158,28 @@ void FileManager::rename_wwivnet_pending_files() {
   }
 }
 
+static bool is_tic_file(const std::string& fn) {
+  const auto idx = fn.rfind('.');
+  if (idx == std::string::npos) {
+    return false;
+  }
+  const auto ext = ToStringUpperCase(fn.substr(idx + 1));
+  return ext == "TIC";
+}
+
+static bool move_without_overrite(const std::filesystem::path& src,
+                                  const std::filesystem::path& dest, const std::string& msg) {
+  LOG(INFO) << "Attempting to move " << src.string() << "to: " << dest.string();
+  if (!File::Exists(dest)) {
+    return File::Move(src, dest);
+  }
+  LOG(ERROR) << "       Skipping Move since file already exists: " << dest.string();
+  if (!msg.empty()) {
+    LOG(ERROR) << msg;
+  }
+  return false;
+}
+
 void FileManager::rename_ftn_pending_files() {
   VLOG(1) << "STATE: rename_ftn_pending_files";
   const auto rdir = dirs_.receive_dir();
@@ -170,16 +194,23 @@ void FileManager::rename_ftn_pending_files() {
     }
     if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
-      if (!File::Exists(ipath)) {
-        File::Move(rpath, ipath);
-      } else {
-        LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";
-      }
-    } else {
+      move_without_overrite(rpath, ipath, "already exists in fido inbound dir. Please move manually.");
+    } else if (is_tic_file(file)) {
       // TODO: here is where we can do the TIC support.
       // If TIC file, process tic file and move it and archive to the net_dir
       // then pass to networkt to process. For now HACK - let's just move all unknown
       // to the tick dir.
+      const auto ticpath = FilePath(rdir, file);
+      sdk::files::Tic tic(ticpath);
+      if (tic.IsValid()) {
+        LOG(INFO) << "Tic file " << ticpath.string() << " is valid.";
+        const auto tfpath = FilePath(rdir, tic.file);
+        move_without_overrite(rpath, tfpath, "File (from TIC) file already existed in TIC path.");
+        move_without_overrite(rpath, tpath, "TIC file already existsed in TIC path.");
+      } else {
+        LOG(ERROR) << "       Tic file " << ticpath.string() << " IS NOT VALID.";
+      }
+    } else {
       LOG(ERROR) << "       unknown file received: '" << file << "' moving to TIC dir.";
     }
   }

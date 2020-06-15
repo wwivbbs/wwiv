@@ -647,7 +647,7 @@ BinkState BinkP::TransferFiles() {
 
   VLOG(1) << "STATE: After SendFilePacket for all files.";
   // Quickly let the inbound event loop percolate.
-  for (int i = 0; i < 5; i++) {
+  for (auto i = 0; i < 5; i++) {
     process_frames(milliseconds(500));
   }
 
@@ -696,7 +696,7 @@ BinkState BinkP::WaitEob() {
 
   const auto eob_retries = 12;
   const auto eob_wait_seconds = 5;
-  for (int count = 1; count < eob_retries; count++) {
+  for (auto count = 1; count < eob_retries; count++) {
     // Loop for up to one minute waiting for an EOB before exiting.
     try {
       process_frames([&]() -> bool { return eob_received_; }, seconds(eob_wait_seconds));

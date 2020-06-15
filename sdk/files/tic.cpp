@@ -33,11 +33,13 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-Tic::Tic(std::filesystem::path path) : path_(std::move(path)), valid_(false) {}
+Tic::Tic(std::filesystem::path path) : path_(std::move(path)), valid_(false) {
+}
+
 Tic::~Tic() = default;
 
 bool Tic::IsValid() const {
-  return valid_ && crc_valid() && exists();
+  return valid_ && exists() && crc_valid() && size_valid();
 }
 
 bool Tic::crc_valid() const {
@@ -50,6 +52,17 @@ bool Tic::crc_valid() const {
     LOG(INFO) << "CRC: actual: " << actual << "; expected: " << crc;
   }
   return crc_valid;
+}
+
+bool Tic::size_valid() const {
+  const auto fpath = FilePath(path_.parent_path(), file);
+  const File f(fpath);
+  const int actual_size = f.length();
+  if (actual_size != size) {
+    LOG(INFO) << "Tic FileSize !valid. actual: " << actual_size << "; expected: " << size;
+    return false;
+  }
+  return true;
 }
 
 bool Tic::exists() const {

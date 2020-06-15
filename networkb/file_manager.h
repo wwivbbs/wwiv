@@ -18,19 +18,13 @@
 #ifndef __INCLUDED_NETWORKB_FILE_MANAGER_H__
 #define __INCLUDED_NETWORKB_FILE_MANAGER_H__
 
-#include <chrono>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "networkb/transfer_file.h"
 #include "networkb/remote.h"
+#include "networkb/transfer_file.h"
 #include "sdk/net.h"
 #include "sdk/fido/fido_util.h"
+#include <functional>
+#include <string>
+#include <vector>
 
 namespace wwiv {
 namespace net {

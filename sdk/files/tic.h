@@ -30,11 +30,13 @@ namespace wwiv::sdk::files {
 class Tic {
 public:
   explicit Tic(std::filesystem::path path);
+  Tic() = delete;
   ~Tic();
 
   // True if everything is valid (file exists, PW correct, and CRC matches)
   [[nodiscard]] bool IsValid() const;
   [[nodiscard]] bool crc_valid() const;
+  [[nodiscard]] bool size_valid() const;
   [[nodiscard]] bool exists() const;
 
   std::string area;
@@ -64,8 +66,8 @@ public:
 class TicParser {
 public:
   explicit TicParser(std::filesystem::path dir);
-  std::optional<Tic> parse(const std::string& filename) const;
-  std::optional<Tic> parse(const std::string& filename, const std::vector<std::string>& lines) const;
+  [[nodiscard]] std::optional<Tic> parse(const std::string& filename) const;
+  [[nodiscard]] std::optional<Tic> parse(const std::string& filename, const std::vector<std::string>& lines) const;
 
 private:
 

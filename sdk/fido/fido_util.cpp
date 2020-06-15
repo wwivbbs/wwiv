@@ -57,11 +57,11 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source,
   return fmt::sprintf("%04.4x%04.4x.%s", net, node, extension);
 }
 
-std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
+std::string net_node_name(const FidoAddress& dest, const std::string& extension) {
   return fmt::sprintf("%04.4x%04.4x.%s", dest.net(), dest.node(), extension);
 }
 
-std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
+std::string flo_name(const FidoAddress& dest, fido_bundle_status_t status) {
   string extension = "flo";
   if (status != fido_bundle_status_t::unknown) {
     extension[0] = static_cast<char>(status);
@@ -69,8 +69,8 @@ std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_statu
   return net_node_name(dest, extension);
 }
 
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source,
-                        const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
+std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int dow,
+                        int bundle_number) {
   return bundle_name(source, dest, dow_extension(dow, bundle_number));
 }
 
@@ -149,7 +149,7 @@ daten_t fido_to_daten(std::string d) {
                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
     auto now = time_t_now();
-    auto t = localtime(&now);
+    auto* t = localtime(&now);
     stream >> t->tm_mday;
     string mon_str;
     stream >> mon_str;
@@ -319,7 +319,8 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
         }
         // Skip all ^D0 lines other than ones we know.
         continue;
-      } else if (code_num > max_optional_val_to_include) {
+      }
+      if (code_num > max_optional_val_to_include) {
         // Skip values higher than we want.
         continue;
       }
@@ -394,7 +395,7 @@ enum class RouteMatch { yes, no, exclude };
 static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std::string& route) {
   auto r = StringTrim(route);
 
-  RouteMatch positive = RouteMatch::yes;
+  auto positive = RouteMatch::yes;
 
   // Negated route.
   if (starts_with(r, "!")) {
@@ -412,16 +413,15 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
     try {
       // Let's see if it's an address.
       FidoAddress route_address(r);
-      return (route_address == a) ? positive : RouteMatch::no;
+      return route_address == a ? positive : RouteMatch::no;
     } catch (const std::exception&) {
       // Not a valid address.
       VLOG(2) << "Malformed route (not a complete address): " << route;
       return RouteMatch::no;
     }
-  } else {
-    // Remove the trailing *
-    r.pop_back();
   }
+  // Remove the trailing *
+  r.pop_back();
 
   if (contains(r, ':') && ends_with(r, "/")) {
     // We have a ZONE:NET/*
@@ -439,7 +439,7 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
   } else if (ends_with(r, ":")) {
     // We have a ZONE:*
     r.pop_back();
-    auto zone = to_number<uint16_t>(r);
+    const auto zone = to_number<uint16_t>(r);
     if (a.zone() == zone) {
       return positive;
     }
@@ -448,14 +448,14 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
   return RouteMatch::no;
 }
 
-bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes) {
+bool RoutesThroughAddress(const FidoAddress& a, const std::string& routes) {
   if (routes.empty()) {
     return false;
   }
   const auto rs = parse_routes(routes);
-  bool ok = false;
+  auto ok = false;
   for (const auto& rr : rs) {
-    RouteMatch m = matches_route(a, rr);
+    auto m = matches_route(a, rr);
     if (m != RouteMatch::no) {
       // Ignore any no matches, return otherwise;
       if (m != RouteMatch::no) {
@@ -466,9 +466,8 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
   return ok;
 }
 
-wwiv::sdk::fido::FidoAddress FindRouteToAddress(
-    const wwiv::sdk::fido::FidoAddress& a,
-    const std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t>& node_configs_map) {
+FidoAddress FindRouteToAddress(const FidoAddress& a,
+                               const std::map<FidoAddress, fido_node_config_t>& node_configs_map) {
 
   for (const auto& nc : node_configs_map) {
     if (nc.first == a) {
@@ -481,8 +480,7 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
   return EMPTY_FIDO_ADDRESS;
 }
 
-wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddress& a,
-                                                const wwiv::sdk::fido::FidoCallout& callout) {
+FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout) {
   return FindRouteToAddress(a, callout.node_configs_map());
 }
 
@@ -518,7 +516,7 @@ bool exists_bundle(const std::string& dir) {
  * If timezone cannot be determined, no characters.
  */
 std::string tz_offset_from_utc() {
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   return dt.to_string("%z");
 }
 
@@ -538,15 +536,15 @@ ParseFloFile(const std::filesystem::path& path) {
     }
     auto st = line.front();
     if (st == '^' || st == '#' || st == '~') {
-      const string fn = line.substr(1);
+      const auto fn = line.substr(1);
       result.emplace_back(fn, static_cast<flo_directive>(st));
     }
   }
   return result;
 }
 
-FloFile::FloFile(const net_networks_rec& net, const std::filesystem::path& p)
-    : net_(net), path_(p), dest_() {
+FloFile::FloFile(const net_networks_rec& net, std::filesystem::path p)
+    : net_(net), path_(std::move(p)) {
   std::filesystem::path fn;
   if (!path_.has_filename()) {
     // This is a malformed flo file
@@ -597,7 +595,7 @@ FloFile::FloFile(const net_networks_rec& net, const std::filesystem::path& p)
 FloFile::~FloFile() = default;
 
 bool FloFile::insert(const std::string& file, flo_directive directive) {
-  entries_.push_back(std::make_pair(file, directive));
+  entries_.emplace_back(file, directive);
   return true;
 }
 
@@ -617,7 +615,7 @@ bool FloFile::Load() {
     return false;
   }
 
-  File f(path_);
+  const File f(path_);
   poll_ = f.length() == 0;
   entries_ = ParseFloFile(path_);
   return true;
@@ -632,7 +630,7 @@ bool FloFile::Save() {
     }
     for (const auto& e : entries_) {
       auto dr = static_cast<char>(e.second);
-      auto& name = e.first;
+      const auto& name = e.first;
       f.Writeln(StrCat(dr, name));
     }
     return true;

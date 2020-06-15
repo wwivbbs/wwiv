@@ -56,7 +56,7 @@ Replaces fsxinfo.zip
 From 21:2/100
 To 21:2/115
 Origin 21:1/1
-Size 125210
+Size 12
 Crc AF083B2D
 Path 21:1/1 1591287303 Thu Jun 04 16:15:03 2020 UTC htick/w32-mvcdll 1.9.0-cur 17-08-15
 Seenby 21:1/1
@@ -86,7 +86,10 @@ Path 21:2/100 1591287460 Thu Jun 04 16:17:40 2020 UTC Mystic/1.12 A46
   EXPECT_EQ(t.area, "fsx_info");
   EXPECT_EQ(18u, t.ldesc.size());
   EXPECT_EQ("Weekly infopack for fsxNet", t.desc);
+  EXPECT_EQ("fsxinfo.zip", t.file);
+  EXPECT_EQ("fsxinfo.zip", t.replaces);
   EXPECT_TRUE(t.exists());
   EXPECT_TRUE(t.crc_valid());
+  EXPECT_TRUE(t.size_valid());
   EXPECT_TRUE(t.IsValid());
 }

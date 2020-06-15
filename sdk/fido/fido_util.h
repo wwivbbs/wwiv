@@ -18,39 +18,35 @@
 #ifndef __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
 #define __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
 
-#include <ctime>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "core/datetime.h"
 #include "core/file.h"
-#include <filesystem>
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/fido/fido_packets.h"
+#include <ctime>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 namespace wwiv {
 namespace sdk {
 namespace fido {
 
-std::string packet_name(wwiv::core::DateTime& now);
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
-std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
-std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
+std::string packet_name(wwiv::core::DateTime& dt);
+std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, int dow, int bundle_number);
+std::string bundle_name(const FidoAddress& source, const FidoAddress& dest, const std::string& extension);
+std::string net_node_name(const FidoAddress& dest, const std::string& extension);
+std::string flo_name(const FidoAddress& dest, fido_bundle_status_t status);
 std::vector<std::string> dow_prefixes();
 std::string dow_extension(int dow, int bundle_number);
 bool is_bundle_file(const std::string& name);
 bool is_packet_file(const std::string& name);
-std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest,
-                              fido_bundle_status_t status);
+std::string control_file_name(const FidoAddress& dest, fido_bundle_status_t status);
 std::string daten_to_fido(time_t t);
 daten_t fido_to_daten(std::string d);
-std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);
-std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a);
-std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a);
+std::string to_net_node(const FidoAddress& a);
+std::string to_zone_net_node(const FidoAddress& a);
+std::string to_zone_net_node_point(const FidoAddress& a);
 
 /** Splits a message to find a specific line. This will strip blank lines. */
 std::vector<std::string> split_message(const std::string& string);
@@ -59,13 +55,11 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = t
 std::string WWIVToFidoText(const std::string& wt);
 std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include);
 
-wwiv::sdk::fido::FidoAddress get_address_from_single_line(const std::string& line);
-wwiv::sdk::fido::FidoAddress get_address_from_origin(const std::string& text);
+FidoAddress get_address_from_single_line(const std::string& line);
+FidoAddress get_address_from_origin(const std::string& text);
 
-bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes);
-wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout);
-wwiv::sdk::fido::FidoAddress FindRouteToAddress(
-  const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout);
+bool RoutesThroughAddress(const FidoAddress& a, const std::string& routes);
+FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout);
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
 bool exists_bundle(const std::string& dir);
@@ -84,7 +78,7 @@ enum class flo_directive : char {
  */
 class FloFile {
 public:
-  FloFile(const net_networks_rec& net, const std::filesystem::path& p);
+  FloFile(const net_networks_rec& net, std::filesystem::path p);
   virtual ~FloFile();
 
   wwiv::sdk::fido::FidoAddress destination_address() const;
