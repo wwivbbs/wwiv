@@ -24,6 +24,7 @@ set(COMMON_SOURCES
   files/file_record.cpp
   files/files.cpp
   files/files_ext.cpp
+  files/tic.cpp
   msgapi/email_wwiv.cpp
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp
@@ -44,7 +45,7 @@ set(COMMON_SOURCES
   user.cpp
   usermanager.cpp
   wwivd_config.cpp
-  )
+   )
 
 set_max_warnings()
 

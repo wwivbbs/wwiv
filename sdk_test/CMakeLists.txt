@@ -28,6 +28,7 @@ set(test_sources
   files/dirs_test.cpp
   files/files_test.cpp
   files/files_ext_test.cpp
+  files/tic_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
   net/callouts_test.cpp

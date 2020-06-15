@@ -1,13 +1,11 @@
 /*
 *  Crc - 32 BIT ANSI X3.66 CRC checksum files
 */
+#include "core/file.h"
 #include <memory>
 #include <string>
 
-#include "core/file.h"
-
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 /**********************************************************************\
 |*                                                                    *|
@@ -107,18 +105,18 @@ static uint32_t crc_32_tab[] = { /* CRC polynomial 0xedb88320 */
 
 #define UPDC32(octet, crc) (crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8))
 
-uint32_t crc32file(const std::string& name) {
+uint32_t crc32file(const std::filesystem::path& path) {
   uint32_t crc = 0xFFFFFFFF;
-  File file(name);
+  File file(path);
   if (!file.Open(File::modeReadOnly | File::modeBinary, File::shareDenyWrite)) {
     return false;
   }
   const auto size = file.length();
-  auto buffer = std::make_unique<uint8_t[]>(size);
+  const auto buffer = std::make_unique<uint8_t[]>(size);
   if (!file.Read(buffer.get(), size)) {
     return false;
   }
-  for (int i = 0; i < size; i++) {
+  for (auto i = 0; i < size; i++) {
     crc = UPDC32(buffer[i], crc);
   }
   return ~crc;
@@ -132,5 +130,4 @@ uint32_t crc32string(const std::string& contents) {
   return ~crc;
 }
 
-}
 }

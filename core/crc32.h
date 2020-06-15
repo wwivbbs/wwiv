@@ -18,12 +18,13 @@
 #ifndef __INCLUDED_CORE_CRC32_H__
 #define __INCLUDED_CORE_CRC32_H__
 
+#include <filesystem>
 #include <string>
 
 namespace wwiv {
 namespace core {
 
-uint32_t crc32file(const std::string& name);
+uint32_t crc32file(const std::filesystem::path& path);
 uint32_t crc32string(const std::string& contents);
 
 }

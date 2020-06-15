@@ -31,8 +31,7 @@
 using std::string;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 bool Cram::GenerateChallengeData() {
   if (challenge_data_.empty()) {
@@ -45,7 +44,7 @@ bool Cram::GenerateChallengeData() {
 bool Cram::ValidatePassword(const std::string& challenge,
                             const std::string& secret, 
                             const std::string& given_hashed_secret) {
-  auto expected = CreateHashedSecret(challenge, secret);
+  const auto expected = CreateHashedSecret(challenge, secret);
   VLOG(2) << "expected pw: " << expected << "; given: " << given_hashed_secret;
   return expected == given_hashed_secret;
 }
@@ -53,7 +52,7 @@ bool Cram::ValidatePassword(const std::string& challenge,
 static std::string FromHex(const std::string& hex) {
   if ((hex.length() % 2) != 0) {
     throw std::logic_error(
-      StrCat("FromHex needs length of size a multiple of 2.  hex: '", hex, "' len:", hex.size()));
+        StrCat("FromHex needs length of size a multiple of 2.  hex: '", hex, "' len:", hex.size()));
   }
 
   if (hex.length() > 256) {
@@ -61,15 +60,15 @@ static std::string FromHex(const std::string& hex) {
   }
 
   char result[128];
-  int len = 0;
+  auto len = 0;
   auto it = hex.begin();
   while (it != hex.end()) {
     string s;
     s.push_back(*it++);
     s.push_back(*it++);
 
-    unsigned long chl = to_number<unsigned long>(s, 16);
-    char ch = (chl & 0xff);
+    const auto chl = to_number<unsigned long>(s, 16);
+    const char ch = chl & 0xff;
     result[len++] = ch;
   }
   return std::string(result, len);
@@ -93,7 +92,7 @@ static std::string SecretOrHash(const std::string& secret) {
 }
 
 std::string Cram::CreateHashedSecret(
-  const std::string& original_challenge_hex, const std::string& secret) {
+    const std::string& original_challenge_hex, const std::string& secret) {
   if (!initialized_) {
     if (!GenerateChallengeData()) {
       // TODO: Go Boom
@@ -105,9 +104,9 @@ std::string Cram::CreateHashedSecret(
     // Radius adds a trailing null character here.
     c.pop_back();
   }
-  string original_challenge = FromHex(c);
+  const auto original_challenge = FromHex(c);
 
-  string challenge = SecretOrHash(original_challenge);
+  auto challenge = SecretOrHash(original_challenge);
   unsigned char ipad[65];
   unsigned char opad[65];
   memset(ipad, 0, sizeof(ipad));
@@ -141,5 +140,4 @@ std::string Cram::CreateHashedSecret(
   return ss.str();
 }
 
-}
 }

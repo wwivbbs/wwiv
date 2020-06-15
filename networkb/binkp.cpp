@@ -252,7 +252,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
       const auto rdir = config_->receive_dir(remote_.network_name());
       const auto dir = File::absolute(config_->config().root_directory(), rdir);
       const File received_file(FilePath(dir, current_receive_file_->filename()));
-      const auto file_crc = crc32file(received_file.full_pathname());
+      const auto file_crc = crc32file(received_file.path());
       if (file_crc == 0) {
         LOG(ERROR) << "Error calculating CRC32 of: " << current_receive_file_->filename();
       } else {

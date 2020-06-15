@@ -41,7 +41,7 @@ namespace wwiv::net {
 
 WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<File>&& file)
     : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(),
-                   crc32file(file->full_pathname())),
+                   crc32file(file->path())),
       file_(std::move(file)) {
   LOG(INFO) << "WFileTransferFile: " << filename;
   if (filename.find(File::pathSeparatorChar) != string::npos) {

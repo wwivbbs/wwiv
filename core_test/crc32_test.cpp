@@ -36,7 +36,7 @@ TEST(Crc32Test, Simple) {
 
   ASSERT_TRUE(File::Exists(path));
 
-  const auto crc = crc32file(path.string());
+  const auto crc = crc32file(path);
   const uint32_t expected = 0x4a17b156;
 
   // use wwiv/scripts/crc32.py to generate golden values as needed.
