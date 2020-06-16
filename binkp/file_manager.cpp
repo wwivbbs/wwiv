@@ -194,7 +194,7 @@ void FileManager::rename_ftn_pending_files() {
     if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
       move_without_overrite(rpath, ipath, "already exists in fido inbound dir. Please move manually.");
-    } else if (is_tic_file(file)) {
+    } else if (is_tic_file(file) && net_.fido.process_tic) {
       // TODO: here is where we can do the TIC support.
       // If TIC file, process tic file and move it and archive to the net_dir
       // then pass to networkt to process. For now HACK - let's just move all unknown

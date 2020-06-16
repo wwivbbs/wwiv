@@ -22,9 +22,6 @@
 #include "core/file.h"
 #include "binkp/file_manager.h"
 #include "core/textfile.h"
-
-
-
 #include <string>
 
 using std::endl;
@@ -38,8 +35,8 @@ class FileManagerTest : public testing::Test {
 public:
   FileManagerTest() {
     const auto& root = file_helper_.TempDir();
-    net_networks_rec net{};
     to_char_array(net.name, "WWIVnet");
+    net.fido.process_tic = true;
     net.type = network_type_t::ftn;
     net.fido.bad_packets_dir = "b";
     net.fido.inbound_dir = "in";
@@ -54,6 +51,9 @@ public:
 
     const auto receive_dir = FilePath(root, "r");
     fm = std::make_unique<FileManager>(root.string(), net, receive_dir.string());
+    r = fm->dirs().receive_dir();
+    t = fm->dirs().tic_dir();
+    u = fm->dirs().unknown_dir();
   }
 
   bool CreateTic(const std::filesystem::path& dir, const std::string filename) {
@@ -73,22 +73,19 @@ public:
       f.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       f.Close();
     }
-
     return true;
   }
 
   FileHelper file_helper_;
+  net_networks_rec net{};
   std::unique_ptr<FileManager> fm;
+  std::filesystem::path r;
+  std::filesystem::path t;
+  std::filesystem::path u;
 };
 
 TEST_F(FileManagerTest, Basic) {
-  const auto& d = fm->dirs();
-  const std::filesystem::path r = d.receive_dir();
-  const std::filesystem::path t = d.tic_dir();
-
   ASSERT_TRUE(CreateTic(r, "foo.zip"));
-  ASSERT_TRUE(File::Exists(r / "foo.zip"));
-  ASSERT_TRUE(File::Exists(r / "foo.tic"));
 
   fm->ReceiveFile("foo.zip");
   fm->ReceiveFile("foo.tic");
@@ -100,4 +97,28 @@ TEST_F(FileManagerTest, Basic) {
 
   EXPECT_TRUE(File::Exists(t / "foo.zip"));
   EXPECT_TRUE(File::Exists(t / "foo.tic"));
+}
+
+TEST_F(FileManagerTest, NoProcessTic) {
+  ASSERT_TRUE(CreateTic(r, "foo.zip"));
+
+  net.fido.process_tic = false;
+  const auto receive_dir = FilePath(file_helper_.TempDir(), "r");
+  fm = std::make_unique<FileManager>(file_helper_.TempDir().string(), net, receive_dir.string());
+  r = fm->dirs().receive_dir();
+  t = fm->dirs().tic_dir();
+  u = fm->dirs().unknown_dir();
+  fm->ReceiveFile("foo.zip");
+  fm->ReceiveFile("foo.tic");
+
+
+  fm->rename_ftn_pending_files();
+
+  EXPECT_FALSE(File::Exists(r / "foo.zip"));
+  EXPECT_FALSE(File::Exists(r / "foo.tic"));
+  EXPECT_FALSE(File::Exists(t / "foo.zip"));
+  EXPECT_FALSE(File::Exists(t / "foo.tic"));
+
+  EXPECT_TRUE(File::Exists(u / "foo.zip"));
+  EXPECT_TRUE(File::Exists(u / "foo.tic"));
 }
