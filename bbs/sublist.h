@@ -21,4 +21,4 @@
 void old_sublist();
 void SubList();
 
-#endif  // __INCLUDED_BBS_SUBLIST_H__
+#endif // __INCLUDED_BBS_SUBLIST_H__

@@ -437,4 +437,3 @@ void sub_xtr_add(int n, int nn) {
     a()->subs().sub(n).nets[nn] = xnp;
   }
 }
-

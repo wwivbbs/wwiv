@@ -21,4 +21,4 @@
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
 
-#endif  // __INCLUDED_BBS_SUBREQ_H__
+#endif // __INCLUDED_BBS_SUBREQ_H__
