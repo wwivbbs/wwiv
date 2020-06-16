@@ -47,6 +47,7 @@ public:
   [[nodiscard]] const std::filesystem::path& TempDir() const { return tmp_; }
   [[nodiscard]] std::string ReadFile(const std::filesystem::path& name) const;
   static void set_wwiv_test_tempdir(const std::string& d) noexcept;
+  static void set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept;
 
 private:
   static std::filesystem::path GetTestTempDir();

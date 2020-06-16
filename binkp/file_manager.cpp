@@ -16,17 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "networkb/file_manager.h"
+#include "binkp/file_manager.h"
 
+#include "binkp/wfile_transfer_file.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "networkb/wfile_transfer_file.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/files/tic.h"
-
 #include <map>
 #include <string>
 #include <vector>
@@ -169,7 +168,7 @@ static bool is_tic_file(const std::string& fn) {
 
 static bool move_without_overrite(const std::filesystem::path& src,
                                   const std::filesystem::path& dest, const std::string& msg) {
-  LOG(INFO) << "Attempting to move " << src.string() << "to: " << dest.string();
+  LOG(INFO) << "       Attempting to move " << src.string() << " => " << dest.string();
   if (!File::Exists(dest)) {
     return File::Move(src, dest);
   }
@@ -183,10 +182,10 @@ static bool move_without_overrite(const std::filesystem::path& src,
 void FileManager::rename_ftn_pending_files() {
   VLOG(1) << "STATE: rename_ftn_pending_files";
   const auto rdir = dirs_.receive_dir();
+  const sdk::files::TicParser tic_parser(rdir);
   for (const auto& file : received_files()) {
     const auto ipath = FilePath(dirs_.inbound_dir(), file);
     const auto rpath = FilePath(rdir, file);
-    const auto tpath = FilePath(dirs_.tic_dir(), file);
     const auto upath = FilePath(dirs_.unknown_dir(), file);
     if (!File::Exists(rpath)) {
       VLOG(1) << "rfile does not exist: " << rpath;
@@ -201,12 +200,18 @@ void FileManager::rename_ftn_pending_files() {
       // then pass to networkt to process. For now HACK - let's just move all unknown
       // to the tick dir.
       const auto ticpath = FilePath(rdir, file);
-      sdk::files::Tic tic(ticpath);
+      auto otick = tic_parser.parse(file);
+      if (!otick) {
+        LOG(ERROR) << "Unable to parse TIC file: " << ticpath;
+        continue;
+      }
+      auto tic = otick.value();
       if (tic.IsValid()) {
         LOG(INFO) << "Tic file " << ticpath.string() << " is valid.";
-        const auto tfpath = FilePath(rdir, tic.file);
-        move_without_overrite(rpath, tfpath, "File (from TIC) file already existed in TIC path.");
-        move_without_overrite(rpath, tpath, "TIC file already existsed in TIC path.");
+        move_without_overrite(FilePath(rdir, tic.file), FilePath(dirs_.tic_dir(), tic.file),
+                              "File (from TIC) file already exists in TIC path.");
+        move_without_overrite(rpath, FilePath(dirs_.tic_dir(), file),
+                              "TIC file already exists in TIC path.");
       } else {
         LOG(ERROR) << "       Tic file " << ticpath.string() << " IS NOT VALID.";
       }
@@ -217,12 +222,12 @@ void FileManager::rename_ftn_pending_files() {
   // pass 2: anything remaining move to unknown dir.
   for (const auto& file : received_files()) {
     const auto rpath = FilePath(rdir, file);
-    const auto upath = FilePath(dirs_.unknown_dir(), file);
     if (!File::Exists(rpath)) {
       VLOG(1) << "rfile does not exist: " << rpath;
       continue;
     }
     if (File::Exists(rpath)) {
+      const auto upath = FilePath(dirs_.unknown_dir(), file);
       File::Move(rpath, upath);
     }
 

@@ -15,13 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb_test/fake_connection.h"
+#include "binkp_test/fake_connection.h"
 
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/socket_exceptions.h"
 #include "core/strings.h"
-#include "networkb/binkp_commands.h"
+#include "binkp/binkp_commands.h"
 #include <chrono>
 #include <cstring>
 #include <iostream>

@@ -15,14 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/binkp_config.h"
+#include "binkp/binkp_config.h"
 
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
-#include "networkb/config_exceptions.h"
+#include "binkp/config_exceptions.h"
 #include "sdk/networks.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"

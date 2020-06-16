@@ -9,5 +9,5 @@ set(NETWORK_MAIN
 set_max_warnings()
 
 add_executable(network2 ${NETWORK_MAIN})
-target_link_libraries(network2 networkb_lib net_core core sdk)
+target_link_libraries(network2 binkp_lib net_core core sdk)
 

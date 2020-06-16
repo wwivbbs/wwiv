@@ -19,7 +19,7 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/net_log.h"
+#include "binkp/net_log.h"
 #include "fmt/printf.h"
 #include <chrono>
 #include <string>

@@ -19,12 +19,12 @@
 
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/binkp.h"
-#include "networkb/binkp_commands.h"
-#include "networkb/binkp_config.h"
+#include "binkp/binkp.h"
+#include "binkp/binkp_commands.h"
+#include "binkp/binkp_config.h"
 #include "sdk/callout.h"
-#include "networkb/transfer_file.h"
-#include "networkb_test/fake_connection.h"
+#include "binkp/transfer_file.h"
+#include "binkp_test/fake_connection.h"
 #include <string>
 #include <thread>
 

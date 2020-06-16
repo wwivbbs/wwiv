@@ -646,6 +646,13 @@ FidoAddress FloFile::destination_address() const { return *dest_; }
 FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net)
   : FtnDirectories(bbsdir, net, net.dir) {}
 
+static void md(const std::vector<std::string>& paths) {
+  for (const auto& p : paths) {
+    if (!File::Exists(p)) {
+      File::mkdirs(p);
+    }
+  }
+}
 // Receive dirs is relative to BBS home.
 FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net,
                                std::string receive_dir)
@@ -658,9 +665,10 @@ FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec
       bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)),
       receive_dir_(std::move(receive_dir)),
       tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
-      unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir))
-{
+      unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir)) {
   VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;
+  md({inbound_dir_, temp_inbound_dir_, temp_outbound_dir(), netmail_dir_, bad_packets_dir_,
+     receive_dir_, tic_dir_, unknown_dir_});
 }
 
 FtnDirectories::~FtnDirectories() = default;

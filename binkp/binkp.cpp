@@ -17,6 +17,12 @@
 /**************************************************************************/
 #include "binkp/binkp.h"
 
+#include "binkp/binkp_commands.h"
+#include "binkp/binkp_config.h"
+#include "binkp/cram.h"
+#include "binkp/file_manager.h"
+#include "binkp/net_log.h"
+#include "binkp/transfer_file.h"
 #include "core/connection.h"
 #include "core/crc32.h"
 #include "core/datetime.h"
@@ -28,17 +34,10 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/printf.h"
-#include "binkp/binkp_commands.h"
-#include "binkp/binkp_config.h"
-#include "binkp/cram.h"
-#include "binkp/file_manager.h"
-#include "binkp/net_log.h"
-#include "binkp/transfer_file.h"
-#include "binkp/wfile_transfer_file.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
-#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_address.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>

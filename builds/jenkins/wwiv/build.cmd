@@ -229,10 +229,10 @@ del result*.xml
 dir
 sdk_tests.exe --gtest_output=xml:result-sdk.xml
 
-cd %WWIV_CMAKE_DIR%\networkb_test
+cd %WWIV_CMAKE_DIR%\binkp_test
 del result*.xml
 dir
-networkb_tests.exe --gtest_output=xml:result-networkb.xml
+binkp_tests.exe --gtest_output=xml:result-networkb.xml
 
 cd %WWIV_CMAKE_DIR%\net_core_test
 del result*.xml

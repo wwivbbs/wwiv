@@ -22,8 +22,8 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "fmt/printf.h"
-#include "networkb/transfer_file.h"
-#include "networkb/wfile_transfer_file.h"
+#include "binkp/transfer_file.h"
+#include "binkp/wfile_transfer_file.h"
 #include <chrono>
 #include <filesystem>
 #include <string>

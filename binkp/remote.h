@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_NETWORKB_REMOTE_USER_H__
 #define __INCLUDED_NETWORKB_REMOTE_USER_H__
 
-#include "networkb/binkp_config.h"
+#include "binkp/binkp_config.h"
 #include <cstdint>
 #include <string>
 

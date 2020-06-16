@@ -7,16 +7,17 @@ set(test_sources
   binkp_config_test.cpp
   cram_test.cpp
   fake_connection.cpp
+  file_manager_test.cpp
   transfer_file_test.cpp
   net_log_test.cpp
   ppp_config_test.cpp
-  networkb_test_main.cpp
+  binkp_test_main.cpp
 )
 
 set_max_warnings()
 
-add_executable(networkb_tests ${test_sources})
-target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest sdk)
-
-add_test(networkb_tests networkb_tests)
+add_executable(binkp_tests ${test_sources})
+target_link_libraries(binkp_tests binkp_lib core core_fixtures gtest sdk)
+ 
+add_test(binkp_tests binkp_tests)
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2020, WWIV Software Services             */
+/*             Copyright (C)2016-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,46 +15,35 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
-#include "networkb/ppp_config.h"
+#ifndef __INCLUDED_NETWORKB_CRAM_H__
+#define __INCLUDED_NETWORKB_CRAM_H__
 
-#include <cstdint>
 #include <string>
 
-using std::string;
-using namespace wwiv::net;
-using namespace wwiv::strings;
+namespace wwiv {
+namespace net {
+  
+class Cram {
+public:
+  Cram() noexcept = default;
+  virtual ~Cram() = default;
 
-class ParsePPPConfigLineTest : public testing::Test {};
+  bool ValidatePassword(const std::string& challenge, 
+                        const std::string& secret, 
+                        const std::string& given_hashed_secret);
+  std::string CreateHashedSecret(const std::string& challenge, const std::string& secret);
 
-TEST_F(ParsePPPConfigLineTest, Basic) {
-  uint16_t node;
-  PPPNodeConfig config;
+  bool GenerateChallengeData();
+  [[nodiscard]] std::string challenge_data() const { return challenge_data_; }
+  void set_challenge_data(const std::string& challenge_data) { challenge_data_ = challenge_data; }
 
-  string line = "@1234 addy@example.com";
-  ASSERT_TRUE(ParseAddressNetLine(line, &node, &config));
-  EXPECT_EQ(1234, node);
-  EXPECT_EQ("addy@example.com", config.email_address);
-}
+private:
+  std::string challenge_data_;
+  bool initialized_ = false;
+};
 
-TEST_F(ParsePPPConfigLineTest, InvalidLine) {
-  uint16_t node;
-  PPPNodeConfig config;
 
-  string line = "*@1234 myhost -";
-  ASSERT_FALSE(ParseAddressNetLine(line, &node, &config));
-}
+}  // namespace net
+}  // namespace wwiv
 
-TEST(PPPConfigTest, NodeConfig) {
-  FileHelper files;
-  files.Mkdir("network");
-  const string line("@2 foo@example.com");
-  files.CreateTempFile("network/address.net", line);
-  const auto network_dir = files.DirName("network");
-  PPPConfig config(1, "mybbs", network_dir);
-  const PPPNodeConfig* node_config = config.ppp_node_config_for(2);
-  ASSERT_TRUE(node_config != nullptr);
-  EXPECT_EQ("foo@example.com", node_config->email_address);
-}
+#endif  // __INCLUDED_NETWORKB_CRAM_H__

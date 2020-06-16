@@ -33,7 +33,7 @@
 #include "fmt/format.h"
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
-#include "networkb/binkp_config.h"
+#include "binkp/binkp_config.h"
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"

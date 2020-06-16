@@ -16,13 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "networkb/remote.h"
+#include "binkp/remote.h"
 
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "networkb/binkp_config.h"
+#include "binkp/binkp_config.h"
 #include "sdk/fido/fido_address.h"
 #include <string>
 

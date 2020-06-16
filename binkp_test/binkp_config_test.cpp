@@ -16,23 +16,56 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/cram.h"
-
-#include <cstdint>
+#include "binkp/binkp_config.h"
+#include "sdk/config.h"
 #include <string>
 
-using std::endl;
 using std::string;
-using std::unique_ptr;
 using namespace wwiv::net;
 using namespace wwiv::strings;
+using namespace wwiv::sdk;
 
+class ParseBinkConfigLineTest : public testing::Test {};
 
-TEST(CramTest, Basic) {
-  Cram c;
-  string h = c.CreateHashedSecret("cafebabecafebabecafebabecafebabe", "WELCOME");
-  // fidopoll from mystic returned bfd5323f395243161863e7a9cd1de854
-  EXPECT_EQ("bfd5323f395243161863e7a9cd1de854", h);
+TEST_F(ParseBinkConfigLineTest, NoPort) {
+  const string line = "@1234 myhost";
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_TRUE(r.has_value());
+  auto [node, config] = r.value();
+  EXPECT_EQ("1234", node);
+  EXPECT_EQ("myhost", config.host);
+  EXPECT_EQ(24554, config.port);
+}
+
+TEST_F(ParseBinkConfigLineTest, Port) {
+  string line = "@1234 myhost:2345";
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_TRUE(r.has_value());
+  auto [node, config] = r.value();
+  EXPECT_EQ("1234", node);
+  EXPECT_EQ("myhost", config.host);
+  EXPECT_EQ(2345, config.port);
+}
+
+TEST_F(ParseBinkConfigLineTest, InvalidLine) {
+  const string line = "*@1234 myhost";
+  auto r = ParseBinkConfigLine(line);
+  ASSERT_FALSE(r.has_value());
+}
+
+TEST(BinkConfigTest, NodeConfig) {
+  FileHelper files;
+  files.Mkdir("network");
+  const string line("@2 example.com");
+  files.CreateTempFile("network/binkp.net", line);
+  const auto network_dir = files.DirName("network");
+  Config wwiv_config(files.TempDir());
+  BinkConfig config(1, wwiv_config, network_dir);
+  const binkp_session_config_t* node_config = config.binkp_session_config_for(2);
+  ASSERT_TRUE(node_config != nullptr);
+  EXPECT_EQ("example.com", node_config->host);
+  EXPECT_EQ(24554, node_config->port);
 }

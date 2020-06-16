@@ -15,36 +15,20 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_WFILE_TRANSFER_FILE_H__
-#define __INCLUDED_NETWORKB_WFILE_TRANSFER_FILE_H__
+#include "core/log.h"
+#include "core_test/file_helper.h"
 
-#include "networkb/transfer_file.h"
-#include "sdk/fido/fido_util.h"
-#include <memory>
-#include <string>
-#include <core/file.h>
+#include "gtest/gtest.h"
 
-namespace wwiv {
-namespace net {
-  
-class WFileTransferFile : public TransferFile {
-public:
-  WFileTransferFile(const std::string& filename, std::unique_ptr<wwiv::core::File>&& file);
-  virtual ~WFileTransferFile();
+using namespace wwiv::core;
 
-  [[nodiscard]] int file_size() const override final;
-  bool Delete() override final;
-  bool GetChunk(char* chunk, int start, int size) override final;
-  bool WriteChunk(const char* chunk, int size) override final;
-  bool Close() override final;
-  void set_flo_file(std::unique_ptr<wwiv::sdk::fido::FloFile>&& f) { flo_file_ = std::move(f); }
+int main(int argc, char* argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  LoggerConfig log_config{};
+  log_config.log_startup = false;
+  Logger::Init(argc, argv, log_config);
 
- private:
-  std::unique_ptr<wwiv::core::File> file_; 
-  std::unique_ptr<wwiv::sdk::fido::FloFile> flo_file_;
-};
-
-}  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETWORKB_WFILE_TRANSFER_FILE_H__
+  tzset();
+  FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
+  return RUN_ALL_TESTS();
+} 

@@ -17,6 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include "file_helper.h"
+
+#include "core/command_line.h"
+
 #include "gtest/gtest.h"
 
 #include <cerrno>
@@ -25,6 +28,10 @@
 
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/log.h"
+#include "core/os.h"
+
+
 #include <filesystem>
 #include "core/strings.h"
 
@@ -58,7 +65,35 @@ bool FileHelper::Mkdir(const string& oname) const {
 
 // static
 void FileHelper::set_wwiv_test_tempdir(const std::string& d) noexcept {
-  basedir_ = std::filesystem::canonical(d);
+  // Use absolute vs. canonical here so that if you have symlinks
+  // or other things (like subst drives), you can use that to shorten
+  // the path -- making it less likely wwiv 4.x data structures will
+  // blow up on path length.
+  basedir_ = std::filesystem::absolute(d);
+}
+
+void FileHelper::set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept {
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.AddStandardArgs();
+  cmdline.add_argument(
+      {"wwiv_test_tempdir", "Use instead of WWIV_TEST_TEMPDIR environment variable.", ""});
+  cmdline.set_no_args_allowed(true);
+  if (!cmdline.Parse()) {
+    LOG(ERROR) << "Failed to parse cmdline.";
+  }
+
+  auto tmpdir = cmdline.arg("wwiv_test_tempdir").as_string();
+  if (tmpdir.empty()) {
+    tmpdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
+  }
+  if (tmpdir.empty()) {
+    return;
+  }
+  if (!File::Exists(tmpdir)) {
+    File::mkdirs(tmpdir);
+  }
+  File::set_current_directory(tmpdir);
+  set_wwiv_test_tempdir(tmpdir);
 }
 
 // static

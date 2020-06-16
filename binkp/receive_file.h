@@ -20,7 +20,7 @@
 
 #include "core/log.h"
 #include "core/strings.h"
-#include "networkb/transfer_file.h"
+#include "binkp/transfer_file.h"
 #include <cstdint>
 #include <ctime>
 #include <memory>

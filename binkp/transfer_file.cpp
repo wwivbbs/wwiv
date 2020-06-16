@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/transfer_file.h"
+#include "binkp/transfer_file.h"
 
 #include "core/crc32.h"
 #include "core/log.h"

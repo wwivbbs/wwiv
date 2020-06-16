@@ -20,10 +20,10 @@
 
 #include "core/command_line.h"
 #include "core/connection.h"
-#include "networkb/cram.h"
-#include "networkb/file_manager.h"
-#include "networkb/receive_file.h"
-#include "networkb/remote.h"
+#include "binkp/cram.h"
+#include "binkp/file_manager.h"
+#include "binkp/receive_file.h"
+#include "binkp/remote.h"
 #include "sdk/callout.h"
 #include <chrono>
 #include <cstdint>

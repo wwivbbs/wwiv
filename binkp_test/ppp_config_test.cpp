@@ -15,45 +15,46 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/binkp_commands.h"
+#include "gtest/gtest.h"
 
-#include <map>
+#include "core/strings.h"
+#include "core_test/file_helper.h"
+#include "binkp/ppp_config.h"
+#include <cstdint>
 #include <string>
 
-using std::map;
 using std::string;
+using namespace wwiv::net;
+using namespace wwiv::strings;
 
-namespace wwiv::net {
+class ParsePPPConfigLineTest : public testing::Test {};
 
-const int BinkpCommands::M_NUL;
-const int BinkpCommands::M_ADR;
-const int BinkpCommands::M_PWD;
-const int BinkpCommands::M_FILE;
-const int BinkpCommands::M_OK;
-const int BinkpCommands::M_EOB;
-const int BinkpCommands::M_GOT;
-const int BinkpCommands::M_ERR;
-const int BinkpCommands::M_BSY;
-const int BinkpCommands::M_GET;
-const int BinkpCommands::M_SKIP;
+TEST_F(ParsePPPConfigLineTest, Basic) {
+  uint16_t node;
+  PPPNodeConfig config;
 
-// static
-string BinkpCommands::command_id_to_name(int command_id) {
-  static const map<int, string> map = {
-    {M_NUL, "M_NUL"},
-    {M_ADR, "M_ADR"},
-    {M_PWD, "M_PWD"},
-    {M_FILE, "M_FILE"},
-    {M_OK, "M_OK"},
-    {M_EOB, "M_EOB"},
-    {M_GOT, "M_GOT"},
-    {M_ERR, "M_ERR"},
-    {M_BSY, "M_BSY"},
-    {M_GET, "M_GET"},
-    {M_SKIP, "M_SKIP"},
-  };
-  return map.at(command_id);
+  string line = "@1234 addy@example.com";
+  ASSERT_TRUE(ParseAddressNetLine(line, &node, &config));
+  EXPECT_EQ(1234, node);
+  EXPECT_EQ("addy@example.com", config.email_address);
 }
 
+TEST_F(ParsePPPConfigLineTest, InvalidLine) {
+  uint16_t node;
+  PPPNodeConfig config;
 
-} // namespace wwiv
+  string line = "*@1234 myhost -";
+  ASSERT_FALSE(ParseAddressNetLine(line, &node, &config));
+}
+
+TEST(PPPConfigTest, NodeConfig) {
+  FileHelper files;
+  files.Mkdir("network");
+  const string line("@2 foo@example.com");
+  files.CreateTempFile("network/address.net", line);
+  const auto network_dir = files.DirName("network");
+  PPPConfig config(1, "mybbs", network_dir);
+  const PPPNodeConfig* node_config = config.ppp_node_config_for(2);
+  ASSERT_TRUE(node_config != nullptr);
+  EXPECT_EQ("foo@example.com", node_config->email_address);
+}

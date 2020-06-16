@@ -16,17 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "networkb/cram.h"
+#include "binkp/cram.h"
 
+#include "core/log.h"
+#include "core/md5.h"
+#include "core/strings.h"
 #include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
-
-#include "core/md5.h"
-#include "core/log.h"
-#include "core/strings.h"
 
 using std::string;
 using namespace wwiv::strings;

@@ -15,42 +15,46 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_CRAM_H__
-#define __INCLUDED_NETWORKB_CRAM_H__
+#ifndef __INCLUDED_NETWORKB_FILE_MANAGER_H__
+#define __INCLUDED_NETWORKB_FILE_MANAGER_H__
 
-#include <chrono>
-#include <cstddef>
-#include <cstdint>
+#include "binkp/remote.h"
+#include "binkp/transfer_file.h"
+#include "sdk/net.h"
+#include "sdk/fido/fido_util.h"
 #include <functional>
-#include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
 namespace wwiv {
 namespace net {
   
-class Cram {
+class FileManager {
 public:
-  Cram() noexcept {}
-  virtual ~Cram() {}
+  explicit FileManager(const std::string& root_directory, const net_networks_rec& net,
+                       const std::string& receive_dir);
+  virtual ~FileManager() = default;
 
-  bool ValidatePassword(const std::string& challenge, 
-                        const std::string& secret, 
-                        const std::string& given_hashed_secret);
-  std::string CreateHashedSecret(const std::string& challenge, const std::string& secret);
+  [[nodiscard]] std::vector<TransferFile*> CreateTransferFileList(const Remote& remote) const;
+  void ReceiveFile(const std::string& filename);
+  [[nodiscard]] const std::vector<std::string>& received_files() const { return received_files_; }
+  void rename_wwivnet_pending_files();
+  void rename_ftn_pending_files();
 
-  bool GenerateChallengeData();
-  std::string challenge_data() const { return challenge_data_; }
-  void set_challenge_data(const std::string& challenge_data) { challenge_data_ = challenge_data; }
+  // For tests.
+  const wwiv::sdk::fido::FtnDirectories& dirs() const { return dirs_; }
 
 private:
-  std::string challenge_data_;
-  bool initialized_ = false;
-};
+  [[nodiscard]] std::vector<TransferFile*> CreateWWIVnetTransferFileList(int destination_node) const;
+  [[nodiscard]] std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
 
+  const net_networks_rec net_;
+  const wwiv::sdk::fido::FtnDirectories dirs_;
+  const std::string network_directory_;
+  std::vector<std::string> received_files_;
+};
 
 }  // namespace net
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETWORKB_CRAM_H__
+#endif  // __INCLUDED_NETWORKB_FILE_MANAGER_H__

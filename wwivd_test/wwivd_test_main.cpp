@@ -33,28 +33,8 @@ int main(int argc, char* argv[]) {
   LoggerConfig log_config{};
   log_config.log_startup = false;
   Logger::Init(argc, argv, log_config);
-  CommandLine cmdline(argc, argv, "net");
-  cmdline.AddStandardArgs();
-  cmdline.add_argument(
-      {"wwiv_test_tempdir", "Use instead of WWIV_TEST_TEMPDIR environment variable.", ""});
-  cmdline.set_no_args_allowed(true);
-  if (!cmdline.Parse()) {
-    LOG(ERROR) << "Failed to parse cmdline.";
-  }
-
   tzset();
-
-  auto tmpdir = cmdline.arg("wwiv_test_tempdir").as_string();
-  if (tmpdir.empty()) {
-    tmpdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
-  }
-  if (!tmpdir.empty()) {
-    if (!File::Exists(tmpdir)) {
-      File::mkdirs(tmpdir);
-    }
-    File::set_current_directory(tmpdir);
-    FileHelper::set_wwiv_test_tempdir(tmpdir);
-  }
+  FileHelper::set_wwiv_test_tempdir_from_commandline(argc, argv);
 
   return RUN_ALL_TESTS();
 }

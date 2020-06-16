@@ -15,13 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/ppp_config.h"
+#include "binkp/ppp_config.h"
 
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
-#include "networkb/config_exceptions.h"
+#include "binkp/config_exceptions.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include <map>

@@ -17,9 +17,18 @@
 /**************************************************************************/
 
 // WWIV Network Redirector (network.exe)
-#include <cctype>
+#include "binkp/binkp_config.h"
+#include "binkp/ppp_config.h"
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "net_core/net_cmdline.h"
+#include "sdk/config.h"
 #include <cstdlib>
-#include <fcntl.h>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -27,20 +36,6 @@
 #include <string>
 #include <vector>
 
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/os.h"
-#include "networkb/binkp_config.h"
-#include "core/connection.h"
-#include "net_core/net_cmdline.h"
-#include "networkb/ppp_config.h"
-
-#include "sdk/config.h"
-#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
