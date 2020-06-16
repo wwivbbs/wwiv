@@ -25,7 +25,7 @@ namespace net {
   
 class Cram {
 public:
-  Cram() noexcept = default;
+  Cram() = default;
   virtual ~Cram() = default;
 
   bool ValidatePassword(const std::string& challenge, 
