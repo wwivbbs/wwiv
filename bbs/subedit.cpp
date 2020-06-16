@@ -322,6 +322,10 @@ static void modify_sub(int n) {
     }
     break;
     case 'J': {
+      const auto num_nets = wwiv::stl::ssize(a()->net_networks);
+      if (!num_nets) {
+        break;
+      }
       a()->subs().set_sub(n, r);
       char ch2 = 'A';
       if (!r.nets.empty()) {

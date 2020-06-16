@@ -259,9 +259,16 @@ void sub_xtr_add(int n, int nn) {
     a()->subs().sub(n).nets.push_back({});
   }
   subboard_network_data_t xnp = {};
-  int network_number = -1;
+  // Start with the first network number, only ask if
+  // we have more than 1 network to choose from.
+  int network_number = 0;
+  const auto num_nets = wwiv::stl::ssize(a()->net_networks);
+  if (num_nets == 0) {
+    LOG(ERROR) << "Called sub_xtr_add when no networks defined.";
+    return;
+  }
 
-  if (wwiv::stl::ssize(a()->net_networks) > 1) {
+  if (num_nets > 1) {
     std::set<char> odc;
     onx[0] = 'Q';
     onx[1] = 0;
