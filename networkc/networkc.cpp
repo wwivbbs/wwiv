@@ -178,7 +178,12 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
         }
 
         // Check to see if TIC files exist.
-
+        const bool process_tic = net.fido.process_tic;
+        const bool tic_file_exist = File::ExistsWildcard(FilePath(dirs.tic_dir(), "*.tic"));
+        if (process_tic && tic_file_exist) {
+          VLOG(2) << "Trying to process TIC files";
+          System(create_network_cmdline(net_cmdline, 't', ""));
+        }
 
         if (exists_bundle(net_cmdline.config(), net)) {
           VLOG(2) << "Trying to FTN export";
@@ -210,7 +215,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
 
     return 0;
   } catch (const std::exception& e) {
-    LOG(ERROR) << "ERROR: [networkf]: " << e.what();
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd() << "]: " << e.what();
   }
   return 2;
 }

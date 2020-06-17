@@ -17,7 +17,6 @@
 /**************************************************************************/
 
 // WWIV5 NetworkC
-#include "../core/log.h"
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -27,27 +26,20 @@
 #include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/version.h"
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/fido/fido_util.h"
-#include "sdk/filenames.h"
-#include "sdk/net/packets.h"
 #include "sdk/status.h"
 #include "sdk/fido/fido_directories.h"
 #include "sdk/files/dirs.h"
 #include "sdk/files/files.h"
 #include "sdk/files/tic.h"
-
-
+#include "sdk/net/packets.h"
 #include <cstdlib>
-#include <ctime>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 
 using std::cout;
@@ -80,7 +72,11 @@ std::optional<files::directory_t> FindDir(const files::Dirs& dirs, const std::st
   return std::nullopt;
 }
 
-bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_files) {
+bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files) {
+  if (!net.fido.process_tic) {
+    LOG(ERROR) << "Exiting without attempting to process TIC files; TIC processing disabled for network: " << net.name;
+    return false;
+  }
   const FtnDirectories ftn_directories(config.root_directory(), net);
   files::Dirs dirs(config.datadir());
   if (!dirs.Load()) {
@@ -124,13 +120,13 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     const auto ext_desc = JoinStrings(t.ldesc, "\r\n");
     if (op.has_value()) {
       LOG(INFO) << "File already exists in file area";
-      cout << "** Updating file." << std::endl;
+      cout << "** Updating : "  << r.aligned_filename() << std::endl;
       if (!fa->UpdateFile(r, op.value())) {
         LOG(ERROR) << "Failed to update File: " << fn.aligned_filename();
         continue;
       }
     } else {
-      cout << "** Adding file." << std::endl;
+      cout << "** Adding  :" << r.aligned_filename() << std::endl;
       if (!fa->AddFile(r)) {
         LOG(ERROR) << "Error adding file: " << r.aligned_filename();
         continue;
@@ -151,7 +147,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     const auto src = FilePath(ftn_directories.tic_dir(), r);
     const auto tic = FilePath(ftn_directories.tic_dir(), f.name);
     const auto dest = FilePath(d.path, r);
-    if (save_files) {
+    if (save_tic_files) {
       File::Copy(src, dest);
     } else {
       File::Move(src, dest);
@@ -170,23 +166,28 @@ int networkt_main(const NetworkCommandLine& net_cmdline) {
 
     switch (net.type) {
     case network_type_t::ftn: {
-      bool save_files = net_cmdline.cmdline().barg("save_files");
-      if (!process_ftn_tic(net_cmdline.config(), net, save_files)) {
+      const auto save_tic_files = net_cmdline.cmdline().barg("save_tic_files");
+      if (!process_ftn_tic(net_cmdline.config(), net, save_tic_files)) {
         return 1;
       }
     } break;
     case network_type_t::wwivnet:
-      break;
+      LOG(ERROR) << "TIC support not implemented for WWIVnet";
+      return 1;
     case network_type_t::internet:
+      LOG(ERROR) << "TIC support not implemented for Internet";
+      return 1;
     case network_type_t::news:
+      LOG(ERROR) << "TIC support not implemented for NNTP";
+      return 1;
     default:
-      // Nothing to do for these.
-      break;
+      LOG(ERROR) << "Unknown network type: " << static_cast<int>(net.type);
+      return 1;
     }
 
     return 0;
   } catch (const std::exception& e) {
-    LOG(ERROR) << "ERROR: [networkt]: " << e.what();
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd() << "]: " << e.what();
   }
   return 2;
 }
@@ -199,7 +200,7 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
   // TODO(rushfan): Change to false when done testing.
-  cmdline.add_argument(BooleanCommandLineArgument{"save_files", 'S', "Save files, do not delete TIC and archives", true});
+  cmdline.add_argument(BooleanCommandLineArgument{"save_tic_files", 'S', "Save TIC files, do not delete TIC and archives", true});
 
   const NetworkCommandLine net_cmdline(cmdline, 't');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {

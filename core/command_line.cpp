@@ -322,7 +322,7 @@ bool CommandLine::AddStandardArgs() {
   add_argument({"bindir", "Main BBS binary directory.", File::current_directory().string(),
                 "WWIV_BIN_DIR"});
   add_argument(
-  {"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory().string(),
+  {"bbsdir", "Root BBS directory (i.e. C:\\bbs)", File::current_directory().string(),
    "WWIV_DIR"});
   add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT",
                 File::current_directory().string(), "WWIV_CONFIG_DIR"});
