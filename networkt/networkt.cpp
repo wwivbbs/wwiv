@@ -72,7 +72,7 @@ std::optional<files::directory_t> FindDir(const files::Dirs& dirs, const std::st
   return std::nullopt;
 }
 
-bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files) {
+bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files, bool skip_delete) {
   if (!net.fido.process_tic) {
     LOG(ERROR) << "Exiting without attempting to process TIC files; TIC processing disabled for network: " << net.name;
     return false;
@@ -86,6 +86,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
   files::FileApi api(config.datadir());
 
   FindFiles ff(FilePath(ftn_directories.tic_dir(), "*.tic"), FindFilesType::files);
+  auto first = true;
   const files::TicParser parser(ftn_directories.tic_dir());
   for (const auto& f : ff) {
     auto ot = parser.parse(f.name);
@@ -107,51 +108,60 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
       LOG(ERROR) << "Unable to open file area: " << d.filename;
       continue;
     }
+    if (first) {
+      LOG(INFO) << "------------------------------------------------------------------------------";
+      first = false;
+    }
     files::FileName fn(t.file);
     auto op = fa->FindFile(fn);
     files::FileRecord r;
-    r.set_filename(fn.aligned_filename());
+    r.set_filename(fn);
     r.set_description(t.desc);
     r.set_extended_description(!t.ldesc.empty());
-    r.u().numbytes = t.size();
-    to_char_array(r.u().date, t.date().to_string("%m/%d/%y"));
+    r.set_numbytes(t.size());
+    r.set_date(t.date());
     const auto actual_t = File::creation_time(FilePath(ftn_directories.tic_dir(), r));
-    to_char_array(r.u().actualdate, DateTime::from_time_t(actual_t).to_string("%m/%d/%y"));
+    r.set_actual_date(DateTime::from_time_t(actual_t));
     const auto ext_desc = JoinStrings(t.ldesc, "\r\n");
     if (op.has_value()) {
       LOG(INFO) << "File already exists in file area";
-      cout << "** Updating : "  << r.aligned_filename() << std::endl;
-      if (!fa->UpdateFile(r, op.value())) {
+      LOG(INFO) << "** Updating: "  << r.aligned_filename();
+      if (!fa->UpdateFile(r, op.value(), ext_desc)) {
         LOG(ERROR) << "Failed to update File: " << fn.aligned_filename();
         continue;
       }
     } else {
-      cout << "** Adding  :" << r.aligned_filename() << std::endl;
-      if (!fa->AddFile(r)) {
+      LOG(INFO) << "** Adding  :" << r.aligned_filename();
+      if (!fa->AddFile(r, ext_desc)) {
         LOG(ERROR) << "Error adding file: " << r.aligned_filename();
         continue;
-      }
-      if (!t.ldesc.empty()) {
-        fa->AddExtendedDescription(r.aligned_filename(), ext_desc);
       }
       if (!fa->Save()) {
         LOG(ERROR) << "Error saving file area: " << d.filename;
         continue;
       }
     }
-    // TODO(rushfan): Move file.
-    cout << "File Name  : " << r.aligned_filename() << std::endl;
-    cout << "Description: " << t.desc << std::endl;
-    cout << "Ext Desc   : " << std::endl << ext_desc << std::endl;
-    cout << "------------------------------------------------------------------------------" << std::endl;
+    // Display information about the file;
+    LOG(INFO) << "File Name  : " << r.aligned_filename();
+    LOG(INFO) << "Description: " << t.desc;
+    LOG(INFO) << "Ext Desc   : ";
+    const auto v = SplitString(ext_desc, "\r\n", true);
+    for (const auto& l : v) {
+      LOG(INFO) << "    " << l;
+    }
+    LOG(INFO) << "------------------------------------------------------------------------------";
     const auto src = FilePath(ftn_directories.tic_dir(), r);
     const auto tic = FilePath(ftn_directories.tic_dir(), f.name);
     const auto dest = FilePath(d.path, r);
     if (save_tic_files) {
+      VLOG(1) << "Not moving file, just copy, --save_tic_files == true";
       File::Copy(src, dest);
     } else {
+      VLOG(1) << "Moving file to: " << dest.string();
       File::Move(src, dest);
-      File::Remove(tic);
+      if (!skip_delete) {
+        File::Remove(tic);
+      }
     }
   }
   return true;
@@ -167,7 +177,8 @@ int networkt_main(const NetworkCommandLine& net_cmdline) {
     switch (net.type) {
     case network_type_t::ftn: {
       const auto save_tic_files = net_cmdline.cmdline().barg("save_tic_files");
-      if (!process_ftn_tic(net_cmdline.config(), net, save_tic_files)) {
+      const auto skip_delete = net_cmdline.skip_delete();
+      if (!process_ftn_tic(net_cmdline.config(), net, save_tic_files, skip_delete)) {
         return 1;
       }
     } break;
@@ -199,8 +210,8 @@ int main(int argc, char** argv) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
-  // TODO(rushfan): Change to false when done testing.
-  cmdline.add_argument(BooleanCommandLineArgument{"save_tic_files", 'S', "Save TIC files, do not delete TIC and archives", true});
+  cmdline.add_argument(BooleanCommandLineArgument{
+      "save_tic_files", 'S', "Save TIC files, do not delete TIC and archives", false});
 
   const NetworkCommandLine net_cmdline(cmdline, 't');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {

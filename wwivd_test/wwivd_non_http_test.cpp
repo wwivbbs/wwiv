@@ -66,7 +66,7 @@ TEST(BadIps, Smoke) {
 
 TEST(AutoBlock, ShouldBlock) {
   wwivd_blocking_t b{};
-  b.auto_blacklist = true;
+  b.auto_blocklist = true;
   b.auto_bl_seconds = 1;
   b.auto_bl_sessions = 1;
   FileHelper helper;
@@ -82,7 +82,7 @@ TEST(AutoBlock, ShouldBlock) {
 
 TEST(AutoBlock, ShouldNotBlock) {
   wwivd_blocking_t b{};
-  b.auto_blacklist = true;
+  b.auto_blocklist = true;
   b.auto_bl_seconds = 1;
   b.auto_bl_sessions = 1;
   FileHelper helper;

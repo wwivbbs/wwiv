@@ -25,9 +25,9 @@
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/wwivd_config.h"
-#include "wwivconfig/utility.h"
 #include <memory>
 #include <string>
+#include <utility>
 
 using std::string;
 using std::unique_ptr;
@@ -51,14 +51,14 @@ static const char enter_to_edit[] = "[Press Enter to Edit]";
 template <class T> class SubDialog : public BaseEditItem {
 public:
   SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
-    : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), t_(t), fn_(fn) {};
+    : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), t_(t), fn_(std::move(fn)) {};
   virtual ~SubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
-    auto ch = window->GetChar();
+    const auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       fn_(t_, window);
       window->RedrawWin();
@@ -78,7 +78,7 @@ private:
 };
 
 static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window) {
-  bool done = false;
+  auto done = false;
   do {
     vector<ListBoxItem> items;
     for (const auto& e : b_.block_cc_countries) {
@@ -89,7 +89,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    auto result = list.Run();
+    const auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
@@ -102,7 +102,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
         wwiv::stl::erase_at(b_.block_cc_countries, result.selected);
       } break;
       case 'I': {
-        const string code_str =
+        const auto code_str =
             dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
         if (code_str.empty()) {
           break;
@@ -110,7 +110,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
         auto code_num = to_number<int>(code_str);
         const auto pos = result.selected;
         if (pos >= 0 && pos < ssize(items)) {
-          wwiv::stl::insert_at(b_.block_cc_countries, pos, code_num);
+          insert_at(b_.block_cc_countries, pos, code_num);
         } else {
           b_.block_cc_countries.push_back(code_num);
         }
@@ -166,7 +166,7 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
   items.add(new Label(COL1_LINE, y, ""));
   y++;
   items.add(new Label(COL1_LINE, y, "Enable Auto Blocking?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.auto_blacklist));
+            new BooleanEditItem(COL1_POSITION, y, &b.auto_blocklist));
   y++;
   items.add(new Label(COL1_LINE, y, "Max Sessions Before Blocking:"),
             new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_sessions));
@@ -220,7 +220,7 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
 }
 
 static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
-  bool done = false;
+  auto done = false;
   do {
     vector<ListBoxItem> items;
     for (const auto& e : c_.bbses) {
@@ -231,7 +231,7 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-    ListBoxResult result = list.Run();
+    auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
       case 'D': {
@@ -241,10 +241,10 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
         if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
           break;
         }
-        wwiv::stl::erase_at(c_.bbses, result.selected);
+        erase_at(c_.bbses, result.selected);
       } break;
       case 'I': {
-        const string name = dialog_input_string(window, "Enter BBS Name: ", 8);
+        const auto name = dialog_input_string(window, "Enter BBS Name: ", 8);
         if (name.empty()) {
           break;
         }
@@ -253,7 +253,7 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
         e.key = name.front();
         auto pos = result.selected;
         if (pos >= 0 && pos < ssize(items)) {
-          wwiv::stl::insert_at(c_.bbses, pos, e);
+          insert_at(c_.bbses, pos, e);
         } else {
           c_.bbses.push_back(e);
         }

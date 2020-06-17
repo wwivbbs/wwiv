@@ -286,7 +286,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
 
   // Not blocked address nor blocked country. See if it's a new
   // connection, and if so, should we block it now.
-  if (b.auto_blacklist && data.auto_blocker_) {
+  if (b.auto_blocklist && data.auto_blocker_) {
     if (!data.auto_blocker_->Connection(remote_peer)) {
       // We have a newly blocked address.
       LOG(INFO) << "Denying connection attempt from AutoBlocker: " << remote_peer;
@@ -354,8 +354,8 @@ ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
 
   conn.send("\r\n\r\n", 1s);
 
-  return (num_escapes > 1) ? ConnectionHandler::MailerModeResult::ALLOW
-                           : ConnectionHandler::MailerModeResult::DENY;
+  return num_escapes > 1 ? ConnectionHandler::MailerModeResult::ALLOW
+                         : ConnectionHandler::MailerModeResult::DENY;
 }
 
 void ConnectionHandler::HandleConnection() {

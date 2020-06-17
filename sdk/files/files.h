@@ -122,7 +122,9 @@ public:
 
   FileRecord ReadFile(int num);
   bool AddFile(const FileRecord& f);
+  bool AddFile(FileRecord& f, const std::string& ext_desc);
   bool UpdateFile(FileRecord& f, int num);
+  bool UpdateFile(FileRecord& f, int num, const std::string& ext_desc);
   bool DeleteFile(const FileRecord& f, int file_number);
   bool DeleteFile(int file_number);
 
@@ -132,6 +134,7 @@ public:
   // then don't update f.
   bool AddExtendedDescription(FileRecord& f, int num, const std::string& text);
   bool AddExtendedDescription(const std::string& file_name, const std::string& text);
+  bool AddExtendedDescription(const FileRecord& f, const std::string& text);
   bool DeleteExtendedDescription(FileRecord& f, int num);
   bool DeleteExtendedDescription(const std::string& file_name);
   std::optional<std::string> ReadExtendedDescriptionAsString(FileRecord& f);

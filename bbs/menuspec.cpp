@@ -149,7 +149,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
           a()->users()->readuser(&ur, f.u().ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < f.u().daten) {
-              const string username_num = a()->names()->UserName(a()->usernum);
+              const auto username_num = a()->names()->UserName(a()->usernum);
               ssm(f.u().ownerusr) << username_num << " downloaded '" << f.aligned_filename() << "' on " << date();
             }
           }
@@ -181,10 +181,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
  * bFree  = If true, security on door will not back checked
  */
 bool MenuRunDoorName(const char *pszDoor, bool bFree) {
-  int nDoorNumber = FindDoorNo(pszDoor);
-  return (nDoorNumber >= 0) ? MenuRunDoorNumber(nDoorNumber, bFree) : false;
+  const int door_number = FindDoorNo(pszDoor);
+  return door_number >= 0 ? MenuRunDoorNumber(door_number, bFree) : false;
 }
-
 
 bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
   if (!bFree && !ValidateDoorAccess(nDoorNumber)) {
@@ -206,7 +205,7 @@ int FindDoorNo(const char *pszDoor) {
 }
 
 bool ValidateDoorAccess(int nDoorNumber) {
-  int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
+  auto inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
   const auto& c = a()->chains->at(nDoorNumber);
   if (inst != 0) {
     const auto inuse_msg = fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
@@ -252,9 +251,8 @@ bool ValidateDoorAccess(int nDoorNumber) {
 void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
-  string s = mmkey(MMKeyAreaType::subs);
-  for (uint16_t i = 0; (i < a()->subs().subs().size())
-       && (a()->usub[i].subnum != -1); i++) {
+  const auto s = mmkey(MMKeyAreaType::subs);
+  for (auto i = 0; i < ssize(a()->subs().subs()) && a()->usub[i].subnum != -1; i++) {
     if (s == a()->usub[i].keys) {
       a()->set_current_user_sub_num(i);
     }
@@ -262,18 +260,18 @@ void ChangeSubNumber() {
 }
 
 void ChangeDirNumber() {
-  bool done = false;
+  auto done = false;
   while (!done && !a()->hangup_) {
     bout << "|#7Select Dir number : |#0";
 
-    string s = mmkey(MMKeyAreaType::dirs);
+    const auto s = mmkey(MMKeyAreaType::dirs);
 
     if (s[0] == '?') {
       DirList();
       bout.nl();
       continue;
     }
-    for (uint16_t i = 0; i < a()->dirs().size(); i++) {
+    for (auto i = 0; i < ssize(a()->dirs()); i++) {
       if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;
@@ -284,9 +282,9 @@ void ChangeDirNumber() {
 
 
 static void SetConf(ConferenceType t, int d) {
-  conf_info_t info = get_conf_info(t);
+  auto info = get_conf_info(t);
 
-  for (size_t i = 0; i < info.uc.size() && info.uc[i].confnum != -1; i++) {
+  for (auto i = 0; i < ssize(info.uc) && info.uc[i].confnum != -1; i++) {
     if (d == info.confs[info.uc[i].confnum].designator) {
       setuconf(t, i, -1);
       break;

@@ -140,7 +140,7 @@ int Main(CommandLine& cmdline) {
   if (c.blocking.use_badip_txt) {
     data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
   }
-  if (c.blocking.auto_blacklist) {
+  if (c.blocking.auto_blocklist) {
     if (!data.bad_ips_) {
       data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
     }

@@ -729,7 +729,7 @@ int try_to_download(const std::string& file_mask, int dn) {
     }
 
     write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-    auto d = fmt::sprintf("%-40.40s", f.u().description);
+    auto d = fmt::sprintf("%-40.40s", f.description());
     abort = false;
     rtn = add_batch(d, f.aligned_filename(), dn, f.numbytes());
 
@@ -1049,7 +1049,7 @@ void removefilesnotthere(int dn, int* autodel) {
     auto candidate_fn = FilePath(a()->dirs()[dn].path, f);
     if (!File::Exists(candidate_fn)) {
       StringTrim(f.u().description);
-      candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.u().description);
+      candidate_fn = fmt::sprintf("|#2%s :|#1 %-40.40s", f.aligned_filename(), f.description());
       if (!*autodel) {
         bout.backline();
         bout << candidate_fn;

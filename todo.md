@@ -41,10 +41,9 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark.
-* Create new directory (temp dir) to receive files into, not
-  into the main net.dir anymore.
-* rename networkb_tests to binkp_tests
-* move the binkp code out of networkb into new binkp lib.
+* create networkt to move tic files into the bbs.
+* 
+
 
 ## core::File Improvements
 ***
@@ -84,6 +83,9 @@
 * get rid of stripfn
 * fix get_file_idz
 * make wwivutil fix use filesapi for extended descriptions.
+* Add overload of AddFile, UpdateFile and handles external descirptions too, i.e.
+  add a 3rd parameter for the external description.  Or put it into the FileRecord
+  class.
 
 
 ## Open Questions

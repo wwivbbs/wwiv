@@ -52,8 +52,7 @@ using namespace wwiv::core;
     }                                                                                              \
   }
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 template <class Archive>
 void serialize(Archive& ar, wwivd_blocking_t &b) {
@@ -61,7 +60,18 @@ void serialize(Archive& ar, wwivd_blocking_t &b) {
   SERIALIZE(b,use_badip_txt);
   SERIALIZE(b, use_goodip_txt);
   SERIALIZE(b, max_concurrent_sessions);
-  SERIALIZE(b, auto_blacklist);
+
+  SERIALIZE(b, auto_blocklist);
+  try {
+    // TODO(rushfan): Get rid of this later in 5.5.  This will read in the old name
+    // and next time wwivconfig saves this out, it'll write out both the new
+    // and old names. In 5.6 we'll get rid of this and only use the new name.
+    // This code will no longer be needed after 5.5 final release.
+    ar(cereal::make_nvp("auto_blacklist", b.auto_blocklist));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+
   SERIALIZE(b, auto_bl_sessions);
   SERIALIZE(b, auto_bl_seconds);
   SERIALIZE(b, use_dns_rbl);
@@ -113,5 +123,4 @@ bool wwivd_config_t::Save(const Config & config) {
   return file.Save();
 }
 
-}
 }

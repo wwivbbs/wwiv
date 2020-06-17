@@ -233,11 +233,35 @@ bool FileArea::AddFile(const FileRecord& f) {
   return true;
 }
 
+bool FileArea::AddFile(FileRecord& f, const std::string& ext_desc) {
+  f.set_extended_description(!ext_desc.empty());
+  if (!AddFile(f)) {
+    return false;
+  }
+  if (ext_desc.empty()) {
+    return true;
+  }
+  return AddExtendedDescription(f, ext_desc);
+}
+
 bool FileArea::UpdateFile(FileRecord& f, int num) {
   files_.at(num) = f.u();
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
   return true;
+}
+
+bool FileArea::UpdateFile(FileRecord& f, int num, const std::string& ext_desc) {
+  f.set_extended_description(!ext_desc.empty());
+  if (!UpdateFile(f, num)) {
+    return false;
+  }
+  if (ext_desc.empty()) {
+    return true;
+  }
+  // Delete any old description before adding new ones.
+  DeleteExtendedDescription(f, num);
+  return AddExtendedDescription(f, num, ext_desc);
 }
 
 bool FileArea::DeleteFile(const FileRecord& f, int file_number) {
@@ -277,9 +301,10 @@ bool FileArea::AddExtendedDescription(FileRecord& f, int num, const std::string&
   if (!ValidateFileNum(f, num)) {
     return false;
   }
-  const auto r = AddExtendedDescription(f.aligned_filename(), text);
+  const auto r = AddExtendedDescription(f, text);
+  const auto need_ext_desc_set = !f.has_extended_description();
   f.set_extended_description(true);
-  if (num > 0) {
+  if (need_ext_desc_set && num > 0) {
     UpdateFile(f, num);
   }
   return r;
@@ -291,6 +316,10 @@ bool FileArea::AddExtendedDescription(const std::string& file_name, const std::s
     return false;
   }
   return o.value()->AddExtended(file_name, text);
+}
+
+bool FileArea::AddExtendedDescription(const FileRecord& f, const std::string& text) {
+  return AddExtendedDescription(f.aligned_filename(), text);
 }
 
 bool FileArea::DeleteExtendedDescription(FileRecord& f, int num) {

@@ -23,6 +23,12 @@
 #include <optional>
 #include <string>
 
+namespace wwiv {
+namespace core {
+class DateTime;
+}
+}
+
 namespace wwiv::sdk::files {
 
 class FileName final {
@@ -52,7 +58,8 @@ public:
 
   [[nodiscard]] uploadsrec& u() { return u_; }
   [[nodiscard]] const uploadsrec& u() const { return u_; }
-  [[nodiscard]] uint32_t numbytes() const noexcept { return u_.numbytes; }
+  [[nodiscard]] uint32_t numbytes() const noexcept;
+  void set_numbytes(int size);
   [[nodiscard]] bool has_extended_description() const noexcept;
   void set_extended_description(bool b);
 
@@ -62,8 +69,12 @@ public:
   [[nodiscard]] bool mask(int mask) const;
   void set_mask(int mask, bool on);
 
+  bool set_filename(const FileName& filename);
   bool set_filename(const std::string& unaligned_filename);
   bool set_description(const std::string& desc);
+  [[nodiscard]] std::string description() const;
+  bool set_date(const wwiv::core::DateTime& dt);
+  bool set_actual_date(const wwiv::core::DateTime& dt);
   [[nodiscard]] FileName filename() const;
   [[nodiscard]] std::string aligned_filename() const;
   [[nodiscard]] std::string unaligned_filename() const;

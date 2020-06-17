@@ -119,6 +119,20 @@ TEST_F(FilesTest, Add) {
   EXPECT_STREQ(f.u().filename, cu.at(1).filename);
 }
 
+TEST_F(FilesTest, Add_ExtendedDescription) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  auto area = api_helper_.CreateAndPopulate(name, {});
+
+  ASSERT_TRUE(area->AddFile(f1, "Hello"));
+  auto opos = area->FindFile(f1);
+  ASSERT_TRUE(opos);
+  auto af = area->ReadFile(opos.value());
+  EXPECT_TRUE(af.has_extended_description());
+  EXPECT_STREQ("Hello", area->ReadExtendedDescriptionAsString(af).value().c_str());
+}
+
 TEST_F(FilesTest, Add_Order) {
   const string name = test_info_->name();
   FileRecord f1{ul("FILE0001.ZIP", "", 1234)};
@@ -306,8 +320,24 @@ TEST_F(FilesTest, UpdateFile) {
   f1.set_filename("foo.zip");
   EXPECT_TRUE(area->UpdateFile(f1, pos.value()));
 
-  auto f = area->ReadFile(pos.value());
+  const auto f = area->ReadFile(pos.value());
   EXPECT_EQ(f.aligned_filename(), "FOO     .ZIP");
+}
+
+TEST_F(FilesTest, Update_ExtendedDescription) {
+  const string name = test_info_->name();
+  const auto now = DateTime::now().to_daten_t();
+  FileRecord f1{ul("FILE0001.ZIP", "", 1234, now)};
+  auto area = api_helper_.CreateAndPopulate(name, {f1});
+
+  auto opos = area->FindFile(f1);
+  const auto pos = opos.value();
+  f1.set_numbytes(4321);
+  ASSERT_TRUE(area->UpdateFile(f1, pos, "Hello"));
+  ASSERT_TRUE(opos);
+  auto af = area->ReadFile(opos.value());
+  EXPECT_TRUE(af.has_extended_description());
+  EXPECT_STREQ("Hello", area->ReadExtendedDescriptionAsString(af).value().c_str());
 }
 
 /////////////////////////////////////////////////////////////////////////////

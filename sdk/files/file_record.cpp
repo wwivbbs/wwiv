@@ -17,13 +17,14 @@
 /**************************************************************************/
 #include "sdk/files/file_record.h"
 
+
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
 #include "sdk/vardec.h"
 #include "sdk/files/files_ext.h"
 #include <string>
-#include <utility>
 
 using std::endl;
 using std::string;
@@ -31,6 +32,11 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
+
+namespace {
+const char* WWIV_FILE_DATE_FORMAT = "%m/%d/%y";
+
+}
 
 static void _align(char* fn) {
   // TODO Modify this to handle long file names
@@ -180,6 +186,10 @@ bool FileRecord::mask(int mask) const {
   return u_.mask & mask;
 }
 
+bool FileRecord::set_filename(const FileName& filename) {
+  return set_filename(filename.unaligned_filename());
+}
+
 bool FileRecord::set_filename(const std::string& unaligned_filename) {
   if (unaligned_filename.size() > 12) {
     return false;
@@ -188,8 +198,33 @@ bool FileRecord::set_filename(const std::string& unaligned_filename) {
   return true;
 }
 
+uint32_t FileRecord::numbytes() const noexcept {
+  return u_.numbytes;
+}
+
+void FileRecord::set_numbytes(int size) {
+  u_.numbytes = size;
+}
+
 bool FileRecord::set_description(const std::string& desc) {
   to_char_array(u_.description, desc);
+  return true;
+}
+
+std::string FileRecord::description() const {
+  return u_.description;
+}
+
+bool FileRecord::set_date(const wwiv::core::DateTime& dt) {
+  const auto d = dt.to_time_t() == 0 ? DateTime::now() : dt;
+  to_char_array(u_.date, d.to_string(WWIV_FILE_DATE_FORMAT));
+  u_.daten = d.to_daten_t();
+  return true;
+}
+
+bool FileRecord::set_actual_date(const wwiv::core::DateTime& dt) {
+  const auto d = dt.to_time_t() == 0 ? DateTime::now() : dt;
+  to_char_array(u_.actualdate, d.to_string(WWIV_FILE_DATE_FORMAT));
   return true;
 }
 

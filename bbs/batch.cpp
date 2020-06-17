@@ -120,8 +120,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
       if (nRecNum > 0) {
         auto f = area->ReadFile(nRecNum);
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-        a()->user()->set_dk(a()->user()->dk() +
-                            static_cast<int>(bytes_to_k(f.u().numbytes)));
+        a()->user()->set_dk(a()->user()->dk() + bytes_to_k(f.numbytes()));
         ++f.u().numdloads;
         if (area->UpdateFile(f, nRecNum)) {
           area->Save();
@@ -215,7 +214,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               }
             }
             if (file.IsOpen()) {
-              f.u().numbytes = static_cast<daten_t>(file.length());
+              f.set_numbytes(file.length());
               file.Close();
               get_file_idz(&f.u(), b.dir());
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);

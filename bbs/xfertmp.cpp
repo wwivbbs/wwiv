@@ -757,7 +757,7 @@ void move_file_t() {
             bout << "Too many files in that directory.\r\n";
           }
           if (File::freespace_for_path(a()->dirs()[d1].path) <
-              static_cast<long>(f.u().numbytes / 1024L) + 3) {
+              static_cast<long>(f.numbytes() / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }
@@ -771,7 +771,7 @@ void move_file_t() {
       if (ok) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          f.u().daten = daten_t_now();
+          f.set_date(DateTime::now());
         }
         --cur_pos;
         auto ext_desc = a()->current_file_area()->ReadExtendedDescriptionAsString(f);
@@ -860,7 +860,7 @@ void removefile() {
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < f.u().daten) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
-                  uu.set_uk(uu.uk() - bytes_to_k(f.u().numbytes));
+                  uu.set_uk(uu.uk() - bytes_to_k(f.numbytes()));
                   a()->users()->writeuser(&uu, f.u().ownerusr);
                 }
               }

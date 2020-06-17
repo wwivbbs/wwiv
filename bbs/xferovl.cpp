@@ -131,7 +131,7 @@ void move_file() {
     if (ok && !done) {
       bout << "|#5Reset upload time for file? ";
       if (yesno()) {
-        f.u().daten = daten_t_now();
+        f.set_date(DateTime::now());
       }
       --nCurrentPos;
       string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");
@@ -141,12 +141,8 @@ void move_file() {
 
       dliscan1(d1);
       auto dest_fn = FilePath(a()->dirs()[d1].path, f);
-      if (a()->current_file_area()->AddFile(f)) {
+      if (a()->current_file_area()->AddFile(f, ss)) {
         a()->current_file_area()->Save();
-      }
-      if (!ss.empty()) {
-        const auto pos = a()->current_file_area()->FindFile(f).value_or(-1);
-        a()->current_file_area()->AddExtendedDescription(f, pos, ss);
       }
       if (src_fn != dest_fn && File::Exists(src_fn)) {
         File::Rename(src_fn, dest_fn);
@@ -320,14 +316,14 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       }
       return true;
     }
-    auto fs = fileUpload.length();
-    f.u().numbytes = static_cast<daten_t>(fs);
+    const auto fs = fileUpload.length();
+    f.set_numbytes(fs);
     fileUpload.Close();
     to_char_array(f.u().upby, a()->names()->UserName(a()->usernum));
-    to_char_array(f.u().date, date());
+    f.set_date(DateTime::now());
 
-    auto t = DateTime::from_time_t(File::creation_time(full_path)).to_string("%m/%d/%y");
-    to_char_array(f.u().actualdate, t);
+    auto t = DateTime::from_time_t(File::creation_time(full_path));
+    f.set_actual_date(t);
 
     if (d.mask & mask_PD) {
       d.mask = mask_PD;
@@ -338,14 +334,14 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     bout << "|#9File size   : |#2" << bytes_to_k(f.numbytes()) << wwiv::endl;
     if (!description.empty()) {
       f.set_description(description);
-      bout << "|#1 Description: " << f.u().description << wwiv::endl;
+      bout << "|#1 Description: " << f.description() << wwiv::endl;
     } else {
       bout << "|#9Enter a description for this file.\r\n|#7: ";
       auto desc = input_text(58);
       f.set_description(desc);
     }
     bout.nl();
-    if (f.u().description[0] == 0) {
+    if (f.description().empty()) {
       return false;
     }
     get_file_idz(&f.u(), directory_num);
@@ -354,7 +350,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       add_to_file_database(f);
     }
     a()->user()->set_uk(a()->user()->uk() + bytes_to_k(fs));
-    f.u().daten = daten_t_now();
+    f.set_date(DateTime::now());
     if (a()->current_file_area()->AddFile(f)) {
       a()->current_file_area()->Save();
     }
@@ -477,9 +473,7 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
             auto f = a()->current_file_area()->ReadFile(1);
             if (iequals(last_fn, f.aligned_filename())) {
               add_to_file_database(f);
-              a()->current_file_area()->AddExtendedDescription(f, 1, ext);
-              f.set_extended_description(true);
-              if (a()->current_file_area()->UpdateFile(f, 1)) {
+              if (a()->current_file_area()->UpdateFile(f, 1, ext)) {
                 a()->current_file_area()->Save();
               }
             }
@@ -508,9 +502,7 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
       auto f = a()->current_file_area()->ReadFile(1);
       if (iequals(last_fn, f.aligned_filename())) {
         add_to_file_database(f);
-        a()->current_file_area()->AddExtendedDescription(f, 1, ext);
-        f.set_extended_description(true);
-        if (a()->current_file_area()->UpdateFile(f, 1)) {
+        if (a()->current_file_area()->UpdateFile(f, 1, ext)) {
           a()->current_file_area()->Save();
         }
       }
@@ -655,8 +647,8 @@ void relist() {
  * Allows user to add or remove ALLOW.DAT entries.
  */
 void edit_database() {
-  char ch, s[20];
-  bool done = false;
+  char s[20];
+  auto done = false;
 
   if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
@@ -669,7 +661,7 @@ void edit_database() {
     bout << "|#2Q|#7)|#9 Quit\r\n";
     bout.nl();
     bout << "|#7Select: ";
-    ch = onek("QAR");
+    char ch = onek("QAR");
     switch (ch) {
     case 'A':
       bout.nl();
@@ -947,7 +939,7 @@ void finddescription() {
       for (auto i1 = 1;
            i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_; i1++) {
         auto f = a()->current_file_area()->ReadFile(i1);
-        auto desc = ToStringUpperCase(f.u().description);
+        auto desc = ToStringUpperCase(f.description());
 
         if (desc.find(search_string) != std::string::npos) {
           if (need_title) {

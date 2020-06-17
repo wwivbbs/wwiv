@@ -29,7 +29,6 @@
 #include "core/stl.h"
 #include "fmt/format.h"
 #include "sdk/config.h"
-#include "sdk/names.h"
 #include "sdk/files/files.h"
 #include "sdk/files/files_ext.h"
 #include "wwivutil/files/allow.h"
@@ -154,7 +153,7 @@ public:
       auto f = area->ReadFile(num);
       cout << "#" << std::setw(3) << std::left << num << " "
            << std::setw(8) << f.unaligned_filename() << " "
-           << f.u().description << std::endl;
+           << f.description() << std::endl;
       if (ext_avail && f.has_extended_description()) {
         auto so = ext.ReadExtendedAsLines(f);
         if (!so) {

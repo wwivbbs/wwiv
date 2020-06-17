@@ -32,7 +32,7 @@ struct wwivd_blocking_t {
   bool use_badip_txt = true;
   bool use_goodip_txt = true;
   int max_concurrent_sessions = 1;
-  bool auto_blacklist = true;
+  bool auto_blocklist = true;
   int auto_bl_sessions = 3;
   int auto_bl_seconds = 30;
 

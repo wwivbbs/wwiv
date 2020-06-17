@@ -46,12 +46,18 @@ What's New in WWIV 5.5 (2020)
 + wwivutil files list will now also display extended file descriptions
   in addition to short ones.
 + wwivutil files delete will also delete extended descriptions.
-+ Internal ZModem performance is 5-10x faster.
+* Internal ZModem performance is 5-10x faster.
 * dirs.json is now the source of truth for directory data (before, dirs.dat
   was the source of truth.  WWIV will automatically convert dirs.dat into
   dirs.json the first time it encounters dirs.dat without dirs.json.
 * Fixed bug where callouts were not happening as expected from wwivd due to 
   the list of networks not loading sporatically.
++ TIC support for receiving files from FTN networks is now available.  To
+  use this feature and set a default TIC directory to receive tic files into
+  and then enable TIC processing in wwivconfig for your FTN network
+  and then edit the directories to specify the correct "FTN Area Tag" for
+  the allfix file echo tag name.   After that networkc should automatically
+  move the files into the WWIV file areas specified.
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -437,8 +443,8 @@ What's New in WWIV 5.1 (2016)
 * "extra color" was only used in transfer section w/o listplus 
   (which means it's not ever used). removed the checks for it.  This
   will come back in the future somewhere else to be useful.
-* Added IP blacklisting/whitelisting and auto blocking. The settings
-  are on the blacklist page in wwivserver.exe. By default 3 connection
+* Added IP blocklisting/safelisting and auto blocking. The settings
+  are on the blocklist page in wwivserver.exe. By default 3 connection
   attempts in 120 seconds will get an IP blacklisted.
 * The wwiv server also pretends to be a FTN mailer for fun.
 * Removed F6 (toggle sysop alert), to page you after a session ends, since

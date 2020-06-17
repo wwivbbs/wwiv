@@ -1367,7 +1367,7 @@ static int move_filename(const std::string& file_name, int dn) {
           bout << "\r\nToo many files in that directory.\r\n";
         }
         if (File::freespace_for_path(a()->dirs()[nDestDirNum].path) <
-            static_cast<long>(f.u().numbytes / 1024L) + 3) {
+            static_cast<long>(f.numbytes() / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -1382,10 +1382,10 @@ static int move_filename(const std::string& file_name, int dn) {
       if (!bulk_move) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          f.u().daten = daten_t_now();
+          f.set_date(DateTime::now());
         }
       } else {
-        f.u().daten = daten_t_now();
+          f.set_date(DateTime::now());
       }
       --cp;
       auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(f).value_or("");

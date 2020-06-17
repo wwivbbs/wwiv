@@ -105,7 +105,7 @@ AutoBlocker::~AutoBlocker() = default;
 
 bool AutoBlocker::Connection(const std::string& ip) {
   VLOG(1) << "AutoBlocker::Connection: " << ip;
-  if (!b_.auto_blacklist) {
+  if (!b_.auto_blocklist) {
     return true;
   }
 
