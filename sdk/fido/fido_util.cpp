@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "sdk/fido/fido_util.h"
 
+
+#include "fido_directories.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -26,7 +28,6 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
-#include <chrono>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -35,7 +36,6 @@
 using std::string;
 using std::vector;
 using namespace wwiv::core;
-using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -519,170 +519,5 @@ std::string tz_offset_from_utc() {
   const auto dt = DateTime::now();
   return dt.to_string("%z");
 }
-
-static std::vector<std::pair<std::string, flo_directive>>
-ParseFloFile(const std::filesystem::path& path) {
-  TextFile file(path, "r");
-  if (!file.IsOpen()) {
-    return {};
-  }
-
-  std::vector<std::pair<std::string, flo_directive>> result;
-  string line;
-  while (file.ReadLine(&line)) {
-    StringTrim(&line);
-    if (line.empty()) {
-      continue;
-    }
-    auto st = line.front();
-    if (st == '^' || st == '#' || st == '~') {
-      const auto fn = line.substr(1);
-      result.emplace_back(fn, static_cast<flo_directive>(st));
-    }
-  }
-  return result;
-}
-
-FloFile::FloFile(const net_networks_rec& net, std::filesystem::path p)
-    : net_(net), path_(std::move(p)) {
-  std::filesystem::path fn;
-  if (!path_.has_filename()) {
-    // This is a malformed flo file
-    LOG(ERROR) << "Malformed FLO file found, bad filename: " << path_;
-    return;
-  }
-  if (!path_.has_extension()) {
-    // This is a malformed flo file
-    LOG(ERROR) << "Malformed FLO file found, no extension: " << path_;
-    return;
-  }
-
-  auto basename = ToStringLowerCase(path_.stem().string());
-  auto ext = ToStringLowerCase(path_.extension().string());
-
-  // Check for 4 so that it's dot + 3 letter extension
-  if (ext.length() != 4) {
-    // malformed flo file
-    LOG(ERROR) << "Malformed FLO file found, bad extension: " << path_;
-    return;
-  }
-  // extract the dot
-  ext = ext.substr(1);
-
-  if (basename.length() != 8) {
-    // malformed flo file
-    LOG(ERROR) << "Malformed FLO file found, bad stem: " << path_;
-    return;
-  }
-  if (!ends_with(ext, "lo")) {
-    // malformed flo file
-    LOG(ERROR) << "Malformed FLO file found, bad extension: " << path_;
-    return;
-  }
-  status_ = static_cast<fido_bundle_status_t>(ext.front());
-
-  auto netstr = basename.substr(0, 4);
-  auto net_num = to_number<int16_t>(netstr, 16);
-  auto nodestr = basename.substr(4);
-  auto node_num = to_number<int16_t>(nodestr, 16);
-
-  FidoAddress source(net_.fido.fido_address);
-  dest_.reset(new FidoAddress(source.zone(), net_num, node_num, 0, source.domain()));
-
-  Load();
-}
-
-FloFile::~FloFile() = default;
-
-bool FloFile::insert(const std::string& file, flo_directive directive) {
-  entries_.emplace_back(file, directive);
-  return true;
-}
-
-bool FloFile::erase(const std::string& file) {
-  for (auto it = entries_.begin(); it != entries_.end(); it++) {
-    if ((*it).first == file) {
-      entries_.erase(it);
-      return true;
-    }
-  }
-  return false;
-}
-
-bool FloFile::Load() {
-  exists_ = File::Exists(path_);
-  if (!exists_) {
-    return false;
-  }
-
-  const File f(path_);
-  poll_ = f.length() == 0;
-  entries_ = ParseFloFile(path_);
-  return true;
-}
-
-bool FloFile::Save() {
-  if (poll_ || !entries_.empty()) {
-    File f(path_);
-    if (!f.Open(File::modeCreateFile | File::modeReadWrite | File::modeText | File::modeTruncate,
-                File::shareDenyReadWrite)) {
-      return false;
-    }
-    for (const auto& e : entries_) {
-      auto dr = static_cast<char>(e.second);
-      const auto& name = e.first;
-      f.Writeln(StrCat(dr, name));
-    }
-    return true;
-  }
-  if (File::Exists(path_)) {
-    return File::Remove(path_);
-  }
-  return true;
-}
-
-FidoAddress FloFile::destination_address() const { return *dest_; }
-
-FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net)
-  : FtnDirectories(bbsdir, net, net.dir) {}
-
-static void md(const std::vector<std::string>& paths) {
-  for (const auto& p : paths) {
-    if (!File::Exists(p)) {
-      File::mkdirs(p);
-    }
-  }
-}
-// Receive dirs is relative to BBS home.
-FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net,
-                               std::string receive_dir)
-    : bbsdir_(bbsdir), net_(net), net_dir_(File::absolute(bbsdir, net.dir)),
-      inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
-      temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
-      temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
-      outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
-      netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
-      bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)),
-      receive_dir_(std::move(receive_dir)),
-      tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
-      unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir)) {
-  VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;
-  md({inbound_dir_, temp_inbound_dir_, temp_outbound_dir(), netmail_dir_, bad_packets_dir_,
-     receive_dir_, tic_dir_, unknown_dir_});
-}
-
-FtnDirectories::~FtnDirectories() = default;
-
-const std::string& FtnDirectories::net_dir() const { return net_dir_; }
-const std::string& FtnDirectories::inbound_dir() const { return inbound_dir_; }
-const std::string& FtnDirectories::temp_inbound_dir() const { return temp_inbound_dir_; }
-const std::string& FtnDirectories::temp_outbound_dir() const { return temp_outbound_dir_; }
-const std::string& FtnDirectories::outbound_dir() const { return outbound_dir_; }
-const std::string& FtnDirectories::netmail_dir() const { return netmail_dir_; }
-const std::string& FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
-const std::string& FtnDirectories::receive_dir() const { return receive_dir_; }
-
-const std::string& FtnDirectories::tic_dir() const { return tic_dir_; }
-const std::string& FtnDirectories::unknown_dir() const { return unknown_dir_; }
 
 } // namespace wwiv

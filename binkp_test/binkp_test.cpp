@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "binkp/binkp.h"
@@ -25,6 +26,8 @@
 #include "sdk/callout.h"
 #include "binkp/transfer_file.h"
 #include "binkp_test/fake_connection.h"
+#include "core/file.h"
+
 #include <string>
 #include <thread>
 

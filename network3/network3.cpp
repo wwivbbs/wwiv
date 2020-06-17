@@ -48,6 +48,8 @@
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
+#include "sdk/fido/fido_directories.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <map>

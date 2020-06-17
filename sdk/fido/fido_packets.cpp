@@ -74,7 +74,7 @@ static std::string ReadFixedLengthField(File& f, int len) {
  */
 static std::string ReadVariableLengthField(File& f, int max_len) {
   string s;
-  for (int i = 0; i < max_len; i++) {
+  for (auto i = 0; i < max_len; i++) {
     const auto ch = ReadCharFromFile(f);
     if (ch == 0) {
       return s;
@@ -117,14 +117,13 @@ bool write_packed_message(File& f, FidoPackedMessage& packet) {
 }
 
 bool write_stored_message(File& f, FidoStoredMessage& packet) {
-  auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
+  const auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
   if (num != sizeof(fido_stored_message_t)) {
     LOG(ERROR) << "Short write on write_stored_message. Wrote: " << num
                << "; expected: " << sizeof(fido_stored_message_t);
     return false;
   }
-  num = f.Write(packet.text);
-  return true;
+  return f.Write(packet.text) == ssize(packet.text);
 }
 
 /**

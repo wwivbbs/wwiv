@@ -40,6 +40,8 @@
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
 #include "sdk/subscribers.h"
+#include "sdk/fido/fido_directories.h"
+
 #include <cstdlib>
 #include <ctime>
 #include <iostream>

@@ -16,8 +16,10 @@ set(COMMON_SOURCES
   ansi/vscreen.cpp
   fido/fido_address.cpp
   fido/fido_callout.cpp
+  fido/fido_directories.cpp
   fido/fido_packets.cpp
   fido/fido_util.cpp
+  fido/flo_file.cpp
   fido/nodelist.cpp
   files/allow.cpp
   files/dirs.cpp

@@ -35,6 +35,8 @@
 #include "sdk/filenames.h"
 #include "sdk/net/packets.h"
 #include "sdk/status.h"
+#include "sdk/fido/fido_directories.h"
+
 #include <cstdlib>
 #include <ctime>
 #include <iostream>

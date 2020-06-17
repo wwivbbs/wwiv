@@ -70,20 +70,20 @@ TEST_F(FloTest, FloFile_Smoke) {
     auto e = flo.flo_entries().front();
     EXPECT_EQ("C:\\db\\outbound\\0000006f.su0", e.first);
     EXPECT_EQ(flo_directive::delete_file, e.second);
-    flo.clear();
+    EXPECT_TRUE(flo.clear());
     EXPECT_TRUE(flo.empty());
     EXPECT_TRUE(flo.Save());
     EXPECT_FALSE(File::Exists(p)) << p;
   }
 
-  flo.insert("C:\\db\\outbound\\0000006f.mo0", flo_directive::truncate_file);
+  EXPECT_TRUE(flo.insert("C:\\db\\outbound\\0000006f.mo0", flo_directive::truncate_file));
   {
     auto e = flo.flo_entries().front();
     EXPECT_EQ("C:\\db\\outbound\\0000006f.mo0", e.first);
     EXPECT_EQ(flo_directive::truncate_file, e.second);
     flo.Save();
     EXPECT_TRUE(File::Exists(p));
-    flo.clear();
+    EXPECT_TRUE(flo.clear());
     File::Remove(p);
   }
 
