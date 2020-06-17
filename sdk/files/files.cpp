@@ -83,6 +83,17 @@ std::unique_ptr<FileArea> FileApi::Open(const directory_t& dir) {
   return Open(dir.filename);
 }
 
+std::unique_ptr<FileArea> FileApi::CreateOrOpen(const directory_t& dir) {
+  auto o = Open(dir);
+  if (o) {
+    return o;
+  }
+  if (Create(dir)) {
+    return Open(dir);
+  }
+  return {};
+}
+
 const Clock* FileApi::clock() const noexcept {
   return clock_.get();  
 }
@@ -316,6 +327,10 @@ std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(
 }
 
 std::optional<int> FileArea::FindFile(const FileRecord& f) {
+  return FindFile(f.aligned_filename());
+}
+
+std::optional<int> FileArea::FindFile(const FileName& f) {
   return FindFile(f.aligned_filename());
 }
 

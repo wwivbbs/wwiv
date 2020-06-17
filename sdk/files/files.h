@@ -51,6 +51,7 @@ public:
   [[nodiscard]] bool Remove(const std::string& filename);
   [[nodiscard]] std::unique_ptr<FileArea> Open(const std::string& filename);
   [[nodiscard]] std::unique_ptr<FileArea> Open(const directory_t& dir);
+  [[nodiscard]] std::unique_ptr<FileArea> CreateOrOpen(const directory_t& dir);
 
   [[nodiscard]] const core::Clock* clock() const noexcept;
   void set_clock(std::unique_ptr<core::Clock> clock);
@@ -111,6 +112,8 @@ public:
   // File specific
   /** Optionally returns the file position for any exact match */
   std::optional<int> FindFile(const FileRecord& f);
+  /** Optionally returns the file position for any exact match */
+  std::optional<int> FindFile(const FileName& f);
   /** Optionally returns the file position for any exact match */
   std::optional<int> FindFile(const std::string& file_name);
 

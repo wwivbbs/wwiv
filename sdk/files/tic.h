@@ -38,6 +38,8 @@ public:
   [[nodiscard]] bool crc_valid() const;
   [[nodiscard]] bool size_valid() const;
   [[nodiscard]] bool exists() const;
+  [[nodiscard]] int size() const;
+  [[nodiscard]] core::DateTime date() const;
 
   std::string area;
   std::string area_description;
@@ -46,8 +48,7 @@ public:
   fido::FidoAddress to;
   std::string file;
   std::string lfile;
-  int size{};
-  core::DateTime date;
+  core::DateTime date_;
   std::string desc;
   std::vector<std::string> ldesc;
   std::string created;
@@ -57,10 +58,11 @@ public:
   std::string ftn_path;
   std::string seen_by;
   std::string pw;
-// private:
+private:
   std::filesystem::path path_;
   bool valid_;
-
+  int size_{};
+  friend class TicParser;
 };  // class
 
 class TicParser {

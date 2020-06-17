@@ -132,7 +132,7 @@ std::string unalign(const std::string& file_name) {
 }
 
 FileName::FileName(std::string aligned_filename)
-    : aligned_filename_(std::move(aligned_filename)), unaligned_filename_(unalign(aligned_filename_)) {}
+    : aligned_filename_(align(aligned_filename)), unaligned_filename_(unalign(aligned_filename_)) {}
 
 FileName::FileName(const FileName& that)
     : aligned_filename_(that.aligned_filename()), unaligned_filename_(that.unaligned_filename()) {}

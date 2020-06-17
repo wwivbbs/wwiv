@@ -20,6 +20,7 @@
 
 #include "binkp/transfer_file.h"
 #include "sdk/fido/fido_util.h"
+#include "sdk/fido/flo_file.h"
 #include <memory>
 #include <string>
 #include <core/file.h>

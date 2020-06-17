@@ -23,7 +23,6 @@
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/fido/flo_file.h"
 #include <ctime>
 #include <filesystem>
 #include <string>

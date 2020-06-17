@@ -58,8 +58,8 @@ bool Tic::size_valid() const {
   const auto fpath = FilePath(path_.parent_path(), file);
   const File f(fpath);
   const int actual_size = f.length();
-  if (actual_size != size) {
-    LOG(INFO) << "Tic FileSize !valid. actual: " << actual_size << "; expected: " << size;
+  if (actual_size != size()) {
+    LOG(INFO) << "Tic FileSize !valid. actual: " << actual_size << "; expected: " << size();
     return false;
   }
   return true;
@@ -67,6 +67,22 @@ bool Tic::size_valid() const {
 
 bool Tic::exists() const {
   return File::Exists(path_);
+}
+
+int Tic::size() const {
+  if (size_ != 0) {
+    return size_;
+  }
+  File f(path_);
+  return f.length();
+}
+
+core::DateTime Tic::date() const {
+  if (date_.to_time_t() == 0) {
+    const auto t = File::creation_time(path_);
+    return DateTime::from_time_t(t);
+  }
+  return date_;
 }
 
 TicParser::TicParser(std::filesystem::path dir) : dir_(std::move(dir)) {}
@@ -117,10 +133,10 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
     } else if (keyword == "fullname") {
       t.lfile = params;
     } else if (keyword == "size") {
-      t.size = to_number<int>(params);
+      t.size_ = to_number<int>(params);
     } else if (keyword == "date") {
       const auto dtt = to_number<time_t>(params);
-      t.date = DateTime::from_time_t(dtt);
+      t.date_ = DateTime::from_time_t(dtt);
     } else if (keyword == "desc") {
       t.desc = params;
     } else if (keyword == "ldesc") {
