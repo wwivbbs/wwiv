@@ -179,6 +179,7 @@ void Output::cls() {
   } else {
     bputch(CL);
   }
+  clear_lines_listed();
 }
 
 /**

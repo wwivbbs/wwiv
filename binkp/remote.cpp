@@ -95,7 +95,7 @@ uint16_t wwivnet_node_number_from_ftn_address(const string& address) {
 }
 
 Remote::Remote(BinkConfig* config, bool caller, const std::string& expected_remote_node)
-  : config_(config), is_caller_(caller), expected_remote_node_(expected_remote_node),
+  : config_(config), remote_is_caller_(caller), expected_remote_node_(expected_remote_node),
   default_network_name_(config_->callout_network_name()) {
   network_name_ = default_network_name_;
 
@@ -111,7 +111,7 @@ void Remote::set_address_list(const std::string& a) {
   address_list_ = a;
   StringLowerCase(&address_list_);
 
-  if (is_caller_) {
+  if (remote_is_caller_) {
     // The remote is the caller. That means we are presented with
     // a single address for the remote.
     auto name = network_name_from_single_address(address_list_);

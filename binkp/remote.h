@@ -43,7 +43,7 @@ public:
 private:
   BinkConfig* config_;
   const std::string default_network_name_;
-  bool is_caller_;
+  bool remote_is_caller_;
   const std::string expected_remote_node_;
 
   std::string system_name_;
