@@ -800,7 +800,7 @@ void networks(const wwiv::sdk::Config& config) {
             break;
           }
           const auto prompt =
-              fmt::format("Insert before which (1-%{} ? ", networks.networks().size() + 1);
+              fmt::format("Insert before which (1-{} ? ", networks.networks().size() + 1);
           const auto net_num =
               dialog_input_number(window, prompt, 1, wwiv::stl::ssize(networks.networks()) + 1);
           if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {

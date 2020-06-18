@@ -702,8 +702,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     FtnMessageDupe dupe(config);
     auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(raw_text);
     auto needs_msgid = false;
-    if (msgid.empty()) {
+    if (msgid.empty() && !is_email) {
       // Create a new MSGID if the BBS didn't put one in there already.
+      // Also only do this for conference mail messages, not for emails.
       msgid = dupe.CreateMessageID(from_address);
       needs_msgid = true;
     }
@@ -720,7 +721,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     // As of 5.3, the PID is added by the BBS software.
     // text << "\001PID: WWIV " << wwiv_version << beta_version << "\r";
     text << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
-    if (needs_msgid) {
+    if (needs_msgid && !is_email) {
       text << "\001MSGID: " << msgid << "\r";
     }
     // Implement FTS-5003. [http://ftsc.org/docs/fts-5003.001]
@@ -781,8 +782,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     }
 
     // Since we wrote the packed message, let's add it to the
-    // duplicate message database.
-    dupe.add(p);
+    // duplicate message database if it's a post.
+    if (!is_email) {
+      dupe.add(p);
+    }
     fido_packet_name = file.path().filename().string();
     return true;
   }

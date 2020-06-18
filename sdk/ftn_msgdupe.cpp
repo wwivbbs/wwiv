@@ -186,7 +186,7 @@ bool FtnMessageDupe::add(const FidoPackedMessage& msg) {
   uint32_t header_crc32 = 0;
   uint32_t msgid_crc32 = 0;
 
-  if (!FtnMessageDupe::GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
+  if (!GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
     return false;
   }
 
@@ -224,20 +224,20 @@ bool FtnMessageDupe::remove(uint32_t header_crc32, uint32_t msgid_crc32) {
 }
 
 bool FtnMessageDupe::is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const {
-  if (contains(header_dupes_, header_crc32)) {
+  if (contains(header_dupes_, header_crc32) && header_crc32 != 0) {
     return true;
   }
-  if (contains(msgid_dupes_, msgid_crc32)) {
+  if (contains(msgid_dupes_, msgid_crc32) && msgid_crc32 != 0) {
     return true;
   }
   return false;
 }
 
-bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const {
+bool FtnMessageDupe::is_dupe(const FidoPackedMessage& msg) const {
   uint32_t header_crc32 = 0;
   uint32_t msgid_crc32 = 0;
 
-  if (!FtnMessageDupe::GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
+  if (!GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
     return false;
   }
   return is_dupe(header_crc32, msgid_crc32);

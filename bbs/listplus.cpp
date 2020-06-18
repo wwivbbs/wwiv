@@ -465,7 +465,7 @@ int print_extended_plus(const std::string& file_name, int numlist, int indent, C
     return 0;
   }
   StringTrimEnd(&ss);
-  if (search_rec) {
+  if (search_rec && search_rec->filemask != "????????.???") {
     colorize_foundtext(&ss, search_rec, static_cast<uint8_t>(color));
   }
   if (indent > -1 && indent != 16) {

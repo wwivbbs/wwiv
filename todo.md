@@ -7,6 +7,14 @@
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
+* Initial Setup issues
+** When creating new ftn area, set packet archiver to zip by default
+** Pre-create directories for fido types
+** run network3 once so that the directory is setup. Maybe also add it
+   to networkc to check
+** Let networkt list the files it's skipping if process tic is disabled.
+** When adding a new network sub type, have the bbs pre-populate the 
+   uplink or at least create a zero byte file for it (nSUBNAME.net)
 
 ## Ini Files and Configuration
 ***
@@ -40,9 +48,7 @@
 
 ## Networking Cleanup
 ***
-* Figure out why new networking stack doesn't work for mark.
-* create networkt to move tic files into the bbs.
-* 
+* Figure out why new networking stack doesn't work for mark. 
 
 
 ## core::File Improvements

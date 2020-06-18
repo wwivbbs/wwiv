@@ -843,7 +843,7 @@ void xfer_defaults() {
     const std::string onek_options = "Q12345";
     bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
     bout << "|#5Which? ";
-    char ch = onek(onek_options.c_str());
+    char ch = onek(onek_options);
     switch (ch) {
     case 'Q':
       done = true;
@@ -899,7 +899,7 @@ void finddescription() {
   }
   bout << "\r\nFind description -\r\n\n";
   bout << "Enter string to search for in file description:\r\n:";
-  auto search_string = input(58);
+  const auto search_string = input(58);
   if (search_string.empty()) {
     tmp_disable_conf(false);
     return;
