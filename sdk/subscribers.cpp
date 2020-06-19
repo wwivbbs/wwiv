@@ -17,31 +17,20 @@
 /**************************************************************************/
 #include "sdk/subscribers.h"
 
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <iostream>
+#include "core/file.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "sdk/fido/fido_address.h"
 #include <map>
 #include <memory>
-#include <sstream>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "core/file.h"
-#include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/os.h"
-#include "core/textfile.h"
-#include "sdk/fido/fido_address.h"
-
 using std::set;
 using std::string;
-using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -105,7 +94,7 @@ bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<uint16
   return true;
 }
 
-bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<FidoAddress>& subscribers) {
+bool WriteFidoSubcriberFile(const std::filesystem::path& path, const std::set<FidoAddress>& subscribers) {
   TextFile file(path, "wt");
   if (!file.IsOpen()) {
     return false;

@@ -630,7 +630,7 @@ void Application::set_language_number(int n) {
   }
 }
 
-void Application::GetCaller() {
+bool Application::GetCaller() {
   wwiv::bbs::WFC wfc(this);
   remoteIO()->remote_info().clear();
   frequent_init();
@@ -667,11 +667,17 @@ void Application::GetCaller() {
   if (lokb == 2) {
     using_modem = -1;
   }
+  if (lokb == 999) {
+    // Magic exit from WWIV
+    return false;
+  }
 
   bout.okskey(true);
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
+
+  return true;
 }
 
 void Application::GotCaller(int ms) {
@@ -709,14 +715,7 @@ std::string Application::configdir() const noexcept { return configdir_; }
 std::string Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
-void Application::AbortBBS(bool bSkipShutdown) {
-  clog.flush();
-  ExitBBSImpl(errorlevel_, !bSkipShutdown);
-}
-
-void Application::QuitBBS() { ExitBBSImpl(Application::exitLevelQuit, true); }
-
-void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
+int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   if (perform_shutdown) {
     write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
     if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
@@ -736,11 +735,7 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     clog.flush();
   }
 
-  // We just delete the session class, not the application class
-  // since one day it'd be ideal to have 1 application contain
-  // N sessions for N>1.
-  delete this;
-  exit(exit_level);
+  return exit_level;
 }
 
 int Application::Run(int argc, char* argv[]) {
@@ -777,21 +772,22 @@ int Application::Run(int argc, char* argv[]) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
     return EXIT_FAILURE;
-  } else if (cmdline.help_requested()) {
+  }
+  if (cmdline.help_requested()) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
-    ExitBBSImpl(0, false);
-    return EXIT_SUCCESS;
-  } else  if (cmdline.barg("version")) {
+    return 0;
+  }
+  if (cmdline.barg("version")) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     return 0;
   }
 
-  const std::string bbs_env = environment_variable("BBS");
+  const auto bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
       LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
-      ExitBBSImpl(255, false);
+      return 255;
     }
   }
   
@@ -820,8 +816,9 @@ int Application::Run(int argc, char* argv[]) {
     if (cmdline.arg("handle").is_default()) {
       clog << "-h must be specified when using '"
            << "-x" << x << "'" << std::endl;
-      ExitBBSImpl(errorlevel_, false);
-    } else if (xarg == 'T' || xarg == 'S') {
+      return errorlevel_;
+    }
+    if (xarg == 'T' || xarg == 'S') {
       ui = cmdline.iarg("bps");
       SetCurrentSpeed(std::to_string(ui));
       // Set it false until we call LiLo
@@ -833,7 +830,7 @@ int Application::Run(int argc, char* argv[]) {
       type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
     } else {
       clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
-      ExitBBSImpl(errorlevel_, false);
+      return errorlevel_;
     }
   }
   if (this_usernum_from_commandline > 0) {
@@ -871,7 +868,7 @@ int Application::Run(int argc, char* argv[]) {
   if (!ReadConfig()) {
     // Gotta read the config before we can create the socket handles.
     // Since we may need the SSH key.
-    AbortBBS(true);
+    return Application::exitLevelNotOK;
   }
 
   const auto sysop_cmd = cmdline.sarg("sysop_cmd");
@@ -880,7 +877,9 @@ int Application::Run(int argc, char* argv[]) {
     user_already_on_ = true;
   }
   CreateComm(hSockOrComm, type);
-  InitializeBBS(!user_already_on_ && sysop_cmd.empty());
+  if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty())) {
+    return Application::exitLevelNotOK;
+  }
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
 
   auto remote_opened = true;
@@ -893,7 +892,7 @@ int Application::Run(int argc, char* argv[]) {
   if (!remote_opened) {
     // Remote side disconnected.
     clog << "Remote side disconnected." << std::endl;
-    ExitBBSImpl(oklevel_, false);
+    return oklevel_;
   }
 
   if (cmdline.barg("beginday")) {
@@ -907,7 +906,7 @@ int Application::Run(int argc, char* argv[]) {
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
-    ExitBBSImpl(oklevel_, true);
+    return oklevel_;
   }
   if (!sysop_cmd.empty()) {
     LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
@@ -934,11 +933,9 @@ int Application::Run(int argc, char* argv[]) {
       break;
     default:
       LOG(ERROR) << "Unknown Sysop Command: '" << sysop_cmd;
-      ExitBBSImpl(errorlevel_, true);
-      break;
+      return errorlevel_;
     }
-    ExitBBSImpl(oklevel_, true);
-    return -1;
+    return oklevel_;
   }
 
   do {
@@ -966,7 +963,10 @@ int Application::Run(int argc, char* argv[]) {
         if (user_already_on_) {
           GotCaller(ui);
         } else {
-          GetCaller();
+          if (!GetCaller()) {
+            // GetCaller returning false means time to exit.
+            return Application::exitLevelOK;
+          }
         }
       }
 

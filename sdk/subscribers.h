@@ -32,8 +32,8 @@ bool ReadSubcriberFile(const std::filesystem::path& filename,
                        std::set<uint16_t>& subscribers);
 bool WriteSubcriberFile(const std::filesystem::path& path,
                         const std::set<uint16_t>& subscribers);
-bool WriteSubcriberFile(const std::filesystem::path& path,
-                        const std::set<fido::FidoAddress>& subscribers);
+bool WriteFidoSubcriberFile(const std::filesystem::path& path,
+                            const std::set<fido::FidoAddress>& subscribers);
 
 
 }  // namespace sdk

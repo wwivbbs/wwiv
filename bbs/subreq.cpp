@@ -393,7 +393,7 @@ void sub_xtr_add(int n, int nn) {
       try {
         wwiv::sdk::fido::FidoAddress a(host);
         addresses.insert(a);
-        if (!WriteSubcriberFile(sub_file_name, addresses)) {
+        if (!WriteFidoSubcriberFile(sub_file_name, addresses)) {
           bout << "ERROR: Unable to add host to subscriber file";
         }
         done = true;

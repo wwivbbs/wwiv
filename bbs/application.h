@@ -250,12 +250,6 @@ public:
   /*! @function CdHome Changes directories back to the WWIV Home directory */
   void CdHome();
 
-  /*! @function AbortBBS - Shuts down the bbs at the not-ok error level */
-  void AbortBBS(bool bSkipShutdown = false);
-
-  /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
-  void QuitBBS();
-
   [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
   [[nodiscard]] uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
@@ -320,9 +314,9 @@ public:
    */
   int Run(int argc, char* argv[]) override;
 
-  void ExitBBSImpl(int exit_level, bool perform_shutdown);
+  int ExitBBSImpl(int exit_level, bool perform_shutdown);
 
-  void InitializeBBS(bool cleanup_network); // old init() method
+  [[nodiscard]] bool InitializeBBS(bool cleanup_network); // old init() method
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
   bool ReadConfig();
@@ -440,7 +434,7 @@ protected:
   /*!
    * @function GetCaller WFC Screen loop
    */
-  void GetCaller();
+  bool GetCaller();
 
   /*!
    * @function GotCaller login routines

@@ -154,7 +154,6 @@ void WFC::DrawScreen() {
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile << " NOT FOUND.";
-        a()->AbortBBS();
       }
       wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
     }
@@ -349,7 +348,8 @@ int WFC::doWFCEvents() {
         io->GotoXY(2, 23);
         bout << "|#7Exit the BBS? ";
         if (yesno()) {
-          a_->QuitBBS();
+          // lokb value of 999 means exit bbs.
+          return 999;
         }
         io->Cls();
         break;
@@ -455,8 +455,8 @@ int WFC::doWFCEvents() {
       // Quit BBS
       case 'Q':
         io->GotoXY(2, 23);
-        a_->QuitBBS();
-        break;
+        // lokb value of 999 means exit bbs.
+        return 999;
         // Read All Mail
       case 'R':
         Clear();

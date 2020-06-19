@@ -19,7 +19,6 @@
 #include "bbs/bbs.h"
 
 #include "exceptions.h"
-#include "bbs/sysoplog.h"
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -28,10 +27,10 @@
 #include "local_io/stdio_local_io.h"
 #include "localui/curses_io.h"
 #include "sdk/config.h"
-
 #include <exception>
 #include <iostream>
 #include <string>
+
 #if !defined( _WIN32 )
 #include <unistd.h>
 #endif // !_WIN32
@@ -55,38 +54,32 @@ Application* CreateSession(LocalIO* localIO) {
   app_ = new Application(localIO);
   return app_;
 }
+using wwiv::core::Logger;
+using wwiv::core::LoggerConfig;
+using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
-  Application* bbs{nullptr};
+  LoggerConfig config(LogDirFromConfig);
+  Logger::Init(argc, argv, config);
+
+  std::unique_ptr<Application> bbs;
   try {
-    using wwiv::core::Logger;
-    using wwiv::core::LoggerConfig;
-    using wwiv::sdk::LogDirFromConfig;
-
-    // Initialize the Logger.
-    LoggerConfig config(LogDirFromConfig);
-    Logger::Init(argc, argv, config);
-
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
-    bbs = CreateSession(new StdioLocalIO());
+    bbs.reset(CreateSession(new StdioLocalIO()));
     const auto return_code = bbs->Run(argc, argv);
-    bbs->ExitBBSImpl(return_code, false);
-    delete bbs;
-    return return_code;
+    return bbs->ExitBBSImpl(return_code, false);
   } catch (const wwiv::bbs::hangup_error& e) {
-    LOG(FATAL) << "BBS User Hung Up: " << e.what();
-    if (bbs != nullptr) {
-      bbs->ExitBBSImpl(Application::exitLevelOK, false);
-      delete bbs;
+    LOG(ERROR) << "BBS User Hung Up: " << e.what();
+    if (bbs) {
+      return bbs->ExitBBSImpl(Application::exitLevelOK, false);
     }
     return 0;
   } catch (const std::exception& e) {
-    if (bbs != nullptr) {
-      bbs->ExitBBSImpl(Application::exitLevelNotOK, false);
-      delete bbs;
+    LOG(ERROR) << "BBS Terminated by exception: " << e.what();
+    if (bbs) {
+      return bbs->ExitBBSImpl(Application::exitLevelNotOK, false);
     }
-    LOG(FATAL) << "BBS Terminated by exception: " << e.what();
-    return 1;
   }
+  return 1;
 }

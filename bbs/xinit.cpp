@@ -372,7 +372,7 @@ bool Application::ReadConfig() {
   IniFile ini(FilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
-    AbortBBS();
+    return false;
   }
   ReadINIFile(ini);
   if (!ReadInstanceSettings(instance_number(), ini)) {
@@ -565,7 +565,7 @@ void Application::read_gfile() {
   }
 }
 
-void Application::InitializeBBS(bool cleanup_network) {
+bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
             << wwiv_version << beta_version << ", Copyright (c) 1998-2020, WWIV Software Services."
@@ -580,7 +580,7 @@ void Application::InitializeBBS(bool cleanup_network) {
     if (!File::mkdirs(temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
       LOG(ERROR) << "It is now set to: '" << temp_directory() << "'";
-      AbortBBS();
+      return false;
     }
   }
 
@@ -588,7 +588,7 @@ void Application::InitializeBBS(bool cleanup_network) {
     if (!File::mkdirs(batch_directory())) {
       LOG(ERROR) << "Your batch dir isn't valid.";
       LOG(ERROR) << "It is now set to: '" << batch_directory() << "'";
-      AbortBBS();
+      return false;
     }
   }
 
@@ -600,23 +600,23 @@ void Application::InitializeBBS(bool cleanup_network) {
   if (!File::Exists(qs_fn)) {
     LOG(ERROR) << "Could not open file '" << qs_fn << "'";
     LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
-    AbortBBS();
+    return false;
   }
 
   if (!read_language()) {
-    AbortBBS();
+    return false;
   }
 
   read_networks();
   if (!create_message_api()) {
-    AbortBBS();
+    return false;
   }
 
   VLOG(1) << "Reading status information.";
   auto status = statusMgr->BeginTransaction();
   if (!status) {
     LOG(ERROR) << "Unable to return statusrec.dat.";
-    AbortBBS();
+    return false;
   }
 
   status->SetWWIVVersion(wwiv_num_version);
@@ -628,17 +628,17 @@ void Application::InitializeBBS(bool cleanup_network) {
 
   VLOG(1) << "Reading user names.";
   if (!read_names()) {
-    AbortBBS();
+    return false;
   }
 
   VLOG(1) << "Reading Message Areas.";
   if (!read_subs()) {
-    AbortBBS();
+    return false;
   }
 
   VLOG(1) << "Reading File Areas.";
   if (!read_dirs()) {
-    AbortBBS();
+    return false;
   }
 
   VLOG(1) << "Reading Chains.";
@@ -657,7 +657,7 @@ void Application::InitializeBBS(bool cleanup_network) {
   if (!File::mkdirs(attach_dir_)) {
     LOG(ERROR) << "Your file attachment directory is invalid.";
     LOG(ERROR) << "It is now set to: " << attach_dir_ << "'";
-    AbortBBS();
+    return false;
   }
   CdHome();
 
@@ -715,6 +715,7 @@ void Application::InitializeBBS(bool cleanup_network) {
 
   VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+  return true;
 }
 
 // begin dupphone additions
