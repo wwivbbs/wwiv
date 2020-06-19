@@ -9,7 +9,7 @@
 /*                                                                        */
 /*                http://www.apache.org/licenses/LICENSE-2.0              */
 /*                                                                        */
-/*    Unless  LISTuired  by  applicable  law  or agreed to  in writing,   */
+/*    Unless required  by  applicable  law  or agreed to  in writing,     */
 /*    software  distributed  under  the  License  is  distributed on an   */
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_FILES_ALLOW_H__
 #define __INCLUDED_WWIVUTIL_FILES_ALLOW_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -33,7 +29,7 @@ class AllowCommand final: public UtilCommand {
 public:
   AllowCommand() : UtilCommand("allow", "Manipulate allow.dat") {}
   //int Execute() override final;
-  std::string GetUsage() const override final;
+  [[nodiscard]] std::string GetUsage() const override final;
   bool AddSubCommands() override final;
 };
 

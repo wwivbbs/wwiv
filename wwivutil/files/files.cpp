@@ -17,21 +17,22 @@
 /**************************************************************************/
 #include "wwivutil/files/files.h"
 
+#include "sdk/files/files.h"
+#include "core/command_line.h"
+#include "core/log.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include "sdk/config.h"
+#include "sdk/files/files_ext.h"
+#include "wwivutil/files/allow.h"
+#include "wwivutil/files/tic.h"
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "core/stl.h"
-#include "fmt/format.h"
-#include "sdk/config.h"
-#include "sdk/files/files.h"
-#include "sdk/files/files_ext.h"
-#include "wwivutil/files/allow.h"
 
 using std::clog;
 using std::cout;
@@ -119,7 +120,16 @@ public:
     if (!o) {
       return 2;
     }
-    const auto area_num = to_number<int>(remaining().front());
+    const auto area_string = remaining().front();
+    if (area_string.empty()) {
+      LOG(ERROR) << "No file area specified";
+      return 1;
+    }
+    if (!isdigit(area_string.front())) {
+      LOG(ERROR) << "No file area number specified.  Input given: " << area_string;
+      return 1;
+    }
+    const auto area_num = to_number<int>(area_string);
     auto dirs = o.value();
 
     if (area_num < 0 || area_num >= ssize(dirs)) {
@@ -238,6 +248,9 @@ public:
 
 bool FilesCommand::AddSubCommands() {
   if (!add(make_unique<AllowCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<TicCommand>())) {
     return false;
   }
   if (!add(make_unique<AreasCommand>())) {

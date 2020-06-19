@@ -224,8 +224,12 @@ void File::Close() noexcept {
 ssize_t File::Read(void* buffer, ssize_t size) {
   const auto ret = read(handle_, buffer, size);
   if (ret == -1) {
-    LOG(ERROR) << "[DEBUG: Read errno: " << errno << " filename: " << full_path_name_
+    LOG(ERROR) << "[DEBUG]: Read errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
+    LOG(ERROR) << "Error String:        " << strerror(errno);
+#ifdef _WIN32
+    LOG(ERROR) << "Error String (DOS):  " << strerror(_doserrno);
+#endif 
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
@@ -237,6 +241,10 @@ ssize_t File::Write(const void* buffer, ssize_t size) {
   if (r == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
+    LOG(ERROR) << "Error String:        " << strerror(errno);
+#ifdef _WIN32
+    LOG(ERROR) << "Error String (DOS):  " << strerror(_doserrno);
+#endif 
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }

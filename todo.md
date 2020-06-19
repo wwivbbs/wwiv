@@ -7,7 +7,6 @@
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
-** Let networkt list the files it's skipping if process tic is disabled.
 
 ## Ini Files and Configuration
 ***
@@ -38,6 +37,8 @@
 * cleanup context class (doc comments, treat type-0 as email api
 * Move the userrec from User class to heap from stack.
 * simplify names in WUser
+* add to_number<T> override that takes a default value, and then change to_number<T>
+  to return an std::optional<T> as the return type.
 
 ## Networking Cleanup
 ***

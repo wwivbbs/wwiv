@@ -11,6 +11,7 @@ set(COMMAND_SOURCES
   fido/dump_fido_subscribers.cpp
   files/allow.cpp
   files/files.cpp
+  files/tic.cpp
   fix/dirs.cpp
   fix/fix.cpp
   fix/users.cpp

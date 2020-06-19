@@ -60,15 +60,16 @@ public:
     if (!otic) {
       LOG(ERROR) << "Failed to parse TIC file: " << fn.string();
     }
-    const auto tic = otic.value();
+    const auto& tic = otic.value();
     if (!tic.IsValid()) {
-      LOG(INFO) << "crc_valid: " << tic.crc_valid();
+      LOG(INFO) << "TIC file:   '" << fn.string() << " is not valid. ";
+      LOG(INFO) << "crc_valid:  " << tic.crc_valid();
       LOG(INFO) << "size_valid: " << tic.size_valid();
       LOG(INFO) << "Exists:     " << tic.exists();
       LOG(INFO) << "IsValid:    " << tic.IsValid();
       return 1;
     }
-    LOG(INFO) << "IsValid:    " << tic.IsValid();
+    LOG(INFO) << "TIC file:   '" << fn.string() << " is valid. ";
     return 0;
   }
 

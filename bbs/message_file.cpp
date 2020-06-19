@@ -157,9 +157,14 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
         }
         if (gatp >= nNumBlocksRequired) {
           gati[gatp] = static_cast<gati_t>(-1);
+          const auto text_len = ssize(text);
           for (int i = 0; i < nNumBlocksRequired; i++) {
+            char block[MSG_BLOCK_SIZE + 1];
+            memset(block, 0, sizeof(block));
             file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
-            file->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
+            const auto remaining = std::min(text_len - (i * MSG_BLOCK_SIZE), MSG_BLOCK_SIZE);
+            memcpy(block, &text[i * MSG_BLOCK_SIZE], remaining);
+            file->Write(block, MSG_BLOCK_SIZE);
             gat[gati[i]] = gati[i + 1];
           }
           save_gat(*file);

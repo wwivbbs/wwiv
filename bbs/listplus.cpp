@@ -419,7 +419,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   file_information.clear();
 
   if (a()->user()->data.lp_options & cfl_date_uploaded) {
-    if ((u->actualdate[2] == '/') && (u->actualdate[5] == '/')) {
+    if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
       buffer = fmt::sprintf("UL: %s  New: %s", u->date, u->actualdate);
       StringJustify(&buffer, 27, ' ', JustificationType::LEFT);
     } else {

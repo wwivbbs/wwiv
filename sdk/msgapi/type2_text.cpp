@@ -182,9 +182,14 @@ std::optional<messagerec> Type2Text::savefile(const string& text) {
     if (ssize(gati) >= num_blocks_required) {
       constexpr auto none = static_cast<uint16_t>(-1);
       gati.push_back(none);
+      const auto text_len = ssize(text);
       for (auto i = 0; i < num_blocks_required; i++) {
+        char block[MSG_BLOCK_SIZE + 1];
+        memset(block, 0, sizeof(block));
         msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
-        msgfile->Write(&text[i * MSG_BLOCK_SIZE], MSG_BLOCK_SIZE);
+        const auto remaining = std::min(text_len - (i * MSG_BLOCK_SIZE), MSG_BLOCK_SIZE);
+        memcpy(block, &text[i * MSG_BLOCK_SIZE], remaining);
+        msgfile->Write(block, MSG_BLOCK_SIZE);
         gat[gati[i]] = gati[i + 1];
       }
       save_gat(*msgfile, section, gat);

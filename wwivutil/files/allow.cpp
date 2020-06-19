@@ -17,17 +17,16 @@
 /**************************************************************************/
 #include "wwivutil/files/allow.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
+#include "sdk/files/allow.h"
 #include "core/command_line.h"
-#include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/files/allow.h"
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -38,9 +37,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::files;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
-namespace files {
+namespace wwiv::wwivutil::files {
 
 
 class AllowListCommand : public UtilCommand {
@@ -188,6 +185,4 @@ bool AllowCommand::AddSubCommands() {
   return true;
 }
 
-} // namespace files
-} // namespace wwivutil
 } // namespace wwiv

@@ -158,14 +158,17 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
       LOG(INFO) << "    " << l;
     }
     LOG(INFO) << "------------------------------------------------------------------------------";
-    const auto src = FilePath(ftn_directories.tic_dir(), r);
+    // Use t.file not r here since r will be the unaligned and lower-case filename,
+    // and we have to match the exact case specified. So use t.file.
+    const auto src = FilePath(ftn_directories.tic_dir(), t.file);
+    // f.name is the name of the TIC file
     const auto tic = FilePath(ftn_directories.tic_dir(), f.name);
     const auto dest = FilePath(d.path, r);
     if (save_tic_files) {
-      VLOG(1) << "Not moving file, just copy, --save_tic_files == true";
+      LOG(INFO) << "Not moving file, just copy, --save_tic_files == true";
       File::Copy(src, dest);
     } else {
-      VLOG(1) << "Moving file to: " << dest.string();
+      LOG(INFO) << "Moving file to: " << dest.string();
       File::Move(src, dest);
       if (!skip_delete) {
         File::Remove(tic);
