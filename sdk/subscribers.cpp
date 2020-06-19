@@ -47,8 +47,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 std::set<FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename) {
 
@@ -86,7 +85,7 @@ bool ReadSubcriberFile(const std::filesystem::path& filename, std::set<uint16_t>
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
-    uint16_t s = to_number<uint16_t>(line);
+    auto s = to_number<uint16_t>(line);
     if (s > 0) {
       subscribers.insert(s);
     }
@@ -106,7 +105,18 @@ bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<uint16
   return true;
 }
 
+bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<FidoAddress>& subscribers) {
+  TextFile file(path, "wt");
+  if (!file.IsOpen()) {
+    return false;
+  }
 
+  for (const auto& s : subscribers) {
+    file.WriteLine(s.as_string());
+  }
+  return true;
 }
+
+
 }
 

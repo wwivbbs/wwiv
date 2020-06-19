@@ -117,7 +117,7 @@ void modify_dir(int n) {
     bout << "|#9O) WWIV Reg     : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
     bout << "|#9T) FTN Area Tag : |#2" << r.area_tag << wwiv::endl;
     bout.nl();
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[T#7,|#1[|#7,|#1]|#7) : ";
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[T|#7,|#1[|#7,|#1]|#7) : ";
     const auto ch = onek("QABCDEFGHJKLMNOT[]", true);
     switch (ch) {
     case 'Q':
@@ -248,7 +248,7 @@ void modify_dir(int n) {
     case 'T': {
       bout.nl();
       bout << "|#2New FTN Area Tag? ";
-      auto s = input_text(r.area_tag, 20);
+      auto s = input_upper(r.area_tag, 20);
       if (!s.empty()) {
         r.area_tag= s;
       }

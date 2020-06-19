@@ -633,20 +633,22 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
   EditItems items{};
-  items.add(new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type))
-      ->set_help_text("If changing network types, exit and reenter this dialog for more options.");
+  int net_type_pos = y++;
+  int node_number_pos = 0;
   items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
-  items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
-      ->set_help_text("WWIVnet node number, or 1 for FTN networks");
   items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
   const auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
+    // skip over the node number
+    node_number_pos = y++;
     items.add(
         new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", n));
     items.add(
         new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", config, n));
   } else if (n.type == network_type_t::wwivnet) {
+    items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
+      ->set_help_text("WWIVnet node number");
     items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
               new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", n));
   }
@@ -654,13 +656,21 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   y = 1;
   items.add_labels({new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Net Type:"),
                     new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Net Name:"),
-                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Node #:"),
-                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Directory:")});
+                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Directory:"),
+                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Node #:")
+  });
   if (n.type == network_type_t::ftn) {
     items.add_labels({new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Settings:"),
                       new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Addresses:")});
   }
-  items.Run(StrCat("Network Configuration: ", n.name, " [.", nn, "]"));
+
+  const auto title = StrCat("Network Configuration: ", n.name, " [.", nn, "]");
+  items.create_window(title);
+  items.window()->PutsXY(COL1_POSITION, net_type_pos, nettypes.at(static_cast<int>(n.type)).second);
+  if (n.type == network_type_t::ftn) {
+    items.window()->PutsXY(COL1_POSITION, node_number_pos, "N/A");
+  }
+  items.Run(title);
 
   if (subs_loaded && orig_network_name != n.name) {
     subs.Save();
@@ -669,7 +679,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   networks.Save();
 }
 
-static bool insert_net(const Config& config, Networks& networks, int nn) {
+static bool insert_net(const Config& config, Networks& networks, int nn, network_type_t type) {
   Subs subs(config.datadir(), networks.networks());
   if (!subs.Load()) {
     return false;
@@ -688,7 +698,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
     if (i2 >= i) {
       iscan1(i, subs, config);
       open_sub(true);
-      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
+      for (auto i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         auto p = get_post(i1);
         if (!p) {
           continue;
@@ -746,7 +756,23 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
 
   {
     net_networks_rec n{};
-    to_char_array(n.name, "NewNet");
+    n.type = type;
+    if (type == network_type_t::ftn) {
+      n.sysnum = 1;
+      to_char_array(n.name, "New FTNNet");
+      auto& f = n.fido;
+      f.bad_packets_dir = File::EnsureTrailingSlash("badpackets");
+      f.inbound_dir = File::EnsureTrailingSlash("in");
+      f.netmail_dir = File::EnsureTrailingSlash("netmail");
+      f.outbound_dir = File::EnsureTrailingSlash("out");
+      f.tic_dir = File::EnsureTrailingSlash("tic");
+      f.temp_outbound_dir = File::EnsureTrailingSlash("tempout");
+      f.temp_inbound_dir = File::EnsureTrailingSlash("tempin");
+      f.unknown_dir = File::EnsureTrailingSlash("unknown");
+      f.packet_config.compression_type = File::EnsureTrailingSlash("ZIP");
+    } else if (type == network_type_t::wwivnet) {
+      to_char_array(n.name, "New WWIVnet");
+    }
     n.dir = File::EnsureTrailingSlash("newnet.dir");
     networks.insert(nn, n);
   }
@@ -755,7 +781,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   return true;
 }
 
-void networks(const wwiv::sdk::Config& config) {
+void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
   try {
     Networks networks(config);
 
@@ -772,7 +798,7 @@ void networks(const wwiv::sdk::Config& config) {
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");
       list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-      ListBoxResult result = list.Run();
+      auto result = list.Run();
 
       if (result.type == ListBoxResultType::SELECTION) {
         edit_net(config, networks, result.selected);
@@ -800,12 +826,24 @@ void networks(const wwiv::sdk::Config& config) {
             break;
           }
           const auto prompt =
-              fmt::format("Insert before which (1-{} ? ", networks.networks().size() + 1);
+              fmt::format("Insert before which (1-{}) ? ", networks.networks().size() + 1);
           const auto net_num =
               dialog_input_number(window, prompt, 1, wwiv::stl::ssize(networks.networks()) + 1);
           if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {
+
+            static const vector<string> nettypes = {
+                {"WWIVnet "},
+                {"Fido    "},
+                {"Internet"},
+                {"Newsgroup (not supported yet)"}};
+            const auto net_type =
+                input_select_item(window, "Select Network Type of (Q) to Quit: ", nettypes);
+            if (net_type == 'Q') {
+              continue;
+            }
             if (dialog_yn(window, "Are you sure? ")) {
-              insert_net(config, networks, net_num - 1);
+              insert_net(config, networks, net_num - 1, static_cast<network_type_t>(net_type - '0'));
+              need_network3.insert(net_num - 1);
             }
           }
           break;

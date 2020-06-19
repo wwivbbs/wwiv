@@ -303,9 +303,10 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
     case 'Q':
       done = true;
       break;
-    case 'N':
-      networks(config);
-      break;
+    case 'N': {
+      std::set<int> need_network3;
+      networks(config, need_network3);
+    } break;
     case 'U':
       user_editor(config);
       break;
@@ -376,6 +377,7 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   Config config(bbsdir);
+  std::set<int> need_network3;
 
   bool legacy_4xx_mode = false;
   if (cmdline.barg("menu_editor")) {
@@ -388,20 +390,23 @@ int WInitApp::main(int argc, char** argv) {
     }
     menus(menu_dir);
     return 0;
-  } else if (cmdline.barg("user_editor")) {
+  }
+  if (cmdline.barg("user_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
     user_editor(config);
     return 0;
-  } else if (cmdline.barg("network_editor")) {
+  }
+  if (cmdline.barg("network_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
     if (!config_offsets_matches_actual(config)) {
       return 1;
     }
-    networks(config);
+    networks(config, need_network3);
     return 0;
-  } else if (cmdline.barg("4xx")) {
+  }
+  if (cmdline.barg("4xx")) {
     if (!config_offsets_matches_actual(config)) {
       return 1;
     }
@@ -503,7 +508,7 @@ int WInitApp::main(int argc, char** argv) {
       edit_languages(config);
       break;
     case 'N':
-      networks(config);
+      networks(config, need_network3);
       break;
     case 'M':
       menus(config.menudir());
@@ -533,5 +538,16 @@ int WInitApp::main(int argc, char** argv) {
   } while (!done);
 
   config.Save();
+
+  for (const auto nn : need_network3) {
+    const auto path = FilePath(File::current_directory(), "network3");
+    std::ostringstream ss;
+    ss << path;
+#ifdef _WIN32
+    ss << ".exe";
+#endif
+    ss << " ." << nn << " Y";
+    system(ss.str().c_str());
+  }
   return 0;
 }

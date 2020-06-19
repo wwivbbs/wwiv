@@ -264,7 +264,7 @@ What's New in WWIV 5.3 (2018)
   this is now fixed.
 + wwivconfig has some new parameters for how it works with 4.x
   WWIV installs.  --4xx will launch a menu with only the items
-  that work with 4.x (like wwivd editor and network.json editor)
+  that work with 4.x (like wwivd editor and network.dat editor)
   run "wwivconfig --help" for the latest list of command-line parameters.
 * Fixed internal editor word wrapping on linux.
 * fixed 8 char packet passwords truncating the last character.

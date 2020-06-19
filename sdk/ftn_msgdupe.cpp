@@ -58,7 +58,7 @@ bool FtnMessageDupe::Load() {
   DataFile<msgids> file(FilePath(datadir_, MSGDUPE_DAT),
                         File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
-    LOG(ERROR) << "Unable to initialize FtnDupe: Unable to create file.";
+    LOG(ERROR) << "Unable to initialize FtnMessageDupe: Unable to create file.";
     return false;
   }
 
@@ -68,7 +68,7 @@ bool FtnMessageDupe::Load() {
     return true;
   }
   if (!file.ReadVector(dupes_)) {
-    LOG(ERROR) << "Unable to initialize FtnDupe: Read Failed";
+    LOG(ERROR) << "Unable to initialize FtnMessageDupe: Read Failed";
     return false;
   }
   for (const auto& d : dupes_) {

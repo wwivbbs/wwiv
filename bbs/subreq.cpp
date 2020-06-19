@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include <string>
 
@@ -380,6 +381,27 @@ void sub_xtr_add(int n, int nn) {
   } else if (net.type == network_type_t::ftn) {
     // Set the fake fido node up as the host.
     xnp.host = FTN_FAKE_OUTBOUND_NODE;
+    const auto sub_file_name = FilePath(net.dir, StrCat("n", xnp.stype, ".net"));
+
+    auto addresses = wwiv::sdk::ReadFidoSubcriberFile(sub_file_name);
+    bool done = false;
+    do {
+      CheckForHangup();
+      bout.nl();
+      bout << "|#2Which FTN system (address) is the host? ";
+      const auto host = input_text(20);
+      try {
+        wwiv::sdk::fido::FidoAddress a(host);
+        addresses.insert(a);
+        if (!WriteSubcriberFile(sub_file_name, addresses)) {
+          bout << "ERROR: Unable to add host to subscriber file";
+        }
+        done = true;
+      } catch (const fido::bad_fidonet_address& e) {
+        bout << "Bad Address: " << e.what();
+      }
+    } while (!done && !a()->hangup_);
+
   } else {
     int ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);
 

@@ -18,10 +18,6 @@
 /**************************************************************************/
 #include "bbs/bbsutl1.h"
 
-#include <chrono>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
@@ -32,7 +28,6 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
-#include <filesystem>
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -40,6 +35,10 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include <chrono>
+#include <filesystem>
+#include <memory>
+#include <string>
 
 using std::string;
 using std::unique_ptr;
@@ -53,12 +52,11 @@ using namespace wwiv::strings;
  * appropriate.
  * @param emailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
- * @param pSystemmNumber OUT The System Number
+ * @param pSystemNumber OUT The System Number
  */
 void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_t* pSystemNumber) {
-  char *ss1, onx[20], ch;
-  unsigned user_number, system_number;
-  int nv, on, xx, onxi, odci;
+  char *ss1, onx[20];
+  unsigned user_number;
   std::set<char> odc;
 
   char szEmailAddress[255];
@@ -78,7 +76,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       bout << "Unknown user.\r\n";
     }
   } else if (to_number<int>(ss + 1) == 0) {
-    int i = 0;
+    int i;
     for (i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
       set_net_num(i);
       if (a()->current_net().type == network_type_t::internet) {
@@ -106,7 +104,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
     if (strchr(szEmailAddress, '@')) {
       user_number = 0;
     }
-    system_number = to_number<unsigned int>(ss);
+    const auto system_number = to_number<unsigned int>(ss);
     ss1 = strchr(ss, '.');
     if (ss1) {
       ss1++;
@@ -124,7 +122,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       *pSystemNumber = static_cast<uint16_t>(system_number);
     }
     if (*pSystemNumber && ss1) {
-      int i = 0;
+      auto i = 0;
       for (i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
         set_net_num(i);
         if (iequals(ss1, a()->network_name())) {
@@ -153,15 +151,14 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
         *pSystemNumber = *pUserNumber = 0;
       }
     } else if (*pSystemNumber && wwiv::stl::ssize(a()->net_networks) > 1) {
-      odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
-      onxi = 1;
-      nv = 0;
-      on = a()->net_num();
+      auto onxi = 1;
+      auto nv = 0;
+      const auto on = a()->net_num();
       ss = static_cast<char*>(calloc(wwiv::stl::ssize(a()->net_networks) + 1, 1));
       CHECK_NOTNULL(ss);
-      xx = -1;
+      int xx = -1;
       for (int i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
         set_net_num(i);
         if (a()->current_net().sysnum == *pSystemNumber) {
@@ -193,7 +190,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
         bout.nl();
         for (int i = 0; i < nv; i++) {
           set_net_num(ss[i]);
-          net_system_list_rec* csne = next_system(*pSystemNumber);
+          const auto* csne = next_system(*pSystemNumber);
           if (csne) {
             if (i < 9) {
               onx[onxi++] = static_cast<char>(i + '1');
@@ -206,16 +203,12 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
         }
         bout << "Q. Quit\r\n\n";
         bout << "|#2Which network (number): ";
-        int i = -1;
+        int i;
         if (nv < 9) {
-          ch = onek(onx);
-          if (ch == 'Q') {
-            i = -1;
-          } else {
-            i = ch - '1';
-          }
+          const char ch = onek(onx);
+          i = ch == 'Q' ? -1 : ch - '1';
         } else {
-          string mmk = mmkey(odc);
+          const auto mmk = mmkey(odc);
           if (mmk == "Q") {
             i = -1;
           } else {
@@ -282,7 +275,7 @@ bool ValidateSysopPassword() {
     return true;
   }
   const auto password = input_password("|#7SY: ", 20);
-  return (password == a()->config()->system_password());
+  return password == a()->config()->system_password();
 }
 
 /**
@@ -300,7 +293,7 @@ void hang_it_up() {
 /**
  * Plays a sound definition file (*.sdf) through PC speaker. SDF files
  * should reside in the gfiles dir. The only params passed to function are
- * filename and false if playback is unabortable, true if it is abortable. If no
+ * filename and false if playback is not abortable, true if it is abortable. If no
  * extension then .SDF is appended. A full path to file may be specified to
  * override gfiles dir. Format of file is:
  *
@@ -316,14 +309,14 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   }
 
   std::filesystem::path full_pathname;
-  // append gfilesdir if no path specified
+  // append gfiles directory if no path specified
   if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
     full_pathname = FilePath(a()->config()->gfilesdir(), sound_filename);
   } else {
     full_pathname = sound_filename;
   }
 
-  // append .SDF if no extension specifie
+  // append .SDF if no extension specified
   if (!full_pathname.has_extension()) {
     full_pathname.replace_extension(".sdf");
   }
@@ -345,14 +338,14 @@ bool play_sdf(const string& sound_filename, bool abortable) {
     if (abortable && bkbhit()) {
       break;
     }
-    const int nw = wordcount(soundLine, DELIMS_WHITE);
+    const auto nw = wordcount(soundLine, DELIMS_WHITE);
     if (nw >= 2) {
       const auto freq = to_number<int>(extractword(1, soundLine, DELIMS_WHITE));
       auto dur = to_number<int>(extractword(2, soundLine, DELIMS_WHITE));
 
       // only play if freq and duration > 0
       if (freq > 0 && dur > 0) {
-        int pause_delay = 0;
+        auto pause_delay = 0;
         if (nw > 2) {
           pause_delay = to_number<int>(extractword(3, soundLine, DELIMS_WHITE));
         }
@@ -384,7 +377,8 @@ string describe_area_code(int nAreaCode) {
     const auto current_town = to_number<int>(current);
     if (current_town == nAreaCode) {
       return previous;
-    } else if (current_town == 0) {
+    }
+    if (current_town == 0) {
       // Only set this on values that are town names and not area codes.
       previous = current;
     }
@@ -410,10 +404,11 @@ string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    int current_town = to_number<int>(current);
+    const auto current_town = to_number<int>(current);
     if (current_town == nTargetTown) {
       return previous;
-    } else if (current_town == 0) {
+    }
+    if (current_town == 0) {
       // Only set this on values that are town names and not area codes.
       previous = current;
     }

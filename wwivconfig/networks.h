@@ -20,7 +20,8 @@
 #define __INCLUDED_INIT_NETWORKS_H__
 
 #include "sdk/config.h"
+#include <set>
 
-void networks(const wwiv::sdk::Config& config);
+void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3);
 
 #endif // __INCLUDED_INIT_NETWORKS_H__

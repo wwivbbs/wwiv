@@ -65,7 +65,7 @@ bool dialog_yn(CursesWindow* window, const std::string& text);
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt, int max_length);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value,
                         int max_value);
-int onek(CursesWindow* window, const char* allowed, bool allow_keycodes = false);
+int onek(UIWindow* window, const std::string& allowed, bool allow_keycodes = false);
 
 EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                         const char* ss);
@@ -80,7 +80,8 @@ void input_password(CursesWindow* window, const std::string& prompt,
                     const std::vector<std::string>& text, std::string* output, int max_length);
 int messagebox(UIWindow* window, const std::string& text);
 int messagebox(UIWindow* window, const std::vector<std::string>& text);
-
+int input_select_item(UIWindow* window, const std::string& title,
+                      const std::vector<std::string>& items);
 void trimstrpath(char* s);
 
 template <typename T>

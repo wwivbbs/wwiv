@@ -321,7 +321,7 @@ static void modify_sub(int n) {
         break;
       }
       a()->subs().set_sub(n, r);
-      char ch2 = 'A';
+      auto ch2 = 'A';
       if (!r.nets.empty()) {
         bout.nl();
         bout << "|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ";
@@ -349,7 +349,7 @@ static void modify_sub(int n) {
           charstring.push_back(static_cast<char>('A' + i));
         }
         bout.Color(0);
-        char ch3 = onek(charstring);
+        auto ch3 = onek(charstring);
         if (ch3 != ' ') {
           int i = ch3 - 'A';
           if (i >= 0 && i < ssize(a()->subs().sub(n).nets)) {

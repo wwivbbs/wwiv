@@ -229,6 +229,8 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
 
     if (dupe.is_dupe(msg)) {
       LOG(ERROR) << "Skipping duplicate FTN message: " << msg.vh.subject;
+      LOG(ERROR) << "Text: " << msg.vh.text;
+      // TODO(rushfan): move this or write out saved copy?
       continue;
     }
     dupe.add(msg);
@@ -368,9 +370,6 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
   File::set_current_directory(saved_dir);
 
   import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.pkt", skip_delete);
-#ifndef _WIN32
-  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.PKT", skip_delete);
-#endif // _WIN32
   return true;
 }
 

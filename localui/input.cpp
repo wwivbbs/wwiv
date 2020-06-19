@@ -382,6 +382,28 @@ int messagebox(UIWindow* window, const vector<string>& text) {
   return dialog->GetChar();
 }
 
+int input_select_item(UIWindow* window, const std::string& prompt, const vector<string>& items) {
+  auto maxlen = wwiv::stl::ssize(prompt) + 2;
+  for (const auto& s : items) {
+    maxlen = std::max<int>(maxlen, s.length());
+  }
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, wwiv::stl::ssize(items) + 2, maxlen));
+  dialog->SetColor(SchemeId::DIALOG_TEXT);
+  auto curline = 1;
+  int index = 0;
+  std::string allowed("Q");
+  for (const auto& s : items) {
+    dialog->PutsXY(2, curline++, fmt::format("{}) {}", index, s));
+    allowed.push_back(static_cast<char>('0' + index));
+    ++index;
+  }
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
+  const auto x = (maxlen - ssize(prompt)) / 2;
+  dialog->PutsXY(x + 2, wwiv::stl::ssize(items) + 2, prompt);
+  dialog->Refresh();
+  return onek(window, allowed, false);
+}
+
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
                                 int max_length) {
   unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, wwiv::stl::ssize(prompt) + 4 + max_length));
@@ -423,7 +445,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   }
 }
 
-int onek(CursesWindow* window, const char* allowed, bool allow_keycodes) {
+int onek(UIWindow* window, const std::string& allowed, bool allow_keycodes) {
   for (;;) {
     const auto key = window->GetChar();
     if (has_key(key)) {
@@ -433,7 +455,7 @@ int onek(CursesWindow* window, const char* allowed, bool allow_keycodes) {
       continue;
     }
     const auto ch = static_cast<char>(std::toupper(key));
-    if (strchr(allowed, ch)) {
+    if (allowed.find(ch) != std::string::npos) {
       return ch;
     }
   }
@@ -661,13 +683,13 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
-  const int cx = window->GetcurX();
-  const int cy = window->GetcurY();
+  const auto cx = window->GetcurX();
+  const auto cy = window->GetcurY();
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
-  bool done = false;
+  auto done = false;
   do {
-    int ch = window->GetChar();
+    const auto ch = window->GetChar();
     switch (ch) {
     case KEY_ENTER:
     case RETURN:
@@ -692,7 +714,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
     default:
       if (ch == 32) {
         value = (value + 1) % strings.size();
-        string s = strings.at(value);
+        auto s = strings.at(value);
         if (s.size() < max_size) {
           s += string(max_size - s.size(), ' ');
         }

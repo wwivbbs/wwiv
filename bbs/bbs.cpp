@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
+
+#include "exceptions.h"
 #include "bbs/sysoplog.h"
 #include "bbs/application.h"
 #include "core/log.h"
@@ -55,6 +57,7 @@ Application* CreateSession(LocalIO* localIO) {
 }
 
 int bbsmain(int argc, char *argv[]) {
+  Application* bbs{nullptr};
   try {
     using wwiv::core::Logger;
     using wwiv::core::LoggerConfig;
@@ -66,11 +69,23 @@ int bbsmain(int argc, char *argv[]) {
 
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
-    auto* bbs = CreateSession(new StdioLocalIO());
+    bbs = CreateSession(new StdioLocalIO());
     const auto return_code = bbs->Run(argc, argv);
     bbs->ExitBBSImpl(return_code, false);
+    delete bbs;
     return return_code;
+  } catch (const wwiv::bbs::hangup_error& e) {
+    LOG(FATAL) << "BBS User Hung Up: " << e.what();
+    if (bbs != nullptr) {
+      bbs->ExitBBSImpl(Application::exitLevelOK, false);
+      delete bbs;
+    }
+    return 0;
   } catch (const std::exception& e) {
+    if (bbs != nullptr) {
+      bbs->ExitBBSImpl(Application::exitLevelNotOK, false);
+      delete bbs;
+    }
     LOG(FATAL) << "BBS Terminated by exception: " << e.what();
     return 1;
   }

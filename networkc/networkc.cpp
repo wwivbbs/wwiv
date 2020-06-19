@@ -81,6 +81,9 @@ string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, c
 
   std::ostringstream ss;
   ss << path;
+#ifdef _WIN32
+  ss << ".exe";
+#endif
   ss << " --v=" << net_cmdline.cmdline().verbose();
   if (net_cmdline.quiet()) {
     ss << " --quiet";
@@ -114,7 +117,26 @@ static bool checkup2(const time_t tFileTime, const string& dir, const string& fi
   return true;
 }
 
-static bool need_network3(const string& dir, int network_version) {
+static bool need_network3(const net_networks_rec& net, int network_version) {
+  const auto dir = net.dir;
+
+  if (!File::Exists(FilePath(dir, BBSDATA_NET))) {
+    return true;
+  }
+
+  if (net.type == network_type_t::ftn) {
+    // Since network3 writes out these files from memory for FTN networks, if
+    // they don't exist then we need to run it.
+    if (!File::Exists(FilePath(dir, BBSDATA_IND))) {
+      return true;
+    }
+    if (!File::Exists(FilePath(dir, BBSDATA_REG))) {
+      return true;
+    }
+    if (!File::Exists(FilePath(dir, BBSDATA_ROU))) {
+      return true;
+    }
+  }
   if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
     return false;
   }
@@ -136,7 +158,7 @@ static bool need_network3(const string& dir, int network_version) {
     return false;
   }
 
-  const time_t bbsdata_time = bbsdataNet.last_write_time();
+  const auto bbsdata_time = bbsdataNet.last_write_time();
   bbsdataNet.Close();
 
   return checkup2(bbsdata_time, dir, BBSLIST_NET) || checkup2(bbsdata_time, dir, CONNECT_NET) ||
@@ -206,7 +228,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
       }
 
       // If our network files have changed, run network3 and send feedback.
-      if (need_network3(net.dir, status->GetNetworkVersion())) {
+      if (need_network3(net, status->GetNetworkVersion())) {
         VLOG(2) << "Need to run network3";
         System(create_network_cmdline(net_cmdline, '3', ""));
         found = true;

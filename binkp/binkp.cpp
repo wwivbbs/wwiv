@@ -961,43 +961,6 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
 
 }
 
-static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  const auto fn = FilePath(dir, filename);
-  File file(fn);
-  return (file.Open(File::modeReadOnly)) ? File::last_write_time(fn) > tFileTime + 2 : true;
-}
-
-static bool need_network3(const string& dir, int network_version) {
-  if (!File::Exists(FilePath(dir, BBSLIST_NET))) {
-    return false;
-  }
-  if (!File::Exists(FilePath(dir, CONNECT_NET))) {
-    return false;
-  }
-  if (!File::Exists(FilePath(dir, CALLOUT_NET))) {
-    return false;
-  }
-
-  if (network_version != wwiv_net_version) {
-    // always need network3 if the versions do not match.
-    LOG(INFO) << "Need to run network3 since current network_version: " << network_version
-              << " != our network_version: " << wwiv_net_version;
-    return true;
-  }
-  const auto bbsdata_fn = FilePath(dir, BBSDATA_NET);
-  {
-    File bbsdataNet(bbsdata_fn);
-    if (!bbsdataNet.Open(File::modeReadOnly)) {
-      return false;
-    }
-  }
-
-  const auto bbsdata_time = File::last_write_time(bbsdata_fn);
-
-  return checkup2(bbsdata_time, dir, BBSLIST_NET) || checkup2(bbsdata_time, dir, CONNECT_NET) ||
-         checkup2(bbsdata_time, dir, CALLOUT_NET);
-}
-
 void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const {
   const auto network_name = remote_.network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;

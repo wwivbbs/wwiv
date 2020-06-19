@@ -163,13 +163,12 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::FILENAME:
         case InputMode::FULL_PATH_NAME: {
           string disallowed =
-              (lc == InputMode::FILENAME) ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
+              lc == InputMode::FILENAME ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
           if (disallowed.find(chCurrent) != std::string::npos) {
             chCurrent = 0;
           } else {
-#ifdef _WIN32
+            // Lowercase filenames on all platforms, not just Win32.
             chCurrent = to_lower_case(chCurrent);
-#endif // _WIN32
           }
         } break;
         }
@@ -424,10 +423,8 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
           c = upcase(static_cast<unsigned char>(c));
         }
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
-#ifdef _WIN32
-          // Force lowercase filenames on Win32.
+          // Force lowercase filenames.
           c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
-#endif // _WIN32
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;
           } else if (mode == InputMode::FILENAME && strchr("<>|*?\";", c)) {
@@ -464,8 +461,8 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
           bout.Right(pos);
           bout << &szTemp[pos];
         }
-        if (((mode == InputMode::DATE && c != slash) || (mode == InputMode::PHONE && c != dash)) ||
-            (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
+        if (mode == InputMode::DATE && c != slash || mode == InputMode::PHONE && c != dash ||
+            mode != InputMode::DATE && mode != InputMode::PHONE && c != 0) {
           if (!bInsert || pos == nLength) {
             bout.bputch(static_cast<unsigned char>(c));
             szTemp[pos++] = static_cast<char>(c);
@@ -473,11 +470,11 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
               nLength++;
             }
           } else {
-            bout.bputch((unsigned char)c);
-            for (int i = nLength++; i >= pos; i--) {
+            bout.bputch(static_cast<unsigned char>(c));
+            for (auto i = nLength++; i >= pos; i--) {
               szTemp[i + 1] = szTemp[i];
             }
-            szTemp[pos++] = (char)c;
+            szTemp[pos++] = static_cast<char>(c);
             bout.RestorePosition();
             bout.SavePosition();
             bout.Right(pos);
