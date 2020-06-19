@@ -40,6 +40,7 @@ public:
   [[nodiscard]] bool exists() const;
   [[nodiscard]] int size() const;
   [[nodiscard]] core::DateTime date() const;
+  [[nodiscard]] std::filesystem::path fpath() const;
 
   std::string area;
   std::string area_description;

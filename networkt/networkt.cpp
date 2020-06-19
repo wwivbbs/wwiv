@@ -74,7 +74,7 @@ std::optional<files::directory_t> FindDir(const files::Dirs& dirs, const std::st
 
 bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files, bool skip_delete) {
   if (!net.fido.process_tic) {
-    LOG(ERROR) << "Exiting without attempting to process TIC files; TIC processing disabled for network: " << net.name;
+    LOG(WARNING) << "TIC processing disabled for network: " << net.name;
     return false;
   }
   const FtnDirectories ftn_directories(config.root_directory(), net);
@@ -123,6 +123,12 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     const auto actual_t = File::creation_time(FilePath(ftn_directories.tic_dir(), r));
     r.set_actual_date(DateTime::from_time_t(actual_t));
     const auto ext_desc = JoinStrings(t.ldesc, "\r\n");
+
+    if (!net.fido.process_tic) {
+      LOG(INFO) << "Skipping processing file. process_tic is not enabled. file: " << t.file;
+      continue;
+    }
+
     if (op.has_value()) {
       LOG(INFO) << "File already exists in file area";
       LOG(INFO) << "** Updating: "  << r.aligned_filename();
@@ -142,6 +148,8 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
       }
     }
     // Display information about the file;
+    LOG(INFO) << "Area Name  : " << t.area;
+    LOG(INFO) << "Area Desc  : " << t.area_description;
     LOG(INFO) << "File Name  : " << r.aligned_filename();
     LOG(INFO) << "Description: " << t.desc;
     LOG(INFO) << "Ext Desc   : ";

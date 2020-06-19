@@ -33,7 +33,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-Tic::Tic(std::filesystem::path path) : path_(std::move(path)), valid_(false) {
+Tic::Tic(std::filesystem::path path)
+    : path_(std::move(path)), valid_(false) {
 }
 
 Tic::~Tic() = default;
@@ -43,8 +44,7 @@ bool Tic::IsValid() const {
 }
 
 bool Tic::crc_valid() const {
-  const auto dir = path_.parent_path();
-  const auto actual_int = wwiv::core::crc32file(FilePath(dir, file));
+  const auto actual_int = wwiv::core::crc32file(fpath());
   const auto actual = fmt::sprintf("%8.8x", actual_int);
 
   const auto crc_valid = iequals(crc, actual);
@@ -55,8 +55,7 @@ bool Tic::crc_valid() const {
 }
 
 bool Tic::size_valid() const {
-  const auto fpath = FilePath(path_.parent_path(), file);
-  const File f(fpath);
+  const File f(fpath());
   const int actual_size = f.length();
   if (actual_size != size()) {
     LOG(INFO) << "Tic FileSize !valid. actual: " << actual_size << "; expected: " << size();
@@ -66,23 +65,28 @@ bool Tic::size_valid() const {
 }
 
 bool Tic::exists() const {
-  return File::Exists(path_);
+  return File::Exists(fpath());
 }
 
 int Tic::size() const {
   if (size_ != 0) {
     return size_;
   }
-  File f(path_);
+  File f(fpath());
   return f.length();
 }
 
 core::DateTime Tic::date() const {
   if (date_.to_time_t() == 0) {
-    const auto t = File::creation_time(path_);
+    const auto t = File::creation_time(fpath());
     return DateTime::from_time_t(t);
   }
   return date_;
+}
+
+std::filesystem::path Tic::fpath() const {
+  auto fp = FilePath(path_.parent_path(), file);
+  return fp;
 }
 
 TicParser::TicParser(std::filesystem::path dir) : dir_(std::move(dir)) {}
@@ -128,9 +132,7 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
       t.to = fido::FidoAddress(params);
     } else if (keyword == "file") {
       t.file = params;
-    } else if (keyword == "lfile") {
-      t.lfile = params;
-    } else if (keyword == "fullname") {
+    } else if (keyword == "lfile" || keyword == "fullname") {
       t.lfile = params;
     } else if (keyword == "size") {
       t.size_ = to_number<int>(params);
