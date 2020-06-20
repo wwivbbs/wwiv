@@ -64,15 +64,15 @@ Here's the best way to work with the WWIV git repository:
     
 2. If you have done step 1 a while ago, pull from the upstream repository to update your clone with the latest from wwivbbs/wwiv.
     ```bash
-    # make sure your branch is back onto the "master" branch
-    git checkout master
+    # make sure your branch is back onto the "main" branch
+    git checkout main
     # pull (this is a fetch + merge) in the changes from the wwivbbs/wwiv respository.
-    git pull upstream master
+    git pull upstream main
     # push the changes from wwivbbs/wwiv to your fork on github.
     git push
     ```
     
-3. Create a new branch off of master for your feature, enhancement, or bug fix and let GitHub know about your branch.
+3. Create a new branch off of main for your feature, enhancement, or bug fix and let GitHub know about your branch.
 
     ```bash
     git checkout -b <MY-BRANCH-NAME>
@@ -84,7 +84,7 @@ Here's the best way to work with the WWIV git repository:
 5. Merge any new changes from the wwivbbs/wwiv respository into your development branch
 
     ```bash
-    git pull upstream master
+    git pull upstream main
     ```    
     
 6. Push your changes from your local machine to your fork on github.
