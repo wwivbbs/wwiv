@@ -32,7 +32,7 @@
 #undef ZRUB0
 #undef ZRUB1
 
-/* Master header file for Zmodem protocol driver routines */
+/* Header file for Zmodem protocol driver routines */
 
 /* PARAMETERS
  *

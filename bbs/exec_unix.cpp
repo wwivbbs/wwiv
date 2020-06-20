@@ -45,7 +45,7 @@
 
 static const char SHELL[] = "/bin/bash";
 
-static int ReadWriteNonBinary(int sock, int master_fd, fd_set& rfd) {
+static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
   if (FD_ISSET(sock, &rfd)) {
     char input{};
     read(sock, &input, 1);
@@ -64,12 +64,12 @@ static int ReadWriteNonBinary(int sock, int master_fd, fd_set& rfd) {
     }
     VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
 	    << "]";
-    write(master_fd, &input, 1);
+    write(pty_fd, &input, 1);
     VLOG(3) << "read from socket, write to term: '" << input << "'";
   }
-  if (FD_ISSET(master_fd, &rfd)) {
+  if (FD_ISSET(pty_fd, &rfd)) {
     char input{};
-    read(master_fd, &input, 1);
+    read(pty_fd, &input, 1);
     if (input == '\n') {
       VLOG(1) << "Performed LF -> CRLF translation.";
       write(sock, "\r\n", 2);
@@ -83,27 +83,27 @@ static int ReadWriteNonBinary(int sock, int master_fd, fd_set& rfd) {
 }
 
 static constexpr int READ_SIZE = 1024;
-static int ReadWriteBinary(int sock, int master_fd, fd_set& rfd) {
+static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
   LOG(INFO) << "ReadWriteBinary Loop: << sock: " << sock
-	    << "; master_fd: " << master_fd;
+	    << "; pty_fd: " << pty_fd;
   if (FD_ISSET(sock, &rfd)) {
     char input[READ_SIZE + 10];
     const int num_read = read(sock, &input, READ_SIZE);
     if (num_read > 0) {
-      const auto w = write(master_fd, &input, num_read);
-      LOG(INFO) << "wrote[master_fd]: " << num_read << ";w:" << w;
+      const auto w = write(pty_fd, &input, num_read);
+      LOG(INFO) << "wrote[pty_fd]: " << num_read << ";w:" << w;
     } else {
       LOG(ERROR) << "num_read[sock] <= 0; " << num_read;
     }
   }
-  if (FD_ISSET(master_fd, &rfd)) {
+  if (FD_ISSET(pty_fd, &rfd)) {
     char input[READ_SIZE + 10];
-    const int num_read = read(master_fd, &input, READ_SIZE);
+    const int num_read = read(pty_fd, &input, READ_SIZE);
     if (num_read > 0) {
       const auto w = write(sock, &input, num_read);
       LOG(INFO) << "wrote[sock]: " << num_read << ";w:" << w;
     } else {
-      LOG(ERROR) << "num_read[master_fd] <= 0; " << num_read;
+      LOG(ERROR) << "num_read[pty_fd] <= 0; " << num_read;
     }
   }
   return 0;
@@ -116,7 +116,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   LOG(INFO) << "Exec: '" << cmd << "' errno: " << errno;
 
   int pid = -1;
-  int master_fd = -1;
+  int pty_fd = -1;
   bool binary = (flags & EFLAG_BINARY);
   if (binary) {
     LOG(INFO) << "Binary mode.";
@@ -134,7 +134,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
     memcpy(&tio.c_cc, ttydefchars, sizeof(tio.c_cc));
     cfsetspeed(&tio, TTYDEF_SPEED);
 
-    pid = forkpty(&master_fd, nullptr, &tio, &ws);
+    pid = forkpty(&pty_fd, nullptr, &tio, &ws);
   } else {
     pid = fork();
   }
@@ -157,11 +157,11 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
     fd_set rfd;
     FD_ZERO(&rfd);
 
-    FD_SET(master_fd, &rfd);
+    FD_SET(pty_fd, &rfd);
     FD_SET(sock, &rfd);
 
     struct timeval tv = {1, 0};
-    auto ret = select(std::max<int>(sock, master_fd) + 1, &rfd, nullptr, nullptr, &tv);
+    auto ret = select(std::max<int>(sock, pty_fd) + 1, &rfd, nullptr, nullptr, &tv);
     if (ret < 0) {
       LOG(INFO) << "select returned <0";
       break;
@@ -183,12 +183,12 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
       break;
     }
 
-    if (master_fd != -1) {
+    if (pty_fd != -1) {
       // Only do this in STDIO mode.
       if (binary) {
-	ReadWriteBinary(sock, master_fd, rfd);
+	ReadWriteBinary(sock, pty_fd, rfd);
       } else {
-	ReadWriteNonBinary(sock, master_fd, rfd);
+	ReadWriteNonBinary(sock, pty_fd, rfd);
       }
     }
   }

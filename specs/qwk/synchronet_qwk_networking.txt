@@ -447,7 +447,7 @@ CIRCLE7  FANTAIR  KRYSTAL      ÚÄÄÄÄÄÄTLOCÄÄÄÄÄÄ¿    TALONBBS  VSS
 			     BLAZING	   WILDHARE
 
 
-The ROUTE.DAT on VERT (master hub) for the above (in case you were curious):
+The ROUTE.DAT on VERT (main hub) for the above (in case you were curious):
 
 --------------------------------[ Cut Here ]-----------------------------------
 03/22/95 CIRCLE7:PHOUSE
