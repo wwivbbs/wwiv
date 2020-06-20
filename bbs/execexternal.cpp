@@ -50,16 +50,17 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   if (nFlags & EFLAG_NETPROG) {
     write_inst(INST_LOC_NET, a()->net_num() + 1, INST_FLAGS_NONE);
   }
-  
+
+  auto exec_dir = a()->bbsdir();
   if (nFlags & EFLAG_TEMP_DIR) {
-    // If EFLAG_TEMP_DIR is specified, we should set the working directory
-    // to the TEMP directory for the instance instead of the BBS directory.
-    if (!File::set_current_directory(a()->temp_directory())) {
-      LOG(ERROR) << "Unable to set working directory to: " << a()->temp_directory();
-    }
-  } else {
-    // Make sure our working dir is back to the BBS dir.
-    a()->CdHome();
+    exec_dir = a()->temp_directory();
+  } else if (nFlags & EFLAG_BATCH_DIR) {
+    exec_dir = a()->batch_directory();
+  } else if (nFlags & EFLAG_QWK_DIR) {
+    exec_dir = a()->qwk_directory();
+  }
+  if (!File::set_current_directory(exec_dir)) {
+    LOG(ERROR) << "Unable to set working directory to: " << exec_dir;
   }
 
   // Some LocalIO implementations (Curses) needs to disable itself before

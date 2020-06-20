@@ -365,13 +365,12 @@ static void qwk_receive_file(const std::string& fn, bool* received, int i) {
   }
 }
 
-static void ready_reply_packet(const std::string& packet_name, const std::string& msg_name) {
+static std::filesystem::path ready_reply_packet(const std::string& packet_name, const std::string& msg_name) {
   const auto archiver = match_archiver(packet_name);
   const auto command = stuff_in(a()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
-  File::set_current_directory(a()->qwk_directory());
-  ExecuteExternalProgram(command, EFLAG_NONE);
-  a()->CdHome();
+  ExecuteExternalProgram(command, EFLAG_QWK_DIR);
+  return FilePath(a()->qwk_directory(), msg_name);
 }
 
 // Takes reply packet and converts '227' (ã) to '13' and removes QWK style
@@ -536,27 +535,27 @@ void upload_reply_packet() {
     tmp_disable_conf(true);
   }
 
-  auto name = StrCat(qwk_system_name(qwk_cfg), ".REP");
+  const auto rep_name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
-  bout << fmt::format("Hit 'Y' to upload reply packet {} :", name);
-  const auto namepath = FilePath(a()->qwk_directory(), name);
+  bout << fmt::format("Hit 'Y' to upload reply packet {} :", rep_name);
+  const auto rep_path = FilePath(a()->qwk_directory(), rep_name);
 
-  const bool do_it = yesno();
+  const auto do_it = yesno();
 
   if (do_it) {
     if (a()->context().incom()) {
-      qwk_receive_file(namepath.string(), &rec, a()->user()->data.qwk_protocol);
+      qwk_receive_file(rep_path.string(), &rec, a()->user()->data.qwk_protocol);
       sleep_for(milliseconds(500));
     }
 
     if (rec) {
-      name = StrCat(qwk_system_name(qwk_cfg), ".MSG");
-      ready_reply_packet(namepath.string(), name);
-      process_reply_dat(namepath.string());
+      const auto msg_name = StrCat(qwk_system_name(qwk_cfg), ".MSG");
+      auto msg_path = ready_reply_packet(rep_path.string(), msg_name);
+      process_reply_dat(msg_path.string());
     } else {
       sysoplog() << "Aborted";
       bout.nl();
-      bout << fmt::sprintf("%s not found", name);
+      bout << fmt::format("{} not found", rep_name);
       bout.nl();
     }
   }

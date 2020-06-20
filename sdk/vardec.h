@@ -973,6 +973,10 @@ constexpr uint16_t  EFLAG_FOSSIL = 0x0200;
 constexpr uint16_t  EFLAG_STDIO = 0x0400;
 // Run out of the TEMP directory instead of the BBS directory
 constexpr uint16_t  EFLAG_TEMP_DIR = 0x0800;
+// Run out of the BATCH directory instead of the BBS directory
+constexpr uint16_t  EFLAG_BATCH_DIR = 0x1000;
+// Run out of the QWK directory instead of the BBS directory
+constexpr uint16_t  EFLAG_QWK_DIR = 0x2000;
 
 ///////////////////////////////////////////////////////////////////////////////
 
