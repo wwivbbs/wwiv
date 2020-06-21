@@ -41,7 +41,6 @@
 #include "sdk/contact.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/fido/fido_util.h"
 #include "sdk/fido/nodelist.h"
 #include "sdk/filenames.h"
 #include "sdk/net/packets.h"
@@ -49,7 +48,6 @@
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/fido/fido_directories.h"
-
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -101,7 +99,7 @@ static bool check_wwivnet_host_networks(
           // Sub hosted here.
           std::set<uint16_t> subscribers;
 
-          const string filename = StrCat("n", n.stype, ".net");
+          const auto filename = StrCat("n", n.stype, ".net");
           if (ReadSubcriberFile(FilePath(net.dir, filename), subscribers)) {
             for (auto subscriber : subscribers) {
               const auto c = b.node_config_for(subscriber);
@@ -171,7 +169,7 @@ static bool check_connect_net(
 
   const Connect connect(net.dir);
   for (const auto& entry : b.node_config()) {
-    const auto n = connect.node_config_for(entry.first);
+    const auto* n = connect.node_config_for(entry.first);
     if (!n) {
       text << "connect.net entry missing for node @" << entry.first << "\r\n";
     }
@@ -184,7 +182,7 @@ static bool check_binkp_net(
   const BinkConfig& bink_config,
   std::ostringstream& text) {
   for (const auto& entry : b.node_config()) {
-    const auto binkp_entry = bink_config.binkp_session_config_for(entry.first);
+    const auto* binkp_entry = bink_config.binkp_session_config_for(entry.first);
     if (binkp_entry == nullptr) {
       text << "binkp.net entry missing for node @" << entry.first << "\r\n";
     }
@@ -230,7 +228,6 @@ static uint16_t get_network_cordinator(const BbsListNet& b) {
 }
 
 static bool add_feedback_general_info(
-    const BbsListNet& b, 
     const Callout& callout, 
     const net_networks_rec& net,
     const vector<net_system_list_rec>& bbsdata_data,
@@ -252,7 +249,7 @@ static bool add_feedback_general_info(
     }
 
     // Make num hops map.
-    auto hops = hops_to_count[d.numhops];
+    const auto hops = hops_to_count[d.numhops];
     hops_to_count[d.numhops] = hops + 1;
 
     total_hops += d.numhops;
@@ -283,12 +280,12 @@ static bool add_feedback_general_info(
   text << "\r\n";
 
   const Connect connect(net.dir);
-  const auto c = connect.node_config_for(net.sysnum);
+  const auto* c = connect.node_config_for(net.sysnum);
   if (c == nullptr) {
     text << " ** Missing connect.net entries.";
   } else {
     for (const auto& callout_node : c->connect) {
-      const auto cnc = callout.net_call_out_for(callout_node);
+      const auto* cnc = callout.net_call_out_for(callout_node);
       if (cnc == nullptr) {
         text << "Can call " << callout_node << " but isn't in callout.net.\r\n"
           << "  ** Add to callout.net\r\n\r\n";
@@ -560,7 +557,7 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   write_bbsdata_reg_file(b, net.dir);
 
   VLOG(1) << "Reading callout.net...";
-  Callout callout(net);
+  const Callout callout(net);
   ensure_contact_net_entries(callout, net);
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);
@@ -569,11 +566,11 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
     std::ostringstream text;
     add_feedback_header(net.dir, text);
     LOG(INFO) << "Sending Feedback.";
-    add_feedback_general_info(b, callout, net, bbsdata_data, text);
+    add_feedback_general_info(callout, net, bbsdata_data, text);
     check_wwivnet_host_networks(net_cmdline.config(), net_cmdline.networks(), b, net_cmdline.network_number(), text);
 
     if (is_nc) {
-      // We should alwyas send feedback to the NCs.
+      // We should always send feedback to the NCs.
       const BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
       check_binkp_net(b, bink_config, text);
       check_connect_net(b, net, text);

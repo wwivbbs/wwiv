@@ -18,6 +18,7 @@
 #include "sdk/net/packets.h"
 
 #include <string>
+#include <utility>
 
 #include "core/datetime.h"
 #include "core/file.h"
@@ -42,7 +43,7 @@ bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const
 }
 
 bool send_network_email(const std::string& filename, const net_networks_rec& network,
-                        net_header_rec& nh, std::vector<uint16_t> list, const std::string& text,
+                        net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text,
                         const std::string& byname, const std::string& title) {
 
   LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type
@@ -81,7 +82,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   }
 
   if (packet.nh.length > 0) {
-    auto length = packet.nh.length;
+    const auto length = packet.nh.length;
 
     if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) || length < 0) {
       LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
@@ -122,7 +123,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
     return false;
   }
   file.Seek(0L, File::Whence::end);
-  auto num = file.Write(&p.nh, sizeof(net_header_rec));
+  const auto num = file.Write(&p.nh, sizeof(net_header_rec));
   if (num != sizeof(net_header_rec)) {
     // Let's fail now since we didn't write this right.
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename << " num written (" << num
@@ -151,7 +152,6 @@ static string NetInfoFileName(uint16_t type) {
   case net_info_sub_lst:
     return SUBS_LST;
   case net_info_wwivnews:
-    return "wwivnews.net";
   case net_info_more_wwivnews:
     return "wwivnews.net";
   case net_info_categ_net:
@@ -163,7 +163,7 @@ static string NetInfoFileName(uint16_t type) {
   case net_info_binkp:
     return BINKP_NET;
   default:
-    return "";
+    return {};
   }
 }
 
@@ -189,18 +189,18 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   if (text.size() < 4) {
     return info;
   }
-  uint16_t flags = (text.at(1) << 8) | text.at(0);
+  const uint16_t flags = (text.at(1) << 8) | text.at(0);
   VLOG(2) << "flags: " << flags;
   const char* fntemp = &text[2];
   string fn(fntemp);
-  if (fn.size() == 0 || fn.size() > 8) {
+  if (fn.empty() || fn.size() > 8) {
     // still BAD.
     LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << fn.size();
     return info;
   }
   VLOG(2) << "fn: '" << fn << "'; "
           << "len: " << fn.size();
-  auto pos = fn.size() + sizeof(uint16_t) + 1;
+  const auto pos = fn.size() + sizeof(uint16_t) + 1;
   if (text.size() < pos) {
     // still bad
     LOG(ERROR) << "text length too short; must be at least: " << pos;
@@ -210,7 +210,7 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   // Since Windows is case sensitive, this is fine.  Since we want lower
   // case filenames on Linux, this is also fine.
   StringLowerCase(&fn);
-  bool zip = (flags & 0x02) != 0;
+  const auto zip = (flags & 0x02) != 0;
   if (zip) {
     info.filename = StrCat(fn, ".zip");
   } else {
@@ -230,8 +230,9 @@ static bool need_to_update_routing(uint16_t main_type) {
   case main_type_file:
   case main_type_new_post:
     return true;
+  default:
+    return false;
   }
-  return false;
 }
 
 static int number_of_header_lines(uint16_t main_type) {
@@ -245,11 +246,13 @@ static int number_of_header_lines(uint16_t main_type) {
   case main_type_file:
   case main_type_new_post:
     return 4;
+  default:
+    return 0;
   }
-  return 0;
 }
-Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::string t)
-    : nh(h), list(l), text_(std::move(t)) {
+
+Packet::Packet(const net_header_rec& h, std::vector<uint16_t> l, std::string t)
+    : nh(h), list(std::move(l)), text_(std::move(t)) {
   if (nh.list_len != list.size()) {
     LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
                << list.size() << "]";
@@ -284,7 +287,7 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   nh.length += routing_information.size();
 
   // Need to skip over either 3 or 4 lines 1st depending on the packet type.
-  auto lines = number_of_header_lines(nh.main_type);
+  const auto lines = number_of_header_lines(nh.main_type);
   auto iter = text_.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
@@ -304,6 +307,11 @@ void Packet::set_text(const std::string& text) {
 void Packet::set_text(std::string&& text) {
   text_ = std::move(text);
   update_header();
+}
+
+void Packet::update_header() {
+  nh.length = text_.size();
+  nh.list_len = static_cast<uint16_t>(list.size());
 }
 
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
@@ -338,6 +346,8 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
   }
   return fmt::format("s{}.net", node);
 }
+
+const std::string& Packet::text() const noexcept { return text_; }
 
 ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
 
@@ -421,7 +431,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
 std::string create_pend(const string& directory, bool local, char network_app_id) {
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
-    const auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
+    auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
     const auto pend_fn = FilePath(directory, filename);
     if (File::Exists(pend_fn)) {
       continue;
@@ -550,8 +560,8 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
   nh.touser = 0;
 
   // TODO(rushfan): Use ParsedPacketText here?
-  // text is subtype<0>title<0>sender<cflr>date<crlf>body
-  string text = subtype;
+  // text is subtype<0>title<0>sender<CRLF>date<crlf>body
+  auto text = subtype;
   text.push_back(0);
   text.append(h.title());
   text.push_back(0);
@@ -570,10 +580,9 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
 static std::string change_subtype_to(const std::string& org_text, const std::string& new_subtype) {
   auto iter = org_text.begin();
   auto subtype = get_message_field(org_text, iter, {'\0', '\r', '\n'}, 80);
-  std::string result = new_subtype;
+  auto result = new_subtype;
   result.push_back(0); // Add NULL
   result += string(iter, std::end(org_text));
-  // Should implicitly move by RVO
   return result;
 }
 
@@ -583,14 +592,13 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_i
   if (!write_wwivnet_packet(fn, net, p)) {
     LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
     return false;
-  } else {
-    VLOG(1) << "Wrote packet: " << fn;
-    return true;
   }
+  VLOG(1) << "Wrote packet: " << fn;
+  return true;
 }
 
 /**
- * Sends the post out via wwivnet or other networks to the other parties if needed.
+ * Sends the post out via WWIVnet or other networks to the other parties if needed.
  *
  * N.B. If this post originates on this system, use -1 for the original_net_num.
  */
@@ -601,7 +609,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
   // TODO(rushfan): Replace '2' with a network_app_id passed in
-  char network_app_id = '2';
+  const auto network_app_id = '2';
   for (const auto& subnet : sub.nets) {
     auto h = template_packet.nh;
     VLOG(1) << "DEBUG: Current network subtype: " << subnet.stype;
@@ -609,8 +617,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     // if subnet.host == 0, we are the host.
     // if subnet.net_num != context.network_number then we are
     // gating the sub to another network.
-    bool are_we_hosting = subnet.host == 0;
-    bool are_we_gating = subnet.net_num != original_net_num;
+    auto are_we_hosting = subnet.host == 0;
+    auto are_we_gating = subnet.net_num != original_net_num;
     const auto& current_net = nets[subnet.net_num];
     VLOG(1) << "DEBUG: are_we_hosting: " << std::boolalpha << are_we_hosting;
     VLOG(1) << "DEBUG: are_we_gating:  " << std::boolalpha << are_we_gating;
@@ -629,8 +637,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     // If the subtype has changed, then change the subtype in the
     // packet text.
     const auto text = (subnet.stype == original_subtype)
-                          ? template_packet.text()
-                          : change_subtype_to(template_packet.text(), subnet.stype);
+                        ? template_packet.text()
+                        : change_subtype_to(template_packet.text(), subnet.stype);
     if (subnet.stype != original_subtype) {
       // we also have to update the nh.length to reflect this change.
       // TODO(rushfan): Really need higher level interface to manipulating
@@ -647,7 +655,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       if (subnet.host == 0) {
         // We are the host.
         std::set<uint16_t> subscribers;
-        bool subscribers_read =
+        const auto subscribers_read =
             ReadSubcriberFile(FilePath(current_net.dir, StrCat("n", subnet.stype, ".net")), subscribers);
         if (subscribers_read) {
           // Remove the original sender from the set of systems
@@ -684,7 +692,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     }
   }
   LOG(INFO) << "DEBUG: send_post_to_subscribers"
-            << "exiting with true";
+      << "exiting with true";
   return true;
 }
 

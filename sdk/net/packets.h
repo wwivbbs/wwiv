@@ -18,20 +18,14 @@
 #ifndef __INCLUDED_SDK_NET_PACKETS_H__
 #define __INCLUDED_SDK_NET_PACKETS_H__
 
-#include <functional>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "core/command_line.h"
 #include "core/file.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/msgapi/message.h"
-#include "sdk/msgapi/message_wwiv.h"
 #include "sdk/net.h"
-#include "sdk/networks.h"
+#include "sdk/msgapi/message_wwiv.h"
+#include <set>
+#include <string>
+#include <vector>
 
 namespace wwiv {
 namespace sdk {
@@ -47,23 +41,20 @@ class ParsedPacketText;
 
 class Packet final {
 public:
-  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, std::string t);
+  Packet(const net_header_rec& h, std::vector<uint16_t> l, std::string t);
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t);
 
   Packet();
-  virtual ~Packet() {}
+  ~Packet() = default;
 
-  virtual bool UpdateRouting(const net_networks_rec& net);
+  bool UpdateRouting(const net_networks_rec& net);
   static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node);
 
-  const std::string& text() const noexcept { return text_; }
+  [[nodiscard]] const std::string& text() const noexcept;
   void set_text(const std::string& text);
   void set_text(std::string&& text);
   // Updates the lengths in the header for list and text.
-  void update_header() {
-    nh.length = text_.size();
-    nh.list_len = static_cast<uint16_t>(list.size());
-  }
+  void update_header();
 
   net_header_rec nh{};
   std::vector<uint16_t> list;
@@ -94,7 +85,7 @@ public:
  * 
  * That means the text portion here just includes the message body and not the 
  * WWIV message fields encoded into the first few lines of message text that
- * exists both in messagebase format as well as on the network.
+ * exists both in message base format as well as on the network.
  */
 class ParsedPacketText {
 public:
@@ -107,14 +98,14 @@ public:
   void set_sender(const std::string& s);
   void set_text(const std::string& t);
   void set_main_type(uint16_t t);
-  uint16_t main_type() const noexcept;
-  const std::string& subtype() const noexcept;
-  const std::string& subtype_or_email_to() const noexcept;
-  const std::string& to() const noexcept;
-  const std::string& title() const noexcept;
-  const std::string& sender() const noexcept;
-  const std::string& date() const noexcept;
-  const std::string& text() const noexcept;
+  [[nodiscard]] uint16_t main_type() const noexcept;
+  [[nodiscard]] const std::string& subtype() const noexcept;
+  [[nodiscard]] const std::string& subtype_or_email_to() const noexcept;
+  [[nodiscard]] const std::string& to() const noexcept;
+  [[nodiscard]] const std::string& title() const noexcept;
+  [[nodiscard]] const std::string& sender() const noexcept;
+  [[nodiscard]] const std::string& date() const noexcept;
+  [[nodiscard]] const std::string& text() const noexcept;
 
   static ParsedPacketText FromPacketText(uint16_t typ, const std::string& raw);
   static ParsedPacketText FromPacket(const Packet& p);
@@ -138,7 +129,7 @@ template <typename C, typename I>
 static std::string get_message_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
   // No need to continue if we're already at the end.
   if (iter == c.end()) {
-    return "";
+    return {};
   }
 
   const auto begin = iter;
@@ -173,7 +164,7 @@ bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const
                       const std::string& byname, const std::string& title);
 
 bool send_network_email(const std::string& filename, const net_networks_rec& network,
-                        net_header_rec& nh, std::vector<uint16_t> list, const std::string& text,
+                        net_header_rec& nh, const std::vector<uint16_t>& list, const std::string& text,
                         const std::string& byname, const std::string& title);
 
 struct NetInfoFileInfo {

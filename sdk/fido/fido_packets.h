@@ -23,6 +23,7 @@
 #include "sdk/net/packets.h"
 #include <cstdint>
 #include <string>
+#include <utility>
 
 namespace wwiv {
 namespace sdk {
@@ -234,26 +235,26 @@ struct fido_variable_length_header_t {
 };
 
 /**
-* Representes a message in a .PKT file in FidoNET.
+* Represents a message in a .PKT file in FidoNET.
 */
 class FidoPackedMessage {
 public:
-  FidoPackedMessage(const fido_packed_message_t& h, const fido_variable_length_header_t& v)
-    : nh(h), vh(v) {}
+  FidoPackedMessage(const fido_packed_message_t& h, fido_variable_length_header_t v)
+    : nh(h), vh(std::move(v)) {}
 
-  FidoPackedMessage() noexcept {}
-  virtual ~FidoPackedMessage() {}
+  FidoPackedMessage() = default;
+  virtual ~FidoPackedMessage() = default;
 
   fido_packed_message_t nh{};
   fido_variable_length_header_t vh;
 };
 
 /**
- * Representes a .MSG file in FidoNET.
+ * Represents a .MSG file in FidoNET.
  */
 class FidoStoredMessage {
 public:
-  FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
+  FidoStoredMessage(const fido_stored_message_t& h, std::string t): nh(h), text(std::move(t)) {}
   FidoStoredMessage() = default;
   virtual ~FidoStoredMessage();
 

@@ -147,7 +147,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   if (area->Exists(p.nh.daten, ppt.title(), p.nh.fromsys, p.nh.fromuser)) {
     LOG(INFO) << "    - Discarding Duplicate Message on sub: " << ppt.subtype()
-              << "; title: " << ppt.title() << ".";
+              << "; daten: " << p.nh.daten << "; title: " << ppt.title() << ".";
     // Returning true since we properly handled this by discarding it.
     return true;
   }
