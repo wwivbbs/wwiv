@@ -254,7 +254,7 @@ public:
 class FidoStoredMessage {
 public:
   FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
-  FidoStoredMessage() noexcept = default;
+  FidoStoredMessage() = default;
   virtual ~FidoStoredMessage();
 
   fido_stored_message_t nh{};

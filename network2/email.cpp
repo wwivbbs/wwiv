@@ -97,11 +97,11 @@ bool handle_email_byname(Context& context, Packet& p) {
   VLOG(1) << "Processing email by name.";
 
   auto iter = std::begin(p.text());
-  const string to_name = get_message_field(p.text(), iter, {'\0'}, 80);
+  const auto to_name = get_message_field(p.text(), iter, {'\0'}, 80);
   // Rest of the message is the text.
-  const string text = string(iter, std::end(p.text()));
+  const auto text = string(iter, std::end(p.text()));
 
-  auto user_number = GetUserNumber(to_name, context.user_manager);
+  const auto user_number = GetUserNumber(to_name, context.user_manager);
   if (user_number == 0) {
     // Not found.
     LOG(ERROR) << "    ! ERROR Received email to user: '" << to_name << "' who is not found on this system; writing to dead.net";

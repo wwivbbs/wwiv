@@ -24,7 +24,6 @@
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/ftn_msgdupe.h"
-#include "sdk/net.h"
 #include "sdk/net/packets.h"
 #include "wwivutil/util.h"
 #include <iostream>
@@ -39,9 +38,7 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
-namespace fido {
+namespace wwiv::wwivutil::fido {
 
 static string fido_attrib_to_string(uint16_t a) {
   string s;
@@ -89,10 +86,11 @@ static int dump_stored_message(const std::string& filename) {
   }
 
   FidoStoredMessage msg;
-  ReadPacketResponse response = read_stored_message(f, msg);
+  const auto response = read_stored_message(f, msg);
   if (response == ReadPacketResponse::END_OF_FILE) {
     return 0;
-  } else if (response == ReadPacketResponse::ERROR) {
+  }
+  if (response == ReadPacketResponse::ERROR) {
     return 1;
   }
 
@@ -101,6 +99,8 @@ static int dump_stored_message(const std::string& filename) {
   const auto dt = fido_to_daten(h.date_time);
   const auto roundtrip_dt = daten_to_fido(dt);
 
+  cout << std::dec << "=============================================================================="
+       << endl;
   cout << "cost:    " << h.cost << std::endl;
   cout << "to:      " << h.to << "(" << h.dest_zone << ":" << h.dest_net << "/" << h.dest_node
        << "." << h.dest_point << ")" << std::endl;
@@ -126,7 +126,7 @@ static int dump_packet_file(const std::string& filename) {
     return 1;
   }
 
-  bool done = false;
+  auto done = false;
   packet_header_2p_t header = {};
   auto num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
   if (num_header_read < static_cast<int>(sizeof(packet_header_2p_t))) {
@@ -183,12 +183,12 @@ static int dump_packet_file(const std::string& filename) {
 }
 
 static int dump_file(const std::string& filename) {
-  string s = filename;
-  StringLowerCase(&s);
+  const auto s = ToStringLowerCase(filename);
 
   if (ends_with(s, ".msg")) {
     return dump_stored_message(filename);
-  } else if (ends_with(s, ".pkt")) {
+  }
+  if (ends_with(s, ".pkt")) {
     return dump_packet_file(filename);
   }
 
@@ -208,12 +208,10 @@ int DumpFidoPacketCommand::Execute() {
     cout << GetUsage() << GetHelp() << endl;
     return 2;
   }
-  const string filename(remaining().front());
+  const auto filename(remaining().front());
   return dump_file(filename);
 }
 
 bool DumpFidoPacketCommand::AddSubCommands() { return true; }
 
-} // namespace fido
-} // namespace wwivutil
 } // namespace wwiv
