@@ -97,9 +97,9 @@ static int dump_stored_message(const std::string& filename) {
   }
 
   const auto& h = msg.nh;
-  auto from_address = get_address_from_origin(msg.text);
-  auto dt = fido_to_daten(h.date_time);
-  auto roundtrip_dt = daten_to_fido(dt);
+  const auto from_address = get_address_from_stored_message(msg);
+  const auto dt = fido_to_daten(h.date_time);
+  const auto roundtrip_dt = daten_to_fido(dt);
 
   cout << "cost:    " << h.cost << std::endl;
   cout << "to:      " << h.to << "(" << h.dest_zone << ":" << h.dest_net << "/" << h.dest_node
@@ -136,20 +136,25 @@ static int dump_packet_file(const std::string& filename) {
 
   while (!done) {
     FidoPackedMessage msg;
-    ReadPacketResponse response = read_packed_message(f, msg);
+    auto response = read_packed_message(f, msg);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return 0;
-    } else if (response == ReadPacketResponse::ERROR) {
+    }
+    if (response == ReadPacketResponse::ERROR) {
       return 1;
     }
 
-    auto from_address = get_address_from_origin(msg.vh.text);
+    auto from_address = get_address_from_packet(msg, header);
     auto dt = fido_to_daten(msg.vh.date_time);
     auto roundtrip_dt = daten_to_fido(dt);
 
     cout << "==[ HEADER ]=================================================================="
          << endl;
-    cout << "Packet date: " << (1900 + header.year) << "-" << header.month << "-" << header.day
+    auto year = header.year;
+    if (year < 1000) {
+      year += 1900;
+    }
+    cout << "Packet date: " << (1900 + year) << "-" << header.month + 1 << "-" << header.day
          << endl;
     cout << "         PW: '" << header.password << "'" << endl;
     uint32_t hc{}, mc{};
@@ -157,7 +162,7 @@ static int dump_packet_file(const std::string& filename) {
       cout << " Header CRC: '" << std::hex << hc << "'" << endl;
       cout << "Message CRC: '" << std::hex << mc << "'" << endl;
     }
-    cout << "=============================================================================="
+    cout << std::dec << "=============================================================================="
          << endl;
     cout << "   msg_type: " << msg.nh.message_type << std::endl;
     cout << "       cost: " << msg.nh.cost << std::endl;

@@ -31,6 +31,9 @@
 namespace wwiv {
 namespace sdk {
 namespace fido {
+class FidoStoredMessage;
+struct packet_header_2p_t;
+class FidoPackedMessage;
 
 // FTN Naming
 std::string packet_name(wwiv::core::DateTime& dt);
@@ -67,10 +70,34 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = t
 std::string WWIVToFidoText(const std::string& wt);
 std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include);
 
+/**
+ * Gets the FidoAddress from a single line of text of the form:
+ * "Name (zone:node/net)"
+ */
 FidoAddress get_address_from_single_line(const std::string& line);
+
+/**
+ * Gets the FidoAddress from an entire message by looking for the "* Origin: "
+ * line in the message text.  The Origin line is expected to be of the form:
+ * "* Origin: Some Origin Line Text (zone:node/net)"
+ */
 FidoAddress get_address_from_origin(const std::string& text);
 
+/**
+ * Gets the FidoAddress from an packet.
+ *
+ * Prefer the address from the Origin line of possible, otherwise use the zone
+ * from the packet header, and net/node from the packed message.
+ */
+FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_header_2p_t& header);
 
+/**
+ * Gets the FidoAddress from a stored message (*.MSG file).
+ *
+ * Prefer the address from the Origin line of possible, otherwise use the zone
+ * from the packet header, and net/node from the packed message.
+ */
+FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg);
 
 }  // namespace fido
 }  // namespace net

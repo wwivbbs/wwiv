@@ -40,9 +40,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 template <typename T, typename C, typename I> static T next_int(C& c, I& it, std::set<char> stop) {
   string s;
@@ -143,6 +141,4 @@ bool FidoAddress::operator==(const FidoAddress& o) const {
   return true;
 }
 
-} // namespace fido
-} // namespace sdk
 } // namespace wwiv

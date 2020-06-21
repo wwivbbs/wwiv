@@ -19,6 +19,7 @@
 
 
 #include "fido_directories.h"
+#include "fido_packets.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -374,6 +375,33 @@ FidoAddress get_address_from_origin(const std::string& text) {
     }
   }
   return EMPTY_FIDO_ADDRESS;
+}
+
+FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_header_2p_t& header) {
+  auto a = get_address_from_origin(msg.vh.text);
+  if (a.zone() > 0) {
+    return a;
+  }
+  auto zone = header.orig_zone;
+  if (zone <= 0) {
+    zone = header.qm_orig_zone;
+  }
+  const auto net = msg.nh.orig_net;
+  const auto node = msg.nh.orig_node;
+  const auto point = header.orig_point;
+  return FidoAddress(zone, net, node, point, "");
+}
+
+FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg) {
+  auto a = get_address_from_origin(msg.text);
+  if (a.zone() > 0) {
+    return a;
+  }
+  const auto zone = msg.nh.orig_zone;
+  const auto net = msg.nh.orig_net;
+  const auto node = msg.nh.orig_node;
+  const auto point = msg.nh.orig_point;
+  return FidoAddress(zone, net, node, point, "");
 }
 
 // Returns a vector of valid routes.

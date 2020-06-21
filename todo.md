@@ -7,6 +7,10 @@
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
+* get_address_from_origin should get address from message, try to get it from
+  msg.vh.text origin line first and if that fails populate the from address
+  from the net/node that is available in msg.nh and packet_header_2p_t for
+  the missing zone info.
 
 ## Ini Files and Configuration
 ***

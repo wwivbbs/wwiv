@@ -181,23 +181,21 @@ static bool handle_packet(
     DATA directory with the filename determined by the
     minor_type (except minor_type 1).
     */
-  case main_type_net_info:
+  case main_type_net_info: {
     if (p.nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
       email_changed = true;
       return handle_email(context, 1, p);
-    } else {
-      return handle_net_info_file(context.net, p);
     }
-  break;
+    return handle_net_info_file(context.net, p);
+  }
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
     email_changed = true;
     return handle_email(context, p.nh.touser, p);
-    break;
-  // The other email type.  The touser field is zero, and the name is found at
+    // The other email type.  The touser field is zero, and the name is found at
   // the beginning of the message text, followed by a NUL character.
   // Minor_type will always be zero.
   case main_type_email_name:
@@ -205,20 +203,17 @@ static bool handle_packet(
     // Email has no minor type, so minor_type will always be zero.
     email_changed = true;
     return handle_email_byname(context, p);
-    break;
-  case main_type_new_post:
-  {
+  case main_type_new_post: {
     posts_changed = true;
     if (!handle_inbound_post(context, p)) {
       LOG(ERROR) << "Error on handle_inbound_post";
       return false;
     }
     return send_post_to_subscribers(context, p, {p.nh.fromsys});
-  } break;
-  case main_type_ssm:
-  {
+  }
+  case main_type_ssm: {
     return handle_ssm(context, p);
-  } break;
+  }
   // Subs add/drop support.
   case main_type_sub_add_req:
     return handle_sub_add_req(context, p);
@@ -232,12 +227,12 @@ static bool handle_packet(
   // Sub ping.
   // In many WWIV networks, the subs list coordinator (SLC) occasionally sends
   // out "pings" to all network members.
-  case main_type_sub_list_info:
+  case main_type_sub_list_info: {
     if (p.nh.minor_type == 0) {
       return handle_sub_list_info_request(context, p);
-    } else {
-      return handle_sub_list_info_response(context, p);
     }
+    return handle_sub_list_info_response(context, p);
+  }
 
   case main_type_sub_list:
     return handle_sub_list(context.net, p);

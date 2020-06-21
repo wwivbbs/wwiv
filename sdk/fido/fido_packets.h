@@ -18,15 +18,11 @@
 #ifndef __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
 #define __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
 
-#include <cstdint>
-#include <set>
-#include <string>
-
 #include "core/file.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
-#include "sdk/net.h"
 #include "sdk/net/packets.h"
+#include <cstdint>
+#include <string>
 
 namespace wwiv {
 namespace sdk {
@@ -40,8 +36,10 @@ namespace fido {
 #undef ERROR
 #endif
 
-  /*
-Type-2 Packet Format (proposed, but currently in use)
+/**
+ * Reference: http://ftsc.org/docs/fsc-0039.004
+ *
+  Type-2 Packet Format (proposed, but currently in use)
   -----------------------------------------------------
   Field    Ofs Siz Type  Description                Expected value(s)
   -------  --- --- ----  -------------------------- -----------------
@@ -256,10 +254,10 @@ public:
 class FidoStoredMessage {
 public:
   FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
-  FidoStoredMessage() noexcept {}
-  virtual ~FidoStoredMessage() {}
+  FidoStoredMessage() noexcept = default;
+  virtual ~FidoStoredMessage();
 
-  fido_stored_message_t nh = {};
+  fido_stored_message_t nh{};
   std::string text;
 };
 

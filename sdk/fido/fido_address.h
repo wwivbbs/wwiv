@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace wwiv {
 namespace sdk {
@@ -78,20 +79,20 @@ public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
   explicit FidoAddress(const ::std::string& address);
   FidoAddress() noexcept : FidoAddress(-1, -1, -1, -1, "") {}
-  FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, const ::std::string& domain)
-    : zone_(zone), net_(net), node_(node), point_(point), domain_(domain) {}
-  ~FidoAddress() {}
+  FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, ::std::string domain)
+    : zone_(zone), net_(net), node_(node), point_(point), domain_(std::move(domain)) {}
+  ~FidoAddress() = default;
 
-  std::string as_string(bool include_domain = false) const;
+  [[nodiscard]] std::string as_string(bool include_domain = false) const;
   friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) {
     os << f.as_string();
     return os; 
   }
-  int16_t zone() const { return zone_; }
-  int16_t net() const { return net_; }
-  int16_t node() const { return node_; }
-  int16_t point() const { return point_; }
-  ::std::string domain() const { return domain_; }
+  [[nodiscard]] int16_t zone() const { return zone_; }
+  [[nodiscard]] int16_t net() const { return net_; }
+  [[nodiscard]] int16_t node() const { return node_; }
+  [[nodiscard]] int16_t point() const { return point_; }
+  [[nodiscard]] ::std::string domain() const { return domain_; }
 
   // Needed to put FidoAddress into a set.
   bool operator< (const FidoAddress& r) const;

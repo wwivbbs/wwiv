@@ -84,6 +84,8 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
   return s;
 }
 
+FidoStoredMessage::~FidoStoredMessage()  = default;
+
 bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
   const auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
   if (num_written != sizeof(packet_header_2p_t)) {
