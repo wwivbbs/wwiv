@@ -199,7 +199,7 @@ void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) {
   if (c.do_beginday_event) {
     LOG(INFO) << "WWIVD is handling beginday event.";
   }
-  std::thread callout_thread(do_wwivd_callout_loop, config, c);
+  std::thread callout_thread(do_wwivd_callout_loop, std::cref(config), std::cref(c));
   callout_thread.detach();
 }
 

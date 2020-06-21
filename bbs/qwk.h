@@ -19,12 +19,12 @@
 #ifndef _QWK_H_
 #define _QWK_H_
 
-#include <optional>
-
 #include "core/datetime.h"
 #include "sdk/vardec.h"
 #include "printfile.h"
+#include <optional>
 #include <string>
+#include <vector>
 
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
 
