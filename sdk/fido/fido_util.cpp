@@ -116,7 +116,6 @@ bool is_packet_file(const std::string& name) {
   if (ext.length() != 3) {
     return false;
   }
-  ext.pop_back();
   StringLowerCase(&ext);
   return ext == "pkt";
 }

@@ -302,3 +302,10 @@ TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   string ss(s);
   EXPECT_EQ(ss, tz_offset_from_utc());
 }
+
+TEST_F(FidoUtilTest, IsPacketFile) {
+  EXPECT_TRUE(is_packet_file("0c386971.pkt"));  
+  EXPECT_TRUE(is_packet_file("0000000.pkt"));  
+  EXPECT_FALSE(is_packet_file("0c386971.pkts"));  
+  EXPECT_FALSE(is_packet_file(""));  
+}
