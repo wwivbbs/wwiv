@@ -17,18 +17,18 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_packet.h"
 
+#include "core/command_line.h"
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "sdk/net.h"
+#include "sdk/net/packets.h"
+#include "wwivutil/util.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "sdk/net/packets.h"
-#include "core/datetime.h"
-#include "sdk/net.h"
-#include "wwivutil/util.h"
 
 using std::cout;
 using std::endl;
@@ -39,8 +39,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 int dump_file(const std::string& filename) {
   File f(filename);
@@ -49,37 +48,36 @@ int dump_file(const std::string& filename) {
     return 1;
   }
 
-  bool done = false;
-  int current = 0;
-  while (!done) {
-    Packet packet;
-    ReadPacketResponse response = read_packet(f, packet, true);
+  auto current{0};
+  for (;;) {
+    auto [packet, response] = read_packet(f, true);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return 0;
-    } else if (response == ReadPacketResponse::ERROR) {
+    }
+    if (response == ReadPacketResponse::ERROR) {
       return 1;
     }
 
     cout << "Header for Packet Index Number: #" << std::setw(5) << std::left << current++ << endl;
     cout << "=============================================================================="
-         << endl;
+         << std::endl;
 
-    cout << " destination: " << packet.nh.touser << "@" << packet.nh.tosys << endl;
-    cout << "        from: " << packet.nh.fromuser << "@" << packet.nh.fromsys << endl;
+    cout << " destination: " << packet.nh.touser << "@" << packet.nh.tosys << std::endl;
+    cout << "        from: " << packet.nh.fromuser << "@" << packet.nh.fromsys << std::endl;
     cout << "        type: (" << main_type_name(packet.nh.main_type);
     if (packet.nh.main_type == main_type_net_info) {
       cout << "/" << net_info_minor_type_name(packet.nh.minor_type);
     } else if (packet.nh.main_type > 0) {
       cout << "/" << packet.nh.minor_type;
     }
-    cout << ")" << endl;
+    cout << ")" << std::endl;
     if (packet.nh.list_len > 0) {
-      cout << "    list_len: " << packet.nh.list_len << endl;
+      cout << "    list_len: " << packet.nh.list_len << std::endl;
     }
-    cout << "       daten: " << daten_to_wwivnet_time(packet.nh.daten) << endl;
-    cout << "      length: " << packet.nh.length << endl;
+    cout << "       daten: " << daten_to_wwivnet_time(packet.nh.daten) << std::endl;
+    cout << "      length: " << packet.nh.length << std::endl;
     if (packet.nh.method > 0) {
-      cout << "compression: de" << packet.nh.method << endl;
+      cout << "compression: de" << packet.nh.method << std::endl;
     }
 
     if (packet.nh.list_len > 0) {
@@ -88,23 +86,22 @@ int dump_file(const std::string& filename) {
       for (const auto item : packet.list) {
         cout << item << " ";
       }
-      cout << endl;
+      cout << std::endl;
     }
     if (packet.nh.length) {
       cout << "=============================================================================="
-           << endl;
-      cout << "Raw Packet Text:" << endl;
+           << std::endl;
+      cout << "Raw Packet Text:" << std::endl;
       cout << "=============================================================================="
-           << endl;
+           << std::endl;
       for (const auto ch : packet.text()) {
         dump_char(cout, ch);
       }
-      cout << endl << endl;
+      cout << std::endl << std::endl;
     }
     cout << "=============================================================================="
-         << endl;
+         << std::endl;
   }
-  return 0;
 }
 
 std::string DumpPacketCommand::GetUsage() const {
@@ -128,5 +125,4 @@ bool DumpPacketCommand::AddSubCommands() {
 }
 
 
-}
 }

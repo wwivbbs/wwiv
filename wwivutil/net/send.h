@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_SEND_H__
 #define __INCLUDED_WWIVUTIL_SEND_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -34,9 +30,9 @@ public:
   // (from autosend.doc): AUTOSEND <sub type> <node> <.net> [num msgs]
   SubSendCommand()
     : UtilCommand("send", "<sub type> <node> <.net> [num msgs]") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 }  // namespace net

@@ -27,7 +27,6 @@
 #include "fmt/printf.h"
 #include "network2/context.h"
 #include "sdk/config.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/packets.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
@@ -71,7 +70,7 @@ static string to_string(sub_info_t& s, uint16_t system_number) {
 }
 
 static std::vector<string> create_sub_info(Context& context) {
-  int current = 0;
+  auto current = 0;
   std::vector <std::string> result;
   for (const auto& x : context.subs.subs()) {
     for (const auto& n : x.nets) {
@@ -141,7 +140,7 @@ static bool send_sub_add_drop_resp(Context& context,
   nh.touser = orig.fromuser;
   string title; // empty
 
-  string text = subtype;
+  auto text = subtype;
   text.push_back(0); // null after subtype.
   text.push_back(code);
 
@@ -163,8 +162,8 @@ static bool send_sub_add_drop_resp(Context& context,
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
-  for (const auto x : context.subs.subs()) {
-    for (const auto n : x.nets) {
+  for (const auto& x : context.subs.subs()) {
+    for (const auto& n : x.nets) {
       if (iequals(subtype, n.stype) 
           && n.host == 0
           && n.net_num == context.network_number) {

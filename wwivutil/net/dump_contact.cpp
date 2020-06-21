@@ -17,19 +17,16 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_contact.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/config.h"
 #include "sdk/contact.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
 #include "sdk/networks.h"
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 using std::clog;
 using std::cout;
@@ -41,8 +38,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string DumpContactCommand::GetUsage() const {
   std::ostringstream ss;
@@ -58,14 +54,14 @@ bool DumpContactCommand::AddSubCommands() {
 }
 
 int DumpContactCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
   map<const string, Contact> contacts;
-  for (const auto net : networks.networks()) {
+  for (const auto& net : networks.networks()) {
     const auto lower_case_network_name = ToStringLowerCase(net.name);
     contacts.emplace(lower_case_network_name, Contact(net, false));
   }
@@ -88,5 +84,4 @@ int DumpContactCommand::Execute() {
   return 0;
 }
 
-}
 }

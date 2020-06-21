@@ -23,13 +23,13 @@
 namespace wwiv {
 namespace wwivutil {
 
-class PrintCommand: public UtilCommand {
+class PrintCommand final : public UtilCommand {
 public:
   PrintCommand();
-  std::string GetUsage() const override final;
-  virtual ~PrintCommand() {}
-  int Execute() override final;
-  bool AddSubCommands() override final;
+  [[nodiscard]] std::string GetUsage() const override;
+  virtual ~PrintCommand() = default;
+  int Execute() override;
+  bool AddSubCommands() override;
 };
 
 

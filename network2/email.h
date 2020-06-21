@@ -18,17 +18,8 @@
 #ifndef __INCLUDED_NETWORK2_EMAIL_H__
 #define __INCLUDED_NETWORK2_EMAIL_H__
 
-#include <vector>
 #include "sdk/net/packets.h"
 #include "network2/context.h"
-#include "sdk/networks.h"
-#include "sdk/net.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/net/packets.h"
 
 namespace wwiv {
 namespace net {

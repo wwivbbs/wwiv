@@ -17,20 +17,17 @@
 /**************************************************************************/
 #include "wwivutil/net/req.h"
 
+#include "core/command_line.h"
+#include "core/datetime.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "sdk/bbslist.h"
+#include "sdk/networks.h"
+#include "sdk/net/packets.h"
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "sdk/net/packets.h"
-#include "sdk/bbslist.h"
-#include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
-#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
@@ -41,8 +38,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string SubReqCommand::GetUsage() const {
   std::ostringstream ss;
@@ -58,25 +54,21 @@ bool SubReqCommand::AddSubCommands() {
 }
 
 int SubReqCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
-  auto r = this->remaining();
+  const auto r = this->remaining();
   if (r.size() < 3) {
     cout << GetUsage() << GetHelp();
     return 2;
   }
 
-  auto net = config()->networks().at(arg("net").as_int());
-  string packet_filename = create_pend(net.dir, false, 'r');
-  uint16_t main_type = main_type_sub_add_req;
-  auto add_drop = upcase(r.at(0).front());
-  if (add_drop != 'A') {
-    main_type = main_type_sub_drop_req;
-  }
+  const auto net = config()->networks().at(arg("net").as_int());
+  const auto packet_filename = create_pend(net.dir, false, 'r');
+  const auto add_drop = upcase(r.at(0).front());
 
   net_header_rec nh = {};
   auto host = to_number<uint16_t>(r.at(2));
@@ -84,20 +76,19 @@ int SubReqCommand::Execute() {
   nh.touser = 1;
   nh.fromsys = net.sysnum;
   nh.fromuser = 1;
-  nh.main_type = main_type_sub_add_req;
+  nh.main_type = add_drop == 'A' ?  main_type_sub_add_req : main_type_sub_drop_req;
   // always use 0 since we use the stype
   nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = daten_t_now();
   nh.method = 0;
   // This is an alphanumeric sub type.
-  auto subtype = r.at(1);
+  const auto& subtype = r.at(1);
   nh.length = subtype.size() + 1;
-  auto text = subtype;
-  StringUpperCase(&text);
+  auto text = ToStringUpperCase(subtype);
   text.push_back('\0');
   Packet packet(nh, {}, text);
-  bool ok = write_wwivnet_packet(packet_filename, net, packet);
+  const auto ok = write_wwivnet_packet(packet_filename, net, packet);
   if (!ok) {
     LOG(ERROR) << "Error writing packet: " << packet_filename;
     return 1;
@@ -106,5 +97,4 @@ int SubReqCommand::Execute() {
   return 0;
 }
 
-}
 }

@@ -18,15 +18,7 @@
 #ifndef __INCLUDED_NETWORK2_SUBS_H__
 #define __INCLUDED_NETWORK2_SUBS_H__
 
-#include <set>
-#include "sdk/net/packets.h"
 #include "network2/context.h"
-#include "sdk/networks.h"
-#include "sdk/net.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/packets.h"
 

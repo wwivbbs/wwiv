@@ -17,16 +17,15 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_connect.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/connect.h"
-#include "sdk/config.h"
 #include "sdk/networks.h"
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -35,8 +34,7 @@ using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string DumpConnectCommand::GetUsage() const {
   std::ostringstream ss;
@@ -46,14 +44,14 @@ std::string DumpConnectCommand::GetUsage() const {
 }
 
 int DumpConnectCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
   map<const string, Connect> connects;
-  for (const auto net : networks.networks()) {
+  for (const auto& net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     connects.emplace(lower_case_network_name, Connect(net.dir));
@@ -69,5 +67,4 @@ int DumpConnectCommand::Execute() {
 }
 
 
-}
 }

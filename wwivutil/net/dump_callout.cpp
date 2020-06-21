@@ -17,16 +17,15 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_callout.h"
 
+#include "core/log.h"
+#include "core/strings.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/networks.h"
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include "core/log.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
-#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
@@ -35,8 +34,7 @@ using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 std::string DumpCalloutCommand::GetUsage() const {
   std::ostringstream ss;
@@ -46,14 +44,14 @@ std::string DumpCalloutCommand::GetUsage() const {
 }
 
 int DumpCalloutCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
   map<const string, Callout> callouts;
-  for (const auto net : networks.networks()) {
+  for (const auto& net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     callouts.emplace(lower_case_network_name, Callout(net));
@@ -69,5 +67,4 @@ int DumpCalloutCommand::Execute() {
 }
 
 
-}
 }

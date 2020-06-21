@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_LIST_H__
 #define __INCLUDED_WWIVUTIL_LIST_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -31,9 +27,9 @@ namespace wwivutil {
 class NetListCommand final: public UtilCommand {
 public:
   NetListCommand() : UtilCommand("list", "List WWIV Networks") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 

@@ -18,21 +18,18 @@
 #ifndef __INCLUDED_WWIVUTIL_NET_DUMP_SUBSCRIBERS_H__
 #define __INCLUDED_WWIVUTIL_NET_DUMP_SUBSCRIBERS_H__
 
-#include "core/command_line.h"
 #include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
 namespace net {
 
-void dump_usage();
-
 class DumpSubscribersCommand final: public UtilCommand {
 public:
   DumpSubscribersCommand() : UtilCommand("subscribers", "Dumps contents of a WWIVnet subscriber list") {}
-  std::string GetUsage() const override final;
-  int Execute() override final;
-  bool AddSubCommands() override final;
+  [[nodiscard]] std::string GetUsage() const override;
+  int Execute() override;
+  bool AddSubCommands() override;
 };
 
 }

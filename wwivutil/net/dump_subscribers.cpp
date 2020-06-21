@@ -17,16 +17,15 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_subscribers.h"
 
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/net.h"
 #include "sdk/subscribers.h"
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -35,9 +34,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
-namespace net {
+namespace wwiv::wwivutil::net {
 
 static int dump_file(const std::string& filename) {
 
@@ -46,19 +43,19 @@ static int dump_file(const std::string& filename) {
     return 1;
   }
 
-  auto start = std::chrono::steady_clock::now();
+  const auto start = std::chrono::steady_clock::now();
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(filename, subscribers)) {
     LOG(ERROR) << "Error reading subscriber file: " << filename;
     return 1;
   }
-  auto end = std::chrono::steady_clock::now();
+  const auto end = std::chrono::steady_clock::now();
   if (subscribers.empty()) {
     LOG(INFO) << "No Subscribers: " << filename;
     return 0;
   }
 
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   cout << "Read " << subscribers.size() << " in " << elapsed.count() << " milliseconds. "
        << std::endl;
   cout << "Read " << subscribers.size() << " in " << elapsed.count() / 1000 << " seconds. "
@@ -90,6 +87,4 @@ bool DumpSubscribersCommand::AddSubCommands() {
   return true;
 }
 
-}
-}
 }

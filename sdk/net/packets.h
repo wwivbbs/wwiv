@@ -155,7 +155,7 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
  */
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
-ReadPacketResponse read_packet(wwiv::core::File& file, Packet& packet, bool process_de);
+std::tuple<Packet, ReadPacketResponse> read_packet(wwiv::core::File& file, bool process_de);
 
 bool write_wwivnet_packet(const std::string& filename, const net_networks_rec& net,
                           const Packet& packet);

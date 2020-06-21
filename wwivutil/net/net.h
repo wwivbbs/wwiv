@@ -26,7 +26,7 @@ namespace wwivutil {
 class NetCommand: public UtilCommand {
 public:
   NetCommand(): UtilCommand("net", "WWIV network commands.") {}
-  virtual ~NetCommand() {}
+  virtual ~NetCommand() = default;
   bool AddSubCommands() override final;
 };
 

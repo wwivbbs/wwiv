@@ -17,18 +17,16 @@
 /**************************************************************************/
 #include "sdk/net/packets.h"
 
-#include <string>
-#include <utility>
-
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 #include "sdk/subscribers.h"
-
-#include "fmt/format.h"
+#include <string>
+#include <utility>
 
 using std::string;
 using namespace wwiv::core;
@@ -58,17 +56,18 @@ bool send_network_email(const std::string& filename, const net_networks_rec& net
   return write_wwivnet_packet(filename, network, Packet(nh, list, ppt));
 }
 
-ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
+std::tuple<Packet, ReadPacketResponse>  read_packet(File& f, bool process_de) {
+  Packet packet{};
   auto num_read = f.Read(&packet.nh, sizeof(net_header_rec));
   if (num_read == 0) {
     // at the end of the packet.
-    return ReadPacketResponse::END_OF_FILE;
+    return std::make_tuple(packet, ReadPacketResponse::END_OF_FILE);
   }
 
   if (num_read != sizeof(net_header_rec)) {
     LOG(INFO) << "error reading header, got short read of size: " << num_read
               << "; expected: " << sizeof(net_header_rec);
-    return ReadPacketResponse::ERROR;
+    return std::make_tuple(packet, ReadPacketResponse::ERROR);
   }
 
   if (packet.nh.method > 0) {
@@ -86,7 +85,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
 
     if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) || length < 0) {
       LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
-      return ReadPacketResponse::ERROR;
+      return std::make_tuple(packet, ReadPacketResponse::ERROR);
     }
 
     if (packet.nh.method > 0 && process_de &&
@@ -104,7 +103,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
     read_text.resize(num_read);
     packet.set_text(std::move(read_text));
   }
-  return ReadPacketResponse::OK;
+  return std::make_tuple(packet, ReadPacketResponse::OK);
 }
 
 bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, const Packet& p) {

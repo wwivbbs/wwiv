@@ -123,8 +123,7 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
   }
 
   for (;;) {
-    Packet packet;
-    const auto response = read_packet(f, packet, false);
+    auto [packet, response] = read_packet(f, false);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
     }

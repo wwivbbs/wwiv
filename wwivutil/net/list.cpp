@@ -49,7 +49,7 @@ bool NetListCommand::AddSubCommands() {
 }
 
 int NetListCommand::Execute() {
-  Networks networks(*config()->config());
+  const Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;

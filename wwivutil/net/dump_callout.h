@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
 #define __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -32,9 +28,9 @@ class DumpCalloutCommand final: public UtilCommand {
 public:
   DumpCalloutCommand()
     : UtilCommand("callout", "Dumps parsed representation of callout.net") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final { return true; }
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override { return true; }
 };
 
 

@@ -18,43 +18,24 @@
 #include "network2/email.h"
 
 // WWIV5 Network2
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "core/command_line.h"
-#include "core/file.h"
 #include "core/log.h"
+#include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/os.h"
-#include "core/connection.h"
-#include "net_core/net_cmdline.h"
-#include "sdk/net/packets.h"
 #include "network2/context.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/callout.h"
-#include "sdk/connect.h"
-#include "sdk/config.h"
-#include "sdk/contact.h"
-#include "core/datetime.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
-#include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/email_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -74,14 +55,12 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
-namespace network2 {
+namespace wwiv::net::network2 {
 
 // Gets the user number or 0 if it is not found.
-static int GetUserNumber(const std::string name, UserManager& um) {
+static int GetUserNumber(const std::string& name, UserManager& um) {
   auto max = um.num_user_records();
-  for (int i = 0; i <= max; i++) {
+  for (auto i = 0; i <= max; i++) {
     User u;
     if (!um.readuser_nocache(&u, i)) {
       continue;
@@ -172,6 +151,4 @@ bool handle_email(Context& context,
   return true;
 }
 
-}
-}
 }

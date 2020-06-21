@@ -17,16 +17,16 @@
 /**************************************************************************/
 #include "wwivutil/net/dump_bbsdata.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
 #include "core/command_line.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;

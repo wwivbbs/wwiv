@@ -17,51 +17,37 @@
 /**************************************************************************/
 
 // WWIV5 Network2
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <fcntl.h>
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
-#include "core/semaphore_file.h"
+#include "core/os.h"
 #include "core/scope_exit.h"
+#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/os.h"
-#include "core/connection.h"
-#include "net_core/net_cmdline.h"
 #include "network2/context.h"
 #include "network2/email.h"
 #include "network2/post.h"
 #include "network2/subs.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/callout.h"
-#include "sdk/connect.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/config.h"
-#include "sdk/contact.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/ssm.h"
-#include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 #include "sdk/usermanager.h"
-#include "sdk/msgapi/msgapi.h"
+#include "sdk/vardec.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/net/packets.h"
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -127,7 +113,6 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
   if (!info.valid) {
     LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
-    return false;
   }
 
   if (info.filename.empty()) {
@@ -153,7 +138,7 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
 }
 
 static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
-  auto info = GetNetInfoFileInfo(p);
+  const auto info = GetNetInfoFileInfo(p);
   return write_net_received_file(net, p, info);
 }
 
@@ -195,12 +180,10 @@ static bool handle_packet(
     // Email has no minor type, so minor_type will always be zero.
     email_changed = true;
     return handle_email(context, p.nh.touser, p);
-    // The other email type.  The touser field is zero, and the name is found at
-  // the beginning of the message text, followed by a NUL character.
-  // Minor_type will always be zero.
   case main_type_email_name:
-    // This is regular email sent to a user number at this system.
-    // Email has no minor type, so minor_type will always be zero.
+    // The other email type.  The "touser" field is zero, and the name is found at
+    // the beginning of the message text, followed by a NUL character.
+    // Minor_type will always be zero.
     email_changed = true;
     return handle_email_byname(context, p);
   case main_type_new_post: {
@@ -245,7 +228,7 @@ static bool handle_packet(
   case main_type_external:
   case main_type_new_external:
 
-  // NetEdiit.
+  // NetEdit.
   case main_type_net_edit:
 
   // *.### support
@@ -267,13 +250,12 @@ static bool handle_file(Context& context, const string& name) {
     return false;
   }
 
-  bool done = false;
-  while (!done) {
-    Packet packet;
-    ReadPacketResponse response = read_packet(f, packet, true);
+  for ( ;; ) {
+    auto [packet, response] = read_packet(f, true);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
-    } else if (response == ReadPacketResponse::ERROR) {
+    }
+    if (response == ReadPacketResponse::ERROR) {
       return false;
     }
 

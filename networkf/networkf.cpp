@@ -1114,8 +1114,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     auto done = false;
     std::set<std::string> bundles;
     while (!done) {
-      Packet p;
-      const auto response = read_packet(f, p, true);
+      auto [p, response] = read_packet(f, true);
       if (response == ReadPacketResponse::END_OF_FILE) {
         // Delete the packet.
         f.Close();
@@ -1124,7 +1123,8 @@ int Main(const NetworkCommandLine& net_cmdline) {
         }
         File::Remove(f.path());
         break;
-      } else if (response == ReadPacketResponse::ERROR) {
+      }
+      if (response == ReadPacketResponse::ERROR) {
         return 1;
       }
       // If we got here, we had a packet to process.
@@ -1153,7 +1153,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     ShowHelp(net_cmdline);
     return 1;
   }
-  return (num_packets_processed > 0) ? 0 : 1;
+  return num_packets_processed > 0 ? 0 : 1;
 }
 
 

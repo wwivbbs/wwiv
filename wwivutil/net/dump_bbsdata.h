@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
 #define __INCLUDED_WWIVUTIL_DUMP_BBSDATA_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/callout.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -32,9 +28,9 @@ class DumpBbsDataCommand final: public UtilCommand {
 public:
   DumpBbsDataCommand()
     : UtilCommand("dump_bbsdata", "Dumps parsed representation of BBSDATA.*") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 

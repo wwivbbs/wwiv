@@ -17,22 +17,7 @@
 /**************************************************************************/
 #include "network2/post.h"
 
-// WWIV5 Network2
-#include <cctype>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
-
-#include "core/command_line.h"
 #include "core/connection.h"
-#include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
@@ -40,21 +25,19 @@
 #include "core/strings.h"
 #include "network2/context.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/net/packets.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/connect.h"
-#include "sdk/contact.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
-#include "sdk/networks.h"
-#include "sdk/subscribers.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
+#include "sdk/net/packets.h"
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -74,12 +57,10 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace net {
-namespace network2 {
+namespace wwiv::net::network2 {
 
 static bool find_sub(const Subs& subs, int network_number, const string& netname, subboard_t& sub) {
-  int current = 0;
+  auto current = 0;
   for (const auto& x : subs.subs()) {
     for (const auto& n : x.nets) {
       if (n.net_num == network_number) {
@@ -172,7 +153,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
   return true;
 }
 
-std::string set_to_string(set<uint16_t> lines) {
+static std::string set_to_string(const set<uint16_t>& lines) {
   std::ostringstream ss;
   for (const auto& line : lines) {
     ss << line << std::endl;
@@ -181,7 +162,7 @@ std::string set_to_string(set<uint16_t> lines) {
 }
 
 bool send_post_to_subscribers(Context& context, Packet& template_packet,
-                              set<uint16_t> subscribers_to_skip) {
+                              const set<uint16_t>& subscribers_to_skip) {
   LOG(INFO) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
 
   if (template_packet.nh.main_type != main_type_new_post) {
@@ -190,7 +171,7 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
                << main_type_name(template_packet.nh.main_type);
     return false;
   }
-  auto original_subtype = get_subtype_from_packet_text(template_packet.text());
+  const auto original_subtype = get_subtype_from_packet_text(template_packet.text());
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
   if (original_subtype.empty()) {
@@ -212,6 +193,4 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
                                   subscribers_send_to_t::hosted_and_gated_only);
 }
 
-} // namespace network2
-} // namespace net
 } // namespace wwiv

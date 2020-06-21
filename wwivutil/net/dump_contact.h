@@ -18,12 +18,8 @@
 #ifndef __INCLUDED_WWIVUTIL_DUMP_CONTACT_H__
 #define __INCLUDED_WWIVUTIL_DUMP_CONTACT_H__
 
-#include <map>
-#include <string>
-
-#include "core/command_line.h"
-#include "sdk/contact.h"
 #include "wwivutil/command.h"
+#include <string>
 
 namespace wwiv {
 namespace wwivutil {
@@ -32,9 +28,9 @@ class DumpContactCommand final: public UtilCommand {
 public:
   DumpContactCommand()
     : UtilCommand("contact", "Dumps parsed representation of contact.net") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
 }  // namespace wwivutil

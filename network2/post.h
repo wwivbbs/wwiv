@@ -20,16 +20,8 @@
 
 #include "network2/context.h"
 #include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/net.h"
-#include "sdk/net/packets.h"
-#include "sdk/networks.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
 #include "sdk/net/packets.h"
 #include <set>
-#include <vector>
 
 namespace wwiv {
 namespace net {
@@ -45,7 +37,7 @@ bool handle_inbound_post(Context& context, wwiv::sdk::net::Packet& packet);
  * a sub or gating a sub.
  */
 bool send_post_to_subscribers(Context& context, wwiv::sdk::net::Packet& packet,
-     std::set<uint16_t> subscribers_to_skip);
+                              const std::set<uint16_t>& subscribers_to_skip);
 
 } // namespace network2
 } // namespace net

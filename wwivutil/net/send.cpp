@@ -17,21 +17,18 @@
 /**************************************************************************/
 #include "wwivutil/net/send.h"
 
+#include "core/command_line.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "sdk/bbslist.h"
+#include "sdk/config.h"
+#include "sdk/networks.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "sdk/net/packets.h"
-#include "sdk/bbslist.h"
-#include "sdk/config.h"
-#include "sdk/callout.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
-#include "sdk/networks.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 using std::cout;
 using std::endl;
@@ -47,7 +44,7 @@ namespace wwiv::wwivutil::net {
 
 // Based off one from post.cpp
 static std::optional<subboard_t> find_sub(const Subs& subs, int network_number, const string& netname) {
-  int current = 0;
+  auto current = 0;
   VLOG(3) << "find_sub: subs.subs().size(): " << subs.subs().size()
           << "; net_num: " << network_number;
   for (const auto& x : subs.subs()) {
@@ -56,9 +53,9 @@ static std::optional<subboard_t> find_sub(const Subs& subs, int network_number, 
         VLOG(4) << "netname: " << netname << "; n.stype: " << n.stype;
         if (iequals(netname, n.stype)) {
           VLOG(2) << "MATCH: netname: " << netname << "; n.stype: " << n.stype;
-          // Since the subtype matches, we need to find the subboard base filename.
+          // Since the subtype matches, we need to find the sub-board base filename.
           // and return that.
-          subboard_t sub = subs.sub(current);
+          auto sub = subs.sub(current);
           return { sub };
         }
       }
@@ -135,14 +132,14 @@ int SubSendCommand::Execute() {
 
   // TODO(rushfan): Should this be enforced, if not we can
   // let people peer to peer seed subs if needed.
-  for (const auto n : so->nets) {
+  for (const auto& n : so->nets) {
     if (n.net_num == net_num && n.host != 0) {
       LOG(WARNING) << "Should only send posts for subs we host";
     }
   }
 
   const wwiv::sdk::msgapi::MessageApiOptions options{};
-  auto x = new NullLastReadImpl();
+  auto* x = new NullLastReadImpl();
   auto api = std::make_unique<WWIVMessageApi>(options, *config()->config(),
                                               config()->networks().networks(), x);
   if (!api->Exist(*so)) {
@@ -154,7 +151,7 @@ int SubSendCommand::Execute() {
     LOG(ERROR) << "Unable to open message area.";
     return 1;
   }
-  for (int i = std::max<int>(1, area->number_of_messages() - num); i <= area->number_of_messages();
+  for (auto i = std::max<int>(1, area->number_of_messages() - num); i <= area->number_of_messages();
        i++) {
     auto message = area->ReadMessage(i);
     const auto* wm = dynamic_cast<const WWIVMessage*>(message.get());

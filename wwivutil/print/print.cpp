@@ -27,8 +27,6 @@
 #include "localui/curses_io.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
-#include <cstdio>
-#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -40,8 +38,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 PrintCommand::PrintCommand() : UtilCommand("print", "prints a textfile") {}
 
@@ -65,7 +62,7 @@ int PrintCommand::Execute() {
     std::cout << s << std::endl;
   } else {
     std::unique_ptr<LocalIO> io;
-    auto io_type = sarg("io");
+    const auto io_type = sarg("io");
 #ifdef _WIN32
     if (io_type == "win32") {
       io = std::make_unique<Win32ConsoleIO>();
@@ -105,5 +102,4 @@ bool PrintCommand::AddSubCommands() {
   return true;
 }
 
-} // namespace wwivutil
 } // namespace wwiv

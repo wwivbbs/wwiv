@@ -124,13 +124,13 @@ static bool check_wwivnet_host_networks(
 }
 
 static bool check_fido_host_networks(
-  const wwiv::sdk::Config& config,
-  const wwiv::sdk::Networks& network,
+  const Config& config,
+  const Networks& network,
   const net_networks_rec& net,
   int network_number,
   std::ostringstream& text) {
 
-  wwiv::sdk::Subs subs(config.datadir(), network.networks());
+  Subs subs(config.datadir(), network.networks());
   if (!subs.Load()) {
     LOG(ERROR) << "Unable to load subs (.dat and .xtr)";
     text << "Unable to load subs (.dat and .xtr)\r\n";
@@ -162,10 +162,9 @@ static bool check_fido_host_networks(
   return true;
 }
 
-static bool check_connect_net(
-  const BbsListNet& b,
-  const net_networks_rec& net,
-  std::ostringstream& text) {
+static bool check_connect_net(const BbsListNet& b,
+                              const net_networks_rec& net,
+                              std::ostringstream& text) {
 
   const Connect connect(net.dir);
   for (const auto& entry : b.node_config()) {
@@ -177,10 +176,9 @@ static bool check_connect_net(
   return true;
 }
 
-static bool check_binkp_net(
-  const BbsListNet& b,
-  const BinkConfig& bink_config,
-  std::ostringstream& text) {
+static bool check_binkp_net(const BbsListNet& b,
+                            const BinkConfig& bink_config,
+                            std::ostringstream& text) {
   for (const auto& entry : b.node_config()) {
     const auto* binkp_entry = bink_config.binkp_session_config_for(entry.first);
     if (binkp_entry == nullptr) {

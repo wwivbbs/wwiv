@@ -22,7 +22,6 @@
 #include <string>
 
 #include "core/command_line.h"
-#include "sdk/connect.h"
 #include "wwivutil/command.h"
 
 namespace wwiv {
@@ -32,11 +31,10 @@ class DumpConnectCommand final: public UtilCommand {
 public:
   DumpConnectCommand()
     : UtilCommand("connect", "Dumps parsed representation of connect.net") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final { return true; }
+  int Execute() override;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override { return true; }
 };
-
 
 }  // namespace wwivutil
 }  // namespace wwiv
