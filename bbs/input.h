@@ -25,8 +25,9 @@
 
 namespace wwiv {
 namespace bbs {
-// Text editing modes for input routines
-enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, DATE, PHONE };
+
+  // Text editing modes for input routines
+  enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
 
 } // namespace bbs
 } // namespace wwiv

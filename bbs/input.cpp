@@ -160,14 +160,16 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
             }
           }
           break;
+	case InputMode::CMDLINE:
         case InputMode::FILENAME:
         case InputMode::FULL_PATH_NAME: {
           string disallowed =
               lc == InputMode::FILENAME ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
           if (disallowed.find(chCurrent) != std::string::npos) {
             chCurrent = 0;
-          } else {
+          } else if (lc != InputMode::CMDLINE) {
             // Lowercase filenames on all platforms, not just Win32.
+	    // Leave commandlines alone.
             chCurrent = to_lower_case(chCurrent);
           }
         } break;
@@ -418,11 +420,15 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     default:
       if (c < 255 && c > 31 &&
           ((bInsert && nLength < max_length) || (!bInsert && pos < max_length))) {
-        if (mode != InputMode::MIXED && mode != InputMode::FILENAME &&
+        if (mode != InputMode::MIXED &&
+	    mode != InputMode::FILENAME &&
+	    mode != InputMode::CMDLINE &&
             mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
         }
-        if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
+        if (mode == InputMode::FILENAME ||
+	    mode == InputMode::FULL_PATH_NAME ||
+	    mode == InputMode::CMDLINE) {
           // Force lowercase filenames.
           c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
@@ -538,7 +544,7 @@ std::string input_path(const std::string& orig_text, int max_length) {
 std::string input_path(int max_length) { return input_path("", max_length); }
 
 std::string input_cmdline(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
+  return Input1(orig_text, max_length, true, InputMode::CMDLINE);
 }
 
 std::string input_phonenumber(const std::string& orig_text, int max_length) {
