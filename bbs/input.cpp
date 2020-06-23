@@ -429,8 +429,10 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
         if (mode == InputMode::FILENAME ||
 	    mode == InputMode::FULL_PATH_NAME ||
 	    mode == InputMode::CMDLINE) {
-          // Force lowercase filenames.
-          c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
+          if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
+            // Force lowercase filenames but not commandlines.
+            c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
+          }
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;
           } else if (mode == InputMode::FILENAME && strchr("<>|*?\";", c)) {
