@@ -185,10 +185,10 @@ void printtitle_plus() {
     printtitle_plus_old();
   } else {
     const auto buf =
-        fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
-                     a()->dirs()[a()->current_user_dir().subnum].name,
-                     a()->current_file_area()->number_of_files());
-    bout.litebar(fmt::format("%-54s Space=Tag/?=Help", buf));
+        fmt::format("Area {} : {: <30} ({} files)", to_number<int>(a()->current_user_dir().keys),
+                    a()->dirs()[a()->current_user_dir().subnum].name,
+                    a()->current_file_area()->number_of_files());
+    bout.litebar(fmt::format("{:<54} Space=Tag/?=Help", buf));
     bout.Color(0);
   }
 }
