@@ -168,7 +168,7 @@ uuid uuid_generator::generate() const {
     data[(i * 4) + 0] = (u >> 24) & 0xff;
     data[(i * 4) + 1] = (u >> 16) & 0xff;
     data[(i * 4) + 2] = (u >> 8) & 0xff;
-    data[(i * 4) + 3] = 0xff;
+    data[(i * 4) + 3] = u & 0xff;
   }
 
   // From https://tools.ietf.org/html/rfc4122#page-6

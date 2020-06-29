@@ -82,3 +82,22 @@ TEST_F(UuidTest, Eq) {
   EXPECT_NE(us, u3s);
 }
 
+TEST_F(UuidTest, FromString) {
+  const std::string s = "f9545e4d-74db-4dad-b9d9-e3e8d1f59036";
+  const auto u = uuid::from_string("f9545e4d-74db-4dad-b9d9-e3e8d1f59036");
+  EXPECT_EQ(u.value().to_string(), s);
+}
+
+TEST_F(UuidTest, FromString_Braces) {
+  const std::string s = "f9545e4d-74db-4dad-b9d9-e3e8d1f59036";
+  const auto u = uuid::from_string("{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}");
+  EXPECT_EQ(u.value().to_string(), s);
+}
+
+TEST_F(UuidTest, FromString_Invalid) {
+  EXPECT_FALSE(uuid::from_string("x{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
+  EXPECT_FALSE(uuid::from_string("x-f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
+  EXPECT_FALSE(uuid::from_string("").has_value());
+  EXPECT_FALSE(uuid::from_string("x").has_value());
+  EXPECT_FALSE(uuid::from_string("e3e8d1f59036").has_value());
+}
