@@ -380,10 +380,8 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
  */
 static int import_bundles(const Config& config, const FidoCallout& callout,
                           const net_networks_rec& net, const std::string& dir,
-                          const std::string& mask, bool skip_delete) {
+                          const std::string& mask, bool skip_delete, FtnMessageDupe& dupe) {
   auto num_bundles_processed = 0;
-
-  FtnMessageDupe dupe(config);
 
   VLOG(1) << "import_bundles: mask: " << mask;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
@@ -395,7 +393,7 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
     }
     const auto lname = ToStringLowerCase(f.name);
     const auto path = FilePath(dir, f.name);
-    LOG(INFO) << "Attempting to impor packet: " << path;
+    LOG(INFO) << "Attempting to import packet: " << path;
     if (ends_with(lname, ".pkt")) {
       if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
         LOG(INFO) << "Successfully imported packet: " << path;
@@ -1084,13 +1082,14 @@ int Main(const NetworkCommandLine& net_cmdline) {
     VLOG(1) << r << endl;
   }
 
+  FtnMessageDupe dupe(net_cmdline.config());
   wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
   if (cmd == "import") {
     const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
     for (const auto& ext : extensions) {
       num_packets_processed +=
           import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
-                         StrCat("*.", ext), net_cmdline.skip_delete());
+                         StrCat("*.", ext), net_cmdline.skip_delete(), dupe);
 #ifndef _WIN32
       num_packets_processed +=
           import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
