@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "sdk/files/tic.h"
 
+
+#include "dirs.h"
 #include "core/crc32.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -164,4 +166,15 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
   t.valid_ = true;
   return {t};
 }
+
+std::optional<files::directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic) {
+  const auto area_tag = tic.area;
+  for (const auto& d : dirs.dirs()) {
+    if (iequals(area_tag, d.area_tag)) {
+      return {d};
+    }
+  }
+  return std::nullopt;
+}
+
 } // namespace wwiv::sdk::files

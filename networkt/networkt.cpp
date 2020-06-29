@@ -63,15 +63,6 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
   exit(1);
 }
 
-std::optional<files::directory_t> FindDir(const files::Dirs& dirs, const std::string& area_tag) {
-  for (const auto& d : dirs.dirs()) {
-    if (iequals(area_tag, d.area_tag)) {
-      return {d};
-    }
-  }
-  return std::nullopt;
-}
-
 bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool save_tic_files, bool skip_delete) {
   if (!net.fido.process_tic) {
     LOG(WARNING) << "TIC processing disabled for network: " << net.name;
@@ -97,7 +88,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     if (!t.IsValid()) {
       continue;
     }
-    auto od = FindDir(dirs, t.area);
+    auto od = FindFileAreaForTic(dirs, t);
     if (!od) {
       LOG(ERROR) << "Unable to find AREA_TAG for tic file: TAG: " << t.area << "; file; " << f.name;
       continue;

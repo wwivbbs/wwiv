@@ -50,7 +50,7 @@ struct directory_t {
 
 class Dirs {
 public:
-  Dirs(std::filesystem::path datadir);
+  explicit Dirs(std::filesystem::path datadir);
   virtual ~Dirs();
 
   bool LoadLegacy();

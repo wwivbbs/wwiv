@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_FILES_TIC_H__
 #define __INCLUDED_SDK_FILES_TIC_H__
 
+#include "dirs.h"
 #include "core/datetime.h"
 #include "sdk/fido/fido_address.h"
 #include <filesystem>
@@ -76,6 +77,10 @@ private:
 
   const std::filesystem::path dir_;
 };
+
+// Helper classes
+
+std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic);
 
 } 
 
