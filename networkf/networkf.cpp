@@ -176,7 +176,7 @@ static string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
+static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageDupe>& dupe,
                                const FidoCallout& callout, const net_networks_rec& net,
                                const std::string& dir, const string& name) {
   VLOG(1) << "import_packet_file: " << dir << name;
@@ -226,14 +226,16 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
     if (response == ReadPacketResponse::ERROR) {
       return false;
     }
-
-    if (dupe.is_dupe(msg)) {
+    if (!dupe) {
+      dupe.reset(new FtnMessageDupe(config));
+    }
+    if (dupe->is_dupe(msg)) {
       LOG(ERROR) << "Skipping duplicate FTN message: " << msg.vh.subject;
       LOG(ERROR) << "Text: " << msg.vh.text;
       // TODO(rushfan): move this or write out saved copy?
       continue;
     }
-    dupe.add(msg);
+    dupe->add(msg);
 
     bool is_email = (msg.nh.attribute & MSGPRIVATE);
     net_header_rec nh{};
@@ -306,7 +308,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
   return true;
 }
 
-static bool import_packets(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout,
+static bool import_packets(const Config& config, std::unique_ptr<FtnMessageDupe>& dupe, const FidoCallout& callout,
                            const net_networks_rec& net, const std::string& dir,
                            const std::string& mask, bool skip_delete) {
   VLOG(1) << "Importing packets from: " << dir << "' mask: '" << mask << "'";
@@ -326,7 +328,7 @@ static bool import_packets(const Config& config, FtnMessageDupe& dupe, const Fid
   return true;
 }
 
-static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
+static bool import_bundle_file(const Config& config, std::unique_ptr<FtnMessageDupe>& dupe,
                                const FidoCallout& callout, const net_networks_rec& net,
                                const std::string& dir, const string& name, bool skip_delete) {
   VLOG(1) << "import_bundle_file: name: " << name;
@@ -380,7 +382,8 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
  */
 static int import_bundles(const Config& config, const FidoCallout& callout,
                           const net_networks_rec& net, const std::string& dir,
-                          const std::string& mask, bool skip_delete, FtnMessageDupe& dupe) {
+                          const std::string& mask, bool skip_delete, 
+                          std::unique_ptr<FtnMessageDupe>& dupe) {
   auto num_bundles_processed = 0;
 
   VLOG(1) << "import_bundles: mask: " << mask;
@@ -1082,9 +1085,9 @@ int Main(const NetworkCommandLine& net_cmdline) {
     VLOG(1) << r << endl;
   }
 
-  FtnMessageDupe dupe(net_cmdline.config());
   wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
   if (cmd == "import") {
+    std::unique_ptr<FtnMessageDupe> dupe;
     const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
     for (const auto& ext : extensions) {
       num_packets_processed +=
