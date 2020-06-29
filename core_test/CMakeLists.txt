@@ -23,6 +23,7 @@ set(test_sources
   strings_test.cpp
   textfile_test.cpp
   transaction_test.cpp
+  uuid_test.cpp
 )
 
 set_max_warnings()

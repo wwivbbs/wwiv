@@ -23,6 +23,7 @@ set(COMMON_SOURCES
   strcasestr.cpp
   strings.cpp
   textfile.cpp
+  uuid.cpp
   version.cpp
   )
 
