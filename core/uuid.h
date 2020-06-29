@@ -29,27 +29,38 @@ public:
   uuid();
   ~uuid() = default;
   explicit uuid(std::array<uint8_t, 16> s);
+  uuid(const uuid&);
+  uuid& operator=(const uuid&);
 
-  [[nodiscard]] bool is_valid() const { return valid_; };
-  [[nodiscard]] bool is_empty() const { return empty_; }
+  [[nodiscard]] bool empty() const { return empty_; }
   [[nodiscard]] std::string to_string() const;
   [[nodiscard]] static std::optional<uuid> from_string(const std::string&);
   [[nodiscard]] int version() const;
   [[nodiscard]] int variant() const;
+  [[nodiscard]] std::array<uint8_t, 16> bytes() const { return bytes_; }
+  friend inline bool operator==(const uuid& lhs, const uuid& rhs);
+  friend inline bool operator!=(const uuid& lhs, const uuid& rhs);
 
 private:
   std::array<uint8_t, 16> bytes_{};
   bool empty_{true};
-  bool valid_{true};
 };
+
+inline bool operator==(const uuid& lhs, const uuid& rhs) {
+  return lhs.bytes_ == rhs.bytes_;
+}
+inline bool operator!=(const uuid& lhs, const uuid& rhs) {
+  return lhs.bytes_ != rhs.bytes_;
+}
 
 class uuid_generator {
 public:
   explicit uuid_generator(std::random_device& rd) :rd_(rd) {}
-  uuid generate() const;
+  [[nodiscard]] uuid generate() const;
 private:
   std::uniform_int_distribution<uint32_t>  distribution_;
   std::random_device& rd_;
 };
+
 
 #endif

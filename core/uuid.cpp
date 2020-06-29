@@ -32,11 +32,21 @@ uuid::uuid() = default;
 uuid::uuid(std::array<uint8_t, 16> s) : bytes_(s) {
   for (const auto& i : bytes_) {
     if (i != 0) {
-      valid_ = true;
       empty_ = false;
     }
   }
 
+}
+
+uuid::uuid(const uuid& that) {
+  this->bytes_ = that.bytes_;
+  this->empty_ = that.empty_;
+}
+
+uuid& uuid::operator=(const uuid& that) {
+  this->bytes_ = that.bytes_;
+  this->empty_ = that.empty_;
+  return *this;
 }
 
 std::string uuid::to_string() const {

@@ -36,8 +36,7 @@ public:
 TEST_F(UuidTest, Smoke) {
   const auto u = g.generate();
   LOG(INFO) << u.to_string();
-  EXPECT_FALSE(u.is_empty());
-  EXPECT_TRUE(u.is_valid());
+  EXPECT_FALSE(u.empty());
 }
 
 TEST_F(UuidTest, ToString) {
@@ -68,3 +67,18 @@ TEST_F(UuidTest, RoundTrip) {
   ASSERT_TRUE(u2.has_value());
   EXPECT_EQ(u.to_string(), u2.value().to_string());
 }
+
+TEST_F(UuidTest, Eq) {
+  const auto u = g.generate();
+  const auto us = u.to_string();
+  const auto u2(u);
+  const auto u2s = u2.to_string();
+  const auto u3 = g.generate();
+  const auto u3s = u3.to_string();
+  EXPECT_EQ(u, u2);
+  EXPECT_EQ(us, u2s);
+
+  EXPECT_NE(u, u3);
+  EXPECT_NE(us, u3s);
+}
+
