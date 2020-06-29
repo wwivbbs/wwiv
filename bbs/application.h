@@ -254,9 +254,6 @@ public:
 
   [[nodiscard]] uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
 
-  [[nodiscard]] bool IsCleanNetNeeded() const { return need_to_clean_net_; }
-  void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
-
   void set_at_wfc(bool b) { at_wfc_ = b; }
   [[nodiscard]] bool at_wfc() const { return at_wfc_; }
 
@@ -480,7 +477,6 @@ private:
   int instance_number_{-1};
   std::string network_extension_;
   bool user_already_on_{false};
-  bool need_to_clean_net_{false};
   bool at_wfc_{false};
   bool chatcall_{false};
 

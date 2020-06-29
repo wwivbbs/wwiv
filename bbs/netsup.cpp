@@ -32,7 +32,6 @@
 #include "core/inifile.h"
 #include "core/numbers.h"
 #include "core/os.h"
-#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -64,7 +63,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 constexpr int MAX_CONNECTS = 1000;
-std::chrono::steady_clock::time_point last_time_c_;
 
 /** Returns a full path to exe under the WWIV_DIR */
 static string CreateNetworkBinary(const std::string& exe) {
@@ -90,8 +88,6 @@ struct CalloutEntry {
 };
 
 void cleanup_net() {
-  a()->SetCleanNetNeeded(false);
-
   if (a()->net_networks.empty()) {
     return;
   }
@@ -122,7 +118,7 @@ void cleanup_net() {
     ss << CreateNetworkBinary("networkc");
     ss << " --quiet";
     ss << " --process_instance=" << a()->instance_number();
-    ss << " ." << a()->net_num();
+    ss << " ." << nNetNumber;
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
     ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG);
@@ -162,90 +158,7 @@ static void do_callout(const net_networks_rec& net, int sn) {
        << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
   ExecuteExternalProgram(cmd, EFLAG_NETPROG);
   a()->status_manager()->RefreshStatusCache();
-  last_time_c_ = steady_clock::now();
   cleanup_net();
-  send_inst_cleannet();
-}
-
-class NodeAndWeight {
-public:
-  NodeAndWeight() = default;
-  NodeAndWeight(int net_num, uint16_t node_num, uint64_t weight)
-      : net_num_(net_num), node_num_(node_num), weight_(weight) {}
-  int net_num_ = 0;
-  uint16_t node_num_ = 0;
-  int64_t weight_ = 0;
-};
-
-bool attempt_callout() {
-  a()->status_manager()->RefreshStatusCache();
-
-  const auto now = steady_clock::now();
-  if (last_time_c_ == steady_clock::time_point::min()) {
-    // Set it to 11s ago, so we try a callout right away.
-    last_time_c_ = now - seconds(11);
-    VLOG(2) << "Setting last time to now";
-    return false;
-  }
-  if (now - last_time_c_ < seconds(10)) {
-    VLOG(3) << "not attempting callout, been less to 10s";
-    return false;
-  }
-
-  // Set the last connect time to now since we are attempting to connect.
-  last_time_c_ = now;
-  ScopeExit set_net_num_zero([&]() { set_net_num(0); });
-  vector<NodeAndWeight> to_call(wwiv::stl::ssize(a()->net_networks));
-
-  for (auto nn = 0; nn < wwiv::stl::ssize(a()->net_networks); nn++) {
-    set_net_num(nn);
-    const auto& net = a()->net_networks[nn];
-    if (!net.sysnum) {
-      continue;
-    }
-
-    Callout callout(net);
-    Contact contact(net, false);
-
-    for (const auto& p : callout.callout_config()) {
-      const auto& ncor = p.second;
-      const NetworkContact* ncr = contact.contact_rec_for(p.first);
-      if (!ncr) {
-        VLOG(2) << "skipping because: !ncr || !ncor";
-        continue;
-      }
-      if (!should_call(*ncr, ncor, DateTime::now())) {
-        continue;
-      }
-
-      auto diff = time(nullptr) - ncr->lasttry();
-      const auto time_weight = std::max<int64_t>(diff, 0);
-
-      if (ncr->bytes_waiting() == 0L) {
-        if (to_call.at(nn).weight_ < time_weight) {
-          to_call[nn] = NodeAndWeight(nn, ncor.sysnum, time_weight);
-        }
-      } else {
-        const auto bytes_weight = static_cast<int64_t>(ncr->bytes_waiting()) * 60 + time_weight;
-        if (to_call.at(nn).weight_ < bytes_weight) {
-          to_call[nn] = NodeAndWeight(nn, ncor.sysnum, bytes_weight);
-        }
-      }
-    }
-  }
-
-  if (to_call.empty()) {
-    VLOG(2) << "Skipping: to_call is empty";
-    return false;
-  }
-  for (const auto& node : to_call) {
-    set_net_num(node.net_num_);
-    if (node.weight_ != 0) {
-      VLOG(1) << "Attempting callout on: @" << node.node_num_;
-      do_callout(a()->net_networks[node.net_num_] , node.node_num_);
-    }
-  }
-  return true;
 }
 
 void print_pending_list() {
@@ -813,7 +726,7 @@ static std::pair<int, int> ansicallout() {
 }
 
 static int FindNetworkNumberForNode(int sn) {
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->net_networks); nNetNumber++) {
+  for (auto nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->net_networks); nNetNumber++) {
     const auto net = a()->net_networks[nNetNumber];
     Callout callout(net);
     if (callout.net_call_out_for(sn) != nullptr) {
@@ -848,5 +761,3 @@ void force_callout() {
   a()->Cls();
   do_callout(net, sn.first);
 }
-
-std::chrono::steady_clock::time_point last_network_attempt() { return last_time_c_; }

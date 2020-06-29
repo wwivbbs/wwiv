@@ -265,17 +265,7 @@ int WFC::doWFCEvents() {
 
     lokb = 0;
     a_->SetCurrentSpeed("KB");
-    auto current_time = steady_clock::now();
-    const auto node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
     // try to check for packets to send every minute.
-    auto diff_time = current_time - last_network_attempt();
-    auto time_to_call = diff_time > minutes(1); // was 1200
-    if (!any && time_to_call && a_->current_net().sysnum && node_supports_callout) {
-      // also try this.
-      Clear();
-      attempt_callout();
-      any = true;
-    }
     DrawScreen();
     bout.okskey(false);
     if (io->KeyPressed()) {
@@ -525,11 +515,6 @@ int WFC::doWFCEvents() {
     }
 
     if (!any) {
-      if (a_->IsCleanNetNeeded()) {
-        // let's try this.
-        Clear();
-        cleanup_net();
-      }
       giveup_timeslice();
     }
   } while (!a()->context().incom() && !lokb);

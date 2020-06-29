@@ -107,43 +107,20 @@ void send_inst_sysstr(int whichinst, const std::string& send_string) {
   send_inst_str1(INST_MSG_SYSMSG, whichinst, send_string);
 }
 
-void send_inst_cleannet() {
-  inst_msg_header ih;
-  instancerec ir;
-
-  if (a()->instance_number() == 1) {
-    return;
-  }
-
-  get_inst_info(1, &ir);
-  if (ir.loc == INST_LOC_WFC) {
-    ih.main = INST_MSG_CLEANNET;
-    ih.minor = 0;
-    ih.from_inst = static_cast<uint16_t>(a()->instance_number());
-    ih.from_user = 1;
-    ih.msg_size = 0;
-    ih.dest_inst = 1;
-    ih.daten = daten_t_now();
-
-    send_inst_msg(&ih, "");
-  }
-}
-
-
 /*
  * "Broadcasts" a message to all online instances.
  */
 void broadcast(const std::string& message) {
   instancerec ir;
 
-  int ni = num_instances();
-  for (int i = 1; i <= ni; i++) {
+  const auto ni = num_instances();
+  for (auto i = 1; i <= ni; i++) {
     if (i == a()->instance_number()) {
       continue;
     }
     if (get_inst_info(i, &ir)) {
       if (inst_available(&ir)) {
-        send_inst_str(i, message.c_str());
+        send_inst_str(i, message);
       }
     }
   }
@@ -165,7 +142,7 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
     if (ih->msg_size > 0 && a()->IsUserOnline() && !a()->hangup_) {
-      SavedLine line = bout.SaveCurrentLine();
+      const auto line = bout.SaveCurrentLine();
       bout.nl(2);
       if (a()->in_chatroom_) {
         i = 0;
@@ -183,9 +160,6 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
       bout << msg << "\r\n\r\n";
       bout.RestoreCurrentLine(line);
     }
-    break;
-  case INST_MSG_CLEANNET:
-    a()->SetCleanNetNeeded(true);
     break;
   default:
     break;

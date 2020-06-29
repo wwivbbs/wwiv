@@ -24,7 +24,6 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
-#include "core/os.h"
 #include "core/strings.h"
 #include "core/version.cpp"
 #include "core/wwivport.h"
@@ -71,7 +70,7 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsd
   auto num_instances = oini.value("NUM_INSTANCES", 4);
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
-  for (int i = 1; i <= num_instances; i++) {
+  for (auto i = 1; i <= num_instances; i++) {
     auto instance_tag = fmt::format("WWIV-{}", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
@@ -352,7 +351,7 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   auto bbsdir = File::EnsureTrailingSlash(cmdline.bbsdir());
-  const bool forced_initialize = cmdline.barg("initialize");
+  const auto forced_initialize = cmdline.barg("initialize");
   UIWindow* window;
   if (forced_initialize) {
     window = new StdioWindow(nullptr, new ColorScheme());
@@ -367,7 +366,7 @@ int WInitApp::main(int argc, char** argv) {
     messagebox(window, "Unable to use --initialize when CONFIG.DAT exists.");
     return 1;
   }
-  bool need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
+  auto need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
 
   if (need_to_initialize) {
     window->Bkgd(' ');
@@ -439,8 +438,8 @@ int WInitApp::main(int argc, char** argv) {
   // wwivconfig --initialize flow should query the user to make an account.
   CreateSysopAccountIfNeeded(bbsdir);
 
-  bool done = false;
-  int selected = -1;
+  auto done = false;
+  auto selected = -1;
   do {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
@@ -461,13 +460,13 @@ int WInitApp::main(int argc, char** argv) {
                                  {"W. wwivd Configuration", 'W'},
                                  {"Q. Quit", 'Q'}};
 
-    int selected_hotkey = -1;
+    auto selected_hotkey = -1;
     {
       ListBox list(window, "Main Menu", items);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
       list.set_selected(selected);
-      ListBoxResult result = list.Run();
+      auto result = list.Run();
       selected = list.selected();
       if (result.type == ListBoxResultType::HOTKEY) {
         selected_hotkey = result.hotkey;

@@ -30,9 +30,5 @@ void gate_msg(
   const std::string& author_name, std::vector<uint16_t> list,
   int nFromNetworkNumber);
 void force_callout();
-bool attempt_callout();
-
-std::chrono::steady_clock::time_point last_network_attempt();
-
 
 #endif  // __INCLUDED_BBS_NETSUP_H__

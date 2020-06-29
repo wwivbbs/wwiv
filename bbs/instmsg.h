@@ -27,7 +27,7 @@
 constexpr int INST_MSG_STRING = 1;  // A string to print out to the user
 constexpr int UNUSED_INST_MSG_SHUTDOWN = 2;  // Hangs up, ends BBS execution
 constexpr int INST_MSG_SYSMSG = 3;  // Message from the system, not a user
-constexpr int INST_MSG_CLEANNET = 4;  // should call cleanup_net
+constexpr int UNUSED_INST_MSG_CLEANNET = 4;  // should call cleanup_net
 constexpr int INST_MSG_CHAT = 6;  // External chat request
 
 /****************************************************************************/
@@ -132,7 +132,6 @@ struct inst_msg_header {
 };
 
 void send_inst_str(int whichinst, const std::string& send_string);
-void send_inst_cleannet();
 void broadcast(const std::string& message);
 void process_inst_msgs();
 bool get_inst_info(int nInstanceNum, instancerec * ir);

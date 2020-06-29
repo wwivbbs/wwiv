@@ -190,7 +190,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   cfg430.max_subs = 64;
   cfg430.max_dirs = 64;
   cfg430.qscn_len =
-      4 * (1 + cfg430.max_subs + ((cfg430.max_subs + 31) / 32) + ((cfg430.max_dirs + 31) / 32));
+      4 * (1 + cfg430.max_subs + (cfg430.max_subs + 31) / 32 + (cfg430.max_dirs + 31) / 32);
 
   cfg430.post_call_ratio = 0.0;
   save_config(cfg430);
