@@ -1096,7 +1096,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
 #ifndef _WIN32
       num_packets_processed +=
           import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
-                          StrCat("*.", ToStringUpperCase(ext)), net_cmdline.skip_delete());
+			 StrCat("*.", ToStringUpperCase(ext)), net_cmdline.skip_delete(), dupe);
 #endif
     }
   } else if (cmd == "export") {

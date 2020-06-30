@@ -58,7 +58,7 @@ inline bool operator!=(const uuid_t& lhs, const uuid_t& rhs) {
 class uuid_generator {
 public:
   explicit uuid_generator(std::random_device& rd) :rd_(rd) {}
-  [[nodiscard]] uuid_t generate() const;
+  [[nodiscard]] uuid_t generate();
 private:
   std::uniform_int_distribution<uint32_t>  distribution_;
   std::random_device& rd_;

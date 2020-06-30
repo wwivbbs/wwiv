@@ -130,37 +130,7 @@ int uuid_t::variant() const {
   return v;
 }
 
-// From https://stackoverflow.com/a/24365878
-std::string generate_uuid_v4_string() {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  const std::uniform_int_distribution<> d_full(0, 15);
-  const std::uniform_int_distribution<> d_short(8, 11);
-  std::stringstream ss;
-  ss << std::hex;
-  for (auto i = 0; i < 8; i++) {
-    ss << d_full(gen);
-  }
-  ss << "-";
-  for (auto i = 0; i < 4; i++) {
-    ss << d_full(gen);
-  }
-  ss << "-4";
-  for (auto i = 0; i < 3; i++) {
-    ss << d_full(gen);
-  }
-  ss << "-" << d_short(gen);
-  for (auto i = 0; i < 3; i++) {
-    ss << d_full(gen);
-  }
-  ss << "-";
-  for (auto i = 0; i < 12; i++) {
-    ss << d_full(gen);
-  };
-  return ss.str();
-}
-
-uuid_t uuid_generator::generate() const {
+uuid_t uuid_generator::generate() {
   std::mt19937 gen(rd_());
   std::array<uint8_t, 16> data{};
   for (auto i = 0; i < 4; i++) {

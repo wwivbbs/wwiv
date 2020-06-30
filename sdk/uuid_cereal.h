@@ -32,8 +32,8 @@ inline std::string save_minimal(Archive const&, const wwiv::core::uuid_t& a) {
 
 template <class Archive>
 inline void load_minimal(Archive const&, wwiv::core::uuid_t& a, const std::string& s) {
-  const auto o = uuid_t::from_string(s);
-  a = o.value_or(uuid_t());
+  const auto o = wwiv::core::uuid_t::from_string(s);
+  a = o.value_or(wwiv::core::uuid_t());
 }
 
 }

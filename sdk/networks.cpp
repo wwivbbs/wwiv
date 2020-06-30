@@ -165,7 +165,7 @@ bool Networks::LoadFromDat() {
   }
 
   std::random_device rd;
-  const uuid_generator uuid_gen(rd);
+  uuid_generator uuid_gen(rd);
   for (const auto& n : networks_disk) {
     net_networks_rec r = {};
     r.type = static_cast<network_type_t>(n.type);
@@ -187,7 +187,7 @@ bool Networks::Save() {
 
 void Networks::EnsureNetworksHaveUUID() {
   std::random_device rd;
-  const uuid_generator uuid_gen(rd);
+  uuid_generator uuid_gen(rd);
   auto added{false};
   for (auto& n : networks_) {
     if (n.uuid.empty()) {
