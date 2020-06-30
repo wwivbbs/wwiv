@@ -87,13 +87,13 @@ void old_sublist() {
       } else {
         os1 << "  ";
       }
-      if (a()->current_net().sysnum || wwiv::stl::ssize(a()->net_networks) > 1) {
+      if (a()->current_net().sysnum || wwiv::stl::ssize(a()->nets()) > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
           std::string ss;
           if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
             ss = "Gated";
           } else {
-            ss = stripcolors(a()->net_networks[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name);
+            ss = stripcolors(a()->nets()[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name);
           }
 
           if (a()->subs().sub(a()->usub[i1].subnum).anony & anony_val_net) {
@@ -236,14 +236,14 @@ void SubList() {
                 : "|#6No ";
         iscan(i1);
         std::string net_info;
-        if (a()->current_net().sysnum || wwiv::stl::ssize(a()->net_networks) > 1) {
+        if (a()->current_net().sysnum || wwiv::stl::ssize(a()->nets()) > 1) {
           if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
 	          std::string net_name;
             if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
               wc = 6;
               net_name = "Gated";
             } else {
-              const std::string nn = a()->net_networks[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name;
+              const std::string nn = a()->nets()[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name;
               net_name = stripcolors(nn);
               wc = a()->net_num() % 8;
             }

@@ -627,7 +627,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       set_net_num(0);
       send_to_name = a()->names()->UserName(un);
     } else {
-      const std::string netname = (wwiv::stl::ssize(a()->net_networks) > 1) ? a()->network_name() : "";
+      const std::string netname = (wwiv::stl::ssize(a()->nets()) > 1) ? a()->network_name() : "";
       send_to_name = username_system_net_as_string(un, a()->net_email_name, sy, netname);
     }
 
@@ -817,7 +817,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       bout << "Going on   : ";
       bout.Color(3);
       for (const auto& xnp : a()->current_sub().nets) {
-        bout << a()->net_networks[xnp.net_num].name << " ";
+        bout << a()->nets()[xnp.net_num].name << " ";
       }
       bout.nl();
     }

@@ -112,11 +112,11 @@ static void DisplayNetInfo(size_t nSubNum) {
   for (const auto& sn : nets) {
     const auto auto_info_text =
         (sn.category) ? fmt::format(" Auto-Info({})", sn.category) : " Auto-Info";
-    if (ssize(a()->net_networks) <= sn.net_num) {
+    if (ssize(a()->nets()) <= sn.net_num) {
       bout << "      |#6No network exists at number: " << sn.net_num << " to display. \r\n";
       continue;
     }
-    const auto& net = a()->net_networks[sn.net_num];
+    const auto& net = a()->nets()[sn.net_num];
     if (sn.host == 0) {
       std::string host = "<HERE>";
       const auto dir = net.dir;
@@ -316,7 +316,7 @@ static void modify_sub(int n) {
       }
     } break;
     case 'J': {
-      const auto num_nets = wwiv::stl::ssize(a()->net_networks);
+      const auto num_nets = wwiv::stl::ssize(a()->nets());
       if (!num_nets) {
         break;
       }

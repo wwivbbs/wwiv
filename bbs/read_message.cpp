@@ -71,7 +71,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
                                  string* outLocation) {
   string netName;
 
-  if (wwiv::stl::ssize(a()->net_networks) > 1) {
+  if (wwiv::stl::ssize(a()->nets()) > 1) {
     netName = StrCat(a()->current_net().name, "- ");
   }
 
@@ -833,7 +833,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     m.flags.insert(MessageFlags::LOCAL);
   }
   for (const auto& nets : cs.nets) {
-    const auto& net = a()->net_networks[nets.net_num];
+    const auto& net = a()->nets()[nets.net_num];
     if (net.type == network_type_t::ftn) {
       m.flags.insert(MessageFlags::FTN);
     } else if (net.type == network_type_t::wwivnet) {

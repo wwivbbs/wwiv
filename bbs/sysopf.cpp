@@ -299,7 +299,7 @@ void print_net_listing(bool bForcePause) {
 
   a()->status_manager()->RefreshStatusCache();
 
-  if (!wwiv::stl::ssize(a()->net_networks)) {
+  if (!wwiv::stl::ssize(a()->nets())) {
     return;
   }
 
@@ -314,13 +314,13 @@ void print_net_listing(bool bForcePause) {
   bool done = false;
   while (!done && !a()->hangup_) {
     bout.cls();
-    if (wwiv::stl::ssize(a()->net_networks) > 1) {
+    if (wwiv::stl::ssize(a()->nets()) > 1) {
       std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (int i = 0; i < ssize(a()->net_networks); i++) {
+      for (int i = 0; i < ssize(a()->nets()); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -328,11 +328,11 @@ void print_net_listing(bool bForcePause) {
           int odci = (i + 1) / 10;
           odc.insert(static_cast<char>(odci + '0'));
         }
-        bout << "|#2" << i + 1 << "|#9)|#1 " << a()->net_networks[i].name << wwiv::endl;
+        bout << "|#2" << i + 1 << "|#9)|#1 " << a()->nets()[i].name << wwiv::endl;
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (wwiv::stl::ssize(a()->net_networks) < 9) {
+      if (wwiv::stl::ssize(a()->nets()) < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -352,14 +352,14 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if (current_net < 0 || current_net > ssize(a()->net_networks)) {
+      if (current_net < 0 || current_net > ssize(a()->nets())) {
         continue;
       }
     } else {
       // current_net is the current network number, if there is only 1, thens use it.
       current_net = 0;
     }
-    const auto& net = a()->net_networks[current_net];
+    const auto& net = a()->nets()[current_net];
 
     bool done1 = false;
     bool abort;
@@ -394,7 +394,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (wwiv::stl::ssize(a()->net_networks) < 2) {
+        if (wwiv::stl::ssize(a()->nets()) < 2) {
           done = true;
         }
         done1 = true;

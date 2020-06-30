@@ -699,10 +699,10 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->RefreshStatusCache();
-  for (int i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
-    if (a()->net_networks[i].sysnum) {
+  for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
+    if (a()->nets()[i].sysnum) {
       std::ostringstream ss;
-      const auto& n = a()->net_networks[i];
+      const auto& n = a()->nets().at(i);
       ss << "|#9" << n.name << " node|#0" << std::string(13 - n.name.size(), ' ') << "|#2 @" << n.sysnum;
       auto s1 = ss.str();
       if (i) {
@@ -730,7 +730,7 @@ static void DisplayUserLoginInformation() {
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
-        if (wwiv::stl::ssize(a()->net_networks) > 1) {
+        if (wwiv::stl::ssize(a()->nets()) > 1) {
           bout << "#" << a()->user()->GetForwardUserNumber()
                << " @"
                << a()->user()->GetForwardSystemNumber()

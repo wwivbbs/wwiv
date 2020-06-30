@@ -106,10 +106,10 @@ static string GetMailBoxStatus() {
   }
   if (a()->user()->GetForwardSystemNumber() != 0) {
     if (a()->user()->IsMailboxForwarded()) {
-      return fmt::sprintf("Forward to #%u @%u.%s.",
+      return fmt::format("Forward to #{} @{}.{}.",
               a()->user()->GetForwardUserNumber(),
               a()->user()->GetForwardSystemNumber(),
-              a()->net_networks[ a()->user()->GetForwardNetNumber() ].name);
+              a()->nets().at(a()->user()->GetForwardNetNumber()).name);
     } else {
       string fwd_username;
       read_inet_addr(fwd_username, a()->usernum);

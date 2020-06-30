@@ -505,8 +505,8 @@ void time_bank() {
 }
 
 int getnetnum(const std::string& network_name) {
-  for (int i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
-    if (iequals(a()->net_networks[i].name, network_name)) {
+  for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
+    if (iequals(a()->nets()[i].name, network_name)) {
       return i;
     }
   }
@@ -514,8 +514,8 @@ int getnetnum(const std::string& network_name) {
 }
 
 int getnetnum_by_type(network_type_t type) {
-  const auto& n = a()->net_networks;
-  for (int i = 0; i < wwiv::stl::ssize(a()->net_networks); i++) {
+  const auto& n = a()->nets().networks();
+  for (auto i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
     if (n[i].type == type) {
       return i;
     }
@@ -527,7 +527,7 @@ void uudecode(const char *input_filename, const char *output_filename) {
   bout << "|#2Now UUDECODING " << input_filename;
   bout.nl();
 
-  auto cmdline = fmt::format("UUDECODE {} {}", input_filename, output_filename);
+  const auto cmdline = fmt::format("UUDECODE {} {}", input_filename, output_filename);
   ExecuteExternalProgram(cmdline, EFLAG_NONE); 
   File::Remove(input_filename);
 }

@@ -224,7 +224,7 @@ void sub_xtr_del(int n, int nn, int f) {
     erase_at(a()->subs().sub(n).nets, nn);
   }
   set_net_num(xn.net_num);
-  const auto& net = a()->net_networks.at(xn.net_num);
+  const auto& net = a()->nets().at(xn.net_num);
 
   if (xn.host != 0 && valid_system(xn.host)) {
     short opt;
@@ -263,7 +263,7 @@ void sub_xtr_add(int n, int nn) {
   // Start with the first network number, only ask if
   // we have more than 1 network to choose from.
   int network_number = 0;
-  const auto num_nets = wwiv::stl::ssize(a()->net_networks);
+  const auto num_nets = wwiv::stl::ssize(a()->nets());
   if (num_nets == 0) {
     LOG(ERROR) << "Called sub_xtr_add when no networks defined.";
     return;
@@ -275,7 +275,7 @@ void sub_xtr_add(int n, int nn) {
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (int ii = 0; ii < wwiv::stl::ssize(a()->net_networks); ii++) {
+    for (int ii = 0; ii < wwiv::stl::ssize(a()->nets()); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -283,11 +283,11 @@ void sub_xtr_add(int n, int nn) {
         int odci = (ii + 1) / 10;
         odc.insert(static_cast<char>(odci + '0'));
       }
-      bout << "(" << ii + 1 << ") " << a()->net_networks[ii].name << wwiv::endl;
+      bout << "(" << ii + 1 << ") " << a()->nets()[ii].name << wwiv::endl;
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (wwiv::stl::ssize(a()->net_networks) < 9) {
+    if (wwiv::stl::ssize(a()->nets()) < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         network_number = -1;
@@ -302,14 +302,14 @@ void sub_xtr_add(int n, int nn) {
         network_number = to_number<int>(mmk) - 1;
       }
     }
-    if (network_number >= 0 && network_number < wwiv::stl::ssize(a()->net_networks)) {
+    if (network_number >= 0 && network_number < wwiv::stl::ssize(a()->nets())) {
       set_net_num(network_number);
     } else {
       return;
     }
   }
   xnp.net_num = static_cast<int16_t>(network_number);
-  const auto& net = a()->net_networks[network_number];
+  const auto& net = a()->nets()[network_number];
 
   bout.nl();
   auto stype_len = 7;

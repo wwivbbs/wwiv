@@ -314,7 +314,7 @@ int WFC::doWFCEvents() {
         break;
       case ',':
         // Print NetLogs
-        if (a_->current_net().sysnum > 0 || !a_->net_networks.empty()) {
+        if (a_->current_net().sysnum > 0 || !a_->nets().empty()) {
           io->GotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");

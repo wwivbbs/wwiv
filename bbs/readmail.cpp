@@ -419,7 +419,7 @@ void readmail(int mode) {
         if (m.fromsys == 0) {
           if (m.fromuser == 65535) {
             if (nn != 255) {
-              ss << a()->net_networks[nn].name;
+              ss << a()->nets()[nn].name;
             }
           } else {
             ss << a()->names()->UserName(m.fromuser);
@@ -448,15 +448,15 @@ void readmail(int mode) {
                 s1 = stripcolors(ss2);
               } else {
                 s1 = fmt::format("{} {}@{}.{} ({})", stripcolors(strip_to_node(ss2)), m.fromuser,
-                                 m.fromsys, a()->net_networks[nn].name, system_name);
+                                 m.fromsys, a()->nets()[nn].name, system_name);
               }
               if (s1.size() > a()->mail_who_field_len) {
                 s1.resize(a()->mail_who_field_len);
               }
             } else {
-              if (wwiv::stl::ssize(a()->net_networks) > 1) {
+              if (wwiv::stl::ssize(a()->nets()) > 1) {
                 s1 = fmt::format("#{} @{}.{} ({})", m.fromuser, m.fromsys,
-                                 a()->net_networks[nn].name, system_name);
+                                 a()->nets()[nn].name, system_name);
               } else {
                 s1 = fmt::format("#{} @{} ({})", m.fromuser, m.fromsys, system_name);
               }
@@ -619,7 +619,7 @@ void readmail(int mode) {
       string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       set_net_num(nn);
-      auto& net = a()->net_networks[nn];
+      auto& net = a()->nets()[nn];
       i1 = 1;
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
@@ -966,7 +966,7 @@ void readmail(int mode) {
                   a()->current_net().type == network_type_t::internet) {
                 fwd_email_name = a()->net_email_name;
               } else {
-                auto netname = ssize(a()->net_networks) > 1 ? a()->network_name() : "";
+                auto netname = ssize(a()->nets()) > 1 ? a()->network_name() : "";
                 fwd_email_name = username_system_net_as_string(user_number, a()->net_email_name,
                                                                 system_number, netname);
               }
@@ -1016,7 +1016,7 @@ void readmail(int mode) {
                 auto s = fmt::sprintf("\r\nForwarded to %s from %s.", fwd_email_name, fwd_user_name);
 
                 set_net_num(nn);
-                net = a()->net_networks[nn];
+                net = a()->nets()[nn];
                 lineadd(&m.msg, s, "email");
                 s = StrCat(fwd_user_name, " forwarded your mail to ", fwd_email_name);
                 if (!(m.status & status_source_verified)) {
@@ -1040,7 +1040,7 @@ void readmail(int mode) {
 
                 if (nn != 255 && nn == a()->net_num()) {
                   email.from_user = m.fromuser;
-                  email.from_system = m.fromsys ? m.fromsys : a()->net_networks[nn].sysnum;
+                  email.from_system = m.fromsys ? m.fromsys : a()->nets()[nn].sysnum;
                   email.from_network_number = nn;
                   sendout_email(email);
                 } else {

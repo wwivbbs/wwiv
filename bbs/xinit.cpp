@@ -420,7 +420,7 @@ void Application::read_nintern() {
 }
 
 bool Application::read_subs() {
-  subs_ = std::make_unique<Subs>(config_->datadir(), net_networks);
+  subs_ = std::make_unique<Subs>(config_->datadir(), nets_->networks());
   return subs_->Load();
 }
 
@@ -445,15 +445,15 @@ class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
 bool Application::create_message_api() {
   // TODO(rushfan): Create the right API type for the right message area.
 
-  wwiv::sdk::msgapi::MessageApiOptions options;
+  msgapi::MessageApiOptions options;
   // Delete ONE matches classic WWIV behavior.
-  options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
+  options.overflow_strategy = msgapi::OverflowStrategy::delete_one;
 
   // We only support type-2
-  msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
-      options, *config_, net_networks, new BBSLastReadImpl());
+  msgapis_[2] = std::make_unique<msgapi::WWIVMessageApi>(
+      options, *config_, nets_->networks(), new BBSLastReadImpl());
 
-  fileapi_ = std::make_unique<wwiv::sdk::files::FileApi>(config_->datadir());
+  fileapi_ = std::make_unique<files::FileApi>(config_->datadir());
   return true;
 }
 
@@ -502,9 +502,6 @@ void Application::read_networks() {
   }
 
   nets_ = std::make_unique<Networks>(*config());
-  if (nets_->IsInitialized()) {
-    net_networks = nets_->networks();
-  }
 }
 
 bool Application::read_names() {

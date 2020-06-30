@@ -55,7 +55,7 @@ void get_user_ppp_addr() {
   if (network_number == -1) {
     return;
   }
-  const auto& net = a()->net_networks[network_number];
+  const auto& net = a()->nets().at(network_number);
   a()->internetFullEmailAddress =
       fmt::format("{}@{}", a()->internetEmailName, a()->internetEmailDomain);
   TextFile acctFile(FilePath(net.dir, ACCT_INI), "rt");
@@ -186,12 +186,12 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   inetAddrFile.Seek(lCurPos, File::Whence::begin);
   inetAddrFile.Write(internet_address.c_str(), 80L);
   inetAddrFile.Close();
-  std::string default_addr = StrCat("USER", user_number);
+  const auto default_addr = StrCat("USER", user_number);
   auto inet_net_num = getnetnum_by_type(network_type_t::internet);
   if (inet_net_num < 0) {
     return;
   }
-  const auto& net = a()->net_networks[inet_net_num];
+  const auto& net = a()->nets().at(inet_net_num);
   TextFile in(FilePath(net.dir, ACCT_INI), "rt");
   TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {

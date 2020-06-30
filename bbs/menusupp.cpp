@@ -424,12 +424,12 @@ void WWIVVersion() {
   bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
-  if (!a()->net_networks.empty()) {
+  if (!a()->nets().empty()) {
     const auto status = a()->status_manager()->GetStatus();
     a()->status_manager()->RefreshStatusCache();
     //bout << wwiv::endl;
     bout << "|#9Networks      : |#2" << "net" << status->GetNetworkVersion() << wwiv::endl;
-    for (const auto& n : a()->net_networks) {
+    for (const auto& n : a()->nets().networks()) {
       if (!n.sysnum) {
         continue;
       }

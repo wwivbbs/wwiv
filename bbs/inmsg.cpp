@@ -71,13 +71,13 @@ static bool GetMessageToName(MessageEditorData& data) {
     return false;
   }
 
-  bool newlsave = bout.newline;
+  const auto saved_newline = bout.newline;
   for (const auto& xnp : a()->current_sub().nets) {
-    if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
+    if (a()->nets()[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
       bout << "|#2To   : ";
       bout.newline = false;
       const auto to_name = input_text("All", 40);
-      bout.newline = newlsave;
+      bout.newline = saved_newline;
       if (to_name.empty()) {
         data.to_name = "All";
         bout << "|#4All\r\n";
@@ -353,7 +353,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name, const string& title) {
   if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
-      if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
+      if (a()->nets()[xnp.net_num].type == network_type_t::ftn) {
         const auto buf = fmt::sprintf("%c0FidoAddr: %s", CD, to_name);
         ss << buf << crlf;
         break;
@@ -383,7 +383,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
 
 static std::filesystem::path FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
-    auto nd = a()->net_networks[xnp.net_num].dir;
+    auto nd = a()->nets()[xnp.net_num].dir;
     auto filename = FilePath(nd, StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;

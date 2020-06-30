@@ -23,10 +23,8 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
 #include "bbs/exceptions.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
@@ -41,7 +39,6 @@
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
-#include "bbs/xfer.h"
 #include "core/command_line.h"
 #include "core/os.h"
 #include "core/strings.h"
@@ -56,6 +53,7 @@
 #include "chnedit.h"
 #include "diredit.h"
 #include "subedit.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
@@ -425,7 +423,7 @@ void Application::UpdateTopScreen() {
   }
 
   auto status = (status_manager()->GetStatus());
-  char i;
+  int i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17];
 
   auto lll = bout.lines_listed();
@@ -607,17 +605,17 @@ void Application::Cls() {
 }
 
 std::string Application::network_name() const {
-  if (net_networks.empty()) {
+  if (nets_->empty()) {
     return {};
   }
-  return net_networks[network_num_].name;
+  return nets_->at(network_num_).name;
 }
 
 std::string Application::network_directory() const {
-  if (net_networks.empty()) {
+  if (nets_->empty()) {
     return "";
   }
-  return std::string(net_networks[network_num_].dir);
+  return std::string(nets_->at(network_num_).dir);
 }
 
 int Application::language_number() const { return m_nCurrentLanguageNumber; }
@@ -1099,8 +1097,8 @@ const wwiv::sdk::Networks& Application::nets() const {
 
 const net_networks_rec& Application::current_net() const {
   const static net_networks_rec empty_rec{};
-  if (net_networks.empty()) {
+  if (nets_->empty()) {
     return empty_rec;
   }
-  return net_networks[net_num()];
+  return nets_->at(net_num());
 }

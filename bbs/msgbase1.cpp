@@ -113,7 +113,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       continue;
     }
     set_net_num(xnp.net_num);
-    const auto& net = a()->net_networks[xnp.net_num];
+    const auto& net = a()->nets()[xnp.net_num];
     net_header_rec nh = nhorig;
     std::vector<uint16_t> list;
     nh.minor_type = 0;
@@ -195,7 +195,7 @@ void post(const PostData& post_data) {
         if (i) {
           bout << "|#9, ";
         }
-        const auto& n = a()->net_networks[a()->current_sub().nets[i].net_num];
+        const auto& n = a()->nets()[a()->current_sub().nets[i].net_num];
         bout << "|#2" << n.name << "|#1";
         if (n.type == network_type_t::wwivnet) {
           bout << "|#1 (WWIV)";
@@ -355,8 +355,8 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
   }
   text.resize(cr);
   // Don't assume that we have a valid network at the network_number position.
-  if (network_number < ssize(a()->net_networks) &&
-      a()->net_networks[network_number].type == network_type_t::ftn) {
+  if (network_number < ssize(a()->nets()) &&
+      a()->nets()[network_number].type == network_type_t::ftn) {
     // 1st line of message is from.
     a()->net_email_name = text;
     return text;
