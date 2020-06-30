@@ -63,7 +63,7 @@ TEST_F(UuidTest, RoundTrip) {
   const auto u = g.generate();
   const auto orig = u.to_string();
   LOG(INFO) << orig;
-  const auto u2 = uuid::from_string(orig);
+  const auto u2 = uuid_t::from_string(orig);
   ASSERT_TRUE(u2.has_value());
   EXPECT_EQ(u.to_string(), u2.value().to_string());
 }
@@ -84,20 +84,20 @@ TEST_F(UuidTest, Eq) {
 
 TEST_F(UuidTest, FromString) {
   const std::string s = "f9545e4d-74db-4dad-b9d9-e3e8d1f59036";
-  const auto u = uuid::from_string("f9545e4d-74db-4dad-b9d9-e3e8d1f59036");
+  const auto u = uuid_t::from_string("f9545e4d-74db-4dad-b9d9-e3e8d1f59036");
   EXPECT_EQ(u.value().to_string(), s);
 }
 
 TEST_F(UuidTest, FromString_Braces) {
   const std::string s = "f9545e4d-74db-4dad-b9d9-e3e8d1f59036";
-  const auto u = uuid::from_string("{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}");
+  const auto u = uuid_t::from_string("{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}");
   EXPECT_EQ(u.value().to_string(), s);
 }
 
 TEST_F(UuidTest, FromString_Invalid) {
-  EXPECT_FALSE(uuid::from_string("x{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
-  EXPECT_FALSE(uuid::from_string("x-f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
-  EXPECT_FALSE(uuid::from_string("").has_value());
-  EXPECT_FALSE(uuid::from_string("x").has_value());
-  EXPECT_FALSE(uuid::from_string("e3e8d1f59036").has_value());
+  EXPECT_FALSE(uuid_t::from_string("x{f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
+  EXPECT_FALSE(uuid_t::from_string("x-f9545e4d-74db-4dad-b9d9-e3e8d1f59036}").has_value());
+  EXPECT_FALSE(uuid_t::from_string("").has_value());
+  EXPECT_FALSE(uuid_t::from_string("x").has_value());
+  EXPECT_FALSE(uuid_t::from_string("e3e8d1f59036").has_value());
 }

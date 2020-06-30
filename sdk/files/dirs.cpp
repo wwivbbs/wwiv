@@ -19,9 +19,8 @@
 #include "sdk/files/dirs.h"
 
 // ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -29,12 +28,11 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/filenames.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/uuid_cereal.h"
 #include "sdk/vardec.h"
-
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -51,6 +49,12 @@ namespace wwiv::sdk::files {
 #define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
 
 template <class Archive>
+void serialize (Archive& ar, dir_area_t& d) {
+  SERIALIZE(d, area_tag);
+  SERIALIZE(d, net_uuid);
+}
+
+template <class Archive>
 void serialize(Archive & ar, directory_t& s) {
   SERIALIZE(s, name);
   SERIALIZE(s, filename);
@@ -60,7 +64,7 @@ void serialize(Archive & ar, directory_t& s) {
   SERIALIZE(s, dar);
   SERIALIZE(s, maxfiles);
   SERIALIZE(s, mask);
-  SERIALIZE(s, area_tag);
+  SERIALIZE(s, area_tags);
 }
 
 bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries) {

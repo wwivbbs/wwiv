@@ -59,7 +59,7 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
 
 const net_networks_rec& Networks::at(const std::string& name) const {
   for (const auto& n : networks_) {
-    if (iequals(name.c_str(), n.name)) {
+    if (iequals(name, n.name)) {
       return n;
     }
   }
@@ -73,6 +73,27 @@ net_networks_rec& Networks::at(const std::string& name) {
     }
   }
   throw std::out_of_range(StrCat("Unable to find network named: ", name));
+}
+
+std::optional<const net_networks_rec> Networks::by_uuid(const wwiv::core::uuid_t& uuid) {
+  if (uuid.empty()) {
+    return std::nullopt;
+  }
+  for (auto& n : networks_) {
+    if (n.uuid == uuid) {
+      return {n};
+    }
+  }
+
+  return std::nullopt;
+}
+
+std::optional<const net_networks_rec> Networks::by_uuid(const std::string& uuid_text) {
+  auto o = uuid_t::from_string(uuid_text);
+  if (!o) {
+    return std::nullopt;
+  }
+  return by_uuid(o.value());
 }
 
 Networks::~Networks() = default;
@@ -97,6 +118,14 @@ bool Networks::contains(const std::string& network_name) const {
   return false;
 }
 
+std::size_t Networks::size() const noexcept {
+   return networks_.size();
+}
+
+bool Networks::empty() const noexcept {
+   return networks_.empty();
+}
+
 bool Networks::insert(int n, net_networks_rec r) {
   return insert_at(networks_, n, r);
 }
@@ -115,7 +144,11 @@ bool Networks::Load() {
 bool Networks::LoadFromJSON() {
   networks_.clear();
   JsonFile json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
-  return json.Load();
+  if (!json.Load()) {
+    return false;
+  }
+   EnsureNetworksHaveUUID();
+  return true;
 }
 
 bool Networks::LoadFromDat() {
@@ -130,12 +163,16 @@ bool Networks::LoadFromDat() {
   if (!file.ReadVector(networks_disk)) {
     return false;
   }
+
+  std::random_device rd;
+  const uuid_generator uuid_gen(rd);
   for (const auto& n : networks_disk) {
     net_networks_rec r = {};
     r.type = static_cast<network_type_t>(n.type);
-    strcpy(r.name, n.name);
+    r.name = n.name;
     r.dir = n.dir;
     r.sysnum = n.sysnum;
+    r.uuid = uuid_gen.generate();
     networks_.emplace_back(r);
   }
   return true;
@@ -146,6 +183,21 @@ bool Networks::Save() {
   const auto json = SaveToJSON();
 
   return dat && json;
+}
+
+void Networks::EnsureNetworksHaveUUID() {
+  std::random_device rd;
+  const uuid_generator uuid_gen(rd);
+  auto added{false};
+  for (auto& n : networks_) {
+    if (n.uuid.empty()) {
+      n.uuid = uuid_gen.generate();
+      added = true;
+    }
+  }
+  if (added) {
+    SaveToJSON();
+  }
 }
 
 bool Networks::SaveToJSON() {
@@ -159,7 +211,7 @@ bool Networks::SaveToDat() {
   for (const auto& from : networks_) {
     net_networks_rec_disk to{};
     to.type = static_cast<uint8_t>(from.type);
-    strcpy(to.name, from.name);
+    to_char_array(to.name, from.name);
     to_char_array(to.dir, from.dir);
     to.sysnum = from.sysnum;
     disk.emplace_back(to);

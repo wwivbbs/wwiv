@@ -26,6 +26,7 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization:
 
 #include "core/stl.h"
 #include "sdk/net.h"
+#include "sdk/uuid_cereal.h"
 #include <string>
 
 namespace cereal {
@@ -164,20 +165,14 @@ void serialize(Archive & ar, fido_network_config_t& n) {
 template <class Archive>
 void serialize(Archive & ar, net_networks_rec& n) {
   SERIALIZE(n, type);
-  try {
-    std::string name(n.name);
-    ar(make_nvp("name", name));
-    to_char_array(n.name, name);
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
+  SERIALIZE(n, name);
   SERIALIZE(n, dir);
   SERIALIZE(n, sysnum);
-
   // Serialize the Fido config
   if (n.type == network_type_t::ftn) {
     SERIALIZE(n, fido);
   }
+  SERIALIZE(n, uuid);
 }
 
 }  // namespace cereal

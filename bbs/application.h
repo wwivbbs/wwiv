@@ -24,6 +24,7 @@
 #include "bbs/context.h"
 #include "bbs/output.h"
 #include "bbs/runnable.h"
+#include "sdk/networks.h"
 #include "sdk/vardec.h"
 
 #include <chrono>
@@ -292,6 +293,9 @@ public:
   [[nodiscard]] wwiv::sdk::files::Dirs& dirs();
   [[nodiscard]] const wwiv::sdk::files::Dirs& dirs() const;
 
+  [[nodiscard]] wwiv::sdk::Networks& nets();
+  [[nodiscard]] const wwiv::sdk::Networks& nets() const;
+
   bool read_subs();
   bool create_message_api();
   void SetLogonTime();
@@ -496,6 +500,7 @@ private:
   Batch batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;
   std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
+  std::unique_ptr<wwiv::sdk::Networks> nets_;
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};

@@ -35,7 +35,7 @@ class FileManagerTest : public testing::Test {
 public:
   FileManagerTest() {
     const auto& root = file_helper_.TempDir();
-    to_char_array(net.name, "WWIVnet");
+    net.name = "WWIVnet";
     net.fido.process_tic = true;
     net.type = network_type_t::ftn;
     net.fido.bad_packets_dir = "b";

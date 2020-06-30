@@ -18,18 +18,18 @@
 /**************************************************************************/
 #include "core/uuid.h"
 
-#include "stl.h"
-
-
+#include "core/stl.h"
 #include <array>
 #include <iomanip>
 #include <ios>
 #include <random>
 #include <sstream>
 
-uuid::uuid() = default;
+namespace wwiv::core {
 
-uuid::uuid(std::array<uint8_t, 16> s) : bytes_(s) {
+uuid_t::uuid_t() = default;
+
+uuid_t::uuid_t(std::array<uint8_t, 16> s) : bytes_(s) {
   for (const auto& i : bytes_) {
     if (i != 0) {
       empty_ = false;
@@ -38,18 +38,18 @@ uuid::uuid(std::array<uint8_t, 16> s) : bytes_(s) {
 
 }
 
-uuid::uuid(const uuid& that) {
+uuid_t::uuid_t(const uuid_t& that) {
   this->bytes_ = that.bytes_;
   this->empty_ = that.empty_;
 }
 
-uuid& uuid::operator=(const uuid& that) {
+uuid_t& uuid_t::operator=(const uuid_t& that) {
   this->bytes_ = that.bytes_;
   this->empty_ = that.empty_;
   return *this;
 }
 
-std::string uuid::to_string() const {
+std::string uuid_t::to_string() const {
   std::ostringstream ss;
   ss << std::hex << std::setfill('0')
      << std::setw(2) << static_cast<int>(bytes_[0])
@@ -89,7 +89,7 @@ uint8_t from_hex_bytes(char l, char r) {
   return (from_single_hex_byte(l) << 4 & 0xf0) | (from_single_hex_byte(r) & 0x0f);
 }
 
-std::optional<uuid> uuid::from_string(const std::string& s) {
+std::optional<uuid_t> uuid_t::from_string(const std::string& s) {
   if (s.empty()) {
     return std::nullopt;
   }
@@ -118,14 +118,14 @@ std::optional<uuid> uuid::from_string(const std::string& s) {
     const auto r = *sit++;
     *outit = from_hex_bytes(l, r);
   }
-  return uuid(out);
+  return uuid_t(out);
 }
 
-int uuid::version() const {
+int uuid_t::version() const {
   return bytes_[6] >> 4;
 }
 
-int uuid::variant() const {
+int uuid_t::variant() const {
   const int v = bytes_[8] >> 6;
   return v;
 }
@@ -160,7 +160,7 @@ std::string generate_uuid_v4_string() {
   return ss.str();
 }
 
-uuid uuid_generator::generate() const {
+uuid_t uuid_generator::generate() const {
   std::mt19937 gen(rd_());
   std::array<uint8_t, 16> data{};
   for (auto i = 0; i < 4; i++) {
@@ -183,5 +183,7 @@ uuid uuid_generator::generate() const {
   data[6] &= 0x4F;
   data[6] |= 0x40;
   
-  return uuid(data);
+  return uuid_t(data);
 }
+
+} 

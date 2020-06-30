@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #endif // __MSDOS__
+#include "core/uuid.h"
 
 #ifndef DATEN_T_DEFINED
 typedef uint32_t daten_t;
@@ -453,8 +454,8 @@ enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news };
 struct net_networks_rec {
   /* type of network */
   network_type_t type;
-  /* network name */
-  char name[16];
+  /* network name. Up to 16 chars*/
+  std::string name;
   /* directory for net data */
   std::string dir;
   /* system number */
@@ -462,6 +463,8 @@ struct net_networks_rec {
 
   // Used by FIDOnet type nodes.
   fido_network_config_t fido;
+  // uuid_t to identify the network locally.
+  wwiv::core::uuid_t uuid;
 };
 
 #endif // __MSDOS__

@@ -36,12 +36,14 @@ public:
   explicit Networks(std::initializer_list<net_networks_rec> l) : networks_(l) {}
   ~Networks();
 
-  bool IsInitialized() const { return initialized_; }
+  [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<net_networks_rec>& networks() const { return networks_; }
   [[nodiscard]] const net_networks_rec& at(size_type num) const { return networks_.at(num); }
   [[nodiscard]] const net_networks_rec& at(const std::string& name) const;
   net_networks_rec& at(size_type num) { return networks_.at(num); }
   net_networks_rec& at(const std::string& name);
+  std::optional<const net_networks_rec> by_uuid(const wwiv::core::uuid_t& uuid);
+  std::optional<const net_networks_rec> by_uuid(const std::string& uuid_text);
 
   net_networks_rec& operator[](size_type num) { return at(num); }
   net_networks_rec& operator[](const std::string& name) { return at(name); }
@@ -50,6 +52,8 @@ public:
 
   [[nodiscard]] size_type network_number(const std::string& network_name) const;
   [[nodiscard]] bool contains(const std::string& network_name) const;
+  [[nodiscard]] std::size_t size() const noexcept;
+  [[nodiscard]] bool empty() const noexcept;
 
   bool insert(int n, net_networks_rec r);
   bool erase(int n);
@@ -57,6 +61,7 @@ public:
   bool Save();
 
 private:
+  void EnsureNetworksHaveUUID();
   bool LoadFromJSON();
   bool LoadFromDat();
   bool SaveToJSON();

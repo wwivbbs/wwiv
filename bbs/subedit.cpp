@@ -165,7 +165,7 @@ static void modify_sub(int n) {
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
-    bout << "|#9K) Storage typ: |#2" << r.storage_type << wwiv::endl;
+    bout << "|#9K) Storage typ: |#2" << static_cast<int>(r.storage_type) << wwiv::endl;
     bout << "|#9L) Val network: |#2" << YesNoString((r.anony & anony_val_net) ? true : false)
          << wwiv::endl;
     bout << "|#9M) Req ANSI   : |#2" << YesNoString((r.anony & anony_ansi_only) ? true : false)
@@ -179,7 +179,7 @@ static void modify_sub(int n) {
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) "
             ": ";
-    char ch = onek("QABCDEFGHIJKLMNOP[]", true);
+    auto ch = onek("QABCDEFGHIJKLMNOP[]", true);
     bout.nl();
     switch (ch) {
     case 'Q':
@@ -209,7 +209,7 @@ static void modify_sub(int n) {
     case 'B': {
       bout << "|#2New base filename (e.g. 'GENERAL')? ";
       auto new_fn = input_filename(r.filename, 8);
-      if (new_fn.empty() || contains(new_fn, '.')) {
+      if (new_fn.empty() || contains(new_fn, '.') || new_fn == r.filename) {
         break;
       }
       auto new_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));

@@ -5,9 +5,6 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark. 
-* Add UUID to each network so that we can refer to that as a consistent network identifier instead of
-  by position.  This will immediately help with the multple tic areas per file area support. And can
-  also clean up lots of other code.
 
 ## FTN
 ***
@@ -16,7 +13,6 @@
 * zone:region/node is acceptible (not just zone:net/node)
 * Add ability to convert between a FidoPackedMessage and FidoStoredMessage.  Then 
   we can move dupes to a badmessage area as FidoStoredMessage (.msg)
-* Add multiple areas per network.
 
 
 ## Ini Files and Configuration

@@ -20,11 +20,18 @@
 #ifndef __INCLUDED_SDK_FILES_DIRS_H__
 #define __INCLUDED_SDK_FILES_DIRS_H__
 
+#include "core/uuid.h"
+
 #include <filesystem>
 #include <string>
 #include <vector>
 
 namespace wwiv::sdk::files {
+
+struct dir_area_t {
+  std::string area_tag;
+  wwiv::core::uuid_t net_uuid;  
+};
 
 // New (5.5+) style directory. 
 struct directory_t {
@@ -44,8 +51,8 @@ struct directory_t {
   uint16_t maxfiles;
   // file type mask
   uint16_t mask;
-  // AREA TAG (used for FTN File Echos)
-  std::string area_tag;
+  // AREA TAGs (used for FTN File Echos)
+  std::vector<dir_area_t> area_tags;
 };
 
 class Dirs {

@@ -24,6 +24,8 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
+#include "sdk/net.h"
+
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -167,11 +169,14 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
   return {t};
 }
 
-std::optional<files::directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic) {
+std::optional<files::directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic,
+                                                     const net_networks_rec& net) {
   const auto area_tag = tic.area;
   for (const auto& d : dirs.dirs()) {
-    if (iequals(area_tag, d.area_tag)) {
-      return {d};
+    for (const auto& dt : d.area_tags) {
+      if (iequals(area_tag, dt.area_tag) && dt.net_uuid == net.uuid) {
+        return {d};
+      }
     }
   }
   return std::nullopt;

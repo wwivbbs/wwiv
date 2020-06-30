@@ -1621,7 +1621,7 @@ static int oidToString( char *textOID, int *textOIDlength,
 				length = sprintf( textOID, "%ld %ld", x, y );
 
 				/* An insane ITU facility lets people register UUIDs as OIDs
-				   (see http://www.itu.int/ITU-T/asn1/uuid.html), if we find
+				   (see http://www.itu.int/ITU-T/asn1/uuid_t.html), if we find
 				   one of these, which live under the arc '2 25' = 0x69 we
 				   have to continue decoding the OID as a UUID instead of a
 				   standard OID */

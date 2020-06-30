@@ -62,7 +62,7 @@ protected:
     config.set_initialized_for_test(true);
     net_networks_rec net{};
     net.dir = network_dir;
-    to_char_array(net.name, "Dummy Network");
+    net.name = "Dummy Network";
     net.type = network_type_t::wwivnet;
     net.sysnum = 0;
     binkp_config_ = std::make_unique<BinkConfig>(ORIGINATING_ADDRESS, config, network_dir);

@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "core/datetime.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
@@ -255,7 +254,7 @@ public:
 
 TEST_F(FidoUtilConfigTest, ExistsBundle) {
   net_networks_rec net;
-  to_char_array(net.name, "testnet");
+  net.name = "testnet";
   ASSERT_TRUE(files_.Mkdir("bbs/net"));
   net.dir = files_.DirName("bbs/net");
 
@@ -269,19 +268,19 @@ TEST_F(FidoUtilConfigTest, ExistsBundle) {
 
 TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
   {
-    auto a = get_address_from_single_line("");
+    const auto a = get_address_from_single_line("");
     EXPECT_EQ(-1, a.net());
     EXPECT_EQ(-1, a.node());
   }
 
   {
-    auto a = get_address_from_single_line("Not an origin line");
+    const auto a = get_address_from_single_line("Not an origin line");
     EXPECT_EQ(-1, a.net());
     EXPECT_EQ(-1, a.node());
   }
 
   {
-    auto a = get_address_from_single_line(" * Origin: Kewl BBS (1:2/3)");
+    const auto a = get_address_from_single_line(" * Origin: Kewl BBS (1:2/3)");
     EXPECT_EQ(1, a.zone());
     EXPECT_EQ(2, a.net());
     EXPECT_EQ(3, a.node());
@@ -296,10 +295,10 @@ TEST_F(FidoUtilTest, FidoToDaten) {
 TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   char s[100];
   auto t = time(nullptr);
-  auto tm = localtime(&t);
+  const auto tm = localtime(&t);
   memset(s, 0, sizeof(s));
   ASSERT_NE(0UL, strftime(s, sizeof(s), "%z", tm));
-  string ss(s);
+  const string ss(s);
   EXPECT_EQ(ss, tz_offset_from_utc());
 }
 

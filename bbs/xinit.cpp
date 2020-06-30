@@ -501,17 +501,9 @@ void Application::read_networks() {
     SetInternetUseRealNames(ini.value<bool>("REALNAME"));
   }
 
-  Networks networks(*config());
-  if (networks.IsInitialized()) {
-    net_networks = networks.networks();
-  }
-
-  // Add a default entry for us.
-  if (net_networks.empty()) {
-    net_networks_rec n{};
-    to_char_array(n.name, "Sample Network");
-    n.dir = config()->datadir();
-    n.sysnum = 1;
+  nets_ = std::make_unique<Networks>(*config());
+  if (nets_->IsInitialized()) {
+    net_networks = nets_->networks();
   }
 }
 

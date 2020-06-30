@@ -252,7 +252,7 @@ static bool config_offsets_matches_actual(const Config& config) {
   file.Read(&x, sizeof(configrec));
 
   // update user info data
-  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  auto userreclen = static_cast<int16_t>(sizeof(userrec));
   int16_t waitingoffset = offsetof(userrec, waiting);
   int16_t inactoffset = offsetof(userrec, inact);
   int16_t sysstatusoffset = offsetof(userrec, sysstatus);
@@ -320,6 +320,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
       lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
     } break;
+    default: ;
     }
     curses_out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
@@ -532,6 +533,7 @@ int WInitApp::main(int argc, char** argv) {
       lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
     } break;
+    default: ;
     }
     curses_out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);

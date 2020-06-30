@@ -47,8 +47,8 @@
 #include <memory>
 #include <string>
 
-#define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
-#define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
+static constexpr int NUM_ATTEMPTS_TO_OPEN_EMAIL = 5;
+static constexpr int DELAY_BETWEEN_EMAIL_ATTEMPTS = 9;
 
 using std::string;
 using std::stringstream;
@@ -92,12 +92,11 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
       *pUserNumber = userRecord.GetForwardUserNumber();
       *pSystemNumber = userRecord.GetForwardSystemNumber();
       return true;
-    } else {
-      read_inet_addr(a()->net_email_name, *pUserNumber);
-      *pUserNumber = 0;
-      *pSystemNumber = 0;
-      return false;
     }
+    read_inet_addr(a()->net_email_name, *pUserNumber);
+    *pUserNumber = 0;
+    *pSystemNumber = 0;
+    return false;
   }
   auto nCurrentUser = userRecord.GetForwardUserNumber();
   if (nCurrentUser == -1 || nCurrentUser == std::numeric_limits<decltype(nCurrentUser)>::max()) {
@@ -161,14 +160,11 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
   }
 
   auto file = std::make_unique<File>(fn);
-  for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
-    if (bAllowWrite) {
-      file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    } else {
-      file->Open(File::modeBinary | File::modeReadOnly);
-    }
-    if (file->IsOpen()) {
-      break;
+  for (auto num = 0; num < NUM_ATTEMPTS_TO_OPEN_EMAIL; num++) {
+    const auto mode = bAllowWrite ? File::modeBinary | File::modeCreateFile | File::modeReadWrite
+                                  : File::modeBinary | File::modeReadOnly;
+    if (file->Open(mode)) {
+      return file;
     }
     sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
   }
@@ -403,7 +399,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
 }
 
 void email(const string& title, uint16_t user_number, uint16_t system_number, bool forceit, int anony, bool bAllowFSED) {
-  int nNumUsers = 0;
+  auto nNumUsers = 0;
   messagerec msg{};
   string destination;
   net_system_list_rec *csne = nullptr;
@@ -414,7 +410,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     char net_name[20], net_email_name[40];
   } carbon_copy[20];
 
-  bool cc = false, bcc = false;
+  auto cc = false, bcc = false;
 
   if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
@@ -696,13 +692,15 @@ void delmail(File& f, size_t loc) {
   bool rm = true;
   if (m.status & status_multimail) {
     auto t = f.length() / sizeof(mailrec);
-    bool otf = false;
+    auto otf = false;
     for (size_t i = 0; i < t; i++) {
       if (i != loc) {
         mailrec m1{};
-        f.Seek(static_cast<long>(i * sizeof(mailrec)), File::Whence::begin);
+        f.Seek(i * sizeof(mailrec), File::Whence::begin);
         f.Read(&m1, sizeof(mailrec));
-        if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
+        if (m.msg.stored_as == m1.msg.stored_as && 
+            m.msg.storage_type == m1.msg.storage_type &&
+            m1.daten != 0xffffffff) {
           otf = true;
         }
       }
@@ -722,7 +720,7 @@ void delmail(File& f, size_t loc) {
       a()->users()->writeuser(&user, m.touser);
     }
   }
-  f.Seek(static_cast<long>(loc * sizeof(mailrec)), File::Whence::begin);
+  f.Seek(loc * sizeof(mailrec), File::Whence::begin);
   m.touser = 0;
   m.tosys = 0;
   m.daten = 0xffffffff;

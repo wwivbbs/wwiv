@@ -93,6 +93,127 @@ static string GetAttributeString(const wwiv::sdk::files::directory_t& r) {
   return word_to_arstr(r.dar, "None.");
 }
 
+std::optional<net_networks_rec> select_network() {
+  std::map<int, net_networks_rec> nets;
+  auto num = 0;
+  for (const auto& n : a()->nets().networks()) {
+    if (n.type == network_type_t::ftn) {
+      nets.emplace(++num, n);
+    }
+  }
+
+  bout << "|#5Networks: " << wwiv::endl;
+  for (const auto& n : nets) {
+    bout << "|#1" << n.first << "|#9) |#2" << n.second.name << wwiv::endl;
+  }
+  bout.nl();
+  bout << "|#2(Q=Quit) Select Network Number : ";
+  const auto r = input_number_hotkey(0, {'Q'}, 1, num, false);
+  if (r.key == 'Q') {
+    return std::nullopt;
+  }
+  auto it = nets.find(r.num);
+  if (it == std::end(nets)) {
+    return std::nullopt;
+  }
+  return {it->second};
+}
+
+enum class list_area_tags_style_t { number, indent };
+static void list_area_tags(const std::vector<wwiv::sdk::files::dir_area_t>& area_tags,
+                           list_area_tags_style_t style) {
+  if (area_tags.empty()) {
+    bout << "|#6(None)" << wwiv::endl;
+    return;
+  }
+  net_networks_rec empty{};
+  empty.name = "(Unknown)";
+
+  int nn = 0;
+  bool first{true};
+  for (const auto& t : area_tags) {
+    if (style == list_area_tags_style_t::number) {
+      bout << "|#2" << nn++ << "|#9) ";
+    } else if (style == list_area_tags_style_t::indent) {
+      if (!first) {
+        bout << "                  ";
+      }
+      first = false;
+    }
+    bout << "|#1" << t.area_tag << "|#9@|#5"
+         << a()->nets().by_uuid(t.net_uuid).value_or(empty).name << wwiv::endl;
+  }
+  
+}
+
+static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_tags) {
+  auto done{false};
+  do {
+    bout.cls();
+    bout.litebar("Editing File Area Tags");
+    bout.nl();
+    list_area_tags(area_tags, list_area_tags_style_t::number);
+
+    bout.nl();
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#2A|#7dd, |#2E|#7dit, or |#2D|#7elete) : ";
+    const auto ch = onek("QAED", true);
+    switch (ch) {
+    case 'A': {
+      wwiv::sdk::files::dir_area_t da{};
+      bout << "Enter Name? ";
+      da.area_tag = input_upper(12);
+      const auto r = select_network();
+      if (!r) {
+        break;
+      }
+      da.net_uuid = r.value().uuid;
+      area_tags.push_back(da);
+    } break;
+    case 'D': {
+      if (area_tags.empty()) {
+        break;
+      }
+      bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
+      auto r = input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      if (r.key == 'Q') {
+        break;
+      }
+      bout << "Are you sure?";
+      if (noyes()) {
+        erase_at(area_tags, r.num - 1);
+      }
+    } break;
+    case 'E': {
+      bout << "Edit!";
+      if (area_tags.empty()) {
+        break;
+      }
+      bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
+      auto r = input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      if (r.key == 'Q') {
+        break;
+      }
+      wwiv::sdk::files::dir_area_t da{};
+      bout << "Enter Name? ";
+      da.area_tag = input_upper(12);
+      const auto nr = select_network();
+      if (!nr) {
+        break;
+      }
+      da.net_uuid = nr.value().uuid;
+      bout << "Are you sure?";
+      if (noyes()) {
+        area_tags[r.num - 1] = da;
+      }
+    } break;
+    case 'Q':
+      done = true;
+      break;
+    }
+  } while (!done && !a()->hangup_);
+  
+}
+
 void modify_dir(int n) {
   auto r = a()->dirs()[n];
   bool done = false;
@@ -115,8 +236,9 @@ void modify_dir(int n) {
     }
     bout << "|#9N) //UPLOADALL  : |#2" << YesNoString((r.mask & mask_uploadall) ? true : false) << wwiv::endl;
     bout << "|#9O) WWIV Reg     : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
-    bout << "|#9T) FTN Area Tag : |#2" << r.area_tag << wwiv::endl;
-    bout.nl();
+    bout << "|#9T) FTN Area Tags: |#2";
+    list_area_tags(r.area_tags, list_area_tags_style_t::indent);
+    bout.nl(2);
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[T|#7,|#1[|#7,|#1]|#7) : ";
     const auto ch = onek("QABCDEFGHJKLMNOT[]", true);
     switch (ch) {
@@ -246,12 +368,7 @@ void modify_dir(int n) {
       }
       break;
     case 'T': {
-      bout.nl();
-      bout << "|#2New FTN Area Tag? ";
-      auto s = input_upper(r.area_tag, 20);
-      if (!s.empty()) {
-        r.area_tag= s;
-      }
+      edit_ftn_area_tags(r.area_tags);
     } break;
     }
   } while (!done && !a()->hangup_);

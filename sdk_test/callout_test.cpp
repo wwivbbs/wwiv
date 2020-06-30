@@ -16,11 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/callout.h"
-
-#include <cstdint>
 #include <string>
 
 using std::string;
@@ -31,7 +30,7 @@ class CalloutTest : public testing::Test {};
 
 TEST_F(CalloutTest, SimpleLine) {
   net_call_out_rec con;
-  string line = "@1234 &";
+  const string line = "@1234 &";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
 }
@@ -103,20 +102,20 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
 TEST_F(CalloutTest, InvalidLine) {
   net_call_out_rec con;
 
-  string line = "*@1234 &&";
+  const string line = "*@1234 &&";
   ASSERT_FALSE(ParseCalloutNetLine(line, &con));
 }
 
 TEST_F(CalloutTest, NodeConfig) {
   FileHelper files;
-  files.Mkdir("network");
+  EXPECT_TRUE(files.Mkdir("network"));
   const string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);
   net_networks_rec net{};
-  to_char_array(net.name, "Dummy Network");
+  net.name = "Dummy Network";
   net.dir = files.DirName("network");
-  Callout callout(net);
-  const net_call_out_rec* con = callout.net_call_out_for(1);
+  const Callout callout(net);
+  const auto* con = callout.net_call_out_for(1);
   ASSERT_TRUE(con != nullptr);
   EXPECT_EQ("foo", con->session_password);
 }

@@ -1089,6 +1089,14 @@ const wwiv::sdk::files::Dirs& Application::dirs() const {
   return *dirs_;
 }
 
+wwiv::sdk::Networks& Application::nets() {
+  return *nets_;
+}
+
+const wwiv::sdk::Networks& Application::nets() const {
+  return *nets_;
+}
+
 const net_networks_rec& Application::current_net() const {
   const static net_networks_rec empty_rec{};
   if (net_networks.empty()) {

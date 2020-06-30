@@ -79,11 +79,11 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
 }
 
 TEST_F(PacketsTest, UpdateRouting_Smoke) {
-  string body = "Hello World";
-  auto now = daten_t_now();
-  auto date = daten_to_wwivnet_time(now);
+  const string body = "Hello World";
+  const auto now = daten_t_now();
+  const auto date = daten_to_wwivnet_time(now);
 
-  auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", date, body);
+  const auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", date, body);
 
   net_header_rec nh{};
   nh.daten = now;
@@ -99,7 +99,7 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
 
   net_networks_rec net{};
   net.dir = "Z:\\";
-  to_char_array(net.name, "My Network");
+  net.name = "My Network";
   net.sysnum = 2;
   net.type = network_type_t::wwivnet;
   packet.UpdateRouting(net);
@@ -109,7 +109,7 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
-  auto actual_route_str = get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
+  const auto actual_route_str = get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
 
   EXPECT_TRUE(starts_with(actual_route_str, "\004"
                                             "0R"));

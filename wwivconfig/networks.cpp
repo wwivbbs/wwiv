@@ -635,7 +635,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   EditItems items{};
   int net_type_pos = y++;
   int node_number_pos = 0;
-  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
   items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
   const auto net_dir = File::absolute(config.root_directory(), n.dir);
@@ -759,7 +759,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn, network
     n.type = type;
     if (type == network_type_t::ftn) {
       n.sysnum = 1;
-      to_char_array(n.name, "New FTNNet");
+      n.name = "New FTNNet";
       auto& f = n.fido;
       f.bad_packets_dir = File::EnsureTrailingSlash("badpackets");
       f.inbound_dir = File::EnsureTrailingSlash("in");
@@ -771,7 +771,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn, network
       f.unknown_dir = File::EnsureTrailingSlash("unknown");
       f.packet_config.compression_type = File::EnsureTrailingSlash("ZIP");
     } else if (type == network_type_t::wwivnet) {
-      to_char_array(n.name, "New WWIVnet");
+      n.name = "New WWIVnet";
     }
     n.dir = File::EnsureTrailingSlash("newnet.dir");
     networks.insert(nn, n);

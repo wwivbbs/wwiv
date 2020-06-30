@@ -26,6 +26,8 @@
 #include <string>
 #include <vector>
 
+struct net_networks_rec;
+
 namespace wwiv::sdk::files {
 
 class Tic {
@@ -80,7 +82,8 @@ private:
 
 // Helper classes
 
-std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic);
+std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic,
+                                              const net_networks_rec& net);
 
 } 
 

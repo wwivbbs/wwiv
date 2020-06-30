@@ -88,7 +88,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     if (!t.IsValid()) {
       continue;
     }
-    auto od = FindFileAreaForTic(dirs, t);
+    auto od = FindFileAreaForTic(dirs, t, net);
     if (!od) {
       LOG(ERROR) << "Unable to find AREA_TAG for tic file: TAG: " << t.area << "; file; " << f.name;
       continue;

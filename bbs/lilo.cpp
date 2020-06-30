@@ -703,7 +703,7 @@ static void DisplayUserLoginInformation() {
     if (a()->net_networks[i].sysnum) {
       std::ostringstream ss;
       const auto& n = a()->net_networks[i];
-      ss << "|#9" << n.name << " node|#0" << std::string(13 - strlen(n.name), ' ') << "|#2 @" << n.sysnum;
+      ss << "|#9" << n.name << " node|#0" << std::string(13 - n.name.size(), ' ') << "|#2 @" << n.sysnum;
       auto s1 = ss.str();
       if (i) {
         bout << s1;

@@ -49,7 +49,7 @@ public:
   void SetUp() override {
   }
 
-  bool CreateNetworksDat(std::vector<std::string> names) const {
+  [[nodiscard]] bool CreateNetworksDat(std::vector<std::string> names) const {
     std::clog << "Writing NETWORK.DAT to: " << config_.datadir() << std::endl;
     File file(FilePath(config_.datadir(), NETWORKS_DAT));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
@@ -78,21 +78,21 @@ public:
 };
 
 TEST_F(NetworkTest, Networks_At) {
-  const Networks& n = test_networks();
+  const auto& n = test_networks();
 
-  EXPECT_STREQ("two", n.at(1).name);
-  EXPECT_STREQ("two", n.at("two").name);
+  EXPECT_EQ("two", n.at(1).name);
+  EXPECT_EQ("two", n.at("two").name);
 }
 
 TEST_F(NetworkTest, Networks_Bracket) {
-  const Networks& n = test_networks();
+  const auto& n = test_networks();
 
-  EXPECT_STREQ("two", n[1].name);
-  EXPECT_STREQ("two", n["two"].name);
+  EXPECT_EQ("two", n[1].name);
+  EXPECT_EQ("two", n["two"].name);
 }
 
 TEST_F(NetworkTest, Networks_Dir) {
-  const Networks& n = test_networks();
+  const auto& n = test_networks();
 
   const std::string expected_two_dir = "two";
   EXPECT_EQ(expected_two_dir, n.at(1).dir);
@@ -102,7 +102,7 @@ TEST_F(NetworkTest, Networks_Dir) {
 }
 
 TEST_F(NetworkTest, Networks_NetworkNumber) {
-  const Networks& n = test_networks();
+  const auto& n = test_networks();
 
   EXPECT_EQ(0, n.network_number("one"));
   EXPECT_EQ(1, n.network_number("two"));
@@ -110,7 +110,7 @@ TEST_F(NetworkTest, Networks_NetworkNumber) {
 }
 
 TEST_F(NetworkTest, Networks_Contains) {
-  const Networks& n = test_networks();
+  const auto& n = test_networks();
 
   EXPECT_TRUE(n.contains("one"));
   EXPECT_FALSE(n.contains("foo"));
