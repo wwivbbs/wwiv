@@ -160,52 +160,13 @@ void normalupload(int dn) {
         bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
-        const string message = fmt::format("Wanted to upload \"{}\"", u.filename);
+        const auto message = fmt::format("Wanted to upload \"{}\"", u.filename);
         sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
         a()->user()->IncrementAssPoints(5);
         ok = 0;
       } else {
         u.mask = mask_PD;
       }
-    }
-    if (ok && !a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-      bout.nl();
-      bout << "Checking for same file in other directories...\r\n\n";
-      int nLastLineLength = 0;
-      for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1; i++) {
-        string buffer = "Scanning ";
-        buffer += a()->dirs()[a()->udir[i].subnum].name;
-        int nBufferLen = buffer.length();
-        for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
-          buffer += " ";
-        }
-        nLastLineLength = nBufferLen;
-        bout << buffer << "\r";
-        dliscan1(a()->udir[i].subnum);
-        int i1 = recno(u.filename);
-        if (i1 >= 0) {
-          bout.nl();
-          bout << "Same file found on " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
-          if (dcs()) {
-            bout.nl();
-            bout << "|#5Upload anyway? ";
-            if (!yesno()) {
-              ok = 0;
-              break;
-            }
-            bout.nl();
-          } else {
-            ok = 0;
-            break;
-          }
-        }
-      }
-
-      bout << string(nLastLineLength, SPACE) << "\r";
-      if (ok) {
-        dliscan1(dn);
-      }
-      bout.nl();
     }
     if (ok) {
       bout.nl();

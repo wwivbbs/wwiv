@@ -42,7 +42,6 @@ constexpr const char* INI_STR_TERMINAL_CMD = "TERMINAL_CMD";
 
 //---NETWORK SETTINGS--
 constexpr const char* INI_STR_NET_CALLOUT = "NET_CALLOUT";
-constexpr const char* INI_STR_NET_PROCESS = "NET_CALLOUT";
 
 //---SYSTEM SETTINGS--
 constexpr const char* INI_STR_FORCE_FBACK = "FORCE_FBACK";
@@ -66,11 +65,9 @@ constexpr const char* INI_STR_TITLEBAR = "TITLEBAR";
 constexpr const char* INI_STR_LOG_DOWNLOADS = "LOG_DOWNLOADS";
 constexpr const char* INI_STR_CLOSE_XFER = "CLOSE_XFER";
 constexpr const char* INI_STR_ALL_UL_TO_SYSOP = "ALL_UL_TO_SYSOP";
-constexpr const char* INI_STR_FAST_SEARCH = "FAST_SEARCH";
 constexpr const char* INI_STR_MSG_TAG = "MSG_TAG";
 constexpr const char* INI_STR_CHAIN_REG = "CHAIN_REG";
 constexpr const char* INI_STR_CAN_SAVE_SSM = "CAN_SAVE_SSM";
-constexpr const char* INI_STR_EXTRA_COLOR = "EXTRA_COLOR";
 constexpr const char* INI_STR_TWO_COLOR_CHAT = "TWO_COLOR_CHAT";
 constexpr const char* INI_STR_ALLOW_ALIASES = "ALLOW_ALIASES";
 constexpr const char* INI_STR_FREE_PHONE = "FREE_PHONE";

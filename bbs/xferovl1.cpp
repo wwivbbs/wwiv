@@ -102,7 +102,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
       }
 
-      const int saved_screen_chars = a()->user()->GetScreenChars();
+      const auto saved_screen_chars = a()->user()->GetScreenChars();
       if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
@@ -128,7 +128,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           << 78 - INDENTION << " chars each.\r\n";
       bout.nl();
       s[0] = '\0';
-      int nSavedScreenSize = a()->user()->GetScreenChars();
+      const int nSavedScreenSize = a()->user()->GetScreenChars();
       if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
@@ -233,7 +233,6 @@ bool get_file_idz(uploadsrec* u, int dn) {
   const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
 
   ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
-  a()->CdHome();
   auto diz_fn = FilePath(a()->temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
     diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
@@ -331,9 +330,7 @@ int read_idz(int mode, int tempdir) {
     auto f = area->ReadFile(i);
     const auto fn = f.aligned_filename();
     if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
-      File::set_current_directory(a()->dirs()[a()->udir[tempdir].subnum].path);
-      const auto file = FilePath(File::current_directory(), f);
-      a()->CdHome();
+      const auto file = FilePath(a()->dirs()[a()->udir[tempdir].subnum].path, f);
       if (!File::Exists(file)) {
         if (get_file_idz(&f.u(), a()->udir[tempdir].subnum)) {
           count++;

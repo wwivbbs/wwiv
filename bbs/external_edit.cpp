@@ -65,22 +65,20 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
   make_abs_cmd(a()->bbsdir(), &editorCommand);
 
   auto strippedFileName{stripfn(edit_filename)};
-  ScopeExit on_exit;
+  ScopeExit on_exit([=] { File::set_current_directory(a()->bbspath()); });
   if (!working_directory.empty()) {
-    const auto original_directory = File::current_directory();
     File::set_current_directory(working_directory);
-    on_exit.swap([=] { File::set_current_directory(original_directory); });
   }
 
   const auto tft_fn = FilePath(File::current_directory(), strippedFileName);
   File fileTempForTime(tft_fn);
-  time_t tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
+  auto tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
   auto num_screen_lines = a()->user()->GetScreenLines();
   if (!a()->using_modem) {
-    int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine())
-                    ? 0
-                    : a()->localIO()->GetTopLine();
+    auto newtl = a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()
+                     ? 0
+                     : a()->localIO()->GetTopLine();
     num_screen_lines = a()->defscreenbottom + 1 - newtl;
   }
 
@@ -88,11 +86,11 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
                                 std::to_string(a()->user()->GetScreenChars()),
                                 std::to_string(num_screen_lines), std::to_string(numlines), "");
 
-  ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir));
+  ExecuteExternalProgram(cmdLine, ansir_to_flags(editor.ansir) | EFLAG_NO_CHANGE_DIR);
   bout.clear_lines_listed();
 
-  time_t tFileTime1 = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
-  return File::Exists(tft_fn) && (tFileTime != tFileTime1);
+  auto tFileTime1 = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
+  return File::Exists(tft_fn) && tFileTime != tFileTime1;
 }
 
 static std::unique_ptr<ExternalMessageEditor>

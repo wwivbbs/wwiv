@@ -448,12 +448,10 @@ void add_arc(const char* arc, const std::string& file_name) {
 
   const auto arc_cmd = get_arc_cmd(arc_fn, 2, file_name);
   if (!arc_cmd.empty()) {
-    File::set_current_directory(a()->temp_directory());
     a()->localIO()->Puts(arc_cmd);
     a()->localIO()->Puts("\r\n");
-    ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A));
+    ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A) | EFLAG_TEMP_DIR);
     a()->UpdateTopScreen();
-    a()->CdHome();
     sysoplog() << fmt::format("Added \"{}\" to {}", file_name, arc_fn);
   } else {
     bout << "Sorry, can't add to temp archive.\r\n\n";
@@ -548,13 +546,10 @@ void temp_extract() {
       bool abort = false;
       printinfo(&f.u(), &abort);
       bout.nl();
-      if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
-        File::set_current_directory(a()->temp_directory());
-      } else {
-        File::set_current_directory(a()->dirs()[a()->current_user_dir().subnum].path);
-      }
-      File file(FilePath(File::current_directory(), f));
-      a()->CdHome();
+      auto path = (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom)
+                      ? a()->temp_directory()
+                      : a()->dirs()[a()->current_user_dir().subnum].path;
+      File file(FilePath(path, f));
       if (check_for_files(file.path())) {
         bool ok1;
         do {
@@ -588,16 +583,14 @@ void temp_extract() {
               extract_fn += ".*";
             }
             auto extract_cmd = get_arc_cmd(file.full_pathname(), 1, stripfn(extract_fn));
-            File::set_current_directory(a()->temp_directory());
             if (!okfn(extract_fn)) {
               extract_cmd.clear();
             }
             if (!extract_cmd.empty()) {
-              ExecuteExternalProgram(extract_cmd, a()->spawn_option(SPAWNOPT_ARCH_E));
+              ExecuteExternalProgram(extract_cmd, a()->spawn_option(SPAWNOPT_ARCH_E) | EFLAG_TEMP_DIR);
               sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn,
                                         f.aligned_filename());
             }
-            a()->CdHome();
           }
         }
         while (!a()->hangup_ && ok && ok1);
@@ -841,12 +834,10 @@ void removefile() {
               bout << "|#5Remove DL points? ";
               bRemoveDlPoints = yesno();
             }
-            if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-              bout.nl();
-              bout << "|#5Remove from ALLOW.DAT? ";
-              if (yesno()) {
-                remove_from_file_database(f.aligned_filename());
-              }
+            bout.nl();
+            bout << "|#5Remove from ALLOW.DAT? ";
+            if (yesno()) {
+              remove_from_file_database(f.aligned_filename());
             }
           } else {
             bDeleteFileToo = true;

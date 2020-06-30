@@ -1248,11 +1248,9 @@ static int remove_filename(const std::string& file_name, int dn) {
             bout << "|#5Remove DL points? ";
             rdlp = yesno();
           }
-          if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-            bout << "|#5Remove from ALLOW.DAT? ";
-            if (yesno()) {
-              remove_from_file_database(fn);
-            }
+          bout << "|#5Remove from ALLOW.DAT? ";
+          if (yesno()) {
+            remove_from_file_database(fn);
           }
         } else {
           rm = true;

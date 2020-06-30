@@ -59,8 +59,10 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   } else if (nFlags & EFLAG_QWK_DIR) {
     exec_dir = a()->qwk_directory();
   }
-  if (!File::set_current_directory(exec_dir)) {
-    LOG(ERROR) << "Unable to set working directory to: " << exec_dir;
+  if (!(nFlags & EFLAG_NO_CHANGE_DIR)) {
+    if (!File::set_current_directory(exec_dir)) {
+      LOG(ERROR) << "Unable to set working directory to: " << exec_dir;
+    }
   }
 
   // Some LocalIO implementations (Curses) needs to disable itself before
@@ -70,7 +72,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
 
   // Re-engage the local IO engine if needed.
   a()->localIO()->ReenableLocalIO();
-  a()->CdHome();
+  File::set_current_directory(a()->bbspath());
 
   // Reread the user record.
   if (a()->IsUserOnline()) {

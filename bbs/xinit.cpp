@@ -94,8 +94,7 @@ void StatusManagerCallback(int i) {
 // Turns a string into a bitmapped unsigned short flag for use with ExecuteExternalProgram.
 static uint16_t str2spawnopt(const std::string& s) {
   auto return_val = EFLAG_NONE;
-  auto ts = s;
-  StringUpperCase(&ts);
+  const auto ts = ToStringUpperCase(s);
 
   if (ts.find("NOHUP") != std::string::npos) {
     return_val |= EFLAG_NOHUP;
@@ -117,6 +116,18 @@ static uint16_t str2spawnopt(const std::string& s) {
   }
   if (ts.find("NOSCRIPT") != std::string::npos) {
     return_val |= EFLAG_NOSCRIPT;
+  }
+  if (ts.find("NO_CHANGE_DIR") != std::string::npos) {
+    return_val |= EFLAG_NO_CHANGE_DIR;
+  }
+  if (ts.find("TEMP_DIR") != std::string::npos) {
+    return_val |= EFLAG_TEMP_DIR;
+  }
+  if (ts.find("BATCH_DIR") != std::string::npos) {
+    return_val |= EFLAG_BATCH_DIR;
+  }
+  if (ts.find("QWK_DIR") != std::string::npos) {
+    return_val |= EFLAG_QWK_DIR;
   }
   return return_val;
 }
@@ -145,7 +156,8 @@ static uint16_t str2restrict(const std::string& s) {
 static std::map<std::string, uint16_t> eventinfo = {
     {"TIMED", EFLAG_NONE},       {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
     {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},      {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
-    {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_NONE},  {"CHAT", EFLAG_NONE},
+    {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_NONE | EFLAG_BATCH_DIR},
+    {"CHAT", EFLAG_NONE},
     {"ARCH_E", EFLAG_NONE},      {"ARCH_L", EFLAG_NONE},      {"ARCH_A", EFLAG_NONE},
     {"ARCH_D", EFLAG_NONE},      {"ARCH_K", EFLAG_NONE},      {"ARCH_T", EFLAG_NONE},
     {"NET_CMD1", EFLAG_NETPROG}, {"NET_CMD2", EFLAG_NETPROG}, {"LOGOFF", EFLAG_NONE},
@@ -192,13 +204,10 @@ static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FAST_TAG_RELIST, OP_FLAGS_FAST_TAG_RELIST},
     {INI_STR_MAIL_PROMPT, OP_FLAGS_MAIL_PROMPT},
     {INI_STR_SHOW_CITY_ST, OP_FLAGS_SHOW_CITY_ST},
-    {INI_STR_FAST_SEARCH, OP_FLAGS_FAST_SEARCH},
-    {INI_STR_NET_CALLOUT, OP_FLAGS_NET_CALLOUT},
     {INI_STR_WFC_SCREEN, OP_FLAGS_WFC_SCREEN},
     {INI_STR_MSG_TAG, OP_FLAGS_MSG_TAG},
     {INI_STR_CHAIN_REG, OP_FLAGS_CHAIN_REG},
     {INI_STR_CAN_SAVE_SSM, OP_FLAGS_CAN_SAVE_SSM},
-    {INI_STR_EXTRA_COLOR, OP_FLAGS_EXTRA_COLOR},
     {INI_STR_USE_FORCE_SCAN, OP_FLAGS_USE_FORCESCAN},
     {INI_STR_NEWUSER_MIN, OP_FLAGS_NEWUSER_MIN},
 };
@@ -648,7 +657,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
     LOG(ERROR) << "It is now set to: " << attach_dir_ << "'";
     return false;
   }
-  CdHome();
+  File::set_current_directory(bbs_dir_);
 
   check_phonenum(); // dupphone addition
 

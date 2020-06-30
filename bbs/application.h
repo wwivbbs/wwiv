@@ -248,9 +248,6 @@ public:
   [[nodiscard]] std::string logdir() const noexcept;
   [[nodiscard]] int verbose() const noexcept;
 
-  /*! @function CdHome Changes directories back to the WWIV Home directory */
-  void CdHome();
-
   [[nodiscard]] bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
   [[nodiscard]] uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }

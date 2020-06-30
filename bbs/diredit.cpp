@@ -288,7 +288,7 @@ void modify_dir(int n) {
       if (!s.empty()) {
         const string dir{s};
         if (!File::Exists(dir)) {
-          a()->CdHome();
+          File::set_current_directory(a()->bbspath());
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();

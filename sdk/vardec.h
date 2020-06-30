@@ -958,6 +958,8 @@ struct filestatusrec {
 constexpr uint16_t EFLAG_NONE = 0x0000;
 // Don't allow running a basic script using the format: '@basic:scriptname.bas'
 constexpr uint16_t EFLAG_NOSCRIPT = 0x0001;
+// Don't reset or change the directory.
+constexpr uint16_t EFLAG_NO_CHANGE_DIR = 0x0002;
 // don't check for hangup (typically used for the upload event)
 constexpr uint16_t  EFLAG_NOHUP = 0x0004;
 // redirect DOS IO to com port
@@ -1015,13 +1017,13 @@ constexpr const char* SPAWNOPT_NETWORK = "NETWORK";
 #define OP_FLAGS_FAST_TAG_RELIST 0x00001000
 #define OP_FLAGS_MAIL_PROMPT 0x00002000
 #define OP_FLAGS_SHOW_CITY_ST 0x00004000
-#define OP_FLAGS_FAST_SEARCH 0x00020000
-#define OP_FLAGS_NET_CALLOUT 0x00040000
+#define OP_FLAGS_UNUSED_7 0x00020000
+#define OP_FLAGS_UNUSED_5 0x00040000
 #define OP_FLAGS_WFC_SCREEN 0x00080000
 #define OP_FLAGS_MSG_TAG 0x00400000
 #define OP_FLAGS_CHAIN_REG 0x00800000
 #define OP_FLAGS_CAN_SAVE_SSM 0x01000000
-#define OP_FLAGS_EXTRA_COLOR 0x02000000
+#define OP_FLAGS_UNUSED_6 0x02000000
 #define OP_FLAGS_USE_FORCESCAN 0x04000000
 #define OP_FLAGS_NEWUSER_MIN 0x08000000
 #define OP_FLAGS_UNUSED_2 0x20000000

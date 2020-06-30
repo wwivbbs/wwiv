@@ -605,8 +605,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     if (a()->context().incom()) {
       File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
       File::Remove(a()->dsz_logfile_name_);
-      File::set_current_directory(a()->batch_directory());
-      ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH));
+      ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);
       if (bHangupAfterDl) {
         bihangup();
       } else {

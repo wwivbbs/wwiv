@@ -365,14 +365,13 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
 }
 
 bool maybe_upload(const std::string& file_name, uint16_t directory_num, const std::string& description) {
-  bool abort = false;
-  bool ok = true;
-  int i = recno(aligns(file_name));
+  auto abort = false;
+  const auto i = recno(aligns(file_name));
 
   if (i == -1) {
-    if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
+    if (!is_uploadable(file_name) && dcs()) {
       bout << fmt::format("{:<12}: |#5In filename database - add anyway? ", file_name);
-      char ch = ynq();
+      const auto ch = ynq();
       if (ch == *str_quit) {
         return false;
       }
@@ -380,14 +379,13 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const st
         bout << "|#5Delete it? ";
         if (yesno()) {
           File::Remove(FilePath(a()->dirs()[directory_num].path, file_name));
-          bout.nl();
-          return true;
         }
+        bout.nl();
         return true;
       }
     }
     if (!upload_file(file_name, a()->udir[directory_num].subnum, description)) {
-      ok = false;
+      return false;
     }
   } else {
     auto f = a()->current_file_area()->ReadFile(i);
@@ -396,10 +394,10 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const st
     printinfo(&f.u(), &abort);
     a()->set_current_user_dir_num(ocd);
     if (abort) {
-      ok = false;
+      return false;
     }
   }
-  return ok;
+  return true;
 }
 
 /* This assumes the file holds listings of files, one per line, to be
@@ -647,13 +645,6 @@ void relist() {
  * Allows user to add or remove ALLOW.DAT entries.
  */
 void edit_database() {
-  char s[20];
-  auto done = false;
-
-  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-    return;
-  }
-
   do {
     bout.nl();
     bout << "|#2A|#7)|#9 Add to ALLOW.DAT\r\n";
@@ -661,36 +652,32 @@ void edit_database() {
     bout << "|#2Q|#7)|#9 Quit\r\n";
     bout.nl();
     bout << "|#7Select: ";
-    char ch = onek("QAR");
+    const auto ch = onek("QAR");
     switch (ch) {
-    case 'A':
+    case 'A': {
       bout.nl();
       bout << "|#2Filename: ";
-      input(s, 12, true);
-      if (s[0]) {
+      auto s = input(12, true);
+      if (!s.empty()) {
         add_to_file_database(s);
       }
-      break;
-    case 'R':
+    } break;
+    case 'R': {
       bout.nl();
       bout << "|#2Filename: ";
-      input(s, 12, true);
-      if (s[0]) {
+      auto s = input(12, true);
+      if (!s.empty()) {
         remove_from_file_database(s);
       }
-      break;
+    } break;
     case 'Q':
-      done = true;
-      break;
+      return;
     }
   }
-  while (!a()->hangup_ && !done);
+  while (!a()->hangup_);
 }
 
 void add_to_file_database(const std::string& file_name) {
-  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-    return;
-  }
   files::Allow allow(*a()->config());
   allow.Add(file_name);
   allow.Save();
@@ -701,9 +688,6 @@ void add_to_file_database(const files::FileRecord& f) {
 }
 
 void remove_from_file_database(const std::string& file_name) {
-  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-    return;
-  }
   files::Allow allow(*a()->config());
   allow.Remove(file_name);
   allow.Save();
@@ -714,9 +698,6 @@ void remove_from_file_database(const std::string& file_name) {
  */
 
 bool is_uploadable(const std::string& file_name) {
-  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-    return true;
-  }
   files::Allow allow(*a()->config());
   return allow.IsAllowed(file_name);
 }

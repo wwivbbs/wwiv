@@ -104,23 +104,22 @@ static int try_to_ul_wh(const string& orig_file_name) {
       if (temp[0] == '?') {
         dirlist(1);
         break;
-      } else {
-        if (!temp[0]) {
-          dn = 0;
+      }
+      if (!temp[0]) {
+        dn = 0;
+        done = true;
+        break;
+      }
+      int x = to_number<int>(temp);
+      if (a()->udir[x].subnum >= 0) {
+        dliscan1(a()->udir[x].subnum);
+        d = a()->dirs()[dn];
+        if (d.mask & mask_no_uploads && !dcs()) {
+          bout << "Can't upload there...\r\n";
+          pausescr();
+        } else {
+          dn = a()->udir[x].subnum;
           done = true;
-          break;
-        }
-        int x = to_number<int>(temp);
-        if (a()->udir[x].subnum >= 0) {
-          dliscan1(a()->udir[x].subnum);
-          d = a()->dirs()[dn];
-          if (d.mask & mask_no_uploads && !dcs()) {
-            bout << "Can't upload there...\r\n";
-            pausescr();
-          } else {
-            dn = a()->udir[x].subnum;
-            done = true;
-          }
         }
       }
     }
@@ -183,7 +182,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  const string unn = a()->names()->UserName(a()->usernum);
+  const auto unn = a()->names()->UserName(a()->usernum);
   to_char_array(u.upby, unn);
   u.upby[36]  = '\0';
   to_char_array(u.date, date());
@@ -200,47 +199,6 @@ static int try_to_ul_wh(const string& orig_file_name) {
       t2u_error(file_name, "That file is already here.");
       return 1;
     }
-  }
-  if (ok && (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
-    bout.nl();
-    bout << "Checking for same file in other directories...\r\n\n";
-    i2 = 0;
-
-    for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1; i++) {
-      string s1 = StrCat("Scanning ", a()->dirs()[a()->udir[i].subnum].name);
-
-      i4 = s1.size();
-      //s1 += string(i3 - i2, ' ');
-
-      i2 = i4;
-      bout << s1;
-      bout.bputch('\r');
-
-      dliscan1(a()->udir[i].subnum);
-      i1 = recno(u.filename);
-      if (i1 >= 0) {
-        bout.nl();
-        bout << "Same file found on " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
-
-        if (dcs()) {
-          bout.nl();
-          bout << "|#5Upload anyway? ";
-          if (!yesno()) {
-            t2u_error(file_name, "That file is already here.");
-            return 1;
-          }
-          bout.nl();
-        } else {
-          t2u_error(file_name, "That file is already here.");
-          return 1;
-        }
-      }
-    }
-
-    bout << string(i2, ' ') << "\r";
-
-    dliscan1(dn);
-    bout.nl();
   }
   const auto src = FilePath(a()->batch_directory(), file_name);
   const auto dest = FilePath(d.path, file_name);
@@ -393,7 +351,6 @@ int try_to_ul(const string& file_name) {
 
   const auto dest_dir = FilePath(a()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
-  a()->CdHome();   // ensure we are in the correct directory
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
@@ -402,7 +359,7 @@ int try_to_ul(const string& file_name) {
   const auto src = FilePath(a()->batch_directory(), file_name);
   const auto dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
-  if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
+  if (File::Exists(dest)) {                        // this is iffy <sp?/who care I choose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
   }
   // it clean and up to date
