@@ -21,6 +21,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core_test/file_helper.h"
+#include "sdk/net.h"
 #include "sdk/files/tic.h"
 
 using namespace wwiv::core;
@@ -92,4 +93,98 @@ Path 21:2/100 1591287460 Thu Jun 04 16:17:40 2020 UTC Mystic/1.12 A46
   EXPECT_TRUE(t.crc_valid());
   EXPECT_TRUE(t.size_valid());
   EXPECT_TRUE(t.IsValid());
+}
+
+TEST(TicTest, FindFileAreaForTic) {
+  FileHelper helper;
+
+  const std::string contents = R"(
+Area AREANAME
+Size 12
+Crc AF083B2D
+File sample.zip
+)";
+  const auto tic_path = helper.CreateTempFile("sample.tic", contents);
+  const auto arc_path = wwiv::core::FilePath(helper.TempDir(), "sample.zip");
+  {
+    File af(arc_path);
+    ASSERT_TRUE(af.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite));
+    ASSERT_EQ(12, af.Write("hello world\n"));
+    af.Close();
+  }
+
+  const auto data = helper.Dir("data");
+  std::random_device rd{};
+  wwiv::core::uuid_generator generator(rd);
+  auto uuid = generator.generate();
+
+  net_networks_rec net{};
+  net.name = "foo";
+  net.uuid = uuid;
+
+  wwiv::sdk::files::dir_area_t dt;
+  dt.net_uuid = uuid;
+  dt.area_tag = "AREANAME";
+  wwiv::sdk::files::directory_t dir;
+  dir.area_tags.emplace_back(dt);
+  dir.name = "d1";
+
+  wwiv::sdk::files::Dirs dirs(data);
+  dirs.set_dirs({dir});
+
+  wwiv::sdk::files::TicParser p(tic_path.parent_path());
+  auto ot = p.parse("sample.tic");
+  ASSERT_TRUE(ot);
+  auto tic = ot.value();
+
+  auto o = wwiv::sdk::files::FindFileAreaForTic(dirs, tic, net);
+  ASSERT_TRUE(o.has_value());
+  auto area = o.value();
+  EXPECT_EQ(dir.name, "d1");
+}
+
+TEST(TicTest, FindFileAreaForTic_NotFound) {
+  FileHelper helper;
+
+  const std::string contents = R"(
+Area AREANAME
+Size 12
+Crc AF083B2D
+File sample.zip
+)";
+  const auto tic_path = helper.CreateTempFile("sample.tic", contents);
+  const auto arc_path = wwiv::core::FilePath(helper.TempDir(), "sample.zip");
+  {
+    File af(arc_path);
+    ASSERT_TRUE(af.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite));
+    ASSERT_EQ(12, af.Write("hello world\n"));
+    af.Close();
+  }
+
+  const auto data = helper.Dir("data");
+  std::random_device rd{};
+  wwiv::core::uuid_generator generator(rd);
+  auto uuid = generator.generate();
+
+  net_networks_rec net{};
+  net.name = "foo";
+  net.uuid = uuid;
+
+  wwiv::sdk::files::dir_area_t dt;
+  dt.net_uuid = uuid;
+  dt.area_tag = "2REANAME";
+  wwiv::sdk::files::directory_t dir;
+  dir.area_tags.emplace_back(dt);
+  dir.name = "d1";
+
+  wwiv::sdk::files::Dirs dirs(data);
+  dirs.set_dirs({dir});
+
+  wwiv::sdk::files::TicParser p(tic_path.parent_path());
+  auto ot = p.parse("sample.tic");
+  ASSERT_TRUE(ot);
+  auto tic = ot.value();
+
+  auto o = wwiv::sdk::files::FindFileAreaForTic(dirs, tic, net);
+  ASSERT_FALSE(o.has_value());
 }

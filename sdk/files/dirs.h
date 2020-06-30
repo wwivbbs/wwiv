@@ -76,7 +76,7 @@ public:
 
   [[nodiscard]] bool exists(const std::string& filename) const;
 
-  void set_sub(int n, directory_t s) { dirs_[n] = s; }
+  void set_dir(int n, directory_t s) { dirs_[n] = s; }
   [[nodiscard]] const std::vector<directory_t>& dirs() const { return dirs_; }
   bool insert(int n, directory_t r);
   bool erase(int n);
