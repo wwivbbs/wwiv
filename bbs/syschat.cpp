@@ -140,7 +140,7 @@ void RequestChat() {
 static std::string select_chat_name() {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
-  std::string sysop_name = a()->config()->sysop_name();
+  auto sysop_name = a()->config()->sysop_name();
   bout.curatr(a()->GetChatNameSelectionColor());
   a()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   a()->localIO()->PutsXY(22, 6, "Chat As: ");
@@ -148,14 +148,14 @@ static std::string select_chat_name() {
   a()->localIO()->PutsXY(31, 6, std::string(30, SPACE));
 
   a()->localIO()->GotoXY(31, 6);
-  auto rc = a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL);
+  const auto rc = a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL);
   if (rc != EditlineResult::ABORTED) { // ABORTED
     StringTrimEnd(&sysop_name);
-    auto user_number = to_number<int>(sysop_name);
+    const auto user_number = to_number<int>(sysop_name);
     if (user_number > 0 && user_number <= a()->config()->max_users()) {
       sysop_name =  a()->names()->UserName(user_number);
     } else {
-      if (!sysop_name[0]) {
+      if (sysop_name.empty()) {
         sysop_name = a()->config()->sysop_name();
       }
     }
@@ -547,7 +547,7 @@ void chat1(const char* chat_line, bool two_way) {
   }
 
   auto sysop_name = select_chat_name();
-  if (!sysop_name.empty()) {
+  if (sysop_name.empty()) {
     return;
   }
 
