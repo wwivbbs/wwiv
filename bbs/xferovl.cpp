@@ -75,8 +75,9 @@ void move_file() {
   while (!a()->hangup_ && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
     auto f = a()->current_file_area()->ReadFile(nCurRecNum);
+    const auto dir = a()->dirs()[a()->current_user_dir().subnum];
     bout.nl();
-    printfileinfo(&f.u(), a()->current_user_dir().subnum);
+    printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
     const auto ch = ynq();
@@ -84,7 +85,7 @@ void move_file() {
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      src_fn = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
+      src_fn = FilePath(dir.path, f);
       string ss;
       do {
         bout.nl(2);
@@ -206,8 +207,9 @@ void rename_file() {
   while (nRecNum > 0 && !a()->hangup_) {
     int nCurRecNum = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
+    const auto& dir = a()->dirs()[a()->current_user_dir().subnum];
     bout.nl();
-    printfileinfo(&f.u(), a()->current_user_dir().subnum);
+    printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
     const char ch = ynq();
@@ -227,13 +229,12 @@ void rename_file() {
     if (!s.empty()) {
       s = aligns(s);
       if (!iequals(s, "        .   ")) {
-        const std::string p = a()->dirs()[a()->current_user_dir().subnum].path;
+        const std::string p = dir.path;
         auto dest_fn = FilePath(p, s);
         if (File::Exists(dest_fn)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
-          auto orig_fn = FilePath(p, f);
-          File::Rename(orig_fn, dest_fn);
+          File::Rename(FilePath(p, f), dest_fn);
           if (File::Exists(dest_fn)) {
             auto* area = a()->current_file_area();
             auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
@@ -331,7 +332,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     bout.nl();
 
     bout << "|#9File name   : |#2" << f << wwiv::endl;
-    bout << "|#9File size   : |#2" << bytes_to_k(f.numbytes()) << wwiv::endl;
+    bout << "|#9File size   : |#2" << humanize(f.numbytes()) << wwiv::endl;
     if (!description.empty()) {
       f.set_description(description);
       bout << "|#1 Description: " << f.description() << wwiv::endl;
@@ -414,11 +415,12 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
   bool ok = true;
 
   std::string last_fn;
-  dliscan1(a()->udir[directory_num].subnum);
+  const auto& dir = a()->dirs()[a()->udir[directory_num].subnum];
+  dliscan1(dir);
 
   auto file = std::make_unique<TextFile>(file_name, "r");
   if (!file->IsOpen()) {
-    const auto default_fn = FilePath(a()->dirs()[a()->udir[directory_num].subnum].path, file_name);
+    const auto default_fn = FilePath(dir.path, file_name);
     file.reset(new TextFile(default_fn, "r"));
   }
   if (!file->IsOpen()) {
@@ -514,9 +516,8 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
 
 // returns false on abort
 bool uploadall(uint16_t directory_num) {
-  const auto actual_num = a()->udir[directory_num].subnum;
-  dliscan1(actual_num);
-  const auto& dir = a()->dirs()[actual_num];
+  const auto& dir = a()->dirs()[a()->udir[directory_num].subnum];
+  dliscan1(dir);
 
   const auto path_mask = FilePath(dir.path, "*.*");
   const int maxf = dir.maxfiles;
@@ -543,7 +544,7 @@ bool uploadall(uint16_t directory_num) {
 }
 
 void relist() {
-  char s[85], s1[40];
+  char s[85];
   bool next, abort = false;
   int16_t tcd = -1;
 
@@ -597,37 +598,37 @@ void relist() {
     bout.Color(FRAME_COLOR);
     bout.bputs((okansi() ? "\xBA" : ":"), &abort, &next);
 
-    sprintf(s1, "%u""k", bytes_to_k(f.u.numbytes));
+    auto numbytes = humanize(f.u.numbytes);
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(a()->dirs()[tcd].mask & mask_cdrom)) {
         files::FileName fn(f.u.filename);
         auto filepath = FilePath(a()->dirs()[tcd].path, fn);
         if (!File::Exists(filepath)) {
-          strcpy(s1, "N/A");
+          numbytes = "N/A";
         }
       }
     }
-    if (strlen(s1) < 5) {
+    if (numbytes.size() < 5) {
       size_t i1 = 0;
-      for (; i1 < 5 - strlen(s1); i1++) {
+      for (; i1 < 5 - numbytes.size(); i1++) {
         s[i1] = SPACE;
       }
       s[i1] = 0;
     }
-    strcat(s, s1);
+    strcat(s, numbytes.c_str());
     bout.Color(2);
     bout.bputs(s, &abort, &next);
 
     bout.Color(FRAME_COLOR);
     bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
-    sprintf(s1, "%d", f.u.numdloads);
+    auto numdloads = std::to_string(f.u.numdloads);
 
     size_t i1 = 0;
-    for (; i1 < 4 - strlen(s1); i1++) {
+    for (; i1 < 4 - numdloads.size(); i1++) {
       s[i1] = SPACE;
     }
     s[i1] = 0;
-    strcat(s, s1);
+    strcat(s, numdloads.c_str());
     bout.Color(2);
     bout.bputs(s, &abort, &next);
 

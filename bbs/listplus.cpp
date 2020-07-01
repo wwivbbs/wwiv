@@ -332,7 +332,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, a()->user()->data.lp_colors[0]);
     }
-    file_information += fmt::format("|{:0<2}{}", a()->user()->data.lp_colors[0], buffer);
+    file_information += fmt::format("|{:02}{}", a()->user()->data.lp_colors[0], buffer);
     width += 8;
   }
   if (a()->user()->data.lp_options & cfl_extension) {
@@ -348,7 +348,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
     width += 4;
   }
   if (a()->user()->data.lp_options & cfl_kbytes) {
-    buffer = fmt::sprintf("%4luk", bytes_to_k(u->numbytes));
+    buffer = humanize(u->numbytes);
     if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom)) {
       auto stf = FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                           files::FileName(u->filename));
@@ -358,7 +358,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
         }
       }
     }
-    file_information += fmt::sprintf(" |%02d%s", a()->user()->data.lp_colors[3], buffer);
+    file_information += fmt::format(" |{:02}{:>4} ", a()->user()->data.lp_colors[3], buffer);
     width += 6;
   }
 
@@ -396,7 +396,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       num_extended = lines_left;
     }
     if (ext_is_on && mask_extended & u->mask) {
-      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos,
+      lines_printed = print_extended(u->filename, num_extended, -extdesc_pos,
                                           static_cast<Color>(a()->user()->data.lp_colors[10]),
                                           search_rec);
     } else {
@@ -451,11 +451,8 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
   return numl;
 }
 
-int print_extended_plus(const std::string& file_name, int numlist, int indent, Color color,
+int print_extended(const std::string& file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
-  int numl = 0;
-  int cpos = 0;
-  auto chars_this_line = 0;
 
   const int will_fit = 80 - std::abs(indent) - 2;
 
@@ -471,39 +468,23 @@ int print_extended_plus(const std::string& file_name, int numlist, int indent, C
   if (indent > -1 && indent != 16) {
     bout << "  |#9Extended Description:\n\r";
   }
-  char ch = SOFTRETURN;
-
-  while (cpos < ssize(ss) && numl < numlist && !a()->hangup_) {
-    if (ch == SOFTRETURN && indent) {
-      bout.SystemColor(static_cast<uint8_t>(color));
-      bout.bputch('\r');
-      bout.Right(std::abs(indent));
+  const auto lines = SplitString(ss, "\n", false);
+  auto numl = std::min(ssize(lines), numlist);
+  for (auto i = 0; i < numl; i++) {
+    bout.Right(std::abs(indent));
+    auto l = lines.at(i);
+    if (ssize(l) > will_fit) {
+      l.resize(will_fit);
     }
-    do {
-      ch = ss[cpos++];
-    }
-    while (ch == '\r' && !a()->hangup_ && cpos < ssize(ss));
-
-    if (ch == SOFTRETURN) {
-      bout.nl();
-      chars_this_line = 0;
-      ++numl;
-    } else if (chars_this_line > will_fit) {
-      do {
-        ch = ss[cpos++];
-      }
-      while (ch != '\n' && ch != 0 && cpos < ssize(ss));
-      --cpos;
-    } else {
-      chars_this_line += bout.bputch(ch);
-    }
+    bout.SystemColor(static_cast<uint8_t>(color));
+    bout.bputs(lines.at(i));
+    bout.nl();
   }
-
+  bout.Color(0);
   if (a()->localIO()->WhereX()) {
     bout.nl();
     ++numl;
   }
-  bout.Color(0);
   return numl;
 }
 
@@ -517,10 +498,10 @@ void show_fileinfo(uploadsrec* u) {
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
     bout << "  |#9Newest file : |#2" << u->actualdate << wwiv::endl;
   }
-  bout << "  |#9Size        : |#2" << bytes_to_k(u->numbytes) << wwiv::endl;
+  bout << "  |#9Size        : |#2" << humanize(u->numbytes) << wwiv::endl;
   bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
-  print_extended_plus(u->filename, 255, 16, Color::YELLOW, nullptr);
+  print_extended(u->filename, 255, 16, Color::YELLOW, nullptr);
   bout.Color(7);
   bout << string(78, '\xCD');
   bout.nl();
@@ -1122,9 +1103,10 @@ static int rename_filename(const std::string& file_name, int dn) {
   while (i > 0) {
     const int current_file_position = i;
     auto* area = a()->current_file_area();
+    auto& dir = a()->dirs()[dn];
     auto f = area->ReadFile(current_file_position);
     bout.nl();
-    printfileinfo(&f.u(), dn);
+    printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
     char ch = ynq();
@@ -1218,7 +1200,9 @@ static int remove_filename(const std::string& file_name, int dn) {
     return 1;
   }
 
-  dliscan1(dn);
+  const auto& dir = a()->dirs()[dn];
+  dliscan1(dir);
+
   auto fn{file_name};
   if (fn.find('.') == std::string::npos) {
     fn += ".*";
@@ -1230,9 +1214,9 @@ static int remove_filename(const std::string& file_name, int dn) {
   int ret = 1;
   while (!a()->hangup_ && i > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(i);
-    if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->usernum)) {
+    if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
       bout.nl();
-      printfileinfo(&f.u(), dn);
+      printfileinfo(&f.u(), dir);
       bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
       char ch = ynq();
       if (ch == 'Q') {
@@ -1257,7 +1241,7 @@ static int remove_filename(const std::string& file_name, int dn) {
           remove_from_file_database(fn);
         }
         if (rm) {
-          File::Remove(FilePath(a()->dirs()[dn].path, f));
+          File::Remove(FilePath(dir.path, f));
           if (rdlp && f.u().ownersys == 0) {
             User user;
             a()->users()->readuser(&user, f.u().ownerusr);
@@ -1299,10 +1283,11 @@ static int move_filename(const std::string& file_name, int dn) {
   wwiv::bbs::TempDisablePause diable_pause;
   while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
+    const auto& dir = a()->dirs()[dn];
     auto f = a()->current_file_area()->ReadFile(nRecNum);
-    auto src_fn = FilePath(a()->dirs()[dn].path, f);
+    auto src_fn = FilePath(dir.path, f);
     bout.nl();
-    printfileinfo(&f.u(), dn);
+    printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
     char ch = 'Y';

@@ -336,8 +336,8 @@ void zmbatchdl(bool bHangupAfterDl) {
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      const auto dir = a()->batch().entry[cur].dir();
-      dliscan1(dir);
+      const auto dir_num = a()->batch().entry[cur].dir();
+      dliscan1(dir_num);
       const int record_number = recno(a()->batch().entry[cur].aligned_filename());
       if (record_number <= 0) {
         a()->batch().delbatch(cur);
@@ -346,9 +346,9 @@ void zmbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(record_number);
-        auto send_filename = FilePath(a()->dirs()[dir].path, f);
-        if (a()->dirs()[dir].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->dirs()[dir].path, f);
+        auto send_filename = FilePath(a()->dirs()[dir_num].path, f);
+        if (a()->dirs()[dir_num].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
           // update the send filename and copy it from the CD-ROM
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
@@ -467,8 +467,8 @@ void ymbatchdl(bool bHangupAfterDl) {
       ++cur;
     }
     if (nsl() >= a()->batch().entry[cur].time(a()->modem_speed_) && !bRatioBad) {
-      const auto dir = a()->batch().entry[cur].dir();
-      dliscan1(dir);
+      const auto dir_num = a()->batch().entry[cur].dir();
+      dliscan1(dir_num);
       const auto nRecordNumber = recno(a()->batch().entry[cur].aligned_filename());
       if (nRecordNumber <= 0) {
         a()->batch().delbatch(cur);
@@ -477,9 +477,9 @@ void ymbatchdl(bool bHangupAfterDl) {
                                     ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         auto* area = a()->current_file_area();
         auto f = area->ReadFile(nRecordNumber);
-        auto send_filename = FilePath(a()->dirs()[dir].path, f);
-        if (a()->dirs()[dir].mask & mask_cdrom) {
-          auto orig_filename = FilePath(a()->dirs()[dir].path, f);
+        auto send_filename = FilePath(a()->dirs()[dir_num].path, f);
+        if (a()->dirs()[dir_num].mask & mask_cdrom) {
+          auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
           send_filename = FilePath(a()->temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
@@ -786,8 +786,8 @@ int batchdl(int mode) {
 }
 
 void upload(int dn) {
-  dliscan1(dn);
   const auto& d = a()->dirs()[dn];
+  dliscan1(d);
   const long free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";

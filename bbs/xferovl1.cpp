@@ -437,7 +437,6 @@ void tag_files(bool& need_title) {
   if (bout.lines_listed() == 0) {
     return;
   }
-  bool abort = false;
   a()->tleft(true);
   if (a()->hangup_) {
     return;
@@ -446,10 +445,10 @@ void tag_files(bool& need_title) {
   bout.Color(FRAME_COLOR);
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
-  bool done = false;
+  auto done = false;
   while (!done && !a()->hangup_) {
     bout.clear_lines_listed();
-    char ch = fancy_prompt("File Tagging", "CDEMQRTV?");
+    const auto ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     bout.clear_lines_listed();
     switch (ch) {
     case '?': {
@@ -478,10 +477,10 @@ void tag_files(bool& need_title) {
       bout.clear_lines_listed();
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
       auto s = input(2, true);
-      int i = to_number<int>(s) - 1;
+      const auto i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        auto d = XFER_TIME(f.u.numbytes);
+        const auto d = XFER_TIME(f.u.numbytes);
         bout.nl();
         int i2;
         for (i2 = 0; i2 < a()->dirs().size(); i2++) {
@@ -489,39 +488,13 @@ void tag_files(bool& need_title) {
             break;
           }
         }
-        if (i2 < a()->dirs().size()) {
-          bout << "|#1Directory  : |#2#" << a()->udir[i2].keys << ", " << a()->dirs()[f.
-                directory].name <<
-              wwiv::endl;
-        } else {
-          bout << "|#1Directory  : |#2#" << "??" << ", " << a()->dirs()[f.directory].name <<
-              wwiv::endl;
-        }
-        bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
-        bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
-        if (f.u.mask & mask_extended) {
-          bout << "|#1Ext. Desc. : |#2";
-          print_extended(f.u.filename, &abort, a()->max_extend_lines, 2);
-        }
-        bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
-        bout << "|#1Apprx. time: |#2" << ctim(std::lround(d)) << wwiv::endl;
-        bout << "|#1Uploaded on: |#2" << f.u.date << wwiv::endl;
-        bout << "|#1Uploaded by: |#2" << f.u.upby << wwiv::endl;
-        bout << "|#1Times D/L'd: |#2" << f.u.numdloads << wwiv::endl;
-        if (a()->dirs()[f.directory].mask & mask_cdrom) {
-          bout.nl();
-          bout << "|#3CD ROM DRIVE\r\n";
-        } else {
-          auto fn = FilePath(a()->dirs()[f.directory].path, f.u.filename);
-          if (!File::Exists(fn)) {
-            bout.nl();
-            bout << "|#6-=>FILE NOT THERE<=-\r\n";
-          }
-        }
+        std::string keys = i2 < a()->dirs().size() ? a()->udir[i2].keys : "??";
+        const auto& dir = a()->dirs()[f.directory];
+        bout.format("|#1Directory  : |#2#{}, {}\r\n", keys, dir.name);
+        printfileinfo(&f.u, dir);
         bout.nl();
         pausescr();
         relist();
-
       }
     }
     break;
@@ -554,7 +527,7 @@ void tag_files(bool& need_title) {
         auto s1 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (a()->dirs()[f.directory].mask & mask_cdrom) {
           auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
-          s1 = FilePath(a()->temp_directory().c_str(), FileName(f.u.filename));
+          s1 = FilePath(a()->temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -614,8 +587,8 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
         c = ' ';
     }
     bout.backline();
-    bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", aligned_file_name,
-                         bytes_to_k(fs), stripcolors(description));
+    bout.bprintf(" |#6? |#1%s %3.3s |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", aligned_file_name,
+                 humanize(fs), stripcolors(description));
     auto ch = onek_ncr("QYN\r");
     bout.backline();
     const auto ufn = wwiv::sdk::files::unalign(aligned_file_name);

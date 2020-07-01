@@ -206,102 +206,49 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
 }
 
 bool ratio_ok() {
-  bool bRetValue = true;
-
   if (!a()->user()->IsExemptRatio()) {
-    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
-      bRetValue = false;
+    if (a()->config()->req_ratio() > 0.0001 && ratio() < a()->config()->req_ratio()) {
       bout.cls();
       bout.nl();
       bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
                                         ratio(), a()->config()->req_ratio());
+      return false;
     }
   }
   if (!a()->user()->IsExemptPost()) {
     if (a()->config()->post_to_call_ratio() > 0.0001 &&
         post_ratio() < a()->config()->post_to_call_ratio()) {
-      bRetValue = false;
-      bout.cls();
       bout.nl();
       bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
                            post_ratio(), "You need a ratio of", a()->config()->post_to_call_ratio(),
                            "to download.");
+      return false;
     }
   }
-  return bRetValue;
+  return true;
 }
 
 bool dcs() {
-  return cs() || a()->user()->GetDsl() >= 100 ? true : false;
+  return cs() || a()->user()->GetDsl() >= 100;
 }
 
 void dliscan1(int directory_num) {
-  const std::string basename{a()->dirs()[directory_num].filename};
+  dliscan1(a()->dirs()[directory_num]);
+}
 
-  if (!a()->fileapi()->Exist(basename)) {
-    if (!a()->fileapi()->Create(basename)) {
-      LOG(ERROR) << "Failed to create file area: " << basename;
+void dliscan1(const wwiv::sdk::files::directory_t& dir) {
+  if (!a()->fileapi()->Exist(dir.filename)) {
+    if (!a()->fileapi()->Create(dir.filename)) {
+      LOG(ERROR) << "Failed to create file area: " << dir.filename;
     }
   }
 
-  auto area = a()->fileapi()->Open(a()->dirs()[directory_num]);
-  this_date = area->header().daten();
-  a()->set_current_file_area(std::move(area));
+  a()->set_current_file_area(a()->fileapi()->Open(dir));
+  this_date = a()->current_file_area()->header().daten();
 }
 
 void dliscan() {
-  dliscan1(a()->current_user_dir().subnum);
-}
-
-void print_extended(const std::string& file_name, bool *abort, int numlist, int indent) {
-  bool next = false;
-  int numl = 0;
-  int cpos = 0;
-  char s[81];
-  
-  string ss = a()->current_file_area()->ReadExtendedDescriptionAsString(file_name).value_or("");
-  if (!ss.empty()) {
-    char ch = indent != 2 ? 10 : 0;
-    while (ss[cpos] && !(*abort) && numl < numlist) {
-      if (ch == SOFTRETURN) {
-        if (indent == 1) {
-          for (auto i = 0; i < INDENTION; i++) {
-            if (i == 12 || i == 18) {
-              s[i] = okansi() ? '\xBA' : ' '; // was |
-            } else {
-              s[i] = SPACE;
-            }
-          }
-          s[INDENTION] = '\0';
-          bout.Color(FRAME_COLOR);
-          bout.bputs(s, abort, &next);
-          bout.Color(1);
-        } else {
-          if (indent == 2) {
-            for (int i = 0; i < 13; i++) {
-              s[i] = SPACE;
-            }
-            s[13] = '\0';
-            bout.bputs(s, abort, &next);
-            bout.Color(2);
-          }
-        }
-      }
-      bout.bputch(ch = ss[ cpos++ ]);
-      checka(abort, &next);
-      if (ch == SOFTRETURN) {
-        ++numl;
-      } else if (ch != RETURN && a()->localIO()->WhereX() >= 78) {
-        bout.bputs("\r\n", abort, &next);
-        ch = SOFTRETURN;
-      }
-    }
-    if (bout.wherex() > 0) {
-      bout.nl();
-    }
-  } else if (bout.wherex() > 0) {
-    bout.nl();
-  }
+  dliscan1(a()->dirs()[a()->current_user_dir().subnum]);
 }
 
 std::string aligns(const std::string& file_name) {
@@ -309,17 +256,17 @@ std::string aligns(const std::string& file_name) {
 }
 
 void printinfo(uploadsrec * u, bool *abort) {
-  char s[85], s1[40];
+  char s[85];
   int i;
   bool next;
 
   {
     tagrec_t t{};
     t.u = *u;
-    auto subnum = a()->current_user_dir().subnum;
+    const auto subnum = a()->current_user_dir().subnum;
     t.directory = subnum;
     t.dir_mask = a()->dirs()[subnum].mask;
-    a()->filelist.emplace_back(std::move(t));
+    a()->filelist.emplace_back(t);
     sprintf(s, "\r|#%d%2d|#%d%c",
             a()->batch().contains_file(u->filename) ? 6 : 0,
             a()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
@@ -334,34 +281,34 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(1);
   bout.bputs(s, abort, &next);
   bout.Color(FRAME_COLOR);
-  bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
+  bout.bputs(okansi() ? "\xBA" : " ", abort, &next); // was |
 
-  sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
+  auto size = humanize(u->numbytes);
 
   const auto& dir = a()->dirs()[a()->udir[a()->current_user_dir_num()].subnum];
   if (!(dir.mask & mask_cdrom)) {
     if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
-      to_char_array(s1, "N/A");
+      size = "N/A";
     }
   }
-  for (i = 0; i < 5 - wwiv::strings::ssize(s1); i++) {
+  for (i = 0; i < 5 - size.size(); i++) {
     s[i] = SPACE;
   }
   s[i] = '\0';
-  strcat(s, s1);
+  strcat(s, size.c_str());
   bout.Color(2);
   bout.bputs(s, abort, &next);
 
   {
     bout.Color(FRAME_COLOR);
-    bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
-    sprintf(s1, "%d", u->numdloads);
+    bout.bputs(okansi() ? "\xBA" : " ", abort, &next); // was |
+    auto numdloads = std::to_string(u->numdloads);
 
-    for (i = 0; i < 4 - wwiv::strings::ssize(s1); i++) {
+    for (i = 0; i < 4 - numdloads.size(); i++) {
       s[i] = SPACE;
     }
     s[i] = '\0';
-    strcat(s, s1);
+    strcat(s, numdloads.c_str());
     bout.Color(2);
     bout.bputs(s, abort, &next);
   }
@@ -399,7 +346,7 @@ std::string file_mask(const std::string& prompt) {
     bout.nl();
     bout << prompt;
   }
-  string s = input(12);
+  auto s = input(12);
   if (s.empty()) {
     s = "*.*";
   }
@@ -483,22 +430,22 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
 }
 
 void nscanall() {
-  bool bScanAllConfs = false;
+  bool scan_all_confs = false;
   a()->context().scanned_files(true);
 
   if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout.nl();
     bout << "|#5All conferences? ";
-    bScanAllConfs = yesno();
+    scan_all_confs = yesno();
     bout.nl();
-    if (bScanAllConfs) {
+    if (scan_all_confs) {
       tmp_disable_conf(true);
     }
   }
   if (okansi()) {
-    auto save_dir = a()->current_user_dir_num();
+    const auto save_dir = a()->current_user_dir_num();
     listfiles_plus(LP_NSCAN_NSCAN);
-    if (bScanAllConfs) {
+    if (scan_all_confs) {
       tmp_disable_conf(false);
     }
     a()->set_current_user_dir_num(save_dir);
@@ -530,7 +477,7 @@ void nscanall() {
     }
   }
   endlist(2);
-  if (bScanAllConfs) {
+  if (scan_all_confs) {
     tmp_disable_conf(false);
   }
 }
@@ -625,11 +572,11 @@ int nrecno(const std::string& file_mask, int start_recno) {
   return !area ? -1 : area->SearchFile(file_mask, start_recno + 1).value_or(-1);
 }
 
-int printfileinfo(uploadsrec * u, int directory_num) {
-  auto d = XFER_TIME(u->numbytes);
+int printfileinfo(uploadsrec * u, const wwiv::sdk::files::directory_t& dir) {
+  const auto d = XFER_TIME(u->numbytes);
   bout << "Filename   : " << FileName(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
-  bout << "File size  : " << bytes_to_k(u->numbytes) << wwiv::endl;
+  bout << "File size  : " << humanize(u->numbytes) << wwiv::endl;
   bout << "Apprx. time: " << ctim(std::lround(d)) << wwiv::endl;
   bout << "Uploaded on: " << u->date << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
@@ -638,17 +585,23 @@ int printfileinfo(uploadsrec * u, int directory_num) {
   bout << "Uploaded by: " << u->upby << wwiv::endl;
   bout << "Times D/L'd: " << u->numdloads << wwiv::endl;
   bout.nl();
-  bool abort = false;
   if (u->mask & mask_extended) {
     bout << "Extended Description: \r\n";
-    print_extended(u->filename, &abort, 255, 0);
+    print_extended(u->filename, 255, -1, wwiv::sdk::Color::YELLOW, nullptr);
+
   }
-  const auto file_name = FilePath(a()->dirs()[directory_num].path, wwiv::sdk::files::unalign(u->filename));
-  if (!File::Exists(file_name)) {
-    bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
-    return -1;
+
+  if (dir.mask & mask_cdrom) {
+    bout.nl();
+    bout << "|#3CD ROM DRIVE\r\n";
+  } else {
+    if (!File::Exists(FilePath(dir.path, FileName(u->filename)))) {
+      bout << "\r\n-=>FILE NOT THERE<=-\r\n\n";
+      return -1;
+    }
   }
-  return (nsl() >= d) ? 1 : 0;
+
+  return nsl() >= d ? 1 : 0;
 }
 
 void remlist(const std::string& file_name) {

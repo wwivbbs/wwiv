@@ -452,13 +452,13 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
-  auto s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
+  auto s1 = humanize(ncn->bytes_waiting());
   a()->localIO()->PutsXYA(58, 17, color, s1);
 
-  s1 = to_string(bytes_to_k(ncn->bytes_received()));
+  s1 = humanize(ncn->bytes_received());
   a()->localIO()->PutsXYA(23, 17, color, s1);
 
-  s1 = to_string(bytes_to_k(ncn->bytes_sent()));
+  s1 = humanize(ncn->bytes_sent());
   a()->localIO()->PutsXYA(23, 18, color, s1);
 
   s1 = to_difftime_string(now, ncn->firstcontact());

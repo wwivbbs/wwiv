@@ -19,12 +19,32 @@
 #ifndef __INCLUDED_WWIV_CORE_NUMBERS_H__
 #define __INCLUDED_WWIV_CORE_NUMBERS_H__
 
+#include "core/strings.h"
+#include <string>
+
 template<typename T>
 T bytes_to_k(T b) {
   if (b <= 0) {
     return static_cast<T>(0);
   }
   return static_cast<T>((b + 1023) / 1024);
+}
+
+template<typename T>
+std::string humanize(T num) {
+  static constexpr T KB = 1024;
+  static constexpr T MB = KB * 1024;
+  static constexpr T GB = MB * 1024;
+  if (num >= GB) {
+    return wwiv::strings::StrCat(std::to_string(num / GB), "G");
+  }
+  if (num >= MB) {
+    return wwiv::strings::StrCat(std::to_string(num / MB), "M");
+  }
+  if (num >= KB) {
+    return wwiv::strings::StrCat(std::to_string(num / KB), "k");
+  }
+  return wwiv::strings::StrCat(std::to_string(bytes_to_k(num)), "k");
 }
 
 #endif  // __INCLUDED_WWIV_CORE_NUMBERS_H__
