@@ -588,8 +588,7 @@ void temp_extract() {
             }
             if (!extract_cmd.empty()) {
               ExecuteExternalProgram(extract_cmd, a()->spawn_option(SPAWNOPT_ARCH_E) | EFLAG_TEMP_DIR);
-              sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn,
-                                        f.aligned_filename());
+              sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn, f);
             }
           }
         }
@@ -857,7 +856,7 @@ void removefile() {
               }
             }
           }
-          sysoplog() << fmt::format("- \"{}\" removed off of {}", f.aligned_filename(),
+          sysoplog() << fmt::format("- \"{}\" removed off of {}", f,
                                     a()->dirs()[a()->current_user_dir().subnum].name);
           if (a()->current_file_area()->DeleteFile(f, record_num)) {
             a()->current_file_area()->Save();

@@ -606,7 +606,7 @@ class User {
       data.year = static_cast<uint8_t>(n-1900);
     }
   }
-  [[nodiscard]] unsigned int GetLanguage() const {
+  [[nodiscard]] int GetLanguage() const {
     return data.language;
   }
   void SetLanguage(int n) {

@@ -53,11 +53,11 @@ using namespace wwiv::strings;
 
 static void t2u_error(const string& file_name, const string& msg) {
   bout.nl(2);
-  string s1 = StrCat("**  ", file_name, " failed T2U qualifications");
+  const auto s1 = StrCat("**  ", file_name, " failed T2U qualifications");
   bout << s1 << wwiv::endl;
   sysoplog() << s1;
 
-  string s2 = StrCat("** Reason : ", msg);
+  const auto s2 = StrCat("** Reason : ", msg);
   bout << s2 << wwiv::endl;
   bout.nl();
   sysoplog() << s2;
@@ -65,7 +65,8 @@ static void t2u_error(const string& file_name, const string& msg) {
 
 static int try_to_ul_wh(const string& orig_file_name) {
   wwiv::sdk::files::directory_t d{};
-  int i1, i2, i4, key, ok = 0, dn = 0;
+  char key;
+  auto ok = 0, dn = 0;
 
   auto file_name = files::unalign(orig_file_name);
 
@@ -175,17 +176,12 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  uploadsrec u{};
-  to_char_array(u.filename, aligned_file_name);
-  u.ownerusr = static_cast<uint16_t>(a()->usernum);
-  u.ownersys = 0;
-  u.numdloads = 0;
-  u.unused_filetype = 0;
-  u.mask = 0;
+  wwiv::sdk::files::FileRecord f;
+  f.set_filename(aligned_file_name);
+  f.u().ownerusr = static_cast<uint16_t>(a()->usernum);
   const auto unn = a()->names()->UserName(a()->usernum);
-  to_char_array(u.upby, unn);
-  u.upby[36]  = '\0';
-  to_char_array(u.date, date());
+  to_char_array(f.u().upby, unn);
+  f.set_date(DateTime::now());
 
   if (File::Exists(StrCat(d.path, files::unalign(aligned_file_name)))) {
     if (dcs()) {
@@ -209,8 +205,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   // s1 and s2 should remain set,they are used below
   File::Move(src, dest);
-  to_char_array(u.description, "NO DESCRIPTION GIVEN");
-  bool file_id_avail = get_file_idz(&u, dn);
+  f.set_description("NO DESCRIPTION GIVEN");
+  bool file_id_avail = get_file_idz(f, a()->dirs()[dn]);
   done = false;
 
   while (!done && !a()->hangup_ && !file_id_avail) {
@@ -220,9 +216,9 @@ static int try_to_ul_wh(const string& orig_file_name) {
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
     bout << "   |#1Filename    |01: |#7" << file_name << wwiv::endl;
-    bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
+    bout << "|#2A|#7] |#1Description |01: |#7" << f.description() << wwiv::endl;
     bout << "|#2B|#7] |#1Modify extended description\r\n\n";
-    print_extended(u.filename, &abort, 10, 0);
+    print_extended(f.aligned_filename(), &abort, 10, 0);
     bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
     key = onek("\rQABC", true);
     switch (key) {
@@ -240,43 +236,43 @@ static int try_to_ul_wh(const string& orig_file_name) {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
       auto desc = input_text(58);
-      to_char_array(u.description, desc);
+      f.set_description(desc);
     } break;
 
     case 'B':
     {
       auto* area = a()->current_file_area();
       bout.nl();
-      string ss = area->ReadExtendedDescriptionAsString(u.filename).value_or("");
+      auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
       bout << "|#5Modify extended description? ";
       if (yesno()) {
         bout.nl();
         if (!ss.empty()) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            area->DeleteExtendedDescription(u.filename);
-            u.mask &= ~mask_extended;
+            area->DeleteExtendedDescription(f.filename());
+            f.set_mask(mask_extended, false);
           } else {
-            u.mask |= mask_extended;
+            f.set_mask(mask_extended, true);
             modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
             if (!ss.empty()) {
-              area->DeleteExtendedDescription(u.filename);
-              area->AddExtendedDescription(u.filename, ss);
+              area->DeleteExtendedDescription(f.filename());
+              area->AddExtendedDescription(f.filename(), ss);
             }
           }
         } else {
           modify_extended_description(&ss, a()->dirs()[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
-            area->AddExtendedDescription(u.filename, ss);
-            u.mask |= mask_extended;
+            area->AddExtendedDescription(f.filename(), ss);
+            f.set_mask(mask_extended, true);
           } else {
-            u.mask &= ~mask_extended;
+            f.set_mask(mask_extended, false);
           }
         }
       } else if (!ss.empty()) {
-        u.mask |= mask_extended;
+        f.set_mask(mask_extended, true);
       } else {
-        u.mask &= ~mask_extended;
+        f.set_mask(mask_extended, false);
       }
     } break;
 
@@ -291,8 +287,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
   File file(FilePath(d.path, files::unalign(aligned_file_name)));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
-    if (u.mask & mask_extended) {
-      a()->current_file_area()->DeleteExtendedDescription(u.filename);
+    if (f.mask(mask_extended)) {
+      a()->current_file_area()->DeleteExtendedDescription(f.filename());
     }
     t2u_error(file_name, "DOS error - File not found.");
     return 1;
@@ -300,26 +296,23 @@ static int try_to_ul_wh(const string& orig_file_name) {
   if (!a()->upload_cmd.empty()) {
     file.Close();
     bout << "Please wait...\r\n";
-    if (!check_ul_event(dn, &u)) {
-      if (u.mask & mask_extended) {
-        a()->current_file_area()->DeleteExtendedDescription(u.filename);
+    if (!check_ul_event(dn, &f.u())) {
+      if (f.mask(mask_extended)) {
+        a()->current_file_area()->DeleteExtendedDescription(f.filename());
       }
       t2u_error(file_name, "Failed upload event");
       return 1;
-    } else {
-      file.Open(File::modeBinary | File::modeReadOnly);
     }
+    file.Open(File::modeBinary | File::modeReadOnly);
   }
-  u.numbytes = static_cast<daten_t>(file.length());
+  f.set_numbytes(file.length());
   file.Close();
   a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
 
-  auto current_daten = daten_t_now();
-  u.daten = current_daten;
+  f.set_date(DateTime::now());
   auto* area = a()->current_file_area();
-  wwiv::sdk::files::FileRecord f(u);
   if (!area->AddFile(f)) {
-    LOG(ERROR) << "Error adding file: " << f.aligned_filename();
+    LOG(ERROR) << "Error adding file: " << f;
   } else {
     area->Save();
   }
@@ -331,7 +324,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   status->IncrementNumUploadsToday();
   status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   a()->status_manager()->CommitTransaction(std::move(status));
-  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f.aligned_filename(), a()->dirs()[dn].name);
+  sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
   return 0;                                 // This means success
 }
 

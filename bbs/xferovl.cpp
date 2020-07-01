@@ -330,7 +330,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     }
     bout.nl();
 
-    bout << "|#9File name   : |#2" << f.unaligned_filename() << wwiv::endl;
+    bout << "|#9File name   : |#2" << f << wwiv::endl;
     bout << "|#9File size   : |#2" << bytes_to_k(f.numbytes()) << wwiv::endl;
     if (!description.empty()) {
       f.set_description(description);
@@ -344,7 +344,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     if (f.description().empty()) {
       return false;
     }
-    get_file_idz(&f.u(), directory_num);
+    get_file_idz(f, a()->dirs()[directory_num]);
     a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
     if (!(d.mask & mask_cdrom)) {
       add_to_file_database(f);
@@ -358,7 +358,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     status->IncrementNumUploadsToday();
     status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
     a()->status_manager()->CommitTransaction(std::move(status));
-    sysoplog() << "+ '" << f.aligned_filename() << "' uploaded on " << d.name;
+    sysoplog() << "+ '" << f << "' uploaded on " << d.name;
     a()->UpdateTopScreen();
   }
   return true;

@@ -117,7 +117,7 @@ public:
   /** Optionally returns the file position for any exact match */
   std::optional<int> FindFile(const std::string& file_name);
 
-  /** Searches for a filemask on an aligned file. i.e. 'FOO?????.ZIP' */
+  /** Searches for a file mask on an aligned file. i.e. 'FOO?????.ZIP' */
   std::optional<int> SearchFile(const std::string& filemask, int start_num = 1);
 
   FileRecord ReadFile(int num);
@@ -135,8 +135,11 @@ public:
   bool AddExtendedDescription(FileRecord& f, int num, const std::string& text);
   bool AddExtendedDescription(const std::string& file_name, const std::string& text);
   bool AddExtendedDescription(const FileRecord& f, const std::string& text);
+  bool AddExtendedDescription(const FileName& f, const std::string& text);
   bool DeleteExtendedDescription(FileRecord& f, int num);
   bool DeleteExtendedDescription(const std::string& file_name);
+  bool DeleteExtendedDescription(const FileName& f);
+  std::optional<std::string> ReadExtendedDescriptionAsString(FileName& f);
   std::optional<std::string> ReadExtendedDescriptionAsString(FileRecord& f);
   std::optional<std::string> ReadExtendedDescriptionAsString(const std::string& aligned_name);
 

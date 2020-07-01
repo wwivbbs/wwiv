@@ -156,7 +156,7 @@ static uint16_t str2restrict(const std::string& s) {
 static std::map<std::string, uint16_t> eventinfo = {
     {"TIMED", EFLAG_NONE},       {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
     {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},      {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
-    {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_NONE | EFLAG_BATCH_DIR},
+    {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_BATCH_DIR},
     {"CHAT", EFLAG_NONE},
     {"ARCH_E", EFLAG_NONE},      {"ARCH_L", EFLAG_NONE},      {"ARCH_A", EFLAG_NONE},
     {"ARCH_D", EFLAG_NONE},      {"ARCH_K", EFLAG_NONE},      {"ARCH_T", EFLAG_NONE},

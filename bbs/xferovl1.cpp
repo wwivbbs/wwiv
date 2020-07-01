@@ -40,6 +40,7 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/numbers.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -209,27 +210,14 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
   return false;
 }
 
-// TODO(rushfan): This is probably completely broken
-bool get_file_idz(uploadsrec* u, int dn) {
-  auto success = false;
-  if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->dirs()[dn].mask & mask_cdrom)) {
-    return false;
-  }
-  const auto pfn = FilePath(a()->dirs()[dn].path, FileName(u->filename));
-  const auto t = DateTime::from_time_t(File::creation_time(pfn)).to_string("%m/%d/%y");
-  to_char_array(u->actualdate, t);
-  auto ufn = std::filesystem::path(FileName(u->filename).unaligned_filename());
-  if (!ufn.has_extension()) {
-    return false;
-  }
-  if (!has_arc_cmd_for_ext(ufn.extension().string().substr(1))) {
-    return false;
-  }
-
+static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem::path& p) {
   File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
   File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
 
-  const auto p = FilePath(a()->dirs()[dn].path, FileName(u->filename));
+  if (!p.has_extension() || !has_arc_cmd_for_ext(p.extension().string().substr(1))) {
+    return std::nullopt;
+  }
+
   const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
 
   ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
@@ -237,58 +225,76 @@ bool get_file_idz(uploadsrec* u, int dn) {
   if (!File::Exists(diz_fn)) {
     diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
   }
-  if (File::Exists(diz_fn)) {
-    bout.nl();
-    bout << "|#9Reading in |#2" << diz_fn.filename().string() << "|#9 as extended description...";
-    auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).value_or("");
-    if (!old_ext.empty()) {
-      a()->current_file_area()->DeleteExtendedDescription(u->filename);
-    }
-    TextFile file(diz_fn, "rt");
-    auto lines = file.ReadFileIntoVector();
-    if (lines.empty()) {
-      return false;
-    }
-    auto iter = std::begin(lines);
-    if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
-      auto ss = *iter;
-      if (!ss.empty()) {
-        for (auto& s : ss) {
-          if (strchr((char*)invalid_chars, s) != nullptr && s != CZ) {
-            s = ' ';
-          }
-        }
-        if (!valid_desc(ss)) {
-          do {
-            ++iter;
-            ss = *iter;
-          }
-          while (!valid_desc(ss));
-        }
-      }
-      if (ss.back() == '\r') {
-        ss.pop_back();
-      }
-      success = true;
-      sprintf(u->description, "%.55s", ss.c_str());
-      ++iter;
-    } else {
-      iter = std::begin(lines);
-    }
-    std::string ss;
-    for (; iter != std::end(lines); ++iter) {
-      ss.append(fixup_diz_string(*iter));
-    }
-    if (!ss.empty()) {
-      a()->current_file_area()->AddExtendedDescription(u->filename, ss);
-      u->mask |= mask_extended;
-    }
-    success = true;
-    bout << "Done!\r\n";
+  if (!File::Exists(diz_fn)) {
+    return std::nullopt;
   }
-  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
-  return success;
+  return {diz_fn};
+}
+
+// TODO(rushfan): Move core logic into SDK
+bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::directory_t& dir) {
+  ScopeExit at_exit([] {
+    File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
+    File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
+  });
+
+  if (!a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && dir.mask & mask_cdrom) {
+    return false;
+  }
+
+  fr.set_date(DateTime::from_time_t(File::creation_time(FilePath(dir.path, fr))));
+  auto o = PathToTempdDiz(FilePath(dir.path, fr));
+  if (!o) {
+    return true;
+  }
+  const auto diz_fn = o.value();
+  bout.nl();
+  bout << "|#9Reading in |#2" << diz_fn.filename() << "|#9 as extended description...";
+  const auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(fr).value_or("");
+  TextFile file(diz_fn, "rt");
+  auto lines = file.ReadFileIntoVector();
+  if (lines.empty()) {
+    return false;
+  }
+  auto iter = std::begin(lines);
+  if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
+    auto ss = *iter;
+    if (!ss.empty()) {
+      for (auto& s : ss) {
+        if (strchr(invalid_chars, s) != nullptr && s != CZ) {
+          s = ' ';
+        }
+      }
+      if (!valid_desc(ss)) {
+        do {
+          ++iter;
+          ss = *iter;
+        }
+        while (!valid_desc(ss));
+      }
+    }
+    if (ss.back() == '\r') {
+      ss.pop_back();
+    }
+    fr.set_description(ss);
+    ++iter;
+  } else {
+    iter = std::begin(lines);
+  }
+  std::string ss;
+  for (; iter != std::end(lines); ++iter) {
+    ss.append(fixup_diz_string(*iter));
+    ss.append("\n");
+  }
+  if (!ss.empty()) {
+    if (!old_ext.empty()) {
+      a()->current_file_area()->DeleteExtendedDescription(fr.filename());
+    }
+    a()->current_file_area()->AddExtendedDescription(fr.filename(), ss);
+    fr.set_extended_description(true);
+  }
+  bout << "Done!\r\n";
+  return true;
 }
 
 int read_idz_all() {
@@ -332,7 +338,8 @@ int read_idz(int mode, int tempdir) {
     if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
       const auto file = FilePath(a()->dirs()[a()->udir[tempdir].subnum].path, f);
       if (!File::Exists(file)) {
-        if (get_file_idz(&f.u(), a()->udir[tempdir].subnum)) {
+        const auto& dir = a()->dirs()[a()->udir[tempdir].subnum];
+        if (get_file_idz(f, dir)) {
           count++;
         }
         if (area->UpdateFile(f, i)) {
@@ -417,7 +424,7 @@ void tag_it() {
         }
         File fp(s);
         if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
-          bout << "|#6The file " << FileName(f.u.filename).unaligned_filename() << " is not there.\r\n";
+          bout << "|#6The file " << FileName(f.u.filename) << " is not there.\r\n";
           bad = true;
         } else {
           fs = fp.length();
@@ -656,9 +663,10 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
     auto ch = onek_ncr("QYN\r");
     bout.backline();
     const auto ufn = wwiv::sdk::files::unalign(aligned_file_name);
+    const auto dir = a()->dirs()[dn];
     if (to_upper_case<char>(ch) == 'Y') {
-      if (a()->dirs()[dn].mask & mask_cdrom) {
-        const auto src = FilePath(a()->dirs()[dn].path, ufn);
+      if (dir.mask & mask_cdrom) {
+        const auto src = FilePath(dir.path, ufn);
         const auto dest = FilePath(a()->temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
@@ -778,7 +786,7 @@ void download() {
         bout.backline();
         bout << fmt::sprintf("|#2%3d ", a()->batch().size() + 1);
         bout.Color(1);
-        bool onl = bout.newline;
+        const bool onl = bout.newline;
         bout.newline = false;
         auto s = input(12);
         bout.newline = onl;
@@ -996,14 +1004,14 @@ void SetNewFileScanDate() {
     int m = atoi(ag);
     int dd = atoi(&(ag[3]));
     int y = atoi(&(ag[6])) + 1900;
-    if (y < 1920) {
+    if (y < 1950) {
       y += 100;
     }
     tm newTime{};
-    if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (dd >= 31)) ||
-        ((m == 2) && (((y % 4 != 0) && (dd == 29)) || (dd == 30))) ||
-        (dd > 31) || ((m == 0) || (y == 0) || (dd == 0)) ||
-        ((m > 12) || (dd > 31))) {
+    if ((m == 2 || m == 9 || m == 4 || m == 6 || m == 11) && dd >= 31 ||
+        m == 2 && (y % 4 != 0 && dd == 29 || dd == 30) ||
+        dd > 31 || (m == 0 || y == 0 || dd == 0) ||
+        (m > 12 || dd > 31)) {
       bout.nl();
       bout << fmt::sprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd,
                            (y % 100));
@@ -1022,10 +1030,9 @@ void SetNewFileScanDate() {
     a()->context().nscandate(dt.to_daten_t());
 
     // Display the new nscan date
-    auto d = dt.to_string("%m/%d/%Y");
-    bout << "|#9New Limiting Date: |#2" << d << "\r\n";
+    bout << "|#9New Limiting Date: |#2" << dt.to_string("%m/%d/%Y") << "\r\n";
 
-    // Hack to make sure the date covers everythig since we had to increment the hour by one
+    // Hack to make sure the date covers everything since we had to increment the hour by one
     // to show the right date on some versions of MSVC
     a()->context().nscandate(a()->context().nscandate() - SECONDS_PER_HOUR);
   } else {
@@ -1063,8 +1070,7 @@ void removefilesnotthere(int dn, int* autodel) {
           bout << "ll";
           *autodel = 1;
         }
-        sysoplog() << "- '" << f.aligned_filename() << "' Removed from "
-            << a()->dirs()[dn].name;
+        sysoplog() << "- '" << f << "' Removed from " << a()->dirs()[dn].name;
         if (area->DeleteFile(f, i)) {
           area->Save();
         }

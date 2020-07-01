@@ -41,6 +41,7 @@ public:
   [[nodiscard]] const std::string& unaligned_filename() const noexcept;
 
   static std::optional<FileName> FromUnaligned(const std::string& unaligned_name);
+  friend std::ostream& operator<<(std::ostream& os, const FileName& f);
 
 private:
   const std::string aligned_filename_;
@@ -78,6 +79,7 @@ public:
   [[nodiscard]] FileName filename() const;
   [[nodiscard]] std::string aligned_filename() const;
   [[nodiscard]] std::string unaligned_filename() const;
+  friend std::ostream& operator<<(std::ostream& os, const FileRecord& f);
 
 private:
   uploadsrec u_;

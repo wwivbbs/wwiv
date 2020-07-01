@@ -84,7 +84,7 @@
 * Move more batch code into batch class.
 * move FileList into context (for tagged files)
 * get rid of stripfn
-* fix get_file_idz
+* move core logic from get_file_idz into sdk
 * make wwivutil fix use filesapi for extended descriptions.
 * Add overload of AddFile, UpdateFile and handles external descirptions too, i.e.
   add a 3rd parameter for the external description.  Or put it into the FileRecord

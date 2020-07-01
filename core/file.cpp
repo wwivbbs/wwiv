@@ -315,13 +315,19 @@ bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n
   return ec.value() == 0;
 }
 
-bool File::Remove(const std::filesystem::path& filename) {
-  if (!Exists(filename)) {
+bool File::Remove(const std::filesystem::path& path, bool force) {
+  if (!Exists(path)) {
     // Don't try to delete a file that doesn't exist.
     return true;
   }
+
+  if (force) {
+    // Reset permissions to read/write, some apps set funky permissions
+    // that keep unlink from working.
+    SetFilePermissions(path, permReadWrite);
+  }
   std::error_code ec;
-  const auto result = std::filesystem::remove(filename, ec);
+  const auto result = std::filesystem::remove(path, ec);
   if (!result) {
     LOG(ERROR) << "File::Remove failed: error code: " << ec.value() << "; msg: " << ec.message();
   }
@@ -345,28 +351,16 @@ bool File::ExistsWildcard(const std::filesystem::path& wildcard) {
   return fnd.open(wildcard.string(), WFindFileTypeMask::WFINDFILE_ANY);
 }
 
-bool File::SetFilePermissions(const std::filesystem::path& filename, int perm) {
-  CHECK(!filename.empty());
-  return chmod(filename.string().c_str(), perm) == 0;
+bool File::SetFilePermissions(const std::filesystem::path& path, int perm) {
+  CHECK(!path.empty());
+  return chmod(path.string().c_str(), perm) == 0;
 }
 
 bool File::IsFileHandleValid(int handle) noexcept { return handle != invalid_handle; }
 
 // static
-std::string File::EnsureTrailingSlash(const std::string& orig) {
-  if (orig.empty()) {
-    return {};
-  }
-  if (orig.back() == pathSeparatorChar) {
-    return orig;
-  }
-  std::string path{orig};
-  path.push_back(pathSeparatorChar);
-  return path;
-}
-
 // static
-std::string File::EnsureTrailingSlashPath(const std::filesystem::path& orig) {
+std::string File::EnsureTrailingSlash(const std::filesystem::path& orig) {
   if (orig.empty()) {
     return {};
   }
@@ -392,8 +386,8 @@ bool File::set_current_directory(const std::filesystem::path& dir) {
 }
 
 // static
-std::string File::FixPathSeparators(const std::string& orig) {
-  std::filesystem::path p{orig};
+std::string File::FixPathSeparators(const std::string& path) {
+  std::filesystem::path p{path};
   return p.make_preferred().string();
 }
 

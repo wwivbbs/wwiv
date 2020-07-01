@@ -122,15 +122,15 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
 
     if (op.has_value()) {
       LOG(INFO) << "File already exists in file area";
-      LOG(INFO) << "** Updating: "  << r.aligned_filename();
+      LOG(INFO) << "** Updating: "  << r;
       if (!fa->UpdateFile(r, op.value(), ext_desc)) {
-        LOG(ERROR) << "Failed to update File: " << fn.aligned_filename();
+        LOG(ERROR) << "Failed to update File: " << fn;
         continue;
       }
     } else {
-      LOG(INFO) << "** Adding  :" << r.aligned_filename();
+      LOG(INFO) << "** Adding  :" << r;
       if (!fa->AddFile(r, ext_desc)) {
-        LOG(ERROR) << "Error adding file: " << r.aligned_filename();
+        LOG(ERROR) << "Error adding file: " << r;
         continue;
       }
       if (!fa->Save()) {
@@ -141,7 +141,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     // Display information about the file;
     LOG(INFO) << "Area Name  : " << t.area;
     LOG(INFO) << "Area Desc  : " << t.area_description;
-    LOG(INFO) << "File Name  : " << r.aligned_filename();
+    LOG(INFO) << "File Name  : " << r;
     LOG(INFO) << "Description: " << t.desc;
     LOG(INFO) << "Ext Desc   : ";
     const auto v = SplitString(ext_desc, "\r\n", true);

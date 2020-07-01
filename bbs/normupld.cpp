@@ -31,7 +31,6 @@
 #include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
@@ -47,14 +46,11 @@ using namespace wwiv::strings;
 // Implementation
 
 void normalupload(int dn) {
-  uploadsrec u, u1;
-  memset(&u, 0, sizeof(uploadsrec));
-  memset(&u1, 0, sizeof(uploadsrec));
-
+  files::FileRecord f;
   int ok = 1;
 
   dliscan1(dn);
-  wwiv::sdk::files::directory_t d = a()->dirs()[dn];
+  files::directory_t d = a()->dirs()[dn];
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
@@ -109,19 +105,19 @@ void normalupload(int dn) {
       return;
     }
   }
-  to_char_array(u.filename, input_fn);
-  u.ownerusr = a()->usernum;
-  u.ownersys = 0;
-  u.numdloads = 0;
-  u.unused_filetype = 0;
-  u.mask = 0;
+  f.set_filename(input_fn);
+  f.u().ownerusr = a()->usernum;
+  f.u().ownersys = 0;
+  f.u().numdloads = 0;
+  f.u().unused_filetype = 0;
+  f.u().mask = 0;
   const auto unn = a()->names()->UserName(a()->usernum);
-  to_char_array(u.upby, unn);
-  to_char_array(u.date, date());
+  to_char_array(f.u().upby, unn);
+  to_char_array(f.u().date, date());
   bout.nl();
   ok = 1;
   bool xfer = true;
-  if (a()->batch().contains_file(u.filename)) {
+  if (a()->batch().contains_file(f.filename())) {
     ok = 0;
     bout.nl();
     bout << "That file is already in the batch queue.\r\n\n";
@@ -160,31 +156,31 @@ void normalupload(int dn) {
         bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
-        const auto message = fmt::format("Wanted to upload \"{}\"", u.filename);
+        const auto message = fmt::format("Wanted to upload \"{}\"", f);
         sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
         a()->user()->IncrementAssPoints(5);
         ok = 0;
       } else {
-        u.mask = mask_PD;
+        f.set_mask(mask_PD, true);
       }
     }
     if (ok) {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
       auto desc = input_text(58);
-      to_char_array(u.description, desc);
+      f.set_description(desc);
       bout.nl();
       string ext_desc;
       modify_extended_description(&ext_desc, a()->dirs()[dn].name);
       if (!ext_desc.empty()) {
-        a()->current_file_area()->AddExtendedDescription(u.filename, ext_desc);
-        u.mask |= mask_extended;
+        a()->current_file_area()->AddExtendedDescription(f, ext_desc);
+        f.set_extended_description(true);
       }
       bout.nl();
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
         auto ti = std::chrono::system_clock::now();
-        receive_file(receive_fn.string(), &ok, u.filename, dn);
+        receive_file(receive_fn.string(), &ok, f.filename().aligned_filename(), dn);
         auto used = std::chrono::system_clock::now() - ti;
         a()->user()->add_extratime(used);
       }
@@ -195,16 +191,16 @@ void normalupload(int dn) {
             ok = 0;
             bout.nl(2);
             bout << "OS error - File not found.\r\n\n";
-            if (u.mask & mask_extended) {
-              a()->current_file_area()->DeleteExtendedDescription(u.filename);
+            if (f.mask(mask_extended)) {
+              a()->current_file_area()->DeleteExtendedDescription(f.filename());
             }
           }
           if (ok && !a()->upload_cmd.empty()) {
             file.Close();
             bout << "Please wait...\r\n";
-            if (!check_ul_event(dn, &u)) {
-              if (u.mask & mask_extended) {
-                a()->current_file_area()->DeleteExtendedDescription(u.filename);
+            if (!check_ul_event(dn, &f.u())) {
+              if (f.mask(mask_extended)) {
+                a()->current_file_area()->DeleteExtendedDescription(f.filename());
               }
               ok = 0;
             } else {
@@ -214,21 +210,18 @@ void normalupload(int dn) {
         }
         if (ok) {
           if (ok == 1) {
-            u.numbytes = static_cast<daten_t>(file.length());
+            f.set_numbytes(file.length());
             file.Close();
             a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
-            add_to_file_database(u.filename);
-            a()->user()->set_uk(a()->user()->uk() + bytes_to_k(u.numbytes));
+            add_to_file_database(f);
+            a()->user()->set_uk(a()->user()->uk() + bytes_to_k(f.numbytes()));
 
-            get_file_idz(&u, dn);
+            get_file_idz(f, a()->dirs()[dn]);
           } else {
-            u.numbytes = 0;
+            f.set_numbytes(0);
           }
-          time_t lCurrentTime;
-          time(&lCurrentTime);
-          u.daten = static_cast<uint32_t>(lCurrentTime);
+          f.set_date(DateTime::now());
           auto* area = a()->current_file_area();
-          wwiv::sdk::files::FileRecord f(u);
           if (area->AddFile(f)) {
             area->Save();
           }
@@ -237,7 +230,7 @@ void normalupload(int dn) {
               s.IncrementNumUploadsToday();
               s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
             });
-            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", u.filename, a()->dirs()[dn].name);
+            sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
             bout.nl(2);
             bout << fmt::sprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
@@ -249,8 +242,8 @@ void normalupload(int dn) {
       } else {
         bout.nl(2);
         bout << "File transmission aborted.\r\n\n";
-        if (u.mask & mask_extended) {
-          a()->current_file_area()->DeleteExtendedDescription(u.filename);
+        if (f.mask(mask_extended)) {
+          a()->current_file_area()->DeleteExtendedDescription(f.filename());
         }
       }
     }

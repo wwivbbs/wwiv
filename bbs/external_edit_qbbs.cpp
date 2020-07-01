@@ -36,9 +36,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  auto f = FilePath(a()->temp_directory(), filename);
-  File::SetFilePermissions(f, File::permReadWrite);
-  File::Remove(f);
+  File::Remove(FilePath(a()->temp_directory(), filename), true);
 }
 
 std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }

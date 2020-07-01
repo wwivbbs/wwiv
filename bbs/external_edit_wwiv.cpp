@@ -41,9 +41,7 @@ struct fedit_data_rec {
 };
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  const auto f = FilePath(a()->temp_directory(), filename);
-  File::SetFilePermissions(f, File::permReadWrite);
-  File::Remove(f);
+  File::Remove(FilePath(a()->temp_directory(), filename), true);
 }
 
 std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }

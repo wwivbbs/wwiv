@@ -627,7 +627,7 @@ int nrecno(const std::string& file_mask, int start_recno) {
 
 int printfileinfo(uploadsrec * u, int directory_num) {
   auto d = XFER_TIME(u->numbytes);
-  bout << "Filename   : " << FileName(u->filename).unaligned_filename() << wwiv::endl;
+  bout << "Filename   : " << FileName(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
   bout << "File size  : " << bytes_to_k(u->numbytes) << wwiv::endl;
   bout << "Apprx. time: " << ctim(std::lround(d)) << wwiv::endl;

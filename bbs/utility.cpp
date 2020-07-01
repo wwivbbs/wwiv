@@ -108,8 +108,7 @@ void frequent_init() {
   bout.okskey(true);
 
   // DSZ Log
-  File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
-  File::Remove(a()->dsz_logfile_name_);
+  File::Remove(a()->dsz_logfile_name_, true);
 }
 
 /**

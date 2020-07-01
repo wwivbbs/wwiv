@@ -126,10 +126,9 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           area->Save();
         }
         if (lCharsPerSecond) {
-          sysoplog() << "Downloaded '" << f.aligned_filename() << "' (" << lCharsPerSecond <<
-              " cps).";
+          sysoplog() << "Downloaded '" << f << "' (" << lCharsPerSecond << " cps).";
         } else {
-          sysoplog() << "Downloaded '" << f.aligned_filename() << "'.";
+          sysoplog() << "Downloaded '" << f << "'.";
         }
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           User user;
@@ -137,8 +136,8 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < f.u().daten) {
               const auto user_name_number = a()->names()->UserName(a()->usernum);
-              ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f.aligned_filename()
-                  << "\" |#7on " << fulldate();
+              ssm(f.u().ownerusr) << user_name_number << " downloaded|#1 \"" << f << "\" |#7on "
+                                  << fulldate();
             }
           }
         }
@@ -216,7 +215,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
             if (file.IsOpen()) {
               f.set_numbytes(file.length());
               file.Close();
-              get_file_idz(&f.u(), b.dir());
+              get_file_idz(f, a()->dirs()[b.dir()]);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
               add_to_file_database(f);
               a()->user()->set_uk(a()->user()->uk() + static_cast<int>(bytes_to_k(f.numbytes())));
@@ -228,11 +227,10 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();
               }
-              sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f.aligned_filename(),
+              sysoplog() << fmt::format("+ \"{}\" uploaded on {} ({} cps)", f,
                                         a()->dirs()[b.dir()].name, lCharsPerSecond);
-              bout << "Uploaded '" << f.aligned_filename() << "' to "
-                  << a()->dirs()[b.dir()].name << " (" << lCharsPerSecond << " cps)"
-                  << wwiv::endl;
+              bout << "Uploaded '" << f << "' to " << a()->dirs()[b.dir()].name << " ("
+                   << lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
           it = a()->batch().delbatch(it);
@@ -525,8 +523,7 @@ static string make_ul_batch_list() {
   // TODO(rushfan): This should move to a temp directory.
   const auto list_filename = FilePath(a()->bbspath(), fn);
 
-  File::SetFilePermissions(list_filename, File::permReadWrite);
-  File::Remove(list_filename);
+  File::Remove(list_filename, true);
 
   TextFile tf(list_filename, "wt");
   for (const auto& b : a()->batch().entry) {
@@ -543,8 +540,7 @@ static std::filesystem::path make_dl_batch_list() {
   const auto fn = fmt::sprintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
   auto list_filename = FilePath(a()->bbspath(), fn);
 
-  File::SetFilePermissions(list_filename, File::permReadWrite);
-  File::Remove(list_filename);
+  File::Remove(list_filename, true);
 
   TextFile tf(list_filename, "wt");
 
@@ -603,8 +599,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
                                       user_name_number, a()->modem_speed_, dl, commandLine);
     a()->localIO()->Puts(message);
     if (a()->context().incom()) {
-      File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
-      File::Remove(a()->dsz_logfile_name_);
+      File::Remove(a()->dsz_logfile_name_, true);
       ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);
       if (bHangupAfterDl) {
         bihangup();
@@ -616,12 +611,10 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     }
   }
   if (!downlist.empty()) {
-    File::SetFilePermissions(downlist, File::permReadWrite);
-    File::Remove(downlist);
+    File::Remove(downlist, true);
   }
   if (!uplist.empty()) {
-    File::SetFilePermissions(uplist, File::permReadWrite);
-    File::Remove(uplist);
+    File::Remove(uplist, true);
   }
 }
 

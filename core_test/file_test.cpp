@@ -185,13 +185,10 @@ TEST(FileTest, EnsureTrailingSlash) {
   const string no_slash = "temp";
 
   EXPECT_EQ(single_slash, File::EnsureTrailingSlash(single_slash));
-  EXPECT_EQ(single_slash, File::EnsureTrailingSlashPath(single_slash));
 
   EXPECT_EQ(double_slash, File::EnsureTrailingSlash(double_slash));
-  EXPECT_EQ(double_slash, File::EnsureTrailingSlashPath(double_slash));
 
   EXPECT_EQ(single_slash, File::EnsureTrailingSlash(no_slash));
-  EXPECT_EQ(single_slash, File::EnsureTrailingSlashPath(no_slash));
 }
 
 TEST(FileTest, CurrentDirectory) {

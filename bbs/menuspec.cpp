@@ -143,7 +143,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
           a()->current_file_area()->Save();
         }
 
-        sysoplog() << "Downloaded '" << f.aligned_filename() << "'.";
+        sysoplog() << "Downloaded '" << f << "'.";
 
         if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           a()->users()->readuser(&ur, f.u().ownerusr);

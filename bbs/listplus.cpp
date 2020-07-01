@@ -1270,7 +1270,7 @@ static int remove_filename(const std::string& file_name, int dn) {
             }
           }
         }
-        sysoplog() << "- '" << f.aligned_filename() << "' removed off of " << a()->dirs()[dn].
+        sysoplog() << "- '" << f << "' removed off of " << a()->dirs()[dn].
             name;
         if (a()->current_file_area()->DeleteFile(f, i)) {
           a()->current_file_area()->Save();
@@ -1402,7 +1402,7 @@ static int move_filename(const std::string& file_name, int dn) {
         if (current_file_position.has_value()) {
           area->AddExtendedDescription(f, current_file_position.value(), ss);
         } else {
-          area->AddExtendedDescription(f.aligned_filename(), ss);
+          area->AddExtendedDescription(f.filename(), ss);
         }
       }
       if (src_fn != dest_fn && File::Exists(src_fn)) {

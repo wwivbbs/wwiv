@@ -150,20 +150,24 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const File& f);
 
   // static functions
-  static bool Remove(const std::filesystem::path& fileName);
+  /**
+   * Removes a file or empty directory referred to by path.
+   * If force is true, then also reset the permissions to Read/Write before
+   * calling delete in case the permissions were read-only.
+   */
+  static bool Remove(const std::filesystem::path& path, bool force = false);
   static bool Rename(const std::filesystem::path& origFileName,
                      const std::filesystem::path& newFileName);
-  [[nodiscard]] static bool Exists(const std::filesystem::path& fileName);
+  [[nodiscard]] static bool Exists(const std::filesystem::path& p);
   [[nodiscard]] static bool ExistsWildcard(const std::filesystem::path& wildCard);
-  static bool Copy(const std::filesystem::path& sourceFileName,
-                   const std::filesystem::path& destFileName);
-  static bool Move(const std::filesystem::path& sourceFileName,
-                   const std::filesystem::path& destFileName);
+  static bool Copy(const std::filesystem::path& from,
+                   const std::filesystem::path& to);
+  static bool Move(const std::filesystem::path& from,
+                   const std::filesystem::path& to);
 
-  static bool SetFilePermissions(const std::filesystem::path& fileName, int nPermissions);
+  static bool SetFilePermissions(const std::filesystem::path& path, int perm);
 
-  [[nodiscard]] static std::string EnsureTrailingSlash(const std::string& path);
-  [[nodiscard]] static std::string EnsureTrailingSlashPath(const std::filesystem::path& path);
+  [[nodiscard]] static std::string EnsureTrailingSlash(const std::filesystem::path& path);
   [[nodiscard]] static std::filesystem::path current_directory();
   static bool set_current_directory(const std::filesystem::path& dir);
   [[nodiscard]] static std::string FixPathSeparators(const std::string& path);

@@ -19,11 +19,19 @@
 #define __INCLUDED_BBS_XFEROVL1_H__
 
 #include <string>
-#include "sdk/vardec.h"
+
+namespace wwiv {
+namespace sdk {
+namespace files {
+struct directory_t;
+class FileRecord;
+}
+}
+}
 
 void modify_extended_description(std::string* sss, const std::string& dest);
 bool valid_desc(const std::string& description);
-bool get_file_idz(uploadsrec* upload_record, int dn);
+bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::directory_t& dir);
 int read_idz_all();
 int read_idz(int mode, int tempdir);
 void tag_it();

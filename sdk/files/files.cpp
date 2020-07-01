@@ -322,6 +322,10 @@ bool FileArea::AddExtendedDescription(const FileRecord& f, const std::string& te
   return AddExtendedDescription(f.aligned_filename(), text);
 }
 
+bool FileArea::AddExtendedDescription(const FileName& f, const std::string& text) {
+  return AddExtendedDescription(f.aligned_filename(), text);
+}
+
 bool FileArea::DeleteExtendedDescription(FileRecord& f, int num) {
   if (!ValidateFileNum(f, num)) {
     return false;
@@ -340,6 +344,14 @@ bool FileArea::DeleteExtendedDescription(const std::string& file_name) {
     return false;
   }
   return o.value()->DeleteExtended(file_name);
+}
+
+bool FileArea::DeleteExtendedDescription(const FileName& f) {
+  return DeleteExtendedDescription(f.aligned_filename());
+}
+
+std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(FileName& f) {
+  return ReadExtendedDescriptionAsString(f.aligned_filename());
 }
 
 std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(FileRecord& f) {

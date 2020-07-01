@@ -207,7 +207,11 @@ void FileRecord::set_numbytes(int size) {
 }
 
 bool FileRecord::set_description(const std::string& desc) {
-  to_char_array(u_.description, desc);
+  auto d = desc;
+  if (d.size() > 55u) {
+    d.resize(55);
+  }
+  to_char_array(u_.description, d);
   return true;
 }
 
@@ -254,6 +258,16 @@ std::filesystem::path FilePath(const std::filesystem::path& directory_name,
     return f.unaligned_filename();
   }
   return directory_name / f.unaligned_filename();
+}
+
+std::ostream& operator<<(std::ostream& os, const FileName& f) {
+  os << f.unaligned_filename();
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const FileRecord& f) {
+  os << f.unaligned_filename();
+  return os;
 }
 
 } // namespace wwiv::sdk::files
