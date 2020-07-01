@@ -20,6 +20,7 @@
 #define __INCLUDED_PLATFORM_LOCALIO_H__
 
 #include "core/file.h"
+#include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include <string>
 
@@ -72,6 +73,17 @@ public:
   virtual void Putch(unsigned char ch) = 0;
   /** Writes text at the current position */
   virtual void Puts(const std::string& text) = 0;
+
+  template <class... Args> void Printf(const char* format_str, Args&&... args) {
+    // Process arguments
+    return Puts(fmt::sprintf(format_str, std::forward<Args>(args)...));
+  }
+
+  template <class... Args> void Format(const char* format_str, Args&&... args) {
+    // Process arguments
+    return Puts(fmt::format(format_str, std::forward<Args>(args)...));
+  }
+
   /**
    * Writes text at position (x, y) using the current color.
    *

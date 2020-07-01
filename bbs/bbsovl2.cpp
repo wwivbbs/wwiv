@@ -96,7 +96,7 @@ void OnlineUserEditor() {
       auto sl = std::to_string(u.GetSl());
       rc = a()->localIO()->EditLine(sl, 3, AllowedKeys::NUM_ONLY);
       u.SetSl(to_number<unsigned int>(sl));
-      a()->localIO()->Puts(fmt::format("{:3}", u.GetSl()));
+      a()->localIO()->Format("{:3}", u.GetSl());
     } break;
     case 1: {
       a()->localIO()->GotoXY(wx + 50, wy + 1);
@@ -108,7 +108,7 @@ void OnlineUserEditor() {
       auto dsl = std::to_string(u.GetDsl());
       rc = a()->localIO()->EditLine(dsl, 3, AllowedKeys::NUM_ONLY);
       u.SetDsl(to_number<int>(dsl));
-      a()->localIO()->Puts(fmt::format("{:3}", u.GetDsl()));
+      a()->localIO()->Format("{:3}", u.GetDsl());
       } break;
     case 3: {
       a()->localIO()->GotoXY(wx + 50, wy + 2);
@@ -121,7 +121,7 @@ void OnlineUserEditor() {
       auto exempt = std::to_string(u.GetExempt());
       rc = a()->localIO()->EditLine(exempt, 3, AllowedKeys::NUM_ONLY);
       u.SetExempt(to_number<int>(exempt));
-      a()->localIO()->Puts(fmt::format("{:3}", exempt));
+      a()->localIO()->Format("{:3}", exempt);
     } break;
     case 5: {
       a()->localIO()->GotoXY(wx + 50, wy + 3);
@@ -138,70 +138,70 @@ void OnlineUserEditor() {
       auto sysopsub = std::to_string(*a()->context().qsc);
       rc = a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY);
       *a()->context().qsc = to_number<uint32_t>(sysopsub);
-      a()->localIO()->Puts(fmt::format("{:3}", sysopsub));
+      a()->localIO()->Format("{:3}", sysopsub);
     } break;
     case 7: {
       a()->localIO()->GotoXY(wx + 50, wy + 5);
       auto banktime = std::to_string(u.GetTimeBankMinutes());
       rc = a()->localIO()->EditLine(banktime, 5, AllowedKeys::NUM_ONLY);
       u.SetTimeBankMinutes(to_number<uint16_t>(banktime));
-      a()->localIO()->Puts(fmt::format("{:5}", banktime));
+      a()->localIO()->Format("{:5}", banktime);
     } break;
     case 8: {
       a()->localIO()->GotoXY(wx + 22, wy + 6);
       auto ass = std::to_string(u.GetAssPoints());
       rc = a()->localIO()->EditLine(ass, 5, AllowedKeys::NUM_ONLY);
       u.SetAssPoints(to_number<int>(ass));
-      a()->localIO()->Puts(fmt::format("{:5}", ass));
+      a()->localIO()->Format("{:5}", ass);
     } break;
     case 9: {
       a()->localIO()->GotoXY(wx + 50, wy + 6);
       auto gold = std::to_string(u.GetGold());
       rc = a()->localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY);
       u.SetGold(static_cast<float>(atof(gold.c_str())));
-      a()->localIO()->Puts(fmt::format("{:5}", fmt::sprintf("%7.2f", u.GetGold())));
+      a()->localIO()->Format("{:5}", fmt::sprintf("%7.2f", u.GetGold()));
     } break;
     case 10: {
       a()->localIO()->GotoXY(wx + 22, wy + 8);
       auto uk = std::to_string(u.uk());
       rc = a()->localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY);
       u.set_uk(to_number<uint32_t>(uk));
-      a()->localIO()->Puts(fmt::format("{:7}", uk));
+      a()->localIO()->Format("{:7}", uk);
     } break;
     case 11: {
       a()->localIO()->GotoXY(wx + 50, wy + 8);
       auto dk = std::to_string(u.dk());
       rc = a()->localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY);
       u.set_dk(to_number<uint32_t>(dk));
-      a()->localIO()->Puts(fmt::format("{:7}", dk));
+      a()->localIO()->Format("{:7}", dk);
     } break;
     case 12: {
       a()->localIO()->GotoXY(wx + 22, wy + 9);
       auto up = std::to_string(u.GetFilesUploaded());
       rc = a()->localIO()->EditLine(up, 5, AllowedKeys::NUM_ONLY);
       u.SetFilesUploaded(to_number<int>(up));
-      a()->localIO()->Puts(fmt::format("{:5}", up));
+      a()->localIO()->Format("{:5}", up);
     } break;
     case 13: {
       a()->localIO()->GotoXY(wx + 50, wy + 9);
       auto down = std::to_string(u.GetFilesDownloaded());
       rc = a()->localIO()->EditLine(down, 5, AllowedKeys::NUM_ONLY);
       u.SetFilesDownloaded(to_number<int>(down));
-      a()->localIO()->Puts(fmt::format("{:5}", down));
+      a()->localIO()->Format("{:5}", down);
     } break;
     case 14: {
       a()->localIO()->GotoXY(wx + 22, wy + 10);
       auto posts = std::to_string(u.GetNumMessagesPosted());
       rc = a()->localIO()->EditLine(posts, 5, AllowedKeys::NUM_ONLY);
       u.SetNumMessagesPosted(to_number<int>(posts));
-      a()->localIO()->Puts(fmt::format("{:5}", posts));
+      a()->localIO()->Format("{:5}", posts);
     } break;
     case 15: {
       a()->localIO()->GotoXY(wx + 50, wy + 10);
       auto logons = std::to_string(u.GetNumLogons());
       rc = a()->localIO()->EditLine(logons, 5, AllowedKeys::NUM_ONLY);
       u.SetNumLogons(to_number<int>(logons));
-      a()->localIO()->Puts(fmt::format("{:5}",u.GetNumLogons()));
+      a()->localIO()->Format("{:5}",u.GetNumLogons());
     } break;
     case 16: {
       a()->localIO()->GotoXY(wx + 8, wy + 12);
