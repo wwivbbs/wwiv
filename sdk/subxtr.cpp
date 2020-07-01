@@ -263,7 +263,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
     if (!x.nets.empty()) {
       f.Write(fmt::sprintf("!%u\n@%s\n#0\n", i, x.desc));
       for (const auto& n : x.nets) {
-        if (ssize(net_networks) <= n.net_num) {
+        if (ssize(net_networks) <= n.net_num || n.net_num < 0) {
           LOG(ERROR) << "Unable to write a subs.xtr line for network number: " << n.net_num
                      << " for sub with description: " << x.desc;
           continue;

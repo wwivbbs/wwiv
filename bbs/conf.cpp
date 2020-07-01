@@ -954,10 +954,10 @@ static std::vector<confrec> read_conferences(const std::filesystem::path& file_n
   confrec c{};
   while (f.ReadLine(&ls) && result.size() < MAX_CONFERENCES) {
     StringTrim(&ls);
-    if (ls.size() < 1) {
+    if (ls.empty()) {
       continue;
     }
-    const char id = ls.front();
+    const auto id = ls.front();
     ls = ls.substr(1);
     switch (id) {
     case '~': {
@@ -970,9 +970,13 @@ static std::vector<confrec> read_conferences(const std::filesystem::path& file_n
     } break;
     case '!': {
       // data about the conference
-      std::vector<string> words = SplitString(ls, DELIMS_WHITE);
+      auto words = SplitString(ls, DELIMS_WHITE);
       if (!c.designator || words.size() < 10) {
         LOG(ERROR) << "Invalid conf line: '" << ls << "'";
+        c.maxsl = 255;
+        c.maxdsl = 255;
+        c.maxage = 255;
+        c.sex = 2;
         break;
       }
       auto it = words.begin();

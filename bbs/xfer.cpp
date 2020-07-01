@@ -291,7 +291,7 @@ void printinfo(uploadsrec * u, bool *abort) {
       size = "N/A";
     }
   }
-  for (i = 0; i < 5 - size.size(); i++) {
+  for (i = 0; i < 5 - ssize(size); i++) {
     s[i] = SPACE;
   }
   s[i] = '\0';
@@ -302,9 +302,9 @@ void printinfo(uploadsrec * u, bool *abort) {
   {
     bout.Color(FRAME_COLOR);
     bout.bputs(okansi() ? "\xBA" : " ", abort, &next); // was |
-    auto numdloads = std::to_string(u->numdloads);
+    const auto numdloads = std::to_string(u->numdloads);
 
-    for (i = 0; i < 4 - numdloads.size(); i++) {
+    for (i = 0; i < 4 - ssize(numdloads); i++) {
       s[i] = SPACE;
     }
     s[i] = '\0';
@@ -574,19 +574,19 @@ int nrecno(const std::string& file_mask, int start_recno) {
 
 int printfileinfo(uploadsrec * u, const wwiv::sdk::files::directory_t& dir) {
   const auto d = XFER_TIME(u->numbytes);
-  bout << "Filename   : " << FileName(u->filename) << wwiv::endl;
-  bout << "Description: " << u->description << wwiv::endl;
-  bout << "File size  : " << humanize(u->numbytes) << wwiv::endl;
-  bout << "Apprx. time: " << ctim(std::lround(d)) << wwiv::endl;
-  bout << "Uploaded on: " << u->date << wwiv::endl;
+  bout << "|#9Filename:    |#2" << FileName(u->filename) << wwiv::endl;
+  bout << "|#9Description: |#2" << u->description << wwiv::endl;
+  bout << "|#9File size:   |#2" << humanize(u->numbytes) << wwiv::endl;
+  bout << "|#9Apprx. time: |#2" << ctim(std::lround(d)) << wwiv::endl;
+  bout << "|#9Uploaded on: |#2" << u->date << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
-    bout << "File date  : " << u->actualdate << wwiv::endl;
+    bout << "|#9File date:  |#2 " << u->actualdate << wwiv::endl;
   }
-  bout << "Uploaded by: " << u->upby << wwiv::endl;
-  bout << "Times D/L'd: " << u->numdloads << wwiv::endl;
+  bout << "|#9Uploaded by: |#2" << u->upby << wwiv::endl;
+  bout << "|#9Times D/L'd: |#2" << u->numdloads << wwiv::endl;
   bout.nl();
   if (u->mask & mask_extended) {
-    bout << "Extended Description: \r\n";
+    bout << "|#9Extended Description: \r\n";
     print_extended(u->filename, 255, -1, wwiv::sdk::Color::YELLOW, nullptr);
 
   }
