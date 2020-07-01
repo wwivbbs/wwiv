@@ -677,7 +677,7 @@ void qwk_menu() {
     if (qwk_percent) {
       bout.Color(3);
       bout.nl();
-      bout << fmt::sprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
+      bout.bprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
     }
     bout.nl();
     std::string allowed = "7[3Q1DCUBS%";
@@ -961,7 +961,7 @@ void qwk_nscan() {
     checka(&abort);
     count++;
 
-    bout << fmt::sprintf("%d.", color);
+    bout.bprintf("%d.", color);
     if (count >= DOTS) {
       bout << "\r";
       bout << "Searching";

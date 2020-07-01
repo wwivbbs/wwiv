@@ -99,7 +99,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
 
   uint32_t message_length = text.size();
   if (nhorig.length > 32755) {
-    bout << fmt::sprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
+    bout.bprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
     nhorig.length = 32755;
     message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
@@ -401,7 +401,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     }
     memory_last_read = a()->context().qsc_p[sub_number];
 
-    bout << fmt::sprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name,
+    bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name,
                  a()->current_user_sub().keys, a()->GetNumMessagesInCurrentMessageArea());
 
     int i;
@@ -475,7 +475,7 @@ void ScanMessageTitles() {
     bout << "No subs available.\r\n";
     return;
   }
-  bout << fmt::sprintf("|#2%d |#9messages in area |#2%s\r\n",
+  bout.bprintf("|#2%d |#9messages in area |#2%s\r\n",
                        a()->GetNumMessagesInCurrentMessageArea(), a()->current_sub().name);
   if (a()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;

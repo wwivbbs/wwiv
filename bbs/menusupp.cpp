@@ -433,7 +433,7 @@ void WWIVVersion() {
       if (!n.sysnum) {
         continue;
       }
-      bout << fmt::format("|#9{:<14}:|#2 @{}", n.name, n.sysnum) << wwiv::endl;
+      bout.format("|#9{:<14}:|#2 @{}\r\n", n.name, n.sysnum);
     }
   }
 

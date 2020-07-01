@@ -421,7 +421,7 @@ static bool download_temp_arc(const char* file_name, bool count_against_xfer_rat
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
         a()->user()->set_dk(a()->user()->dk() + bytes_to_k(file_size));
         bout.nl(2);
-        bout << fmt::sprintf("Your ratio is now: %-6.3f\r\n", ratio());
+        bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
       sysoplog() << "Downloaded " << bytes_to_k(file_size) << " of '" << file_to_send << "'";
       if (a()->IsUserOnline()) {

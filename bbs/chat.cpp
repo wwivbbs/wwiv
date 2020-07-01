@@ -106,7 +106,7 @@ static int grabname(const std::string& orig, int channel) {
   int n = to_number<int>(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
-      bout << fmt::sprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+      bout.bprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
       return 0;
     }
     get_inst_info(n, &ir);
@@ -117,7 +117,7 @@ static int grabname(const std::string& orig, int channel) {
       }
       return n;
     }
-    bout << fmt::sprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+    bout.bprintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
     return 0;
   }
   {
@@ -343,7 +343,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
   } else if (iequals(raw_message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
-      bout << fmt::sprintf("%-16.16s", actions[i2]->aword);
+      bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;

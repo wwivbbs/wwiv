@@ -619,7 +619,7 @@ static void CheckAndUpdateUserInfo() {
       bout.nl();
       input_age(a()->user());
       bout.nl();
-      bout << fmt::sprintf("%02d/%02d/%02d -- Correct? ",
+      bout.bprintf("%02d/%02d/%02d -- Correct? ",
           a()->user()->GetBirthdayMonth(),
           a()->user()->GetBirthdayDay(),
           a()->user()->GetBirthdayYear());

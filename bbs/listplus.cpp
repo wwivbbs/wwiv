@@ -166,7 +166,7 @@ static void printtitle_plus_old() {
       fmt::sprintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
                    a()->dirs()[a()->current_user_dir().subnum].name,
                    a()->current_file_area()->number_of_files());
-  bout << fmt::sprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
+  bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf);
 
   if (a()->user()->data.lp_options & cfl_header) {
     build_header();
@@ -219,7 +219,7 @@ void print_searching(search_record* search_rec) {
   }
   bout << "|#9<Space> aborts  : ";
   bout.cls();
-  bout << fmt::sprintf(" |17|15%-40.40s|16|#0\r",
+  bout.bprintf(" |17|15%-40.40s|16|#0\r",
                        a()->dirs()[a()->current_user_dir().subnum].name);
 }
 

@@ -169,11 +169,11 @@ static void ReadBBSList(const vector<BbsListEntry>& entries) {
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " BBS List"));
   for (const auto& entry : entries) {
-    bout.Color((++cnt % 2) == 0 ? 1 : 9);
-    bout << fmt::format("{:<3} : {:<60} ({})", entry.id, entry.name, entry.software) << wwiv::endl;
+    bout.Color(++cnt % 2 == 0 ? 1 : 9);
+    bout.format("{:<3} : {:<60} ({})\r\n", entry.id, entry.name, entry.software);
     for (const auto& a : entry.addresses) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << fmt::format("{:<11} : {}",a.type, a.address) << wwiv::endl;
+      bout.format("{:<11} : {}\r\n",a.type, a.address);
     }
   }
   bout.nl();

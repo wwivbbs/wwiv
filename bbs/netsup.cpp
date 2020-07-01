@@ -225,7 +225,7 @@ void print_pending_list() {
       auto brec = fmt::format("{}k", (r->bytes_received() + 1023) / 1024);
       auto bwait = fmt::format("{}k", (r->bytes_waiting() + 1023) / 1024);
 
-      bout << fmt::format(
+      bout.format(
           "|#7\xB3 {:>3} |#7\xB3 |#2{:<8} |#7\xB3 |#2{:>5} |#7\xB3|#2{:>8} |#7\xB3|#2{:>8} "
           "|#7\xB3|#2{:>5} |#7\xB3|#2{:>4} |#7\xB3|#2{:>10} |#7\xB3|#7\r\n",
           atc, a()->network_name(), r->systemnumber(), bsent, brec, bwait, r->numfails(),
@@ -247,7 +247,7 @@ void print_pending_list() {
       const auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
       const auto deadk = fmt::format("{}k", (dead_net_file_size + 1023) / 1024);
-      bout << fmt::format(
+      bout.format(
           "|#7\xB3 |#3--- |#7\xB3 |#2{:>8} |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
           "|#2------- |#7\xB3|#2{:>5} |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
           net.name, deadk);
@@ -264,7 +264,7 @@ void print_pending_list() {
       const auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
       const auto checkk = fmt::format("{}k", (check_net_file_size + 1023) / 1024);
-      bout << fmt::format(
+      bout.format(
           "|#7\xB3 |#3--- |#7\xB3 |#2{:>8} |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
           "|#2------- |#7\xB3|#2{:>5} |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
           net.name, checkk);

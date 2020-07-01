@@ -138,25 +138,20 @@ static void print_cur_stat() {
   const string ansi_setting =
       (a()->user()->HasAnsi() ?
           (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
-  bout << fmt::format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
+  bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
   bout << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
-
-  bout << fmt::format("|#13|#9) Pause on screen   : |#2{:<16} ",
-                      a()->user()->HasPause() ? "On " : "Off");
+  bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->HasPause() ? "On " : "Off");
   bout << "|#14|#9) Mailbox           : |#2" << GetMailBoxStatus() << wwiv::endl;
-
-  bout << fmt::format("{:<45} {}", "|#15|#9) Configured Q-scan", "|#16|#9) Change password")
-       << wwiv::endl;
+  bout.format("{:<45} {}\r\n", "|#15|#9) Configured Q-scan", "|#16|#9) Change password");
 
   if (okansi()) {
-    bout << fmt::format("{:<45} {}", "|#17|#9) Update macros", "|#18|#9) Change colors")
-         << wwiv::endl;
+    bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
     const auto nEditorNum = a()->user()->GetDefaultEditor();
     const string editor_name = (nEditorNum > 0 && nEditorNum <= ssize(a()->editors))
                                    ? a()->editors[nEditorNum - 1].description
                                    : "None";
-    bout << fmt::format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
+    bout.format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
     bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;
@@ -164,9 +159,9 @@ static void print_cur_stat() {
 
   const auto internet_email_address = 
       ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
-  bout << fmt::format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
+  bout.format("|#1B|#9) Optional lines    : |#2{:<16} ", a()->user()->GetOptionalVal());
   bout << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
-  bout << fmt::format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->HasStatusFlag(User::msg_show_controlcodes)));
+  bout.format("|#1D|#9) Show Hidden Lines : |#2{:<16} ", YesNoString(a()->user()->HasStatusFlag(User::msg_show_controlcodes)));
   if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
@@ -179,7 +174,7 @@ static void print_cur_stat() {
     bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!a()->user()->IsIgnoreNodeMessages());
   }
   bout.nl();
-  bout << fmt::format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
+  bout.format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
                       YesNoString(a()->user()->IsUseClearScreen()));
   bout << "|#1T|#9) 12hr or 24hr clock: |#2" << (a()->user()->IsUse24HourClock() ? "24hr" : "12hr")
        << wwiv::endl;
@@ -188,7 +183,7 @@ static void print_cur_stat() {
   if (a()->user()->GetWWIVRegNumber()) {
     wwiv_regnum = std::to_string(a()->user()->GetWWIVRegNumber());
   }
-  bout << fmt::format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
+  bout.format("|#1U|#9) Use Msg AutoQuote : |#2{:<16} ",
                       YesNoString(a()->user()->IsUseAutoQuote()));
   bout << "|#1W|#9) WWIV reg num      : |#2" << wwiv_regnum << wwiv::endl;
 
@@ -883,10 +878,10 @@ static void list_config_scan_plus(int first, int *amount, int type) {
     else {
       s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name, 26);
     }
-    bout << fmt::sprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
   } else {
-    bout << fmt::sprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
@@ -965,7 +960,7 @@ static void undrawscan(int filepos, long tagged) {
   } else {
     bout.GotoXY(1, filepos + 3);
   }
-  bout << fmt::sprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
+  bout.bprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
 
 static long is_inscan(int dir) {

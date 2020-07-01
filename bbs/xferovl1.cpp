@@ -287,8 +287,8 @@ int read_idz(bool prompt_for_mask, int tempdir) {
     s = aligns(s);
     dliscan1(dir_num);
   }
-  bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
-                       dir.name, a()->udir[tempdir].keys);
+  bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n", dir.name,
+               a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
   for (auto i = 1; i <= area->number_of_files() && !a()->hangup_ && !abort; i++) {
     auto f = area->ReadFile(i);
@@ -364,7 +364,7 @@ void tag_it() {
       }
       if (a()->config()->req_ratio() > 0.0001 && ratio() < a()->config()->req_ratio() &&
           !a()->user()->IsExemptRatio() && !bad) {
-        bout << fmt::sprintf(
+        bout.bprintf(
             "|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
             ratio(), a()->config()->req_ratio());
         bad = true;
@@ -614,7 +614,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
         c = ' ';
     }
     bout.backline();
-    bout << fmt::sprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", aligned_file_name,
+    bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", aligned_file_name,
                          bytes_to_k(fs), stripcolors(description));
     auto ch = onek_ncr("QYN\r");
     bout.backline();
@@ -647,7 +647,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
       const BatchEntry b(aligned_file_name, dn, fs, true);
       bout << "\r";
       const auto bt = ctim(b.time(a()->modem_speed_));
-      bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
+      bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                            a()->batch().size() + 1,
                            b.aligned_filename(), b.len(), bt, a()->dirs()[b.dir()].name);
       a()->batch().AddBatch(b);
@@ -732,7 +732,7 @@ void download() {
       const auto& b = a()->batch().entry[i];
       if (b.sending()) {
         const auto t = ctim(b.time(a()->modem_speed_));
-        bout << fmt::sprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
+        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
                              i + 1, b.aligned_filename(), b.len(), t, a()->dirs()[b.dir()].name);
       }
     } else {
@@ -740,7 +740,7 @@ void download() {
         int count = 0;
         ok = true;
         bout.backline();
-        bout << fmt::sprintf("|#2%3d ", a()->batch().size() + 1);
+        bout.bprintf("|#2%3d ", a()->batch().size() + 1);
         bout.Color(1);
         const bool onl = bout.newline;
         bout.newline = false;
@@ -969,7 +969,7 @@ void SetNewFileScanDate() {
         dd > 31 || (m == 0 || y == 0 || dd == 0) ||
         (m > 12 || dd > 31)) {
       bout.nl();
-      bout << fmt::sprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd,
+      bout.bprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd,
                            (y % 100));
       bout.nl();
     } else {

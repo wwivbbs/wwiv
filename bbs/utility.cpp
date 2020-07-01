@@ -233,7 +233,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
     return {};
   }
   auto f = ff.begin();
-  bout << fmt::sprintf("%12.12s ", f->name);
+  bout.bprintf("%12.12s ", f->name);
 
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
@@ -259,7 +259,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
       break;
     }
     ++f;
-    bout << fmt::sprintf("%12.12s ", f->name);
+    bout.bprintf("%12.12s ", f->name);
     if (bout.getkey() == SPACE) {
       bout.nl();
       break;

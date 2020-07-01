@@ -370,7 +370,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const st
 
   if (i == -1) {
     if (!is_uploadable(file_name) && dcs()) {
-      bout << fmt::format("{:<12}: |#5In filename database - add anyway? ", file_name);
+      bout.format("{:<12}: |#5In filename database - add anyway? ", file_name);
       const auto ch = ynq();
       if (ch == *str_quit) {
         return false;

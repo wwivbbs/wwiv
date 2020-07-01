@@ -281,7 +281,7 @@ int select_qwk_archiver(struct qwk_junk* qwk_info, int ask) {
     if (temp[0]) {
       sprintf(temp, "%d", x + 1);
       strcat(allowed, temp);
-      bout << fmt::sprintf("1%d) 3%s", x + 1, a()->arcs[x].extension);
+      bout.bprintf("1%d) 3%s", x + 1, a()->arcs[x].extension);
       bout.nl();
     }
   }
@@ -460,10 +460,10 @@ static void process_reply_dat(const std::string& name) {
       } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
         bout.cls();
         bout.Color(1);
-        bout << fmt::sprintf("Message '2%s1' is marked 3PRIVATE", title);
+        bout.bprintf("Message '2%s1' is marked 3PRIVATE", title);
         bout.nl();
         bout.Color(1);
-        bout << fmt::sprintf("It is addressed to 2%s", to);
+        bout.bprintf("It is addressed to 2%s", to);
         bout.nl(2);
         bout.Color(7);
         bout << "Route into E-Mail?";
@@ -483,10 +483,10 @@ static void process_reply_dat(const std::string& name) {
         if (to_from_msg_opt.has_value()) {
           bout.nl();
           bout.Color(3);
-          bout << fmt::sprintf("1) %s", to);
+          bout.bprintf("1) %s", to);
           bout.nl();
           bout.Color(3);
-          bout << fmt::sprintf("2) %s", to_from_msg_opt.value());
+          bout.bprintf("2) %s", to_from_msg_opt.value());
           bout.nl(2);
 
           bout << "Which address is correct?";
@@ -537,7 +537,7 @@ void upload_reply_packet() {
 
   const auto rep_name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
-  bout << fmt::format("Hit 'Y' to upload reply packet {} :", rep_name);
+  bout.format("Hit 'Y' to upload reply packet {} :", rep_name);
   const auto rep_path = FilePath(a()->qwk_directory(), rep_name);
 
   const auto do_it = yesno();
@@ -555,7 +555,7 @@ void upload_reply_packet() {
     } else {
       sysoplog() << "Aborted";
       bout.nl();
-      bout << fmt::format("{} not found", rep_name);
+      bout.format("{} not found", rep_name);
       bout.nl();
     }
   }
@@ -633,17 +633,17 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     if (sy != 0) {
       bout.nl();
-      bout << fmt::format("Name of system: {}", csne->name) << wwiv::endl;
-      bout << fmt::format("Number of hops: {}", csne->numhops);
-      bout.nl(2);
+      bout.format("Name of system: {}\r\n", csne->name);
+      bout.format("Number of hops: {}\r\n", csne->numhops);
+      bout.nl();
     }
 
     bout.cls();
     bout.Color(2);
-    bout << fmt::format("Sending to: {}", send_to_name);
+    bout.format("Sending to: {}", send_to_name);
     bout.nl();
     bout.Color(2);
-    bout << fmt::format("Titled    : {}", title);
+    bout.format("Titled    : {}", title);
     bout.nl(2);
     bout.Color(5);
     bout << "Correct? ";
@@ -998,7 +998,7 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
       int x = 1;
       for (const auto& b : qwk_cfg.bulletins) {
         if (checka()) { break; }
-        bout << fmt::sprintf("[%d] %s Is copied over from", x++, b.name);
+        bout.bprintf("[%d] %s Is copied over from", x++, b.name);
         bout.nl();
         bout.Color(7);
         bout << string(78, '\xCD');
@@ -1022,12 +1022,12 @@ void qwk_sysop() {
   while (!done && !a()->hangup_) {
     auto sn = qwk_system_name(qwk_cfg);
     bout.cls();
-    bout << fmt::sprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
-    bout << fmt::sprintf("[2] News    file : %s\r\n", qwk_cfg.news);
-    bout << fmt::sprintf("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
-    bout << fmt::sprintf("[4] Packet name  : %s\r\n", sn);
-    bout << fmt::sprintf("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
-    bout << fmt::sprintf("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
+    bout.bprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
+    bout.bprintf("[2] News    file : %s\r\n", qwk_cfg.news);
+    bout.bprintf("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
+    bout.bprintf("[4] Packet name  : %s\r\n", sn);
+    bout.bprintf("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
+    bout.bprintf("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
     bout << "Hit <Enter> or Q to save and exit: [12345<CR>] ";
 
     int x = onek("Q123456\r\n");
@@ -1053,7 +1053,7 @@ void qwk_sysop() {
       write_qwk_cfg(qwk_cfg);
       bout.nl();
       bout.Color(1);
-      bout << fmt::sprintf("Current name : %s", sn);
+      bout.bprintf("Current name : %s", sn);
       bout.nl();
       bout << "Enter new packet name: ";
       sn = input(8);

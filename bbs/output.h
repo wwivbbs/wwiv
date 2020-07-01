@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_BBS_OUTPUT_H__
 #define __INCLUDED_BBS_OUTPUT_H__
 
+#include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/ansi/ansi.h"
@@ -167,6 +168,15 @@ public:
     ss << value;
     bputs(ss.str());
     return *this;
+  }
+
+  template <class... Args> int bprintf(const char* format_str, Args&&... args) {
+    // Process arguments
+    return bputs(fmt::sprintf(format_str, std::forward<Args>(args)...));
+  }
+  template <typename... Args> int format(const char* format_str, Args&&... args) {
+    // Process arguments
+    return bputs(fmt::format(format_str, args...));
   }
 
   int bputch(char c, bool use_buffer = false);

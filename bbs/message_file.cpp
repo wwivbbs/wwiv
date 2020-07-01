@@ -178,7 +178,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   break;
   default:
   {
-    bout << fmt::sprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", msg->storage_type);
+    bout.bprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", msg->storage_type);
   }
   break;
   }

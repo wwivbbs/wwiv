@@ -213,7 +213,7 @@ bool ratio_ok() {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout << fmt::sprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
+      bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
                                         ratio(), a()->config()->req_ratio());
     }
   }
@@ -223,7 +223,7 @@ bool ratio_ok() {
       bRetValue = false;
       bout.cls();
       bout.nl();
-      bout << fmt::sprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
+      bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
                            post_ratio(), "You need a ratio of", a()->config()->post_to_call_ratio(),
                            "to download.");
     }

@@ -232,7 +232,7 @@ void normalupload(int dn) {
             });
             sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
             bout.nl(2);
-            bout << fmt::sprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
             if (a()->IsUserOnline()) {
               a()->UpdateTopScreen();

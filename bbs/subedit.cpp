@@ -124,13 +124,13 @@ static void DisplayNetInfo(size_t nSubNum) {
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(FilePath(dir, net_file_name), subscribers);
       auto num = ssize(subscribers);
-      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
+      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
                            net.name, sn.stype, host, num,
                            (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     } else {
       auto host = fmt::format("{} ", sn.host);
-      bout << fmt::sprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n", i + 'a', net.name,
+      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n", i + 'a', net.name,
                            sn.stype, host, (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     }
