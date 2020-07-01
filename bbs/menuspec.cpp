@@ -90,7 +90,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     MenuSysopLog("DLDNF");                  /* DL - DIR NOT FOUND */
     return 0;
   }
-  dliscan1(dn);
+  const auto& dir = a()->dirs()[dn];
+  dliscan1(dir);
+
   int nRecordNumber = recno(dl_fn);
   if (nRecordNumber <= 0) {
     checka(&abort);
@@ -107,9 +109,9 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     bout.nl();
 
     if (bTitle) {
-      bout << "Directory  : " << a()->dirs()[dn].name << wwiv::endl;
+      bout << "Directory  : " << dir.name << wwiv::endl;
     }
-    bOkToDL = printfileinfo(&f.u(), dn);
+    bOkToDL = printfileinfo(&f.u(), dir);
 
 
     if (!ratio_ok()) {
@@ -117,12 +119,11 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      auto s1 = FilePath(a()->dirs()[dn].path, f);
-      if (a()->dirs()[dn].mask & mask_cdrom) {
-        auto s2 = FilePath(a()->dirs()[dn].path, f);
+      auto s1 = FilePath(dir.path, f);
+      if (dir.mask & mask_cdrom) {
         s1 = FilePath(a()->temp_directory(), f);
         if (!File::Exists(s1)) {
-          File::Copy(s2, s1);
+          File::Copy(FilePath(dir.path, f), s1);
         }
       }
       bool sent = false;

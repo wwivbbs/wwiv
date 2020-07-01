@@ -78,6 +78,7 @@ void dirlist(int mode) {
         }
         ++nd;
         int directory_number = a()->udir[i1].subnum;
+        const auto& dir = a()->dirs()[directory_number];
         if (directory_number == 0) {
           is = true;
         }
@@ -85,17 +86,17 @@ void dirlist(int mode) {
         if (a()->context().qsc_n[directory_number / 32] & (1L << (directory_number % 32))) {
           scanme = "|#5Yes";
         }
-        dliscan1(directory_number);
+        dliscan1(dir);
         if (a()->current_user_dir().subnum == a()->udir[i1].subnum) {
           s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
-                           a()->udir[i1].keys, scanme, a()->dirs()[directory_number].name,
+                           a()->udir[i1].keys, scanme, dir.name,
                            a()->current_file_area()->number_of_files());
         } else {
-          s = fmt::sprintf(
-              " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d", a()->udir[i1].keys,
-              scanme,
-              mode == 1 && a()->dirs()[a()->udir[i1].subnum].mask & mask_cdrom ? "|#9" : "|#1",
-              a()->dirs()[directory_number].name, a()->current_file_area()->number_of_files());
+          s = fmt::sprintf(" |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
+                           a()->udir[i1].keys, scanme,
+                           mode == 1 && a()->dirs()[a()->udir[i1].subnum].mask & mask_cdrom ? "|#9"
+                                                                                            : "|#1",
+                           dir.name, a()->current_file_area()->number_of_files());
         }
         if (okansi()) {
           bout.bputs(s, &abort, &next);

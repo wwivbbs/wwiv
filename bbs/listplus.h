@@ -85,7 +85,7 @@ int listfiles_plus(int type);
 int lp_add_batch(const std::string& file_name, int dn, int fs);
 int printinfo_plus(uploadsrec* upload_record, int filenum, int marked, int LinesLeft,
                    search_record* search_rec);
-int print_extended_plus(const std::string& file_name, int numlist, int indent,
+int print_extended(const std::string& file_name, int numlist, int indent,
                         wwiv::sdk::Color color, search_record* search_rec);
 void show_fileinfo(uploadsrec* upload_record);
 int check_lines_needed(uploadsrec* upload_record);

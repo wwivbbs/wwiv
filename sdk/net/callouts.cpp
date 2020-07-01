@@ -98,7 +98,7 @@ bool should_call(const NetworkContact& ncn, const network_callout_config_t& call
   if (callout.min_k > 0) {
     // We won't use min_k if it's 0, so only test if it's >0
     if (bytes_to_k<int>(ncn.bytes_waiting()) >= callout.min_k) {
-      VLOG(1) << "Calling: min_k: " << bytes_to_k(ncn.bytes_waiting()) << " > " << callout.min_k;
+      VLOG(1) << "Calling: min_k: " << humanize(ncn.bytes_waiting()) << " > " << callout.min_k;
       return true;
     }
   }

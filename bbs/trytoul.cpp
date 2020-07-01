@@ -16,14 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <chrono>
-
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
+#include "bbs/listplus.h"
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -41,6 +40,7 @@
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/files/files.h"
+#include <chrono>
 
 using std::chrono::milliseconds;
 using std::string;
@@ -126,8 +126,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
     }
   }
 
-  dliscan1(dn);
   d = a()->dirs()[dn];
+  dliscan1(d);
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
@@ -210,15 +210,13 @@ static int try_to_ul_wh(const string& orig_file_name) {
   done = false;
 
   while (!done && !a()->hangup_ && !file_id_avail) {
-    bool abort = false;
-
     bout.cls();
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
     bout << "   |#1Filename    |01: |#7" << file_name << wwiv::endl;
     bout << "|#2A|#7] |#1Description |01: |#7" << f.description() << wwiv::endl;
     bout << "|#2B|#7] |#1Modify extended description\r\n\n";
-    print_extended(f.aligned_filename(), &abort, 10, 0);
+    print_extended(f.aligned_filename(), 10, -1, Color::YELLOW, nullptr);
     bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
     key = onek("\rQABC", true);
     switch (key) {

@@ -423,7 +423,7 @@ static bool download_temp_arc(const char* file_name, bool count_against_xfer_rat
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
-      sysoplog() << "Downloaded " << bytes_to_k(file_size) << " of '" << file_to_send << "'";
+      sysoplog() << "Downloaded " << humanize(file_size) << " of '" << file_to_send << "'";
       if (a()->IsUserOnline()) {
         a()->UpdateTopScreen();
       }
@@ -695,7 +695,7 @@ void move_file_t() {
     pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (int pos = a()->batch().ssize() - 1; pos >= 0; pos--) {
+  for (auto pos = a()->batch().ssize() - 1; pos >= 0; pos--) {
     bool ok;
     auto cur_batch_fn = aligns(a()->batch().entry[pos].aligned_filename());
     dliscan1(a()->batch().entry[pos].dir());
@@ -707,7 +707,8 @@ void move_file_t() {
     while (!a()->hangup_ && temp_record_num > 0) {
       auto cur_pos = temp_record_num;
       auto f = a()->current_file_area()->ReadFile(temp_record_num);
-      printfileinfo(&f.u(), a()->batch().entry[pos].dir());
+      const auto& dir = a()->dirs()[a()->batch().entry[pos].dir()];
+      printfileinfo(&f.u(), dir);
       bout << "|#5Move this (Y/N/Q)? ";
       const auto ch = ynq();
       if (ch == 'Q') {
@@ -717,7 +718,7 @@ void move_file_t() {
       }
       std::filesystem::path s1;
       if (ch == 'Y') {
-        s1 = FilePath(a()->dirs()[a()->batch().entry[pos].dir()].path, f);
+        s1 = FilePath(dir.path, f);
         string dirnum;
         do {
           bout << "|#2To which directory? ";
@@ -811,14 +812,15 @@ void removefile() {
   remove_fn = aligns(remove_fn);
   auto record_num = recno(remove_fn);
   auto abort = false;
-  while (!a()->hangup_ && (record_num > 0) && !abort) {
+  while (!a()->hangup_ && record_num > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(record_num);
     if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->usernum)) {
+      const auto& dir = a()->dirs()[a()->current_user_dir().subnum];
       bout.nl();
       if (a()->batch().contains_file(f.filename())) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
-        printfileinfo(&f.u(), a()->current_user_dir().subnum);
+        printfileinfo(&f.u(), dir);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
         auto ch = ynq();
         if (ch == 'Q') {
@@ -843,7 +845,7 @@ void removefile() {
             remove_from_file_database(f.aligned_filename());
           }
           if (bDeleteFileToo) {
-            auto del_fn = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
+            auto del_fn = FilePath(dir.path, f);
             File::Remove(del_fn);
             if (bRemoveDlPoints && f.u().ownersys == 0) {
               a()->users()->readuser(&uu, f.u().ownerusr);
@@ -856,8 +858,7 @@ void removefile() {
               }
             }
           }
-          sysoplog() << fmt::format("- \"{}\" removed off of {}", f,
-                                    a()->dirs()[a()->current_user_dir().subnum].name);
+          sysoplog() << fmt::format("- \"{}\" removed off of {}", f, dir.name);
           if (a()->current_file_area()->DeleteFile(f, record_num)) {
             a()->current_file_area()->Save();
             --record_num;

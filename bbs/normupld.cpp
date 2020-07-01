@@ -49,8 +49,8 @@ void normalupload(int dn) {
   files::FileRecord f;
   int ok = 1;
 
-  dliscan1(dn);
-  files::directory_t d = a()->dirs()[dn];
+  const auto& d = a()->dirs()[dn];
+  dliscan1(d);
   if (a()->current_file_area()->number_of_files() >= d.maxfiles) {
     bout.nl(3);
     bout << "This directory is currently full.\r\n\n";
@@ -148,7 +148,7 @@ void normalupload(int dn) {
       bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
       ok = 0;
     }
-    if ((d.mask & mask_PD) && ok) {
+    if (d.mask & mask_PD && ok) {
       bout.nl();
       bout << "|#5Is this program PD/Shareware? ";
       if (!yesno()) {
