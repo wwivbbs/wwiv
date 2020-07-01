@@ -49,6 +49,7 @@
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/files/diz.h"
 #include "sdk/files/files.h"
 
 #include <cmath>
@@ -67,6 +68,7 @@ using wwiv::sdk::files::FileName;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::files;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -183,24 +185,6 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
   while (i);
 }
 
-bool valid_desc(const string& description) {
-  // I don't think this function is really doing what it should
-  // be doing, but am not sure what it should be doing instead.
-  for (const auto& c : description) {
-    if (c > '@' && c < '{') {
-      return true;
-    }
-  }
-  return false;
-}
-
-static std::string fixup_diz_string(const std::string& orig) {
-  auto s{orig};
-  std::replace(s.begin(), s.end(), '\x0c', ' ');
-  std::replace(s.begin(), s.end(), '\x1a', ' ');
-  return s;
-}
-
 static bool has_arc_cmd_for_ext(const std::string& ext) {
   for (auto i = 0; i < MAX_ARCS; i++) {
     if (iequals(ext, a()->arcs[i].extension)) {
@@ -231,8 +215,7 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
   return {diz_fn};
 }
 
-// TODO(rushfan): Move core logic into SDK
-bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::directory_t& dir) {
+bool get_file_idz(FileRecord& fr, const directory_t& dir) {
   ScopeExit at_exit([] {
     File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
     File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
@@ -251,48 +234,23 @@ bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::dire
   bout.nl();
   bout << "|#9Reading in |#2" << diz_fn.filename() << "|#9 as extended description...";
   const auto old_ext = a()->current_file_area()->ReadExtendedDescriptionAsString(fr).value_or("");
-  TextFile file(diz_fn, "rt");
-  auto lines = file.ReadFileIntoVector();
-  if (lines.empty()) {
-    return false;
-  }
-  auto iter = std::begin(lines);
-  if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
-    auto ss = *iter;
-    if (!ss.empty()) {
-      for (auto& s : ss) {
-        if (strchr(invalid_chars, s) != nullptr && s != CZ) {
-          s = ' ';
-        }
+
+  DizParser dp(a()->HasConfigFlag(OP_FLAGS_IDZ_DESC));
+  auto odiz = dp.parse(diz_fn);
+
+  if (odiz.has_value()) {
+    auto& diz = odiz.value();
+    fr.set_description(diz.description());
+    const auto ext_desc = diz.extended_description();
+    if (!ext_desc.empty()) {
+      if (!old_ext.empty()) {
+        a()->current_file_area()->DeleteExtendedDescription(fr.filename());
       }
-      if (!valid_desc(ss)) {
-        do {
-          ++iter;
-          ss = *iter;
-        }
-        while (!valid_desc(ss));
-      }
+      a()->current_file_area()->AddExtendedDescription(fr.filename(), ext_desc);
+      fr.set_extended_description(true);
     }
-    if (ss.back() == '\r') {
-      ss.pop_back();
-    }
-    fr.set_description(ss);
-    ++iter;
-  } else {
-    iter = std::begin(lines);
   }
-  std::string ss;
-  for (; iter != std::end(lines); ++iter) {
-    ss.append(fixup_diz_string(*iter));
-    ss.append("\n");
-  }
-  if (!ss.empty()) {
-    if (!old_ext.empty()) {
-      a()->current_file_area()->DeleteExtendedDescription(fr.filename());
-    }
-    a()->current_file_area()->AddExtendedDescription(fr.filename(), ss);
-    fr.set_extended_description(true);
-  }
+
   bout << "Done!\r\n";
   return true;
 }
@@ -303,42 +261,40 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
   a()->ClearTopScreenProtection();
-  for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 &&
-                     !a()->localIO()->KeyPressed(); i++) {
-    count += read_idz(0, i);
+  for (auto i = 0;
+       i < a()->dirs().size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed(); i++) {
+    count += read_idz(false, i);
   }
   tmp_disable_conf(false);
   a()->UpdateTopScreen();
   return count;
 }
 
-int read_idz(int mode, int tempdir) {
+int read_idz(bool prompt_for_mask, int tempdir) {
   int count = 0;
   bool abort = false;
+  const auto dir_num = a()->udir[tempdir].subnum;
+  const auto dir = a()->dirs()[dir_num];
 
   std::unique_ptr<TempDisablePause> disable_pause;
   std::string s = "*.*";
-  if (mode) {
+  if (prompt_for_mask) {
     disable_pause.reset(new TempDisablePause);
     a()->ClearTopScreenProtection();
     dliscan();
     s = file_mask();
   } else {
     s = aligns(s);
-    dliscan1(a()->udir[tempdir].subnum);
+    dliscan1(dir_num);
   }
   bout << fmt::sprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
-                       a()->dirs()[a()->udir[tempdir].subnum].name,
-                       a()->udir[tempdir].keys);
+                       dir.name, a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
-  for (int i = 1; i <= a()->current_file_area()->number_of_files() && !a()->hangup_ && !abort;
-       i++) {
+  for (auto i = 1; i <= area->number_of_files() && !a()->hangup_ && !abort; i++) {
     auto f = area->ReadFile(i);
     const auto fn = f.aligned_filename();
-    if (files::aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
-      const auto file = FilePath(a()->dirs()[a()->udir[tempdir].subnum].path, f);
-      if (!File::Exists(file)) {
-        const auto& dir = a()->dirs()[a()->udir[tempdir].subnum];
+    if (aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
+      if (File::Exists(FilePath(dir.path, f))) {
         if (get_file_idz(f, dir)) {
           count++;
         }
@@ -349,7 +305,7 @@ int read_idz(int mode, int tempdir) {
     }
     checka(&abort);
   }
-  if (mode) {
+  if (prompt_for_mask) {
     a()->UpdateTopScreen();
   }
   return count;

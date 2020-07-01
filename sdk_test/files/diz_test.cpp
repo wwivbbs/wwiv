@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                Copyright (C)2020, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,34 +14,46 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_XFEROVL1_H__
-#define __INCLUDED_BBS_XFEROVL1_H__
+#include "gtest/gtest.h"
 
-#include <string>
+#include "core_test/file_helper.h"
+#include "sdk/files/diz.h"
 
-namespace wwiv {
-namespace sdk {
-namespace files {
-struct directory_t;
-class FileRecord;
+
+TEST(DizTest, Smoke) {
+  FileHelper helper;
+
+  const std::string kDIZ = R"(Line1
+Line2
+Line3)";
+
+  const auto file = helper.CreateTempFile("file_id.diz", kDIZ);
+
+  wwiv::sdk::files::DizParser p(true);
+  auto o = p.parse(file);
+  ASSERT_TRUE(o);
+
+  auto d = o.value();
+  EXPECT_EQ(d.description(), "Line1");
+  EXPECT_EQ(d.extended_description(), "Line2\nLine3\n");
 }
-}
-}
 
-void modify_extended_description(std::string* sss, const std::string& dest);
-bool valid_desc(const std::string& description);
-bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::directory_t& dir);
-int read_idz_all();
-int read_idz(bool prompt_for_mask, int tempdir);
-void tag_it();
-void tag_files(bool& need_title);
-int add_batch(std::string& description, const std::string& aligned_file_name, int dn, long fs);
-int try_to_download(const std::string& file_mask, int dn);
-void download();
-void endlist(int mode);
-void SetNewFileScanDate();
-void removefilesnotthere(int dn, int* autodel);
-void removenotthere();
+TEST(DizTest, Smoke_NotDescription) {
+  FileHelper helper;
 
-#endif  // __INCLUDED_BBS_XFEROVL1_H__
+  const std::string kDIZ = R"(Line1
+Line2
+Line3)";
+
+  const auto file = helper.CreateTempFile("file_id.diz", kDIZ);
+
+  wwiv::sdk::files::DizParser p(false);
+  auto o = p.parse(file);
+  ASSERT_TRUE(o);
+
+  auto d = o.value();
+  EXPECT_EQ(d.description(), "");
+  EXPECT_EQ(d.extended_description(), "Line1\nLine2\nLine3\n");
+}

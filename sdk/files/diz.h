@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                            WWIV Version 5                              */
+/*                Copyright (C)2020, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,33 +15,39 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_XFEROVL1_H__
-#define __INCLUDED_BBS_XFEROVL1_H__
+#ifndef __INCLUDED_SDK_FILES_DIZ_H__
+#define __INCLUDED_SDK_FILES_DIZ_H__
 
+#include <filesystem>
+#include <optional>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace files {
-struct directory_t;
-class FileRecord;
-}
-}
+namespace wwiv::sdk::files {
+
+class Diz final {
+public:
+  explicit Diz(std::string description, std::string extended_description);
+  Diz() = delete;
+  ~Diz() = default;
+
+  [[nodiscard]] std::string description() const noexcept;
+  [[nodiscard]] std::string extended_description() const noexcept;
+private:
+  const std::string description_;
+  const std::string extended_description_;
+};
+
+class DizParser final {
+public:
+  explicit DizParser(bool firstline_as_desc);
+  DizParser() = delete;
+  ~DizParser() = default;
+
+  [[nodiscard]] std::optional<Diz> parse(const std::filesystem::path& path) const;
+private:
+  bool firstline_as_desc_;
+};
+
 }
 
-void modify_extended_description(std::string* sss, const std::string& dest);
-bool valid_desc(const std::string& description);
-bool get_file_idz(wwiv::sdk::files::FileRecord& fr, const wwiv::sdk::files::directory_t& dir);
-int read_idz_all();
-int read_idz(bool prompt_for_mask, int tempdir);
-void tag_it();
-void tag_files(bool& need_title);
-int add_batch(std::string& description, const std::string& aligned_file_name, int dn, long fs);
-int try_to_download(const std::string& file_mask, int dn);
-void download();
-void endlist(int mode);
-void SetNewFileScanDate();
-void removefilesnotthere(int dn, int* autodel);
-void removenotthere();
-
-#endif  // __INCLUDED_BBS_XFEROVL1_H__
+#endif

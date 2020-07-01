@@ -26,6 +26,7 @@ set(test_sources
   ansi/makeansi_test.cpp
   files/allow_test.cpp
   files/dirs_test.cpp
+  files/diz_test.cpp
   files/files_test.cpp
   files/files_ext_test.cpp
   files/tic_test.cpp

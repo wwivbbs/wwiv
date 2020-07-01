@@ -731,7 +731,7 @@ void ReadIDZ() {
   if (yesno()) {
     read_idz_all();
   } else {
-    read_idz(1, a()->current_user_dir_num());
+    read_idz(true, a()->current_user_dir_num());
   }
 }
 

@@ -85,7 +85,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
       case '%':
         os << "%";
         break;
-      // replacable parameters
+      // replaceable parameters
       case '1':
       case '2':
       case '3':
