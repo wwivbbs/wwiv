@@ -18,34 +18,33 @@
 /**************************************************************************/
 #include "wwivutil/fix/users.h"
 
-#include <algorithm>
-#include <vector>
-#include <set>
-
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/datetime.h"
+#include "fmt/printf.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include <algorithm>
+#include <set>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 namespace {
-static statusrec_t st;
+statusrec_t st;
 }
 
-static char *dateFromTimeT(time_t t) {
+static char* dateFromTimeT(time_t t) {
   static char date_string[11];
-  auto ds = DateTime::from_time_t(t).to_string("%m/%d/%y");
+  const auto ds = DateTime::from_time_t(t).to_string("%m/%d/%y");
   to_char_array(date_string, ds);
   return date_string;
 }
@@ -55,7 +54,7 @@ static std::string dateFromTimeTForLog(time_t t) {
   return dt.to_string("%y%m%d");
 }
 
-static bool checkFileSize(File &file, unsigned long len) {
+static bool checkFileSize(File& file, unsigned long len) {
   if (!file.IsOpen()) {
     int nFileMode = File::modeReadOnly | File::modeBinary;
     file.Open(nFileMode);
@@ -67,8 +66,7 @@ static bool checkFileSize(File &file, unsigned long len) {
     return false;
   }
   if (actual > len) {
-    LOG(INFO) << file << " too long (" << actual << ">"
-      << len << ").";
+    LOG(INFO) << file << " too long (" << actual << ">" << len << ").";
     LOG(INFO) << "Attempting to continue.";
   }
   return true;
@@ -83,8 +81,8 @@ static void saveStatus(const std::string& datadir) {
 }
 
 static bool initStatusDat(const std::string& datadir) {
-  int nFileMode = File::modeReadOnly | File::modeBinary;
-  bool update = false;
+  const auto nFileMode = File::modeReadOnly | File::modeBinary;
+  auto update = false;
   const auto status_fn = FilePath(datadir, STATUS_DAT);
   if (!File::Exists(status_fn)) {
     LOG(INFO) << status_fn << " NOT FOUND!";
@@ -112,8 +110,8 @@ static bool initStatusDat(const std::string& datadir) {
 
     // version check
     if (st.wwiv_version > wwiv_num_version) {
-      LOG(INFO) << "Incorrect version of fix (this is for "
-           << wwiv_num_version << ", you need " << st.wwiv_version << ")";
+      LOG(INFO) << "Incorrect version of fix (this is for " << wwiv_num_version << ", you need "
+                << st.wwiv_version << ")";
     }
 
     auto dt = DateTime::now();
@@ -159,7 +157,6 @@ static bool initStatusDat(const std::string& datadir) {
   return true;
 }
 
-
 bool FixUsersCommand::AddSubCommands() {
   add_argument(BooleanCommandLineArgument("exp", 'x', "Enable experimental features.", false));
   add_argument(BooleanCommandLineArgument("verbose", 'v', "Enable verbose output.", false));
@@ -179,87 +176,87 @@ int FixUsersCommand::Execute() {
 
   initStatusDat(config()->config()->datadir());
   const auto user_fn = FilePath(config()->config()->datadir(), USER_LST);
-	if (!File::Exists(user_fn)) {
+  if (!File::Exists(user_fn)) {
     LOG(ERROR) << user_fn << " does not exist.";
     return 1;
-	}
+  }
 
-	UserManager userMgr(*config()->config());
+  UserManager userMgr(*config()->config());
   LOG(INFO) << "Checking USER.LST... found " << userMgr.num_user_records() << " user records.";
   LOG(INFO) << "TBD: Check for trashed user recs.";
-	if (userMgr.num_user_records() > config()->config()->max_users()) {
+  if (userMgr.num_user_records() > config()->config()->max_users()) {
     LOG(INFO) << "Might be too many.";
     if (!arg("exp").as_bool()) {
       return 1;
     }
-	} else {
+  } else {
     LOG(INFO) << "Reasonable number.";
-	}
+  }
 
-	std::vector<smalrec> smallrecords;
-	std::set<std::string> names;
+  std::vector<smalrec> smallrecords;
+  std::set<std::string> names;
 
   const auto num_user_records = userMgr.num_user_records();
-	for(auto i = 1; i <= num_user_records; i++) {
-		User user;
-		userMgr.readuser(&user, i);
-		user.FixUp();
-		userMgr.writeuser(&user, i);
-		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
-			smalrec sr = { 0 };
-			strcpy((char*) sr.name, user.GetName());
-			sr.number = static_cast<uint16_t>(i);
-			std::string namestring((char*) sr.name);
-			if (names.find(namestring) == names.end()) {
-				smallrecords.push_back(sr);
-				names.insert(namestring);
+  for (auto i = 1; i <= num_user_records; i++) {
+    User user;
+    userMgr.readuser(&user, i);
+    user.FixUp();
+    userMgr.writeuser(&user, i);
+    if (!user.IsUserDeleted() && !user.IsUserInactive()) {
+      smalrec sr{};
+      strcpy(reinterpret_cast<char*>(sr.name), user.GetName());
+      sr.number = static_cast<uint16_t>(i);
+      std::string namestring(reinterpret_cast<char*>(sr.name));
+      if (names.find(namestring) == names.end()) {
+        smallrecords.push_back(sr);
+        names.insert(namestring);
         if (arg("verbose").as_bool()) {
-          LOG(INFO) << "Keeping user: " << sr.name << " #" << sr.number ;
+          LOG(INFO) << "Keeping user: " << sr.name << " #" << sr.number;
         }
-			} else {
-				LOG(INFO) << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
-			}
-		}
-	};
+      } else {
+        LOG(INFO) << "[skipping duplicate user: " << namestring << " #" << sr.number << "]";
+      }
+    }
+  };
 
-	std::sort(smallrecords.begin(), smallrecords.end(), [](const smalrec& a, const smalrec& b) -> bool {
-		int equal = strcmp((char*)a.name, (char*)b.name);
+  std::sort(smallrecords.begin(), smallrecords.end(),
+            [](const smalrec& a, const smalrec& b) -> bool {
+              int equal = strcmp((char*)a.name, (char*)b.name);
 
-		// Sort by user number if names match.
-		if (equal == 0) {
-			return a.number < b.number;
-		}
+              // Sort by user number if names match.
+              if (equal == 0) {
+                return a.number < b.number;
+              }
 
-		// Otherwise sort by name comparison.
-		return equal < 0;
-	});
+              // Otherwise sort by name comparison.
+              return equal < 0;
+            });
 
-	printf("size=%lu %lu\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
+  fmt::print("size={} {}\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
   LOG(INFO) << "Checking NAMES.LST";
   const auto name_fn = FilePath(config()->config()->datadir(), NAMES_LST);
-	if (!File::Exists(name_fn)) {
+  if (!File::Exists(name_fn)) {
     LOG(INFO) << name_fn << " does not exist, regenerating with " << smallrecords.size()
               << " names";
     File nameFile(name_fn);
     nameFile.Open(File::modeCreateFile | File::modeBinary | File::modeWriteOnly);
-		nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
-		nameFile.Close();
-	} else {
-      File nameFile(name_fn);
-      if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
-			auto size = nameFile.length();
+    nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
+    nameFile.Close();
+  } else {
+    File nameFile(name_fn);
+    if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
+      auto size = nameFile.length();
       auto recs = static_cast<uint16_t>(size / sizeof(smalrec));
-			if (recs != st.users) {
-				st.users = recs;
+      if (recs != st.users) {
+        st.users = recs;
         LOG(INFO) << "STATUS.DAT contained an incorrect user count.";
-			} else {
+      } else {
         LOG(INFO) << "STATUS.DAT matches expected user count of " << st.users << " users.";
-			}
-		}
-		nameFile.Close();
-	}
+      }
+    }
+    nameFile.Close();
+  }
   return 0;
 }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+} // namespace wwiv
