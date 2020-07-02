@@ -49,6 +49,12 @@ uuid_t& uuid_t::operator=(const uuid_t& that) {
   return *this;
 }
 
+std::ostream& operator<<(std::ostream& os, const uuid_t& u) {
+  os << u.to_string();
+  return os;
+}
+
+
 std::string uuid_t::to_string() const {
   std::ostringstream ss;
   ss << std::hex << std::setfill('0')

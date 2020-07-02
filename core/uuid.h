@@ -42,7 +42,9 @@ public:
   [[nodiscard]] std::array<uint8_t, 16> bytes() const { return bytes_; }
   friend inline bool operator==(const uuid_t& lhs, const uuid_t& rhs);
   friend inline bool operator!=(const uuid_t& lhs, const uuid_t& rhs);
+  friend std::ostream& operator<<(std::ostream& os, const uuid_t& u);
 
+  
 private:
   std::array<uint8_t, 16> bytes_{};
   bool empty_{true};

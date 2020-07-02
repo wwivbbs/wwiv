@@ -173,8 +173,14 @@ std::optional<files::directory_t> FindFileAreaForTic(const files::Dirs& dirs, co
   const auto area_tag = tic.area;
   for (const auto& d : dirs.dirs()) {
     for (const auto& dt : d.area_tags) {
-      if (iequals(area_tag, dt.area_tag) && dt.net_uuid == net.uuid) {
-        return {d};
+      VLOG(3) << "Checking area: '" << dt.area_tag << "'";
+      if (iequals(area_tag, dt.area_tag)) {
+	VLOG(3) << "Found matching area, checking UUID for area: '" << dt.net_uuid << "'";
+	if (dt.net_uuid == net.uuid) {
+	  return {d};
+	} else {
+	  VLOG(1) << "UUID didn't match: [dir] " << dt.net_uuid << " != [net]:  " << net.uuid;
+	}
       }
     }
   }
