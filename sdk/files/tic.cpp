@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/files/tic.h"
 
-
 #include "core/crc32.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -75,7 +74,7 @@ int Tic::size() const {
   if (size_ != 0) {
     return size_;
   }
-  File f(fpath());
+  const File f(fpath());
   return f.length();
 }
 
@@ -168,23 +167,22 @@ std::optional<Tic> TicParser::parse(const std::string& filename, const std::vect
   return {t};
 }
 
-std::optional<files::directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic,
-                                                     const net_networks_rec& net) {
+std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic& tic,
+                                              const net_networks_rec& net) {
   const auto area_tag = tic.area;
   for (const auto& d : dirs.dirs()) {
     for (const auto& dt : d.area_tags) {
       VLOG(3) << "Checking area: '" << dt.area_tag << "'";
       if (iequals(area_tag, dt.area_tag)) {
-	VLOG(3) << "Found matching area, checking UUID for area: '" << dt.net_uuid << "'";
-	if (dt.net_uuid == net.uuid) {
-	  return {d};
-	} else {
-	  VLOG(1) << "UUID didn't match: [dir] " << dt.net_uuid << " != [net]:  " << net.uuid;
-	}
+        VLOG(3) << "Found matching area, checking UUID for area: '" << dt.net_uuid << "'";
+        if (dt.net_uuid == net.uuid) {
+          return {d};
+        }
+        VLOG(1) << "UUID didn't match: [dir] " << dt.net_uuid << " != [net]:  " << net.uuid;
       }
     }
   }
   return std::nullopt;
 }
 
-} // namespace wwiv::sdk::files
+      } // namespace wwiv::sdk::files

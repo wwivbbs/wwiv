@@ -45,7 +45,7 @@ public:
 
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
 void post(const PostData& data);
-void add_ftn_msgid(const wwiv::sdk::Config& config, wwiv::sdk::fido::FidoAddress addr, const std::string& msgid,
+void add_ftn_msgid(const wwiv::sdk::Config& config, const wwiv::sdk::fido::FidoAddress& addr, const std::string& msgid,
                    wwiv::bbs::MessageEditorData* data);
 std::string grab_user_name(messagerec* m, const std::string& file_name, int network_number);
 void qscan(uint16_t start_subnum, bool& next_sub);

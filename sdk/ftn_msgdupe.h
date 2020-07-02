@@ -28,27 +28,30 @@
 namespace wwiv {
 namespace sdk {
 
+#pragma pack(push, 1)
  struct msgids {
-   uint32_t msgid{};
-   uint32_t header{};
+   uint32_t msgid;
+   uint32_t header;
  };
+#pragma pack(pop)
 
- static_assert(sizeof(msgids) == sizeof(uint64_t), "sizeof(msgids) must be the same as an int64.");
+static_assert(std::is_trivial<msgids>::value == true);
+static_assert(sizeof(msgids) == sizeof(uint64_t), "sizeof(msgids) must be the same as an int64.");
 
-class FtnMessageDupe {
+class FtnMessageDupe final {
 public:
   explicit FtnMessageDupe(const Config& config);
   FtnMessageDupe(std::string datadir, bool use_filesystem);
-  virtual ~FtnMessageDupe() = default;
+  ~FtnMessageDupe() = default;
 
-  bool IsInitialized() const { return initialized_; }
+  [[nodiscard]] bool IsInitialized() const { return initialized_; }
   std::string CreateMessageID(const wwiv::sdk::fido::FidoAddress& a);
   bool add(const wwiv::sdk::fido::FidoPackedMessage& msg);
   bool add(uint32_t header_crc32, uint32_t msgid_crc32);
   bool remove(uint32_t header_crc32, uint32_t msgid_crc32);
   /** returns true if either the header or msgid crc is duplicated */
-  bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
-  bool is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const;
+  [[nodiscard]] bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
+  [[nodiscard]] bool is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const;
 
   /** Returns the MSGID from this message or an empty string. */
   static std::string GetMessageIDFromText(const std::string& text);

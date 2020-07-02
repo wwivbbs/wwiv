@@ -172,10 +172,11 @@ static std::string select_chat_name() {
 // then chat1 is back in control.
 static void two_way_chat(std::string* rollover, int max_length, bool crend, const std::string& sysop_name) {
   char s2[100], temp1[100];
-  int i, i1;
+  int i;
+  int i1;
 
-  auto cm = a()->chatting_;
-  auto begx = a()->localIO()->WhereX();
+  const auto cm = a()->chatting_;
+  const auto begx = a()->localIO()->WhereX();
   if (!rollover->empty()) {
     if (bout.charbufferpointer_) {
       char szTempBuffer[255];

@@ -45,7 +45,7 @@ using namespace wwiv::strings;
 class FtnMsgDupeTest : public testing::Test {
 public:
   FtnMsgDupeTest() : config_(helper.root()) {}
-  bool CreateDupes(std::vector<msgids> ids) {
+  bool CreateDupes(std::vector<msgids> ids) const {
     DataFile<msgids> file(FilePath(config_.datadir(), MSGDUPE_DAT),
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate);
@@ -56,7 +56,7 @@ public:
     return file.WriteVector(ids);
   }
 
-  bool SetLastMessageId(uint32_t message_id) {
+  bool SetLastMessageId(uint32_t message_id) const {
     uint64_t id = message_id;
     DataFile<uint64_t> file(FilePath(config_.datadir(), MSGID_DAT),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
@@ -77,13 +77,13 @@ uint64_t as64(uint32_t header, uint32_t msgid) {
 }
 
 TEST_F(FtnMsgDupeTest, As64) {
-  auto i = as64(2, 1);
+  const auto i = as64(2, 1);
   LOG(INFO) << i;
   LOG(INFO) << "msgids sizeof: " << sizeof(msgids);
   LOG(INFO) << "i sizeof: " << sizeof(i);
   msgids ids{};
   
-  memcpy(&ids, &i, sizeof(i));
+  memcpy(static_cast<void*>(&ids), &i, sizeof(i));
   LOG(INFO) << "header: " << ids.header << "; msgid: " << ids.msgid;
   EXPECT_EQ(2u, ids.header);
   EXPECT_EQ(1u, ids.msgid);

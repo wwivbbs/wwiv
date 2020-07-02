@@ -107,14 +107,13 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   strcpy(b1.get(), pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), message_length);
 
-  for (size_t n = 0; n < sub.nets.size(); n++) {
-    const auto& xnp = sub.nets[n];
+  for (const auto& xnp : sub.nets) {
     if (xnp.net_num == netnum && xnp.host) {
       continue;
     }
     set_net_num(xnp.net_num);
     const auto& net = a()->nets()[xnp.net_num];
-    net_header_rec nh = nhorig;
+    auto nh = nhorig;
     std::vector<uint16_t> list;
     nh.minor_type = 0;
     if (!nh.fromsys) {
@@ -125,7 +124,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       nh.tosys = xnp.host;
     } else {
       std::set<uint16_t> subscribers;
-      const bool subscribers_read =
+      const auto subscribers_read =
           ReadSubcriberFile(FilePath(net.dir, StrCat("n", xnp.stype, ".net")), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
@@ -184,7 +183,7 @@ void post(const PostData& post_data) {
     data.anonymous_flag = 0;
   }
   if (!a()->current_sub().nets.empty()) {
-    data.anonymous_flag &= (anony_real_name);
+    data.anonymous_flag &= anony_real_name;
     if (a()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
@@ -259,12 +258,12 @@ void post(const PostData& post_data) {
 
   open_sub(true);
 
-  if ((!a()->current_sub().nets.empty()) && (a()->current_sub().anony & anony_val_net) &&
+  if (!a()->current_sub().nets.empty() && a()->current_sub().anony & anony_val_net &&
       (!lcs() || !post_data.reply_to.title.empty())) {
     p.status |= status_pending_net;
-    bool dm = true;
-    for (int i = a()->GetNumMessagesInCurrentMessageArea();
-         (i >= 1) && (i > (a()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+    auto dm = true;
+    for (auto i = a()->GetNumMessagesInCurrentMessageArea();
+         i >= 1 && i > a()->GetNumMessagesInCurrentMessageArea() - 28; i--) {
       if (get_post(i)->status & status_pending_net) {
         dm = false;
         break;
@@ -279,11 +278,12 @@ void post(const PostData& post_data) {
     int i = 1;
     int dm = 0;
     while (i <= a()->GetNumMessagesInCurrentMessageArea()) {
-      postrec* pp = get_post(i);
+      auto* pp = get_post(i);
       if (!pp) {
         break;
-      } else if (((pp->status & status_no_delete) == 0) ||
-                 (pp->msg.storage_type != a()->current_sub().storage_type)) {
+      }
+      if ((pp->status & status_no_delete) == 0 ||
+          pp->msg.storage_type != a()->current_sub().storage_type) {
         dm = i;
         break;
       }
@@ -325,7 +325,7 @@ void post(const PostData& post_data) {
   }
 }
 
-void add_ftn_msgid(const wwiv::sdk::Config& config, FidoAddress addr, const std::string& msgid,
+void add_ftn_msgid(const wwiv::sdk::Config& config, const FidoAddress& addr, const std::string& msgid,
                    MessageEditorData* data) {
   FtnMessageDupe dupe(config);
   if (dupe.IsInitialized()) {
@@ -349,7 +349,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
   if (!readfile(msg, file_name, &text)) {
     return {};
   }
-  auto cr = text.find_first_of('\r');
+  const auto cr = text.find_first_of('\r');
   if (cr == string::npos) {
     return {};
   }
@@ -361,7 +361,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
     a()->net_email_name = text;
     return text;
   }
-  auto ss2 = text.c_str();
+  const auto* ss2 = text.c_str();
   if (text[0] == '`' && text[1] == '`') {
     for (const char* ss1 = ss2 + 2; *ss1; ss1++) {
       if (ss1[0] == '`' && ss1[1] == '`') {
@@ -388,7 +388,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
   auto memory_last_read = a()->context().qsc_p[sub_number];
 
   iscan1(sub_number);
-
+  auto num_lines = 3;
   const auto on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     const auto old_subnum = a()->current_user_sub_num();
@@ -414,26 +414,22 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
         get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
-      auto status = a()->status_manager()->GetStatus();
+      const auto status = a()->status_manager()->GetStatus();
       a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = status->GetQScanPointer() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);
     bout << "|#1< " << a()->current_sub().name << " Q-Scan Done >";
-    bout.clreol();
-    bout.nl();
-    bout.clear_lines_listed();
-    bout.clreol();
-    bout.move_up_if_newline(4);
+    num_lines = 4;
   } else {
     bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name << " "
          << a()->usub[start_subnum].keys;
-    bout.clreol();
-    bout.nl();
-    bout.clear_lines_listed();
-    bout.clreol();
-    bout.move_up_if_newline(3);
   }
+  bout.clreol();
+  bout.nl();
+  bout.clear_lines_listed();
+  bout.clreol();
+  bout.move_up_if_newline(num_lines);
   bout.nl();
 }
 
@@ -482,8 +478,8 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
        << "|#9): ";
-  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
-  bool nextsub = false;
+  const auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
+  auto nextsub = false;
   if (r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
   } else if (r.key == 'Q') {
@@ -520,9 +516,9 @@ void remove_post() {
   auto postnum = input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
-    if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == a()->usernum)) ||
+    if (get_post(postnum)->ownersys == 0 && get_post(postnum)->owneruser == a()->usernum ||
         lcs()) {
-      if ((get_post(postnum)->owneruser == a()->usernum) && (get_post(postnum)->ownersys == 0)) {
+      if (get_post(postnum)->owneruser == a()->usernum && get_post(postnum)->ownersys == 0) {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {
