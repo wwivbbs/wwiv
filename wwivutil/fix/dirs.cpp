@@ -24,7 +24,6 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "sdk/files/files.h"
 #include <iostream>
@@ -45,12 +44,6 @@ namespace wwiv::wwivutil {
 
 namespace {
 const char* WWIV_FILE_DATE_FORMAT = "%m/%d/%y";
-}
-
-static std::string to_string(const sdk::files::directory_t& d) {
-  std::ostringstream ss;
-  ss << d.name << " (" << d.filename << ")";
-  return ss.str();
 }
 
 static bool ensure_path_exists(const wwiv::sdk::files::directory_t& d, bool dry_run) {
@@ -181,9 +174,9 @@ static uint32_t file_size(const std::filesystem::path& path) {
 static bool CheckAttributes(const wwiv::sdk::files::directory_t& dir, sdk::files::FileArea& area,
   const std::unordered_set<std::string>& files_with_ext_desc, bool dry_run) {
   const auto nf = area.number_of_files();
-  bool area_dirty{false};
-  for (int i = 1; i < nf; i++) {
-    bool dirty{false};
+  auto area_dirty{false};
+  for (auto i = 1; i < nf; i++) {
+    auto dirty{false};
     auto f = area.ReadFile(i);
     const auto actual_extended = contains(files_with_ext_desc, f.aligned_filename());
     if (actual_extended != f.has_extended_description()) {

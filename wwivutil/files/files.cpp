@@ -24,7 +24,6 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/config.h"
-#include "sdk/files/files_ext.h"
 #include "wwivutil/files/allow.h"
 #include "wwivutil/files/tic.h"
 #include <algorithm>
@@ -145,9 +144,6 @@ public:
       LOG(ERROR) << "Unable to open area: #" << area_num << "; filename: " << dir.filename;
       return 1;
     }
-    wwiv::sdk::files::FileAreaExtendedDesc ext(&api, config()->config()->datadir(), dir,
-                                               area->number_of_files());
-    const auto ext_avail = ext.Load();
     auto num_files = area->number_of_files();
     cout << fmt::format("File Area: {} ({} files)", dir.name, num_files) << std::endl;
     cout << std::endl;
@@ -161,17 +157,15 @@ public:
     cout << string(78, '=') << endl;
     for (auto num = 1; num <= num_files; num++) {
       auto f = area->ReadFile(num);
-      cout << "#" << std::setw(3) << std::left << num << " "
-           << std::setw(8) << f.unaligned_filename() << " "
-           << f.description() << std::endl;
-      if (ext_avail && f.has_extended_description()) {
-        auto so = ext.ReadExtendedAsLines(f);
+      cout << fmt::format("#{: <3} {: <12} {}", num, f.unaligned_filename(), f.description()) << std::endl;
+      if (f.has_extended_description() && barg("ext")) {
+        auto so = area->ReadExtendedDescriptionAsString(f);
         if (!so) {
           continue;
         }
-        auto lines = so.value();
+        auto lines = SplitString(so.value(), "\n", false);
         for(const auto& l : lines) {
-          cout << std::string(17, ' ') << StringTrim(l) << std::endl;
+          cout << std::string(18, ' ') << StringTrim(l) << std::endl;
         }
       }
     }
@@ -179,7 +173,7 @@ public:
   }
 
   bool AddSubCommands() override {
-    add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
+    add_argument(BooleanCommandLineArgument("ext", "Display extended descriptions.", false));
     return true;
   }
 };
