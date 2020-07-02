@@ -201,7 +201,7 @@ static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageD
   // on header.password, we add one.
   char temp[9];
   memset(temp, 0, sizeof(temp));
-  strncpy(temp, header.password, sizeof(header.password));
+  strncpy(temp, header.password, 8);
   string actual = temp;
   if (!iequals(expected, actual)) {
     LOG(ERROR) << "Unexpected packet password from node: " << address << "; actual: '" << actual

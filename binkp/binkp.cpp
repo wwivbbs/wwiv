@@ -800,6 +800,9 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
   if (s.size() >= 4) {
     offset = to_number<long>(s.at(3));
   }
+  if (offset != 0) {
+    LOG(WARNING) << "offset specified in FileGetRequest.  We don't support offset != 0";
+  }
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {

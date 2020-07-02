@@ -95,9 +95,11 @@ uint16_t wwivnet_node_number_from_ftn_address(const string& address) {
 }
 
 Remote::Remote(BinkConfig* config, bool caller, const std::string& expected_remote_node)
-  : config_(config), remote_is_caller_(caller), expected_remote_node_(expected_remote_node),
-  default_network_name_(config_->callout_network_name()) {
-  network_name_ = default_network_name_;
+  : config_(config),
+  default_network_name_(config_->callout_network_name()),
+  remote_is_caller_(caller),
+  expected_remote_node_(expected_remote_node),
+  network_name_(default_network_name_) {
 
   // When sending, we should be talking to who we wanted to.
   if (!caller) {

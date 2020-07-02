@@ -122,7 +122,7 @@ static std::string fopen_compatible_mode(const std::string& m) noexcept {
 
 TextFile::TextFile(const std::filesystem::path& file_name, const string& file_mode) noexcept
   : file_name_(file_name), file_(OpenImpl(file_name.string(), fopen_compatible_mode(file_mode))),
-    dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr), open_(file_ != nullptr) {
+    open_(file_ != nullptr), dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {
 }
 
 bool TextFile::Close() noexcept {

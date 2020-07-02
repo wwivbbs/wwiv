@@ -469,7 +469,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     bout << "  |#9Extended Description:\n\r";
   }
   const auto lines = SplitString(ss, "\n", false);
-  auto numl = std::min(ssize(lines), numlist);
+  auto numl = std::min<int>(ssize(lines), numlist);
   for (auto i = 0; i < numl; i++) {
     bout.Right(std::abs(indent));
     auto l = lines.at(i);

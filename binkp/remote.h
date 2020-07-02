@@ -45,13 +45,13 @@ private:
   const std::string default_network_name_;
   bool remote_is_caller_;
   const std::string expected_remote_node_;
+  std::string network_name_;
 
   std::string system_name_;
   std::string sysop_name_;
   std::string version_;
   std::string ftn_address_;
   uint16_t wwivnet_node_;
-  std::string network_name_;
   std::string address_list_;
 };
 

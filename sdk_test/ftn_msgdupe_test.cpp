@@ -82,7 +82,7 @@ TEST_F(FtnMsgDupeTest, As64) {
   LOG(INFO) << "msgids sizeof: " << sizeof(msgids);
   LOG(INFO) << "i sizeof: " << sizeof(i);
   msgids ids{};
-
+  
   memcpy(&ids, &i, sizeof(i));
   LOG(INFO) << "header: " << ids.header << "; msgid: " << ids.msgid;
   EXPECT_EQ(2u, ids.header);
