@@ -18,19 +18,19 @@
 /**************************************************************************/
 #include "wwivutil/fix/dirs.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
-
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "sdk/files/files.h"
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -39,146 +39,229 @@ using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::stl;
 
 namespace wwiv::wwivutil {
 
-static bool checkDirExists(const std::string& dir, const char *desc) {
-  if (File::Exists(dir)) {
+namespace {
+const char* WWIV_FILE_DATE_FORMAT = "%m/%d/%y";
+}
+
+static std::string to_string(const sdk::files::directory_t& d) {
+  std::ostringstream ss;
+  ss << d.name << " (" << d.filename << ")";
+  return ss.str();
+}
+
+static bool ensure_path_exists(const wwiv::sdk::files::directory_t& d, bool dry_run) {
+  if (File::Exists(d.path)) {
     return true;
   }
 
-  LOG(INFO) << "For File Area: " << desc;
-  LOG(INFO) << "Unable to find dir: " << dir;
-  LOG(INFO) << "Please create it.";
-  return false;
-  //printf("   Do you wish to CREATE it (y/N)?\n");
-  //string s;
-  //std::cin >> s;
-  //if (s[0] == 'Y' || s[0] == 'y') {
-  //  if (!File::mkdirs(dir)) {
-  //    Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.full_pathname().c_str(), desc);
-  //    return false;
-  //  }
-  //}
-  //return true;
+  LOG(INFO) << "Missing directory for file area: " << d;
+  LOG(INFO) << "Path: " << d.path;
+  if (dry_run) {
+    LOG(INFO) << "Please create it.";
+    return false;
+  }
+  LOG(INFO) << "Creating directory: " << d.path;
+  return File::mkdirs(d.path);
 }
 
-void checkFileAreas(const std::string& datadir, bool verbose) {
-  vector<directoryrec_422_t> directories;
-  {
-    DataFile<directoryrec_422_t> file(FilePath(datadir, DIRS_DAT));
-    if (!file) {
-      // TODO(rushfan): show error?
-      return;
+std::unordered_set<std::string> CheckDirForDuplicates(sdk::files::FileArea& area, bool dry_run) {
+  std::unordered_set<std::string> files;
+  std::vector<uploadsrec> data;
+  const auto& raw_files = area.raw_files();
+  for (const auto& r : raw_files) {
+    auto [it, added] = files.insert(r.filename);
+    if (added) {
+      data.push_back(r);
+    } else {
+      LOG(INFO) << "Found duplicate file: " << r.filename;
     }
-    if (!file.ReadVector(directories)) {
-      // TODO(rushfan): show error?
-      return;
+  }
+  if (data.size() != raw_files.size()) {
+    // We deleted some, time to save.
+    LOG(INFO) << "Removed " << std::abs(ssize(data) - ssize(raw_files)) << " duplicate files";
+    if (area.set_raw_files(data)) {
+      if (!dry_run) {
+        area.Save();
+      }
+    }
+  }
+  return files;
+}
+
+std::optional<std::unordered_set<std::string>>
+RewriteExtendedDescriptions(const sdk::files::directory_t& dir, sdk::files::FileArea& area,
+                            std::unordered_set<std::string> actual_files, bool dry_run) {
+  VLOG(1) << "Rewriting extended descriptions for: " << dir;
+  auto ext_path = area.ext_path();
+
+  if (!File::Exists(ext_path)) {
+    VLOG(1) << "No extended descriptions for: " << dir;
+    return std::nullopt;
+  }
+  auto tmp_path{ext_path};
+  tmp_path.replace_extension(".tmp");
+
+  std::unordered_set<std::string> files_with_ext_desc;
+  if (!backup_file(ext_path)) {
+    LOG(ERROR) << "Error creating backup of Extended Description file: " << dir;
+  }
+
+  // move to .TMP
+  if (dry_run) {
+    if (!File::Copy(ext_path, tmp_path)) {
+      LOG(ERROR) << "Error Copying Extended Description file: " << dir;
+      return std::nullopt;
+    }
+  } else {
+    if (!File::Move(ext_path, tmp_path)) {
+      LOG(ERROR) << "Error Moving Extended Description file: " << dir;
+      return std::nullopt;
     }
   }
 
-  LOG(INFO) << "Checking " << directories.size() << " directories.";
-  for (auto& d : directories) {
-    if (!(d.mask & mask_cdrom) && !(d.mask & mask_offline)) {
-      if (checkDirExists(d.path, d.name)) {
-        LOG(INFO) << "Checking directory: " << d.name;
-        const auto filename = StrCat(d.filename, ".dir");
-        const auto record_path = FilePath(datadir, filename);
-        if (File::Exists(record_path)) {
-          File recordFile(record_path);
-          if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
-            LOG(INFO) << "Unable to open:" << recordFile;
-          } else {
-            auto numFiles = static_cast<int>(recordFile.length() / sizeof(uploadsrec));
-            uploadsrec upload{};
-            recordFile.Read(&upload, sizeof(uploadsrec));
-            if (static_cast<int>(upload.numbytes) != numFiles) {
-              LOG(INFO) << "Corrected # of files in: " << d.name;
-              upload.numbytes = numFiles;
-              recordFile.Seek(0L, File::Whence::begin);
-              recordFile.Write(&upload, sizeof(uploadsrec));
-            }
-            if (numFiles >= 1) {
-              ext_desc_rec *extDesc = nullptr;
-              int recNo = 0;
-              const auto fn = FilePath(datadir, StrCat(d.filename, ".ext"));
-              if (File::Exists(fn)) {
-                File extDescFile(fn);
-                if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
-                  extDesc = static_cast<ext_desc_rec*>(malloc(numFiles * sizeof(ext_desc_rec)));
-                  auto offs = 0;
-                  while (offs < extDescFile.length() && recNo < numFiles) {
-                    ext_desc_type ed{};
-                    extDescFile.Seek(offs, File::Whence::begin);
-                    if (extDescFile.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
-                      strcpy(extDesc[recNo].name, ed.name);
-                      extDesc[recNo].offset = offs;
-                      offs += static_cast<int>(ed.len + sizeof(ext_desc_type));
-                      ++recNo;
-                    }
-                  }
-                }
-                extDescFile.Close();
-              }
-              for (int file_no = 1; file_no < numFiles; file_no++) {
-                bool modified = false;
-                recordFile.Seek(sizeof(uploadsrec) * file_no, File::Whence::begin);
-                recordFile.Read(&upload, sizeof(uploadsrec));
-                bool extDescFound = false;
-                for (auto desc = 0; desc < recNo; desc++) {
-                  if (strcmp(upload.filename, extDesc[desc].name) == 0) {
-                    extDescFound = true;
-                  }
-                }
-                if (extDescFound && ((upload.mask & mask_extended) == 0)) {
-                  upload.mask |= mask_extended;
-                  modified = true;
-                  LOG(INFO) << "Fixed (added) extended description for: " << upload.filename;
-                } else if (!extDescFound && (upload.mask & mask_extended)) {
-                  upload.mask &= ~mask_extended;
-                  modified = true;
-                  LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
-                }
-                const auto dir_fn = FilePath(d.path, wwiv::sdk::files::unalign(upload.filename));
-                File file(dir_fn);
-                if (strlen(upload.filename) > 0 && File::Exists(dir_fn)) {
-                  if (file.Open(File::modeReadOnly | File::modeBinary)) {
-                    if (verbose) {
-                      LOG(INFO) << "Checking file: " << file;
-                    }
-                    if (upload.numbytes != static_cast<decltype(upload.numbytes)>(file.length())) {
-                      upload.numbytes = file.length();
-                      modified = true;
-                      LOG(INFO) << "Fixed file size for: " << upload.filename;
-                    }
-                    file.Close();
-                  } else {
-                    LOG(INFO) << "Unable to open file '" << dir_fn
-                              << "', error:" << file.last_error();
-                  }
-                }
-                if (modified) {
-                  recordFile.Seek(sizeof(uploadsrec) * file_no, File::Whence::begin);
-                  recordFile.Write(&upload, sizeof(uploadsrec));
-                }
-              }
-              if (extDesc != nullptr) {
-                free(extDesc);
-                extDesc = nullptr;
-              }
-            }
-            recordFile.Close();
-          }
-        } else {
-          LOG(INFO) << "Directory '" << d.name << "' missing file: " << record_path;
-        }
+  File in(tmp_path);
+  if (!in.Open(File::modeReadOnly | File::modeBinary)) {
+    LOG(ERROR) << "Error Reading Extended Description file: " << dir;
+    return std::nullopt;
+  }
+  const auto file_size = in.length();
+  if (!file_size) {
+    VLOG(1) << "Extended description file is empty.";
+    return std::nullopt;
+  }
+
+  File out(ext_path);
+  if (!dry_run) {
+    if (!out.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate)) {
+      LOG(ERROR) << "Error Opening Extended Description file for Write: " << dir;
+      return std::nullopt;
+    }
+  }
+
+  for (long file_pos = 0; file_pos < file_size; ) {
+    in.Seek(file_pos, File::Whence::begin);
+    ext_desc_type ed{};
+    const auto num_read = in.Read(&ed, sizeof(ext_desc_type));
+    if (num_read != sizeof(ext_desc_type)) {
+      // LOG ERROR? Return false here?
+      break;
+    }
+    if (contains(actual_files, ed.name)) {
+      // The file exists in the list, so let's write it and then remove
+      // it, so we don't write dupes.
+      actual_files.erase(ed.name);
+      files_with_ext_desc.insert(ed.name);
+      if (!dry_run) {
+        out.Write(&ed, sizeof(ext_desc_type));
       }
-    } else if (d.mask & mask_offline) {
-      LOG(INFO) << "Skipping directory '" << d.name << "' [OFFLINE]";
-    } else if (d.mask & mask_cdrom) {
-      LOG(INFO) << "Skipping directory '" << d.name << "' [CDROM]";
+
+      string ss;
+      ss.resize(ed.len);
+      in.Read(&ss[0], ed.len);
+      if (!dry_run) {
+        out.Write(&ss[0], ed.len);
+      }
     } else {
-      LOG(INFO) << "Skipping directory '" << d.name << "' [UNKNOWN MASK]";
+      LOG(INFO) << "Removing file from ext description [does not exist] : " << ed.name;
+    }
+    file_pos += ed.len + static_cast<int>(sizeof(ext_desc_type));
+  }
+  return {files_with_ext_desc};
+}
+
+static uint32_t file_size(const std::filesystem::path& path) {
+  const File f(path);
+  return static_cast<uint32_t>(f.length());
+}
+
+static bool CheckAttributes(const wwiv::sdk::files::directory_t& dir, sdk::files::FileArea& area,
+  const std::unordered_set<std::string>& files_with_ext_desc, bool dry_run) {
+  const auto nf = area.number_of_files();
+  bool area_dirty{false};
+  for (int i = 1; i < nf; i++) {
+    bool dirty{false};
+    auto f = area.ReadFile(i);
+    const auto actual_extended = contains(files_with_ext_desc, f.aligned_filename());
+    if (actual_extended != f.has_extended_description()) {
+      dirty = true;
+      LOG(INFO) << "Fixing ext desc mask on: " << f.filename();
+      f.set_extended_description(actual_extended);
+    }
+    const auto path = FilePath(dir.path, f);
+    const auto actual_size = wwiv::wwivutil::file_size(path);
+    if (actual_size != f.numbytes()) {
+      dirty = true;
+      LOG(INFO) << "Fixing file size for: " << f.filename();
+      f.set_numbytes(actual_size);
+    }
+    auto actual_dt = DateTime::from_time_t(File::creation_time(path));
+    const auto actual_dts = actual_dt.to_string(WWIV_FILE_DATE_FORMAT);
+    if (!iequals(actual_dts, f.actual_date())) {
+      dirty = true;
+      LOG(INFO) << "Fixing file actual date for: " << f.filename() << "; date: " << actual_dts;
+      f.set_actual_date(actual_dt);
+    }
+
+    if (dirty && !dry_run) {
+      area_dirty = true;
+      if (!area.UpdateFile(f, i)) {
+        LOG(ERROR) << "Error Updating file: " << f.filename();
+      }
+    }
+  }
+
+  if (area_dirty && !dry_run) {
+    return area.Save();
+  }
+  return true;
+}
+
+bool CheckExtendedDirAndAttributes(const sdk::files::directory_t& dir, sdk::files::FileArea& area, bool dry_run) {
+  const auto actual_files = CheckDirForDuplicates(area, dry_run);
+  std::unordered_set<std::string> empty_set;
+  const auto files_with_ext_desc = RewriteExtendedDescriptions(dir, area, actual_files, dry_run).value_or(empty_set);
+  // Reload areas since duplicates could have been removed.
+  area.Close();
+  area.Load();
+  return CheckAttributes(dir, area, files_with_ext_desc, dry_run);
+}
+
+void checkFileAreas(const std::string& datadir, bool verbose, bool dry_run) {
+  sdk::files::Dirs dirs(datadir);
+  if (!dirs.Load()) {
+    LOG(ERROR) << "Unble to load dirs.dat";
+    return;
+  }
+  sdk::files::FileApi api(datadir);
+  const auto& directories = dirs.dirs();
+
+  LOG(INFO) << "Checking " << directories.size() << " directories.";
+  for (const auto& d : directories) {
+    if (d.mask & mask_cdrom) {
+      LOG(INFO) << "Skipping directory '" << d.name << "' [CD-ROM]";
+      continue;
+    }
+    if (d.mask & mask_offline) {
+      LOG(INFO) << "Skipping directory '" << d.name << "' [OFFLINE]";
+      continue;
+    }
+    if (!ensure_path_exists(d, dry_run)) {
+      continue;
+    }
+    auto area = api.Open(d);
+    if (!area) {
+      LOG(ERROR) << "Unable to open file area: " << d;
+      continue;
+    }
+    if (!area->FixFileHeader()) {
+      LOG(ERROR) << "Error fixing file header";
+    }
+    if (!CheckExtendedDirAndAttributes(d, *area, dry_run)) {
+      LOG(ERROR) <<"Failed to fix directory: " << d;
     }
   }
 }
@@ -192,6 +275,7 @@ std::string FixDirectoriesCommand::GetUsage() const {
 
 bool FixDirectoriesCommand::AddSubCommands() {
   add_argument(BooleanCommandLineArgument("verbose", 'v', "Enable verbose output.", false));
+  add_argument(BooleanCommandLineArgument("dry_run", 'x', "Enable dry run mode (report errors, do not fix).", false));
 
   return true;
 }
@@ -199,9 +283,17 @@ bool FixDirectoriesCommand::AddSubCommands() {
 int FixDirectoriesCommand::Execute() {
   cout << "Runnning FixDirectoriesCommand::Execute" << endl;
 
-  checkFileAreas(config()->config()->datadir(), arg("verbose").as_bool());
+  checkFileAreas(config()->config()->datadir(), verbose(), dry_run());
   return 0;
 }
 
-} // namespavce wwiv
+bool FixDirectoriesCommand::verbose() const {
+  return arg("verbose").as_bool();
+}
+
+bool FixDirectoriesCommand::dry_run() const {
+  return arg("dry_run").as_bool();
+}
+
+} // namespace wwiv
 

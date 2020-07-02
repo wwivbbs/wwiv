@@ -67,6 +67,11 @@ void serialize(Archive & ar, directory_t& s) {
   SERIALIZE(s, area_tags);
 }
 
+std::ostream& operator<<(std::ostream& os, const sdk::files::directory_t& d) {
+  os << d.name << " (" << d.filename << ")";
+  return os;
+}
+
 bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries) {
   entries.clear();
   JsonFile f(FilePath(dir, filename), "dirs", entries);

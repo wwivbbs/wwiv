@@ -102,11 +102,19 @@ public:
   [[nodiscard]] FileAreaHeader& header() const;
 
   // File Dir Specific Operations
+
+  // Loads the data on disk to the FileArea class
+  bool Load();
+  // Saves all changes to Disk. Note that extended
+  // description changes happen immediately.
   bool Save();
+  // Saves (if dirty and open) and marks this file areas as closed.
   bool Close();
   bool Lock();
   bool Unlock();
   [[nodiscard]] int number_of_files() const;
+
+  // Sorts the files in memory.
   bool Sort(FileAreaSortType type);
 
   // File specific
@@ -129,7 +137,9 @@ public:
   bool DeleteFile(int file_number);
 
   // Extended Descriptions
-  std::optional<FileAreaExtendedDesc*> ext_desc();
+  // Gets or creates the FileAreaExtendedDesc class.  If reload is true then
+  // the class will be reloaded.
+  std::optional<FileAreaExtendedDesc*> ext_desc(bool reload = false);
   // Adds an extended description to file f at pos num.  If num is -1
   // then don't update f.
   bool AddExtendedDescription(FileRecord& f, int num, const std::string& text);
@@ -143,8 +153,14 @@ public:
   std::optional<std::string> ReadExtendedDescriptionAsString(FileRecord& f);
   std::optional<std::string> ReadExtendedDescriptionAsString(const std::string& aligned_name);
 
-protected:
+  // Gets the raw files
+  [[nodiscard]] const std::vector<uploadsrec>& raw_files() const;
+  // Sets the raw files.  Do not use unless you are doing a "fix" type tool
+  [[nodiscard]] bool set_raw_files(std::vector<uploadsrec>);
   [[nodiscard]] std::filesystem::path path() const noexcept;
+  [[nodiscard]] std::filesystem::path ext_path();
+
+protected:
   bool ValidateFileNum(const FileRecord& f, int num);
 
   // Not owned.

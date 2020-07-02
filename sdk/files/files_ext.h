@@ -42,11 +42,11 @@ public:
   bool Load();
   bool Save(); // NOP?
   bool Close();
-  bool Lock() { return true; }
-  bool Unlock() { return true; }
+  [[nodiscard]] bool Lock() { return true; }
+  [[nodiscard]] bool Unlock() { return true; }
   int max_number_of_files() const noexcept { return num_files_; };
   int number_of_ext_descriptions();
-  bool Compact() { return false; }
+  [[nodiscard]] bool Compact() { return false; }
 
   // File specific
   bool AddExtended(const FileRecord& f, const std::string& text);
@@ -59,8 +59,9 @@ public:
   std::optional<std::vector<std::string>> ReadExtendedAsLines(const std::string& file_name);
   bool UpdateExtended(const FileRecord& f, const std::string& text);
 
-protected:
   [[nodiscard]] std::filesystem::path path() const noexcept;
+
+protected:
 
   // Not owned.
   FileApi* api_;

@@ -35,7 +35,6 @@ namespace wwiv::sdk::files {
 
 namespace {
 const char* WWIV_FILE_DATE_FORMAT = "%m/%d/%y";
-
 }
 
 static void _align(char* fn) {
@@ -217,6 +216,14 @@ bool FileRecord::set_description(const std::string& desc) {
 
 std::string FileRecord::description() const {
   return u_.description;
+}
+
+wwiv::core::DateTime FileRecord::date() const {
+  return DateTime::from_daten(u_.daten);
+}
+
+std::string FileRecord::actual_date() const {
+  return std::string(u_.actualdate);
 }
 
 bool FileRecord::set_date(const wwiv::core::DateTime& dt) {

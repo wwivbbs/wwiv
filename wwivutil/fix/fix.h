@@ -20,19 +20,17 @@
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
-class FixCommand: public UtilCommand {
+class FixCommand final: public UtilCommand {
 public:
   FixCommand(): UtilCommand("fix", "WWIV fix commands.") {}
-  virtual ~FixCommand() {}
-  virtual bool AddSubCommands() override final;
+  ~FixCommand() = default;
+  bool AddSubCommands() override final;
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}
 
 
 #endif  // __INCLUDED_WWIVUTIL_FIX_FIX_H__

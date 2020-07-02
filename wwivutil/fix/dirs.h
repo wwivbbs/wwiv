@@ -19,22 +19,21 @@
 #ifndef __INCLUDED_WWIVUTIL_FIX_DIRS_H__
 #define __INCLUDED_WWIVUTIL_FIX_DIRS_H__
 
-#include "core/command_line.h"
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class FixDirectoriesCommand final: public UtilCommand {
 public:
   FixDirectoriesCommand()
     : UtilCommand("dirs", "Fix File Directories.") {}
-  int Execute() override final;
-  std::string GetUsage() const override final;
-  bool AddSubCommands() override final;
+  int Execute() override;
+  [[nodiscard]] bool verbose() const;
+  [[nodiscard]] bool dry_run() const;
+  [[nodiscard]] std::string GetUsage() const override;
+  bool AddSubCommands() override;
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}
 
 #endif  // __INCLUDED_WWIVUTIL_FIX_DIRS_H__ 

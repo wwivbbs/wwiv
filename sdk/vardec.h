@@ -830,7 +830,7 @@ struct userconfrec {
 #define mask_PD 0x0001
 #define mask_no_uploads 0x0004
 #define mask_archive 0x0008
-#define mask_pending_batch 0x0010
+#define unused_mask_pending_batch 0x0010
 #define mask_no_ratio 0x0020
 #define mask_cdrom 0x0040
 #define mask_offline 0x0080

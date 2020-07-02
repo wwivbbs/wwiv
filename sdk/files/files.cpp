@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/files/files.h"
 
-
 #include "dirs.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
@@ -25,7 +24,6 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "local_io/keycodes.h"
 #include "sdk/vardec.h"
 #include "sdk/files/files_ext.h"
 #include <algorithm>
@@ -133,22 +131,9 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const directory_t& 
 FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& filename)
     : api_(api), data_directory_(std::move(data_directory)),
       base_filename_(filename), filename_(StrCat(filename, ".dir")) {
-  DataFile<uploadsrec> file(path(), File::modeReadOnly | File::modeBinary);
-  if (file) {
-    if (file.ReadVector(files_)) {
-      open_ = true;
-    }
-  }
-  if (files_.empty()) {
-    files_.emplace_back();
-    open_ = dirty_ = true;
-  }
-  header_ = std::make_unique<FileAreaHeader>(files_.front());
-  header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
-
+  open_ = Load();
   // Load up extended descriptions
   ext_desc();
-  //ext_desc_ = std::make_unique<FileAreaExtendedDesc>(api_, data_directory_, base_filename_, number_of_files());
 }
 
 
@@ -161,9 +146,27 @@ FileAreaHeader& FileArea::header() const {
   return *header_;
 }
 
+bool FileArea::Load() {
+  dirty_ = false;
+  DataFile<uploadsrec> file(path(), File::modeReadOnly | File::modeBinary);
+  if (file) {
+    if (file.ReadVector(files_)) {
+      open_ = true;
+    }
+  }
+  if (files_.empty()) {
+    files_.emplace_back();
+    open_ = dirty_ = true;
+  }
+  header_ = std::make_unique<FileAreaHeader>(files_.front());
+  header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
+  return open_;
+}
+
 bool FileArea::Close() {
   if (open_ && dirty_) {
     const auto r = Save();
+    ext_desc_.reset();
     open_ = false;
     return r;
   }
@@ -286,11 +289,11 @@ bool FileArea::DeleteFile(int file_number) {
   return true;
 }
 
-std::optional<FileAreaExtendedDesc*> FileArea::ext_desc() {
+std::optional<FileAreaExtendedDesc*> FileArea::ext_desc(bool reload) {
   if (!open_) {
     return std::nullopt;
   }
-  if (!ext_desc_) {
+  if (!ext_desc_ || reload) {
     ext_desc_ = std::make_unique<FileAreaExtendedDesc>(
       api_, data_directory_, base_filename_, number_of_files());
   }
@@ -367,6 +370,15 @@ std::optional<std::string> FileArea::ReadExtendedDescriptionAsString(
   return o.value()->ReadExtended(aligned_name);
 }
 
+const std::vector<uploadsrec>& FileArea::raw_files() const {
+  return files_;
+}
+
+bool FileArea::set_raw_files(std::vector<uploadsrec> nf) {
+  files_ = std::move(nf);
+  return true;
+}
+
 std::optional<int> FileArea::FindFile(const FileRecord& f) {
   return FindFile(f.aligned_filename());
 }
@@ -434,6 +446,15 @@ bool FileArea::Save() {
 
 std::filesystem::path FileArea::path() const noexcept {
   return ::FilePath(data_directory_, filename_);
+}
+
+std::filesystem::path FileArea::ext_path() {
+  const auto e = ext_desc(false);
+  if (!e) {
+    auto p = path();
+    return p.replace_extension(".ext");
+  }
+  return e.value()->path();
 }
 
 bool FileArea::ValidateFileNum(const FileRecord& f, int num) {

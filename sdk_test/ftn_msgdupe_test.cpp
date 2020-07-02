@@ -45,7 +45,8 @@ using namespace wwiv::strings;
 class FtnMsgDupeTest : public testing::Test {
 public:
   FtnMsgDupeTest() : config_(helper.root()) {}
-  bool CreateDupes(std::vector<msgids> ids) const {
+
+  [[nodiscard]] bool CreateDupes(const std::vector<msgids>& ids) const {
     DataFile<msgids> file(FilePath(config_.datadir(), MSGDUPE_DAT),
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate);
@@ -56,7 +57,7 @@ public:
     return file.WriteVector(ids);
   }
 
-  bool SetLastMessageId(uint32_t message_id) const {
+  [[nodiscard]] bool SetLastMessageId(uint32_t message_id) const {
     uint64_t id = message_id;
     DataFile<uint64_t> file(FilePath(config_.datadir(), MSGID_DAT),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
@@ -73,7 +74,7 @@ public:
 
 // This is what the old msgdupe used.
 uint64_t as64(uint32_t header, uint32_t msgid) {
-  return (static_cast<uint64_t>(header) << 32) | msgid;
+  return static_cast<uint64_t>(header) << 32 | msgid;
 }
 
 TEST_F(FtnMsgDupeTest, As64) {
@@ -109,14 +110,14 @@ TEST_F(FtnMsgDupeTest, Exists) {
   ASSERT_TRUE(SetLastMessageId(last_message_id));
   ASSERT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
   FtnMessageDupe dupe(config_.datadir(), true);
-  FidoAddress a{"1:2/3"};
+  const FidoAddress a{"1:2/3"};
   const auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
   ASSERT_EQ(2u, parts.size());
   const auto id = static_cast<unsigned int>(std::stoul(parts.at(1), nullptr, 16));
 
   EXPECT_EQ(id - last_message_id, 1u) << "id: " << id << "; last_message_id: " << last_message_id
-                                     << "; delta: " << (id - last_message_id);
+                                      << "; delta: " << (id - last_message_id);
 }
 
 TEST_F(FtnMsgDupeTest, Smoke) {

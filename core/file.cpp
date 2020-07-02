@@ -303,10 +303,18 @@ time_t File::last_write_time(const std::filesystem::path& path) {
 // static
 time_t File::creation_time(const std::filesystem::path& path) {
   struct stat buf{};
-  // st_ctime is creation time on windows and status change time on posix
-  // so that's probably the closest to what we want.
+  // Despite what https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/stat-functions?view=vs-2019
+  // says, st_ctime is no longer creation time on Windows.
+  // For Linux https://man7.org/linux/man-pages/man2/statx.2.html is how we can
+  // find the birth time on kernel versions 4.11 or later.
+  // We will just use the oldest of ctime and mtime for now.
+  // TODO(https://github.com/wwivbbs/wwiv/issues/1220)
   const auto p = path.string();
-  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+
+  if (stat(p.c_str(), &buf) == -1) {
+    return 0;
+  }
+  return std::min<time_t>(buf.st_ctime, buf.st_mtime);
 }
 
 bool File::Rename(const std::filesystem::path& o, const std::filesystem::path& n) {

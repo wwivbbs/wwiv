@@ -21,8 +21,8 @@
 #define __INCLUDED_SDK_FILES_DIRS_H__
 
 #include "core/uuid.h"
-
 #include <filesystem>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -53,12 +53,13 @@ struct directory_t {
   uint16_t mask;
   // AREA TAGs (used for FTN File Echos)
   std::vector<dir_area_t> area_tags;
+  friend std::ostream& operator<<(std::ostream& os, const directory_t& f);
 };
 
-class Dirs {
+class Dirs final {
 public:
   explicit Dirs(std::filesystem::path datadir);
-  virtual ~Dirs();
+  ~Dirs();
 
   bool LoadLegacy();
   bool Load();

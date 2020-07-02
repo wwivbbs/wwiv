@@ -74,6 +74,8 @@ public:
   bool set_filename(const std::string& unaligned_filename);
   bool set_description(const std::string& desc);
   [[nodiscard]] std::string description() const;
+  [[nodiscard]] wwiv::core::DateTime date() const;
+  [[nodiscard]] std::string actual_date() const;
   bool set_date(const wwiv::core::DateTime& dt);
   bool set_actual_date(const wwiv::core::DateTime& dt);
   [[nodiscard]] FileName filename() const;

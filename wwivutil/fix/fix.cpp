@@ -17,20 +17,16 @@
 /**************************************************************************/
 #include "wwivutil/fix/fix.h"
 
-#include <cstdio>
+#include "core/command_line.h"
+#include "core/file.h"
+#include "sdk/config.h"
+#include "wwivutil/fix/dirs.h"
+#include "wwivutil/fix/users.h"
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
-#include "wwivutil/fix/dirs.h"
-#include "wwivutil/fix/users.h"
 
 using std::endl;
 using std::make_unique;
@@ -41,8 +37,7 @@ using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 bool FixCommand::AddSubCommands() {
   add(make_unique<FixUsersCommand>());
@@ -52,5 +47,4 @@ bool FixCommand::AddSubCommands() {
 }
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}
