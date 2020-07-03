@@ -469,26 +469,34 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
 
-static std::vector<std::string> split_long_line(const std::string& text) {
-  std::vector<std::string> lines;
-  // use size_t since size_without_colors returns that.
+static std::vector<std::string> split_long_lines(std::string& orig_text) {
+  auto orig = SplitString(orig_text, "\r");
+  std::vector<std::string> out;
   const auto screen_width = a()->user()->GetScreenChars();
-  auto s = text;
-  while (size_without_colors(s) > screen_width) {
-    auto pos = screen_width;
-    while (pos > 0 && s[pos] >= 27) {
-      pos--;
-    }
-    if (pos == 0) {
-      pos = screen_width;
-    }
-    lines.emplace_back(s.substr(0, pos));
-    s = s.substr(pos + 1);
+  for (auto& l : orig) {
+    StringTrimCRLF(&l);
+    l.erase(std::remove(l.begin(), l.end(), 10), l.end());
+
+    do {
+      const auto szwc = size_without_colors(l);
+      if (szwc <= screen_width) {
+        out.push_back(l);
+        break;
+      }
+      // We have a long line
+        auto pos = screen_width;
+      while (pos > 0 && l[pos] > 32) {
+        pos--;
+      }
+      if (pos == 0) {
+        pos = screen_width;
+      }
+      out.push_back(l.substr(0, pos));
+      l = l.substr(pos + 1);
+    } while (true);
+    
   }
-  if (!s.empty()) {
-    lines.emplace_back(s);
-  }
-  return lines;
+  return out;
 }
 
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {
@@ -499,37 +507,38 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
     text = text.substr(0, cz_pos);
   }
 
-  auto orig_lines = SplitString(text, "\r");
-  std::vector<std::string> lines;
-  for (auto line : orig_lines) {
-    StringTrimCRLF(&line);
-    line.erase(std::remove(line.begin(), line.end(), 10), line.end());
-    if (!line.empty()) {
-      const auto optional_lines = a()->user()->GetOptionalVal();
-      if (line.front() == CD) {
-        const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
-        if (level == 0) {
-          // ^D0 lines are always skipped unless explicitly requested.
-          if (controlcodes) {
-            line = StrCat("@", line.substr(2));
-          } else {
-            continue;
-          }
-        } else {
-          line = line.substr(2);
-        }
-        if (optional_lines != 0 && line.size() >= 2) {
-          if (static_cast<int>(10 - optional_lines) < level) {
-            // This is too high of a level, so skip it.
-            continue;
-          }
-        }
-      } else if (line.back() == CA) {
-        // This meant we wrapped here.
-        line.pop_back();
-      }
-    }
+  // split line into line + overflow.
+  auto orig_lines = split_long_lines(text);
 
+  std::vector<std::string> lines;
+  std::string overflow;
+  for (auto line : orig_lines) {
+    if (line.empty()) {
+      lines.emplace_back("");
+      continue;
+    }
+    const auto optional_lines = a()->user()->GetOptionalVal();
+    if (line.front() == CD) {
+      const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
+      if (level == 0) {
+        // ^D0 lines are always skipped unless explicitly requested.
+        if (!controlcodes) {
+          continue;
+        }
+        line = StrCat("@", line.substr(2));
+      } else {
+        line = line.substr(2);
+      }
+      if (optional_lines != 0 && line.size() >= 2 &&
+          static_cast<int>(10 - optional_lines) < level) {
+        // This is too high of a level, so skip it.
+        continue;
+      }
+    } else if (line.back() == CA) {
+      // This meant we wrapped here.
+      line.pop_back();
+    }
+    // Not CD or CA.  Check overflow.
     lines.emplace_back(line);
   }
 
