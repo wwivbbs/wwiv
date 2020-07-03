@@ -107,7 +107,6 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   if (!context.api(sub.storage_type).Exist(sub)) {
     LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";
-    ;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.

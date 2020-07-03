@@ -65,7 +65,7 @@ static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
     VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
 	    << "]";
     write(pty_fd, &input, 1);
-    VLOG(3) << "read from socket, write to term: '" << input << "'";
+    VLOG(4) << "read from socket, write to term: '" << input << "'";
   }
   if (FD_ISSET(pty_fd, &rfd)) {
     char input{};
@@ -74,8 +74,7 @@ static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
       VLOG(1) << "Performed LF -> CRLF translation.";
       write(sock, "\r\n", 2);
     } else {
-      VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input)
-	      << "]";
+      VLOG(4) << "Read From Terminal: '" << input << "'; [" << static_cast<unsigned>(input) << "]";
       write(sock, &input, 1);
     }
   }

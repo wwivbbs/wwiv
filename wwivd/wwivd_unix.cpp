@@ -166,7 +166,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   to_char_array(cmdstr, cmd);
   char* argv[] = { sh, dc, cmdstr, NULL };
 
-  LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
+  VLOG(2) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
   int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
   if (sock != SOCKET_ERROR) {

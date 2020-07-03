@@ -270,7 +270,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     current_receive_file_.reset();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
-    //    VLOG(1) << "       file still transferring; bytes_received: " <<
+    //    VLOG(3) << "       file still transferring; bytes_received: " <<
     //    current_receive_file_->length()
     //        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
   }
@@ -507,7 +507,7 @@ BinkState BinkP::PasswordAck() {
 
   VLOG(1) << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
-    // VLOG(1) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
+    // VLOG(3) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
     if (remote_password_ == expected_password) {
       // Passwords match, send OK.
       send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");

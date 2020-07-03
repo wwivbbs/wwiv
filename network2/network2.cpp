@@ -98,14 +98,14 @@ static bool handle_ssm(Context& context, Packet& p) {
     VLOG(1) << "==============================================================";
   });
   VLOG(1) << "==============================================================";
-  VLOG(1) << "  Receiving SSM for user: #" << p.nh.touser;
   SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(p.nh.touser, p.text())) {
-    LOG(ERROR) << "    ! ERROR writing SSM: '" << p.text() << "'; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR writing SSM: '" << p.nh.touser << "; text: '" << p.text()
+               << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
-  LOG(INFO) << "    + SSM  '" << p.text() << "'";
+  LOG(INFO) << "    + SSM  to: " << p.nh.touser << "; text: '" << p.text() << "'";
   return true;
 }
 

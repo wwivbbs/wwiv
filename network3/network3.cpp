@@ -410,7 +410,7 @@ static bool need_to_send_feedback(const CommandLine& cmdline) {
 }
 
 static int network3_fido(const NetworkCommandLine& net_cmdline) {
-  VLOG(1) << "network3_fido";
+  VLOG(2) << "network3_fido";
   const auto& net = net_cmdline.network();
   std::ostringstream text;
   add_feedback_header(net.dir, text);
@@ -533,7 +533,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
 }
 
 static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
-  VLOG(1) << "Reading bbslist.net..";
+  VLOG(2) << "Reading bbslist.net..";
   const auto& net = net_cmdline.network();
   const auto b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
   if (b.empty()) {
@@ -554,7 +554,7 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   write_bbsdata_files(bbsdata_data, net.dir);
   write_bbsdata_reg_file(b, net.dir);
 
-  VLOG(1) << "Reading callout.net...";
+  VLOG(2) << "Reading callout.net...";
   const Callout callout(net);
   ensure_contact_net_entries(callout, net);
   update_filechange_status_dat(net_cmdline.config().datadir());

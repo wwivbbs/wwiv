@@ -84,12 +84,6 @@ static std::unique_ptr<WWIVMessageAreaHeader> ReadHeader(DataFile<postrec>& file
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
     raw_header.daten_created = DateTime::now().to_daten_t();
-
-    // We probably can't write the header here since the datafile is usually
-    // only open for read only at this point.
-    // if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {
-    //   VLOG(4) << "Unable to write 5.2 header to file: " << file.file();
-    // }
   }
 
   return std::make_unique<WWIVMessageAreaHeader>(raw_header);

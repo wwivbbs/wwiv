@@ -73,10 +73,10 @@ static int GetUserNumber(const std::string& name, UserManager& um) {
 }
 
 bool handle_email_byname(Context& context, Packet& p) {
-  VLOG(1) << "Processing email by name.";
-
   auto iter = std::begin(p.text());
   const auto to_name = get_message_field(p.text(), iter, {'\0'}, 80);
+  VLOG(1) << "Processing email by name to: '" << to_name << "'";
+
   // Rest of the message is the text.
   const auto text = string(iter, std::end(p.text()));
 

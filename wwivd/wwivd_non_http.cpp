@@ -364,13 +364,13 @@ void ConnectionHandler::HandleConnection() {
     SocketConnection conn(r.client_socket);
     auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
-      LOG(INFO) << "Blocked connection.";
+      VLOG(2) << "HandleConnection: Blocked: " << result.remote_peer;
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
-      LOG(INFO) << "Blocked by concurrent limit..";
+      LOG(INFO) << " Blocked by concurrent limit: " << result.remote_peer;
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;

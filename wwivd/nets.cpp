@@ -138,7 +138,7 @@ static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
   VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
   const Networks networks(config);
   const auto& nets = networks.networks();
-  int network_number = 0;
+  auto network_number = 0;
   for (const auto& net : nets) {
     if (net.type == network_type_t::wwivnet) {
       one_net_wwivnet_callout(net, c, network_number++);
