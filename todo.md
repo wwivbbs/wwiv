@@ -77,6 +77,9 @@
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
 * Make the emailmessage extend the message so most things are common
   between them.
+* Use read_type2_message everywhere
+* make read_type2_message use the msgapi
+* use the msgapi more in WWIV code.
 
 # File Areas
 ***

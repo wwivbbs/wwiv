@@ -38,7 +38,10 @@ struct Type2MessageData {
   std::string to_user_name;
   std::string from_user_name;
   std::string date;
+  // Parsed out message text, no header information.
   std::string message_text;
+  // Raw text as it came from readfile
+  std::string raw_message_text;
   std::string from_sys_name;
   std::string from_sys_loc;
 

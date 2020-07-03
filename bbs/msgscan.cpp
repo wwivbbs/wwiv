@@ -805,7 +805,9 @@ void HandleMessageReply(int& nMessageNumber) {
 
   if (okfsed() && a()->user()->IsUseAutoQuote() && nMessageNumber > 0 &&
       nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
-    auto_quote(&m.message_text[0], m.from_user_name, m.message_text.size(), 1, p2.daten);
+    // auto_quote needs the raw message text like from readfile(), so that
+    // the top two lines are header information.
+    auto_quote(&m.raw_message_text[0], m.from_user_name, m.message_text.size(), 1, p2.daten);
   }
 
   if (!m.title.empty()) {

@@ -288,6 +288,8 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   if (!readfile(msg, file_name, &data.message_text)) {
     return {};
   }
+  // Make a copy of the raw message text.
+  data.raw_message_text = data.message_text;
 
   // TODO(rushfan): Use get_control_line from networking code here.
 
