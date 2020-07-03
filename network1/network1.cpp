@@ -140,7 +140,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto& net = net_cmdline.network();
 
-    VLOG(1) << "Reading bbsdata.net..";
+    VLOG(3) << "Reading bbsdata.net..";
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
       LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";

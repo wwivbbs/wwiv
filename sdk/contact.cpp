@@ -20,18 +20,16 @@
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 using std::endl;
 using std::map;
@@ -62,8 +60,8 @@ std::string NetworkContact::CreateFakeFtnAddress(int node) {
 
 Contact::Contact(const net_networks_rec& net) : Contact(net, false) {}
 
-Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
-    : net_(net), save_on_destructor_(save_on_destructor) {
+Contact::Contact(net_networks_rec net, bool save_on_destructor)
+    : net_(std::move(net)), save_on_destructor_(save_on_destructor) {
   DataFile<net_contact_rec> file(FilePath(net_.dir, CONTACT_NET),
                                  File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
@@ -96,8 +94,8 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
   initialized_ = true;
 }
 
-Contact::Contact(const net_networks_rec& net, std::initializer_list<NetworkContact> l)
-    : net_(net), save_on_destructor_(false), initialized_(true) {
+Contact::Contact(net_networks_rec net, std::initializer_list<NetworkContact> l)
+    : net_(std::move(net)), save_on_destructor_(false), initialized_(true) {
   for (const auto& r : l) {
     contacts_.emplace(r.address(), r);
   }
@@ -108,14 +106,14 @@ bool Contact::Save() {
     return false;
   }
 
-  VLOG(2) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET).string();
+  VLOG(3) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET).string();
   DataFile<net_contact_rec> file(FilePath(net_.dir, CONTACT_NET),
                  File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite);
   if (!file) {
     return false;
   }
-  if (contacts_.size() == 0) {
+  if (contacts_.empty()) {
     return false;
   }
 
@@ -149,7 +147,7 @@ void NetworkContact::fixup() {
 }
 
 void NetworkContact::AddContact(const wwiv::core::DateTime& t) {
-  daten_t d = t.to_daten_t();
+  const auto d = t.to_daten_t();
   ncr_.ncr.lasttry = d;
   ncr_.ncr.lastcontact = d;
   ncr_.ncr.numcontacts++;
@@ -200,7 +198,7 @@ void Contact::ensure_rec_for(const std::string& node) {
   if (current == nullptr) {
     network_contact_record ncr{};
     ncr.address = node;
-    wwiv::sdk::fido::FidoAddress address(node);
+    const fido::FidoAddress address(node);
     ncr.ncr.systemnumber = address.node();
     contacts_.emplace(node, NetworkContact(ncr));
   }
@@ -208,15 +206,15 @@ void Contact::ensure_rec_for(const std::string& node) {
 
 void Contact::add_connect(int node, const wwiv::core::DateTime& time, uint32_t bytes_sent,
                           uint32_t bytes_received) {
-  auto key = NetworkContact::CreateFakeFtnAddress(node);
+  const auto key = NetworkContact::CreateFakeFtnAddress(node);
   add_connect(key, time, bytes_sent, bytes_received);
 }
 
 void Contact::add_connect(const std::string& node, const wwiv::core::DateTime& time,
                           uint32_t bytes_sent,
                           uint32_t bytes_received) {
-  auto key = node;
-  NetworkContact* c = contact_rec_for(key);
+  const auto key = node;
+  auto* c = contact_rec_for(key);
   if (c == nullptr) {
     ensure_rec_for(key);
     c = contact_rec_for(key);
@@ -229,7 +227,7 @@ void Contact::add_connect(const std::string& node, const wwiv::core::DateTime& t
 }
 
 void Contact::add_failure(int node, const wwiv::core::DateTime& time) {
-  NetworkContact* c = contact_rec_for(node);
+  auto* c = contact_rec_for(node);
   if (c == nullptr) {
     ensure_rec_for(node);
     c = contact_rec_for(node);
@@ -242,11 +240,10 @@ void Contact::add_failure(int node, const wwiv::core::DateTime& time) {
 }
 
 void Contact::add_failure(const std::string& n, const wwiv::core::DateTime& time) {
-  auto key = n;
-  NetworkContact* c = contact_rec_for(key);
+  auto* c = contact_rec_for(n);
   if (c == nullptr) {
-    ensure_rec_for(key);
-    c = contact_rec_for(key);
+    ensure_rec_for(n);
+    c = contact_rec_for(n);
     if (c == nullptr) {
       // Unable to add node in add_connect.
       return;

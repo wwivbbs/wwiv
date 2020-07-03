@@ -197,7 +197,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       if (n.type == network_type_t::wwivnet) {
         bink_config.callouts()[lower_case_network_name] = std::make_unique<Callout>(n);
       } else if (n.type == network_type_t::ftn) {
-        LOG(INFO) << "Adding FidoCallout for " << n.name;
+        VLOG(2) << "Adding FidoCallout for " << n.name;
         bink_config.callouts()[lower_case_network_name] =
             std::make_unique<FidoCallout>(net_cmdline.config(), n);
       }

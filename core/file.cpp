@@ -161,7 +161,7 @@ bool File::Open(int file_mode, int share_mode) {
   // Set default share mode
   if (share_mode == shareUnknown) {
     share_mode = shareDenyWrite;
-    if ((file_mode & modeReadWrite) || (file_mode & modeWriteOnly)) {
+    if (file_mode & modeReadWrite || file_mode & modeWriteOnly) {
       share_mode = shareDenyReadWrite;
     }
   }
@@ -169,31 +169,31 @@ bool File::Open(int file_mode, int share_mode) {
   CHECK_NE(share_mode, File::shareUnknown);
   CHECK_NE(file_mode, File::modeUnknown);
 
-  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode;
+  VLOG(5) << "File::Open (before _sopen) " << full_path_name_ << ", access=" << file_mode;
 
   handle_ = _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
-    VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
-    int count = 1;
+    VLOG(4) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
+    auto count = 1;
     if (access(full_path_name_.string().c_str(), 0) != -1) {
       sleep_for(wait_time);
       handle_ =
           _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
-      while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
-        sleep_for((count % 2) ? wait_time : milliseconds(0));
-        VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
+      while (handle_ < 0 && errno == EACCES && count < TRIES) {
+        sleep_for(count % 2 ? wait_time : milliseconds(0));
+        VLOG(4) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
         handle_ =
             _sopen(full_path_name_.string().c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       }
 
       if (handle_ < 0) {
-        VLOG(3) << "The file " << full_path_name_ << " is busy.  Try again later.";
+        VLOG(4) << "The file " << full_path_name_ << " is busy.  Try again later.";
       }
     }
   }
 
-  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode << ", handle=" << handle_;
+  VLOG(3) << "File::Open '" << full_path_name_ << "', access=" << file_mode << ", handle=" << handle_;
 
   if (IsFileHandleValid(handle_)) {
     flock(handle_,
@@ -210,7 +210,7 @@ bool File::Open(int file_mode, int share_mode) {
 bool File::IsOpen() const noexcept { return IsFileHandleValid(handle_); }
 
 void File::Close() noexcept {
-  VLOG(3) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
+  VLOG(4) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
   if (IsFileHandleValid(handle_)) {
     flock(handle_, LOCK_UN);
     close(handle_);
@@ -297,7 +297,7 @@ time_t File::last_write_time() const { return last_write_time(full_path_name_); 
 time_t File::last_write_time(const std::filesystem::path& path) {
   struct stat buf{};
   const auto p = path.string();
-  return (stat(p.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  return stat(p.c_str(), &buf) == -1 ? 0 : buf.st_mtime;
 }
 
 // static

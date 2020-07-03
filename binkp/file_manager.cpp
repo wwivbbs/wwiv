@@ -68,10 +68,10 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
 
   FidoAddress dest(address);
   const auto dir = dirs_.outbound_dir();
-  VLOG(1) << "CreateFtnTransferFileList: " << dir;
+  VLOG(2) << "CreateFtnTransferFileList: " << dir;
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
-    VLOG(1) << "Looking for FLO file named: " << FilePath(dir, name).string();
+    VLOG(2) << "Looking for FLO file named: " << FilePath(dir, name).string();
     if (File::Exists(FilePath(dir, name))) {
       LOG(INFO) << "Found file file: " << dir << "; name: " << name;
       const auto path = FilePath(dir, name);

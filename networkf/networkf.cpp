@@ -179,8 +179,7 @@ static string get_echomail_areaname(const std::string& text) {
 static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageDupe>& dupe,
                                const FidoCallout& callout, const net_networks_rec& net,
                                const std::string& dir, const string& name) {
-  VLOG(1) << "import_packet_file: " << dir << name;
-
+  LOG(INFO) << "Importing Packet: " << FilePath(dir, name).string();
   File f(FilePath(dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << dir << name;
@@ -202,6 +201,7 @@ static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageD
   char temp[9];
   memset(temp, 0, sizeof(temp));
   strncpy(temp, header.password, 8);
+  temp[8] = '\0';
   string actual = temp;
   if (!iequals(expected, actual)) {
     LOG(ERROR) << "Unexpected packet password from node: " << address << "; actual: '" << actual
@@ -230,7 +230,8 @@ static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageD
       dupe.reset(new FtnMessageDupe(config));
     }
     if (dupe->is_dupe(msg)) {
-      LOG(ERROR) << "Skipping duplicate FTN message: " << msg.vh.subject;
+      const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+      LOG(ERROR) << "Skipping duplicate FTN message: '" << msg.vh.subject << "' msgid: (" << msgid << ")";
       LOG(ERROR) << "Text: " << msg.vh.text;
       // TODO(rushfan): move this or write out saved copy?
       continue;
@@ -386,7 +387,7 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
                           std::unique_ptr<FtnMessageDupe>& dupe) {
   auto num_bundles_processed = 0;
 
-  VLOG(1) << "import_bundles: mask: " << mask;
+  VLOG(3) << "import_bundles: mask: " << mask;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   for (const auto& f : files) {
     if (f.size == 0) {
@@ -1049,7 +1050,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     return 1;
   }
 
-  VLOG(1) << "Reading bbsdata.net..";
+  VLOG(3) << "Reading bbsdata.net..";
   auto b = BbsListNet::ReadBbsDataNet(net.dir);
   if (b.empty()) {
     LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
@@ -1079,10 +1080,10 @@ int Main(const NetworkCommandLine& net_cmdline) {
 
   const auto cmd = cmds.front();
   cmds.erase(cmds.begin());
-  VLOG(1) << "Command: " << cmd;
-  VLOG(1) << "Args: ";
+  VLOG(3) << "Command: " << cmd;
+  VLOG(3) << "Args: ";
   for (const auto& r : cmds) {
-    VLOG(1) << r << endl;
+    VLOG(3) << r << endl;
   }
 
   wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);

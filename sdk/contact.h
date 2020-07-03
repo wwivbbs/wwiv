@@ -88,9 +88,9 @@ class Contact {
 
  public:
   explicit Contact(const net_networks_rec& net);
-  Contact(const net_networks_rec& net, bool save_on_destructor);
+  Contact(net_networks_rec net, bool save_on_destructor);
    // VisibleForTesting
-  Contact(const net_networks_rec& net, std::initializer_list<NetworkContact> l);
+  Contact(net_networks_rec net, std::initializer_list<NetworkContact> l);
   virtual ~Contact();
 
   // Was this list initialized properly.

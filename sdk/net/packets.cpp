@@ -133,7 +133,7 @@ bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, c
     LOG(WARNING) << "p.nh.list_len [" << p.nh.list_len << "] != p.list.size() [" << p.list.size()
                  << "]";
   }
-  VLOG(2) << "p.nh.list_len: " << p.nh.list_len;
+  VLOG(4) << "p.nh.list_len: " << p.nh.list_len;
   if (p.nh.list_len) {
     file.Write(&p.list[0], sizeof(uint16_t) * (p.nh.list_len));
   }
