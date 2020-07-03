@@ -254,7 +254,7 @@ static bool import_packet_file(const Config& config, std::unique_ptr<FtnMessageD
     nh.tosys = 1; // always 1 in new fido
     nh.touser = 0;
 
-    auto from_address = get_address_from_origin(msg.vh.text);
+    auto from_address = get_address_from_packet(msg, header);
 
     std::string text;
     std::string s1;
