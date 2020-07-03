@@ -25,7 +25,7 @@
 
 #include "sdk/vardec.h"
 
-class ExternalQBBSMessageEditor : public ExternalMessageEditor {
+class ExternalQBBSMessageEditor final : public ExternalMessageEditor {
 public:
   ExternalQBBSMessageEditor(const editorrec& editor, wwiv::bbs::MessageEditorData& data, int maxli,
                             int* setanon, const std::string& temp_directory)
@@ -34,7 +34,7 @@ public:
   void CleanupControlFiles() override;
   bool Before() override;
   bool After() override;
-  std::string editor_filename() const override;
+  [[nodiscard]] std::string editor_filename() const override;
 };
 
 

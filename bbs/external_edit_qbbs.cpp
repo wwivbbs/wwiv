@@ -27,6 +27,8 @@
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_util.h"
+
 #include <string>
 
 using std::string;
@@ -63,14 +65,14 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  * line 6: Private flag ("YES" or "NO")
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
-                        const string& to_name) {
+                        const string& to_name, bool real_name) {
   TextFile file(FilePath(a()->temp_directory(), MSGINF), "wd");
   if (!file.IsOpen()) {
     return false;
   }
 
   // line 1: Who the message is FROM
-  file.WriteLine(a()->user()->GetName());
+  file.WriteLine(real_name ? a()->user()->GetRealName() : a()->user()->GetName());
   if (!to_name.empty()) {
     // line 2: Who the message is TO
     file.WriteLine(to_name);
@@ -105,7 +107,7 @@ static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
     return false;
   }
   // Copy quotes.txt to MSGTMP if it exists
-  TextFile in(qfn, "r");
+  TextFile in(qfn, "rt");
   if (!in) {
     return false; 
   }
@@ -132,18 +134,26 @@ static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
 
 bool ExternalQBBSMessageEditor::Before() {
   CleanupControlFiles();
-  CreateMsgTmpFromQuotesTxt(a()->temp_directory());
-  return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name);
+  CreateMsgTmpFromQuotesTxt(temp_directory_);
+  bool real_name = data_.anonymous_flag & anony_real_name;
+  return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name, real_name);
 }
 
 bool ExternalQBBSMessageEditor::After() {
-  // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
-  // TODO(rushfan): Let this function return an object with result and filename and anything
-  // else that needs to be passed back.
-  std::error_code ec;
-  const auto from = FilePath(temp_directory_, MSGTMP);
-  const auto to = FilePath(temp_directory_, INPUT_MSG);
-  copy_file(from, to, std::filesystem::copy_options::overwrite_existing, ec);
-  return true;
+  // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expects.
+
+  TextFile from(FilePath(temp_directory_, MSGTMP), "rt");
+  if (!from) {
+    return false;
+  }
+  const auto qbbs = from.ReadFileIntoString();
+  const auto wwiv = wwiv::sdk::fido::FidoToWWIVText(qbbs, true);
+
+  TextFile to(FilePath(temp_directory_, INPUT_MSG), "wt");
+  if (!to) {
+    return false;
+  }
+
+  return to.Write(wwiv) != 0;
 }
 

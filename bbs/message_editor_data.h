@@ -39,7 +39,7 @@ public:
   MessageEditorData() = default;
   ~MessageEditorData() = default;
 
-  bool is_email() const;
+  [[nodiscard]] bool is_email() const;
 
   // Title to use. If set it will be used without prompting the user.
   std::string title;
@@ -50,7 +50,7 @@ public:
   uint8_t anonymous_flag{0};   // an
   int msged_flags{MSGED_FLAG_NONE};      // used to be flags
   FsedFlags fsed_flags{FsedFlags::NOFSED};       // fsed
-  bool silent_mode{false};     // Used for ASV and newemail emails.  No questions, etc.
+  bool silent_mode{false};     // Used for ASV and new email emails.  No questions, etc.
 
   // legacy filename, used to see if it's email or not.
   std::string aux;
