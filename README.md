@@ -109,7 +109,7 @@ If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repos
 #### Compiling WWIV
 
 
-Now change directory to the ```/wwiv``` directory where you cloned the repository
+Now change directory to the ```wwiv``` directory where you cloned the repository
 and run the following:
   ```
   mkdir _build
@@ -136,6 +136,11 @@ If you get an error about needing to do an out of source build, please make sure
 you are executing the cmake command from a directory that is not the same as your source
 code, such as a subdirectory called ```_b``` or ```_build``` or even a different directory
 all together. I use ```/home/rushfan/out/wwiv``` myself.
+
+Once you get a warning about this, you will need to clean the build so you need to
+remove the following file and directory:
+  * CMakeFiles
+  * CMakeCache.txt 
 
 *** 
 

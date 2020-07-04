@@ -104,6 +104,7 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   IF(insource OR insourcesubdir)
     MESSAGE(FATAL_ERROR 
     "${PROJECT_NAME} requires an out of source build.
+     Please see https://github.com/wwivbbs/wwiv#out-of-source-build-warning
      This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
      Please delete them."
     )
