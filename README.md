@@ -18,7 +18,7 @@ We prefer contributors to FORK ```wwivbbs``` repositories to their account and w
 
 ## Building on Windows
 
-### Installing Git or GitHub Desktop
+### Installing Git
 
 You will need [Git](https://git-scm.com) installed.  You can use the GitHub Desktop GUI, but it's also easy
 to use the commandline tool directly.  You'll need to download [Git](https://git-scm.com/download/win) and
@@ -34,7 +34,7 @@ when you clone the repo, you have "Recurse Submodules" specified in the tool, or
 WWIV is compiled with the VS2019 compiler for windows. 
 You can download [Microsoft Visual Studio 2019 Community](https://www.visualstudio.com/downloads/)
 
-Choose to installthe ```Desktop development with C++``` workload.
+Choose to install the ```Desktop development with C++``` workload.
 You also may want to optionally install the following "Individual Components":
 ```
    Git For Windows (Only if you do not have this already)
@@ -58,7 +58,8 @@ Above that you will see Login to GitHub, do that.
 ## Building on Linux
 This only builds the binaries, it does NOT include the supporting files.
 Please follow the
-[Linux Installation](http://docs.wwivbbs.org/en/latest/linux_installation/) instructions for getting the supporting files in place.
+[Linux Installation](http://docs.wwivbbs.org/en/latest/linux_installation/) instructions under
+*Steps to install the software* for first installing the base system.
 
 ** NOTE:** Do these steps as a non-root user; your BBS user would be the easiest from a file permissions perspective later on.  root should never be used to compile binaries.
 
@@ -73,8 +74,8 @@ make | for cryptlib
 ninja-build | 1.8 or later, earlier versions probably work too
 g++ | 8.3.0 or later (easiest to install via build-essential on debian)
 
-If you are on debian, you can use ```/builds/jenkins/linux/install-prereqs.sh``` to ensure that
-the right software is installed.  This command should be executed as root (using sudo)
+If you are on debian or ubuntu, you can use the ```/builds/jenkins/linux/install-prereqs.sh``` 
+escript to ensure that the right software is installed.  This command should be executed as root (using sudo)
 
 ### WWIV Binaries
 Here's the list of binaries that will be built in the build directory:  
@@ -114,10 +115,28 @@ and run the following:
   mkdir _build
   cd _build 
   ../cmake-config.sh 
-  cmake --build . --config Debug
+  cmake --build .
   ```
 
-Now you can enter the ```bbs/admin/unix``` directory and run ```sudo ./install.sh```
+Copy all of the files newly built, or symlinks to them from your WWIV base install
+i.e. in /home/wwiv/ (assuming the source is in $HOME/git/wwiv now.)
+```
+ # This should be done as the wwiv user who has the source code.
+ cd /home/wwiv
+ ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
+ 
+ export BUILT_BIN=$HOME/out/wwiv
+ ./use-built-bin.sh ${BUILT_BIN} bbs wwivd wwivconfig network network?
+
+```
+
+#### Out of Source Build warning
+
+If you get an error about needing to do an out of source build, please make sure that
+you are executing the cmake command from a directory that is not the same as your source
+code, such as a subdirectory called ```_b``` or ```_build``` or even a different directory
+all together. I use ```/home/rushfan/out/wwiv``` myself.
+
 *** 
 
 Installation and SysOp Instructions
