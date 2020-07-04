@@ -276,7 +276,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
   if (b.use_dns_cc && !b.dns_cc_server.empty()) {
     const auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
     LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
-              << "; coutry code: " << cc;
+              << "; country code: " << cc;
     if (contains(data.c->blocking.block_cc_countries, cc)) {
       // We have a connection from a blocked country
       LOG(INFO) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
