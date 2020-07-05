@@ -194,8 +194,8 @@ bool bkbhitraw() {
 }
 
 bool bkbhit() {
-  if ((a()->localIO()->KeyPressed() || (a()->context().incom() && bkbhitraw()) ||
-       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_]))) {
+  if (a()->localIO()->KeyPressed() || a()->context().incom() && bkbhitraw() ||
+      bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_]) {
     return true;
   }
   return false;

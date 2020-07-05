@@ -207,9 +207,9 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
     if (current_line[0] == '/') {
       auto cmd = current_line;
       StringUpperCase(&cmd);
-      if (((cmd == "/HELP")) ||
-          ((cmd == "/H")) ||
-          ((cmd == "/?"))) {
+      if (cmd == "/HELP" ||
+          cmd == "/H" ||
+          cmd == "/?") {
         check_message_size = false;
         print_help_file(EDITOR_NOEXT);
       } else if ((cmd == "/QUOTE") ||

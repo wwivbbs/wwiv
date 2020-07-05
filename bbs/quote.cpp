@@ -151,7 +151,7 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
   quotes_nrm_l = ss.length();
   if (ss.back() == CZ) {
     // Since CZ isn't special on Win32/Linux. Don't write it out
-    // to the quotea file.
+    // to the quotes file.
     ss.pop_back();
   }
 
@@ -172,9 +172,9 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
   if (a()->current_net().type == network_type_t::internet ||
       a()->current_net().type == network_type_t::news) {
     for (size_t l1 = 0; l1 < ss.length(); l1++) {
-      if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') && (ss[l1 + 3] == 'M')) {
+      if (ss[l1] == 4 && ss[l1 + 1] == '0' && ss[l1 + 2] == 'R' && ss[l1 + 3] == 'M') {
         l1 += 3;
-        while ((ss[l1] != '\r') && (l1 < ss.length())) {
+        while (ss[l1] != '\r' && l1 < ss.length()) {
           temp[l3++] = ss[l1];
           l1++;
         }
@@ -435,7 +435,7 @@ std::deque<std::string> get_quote(const string& reply_to_name) {
         if (quotes_ind[l2++] == 10) {
           l1++;
         }
-      } while ((l2 < quotes_ind_l) && (l1 < 2));
+      } while (l2 < quotes_ind_l && (l1 < 2));
       do {
         if (quotes_ind[l2] == 0x04) {
           while ((quotes_ind[l2++] != 10) && (l2 < quotes_ind_l)) {
@@ -464,7 +464,7 @@ std::deque<std::string> get_quote(const string& reply_to_name) {
           bout.bputs(s1, &abort, &next);
           bout.bpla(s, &abort);
           // Add line s to the list of lines.
-          lines.push_back(s);
+          lines.emplace_back(s);
         }
       } while (l2 < quotes_ind_l);
       --i;
