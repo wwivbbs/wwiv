@@ -91,7 +91,7 @@ static void HandleControlKey(char *ch) {
     case CA:   // CTRL-A
     case CD:   // CTRL-D
     case CF:   // CTRL-F
-      if (a()->context().okmacro() && (!bout.charbufferpointer_)) {
+      if (a()->context().okmacro() && !bout.charbufferpointer_) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         auto macroNum = MACRO_KEY_TABLE[(int)c];
         to_char_array(bout.charbuffer, a()->user()->GetMacro(macroNum));

@@ -119,9 +119,9 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     string b;
     readfile(&(post->msg), (a()->current_sub().filename), &b);
     if (user_input[0] == '@') {
-      auto_quote(&b[0], reply_to_name, b.size(), 1, post->daten);
+      auto_quote(b, reply_to_name, 1, post->daten);
     } else {
-      auto_quote(&b[0], reply_to_name, b.size(), 3, post->daten);
+      auto_quote(b, reply_to_name, 3, post->daten);
     }
   }
 
@@ -807,7 +807,7 @@ void HandleMessageReply(int& nMessageNumber) {
       nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
     // auto_quote needs the raw message text like from readfile(), so that
     // the top two lines are header information.
-    auto_quote(&m.raw_message_text[0], m.from_user_name, m.message_text.size(), 1, p2.daten);
+    auto_quote(m.raw_message_text, m.from_user_name, 1, p2.daten);
   }
 
   if (!m.title.empty()) {

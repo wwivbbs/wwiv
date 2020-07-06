@@ -27,6 +27,24 @@ namespace sdk {
 namespace msgapi {
 
 /**
+ * Specifies how to return the text with respect to control lines,
+ * * control_lines: Return raw control lines
+ * * control_lines_masked: Replace control line character with '@'
+ * * no_control_lines: Skip lines containing control lines.
+ */
+enum class control_lines_t {
+  control_lines,
+  control_lines_masked,
+  no_control_lines
+};
+
+struct parsed_message_lines_style_t {
+  control_lines_t ctrl_lines;
+  int line_length{76};
+  bool add_wrapping_marker{true};
+};
+
+/**
  * Represents a parsed (split into lines) message.  The format can either be in
  * WWIV native (control lines start with ^D0) or FTN (control lines start with ^A),
  * depending on the control_char specified.
@@ -45,6 +63,7 @@ public:
    */
   bool remove_control_line(const std::string& start_of_line);
   [[nodiscard]] std::string to_string() const;
+  [[nodiscard]] std::vector<std::string> to_lines(const parsed_message_lines_style_t& style) const;
 
 private:
   const std::string control_char_;
@@ -57,7 +76,7 @@ private:
  * Represents a parsed (split into lines) message  in WWIV format (control
  * lines start with ^D0) and end of line is "\r\n".
  */
-class WWIVParsedMessageText : public ParsedMessageText {
+class WWIVParsedMessageText final : public ParsedMessageText {
 public:
   WWIVParsedMessageText(const std::string& text);
   ~WWIVParsedMessageText();

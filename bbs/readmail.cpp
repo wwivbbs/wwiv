@@ -942,7 +942,7 @@ void readmail(int mode) {
           // TODO: optimize this since we also call readfile in grab_user_name
           auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (readfile(&(m.msg), "email", &b)) {
-            auto_quote(&b[0], reply_to_name, b.size(), 4, m.daten);
+            auto_quote(b, reply_to_name, 4, m.daten);
             send_email();
           }
           break;
@@ -1073,7 +1073,8 @@ void readmail(int mode) {
           bout << "|#6Deleted network.\r\n";
           i1 = 0;
           break;
-        } else if (m.fromuser != 65535) {
+        }
+        if (m.fromuser != 65535) {
           // TODO: optimize this since we also call readfile in grab_user_name
           reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (okfsed() && a()->user()->IsUseAutoQuote()) {
@@ -1081,7 +1082,7 @@ void readmail(int mode) {
             readfile(&(m.msg), "email", &b);
             // used to be 1 or 2 depending on s[0] == '@', but
             // that's allowable now and @ was never in the beginning.
-            auto_quote(&b[0], reply_to_name, b.size(), 2, m.daten);
+            auto_quote(b, reply_to_name, 2, m.daten);
           }
 
           grab_quotes(&(m.msg), "email", reply_to_name);

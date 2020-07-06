@@ -85,7 +85,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   }
 
   if (system_number && a()->current_net().type == network_type_t::wwivnet) {
-    net_system_list_rec* csne = next_system(system_number);
+    auto* csne = next_system(system_number);
     if (csne) {
       string netstatus;
       if (user_number == 1) {
@@ -125,122 +125,116 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
 }
 
 void display_message_text(const std::string& text, bool* next) {
-  int nNumCharsPtr = 0;
-  int nLineLenPtr = 0;
-  int ctrld = 0;
-  bool done = false;
-  bool printit = false;
-  bool ctrla = false;
-  bool centre = false;
-  bool abort = false;
-  bool ansi = false;
-  char s[205];
+  auto line_len_ptr = 0;
+  auto ctrld = 0;
+  auto printit = false;
+  auto ctrla = false;
+  auto centre = false;
+  auto abort = false;
+  auto ansi = false;
+  std::string s;
+  s.reserve(160);
 
   bout.nl();
-  for (char ch : text) {
-    if (done || abort) {
+  for (auto ch : text) {
+    if (ch == CZ || abort) {
       break;
     }
-    if (ch == CZ) {
-      done = true;
-    } else {
-      if (ch != SOFTRETURN) {
-        if (ch == RETURN || !ch) {
-          printit = true;
-        } else if (ch == CA) {
-          ctrla = true;
-        } else if (ch == CB) {
-          centre = true;
-        } else if (ch == CD) {
-          ctrld = 1;
-        } else if (ctrld == 1) {
-          if (ch >= '0' && ch <= '9') {
-            if (ch == '0') {
+    if (ch == SOFTRETURN) {
+      ctrld = 0;
+      continue;
+    }
+    if (ch == RETURN || !ch) {
+      printit = true;
+    } else if (ch == CA) {
+      ctrla = true;
+    } else if (ch == CB) {
+      centre = true;
+    } else if (ch == CD) {
+      ctrld = 1;
+    } else if (ctrld == 1) {
+      if (ch >= '0' && ch <= '9') {
+        if (ch == '0') {
+          ctrld = -1; // don't display
+        } else {
+          if (a()->user()->GetOptionalVal() == 0) {
+            ctrld = 0; // display
+          } else {
+            if (10 - a()->user()->GetOptionalVal() < static_cast<int>(ch - '0')) {
               ctrld = -1; // don't display
             } else {
-              if (a()->user()->GetOptionalVal() == 0) {
-                ctrld = 0; // display
-              } else {
-                if (10 - (a()->user()->GetOptionalVal()) < static_cast<int>(ch - '0')) {
-                  ctrld = -1; // don't display
-                } else {
-                  ctrld = 0; // display
-                }
-              }
+              ctrld = 0; // display
             }
-          } else {
-            ctrld = 0; // ctrl-d and non-numeric
-          }
-        } else {
-          if (ch == ESC) {
-            ansi = true;
-          }
-          if (bout.ansi_movement_occurred()) {
-            bout.clear_ansi_movement_occurred();
-            bout.clear_lines_listed();
-            if (a()->localIO()->GetTopLine() && a()->localIO()->GetScreenBottom() == 24) {
-              a()->ClearTopScreenProtection();
-            }
-          }
-          s[nNumCharsPtr++] = ch;
-          if (ch == CC || ch == BACKSPACE) {
-            --nLineLenPtr;
-          } else {
-            ++nLineLenPtr;
           }
         }
-
-        if (printit || ansi || nLineLenPtr >= 80) {
-          if (centre && (ctrld != -1)) {
-            const auto spaces_to_center = (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
-            bout.bputs(std::string(spaces_to_center, ' '), &abort, next);
-          }
-          if (nNumCharsPtr) {
-            if (ctrld != -1) {
-              if ((bout.wherex() + nLineLenPtr >=
-                   static_cast<int>(a()->user()->GetScreenChars())) &&
-                  !centre && !ansi) {
-                bout.nl();
-              }
-              s[nNumCharsPtr] = '\0';
-              bout.bputs(s, &abort, next);
-              if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
-                if (bout.wherex() < static_cast<int>(a()->user()->GetScreenChars()) - 1) {
-                  bout.bputch(SPACE);
-                  bout.nl();
-                } else {
-                  bout.nl();
-                }
-                checka(&abort, next);
-              }
-            }
-            nLineLenPtr = 0;
-            nNumCharsPtr = 0;
-          }
-          centre = false;
-        }
-        if (ch == RETURN) {
-          if (ctrla == false) {
-            if (ctrld != -1) {
-              bout.nl();
-              checka(&abort, next);
-            }
-          } else {
-            ctrla = false;
-          }
-          if (printit) {
-            ctrld = 0;
-          }
-        }
-        printit = false;
       } else {
+        ctrld = 0; // ctrl-d and non-numeric
+      }
+    } else {
+      if (ch == ESC) {
+        ansi = true;
+      }
+      if (bout.ansi_movement_occurred()) {
+        bout.clear_ansi_movement_occurred();
+        bout.clear_lines_listed();
+        if (a()->localIO()->GetTopLine() && a()->localIO()->GetScreenBottom() == 24) {
+          a()->ClearTopScreenProtection();
+        }
+      }
+      s.push_back(ch);
+      if (ch == CC || ch == BACKSPACE) {
+        --line_len_ptr;
+      } else {
+        ++line_len_ptr;
+      }
+    }
+
+    if (printit || ansi || line_len_ptr >= 80) {
+      if (centre && ctrld != -1) {
+        const auto spaces_to_center = (a()->user()->GetScreenChars() - bout.wherex() - line_len_ptr) / 2;
+        bout.bputs(std::string(spaces_to_center, ' '), &abort, next);
+      }
+      if (!s.empty()) {
+        if (ctrld != -1) {
+          if (bout.wherex() + line_len_ptr >= static_cast<int>(a()->user()->GetScreenChars()) &&
+              !centre && !ansi) {
+            bout.nl();
+          }
+          bout.bputs(s, &abort, next);
+          if (ctrla && !s.empty() && s.back() != SPACE && !ansi) {
+            if (bout.wherex() < static_cast<int>(a()->user()->GetScreenChars()) - 1) {
+              bout.bputch(SPACE);
+            } 
+            bout.nl();
+            checka(&abort, next);
+          }
+        }
+        line_len_ptr = 0;
+        s.clear();
+      }
+      centre = false;
+    }
+    if (ch == RETURN) {
+      if (ctrla == false) {
+        if (ctrld != -1) {
+          bout.nl();
+          checka(&abort, next);
+        }
+      } else {
+        ctrla = false;
+      }
+      if (printit) {
         ctrld = 0;
       }
     }
+    printit = false;
   }
 
-  if (!abort && nNumCharsPtr) {
-    s[nNumCharsPtr] = '\0';
+  //
+  // After the for loop processing character by character
+  //
+
+  if (!abort && !s.empty()) {
     bout << s;
     bout.nl();
   }
@@ -471,30 +465,35 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
 
-static std::vector<std::string> split_long_lines(std::string& orig_text) {
+static std::vector<std::string> split_long_lines(std::string& orig_text, int width, bool add_wrapping_marker) {
   auto orig = SplitString(orig_text, "\r");
   std::vector<std::string> out;
-  const auto screen_width = a()->user()->GetScreenChars();
   for (auto& l : orig) {
     StringTrimCRLF(&l);
     l.erase(std::remove(l.begin(), l.end(), 10), l.end());
 
     do {
-      const auto szwc = size_without_colors(l);
-      if (szwc <= screen_width) {
+      const auto size_wc = size_without_colors(l);
+      if (size_wc <= width) {
         out.push_back(l);
         break;
       }
       // We have a long line
-        auto pos = screen_width;
+      auto pos = width;
       while (pos > 0 && l[pos] > 32) {
         pos--;
       }
       if (pos == 0) {
-        pos = screen_width;
+        pos = width;
       }
-      out.push_back(l.substr(0, pos));
+      auto subset_of_l = l.substr(0, pos);
       l = l.substr(pos + 1);
+      if (add_wrapping_marker) {
+        // A ^A at the end of the line means it was soft wrapped.
+        out.push_back(fmt::sprintf("%s%c", subset_of_l, 0x01));
+      } else {
+        out.push_back(subset_of_l);
+      }
     } while (true);
     
   }
@@ -503,15 +502,17 @@ static std::vector<std::string> split_long_lines(std::string& orig_text) {
 
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {
   auto text(orig_text);
+  const auto& user = *a()->user();
   const auto cz_pos = text.find(CZ);
   if (cz_pos != string::npos) {
     // We stop the message at control-Z if it exists.
     text = text.substr(0, cz_pos);
   }
 
-  // split line into line + overflow.
-  auto orig_lines = split_long_lines(text);
+  // split text into lines of appropriate length.
+  auto orig_lines = split_long_lines(text, user.GetScreenChars(), false);
 
+  // Now handle control chars, and optional lines.
   std::vector<std::string> lines;
   std::string overflow;
   for (auto line : orig_lines) {
@@ -519,7 +520,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
       lines.emplace_back("");
       continue;
     }
-    const auto optional_lines = a()->user()->GetOptionalVal();
+    const auto optional_lines = user.GetOptionalVal();
     if (line.front() == CD) {
       const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
       if (level == 0) {
@@ -544,9 +545,11 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
     lines.emplace_back(line);
   }
 
+  // Finally render it to the frame buffer to interpret
+  // heart codes, ansi, etc
   FrameBuffer b{80};
   Ansi ansi(&b, {}, 0x07);
-  HeartCodeFilter heart(&ansi, a()->user()->colors());
+  HeartCodeFilter heart(&ansi, user.colors());
   for (auto& l : lines) {
     for (const auto c  : l) {
       heart.write(c);
@@ -560,7 +563,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
 static void display_message_text_new(const std::vector<std::string>& lines, int start,
                                      int message_height, int screen_width, int lines_start) {
   auto had_ansi = false;
-  for (int i = start; i < start + message_height; i++) {
+  for (auto i = start; i < start + message_height; i++) {
     // Do this so we don't pop up a pause for sure.
     bout.clear_lines_listed();
 
@@ -595,10 +598,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   bout.curatr(7);
   bout.clear_ansi_movement_occurred();
   *next = false;
-  a()->mci_enabled_ = true;
-  if (an == 0) {
-    a()->mci_enabled_ = false;
-  }
+  a()->mci_enabled_ = an != 0;
 
   bout.cls();
   auto fs = display_type2_message_header(msg);
@@ -626,13 +626,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       display_message_text_new(lines, start, fs.message_height(), fs.screen_width(),
                                fs.lines_start());
       dirty = false;
-
-      if (start == last) {
-        fs.DrawBottomBar("END");
-      } else {
-        fs.DrawBottomBar("");
-      }
-
+      fs.DrawBottomBar(start == last ? "END" : "");
       fs.ClearCommandLine();
       bout.PutsXY(1, fs.command_line_y(), "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
     }

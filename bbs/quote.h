@@ -25,7 +25,7 @@
 
 void grab_quotes(messagerec* m, const std::string& aux, const std::string& to_name);
 void clear_quotes();
-void auto_quote(char *org, const std::string& to_name, long len, int type, time_t tDateTime);
+void auto_quote(std::string& org, const std::string& to_name, int type, time_t tDateTime);
 std::deque<std::string> get_quote(const std::string& reply_to_name);
 
 // [[ VisibleForTesting ]]

@@ -19,6 +19,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/printf.h"
 #include <functional>
 #include <string>
 #include <utility>
@@ -34,17 +35,43 @@ constexpr char CZ = 26;
 
 static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
   auto temp(s);
+  const auto cz_pos = temp.find(CZ);
+  if (cz_pos != string::npos) {
+    // We stop the message at control-Z if it exists.
+    temp = temp.substr(0, cz_pos);
+  }
   // Instead of splitting on \r\n, we remove the \n and then
   // split on just \r.  This also is great that it handles
   // the cases where we end in only \r properly.
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Use SplitString(..., false) so we don't skip blank lines.
-  return SplitString(temp, "\r", false);
+  auto orig =  SplitString(temp, "\r", false);
+
+  std::vector<std::string> out;
+  std::string current_line;
+  for (auto& l : orig) {
+    if (l.empty()) {
+      out.emplace_back("");
+      continue;
+    }
+    if (l.back() == 0x01) { // ^A
+      l.pop_back();
+      current_line.append(l);
+      continue;
+    }
+    if (current_line.empty()) {
+      out.emplace_back(l);
+    } else {
+      out.emplace_back(current_line.append(l));
+    }
+  }
+  return out;
 }
 
 ParsedMessageText::ParsedMessageText(std::string control_char, const std::string& text,
                                      const splitfn& split_fn, std::string eol)
-    : control_char_(std::move(control_char)), split_fn_(split_fn), eol_(std::move(eol)) {
+    : control_char_(std::move(control_char)),
+      split_fn_(split_fn), eol_(std::move(eol)) {
   if (text.empty()) {
     return;
   }
@@ -55,7 +82,7 @@ ParsedMessageText::ParsedMessageText(std::string control_char, const std::string
   } else {
     lines_ = split_fn(text);
   }
-  // TODO, lines needs to be a structure thatincludes metadata
+  // TODO, lines needs to be a structure that includes metadata
   // like  centered line, or soft-wrapped line.  WWIV and
   // FTN have different ways of soft-wrapping and need
   // to handle both.
@@ -128,6 +155,61 @@ bool ParsedMessageText::remove_control_line(const std::string& start_of_line) {
 
 std::string ParsedMessageText::to_string() const {
   return JoinStrings(lines_, eol_) + static_cast<char>(CZ);
+}
+
+std::vector<std::string>
+ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
+  std::vector<std::string> out;
+  for (auto l : lines_) {
+    if (l.empty()) {
+      out.emplace_back("");
+      continue;
+    }
+    const auto is_control_line = starts_with(l, control_char_);
+    if (!is_control_line) {
+      do {
+        const auto size_wc = size_without_colors(l);
+        if (size_wc <= style.line_length) {
+          out.push_back(l);
+          break;
+        }
+        // We have a long line
+        auto pos = style.line_length;
+        while (pos > 0 && l[pos] > 32) {
+          pos--;
+        }
+        if (pos == 0) {
+          pos = style.line_length;
+        }
+        auto subset_of_l = l.substr(0, pos);
+        l = l.substr(pos + 1);
+        if (style.add_wrapping_marker) {
+          // A ^A at the end of the line means it was soft wrapped.
+          out.push_back(fmt::sprintf("%s%c", subset_of_l, 0x01));
+        } else {
+          out.push_back(subset_of_l);
+        }
+      } while (true);
+      continue;
+    }
+    switch (style.ctrl_lines) {
+    case control_lines_t::control_lines:
+      out.push_back(l);
+      break;
+    case control_lines_t::control_lines_masked: {
+      auto s{l};
+      out.push_back(StringReplace(&s, control_char_, "@"));
+    } break;
+    case control_lines_t::no_control_lines:
+      if (!is_control_line) {
+        out.push_back(l);
+      }
+      break;
+    default: ;
+      out.push_back(l);
+    }
+  }
+  return out;
 }
 
 WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)

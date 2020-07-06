@@ -81,6 +81,14 @@
 * make read_type2_message use the msgapi
 * use the msgapi more in WWIV code.
 
+## Quotes cleanup
+* Redo grab_qouotes, auto_quote, get_quotes
+* move split_long_lines to sdk/msgapi/message_util_wwiv
+* create a SplitString like method for splitting a wwiv message
+  text into lines, but making lines that end with control-A into
+  one long line do split_long_lines can wrap it properly.  Also
+  Use that everywere isntead of SplitString("\r\n")
+
 # File Areas
 ***
 * cleanup char[] usage

@@ -109,10 +109,10 @@ TEST_F(ParsedMessageTest, AfterMsgID) {
 }
 
 TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
-  const std::string kReply = ca + "REPLY";
+  const auto kReply = ca + "REPLY";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
                       "\r\n");
-  const std::string kNewMsgId = ca + "MSGID 5678";
+  const auto kNewMsgId = ca + "MSGID 5678";
   p.add_control_line_after("MSGID", "MSGID 5678");
   // Remove original msgid
   p.remove_control_line("MSGID");
@@ -152,4 +152,38 @@ TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
   const auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_wwiv(5, kControlLineWithControlChar), actual_string);
+}
+
+TEST(WWIVParsedMessageTest, ToString_StaysSingleLine) {
+  const std::string cz(1, static_cast<char>(CZ));
+  const std::string text = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
+
+  WWIVParsedMessageText p(text);
+  EXPECT_EQ(StrCat(text, "\r\n", cz), p.to_string());
+}
+
+TEST(WWIVParsedMessageTest, ToString_SplitLineWithContinuations) {
+  const std::string cz(1, static_cast<char>(CZ));
+  const std::string text = "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
+  const std::string expected = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
+
+  WWIVParsedMessageText p(text);
+  EXPECT_EQ(StrCat(expected, "\r\n", cz), p.to_string());
+}
+
+TEST(WWIVParsedMessageTest, ToLines_Smoke) {
+  const std::string cz(1, static_cast<char>(CZ));
+  const std::string text = "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
+  const std::string expected = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
+
+  WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 40;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(4u, lines.size());
+  EXPECT_EQ("This is a long line and this is a long\x1|"
+            "line and this is a long line and this\x1|"
+            "too is a long line and this too is a\x1|"
+            "long line|",
+            JoinStrings(lines, "|"));
 }
