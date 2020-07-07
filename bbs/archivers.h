@@ -19,19 +19,11 @@
 #ifndef _ARCHIVERS_H_
 #define _ARCHIVERS_H_
 
+#include "sdk/vardec.h"
+#include <optional>
 #include <string>
+#include <vector>
 
-enum COMPRESSIONS {
-  COMPRESSION_UNKNOWN,
-  COMPRESSION_ARJ,
-  COMPRESSION_ZIP,
-  COMPRESSION_PAK,
-  COMPRESSION_ZOO,
-  COMPRESSION_LHA,
-  COMPRESSION_RAR,
-};
-
-
-int match_archiver(const std::string& filename);
+std::optional<arcrec> match_archiver(const std::vector<arcrec>& arcs, const std::string& filename);
 
 #endif  // _ARCHIVERS_H_
