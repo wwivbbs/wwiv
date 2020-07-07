@@ -214,7 +214,7 @@ std::optional<std::string> readfile(const messagerec* msg, const string& fileNam
   }
   file->Close();
   const auto last_cz = out.find_last_of(CZ);
-  const auto last_block_start = ssize(out) - MSG_BLOCK_SIZE;
+  const auto last_block_start = out.size() - MSG_BLOCK_SIZE;
   if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
     out.resize(last_cz);
@@ -256,7 +256,7 @@ void lineadd(const messagerec* msg, const string& sx, string fileName) {
     strcpy(&(b[j]), line.c_str());
     message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Write(b, MSG_BLOCK_SIZE);
-    if (((j + line.size()) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
+    if (j + line.size() > MSG_BLOCK_SIZE && new1 != GAT_NUMBER_ELEMENTS) {
       message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::Whence::begin);
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;

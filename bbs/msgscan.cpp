@@ -120,17 +120,15 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
 
     if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
         msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
-      if (user_input[0] == '@') {
-        auto_quote(b, reply_to_name, 1, post->daten);
-      } else {
-        auto_quote(b, reply_to_name, 3, post->daten);
-      }
+      const auto type =
+          user_input[0] == '@' ? quote_date_format_t::generic : quote_date_format_t::post;
+      auto_quote(b, reply_to_name, type, post->daten);
     }
   }
 
   if (post->status & status_post_new_net) {
     set_net_num(post->network.network_msg.net_number);
-    if (post->network.network_msg.net_number == -1) {
+    if (post->network.network_msg.net_number == static_cast<uint8_t>(-1)) {
       bout << "|#6Deleted network.\r\n";
       return;
     }
@@ -167,20 +165,19 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     case '1': {
       bout.nl();
       bout << "|#9Enter user name or number:\r\n:";
-      char szUserNameOrNumber[81];
-      input(szUserNameOrNumber, 75, true);
-      auto at_pos = strcspn(szUserNameOrNumber, "@");
-      if (at_pos != strlen(szUserNameOrNumber) && isalpha(szUserNameOrNumber[at_pos + 1])) {
-        if (strstr(szUserNameOrNumber, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
-          strlwr(szUserNameOrNumber);
-          strcat(szUserNameOrNumber, " ");
-          strcat(szUserNameOrNumber, "@32767 ");
+      char un_nn[81];
+      input(un_nn, 75, true);
+      auto at_pos = strcspn(un_nn, "@");
+      if (at_pos != strlen(un_nn) && isalpha(un_nn[at_pos + 1])) {
+        if (strstr(un_nn, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
+          strlwr(un_nn);
+          strcat(un_nn, " ");
+          strcat(un_nn, "@32767 ");
         }
       }
-      uint16_t user_number, system_number;
-      parse_email_info(szUserNameOrNumber, &user_number, &system_number);
-      if (user_number || system_number) {
-        email("", user_number, system_number, false, 0);
+      auto [un, sy] = parse_email_info(un_nn);
+      if (un || sy) {
+        email("", un, sy, false, 0);
       }
       scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     } break;
@@ -811,7 +808,7 @@ void HandleMessageReply(int& nMessageNumber) {
       nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
     // auto_quote needs the raw message text like from readfile(), so that
     // the top two lines are header information.
-    auto_quote(m.raw_message_text, m.from_user_name, 1, p2.daten);
+    auto_quote(m.raw_message_text, m.from_user_name, quote_date_format_t::generic, p2.daten);
   }
 
   if (!m.title.empty()) {

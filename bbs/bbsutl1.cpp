@@ -51,27 +51,27 @@ using namespace wwiv::strings;
  * Finds a()->usernum and system number from emailAddress, sets network number as
  * appropriate.
  * @param emailAddress The text of the email address.
- * @param pUserNumber OUT The User Number
- * @param pSystemNumber OUT The System Number
+ * @param un OUT The User Number
+ * @param sy OUT The System Number
  */
-void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_t* pSystemNumber) {
+std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address) {
   char *ss1, onx[20];
   unsigned user_number;
   std::set<char> odc;
 
   char szEmailAddress[255];
-  to_char_array(szEmailAddress, emailAddress);
+  to_char_array(szEmailAddress, email_address);
 
-  *pUserNumber = 0;
-  *pSystemNumber = 0;
+  uint16_t un = 0;
+  uint16_t sy = 0;
   a()->net_email_name.clear();
   char* ss = strrchr(szEmailAddress, '@');
   if (ss == nullptr) {
     user_number = finduser1(szEmailAddress);
     if (user_number > 0) {
-      *pUserNumber = static_cast<uint16_t>(user_number);
+      un = static_cast<uint16_t>(user_number);
     } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) { // Add 4.31 Build3
-      *pUserNumber = 1;
+      un = 1;
     } else {
       bout << "Unknown user.\r\n";
     }
@@ -86,7 +86,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
           }
           a()->net_email_name = szEmailAddress;
         }
-        *pSystemNumber = 1;
+        sy = 1;
         break;
       }
     }
@@ -95,7 +95,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
     }
   } else {
     ss[0] = '\0';
-    ss = &(ss[1]);
+    ss = &ss[1];
     StringTrimEnd(szEmailAddress);
     user_number = to_number<unsigned int>(szEmailAddress);
     if (user_number == 0 && szEmailAddress[0] == '#') {
@@ -113,31 +113,31 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       a()->net_email_name = szEmailAddress;
       StringTrimEnd(&a()->net_email_name);
       if (!a()->net_email_name.empty()) {
-        *pSystemNumber = static_cast<uint16_t>(system_number);
+        sy = static_cast<uint16_t>(system_number);
       } else {
         bout << "Unknown user.\r\n";
       }
     } else {
-      *pUserNumber = static_cast<uint16_t>(user_number);
-      *pSystemNumber = static_cast<uint16_t>(system_number);
+      un = static_cast<uint16_t>(user_number);
+      sy = static_cast<uint16_t>(system_number);
     }
-    if (*pSystemNumber && ss1) {
+    if (sy && ss1) {
       auto i = 0;
       for (i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
         set_net_num(i);
         if (iequals(ss1, a()->network_name())) {
-          if (!valid_system(*pSystemNumber)) {
+          if (!valid_system(sy)) {
             bout.nl();
-            bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
-            *pSystemNumber = *pUserNumber = 0;
+            bout << "There is no " << ss1 << " @" << sy << ".\r\n\n";
+            sy = un = 0;
           } else {
-            if (*pSystemNumber == a()->current_net().sysnum) {
-              *pSystemNumber = 0;
-              if (*pUserNumber == 0) {
-                *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
+            if (sy == a()->current_net().sysnum) {
+              sy = 0;
+              if (un == 0) {
+                un = static_cast<uint16_t>(finduser(a()->net_email_name));
               }
-              if (*pUserNumber == 0 || *pUserNumber > 32767) {
-                *pUserNumber = 0;
+              if (un == 0 || un > 32767) {
+                un = 0;
                 bout << "Unknown user.\r\n";
               }
             }
@@ -148,9 +148,9 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       if (i >= wwiv::stl::ssize(a()->nets())) {
         bout.nl();
         bout << "This system isn't connected to " << ss1 << "\r\n";
-        *pSystemNumber = *pUserNumber = 0;
+        sy = un = 0;
       }
-    } else if (*pSystemNumber && wwiv::stl::ssize(a()->nets()) > 1) {
+    } else if (sy && wwiv::stl::ssize(a()->nets()) > 1) {
       onx[0] = 'Q';
       onx[1] = '\0';
       auto onxi = 1;
@@ -161,9 +161,9 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       int xx = -1;
       for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
         set_net_num(i);
-        if (a()->current_net().sysnum == *pSystemNumber) {
+        if (a()->current_net().sysnum == sy) {
           xx = i;
-        } else if (valid_system(*pSystemNumber)) {
+        } else if (valid_system(sy)) {
           ss[nv++] = static_cast<char>(i);
         }
       }
@@ -171,18 +171,18 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
       if (nv == 0) {
         if (xx != -1) {
           set_net_num(xx);
-          *pSystemNumber = 0;
-          if (*pUserNumber == 0) {
-            *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
-            if (*pUserNumber == 0 || *pUserNumber > 32767) {
-              *pUserNumber = 0;
+          sy = 0;
+          if (un == 0) {
+            un = static_cast<uint16_t>(finduser(a()->net_email_name));
+            if (un == 0 || un > 32767) {
+              un = 0;
               bout << "Unknown user.\r\n";
             }
           }
         } else {
           bout.nl();
           bout << "Unknown system\r\n";
-          *pSystemNumber = *pUserNumber = 0;
+          sy = un = 0;
         }
       } else if (nv == 1) {
         set_net_num(ss[0]);
@@ -190,7 +190,7 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
         bout.nl();
         for (int i = 0; i < nv; i++) {
           set_net_num(ss[i]);
-          const auto* csne = next_system(*pSystemNumber);
+          const auto* csne = next_system(sy);
           if (csne) {
             if (i < 9) {
               onx[onxi++] = static_cast<char>(i + '1');
@@ -219,26 +219,27 @@ void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_
           set_net_num(ss[i]);
         } else {
           bout << "\r\n|#6Aborted.\r\n\n";
-          *pUserNumber = *pSystemNumber = 0;
+          un = sy = 0;
         }
       }
       free(ss);
     } else {
-      if (*pSystemNumber == a()->current_net().sysnum) {
-        *pSystemNumber = 0;
-        if (*pUserNumber == 0) {
-          *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
+      if (sy == a()->current_net().sysnum) {
+        sy = 0;
+        if (un == 0) {
+          un = static_cast<uint16_t>(finduser(a()->net_email_name));
         }
-        if (*pUserNumber == 0 || *pUserNumber > 32767) {
-          *pUserNumber = 0;
+        if (un == 0 || un > 32767) {
+          un = 0;
           bout << "Unknown user.\r\n";
         }
-      } else if (!valid_system(*pSystemNumber)) {
+      } else if (!valid_system(sy)) {
         bout << "\r\nUnknown user.\r\n";
-        *pSystemNumber = *pUserNumber = 0;
+        sy = un = 0;
       }
     }
   }
+  return std::make_tuple(un, sy);
 }
 
 std::string username_system_net_as_string(uint16_t un, const std::string& user_name, uint16_t sn,

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/quote.h"
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -93,27 +94,27 @@ static string to_quote_date_format(time_t t) {
   return ss.str();
 }
 
-std::string to_quote_date_line(int type, time_t tt, const string& tb) {
+static std::string to_quote_date_line(quote_date_format_t type, time_t tt, const string& tb) {
   const auto datetime = to_quote_date_format(tt);
   std::string date_line;
   switch (type) {
-  case 1:
+  case quote_date_format_t::generic:
     date_line = fmt::sprintf("%c3On %c1%s, %c2%s%c3 wrote:%c0", 0x03, 0x03, datetime, 0x03, tb,
                              0x03, 0x03);
     break;
-  case 2:
+  case quote_date_format_t::email:
     date_line = fmt::sprintf("%c3In your e-mail of %c2%s%c3, you wrote:%c0", 0x03, 0x03, datetime,
                              0x03, 0x03);
     break;
-  case 3:
+  case quote_date_format_t::post:
     date_line = fmt::sprintf("%c3In a message posted %c2%s%c3, you wrote:%c0", 0x03, 0x03,
                              datetime, 0x03, 0x03);
     break;
-  case 4:
+  case quote_date_format_t::forward:
     date_line = fmt::sprintf("%c3Message forwarded from %c2%s%c3, sent on %s.%c0", 0x03, 0x03, tb,
                              0x03, datetime, 0x03);
     break;
-  case 0:
+  case quote_date_format_t::no_quote:
   default:
     return {};
   }
@@ -121,10 +122,10 @@ std::string to_quote_date_line(int type, time_t tt, const string& tb) {
   return date_line;
 }
 
-//TODO(rushfan): This should be rewritten to use parsed message text.
-std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
-                                                         const std::string& to_name, int type,
-                                                         time_t tt) {
+static std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
+                                                                const std::string& to_name,
+                                                                quote_date_format_t type,
+                                                                time_t tt) {
   const msgapi::WWIVParsedMessageText pmt(raw_text);
   msgapi::parsed_message_lines_style_t style{};
   style.line_length = 72;
@@ -143,7 +144,7 @@ std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
 
   const auto tb1 = GetQuoteInitials(to_name);
   std::vector<std::string> out;
-  if (type != 0) {
+  if (type != quote_date_format_t::no_quote) {
     out.emplace_back(to_quote_date_line(type, tt, properize(strip_to_node(to_node))));
   }
 
@@ -156,7 +157,8 @@ std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
   return out;
 }
 
-void auto_quote(std::string& raw_text, const std::string& to_name, int type, time_t tt) {
+void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
+                time_t tt) {
   const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
   File::Remove(fn);
   if (a()->hangup_) {
@@ -189,7 +191,8 @@ void grab_quotes(std::string& raw_text, const std::string& to_name) {
     f.Write(raw_text);
   }
 
-  quotes_ind = std::make_unique<std::vector<std::string>>(create_quoted_text_from_message(raw_text, to_name, 0, 0));
+  quotes_ind = std::make_unique<std::vector<std::string>>(
+      create_quoted_text_from_message(raw_text, to_name, quote_date_format_t::no_quote, 0));
 }
 
 void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {

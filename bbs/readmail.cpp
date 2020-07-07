@@ -344,7 +344,7 @@ void readmail(int mode) {
   mailrec m1{};
   char ch;
   int num_mail, num_mail1;
-  uint16_t user_number, system_number;
+  //uint16_t user_number, system_number;
   net_system_list_rec* csne;
   filestatusrec fsr{};
   bool attach_exists = false;
@@ -943,7 +943,7 @@ void readmail(int mode) {
           // TODO: optimize this since we also call readfile in grab_user_name
           auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {
-            auto_quote(o.value(), reply_to_name, 4, m.daten);
+            auto_quote(o.value(), reply_to_name, quote_date_format_t::forward, m.daten);
             send_email();
           }
           break;
@@ -951,39 +951,39 @@ void readmail(int mode) {
 
         bout << "|#2Forward to: ";
         auto user_input = fixup_user_entered_email(input(75));
-        parse_email_info(user_input, &user_number, &system_number);
-        if (user_number || system_number) {
-          if (ForwardMessage(&user_number, &system_number)) {
+        auto [un, sn] = parse_email_info(user_input);
+        if (un || sn) {
+          if (ForwardMessage(&un, &sn)) {
             bout << "Mail forwarded.\r\n";
           }
-          if ((user_number == a()->usernum) && (system_number == 0) && (!cs())) {
+          if (un == a()->usernum && sn == 0 && !cs()) {
             bout << "Can't forward to yourself.\r\n";
-            user_number = 0;
+            un = 0;
           }
-          if (user_number || system_number) {
+          if (un || sn) {
             std::string fwd_email_name;
-            if (system_number) {
-              if (system_number == 1 && user_number == 0 &&
+            if (sn) {
+              if (sn == 1 && un == 0 &&
                   a()->current_net().type == network_type_t::internet) {
                 fwd_email_name = a()->net_email_name;
               } else {
                 auto netname = ssize(a()->nets()) > 1 ? a()->network_name() : "";
-                fwd_email_name = username_system_net_as_string(user_number, a()->net_email_name,
-                                                                system_number, netname);
+                fwd_email_name = username_system_net_as_string(un, a()->net_email_name,
+                                                                sn, netname);
               }
             } else {
               set_net_num(nn);
-              fwd_email_name = a()->names()->UserName(user_number, a()->current_net().sysnum);
+              fwd_email_name = a()->names()->UserName(un, a()->current_net().sysnum);
             }
-            if (ok_to_mail(user_number, system_number, false)) {
+            if (ok_to_mail(un, sn, false)) {
               bout << "|#5Forward to " << fwd_email_name << "? ";
               if (yesno()) {
-                auto pFileEmail(OpenEmailFile(true));
-                if (!pFileEmail->IsOpen()) {
+                auto file(OpenEmailFile(true));
+                if (!file->IsOpen()) {
                   break;
                 }
-                pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
-                pFileEmail->Read(&m, sizeof(mailrec));
+                file->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
+                file->Read(&m, sizeof(mailrec));
                 if (!same_email(mloc[curmail], m)) {
                   bout << "Error, mail moved.\r\n";
                   break;
@@ -999,8 +999,8 @@ void readmail(int mode) {
                   m1.daten = 0xffffffff;
                   m1.msg.storage_type = 0;
                   m1.msg.stored_as = 0xffffffff;
-                  pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
-                  pFileEmail->Write(&m1, sizeof(mailrec));
+                  file->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
+                  file->Write(&m1, sizeof(mailrec));
                 } else {
                   string b;
                   if (auto o = readfile(&(m.msg), "email")) {
@@ -1009,7 +1009,7 @@ void readmail(int mode) {
                 }
                 m.status |= status_forwarded;
                 m.status |= status_seen;
-                pFileEmail->Close();
+                file->Close();
 
                 i = a()->net_num();
                 const auto fwd_user_name =
@@ -1033,8 +1033,8 @@ void readmail(int mode) {
                 email.title = m.title;
                 email.msg = &m.msg;
                 email.anony = m.anony;
-                email.user_number = user_number;
-                email.system_number = system_number;
+                email.user_number = un;
+                email.system_number = sn;
                 email.an = true;
                 email.forwarded_code = delme; // this looks totally wrong to me...
                 email.silent_mode = false;
@@ -1082,7 +1082,7 @@ void readmail(int mode) {
             if (okfsed() && a()->user()->IsUseAutoQuote()) {
               // used to be 1 or 2 depending on s[0] == '@', but
               // that's allowable now and @ was never in the beginning.
-              auto_quote(o.value(), reply_to_name, 2, m.daten);
+              auto_quote(o.value(), reply_to_name, quote_date_format_t::email, m.daten);
             }
             grab_quotes(o.value(), reply_to_name);
           }
@@ -1090,9 +1090,9 @@ void readmail(int mode) {
           if (ch == '@') {
             bout << "\r\n|#9Enter user name or number:\r\n:";
             auto user_email = fixup_user_entered_email(input(75, true));
-            parse_email_info(user_email, &user_number, &system_number);
-            if (user_number || system_number) {
-              email("", user_number, system_number, false, 0);
+            auto [un, sy] = parse_email_info(user_email);
+            if (un || sy) {
+              email("", un, sy, false, 0);
             }
           } else {
             email("", m.fromuser, m.fromsys, false, m.anony);

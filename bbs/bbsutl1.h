@@ -19,8 +19,9 @@
 #define __INCLUDED_BBS_BBSUTL1_H__
 
 #include <string>
+#include <tuple>
 
-void parse_email_info(const std::string& emailAddress, uint16_t *pUserNumber, uint16_t *pSystemNumber);
+std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address);
 
 /**
  * Creates string of form (#un | user_name) @sn[.network_name].

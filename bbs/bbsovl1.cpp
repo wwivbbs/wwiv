@@ -127,14 +127,14 @@ int GetMaxMessageLinesAllowed() {
  */
 void upload_post() {
   File file(FilePath(a()->temp_directory(), INPUT_MSG));
-  auto lMaxBytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
+  const auto max_bytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
-  bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
+  bout << "\r\nYou may now upload a message, max bytes: " << max_bytes << wwiv::endl << wwiv::endl;
   int i = 0;
   receive_file(file.full_pathname(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
-    auto file_size = file.length();
-    if (file_size > lMaxBytes) {
+    const auto file_size = file.length();
+    if (file_size > max_bytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
       File::Remove(file.path());
@@ -177,8 +177,7 @@ void send_email() {
     }
   }
 
-  uint16_t system_number, user_number;
-  parse_email_info(username, &user_number, &system_number);
+  auto [user_number, system_number] = parse_email_info(username);
   clear_quotes();
   if (user_number || system_number) {
     email("", user_number, system_number, false, 0);
@@ -261,7 +260,7 @@ void feedback(bool bNewUserFeedback) {
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       User user;
       a()->users()->readuser(&user, i);
-      if ((user.GetSl() == 255 || (a()->config()->sl(user.GetSl()).ability & ability_cosysop)) &&
+      if ((user.GetSl() == 255 || a()->config()->sl(user.GetSl()).ability & ability_cosysop) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);

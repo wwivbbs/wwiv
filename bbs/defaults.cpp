@@ -683,12 +683,11 @@ static void modify_mailbox() {
   }
   bout.nl();
   bout << "|#2Forward to? ";
-  auto entered_forward_to = input(40);
+  const auto entered_forward_to = input(40);
 
-  uint16_t nTempForwardUser, nTempForwardSystem;
-  parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);
-  a()->user()->SetForwardUserNumber(nTempForwardUser);
-  a()->user()->SetForwardSystemNumber(nTempForwardSystem);
+  auto [tu, ts] = parse_email_info(entered_forward_to);
+  a()->user()->SetForwardUserNumber(tu);
+  a()->user()->SetForwardSystemNumber(ts);
   if (a()->user()->GetForwardSystemNumber() != 0) {
     a()->user()->SetForwardNetNumber(a()->net_num());
     if (a()->user()->GetForwardUserNumber() == 0) {

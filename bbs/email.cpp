@@ -526,8 +526,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           done = true;
           break;
         }
-        uint16_t tu, ts;
-        parse_email_info(emailAddress, &tu, &ts);
+        auto [tu, ts] = parse_email_info(emailAddress);
         if (tu || ts) {
           carbon_copy[nNumUsers].user_number = tu;
           carbon_copy[nNumUsers].system_number = ts;
