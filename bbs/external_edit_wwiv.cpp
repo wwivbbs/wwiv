@@ -107,7 +107,6 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   }
   if (title.empty()) {
     RemoveEditorFileFromTemp(QUOTES_TXT);
-    RemoveEditorFileFromTemp(QUOTES_IND);
   }
 
   // Write FEDIT.INF

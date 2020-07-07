@@ -77,7 +77,6 @@ string GetQuoteInitials(const string& orig_name) {
 
 void clear_quotes() {
   File::Remove(FilePath(a()->temp_directory(), QUOTES_TXT), true);
-  File::Remove(FilePath(a()->temp_directory(), QUOTES_IND), true);
 
   quotes_ind.reset();
 }

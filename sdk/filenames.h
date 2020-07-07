@@ -154,7 +154,6 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define PHONENUM_DAT "phonenum.dat"
 
 #define QUOTE_NOEXT "quote"
-#define QUOTES_IND "quotes.ind"
 #define QUOTES_TXT "quotes.txt"
 #define QWK_CFG "qwk.cfg"
 
