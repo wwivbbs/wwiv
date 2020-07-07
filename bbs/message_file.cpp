@@ -184,15 +184,14 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   }
 }
 
-bool readfile(const messagerec* msg, const string& fileName, string* out) {
-  out->clear();
+std::optional<std::string> readfile(const messagerec* msg, const string& fileName) {
   if (msg->storage_type != 2) {
-    return false;
+    return std::nullopt;
   }
 
   auto file(OpenMessageFile(fileName));
-  set_gat_section(*file, msg->stored_as / GAT_NUMBER_ELEMENTS);
-  int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+  set_gat_section(*file, static_cast<int>(msg->stored_as) / GAT_NUMBER_ELEMENTS);
+  auto current_section = static_cast<int>(msg->stored_as % GAT_NUMBER_ELEMENTS);
   long message_length = 0;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     message_length += MSG_BLOCK_SIZE;
@@ -200,26 +199,27 @@ bool readfile(const messagerec* msg, const string& fileName, string* out) {
   }
   if (message_length == 0) {
     bout << "\r\nNo message found.\r\n\n";
-    return false;
+    return std::nullopt;
   }
 
-  current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+  std::string out;
+  current_section = static_cast<int>(msg->stored_as) % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
     char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
     b[MSG_BLOCK_SIZE] = 0;
-    out->append(b);
+    out.append(b);
     current_section = gat[current_section];
   }
   file->Close();
-  const auto last_cz = out->find_last_of(CZ);
-  const auto last_block_start = out->length() - MSG_BLOCK_SIZE;
+  const auto last_cz = out.find_last_of(CZ);
+  const auto last_block_start = ssize(out) - MSG_BLOCK_SIZE;
   if (last_cz != string::npos && last_block_start >= 0 && last_cz > last_block_start) {
     // last block has a Control-Z in it.  Make sure we add a 0 after it.
-    out->resize(last_cz);
+    out.resize(last_cz);
   }
-  return true;
+  return {out};
 }
 
 void lineadd(const messagerec* msg, const string& sx, string fileName) {

@@ -228,13 +228,13 @@ void sendout_email(EmailData& data) {
       bout << "|#6DIDN'T SAVE RIGHT!\r\n";
     }
   } else {
-    string b;
-    if (!readfile(&(m.msg), "email", &b)) {
+    auto o = readfile(&m.msg, "email"); 
+    if (!o) {
       return;
     }
     if (data.forwarded_code == 2) {
       // Not sure where this is ever set to 2...
-      remove_link(&(m.msg), "email");
+      remove_link(&m.msg, "email");
     }
     nh.tosys  = static_cast<uint16_t>(data.system_number);
     nh.touser = static_cast<uint16_t>(data.user_number);
@@ -249,11 +249,12 @@ void sendout_email(EmailData& data) {
     nh.list_len = 0;
     nh.daten = m.daten;
     nh.method = 0;
-    unique_ptr<char[]> b1(new char[b.size() + 768]);
+    auto b = o.value();
+    auto b1 = std::make_unique<char[]>(b.size() + 768);
     int i = 0;
     if (data.user_number == 0 && data.from_network_number == a()->net_num()) {
       nh.main_type = main_type_email_name;
-      strcpy(&(b1[i]), a()->net_email_name.c_str());
+      strcpy(&b1[i], a()->net_email_name.c_str());
       i += wwiv::stl::ssize(a()->net_email_name) + 1;
     }
     strcpy(&b1[i], m.title);
@@ -269,18 +270,14 @@ void sendout_email(EmailData& data) {
         a()->net_num(), a()->net_email_name, 
       {}, data.from_network_number);
     } else {
-      string net_filename;
-      if (data.forwarded_code) {
-        net_filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
-      } else {
-        net_filename = StrCat(a()->network_directory(), "p0", a()->network_extension());
-      }
-      File fileNetworkPacket(net_filename);
-      fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      fileNetworkPacket.Seek(0L, File::Whence::end);
-      fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
-      fileNetworkPacket.Write(b1.get(), nh.length);
-      fileNetworkPacket.Close();
+      const auto fn =
+          fmt::format("{}{}", data.forwarded_code ? "p1" : "p0", a()->network_extension());
+      File packet(FilePath(a()->network_directory(), fn));
+      packet.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+      packet.Seek(0L, File::Whence::end);
+      packet.Write(&nh, sizeof(net_header_rec));
+      packet.Write(b1.get(), nh.length);
+      packet.Close();
     }
   }
   string logMessage = "Mail sent to ";

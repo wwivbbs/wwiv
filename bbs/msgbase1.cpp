@@ -67,8 +67,8 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
-  string text;
-  if (!readfile(&(pPostRecord->msg), sub.filename, &text)) {
+  auto o = readfile(&(pPostRecord->msg), sub.filename);
+  if (!o) {
     return;
   }
 
@@ -87,6 +87,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     netnum = -1;
   }
 
+  auto text = o.value();
   net_header_rec nhorig = {};
   nhorig.tosys = 0;
   nhorig.touser = 0;
@@ -97,7 +98,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   nhorig.length = text.size() + 1 + strlen(pPostRecord->title);
   nhorig.method = 0;
 
-  uint32_t message_length = text.size();
+  auto message_length = text.size();
   if (nhorig.length > 32755) {
     bout.bprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
     nhorig.length = 32755;
@@ -344,11 +345,12 @@ void add_ftn_msgid(const wwiv::sdk::Config& config, const FidoAddress& addr, con
 }
 
 std::string grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
-  string text;
   a()->net_email_name.clear();
-  if (!readfile(msg, file_name, &text)) {
+  auto o = readfile(msg, file_name);
+  if (!o) {
     return {};
   }
+  auto text = o.value();
   const auto cr = text.find_first_of('\r');
   if (cr == string::npos) {
     return {};

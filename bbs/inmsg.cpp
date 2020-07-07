@@ -162,8 +162,8 @@ static void GetMessageTitle(MessageEditorData& data) {
 }
 
 static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, MessageEditorData& data) {
-  bool abort = false, next = false;
-  int curli = 0;
+  auto abort = false, next = false;
+  auto curli = 0;
 
   bout.nl(2);
   bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
@@ -179,10 +179,10 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   bout << header;
   bout.nl();
 
-  string current_line;  
-  bool check_message_size = true;
-  bool save_message = false;
-  bool done = false;
+  string current_line;
+  auto check_message_size = true;
+  auto save_message = false;
+  auto done = false;
   string rollover_line;
   std::deque<std::string> quoted_lines;
   while (!done && !a()->hangup_) {
@@ -215,8 +215,11 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         check_message_size = false;
-        quoted_lines = get_quote(data.to_name);
-          
+        quoted_lines = query_quote_lines();
+
+        if (quoted_lines.empty()) {
+          bout.nl();          
+        }
         while (!quoted_lines.empty()) {
           current_line = quoted_lines.front();
           quoted_lines.pop_front();
@@ -229,27 +232,27 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
             lin.at(curli).assign(current_line);
           }
           curli++;
-        }
-      } else if ((cmd == "/LI")) {
+        } 
+      } else if (cmd == "/LI") {
         check_message_size = false;
         abort = false;
-        for (int i = 0; (i < curli) && !abort; i++) {
+        for (auto i = 0; i < curli && !abort; i++) {
           auto line = lin.at(i);
           if (!line.empty() && line.back() == CA) {
             line.pop_back();
           }
           if (!line.empty() && line.front() == CB) {
             line = line.substr(1);
-            int i5 = 0;
+            auto i5 = 0;
             // TODO(rushfan): Make a utility function to do this in strings.h
-            for (size_t i4 = 0; i4 < line.size(); i4++) {
-              if ((line[i4] == 8) || (line[i4] == 3)) {
+            for (auto i4 = 0; i4 < ssize(line); i4++) {
+              if (line[i4] == 8 || line[i4] == 3) {
                 --i5;
               } else {
                 ++i5;
               }
             }
-            for (int i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (auto i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
               bout.bputs(" ", &abort, &next);
             }
           }
@@ -259,28 +262,28 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
           bout.nl();
           bout << "Continue...\r\n";
         }
-      } else if ((cmd == "/ES") ||
-                 (cmd == "/S")) {
+      } else if (cmd == "/ES" ||
+                 cmd == "/S") {
         save_message = true;
         done = true;
         check_message_size = false;
-      } else if ((cmd == "/ESY") ||
-                 (cmd == "/SY")) {
+      } else if (cmd == "/ESY" ||
+                 cmd == "/SY") {
         save_message = true;
         done = true;
         check_message_size = false;
         *setanon = 1;
-      } else if ((cmd == "/ESN") ||
-                 (cmd == "/SN")) {
+      } else if (cmd == "/ESN" ||
+                 cmd == "/SN") {
         save_message = true;
         done = true;
         check_message_size = false;
         *setanon = -1;
-      } else if ((cmd == "/ABT") ||
-                 (cmd == "/A")) {
+      } else if (cmd == "/ABT" ||
+                 cmd == "/A") {
         done = true;
         check_message_size = false;
-      } else if ((cmd == "/CLR")) {
+      } else if (cmd == "/CLR") {
         check_message_size = false;
         curli = 0;
         bout << "Message cleared... Start over...\r\n\n";
@@ -314,7 +317,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
           // to back up one.
           auto last_line = curli - 1;
           auto temp = lin.at(last_line);
-          wwiv::strings::StringReplace(&temp, old_string, new_string);
+          StringReplace(&temp, old_string, new_string);
           lin[last_line] = temp;
           bout << "Last line:\r\n" << lin.at(last_line) << "\r\nContinue...\r\n";
         }
@@ -332,12 +335,12 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       }
       // Since we added the line, let's move forward.
       curli++;
-      if (curli == (maxli + 1)) {
+      if (curli == maxli + 1) {
         bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
         curli--;
       } else if (curli == maxli) {
         bout << "-= Message limit reached, /S to save =-\r\n";
-      } else if ((curli + 5) == maxli) {
+      } else if (curli + 5 == maxli) {
         bout << "-= 5 lines left =-\r\n";
       }
     }

@@ -63,6 +63,7 @@ static std::vector<std::string> split_wwiv_style_message_text(const std::string&
       out.emplace_back(l);
     } else {
       out.emplace_back(current_line.append(l));
+      current_line.clear();
     }
   }
   return out;

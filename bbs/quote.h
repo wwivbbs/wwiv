@@ -18,15 +18,15 @@
 #ifndef __INCLUDED_BBS_QUOTE_H__
 #define __INCLUDED_BBS_QUOTE_H__
 
+#include "sdk/vardec.h"
 #include <string>
 #include <deque>
 
-#include "sdk/vardec.h"
-
+void grab_quotes(std::string& raw_text, const std::string& to_name);
 void grab_quotes(messagerec* m, const std::string& aux, const std::string& to_name);
 void clear_quotes();
-void auto_quote(std::string& org, const std::string& to_name, int type, time_t tDateTime);
-std::deque<std::string> get_quote(const std::string& reply_to_name);
+void auto_quote(std::string& raw_text, const std::string& to_name, int type, time_t tt);
+std::deque<std::string> query_quote_lines();
 
 // [[ VisibleForTesting ]]
 std::string GetQuoteInitials(const std::string& reply_to_name);

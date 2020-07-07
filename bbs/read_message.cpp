@@ -42,6 +42,8 @@
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/net.h"
 #include "sdk/subxtr.h"
+#include "sdk/msgapi/parsed_message.h"
+
 #include <cctype>
 #include <memory>
 #include <stdexcept>
@@ -279,10 +281,12 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 
   Type2MessageData data{};
   data.email = iequals("email", file_name);
-  if (!readfile(msg, file_name, &data.message_text)) {
+  auto o = readfile(msg, file_name);
+  if (!o) {
     return {};
   }
   // Make a copy of the raw message text.
+  data.message_text = o.value();
   data.raw_message_text = data.message_text;
 
   // TODO(rushfan): Use get_control_line from networking code here.
@@ -465,52 +469,15 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
 
-static std::vector<std::string> split_long_lines(std::string& orig_text, int width, bool add_wrapping_marker) {
-  auto orig = SplitString(orig_text, "\r");
-  std::vector<std::string> out;
-  for (auto& l : orig) {
-    StringTrimCRLF(&l);
-    l.erase(std::remove(l.begin(), l.end(), 10), l.end());
-
-    do {
-      const auto size_wc = size_without_colors(l);
-      if (size_wc <= width) {
-        out.push_back(l);
-        break;
-      }
-      // We have a long line
-      auto pos = width;
-      while (pos > 0 && l[pos] > 32) {
-        pos--;
-      }
-      if (pos == 0) {
-        pos = width;
-      }
-      auto subset_of_l = l.substr(0, pos);
-      l = l.substr(pos + 1);
-      if (add_wrapping_marker) {
-        // A ^A at the end of the line means it was soft wrapped.
-        out.push_back(fmt::sprintf("%s%c", subset_of_l, 0x01));
-      } else {
-        out.push_back(subset_of_l);
-      }
-    } while (true);
-    
-  }
-  return out;
-}
-
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {
-  auto text(orig_text);
   const auto& user = *a()->user();
-  const auto cz_pos = text.find(CZ);
-  if (cz_pos != string::npos) {
-    // We stop the message at control-Z if it exists.
-    text = text.substr(0, cz_pos);
-  }
+  WWIVParsedMessageText pmt(orig_text);
+  parsed_message_lines_style_t style{};
+  style.ctrl_lines = control_lines_t::control_lines;
+  style.add_wrapping_marker = false;
+  style.line_length = user.GetScreenChars() - 1;
 
-  // split text into lines of appropriate length.
-  auto orig_lines = split_long_lines(text, user.GetScreenChars(), false);
+  auto orig_lines = pmt.to_lines(style);
 
   // Now handle control chars, and optional lines.
   std::vector<std::string> lines;
@@ -522,7 +489,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
     }
     const auto optional_lines = user.GetOptionalVal();
     if (line.front() == CD) {
-      const auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
+      const auto level = line.size() > 1 ? static_cast<int>(line.at(1) - '0') : 0;
       if (level == 0) {
         // ^D0 lines are always skipped unless explicitly requested.
         if (!controlcodes) {
@@ -537,11 +504,8 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
         // This is too high of a level, so skip it.
         continue;
       }
-    } else if (line.back() == CA) {
-      // This meant we wrapped here.
-      line.pop_back();
     }
-    // Not CD or CA.  Check overflow.
+    // Not CD.  Check overflow.
     lines.emplace_back(line);
   }
 

@@ -38,9 +38,16 @@ enum class control_lines_t {
   no_control_lines
 };
 
+/**
+ * Controls the style of the text to be returned in ParsedMessageText::to_lines
+ */
 struct parsed_message_lines_style_t {
+  // Controls the including of control lines and how to include.
   control_lines_t ctrl_lines;
+  // Line length to wrap soft-wrapped lines
   int line_length{76};
+  // Should the WWIV wrapping marker be added (^A) at the end of
+  // a soft-wrapped line.
   bool add_wrapping_marker{true};
 };
 

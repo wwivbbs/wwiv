@@ -51,6 +51,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
@@ -101,7 +102,7 @@ static string GetScanReadPrompts(int nMessageNumber) {
 
 static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
                                     MsgScanOption& scan_option) {
-  postrec* post = get_post(msgnum);
+  auto* post = get_post(msgnum);
   if (!post) {
     return;
   }
@@ -112,16 +113,18 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   if (post->ownersys && !post->owneruser) {
     reply_to_name = grab_user_name(&(post->msg), a()->current_sub().filename, a()->net_num());
   }
-  grab_quotes(&(post->msg), a()->current_sub().filename, reply_to_name);
 
-  if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
-      msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
-    string b;
-    readfile(&(post->msg), (a()->current_sub().filename), &b);
-    if (user_input[0] == '@') {
-      auto_quote(b, reply_to_name, 1, post->daten);
-    } else {
-      auto_quote(b, reply_to_name, 3, post->daten);
+  if (auto o = readfile(&post->msg, a()->current_sub().filename)) {
+    auto b = o.value();
+    grab_quotes(b, reply_to_name);
+
+    if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
+        msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
+      if (user_input[0] == '@') {
+        auto_quote(b, reply_to_name, 1, post->daten);
+      } else {
+        auto_quote(b, reply_to_name, 3, post->daten);
+      }
     }
   }
 
@@ -166,8 +169,8 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
       bout << "|#9Enter user name or number:\r\n:";
       char szUserNameOrNumber[81];
       input(szUserNameOrNumber, 75, true);
-      size_t nAtPos = strcspn(szUserNameOrNumber, "@");
-      if (nAtPos != strlen(szUserNameOrNumber) && isalpha(szUserNameOrNumber[nAtPos + 1])) {
+      auto at_pos = strcspn(szUserNameOrNumber, "@");
+      if (at_pos != strlen(szUserNameOrNumber) && isalpha(szUserNameOrNumber[at_pos + 1])) {
         if (strstr(szUserNameOrNumber, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
           strlwr(szUserNameOrNumber);
           strcat(szUserNameOrNumber, " ");
@@ -183,8 +186,11 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     } break;
     case '2': {
       if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
-        string b;
-        readfile(&post->msg, a()->current_sub().filename, &b);
+        auto o = readfile(&post->msg, a()->current_sub().filename);
+        if (!o) {
+          break;
+        }
+        auto b = o.value();
         string filename = "EXTRACT.TMP";
         if (File::Exists(filename)) {
           File::Remove(filename);
@@ -311,8 +317,8 @@ static void HandleScanReadFind(int& nMessageNumber, MsgScanOption& scan_option) 
         CheckForHangup();
       }
     }
-    string b;
-    if (readfile(&(get_post(tmp_msgnum)->msg), a()->current_sub().filename, &b)) {
+    if (auto o = readfile(&(get_post(tmp_msgnum)->msg), a()->current_sub().filename)) {
+      auto b = o.value();
       StringUpperCase(&b);
       fnd = (strstr(strupr(stripcolors(get_post(tmp_msgnum)->title)), szFindString) ||
              strstr(b.c_str(), szFindString))
@@ -656,8 +662,11 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
 
 static void HandleMessageDownload(int msgnum) {
   if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
-    string b;
-    readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename), &b);
+    auto o = readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename));
+    if (!o) {
+      return;
+    }
+    auto b = o.value();
     bout << "|#1Message Download -\r\n\n";
     bout << "|#2Filename to use? ";
     const auto filename = input_filename(12);
@@ -666,12 +675,8 @@ static void HandleMessageDownload(int msgnum) {
     }
     const auto f = FilePath(a()->temp_directory(), filename);
     File::Remove(f);
-    {
-      File fileTemp(f);
-      fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      fileTemp.Write(b);
-      fileTemp.Close();
-    }
+    TextFile tf(f, "wt");
+    tf.Write(b);
 
     bool bFileAbortStatus;
     bool bStatus;
@@ -721,10 +726,9 @@ void HandleMessageMove(int& nMessageNumber) {
     if (nTempSubNum != -1) {
       open_sub(true);
       resynch(&nMessageNumber, nullptr);
-      postrec p2 = *get_post(nMessageNumber);
-      postrec p1 = p2;
-      string b;
-      readfile(&(p2.msg), (a()->current_sub().filename), &b);
+      auto p2 = *get_post(nMessageNumber);
+      auto p1 = p2;
+      auto b = readfile(&(p2.msg), (a()->current_sub().filename)).value_or("");
       bout.nl();
       bout << "|#5Delete original post? ";
       if (yesno()) {
@@ -801,7 +805,7 @@ void HandleMessageReply(int& nMessageNumber) {
                               cs.filename.c_str(), p2.ownersys, p2.owneruser);
   m.title = p2.title;
 
-  grab_quotes(&p2.msg, a()->current_sub().filename, m.from_user_name);
+  grab_quotes(m.raw_message_text, m.from_user_name);
 
   if (okfsed() && a()->user()->IsUseAutoQuote() && nMessageNumber > 0 &&
       nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
@@ -872,9 +876,9 @@ static void HandleMessageExtract(int& msgnum) {
   if (!so()) {
     return;
   }
-  if ((msgnum > 0) && (msgnum <= a()->GetNumMessagesInCurrentMessageArea())) {
-    string b;
-    if (readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename), &b)) {
+  if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
+    if (auto o = readfile(&get_post(msgnum)->msg, (a()->current_sub().filename))) {
+      auto b = o.value();
       extract_out(&b[0], b.size(), get_post(msgnum)->title);
     }
   }

@@ -437,11 +437,10 @@ void readmail(int mode) {
           if (nn == 255) {
             s1 = fmt::format("#{} @{}.<deleted network>", m.fromuser, m.fromsys);
           } else {
-            string b;
-            if (readfile(&m.msg, "email", &b)) {
+            if (auto o = readfile(&m.msg, "email")) {
               // we know b is much bigger than s2, so don't
               // use to_char_array
-              strncpy(s2, b.c_str(), sizeof(s2) - 1);
+              strncpy(s2, o.value().c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
               if (m.fromsys == INTERNET_EMAIL_FAKE_OUTBOUND_NODE ||
                   m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
@@ -563,7 +562,7 @@ void readmail(int mode) {
         // message, including sender name (which is all we have for FTN messages).
         // We need to get the full header before that and pass it into this
         // method to display it.
-        auto msg = read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, "email",
+        auto msg = read_type2_message(&m.msg, m.anony & 0x0f, i ? true : false, "email",
                                       nFromSystem, nFromUser);
         msg.message_area = "Personal E-Mail";
         msg.title = m.title;
@@ -692,8 +691,8 @@ void readmail(int mode) {
         break;
       case 'E':
         if (so() && okmail) {
-          string b;
-          if (readfile(&(m.msg), "email", &b)) {
+          if (auto o = readfile(&(m.msg), "email")) {
+            auto b = o.value();
             extract_out(&b[0], b.length(), m.title);
           }
         }
@@ -825,8 +824,11 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            string b;
-            readfile(&(m.msg), "email", &b);
+            auto o = readfile(&(m.msg), "email");
+            if (!o) {
+              break;
+            }
+            auto b = o.value();
 
             postrec p{};
             strcpy(p.title, m.title);
@@ -938,11 +940,10 @@ void readmail(int mode) {
         }
         bout.nl(2);
         if (okfsed() && a()->user()->IsUseAutoQuote()) {
-          string b;
           // TODO: optimize this since we also call readfile in grab_user_name
           auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
-          if (readfile(&(m.msg), "email", &b)) {
-            auto_quote(b, reply_to_name, 4, m.daten);
+          if (auto o = readfile(&(m.msg), "email")) {
+            auto_quote(o.value(), reply_to_name, 4, m.daten);
             send_email();
           }
           break;
@@ -1002,8 +1003,8 @@ void readmail(int mode) {
                   pFileEmail->Write(&m1, sizeof(mailrec));
                 } else {
                   string b;
-                  if (readfile(&(m.msg), "email", &b)) {
-                    savefile(b, &(m.msg), "email");
+                  if (auto o = readfile(&(m.msg), "email")) {
+                    savefile(o.value(), &(m.msg), "email");
                   }
                 }
                 m.status |= status_forwarded;
@@ -1077,15 +1078,15 @@ void readmail(int mode) {
         if (m.fromuser != 65535) {
           // TODO: optimize this since we also call readfile in grab_user_name
           reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
-          if (okfsed() && a()->user()->IsUseAutoQuote()) {
-            string b;
-            readfile(&(m.msg), "email", &b);
-            // used to be 1 or 2 depending on s[0] == '@', but
-            // that's allowable now and @ was never in the beginning.
-            auto_quote(b, reply_to_name, 2, m.daten);
+          if (auto o = readfile(&(m.msg), "email")) {
+            if (okfsed() && a()->user()->IsUseAutoQuote()) {
+              // used to be 1 or 2 depending on s[0] == '@', but
+              // that's allowable now and @ was never in the beginning.
+              auto_quote(o.value(), reply_to_name, 2, m.daten);
+            }
+            grab_quotes(o.value(), reply_to_name);
           }
 
-          grab_quotes(&(m.msg), "email", reply_to_name);
           if (ch == '@') {
             bout << "\r\n|#9Enter user name or number:\r\n:";
             auto user_email = fixup_user_entered_email(input(75, true));
@@ -1180,21 +1181,21 @@ void readmail(int mode) {
       } break;
       case 'Y': // Add from here
         if (curmail >= 0) {
-          string b;
-          readfile(&(m.msg), "email", &b);
+          auto o = readfile(&(m.msg), "email");
+          if (!o) {
+            break;
+          }
+          auto b = o.value();
           bout << "E-mail download -\r\n\n|#2Filename: ";
-          string downloadFileName = input(12);
-          if (!okfn(downloadFileName.c_str())) {
+          auto downloadFileName = input(12);
+          if (!okfn(downloadFileName)) {
             break;
           }
           const auto fn = FilePath(a()->temp_directory(), downloadFileName);
           File::Remove(fn);
-          {
-            File fileTemp(fn);
-            fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-            fileTemp.Write(b);
-            fileTemp.Close();
-          }
+          TextFile tf(fn, "w");
+          tf.Write(b);
+          tf.Close();
           bool bSent;
           bool bAbort;
           send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, b.size());

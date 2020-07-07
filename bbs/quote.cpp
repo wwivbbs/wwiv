@@ -30,55 +30,12 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+#include "sdk/msgapi/parsed_message.h"
+
 #include <deque>
 #include <memory>
 #include <string>
 #include <vector>
-
-#define LINELEN 79
-#define PFXCOL 2
-#define QUOTECOL 0
-
-#define WRTPFX                                                                                     \
-  {                                                                                                \
-    file.Write(fmt::sprintf("\x3%d", PFXCOL));                                                \
-    if (tf == 1)                                                                                   \
-      cp = file.WriteBinary(pfx.c_str(), pfx.size() - 1);                                          \
-    else                                                                                           \
-      cp = file.WriteBinary(pfx.c_str(), pfx.size());                                              \
-    file.Write(fmt::sprintf("\x3%c", cc));                                                         \
-  }
-#define NL                                                                                         \
-  {                                                                                                \
-    if (!cp) {                                                                                     \
-      file.Write(fmt::sprintf("\x3%d", PFXCOL));                                              \
-      file.WriteBinary(pfx.c_str(), pfx.size());                                                   \
-    }                                                                                              \
-    if (ctlc)                                                                                      \
-      file.WriteBinary("0", 1);                                                                    \
-    file.WriteBinary("\r\n", 2);                                                                   \
-    cp = ns = ctlc = 0;                                                                            \
-  }
-#define FLSH                                                                                       \
-  {                                                                                                \
-    if (ss1) {                                                                                     \
-      if (cp && (l3 + cp >= linelen))                                                              \
-        NL else if (ns) cp += file.WriteBinary(" ", 1);                                            \
-      if (!cp) {                                                                                   \
-        if (ctld)                                                                                  \
-          file.Write(fmt::sprintf("\x4%c", ctld));                                                 \
-        WRTPFX;                                                                                    \
-      }                                                                                            \
-      file.WriteBinary(ss1, l2);                                                                   \
-      cp += l3;                                                                                    \
-      ss1 = nullptr;                                                                               \
-      l2 = l3 = 0;                                                                                 \
-      ns = 1;                                                                                      \
-    }                                                                                              \
-  }
-
-static int quotes_ind_l = 0;
-static char* quotes_ind = nullptr;
 
 using std::string;
 using std::unique_ptr;
@@ -86,6 +43,8 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
+
+static std::unique_ptr<std::vector<std::string>> quotes_ind;
 
 static string FirstLettersOfVectorAsString(const vector<string>& parts) {
   string result;
@@ -104,15 +63,15 @@ string GetQuoteInitials(const string& orig_name) {
     name = name.substr(2);
   }
 
-  auto paren_start = name.find('(');
+  const auto paren_start = name.find('(');
   if (paren_start != name.npos && !isdigit(name.at(paren_start + 1))) {
-    auto inner = name.substr(paren_start + 1);
+    const auto inner = name.substr(paren_start + 1);
     return GetQuoteInitials(inner);
   }
 
   const auto last = name.find_first_of("#<>()[]`");
-  vector<string> parts =
-      (last != name.npos) ? SplitString(name.substr(0, last), " ") : SplitString(name, " ");
+  const auto parts =
+      last != name.npos ? SplitString(name.substr(0, last), " ") : SplitString(name, " ");
   return FirstLettersOfVectorAsString(parts);
 }
 
@@ -120,148 +79,11 @@ void clear_quotes() {
   File::Remove(FilePath(a()->temp_directory(), QUOTES_TXT), true);
   File::Remove(FilePath(a()->temp_directory(), QUOTES_IND), true);
 
-  if (quotes_ind) {
-    free(quotes_ind);
-  }
-
-  quotes_ind = nullptr;
-  quotes_ind_l = 0;
+  quotes_ind.reset();
 }
 
-void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
-  long l2, l3;
-  int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
-  char cc = QUOTECOL + 48;
-  int linelen = LINELEN, tf = 0;
-
-  clear_quotes();
-  
-  auto quotes_txt_fn = FilePath(a()->temp_directory(), QUOTES_TXT);
-  auto quotes_ind_fn = FilePath(a()->temp_directory(), QUOTES_IND);
-
-  auto pfx = StrCat(GetQuoteInitials(to_name), "> ");
-
-  string ss;
-  if (!readfile(m, message_filename, &ss)) {
-    return;
-  }
-  if (ss.back() == CZ) {
-    // Since CZ isn't special on Win32/Linux. Don't write it out
-    // to the quotes file.
-    ss.pop_back();
-  }
-
-  File quotesTextFile(quotes_txt_fn);
-  if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate,
-                          File::shareDenyNone)) {
-    quotesTextFile.Write(ss);
-    quotesTextFile.Close();
-  }
-  TextFile file(quotes_ind_fn, "wb");
-  if (!file.IsOpen()) {
-    return;
-  }
-
-  char* ss1 = nullptr;
-  l3 = l2 = 0;
-  for (auto l1 = 0; l1 < ssize(ss); l1++) {
-    if (ctld == -1) {
-      ctld = ss[l1];
-    } else
-      switch (ss[l1]) {
-      case 1:
-        ctla = 1;
-        break;
-      case 2:
-        break;
-      case 3:
-        if (!ss1) {
-          ss1 = &ss[0] + l1;
-        }
-        l2++;
-        ctlc = 1;
-        break;
-      case 4:
-        ctld = -1;
-        break;
-      case '\n':
-        tf = 0;
-        if (ctla) {
-          ctla = 0;
-        } else {
-          cc = QUOTECOL + '0';
-          FLSH;
-          ctld = 0;
-          NL;
-        }
-        break;
-      case ' ':
-      case '\r':
-        if (ss1) {
-          FLSH;
-        } else {
-          if (ss[l1] == ' ') {
-            if (cp + 1 >= linelen) {
-              NL;
-            }
-            if (!cp) {
-              if (ctld) {
-                file.Write(fmt::sprintf("\x04%c", ctld));
-              }
-              WRTPFX;
-            }
-            cp++;
-            file.WriteBinary(" ", 1);
-          }
-        }
-        break;
-      default:
-        if (!ss1) {
-          ss1 = &ss[0] + l1;
-        }
-        l2++;
-        if (ctlc) {
-          if (ss[l1] == '0') {
-            ss[l1] = QUOTECOL + '0';
-          }
-          cc = ss[l1];
-          ctlc = 0;
-        } else {
-          l3++;
-          if (!tf) {
-            if (ss[l1] == '>') {
-              tf = 1;
-              linelen = LINELEN;
-            } else {
-              tf = 2;
-              linelen = LINELEN - 5;
-            }
-          }
-        }
-        break;
-      }
-  }
-  FLSH;
-  if (cp) {
-    file.WriteBinary("\r\n", 2);
-  }
-  file.Close();
-
-  File ff(quotes_ind_fn);
-  if (ff.Open(File::modeBinary | File::modeReadOnly)) {
-    quotes_ind_l = ff.length();
-    quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
-    if (quotes_ind) {
-      ff.Read(quotes_ind, quotes_ind_l);
-    } else {
-      quotes_ind_l = 0;
-    }
-    ff.Close();
-  }
-}
-
-static string CreateDateString(time_t t) {
-  auto dt = DateTime::from_time_t(t);
+static string to_quote_date_format(time_t t) {
+  const auto dt = DateTime::from_time_t(t);
   std::ostringstream ss;
   ss << dt.to_string("%A,%B %d, %Y") << " at ";
   if (a()->user()->IsUse24HourClock()) {
@@ -272,226 +94,191 @@ static string CreateDateString(time_t t) {
   return ss.str();
 }
 
-//TODO(rushfan): This should be rewritten to use parsed message text.
-void auto_quote(std::string& org, const std::string& to_name, int type, time_t tDateTime) {
-  char s1[81];
-  char *p = &org[0];
-  char *b = &org[0];
-  char b1[81];
-  int len = org.length();
+std::string to_quote_date_line(int type, time_t tt, const string& tb) {
+  const auto datetime = to_quote_date_format(tt);
+  std::string date_line;
+  switch (type) {
+  case 1:
+    date_line = fmt::sprintf("%c3On %c1%s, %c2%s%c3 wrote:%c0", 0x03, 0x03, datetime, 0x03, tb,
+                             0x03, 0x03);
+    break;
+  case 2:
+    date_line = fmt::sprintf("%c3In your e-mail of %c2%s%c3, you wrote:%c0", 0x03, 0x03, datetime,
+                             0x03, 0x03);
+    break;
+  case 3:
+    date_line = fmt::sprintf("%c3In a message posted %c2%s%c3, you wrote:%c0", 0x03, 0x03,
+                             datetime, 0x03, 0x03);
+    break;
+  case 4:
+    date_line = fmt::sprintf("%c3Message forwarded from %c2%s%c3, sent on %s.%c0", 0x03, 0x03, tb,
+                             0x03, datetime, 0x03);
+    break;
+  case 0:
+  default:
+    return {};
+  }
+  date_line.append("\r\n");
+  return date_line;
+}
 
+//TODO(rushfan): This should be rewritten to use parsed message text.
+std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
+                                                         const std::string& to_name, int type,
+                                                         time_t tt) {
+  const msgapi::WWIVParsedMessageText pmt(raw_text);
+  msgapi::parsed_message_lines_style_t style{};
+  style.line_length = 72;
+  style.ctrl_lines = msgapi::control_lines_t::no_control_lines;
+  style.add_wrapping_marker = false;
+
+  auto lines = pmt.to_lines(style);
+  auto it = std::begin(lines);
+  const auto end = std::end(lines);
+
+  if (lines.size() < 2) {
+    return {};
+  }
+  const auto to_node = *it++;
+  ++it;
+
+  const auto tb1 = GetQuoteInitials(to_name);
+  std::vector<std::string> out;
+  if (type != 0) {
+    out.emplace_back(to_quote_date_line(type, tt, properize(strip_to_node(to_node))));
+  }
+
+  for(; it != end; ++it) {
+    auto l = *it;
+    StringReplace(&l, "\x03""0", "\x03""5");
+    out.emplace_back(
+        fmt::sprintf("%c%c%s%c%c> %c%c%s%c0", 0x03, '1', tb1, 0x03, '7', 0x03, '5', l, 0x03));
+  }
+  return out;
+}
+
+void auto_quote(std::string& raw_text, const std::string& to_name, int type, time_t tt) {
   const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
   File::Remove(fn);
-  File fileInputMsg(fn);
-  if (!a()->hangup_) {
-    fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    fileInputMsg.Seek(0L, File::Whence::end);
-    while (*p != '\r') {
-      ++p;
-    }
-    *p = '\0';
-    strcpy(s1, b);
-    p += 2;
-    len = len - (p - b);
-    b = p;
-    while (*p != '\r') {
-      ++p;
-    }
-    p += 2;
-    len = len - (p - b);
-    b = p;
-    const auto datetime = CreateDateString(tDateTime);
+  if (a()->hangup_) {
+    return ;
+  }
 
-    const auto tb = properize(strip_to_node(s1));
-    const auto tb1 = GetQuoteInitials(to_name);
-    std::string date_line;
-    switch (type) {
-    case 1:
-      date_line = fmt::sprintf("\003"
-                               "3On \003"
-                               "1%s, \003"
-                               "2%s\003"
-                               "3 wrote:\003"
-                               "0",
-                               datetime, tb);
-      break;
-    case 2:
-      date_line = fmt::sprintf("\003"
-              "3In your e-mail of \003"
-              "2%s\003"
-              "3, you wrote:\003"
-              "0",
-              datetime);
-      break;
-    case 3:
-      date_line = fmt::sprintf("\003"
-              "3In a message posted \003"
-              "2%s\003"
-              "3, you wrote:\003"
-              "0",
-              datetime);
-      break;
-    case 4:
-      date_line = fmt::sprintf("\003"
-              "3Message forwarded from \003"
-              "2%s\003"
-              "3, sent on %s.\003"
-              "0",
-              tb, datetime);
-      break;
-    }
-    date_line.append("\r\n");
-    fileInputMsg.Writeln(date_line);
-    while (len > 0) {
-      while ((strchr("\r\001", *p) == nullptr) && ((p - b) < (len < 253 ? len : 253))) {
-        ++p;
-      }
-      if (*p == '\001') {
-        *(p++) = '\0';
-      }
-      *p = '\0';
-      if (*b != '\004' && strchr(b, '\033') == nullptr) {
-        int jj = 0;
-        for (int j = 0; j < static_cast<int>(77 - tb1.length()); j++) {
-          if ((b[j] == '0' && b[j - 1] != '\003') || b[j] != '0') {
-            b1[jj] = b[j];
-          } else {
-            b1[jj] = '5';
-          }
-          b1[jj + 1] = 0;
-          jj++;
-        }
-        date_line = fmt::sprintf("\003"
-                "1%s\003"
-                "7>\003"
-                "5%s\003"
-                "0",
-                tb1, b1);
-        fileInputMsg.Writeln(date_line);
-      }
-      p += 2;
-      len = len - (p - b);
-      b = p;
-    }
-    fileInputMsg.Close();
-    if (a()->user()->GetNumMessagesPosted() < 10) {
-      printfile(QUOTE_NOEXT);
-    }
+  TextFile f(fn, "w");
+  if (!f) {
+    return;
+  }
+  auto lines = create_quoted_text_from_message(raw_text, to_name, type, tt);
+  for (const auto& l : lines) {
+    f.WriteLine(l);
+  }
+  if (a()->user()->GetNumMessagesPosted() < 10) {
+    printfile(QUOTE_NOEXT);
   }
 }
 
-std::deque<std::string> get_quote(const string& reply_to_name) {
-  static char s[141], s1[10];
-  static int i, i1, i2, i3, rl;
-  static int l1, l2;
+void grab_quotes(std::string& raw_text, const std::string& to_name) {
+  if (raw_text.back() == CZ) {
+    // Since CZ isn't special on Win32/Linux. Don't write it out
+    // to the quotes file.
+    raw_text.pop_back();
+  }
+
+  clear_quotes();
+  File f(FilePath(a()->temp_directory(), QUOTES_TXT));
+  if (f.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
+    f.Write(raw_text);
+  }
+
+  quotes_ind = std::make_unique<std::vector<std::string>>(create_quoted_text_from_message(raw_text, to_name, 0, 0));
+}
+
+void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
+  if (auto o = readfile(m, message_filename)) {
+    grab_quotes(o.value(), to_name);
+  }
+}
+
+
+std::deque<std::string> query_quote_lines() {
   std::vector<std::string> lines;
 
-  if (quotes_ind == nullptr) {
+  if (!quotes_ind || quotes_ind->empty()) {
     return {};
   }
-  rl = 1;
+  int start_line;
+  int end_line;
+  auto num_lines = 0;
   do {
-    if (rl) {
-      i = 1;
-      l1 = l2 = 0;
-      i1 = i2 = 0;
-      bool abort = false;
-      bool next = false;
-      do {
-        if (quotes_ind[l2++] == 10) {
-          l1++;
-        }
-      } while (l2 < quotes_ind_l && (l1 < 2));
-      do {
-        if (quotes_ind[l2] == 0x04) {
-          while ((quotes_ind[l2++] != 10) && (l2 < quotes_ind_l)) {
-          }
-        } else {
-          if (!reply_to_name.empty()) {
-            s[0] = 32;
-            i3 = 1;
-          } else {
-            i3 = 0;
-          }
-          if (abort) {
-            do {
-              l2++;
-            } while (quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
-          } else {
-            do {
-              s[i3++] = quotes_ind[l2++];
-            } while (quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
-          }
-          if (quotes_ind[l2]) {
-            l2 += 2;
-            s[i3] = 0;
-          }
-          sprintf(s1, "%3d", i++);
-          bout.bputs(s1, &abort, &next);
-          bout.bpla(s, &abort);
-          // Add line s to the list of lines.
-          lines.emplace_back(s);
-        }
-      } while (l2 < quotes_ind_l);
-      --i;
+    start_line = 0;
+    end_line = 0;
+    auto iter = std::begin(*quotes_ind);
+    auto end = std::end(*quotes_ind);
+    num_lines = 1;
+    auto abort = false;
+    if (quotes_ind->size() >= 2) {
+      ++iter;
+      ++iter;
     }
+    for (; iter != end; ++iter) {
+      // Skip control line (^D)
+      auto& line = *iter;
+      if (!line.empty() && line.front() == 0x04) {
+        continue;
+      }
+      StringTrimCRLF(&line);
+      bout.bpla(fmt::format("{:>3}] {}", num_lines++, line), &abort);
+      if (abort) {
+        break;
+      }
+      // Add line s to the list of lines.
+      lines.emplace_back(line);
+    };
+    --num_lines;
     bout.nl();
 
-    if (!i1 && !a()->hangup_) {
-      do {
-        sprintf(s, "Quote from line 1-%d? (?=relist, Q=quit) ", i);
-        bout << "|#2" << s;
-        input(s, 3);
-      } while (!s[0] && !a()->hangup_);
-      if (s[0] == 'Q') {
-        rl = 0;
-      } else if (s[0] != '?') {
-        i1 = to_number<int>(s);
-        if (i1 >= i) {
-          i2 = i1 = i;
-        }
-        if (i1 < 1) {
-          i1 = 1;
-        }
+    if (lines.empty() || a()->hangup_) {
+      return {};
+    }
+    bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
+    auto k = input_number_hotkey(1, {'Q','?'}, 1, num_lines);
+    
+    if (k.key == 'Q') {
+      return {};
+    }
+    if (k.key == '?') {
+      bout.nl();
+      continue;
+    }
+    start_line = k.num;
+    if (start_line == num_lines) {
+      end_line = start_line;
+    } else {
+      bout.format("|#2through line {} - {} ? (Q=quit) ", start_line, num_lines);
+      k = input_number_hotkey(start_line, {'Q','?'}, start_line, num_lines);
+      if (k.key == 'Q') {
+        return {};
       }
+      if (k.key == '?') {
+        bout.nl();
+        continue;
+      }
+      end_line = k.num;
     }
 
-    if (i1 && !i2 && !a()->hangup_) {
-      do {
-        bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
-        input(s, 3);
-      } while (!s[0] && !a()->hangup_);
-      if (s[0] == 'Q') {
-        rl = 0;
-      } else if (s[0] != '?') {
-        i2 = to_number<int>(s);
-        if (i2 > i) {
-          i2 = i;
-        }
-        if (i2 < i1) {
-          i2 = i1;
-        }
-      }
+    if (start_line == end_line) {
+      bout << "|#5Quote line " << start_line << "? ";
+    } else {
+      bout << "|#5Quote lines " << start_line << "-" << end_line << "? ";
     }
-    if (i2 && rl && !a()->hangup_) {
-      if (i1 == i2) {
-        bout << "|#5Quote line " << i1 << "? ";
-      } else {
-        bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
-      }
-      if (!noyes()) {
-        i1 = 0;
-        i2 = 0;
-      }
+    if (!noyes()) {
+      return {};
     }
-  } while (!a()->hangup_ && rl && !i2);
-  bout.charbufferpointer_ = 0;
-  if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !a()->hangup_) {
-    std::deque<std::string> r;
-    for (auto it = i1 - 1; it <= i2 - 1; it++) {
-      r.push_back(lines.at(it));
-    }
-    return r;
+    break;
+  } while (!a()->hangup_);
+  std::deque<std::string> r;
+  for (auto it = start_line - 1; it <= end_line - 1; it++) {
+    r.push_back(lines.at(it));
   }
-  return {};
+  return r;
 }
