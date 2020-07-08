@@ -66,7 +66,18 @@ struct MenuItemContext {
   const std::string& p2_;
 };
 
-map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
+struct MenuItem {
+  MenuItem(std::string desc, std::function<void(MenuItemContext&)> f)
+      : description_(std::move(desc)), f_(std::move(f)) {}
+  MenuItem(std::function<void(MenuItemContext&)> f)
+      : description_(""), f_(std::move(f)) {}
+
+  std::string description_;
+  std::function<void(MenuItemContext&)> f_;
+
+};
+
+map<string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
 
 void InterpretCommand(MenuInstance* menudata, const std::string& script) {
   static auto functions = CreateCommandMap();
@@ -90,7 +101,7 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
     string cmd(scmd);
     if (contains(functions, cmd)) {
       MenuItemContext context(menudata, param1, param2);
-      functions.at(cmd)(context);
+      functions.at(cmd).f_(context);
       if (menudata) {
         menudata->reload = context.need_reload;
         menudata->finished = (context.finished || context.need_reload);
@@ -99,448 +110,448 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
   }
 }
 
-map<string, std::function<void(MenuItemContext&)>, ci_less> CreateCommandMap() {
+map<string, MenuItem, ci_less> CreateCommandMap() {
   return {
-    { "MENU", [](MenuItemContext& context) {
+    { "MENU", MenuItem([](MenuItemContext& context) {
       if (context.pMenuData) {
         MenuInstance new_menu(context.pMenuData->menu_directory(), context.param1);
         new_menu.RunMenu();
       }
-    } },
-    { "ReturnFromMenu", [](MenuItemContext& context) {
+    } ) },
+    { "ReturnFromMenu", MenuItem([](MenuItemContext& context) {
       if (context.pMenuData) {
         InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
         context.finished = true;
       }
-    } },
-    { "DLFreeFile", [](MenuItemContext& context) {
+    } ) },
+    { "DLFreeFile", MenuItem([](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, true, true);
-    } },
-    { "DLFile", [](MenuItemContext& context) {
+    } ) },
+    { "DLFile", MenuItem([](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, false, true);
-    } },
-    { "RunDoor", [](MenuItemContext& context) {
+    } ) },
+    { "RunDoor", MenuItem([](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), false);
-    } },
-    { "RunDoorFree", [](MenuItemContext& context) {
+    } ) },
+    { "RunDoorFree", MenuItem([](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), true);
-    } },
-    { "RunDoorNumber", [](MenuItemContext& context) {
+    } ) },
+    { "RunDoorNumber", MenuItem([](MenuItemContext& context) {
       auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, false);
-    } },
-    { "RunDoorNumberFree", [](MenuItemContext& context) {
+    } ) },
+    { "RunDoorNumberFree", MenuItem([](MenuItemContext& context) {
       auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, true);
-    } },
-    { "RunBasic", [](MenuItemContext& context) {
+    } ) },
+    { "RunBasic", MenuItem([](MenuItemContext& context) {
       // Runs a basic script from GFILES/
       wwiv::bbs::RunBasicScript(context.param1);
-    } },
-    { "PrintFile", [](MenuItemContext& context) {
+    } ) },
+    { "PrintFile", MenuItem([](MenuItemContext& context) {
       printfile(context.param1, true);
-    } },
-    { "PrintFileNA", [](MenuItemContext& context) {
+    } ) },
+    { "PrintFileNA", MenuItem([](MenuItemContext& context) {
       printfile(context.param1, false);
-    } },
-    { "SetSubNumber", [](MenuItemContext& context) {
+    } ) },
+    { "SetSubNumber", MenuItem([](MenuItemContext& context) {
       SetSubNumber(context.param1.c_str());
-    } },
-    { "SetDirNumber", [](MenuItemContext& context) {
+    } ) },
+    { "SetDirNumber", MenuItem([](MenuItemContext& context) {
       SetDirNumber(context.param1.c_str());
-    } },
-    { "SetMsgConf", [](MenuItemContext& context) {
+    } ) },
+    { "SetMsgConf", MenuItem([](MenuItemContext& context) {
       SetMsgConf(context.param1.c_str()[0]);
-    } },
-    { "SetMsgConf", [](MenuItemContext& context) {
+    } ) },
+    { "SetMsgConf", MenuItem([](MenuItemContext& context) {
       SetMsgConf(context.param1.c_str()[0]);
-    } },
-    { "SetDirConf", [](MenuItemContext& context) {
+    } ) },
+    { "SetDirConf", MenuItem([](MenuItemContext& context) {
       SetDirConf(context.param1.c_str()[0]);
-    } },
-    { "EnableConf", [](MenuItemContext&) {
+    } ) },
+    { "EnableConf", MenuItem([](MenuItemContext&) {
       EnableConf();
-    } },
-    { "DisableConf", [](MenuItemContext&) {
+    } ) },
+    { "DisableConf", MenuItem([](MenuItemContext&) {
       DisableConf();
-    } },
-    { "Pause", [](MenuItemContext&) {
+    } ) },
+    { "Pause", MenuItem([](MenuItemContext&) {
       pausescr();
-    } },
-    { "ConfigUserMenuSet", [](MenuItemContext& context) {
+    } ) },
+    { "ConfigUserMenuSet", MenuItem([](MenuItemContext& context) {
       ConfigUserMenuSet();
       context.need_reload = true;
-    } },
-    { "DisplayHelp", [](MenuItemContext& context) {
+    } ) },
+    { "DisplayHelp", MenuItem([](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
-    } },
-    {"DisplayMenu", [](MenuItemContext& context) {
+    } ) },
+    {"DisplayMenu", MenuItem([](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
-    }},
-    { "SelectSub", [](MenuItemContext&) {
+    } ) },
+    { "SelectSub", MenuItem([](MenuItemContext&) {
       ChangeSubNumber();
-    } },
-    { "SelectDir", [](MenuItemContext&) {
+    } ) },
+    { "SelectDir", MenuItem([](MenuItemContext&) {
       ChangeDirNumber();
-    } },
-    { "SubList", [](MenuItemContext&) {
+    } ) },
+    { "SubList", MenuItem([](MenuItemContext&) {
       SubList();
-    } },
-    { "UpSubConf", [](MenuItemContext&) {
+    } ) },
+    { "UpSubConf", MenuItem([](MenuItemContext&) {
       UpSubConf();
-    } },
-    { "DownSubConf", [](MenuItemContext&) {
+    } ) },
+    { "DownSubConf", MenuItem([](MenuItemContext&) {
       DownSubConf();
-    } },
-    { "UpSub", [](MenuItemContext&) {
+    } ) },
+    { "UpSub", MenuItem([](MenuItemContext&) {
       UpSub();
-    } },
-    { "DownSub", [](MenuItemContext&) {
+    } ) },
+    { "DownSub", MenuItem([](MenuItemContext&) {
       DownSub();
-    } },
-    { "ValidateUser", [](MenuItemContext&) {
+    } ) },
+    { "ValidateUser", MenuItem([](MenuItemContext&) {
       ValidateUser();
-    } },
-    { "Doors", [](MenuItemContext&) {
+    } ) },
+    { "Doors", MenuItem([](MenuItemContext&) {
       Chains();
-    } },
-    { "TimeBank", [](MenuItemContext&) {
+    } ) },
+    { "TimeBank", MenuItem([](MenuItemContext&) {
       TimeBank();
-    } },
-    { "AutoMessage", [](MenuItemContext&) {
+    } ) },
+    { "AutoMessage", MenuItem([](MenuItemContext&) {
       AutoMessage();
-    } },
-    { "BBSList", [](MenuItemContext&) {
+    } ) },
+    { "BBSList", MenuItem([](MenuItemContext&) {
       NewBBSList();
-    } },
-    { "RequestChat", [](MenuItemContext&) {
+    } ) },
+    { "RequestChat", MenuItem([](MenuItemContext&) {
       RequestChat();
-    } },
-    { "Defaults", [](MenuItemContext& context) {
+    } ) },
+    { "Defaults", MenuItem([](MenuItemContext& context) {
       Defaults(context.need_reload);
-    } },
-    { "SendEMail", [](MenuItemContext&) {
+    } ) },
+    { "SendEMail", MenuItem([](MenuItemContext&) {
       SendEMail();
-    } },
-    { "Feedback", [](MenuItemContext&) {
+    } ) },
+    { "Feedback", MenuItem([](MenuItemContext&) {
       FeedBack();
-    } },
-    { "Bulletins", [](MenuItemContext&) {
+    } ) },
+    { "Bulletins", MenuItem([](MenuItemContext&) {
       Bulletins();
-    } },
-    { "HopSub", [](MenuItemContext&) {
+    } ) },
+    { "HopSub", MenuItem([](MenuItemContext&) {
       HopSub();
-    } },
-    { "SystemInfo", [](MenuItemContext&) {
+    } ) },
+    { "SystemInfo", MenuItem([](MenuItemContext&) {
       SystemInfo();
-    } },
-    { "JumpSubConf", [](MenuItemContext&) {
+    } ) },
+    { "JumpSubConf", MenuItem([](MenuItemContext&) {
       JumpSubConf();
-    } },
-    { "KillEMail", [](MenuItemContext&) {
+    } ) },
+    { "KillEMail", MenuItem([](MenuItemContext&) {
       KillEMail();
-    } },
-    { "LastCallers", [](MenuItemContext&) {
+    } ) },
+    { "LastCallers", MenuItem([](MenuItemContext&) {
       LastCallers();
-    } },
-    { "ReadEMail", [](MenuItemContext&) {
+    } ) },
+    { "ReadEMail", MenuItem([](MenuItemContext&) {
       ReadEMail();
-    } },
-    { "NewMessageScan", [](MenuItemContext&) {
+    } ) },
+    { "NewMessageScan", MenuItem([](MenuItemContext&) {
       NewMessageScan();
-    } },
-    { "Goodbye", [](MenuItemContext&) {
+    } ) },
+    { "Goodbye", MenuItem([](MenuItemContext&) {
       GoodBye();
-    } },
-    { "PostMessage", [](MenuItemContext&) {
+    } ) },
+    { "PostMessage", MenuItem([](MenuItemContext&) {
       WWIV_PostMessage();
-    } },
-    { "NewMsgScanCurSub", [](MenuItemContext&) {
+    } ) },
+    { "NewMsgScanCurSub", MenuItem([](MenuItemContext&) {
       ScanSub();
-    } },
-    { "RemovePost", [](MenuItemContext&) {
+    } ) },
+    { "RemovePost", MenuItem([](MenuItemContext&) {
       RemovePost();
-    } },
-    { "TitleScan", [](MenuItemContext&) {
+    } ) },
+    { "TitleScan", MenuItem([](MenuItemContext&) {
       TitleScan();
-    } },
-    { "ListUsers", [](MenuItemContext&) {
+    } ) },
+    { "ListUsers", MenuItem([](MenuItemContext&) {
       ListUsers();
-    } },
-    { "Vote", [](MenuItemContext&) {
+    } ) },
+    { "Vote", MenuItem([](MenuItemContext&) {
       Vote();
-    } },
-    { "ToggleExpert", [](MenuItemContext&) {
+    } ) },
+    { "ToggleExpert", MenuItem([](MenuItemContext&) {
       ToggleExpert();
-    } },
-    { "YourInfo", [](MenuItemContext&) {
+    } ) },
+    { "YourInfo", MenuItem([](MenuItemContext&) {
       YourInfo();
-    } },
-    { "WWIVVer", [](MenuItemContext&) {
+    } ) },
+    { "WWIVVer", MenuItem([](MenuItemContext&) {
       WWIVVersion();
-    } },
-    { "ConferenceEdit", [](MenuItemContext&) {
+    } ) },
+    { "ConferenceEdit", MenuItem([](MenuItemContext&) {
       JumpEdit();
-    } },
-    { "SubEdit", [](MenuItemContext&) {
+    } ) },
+    { "SubEdit", MenuItem([](MenuItemContext&) {
       BoardEdit();
-    } },
-    { "ChainEdit", [](MenuItemContext&) {
+    } ) },
+    { "ChainEdit", MenuItem([](MenuItemContext&) {
       ChainEdit();
-    } },
-    { "ToggleAvailable", [](MenuItemContext&) {
+    } ) },
+    { "ToggleAvailable", MenuItem([](MenuItemContext&) {
       ToggleChat();
-    } },
-    { "ChangeUser", [](MenuItemContext&) {
+    } ) },
+    { "ChangeUser", MenuItem([](MenuItemContext&) {
       ChangeUser();
-    } },
-    { "DirEdit", [](MenuItemContext&) {
+    } ) },
+    { "DirEdit", MenuItem([](MenuItemContext&) {
       DirEdit();
-    } },
-    { "Edit", [](MenuItemContext&) {
+    } ) },
+    { "Edit", MenuItem([](MenuItemContext&) {
       EditText();
-    } },
-    { "BulletinEdit", [](MenuItemContext&) {
+    } ) },
+    { "BulletinEdit", MenuItem([](MenuItemContext&) {
       EditBulletins();
-    } },
-    { "LoadText", [](MenuItemContext&) {
+    } ) },
+    { "LoadText", MenuItem([](MenuItemContext&) {
       LoadTextFile();
-    } },
-    { "ReadAllMail", [](MenuItemContext&) {
+    } ) },
+    { "ReadAllMail", MenuItem([](MenuItemContext&) {
       ReadAllMail();
-    } },
-    { "ReloadMenus", [](MenuItemContext&) {
+    } ) },
+    { "ReloadMenus", MenuItem([](MenuItemContext&) {
       ReloadMenus();
-    } },
-    { "ResetQscan", [](MenuItemContext&) {
+    } ) },
+    { "ResetQscan", MenuItem([](MenuItemContext&) {
       ResetQscan();
-    } },
-    { "MemStat", [](MenuItemContext&) {
+    } ) },
+    { "MemStat", MenuItem([](MenuItemContext&) {
       MemoryStatus();
-    } },
-    { "VoteEdit", [](MenuItemContext&) {
+    } ) },
+    { "VoteEdit", MenuItem([](MenuItemContext&) {
       InitVotes();
-    } },
-    { "Log", [](MenuItemContext&) {
+    } ) },
+    { "Log", MenuItem([](MenuItemContext&) {
       ReadLog();
-    } },
-    { "NetLog", [](MenuItemContext&) {
+    } ) },
+    { "NetLog", MenuItem([](MenuItemContext&) {
       ReadNetLog();
-    } },
-    { "Pending", [](MenuItemContext&) {
+    } ) },
+    { "Pending", MenuItem([](MenuItemContext&) {
       PrintPending();
-    } },
-    { "Status", [](MenuItemContext&) {
+    } ) },
+    { "Status", MenuItem([](MenuItemContext&) {
       PrintStatus();
-    } },
-    { "TextEdit", [](MenuItemContext&) {
+    } ) },
+    { "TextEdit", MenuItem([](MenuItemContext&) {
       TextEdit();
-    } },
-    { "VotePrint", [](MenuItemContext&) {
+    } ) },
+    { "VotePrint", MenuItem([](MenuItemContext&) {
       VotePrint();
-    } },
-    { "YLog", [](MenuItemContext&) {
+    } ) },
+    { "YLog", MenuItem([](MenuItemContext&) {
       YesterdaysLog();
-    } },
-    { "ZLog", [](MenuItemContext&) {
+    } ) },
+    { "ZLog", MenuItem([](MenuItemContext&) {
       ZLog();
-    } },
-    { "ViewNetDataLog", [](MenuItemContext&) {
+    } ) },
+    { "ViewNetDataLog", MenuItem([](MenuItemContext&) {
       ViewNetDataLog();
-    } },
-    { "UploadPost", [](MenuItemContext&) {
+    } ) },
+    { "UploadPost", MenuItem([](MenuItemContext&) {
       UploadPost();
-    } },
-    { "cls", [](MenuItemContext&) {
+    } ) },
+    { "cls", MenuItem([](MenuItemContext&) {
       bout.cls();
-    } },
-    { "NetListing", [](MenuItemContext&) {
+    } ) },
+    { "NetListing", MenuItem([](MenuItemContext&) {
       print_net_listing(false);
-    } },
-    { "WHO", [](MenuItemContext&) {
+    } ) },
+    { "WHO", MenuItem([](MenuItemContext&) {
       WhoIsOnline();
-    } },
-    { "NewMsgsAllConfs", [](MenuItemContext&) {
+    } ) },
+    { "NewMsgsAllConfs", MenuItem([](MenuItemContext&) {
       // /A NewMsgsAllConfs
       NewMsgsAllConfs();
-    } },
-    { "MultiEMail", [](MenuItemContext&) {
+    } ) },
+    { "MultiEMail", MenuItem([](MenuItemContext&) {
       // /E "MultiEMail"
       MultiEmail();
-    } },
-    { "NewMsgScanFromHere", [](MenuItemContext&) {
+    } ) },
+    { "NewMsgScanFromHere", MenuItem([](MenuItemContext&) {
       NewMsgScanFromHere();
-    } },
-    { "ValidatePosts", [](MenuItemContext&) {
+    } ) },
+    { "ValidatePosts", MenuItem([](MenuItemContext&) {
       ValidateScan();
-    } },
-    { "ChatRoom", [](MenuItemContext&) {
+    } ) },
+    { "ChatRoom", MenuItem([](MenuItemContext&) {
       ChatRoom();
-    } },
-    { "ClearQScan", [](MenuItemContext&) {
+    } ) },
+    { "ClearQScan", MenuItem([](MenuItemContext&) {
       ClearQScan();
-    } },
-    { "FastGoodBye", [](MenuItemContext&) {
+    } ) },
+    { "FastGoodBye", MenuItem([](MenuItemContext&) {
       FastGoodBye();
-    } },
-    { "NewFilesAllConfs", [](MenuItemContext&) {
+    } ) },
+    { "NewFilesAllConfs", MenuItem([](MenuItemContext&) {
       NewFilesAllConfs();
-    } },
-    { "ReadIDZ", [](MenuItemContext&) {
+    } ) },
+    { "ReadIDZ", MenuItem([](MenuItemContext&) {
       ReadIDZ();
-    } },
-    { "UploadAllDirs", [](MenuItemContext&) {
+    } ) },
+    { "UploadAllDirs", MenuItem([](MenuItemContext&) {
       UploadAllDirs();
-    } },
-    { "UploadCurDir", [](MenuItemContext&) {
+    } ) },
+    { "UploadCurDir", MenuItem([](MenuItemContext&) {
       UploadCurDir();
-    } },
-    { "RenameFiles", [](MenuItemContext&) {
+    } ) },
+    { "RenameFiles", MenuItem([](MenuItemContext&) {
       RenameFiles();
-    } },
-    { "MoveFiles", [](MenuItemContext&) {
+    } ) },
+    { "MoveFiles", MenuItem([](MenuItemContext&) {
       MoveFiles();
-    } },
-    { "SortDirs", [](MenuItemContext&) {
+    } ) },
+    { "SortDirs", MenuItem([](MenuItemContext&) {
       SortDirs();
-    } },
-    { "ReverseSortDirs", [](MenuItemContext&) {
+    } ) },
+    { "ReverseSortDirs", MenuItem([](MenuItemContext&) {
       ReverseSort();
-    } },
-    { "AllowEdit", [](MenuItemContext&) {
+    } ) },
+    { "AllowEdit", MenuItem([](MenuItemContext&) {
       AllowEdit();
-    } },
-    { "UploadFilesBBS", [](MenuItemContext&) {
+    } ) },
+    { "UploadFilesBBS", MenuItem([](MenuItemContext&) {
       UploadFilesBBS();
-    } },
-    { "DirList", [](MenuItemContext&) {
+    } ) },
+    { "DirList", MenuItem([](MenuItemContext&) {
       DirList();
-    } },
-    { "UpDirConf", [](MenuItemContext&) {
+    } ) },
+    { "UpDirConf", MenuItem([](MenuItemContext&) {
       UpDirConf();
-    } },
-    { "UpDir", [](MenuItemContext&) {
+    } ) },
+    { "UpDir", MenuItem([](MenuItemContext&) {
       UpDir();
-    } },
-    { "DownDirConf", [](MenuItemContext&) {
+    } ) },
+    { "DownDirConf", MenuItem([](MenuItemContext&) {
       DownDirConf();
-    } },
-    { "DownDir", [](MenuItemContext&) {
+    } ) },
+    { "DownDir", MenuItem([](MenuItemContext&) {
       DownDir();
-    } },
-    { "ListUsersDL", [](MenuItemContext&) {
+    } ) },
+    { "ListUsersDL", MenuItem([](MenuItemContext&) {
       ListUsersDL();
-    } },
-    { "PrintDSZLog", [](MenuItemContext&) {
+    } ) },
+    { "PrintDSZLog", MenuItem([](MenuItemContext&) {
       PrintDSZLog();
-    } },
-    { "PrintDevices", [](MenuItemContext&) {
+    } ) },
+    { "PrintDevices", MenuItem([](MenuItemContext&) {
       PrintDevices();
-    } },
-    { "ViewArchive", [](MenuItemContext&) {
+    } ) },
+    { "ViewArchive", MenuItem([](MenuItemContext&) {
       ViewArchive();
-    } },
-    { "BatchMenu", [](MenuItemContext&) {
+    } ) },
+    { "BatchMenu", MenuItem([](MenuItemContext&) {
       BatchMenu();
-    } },
-    { "Download", [](MenuItemContext&) {
+    } ) },
+    { "Download", MenuItem([](MenuItemContext&) {
       Download();
-    } },
-    { "TempExtract", [](MenuItemContext&) {
+    } ) },
+    { "TempExtract", MenuItem([](MenuItemContext&) {
       TempExtract();
-    } },
-    { "FindDescription", [](MenuItemContext&) {
+    } ) },
+    { "FindDescription", MenuItem([](MenuItemContext&) {
       FindDescription();
-    } },
-    { "ArchiveMenu", [](MenuItemContext&) {
+    } ) },
+    { "ArchiveMenu", MenuItem([](MenuItemContext&) {
       TemporaryStuff();
-    } },
-    { "HopDir", [](MenuItemContext&) {
+    } ) },
+    { "HopDir", MenuItem([](MenuItemContext&) {
       HopDir();
-    } },
-    { "JumpDirConf", [](MenuItemContext&) {
+    } ) },
+    { "JumpDirConf", MenuItem([](MenuItemContext&) {
       JumpDirConf();
-    } },
-    { "ListFiles", [](MenuItemContext&) {
+    } ) },
+    { "ListFiles", MenuItem([](MenuItemContext&) {
       ListFiles();
-    } },
-    { "NewFileScan", [](MenuItemContext&) {
+    } ) },
+    { "NewFileScan", MenuItem([](MenuItemContext&) {
       NewFileScan();
-    } },
-    { "SetNewFileScanDate", [](MenuItemContext&) {
+    } ) },
+    { "SetNewFileScanDate", MenuItem([](MenuItemContext&) {
       SetNewFileScanDate();
-    } },
-    { "RemoveFiles", [](MenuItemContext&) {
+    } ) },
+    { "RemoveFiles", MenuItem([](MenuItemContext&) {
       RemoveFiles();
-    } },
-    { "SearchAllFiles", [](MenuItemContext&) {
+    } ) },
+    { "SearchAllFiles", MenuItem([](MenuItemContext&) {
       SearchAllFiles();
-    } },
-    { "XferDefaults", [](MenuItemContext&) {
+    } ) },
+    { "XferDefaults", MenuItem([](MenuItemContext&) {
       XferDefaults();
-    } },
-    { "Upload", [](MenuItemContext&) {
+    } ) },
+    { "Upload", MenuItem([](MenuItemContext&) {
       Upload();
-    } },
-    { "YourInfoDL", [](MenuItemContext&) {
+    } ) },
+    { "YourInfoDL", MenuItem([](MenuItemContext&) {
       Upload();
-    } },
-    { "YourInfoDL", [](MenuItemContext&) {
+    } ) },
+    { "YourInfoDL", MenuItem([](MenuItemContext&) {
       YourInfoDL();
-    } },
-    { "UploadToSysop", [](MenuItemContext&) {
+    } ) },
+    { "UploadToSysop", MenuItem([](MenuItemContext&) {
       UploadToSysop();
-    } },
-    { "ReadAutoMessage", [](MenuItemContext&) {
+    } ) },
+    { "ReadAutoMessage", MenuItem([](MenuItemContext&) {
       ReadAutoMessage();
-    } },
-    { "SetNewScanMsg", [](MenuItemContext&) {
+    } ) },
+    { "SetNewScanMsg", MenuItem([](MenuItemContext&) {
       SetNewScanMsg();
-    } },
-    { "LoadTextFile", [](MenuItemContext&) {
+    } ) },
+    { "LoadTextFile", MenuItem([](MenuItemContext&) {
       LoadTextFile();
-    } },
-    { "GuestApply", [](MenuItemContext&) {
+    } ) },
+    { "GuestApply", MenuItem([](MenuItemContext&) {
       GuestApply();
-    } },
-    { "ConfigFileList", [](MenuItemContext&) {
+    } ) },
+    { "ConfigFileList", MenuItem([](MenuItemContext&) {
       ConfigFileList();
-    } },
-    { "ListAllColors", [](MenuItemContext&) {
+    } ) },
+    { "ListAllColors", MenuItem([](MenuItemContext&) {
       ListAllColors();
-    } },
-    { "RemoveNotThere", [](MenuItemContext&) {
+    } ) },
+    { "RemoveNotThere", MenuItem([](MenuItemContext&) {
       RemoveNotThere();
-    } },
-    { "AttachFile", [](MenuItemContext&) {
+    } ) },
+    { "AttachFile", MenuItem([](MenuItemContext&) {
       AttachFile();
-    } },
-    { "InternetEmail", [](MenuItemContext&) {
+    } ) },
+    { "InternetEmail", MenuItem([](MenuItemContext&) {
       InternetEmail();
-    } },
-    { "UnQScan", [](MenuItemContext&) {
+    } ) },
+    { "UnQScan", MenuItem([](MenuItemContext&) {
       UnQScan();
-    } },
-    { "Packers", [](MenuItemContext&) {
+    } ) },
+    { "Packers", MenuItem([](MenuItemContext&) {
       Packers();
-    } },
-    { "InitVotes", [](MenuItemContext&) {
+    } ) },
+    { "InitVotes", MenuItem([](MenuItemContext&) {
       InitVotes();
-    } },
-    { "TurnMCIOn", [](MenuItemContext&) {
+    } ) },
+    { "TurnMCIOn", MenuItem([](MenuItemContext&) {
       TurnMCIOn();
-    } },
-    { "TurnMCIOff", [](MenuItemContext&) {
+    } ) },
+    { "TurnMCIOff", MenuItem([](MenuItemContext&) {
       TurnMCIOff();
-    } },
-//    { "", [](MenuItemContext& context) {
-//    } },
+    } ) },
+//    { "", MenuItem([](MenuItemContext& context) {
+//    } ) },
   };
 }
 
