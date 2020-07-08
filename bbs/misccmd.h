@@ -26,7 +26,6 @@ void list_users(int mode);
 void time_bank();
 int getnetnum(const std::string& network_name);
 int getnetnum_by_type(network_type_t type);
-void uudecode(const char *input_filename, const char *output_filename);
 void Packers();
 
 #endif  // __INCLUDED_BBS_MISCCMD_H__

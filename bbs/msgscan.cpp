@@ -876,7 +876,7 @@ static void HandleMessageExtract(int& msgnum) {
   if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
     if (auto o = readfile(&get_post(msgnum)->msg, (a()->current_sub().filename))) {
       auto b = o.value();
-      extract_out(&b[0], b.size(), get_post(msgnum)->title);
+      extract_out(b, get_post(msgnum)->title);
     }
   }
 }

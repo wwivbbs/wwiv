@@ -523,15 +523,6 @@ int getnetnum_by_type(network_type_t type) {
   return -1;
 }
 
-void uudecode(const char *input_filename, const char *output_filename) {
-  bout << "|#2Now UUDECODING " << input_filename;
-  bout.nl();
-
-  const auto cmdline = fmt::format("UUDECODE {} {}", input_filename, output_filename);
-  ExecuteExternalProgram(cmdline, EFLAG_NONE); 
-  File::Remove(input_filename);
-}
-
 void Packers() {
   qwk_menu();
 }

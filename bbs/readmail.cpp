@@ -693,7 +693,7 @@ void readmail(int mode) {
         if (so() && okmail) {
           if (auto o = readfile(&(m.msg), "email")) {
             auto b = o.value();
-            extract_out(&b[0], b.length(), m.title);
+            extract_out(b, m.title);
           }
         }
         i1 = 0;
