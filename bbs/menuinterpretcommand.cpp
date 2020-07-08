@@ -112,7 +112,10 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
 
 map<string, MenuItem, ci_less> CreateCommandMap() {
   return {
-    { "MENU", MenuItem([](MenuItemContext& context) {
+    { "MENU", MenuItem(R"(<menu>
+  Loads up and starts running a new menu set, where <menu> equals the name of
+  the menu to load.
+)", [](MenuItemContext& context) {
       if (context.pMenuData) {
         MenuInstance new_menu(context.pMenuData->menu_directory(), context.param1);
         new_menu.RunMenu();
@@ -124,11 +127,24 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
         context.finished = true;
       }
     } ) },
-    { "DLFreeFile", MenuItem([](MenuItemContext& context) {
+    { "DLFreeFile", MenuItem(R"(
+<dirfname> <filename>
+
+  This will download a file, but not check ratios or charge a download charge.
+  You must specify the dir filename, which is the name of the data file in
+  the transfer editor.  filename is the name of the file being downloaded.
+)", [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, true, true);
     } ) },
-    { "DLFile", MenuItem([](MenuItemContext& context) {
+    { "DLFile", MenuItem(R"(
+<dirfname> <filename>
+
+  This will download a file, with a check for ratios and will update the
+  kb downloaded and number of files downloaded.
+  You must specify the dirfilename, which is the name of the data file in
+  the transfer editor.  filename is the name of the file being downloaded.
+)", [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, false, true);
     } ) },
