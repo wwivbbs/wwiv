@@ -16,11 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-
 #include "bbs/basic.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -33,56 +28,48 @@
 #include "bbs/menu_parser.h"
 #include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
-#include "bbs/syschat.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "bbs/shortmsg.h"
-#include "bbs/sr.h"
-#include "bbs/subacc.h"
 #include "bbs/sublist.h"
+#include "bbs/syschat.h"
 #include "bbs/sysopf.h"
-#include "bbs/utility.h"
-
-#include "bbs/wqscn.h"
 #include "bbs/xfer.h"
-#include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/xfertmp.h"
-#include "core/inifile.h"
-#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/filenames.h"
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 
 using std::map;
 using std::string;
 using std::unique_ptr;
-
 using wwiv::core::IniFile;
 using wwiv::bbslist::NewBBSList;
 
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 struct MenuItemContext {
-public:
-  MenuItemContext(MenuInstance* m, const string& p1, const string& p2)
-    : pMenuData(m), param1(p1), param2(p2) {}
+  MenuItemContext(MenuInstance* m, std::string p1, std::string p2)
+    : pMenuData(m), param1(std::move(p1)), param2(std::move(p2)), p2_(p2) {}
   // May be null if not invoked from an actual menu.
   MenuInstance* pMenuData;
   string param1;
   string param2;
-  bool finished = false;
-  bool need_reload = false;
+  bool finished{false};
+  bool need_reload{false};
+  const std::string& p2_;
 };
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 void InterpretCommand(MenuInstance* menudata, const std::string& script) {
-  static map<string, std::function<void(MenuItemContext& context)>, wwiv::stl::ci_less> functions = CreateCommandMap();
+  static auto functions = CreateCommandMap();
 
   if (script.empty()) {
     return;
@@ -112,12 +99,7 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
   }
 }
 
-#if defined( _MSC_VER )
-#pragma warning( push )
-#pragma warning( disable : 4100 )  // unreferenced formal parameter for menudata, param1, param2
-#endif
-
-map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap() {
+map<string, std::function<void(MenuItemContext&)>, ci_less> CreateCommandMap() {
   return {
     { "MENU", [](MenuItemContext& context) {
       if (context.pMenuData) {
@@ -146,11 +128,11 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       MenuRunDoorName(context.param1.c_str(), true);
     } },
     { "RunDoorNumber", [](MenuItemContext& context) {
-      auto t = to_number<int>(context.param1.c_str());
+      auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, false);
     } },
     { "RunDoorNumberFree", [](MenuItemContext& context) {
-      auto t = to_number<int>(context.param1.c_str());
+      auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, true);
     } },
     { "RunBasic", [](MenuItemContext& context) {
@@ -178,13 +160,13 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "SetDirConf", [](MenuItemContext& context) {
       SetDirConf(context.param1.c_str()[0]);
     } },
-    { "EnableConf", [](MenuItemContext& context) {
+    { "EnableConf", [](MenuItemContext&) {
       EnableConf();
     } },
-    { "DisableConf", [](MenuItemContext& context) {
+    { "DisableConf", [](MenuItemContext&) {
       DisableConf();
     } },
-    { "Pause", [](MenuItemContext& context) {
+    { "Pause", [](MenuItemContext&) {
       pausescr();
     } },
     { "ConfigUserMenuSet", [](MenuItemContext& context) {
@@ -201,360 +183,360 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
         context.pMenuData->DisplayMenu();
       }
     }},
-    { "SelectSub", [](MenuItemContext& context) {
+    { "SelectSub", [](MenuItemContext&) {
       ChangeSubNumber();
     } },
-    { "SelectDir", [](MenuItemContext& context) {
+    { "SelectDir", [](MenuItemContext&) {
       ChangeDirNumber();
     } },
-    { "SubList", [](MenuItemContext& context) {
+    { "SubList", [](MenuItemContext&) {
       SubList();
     } },
-    { "UpSubConf", [](MenuItemContext& context) {
+    { "UpSubConf", [](MenuItemContext&) {
       UpSubConf();
     } },
-    { "DownSubConf", [](MenuItemContext& context) {
+    { "DownSubConf", [](MenuItemContext&) {
       DownSubConf();
     } },
-    { "UpSub", [](MenuItemContext& context) {
+    { "UpSub", [](MenuItemContext&) {
       UpSub();
     } },
-    { "DownSub", [](MenuItemContext& context) {
+    { "DownSub", [](MenuItemContext&) {
       DownSub();
     } },
-    { "ValidateUser", [](MenuItemContext& context) {
+    { "ValidateUser", [](MenuItemContext&) {
       ValidateUser();
     } },
-    { "Doors", [](MenuItemContext& context) {
+    { "Doors", [](MenuItemContext&) {
       Chains();
     } },
-    { "TimeBank", [](MenuItemContext& context) {
+    { "TimeBank", [](MenuItemContext&) {
       TimeBank();
     } },
-    { "AutoMessage", [](MenuItemContext& context) {
+    { "AutoMessage", [](MenuItemContext&) {
       AutoMessage();
     } },
-    { "BBSList", [](MenuItemContext& context) {
+    { "BBSList", [](MenuItemContext&) {
       NewBBSList();
     } },
-    { "RequestChat", [](MenuItemContext& context) {
+    { "RequestChat", [](MenuItemContext&) {
       RequestChat();
     } },
     { "Defaults", [](MenuItemContext& context) {
       Defaults(context.need_reload);
     } },
-    { "SendEMail", [](MenuItemContext& context) {
+    { "SendEMail", [](MenuItemContext&) {
       SendEMail();
     } },
-    { "Feedback", [](MenuItemContext& context) {
+    { "Feedback", [](MenuItemContext&) {
       FeedBack();
     } },
-    { "Bulletins", [](MenuItemContext& context) {
+    { "Bulletins", [](MenuItemContext&) {
       Bulletins();
     } },
-    { "HopSub", [](MenuItemContext& context) {
+    { "HopSub", [](MenuItemContext&) {
       HopSub();
     } },
-    { "SystemInfo", [](MenuItemContext& context) {
+    { "SystemInfo", [](MenuItemContext&) {
       SystemInfo();
     } },
-    { "JumpSubConf", [](MenuItemContext& context) {
+    { "JumpSubConf", [](MenuItemContext&) {
       JumpSubConf();
     } },
-    { "KillEMail", [](MenuItemContext& context) {
+    { "KillEMail", [](MenuItemContext&) {
       KillEMail();
     } },
-    { "LastCallers", [](MenuItemContext& context) {
+    { "LastCallers", [](MenuItemContext&) {
       LastCallers();
     } },
-    { "ReadEMail", [](MenuItemContext& context) {
+    { "ReadEMail", [](MenuItemContext&) {
       ReadEMail();
     } },
-    { "NewMessageScan", [](MenuItemContext& context) {
+    { "NewMessageScan", [](MenuItemContext&) {
       NewMessageScan();
     } },
-    { "Goodbye", [](MenuItemContext& context) {
+    { "Goodbye", [](MenuItemContext&) {
       GoodBye();
     } },
-    { "PostMessage", [](MenuItemContext& context) {
+    { "PostMessage", [](MenuItemContext&) {
       WWIV_PostMessage();
     } },
-    { "NewMsgScanCurSub", [](MenuItemContext& context) {
+    { "NewMsgScanCurSub", [](MenuItemContext&) {
       ScanSub();
     } },
-    { "RemovePost", [](MenuItemContext& context) {
+    { "RemovePost", [](MenuItemContext&) {
       RemovePost();
     } },
-    { "TitleScan", [](MenuItemContext& context) {
+    { "TitleScan", [](MenuItemContext&) {
       TitleScan();
     } },
-    { "ListUsers", [](MenuItemContext& context) {
+    { "ListUsers", [](MenuItemContext&) {
       ListUsers();
     } },
-    { "Vote", [](MenuItemContext& context) {
+    { "Vote", [](MenuItemContext&) {
       Vote();
     } },
-    { "ToggleExpert", [](MenuItemContext& context) {
+    { "ToggleExpert", [](MenuItemContext&) {
       ToggleExpert();
     } },
-    { "YourInfo", [](MenuItemContext& context) {
+    { "YourInfo", [](MenuItemContext&) {
       YourInfo();
     } },
-    { "WWIVVer", [](MenuItemContext& context) {
+    { "WWIVVer", [](MenuItemContext&) {
       WWIVVersion();
     } },
-    { "ConferenceEdit", [](MenuItemContext& context) {
+    { "ConferenceEdit", [](MenuItemContext&) {
       JumpEdit();
     } },
-    { "SubEdit", [](MenuItemContext& context) {
+    { "SubEdit", [](MenuItemContext&) {
       BoardEdit();
     } },
-    { "ChainEdit", [](MenuItemContext& context) {
+    { "ChainEdit", [](MenuItemContext&) {
       ChainEdit();
     } },
-    { "ToggleAvailable", [](MenuItemContext& context) {
+    { "ToggleAvailable", [](MenuItemContext&) {
       ToggleChat();
     } },
-    { "ChangeUser", [](MenuItemContext& context) {
+    { "ChangeUser", [](MenuItemContext&) {
       ChangeUser();
     } },
-    { "DirEdit", [](MenuItemContext& context) {
+    { "DirEdit", [](MenuItemContext&) {
       DirEdit();
     } },
-    { "Edit", [](MenuItemContext& context) {
+    { "Edit", [](MenuItemContext&) {
       EditText();
     } },
-    { "BulletinEdit", [](MenuItemContext& context) {
+    { "BulletinEdit", [](MenuItemContext&) {
       EditBulletins();
     } },
-    { "LoadText", [](MenuItemContext& context) {
+    { "LoadText", [](MenuItemContext&) {
       LoadTextFile();
     } },
-    { "ReadAllMail", [](MenuItemContext& context) {
+    { "ReadAllMail", [](MenuItemContext&) {
       ReadAllMail();
     } },
-    { "ReloadMenus", [](MenuItemContext& context) {
+    { "ReloadMenus", [](MenuItemContext&) {
       ReloadMenus();
     } },
-    { "ResetQscan", [](MenuItemContext& context) {
+    { "ResetQscan", [](MenuItemContext&) {
       ResetQscan();
     } },
-    { "MemStat", [](MenuItemContext& context) {
+    { "MemStat", [](MenuItemContext&) {
       MemoryStatus();
     } },
-    { "VoteEdit", [](MenuItemContext& context) {
+    { "VoteEdit", [](MenuItemContext&) {
       InitVotes();
     } },
-    { "Log", [](MenuItemContext& context) {
+    { "Log", [](MenuItemContext&) {
       ReadLog();
     } },
-    { "NetLog", [](MenuItemContext& context) {
+    { "NetLog", [](MenuItemContext&) {
       ReadNetLog();
     } },
-    { "Pending", [](MenuItemContext& context) {
+    { "Pending", [](MenuItemContext&) {
       PrintPending();
     } },
-    { "Status", [](MenuItemContext& context) {
+    { "Status", [](MenuItemContext&) {
       PrintStatus();
     } },
-    { "TextEdit", [](MenuItemContext& context) {
+    { "TextEdit", [](MenuItemContext&) {
       TextEdit();
     } },
-    { "VotePrint", [](MenuItemContext& context) {
+    { "VotePrint", [](MenuItemContext&) {
       VotePrint();
     } },
-    { "YLog", [](MenuItemContext& context) {
+    { "YLog", [](MenuItemContext&) {
       YesterdaysLog();
     } },
-    { "ZLog", [](MenuItemContext& context) {
+    { "ZLog", [](MenuItemContext&) {
       ZLog();
     } },
-    { "ViewNetDataLog", [](MenuItemContext& context) {
+    { "ViewNetDataLog", [](MenuItemContext&) {
       ViewNetDataLog();
     } },
-    { "UploadPost", [](MenuItemContext& context) {
+    { "UploadPost", [](MenuItemContext&) {
       UploadPost();
     } },
-    { "cls", [](MenuItemContext& context) {
+    { "cls", [](MenuItemContext&) {
       bout.cls();
     } },
-    { "NetListing", [](MenuItemContext& context) {
+    { "NetListing", [](MenuItemContext&) {
       print_net_listing(false);
     } },
-    { "WHO", [](MenuItemContext& context) {
+    { "WHO", [](MenuItemContext&) {
       WhoIsOnline();
     } },
-    { "NewMsgsAllConfs", [](MenuItemContext& context) {
+    { "NewMsgsAllConfs", [](MenuItemContext&) {
       // /A NewMsgsAllConfs
       NewMsgsAllConfs();
     } },
-    { "MultiEMail", [](MenuItemContext& context) {
+    { "MultiEMail", [](MenuItemContext&) {
       // /E "MultiEMail"
       MultiEmail();
     } },
-    { "NewMsgScanFromHere", [](MenuItemContext& context) {
+    { "NewMsgScanFromHere", [](MenuItemContext&) {
       NewMsgScanFromHere();
     } },
-    { "ValidatePosts", [](MenuItemContext& context) {
+    { "ValidatePosts", [](MenuItemContext&) {
       ValidateScan();
     } },
-    { "ChatRoom", [](MenuItemContext& context) {
+    { "ChatRoom", [](MenuItemContext&) {
       ChatRoom();
     } },
-    { "ClearQScan", [](MenuItemContext& context) {
+    { "ClearQScan", [](MenuItemContext&) {
       ClearQScan();
     } },
-    { "FastGoodBye", [](MenuItemContext& context) {
+    { "FastGoodBye", [](MenuItemContext&) {
       FastGoodBye();
     } },
-    { "NewFilesAllConfs", [](MenuItemContext& context) {
+    { "NewFilesAllConfs", [](MenuItemContext&) {
       NewFilesAllConfs();
     } },
-    { "ReadIDZ", [](MenuItemContext& context) {
+    { "ReadIDZ", [](MenuItemContext&) {
       ReadIDZ();
     } },
-    { "UploadAllDirs", [](MenuItemContext& context) {
+    { "UploadAllDirs", [](MenuItemContext&) {
       UploadAllDirs();
     } },
-    { "UploadCurDir", [](MenuItemContext& context) {
+    { "UploadCurDir", [](MenuItemContext&) {
       UploadCurDir();
     } },
-    { "RenameFiles", [](MenuItemContext& context) {
+    { "RenameFiles", [](MenuItemContext&) {
       RenameFiles();
     } },
-    { "MoveFiles", [](MenuItemContext& context) {
+    { "MoveFiles", [](MenuItemContext&) {
       MoveFiles();
     } },
-    { "SortDirs", [](MenuItemContext& context) {
+    { "SortDirs", [](MenuItemContext&) {
       SortDirs();
     } },
-    { "ReverseSortDirs", [](MenuItemContext& context) {
+    { "ReverseSortDirs", [](MenuItemContext&) {
       ReverseSort();
     } },
-    { "AllowEdit", [](MenuItemContext& context) {
+    { "AllowEdit", [](MenuItemContext&) {
       AllowEdit();
     } },
-    { "UploadFilesBBS", [](MenuItemContext& context) {
+    { "UploadFilesBBS", [](MenuItemContext&) {
       UploadFilesBBS();
     } },
-    { "DirList", [](MenuItemContext& context) {
+    { "DirList", [](MenuItemContext&) {
       DirList();
     } },
-    { "UpDirConf", [](MenuItemContext& context) {
+    { "UpDirConf", [](MenuItemContext&) {
       UpDirConf();
     } },
-    { "UpDir", [](MenuItemContext& context) {
+    { "UpDir", [](MenuItemContext&) {
       UpDir();
     } },
-    { "DownDirConf", [](MenuItemContext& context) {
+    { "DownDirConf", [](MenuItemContext&) {
       DownDirConf();
     } },
-    { "DownDir", [](MenuItemContext& context) {
+    { "DownDir", [](MenuItemContext&) {
       DownDir();
     } },
-    { "ListUsersDL", [](MenuItemContext& context) {
+    { "ListUsersDL", [](MenuItemContext&) {
       ListUsersDL();
     } },
-    { "PrintDSZLog", [](MenuItemContext& context) {
+    { "PrintDSZLog", [](MenuItemContext&) {
       PrintDSZLog();
     } },
-    { "PrintDevices", [](MenuItemContext& context) {
+    { "PrintDevices", [](MenuItemContext&) {
       PrintDevices();
     } },
-    { "ViewArchive", [](MenuItemContext& context) {
+    { "ViewArchive", [](MenuItemContext&) {
       ViewArchive();
     } },
-    { "BatchMenu", [](MenuItemContext& context) {
+    { "BatchMenu", [](MenuItemContext&) {
       BatchMenu();
     } },
-    { "Download", [](MenuItemContext& context) {
+    { "Download", [](MenuItemContext&) {
       Download();
     } },
-    { "TempExtract", [](MenuItemContext& context) {
+    { "TempExtract", [](MenuItemContext&) {
       TempExtract();
     } },
-    { "FindDescription", [](MenuItemContext& context) {
+    { "FindDescription", [](MenuItemContext&) {
       FindDescription();
     } },
-    { "ArchiveMenu", [](MenuItemContext& context) {
+    { "ArchiveMenu", [](MenuItemContext&) {
       TemporaryStuff();
     } },
-    { "HopDir", [](MenuItemContext& context) {
+    { "HopDir", [](MenuItemContext&) {
       HopDir();
     } },
-    { "JumpDirConf", [](MenuItemContext& context) {
+    { "JumpDirConf", [](MenuItemContext&) {
       JumpDirConf();
     } },
-    { "ListFiles", [](MenuItemContext& context) {
+    { "ListFiles", [](MenuItemContext&) {
       ListFiles();
     } },
-    { "NewFileScan", [](MenuItemContext& context) {
+    { "NewFileScan", [](MenuItemContext&) {
       NewFileScan();
     } },
-    { "SetNewFileScanDate", [](MenuItemContext& context) {
+    { "SetNewFileScanDate", [](MenuItemContext&) {
       SetNewFileScanDate();
     } },
-    { "RemoveFiles", [](MenuItemContext& context) {
+    { "RemoveFiles", [](MenuItemContext&) {
       RemoveFiles();
     } },
-    { "SearchAllFiles", [](MenuItemContext& context) {
+    { "SearchAllFiles", [](MenuItemContext&) {
       SearchAllFiles();
     } },
-    { "XferDefaults", [](MenuItemContext& context) {
+    { "XferDefaults", [](MenuItemContext&) {
       XferDefaults();
     } },
-    { "Upload", [](MenuItemContext& context) {
+    { "Upload", [](MenuItemContext&) {
       Upload();
     } },
-    { "YourInfoDL", [](MenuItemContext& context) {
+    { "YourInfoDL", [](MenuItemContext&) {
       Upload();
     } },
-    { "YourInfoDL", [](MenuItemContext& context) {
+    { "YourInfoDL", [](MenuItemContext&) {
       YourInfoDL();
     } },
-    { "UploadToSysop", [](MenuItemContext& context) {
+    { "UploadToSysop", [](MenuItemContext&) {
       UploadToSysop();
     } },
-    { "ReadAutoMessage", [](MenuItemContext& context) {
+    { "ReadAutoMessage", [](MenuItemContext&) {
       ReadAutoMessage();
     } },
-    { "SetNewScanMsg", [](MenuItemContext& context) {
+    { "SetNewScanMsg", [](MenuItemContext&) {
       SetNewScanMsg();
     } },
-    { "LoadTextFile", [](MenuItemContext& context) {
+    { "LoadTextFile", [](MenuItemContext&) {
       LoadTextFile();
     } },
-    { "GuestApply", [](MenuItemContext& context) {
+    { "GuestApply", [](MenuItemContext&) {
       GuestApply();
     } },
-    { "ConfigFileList", [](MenuItemContext& context) {
+    { "ConfigFileList", [](MenuItemContext&) {
       ConfigFileList();
     } },
-    { "ListAllColors", [](MenuItemContext& context) {
+    { "ListAllColors", [](MenuItemContext&) {
       ListAllColors();
     } },
-    { "RemoveNotThere", [](MenuItemContext& context) {
+    { "RemoveNotThere", [](MenuItemContext&) {
       RemoveNotThere();
     } },
-    { "AttachFile", [](MenuItemContext& context) {
+    { "AttachFile", [](MenuItemContext&) {
       AttachFile();
     } },
-    { "InternetEmail", [](MenuItemContext& context) {
+    { "InternetEmail", [](MenuItemContext&) {
       InternetEmail();
     } },
-    { "UnQScan", [](MenuItemContext& context) {
+    { "UnQScan", [](MenuItemContext&) {
       UnQScan();
     } },
-    { "Packers", [](MenuItemContext& context) {
+    { "Packers", [](MenuItemContext&) {
       Packers();
     } },
-    { "InitVotes", [](MenuItemContext& context) {
+    { "InitVotes", [](MenuItemContext&) {
       InitVotes();
     } },
-    { "TurnMCIOn", [](MenuItemContext& context) {
+    { "TurnMCIOn", [](MenuItemContext&) {
       TurnMCIOn();
     } },
-    { "TurnMCIOff", [](MenuItemContext& context) {
+    { "TurnMCIOff", [](MenuItemContext&) {
       TurnMCIOff();
     } },
 //    { "", [](MenuItemContext& context) {
@@ -562,9 +544,4 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
   };
 }
 
-#if defined( _MSC_VER )
-#pragma warning(pop)
-#endif
-
-}  // namespace menus
-}  // namespace wwiv
+}

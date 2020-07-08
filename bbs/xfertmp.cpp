@@ -34,8 +34,8 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
+#include "bbs/xfer_common.h"
 #include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/stl.h"
@@ -46,7 +46,6 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
-
 #include <cmath>
 #include <cstdio>
 #include <functional>

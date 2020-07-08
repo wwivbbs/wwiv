@@ -182,7 +182,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
  * bFree  = If true, security on door will not back checked
  */
 bool MenuRunDoorName(const char *pszDoor, bool bFree) {
-  const int door_number = FindDoorNo(pszDoor);
+  const auto door_number = FindDoorNo(pszDoor);
   return door_number >= 0 ? MenuRunDoorNumber(door_number, bFree) : false;
 }
 
@@ -213,11 +213,10 @@ bool ValidateDoorAccess(int nDoorNumber) {
     if (!(c.multi_user)) {
       bout << inuse_msg << " Try again later.\r\n";
       return false;
-    } else {
-      bout << inuse_msg << " Care to join in? ";
-      if (!(yesno())) {
-        return false;
-      }
+    }
+    bout << inuse_msg << " Care to join in? ";
+    if (!(yesno())) {
+      return false;
     }
   }
   if (c.ansi && !okansi()) {
