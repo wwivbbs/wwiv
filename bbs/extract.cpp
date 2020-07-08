@@ -24,7 +24,6 @@
 #include "bbs/misccmd.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer.h"
-#include "core/findfiles.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"

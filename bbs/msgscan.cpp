@@ -111,7 +111,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   }
   string reply_to_name;
   if (post->ownersys && !post->owneruser) {
-    reply_to_name = grab_user_name(&(post->msg), a()->current_sub().filename, a()->net_num());
+    reply_to_name = grab_user_name(&post->msg, a()->current_sub().filename, a()->net_num());
   }
 
   if (auto o = readfile(&post->msg, a()->current_sub().filename)) {

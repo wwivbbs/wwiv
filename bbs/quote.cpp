@@ -32,7 +32,6 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/parsed_message.h"
-
 #include <deque>
 #include <memory>
 #include <string>
@@ -142,17 +141,17 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
   const auto to_node = *it++;
   ++it;
 
-  const auto tb1 = GetQuoteInitials(to_name);
+  const auto quote_initials = GetQuoteInitials(to_name);
   std::vector<std::string> out;
   if (type != quote_date_format_t::no_quote) {
     out.emplace_back(to_quote_date_line(type, tt, properize(strip_to_node(to_node))));
   }
 
   for(; it != end; ++it) {
-    auto l = *it;
-    StringReplace(&l, "\x03""0", "\x03""5");
-    out.emplace_back(
-        fmt::sprintf("%c%c%s%c%c> %c%c%s%c0", 0x03, '1', tb1, 0x03, '7', 0x03, '5', l, 0x03));
+    auto line = *it;
+    StringReplace(&line, "\x03""0", "\x03""5");
+    out.emplace_back(fmt::sprintf("%c%c%s%c%c> %c%c%s%c0",
+                     0x03, '1', quote_initials, 0x03, '7', 0x03, '5', line, 0x03));
   }
   return out;
 }
@@ -229,7 +228,7 @@ std::deque<std::string> query_quote_lines() {
         continue;
       }
       StringTrimCRLF(&line);
-      bout.bpla(fmt::format("{:>3}] {}", num_lines++, line), &abort);
+      bout.bpla(fmt::format("{:>3} {}", num_lines++, line), &abort);
       if (abort) {
         break;
       }

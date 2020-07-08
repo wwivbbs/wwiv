@@ -495,7 +495,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text,
         if (!controlcodes) {
           continue;
         }
-        line = StrCat("@", line.substr(2));
+        line = StrCat("|08@", line.substr(2));
       } else {
         line = line.substr(2);
       }
