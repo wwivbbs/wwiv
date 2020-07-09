@@ -727,20 +727,10 @@ Runs a WWIVbasic Script
 )", "", [](MenuItemContext&) {
       Download();
     } ));
-  m.emplace("TempExtract", MenuItem(R"(
-  Extract an archive to the temp directory
-)", "", [](MenuItemContext&) {
-      TempExtract();
-    } ));
   m.emplace("FindDescription", MenuItem(R"(
   Search for a file by description
 )", "", [](MenuItemContext&) {
       FindDescription();
-    } ));
-  m.emplace("ArchiveMenu", MenuItem(R"(
-  Enter the archive menu
-)", "", [](MenuItemContext&) {
-      TemporaryStuff();
     } ));
   m.emplace("HopDir", MenuItem(R"(
   Hop to another directory number 'H'

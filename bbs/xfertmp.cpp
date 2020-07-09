@@ -20,40 +20,26 @@
 #include "bbs/xfertmp.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
-#include "bbs/datetime.h"
 #include "bbs/dirlist.h"
-#include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
-#include "bbs/sr.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
-#include "bbs/xfer_common.h"
-#include "core/findfiles.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "fmt/printf.h"
-#include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/files.h"
-#include <cmath>
-#include <cstdio>
 #include <functional>
 #include <string>
 #include <vector>
-
-// the archive type to use
-static const int ARC_NUMBER = 0;
 
 using std::function;
 using std::string;
@@ -64,36 +50,11 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-bool bad_filename(const std::string& file_name) {
-  // strings not to allow in a .zip file to extract from
-  static const vector<string> bad_words = {
-      "COMMAND",
-      "..",
-      "CMD",
-      "4DOS",
-      "4OS2",
-      "4NT",
-      "PKZIP",
-      "PKUNZIP",
-      "ARJ",
-      "RAR",
-      "LHA",
-      "LHARC",
-      "PKPAK",
-  };
-
-  for (const auto& bad_word : bad_words) {
-    if (strstr(file_name.c_str(), bad_word.c_str())) {
-      bout << "Can't extract from that because it has " << file_name << wwiv::endl;
-      return true;
-    }
-  }
-  if (!okfn(file_name)) {
-    bout << "Can't extract from that because it has " << file_name << wwiv::endl;
-    return true;
-  }
-  return false;
+static bool bad_filename(const std::string& fn) {
+  bout << fn;
+  return true;
 }
+
 
 struct arch {
   unsigned char type;
@@ -219,7 +180,8 @@ bool check_for_files_zip(const std::filesystem::path& path) {
       switch (sig) {
       case ZIP_LOCAL_SIG:
         file.Read(&zl, sizeof(zl));
-        file.Read( s, zl.filename_len ); s[ zl.filename_len ] = '\0';
+        file.Read( s, zl.filename_len );
+        s[ zl.filename_len ] = '\0';
         strupr(s);
         if (bad_filename(s)) {
           return false;
@@ -388,298 +350,6 @@ static bool check_for_files(const std::filesystem::path& path) {
     }
   }
   return false;
-}
-
-static bool download_temp_arc(const char* file_name, bool count_against_xfer_ratio) {
-  bout << "Downloading " << file_name << "." << a()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
-  if (count_against_xfer_ratio && !ratio_ok()) {
-    bout << "Ratio too low.\r\n";
-    return false;
-  }
-  const auto file_to_send = StrCat(file_name, ".", a()->arcs[ARC_NUMBER].extension);
-  const auto dl_filename = FilePath(a()->temp_directory(), file_to_send);
-  File file(dl_filename);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "No such file.\r\n\n";
-    return false;
-  }
-  auto file_size = file.length();
-  file.Close();
-  if (file_size == 0L) {
-    bout << "File has nothing in it.\r\n\n";
-    return false;
-  }
-  double d = XFER_TIME(file_size);
-  if (d <= nsl()) {
-    bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
-    bool sent = false;
-    bool abort = false;
-    send_file(dl_filename.string(), &sent, &abort, file_to_send, -1, file_size);
-    if (sent) {
-      if (count_against_xfer_ratio) {
-        a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-        a()->user()->set_dk(a()->user()->dk() + bytes_to_k(file_size));
-        bout.nl(2);
-        bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
-      }
-      sysoplog() << "Downloaded " << humanize(file_size) << " of '" << file_to_send << "'";
-      if (a()->IsUserOnline()) {
-        a()->UpdateTopScreen();
-      }
-      return true;
-    }
-  } else {
-    bout.nl(2);
-    bout << "Not enough time left to D/L.\r\n\n";
-  }
-  return false;
-}
-
-void add_arc(const char* arc, const std::string& file_name) {
-  const auto arc_fn = fmt::format("{}.{}", arc, a()->arcs[ARC_NUMBER].extension);
-  // TODO - This logic is still broken since chain.* and door.* won't match
-  if (iequals(file_name, DROPFILE_CHAIN_TXT) ||
-      iequals(file_name, "door.sys") ||
-      iequals(file_name, "chain.*") ||
-      iequals(file_name, "door.*")) {
-    return;
-  }
-
-  const auto arc_cmd = get_arc_cmd(arc_fn, 2, file_name);
-  if (!arc_cmd.empty()) {
-    a()->localIO()->Puts(arc_cmd);
-    a()->localIO()->Puts("\r\n");
-    ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_A) | EFLAG_TEMP_DIR);
-    a()->UpdateTopScreen();
-    sysoplog() << fmt::format("Added \"{}\" to {}", file_name, arc_fn);
-  } else {
-    bout << "Sorry, can't add to temp archive.\r\n\n";
-  }
-}
-
-void add_temp_arc() {
-  bout.nl();
-  bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
-  auto input_mask = input(12);
-  if (!okfn(input_mask)) {
-    return;
-  }
-  if (input_mask.empty()) {
-    return;
-  }
-  if (strchr(input_mask.c_str(), '.') == nullptr) {
-    input_mask += ".*";
-  }
-  const auto file_mask = stripfn(input_mask);
-  for (auto c : file_mask) {
-    if (c == '|' || c == '>' || c == '<' || c == ';' || c == ' ' || c == ':' || c == '/' ||
-        c == '\\') {
-      return;
-    }
-  }
-  add_arc("temp", file_mask);
-}
-
-void del_temp() {
-  bout.nl();
-  bout << "|#9Enter file name to delete: ";
-  auto fn = input(12, true);
-  if (fn.empty() || !okfn(fn)) {
-    return;
-  }
-  if (strchr(fn.c_str(), '.') == nullptr) {
-    fn += ".*";
-  }
-  remove_from_temp(fn, a()->temp_directory(), true);
-}
-
-void list_temp_dir() {
-  FindFiles ff(FilePath(a()->temp_directory(), "*"), FindFilesType::any);
-  bout.nl();
-  bout << "Files in temporary directory:\r\n\n";
-  for (const auto& f : ff) {
-    CheckForHangup();
-    if (checka()) { break; }
-    if (iequals(f.name, DROPFILE_CHAIN_TXT) || iequals(f.name, "door.sys")) {
-      continue;
-    }
-    auto filename = aligns(f.name);
-    bout.bputs(fmt::sprintf("%12s  %-8ld", filename, f.size));
-  }
-  if (ff.empty()) {
-    bout << "None.\r\n";
-  }
-  bout.nl();
-  bout << "Free space: " << File::freespace_for_path(a()->temp_directory()) << wwiv::endl;
-  bout.nl();
-}
-
-void temp_extract() {
-  dliscan();
-  bout.nl();
-  bout << "Extract to temporary directory:\r\n\n";
-  bout << "|#2Filename: ";
-  auto s = input(12);
-  if (!okfn(s) || s.empty()) {
-    return;
-  }
-  if (strchr(s.c_str(), '.') == nullptr) {
-    s += ".*";
-  }
-  s = aligns(s);
-  int i = recno(s);
-  bool ok = true;
-  while (i > 0 && ok && !a()->hangup_) {
-    auto f = a()->current_file_area()->ReadFile(i);
-    auto tmppath = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
-    if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
-      auto curpath = FilePath(a()->dirs()[a()->current_user_dir().subnum].path, f);
-      tmppath = FilePath(a()->temp_directory(), f);
-      if (!File::Exists(tmppath)) {
-        File::Copy(curpath, tmppath);
-      }
-    }
-    auto curpath = get_arc_cmd(tmppath.string(), 1, "");
-    if (!curpath.empty() && File::Exists(tmppath)) {
-      bout.nl(2);
-      bool abort = false;
-      printinfo(&f.u(), &abort);
-      bout.nl();
-      auto path = (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom)
-                      ? a()->temp_directory()
-                      : a()->dirs()[a()->current_user_dir().subnum].path;
-      File file(FilePath(path, f));
-      if (check_for_files(file.path())) {
-        bool ok1;
-        do {
-          bout << "|#2Extract what (?=list,Q=abort) ? ";
-          auto extract_fn = input(12);
-          ok1 = !extract_fn.empty();
-          if (!okfn(extract_fn)) {
-            ok1 = false;
-          }
-          if (iequals(extract_fn, "?")) {
-            list_arc_out(f.unaligned_filename(),
-                         a()->dirs()[a()->current_user_dir().subnum].path);
-            extract_fn.clear();
-          }
-          if (iequals(extract_fn, "Q")) {
-            ok = false;
-            extract_fn.clear();
-          }
-          int i2 = 0;
-          for (int i1 = 0; i1 < wwiv::stl::ssize(extract_fn); i1++) {
-            if (extract_fn[i1] == '|' || extract_fn[i1] == '>' || extract_fn[i1] == '<' ||
-                extract_fn[i1] == ';' || extract_fn[i1] == ' ') {
-              i2 = 1;
-            }
-          }
-          if (i2) {
-            extract_fn.clear();
-          }
-          if (!extract_fn.empty()) {
-            if (strchr(extract_fn.c_str(), '.') == nullptr) {
-              extract_fn += ".*";
-            }
-            auto extract_cmd = get_arc_cmd(file.full_pathname(), 1, stripfn(extract_fn));
-            if (!okfn(extract_fn)) {
-              extract_cmd.clear();
-            }
-            if (!extract_cmd.empty()) {
-              ExecuteExternalProgram(extract_cmd, a()->spawn_option(SPAWNOPT_ARCH_E) | EFLAG_TEMP_DIR);
-              sysoplog() << fmt::format("Extracted out \"{}\" from \"{}\"", extract_fn, f);
-            }
-          }
-        }
-        while (!a()->hangup_ && ok && ok1);
-      }
-    } else {
-      bout.nl();
-      bout << "That file currently isn't there.\r\n\n";
-    }
-    if (ok) {
-      i = nrecno(s, i);
-    }
-  }
-}
-
-void list_temp_text() {
-  bout.nl();
-  bout << "|#2List what file(s) : ";
-  auto fn = input(12, true);
-  if (!okfn(fn)) {
-    return;
-  }
-  if (!fn.empty()) {
-    if (!contains(fn, '.')) {
-      fn += ".*";
-    }
-    const auto fmask = FilePath(a()->temp_directory(), stripfn(fn));
-    FindFiles ff(fmask, FindFilesType::any);
-    bout.nl();
-    for (const auto& f : ff) {
-      const auto s = FilePath(a()->temp_directory(), f.name);
-      if (iequals(f.name, "door.sys") || iequals(f.name, DROPFILE_CHAIN_TXT)) {
-        continue;
-      }
-      bout.nl();
-      bout << "Listing " << f.name << "\r\n\n";
-      bool sent;
-      double percent;
-      ascii_send(s.string(), &sent, &percent);
-      if (sent) {
-        sysoplog() << "Temp text D/L \"" << f.name << "\"";
-      } else {
-        sysoplog() << "Temp Tried text D/L \"" << f.name << "\"" << (percent * 100.0) << "%";
-        break;
-      }
-    }
-  }
-}
-
-
-void list_temp_arc() {
-  char szFileName[MAX_PATH];
-
-  sprintf(szFileName, "temp.%s", a()->arcs[ARC_NUMBER].extension);
-  list_arc_out(szFileName, a()->temp_directory());
-  bout.nl();
-}
-
-
-void temporary_stuff() {
-  printfile(TARCHIVE_NOEXT);
-  do {
-    bout.nl();
-    bout << "|#9Archive: Q,D,R,A,V,L,T: ";
-    char ch = onek("Q?DRAVLT");
-    switch (ch) {
-    case 'Q':
-      return;
-    case 'D':
-      download_temp_arc("temp", true);
-      break;
-    case 'V':
-      list_temp_arc();
-      break;
-    case 'A':
-      add_temp_arc();
-      break;
-    case 'R':
-      del_temp();
-      break;
-    case 'L':
-      list_temp_dir();
-      break;
-    case 'T':
-      list_temp_text();
-      break;
-    case '?':
-      print_help_file(TARCHIVE_NOEXT);
-      break;
-    }
-  }
-  while (!a()->hangup_);
 }
 
 void move_file_t() {

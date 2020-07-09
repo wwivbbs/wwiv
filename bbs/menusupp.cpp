@@ -889,16 +889,8 @@ void Download() {
   download();
 }
 
-void TempExtract() {
-  temp_extract();
-}
-
 void FindDescription() {
   finddescription();
-}
-
-void TemporaryStuff() {
-  temporary_stuff();
 }
 
 void JumpDirConf() {

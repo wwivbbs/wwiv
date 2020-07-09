@@ -18,17 +18,6 @@
 #ifndef __INCLUDED_BBS_XFERTMP_H__
 #define __INCLUDED_BBS_XFERTMP_H__
 
-#include <string>
-
-bool bad_filename(const std::string& file_name);
-void add_arc(const char* arc, const std::string& file_name);
-void add_temp_arc();
-void del_temp();
-void list_temp_dir();
-void temp_extract();
-void list_temp_text();
-void list_temp_arc();
-void temporary_stuff();
 void move_file_t();
 void removefile();
 

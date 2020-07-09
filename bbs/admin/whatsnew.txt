@@ -58,6 +58,48 @@ What's New in WWIV 5.5 (2020)
   and then edit the directories to specify the correct "FTN Area Tag" for
   the allfix file echo tag name.   After that networkc should automatically
   move the files into the WWIV file areas specified.
+! Removed ArchiveMenu and TempExtract menu commands.  Please remove these
+  from your menus if you have them.
++ "bbs -o" will not list the available menu commands for WWIV's menu editor.
+   menu.txt is now generated from the BBS output.
+   bbs -oc will group by category (once tagged), and bbs -om (or -ocm) will
+   output the text in markdown format.
+* Fixed archive types other than ZIP in QWK.  Now you can use any supported
+  archive type.
+* Simplified Quoting Code.  It's much simpler than before and now possible
+  to fix/change it.
+* Fized parsing of FTN address from FTN messages.
+* Convert QBBS editor text from Fido format to WWIV. This fixes a few issued
+  with QBBS style editors and control lines.
++ wwivutil fix dirs actually works now.
+* Lots of fixes around handling botched conferences.
++ Transfer area can now list file sizes by MB or GB in addition to KB
+* Fixed displaying WWIV color codes in File Extended descriptions
+! Removed FAST_SEARCH from wwiv.ini.  We always use it
+! Removed EXTRA_COLOR from wwiv.ini, it was not used.
+* Many fixes to FILE_ID.DIZ handling
++ Support multiple tic areas per file area.
+! Don't call out from the BBS WFC automatically anymore. WWIVD handles callouts
+* 8x Speedup in networkf.
+* Fix format string in litebar header for listplus.
++ Added script used to create links to built binaries. use-built-bin.sh
+* Improved wwivutil fido dump display.
+* Fix qwk uploads
++ added "wwivutil files tic validate" comman
++ Numerous FTN network usability improvements
+  * Stopped allowing network type changes in wwivconfig.
+  * When creating a new network in wwivconfig, ask for type before creating
+    the network.
+  * When creating new ftn area, set packet archiver to zip by default
+  * Pre-create directories for fido types
+  * run network3 once so that the directory is setup. Maybe also add it
+    to networkc to check
+  * When adding a network to a sub, ask for the host and then automatically
+    add it to the subscriber's file.
+  * Don't add msgid to emails
+  * Don't add failed crc32 entries to the dupe database
+  * Don't add emails to the dupe database
+
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
