@@ -99,6 +99,7 @@ void TurnMCIOn();
  * the MENU, or nullptr if not invoked from an actual menu.
  */
 void InterpretCommand(MenuInstance* menudata, const std::string& script);
+void PrintMenuCommands(const std::string& arg);
 
 }  // namespace menus
 }  // namespace wwiv

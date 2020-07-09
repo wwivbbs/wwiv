@@ -113,7 +113,6 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     }
     bOkToDL = printfileinfo(&f.u(), dir);
 
-
     if (!ratio_ok()) {
       return -1;
     }

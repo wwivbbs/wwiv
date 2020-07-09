@@ -39,8 +39,8 @@ DLFile
 
 RunDoor <doorname>
 
-  Runs a door (chain) with doorname matching, exactly, the description you have
-  given the door in //CHEDIT
+    Runs a door (chain) with doorname matching, exactly, the description you have
+    given the door in //CHEDIT
 
 RunDoorFree <doorname>
 

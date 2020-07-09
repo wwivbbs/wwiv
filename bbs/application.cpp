@@ -748,12 +748,14 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.set_no_args_allowed(true);
   cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
   cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "115200"});
+  cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
   cmdline.add_argument(
       BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
   cmdline.add_argument({"handle", 'h', "Socket handle", "0"});
   cmdline.add_argument(BooleanCommandLineArgument{"no_modem", 'm',
                                                   "Don't access the modem at all", false});
   cmdline.add_argument({"instance", 'n', "Designate instance number <inst>", "1"});
+  cmdline.add_argument({"menu_commands", 'o', "Displays the menu commands available then exits.", ""});
   cmdline.add_argument({"ok_exit", 'q', "Normal exit level", "0"});
   cmdline.add_argument({"remaining_min", 'r', "Specify max # minutes until event", "0"});
   cmdline.add_argument({"user_num", 'u', "Pass usernumber <user#> online", "0"});
@@ -761,7 +763,6 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
   cmdline.add_argument(BooleanCommandLineArgument{"no_hangup", 'z',
                                                   "Do not hang up on user when at log off", false});
-  cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
 
   if (!cmdline.Parse()) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
@@ -775,6 +776,11 @@ int Application::Run(int argc, char* argv[]) {
   }
   if (cmdline.barg("version")) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    return 0;
+  }
+  auto menu_commands = cmdline.arg("menu_commands");
+  if (!menu_commands.is_default()) {
+    wwiv::menus::PrintMenuCommands(menu_commands.as_string());
     return 0;
   }
 

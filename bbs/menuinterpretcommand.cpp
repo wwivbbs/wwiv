@@ -67,14 +67,18 @@ struct MenuItemContext {
 };
 
 struct MenuItem {
+  MenuItem(std::string desc, std::string category, std::function<void(MenuItemContext&)> f)
+      : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
   MenuItem(std::string desc, std::function<void(MenuItemContext&)> f)
       : description_(std::move(desc)), f_(std::move(f)) {}
   MenuItem(std::function<void(MenuItemContext&)> f)
       : description_(""), f_(std::move(f)) {}
 
   std::string description_;
+  std::string category_;
   std::function<void(MenuItemContext&)> f_;
-
+  // Set at the end of CreateMenuMap.
+  std::string cmd_;
 };
 
 map<string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
@@ -111,464 +115,813 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
 }
 
 map<string, MenuItem, ci_less> CreateCommandMap() {
-  return {
-    { "MENU", MenuItem(R"(<menu>
+  map<string, MenuItem, ci_less> m;
+  m.emplace("MENU", MenuItem(R"(<menu>
   Loads up and starts running a new menu set, where <menu> equals the name of
   the menu to load.
-)", [](MenuItemContext& context) {
+)", "", [](MenuItemContext& context) {
       if (context.pMenuData) {
         MenuInstance new_menu(context.pMenuData->menu_directory(), context.param1);
         new_menu.RunMenu();
       }
-    } ) },
-    { "ReturnFromMenu", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("ReturnFromMenu", MenuItem(R"()", "", [](MenuItemContext& context) {
       if (context.pMenuData) {
         InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
         context.finished = true;
       }
-    } ) },
-    { "DLFreeFile", MenuItem(R"(
+    } ));
+  m.emplace("DLFreeFile", MenuItem(R"(
 <dirfname> <filename>
 
   This will download a file, but not check ratios or charge a download charge.
   You must specify the dir filename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
-)", [](MenuItemContext& context) {
+)", "", [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, true, true);
-    } ) },
-    { "DLFile", MenuItem(R"(
+    } ));
+  m.emplace("DLFile", MenuItem(R"(
 <dirfname> <filename>
 
   This will download a file, with a check for ratios and will update the
   kb downloaded and number of files downloaded.
   You must specify the dirfilename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
-)", [](MenuItemContext& context) {
+)", "", [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, false, true);
-    } ) },
-    { "RunDoor", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("RunDoor", MenuItem(R"(<door name>
+
+  Runs a door (chain) with doorname matching, exactly, the description you have
+  given the door in //CHEDIT
+)", "", [](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), false);
-    } ) },
-    { "RunDoorFree", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("RunDoorFree", MenuItem(R"(<door name>
+
+  Runs a door (chain) with doorname matching, exactly, the description you have
+  given the door in //CHEDIT, but this function bypasses the check to see if
+  the user is allowed to run the door.
+)", "", [](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), true);
-    } ) },
-    { "RunDoorNumber", MenuItem([](MenuItemContext& context) {
-      auto t = to_number<int>(context.param1);
+    } ));
+  m.emplace("RunDoorNumber", MenuItem(R"(<door number>
+
+  Like RunDoor, but you must specify the #1 in //CHEDIT instead of the
+  description.
+)", "", [](MenuItemContext& context) {
+      const auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, false);
-    } ) },
-    { "RunDoorNumberFree", MenuItem([](MenuItemContext& context) {
-      auto t = to_number<int>(context.param1);
+    } ));
+  m.emplace("RunDoorNumberFree", MenuItem(R"(<door number>
+
+  Like RunDoorFree, but you must specify the #1 in //CHEDIT instead of the
+  description.
+)", "", [](MenuItemContext& context) {
+      const auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, true);
-    } ) },
-    { "RunBasic", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("RunBasic", MenuItem(R"(<script name>
+
+Runs a WWIVbasic Script
+)", "", [](MenuItemContext& context) {
       // Runs a basic script from GFILES/
       wwiv::bbs::RunBasicScript(context.param1);
-    } ) },
-    { "PrintFile", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("PrintFile", MenuItem(R"(<filename>
+
+  Prints a file, first checking to see if you specified an absolute path,
+  then the language dir, then the gfilesdir.  It will use the usual checks to
+  determin .ANS, or .MSG if not specified.
+)", "", [](MenuItemContext& context) {
       printfile(context.param1, true);
-    } ) },
-    { "PrintFileNA", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("PrintFileNA", MenuItem(R"(<filename>
+
+  Just like PrintFile, but the user can not abort it with the space bar.
+)", "", [](MenuItemContext& context) {
       printfile(context.param1, false);
-    } ) },
-    { "SetSubNumber", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("SetSubNumber", MenuItem(R"(<key>
+
+  Equivalent to typing in a number at the main menu, it sets the current sub
+  number.
+)", "", [](MenuItemContext& context) {
       SetSubNumber(context.param1.c_str());
-    } ) },
-    { "SetDirNumber", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("SetDirNumber", MenuItem(R"( <key>
+
+  Equivalent to typing in a number at the xfer menu, it sets the current dir
+  number.
+)", "", [](MenuItemContext& context) {
       SetDirNumber(context.param1.c_str());
-    } ) },
-    { "SetMsgConf", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("SetMsgConf", MenuItem(R"(<key>
+
+  Sets the subboards conference to key
+)", "", [](MenuItemContext& context) {
       SetMsgConf(context.param1.c_str()[0]);
-    } ) },
-    { "SetMsgConf", MenuItem([](MenuItemContext& context) {
-      SetMsgConf(context.param1.c_str()[0]);
-    } ) },
-    { "SetDirConf", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("SetDirConf", MenuItem(R"(<key>
+
+  Sets the xfer section conference to key
+)", "", [](MenuItemContext& context) {
       SetDirConf(context.param1.c_str()[0]);
-    } ) },
-    { "EnableConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("EnableConf", MenuItem(R"(
+
+  Turns conferencing on
+)", "", [](MenuItemContext&) {
       EnableConf();
-    } ) },
-    { "DisableConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DisableConf", MenuItem(R"(
+
+  Turns conferencing off
+)", "", [](MenuItemContext&) {
       DisableConf();
-    } ) },
-    { "Pause", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Pause", MenuItem(R"(
+
+  Pauses the screen, like 'pausescr()' in C code
+)", "", [](MenuItemContext&) {
       pausescr();
-    } ) },
-    { "ConfigUserMenuSet", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("ConfigUserMenuSet", MenuItem(R"(
+
+  Takes the user into the user menu config so they can select which menuset
+  they want to use, etc...
+)", "", [](MenuItemContext& context) {
       ConfigUserMenuSet();
       context.need_reload = true;
-    } ) },
-    { "DisplayHelp", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("DisplayHelp", MenuItem(R"( <filename>
+
+  An alias for DisplayMenu. This alias is deprecated, please use DisplayMenu.
+)", "", [](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
-    } ) },
-    {"DisplayMenu", MenuItem([](MenuItemContext& context) {
+    } ));
+    m.emplace("DisplayMenu", MenuItem(R"( <filename>
+
+  Prints the 'novice menus' for the current menu set, or if one doesn't exist,
+  it will generate one using the menu definitions.
+)", "", [](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
-    } ) },
-    { "SelectSub", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SelectSub", MenuItem(R"(
+
+  This will prompt the user to enter a sub to change to.  However, it does not
+  first show the subs (like Renegade).  However, you can stack a sublist and
+  then this command to mimic the action.
+)", "", [](MenuItemContext&) {
       ChangeSubNumber();
-    } ) },
-    { "SelectDir", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SelectDir", MenuItem(R"(
+
+  Like SelectSub, but for the xfer section.
+)", "", [](MenuItemContext&) {
       ChangeDirNumber();
-    } ) },
-    { "SubList", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SubList", MenuItem(R"(
+
+  List the subs available
+)", "", [](MenuItemContext&) {
       SubList();
-    } ) },
-    { "UpSubConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UpSubConf", MenuItem(R"(
+
+  Increment ()) to the previous conference number
+)", "", [](MenuItemContext&) {
       UpSubConf();
-    } ) },
-    { "DownSubConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DownSubConf", MenuItem(R"(
+
+  Decrement ({) to the next sub conference
+)", "", [](MenuItemContext&) {
       DownSubConf();
-    } ) },
-    { "UpSub", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UpSub", MenuItem(R"(
+
+  Increment the current sub# (+)
+)", "", [](MenuItemContext&) {
       UpSub();
-    } ) },
-    { "DownSub", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DownSub", MenuItem(R"(
+
+  Decrement the current sub number (-)
+)", "", [](MenuItemContext&) {
       DownSub();
-    } ) },
-    { "ValidateUser", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ValidateUser", MenuItem(R"(
+  Validate a new users.  I think this '!'
+)", "", [](MenuItemContext&) {
       ValidateUser();
-    } ) },
-    { "Doors", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Doors", MenuItem(R"(
+  Enter the doors, or chains section.  Like '.'
+)", "", [](MenuItemContext&) {
       Chains();
-    } ) },
-    { "TimeBank", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TimeBank", MenuItem(R"(
+  Enter the time bank
+)", "", [](MenuItemContext&) {
       TimeBank();
-    } ) },
-    { "AutoMessage", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("AutoMessage", MenuItem(R"(
+  Read the auto message
+)", "", [](MenuItemContext&) {
       AutoMessage();
-    } ) },
-    { "BBSList", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("BBSList", MenuItem(R"(
+  Read the bbslist
+)", "", [](MenuItemContext&) {
       NewBBSList();
-    } ) },
-    { "RequestChat", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("RequestChat", MenuItem(R"(
+  Request chat from the sysop
+)", "", [](MenuItemContext&) {
       RequestChat();
-    } ) },
-    { "Defaults", MenuItem([](MenuItemContext& context) {
+    } ));
+  m.emplace("Defaults", MenuItem(R"(
+  Enter the normal 'defaults' section
+)", "", [](MenuItemContext& context) {
       Defaults(context.need_reload);
-    } ) },
-    { "SendEMail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SendEMail", MenuItem(R"(
+  Enter and send email 'E' from the main menu
+)", "", [](MenuItemContext&) {
       SendEMail();
-    } ) },
-    { "Feedback", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Feedback", MenuItem(R"(
+  Leave feedback to the syosp.  'F'
+)", "", [](MenuItemContext&) {
       FeedBack();
-    } ) },
-    { "Bulletins", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Bulletins", MenuItem(R"(
+  Enter the bulletins (or 'gfiles') section.  'G'
+)", "", [](MenuItemContext&) {
       Bulletins();
-    } ) },
-    { "HopSub", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("HopSub", MenuItem(R"(
+  Hop to another sub.  'H'
+)", "", [](MenuItemContext&) {
       HopSub();
-    } ) },
-    { "SystemInfo", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SystemInfo", MenuItem(R"(
+  View the system info
+)", "", [](MenuItemContext&) {
       SystemInfo();
-    } ) },
-    { "JumpSubConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("JumpSubConf", MenuItem(R"(
+  Jump to another sub conference.
+)", "", [](MenuItemContext&) {
       JumpSubConf();
-    } ) },
-    { "KillEMail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("KillEMail", MenuItem(R"(
+  Kill email that you have sent 'K'
+)", "", [](MenuItemContext&) {
       KillEMail();
-    } ) },
-    { "LastCallers", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("LastCallers", MenuItem(R"(
+  View the last few callers
+)", "", [](MenuItemContext&) {
       LastCallers();
-    } ) },
-    { "ReadEMail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReadEMail", MenuItem(R"(
+  Read your email
+)", "", [](MenuItemContext&) {
       ReadEMail();
-    } ) },
-    { "NewMessageScan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewMessageScan", MenuItem(R"(
+  Do a new message scan
+)", "", [](MenuItemContext&) {
       NewMessageScan();
-    } ) },
-    { "Goodbye", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Goodbye", MenuItem(R"(
+  Normal logoff 'O'
+)", "", [](MenuItemContext&) {
       GoodBye();
-    } ) },
-    { "PostMessage", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("PostMessage", MenuItem(R"(
+  Post a message in the current sub
+)", "", [](MenuItemContext&) {
       WWIV_PostMessage();
-    } ) },
-    { "NewMsgScanCurSub", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewMsgScanCurSub", MenuItem(R"(
+  Scan new messages in the current message sub
+)", "", [](MenuItemContext&) {
       ScanSub();
-    } ) },
-    { "RemovePost", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("RemovePost", MenuItem(R"(
+  Remove a post
+)", "", [](MenuItemContext&) {
       RemovePost();
-    } ) },
-    { "TitleScan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TitleScan", MenuItem(R"(
+  Scan the titles of the messages in the current sub
+)", "", [](MenuItemContext&) {
       TitleScan();
-    } ) },
-    { "ListUsers", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ListUsers", MenuItem(R"(
+  List users who have access to the current sub
+)", "", [](MenuItemContext&) {
       ListUsers();
-    } ) },
-    { "Vote", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Vote", MenuItem(R"(
+  Enter the voting both
+)", "", [](MenuItemContext&) {
       Vote();
-    } ) },
-    { "ToggleExpert", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ToggleExpert", MenuItem(R"(
+  Turn 'X'pert mode on or off (toggle)
+)", "", [](MenuItemContext&) {
       ToggleExpert();
-    } ) },
-    { "YourInfo", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("YourInfo", MenuItem(R"(
+  Display the yourinfo screen
+)", "", [](MenuItemContext&) {
       YourInfo();
-    } ) },
-    { "WWIVVer", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("WWIVVer", MenuItem(R"(
+  Get the wwiv version
+)", "", [](MenuItemContext&) {
       WWIVVersion();
-    } ) },
-    { "ConferenceEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ConferenceEdit", MenuItem(R"(
+  Sysop command ot edit the conferences
+)", "", [](MenuItemContext&) {
       JumpEdit();
-    } ) },
-    { "SubEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SubEdit", MenuItem(R"(
+  Sysop command to edit the subboards
+)", "", [](MenuItemContext&) {
       BoardEdit();
-    } ) },
-    { "ChainEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ChainEdit", MenuItem(R"(
+  Sysop command to edit the doors or chains
+)", "", [](MenuItemContext&) {
       ChainEdit();
-    } ) },
-    { "ToggleAvailable", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ToggleAvailable", MenuItem(R"(
+  Toggle the sysop availability for chat
+)", "", [](MenuItemContext&) {
       ToggleChat();
-    } ) },
-    { "ChangeUser", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ChangeUser", MenuItem(R"(
+  Sysop command equal to //CHUSER, to change into another users
+)", "", [](MenuItemContext&) {
       ChangeUser();
-    } ) },
-    { "DirEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DirEdit", MenuItem(R"(
+  Sysop command to edit the directory records
+)", "", [](MenuItemContext&) {
       DirEdit();
-    } ) },
-    { "Edit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Edit", MenuItem(R"(
+  Sysop command to edit a text file
+)", "", [](MenuItemContext&) {
       EditText();
-    } ) },
-    { "BulletinEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("BulletinEdit", MenuItem(R"(
+  Sysop command to edit the bulletins 'gfiles'
+)", "", [](MenuItemContext&) {
       EditBulletins();
-    } ) },
-    { "LoadText", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("LoadText", MenuItem(R"(
+  Sysop command to load a text file that will be edited in the text editor
+)", "", [](MenuItemContext&) {
       LoadTextFile();
-    } ) },
-    { "ReadAllMail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReadAllMail", MenuItem(R"(
+  Sysop command to read all mail
+)", "", [](MenuItemContext&) {
       ReadAllMail();
-    } ) },
-    { "ReloadMenus", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReloadMenus", MenuItem(R"(
+  This is probably obsolete.
+)", "", [](MenuItemContext&) {
       ReloadMenus();
-    } ) },
-    { "ResetQscan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ResetQscan", MenuItem(R"(
+  Set all messages to read (I think)
+)", "", [](MenuItemContext&) {
       ResetQscan();
-    } ) },
-    { "MemStat", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("MemStat", MenuItem(R"()", "", [](MenuItemContext&) {
       MemoryStatus();
-    } ) },
-    { "VoteEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("VoteEdit", MenuItem(R"(
+  Sysop command to edit the voting both
+)", "", [](MenuItemContext&) {
       InitVotes();
-    } ) },
-    { "Log", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Log", MenuItem(R"(
+  Syosp command to view the log file
+)", "", [](MenuItemContext&) {
       ReadLog();
-    } ) },
-    { "NetLog", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NetLog", MenuItem(R"(
+  Sysop command to view the network log
+)", "", [](MenuItemContext&) {
       ReadNetLog();
-    } ) },
-    { "Pending", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Pending", MenuItem(R"(
+  Shows which net files are ready to be sent
+)", "", [](MenuItemContext&) {
       PrintPending();
-    } ) },
-    { "Status", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Status", MenuItem(R"()", "", [](MenuItemContext&) {
       PrintStatus();
-    } ) },
-    { "TextEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TextEdit", MenuItem(R"(
+  Edit a text file
+)", "", [](MenuItemContext&) {
       TextEdit();
-    } ) },
-    { "VotePrint", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("VotePrint", MenuItem(R"(
+  Show the voting statistics
+)", "", [](MenuItemContext&) {
       VotePrint();
-    } ) },
-    { "YLog", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("YLog", MenuItem(R"(
+  View yesterdays log
+)", "", [](MenuItemContext&) {
       YesterdaysLog();
-    } ) },
-    { "ZLog", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ZLog", MenuItem(R"(
+  View the ZLog
+)", "", [](MenuItemContext&) {
       ZLog();
-    } ) },
-    { "ViewNetDataLog", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ViewNetDataLog", MenuItem(R"(
+  View the net data logs
+)", "", [](MenuItemContext&) {
       ViewNetDataLog();
-    } ) },
-    { "UploadPost", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UploadPost", MenuItem(R"(
+  Allow a user to upload a post that will be posted
+)", "", [](MenuItemContext&) {
       UploadPost();
-    } ) },
-    { "cls", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("cls", MenuItem(R"(
+  Clear the screen
+)", "", [](MenuItemContext&) {
       bout.cls();
-    } ) },
-    { "NetListing", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NetListing", MenuItem(R"(
+  Show networks
+)", "", [](MenuItemContext&) {
       print_net_listing(false);
-    } ) },
-    { "WHO", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("WHO", MenuItem(R"(
+  Show who else is online
+)", "", [](MenuItemContext&) {
       WhoIsOnline();
-    } ) },
-    { "NewMsgsAllConfs", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewMsgsAllConfs", MenuItem(R"(
+  Do a new message scan for all subs in all conferences '/A'
+)", "", [](MenuItemContext&) {
       // /A NewMsgsAllConfs
       NewMsgsAllConfs();
-    } ) },
-    { "MultiEMail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("MultiEMail", MenuItem(R"(
+  Send multi-email
+)", "", [](MenuItemContext&) {
       // /E "MultiEMail"
       MultiEmail();
-    } ) },
-    { "NewMsgScanFromHere", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewMsgScanFromHere", MenuItem(R"(
+  Read new messages starting from the current sub
+)", "", [](MenuItemContext&) {
       NewMsgScanFromHere();
-    } ) },
-    { "ValidatePosts", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ValidatePosts", MenuItem(R"(
+  Sysop command to validate unvalidated posts
+)", "", [](MenuItemContext&) {
       ValidateScan();
-    } ) },
-    { "ChatRoom", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ChatRoom", MenuItem(R"(
+  Go into the multiuser chat room
+)", "", [](MenuItemContext&) {
       ChatRoom();
-    } ) },
-    { "ClearQScan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ClearQScan", MenuItem(R"(
+  Marks messages unread.
+)", "", [](MenuItemContext&) {
       ClearQScan();
-    } ) },
-    { "FastGoodBye", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("FastGoodBye", MenuItem(R"(
+  Logoff fast '/O'
+)", "", [](MenuItemContext&) {
       FastGoodBye();
-    } ) },
-    { "NewFilesAllConfs", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewFilesAllConfs", MenuItem(R"(
+  New file scan in all directories in all conferences
+)", "", [](MenuItemContext&) {
       NewFilesAllConfs();
-    } ) },
-    { "ReadIDZ", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReadIDZ", MenuItem(R"(
+  Sysop command to read the file_id.diz and add it to the extended description
+)", "", [](MenuItemContext&) {
       ReadIDZ();
-    } ) },
-    { "UploadAllDirs", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UploadAllDirs", MenuItem(R"(
+  Syosp command to add any files sitting in the directories, but not in
+  the file database to wwiv's file database
+)", "", [](MenuItemContext&) {
       UploadAllDirs();
-    } ) },
-    { "UploadCurDir", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UploadCurDir", MenuItem(R"(
+  Sysop command to scan the current directory for any files that are not in
+  wwiv's file database and adds them to it.
+)", "", [](MenuItemContext&) {
       UploadCurDir();
-    } ) },
-    { "RenameFiles", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("RenameFiles", MenuItem(R"(
+  Sysop command to edit and rename files
+)", "", [](MenuItemContext&) {
       RenameFiles();
-    } ) },
-    { "MoveFiles", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("MoveFiles", MenuItem(R"(
+  Sysop command to move files
+)", "", [](MenuItemContext&) {
       MoveFiles();
-    } ) },
-    { "SortDirs", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SortDirs", MenuItem(R"(
+  Sort the directory by date or name
+)", "", [](MenuItemContext&) {
       SortDirs();
-    } ) },
-    { "ReverseSortDirs", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReverseSortDirs", MenuItem(R"(
+  Sort the directory by date or name, backwards.
+)", "", [](MenuItemContext&) {
       ReverseSort();
-    } ) },
-    { "AllowEdit", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("AllowEdit", MenuItem(R"(
+  Sysop command to enter the 'ALLOW.DAT' editor.
+)", "", [](MenuItemContext&) {
       AllowEdit();
-    } ) },
-    { "UploadFilesBBS", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UploadFilesBBS", MenuItem(R"(
+  Import a files.bbs (probably a CD) into the wwiv's file database
+)", "", [](MenuItemContext&) {
       UploadFilesBBS();
-    } ) },
-    { "DirList", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DirList", MenuItem(R"(
+  List the directory names in the xfer section
+)", "", [](MenuItemContext&) {
       DirList();
-    } ) },
-    { "UpDirConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UpDirConf", MenuItem(R"(
+  Go to the next directory conference '}'
+)", "", [](MenuItemContext&) {
       UpDirConf();
-    } ) },
-    { "UpDir", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UpDir", MenuItem(R"(
+  Go to the next directory number '+'
+)", "", [](MenuItemContext&) {
       UpDir();
-    } ) },
-    { "DownDirConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DownDirConf", MenuItem(R"(
+  Go to the prior directory conference '{'
+)", "", [](MenuItemContext&) {
       DownDirConf();
-    } ) },
-    { "DownDir", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("DownDir", MenuItem(R"(
+  Go to the prior directory number '-'
+)", "", [](MenuItemContext&) {
       DownDir();
-    } ) },
-    { "ListUsersDL", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ListUsersDL", MenuItem(R"(
+  List users with access to the current xfer sub
+)", "", [](MenuItemContext&) {
       ListUsersDL();
-    } ) },
-    { "PrintDSZLog", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("PrintDSZLog", MenuItem(R"(
+  View the DSZ log
+)", "", [](MenuItemContext&) {
       PrintDSZLog();
-    } ) },
-    { "PrintDevices", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("PrintDevices", MenuItem(R"(
+  Show the 'devices'.  I have no idea why.
+)", "", [](MenuItemContext&) {
       PrintDevices();
-    } ) },
-    { "ViewArchive", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ViewArchive", MenuItem(R"(
+  List an archive's contents
+)", "", [](MenuItemContext&) {
       ViewArchive();
-    } ) },
-    { "BatchMenu", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("BatchMenu", MenuItem(R"(
+  Enter the batch menu 'B'
+)", "", [](MenuItemContext&) {
       BatchMenu();
-    } ) },
-    { "Download", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Download", MenuItem(R"(
+  Download a file 'D'
+)", "", [](MenuItemContext&) {
       Download();
-    } ) },
-    { "TempExtract", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TempExtract", MenuItem(R"(
+  Extract an archive to the temp directory
+)", "", [](MenuItemContext&) {
       TempExtract();
-    } ) },
-    { "FindDescription", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("FindDescription", MenuItem(R"(
+  Search for a file by description
+)", "", [](MenuItemContext&) {
       FindDescription();
-    } ) },
-    { "ArchiveMenu", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ArchiveMenu", MenuItem(R"(
+  Enter the archive menu
+)", "", [](MenuItemContext&) {
       TemporaryStuff();
-    } ) },
-    { "HopDir", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("HopDir", MenuItem(R"(
+  Hop to another directory number 'H'
+)", "", [](MenuItemContext&) {
       HopDir();
-    } ) },
-    { "JumpDirConf", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("JumpDirConf", MenuItem(R"(
+  Jump to another directory conference 'J'
+)", "", [](MenuItemContext&) {
       JumpDirConf();
-    } ) },
-    { "ListFiles", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ListFiles", MenuItem(R"(
+  List the file in the current directory
+)", "", [](MenuItemContext&) {
       ListFiles();
-    } ) },
-    { "NewFileScan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("NewFileScan", MenuItem(R"(
+  List files that are new since your 'New Scan Date (usually last call)' 'N'
+)", "", [](MenuItemContext&) {
       NewFileScan();
-    } ) },
-    { "SetNewFileScanDate", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SetNewFileScanDate", MenuItem(R"(
+  Set the 'New Scan Date' to a new date
+)", "", [](MenuItemContext&) {
       SetNewFileScanDate();
-    } ) },
-    { "RemoveFiles", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("RemoveFiles", MenuItem(R"(
+  Remove a file you uploaded
+)", "", [](MenuItemContext&) {
       RemoveFiles();
-    } ) },
-    { "SearchAllFiles", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SearchAllFiles", MenuItem(R"(
+  Search all files???
+)", "", [](MenuItemContext&) {
       SearchAllFiles();
-    } ) },
-    { "XferDefaults", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("XferDefaults", MenuItem(R"(
+  Enter the xfer section defaults
+)", "", [](MenuItemContext&) {
       XferDefaults();
-    } ) },
-    { "Upload", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Upload", MenuItem(R"(
+  User upload a file
+)", "", [](MenuItemContext&) {
       Upload();
-    } ) },
-    { "YourInfoDL", MenuItem([](MenuItemContext&) {
-      Upload();
-    } ) },
-    { "YourInfoDL", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("YourInfoDL", MenuItem(R"(
+  Prints user info for downloads
+)", "", [](MenuItemContext&) {
       YourInfoDL();
-    } ) },
-    { "UploadToSysop", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UploadToSysop", MenuItem(R"(
+  Upload a file into dir#0, the sysop dir.
+)", "", [](MenuItemContext&) {
       UploadToSysop();
-    } ) },
-    { "ReadAutoMessage", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ReadAutoMessage", MenuItem(R"(
+  Read the auto message
+)", "", [](MenuItemContext&) {
       ReadAutoMessage();
-    } ) },
-    { "SetNewScanMsg", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("SetNewScanMsg", MenuItem(R"(
+  Enter the menu so that a user can set which subs he want to scan when doing
+  a new message scan
+)", "", [](MenuItemContext&) {
       SetNewScanMsg();
-    } ) },
-    { "LoadTextFile", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("LoadTextFile", MenuItem(R"(
+  Looks like a duplicate to 'LoadText'
+)", "", [](MenuItemContext&) {
       LoadTextFile();
-    } ) },
-    { "GuestApply", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("GuestApply", MenuItem(R"(
+  Allows a guest to apply for access
+)", "", [](MenuItemContext&) {
       GuestApply();
-    } ) },
-    { "ConfigFileList", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ConfigFileList", MenuItem(R"(
+  Enter the List+ configurator so the user can set it up to look like he wants
+)", "", [](MenuItemContext&) {
       ConfigFileList();
-    } ) },
-    { "ListAllColors", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("ListAllColors", MenuItem(R"(
+  Display all colors available for use.
+)", "", [](MenuItemContext&) {
       ListAllColors();
-    } ) },
-    { "RemoveNotThere", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("RemoveNotThere", MenuItem(R"(
+  SYSOP command to remove files that do not exist.
+)", "", [](MenuItemContext&) {
       RemoveNotThere();
-    } ) },
-    { "AttachFile", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("AttachFile", MenuItem(R"()", "", [](MenuItemContext&) {
       AttachFile();
-    } ) },
-    { "InternetEmail", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("InternetEmail", MenuItem(R"()", "", [](MenuItemContext&) {
       InternetEmail();
-    } ) },
-    { "UnQScan", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("UnQScan", MenuItem(R"(
+  Marks messages as unread
+)", "", [](MenuItemContext&) {
       UnQScan();
-    } ) },
-    { "Packers", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("Packers", MenuItem(R"(
+  Executes the QWK menu.
+)", "", [](MenuItemContext&) {
       Packers();
-    } ) },
-    { "InitVotes", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("InitVotes", MenuItem(R"()", "", [](MenuItemContext&) {
       InitVotes();
-    } ) },
-    { "TurnMCIOn", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TurnMCIOn", MenuItem(R"(
+  Enable MCI codes
+)", "", [](MenuItemContext&) {
       TurnMCIOn();
-    } ) },
-    { "TurnMCIOff", MenuItem([](MenuItemContext&) {
+    } ));
+  m.emplace("TurnMCIOff", MenuItem(R"(
+  Disable MCI codes
+)", "", [](MenuItemContext&) {
       TurnMCIOff();
-    } ) },
-//    { "", MenuItem([](MenuItemContext& context) {
-//    } ) },
-  };
+    } ));
+//  m.emplace("", MenuItem(R"()", "", [](MenuItemContext& context) {
+//    } ));
+  // Set the cmd names.    
+  for (auto& i : m) {
+    i.second.cmd_ = i.first;
+  }
+  LOG(INFO) << sizeof(m);
+  return m;
+}
+
+void emit_menu(const std::string& cmd, const std::string& cat, const std::string& desc, bool markdown, bool group_by_cat) {
+  const auto lines = SplitString(desc, "\n");
+  const auto c = group_by_cat || cat.empty() ? "" : StrCat(" [", cat ,"]");
+  if (markdown) {
+    std::cout << "### ";
+  }
+  std::cout << cmd << c << std::endl;
+  for (const auto& d : lines) {
+    std::cout << "    " << StringTrim(d) << std::endl;
+  }
+  std::cout << std::endl << std::endl;
+}
+
+void emit_category_name(const std::string& cat, bool output_markdown) {
+  if (cat.empty()) {
+    return;
+  }
+
+  if (output_markdown) {
+    std::cout << "##";
+  }  
+  std::cout << "Category: " << StringTrim(cat) << std::endl << std::endl;
+}
+
+void PrintMenuCommands(const std::string& arg) {
+  const auto category_group = arg.find('c') != std::string::npos;
+  const auto output_markdown = arg.find('m') != std::string::npos;
+
+  auto raw_commands = CreateCommandMap();
+  auto& commands = raw_commands;
+  if (category_group) {
+    std::map<std::string, std::vector<MenuItem>> cat_commands;
+    for (const auto& c : raw_commands) {
+      cat_commands[c.second.category_].emplace_back(c.second);
+    }
+
+    for (const auto& c : cat_commands) {
+      emit_category_name(c.first, output_markdown);
+      for (const auto& m : c.second) {
+        emit_menu(m.cmd_, "", m.description_, output_markdown, true);
+      }
+    }
+    return;
+  }
+  for (const auto& c : commands) {
+    const auto cmd = c.first;
+    const auto cat = c.second.category_;
+    const auto desc = c.second.description_;
+    emit_menu(cmd, cat, desc, output_markdown, false);
+  }
 }
 
 }
