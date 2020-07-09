@@ -1,0 +1,15 @@
+Menu commands are called by there name and a number of options parameters.
+
+The following forms are valid syntax
+
+command without parameters  : menucmd
+command with one parameter  : menucmd "xyz"
+command with two parameters : menucmd 123, "abc def"
+command with two parameters : menucmd(456,"abc")
+
+Most menu commands run without any parameters at all, and most are taken
+straight from the main and xfer menus.  Additional commands are added to
+manage the menu system as well as a few commands which will help you to
+emulate other BBSes.
+
+ =============================================================================

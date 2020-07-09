@@ -13,552 +13,587 @@ manage the menu system as well as a few commands which will help you to
 emulate other BBSes.
 
  =============================================================================
+AllowEdit
+    Sysop command to enter the 'ALLOW.DAT' editor.
 
-MENU <menu>
 
-  Loads up and starts running a new menu set, where <menu> equals the name of
-  the menu to load.
+ArchiveMenu
+    Enter the archive menu
+
+
+AttachFile
+
+
+AutoMessage
+    Read the auto message
+
+
+BatchMenu
+    Enter the batch menu 'B'
+
+
+BBSList
+    Read the bbslist
+
+
+BulletinEdit
+    Sysop command to edit the bulletins 'gfiles'
+
+
+Bulletins
+    Enter the bulletins (or 'gfiles') section.  'G'
+
+
+ChainEdit
+    Sysop command to edit the doors or chains
+
+
+ChangeUser
+    Sysop command equal to //CHUSER, to change into another users
+
+
+ChatRoom
+    Go into the multiuser chat room
+
+
+ClearQScan
+    Marks messages unread.
+
+
+cls
+    Clear the screen
+
+
+ConferenceEdit
+    Sysop command ot edit the conferences
+
+
+ConfigFileList
+    Enter the List+ configurator so the user can set it up to look like he wants
+
+
+ConfigUserMenuSet
+    Takes the user into the user menu config so they can select which menuset
+    they want to use, etc...
+
+
+Defaults
+    Enter the normal 'defaults' section
+
+
+DirEdit
+    Sysop command to edit the directory records
+
+
+DirList
+    List the directory names in the xfer section
+
+
+DisableConf
+    Turns conferencing off
+
+
+DisplayHelp
+    <filename>
+    An alias for DisplayMenu. This alias is deprecated, please use DisplayMenu.
+
+
+DisplayMenu
+    <filename>
+    Prints the 'novice menus' for the current menu set, or if one doesn't exist,
+    it will generate one using the menu definitions.
+
+
+DLFile
+    <dirfname> <filename>
+    This will download a file, with a check for ratios and will update the
+    kb downloaded and number of files downloaded.
+    You must specify the dirfilename, which is the name of the data file in
+    the transfer editor.  filename is the name of the file being downloaded.
+
+
+DLFreeFile
+    <dirfname> <filename>
+    This will download a file, but not check ratios or charge a download charge.
+    You must specify the dir filename, which is the name of the data file in
+    the transfer editor.  filename is the name of the file being downloaded.
+
+
+Doors
+    Enter the doors, or chains section.  Like '.'
+
+
+DownDir
+    Go to the prior directory number '-'
+
+
+DownDirConf
+    Go to the prior directory conference '{'
+
+
+Download
+    Download a file 'D'
+
+
+DownSub
+    Decrement the current sub number (-)
+
+
+DownSubConf
+    Decrement ({) to the next sub conference
+
+
+Edit
+    Sysop command to edit a text file
+
+
+EnableConf
+    Turns conferencing on
+
+
+FastGoodBye
+    Logoff fast '/O'
+
+
+Feedback
+    Leave feedback to the syosp.  'F'
+
+
+FindDescription
+    Search for a file by description
+
+
+Goodbye
+    Normal logoff 'O'
+
+
+GuestApply
+    Allows a guest to apply for access
+
+
+HopDir
+    Hop to another directory number 'H'
+
+
+HopSub
+    Hop to another sub.  'H'
+
+
+InitVotes
+
+
+InternetEmail
+
+
+JumpDirConf
+    Jump to another directory conference 'J'
+
+
+JumpSubConf
+    Jump to another sub conference.
+
+
+KillEMail
+    Kill email that you have sent 'K'
+
+
+LastCallers
+    View the last few callers
+
+
+ListAllColors
+    Display all colors available for use.
+
+
+ListFiles
+    List the file in the current directory
+
+
+ListUsers
+    List users who have access to the current sub
+
+
+ListUsersDL
+    List users with access to the current xfer sub
+
+
+LoadText
+    Sysop command to load a text file that will be edited in the text editor
+
+
+LoadTextFile
+    Looks like a duplicate to 'LoadText'
+
+
+Log
+    Syosp command to view the log file
+
+
+MemStat
+
+
+MENU
+    <menu>
+    Loads up and starts running a new menu set, where <menu> equals the name of
+    the menu to load.
+
+
+MoveFiles
+    Sysop command to move files
+
+
+MultiEMail
+    Send multi-email
+
+
+NetListing
+    Show networks
+
+
+NetLog
+    Sysop command to view the network log
+
+
+NewFilesAllConfs
+    New file scan in all directories in all conferences
+
+
+NewFileScan
+    List files that are new since your 'New Scan Date (usually last call)' 'N'
+
+
+NewMessageScan
+    Do a new message scan
+
+
+NewMsgsAllConfs
+    Do a new message scan for all subs in all conferences '/A'
+
+
+NewMsgScanCurSub
+    Scan new messages in the current message sub
+
+
+NewMsgScanFromHere
+    Read new messages starting from the current sub
+
+
+Packers
+    Executes the QWK menu.
+
+
+Pause
+    Pauses the screen, like 'pausescr()' in C code
+
+
+Pending
+    Shows which net files are ready to be sent
+
+
+PostMessage
+    Post a message in the current sub
+
+
+PrintDevices
+    Show the 'devices'.  I have no idea why.
+
+
+PrintDSZLog
+    View the DSZ log
+
+
+PrintFile
+    <filename>
+    Prints a file, first checking to see if you specified an absolute path,
+    then the language dir, then the gfilesdir.  It will use the usual checks to
+    determin .ANS, or .MSG if not specified.
+
+
+PrintFileNA
+    <filename>
+    Just like PrintFile, but the user can not abort it with the space bar.
+
+
+ReadAllMail
+    Sysop command to read all mail
+
+
+ReadAutoMessage
+    Read the auto message
+
+
+ReadEMail
+    Read your email
+
+
+ReadIDZ
+    Sysop command to read the file_id.diz and add it to the extended description
+
+
+ReloadMenus
+    This is probably obsolete.
+
+
+RemoveFiles
+    Remove a file you uploaded
+
+
+RemoveNotThere
+    SYSOP command to remove files that do not exist.
+
+
+RemovePost
+    Remove a post
+
+
+RenameFiles
+    Sysop command to edit and rename files
+
+
+RequestChat
+    Request chat from the sysop
+
+
+ResetQscan
+    Set all messages to read (I think)
+
 
 ReturnFromMenu
 
-  Unloads the current menu and goes back to the menu that loaded the current
-  one.  If you try to return from the very first menu, it will just be reloaded
 
-DLFreeFile <dirfname> <filename>
+ReverseSortDirs
+    Sort the directory by date or name, backwards.
 
-  This will download a file, but not check ratios or charge a download charge.
-  You must specify the dirfilename, which is the name of the data file in
-  the transfer editor.  filename is the name of the file being downloaded.
 
-DLFile
+RunBasic
+    <script name>
+    Runs a WWIVbasic Script
 
-  This will download a file, with a check for ratios and will update the
-  kb downloaded and number of files downloaded.
-  You must specify the dirfilename, which is the name of the data file in
-  the transfer editor.  filename is the name of the file being downloaded.
 
-RunDoor <doorname>
-
+RunDoor
+    <door name>
     Runs a door (chain) with doorname matching, exactly, the description you have
     given the door in //CHEDIT
 
-RunDoorFree <doorname>
 
-  Runs a door (chain) with doorname matching, exactly, the description you have
-  given the door in //CHEDIT, but this function bypasses the check to see if
-  the user is allowed to run the door.
+RunDoorFree
+    <door name>
+    Runs a door (chain) with doorname matching, exactly, the description you have
+    given the door in //CHEDIT, but this function bypasses the check to see if
+    the user is allowed to run the door.
 
-RunDoorNumber <door#>
 
-  Like RunDoor, but you must specify the #1 in //CHEDIT instead of the
-  description.
+RunDoorNumber
+    <door number>
+    Like RunDoor, but you must specify the #1 in //CHEDIT instead of the
+    description.
+
 
 RunDoorNumberFree
-
-  Like RunDoorFree, but you must specify the #1 in //CHEDIT instead of the
-  description.
-
-PrintFile <filename>
-
-  Prints a file, first checking to see if you specified an absolute path,
-  then the language dir, then the gfilesdir.  It will use the usual checks to
-  determin .ANS, or .MSG if not specified.
-
-PrintFileNA <filename>
-
-  Just like PrintFile, but the user can not abort it with the space bar.
-
-SetSubNumber <key>
-
-  Equivalent to typing in a number at the main menu, it sets the current sub
-  number.
-
-SetDirNumber <key>
-
-  Equivalent to typing in a number at the xfer menu, it sets the current dir
-  number.
-
-SetMsgConf <key>
-
-  Sets the subboards conference to key
-
-SetDirConf <key>
-
-  Sets the xfer section conference to key
-
-EnableConf
-
-  Turns conferencing on
-
-DisableConf
-
-  Turns conferencing off
-
-Pause
-
-  Pauses the screen, like 'pausescr()' in C code
-
-ConfigUserMenuSet
-
-  Takes the user into the user menu config so they can select which menuset
-  they want to use, etc...
-
-DisplayHelp <filename>
-
-  An alias for DisplayMenu. This alias is deprecated, please use DisplayMenu.
+    <door number>
+    Like RunDoorFree, but you must specify the #1 in //CHEDIT instead of the
+    description.
 
 
-DisplayMenu <filename>
+SearchAllFiles
+    Search all files???
 
-  Prints the 'novice menus' for the current menu set, or if one doesn't exist,
-  it will generate one using the menu definitions.
-
-SelectSub
-
-  This will prompt the user to enter a sub to change to.  However, it does not
-  first show the subs (like Renegade).  However, you can stack a sublist and
-  then this command to mimic the action.
 
 SelectDir
+    Like SelectSub, but for the xfer section.
 
-  Like SelectSub, but for the xfer section.
 
-SubList
+SelectSub
+    This will prompt the user to enter a sub to change to.  However, it does not
+    first show the subs (like Renegade).  However, you can stack a sublist and
+    then this command to mimic the action.
 
-  List the subs available
-
-UpSubConf
-
-  Increment ()) to the previous conference number
-
-DownSubConf
-
-  Decrement ({) to the next sub conference
-
-UpSub
-
-  Increment the current sub# (+)
-
-DownSub
-
-  Decrement the current sub number (-)
-
-ValidateUser
-
-  Validate a new users.  I think this '!'
-
-Doors
-
-  Enter the doors, or chains section.  Like '.'
-
-TimeBank
-
-  Enter the time bank
-
-AutoMessage
-
-  Read the auto message
-
-BBSList
-
-  Read the bbslist
-
-RequestChat
-
-  Request chat from the sysop
-
-Defaults
-
-  Enter the normal 'defaults' section
 
 SendEMail
+    Enter and send email 'E' from the main menu
 
-  Enter and send email 'E' from the main menu
 
-Feedback
+SetDirConf
+    <key>
+    Sets the xfer section conference to key
 
-  Leave feedback to the syosp.  'F'
 
-Bulletins
+SetDirNumber
+    <key>
+    Equivalent to typing in a number at the xfer menu, it sets the current dir
+    number.
 
-  Enter the bulletins (or 'gfiles') section.  'G'
 
-HopSub
+SetMsgConf
+    <key>
+    Sets the subboards conference to key
 
-  Hop to another sub.  'H'
 
-SystemInfo
+SetNewFileScanDate
+    Set the 'New Scan Date' to a new date
 
-  View the system info
 
-JumpSubConf
+SetNewScanMsg
+    Enter the menu so that a user can set which subs he want to scan when doing
+    a new message scan
 
-  Jump to another sub conference.
 
-KillEMail
+SetSubNumber
+    <key>
+    Equivalent to typing in a number at the main menu, it sets the current sub
+    number.
 
-  Kill email that you have sent 'K'
 
-LastCallers
+SortDirs
+    Sort the directory by date or name
 
-  View the last few callers
-
-ReadEMail
-
-  Read your email
-
-NewMessageScan
-
-  Do a new message scan
-
-Goodbye
-
-  Normal logoff 'O'
-
-PostMessage
-
-  Post a message in the current sub
-
-NewMsgScanCurSub
-
-  Scan new messages in the current message sub
-
-RemovePost
-
-  Remove a post
-
-TitleScan
-
-  Scan the titles of the messages in the current sub
-
-ListUsers
-
-  List users who have access to the current sub
-
-Vote
-
-  Enter the voting both
-
-ToggleExpert
-
-  Turn 'X'pert mode on or off (toggle)
-
-
-YourInfo
-
-  Display the yourinfo screen
-
-WWIVVer
-
-  Get the wwiv version
-
-InstanceEdit
-
-  Sysop command to edit the instances
-
-ConferenceEdit
-
-  Sysop command ot edit the conferences
-
-SubEdit
-
-  Sysop command to edit the subboards
-
-ChainEdit
-
-  Sysop command to edit the doors or chains
-
-ToggleAvailable
-
-  Toggle the sysop availability for chat
-
-ChangeUser
-
-  Sysop command equal to //CHUSER, to change into another users
-
-DirEdit
-
-  Sysop command to edit the directory records
-
-Edit
-
-  Sysop command to edit a text file
-
-BulletinEdit
-
-  Sysop command to edit the bulletins 'gfiles'
-
-LoadText
-
-  Sysop command to load a text file that will be edited in the text editor
-
-ReadAllMail
-
-  Sysop command to read all mail
-
-ReloadMenus
-
-  This is probably obsolete.
-
-ResetUserIndex
-
-  Rebuild the user index.  //RESETF if I am not mistaken
-
-ResetQScan
-
-  Set all messages to read (I think)
-
-VoteEdit
-
-  Sysop command to edit the voting both
-
-Log
-
-  Syosp command to view the log file
-
-NetLog
-
-  Sysop command to view the network log
-
-Pending
-
-  Shows which net files are ready to be sent
 
 Status
 
-  Who knows...
 
-TextEdit
+SubEdit
+    Sysop command to edit the subboards
 
-  Edit a text file
 
-UserEdit
+SubList
+    List the subs available
 
-  Sysop command to edit users
 
-VotePrint
+SystemInfo
+    View the system info
 
-  Show the voting statistics
-
-YLog
-
-  View yesterdays log
-
-ZLog
-
-  View the ZLog
-
-ViewNetDataLog
-
-  View the net data logs
-
-UploadPost
-
-  Allow a user to upload a post that will be posted
-
-CLS
-
-  Clear the screen
-
-NetListing
-
-  Show networks
-
-WHO
-
-  Show who else is online
-
-NewMsgsAllConfs
-
-  Do a new message scan for all subs in all conferences '/A'
-
-MultiEMail
-
-  Send multi-email
-
-NewMsgScanFromHere
-
-  Read new messages starting from the current sub
-
-ValidatePosts
-
-  Sysop command to validate unvalidated posts
-
-ChatRoom
-
-  Go into the multiuser chat room
-
-ClearQScan
-
-  Makes all message unread???
-
-FastGoodBye
-
-  Logoff fast '/O'
-
-NewFilesAllConfs
-
-  New file scan in all directories in all conferences
-
-ReadIDZ
-
-  Sysop command to read the file_id.diz and add it to the extended description
-
-UploadAllDirs
-
-  Syosp command to add any files sitting in the directories, but not in
-  the file database to wwiv's file database
-
-UploadCurDir
-
-  Sysop command to scan the current directory for any files that are not in
-  wwiv's file database and adds them to it.
-
-RenameFiles
-
-  Sysop command to edit and rename files
-
-MoveFiles
-
-  Sysop command to move files
-
-SortDirs
-
-  Sort the directory by date or name
-
-ReverseSortDirs
-
-  Sort the directory by date or name, backwards.
-
-AllowEdit
-
-  Sysop command to enter the 'ALLOW.DAT' editor.
-
-ReadINI
-
-  Re-read the INI files
-
-UploadFilesBBS
-
-  Import a files.bbs (probably a CD) into the wwiv's file database
-
-DirList
-
-  List the directory names in the xfer section
-
-UpDirConf
-
-  Go to the next directory conference '}'
-
-UpDir
-
-  Go to the next directory number '+'
-
-DownDirConf
-
-  Go to the prior directory conference '{'
-
-DownDir
-
-  Go to the prior directory number '-'
-
-ListUsersDL
-
-  List users with access to the current xfer sub
-
-PrintDSZLog
-
-  View the DSZ log
-
-PrintDevices
-
-  Show the 'devices'.  I have no idea why.
-
-ViewArchive
-
-  List an archive's contents
-
-BatchMenu
-
-  Enter the batch menu 'B'
-
-Download
-
-  Download a file 'D'
 
 TempExtract
+    Extract an archive to the temp directory
 
-  Extract an archive to the temp directory
 
-FindDescription
+TextEdit
+    Edit a text file
 
-  Search for a file by description
 
-ArchiveMenu
+TimeBank
+    Enter the time bank
 
-  Enter the archive menu
 
-HopDir
+TitleScan
+    Scan the titles of the messages in the current sub
 
-  Hop to another directory number 'H'
 
-JumpDirConf
+ToggleAvailable
+    Toggle the sysop availability for chat
 
-  Jump to another directory conference 'J'
 
-ListFiles
+ToggleExpert
+    Turn 'X'pert mode on or off (toggle)
 
-  List the file in the current directory
 
-NewFileScan
+TurnMCIOff
+    Disable MCI codes
 
-  List files that are new since your 'New Scan Date (usually last call)' 'N'
 
-SetNewFileScanDate
+TurnMCIOn
+    Enable MCI codes
 
-  Set the 'New Scan Data' to a new date
 
-RemoveFiles
+UnQScan
+    Marks messages as unread
 
-  Remove a file you uploaded
 
-SearchAllFiles
+UpDir
+    Go to the next directory number '+'
 
-  Search all files???
 
-XferDefaults
+UpDirConf
+    Go to the next directory conference '}'
 
-  Enter the xfer section defaults
 
 Upload
+    User upload a file
 
-  User upload a file
 
-YourInfoDL
+UploadAllDirs
+    Syosp command to add any files sitting in the directories, but not in
+    the file database to wwiv's file database
 
-  Prints user info for downloads
+
+UploadCurDir
+    Sysop command to scan the current directory for any files that are not in
+    wwiv's file database and adds them to it.
+
+
+UploadFilesBBS
+    Import a files.bbs (probably a CD) into the wwiv's file database
+
+
+UploadPost
+    Allow a user to upload a post that will be posted
+
 
 UploadToSysop
+    Upload a file into dir#0, the sysop dir.
 
-  Upload a file into dir#0, the sysop dir.
 
-ReadAutoMessage
+UpSub
+    Increment the current sub# (+)
 
-  Read the auto message
 
-SetNewScanMsg
+UpSubConf
+    Increment ()) to the previous conference number
 
-  Enter the menu so that a user can set which subs he want to scan when doing
-  a new message scan
 
-LoadTextFile
+ValidatePosts
+    Sysop command to validate unvalidated posts
 
-  Looks like a duplicate to 'LoadText'
 
-GuestApply
+ValidateUser
+    Validate a new users.  I think this '!'
 
-  Allows a guest to apply for access
 
-ConfigFileList
+ViewArchive
+    List an archive's contents
 
-  Enter the List+ configurator so the user can set it up to look like he wants
+
+ViewNetDataLog
+    View the net data logs
+
+
+Vote
+    Enter the voting both
+
+
+VoteEdit
+    Sysop command to edit the voting both
+
+
+VotePrint
+    Show the voting statistics
+
+
+WHO
+    Show who else is online
+
+
+WWIVVer
+    Get the wwiv version
+
+
+XferDefaults
+    Enter the xfer section defaults
+
+
+YLog
+    View yesterdays log
+
+
+YourInfo
+    Display the yourinfo screen
+
+
+YourInfoDL
+    Prints user info for downloads
+
+
+ZLog
+    View the ZLog
+
+
