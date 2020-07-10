@@ -57,6 +57,7 @@ cp  ${CMAKE_BUILD}/bbs/bbs \
     ${CMAKE_BUILD}/networkb/networkb \
     ${CMAKE_BUILD}/networkc/networkc \
     ${CMAKE_BUILD}/networkf/networkf \
+    ${CMAKE_BUILD}/networkt/networkt \
     ${CMAKE_BUILD}/network1/network1 \
     ${CMAKE_BUILD}/network2/network2 \
     ${CMAKE_BUILD}/network3/network3 \

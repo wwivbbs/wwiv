@@ -872,11 +872,11 @@ Runs a WWIVbasic Script
     } ));
 //  m.emplace("", MenuItem(R"()", "", [](MenuItemContext& context) {
 //    } ));
+
   // Set the cmd names.    
   for (auto& i : m) {
     i.second.cmd_ = i.first;
   }
-  LOG(INFO) << sizeof(m);
   return m;
 }
 
