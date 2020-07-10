@@ -54,9 +54,26 @@ using namespace wwiv::stl;
 
 namespace wwiv::menus {
 
+// Categories
+static const std::string MENU_CAT_MSGS = "Message";
+static const std::string MENU_CAT_EMAIL = "EMail";
+static const std::string MENU_CAT_FILE = "File";
+static const std::string MENU_CAT_BBSLIST = "BBSList";
+static const std::string MENU_CAT_AUTOMSG = "AutoMessage";
+static const std::string MENU_CAT_CHAIN = "Chain";
+static const std::string MENU_CAT_NET = "Net";
+static const std::string MENU_CAT_QWK = "QWK";
+static const std::string MENU_CAT_VOTE = "Vote";
+static const std::string MENU_CAT_GFILES = "GFiles";
+static const std::string MENU_CAT_SYSOP = "SYSOP";
+static const std::string MENU_CAT_MENU = "Menu";
+static const std::string MENU_CAT_SYS = "System";
+static const std::string MENU_CAT_CONF = "Conference";
+static const std::string MENU_CAT_USER = "User";
+
 struct MenuItemContext {
   MenuItemContext(MenuInstance* m, std::string p1, std::string p2)
-    : pMenuData(m), param1(std::move(p1)), param2(std::move(p2)), p2_(p2) {}
+      : pMenuData(m), param1(std::move(p1)), param2(std::move(p2)), p2_(std::move(p2)) {}
   // May be null if not invoked from an actual menu.
   MenuInstance* pMenuData;
   string param1;
@@ -114,18 +131,19 @@ void InterpretCommand(MenuInstance* menudata, const std::string& script) {
   }
 }
 
+
 map<string, MenuItem, ci_less> CreateCommandMap() {
   map<string, MenuItem, ci_less> m;
   m.emplace("MENU", MenuItem(R"(<menu>
   Loads up and starts running a new menu set, where <menu> equals the name of
   the menu to load.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_MENU, [](MenuItemContext& context) {
       if (context.pMenuData) {
         MenuInstance new_menu(context.pMenuData->menu_directory(), context.param1);
         new_menu.RunMenu();
       }
     } ));
-  m.emplace("ReturnFromMenu", MenuItem(R"()", "", [](MenuItemContext& context) {
+  m.emplace("ReturnFromMenu", MenuItem(R"()", MENU_CAT_MENU, [](MenuItemContext& context) {
       if (context.pMenuData) {
         InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
         context.finished = true;
@@ -137,7 +155,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
   This will download a file, but not check ratios or charge a download charge.
   You must specify the dir filename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_FILE, [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, true, true);
     } ));
@@ -148,7 +166,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
   kb downloaded and number of files downloaded.
   You must specify the dirfilename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_FILE, [](MenuItemContext& context) {
       const auto s = aligns(context.param2);
       MenuDownload(context.param1, s, false, true);
     } ));
@@ -156,7 +174,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
 
   Runs a door (chain) with doorname matching, exactly, the description you have
   given the door in //CHEDIT
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_CHAIN, [](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), false);
     } ));
   m.emplace("RunDoorFree", MenuItem(R"(<door name>
@@ -164,14 +182,14 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
   Runs a door (chain) with doorname matching, exactly, the description you have
   given the door in //CHEDIT, but this function bypasses the check to see if
   the user is allowed to run the door.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_CHAIN, [](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), true);
     } ));
   m.emplace("RunDoorNumber", MenuItem(R"(<door number>
 
   Like RunDoor, but you must specify the #1 in //CHEDIT instead of the
   description.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_CHAIN, [](MenuItemContext& context) {
       const auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, false);
     } ));
@@ -179,14 +197,14 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
 
   Like RunDoorFree, but you must specify the #1 in //CHEDIT instead of the
   description.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_CHAIN, [](MenuItemContext& context) {
       const auto t = to_number<int>(context.param1);
       MenuRunDoorNumber(t, true);
     } ));
   m.emplace("RunBasic", MenuItem(R"(<script name>
 
 Runs a WWIVbasic Script
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_SYS, [](MenuItemContext& context) {
       // Runs a basic script from GFILES/
       wwiv::bbs::RunBasicScript(context.param1);
     } ));
@@ -195,71 +213,71 @@ Runs a WWIVbasic Script
   Prints a file, first checking to see if you specified an absolute path,
   then the language dir, then the gfilesdir.  It will use the usual checks to
   determin .ANS, or .MSG if not specified.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_SYS, [](MenuItemContext& context) {
       printfile(context.param1, true);
     } ));
   m.emplace("PrintFileNA", MenuItem(R"(<filename>
 
   Just like PrintFile, but the user can not abort it with the space bar.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_SYS, [](MenuItemContext& context) {
       printfile(context.param1, false);
     } ));
   m.emplace("SetSubNumber", MenuItem(R"(<key>
 
   Equivalent to typing in a number at the main menu, it sets the current sub
   number.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_MSGS, [](MenuItemContext& context) {
       SetSubNumber(context.param1.c_str());
     } ));
   m.emplace("SetDirNumber", MenuItem(R"( <key>
 
   Equivalent to typing in a number at the xfer menu, it sets the current dir
   number.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_FILE, [](MenuItemContext& context) {
       SetDirNumber(context.param1.c_str());
     } ));
   m.emplace("SetMsgConf", MenuItem(R"(<key>
 
   Sets the subboards conference to key
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_MSGS, [](MenuItemContext& context) {
       SetMsgConf(context.param1.c_str()[0]);
     } ));
   m.emplace("SetDirConf", MenuItem(R"(<key>
 
   Sets the xfer section conference to key
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_FILE, [](MenuItemContext& context) {
       SetDirConf(context.param1.c_str()[0]);
     } ));
   m.emplace("EnableConf", MenuItem(R"(
 
   Turns conferencing on
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       EnableConf();
     } ));
   m.emplace("DisableConf", MenuItem(R"(
 
   Turns conferencing off
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       DisableConf();
     } ));
   m.emplace("Pause", MenuItem(R"(
 
   Pauses the screen, like 'pausescr()' in C code
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       pausescr();
     } ));
   m.emplace("ConfigUserMenuSet", MenuItem(R"(
 
   Takes the user into the user menu config so they can select which menuset
   they want to use, etc...
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_USER, [](MenuItemContext& context) {
       ConfigUserMenuSet();
       context.need_reload = true;
     } ));
   m.emplace("DisplayHelp", MenuItem(R"( <filename>
 
   An alias for DisplayMenu. This alias is deprecated, please use DisplayMenu.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_MENU, [](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
@@ -268,7 +286,7 @@ Runs a WWIVbasic Script
 
   Prints the 'novice menus' for the current menu set, or if one doesn't exist,
   it will generate one using the menu definitions.
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_MENU, [](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayMenu();
       }
@@ -278,578 +296,578 @@ Runs a WWIVbasic Script
   This will prompt the user to enter a sub to change to.  However, it does not
   first show the subs (like Renegade).  However, you can stack a sublist and
   then this command to mimic the action.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ChangeSubNumber();
     } ));
   m.emplace("SelectDir", MenuItem(R"(
 
   Like SelectSub, but for the xfer section.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ChangeDirNumber();
     } ));
   m.emplace("SubList", MenuItem(R"(
 
   List the subs available
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       SubList();
     } ));
   m.emplace("UpSubConf", MenuItem(R"(
 
   Increment ()) to the previous conference number
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       UpSubConf();
     } ));
   m.emplace("DownSubConf", MenuItem(R"(
 
   Decrement ({) to the next sub conference
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       DownSubConf();
     } ));
   m.emplace("UpSub", MenuItem(R"(
 
   Increment the current sub# (+)
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       UpSub();
     } ));
   m.emplace("DownSub", MenuItem(R"(
 
   Decrement the current sub number (-)
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       DownSub();
     } ));
   m.emplace("ValidateUser", MenuItem(R"(
   Validate a new users.  I think this '!'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ValidateUser();
     } ));
   m.emplace("Doors", MenuItem(R"(
   Enter the doors, or chains section.  Like '.'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CHAIN, [](MenuItemContext&) {
       Chains();
     } ));
   m.emplace("TimeBank", MenuItem(R"(
   Enter the time bank
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       TimeBank();
     } ));
   m.emplace("AutoMessage", MenuItem(R"(
   Read the auto message
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_AUTOMSG, [](MenuItemContext&) {
       AutoMessage();
     } ));
   m.emplace("BBSList", MenuItem(R"(
   Read the bbslist
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_BBSLIST, [](MenuItemContext&) {
       NewBBSList();
     } ));
   m.emplace("RequestChat", MenuItem(R"(
   Request chat from the sysop
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       RequestChat();
     } ));
   m.emplace("Defaults", MenuItem(R"(
   Enter the normal 'defaults' section
-)", "", [](MenuItemContext& context) {
+)", MENU_CAT_SYS, [](MenuItemContext& context) {
       Defaults(context.need_reload);
     } ));
   m.emplace("SendEMail", MenuItem(R"(
   Enter and send email 'E' from the main menu
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_EMAIL, [](MenuItemContext&) {
       SendEMail();
     } ));
   m.emplace("Feedback", MenuItem(R"(
   Leave feedback to the syosp.  'F'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       FeedBack();
     } ));
   m.emplace("Bulletins", MenuItem(R"(
   Enter the bulletins (or 'gfiles') section.  'G'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_GFILES, [](MenuItemContext&) {
       Bulletins();
     } ));
   m.emplace("HopSub", MenuItem(R"(
   Hop to another sub.  'H'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       HopSub();
     } ));
   m.emplace("SystemInfo", MenuItem(R"(
   View the system info
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       SystemInfo();
     } ));
   m.emplace("JumpSubConf", MenuItem(R"(
   Jump to another sub conference.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       JumpSubConf();
     } ));
   m.emplace("KillEMail", MenuItem(R"(
   Kill email that you have sent 'K'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_EMAIL, [](MenuItemContext&) {
       KillEMail();
     } ));
   m.emplace("LastCallers", MenuItem(R"(
   View the last few callers
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       LastCallers();
     } ));
   m.emplace("ReadEMail", MenuItem(R"(
   Read your email
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_EMAIL, [](MenuItemContext&) {
       ReadEMail();
     } ));
   m.emplace("NewMessageScan", MenuItem(R"(
   Do a new message scan
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       NewMessageScan();
     } ));
   m.emplace("Goodbye", MenuItem(R"(
   Normal logoff 'O'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       GoodBye();
     } ));
   m.emplace("PostMessage", MenuItem(R"(
   Post a message in the current sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       WWIV_PostMessage();
     } ));
   m.emplace("NewMsgScanCurSub", MenuItem(R"(
   Scan new messages in the current message sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ScanSub();
     } ));
   m.emplace("RemovePost", MenuItem(R"(
   Remove a post
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       RemovePost();
     } ));
   m.emplace("TitleScan", MenuItem(R"(
   Scan the titles of the messages in the current sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       TitleScan();
     } ));
   m.emplace("ListUsers", MenuItem(R"(
   List users who have access to the current sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ListUsers();
     } ));
   m.emplace("Vote", MenuItem(R"(
   Enter the voting both
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_VOTE, [](MenuItemContext&) {
       Vote();
     } ));
   m.emplace("ToggleExpert", MenuItem(R"(
   Turn 'X'pert mode on or off (toggle)
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       ToggleExpert();
     } ));
   m.emplace("YourInfo", MenuItem(R"(
   Display the yourinfo screen
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       YourInfo();
     } ));
   m.emplace("WWIVVer", MenuItem(R"(
   Get the wwiv version
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       WWIVVersion();
     } ));
   m.emplace("ConferenceEdit", MenuItem(R"(
   Sysop command ot edit the conferences
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       JumpEdit();
     } ));
   m.emplace("SubEdit", MenuItem(R"(
   Sysop command to edit the subboards
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       BoardEdit();
     } ));
   m.emplace("ChainEdit", MenuItem(R"(
   Sysop command to edit the doors or chains
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ChainEdit();
     } ));
   m.emplace("ToggleAvailable", MenuItem(R"(
   Toggle the sysop availability for chat
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ToggleChat();
     } ));
   m.emplace("ChangeUser", MenuItem(R"(
   Sysop command equal to //CHUSER, to change into another users
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ChangeUser();
     } ));
   m.emplace("DirEdit", MenuItem(R"(
   Sysop command to edit the directory records
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       DirEdit();
     } ));
   m.emplace("Edit", MenuItem(R"(
   Sysop command to edit a text file
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       EditText();
     } ));
   m.emplace("BulletinEdit", MenuItem(R"(
   Sysop command to edit the bulletins 'gfiles'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_GFILES, [](MenuItemContext&) {
       EditBulletins();
     } ));
   m.emplace("LoadText", MenuItem(R"(
   Sysop command to load a text file that will be edited in the text editor
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       LoadTextFile();
     } ));
   m.emplace("ReadAllMail", MenuItem(R"(
   Sysop command to read all mail
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_EMAIL, [](MenuItemContext&) {
       ReadAllMail();
     } ));
   m.emplace("ReloadMenus", MenuItem(R"(
   This is probably obsolete.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ReloadMenus();
     } ));
   m.emplace("ResetQscan", MenuItem(R"(
   Set all messages to read (I think)
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ResetQscan();
     } ));
-  m.emplace("MemStat", MenuItem(R"()", "", [](MenuItemContext&) {
+  m.emplace("MemStat", MenuItem(R"()", MENU_CAT_SYSOP, [](MenuItemContext&) {
       MemoryStatus();
     } ));
   m.emplace("VoteEdit", MenuItem(R"(
   Sysop command to edit the voting both
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       InitVotes();
     } ));
   m.emplace("Log", MenuItem(R"(
   Syosp command to view the log file
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       ReadLog();
     } ));
   m.emplace("NetLog", MenuItem(R"(
   Sysop command to view the network log
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_NET, [](MenuItemContext&) {
       ReadNetLog();
     } ));
   m.emplace("Pending", MenuItem(R"(
   Shows which net files are ready to be sent
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_NET, [](MenuItemContext&) {
       PrintPending();
     } ));
-  m.emplace("Status", MenuItem(R"()", "", [](MenuItemContext&) {
+  m.emplace("Status", MenuItem(R"()", MENU_CAT_SYSOP, [](MenuItemContext&) {
       PrintStatus();
     } ));
   m.emplace("TextEdit", MenuItem(R"(
   Edit a text file
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       TextEdit();
     } ));
   m.emplace("VotePrint", MenuItem(R"(
   Show the voting statistics
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_VOTE, [](MenuItemContext&) {
       VotePrint();
     } ));
   m.emplace("YLog", MenuItem(R"(
   View yesterdays log
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       YesterdaysLog();
     } ));
   m.emplace("ZLog", MenuItem(R"(
   View the ZLog
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       ZLog();
     } ));
   m.emplace("ViewNetDataLog", MenuItem(R"(
   View the net data logs
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYSOP, [](MenuItemContext&) {
       ViewNetDataLog();
     } ));
   m.emplace("UploadPost", MenuItem(R"(
   Allow a user to upload a post that will be posted
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       UploadPost();
     } ));
   m.emplace("cls", MenuItem(R"(
   Clear the screen
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       bout.cls();
     } ));
   m.emplace("NetListing", MenuItem(R"(
   Show networks
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_NET, [](MenuItemContext&) {
       print_net_listing(false);
     } ));
   m.emplace("WHO", MenuItem(R"(
   Show who else is online
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       WhoIsOnline();
     } ));
   m.emplace("NewMsgsAllConfs", MenuItem(R"(
   Do a new message scan for all subs in all conferences '/A'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       // /A NewMsgsAllConfs
       NewMsgsAllConfs();
     } ));
   m.emplace("MultiEMail", MenuItem(R"(
   Send multi-email
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_EMAIL, [](MenuItemContext&) {
       // /E "MultiEMail"
       MultiEmail();
     } ));
   m.emplace("NewMsgScanFromHere", MenuItem(R"(
   Read new messages starting from the current sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       NewMsgScanFromHere();
     } ));
   m.emplace("ValidatePosts", MenuItem(R"(
   Sysop command to validate unvalidated posts
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ValidateScan();
     } ));
   m.emplace("ChatRoom", MenuItem(R"(
   Go into the multiuser chat room
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       ChatRoom();
     } ));
   m.emplace("ClearQScan", MenuItem(R"(
   Marks messages unread.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       ClearQScan();
     } ));
   m.emplace("FastGoodBye", MenuItem(R"(
   Logoff fast '/O'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       FastGoodBye();
     } ));
   m.emplace("NewFilesAllConfs", MenuItem(R"(
   New file scan in all directories in all conferences
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       NewFilesAllConfs();
     } ));
   m.emplace("ReadIDZ", MenuItem(R"(
   Sysop command to read the file_id.diz and add it to the extended description
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ReadIDZ();
     } ));
   m.emplace("UploadAllDirs", MenuItem(R"(
   Syosp command to add any files sitting in the directories, but not in
   the file database to wwiv's file database
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       UploadAllDirs();
     } ));
   m.emplace("UploadCurDir", MenuItem(R"(
   Sysop command to scan the current directory for any files that are not in
   wwiv's file database and adds them to it.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       UploadCurDir();
     } ));
   m.emplace("RenameFiles", MenuItem(R"(
   Sysop command to edit and rename files
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       RenameFiles();
     } ));
   m.emplace("MoveFiles", MenuItem(R"(
   Sysop command to move files
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       MoveFiles();
     } ));
   m.emplace("SortDirs", MenuItem(R"(
   Sort the directory by date or name
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       SortDirs();
     } ));
   m.emplace("ReverseSortDirs", MenuItem(R"(
   Sort the directory by date or name, backwards.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ReverseSort();
     } ));
   m.emplace("AllowEdit", MenuItem(R"(
   Sysop command to enter the 'ALLOW.DAT' editor.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       AllowEdit();
     } ));
   m.emplace("UploadFilesBBS", MenuItem(R"(
   Import a files.bbs (probably a CD) into the wwiv's file database
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       UploadFilesBBS();
     } ));
   m.emplace("DirList", MenuItem(R"(
   List the directory names in the xfer section
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       DirList();
     } ));
   m.emplace("UpDirConf", MenuItem(R"(
   Go to the next directory conference '}'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       UpDirConf();
     } ));
   m.emplace("UpDir", MenuItem(R"(
   Go to the next directory number '+'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       UpDir();
     } ));
   m.emplace("DownDirConf", MenuItem(R"(
   Go to the prior directory conference '{'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       DownDirConf();
     } ));
   m.emplace("DownDir", MenuItem(R"(
   Go to the prior directory number '-'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       DownDir();
     } ));
   m.emplace("ListUsersDL", MenuItem(R"(
   List users with access to the current xfer sub
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ListUsersDL();
     } ));
   m.emplace("PrintDSZLog", MenuItem(R"(
   View the DSZ log
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       PrintDSZLog();
     } ));
   m.emplace("PrintDevices", MenuItem(R"(
   Show the 'devices'.  I have no idea why.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       PrintDevices();
     } ));
   m.emplace("ViewArchive", MenuItem(R"(
   List an archive's contents
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ViewArchive();
     } ));
   m.emplace("BatchMenu", MenuItem(R"(
   Enter the batch menu 'B'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       BatchMenu();
     } ));
   m.emplace("Download", MenuItem(R"(
   Download a file 'D'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       Download();
     } ));
   m.emplace("FindDescription", MenuItem(R"(
   Search for a file by description
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       FindDescription();
     } ));
   m.emplace("HopDir", MenuItem(R"(
   Hop to another directory number 'H'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       HopDir();
     } ));
   m.emplace("JumpDirConf", MenuItem(R"(
   Jump to another directory conference 'J'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_CONF, [](MenuItemContext&) {
       JumpDirConf();
     } ));
   m.emplace("ListFiles", MenuItem(R"(
   List the file in the current directory
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ListFiles();
     } ));
   m.emplace("NewFileScan", MenuItem(R"(
   List files that are new since your 'New Scan Date (usually last call)' 'N'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       NewFileScan();
     } ));
   m.emplace("SetNewFileScanDate", MenuItem(R"(
   Set the 'New Scan Date' to a new date
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       SetNewFileScanDate();
     } ));
   m.emplace("RemoveFiles", MenuItem(R"(
   Remove a file you uploaded
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       RemoveFiles();
     } ));
   m.emplace("SearchAllFiles", MenuItem(R"(
   Search all files???
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       SearchAllFiles();
     } ));
   m.emplace("XferDefaults", MenuItem(R"(
   Enter the xfer section defaults
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       XferDefaults();
     } ));
   m.emplace("Upload", MenuItem(R"(
   User upload a file
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       Upload();
     } ));
   m.emplace("YourInfoDL", MenuItem(R"(
   Prints user info for downloads
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       YourInfoDL();
     } ));
   m.emplace("UploadToSysop", MenuItem(R"(
   Upload a file into dir#0, the sysop dir.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       UploadToSysop();
     } ));
   m.emplace("ReadAutoMessage", MenuItem(R"(
   Read the auto message
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_AUTOMSG, [](MenuItemContext&) {
       ReadAutoMessage();
     } ));
   m.emplace("SetNewScanMsg", MenuItem(R"(
   Enter the menu so that a user can set which subs he want to scan when doing
   a new message scan
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       SetNewScanMsg();
     } ));
   m.emplace("LoadTextFile", MenuItem(R"(
   Looks like a duplicate to 'LoadText'
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       LoadTextFile();
     } ));
   m.emplace("GuestApply", MenuItem(R"(
   Allows a guest to apply for access
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       GuestApply();
     } ));
   m.emplace("ConfigFileList", MenuItem(R"(
   Enter the List+ configurator so the user can set it up to look like he wants
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       ConfigFileList();
     } ));
   m.emplace("ListAllColors", MenuItem(R"(
   Display all colors available for use.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       ListAllColors();
     } ));
   m.emplace("RemoveNotThere", MenuItem(R"(
   SYSOP command to remove files that do not exist.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_FILE, [](MenuItemContext&) {
       RemoveNotThere();
     } ));
-  m.emplace("AttachFile", MenuItem(R"()", "", [](MenuItemContext&) {
+  m.emplace("AttachFile", MenuItem(R"()", MENU_CAT_EMAIL, [](MenuItemContext&) {
       AttachFile();
     } ));
-  m.emplace("InternetEmail", MenuItem(R"()", "", [](MenuItemContext&) {
+  m.emplace("InternetEmail", MenuItem(R"()", MENU_CAT_EMAIL, [](MenuItemContext&) {
       InternetEmail();
     } ));
   m.emplace("UnQScan", MenuItem(R"(
   Marks messages as unread
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_MSGS, [](MenuItemContext&) {
       UnQScan();
     } ));
   m.emplace("Packers", MenuItem(R"(
   Executes the QWK menu.
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_QWK, [](MenuItemContext&) {
       Packers();
     } ));
-  m.emplace("InitVotes", MenuItem(R"()", "", [](MenuItemContext&) {
+  m.emplace("InitVotes", MenuItem(R"()", MENU_CAT_VOTE, [](MenuItemContext&) {
       InitVotes();
     } ));
   m.emplace("TurnMCIOn", MenuItem(R"(
   Enable MCI codes
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       TurnMCIOn();
     } ));
   m.emplace("TurnMCIOff", MenuItem(R"(
   Disable MCI codes
-)", "", [](MenuItemContext&) {
+)", MENU_CAT_SYS, [](MenuItemContext&) {
       TurnMCIOff();
     } ));
 //  m.emplace("", MenuItem(R"()", "", [](MenuItemContext& context) {
@@ -881,14 +899,27 @@ void emit_category_name(const std::string& cat, bool output_markdown) {
   }
 
   if (output_markdown) {
-    std::cout << "##";
+    std::cout << "## ";
   }  
-  std::cout << "Category: " << StringTrim(cat) << std::endl << std::endl;
+  std::cout << "Category: " << StringTrim(cat) << std::endl;
+  std::cout << "***" << std::endl;
+  std::cout << std::endl;
 }
 
 void PrintMenuCommands(const std::string& arg) {
   const auto category_group = arg.find('c') != std::string::npos;
   const auto output_markdown = arg.find('m') != std::string::npos;
+
+  if (output_markdown) {
+    std::cout << R"(
+# WWIV Menu Commands
+***
+
+Here is the list of all WWIV Menu Commands available in the Menu Editor broken
+out by category.
+
+)";
+  }
 
   auto raw_commands = CreateCommandMap();
   auto& commands = raw_commands;
