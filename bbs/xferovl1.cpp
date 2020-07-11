@@ -861,111 +861,57 @@ void endlist(int mode) {
   bout << "\r|#9Files listed: |#2 " << a()->filelist.size();
 }
 
-void SetNewFileScanDate() {
-  char ag[10];
-  bool ok = true;
-
-  bout.nl();
-  bout << "|#9Current limiting date: |#2" << DateTime::from_daten(a()->context().nscandate()).
-      to_string("%m/%d/%y") << "\r\n";
-  bout.nl();
-  bout << "|#9Enter new limiting date in the following format: \r\n";
-  bout << "|#1 MM/DD/YY\r\n|#7:";
-  bout.mpl(8);
-  int i = 0;
-  char ch = 0;
-  do {
-    if (i == 2 || i == 5) {
-      ag[i++] = '/';
-      bout.bputch('/');
-    } else {
-      switch (i) {
-      case 0:
-        ch = onek_ncr("01\r");
-        break;
-      case 3:
-        ch = onek_ncr("0123\b");
-        break;
-      case 8:
-        ch = onek_ncr("\b\r");
-        break;
-      default:
-        ch = onek_ncr("0123456789\b");
-        break;
-      }
-      if (a()->hangup_) {
-        ok = false;
-        ag[0] = '\0';
-        break;
-      }
-      switch (ch) {
-      case '\r':
-        switch (i) {
-        case 0:
-          ok = false;
-          break;
-        case 8:
-          ag[8] = '\0';
-          break;
-        default:
-          ch = '\0';
-          break;
-        }
-        break;
-      case BACKSPACE:
-        bout << " \b";
-        --i;
-        if (i == 2 || i == 5) {
-          bout.bs();
-          --i;
-        }
-        break;
-      default:
-        ag[i++] = ch;
-        break;
-      }
-    }
+// TODO(rushfan): Move to datetime.h? either in bbs or core?
+// Converts a mm/dd/yyyy string into int for month, day, year and OK 
+static std::optional<DateTime> mmddyy_to_mdyo(std::string s) {
+  if (s.size() != 10) {
+    return std::nullopt;
   }
-  while (ch != '\r' && !a()->hangup_);
+  const auto m = to_number<int>(StrCat(s[0], s[1]));
+  const auto d = to_number<int>(StrCat(s[3], s[4]));
+  const auto y = to_number<int>(StrCat(s[6], s[7], s[8], s[9]));
+  // These parens are not redundant
+  if (((m == 2 || m == 9 || m == 4 || m == 6 || m == 11) && d >= 31) ||
+      (m == 2 && ((y % 4 != 0 && d == 29) || d == 30)) ||
+      d > 31 || (m == 0 || y == 0 || d == 0) ||
+      (m > 12 || d > 31)) {
+      return std::nullopt;
+  }
 
+  tm t{};
+  t.tm_min = 0;
+  t.tm_hour = 1;
+  t.tm_sec = 0;
+  t.tm_year = y - 1900;
+  t.tm_mday = d;
+  t.tm_mon = m - 1;
+
+  return {DateTime::from_tm(&t)};
+}
+
+void SetNewFileScanDate() {
   bout.nl();
-  if (ok) {
-    int m = atoi(ag);
-    int dd = atoi(&(ag[3]));
-    int y = atoi(&(ag[6])) + 1900;
-    if (y < 1950) {
-      y += 100;
-    }
-    tm newTime{};
-    if ((m == 2 || m == 9 || m == 4 || m == 6 || m == 11) && dd >= 31 ||
-        m == 2 && (y % 4 != 0 && dd == 29 || dd == 30) ||
-        dd > 31 || (m == 0 || y == 0 || dd == 0) ||
-        (m > 12 || dd > 31)) {
-      bout.nl();
-      bout.bprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd,
-                           (y % 100));
-      bout.nl();
-    } else {
-      // Rushfan - Note, this needs a better fix, this whole routine should be replaced.
-      newTime.tm_min = 0;
-      newTime.tm_hour = 1;
-      newTime.tm_sec = 0;
-      newTime.tm_year = y - 1900;
-      newTime.tm_mday = dd;
-      newTime.tm_mon = m - 1;
-    }
-    bout.nl();
-    auto dt = DateTime::from_time_t(mktime(&newTime));
-    a()->context().nscandate(dt.to_daten_t());
+  const auto current_dt = DateTime::from_daten(a()->context().nscandate());
+  bout << "|#9Current limiting date: |#2" << current_dt.to_string("%m/%d/%Y") << wwiv::endl;
+  bout.nl();
+  bout << "|#9Enter new limiting date in the following format:\r\n";
+  bout << "|#1 MM/DD/YYYY\r\n|#7:";
+  bout.mpl(8);
+  const auto ag = input_date_mmddyyyy("");
+  bout.nl();
+  if (!ag.empty()) {
+    auto o = mmddyy_to_mdyo(ag);
+    if (o.has_value()) {
+      const auto& dt = o.value();
+      a()->context().nscandate(dt.to_daten_t());
 
-    // Display the new nscan date
-    bout << "|#9New Limiting Date: |#2" << dt.to_string("%m/%d/%Y") << "\r\n";
+      // Display the new nscan date
+      bout << "|#9New Limiting Date: |#2" << dt.to_string("%m/%d/%Y") << "\r\n";
 
-    // Hack to make sure the date covers everything since we had to increment the hour by one
-    // to show the right date on some versions of MSVC
-    a()->context().nscandate(a()->context().nscandate() - SECONDS_PER_HOUR);
-  } else {
-    bout.nl();
+      // Hack to make sure the date covers everything since we had to increment the hour by one
+      // to show the right date on some versions of MSVC
+      a()->context().nscandate(a()->context().nscandate() - SECONDS_PER_HOUR);
+    }
   }
 }
 

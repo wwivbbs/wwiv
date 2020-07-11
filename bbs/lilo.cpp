@@ -917,7 +917,7 @@ void logoff() {
   }
   setiia(std::chrono::seconds(5));
   a()->remoteIO()->disconnect();
-  // Don't need to a()->hangup_ here, but *do* want to ensure that a()->hangup_ is true.
+  // Don't need hangup here, but *do* want to ensure that a()->hangup_ is true.
   a()->hangup_ = true;
   VLOG(1) << "Setting a()->hangup_=true in logoff";
   if (a()->usernum < 1) {

@@ -279,7 +279,7 @@ static void bihangup() {
   const auto batch_lastchar = std::chrono::steady_clock::now();
   auto nextbeep = std::chrono::seconds(1);
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
-  bout << "|#2Press 'H' to a()->hangup_, or any other key to return to system.\r\n";
+  bout << "|#2Press 'H' to Hangup, or any other key to return to system.\r\n";
 
   while (!bkbhit() && !a()->hangup_) {
     auto dd = std::chrono::steady_clock::now();
