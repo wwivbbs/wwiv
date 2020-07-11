@@ -1302,7 +1302,7 @@ void DoMinimalNewUser() {
     u->SetAge(years_old(m, d, y));
     cln_nu();
     bout << "|#2" << mon[std::max<int>(0, u->GetBirthdayMonth() - 1)] << " " << u->GetBirthdayDay()
-         << ", " << u->GetBirthdayYear() << " (" << u->GetAge() << " years old)\r\n"
+         << ", " << u->GetBirthdayYear() << " (" << static_cast<int>(u->GetAge()) << " years old)\r\n"
          << "|#1[C] Sex (Gender)            : ";
     bout.SavePosition();
     if (u->GetGender() != 'M' && u->GetGender() != 'F') {

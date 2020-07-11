@@ -81,33 +81,33 @@ std::string ctim(std::chrono::duration<double> d) {
 
 int years_old(int nMonth, int nDay, int nYear) {
   auto t = time_t_now();
-  const auto pTm = localtime(&t);
+  auto* const tm = localtime(&t);
   nYear = nYear - 1900;
   --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
 
   // Find the range of impossible dates (ie, pTm can't be
   // less than the input date)
-  if (pTm->tm_year < nYear) {
+  if (tm->tm_year < nYear) {
     return 0;
   }
-  if (pTm->tm_year == nYear) {
-    if (pTm->tm_mon < nMonth) {
+  if (tm->tm_year == nYear) {
+    if (tm->tm_mon < nMonth) {
       return 0;
     }
-    if (pTm->tm_mon == nMonth) {
-      if (pTm->tm_mday < nDay) {
+    if (tm->tm_mon == nMonth) {
+      if (tm->tm_mday < nDay) {
         return 0;
       }
     }
   }
 
-  auto nAge = pTm->tm_year - nYear;
-  if (pTm->tm_mon < nMonth) {
-    --nAge;
-  } else if ((pTm->tm_mon == nMonth) && (pTm->tm_mday < nDay)) {
-    --nAge;
+  auto age = tm->tm_year - nYear;
+  if (tm->tm_mon < nMonth) {
+    --age;
+  } else if (tm->tm_mon == nMonth && tm->tm_mday < nDay) {
+    --age;
   }
-  return nAge;
+  return age;
 }
 
 system_clock::duration duration_since_midnight(system_clock::time_point now) {

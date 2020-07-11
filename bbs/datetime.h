@@ -19,11 +19,10 @@
 #ifndef __INCLUDED_DATETIME_H__
 #define __INCLUDED_DATETIME_H__
 
+#include "core/datetime.h"
 #include <chrono>
 #include <ctime>
 #include <string>
-
-#include "core/datetime.h"
 
 bool isleap(int nYear);
 std::string ctim(long d);
@@ -31,7 +30,7 @@ std::string ctim(std::chrono::duration<double> d);
 int years_old(int nMonth, int nDay, int nYear);
 
 /** 
- * Returns a duration represeting the duration since midnight of the current day.
+ * Returns a duration representing the duration since midnight of the current day.
  */
 std::chrono::system_clock::duration duration_since_midnight(std::chrono::system_clock::time_point now);
 
