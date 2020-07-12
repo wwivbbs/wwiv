@@ -62,6 +62,7 @@
 using std::begin;
 using std::end;
 using std::string;
+using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -271,22 +272,36 @@ static void ProcessDSZLogFile(const std::string& path) {
   });
 }
 
+static int hangup_color(int left) {
+  if (left < 3) {
+    return 6;
+  }
+  if (left < 6) {
+    return 2;
+  }
+  return 5;
+}
+
 // This function returns one character from either the local keyboard or
 // remote com port (if applicable).  Every second of inactivity, a
 // beep is sounded.  After 10 seconds of inactivity, the user is hung up.
 static void bihangup() {
   bout.dump();
-  const auto batch_lastchar = std::chrono::steady_clock::now();
-  auto nextbeep = std::chrono::seconds(1);
+  const auto batch_lastchar = steady_clock::now();
+  auto nextbeep = seconds(1);
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to Hangup, or any other key to return to system.\r\n";
 
   while (!bkbhit() && !a()->hangup_) {
-    auto dd = std::chrono::steady_clock::now();
-    if (dd - batch_lastchar > nextbeep) {
-      nextbeep += std::chrono::seconds(1);
+    const auto dd = steady_clock::now();
+    const auto elapsed = dd - batch_lastchar;
+    if (elapsed > nextbeep) {
+      nextbeep += seconds(1);
+      const auto left = 10 - static_cast<int>(duration_cast<seconds>(elapsed).count());
+      bout.Color(hangup_color(left));
+      bout << "\r" << left;
     }
-    if (dd - batch_lastchar > std::chrono::seconds(10)) {
+    if (dd - batch_lastchar > seconds(10)) {
       bout.nl();
       bout << "Thank you for calling.";
       bout.nl();
