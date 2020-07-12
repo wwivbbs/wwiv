@@ -3,6 +3,19 @@
 ***
 
 
+## Build Cleanup.
+* Move version writing code into cmake using configure_file ( no more sed) 
+* Use version.h not version.cpp so we can write it into the built tree
+  then add the dir to cmake 
+  https://stackoverflow.com/questions/26193171/cmake-how-to-create-a-file-with-make-command
+* Change wwivconfig to unzip zip-city and the other one without needing hte 
+  subdir into the zip file.
+* let cmake create zip files.
+* add some cmake install targets
+
+
+
+
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark. 

@@ -20,22 +20,23 @@ setlocal
 del wwiv-*.zip
 
 if /I "%LABEL%"=="win-x86" (
-	@echo "Setting x86 (32-bit) Architecture"
-	set ARCH=x86
+	@echo "Setting x86 (32-bit) WWIV_ARCHitecture"
+	set WWIV_ARCH=x86
 	set NUM_BITS=32
 )
 if /I "%LABEL%"=="win-x64" (
-	@echo "Setting x64 (64-bit) Architecture"
-	set ARCH=x64
+	@echo "Setting x64 (64-bit) WWIV_ARCHitecture"
+	set WWIV_ARCH=x64
 	set NUM_BITS=64
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.5
 set WWIV_FULL_RELEASE=5.5.0
-set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
-set STAGE_DIR=%WORKSPACE%\staging
-set WWIV_CMAKE_DIR=%WORKSPACE%\_build
+set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%WWIV_ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
+set WWIV_RELEASE_DIR=%WORKSPACE%\release
+set CMAKE_BINARY_DIR=%WORKSPACE%\_build
+set WWIV_INSTALL_SRC=%WORKSPACE%\install
 set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
@@ -44,29 +45,29 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @rem ===============================================================================
 
 @if exist "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  call "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
   set VS_EDITION="BuildTools"
   set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
 @if exist "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %ARCH%
+  echo "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  call "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
   set VS_EDITION="BuildTools"
   set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
 )
 
 @if exist "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  echo "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  call "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
   set VS_EDITION="Community"
   set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
 @if exist "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
-  call "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %ARCH%
+  echo "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  call "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
   set VS_EDITION="Community"
   set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
@@ -74,14 +75,14 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @echo =============================================================================
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
-@echo Architecture:         %ARCH%
+@echo WWIV_ARCHitecture:         %WWIV_ARCH%
 @echo Number of Bits:       %NUM_BITS%
 @echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
 @echo WWIV Release:         %WWIV_RELEASE%        
 @echo Build Number:         %BUILD_NUMBER%
-@echo WWIV CMake Root:      %WWIV_CMAKE_DIR%
-@echo Archive:              %RELEASE_ZIP%
-@echo Staging Dir:          %STAGE_DIR%
+@echo WWIV CMake Root:      %CMAKE_BINARY_DIR%
+@echo WWIV_ARCHive:              %WWIV_RELEASE_ARCHIVE_FILE%
+@echo Release Dir:          %WWIV_RELEASE_DIR%
 @echo Visual Studio Ver:    %VS_VERSION%
 @echo Visual Studio Ed:     %VS_EDITION%
 @echo Visual Studio DIR:    %VS_INSTALL_DIR%
@@ -94,19 +95,19 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @echo on
 rem Turn echo back on now.
 
-if not exist %WWIV_CMAKE_DIR% (
-  echo Creating %WWIV_CMAKE_DIR%
-  mkdir %WWIV_CMAKE_DIR%
+if not exist %CMAKE_BINARY_DIR% (
+  echo Creating %CMAKE_BINARY_DIR%
+  mkdir %CMAKE_BINARY_DIR%
 )
-del %WWIV_CMAKE_DIR%\CMakeCache.txt
-rmdir /s/q %WWIV_CMAKE_DIR%\CMakeFiles
+del %CMAKE_BINARY_DIR%\CMakeCache.txt
+rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
 
 @rem Build Cryptlib 1st.
 echo:
 echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
 set cryptlib_platform=Win32
-if /i "%arch%"=="x64" (set cryptlib_platform=x64)
+if /i "%WWIV_ARCH%"=="x64" (set cryptlib_platform=x64)
 msbuild crypt32.vcxproj /t:Build /p:Configuration=Release /p:Platform=%cryptlib_platform% || exit /b
 
 @rem Build BBS, wwivconfig
@@ -118,7 +119,7 @@ cd %WORKSPACE%\core
 
 echo:
 echo * Building WWIV
-cd %WWIV_CMAKE_DIR%
+cd %CMAKE_BINARY_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
 ctest --no-compress-output -T Test -V
@@ -136,72 +137,69 @@ msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /p:Pla
 msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 cd %WORKSPACE%\
-if not exist %STAGE_DIR% (
-  echo Creating %STAGE_DIR%
-  mkdir %STAGE_DIR%
+if not exist %WWIV_RELEASE_DIR% (
+  echo Creating %WWIV_RELEASE_DIR%
+  mkdir %WWIV_RELEASE_DIR%
 )
-del /q %STAGE_DIR%
+del /q %WWIV_RELEASE_DIR%
 del wwiv-*.zip
 
 echo:
 echo * Creating inifiles.zip
-cd %WORKSPACE%\bbs\admin\inifiles
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\inifiles.zip *
+cd %WWIV_INSTALL_SRC%\inifiles
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\inifiles.zip *
 
 echo:
 echo * Creating data.zip
-cd %WORKSPACE%\bbs\admin\data
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\data.zip *
+cd %WWIV_INSTALL_SRC%\data
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\data.zip *
 
 echo:
 echo * Creating gfiles.zip
-cd %WORKSPACE%\bbs\admin\gfiles
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\gfiles.zip *
+cd %WWIV_INSTALL_SRC%\gfiles
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\gfiles.zip *
 
 cd %WORKSPACE%\
 echo:
-echo * Copying BBS files to staging directory.
-copy /v/y %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll %STAGE_DIR%\cl%NUM_BITS%.dll || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\bbs\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\wwivconfig\wwivconfig.exe %STAGE_DIR%\wwivconfig.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\network\network.exe %STAGE_DIR%\network.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\network1\network1.exe %STAGE_DIR%\network1.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\network2\network2.exe %STAGE_DIR%\network2.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\network3\network3.exe %STAGE_DIR%\network3.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\networkb\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\networkc\networkc.exe %STAGE_DIR%\networkc.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\networkf\networkf.exe %STAGE_DIR%\networkf.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\networkt\networkt.exe %STAGE_DIR%\networkt.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\wwivd\wwivd.exe %STAGE_DIR%\wwivd.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\wwivutil\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
-copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
-copy /v/y %WORKSPACE%\bbs\admin\win32\* %STAGE_DIR%\
+echo * Copying BBS files to Release directory.
+copy /v/y %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll %WWIV_RELEASE_DIR%\cl%NUM_BITS%.dll || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\bbs\bbs.exe %WWIV_RELEASE_DIR%\bbs.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\wwivconfig\wwivconfig.exe %WWIV_RELEASE_DIR%\wwivconfig.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\network\network.exe %WWIV_RELEASE_DIR%\network.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\network1\network1.exe %WWIV_RELEASE_DIR%\network1.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\network2\network2.exe %WWIV_RELEASE_DIR%\network2.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\network3\network3.exe %WWIV_RELEASE_DIR%\network3.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\networkb\networkb.exe %WWIV_RELEASE_DIR%\networkb.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\networkc\networkc.exe %WWIV_RELEASE_DIR%\networkc.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\networkf\networkf.exe %WWIV_RELEASE_DIR%\networkf.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\networkt\networkt.exe %WWIV_RELEASE_DIR%\networkt.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\wwivd\wwivd.exe %WWIV_RELEASE_DIR%\wwivd.exe || exit /b
+copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.exe || exit /b
+copy /v/y %WWIV_INSTALL_SRC%\* %WWIV_RELEASE_DIR%\
+copy /v/y %WWIV_INSTALL_SRC%\win32\* %WWIV_RELEASE_DIR%\
 
 echo:
-echo * Copying INFOZIP files to staging area
+echo * Copying INFOZIP files to Release area
 set INFOZIP=%WORKSPACE%\deps\infozip
 dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
 dir %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe
-copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %STAGE_DIR%\unzip.exe
-copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %STAGE_DIR%\zip.exe
+copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %WWIV_RELEASE_DIR%\unzip.exe
+copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WWIV_RELEASE_DIR%\zip.exe
 
 echo:
 echo * Creating scripts.zip
-cd %WORKSPACE%\bbs\admin\scripts
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\scripts.zip *
+cd %WWIV_INSTALL_SRC%\scripts
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\scripts.zip *
 
 echo:
 echo * Creating Regions
-cd %WORKSPACE%\bbs\admin
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\zip-city.zip zip-city\*
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\regions.zip regions\*
+cd %WWIV_INSTALL_SRC%
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\zip-city.zip zip-city\*
+%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\regions.zip regions\*
 
 echo:
-echo * Creating build.nfo file
-cd %WORKSPACE%\
-echo Build URL %BUILD_URL% > %STAGE_DIR%\build.nfo
-echo Build: %WWIV_FULL_RELEASE%.%BUILD_NUMBER% >> %STAGE_DIR%\build.nfo
-
+echo * Copying build.nfo file
+copy %CMAKE_BINARY_DIR%\build.nfo %WWIV_RELEASE_DIR%\build.nfo
 
 @echo =============================================================================
 @echo. 
@@ -211,37 +209,37 @@ echo Build: %WWIV_FULL_RELEASE%.%BUILD_NUMBER% >> %STAGE_DIR%\build.nfo
 
 
 echo:
-echo * Creating release archive: %RELEASE_ZIP%
-cd %STAGE_DIR%
-%ZIP_EXE% a -tzip -y %RELEASE_ZIP%
+echo * Creating release WWIV_ARCHive: %WWIV_RELEASE_ARCHIVE_FILE%
+cd %WWIV_RELEASE_DIR%
+%ZIP_EXE% a -tzip -y %WWIV_RELEASE_ARCHIVE_FILE%
 
-cd %WWIV_CMAKE_DIR%\core_test
+cd %CMAKE_BINARY_DIR%\core_test
 del result*.xml
 dir
 core_tests.exe --gtest_output=xml:result-core.xml
 
-cd %WWIV_CMAKE_DIR%\bbs_test
+cd %CMAKE_BINARY_DIR%\bbs_test
 copy /y/v %CL32_DLL% .
 del result*.xml
 dir
 bbs_tests.exe --gtest_output=xml:result-bbs.xml
 
-cd %WWIV_CMAKE_DIR%\sdk_test
+cd %CMAKE_BINARY_DIR%\sdk_test
 del result*.xml
 dir
 sdk_tests.exe --gtest_output=xml:result-sdk.xml
 
-cd %WWIV_CMAKE_DIR%\binkp_test
+cd %CMAKE_BINARY_DIR%\binkp_test
 del result*.xml
 dir
 binkp_tests.exe --gtest_output=xml:result-networkb.xml
 
-cd %WWIV_CMAKE_DIR%\net_core_test
+cd %CMAKE_BINARY_DIR%\net_core_test
 del result*.xml
 dir
 net_core_tests.exe --gtest_output=xml:result-net_core.xml
 
-cd %WWIV_CMAKE_DIR%\wwivd_test
+cd %CMAKE_BINARY_DIR%\wwivd_test
 del result*.xml
 dir
 wwivd_tests.exe --gtest_output=xml:result-wwivd.xml
@@ -251,7 +249,7 @@ echo:
 echo:
 echo: **** SUCCESS ****
 echo:
-echo ** Archive File: %RELEASE_ZIP%
-echo ** Archive contents:
-%ZIP_EXE% l %RELEASE_ZIP%
+echo ** WWIV_ARCHive File: %WWIV_RELEASE_ARCHIVE_FILE%
+echo ** WWIV_ARCHive contents:
+%ZIP_EXE% l %WWIV_RELEASE_ARCHIVE_FILE%
 endlocal

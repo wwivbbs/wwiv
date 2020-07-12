@@ -2,6 +2,23 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 project(wwiv)
 
+############################################################################### 
+#
+# Build variables to come from Jenkins, environment, etc.
+# 
+
+set(WWIV_RELEASE "5.5" CACHE STRING "WWIV Release Major Version to 2 digits")
+set(WWIV_FULL_RELEASE "5.5.0" CACHE STRING "WWIV Release Version to 3 digits")
+set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
+set(NUM_BITS "32" CACHE STRING "32 or 64")
+
+set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
+# TODO move this under the built root.
+set(WWIV_RELEASE_DIR "${CMAKE_SOURCE_DIR}/release" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/release")
+#set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
+# set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
+
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include_directories(${CMAKE_SOURCE_DIR})
@@ -67,3 +84,11 @@ if (WWIV_BUILD_TESTS)
   add_subdirectory(wwivd_test)
 	
 endif (WWIV_BUILD_TESTS)
+
+# Create build.nfo
+message(STATUS "Writing ${CMAKE_BINARY_DIR}/BUILD.NFO")
+file(
+  WRITE "${CMAKE_BINARY_DIR}/build.nfo"
+  "Build URL $ENV{BUILD_URL}\n"
+  "Build Version: $ENV{BUILD_NUMBER}\n\n"
+)

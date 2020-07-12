@@ -1,21 +1,9 @@
 readme-wwiv.txt
 
-                *** Attention Windows Users ***
-
-    You may need to download the Visual Studio 2019 redistributable
-    files. 
-    
-    Here's the official link: 
-    https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-        
-    If you see errors about missing DLL files, you may need to install this package before using WWIV (wwivconfig.exe, bbs.exe, everything).
-
-
 WWIV 5.x Getting Started
 ~~~~~~~~~~~~~~~~~~~~~~~~
-If you already have WWIV 4.3 or 5.x installed, just copy the EXE and DLL 
-files over your existing 4.3/5.x installation. Please backup your previous
-binaries and configuration files.
+If you already have WWIV 4.3 or 5.x installed, Please see the instructions at
+http://docs.wwivbbs.org for upgrading from 4.x.
 
 init.exe was renamed to wwivconfig earlier in 5.x, so please delete the
 older init.exe if you have it still.
@@ -25,7 +13,7 @@ The command line parameters have changed quite a bit, I suggest running
 
 So far, WWIV 5.5 is still fully compatable with your existing WWIV 4.30
 and 5.x installations (Just drop it in and run wwivconfig to upgrade the 
-data files and go).
+data files and go for the most part).
 
 Run wwivconfig.exe and then select the menu WWIVD and setup
 the information for your configuration (paths, and the starting and ending
@@ -43,16 +31,20 @@ other changes that have happened since 5.0. ***
 NOTE: Serial I/O Support has been removed. Use one of the serial -> telnet
 bridges for "Dial Up" support.
 
-DEVELOPMENT INFORMATION
-~~~~~~~~~~~~~~~~~~~~~~~
+===============================================================================
 
-    WWIV is compiled with the following compilers:
-        MS Visual C++ 2019 Community Edition. (16.3 or later)
-        GCC 8.3 or newer on Linux
+                *** Attention Windows Users ***
 
-    I recommend using MSVC 2019 Community Edition on Windows.
-    It is available for free as is gcc on Linux.
+    You may need to download the Visual Studio 2019 redistributable
+    files. 
+    
+    Here's the official link: 
+    https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
+        
+    If you see errors about missing DLL files, you may need to install this package
+    before using WWIV (wwivconfig.exe, bbs.exe, everything).
 
+*** Please see https://github.com/wwivbbs/wwiv for development information. ***
 
 ===============================================================================
 
@@ -267,33 +259,6 @@ alternate usage conditions apply:
 
 
 ===============================================================================
-* easyloggingpp https://github.com/easylogging/easyloggingpp
-The MIT License (MIT)
-
-Copyright (c) 2015 muflihun.com
-
-http://github.com/easylogging/
-http://easylogging.muflihun.com
-http://muflihun.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-===============================================================================
 * cereal https://github.com/USCiLab/cereal/ (BSD License)
 
 
@@ -345,3 +310,31 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+===============================================================================
+* FMT https://github.com/fmtlib/fmt
+
+Copyright (c) 2012 - present, Victor Zverovich
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
