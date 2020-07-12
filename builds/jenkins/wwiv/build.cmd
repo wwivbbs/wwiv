@@ -170,7 +170,7 @@ copy /v/y %WWIV_CMAKE_DIR%\network3\network3.exe %STAGE_DIR%\network3.exe || exi
 copy /v/y %WWIV_CMAKE_DIR%\networkb\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\networkc\networkc.exe %STAGE_DIR%\networkc.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\networkf\networkf.exe %STAGE_DIR%\networkf.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\networkc\networkt.exe %STAGE_DIR%\networkt.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\networkt\networkt.exe %STAGE_DIR%\networkt.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\wwivd\wwivd.exe %STAGE_DIR%\wwivd.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\wwivutil\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
 copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
