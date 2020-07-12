@@ -121,6 +121,7 @@ echo * Building WWIV
 cd %WWIV_CMAKE_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
+ctest --no-compress-output -T Test -V
 
 @rem Building bits from the build tree.
 @rem build InfoZIP Zip/UnZip
