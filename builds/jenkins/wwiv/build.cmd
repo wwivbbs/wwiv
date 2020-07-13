@@ -75,13 +75,13 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @echo =============================================================================
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
-@echo WWIV_ARCHitecture:         %WWIV_ARCH%
+@echo WWIV_ARCHitecture:    %WWIV_ARCH%
 @echo Number of Bits:       %NUM_BITS%
 @echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
 @echo WWIV Release:         %WWIV_RELEASE%        
 @echo Build Number:         %BUILD_NUMBER%
 @echo WWIV CMake Root:      %CMAKE_BINARY_DIR%
-@echo WWIV_ARCHive:              %WWIV_RELEASE_ARCHIVE_FILE%
+@echo WWIV_ARCHive:         %WWIV_RELEASE_ARCHIVE_FILE%
 @echo Release Dir:          %WWIV_RELEASE_DIR%
 @echo Visual Studio Ver:    %VS_VERSION%
 @echo Visual Studio Ed:     %VS_EDITION%
@@ -102,13 +102,6 @@ if not exist %CMAKE_BINARY_DIR% (
 del %CMAKE_BINARY_DIR%\CMakeCache.txt
 rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
 
-@rem Build Cryptlib 1st.
-echo:
-echo * Building Cryptlib (zip/unzip)
-cd %WORKSPACE%\deps\cl342
-set cryptlib_platform=Win32
-if /i "%WWIV_ARCH%"=="x64" (set cryptlib_platform=x64)
-msbuild crypt32.vcxproj /t:Build /p:Configuration=Release /p:Platform=%cryptlib_platform% || exit /b
 
 @rem Build BBS, wwivconfig
 echo:
@@ -120,21 +113,9 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release %WORKSPACE% || exit /b
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DWWIV_RELEASE=%WWIV_RELEASE% -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% -DWWIV_ARCH=%WWIV_ARCH% %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
 ctest --no-compress-output -T Test -V
-
-@rem Building bits from the build tree.
-@rem build InfoZIP Zip/UnZip
-echo:
-echo * Building INFOZIP (zip/unzip)
-cd %WORKSPACE%\deps\infozip
-
-@rem
-@rem Always build this as 32-bit binaries nomatter what. 
-@rem
-msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 cd %WORKSPACE%\
 if not exist %WWIV_RELEASE_DIR% (
@@ -144,20 +125,6 @@ if not exist %WWIV_RELEASE_DIR% (
 del /q %WWIV_RELEASE_DIR%
 del wwiv-*.zip
 
-echo:
-echo * Creating inifiles.zip
-cd %WWIV_INSTALL_SRC%\inifiles
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\inifiles.zip *
-
-echo:
-echo * Creating data.zip
-cd %WWIV_INSTALL_SRC%\data
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\data.zip *
-
-echo:
-echo * Creating gfiles.zip
-cd %WWIV_INSTALL_SRC%\gfiles
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\gfiles.zip *
 
 cd %WORKSPACE%\
 echo:
@@ -175,31 +142,9 @@ copy /v/y %CMAKE_BINARY_DIR%\networkf\networkf.exe %WWIV_RELEASE_DIR%\networkf.e
 copy /v/y %CMAKE_BINARY_DIR%\networkt\networkt.exe %WWIV_RELEASE_DIR%\networkt.exe || exit /b
 copy /v/y %CMAKE_BINARY_DIR%\wwivd\wwivd.exe %WWIV_RELEASE_DIR%\wwivd.exe || exit /b
 copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.exe || exit /b
-copy /v/y %WWIV_INSTALL_SRC%\* %WWIV_RELEASE_DIR%\
-copy /v/y %WWIV_INSTALL_SRC%\win32\* %WWIV_RELEASE_DIR%\
+copy /v/y %WWIV_INSTALL_SRC%\docs\* %WWIV_RELEASE_DIR%\
+copy /v/y %WWIV_INSTALL_SRC%\platform\win32\* %WWIV_RELEASE_DIR%\
 
-echo:
-echo * Copying INFOZIP files to Release area
-set INFOZIP=%WORKSPACE%\deps\infozip
-dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
-dir %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe
-copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %WWIV_RELEASE_DIR%\unzip.exe
-copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WWIV_RELEASE_DIR%\zip.exe
-
-echo:
-echo * Creating scripts.zip
-cd %WWIV_INSTALL_SRC%\scripts
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\scripts.zip *
-
-echo:
-echo * Creating Regions
-cd %WWIV_INSTALL_SRC%
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\zip-city.zip zip-city\*
-%ZIP_EXE% a -tzip -r %WWIV_RELEASE_DIR%\regions.zip regions\*
-
-echo:
-echo * Copying build.nfo file
-copy %CMAKE_BINARY_DIR%\build.nfo %WWIV_RELEASE_DIR%\build.nfo
 
 @echo =============================================================================
 @echo. 

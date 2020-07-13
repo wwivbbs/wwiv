@@ -14,7 +14,7 @@ set(NUM_BITS "32" CACHE STRING "32 or 64")
 
 set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
 # TODO move this under the built root.
-set(WWIV_RELEASE_DIR "${CMAKE_SOURCE_DIR}/release" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/release")
+set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this is: ${CMAKE_BINARY_DIR}/release")
 #set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
 # set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 
@@ -92,3 +92,31 @@ file(
   "Build URL $ENV{BUILD_URL}\n"
   "Build Version: $ENV{BUILD_NUMBER}\n\n"
 )
+
+function(zip output_file input_files working_dir)
+  # message(STATUS "zip: ${output_file} : ${input_files}")
+  add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E tar "cvf" "${output_file}" --format=zip -- ${input_files}
+    WORKING_DIRECTORY "${working_dir}"
+    OUTPUT  "${output_file}"
+    DEPENDS ${input_files}
+    COMMENT "Creating ZIP file: ${output_file}."
+    )
+endfunction()
+
+function(create_datafile_archive arc dir)
+  message(STATUS "create_datafile_archive: dir: ${dir}: ${WWIV_RELEASE_DIR}/${arc}.zip")
+  file(GLOB_RECURSE DATA_FILES "${dir}/*")
+  zip("${WWIV_RELEASE_DIR}/${arc}.zip" "${DATA_FILES}" "${dir}/")
+  add_custom_target("${arc}_archive" ALL DEPENDS "${WWIV_RELEASE_DIR}/${arc}.zip")
+endfunction()
+
+create_datafile_archive("data" "${WWIV_INSTALL_SRC}/data")
+create_datafile_archive("inifiles" "${WWIV_INSTALL_SRC}/inifiles")
+create_datafile_archive("gfiles" "${WWIV_INSTALL_SRC}/gfiles")
+create_datafile_archive("scripts" "${WWIV_INSTALL_SRC}/scripts")
+create_datafile_archive("zip-city" "${WWIV_INSTALL_SRC}/zip-city")
+create_datafile_archive("regions" "${WWIV_INSTALL_SRC}/regions")
+if (UNIX)
+  create_datafile_archive("unix" "${WWIV_INSTALL_SRC}/platform/unix")
+endif()

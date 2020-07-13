@@ -36,26 +36,6 @@ run_test() {
     set -e
 }
 
-# Args:
-# $1 make args
-build_binaries() {
-    local make_args=$1
-    
-    echo "Building binaries"
-    cd ${WORKSPACE}
-    sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
-    
-    echo "Compiling Everything"
-    if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
-    mkdir -p ${CMAKE_BINARY_DIR}
-    fi
-    
-    pushd ${CMAKE_BINARY_DIR}
-    ${CMAKE_BIN} -G "Ninja" -DCMAKE_BINARY_DIR_TYPE=Debug ..
-    ${CMAKE_BIN} --build . --config Debug
-    popd > /dev/null
-}
-
 rm ${WORKSPACE}/wwiv-*.tar.gz
 
 set -e
@@ -93,7 +73,18 @@ fi
 mkdir -p "${WWIV_RELEASE_DIR}"
 echo "Created release dir: ${WWIV_RELEASE_DIR}"
 
-build_binaries -j8
+echo "Building binaries"
+cd ${WORKSPACE}
+sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
+
+echo "Compiling Everything"
+if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
+    mkdir -p ${CMAKE_BINARY_DIR}
+fi
+
+pushd ${CMAKE_BINARY_DIR}
+${CMAKE_BIN} -G "Ninja" -DCMAKE_BINARY_DIR_TYPE=Debug ..
+${CMAKE_BIN} --build . --config Debug
 
 run_test "${CMAKE_BINARY_DIR}/core_test" core_tests
 run_test "${CMAKE_BINARY_DIR}/sdk_test" sdk_tests
@@ -121,52 +112,13 @@ cp  ${CMAKE_BINARY_DIR}/bbs/bbs \
     ${CMAKE_BINARY_DIR}/wwivutil/wwivutil \
     ${WWIV_RELEASE_DIR}
 
-echo "Creating inifiles.zip"
-cd ${WWIV_INSTALL_SRC}/inifiles
-zip -r ${WWIV_RELEASE_DIR}/inifiles.zip *
-
-echo "Creating data.zip"
-cd ${WWIV_INSTALL_SRC}/data
-zip -r ${WWIV_RELEASE_DIR}/data.zip *
-
-echo "Creating gfiles.zip"
-cd ${WWIV_INSTALL_SRC}/gfiles
-zip -r ${WWIV_RELEASE_DIR}/gfiles.zip *
-
-echo "Creating scripts.zip"
-cd ${WWIV_INSTALL_SRC}/scripts
-zip -r ${WWIV_RELEASE_DIR}/scripts.zip *
-
-echo "Creating zip-city"
-cd ${WWIV_INSTALL_SRC}
-zip -r ${WWIV_RELEASE_DIR}/zip-city.zip zip-city/*
-
-echo "Creating regions"
-cd ${WWIV_INSTALL_SRC}
-zip -r ${WWIV_RELEASE_DIR}/regions.zip regions/*
-
 echo "adding common files"
-cd ${WWIV_INSTALL_SRC}
-shopt -s extglob
-set +e
-cp -v !(*.bat) ${WWIV_RELEASE_DIR}
-RESULT=$?
-set -e
-# cp returns non-zero if we skip directories, so do our own check
-if [[ $RESULT -gt 1 ]]
-then
-  exit 1
-fi
-shopt -u extglob
 
 echo "adding linux-specific files"
-cd ${WWIV_INSTALL_SRC}/unix
+cd ${WWIV_INSTALL_SRC}/platform/unix
 shopt -s dotglob
 cp -a * ${WWIV_RELEASE_DIR}
 shopt -u dotglob
-
-echo "Creating build.nfo file"
-cp ${CMAKE_BINARY_DIR}/built.nfo ${WWIV_RELEASE_DIR}/build.nfo
 
 echo "Creating release archive: ${WWIV_RELEASE_ARCHIVE_FILE}"
 cd ${WWIV_RELEASE_DIR}
