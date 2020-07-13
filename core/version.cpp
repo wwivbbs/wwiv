@@ -31,4 +31,4 @@ uint16_t wwiv_num_version = 520;
 int wwiv_net_version = 53;
 
 // Data/time of this build
-const char* wwiv_date = __DATE__ ", " __TIME__;
+const char* wwiv_date = INTERNAL_BUILD_DATE;

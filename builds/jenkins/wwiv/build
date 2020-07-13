@@ -6,36 +6,6 @@
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
 
-
-# Runs a single test collecting the output into
-# ${test_name}.xml (i.e. core-test.xml)
-#
-# Args:
-# 1: test dir i.e. ${WORKSPACE}/core_tests
-# 2: test name, no suffic (i.e. core-test)
-run_test() {
-    set +e
-    local test_dir=$1
-    local test_name=$2
-    if [[ -z "${test_dir}" ]]; then
-    echo "test_dir must be specified to run_test"
-    exit 1;
-    fi
-    if [[ -z "${test_name}" ]]; then
-    echo "test_name must be specified to run_test"
-    exit 1;
-    fi
-
-    cd "${test_dir}"
-    if [[ -r result.xml ]]; then
-    rm result.xml
-    fi
-
-    ./${test_name} --gtest_output=xml:result-${test_name}.xml
-    cd ${WORKSPACE}
-    set -e
-}
-
 rm ${WORKSPACE}/wwiv-*.tar.gz
 
 set -e
@@ -65,6 +35,7 @@ if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
   mkdir -p "${CMAKE_BINARY_DIR}"
 fi
 echo "Created release dir: ${WWIV_RELEASE_DIR}"
+rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
 
 echo "Cleaning up release dir (${WWIV_RELEASE_DIR})"
 if [[ -d "${WWIV_RELEASE_DIR}" ]]; then
@@ -74,8 +45,6 @@ mkdir -p "${WWIV_RELEASE_DIR}"
 echo "Created release dir: ${WWIV_RELEASE_DIR}"
 
 echo "Building binaries"
-cd ${WORKSPACE}
-sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
 
 echo "Compiling Everything"
 if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
@@ -85,16 +54,8 @@ fi
 pushd ${CMAKE_BINARY_DIR}
 ${CMAKE_BIN} -G "Ninja" -DCMAKE_BINARY_DIR_TYPE=Debug ..
 ${CMAKE_BIN} --build . --config Debug
-
-run_test "${CMAKE_BINARY_DIR}/core_test" core_tests
-run_test "${CMAKE_BINARY_DIR}/sdk_test" sdk_tests
-run_test "${CMAKE_BINARY_DIR}/binkp_test" binkp_tests
-run_test "${CMAKE_BINARY_DIR}/net_core_test" net_core_tests
-run_test "${CMAKE_BINARY_DIR}/bbs_test" bbs_tests
-run_test "${CMAKE_BINARY_DIR}/wwivd_test" wwivd_tests
-
-cd ${CMAKE_BINARY_DIR}
 ${CTEST_BIN} --no-compress-output -T Test -V || /bin/true
+popd
 cd ${WORKSPACE}
 
 echo "Populating built binaries"

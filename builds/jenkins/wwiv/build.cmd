@@ -9,8 +9,6 @@
 @rem   7-Zip [C:\Program Files\7-Zip\7z.exe]
 @rem   Visual Studio [C:\Program Files (x86)\Microsoft Visual Studio\VER]
 @rem   cmake [in PATH, set by vcvarsall.bat]
-@rem   msbuild [in PATH, set by vcvarsall.bat]
-@rem   sed [in PATH]
 @rem 
 @rem **************************************************************************
 
@@ -108,13 +106,14 @@ echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
 
-%SED% -i -e "s@.development@.%BUILD_NUMBER%@" version.cpp
-
 echo:
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DWWIV_RELEASE=%WWIV_RELEASE% -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% -DWWIV_ARCH=%WWIV_ARCH% %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
+@echo =============================================================================
+@echo                           **** RUNNING TESTS ****
+@echo =============================================================================
 ctest --no-compress-output -T Test -V
 
 cd %WORKSPACE%\
@@ -144,14 +143,6 @@ copy /v/y %CMAKE_BINARY_DIR%\wwivd\wwivd.exe %WWIV_RELEASE_DIR%\wwivd.exe || exi
 copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.exe || exit /b
 copy /v/y %WWIV_INSTALL_SRC%\docs\* %WWIV_RELEASE_DIR%\
 copy /v/y %WWIV_INSTALL_SRC%\platform\win32\* %WWIV_RELEASE_DIR%\
-
-
-@echo =============================================================================
-@echo. 
-@echo                           **** RUNNING TESTS ****
-@echo. 
-@echo =============================================================================
-
 
 echo:
 echo * Creating release WWIV_ARCHive: %WWIV_RELEASE_ARCHIVE_FILE%

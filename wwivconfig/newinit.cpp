@@ -59,7 +59,7 @@ static void write_qscn(const Config& config, unsigned int un, uint32_t* qscn) {
 static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::string& dir) {
   if (File::Exists(zipfile)) {
     window->SetColor(SchemeId::NORMAL);
-    window->Puts(StrCat("Decompressing file: ", zipfile, "\n"));
+    window->Puts(fmt::format("Decompressing file: {} to dir: {}\n", zipfile, dir));
     const auto unzip_cmd = StrCat("unzip -qq -o ", zipfile, " -d", dir);
     const auto rc = system(unzip_cmd.c_str());
     if (rc != 0) {
@@ -308,8 +308,14 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     unzip_file(window, "gfiles.zip", "gfiles");
     unzip_file(window, "scripts.zip", "scripts");
     unzip_file(window, "data.zip", "data");
-    unzip_file(window, "regions.zip", "data");
-    unzip_file(window, "zip-city.zip", "data");
+
+    auto cwd = File::current_directory();
+    auto data = FilePath(cwd, "data");
+    File::set_current_directory(data);
+
+    unzip_file(window, "regions.zip", "regions");
+    unzip_file(window, "zip-city.zip", "zip-city");
+    File::set_current_directory(cwd);
   }
 
   window->SetColor(SchemeId::NORMAL);
