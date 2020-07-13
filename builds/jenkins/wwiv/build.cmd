@@ -27,9 +27,9 @@ if /I "%LABEL%"=="win-x64" (
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.5
-set WWIV_FULL_RELEASE=5.5.0
-set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%WWIV_ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
+set WWIV_RELEASE=5.5.0
+set WWIV_FULL_RELEASE=5.5.0.%BUILD_NUMBER%
+set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%WWIV_ARCH%-%WWIV_FULL_RELEASE%.zip
 set CMAKE_BINARY_DIR=%WORKSPACE%\_build
 set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
 set WWIV_INSTALL_SRC=%WORKSPACE%\install
@@ -79,7 +79,6 @@ set VS_PREVIEW_DIR=Microsoft Visual Studio\%VS_VERSION%\Preview\VC\Auxiliary\Bui
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
 @echo WWIV_ARCHitecture:    %WWIV_ARCH%
-@echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
 @echo WWIV Release:         %WWIV_RELEASE%        
 @echo Build Number:         %BUILD_NUMBER%
 @echo WWIV CMake Root:      %CMAKE_BINARY_DIR%
@@ -108,22 +107,18 @@ if not exist %WWIV_RELEASE_DIR% (
 del /q %WWIV_RELEASE_DIR%
 del wwiv-*.zip
 
-@rem Build BBS, wwivconfig
-echo:
-echo * Updating the Build Number in version.cpp
-cd %WORKSPACE%\core
-
-@echo on
 rem Turn echo back on now.
+@echo on
+
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_RELEASE=%WWIV_RELEASE% ^
-    -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% ^
     -DWWIV_ARCH=%WWIV_ARCH%  ^
     -DWWIV_BUILD_NUMBER=%BUILD_NUMBER% ^
     %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
+
 @echo =============================================================================
 @echo                           **** RUNNING TESTS ****
 @echo =============================================================================
@@ -147,12 +142,12 @@ copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.e
 copy /v/y %WWIV_INSTALL_SRC%\docs\* %WWIV_RELEASE_DIR%\
 copy /v/y %WWIV_INSTALL_SRC%\platform\win32\* %WWIV_RELEASE_DIR%\
 
-echo * Creating release WWIV_ARCHive: %WWIV_RELEASE_ARCHIVE_FILE%
+echo * Creating release Archive: %WWIV_RELEASE_ARCHIVE_FILE%
 cd %WWIV_RELEASE_DIR%
 %ZIP_EXE% a -tzip -y %WWIV_RELEASE_ARCHIVE_FILE%
 
 echo **** SUCCESS ****
-echo ** WWIV_ARCHive File: %WWIV_RELEASE_ARCHIVE_FILE%
-echo ** WWIV_ARCHive contents:
+echo ** Archive File: %WWIV_RELEASE_ARCHIVE_FILE%
+echo ** Archive contents:
 %ZIP_EXE% l %WWIV_RELEASE_ARCHIVE_FILE%
 endlocal

@@ -9,9 +9,9 @@ project(wwiv)
 #
 # Build variables to come from Jenkins, environment, etc.
 
-set(WWIV_RELEASE "5.5" CACHE STRING "WWIV Release Major Version to 2 digits")
+set(WWIV_RELEASE "5.5.0" CACHE STRING "WWIV Release Major Version to 3 digits")
 set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
-set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version to 3 digits")
+set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
 
 set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")

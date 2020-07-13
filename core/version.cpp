@@ -33,7 +33,7 @@ std::string wwiv_compile_datetime() {
 }
 
 std::string full_version() {
-  return fmt::format("{}.{}", WWIV_RELEASE, WWIV_BUILD_NUMBER);
+  return WWIV_FULL_RELEASE;
 }
 
 std::string short_version() {
