@@ -39,6 +39,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+#pragma pack(push, 1)
 struct pcboard_sys_rec {
   char display[2], printer[2], page_bell[2], alarm[2], sysop_next, errcheck[2], graphics, nodechat,
       openbps[5], connectbps[5];
@@ -75,6 +76,8 @@ struct pcboard_sys_rec {
   char hconfbitmap;
   // end PCB 14.5 additions
 };
+#pragma pack(pop)
+[[maybe_unused]] static constexpr auto sizeof_pcboard_sys = sizeof(pcboard_sys_rec);
 
 static constexpr int NULL_HANDLE = 0;
 
