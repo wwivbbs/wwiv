@@ -11,7 +11,7 @@ rm ${WORKSPACE}/wwiv-*.tar.gz
 set -e
 
 declare -r CMAKE_BINARY_DIR="${WORKSPACE}/_build"
-declare -r WWIV_RELEASE_DIR="${WORKSPACE}/release"
+declare -r WWIV_RELEASE_DIR="${CMAKE_BINARY_DIR}/release"
 delcare -r WWIV_INSTALL_SRC="${WORKSPACE}/install"
 declare -r WWIV_RELEASE="5.5"
 declare -r WWIV_FULL_RELEASE="5.5.0"

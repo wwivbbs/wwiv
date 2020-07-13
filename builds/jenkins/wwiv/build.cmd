@@ -32,12 +32,13 @@ set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.5
 set WWIV_FULL_RELEASE=5.5.0
 set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%WWIV_ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
-set WWIV_RELEASE_DIR=%WORKSPACE%\release
 set CMAKE_BINARY_DIR=%WORKSPACE%\_build
+set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
 set WWIV_INSTALL_SRC=%WORKSPACE%\install
 set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
+set VS_PREVIEW_DIR=Microsoft Visual Studio\%VS_VERSION%\Preview\VC\Auxiliary\Build\
 set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 
 @rem ===============================================================================
@@ -70,6 +71,14 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
   set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
 )
 
+@if exist "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  call "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" %WWIV_ARCH%
+  set VS_EDITION="Preview"
+  set VS_INSTALL_DIR=%VS_PREVIEW_DIR%
+)
+
+
 @echo =============================================================================
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
@@ -98,7 +107,15 @@ if not exist %CMAKE_BINARY_DIR% (
   mkdir %CMAKE_BINARY_DIR%
 )
 del %CMAKE_BINARY_DIR%\CMakeCache.txt
+
 rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
+cd %WORKSPACE%
+if not exist %WWIV_RELEASE_DIR% (
+  echo Creating %WWIV_RELEASE_DIR%
+  mkdir %WWIV_RELEASE_DIR%
+)
+del /q %WWIV_RELEASE_DIR%
+del wwiv-*.zip
 
 
 @rem Build BBS, wwivconfig
@@ -115,15 +132,6 @@ cmake --build . --config Release || exit /b
 @echo                           **** RUNNING TESTS ****
 @echo =============================================================================
 ctest --no-compress-output -T Test -V
-
-cd %WORKSPACE%\
-if not exist %WWIV_RELEASE_DIR% (
-  echo Creating %WWIV_RELEASE_DIR%
-  mkdir %WWIV_RELEASE_DIR%
-)
-del /q %WWIV_RELEASE_DIR%
-del wwiv-*.zip
-
 
 cd %WORKSPACE%\
 echo:
@@ -148,37 +156,6 @@ echo:
 echo * Creating release WWIV_ARCHive: %WWIV_RELEASE_ARCHIVE_FILE%
 cd %WWIV_RELEASE_DIR%
 %ZIP_EXE% a -tzip -y %WWIV_RELEASE_ARCHIVE_FILE%
-
-cd %CMAKE_BINARY_DIR%\core_test
-del result*.xml
-dir
-core_tests.exe --gtest_output=xml:result-core.xml
-
-cd %CMAKE_BINARY_DIR%\bbs_test
-copy /y/v %CL32_DLL% .
-del result*.xml
-dir
-bbs_tests.exe --gtest_output=xml:result-bbs.xml
-
-cd %CMAKE_BINARY_DIR%\sdk_test
-del result*.xml
-dir
-sdk_tests.exe --gtest_output=xml:result-sdk.xml
-
-cd %CMAKE_BINARY_DIR%\binkp_test
-del result*.xml
-dir
-binkp_tests.exe --gtest_output=xml:result-networkb.xml
-
-cd %CMAKE_BINARY_DIR%\net_core_test
-del result*.xml
-dir
-net_core_tests.exe --gtest_output=xml:result-net_core.xml
-
-cd %CMAKE_BINARY_DIR%\wwivd_test
-del result*.xml
-dir
-wwivd_tests.exe --gtest_output=xml:result-wwivd.xml
 
 
 echo:
