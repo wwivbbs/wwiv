@@ -6,17 +6,18 @@
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
 
-rm ${WORKSPACE}/wwiv-*.tar.gz
+rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
 
 set -e
 
 declare -r CMAKE_BINARY_DIR="${WORKSPACE}/_build"
 declare -r WWIV_RELEASE_DIR="${CMAKE_BINARY_DIR}/release"
-delcare -r WWIV_INSTALL_SRC="${WORKSPACE}/install"
+declare -r WWIV_INSTALL_SRC="${WORKSPACE}/install"
 declare -r WWIV_RELEASE="5.5"
 declare -r WWIV_FULL_RELEASE="5.5.0"
 declare -r WWIV_RELEASE_ARCHIVE_FILE=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
 declare -r CTEST_BIN=ctest
+declare -r CMAKE_BIN=cmake
 echo "WWIV BBS Build"
 echo "Workspace:        ${WORKSPACE}"
 echo "CMake:            ${CMAKE_BIN}"
@@ -34,8 +35,11 @@ echo "Ensuring CMAKE_BINARY_DIR exists: (${CMAKE_BINARY_DIR})"
 if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
   mkdir -p "${CMAKE_BINARY_DIR}"
 fi
-echo "Created release dir: ${WWIV_RELEASE_DIR}"
-rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
+echo "Created binary dir: ${CMAKE_BINARY_DIR}"
+
+if [[ -r "${CMAKE_BINARY_DIR}/CMakeCache.txt" ]] ;then
+   rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
+fi
 
 echo "Cleaning up release dir (${WWIV_RELEASE_DIR})"
 if [[ -d "${WWIV_RELEASE_DIR}" ]]; then
