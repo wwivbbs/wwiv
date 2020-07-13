@@ -17,7 +17,9 @@ declare -r WWIV_RELEASE="5.5"
 declare -r WWIV_FULL_RELEASE="5.5.0"
 declare -r WWIV_RELEASE_ARCHIVE_FILE=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
 declare -r CTEST_BIN=ctest
-declare -r CMAKE_BIN=cmake
+if [[ -z "${CMAKE_BIN}" ]]; then
+    CMAKE_BIN=cmake
+fi
 echo "WWIV BBS Build"
 echo "Workspace:        ${WORKSPACE}"
 echo "CMake:            ${CMAKE_BIN}"
@@ -58,7 +60,7 @@ fi
 pushd ${CMAKE_BINARY_DIR}
 ${CMAKE_BIN} -G "Ninja" -DCMAKE_BINARY_DIR_TYPE=Debug ..
 ${CMAKE_BIN} --build . --config Debug
-${CTEST_BIN} --no-compress-output -T Test -V || /bin/true
+${CTEST_BIN} --no-compress-output --output-on-failure -T Test || /bin/true
 popd
 cd ${WORKSPACE}
 
