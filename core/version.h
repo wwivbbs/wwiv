@@ -19,11 +19,11 @@
 #define __INCLUDED_CORE_VERSION_H__
 
 #include <cstdint>
-
 extern const char* wwiv_version;
 extern const char* beta_version;
 extern const char* wwiv_date;
 extern uint16_t wwiv_num_version;
 extern int wwiv_net_version;
+
 
 #endif  // __INCLUDED_CORE_VERSION_H__

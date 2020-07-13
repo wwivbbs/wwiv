@@ -8,7 +8,8 @@ project(wwiv)
 # 
 
 set(WWIV_RELEASE "5.5" CACHE STRING "WWIV Release Major Version to 2 digits")
-set(WWIV_FULL_RELEASE "5.5.0" CACHE STRING "WWIV Release Version to 3 digits")
+set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
+set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE STRING "WWIV Release Version to 3 digits")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
 set(NUM_BITS "32" CACHE STRING "32 or 64")
 
@@ -18,6 +19,7 @@ set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this
 #set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
 # set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 
+message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE} : ${WWIV_BUILD_NUMBER}")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

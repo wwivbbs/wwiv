@@ -25,7 +25,7 @@
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/version.cpp"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "fmt/format.h"
 #include "localui/curses_io.h"

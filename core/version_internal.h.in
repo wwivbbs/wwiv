@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                Copyright (C)2015-2020, WWIV Software Services          */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,21 +14,15 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "version_internal.h"
-#include <cstdint>
+#ifndef __INCLUDED_CORE_VERSION_INTERNAL_H__
+#define __INCLUDED_CORE_VERSION_INTERNAL_H__
 
-// Version String
-const char* wwiv_version = WWIV_RELEASE;
+# cmakedefine WWIV_RELEASE "@WWIV_RELEASE@"
+# cmakedefine WWIV_BUILD_NUMBER "@WWIV_BUILD_NUMBER@"
+# cmakedefine WWIV_FULL_RELEASE "@WWIV_FULL_RELEASE@"
 
-// Build Information
-const char* beta_version = WWIV_BUILD_NUMBER;
+#define INTERNAL_BUILD_DATE __DATE__ ", " __TIME__;
 
-// The statusrec.wwiv_version
-uint16_t wwiv_num_version = 520;
-// The statusrec.network_version
-int wwiv_net_version = 53;
 
-// Data/time of this build
-const char* wwiv_date = __DATE__ ", " __TIME__;
+#endif  // __INCLUDED_CORE_VERSION_H__
