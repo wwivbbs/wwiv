@@ -93,7 +93,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   // Set header
   cfg430.header.header.config_revision_number = 1;
   cfg430.header.header.config_size = sizeof(configrec);
-  cfg430.header.header.written_by_wwiv_num_version = wwiv_num_version;
+  cfg430.header.header.written_by_wwiv_num_version = wwiv_config_version();
   to_char_array(cfg430.header.header.signature, "WWIV");
 
   to_char_array(cfg430.datadir, "data");

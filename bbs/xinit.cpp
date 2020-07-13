@@ -566,7 +566,7 @@ void Application::read_gfile() {
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
-            << wwiv_version << beta_version << ", Copyright (c) 1998-2020, WWIV Software Services."
+            << full_version() << ", Copyright (c) 1998-2020, WWIV Software Services."
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;
@@ -617,7 +617,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
     return false;
   }
 
-  status->SetWWIVVersion(wwiv_num_version);
+  status->SetWWIVVersion(wwiv_config_version());
   status->EnsureCallerNumberIsValid();
   statusMgr->CommitTransaction(std::move(status));
 
@@ -672,7 +672,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
   // SET BBS environment variable.
-  set_environment_variable("BBS", wwiv_version);
+  set_environment_variable("BBS", full_version());
   context().InitalizeContext();
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
@@ -705,7 +705,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   if (cleanup_network) {
     cleanup_net();
     sysoplog(false) << "";
-    sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
+    sysoplog(false) << "WWIV " << full_version() << ", inst " << instance_number()
                     << ", brought up at " << times() << " on " << fulldate() << ".";
   }
 

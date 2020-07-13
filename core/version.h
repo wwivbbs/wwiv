@@ -19,11 +19,26 @@
 #define __INCLUDED_CORE_VERSION_H__
 
 #include <cstdint>
-extern const char* wwiv_version;
-extern const char* beta_version;
-extern const char* wwiv_date;
-extern uint16_t wwiv_num_version;
-extern int wwiv_net_version;
+#include <string>
 
+namespace wwiv::core {
+
+// Returns the full WWIV version (like 5.5.0.2020) as a string.
+std::string full_version();
+
+// Returns the short version (Like 5.5.0) as a string.
+std::string short_version();
+
+// Returns the wwiv modern config version #.  Used to run upgrade
+// activities on WWIV.
+uint16_t wwiv_config_version();
+
+// Returns the network compatible version as an int. i.e. 53
+int wwiv_network_compatible_version();
+
+// Returns the compile date for WWIV
+std::string wwiv_compile_datetime();
+
+}
 
 #endif  // __INCLUDED_CORE_VERSION_H__

@@ -19,6 +19,8 @@
 #define _DEFINE_GLOBALS_
 
 #include "wwivconfig/wwivconfig.h"
+
+#include "bbs/datetime.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -315,7 +317,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
     case '$': {
       vector<string> lines;
       std::ostringstream ss;
-      ss << "WWIV " << wwiv_version << beta_version << " wwivconfig compiled " << wwiv_date;
+      ss << "WWIV " << full_version() << " wwivconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());
       lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
@@ -357,7 +359,7 @@ int WInitApp::main(int argc, char** argv) {
   if (forced_initialize) {
     window = new StdioWindow(nullptr, new ColorScheme());
   } else {
-    CursesIO::Init(fmt::format("WWIV {}{} Configuration Program.", wwiv_version, beta_version));
+    CursesIO::Init(fmt::format("WWIV {} Configuration Program.", full_version()));
     window = curses_out->window();
     curses_out->Cls(ACS_CKBOARD);
     window->SetColor(SchemeId::NORMAL);
@@ -528,7 +530,7 @@ int WInitApp::main(int argc, char** argv) {
     case '$': {
       vector<string> lines;
       std::ostringstream ss;
-      ss << "WWIV " << wwiv_version << beta_version << " wwivconfig compiled " << wwiv_date;
+      ss << "WWIV " << full_version() << " wwivconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());
       lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);

@@ -274,8 +274,8 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
 
   std::ostringstream ss;
   ss << "\004"
-     << "0R " << wwiv_net_version << " - " << date() << " " << times() << " " << net.name << " ->"
-     << net.sysnum << "\r\n";
+     << "0R " << wwiv_network_compatible_version() << " - " << date() << " " << times() << " "
+     << net.name << " ->" << net.sysnum << "\r\n";
 
   const auto routing_information = ss.str();
 

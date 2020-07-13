@@ -283,7 +283,7 @@ static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, un
 static int _version(struct mb_interpreter_t* bas, void** l) {
   mb_check(mb_attempt_open_bracket(bas, l));
   mb_check(mb_attempt_close_bracket(bas, l));
-  mb_push_string(bas, l, BasicStrDup(wwiv_version));
+  mb_push_string(bas, l, BasicStrDup(short_version()));
   return MB_FUNC_OK;
 }
 

@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
   }
   if (cmdline.barg("version")) {
-    cout << wwiv_version << beta_version << std::endl;
+    cout << full_version() << std::endl;
     return 0;
   }
 

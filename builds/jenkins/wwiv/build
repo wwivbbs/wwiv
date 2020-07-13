@@ -7,20 +7,22 @@
 #   BUILD_NUMBER - Jenkins Build number
 
 rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
-
 set -e
 
 declare -r CMAKE_BINARY_DIR="${WORKSPACE}/_build"
-declare -r WWIV_RELEASE_DIR="${CMAKE_BINARY_DIR}/release"
 declare -r WWIV_INSTALL_SRC="${WORKSPACE}/install"
+declare -r WWIV_RELEASE_DIR="${CMAKE_BINARY_DIR}/release"
 declare -r WWIV_RELEASE="5.5"
 declare -r WWIV_FULL_RELEASE="5.5.0"
-declare -r WWIV_RELEASE_ARCHIVE_FILE=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
-declare -r CTEST_BIN=ctest
+declare -r WWIV_RELEASE_ARCHIVE_FILE=${WORKSPACE}/wwiv-linux-${label}-${WWIV_FULL_RELEASE}.${BUILD_NUMBER}.tar.gz
 if [[ -z "${CMAKE_BIN}" ]]; then
     CMAKE_BIN=cmake
 fi
-echo "WWIV BBS Build"
+if [[ -z "${CTEST_BIN}" ]]; then
+    CTEST_BIN=ctest
+fi
+
+echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"
 echo "CMake:            ${CMAKE_BIN}"
 echo "CTest:            ${CTEST_BIN}"
@@ -32,6 +34,7 @@ echo "Version:          ${BUILD_NUMBER}"
 echo "Archive:          ${WWIV_RELEASE_ARCHIVE_FILE}"
 echo "Label:            ${label}"
 echo "GCC:              $(gcc --version)"
+echo "============================================================================="
 
 echo "Ensuring CMAKE_BINARY_DIR exists: (${CMAKE_BINARY_DIR})"
 if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
@@ -47,23 +50,24 @@ echo "Cleaning up release dir (${WWIV_RELEASE_DIR})"
 if [[ -d "${WWIV_RELEASE_DIR}" ]]; then
   rm -rf "${WWIV_RELEASE_DIR}"
 fi
-mkdir -p "${WWIV_RELEASE_DIR}"
+
 echo "Created release dir: ${WWIV_RELEASE_DIR}"
+mkdir -p "${WWIV_RELEASE_DIR}"
 
 echo "Building binaries"
-
-echo "Compiling Everything"
-if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
-    mkdir -p ${CMAKE_BINARY_DIR}
-fi
-
 pushd ${CMAKE_BINARY_DIR}
-${CMAKE_BIN} -G "Ninja" -DCMAKE_BINARY_DIR_TYPE=Debug ..
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug ^
+      -DWWIV_RELEASE=${WWIV_RELEASE} ^
+      -DWWIV_FULL_RELEASE=${WWIV_FULL_RELEASE} ^
+      -DWWIV_ARCH=${WWIV_ARCH}  ^
+      -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} ^
+      ${WORKSPACE} || exit /b
+
 ${CMAKE_BIN} --build . --config Debug
 ${CTEST_BIN} --no-compress-output --output-on-failure -T Test || /bin/true
 popd
-cd ${WORKSPACE}
 
+cd ${WORKSPACE}
 echo "Populating built binaries"
 cp  ${CMAKE_BINARY_DIR}/bbs/bbs \
     ${CMAKE_BINARY_DIR}/network/network \
@@ -78,8 +82,6 @@ cp  ${CMAKE_BINARY_DIR}/bbs/bbs \
     ${CMAKE_BINARY_DIR}/wwivd/wwivd \
     ${CMAKE_BINARY_DIR}/wwivutil/wwivutil \
     ${WWIV_RELEASE_DIR}
-
-echo "adding common files"
 
 echo "adding linux-specific files"
 cd ${WWIV_INSTALL_SRC}/platform/unix

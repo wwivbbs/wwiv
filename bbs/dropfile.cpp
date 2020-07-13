@@ -40,6 +40,10 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 #pragma pack(push, 1)
+
+// See http://wiki.bbs.nz/doors:dropfiles:pcboardsys
+// Note, this doesn't seem to match perfectly what that states, but this
+// is the same pcboard.sys format wwiv has done for years.
 struct pcboard_sys_rec {
   char display[2], printer[2], page_bell[2], alarm[2], sysop_next, errcheck[2], graphics, nodechat,
       openbps[5], connectbps[5];
@@ -77,6 +81,7 @@ struct pcboard_sys_rec {
   // end PCB 14.5 additions
 };
 #pragma pack(pop)
+
 [[maybe_unused]] static constexpr auto sizeof_pcboard_sys = sizeof(pcboard_sys_rec);
 
 static constexpr int NULL_HANDLE = 0;
@@ -360,7 +365,7 @@ void CreateDoor32SysDropFile() {
     file.WriteLine(GetDoorHandle());
     string cspeed = std::to_string(a()->modem_speed_);
     file.WriteLine(cspeed);
-    file.WriteLine(StrCat("WWIV ", wwiv_version));
+    file.WriteLine(StrCat("WWIV ", short_version()));
     file.WriteLine(a()->usernum);
     file.WriteLine(a()->user()->GetRealName());
     file.WriteLine(a()->user()->GetName());

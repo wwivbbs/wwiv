@@ -91,10 +91,10 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   }
   network_ = nws[network_number_];
   network_name_ = ToStringLowerCase(network_.name);
-  LOG(STARTUP) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
+  LOG(STARTUP) << cmdline.program_name() << " [" << full_version() << "]"
                << " for network: " << network_name_;
   if (!quiet()) {
-    std::cerr << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
+    std::cerr << cmdline.program_name() << " [" << full_version() << "]"
               << " for network: " << network_name_ << std::endl;
   }
 }

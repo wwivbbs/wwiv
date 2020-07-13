@@ -21,6 +21,7 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
 #include <string>
 #include <vector>
 
@@ -78,7 +79,7 @@ void HttpServer::SendResponse(const HttpResponse& r) {
   const auto d = std::chrono::seconds(1);
   conn_->send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
   conn_->send_line(StrCat("Date: ", current_time_as_string()), d);
-  conn_->send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
+  conn_->send_line(fmt::format("Server: wwivd/{}", full_version()), d);
   if (!r.text.empty()) {
     const auto content_length = r.text.size();
     conn_->send_line(StrCat("Content-Length: ", content_length), d);

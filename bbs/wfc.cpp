@@ -183,7 +183,7 @@ void WFC::DrawScreen() {
         21, 13, 14,
         fmt::sprintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
                      100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
-    a()->localIO()->PutsXYA(58, 6, 14, StrCat(wwiv_version, beta_version));
+    a()->localIO()->PutsXYA(58, 6, 14, full_version());
 
     a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->GetNetworkVersion()));
     a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->GetNumUsers()));

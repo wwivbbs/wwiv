@@ -8,7 +8,7 @@
 #  GTEST_FOUND - System has GTest
 #  GTEST_INCLUDE_DIRS - The GTest include directories
 #  GTEST_LIBRARIES - The libraries needed to use GTest
-message(STATUS "WWIV FindGTest")
+message(TRACE "WWIV FindGTest")
 
 set(GTEST_ROOT_DIR
     "${CMAKE_SOURCE_DIR}/deps/googletest/googletest"

@@ -111,7 +111,7 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 }
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
-  bout << "\r\nWWIV " << wwiv_version << beta_version << wwiv::endl;
+  bout << "\r\nWWIV " << full_version() << wwiv::endl;
   bout << "Copyright (c) 1998-2020, WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;
 
@@ -695,7 +695,7 @@ static void DisplayUserLoginInformation() {
     bout << "NOT Available\r\n";
   }
 
-  bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
+  bout << "|#9System is|#0......... |#2WWIV " << full_version() << "  " << wwiv::endl;
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->RefreshStatusCache();

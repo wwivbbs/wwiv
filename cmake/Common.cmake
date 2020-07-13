@@ -1,14 +1,10 @@
 #
 # Common CMake module for WWIV
-#
 
-message(STATUS "WWIV Common CMake Module.")
+message(VERBOSE "WWIV Common CMake Module.")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules/sanitizers)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_COLOR_MAKEFILE   ON)
-
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -62,25 +58,23 @@ endif (UNIX)
 
 if( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE "Debug" )
-  message(STATUS "Defaulting CMAKE_BUILD_TYPE to Debug")
+  message(STATUS "CMAKE_BUILD_TYPE not set; defaulting to Debug")
 endif()
-message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message(VERBOSE "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 
 IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  message(STATUS "Defining _DEBUG macro")
+  message(VERBOSE "Defining _DEBUG macro for debug build")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
 macro(SET_MSVC_WARNING_LEVEL_4) 
-  #message(STATUS "SET_MSVC_WARNING_LEVEL_4: ${CMAKE_PROJECT_NAME}")
   if(WIN32 AND MSVC)
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
       string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     else()
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
-    #message(STATUS "SET_MSVC_WARNING_LEVEL_4: WIN32 AND MSVC: ${CMAKE_CXX_FLAGS}")
   endif()
 endmacro()
 
@@ -93,7 +87,6 @@ macro(SET_MAX_WARNINGS)
   endif()
 endmacro()
 
-
 MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
     "${${PROJECT_NAME}_BINARY_DIR}" insource)
@@ -105,10 +98,29 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
     "${PROJECT_NAME} requires an out of source build.
      Please see https://github.com/wwivbbs/wwiv#out-of-source-build-warning
      This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
-     Please delete them."
+     Please delete them before re-running cmake."
     )
   ENDIF(insource OR insourcesubdir)
 ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 
   
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(VERBOSE "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+
+function(zip output_file input_files working_dir)
+  message(DEBUG "zip: ${output_file} : ${input_files}")
+  add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E tar "cf" "${output_file}" --format=zip -- ${input_files}
+    WORKING_DIRECTORY "${working_dir}"
+    OUTPUT  "${output_file}"
+    DEPENDS ${input_files}
+    COMMENT "Creating ZIP file: ${output_file}."
+    )
+endfunction()
+
+function(create_datafile_archive arc dir)
+  message(DEBUG "create_datafile_archive: dir: ${dir}: ${WWIV_RELEASE_DIR}/${arc}.zip")
+  file(GLOB_RECURSE DATA_FILES "${dir}/*")
+  zip("${WWIV_RELEASE_DIR}/${arc}.zip" "${DATA_FILES}" "${dir}/")
+  add_custom_target("${arc}_archive" ALL DEPENDS "${WWIV_RELEASE_DIR}/${arc}.zip")
+endfunction()
+

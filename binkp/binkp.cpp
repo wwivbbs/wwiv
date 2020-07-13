@@ -366,10 +366,10 @@ BinkState BinkP::ConnInit() {
   return BinkState::WAIT_CONN;
 }
 
-static string wwiv_version_string() { return StrCat(wwiv_version, beta_version); }
+static string wwiv_version_string() { return full_version(); }
 
 static string wwiv_version_string_with_date() {
-  return StrCat(wwiv_version, beta_version, " (", wwiv_date, ")");
+  return fmt::format("{} ({})", full_version(), wwiv_compile_datetime());
 }
 
 BinkState BinkP::WaitConn() {

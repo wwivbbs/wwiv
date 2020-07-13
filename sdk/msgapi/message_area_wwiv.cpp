@@ -82,7 +82,7 @@ static std::unique_ptr<WWIVMessageAreaHeader> ReadHeader(DataFile<postrec>& file
     to_char_array(raw_header.signature, "WWIV\x1A");
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
-    raw_header.wwiv_version = wwiv_num_version;
+    raw_header.wwiv_version = wwiv_config_version();
     raw_header.daten_created = DateTime::now().to_daten_t();
   }
 

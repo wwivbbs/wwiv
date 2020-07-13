@@ -76,7 +76,7 @@ TEST_F(ConfigTest, SetConfig) {
 TEST_F(ConfigTest, WrittenByNumVersion) {
   Config config(helper.root());
 
-  ASSERT_EQ(wwiv_num_version, config.written_by_wwiv_num_version());
+  ASSERT_EQ(wwiv_config_version(), config.written_by_wwiv_num_version());
 }
 
 TEST_F(ConfigTest, Is5XXOrLater) {

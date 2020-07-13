@@ -200,13 +200,13 @@ template.h
 # Linux/UNIX files
 #
 #
-*.cmake
 CMakeFiles
 CMakeCache.txt
 Makefile
 *.a
 deps/cl342/*.o
 _build/
+_b/
 
 # CLion files
 .idea/

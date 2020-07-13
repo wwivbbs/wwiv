@@ -413,13 +413,13 @@ void ToggleExpert() {
 
 void WWIVVersion() {
   bout.cls();
-  bout << "|#9WWIV Bulletin Board System " << wwiv_version << beta_version << wwiv::endl;
+  bout << "|#9WWIV Bulletin Board System " << full_version() << wwiv::endl;
   bout << "|#9Copyright (C) 1998-2020, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
   bout << "|#9Licensed under the Apache License, Version 2.0." << wwiv::endl;
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
        << wwiv::endl << wwiv::endl;
-  bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
+  bout << "|#9Compile Time  : |#2" << wwiv_compile_datetime() << wwiv::endl;
   bout << "|#9SysOp Name    : |#2" << a()->config()->sysop_name() << wwiv::endl;
   bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;

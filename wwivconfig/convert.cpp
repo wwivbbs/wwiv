@@ -115,7 +115,7 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
   configrec_header_t h = {};
   h.config_revision_number = 0;
   h.config_size = sizeof(configrec);
-  h.written_by_wwiv_num_version = wwiv_num_version;
+  h.written_by_wwiv_num_version = wwiv_config_version();
   to_char_array(h.signature, "WWIV");
 
   // Save old newuser password.

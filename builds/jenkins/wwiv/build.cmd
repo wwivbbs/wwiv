@@ -18,14 +18,12 @@ setlocal
 del wwiv-*.zip
 
 if /I "%LABEL%"=="win-x86" (
-	@echo "Setting x86 (32-bit) WWIV_ARCHitecture"
+	@echo "Setting x86 (32-bit) Architecture"
 	set WWIV_ARCH=x86
-	set NUM_BITS=32
 )
 if /I "%LABEL%"=="win-x64" (
-	@echo "Setting x64 (64-bit) WWIV_ARCHitecture"
+	@echo "Setting x64 (64-bit) Architecture"
 	set WWIV_ARCH=x64
-	set NUM_BITS=64
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
@@ -39,7 +37,6 @@ set VS_VERSION=2019
 set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
 set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
 set VS_PREVIEW_DIR=Microsoft Visual Studio\%VS_VERSION%\Preview\VC\Auxiliary\Build\
-set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 
 @rem ===============================================================================
 
@@ -78,12 +75,10 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
   set VS_INSTALL_DIR=%VS_PREVIEW_DIR%
 )
 
-
 @echo =============================================================================
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
 @echo WWIV_ARCHitecture:    %WWIV_ARCH%
-@echo Number of Bits:       %NUM_BITS%
 @echo WWIV Full Release:    %WWIV_FULL_RELEASE%        
 @echo WWIV Release:         %WWIV_RELEASE%        
 @echo Build Number:         %BUILD_NUMBER%
@@ -96,7 +91,6 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
 @echo WindowsLibPath        %WindowsLibPath%
 @echo INCLUDE               %INCLUDE%
-@echo CL32_DLL              %CL32_DLL%
 @echo =============================================================================
 
 if not exist %CMAKE_BINARY_DIR% (
@@ -114,7 +108,6 @@ if not exist %WWIV_RELEASE_DIR% (
 del /q %WWIV_RELEASE_DIR%
 del wwiv-*.zip
 
-
 @rem Build BBS, wwivconfig
 echo:
 echo * Updating the Build Number in version.cpp
@@ -124,7 +117,12 @@ cd %WORKSPACE%\core
 rem Turn echo back on now.
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DWWIV_RELEASE=%WWIV_RELEASE% -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% -DWWIV_ARCH=%WWIV_ARCH% %WORKSPACE% || exit /b
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
+    -DWWIV_RELEASE=%WWIV_RELEASE% ^
+    -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% ^
+    -DWWIV_ARCH=%WWIV_ARCH%  ^
+    -DWWIV_BUILD_NUMBER=%BUILD_NUMBER% ^
+    %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
 @echo =============================================================================
 @echo                           **** RUNNING TESTS ****
@@ -134,7 +132,6 @@ ctest --no-compress-output --output-on-failure -T Test
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to Release directory.
-copy /v/y %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll %WWIV_RELEASE_DIR%\cl%NUM_BITS%.dll || exit /b
 copy /v/y %CMAKE_BINARY_DIR%\bbs\bbs.exe %WWIV_RELEASE_DIR%\bbs.exe || exit /b
 copy /v/y %CMAKE_BINARY_DIR%\wwivconfig\wwivconfig.exe %WWIV_RELEASE_DIR%\wwivconfig.exe || exit /b
 copy /v/y %CMAKE_BINARY_DIR%\network\network.exe %WWIV_RELEASE_DIR%\network.exe || exit /b

@@ -605,7 +605,7 @@ static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_ad
   header.capabilities_valid =
       (header.capabilities & 0xff00) >> 8 | ((header.capabilities & 0xff) << 8);
   header.product_rev_major = 0;
-  header.product_rev_minor = static_cast<uint8_t>(wwiv_net_version & 0xff);
+  header.product_rev_minor = static_cast<uint8_t>(wwiv_network_compatible_version() & 0xff);
   // Add in packet password.  We don't want to ensure we have
   // a trailing null since we may want all 8 bytes to be usable
   // by the password.
@@ -720,8 +720,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       text << "AREA:" << subtype << "\r";
     }
     // As of 5.3, the PID is added by the BBS software.
-    // text << "\001PID: WWIV " << wwiv_version << beta_version << "\r";
-    text << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+    // text << "\001PID: WWIV " << full_version() << "\r";
+    text << "\001TID: WWIV NET" << full_version() << "\r";
     if (needs_msgid && !is_email) {
       text << "\001MSGID: " << msgid << "\r";
     }
@@ -746,11 +746,11 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     if (from_address.point() == 0) {
       text << "\r"
-           << "--- WWIV " << wwiv_version << beta_version << "\r"
+           << "--- WWIV " << full_version() << "\r"
            << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
     } else {
       text << "\r"
-           << "--- WWIV " << wwiv_version << beta_version << "\r"
+           << "--- WWIV " << full_version() << "\r"
            << " * Origin: " << origin_line << " (" << to_zone_net_node_point(from_address) << ")\r";
     }
     // Finally we need SEEN-BY and PATH lines for routing.
@@ -865,7 +865,7 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
     break;
   }
 
-  string from = StrCat("WWIV NET ", wwiv_version, beta_version);
+  string from = StrCat("WWIV NET ", full_version());
   string to = "SYSOP";
 
   h.cost = 0;
@@ -891,8 +891,8 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
   // FTS-4001 INTL line
   text << "\001"
        << "INTL " << dest << " " << orig << "\r";
-  text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
-       << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+  text << "\001PID: WWIV " << full_version() << "\r"
+       << "\001TID: WWIV NET" << full_version() << "\r";
   if (!msgid.empty()) {
     text << "\001MSGID: " << msgid << "\r";
   }

@@ -356,12 +356,12 @@ static void update_net_ver_status_dat(const string& datadir) {
   if (!file.Read(0, &statusrec)) {
     return;
   }
-  if (statusrec.net_version == wwiv_net_version) {
+  if (statusrec.net_version == wwiv_network_compatible_version()) {
     return;
   }
   statusrec.net_bias = 0;
   statusrec.net_req_free = 0;
-  statusrec.net_version = static_cast<uint16_t>(wwiv_net_version);
+  statusrec.net_version = static_cast<uint16_t>(wwiv_network_compatible_version());
   file.Write(0, &statusrec);
 }
 

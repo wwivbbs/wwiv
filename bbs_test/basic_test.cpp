@@ -173,7 +173,8 @@ TEST_F(BasicTest, ModuleNames) {
 }
 
 TEST_F(BasicTest, WWIV_Version) {
-  const auto script = fmt::format(R"(ASSERT.EQUALS("{}", wwiv.version()) )", wwiv_version);
+  const auto script = fmt::format(R"(ASSERT.EQUALS("{}", wwiv.version()) )",
+                                  wwiv::core::short_version());
   EXPECT_TRUE(RunScript(script));
 }
 
@@ -181,7 +182,7 @@ TEST_F(BasicTest, WWIV_Version_Import) {
   const auto script = fmt::format(R"(
 import "@wwiv"
 ASSERT.EQUALS("{}", version())
-)", wwiv_version);
+)", wwiv::core::short_version());
   EXPECT_TRUE(RunScript(script));
 }
 

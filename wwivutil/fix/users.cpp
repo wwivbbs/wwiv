@@ -95,7 +95,7 @@ static bool initStatusDat(const std::string& datadir) {
     to_char_array(st.log2, "000000.log");
     to_char_array(st.gfiledate, "00/00/00");
     st.callernum = 65535;
-    st.wwiv_version = wwiv_num_version;
+    st.wwiv_version = wwiv_config_version();
     update = true;
   } else {
     File statusDat(status_fn);
@@ -109,8 +109,8 @@ static bool initStatusDat(const std::string& datadir) {
     statusDat.Close();
 
     // version check
-    if (st.wwiv_version > wwiv_num_version) {
-      LOG(INFO) << "Incorrect version of fix (this is for " << wwiv_num_version << ", you need "
+    if (st.wwiv_version > wwiv_config_version()) {
+      LOG(INFO) << "Incorrect version of fix (this is for " << wwiv_config_version() << ", you need "
                 << st.wwiv_version << ")";
     }
 

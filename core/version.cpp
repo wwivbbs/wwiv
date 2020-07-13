@@ -16,19 +16,36 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/version.h"
+#include "fmt/format.h"
 #include "version_internal.h"
 #include <cstdint>
-
-// Version String
-const char* wwiv_version = WWIV_RELEASE;
-
-// Build Information
-const char* beta_version = WWIV_BUILD_NUMBER;
+#include <string>
 
 // The statusrec.wwiv_version
-uint16_t wwiv_num_version = 520;
+static constexpr uint16_t wwiv_num_version = 520;
 // The statusrec.network_version
-int wwiv_net_version = 53;
+static constexpr int wwiv_net_version = 53;
 
-// Data/time of this build
-const char* wwiv_date = INTERNAL_BUILD_DATE;
+namespace wwiv::core {
+std::string wwiv_compile_datetime() {
+  return INTERNAL_BUILD_DATE;
+}
+
+std::string full_version() {
+  return fmt::format("{}.{}", WWIV_RELEASE, WWIV_BUILD_NUMBER);
+}
+
+std::string short_version() {
+  return WWIV_RELEASE; 
+}
+
+uint16_t wwiv_config_version() {
+  return wwiv_num_version;
+}
+
+int wwiv_network_compatible_version() {
+  return wwiv_net_version;
+}
+
+}

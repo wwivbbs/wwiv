@@ -646,7 +646,7 @@ bool inmsg(MessageEditorData& data) {
   // as well as FTN messages so we know the Program ID (WWIV) that created
   // the message.
   const auto control_d_zero = fmt::sprintf("%c0", CD);
-  b << control_d_zero << "PID: WWIV " << wwiv_version << beta_version << crlf;
+  b << control_d_zero << "PID: WWIV " << full_version() << crlf;
 
   // iterate through the lines in "lin" and append them to 'b'
   for (const auto& l : lin) {

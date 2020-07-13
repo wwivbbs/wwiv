@@ -228,7 +228,7 @@ void add_post(postrec* pp) {
     strcpy(p.signature, "WWIV\x1A");
     p.active_message_count = saved_count;
     p.revision = 1;
-    p.wwiv_version = wwiv_num_version;
+    p.wwiv_version = wwiv_config_version();;
     p.daten_created = DateTime::now().to_daten_t();
   }
 

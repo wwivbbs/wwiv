@@ -147,10 +147,10 @@ static bool need_network3(const net_networks_rec& net, int network_version) {
     return false;
   }
 
-  if (network_version != wwiv_net_version) {
+  if (network_version != wwiv_network_compatible_version()) {
     // always need network3 if the versions do not match.
     LOG(INFO) << "Need to run network3 since current network_version: " << network_version
-              << " != our network_version: " << wwiv_net_version;
+              << " != our network_version: " << wwiv_network_compatible_version();
     return true;
   }
   File bbsdataNet(FilePath(dir, BBSDATA_NET));

@@ -82,7 +82,7 @@ SdkHelper::SdkHelper()
     h.config_revision_number = 0;
     h.config_size = sizeof(configrec);
     c.userreclen = sizeof(userrec);
-    h.written_by_wwiv_num_version = wwiv_num_version;
+    h.written_by_wwiv_num_version = wwiv_config_version();
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 

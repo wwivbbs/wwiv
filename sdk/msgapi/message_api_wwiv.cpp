@@ -90,7 +90,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
 
   if (name != EMAIL_NOEXT) {
     // Create 5.1 style sub header for subs, but not for email.
-    const WWIVMessageAreaHeader header(wwiv_num_version, 0);
+    const WWIVMessageAreaHeader header(wwiv_config_version(), 0);
     fileSub.Write(&header.header(), sizeof(subfile_header_t));
   }
   return true;

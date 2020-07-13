@@ -717,14 +717,14 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
       sysoplog(false);
-      sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number()
+      sysoplog(false) << "WWIV " << short_version() << ", inst " << instance_number()
                       << ", taken down at " << times() << " on " << fulldate() << " with exit code "
                       << exit_level << ".";
       sysoplog(false);
     }
     catsl();
     clog << "\r\n";
-    clog << "WWIV Bulletin Board System " << wwiv_version << beta_version
+    clog << "WWIV Bulletin Board System " << full_version()
          << " exiting at error level " << exit_level << endl
          << endl;
     clog.flush();
@@ -739,7 +739,7 @@ int Application::Run(int argc, char* argv[]) {
   auto type = CommunicationType::NONE;
 
 #ifdef _WIN32
-  // Disble padding with 0xFE for all safe string functions.
+  // Disable padding with 0xFE for all safe string functions.
   // We'd rather leave them padded with 0x0 as default.
   _CrtSetDebugFillThreshold(0);
 #endif
@@ -765,20 +765,20 @@ int Application::Run(int argc, char* argv[]) {
                                                   "Do not hang up on user when at log off", false});
 
   if (!cmdline.Parse()) {
-    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
     return EXIT_FAILURE;
   }
   if (cmdline.help_requested()) {
-    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
     return 0;
   }
   if (cmdline.barg("version")) {
-    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     return 0;
   }
-  auto menu_commands = cmdline.arg("menu_commands");
+  const auto menu_commands = cmdline.arg("menu_commands");
   if (!menu_commands.is_default()) {
     wwiv::menus::PrintMenuCommands(menu_commands.as_string());
     return 0;
@@ -851,7 +851,7 @@ int Application::Run(int argc, char* argv[]) {
       // We only want the localIO if we ran this locally at a terminal
       // and also not passed in from the telnet handler, etc.  On Windows
       // We always have a local console, so this is *NIX specific.
-      CursesIO::Init(fmt::sprintf("WWIV BBS %s%s", wwiv_version, beta_version));
+      CursesIO::Init(fmt::sprintf("WWIV BBS %s", full_version()));
       reset_local_io(new CursesLocalIO(curses_out->GetMaxY()));
     } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
       reset_local_io(new NullLocalIO());
@@ -921,7 +921,7 @@ int Application::Run(int argc, char* argv[]) {
     // not in this state when we enter the WFC.
     hangup_ = false;
     set_at_wfc(true);
-    char cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
+    const auto cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
     switch (cmd) {
     case 'B':
       boardedit();
@@ -1037,28 +1037,31 @@ int Application::Run(int argc, char* argv[]) {
   return oklevel_;
 }
 
-  /** Returns the WWIV SDK Config Object. */
-wwiv::sdk::Config* Application::config() const { return config_.get(); }
+/** Returns the WWIV SDK Config Object. */
+Config* Application::config() const { return config_.get(); }
 void Application::set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
   config_ = std::move(config);
 }
-/** Returns the WWIV Names.LST Config Object. */
-wwiv::sdk::Names* Application::names() const { return names_.get(); }
 
-wwiv::sdk::msgapi::MessageApi* Application::msgapi(int type) const {
+/** Returns the WWIV Names.LST Config Object. */
+Names* Application::names() const { return names_.get(); }
+
+msgapi::MessageApi* Application::msgapi(int type) const {
   return msgapis_.at(type).get();
 }
-wwiv::sdk::msgapi::MessageApi* Application::msgapi() const {
+
+msgapi::MessageApi* Application::msgapi() const {
   return msgapis_.at(current_sub().storage_type).get();
 }
-wwiv::sdk::msgapi::WWIVMessageApi* Application::msgapi_email() const {
+
+msgapi::WWIVMessageApi* Application::msgapi_email() const {
   return dynamic_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
 }
 
-wwiv::sdk::files::FileApi* Application::fileapi() const {
+files::FileApi* Application::fileapi() const {
   return fileapi_.get();
 }
-wwiv::sdk::files::FileArea* Application::current_file_area() const {
+files::FileArea* Application::current_file_area() const {
   return file_area_.get();
 }
 
@@ -1070,31 +1073,31 @@ void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileAr
 
 Batch& Application::batch() { return batch_; }
 
-const wwiv::sdk::subboard_t& Application::current_sub() const {
+const subboard_t& Application::current_sub() const {
   return subs().sub(GetCurrentReadMessageArea());
 }
 
-const wwiv::sdk::files::directory_t& Application::current_dir() const {
+const files::directory_t& Application::current_dir() const {
  return dirs()[current_user_dir().subnum];
 }
 
-wwiv::sdk::Subs& Application::subs() { return *subs_; }
+Subs& Application::subs() { return *subs_; }
 
-const wwiv::sdk::Subs& Application::subs() const { return *subs_; }
+const Subs& Application::subs() const { return *subs_; }
 
-wwiv::sdk::files::Dirs& Application::dirs() {
+files::Dirs& Application::dirs() {
   return *dirs_;
 }
 
-const wwiv::sdk::files::Dirs& Application::dirs() const {
+const files::Dirs& Application::dirs() const {
   return *dirs_;
 }
 
-wwiv::sdk::Networks& Application::nets() {
+Networks& Application::nets() {
   return *nets_;
 }
 
-const wwiv::sdk::Networks& Application::nets() const {
+const Networks& Application::nets() const {
   return *nets_;
 }
 

@@ -31,4 +31,4 @@ set_property(
   APPEND PROPERTY
       INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
 )
-message (STATUS "CL: ${cl342_lib}:${LIBCL_A}")
+message (DEBUG "CL: ${cl342_lib}:${LIBCL_A}")

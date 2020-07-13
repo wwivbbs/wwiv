@@ -152,8 +152,8 @@ bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; 
 // static
 void Logger::StartupLog(int argc, char* argv[]) {
   const auto dt = DateTime::now();
-  LOG(STARTUP) << config_.exit_filename << " version " << wwiv_version << beta_version << " ("
-      << wwiv_date << ")";
+  LOG(STARTUP) << config_.exit_filename << " version " << full_version() << " ("
+               << wwiv_compile_datetime() << ")";
   LOG(STARTUP) << config_.exit_filename << " starting at " << dt.to_string();
   if (argc > 1) {
     string cmdline;
