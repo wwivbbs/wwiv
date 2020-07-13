@@ -99,9 +99,6 @@ set CL32_DLL=%WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll
 @echo CL32_DLL              %CL32_DLL%
 @echo =============================================================================
 
-@echo on
-rem Turn echo back on now.
-
 if not exist %CMAKE_BINARY_DIR% (
   echo Creating %CMAKE_BINARY_DIR%
   mkdir %CMAKE_BINARY_DIR%
@@ -123,7 +120,8 @@ echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
 
-echo:
+@echo on
+rem Turn echo back on now.
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
 cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DWWIV_RELEASE=%WWIV_RELEASE% -DWWIV_FULL_RELEASE=%WWIV_FULL_RELEASE% -DWWIV_ARCH=%WWIV_ARCH% %WORKSPACE% || exit /b
@@ -131,7 +129,7 @@ cmake --build . --config Release || exit /b
 @echo =============================================================================
 @echo                           **** RUNNING TESTS ****
 @echo =============================================================================
-ctest --no-compress-output -T Test -V
+ctest --no-compress-output --output-on-failure -T Test 
 
 cd %WORKSPACE%\
 echo:
@@ -152,16 +150,11 @@ copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.e
 copy /v/y %WWIV_INSTALL_SRC%\docs\* %WWIV_RELEASE_DIR%\
 copy /v/y %WWIV_INSTALL_SRC%\platform\win32\* %WWIV_RELEASE_DIR%\
 
-echo:
 echo * Creating release WWIV_ARCHive: %WWIV_RELEASE_ARCHIVE_FILE%
 cd %WWIV_RELEASE_DIR%
 %ZIP_EXE% a -tzip -y %WWIV_RELEASE_ARCHIVE_FILE%
 
-
-echo:
-echo:
-echo: **** SUCCESS ****
-echo:
+echo **** SUCCESS ****
 echo ** WWIV_ARCHive File: %WWIV_RELEASE_ARCHIVE_FILE%
 echo ** WWIV_ARCHive contents:
 %ZIP_EXE% l %WWIV_RELEASE_ARCHIVE_FILE%
