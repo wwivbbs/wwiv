@@ -9,6 +9,51 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
+option(WWIV_ZIP_INSTALL_FILES "Create the zip filed for data, gfiles, etc" ON)
+
+############################################################################### 
+#
+# Build variables to come from Jenkins, environment, etc.
+
+set(WWIV_RELEASE "5.5.0" CACHE STRING "WWIV Release Major Version to 3 digits")
+set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
+set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
+set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
+if (WIN32)
+  set(CPACK_PACKAGE_FILE_NAME "wwiv-win-${WWIV_ARCH}-${WWIV_FULL_RELEASE}")
+endif()
+if (LINUX)
+  set(CPACK_PACKAGE_FILE_NAME "wwiv-linux-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}")
+endif()
+set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
+set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this is: ${CMAKE_BINARY_DIR}/release")
+#set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
+# set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
+# Packaging support
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_PACKAGE_NAME "WWIV")
+set(CPACK_PACKAGE_VENDOR "WWIV Software Services")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "WWIV Computer bulletin board system (BBS)")
+set(CPACK_PACKAGE_VERSION_MAJOR "5")
+set(CPACK_PACKAGE_VERSION_MINOR "5")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+
+file(TO_NATIVE_PATH "C:/wwiv" C_WWIV_PATH)
+set(CPACK_NSIS_INSTALL_ROOT "${C_WWIV_PATH}")
+
+set(CPACK_NSIS_PACKAGE_NAME "WWIV BBS Software")
+set(CPACK_NSIS_URL_INFO_ABOUT "http://www.wwivbbs.org")
+set(CPACK_NSIS_CONTACT "http://docs.wwivbbs.org")
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
+include(CPack)
+
+
+message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE}")
+
 
 macro(ENSURE_MINIMUM_COMPILER_VERSIONS)
   # Set minimum GCC version

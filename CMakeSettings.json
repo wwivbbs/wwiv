@@ -12,7 +12,13 @@
       "clangTidyChecks": "clang-analyzer-*,bugprone-*",
       "enableMicrosoftCodeAnalysis": true,
       "enableClangTidyCodeAnalysis": true,
-      "variables": []
+      "variables": [
+        {
+          "name": "WWIV_RELEASE",
+          "value": "5.5.0",
+          "type": "STRING"
+        }
+      ]
     },
     {
       "name": "x86-Release",

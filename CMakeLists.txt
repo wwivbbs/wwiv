@@ -5,37 +5,6 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 project(wwiv)
 
-############################################################################### 
-#
-# Build variables to come from Jenkins, environment, etc.
-
-set(WWIV_RELEASE "5.5.0" CACHE STRING "WWIV Release Major Version to 3 digits")
-set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
-set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
-set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
-if (WIN32)
-  set(CPACK_PACKAGE_FILE_NAME "wwiv-win-${WWIV_ARCH}-${WWIV_FULL_RELEASE}")
-endif()
-if (LINUX)
-  set(CPACK_PACKAGE_FILE_NAME "wwiv-linux-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}")
-endif()
-set(WWIV_INSTALL_SRC "${CMAKE_SOURCE_DIR}/install" CACHE STRING "By default this is: ${CMAKE_SOURCE_DIR}/install")
-set(WWIV_RELEASE_DIR "${CMAKE_BINARY_DIR}/release" CACHE STRING "By default this is: ${CMAKE_BINARY_DIR}/release")
-#set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description")
-# set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
-# Packaging support
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_PACKAGE_VENDOR "WWIV Software Services")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "WWIV Computer bulletin board system (BBS)")
-set(CPACK_PACKAGE_VERSION_MAJOR "5")
-set(CPACK_PACKAGE_VERSION_MINOR "5")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
-set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
-include(CPack)
-
-message(STATUS "WWIV Build Number: ${WWIV_FULL_RELEASE}")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -70,6 +39,7 @@ add_subdirectory(deps/cl342)
 add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
 
 if(WIN32)
+  # We only use pdcurses on Win32
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
 
@@ -100,7 +70,6 @@ if (WWIV_BUILD_TESTS)
   add_subdirectory(net_core_test)
   add_subdirectory(sdk_test)
   add_subdirectory(wwivd_test)
-	
 endif (WWIV_BUILD_TESTS)
 
 # Create build.nfo
@@ -111,14 +80,16 @@ file(
   "Build Version: $ENV{BUILD_NUMBER}\n\n"
 )
 
-create_datafile_archive("data" "${WWIV_INSTALL_SRC}/data")
-create_datafile_archive("inifiles" "${WWIV_INSTALL_SRC}/inifiles")
-create_datafile_archive("gfiles" "${WWIV_INSTALL_SRC}/gfiles")
-create_datafile_archive("scripts" "${WWIV_INSTALL_SRC}/scripts")
-create_datafile_archive("zip-city" "${WWIV_INSTALL_SRC}/zip-city")
-create_datafile_archive("regions" "${WWIV_INSTALL_SRC}/regions")
-if (UNIX)
-  create_datafile_archive("unix" "${WWIV_INSTALL_SRC}/platform/unix")
+if(WWIV_ZIP_INSTALL_FILES)
+  create_datafile_archive("data" "${WWIV_INSTALL_SRC}/data")
+  create_datafile_archive("inifiles" "${WWIV_INSTALL_SRC}/inifiles")
+  create_datafile_archive("gfiles" "${WWIV_INSTALL_SRC}/gfiles")
+  create_datafile_archive("scripts" "${WWIV_INSTALL_SRC}/scripts")
+  create_datafile_archive("zip-city" "${WWIV_INSTALL_SRC}/zip-city")
+  create_datafile_archive("regions" "${WWIV_INSTALL_SRC}/regions")
+  if (UNIX)
+    create_datafile_archive("unix" "${WWIV_INSTALL_SRC}/platform/unix")
+  endif()
 endif()
 
 install(TARGETS bbs DESTINATION .)
@@ -136,10 +107,10 @@ install(TARGETS wwivutil DESTINATION .)
 
 if (UNIX)
   set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/unix")
-endif()
-if (WIN32)
+elseif(WIN32)
   set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/win32")
 endif()
+
 file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*")
 INSTALL(FILES ${PLATFORM_FILES} DESTINATION .)
 
