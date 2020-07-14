@@ -56,7 +56,7 @@ mkdir -p "${WWIV_RELEASE_DIR}"
 set -x
 echo "Building binaries"
 pushd ${CMAKE_BINARY_DIR}
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
+${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
       -DWWIV_RELEASE=${WWIV_RELEASE} \
       -DWWIV_ARCH=${WWIV_ARCH}  \
       -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} \
