@@ -60,6 +60,7 @@ ${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
       -DWWIV_RELEASE=${WWIV_RELEASE} \
       -DWWIV_ARCH=${WWIV_ARCH}  \
       -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} \
+      -DWWIV_DISTRO=${label} \
       ${WORKSPACE} || exit /b
 
 ${CMAKE_BIN} --build . --config Debug
