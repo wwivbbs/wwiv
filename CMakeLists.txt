@@ -107,13 +107,18 @@ install(TARGETS wwivutil DESTINATION .)
 
 if (UNIX)
   set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/unix")
+  # Copy shell scripts, rest can be from unix.zip
+  file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.sh")
+  foreach(file ${PLATFORM_FILES})
+    message(DEBUG "Installing ${file}")
+    INSTALL(FILES "${file}" DESTINATION .)
+  endforeach()
 elseif(WIN32)
   set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/win32")
+  install(DIRECTORY "${PLATFORM_DIR}" DESTINATION .)
 endif()
 
-file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*")
-INSTALL(FILES ${PLATFORM_FILES} DESTINATION .)
-
 file(GLOB DOCS_FILES "${WWIV_INSTALL_SRC}/docs/*")
-install(FILES ${DOCS_FILES} DESTINATION .)
-#install(DIRECTORY "${PLATFORM_DIR}" DESTINATION . FILES_MATCHING PATTERN "*")
+foreach(file ${DOCS_FILES})
+  INSTALL(FILES "${file}" DESTINATION .)
+endforeach()

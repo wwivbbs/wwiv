@@ -152,7 +152,7 @@ ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 message(VERBOSE "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 function(zip output_file input_files working_dir)
-  message(DEBUG "zip: ${output_file} : ${input_files}")
+  #message(DEBUG "zip: ${output_file} : ${input_files}")
   add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E tar "cf" "${output_file}" --format=zip -- ${input_files}
     WORKING_DIRECTORY "${working_dir}"
@@ -168,7 +168,7 @@ function(create_datafile_archive arc dir)
   zip("${WWIV_RELEASE_DIR}/${arc}.zip" "${DATA_FILES}" "${dir}/")
   set(ARC_PATH "${WWIV_RELEASE_DIR}/${arc}.zip")
   add_custom_target("${arc}_archive" ALL DEPENDS "${ARC_PATH}")
-  message(TRACE "P: ${ARC_PATH}")
+  #message(TRACE "P: ${ARC_PATH}")
   install(FILES "${ARC_PATH}" DESTINATION .)
 endfunction()
 
