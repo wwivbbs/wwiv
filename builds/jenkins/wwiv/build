@@ -1,56 +1,44 @@
 #!/bin/bash
-#
 # WWIV Build Script.
 #
 # Required Variables:
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
+#   label - Linux  build label (i.e. centos7)
 
-rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
-set -e
+declare -r CMAKE_BIN=${CMAKE_BIN:-"cmake"}
+declare -r CTEST_BIN=${CTEST_BIN:-"ctest"}
+declare -r CPACK_BIN=${CPACK_BIN:-"cpack"}
+declare -r label=${label:-"i686"}
+declare -r WWIV_RELEASE=${WWIV_RELEASE:-"5.5.0"}
+declare -r CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR:-"${WORKSPACE}/_build"}
+declare -r WWIV_INSTALL_SRC=${WWIV_INSTALL_SRC:-"${WORKSPACE}/install"}
+declare -r WWIV_RELEASE_DIR=${WWIV_RELEASE_DIR:-"${CMAKE_BINARY_DIR}/release"}
 
-declare -r CMAKE_BINARY_DIR="${WORKSPACE}/_build"
-declare -r WWIV_INSTALL_SRC="${WORKSPACE}/install"
-declare -r WWIV_RELEASE_DIR="${CMAKE_BINARY_DIR}/release"
-declare -r WWIV_RELEASE="5.5.0"
 declare -r WWIV_FULL_RELEASE="${WWIV_RELEASE}.${BUILD_NUMBER}"
-declare -r WWIV_RELEASE_ARCHIVE_FILE=${WORKSPACE}/wwiv-linux-${label}-${WWIV_FULL_RELEASE}.tar.gz
-if [[ -z "${CMAKE_BIN}" ]]; then
-    CMAKE_BIN=cmake
-fi
-if [[ -z "${CTEST_BIN}" ]]; then
-    CTEST_BIN=ctest
-fi
+declare -r WWIV_RELEASE_ARCHIVE_FILE=wwiv-linux-${label}-${WWIV_FULL_RELEASE}.tar.gz
 
 echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"
-echo "CMake:            ${CMAKE_BIN}"
-echo "CTest:            ${CTEST_BIN}"
+echo "CMake:            ${CMAKE_BIN}; Test: ${CTEST_BIN}; Pack: ${CPACK_BIN}"
 echo "CMake Build:      ${CMAKE_BINARY_DIR}"
 echo "Release Dir:      ${WWIV_RELEASE_DIR}"
-echo "WWIV Release:     ${WWIV_RELEASE}"
-echo "Version:          ${BUILD_NUMBER}"
+echo "WWIV Release:     ${WWIV_FULL_RELEASE}"
 echo "Archive:          ${WWIV_RELEASE_ARCHIVE_FILE}"
 echo "Label:            ${label}"
-echo "GCC:              $(gcc --version)"
+echo "GCC:              $(gcc --version | head -1)"
 echo "============================================================================="
 
-echo "Ensuring CMAKE_BINARY_DIR exists: (${CMAKE_BINARY_DIR})"
-if [[ ! -d "${CMAKE_BINARY_DIR}" ]]; then
-  mkdir -p "${CMAKE_BINARY_DIR}"
-fi
-echo "Created binary dir: ${CMAKE_BINARY_DIR}"
+# Delete any previous release archives before starting the build with set -e
+rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
+rm ${CMAKE_BINARY_DIR}/wwiv-*.tar.gz || /bin/true
+rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
+rm -rf "${WWIV_RELEASE_DIR}"
 
-if [[ -r "${CMAKE_BINARY_DIR}/CMakeCache.txt" ]] ;then
-   rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
-fi
+set -e
 
-echo "Cleaning up release dir (${WWIV_RELEASE_DIR})"
-if [[ -d "${WWIV_RELEASE_DIR}" ]]; then
-  rm -rf "${WWIV_RELEASE_DIR}"
-fi
-
-echo "Created release dir: ${WWIV_RELEASE_DIR}"
+echo "Creating ${CMAKE_BINARY_DIR} and ${WWIV_RELEASE_DIR}"
+mkdir -p "${CMAKE_BINARY_DIR}"
 mkdir -p "${WWIV_RELEASE_DIR}"
 
 set -x
@@ -65,36 +53,12 @@ ${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
 
 ${CMAKE_BIN} --build . --config Debug
 ${CTEST_BIN} --no-compress-output --output-on-failure -T Test || /bin/true
+${CPACK_BIN} -G TGZ
+
 popd
-
 cd ${WORKSPACE}
-echo "Populating built binaries"
-cp  ${CMAKE_BINARY_DIR}/bbs/bbs \
-    ${CMAKE_BINARY_DIR}/network/network \
-    ${CMAKE_BINARY_DIR}/networkb/networkb \
-    ${CMAKE_BINARY_DIR}/networkc/networkc \
-    ${CMAKE_BINARY_DIR}/networkf/networkf \
-    ${CMAKE_BINARY_DIR}/networkt/networkt \
-    ${CMAKE_BINARY_DIR}/network1/network1 \
-    ${CMAKE_BINARY_DIR}/network2/network2 \
-    ${CMAKE_BINARY_DIR}/network3/network3 \
-    ${CMAKE_BINARY_DIR}/wwivconfig/wwivconfig \
-    ${CMAKE_BINARY_DIR}/wwivd/wwivd \
-    ${CMAKE_BINARY_DIR}/wwivutil/wwivutil \
-    ${WWIV_RELEASE_DIR}
+mv ${CMAKE_BINARY_DIR}/${WWIV_RELEASE_ARCHIVE_FILE} ${WORKSPACE}/${WWIV_RELEASE_ARCHIVE_FILE}
 
-echo "adding linux-specific files"
-cd ${WWIV_INSTALL_SRC}/platform/unix
-shopt -s dotglob
-cp -a * ${WWIV_RELEASE_DIR}
-shopt -u dotglob
-
-echo "Creating release archive: ${WWIV_RELEASE_ARCHIVE_FILE}"
-cd ${WWIV_RELEASE_DIR}
-shopt -s dotglob
-tar zcvf ${WWIV_RELEASE_ARCHIVE_FILE} * 
-shopt -u dotglob
-
-echo "Archive file: ${WWIV_RELEASE_ARCHIVE_FILE}"
-echo "File Contents:"
-tar ztvf ${WWIV_RELEASE_ARCHIVE_FILE}
+echo "Archive file: ${WORKSPACE}/${WWIV_RELEASE_ARCHIVE_FILE}"
+echo "Contents:"
+tar ztvf ${WORKSPACE}/${WWIV_RELEASE_ARCHIVE_FILE}
