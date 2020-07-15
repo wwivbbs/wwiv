@@ -29,7 +29,7 @@ if /I "%LABEL%"=="win-x64" (
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.5.0
 set WWIV_FULL_RELEASE=5.5.0.%BUILD_NUMBER%
-set WWIV_RELEASE_ARCHIVE_FILE=%WORKSPACE%\wwiv-win-%WWIV_ARCH%-%WWIV_FULL_RELEASE%.zip
+set WWIV_RELEASE_ARCHIVE_FILE=wwiv-win-%WWIV_ARCH%-%WWIV_FULL_RELEASE%.zip
 set CMAKE_BINARY_DIR=%WORKSPACE%\_build
 set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
 set WWIV_INSTALL_SRC=%WORKSPACE%\install
@@ -124,30 +124,14 @@ cmake --build . --config Release || exit /b
 @echo =============================================================================
 ctest --no-compress-output --output-on-failure -T Test 
 
-cd %WORKSPACE%\
-echo:
-echo * Copying BBS files to Release directory.
-copy /v/y %CMAKE_BINARY_DIR%\bbs\bbs.exe %WWIV_RELEASE_DIR%\bbs.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\wwivconfig\wwivconfig.exe %WWIV_RELEASE_DIR%\wwivconfig.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\network\network.exe %WWIV_RELEASE_DIR%\network.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\network1\network1.exe %WWIV_RELEASE_DIR%\network1.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\network2\network2.exe %WWIV_RELEASE_DIR%\network2.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\network3\network3.exe %WWIV_RELEASE_DIR%\network3.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\networkb\networkb.exe %WWIV_RELEASE_DIR%\networkb.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\networkc\networkc.exe %WWIV_RELEASE_DIR%\networkc.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\networkf\networkf.exe %WWIV_RELEASE_DIR%\networkf.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\networkt\networkt.exe %WWIV_RELEASE_DIR%\networkt.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\wwivd\wwivd.exe %WWIV_RELEASE_DIR%\wwivd.exe || exit /b
-copy /v/y %CMAKE_BINARY_DIR%\wwivutil\wwivutil.exe %WWIV_RELEASE_DIR%\wwivutil.exe || exit /b
-copy /v/y %WWIV_INSTALL_SRC%\docs\* %WWIV_RELEASE_DIR%\
-copy /v/y %WWIV_INSTALL_SRC%\platform\win32\* %WWIV_RELEASE_DIR%\
-
 echo * Creating release Archive: %WWIV_RELEASE_ARCHIVE_FILE%
-cd %WWIV_RELEASE_DIR%
-%ZIP_EXE% a -tzip -y %WWIV_RELEASE_ARCHIVE_FILE%
+cpack -G ZIP || exit /b 
+
+cd %WORKSPACE%
+copy /y/v %CMAKE_BINARY_DIR%\%WWIV_RELEASE_ARCHIVE_FILE% %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 
 echo **** SUCCESS ****
 echo ** Archive File: %WWIV_RELEASE_ARCHIVE_FILE%
 echo ** Archive contents:
-%ZIP_EXE% l %WWIV_RELEASE_ARCHIVE_FILE%
+%ZIP_EXE% l %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 endlocal
