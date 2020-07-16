@@ -25,90 +25,45 @@ if /I "%LABEL%"=="win-x64" (
 	@echo "Setting x64 (64-bit) Architecture"
 	set WWIV_ARCH=x64
 )
+set WWIV_DISTRO=%LABEL%
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.5.0
 set WWIV_FULL_RELEASE=5.5.0.%BUILD_NUMBER%
-set WWIV_RELEASE_ARCHIVE_FILE=wwiv-win-%WWIV_ARCH%-%WWIV_FULL_RELEASE%.zip
+set WWIV_RELEASE_ARCHIVE_FILE=wwiv-%WWIV_DISTRO%-%WWIV_FULL_RELEASE%.zip
 set CMAKE_BINARY_DIR=%WORKSPACE%\_build
 set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
 set WWIV_INSTALL_SRC=%WORKSPACE%\install
-set VS_VERSION=2019
-set VS_BUILDTOOLS_DIR=Microsoft Visual Studio\%VS_VERSION%\BuildTools\VC\Auxiliary\Build\
-set VS_COMMUNITY_DIR=Microsoft Visual Studio\%VS_VERSION%\Community\VC\Auxiliary\Build\
-set VS_PREVIEW_DIR=Microsoft Visual Studio\%VS_VERSION%\Preview\VC\Auxiliary\Build\
 
 @rem ===============================================================================
 
-@if exist "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  call "%ProgramFiles(x86)%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  set VS_EDITION="BuildTools"
-  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
-)
-
-@if exist "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  call "%ProgramFiles%\%VS_BUILDTOOLS_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  set VS_EDITION="BuildTools"
-  set VS_INSTALL_DIR=%VS_BUILDTOOLS_DIR%
-)
-
-@if exist "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  call "%ProgramFiles(x86)%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  set VS_EDITION="Community"
-  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
-)
-
-@if exist "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  call "%ProgramFiles%\%VS_COMMUNITY_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  set VS_EDITION="Community"
-  set VS_INSTALL_DIR=%VS_COMMUNITY_DIR%
-)
-
-@if exist "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" (
-  echo "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  call "%ProgramFiles(x86)%\%VS_PREVIEW_DIR%\vcvarsall.bat" %WWIV_ARCH%
-  set VS_EDITION="Preview"
-  set VS_INSTALL_DIR=%VS_PREVIEW_DIR%
-)
+call %VCVARS_ALL% %WWIV_ARCH%
 
 @echo =============================================================================
 @echo Workspace:            %WORKSPACE% 
 @echo Label:                %LABEL%
 @echo WWIV_ARCHitecture:    %WWIV_ARCH%
+@echo WWIV_DISTRO:          %WWIV_DISTRO%
 @echo WWIV Release:         %WWIV_RELEASE%        
 @echo Build Number:         %BUILD_NUMBER%
 @echo WWIV CMake Root:      %CMAKE_BINARY_DIR%
 @echo WWIV_ARCHive:         %WWIV_RELEASE_ARCHIVE_FILE%
 @echo Release Dir:          %WWIV_RELEASE_DIR%
-@echo Visual Studio Ver:    %VS_VERSION%
-@echo Visual Studio Ed:     %VS_EDITION%
-@echo Visual Studio DIR:    %VS_INSTALL_DIR%
+@echo Visual Studio Shell:  %VCVARS_ALL%
 @echo WindowsSdkVerBinPath  %WindowsSdkVerBinPath%
 @echo WindowsLibPath        %WindowsLibPath%
 @echo INCLUDE               %INCLUDE%
 @echo =============================================================================
 
-if not exist %CMAKE_BINARY_DIR% (
-  echo Creating %CMAKE_BINARY_DIR%
-  mkdir %CMAKE_BINARY_DIR%
-)
+mkdir %CMAKE_BINARY_DIR%
 del %CMAKE_BINARY_DIR%\CMakeCache.txt
-
 rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
-cd %WORKSPACE%
-if not exist %WWIV_RELEASE_DIR% (
-  echo Creating %WWIV_RELEASE_DIR%
-  mkdir %WWIV_RELEASE_DIR%
-)
-del /q %WWIV_RELEASE_DIR%
-del wwiv-*.zip
 
-rem Turn echo back on now.
-@echo on
+cd %WORKSPACE%
+mkdir %WWIV_RELEASE_DIR%
+del /q %WWIV_RELEASE_DIR%
+del /q wwiv-*.zip
+del /q wwiv-*.exe
 
 echo * Building WWIV
 cd %CMAKE_BINARY_DIR%
@@ -116,6 +71,7 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_RELEASE=%WWIV_RELEASE% ^
     -DWWIV_ARCH=%WWIV_ARCH%  ^
     -DWWIV_BUILD_NUMBER=%BUILD_NUMBER% ^
+    -DWWIV_DISTRO=%WWIV_DISTRO% ^
     %WORKSPACE% || exit /b
 cmake --build . --config Release || exit /b
 
