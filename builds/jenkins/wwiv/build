@@ -10,13 +10,14 @@ declare -r CMAKE_BIN=${CMAKE_BIN:-"cmake"}
 declare -r CTEST_BIN=${CTEST_BIN:-"ctest"}
 declare -r CPACK_BIN=${CPACK_BIN:-"cpack"}
 declare -r label=${label:-"i686"}
+declare -r WWIV_DISTRO="linux-${label}"
 declare -r WWIV_RELEASE=${WWIV_RELEASE:-"5.5.0"}
 declare -r CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR:-"${WORKSPACE}/_build"}
 declare -r WWIV_INSTALL_SRC=${WWIV_INSTALL_SRC:-"${WORKSPACE}/install"}
 declare -r WWIV_RELEASE_DIR=${WWIV_RELEASE_DIR:-"${CMAKE_BINARY_DIR}/release"}
 
 declare -r WWIV_FULL_RELEASE="${WWIV_RELEASE}.${BUILD_NUMBER}"
-declare -r WWIV_RELEASE_ARCHIVE_FILE=wwiv-linux-${label}-${WWIV_FULL_RELEASE}.tar.gz
+declare -r WWIV_RELEASE_ARCHIVE_FILE=wwiv-${WWIV_DISTRO}-${WWIV_FULL_RELEASE}.tar.gz
 
 echo "============================================================================="
 echo "Workspace:        ${WORKSPACE}"
@@ -26,6 +27,7 @@ echo "Release Dir:      ${WWIV_RELEASE_DIR}"
 echo "WWIV Release:     ${WWIV_FULL_RELEASE}"
 echo "Archive:          ${WWIV_RELEASE_ARCHIVE_FILE}"
 echo "Label:            ${label}"
+echo "WWIV_DISTRO:      ${WWIV_DISTRO}"
 echo "GCC:              $(gcc --version | head -1)"
 echo "============================================================================="
 
@@ -48,7 +50,7 @@ ${CMAKE_BIN} -G "Ninja" -DCMAKE_BUILD_TYPE=Debug \
       -DWWIV_RELEASE=${WWIV_RELEASE} \
       -DWWIV_ARCH=${WWIV_ARCH}  \
       -DWWIV_BUILD_NUMBER=${BUILD_NUMBER} \
-      -DWWIV_DISTRO=${label} \
+      -DWWIV_DISTRO=${WWIV_DISTRO} \
       ${WORKSPACE} || exit /b
 
 ${CMAKE_BIN} --build . --config Debug
