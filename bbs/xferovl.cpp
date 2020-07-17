@@ -323,7 +323,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     to_char_array(f.u().upby, a()->names()->UserName(a()->usernum));
     f.set_date(DateTime::now());
 
-    auto t = DateTime::from_time_t(File::creation_time(full_path));
+    auto t = DateTime::from_time_t(File::last_write_time(full_path));
     f.set_actual_date(t);
 
     if (d.mask & mask_PD) {

@@ -398,6 +398,8 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   a()->tleft(true);
   resetnsp();
   lastchar_pressed();
+  bout.clear_lines_listed();
+
 
   auto beepyet{false};
   auto tv = bout.key_timeout();

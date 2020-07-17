@@ -810,9 +810,11 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     }
   }
 
+  ReadMessageResult result{};
   if (p.status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
-      return {};
+      result.option = ReadMessageOption::NEXT_MSG;
+      return result;
     }
     m.flags.insert(MessageFlags::NOT_VALIDATED);
     *val |= 1;
@@ -828,7 +830,6 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }
-  ReadMessageResult result{};
   if (!abort) {
     const auto saved_net_num = a()->net_num();
 
