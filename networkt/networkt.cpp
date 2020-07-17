@@ -111,7 +111,7 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     r.set_extended_description(!t.ldesc.empty());
     r.set_numbytes(t.size());
     r.set_date(t.date());
-    const auto actual_t = File::creation_time(FilePath(ftn_directories.tic_dir(), r));
+    const auto actual_t = File::last_write_time(FilePath(ftn_directories.tic_dir(), r));
     r.set_actual_date(DateTime::from_time_t(actual_t));
     const auto ext_desc = JoinStrings(t.ldesc, "\r\n");
 

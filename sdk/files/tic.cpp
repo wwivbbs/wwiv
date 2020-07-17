@@ -80,7 +80,7 @@ int Tic::size() const {
 
 core::DateTime Tic::date() const {
   if (date_.to_time_t() == 0) {
-    const auto t = File::creation_time(fpath());
+    const auto t = File::last_write_time(fpath());
     return DateTime::from_time_t(t);
   }
   return date_;

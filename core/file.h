@@ -129,7 +129,6 @@ public:
 
   [[nodiscard]] bool Exists() const noexcept;
 
-  [[nodiscard]] time_t creation_time() const;
   [[nodiscard]] time_t last_write_time() const;
   bool set_last_write_time(time_t last_write_time) noexcept;
 
@@ -172,7 +171,6 @@ public:
   [[nodiscard]] static std::string FixPathSeparators(const std::string& path);
   [[nodiscard]] static std::string absolute(const std::string& base, const std::string& relative);
 
-  [[nodiscard]] static time_t creation_time(const std::filesystem::path& path);
   [[nodiscard]] static time_t last_write_time(const std::filesystem::path& path);
 
   /**

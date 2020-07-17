@@ -225,7 +225,7 @@ bool get_file_idz(FileRecord& fr, const directory_t& dir) {
     return false;
   }
 
-  fr.set_date(DateTime::from_time_t(File::creation_time(FilePath(dir.path, fr))));
+  fr.set_date(DateTime::from_time_t(File::last_write_time(FilePath(dir.path, fr))));
   auto o = PathToTempdDiz(FilePath(dir.path, fr));
   if (!o) {
     return true;

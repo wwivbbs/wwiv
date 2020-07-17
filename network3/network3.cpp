@@ -499,7 +499,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
   } else {
-    text << " [" << time_t_to_wwivnet_time(File::creation_time(nl_file)) << "]\r\n";
+    text << " [" << time_t_to_wwivnet_time(File::last_write_time(nl_file)) << "]\r\n";
     auto nl_path = File::absolute(dirs.net_dir(), nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {

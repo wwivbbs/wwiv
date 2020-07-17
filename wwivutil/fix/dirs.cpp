@@ -191,7 +191,7 @@ static bool CheckAttributes(const wwiv::sdk::files::directory_t& dir, sdk::files
       LOG(INFO) << "Fixing file size for: " << f.filename();
       f.set_numbytes(actual_size);
     }
-    auto actual_dt = DateTime::from_time_t(File::creation_time(path));
+    auto actual_dt = DateTime::from_time_t(File::last_write_time(path));
     const auto actual_dts = actual_dt.to_string(WWIV_FILE_DATE_FORMAT);
     if (!iequals(actual_dts, f.actual_date())) {
       dirty = true;
