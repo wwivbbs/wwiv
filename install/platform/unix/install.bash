@@ -7,7 +7,6 @@ declare -r YELLOW='\033[1;33m'
 declare -r RED='\033[1;31m'
 declare -r CYAN='\033[0;36m'
 declare -r BLUE='\033[1;34m'
-
   
 say() {
   echo -e "${BLUE}* ${CYAN}$1${NC}"
@@ -46,7 +45,6 @@ printerr() {
 
 pausescr() {
 	if [[ -z "${YES}" ]]; then
-		echo "YES: ${YES}"
 	  echo -e "${PURPLE}[PAUSE]${NC}"
 	  read -n1 -s
 	fi
@@ -131,13 +129,11 @@ create_directory() {
   # Validate WWIV directory
   if [[ ! -d ${dir} ]]; then
   	say "The directory ${dir} doesn't exist; creating it."
-  	if ! ${MKDIR} -p ${dir}  |& tee -a ${LOGFILE}
+  	if ! ${MKDIR} -p ${dir}  &>> ${LOGFILE}
   	then
-	    say "There was an error creating the directory"
-	    say "Please check $LOGFILE for details.  Aborting."
+	    say "FATAL: There was an error creating the directory"
+	    say "Please check $LOGFILE for details."
 	    exit 10
-  	else
-  	    say "Directory ${dir} created"
   	fi
   fi
 }
@@ -152,7 +148,6 @@ wwiv_user_exists() {
 # Creates a locked WWIV service user.
 # Params: [username] [group] [home]
 create_wwiv_user() {
-	echo "create_wwiv_user"
 	local wwiv_user="$1"
 	local wwiv_group="$2"
 	local wwiv_home="$3"
@@ -160,7 +155,7 @@ create_wwiv_user() {
 									-c "WWIV BBS Service Account" \
 									-d ${wwiv_home} \
 					  			-s /sbin/nologin \
-					  			-m ${wwiv_user} |& tee -a ${LOGFILE}
+					  			-m ${wwiv_user} &>> ${LOGFILE}
 }
 
 # Locks an existing WWIV service user.
@@ -168,7 +163,7 @@ create_wwiv_user() {
 lock_wwiv_user() {
 	local wwiv_user="$1"
 	# Lock the wwiv user.
-	${RUN} usermod -L ${wwiv_user} |& tee -a ${LOGFILE}
+	${RUN} usermod -L ${wwiv_user} &>> ${LOGFILE}
 }
 
 # Does the WWIV group exist.
@@ -182,7 +177,7 @@ wwiv_group_exists() {
 # Params: [groupname]
 create_wwiv_group() {
 	local wwiv_group="$1"
-	${RUN} groupadd "${wwiv_group}" |& tee -a ${LOGFILE}
+	${RUN} groupadd "${wwiv_group}" &>> ${LOGFILE}
 }
 
 # Checks to see if an existing WWIV installation exists at dir.
@@ -192,7 +187,8 @@ check_existing_wwiv_install() {
 	[[ -e "${dir}/config.dat" ]]
 }
 
-# Process all template files with env subst
+# Process all template files with environment variable substitution
+# Globals needed; WWIV_USER, WWIV_DIR
 # Params: [globspec]
 process_templates() {
 	local globspec="$1"
@@ -212,12 +208,12 @@ create_etc_wwiv() {
 	local dir="$1"
   say "Copying the wwiv config file to /etc/wwiv"
   if [[ ! -d /etc/wwiv ]]; then
-    ${RUN} mkdir -p /etc/wwiv  |& tee -a ${LOGFILE}
+    ${RUN} mkdir -p /etc/wwiv  &>> ${LOGFILE}
   elif [[ -e /etc/wwiv/config ]]; then
     say "/etc/wwiv/config already exists, saving as /etc/wwiv/config.new"
-    ${RUN} cp ${dir}/systemd/config /etc/wwiv/config.new  |& tee -a ${LOGFILE}
+    ${RUN} cp ${dir}/systemd/config /etc/wwiv/config.new  &>> ${LOGFILE}
   fi
-  ${RUN} cp ${dir}/systemd/config /etc/wwiv/config  |& tee -a ${LOGFILE}
+  ${RUN} cp ${dir}/systemd/config /etc/wwiv/config  &>> ${LOGFILE}
   say "Installed: /etc/wwiv/config"
 }
 
@@ -236,13 +232,13 @@ configure_systemd() {
 	if [[ -e /etc/systemd/system/wwivd.service ]]; then
     say "/etc/systemd/system/wwivd.service already exists"
     say "Installed /etc/systemd/system/wwivd.service.new"
-    ${RUN} cp ${dir}/systemd/wwivd.service /etc/systemd/system/wwivd.service.new  |& tee -a ${LOGFILE}
+    ${RUN} cp ${dir}/systemd/wwivd.service /etc/systemd/system/wwivd.service.new  &>> ${LOGFILE}
   else
-    ${RUN} cp ${dir}/systemd/wwivd.service /etc/systemd/system/wwivd.service |& tee -a ${LOGFILE}
+    ${RUN} cp ${dir}/systemd/wwivd.service /etc/systemd/system/wwivd.service &>> ${LOGFILE}
     say "Installed: /etc/systemd/system/wwivd.service"
-	  ${RUN} systemctl daemon-reload |& tee -a ${LOGFILE}
+	  ${RUN} systemctl daemon-reload &>> ${LOGFILE}
   fi
-  ${RUN} systemctl enable wwivd.service |& tee -a ${LOGFILE}
+  ${RUN} systemctl enable wwivd.service &>> ${LOGFILE}
   say "systemd wwivd service enabled"
 }
 
@@ -257,12 +253,12 @@ configure_svcadm() {
 	fi
   if [[ ! -e ${WWIV_DIR}/start_wwiv.sh ]]; then
     say "Installing ${RUNDIR}/svcadm/start_wwiv.sh"
-    ${RUN} cp ${RUNDIR}/svcadm/start_wwiv.sh ${WWIV_DIR} |& tee -a ${LOGFILE}
-    ${RUN} chmod +x ${WWIV_DIR}/start_wwiv.sh |& tee -a ${LOGFILE}
+    ${RUN} cp ${RUNDIR}/svcadm/start_wwiv.sh ${WWIV_DIR} &>> ${LOGFILE}
+    ${RUN} chmod +x ${WWIV_DIR}/start_wwiv.sh &>> ${LOGFILE}
   fi
   say "Installing service manifest."
-  ${RUN} cp ${RUNDIR}/svcadm/wwivd.xml /var/svc/manifest/application/wwivd.xml |& tee -a ${LOGFILE}
-  ${RUN} svcadm restart svc:/system/manifest-import |& tee -a ${LOGFILE}
+  ${RUN} cp ${RUNDIR}/svcadm/wwivd.xml /var/svc/manifest/application/wwivd.xml &>> ${LOGFILE}
+  ${RUN} svcadm restart svc:/system/manifest-import &>> ${LOGFILE}
   say "service manifest installed, to enable run : \"svcadm enable wwivd\""
 }
 

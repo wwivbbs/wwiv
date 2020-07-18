@@ -101,8 +101,6 @@ declare -r WWIV_GROUP=${wwiv_group:-"wwiv"}
 # now that variables are defined, these functions can be used.
 source "$(dirname $(realpath $0))/install.bash"
 
-echo "** RUN==${RUN}"
-
 # setting path so running with sudo works
 export PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH
 
@@ -184,17 +182,17 @@ if [[ -e "${WWIV_DIR}/config.dat" ]]; then
   exit 2
 fi
 
+say "Checking if wwiv group (${WWIV_GROUP}) exists"
 wwiv_group_exists "${WWIV_GROUP}"
 group_exist=$?
-#set -x
-if [[ "${group_exist}" -ne 0 && "${FORCE}" == "false" ]]; then
+if [[ "${group_exist}" -eq 0 && "${FORCE}" == "false" ]]; then
   say "User (${WWIV_GROUP}) already exists, too.  Please verify your user"
   say "name choice and re-run the installer or add --force to the commandline."
   exit 3
 fi
+say "Checking if wwiv user (${WWIV_USER}) exists"
 wwiv_user_exists "${WWIV_USER}"
-user_exist=$?
-if [[ ${user_exist} -ne 0 && "${FORCE}" == "false" ]]; then
+if [[ ${user_exist} -eq 0 && "${FORCE}" == "false" ]]; then
   say "User (${WWIV_USER}) already exists, too.  Please verify your user"
   say "name choice and re-run the installer or add --force to the commandline."
   exit 3
@@ -259,7 +257,7 @@ fi
 
 #Final permissions setting of the WWIV directory files before running wwivconfig
 say "Making sure ${WWIV_USER} owns all the files"
-${RUN} chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} |& tee -a ${LOGFILE}
+${RUN} chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} &>> ${LOGFILE}
 say ""
 say "Your BBS basic systemd service configuration "
 say "and helper scripts are complete."
