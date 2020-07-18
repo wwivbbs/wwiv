@@ -109,6 +109,7 @@ if (UNIX)
   set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/unix")
   # Copy shell scripts, rest can be from unix.zip
   file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.sh")
+  file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.bash")
   foreach(file ${PLATFORM_FILES})
     message(DEBUG "Installing ${file}")
     INSTALL(FILES "${file}" DESTINATION .)
