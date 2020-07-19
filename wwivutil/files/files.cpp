@@ -25,6 +25,7 @@
 #include "fmt/format.h"
 #include "sdk/config.h"
 #include "wwivutil/files/allow.h"
+#include "wwivutil/files/arc.h"
 #include "wwivutil/files/tic.h"
 #include <algorithm>
 #include <iomanip>
@@ -242,6 +243,9 @@ public:
 
 bool FilesCommand::AddSubCommands() {
   if (!add(make_unique<AllowCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<ArcCommand>())) {
     return false;
   }
   if (!add(make_unique<TicCommand>())) {

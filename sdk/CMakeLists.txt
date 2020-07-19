@@ -22,6 +22,7 @@ set(COMMON_SOURCES
   fido/flo_file.cpp
   fido/nodelist.cpp
   files/allow.cpp
+  files/arc.cpp
   files/dirs.cpp
   files/diz.cpp
   files/file_record.cpp

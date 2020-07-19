@@ -15,17 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_TIC_H__
-#define __INCLUDED_WWIVUTIL_FILES_TIC_H__
+#ifndef __INCLUDED_WWIVUTIL_FILES_ARC_H__
+#define __INCLUDED_WWIVUTIL_FILES_ARC_H__
 
 #include "wwivutil/command.h"
 #include <string>
 
 namespace wwiv::wwivutil::files {
 
-class TicCommand final: public UtilCommand {
+class ArcCommand final: public UtilCommand {
 public:
-  TicCommand() : UtilCommand("tic", "Manipulate TIC files") {}
+  ArcCommand() : UtilCommand("arc", "Manipulate archives") {}
   [[nodiscard]] std::string GetUsage() const override final;
   bool AddSubCommands() override final;
 };
@@ -33,4 +33,4 @@ public:
 
 } // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_FILES_TIC_H__
+#endif  // __INCLUDED_WWIVUTIL_FILES_ARC_H__

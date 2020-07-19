@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*                  Copyright (C)2020, WWIV Software Services             */
+/*             Copyright (C)2018-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,12 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/files/tic.h"
-#include "wwivutil/files/tic.h"
+#include "wwivutil/files/arc.h"
 
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
+#include "sdk/files/arc.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -36,11 +38,11 @@ using namespace wwiv::strings;
 namespace wwiv::wwivutil::files {
 
 
-class TicValidateCommand : public UtilCommand {
+class ArcViewCommand : public UtilCommand {
 public:
-  TicValidateCommand() : UtilCommand("validate", "Validates the contents of a TIC file.") {}
+  ArcViewCommand() : UtilCommand("view", "Views the contents of an archive.") {}
 
-  virtual ~TicValidateCommand() = default;
+  virtual ~ArcViewCommand() = default;
 
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
@@ -54,36 +56,39 @@ public:
       return 2;
     }
     const std::filesystem::path fn{remaining().front()};
-    const auto dir = fn.parent_path();
-    sdk::files::TicParser parser(dir);
-    const auto otic = parser.parse(fn.filename().string());
-    if (!otic) {
-      LOG(ERROR) << "Failed to parse TIC file: " << fn.string();
-    }
-    const auto& tic = otic.value();
-    if (!tic.IsValid()) {
-      LOG(INFO) << "TIC file:   '" << fn.string() << " is not valid. ";
-      LOG(INFO) << "crc_valid:  " << tic.crc_valid();
-      LOG(INFO) << "size_valid: " << tic.size_valid();
-      LOG(INFO) << "Exists:     " << tic.exists();
-      LOG(INFO) << "IsValid:    " << tic.IsValid();
+
+    auto o = wwiv::sdk::files::list_archive(fn);
+    if (!o) {
+      LOG(INFO) << "Unable to view archive: '" << fn.string() << "'.";
       return 1;
     }
-    LOG(INFO) << "TIC file:   '" << fn.string() << " is valid. ";
+    const auto& files = o.value();
+    std::cout << "CompSize     Size   Date   Time  CRC-32   File Name" << std::endl;
+    std::cout << "======== -------- ======== ----- ======== ----------------------------------"
+              << std::endl;
+    for (const auto& f : files) {
+      const auto dt = DateTime::from_time_t(f.dt);
+      auto d = dt.to_string("%m/%d/%y");
+      auto t = dt.to_string("%I:%M");
+      auto line = fmt::format("{:>8} {:>8} {:<8} {:<5} {:>08x} {}", 
+        f.compress_size, f.uncompress_size, d, t, f.crc32, f.filename);
+      std::cout << line << std::endl;
+    }
+
     return 0;
   }
 
   bool AddSubCommands() override final { return true; }
 };
 
-std::string TicCommand::GetUsage() const {
+std::string ArcCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   tic " << endl;
+  ss << "Usage:   arc " << endl;
   return ss.str();
 }
 
-bool TicCommand::AddSubCommands() {
-  if (!add(std::make_unique<TicValidateCommand>())) {
+bool ArcCommand::AddSubCommands() {
+  if (!add(std::make_unique<ArcViewCommand>())) {
     return false;
   }
   return true;

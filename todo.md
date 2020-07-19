@@ -2,7 +2,6 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
-
 ## Build Cleanup.
 * add some cmake install targets
   cmake .. -DCMAKE_INSTALL_PREFIX=<location>
@@ -12,6 +11,11 @@
   cpack -G ZIP
 
 
+# Install
+curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json
+?pretty=true > jenkins.json
+jq ".url+.artifacts[].relativePath" jenkins.json
+jq ".number" jenkins.json
 
 ## Networking Cleanup
 ***
