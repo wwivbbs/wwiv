@@ -91,8 +91,11 @@ bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   arc.emplace_back(arcrec{"Pak", "PAK", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
                           "pkunpak.exe -p %1", "pkpak.exe -d %1  @BBSADS.TXT",
                           "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
+  arc.emplace_back(arcrec{"Arc", "ARC", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
+                          "pkunpak.exe -p %1", "pkpak.exe -d %1  @BBSADS.TXT",
+                          "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
 
-  for (int i = 5; i < MAX_ARCS; i++) {
+  for (int i = wwiv::stl::ssize(arc); i < MAX_ARCS; i++) {
     arc.emplace_back(arcrec{"New Archiver Name", "EXT", "archive add command",
                             "archive extract command", "archive list command",
                             "archive delete command", "archive comment command",

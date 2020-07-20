@@ -17,9 +17,13 @@
 /**************************************************************************/
 #include "sdk/files/arc.h"
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "sdk/filenames.h"
+#include <string>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -220,7 +224,7 @@ static std::optional<std::vector<archive_entry_t>> list_archive_arc(const std::f
     pos += a.len;
     ++pos;
     archive_entry_t ae{};
-    auto arc_fn = ToStringUpperCase(trim_to_size(a.name, 13));
+    auto arc_fn = trim_to_size(a.name, 13);
     ae.filename = arc_fn;
     ae.crc32 = a.crc;
     ae.compress_size = a.len;
@@ -320,7 +324,6 @@ static std::optional<std::vector<archive_entry_t>> list_archive_lzh(const std::f
           LOG(ERROR) << "Error reading os_id" << " on file: " << path;
           return {files};
         }
-        char ext[16384];
         uint16_t ext_size = 0;
         if (2 != file.Read(&ext_size, 2)) {
           LOG(ERROR) << "Error reading os_id"<< " on file: " << path;
@@ -331,6 +334,11 @@ static std::optional<std::vector<archive_entry_t>> list_archive_lzh(const std::f
         do {
           if (ext_size < 3) {
             LOG(ERROR) << "Invalid ext_size on" << " on file: " << path;
+            return {files};
+          }
+          char ext[1024];
+          if (ext_size > 1024) {
+            LOG(ERROR) << "Huge ext_size on file: " << path;
             return {files};
           }
           if (ext_size != file.Read(&ext, ext_size)) {
@@ -352,11 +360,10 @@ static std::optional<std::vector<archive_entry_t>> list_archive_lzh(const std::f
     ae.uncompress_size = a.uncomp_size;
     ae.crc32 = a.checksum;
     files.emplace_back(ae);
-
-
   }
   return {files};
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARJ FILE
@@ -453,7 +460,7 @@ static std::optional<std::vector<archive_entry_t>> list_archive_arj(const std::f
     // We can skip the ext header since arj never used it.
     pos += h.basic_header_size + 4 + 4 + 2;
     if (!file_header) {
-      pos += h.compressed_size;
+      pos += static_cast<long>(h.compressed_size);
       archive_entry_t ae{};
       ae.filename = filename;
       ae.compress_size = h.compressed_size;
@@ -503,6 +510,90 @@ std::optional<std::vector<archive_entry_t>> list_archive(const std::filesystem::
     }
   }
   return std::nullopt;
+}
+
+// One thing to note, if an 'arc' is found, it uses pak, and returns that
+// The reason being, PAK does all ARC does, plus a little more, I believe
+// PAK has its own special modes, but still look like an ARC, thus, an ARC
+// Will puke if it sees this
+std::optional<std::string> determine_arc_extension(const std::filesystem::path& filename) {
+  File f(filename);
+  if (!f.Open(File::modeReadOnly | File::modeBinary)) {
+    return std::nullopt;
+  }
+
+  char header[10];
+  const auto num_read = f.Read(&header, 10);
+  if (num_read < 10) {
+    return std::nullopt;
+  }
+
+  switch (header[0]) {
+  case 0x60:
+    if (static_cast<unsigned char>(header[1]) == static_cast<unsigned char>(0xEA))
+      return {"ARJ"};
+    break;
+  case 0x1a:
+    return {"ARC"};
+  case 'P':
+    if (header[1] == 'K')
+      return {"ZIP"};
+    break;
+  case 'R':
+    if (header[1] == 'a')
+      return {"RAR"};
+    break;
+  case 'Z':
+    if (header[1] == 'O' && header[2] == 'O')
+      return {"ZOO"};
+    break;
+  }
+  if (header[0] == 'P') {
+    return std::nullopt;
+  }
+  header[9] = 0;
+  if (strstr(header, "-lh")) {
+    return {"LZH"};
+  }
+  return std::nullopt;
+}
+
+std::vector<arcrec> read_arcs(const std::string& datadir) {
+  std::vector<arcrec> arcs;
+  wwiv::core::DataFile<arcrec> file(FilePath(datadir, ARCHIVER_DAT));
+  if (file) {
+    file.ReadVector(arcs, 20);
+  }
+  return arcs;
+}
+
+/** returns the arcrec for the extension, or the 1st one if none match */
+static std::optional<arcrec> find_arc_by_extension(const std::vector<arcrec> arcs, const std::string& extension) {
+  const auto ue = ToStringUpperCase(extension);
+  for (const auto& a : arcs) {
+    if (ue == a.extension) {
+      return {a};
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs,
+                                  const std::filesystem::path& path) {
+  const auto ext = determine_arc_extension(path);
+  if (!ext) {
+    return std::nullopt;
+  }
+  return find_arc_by_extension(arcs, ext.value());
+}
+
+std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs, const std::filesystem::path& path,
+                                  const std::string& default_ext) {
+  const auto ext = determine_arc_extension(path);
+  if (!ext) {
+    return find_arc_by_extension(arcs, ToStringUpperCase(default_ext));
+  }
+  return find_arc_by_extension(arcs, ext.value());
 }
 
 } // namespace wwiv::sdk::files

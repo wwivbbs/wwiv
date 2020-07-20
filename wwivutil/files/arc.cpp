@@ -46,7 +46,7 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
-    ss << "Usage:   list [search spec]" << endl;
+    ss << "Usage:   view [filename]" << endl;
     return ss.str();
   }
 
@@ -81,6 +81,46 @@ public:
   bool AddSubCommands() override final { return true; }
 };
 
+class ArcCmdCommand : public UtilCommand {
+public:
+  ArcCmdCommand() : UtilCommand("cmd", "Gets the commands to use for an archive.") {}
+
+  virtual ~ArcCmdCommand() = default;
+
+  [[nodiscard]] std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   cmd [filename]" << endl;
+    return ss.str();
+  }
+
+  int Execute() override final {
+    if (remaining().empty()) {
+      std::cerr << "missing filename";
+      return 2;
+    }
+    const std::filesystem::path fn{remaining().front()};
+
+    auto arcs = wwiv::sdk::files::read_arcs(config()->config()->datadir());
+
+    auto oa = wwiv::sdk::files::find_arcrec(arcs, fn);
+    if (!oa) {
+      LOG(ERROR) << "Unable to determine the type of archive for " << fn.string();
+      return 1;
+    }
+    auto a = oa.value();
+    std::cout << "Add:     " << a.arca << std::endl;
+    std::cout << "Delete:  " << a.arcd << std::endl;
+    std::cout << "Extract: " << a.arce << std::endl;
+    std::cout << "Comment: " << a.arck << std::endl;
+    std::cout << "List:    " << a.arcl << std::endl;
+    std::cout << "Test:    " << a.arct << std::endl;
+
+    return 0;
+  }
+
+  bool AddSubCommands() override final { return true; }
+};
+
 std::string ArcCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   arc " << endl;
@@ -89,6 +129,9 @@ std::string ArcCommand::GetUsage() const {
 
 bool ArcCommand::AddSubCommands() {
   if (!add(std::make_unique<ArcViewCommand>())) {
+    return false;
+  }
+  if (!add(std::make_unique<ArcCmdCommand>())) {
     return false;
   }
   return true;

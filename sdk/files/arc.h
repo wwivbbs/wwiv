@@ -21,6 +21,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include "sdk/vardec.h"
 
 namespace wwiv::sdk::files {
 
@@ -41,8 +42,17 @@ struct archive_entry_t {
   uint32_t crc32;
 };
 
+std::vector<arcrec> read_arcs(const std::string& datadir);
+
 std::optional<std::vector<archive_entry_t>> list_archive(const std::filesystem::path& path);
 
-}
+std::optional<std::string> determine_arc_extension(const std::filesystem::path& filename);
+
+std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs,
+                                  const std::filesystem::path& path);
+
+std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs, const std::filesystem::path& path,
+                                  const std::string& default_ext);
+} // namespace wwiv::sdk::files
 
 #endif
