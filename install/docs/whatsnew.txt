@@ -99,6 +99,28 @@ What's New in WWIV 5.5 (2020)
   * Don't add msgid to emails
   * Don't add failed crc32 entries to the dupe database
   * Don't add emails to the dupe database
++ Added SDK code to list archives for arc, zip, lzh, and arj.
++ Added new command "wwivutil files arc cmd", that will display
+  the commandlines used for manipulating archives.
++ Also added new command "wwivutil files arc view" to display
+  the contents of any supported archive format.
++ Use internal arc viewer when arc view command is "@internal"
+* Added "ARC" archive type by default to WWIV.  Delete data/archiver.dat
+  then re-run wwivconfig and visit the archiver page to recreate your
+  default archiver.dat.
+* Fix full screen reader on unvalidated messages.
+* Remove File::creation_time, it doesn't work reliably on any platform
+* Lots of work on the installer:
+  * add some cmake install targets
+    cmake .. -DCMAKE_INSTALL_PREFIX=<location>
+    cmake --build . --target install
+  * You can use to generate archives (valid types ZIP, TGZ, STGZ, NSIS)
+    example: cpack -G ZIP
+* Added back the color countdown in bihangup.
+* Fix setting the nscandate (P) from the xfer menu.
+* Fix "years old" display in newuser (#1224)
++ include networkt in builds
+
 
 
 What's New in WWIV 5.5 (2019)
