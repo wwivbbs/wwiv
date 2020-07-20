@@ -18,6 +18,9 @@
 /**************************************************************************/
 #include "bbs/archivers.h"
 
+#include "bbs/bbs.h"
+#include "bbs/make_abs_cmd.h"
+#include "bbs/stuffin.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/files/arc.h"
@@ -29,9 +32,59 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static const std::string DEFAULT_EXT = "ZIP";
+constexpr int MAX_ARCS = 15;
+
 
 // Returns which archive as a number in your archive config
 // Returns the first archiver you have listed if unknown
 std::optional<arcrec> match_archiver(const std::vector<arcrec>& arcs, const std::string& filename) {
   return wwiv::sdk::files::find_arcrec(arcs, filename, DEFAULT_EXT);
+}
+
+std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_type_t cmdtype, const std::string& ofn) {
+
+  auto oa = wwiv::sdk::files::find_arcrec(a()->arcs, arc_fn);
+  if (!oa) {
+    return std::nullopt;
+  }
+  auto arc = oa.value();
+  std::string cmdline;
+  switch (cmdtype) {
+  case arc_command_type_t::list:
+    cmdline = arc.arcl;
+    break;
+  case arc_command_type_t::extract:
+    cmdline = arc.arce;
+    break;
+  case arc_command_type_t::add:
+    cmdline = arc.arca;
+    break;
+  case arc_command_type_t::remove:
+    cmdline = arc.arcd;
+    break;
+  case arc_command_type_t::comment:
+    cmdline = arc.arck;
+    break;
+  case arc_command_type_t::test:
+    cmdline = arc.arct;
+    break;
+  default:
+    // Unknown type.
+    return std::nullopt;
+  }
+
+  if (cmdline.empty()) {
+    return std::nullopt;
+  }
+
+  if (cmdline == "@internal") {
+    arc_command_t c{};
+    c.internal = true;
+    return {c};
+  }
+
+  auto out = stuff_in(cmdline, arc_fn, ofn, "", "", "");
+  make_abs_cmd(a()->bbsdir(), &out);
+  arc_command_t c{false, out};
+  return {c};
 }

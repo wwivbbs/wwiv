@@ -28,8 +28,6 @@
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// https://www.hanshq.net/zip.html
-
 namespace wwiv::sdk::files {
 
 /* Convert DOS date and time to time_t. */
@@ -52,6 +50,8 @@ static time_t dos2time_t(uint16_t dos_date, uint16_t dos_time) {
 ///////////////////////////////////////////////////////////////////////////////
 // ZIP FILE
 //
+// https://www.hanshq.net/zip.html
+
 
 // .ZIP structures and defines
 static constexpr uint32_t ZIP_LOCAL_SIG = 0x04034b50;
@@ -128,8 +128,6 @@ template <typename Z> archive_entry_t create_archive_entry(const Z& z, const cha
 
 static std::optional<std::vector<archive_entry_t>>
 list_archive_zip(const std::filesystem::path& path) {
-  zip_end_dir ze{};
-
   std::vector<archive_entry_t> files;
 
   File file(path);
@@ -151,9 +149,11 @@ list_archive_zip(const std::filesystem::path& path) {
       file.Read(&zl, sizeof(zl));
       file.Read(s, zl.filename_len);
       s[zl.filename_len] = '\0';
-      files.emplace_back(create_archive_entry(zl, s));
-      l += sizeof(zl);
-      l += zl.comp_size + zl.filename_len + zl.extra_length;
+      // Since zip_central_dir and zip_local_header both have the same
+      // information, don't add it here.
+      // files.emplace_back(create_archive_entry(zl, s));
+      // VLOG(1) << "ZIP_LOCAL_SIG: " << s;
+      l += sizeof(zl) + zl.comp_size + zl.filename_len + zl.extra_length;
     } break;
     case ZIP_CENT_START_SIG: {
       zip_central_dir zc{};
@@ -161,12 +161,12 @@ list_archive_zip(const std::filesystem::path& path) {
       file.Read(&zc, sizeof(zc));
       file.Read(s, zc.filename_len);
       s[zc.filename_len] = '\0';
+      VLOG(1) << "ZIP_CENT_START_SIG: " << s;
       files.emplace_back(create_archive_entry(zc, s));
       l += sizeof(zc);
       l += zc.filename_len + zc.extra_len;
     } break;
     case ZIP_CENT_END_SIG:
-      file.Read(&ze, sizeof(ze));
       [[fallthrough]];
     default: 
       done = true;

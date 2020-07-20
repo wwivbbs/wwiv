@@ -16,8 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "bbs/xfer.h"
+
+#include "bbs/archivers.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
@@ -41,6 +42,7 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
+#include "sdk/files/arc.h"
 #include "sdk/files/files.h"
 #include <cmath>
 #include <string>
@@ -128,50 +130,6 @@ void print_devices() {
   }
 }
 
-std::string get_arc_cmd(const std::string& arc_fn, int cmdtype, const std::string& ofn) {
-
-  std::string cmd;
-
-  const auto* ss = strrchr(arc_fn.c_str(), '.');
-  if (ss == nullptr) {
-    return {};
-  }
-  ++ss;
-  for (auto i = 0; i < MAX_ARCS; i++) {
-    if (iequals(ss, a()->arcs[i].extension)) {
-      switch (cmdtype) {
-      case 0:
-        cmd = a()->arcs[i].arcl;
-        break;
-      case 1:
-        cmd = a()->arcs[i].arce;
-        break;
-      case 2:
-        cmd = a()->arcs[i].arca;
-        break;
-      case 3:
-        cmd = a()->arcs[i].arcd;
-        break;
-      case 4:
-        cmd = a()->arcs[i].arck;
-        break;
-      case 5:
-        cmd = a()->arcs[i].arct;
-        break;
-      default:
-        // Unknown type.
-        return {};
-      }
-
-      if (!cmd.empty()) {
-        auto out = stuff_in(cmd, arc_fn, ofn, "", "", "");
-        make_abs_cmd(a()->bbsdir(), &out);
-        return out;
-      }
-    }
-  }
-  return {};
-}
 
 int list_arc_out(const std::string& file_name, const std::string& dir) {
   string name_to_delete;
@@ -185,15 +143,36 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
     }
   }
   const auto full_pathname = FilePath(dir, file_name);
-  auto arc_cmd = get_arc_cmd(full_pathname.string(), 0, "");
+  auto opt_cmd = get_arc_cmd(full_pathname.string(), arc_command_type_t::list, "");
   if (!okfn(file_name)) {
-    arc_cmd.clear();
+    opt_cmd.reset();
   }
 
   auto return_code = 0;
-  if (File::Exists(full_pathname) && !arc_cmd.empty()) {
+  if (File::Exists(full_pathname) && opt_cmd.has_value()) {
     bout << "\r\n\nArchive listing for " << file_name << "\r\n\n";
-    return_code = ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
+    const auto cmd = opt_cmd.value();
+    if (cmd.internal) {
+      auto o = wwiv::sdk::files::list_archive(full_pathname);
+      if (!o) {
+        bout << "Unable to view archive: '" << full_pathname << "'.";
+        return 1;
+      }
+      const auto& files = o.value();
+      bout << "|#2CompSize     Size   Date   Time  CRC-32   File Name" << std::endl;
+      bout << "|#7======== -------- ======== ----- ======== ----------------------------------" << std::endl;
+      int line_num = 0;
+      for (const auto& f : files) {
+        const auto dt = DateTime::from_time_t(f.dt);
+        auto d = dt.to_string("%m/%d/%y");
+        auto t = dt.to_string("%I:%M");
+        auto line = fmt::format("{:>8} {:>8} {:<8} {:<5} {:>08x} {}", f.compress_size,
+                                f.uncompress_size, d, t, f.crc32, f.filename);
+        bout << ((++line_num % 2) ? "|#9" : "|#1") << line << std::endl;
+      }
+    } else {
+      return_code = ExecuteExternalProgram(cmd.cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
+    }
   } else {
     bout << "\r\nUnknown archive: " << file_name << "\r\n";
   }

@@ -42,17 +42,52 @@ struct archive_entry_t {
   uint32_t crc32;
 };
 
+/**
+ * Reads data/archiver.dat and populates a vector of arcrec from it.
+ */
 std::vector<arcrec> read_arcs(const std::string& datadir);
 
+/**
+ * Returns an optional vector of archive_entry_t containing the files of archive
+ * file identified by path.
+ */
 std::optional<std::vector<archive_entry_t>> list_archive(const std::filesystem::path& path);
 
+/**
+ * Returns the arc extension for the file identified by filename or std::nullopt of none
+ * could be determined.  The contents of the file are checked first and if there is no
+ * match then the filename's extension is consulted.
+ *
+ * This method is ideal when you do not know the archive type, like with QWK packets and
+ * also FTN network bundles.
+ */
 std::optional<std::string> determine_arc_extension(const std::filesystem::path& filename);
 
+/**
+ * Returns the arcrec for the archive type identified by filename or std::nullopt of none
+ * could be determined.  The contents of the file are checked first and if there is no
+ * match then the filename's extension is consulted.
+ *
+ * This method is ideal when you do not know the archive type, like with QWK packets and
+ * also FTN network bundles.
+ */
 std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs,
                                   const std::filesystem::path& path);
 
+/**
+ * Returns the arcrec for the archive type identified by filename or std::nullopt of none
+ * could be determined.  The contents of the file are checked first and if there is no
+ * match then the filename's extension is consulted.  
+ *
+ * Finally if there is no match, use default_ext as the file extension to use when locating
+ * the archiver record for this file.
+ *
+ * This method is ideal when you do not know the archive type, like with QWK packets and
+ * also FTN network bundles.
+ */
 std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs, const std::filesystem::path& path,
                                   const std::string& default_ext);
+
 } // namespace wwiv::sdk::files
 
 #endif

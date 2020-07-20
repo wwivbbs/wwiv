@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivconfig/archivers.h"
-#include "localui/wwiv_curses.h"
 
+#include "localui/wwiv_curses.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -78,7 +78,7 @@ static void edit_arc(int arc_number, arcrec* a) {
 
 bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   vector<arcrec> arc;
-  arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -o -j -C %1 %2", "unzip -l %1",
+  arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -o -j -C %1 %2", "@internal",
                           "zip -d %1 -@ < BBSADS.TXT", "zip -z %1 < COMMENT.TXT", "unzip -t %1"});
   arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a %1 %2", "arj.exe e %1 %2", "arj.exe i %1",
                           "arj.exe d %1 !BBSADS.TXT", "arj.exe c %1 -zCOMMENT.TXT",

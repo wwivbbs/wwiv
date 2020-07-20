@@ -26,4 +26,13 @@
 
 std::optional<arcrec> match_archiver(const std::vector<arcrec>& arcs, const std::string& filename);
 
+struct arc_command_t {
+  bool internal{false};
+  std::string cmd;
+};
+
+enum class arc_command_type_t { list, extract, add, comment, remove, test };
+std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_type_t cmd,
+                                         const std::string& data);
+
 #endif  // _ARCHIVERS_H_

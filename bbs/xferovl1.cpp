@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "bbs/xferovl1.h"
+
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -37,6 +37,7 @@
 #include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
 #include "bbs/xfertmp.h"
+#include "bbs/archivers.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/numbers.h"
@@ -51,7 +52,6 @@
 #include "sdk/filenames.h"
 #include "sdk/files/diz.h"
 #include "sdk/files/files.h"
-
 #include <cmath>
 #include <memory>
 #include <string>
@@ -202,9 +202,12 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
     return std::nullopt;
   }
 
-  const auto cmd = get_arc_cmd(p.string(), 1, "FILE_ID.DIZ DESC.SDI");
-
-  ExecuteExternalProgram(cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
+  const auto cmd = get_arc_cmd(p.string(), arc_command_type_t::extract, "FILE_ID.DIZ DESC.SDI");
+  if (!cmd.has_value() || cmd->internal) {
+    // Can't handle internal extract
+    return std::nullopt;
+  }
+  ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
   auto diz_fn = FilePath(a()->temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
     diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
@@ -537,23 +540,11 @@ void tag_files(bool& need_title) {
           pausescr();
           break;
         }
-        auto arc_cmd = get_arc_cmd(s1.string(), 0, "");
-        if (!okfn(FileName(f.u.filename).unaligned_filename())) {
-          arc_cmd.clear();
-        }
-        if (!arc_cmd.empty()) {
-          bout.nl();
-          ExecuteExternalProgram(arc_cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
-          bout.nl();
-          pausescr();
-          a()->UpdateTopScreen();
-          bout.cls();
-          relist();
-        } else {
-          bout << "|#6Unknown archive.\r\n";
-          pausescr();
-          break;
-        }
+        list_arc_out(s1.string(), "");
+        pausescr();
+        a()->UpdateTopScreen();
+        bout.cls();
+        relist();
       }
     }
     break;
