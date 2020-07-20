@@ -80,19 +80,19 @@ bool create_arcs(UIWindow* window, const std::filesystem::path& datadir) {
   vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", "zip -j %1 %2", "unzip -o -j -C %1 %2", "@internal",
                           "zip -d %1 -@ < BBSADS.TXT", "zip -z %1 < COMMENT.TXT", "unzip -t %1"});
-  arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a %1 %2", "arj.exe e %1 %2", "arj.exe i %1",
+  arc.emplace_back(arcrec{"Arj", "ARJ", "arj.exe a %1 %2", "arj.exe e %1 %2", "@internal",
                           "arj.exe d %1 !BBSADS.TXT", "arj.exe c %1 -zCOMMENT.TXT",
                           "arj.exe t %1"});
   arc.emplace_back(arcrec{"Rar", "RAR", "rar.exe a -std -s- %1 %2", "rar.exe e -std -o+ %1 %2",
                           "rar.exe l -std %1", "rar.exe d -std %1 < BBSADS.TXT ",
                           "rar.exe zCOMMENT.TXT -std %1", "rar.exe t -std %1"});
-  arc.emplace_back(arcrec{"Lzh", "LZH", "lha.exe a %1 %2", "lha.exe eo  %1 %2", "lha.exe l %1",
+  arc.emplace_back(arcrec{"Lzh", "LZH", "lha.exe a %1 %2", "lha.exe eo  %1 %2", "@internal",
                           "lha.exe d %1  < BBSADS.TXT", "", "lha.exe t %1"});
   arc.emplace_back(arcrec{"Pak", "PAK", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
-                          "pkunpak.exe -p %1", "pkpak.exe -d %1  @BBSADS.TXT",
+                          "@internal", "pkpak.exe -d %1  @BBSADS.TXT",
                           "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
   arc.emplace_back(arcrec{"Arc", "ARC", "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2",
-                          "pkunpak.exe -p %1", "pkpak.exe -d %1  @BBSADS.TXT",
+                          "@internal", "pkpak.exe -d %1  @BBSADS.TXT",
                           "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1"});
 
   for (int i = wwiv::stl::ssize(arc); i < MAX_ARCS; i++) {
