@@ -41,6 +41,10 @@ public:
   int command_line_y() const { return command_line_; }
   int screen_width() const { return screen_width_; }
 
+  // Runs bgetch_event with error message and warning displayed
+  // on the status line.
+  int bgetch();
+
 private:
   Output& bout_;
 

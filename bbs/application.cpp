@@ -26,6 +26,7 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/exceptions.h"
+#include "bbs/fsed.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
@@ -747,6 +748,7 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
   cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
+  cmdline.add_argument({"fsed", 'f', "Opens file in the FSED", ""});
   cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "115200"});
   cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
   cmdline.add_argument(
@@ -873,12 +875,13 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   const auto sysop_cmd = cmdline.sarg("sysop_cmd");
-  if (!sysop_cmd.empty()) {
+  const auto fsed = cmdline.sarg("fsed");
+  if (!sysop_cmd.empty() || !fsed.empty()) {
     // HACK for now, pass arg into InitializeBBS
     user_already_on_ = true;
   }
   CreateComm(hSockOrComm, type);
-  if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty())) {
+  if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty())) {
     return Application::exitLevelNotOK;
   }
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
@@ -936,6 +939,21 @@ int Application::Run(int argc, char* argv[]) {
       LOG(ERROR) << "Unknown Sysop Command: '" << sysop_cmd;
       return errorlevel_;
     }
+    return oklevel_;
+  }
+  // Runs the FSED on a file
+  if (!fsed.empty()) {
+    LOG(INFO) << "Executing FSED on : " << fsed;
+    remoteIO()->remote_info().clear();
+    frequent_init();
+    ReadCurrentUser(1);
+    reset_effective_sl();
+
+    usernum = 0;
+    // Since hang_it_up sets hangup_ = true, let's ensure we're always
+    // not in this state when we enter the WFC.
+    hangup_ = false;
+    wwiv::bbs::fsed::fsed(fsed);
     return oklevel_;
   }
 

@@ -20,6 +20,7 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include <iterator>
@@ -88,5 +89,14 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 }
 
 void FullScreenView::GotoContentAreaTop() {
-  bout_.GotoXY(1, num_header_lines_ + 2);
+  bout_.GotoXY(1, num_header_lines_ + 2); }
+
+int FullScreenView::bgetch() { 
+  return bgetch_event(numlock_status_t::NUMBERS, [&](bgetch_timeout_status_t status, int s) {
+    if (status == bgetch_timeout_status_t::WARNING) {
+      PrintTimeoutWarning(s);
+    } else if (status == bgetch_timeout_status_t::CLEAR) {
+      ClearCommandLine();
+    }
+  });
 }
