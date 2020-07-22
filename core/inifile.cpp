@@ -146,9 +146,12 @@ long IniFile::GetNumericValueT(const string& key, long default_value) const {
 }
 
 [[nodiscard]] std::vector<int> IniFile::GetIntList(const std::string& key) const {
-  const std::string s = GetValue(key);
-  auto list = SplitString(s, ",");
+  const std::string s = GetStringValue(key, "");
   std::vector<int> out;
+  if (s.empty()) {
+    return out;
+  }
+  auto list = SplitString(s, ",");
   for (const auto i : list) {
     out.push_back(wwiv::strings::to_number<long>(i));
   }

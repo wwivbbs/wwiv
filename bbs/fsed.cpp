@@ -345,12 +345,12 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
   // Draw the initial contents of the file.
   ed.invalidate_to_eof(0);
   // Draw the bottom bar once to start with.
+  bout.Color(0);
   view.draw_bottom_bar(ed);
   fs.GotoContentAreaTop();
   bool done = false;
   bool save = false;
   // top editor line number in thw viewable area.
-  bout.Color(0);
   while (!done) {
     gotoxy(ed, fs);
 
@@ -611,6 +611,7 @@ void FsedView::redraw() {
 }
 
 void FsedView::draw_bottom_bar(editor_t& ed) {
+  auto sc = bout.curatr();
   static int sx = -1, sy = -1, sl = -1;
   if (sx != ed.cx || sy != ed.cy || sl != ed.curli) {
     const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
@@ -620,6 +621,7 @@ void FsedView::draw_bottom_bar(editor_t& ed) {
     sy = ed.cy;
     sl = ed.curli;
   }
+  bout.curatr(sc);
   gotoxy(ed);
 }
 
