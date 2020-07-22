@@ -58,7 +58,7 @@ struct editor_range_t {
 class editor_t {
 public:
   // Lines of text
-  std::vector<line_t> lines;
+  mutable std::vector<line_t> lines;
   // cursor X position
   int cx{0};
   // cursor Y positon
@@ -91,7 +91,7 @@ public:
     mode_ = (mode_ == ins_ovr_mode_t::ins) ? ins_ovr_mode_t::ovr : ins_ovr_mode_t::ins;
   }
 
-  ins_ovr_mode_t mode() { return mode_; };
+  ins_ovr_mode_t mode() const noexcept { return mode_; };
 
   std::vector<std::string> to_lines();
 
@@ -121,6 +121,8 @@ public:
   // world.
   void handle_editor_invalidate(editor_t&, editor_range_t t);
   void redraw();
+  void draw_bottom_bar(editor_t& ed);
+  int bgetch(editor_t& ed);
 
 public:
   // Top editor line number visible in the viewport.

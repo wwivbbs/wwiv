@@ -394,7 +394,12 @@ int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   return key;
 }
 
-int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
+int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb) {
+  return bgetch_event(numlock_mode, std::chrono::hours(24), cb);
+}
+
+int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time,
+                 bgetch_callback_fn cb) {
   a()->tleft(true);
   resetnsp();
   lastchar_pressed();
@@ -404,6 +409,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   auto beepyet{false};
   auto tv = bout.key_timeout();
   auto tv1 = tv - std::chrono::minutes(1);
+  bool once = true;
 
   while (true) {
     CheckForHangup();
@@ -422,6 +428,10 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
       bout << "Call back later when you are there.\r\n";
       Hangup();
       return 0;
+    }
+    if (once && diff > idle_time) {
+      once = false;
+      cb(bgetch_timeout_status_t::IDLE, 0);
     }
 
     if (!bkbhitraw() && !a()->localIO()->KeyPressed()) {

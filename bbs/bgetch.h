@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_BGETCH_H__
 #define __INCLUDED_BBS_BGETCH_H__
 
+#include <chrono>
 #include <functional>
 
 char bgetch(bool allow_extended_input = false);
@@ -33,11 +34,13 @@ enum class numlock_status_t {
 
 enum class bgetch_timeout_status_t {
   WARNING,
-  CLEAR
+  CLEAR,
+  IDLE
 };
 
-typedef std::function<void(bgetch_timeout_status_t, int)> bgetch_timeout_callback_fn;
-int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb);
+typedef std::function<void(bgetch_timeout_status_t, int)> bgetch_callback_fn;
+int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time, bgetch_callback_fn cb);
+int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb);
 int bgetch_event(numlock_status_t numlock_mode);
 
 
