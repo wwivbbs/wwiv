@@ -19,6 +19,7 @@
 #define __INCLUDED_BBS_FSED_H__
 
 #include "bbs/full_screen.h"
+#include "bbs/message_editor_data.h"
 #include <filesystem>
 #include <functional>
 #include <vector>
@@ -28,14 +29,18 @@ namespace wwiv::bbs::fsed {
 
 enum class ins_ovr_mode_t { ins, ovr };
 
+enum class line_add_result_t { needs_redraw, no_redraw, error };
+
+enum class editor_add_result_t { added, wrapped, error };
+
 class line_t {
 public:
   bool wrapped{false};
   std::string text;
 
-  bool add(int x, char c, ins_ovr_mode_t mode);
-  bool del(int x, ins_ovr_mode_t mode);
-  bool bs(int x, ins_ovr_mode_t mode);
+  line_add_result_t add(int x, char c, ins_ovr_mode_t mode);
+  line_add_result_t del(int x, ins_ovr_mode_t mode);
+  line_add_result_t bs(int x, ins_ovr_mode_t mode);
 
   int size() const;
 };
@@ -74,7 +79,7 @@ public:
   // deletes the current line.
   bool remove_line();
   // Adds a char at the current position (cx, curli);
-  bool add(char c);
+  editor_add_result_t add(char c);
   // deletes current character and shifts left rest
   bool del();
   // backspace over existing character
@@ -88,12 +93,15 @@ public:
 
   ins_ovr_mode_t mode() { return mode_; };
 
+  std::vector<std::string> to_lines();
+
   // Listeners
   typedef std::function<void(editor_t&, editor_range_t)> editor_range_invalidated_fn;
   bool add_callback(editor_range_invalidated_fn fn);
   void invalidate_to_eol();
   void invalidate_to_eof();
   void invalidate_to_eof(int start_line);
+  void invalidate_range(int start_line, int end_line);
 
   std::vector<editor_range_invalidated_fn> callbacks_;
 };
@@ -125,6 +133,7 @@ private:
 };
 
 bool fsed(const std::filesystem::path& path);
+bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool file);
 
 }
 
