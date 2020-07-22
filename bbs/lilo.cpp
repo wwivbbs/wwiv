@@ -562,6 +562,9 @@ static void UpdateLastOnFile() {
         needs_header = false;
       }
       bout << line << wwiv::endl;
+      if (checka()) {
+        break;
+      }
     }
     bout.nl(2);
     pausescr();

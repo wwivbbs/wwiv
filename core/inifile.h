@@ -80,6 +80,13 @@ template <typename T>
   return flags;
 }
 
+/**
+ * Gets a std::vector of int from key. In the INI file the list should be
+ * a comma separated list.
+ */
+[[nodiscard]] std::vector<int> GetIntList(const std::string& key) const;
+
+
 private:
   // This class should not be assignable via '=' so remove the implicit operator=
   // and Copy constructor.
@@ -90,6 +97,7 @@ private:
   [[nodiscard]] std::string GetStringValue(const std::string& key, const std::string& default_value) const;
   [[nodiscard]] long GetNumericValueT(const std::string& key, long default_value = 0) const;
   [[nodiscard]] bool GetBooleanValue(const std::string& key, bool default_value = false) const;
+
 
   const std::filesystem::path path_;
   bool open_{false};

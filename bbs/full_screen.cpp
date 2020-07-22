@@ -21,6 +21,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bgetch.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include <iterator>
@@ -74,6 +75,9 @@ void FullScreenView::DrawTopBar() {
 void FullScreenView::DrawBottomBar(const std::string& text) {
   auto y = screen_length_ - 1;
   bout_.GotoXY(1, y);
+  const auto saved_color = bout.curatr();
+  wwiv::core::ScopeExit at_ext([=] { bout.curatr(saved_color); });
+
   bout << "|09" << static_cast<unsigned char>(198)
        << string(screen_width_ - 2, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181);

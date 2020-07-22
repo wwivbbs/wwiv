@@ -31,12 +31,14 @@ constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
 constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
 
 enum class FsedFlags {
-  NOFSED, FSED, WORKSPACE
+  NOFSED, 
+  FSED,
+  WORKSPACE
 };
 
 class MessageEditorData {
 public:
-  MessageEditorData() = default;
+  MessageEditorData();
   ~MessageEditorData() = default;
 
   [[nodiscard]] bool is_email() const;
@@ -45,6 +47,9 @@ public:
   std::string title;
   std::string to_name;  // szDestination (to or sub name)
   std::string sub_name;
+  // This should be the username or realname depending on the base. It's
+  // set to the default username in the constructor.
+  std::string from_name;
 
   bool need_title{true};
   uint8_t anonymous_flag{0};   // an

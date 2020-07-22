@@ -18,12 +18,18 @@
 /**************************************************************************/
 #include "bbs/message_editor_data.h"
 
+#include "bbs/bbs.h"
 #include "core/strings.h"
+#include "sdk/names.h"
 #include <string>
 
 using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::strings;
+
+wwiv::bbs::MessageEditorData::MessageEditorData() {
+  from_name = a()->names()->UserName(a()->usernum);
+}
 
 bool MessageEditorData::is_email() const {
   return iequals(aux, "email");

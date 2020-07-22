@@ -145,6 +145,19 @@ long IniFile::GetNumericValueT(const string& key, long default_value) const {
   return (s != nullptr) ? wwiv::strings::to_number<long>(s) : default_value;
 }
 
+[[nodiscard]] std::vector<int> IniFile::GetIntList(const std::string& key) const {
+  const std::string s = GetValue(key);
+  auto list = SplitString(s, ",");
+  std::vector<int> out;
+  for (const auto i : list) {
+    out.push_back(wwiv::strings::to_number<long>(i));
+  }
+  return out;
+} 
+
+
+
+
 template <>
 std::string IniFile::value<std::string>(const std::string& key,
                                         const std::string& default_value) const {

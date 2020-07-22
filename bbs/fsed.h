@@ -110,7 +110,7 @@ public:
 
 class FsedView {
 public:
-  FsedView(FullScreenView fs);
+  FsedView(FullScreenView fs, MessageEditorData& data, bool file);
   ~FsedView() = default;
 
   FullScreenView& fs();
@@ -119,8 +119,8 @@ public:
   int max_view_columns() const { return max_view_columns_; }
   // Updates the editor line number based on the cy and fs view of the 
   // world.
-  bool update_editor_lineno(editor_t& ed);
   void handle_editor_invalidate(editor_t&, editor_range_t t);
+  void redraw();
 
 public:
   // Top editor line number visible in the viewport.
@@ -130,10 +130,14 @@ private:
   FullScreenView fs_;
   int max_view_lines_;
   int max_view_columns_;
+  MessageEditorData& data_;
+  bool file_{false};
 };
 
 bool fsed(const std::filesystem::path& path);
-bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool file);
+bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file);
+bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data,
+          bool file);
 
 }
 

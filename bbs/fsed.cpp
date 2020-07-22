@@ -23,6 +23,7 @@
 #include "bbs/message_editor_data.h"
 #include "bbs/output.h"
 #include "bbs/pause.h"
+#include "bbs/quote.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -45,7 +46,6 @@ std::vector<line_t> read_file(const std::filesystem::path& path, int line_length
   auto lines = f.ReadFileIntoVector();
 
   std::vector<line_t> out;
-
   for (auto l : lines) {
     do {
       const auto size_wc = size_without_colors(l);
@@ -253,55 +253,88 @@ std::vector<std::string> editor_t::to_lines() {
 /////////////////////////////////////////////////////////////////////////////
 // MAIN
 
-static FsedView create_frame(const MessageEditorData& data, bool file) {
-  auto oldcuratr = bout.curatr();
+static FsedView create_frame(MessageEditorData& data, bool file) {
   const auto screen_width = a()->user()->GetScreenChars();
   const auto screen_length = a()->user()->GetScreenLines() - 1;
-  bout.cls();
-  bout << "From: " << wwiv::endl;
-  bout << "to:   " << data.to_name << wwiv::endl;
-  bout << "Area: " << data.sub_name << wwiv::endl;
-  bout << (file ? "File: " : "Subj: ") << data.title << wwiv::endl;
   const auto num_header_lines = 4;
-
-  bout.curatr(oldcuratr);
   auto fs = FullScreenView(bout, num_header_lines, screen_width, screen_length);
-  fs.DrawTopBar();
-  fs.DrawBottomBar("Foo");
-  return FsedView(fs);
+  auto view = FsedView(fs, data, file);
+  view.redraw();
+  return view;
 }
 
-void gotoxy(const editor_t& ed, const FullScreenView& fs) { 
+static void gotoxy(const editor_t& ed, const FullScreenView& fs) { 
   bout.GotoXY(ed.cx + 1, ed.cy + fs.lines_start());
 }
 
-void advance_cy(editor_t& ed, FsedView& view) {
+static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
   // advancy cy if we have room, scroll region otherwise
   if (ed.cy < view.max_view_lines()) {
     ++ed.cy;
   } else {
     // scroll
     view.top_line = ed.curli - ed.cy;
-    ed.invalidate_to_eof(view.top_line);
+    if (invalidate) {
+      ed.invalidate_to_eof(view.top_line);
+    }
   }
 }
 
 bool fsed(const std::filesystem::path& path) {
   MessageEditorData data{};
   data.title = path.string();
-  return fsed(path, data, true);
-}
-
-bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool file) { 
-  auto view = create_frame(data, file);
-  auto& fs = view.fs();
   editor_t ed{};
   auto file_lines = read_file(path, ed.maxli);
   if (!file_lines.empty()) {
     ed.lines = std::move(file_lines);
   }
+
+  int anon = 0;
+  auto save = fsed(ed, data, &anon, true);
+
+  bout.cls();
+  bout << "Text:" << wwiv::endl;
+  for (const auto& l : ed.to_lines()) {
+    bout << l << wwiv::endl;
+  }
+  if (!save) {
+    return false;
+  }
+
+  TextFile f(path, "wt");
+  if (!f) {
+    return false;
+  }
+  for (const auto& l : ed.to_lines()) {
+    f.WriteLine(l);
+  }
+  return true;
+}
+
+bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data,
+          bool file) {
+  editor_t ed{};
+  ed.maxli = maxli;
+  // TODO anon
+  for (auto l : lin) {
+    bool wrapped = !l.empty() && l.back() == '\x1';
+    ed.lines.emplace_back(line_t{wrapped, l});
+  }
+  if (!fsed(ed, data, setanon, file)) {
+    return false;
+  }
+
+  lin = ed.to_lines();
+  return true;
+}
+
+
+bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) { 
+  auto view = create_frame(data, file);
+  auto& fs = view.fs();
   ed.add_callback([&view](editor_t& e, editor_range_t t) {
-    view.handle_editor_invalidate(e, t); });
+    view.handle_editor_invalidate(e, t); 
+  });
 
   int saved_topdata = a()->topdata;
   if (a()->topdata != LocalIO::topdataNone) {
@@ -315,6 +348,7 @@ bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool
   bool done = false;
   bool save = false;
   // top editor line number in thw viewable area.
+  bout.Color(0);
   while (!done) {
     const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     fs.DrawBottomBar(fmt::format("X:{} Y:{} L:{} T:{} C:{} [{}]", ed.cx, ed.cy, ed.curli,
@@ -449,6 +483,33 @@ bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool
       case 'A': {
         done = true;
       } break;
+      case 'q':
+      case 'Q': {
+        // Hacky quote solution for now.
+        // TODO(rushfan): Do something less lame here.
+        bout.cls();
+        auto quoted_lines = query_quote_lines();
+        if (quoted_lines.empty()) {
+          break;
+        }
+        while (!quoted_lines.empty()) {
+          // Insert all quote lines.
+          const auto ql = quoted_lines.front();
+          quoted_lines.pop_front();
+          ++ed.curli;
+          ed.insert_line();
+          ed.curline().text = ql;
+          advance_cy(ed, view, false);
+        }
+        // Add blank line afterwards to use to start new text.
+        ++ed.curli;
+        ed.insert_line();
+        advance_cy(ed, view, false);
+
+        // Redraw everything, the whole enchilada!
+        view.redraw();
+        ed.invalidate_to_eof(0);
+      } break;
       case ESC:
         [[fallthrough]];
       default: {
@@ -473,28 +534,14 @@ bool fsed(const std::filesystem::path& path, const MessageEditorData& data, bool
 
   }
 
-  if (save) {
-    TextFile f(path, "wt");
-    if (f) {
-      for (const auto& l : ed.to_lines()) {
-        f.WriteLine(l);
-      }
-    }
-  } else {
-    bout.cls();
-    bout << "Text:" << wwiv::endl;
-    for (const auto& l : ed.to_lines()) {
-      bout << l << wwiv::endl;
-    }
-  }
-
   a()->topdata = saved_topdata;
   a()->UpdateTopScreen();
 
   return save;
 }
 
-FsedView::FsedView(FullScreenView fs) : fs_(std::move(fs)) {
+FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
+    : fs_(std::move(fs)), data_(data), file_(file) {
   max_view_lines_ = std::min<int>(20, fs.message_height() - 1);
   max_view_columns_ = std::min<int>(fs.screen_width(), 79);
 }
@@ -508,7 +555,10 @@ void FsedView::gotoxy(const editor_t& ed) {
 void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
   // TODO: optimize for first line
 
-  for (int i = t.start.line; i <= t.end.line; i++) {
+  // Never go below top line.
+  auto start_line = std::max<int>(t.start.line, top_line);
+
+  for (int i = start_line; i <= t.end.line; i++) {
     auto y = i - top_line + fs_.lines_start();
     if (y > fs_.lines_end() || i >= ssize(e.lines)) {
       // clear the current and then remaining
@@ -526,6 +576,20 @@ void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
     bout.clreol();
   }
   gotoxy(e);
+}
+
+void FsedView::redraw() {
+  auto oldcuratr = bout.curatr();
+  bout.cls();
+  auto to = data_.to_name.empty() ? "All" : data_.to_name;
+  bout << "|#7From: |#2" << data_.from_name << wwiv::endl;
+  bout << "|#7To:   |#2" << to << wwiv::endl;
+  bout << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
+  bout << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
+
+  bout.curatr(oldcuratr);
+  fs_.DrawTopBar();
+  fs_.DrawBottomBar("");
 }
 
 } // namespace wwiv::bbs::fsed

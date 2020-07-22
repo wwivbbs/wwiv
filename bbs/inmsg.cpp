@@ -24,6 +24,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/external_edit.h"
+#include "bbs/fsed.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
@@ -565,9 +566,7 @@ bool inmsg(MessageEditorData& data) {
     bout.charbufferpointer_ = 0;
     bout.charbuffer[0] = '\0';
     clear_quotes();
-    if (data.fsed_flags != FsedFlags::NOFSED) {
-      File::Remove(exted_filename);
-    }
+    File::Remove(exted_filename);
   });
 
   bout.nl();
@@ -593,7 +592,11 @@ bool inmsg(MessageEditorData& data) {
   auto save_message = false;
   auto maxli = GetMaxMessageLinesAllowed();
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
-    save_message = InternalMessageEditor(lin, maxli, &setanon, data);
+    if (a()->IsUseExperimentalFsed()) {
+      save_message = wwiv::bbs::fsed::fsed(lin, maxli, &setanon, data, false);
+    } else {
+      save_message = InternalMessageEditor(lin, maxli, &setanon, data);
+    }
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
     save_message = DoExternalMessageEditor(data, maxli, &setanon);
     TextFile editor_file(exted_filename, "r");
