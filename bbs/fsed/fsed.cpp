@@ -24,6 +24,7 @@
 #include "bbs/output.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
+#include "bbs/fsed/commands.h"
 #include "bbs/fsed/common.h"
 #include "bbs/fsed/editor.h"
 #include "bbs/fsed/line.h"
@@ -137,13 +138,31 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
   fs.GotoContentAreaTop();
   bool done = false;
   bool save = false;
+
+  const auto keys = CreateDefaultKeyMap();
   // top editor line number in thw viewable area.
   while (!done) {
     gotoxy(ed, fs);
 
-    auto key = view.bgetch(ed);
-    switch (key) {
-    case COMMAND_UP: {
+    const auto key = view.bgetch(ed);
+    if (key < 0xff && key >= 32) {
+      const auto c = static_cast<char>(key & 0xff);
+      gotoxy(ed, fs);
+      bout.bputch(c);
+      if (ed.add(c) == editor_add_result_t::wrapped) {
+        advance_cy(ed, view);
+      }
+      continue;
+    }
+
+    const auto it = keys.find(key);
+    if (it == std::end(keys)) {
+      // No key binding
+      continue;
+    }
+    auto cmd = it->second;
+    switch (cmd) {
+    case FsedCommand::cursor_up: {
       if (ed.cy > 0) {
         --ed.cy;
         --ed.curli;
@@ -159,7 +178,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         ed.invalidate_to_eof(view.top_line);
       }
     } break;
-    case COMMAND_DOWN: {
+    case FsedCommand::cursor_down: {
       if (ed.curli < ssize(ed.lines) - 1) {
         ++ed.curli;
         const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
@@ -167,7 +186,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         advance_cy(ed, view);
       }
     } break;
-    case COMMAND_PAGEUP: {
+    case FsedCommand::cursor_pgup: {
       const auto up = std::min<int>(ed.curli, view.max_view_lines());
       // nothing to do!
       if (up == 0) {
@@ -180,7 +199,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.cx = std::min<int>(ed.cx, right_max);
       ed.invalidate_to_eof(view.top_line);
     } break;
-    case COMMAND_PAGEDN: {
+    case FsedCommand::cursor_pgdown: {
       const auto dn =
           std::min<int>(view.max_view_lines(), std::max<int>(0, ssize(ed.lines) - ed.curli - 1));
       if (dn == 0) {
@@ -198,32 +217,30 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         ed.invalidate_to_eof(view.top_line);
       }
     } break;
-    case COMMAND_LEFT: {
+    case FsedCommand::cursor_left: {
       if (ed.cx > 0) {
         --ed.cx;
       }
     } break;
-    case COMMAND_RIGHT: {
+    case FsedCommand::cursor_right: {
       // TODO: add option to cursor right to end of view
       const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
       if (ed.cx < right_max) {
         ++ed.cx;
       }
     } break;
-    case CA:
-    case COMMAND_HOME: {
+    case FsedCommand::cursor_home:{
       ed.cx = 0;
     } break;
-    case CD: {
+    case FsedCommand::delete_line: {
       if (ed.remove_line()) {
         ed.invalidate_to_eof(ed.curli);
       }
     } break;
-    case CE:
-    case COMMAND_END: {
+    case FsedCommand::cursor_end:{
       ed.cx = ed.curline().size();
     } break;
-    case CK: {
+    case FsedCommand::delete_to_eol: {
       if (ed.cx < ed.curline().size()) {
         auto& oline = ed.curline();
         oline.text = oline.text.substr(0, ed.cx);
@@ -236,16 +253,16 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         }
       }
     } break;
-    case CL: { // redraw
+    case FsedCommand::view_redraw: { // redraw
       ed.invalidate_to_eof(0);
     } break;
-    case COMMAND_DELETE: {
+    case FsedCommand::delete_right: {
       // TODO keep mode state;
       ed.del();
       gotoxy(ed, fs);
       ed.invalidate_to_eol();
     } break;
-    case BACKSPACE: {
+    case FsedCommand::backspace: {
       // TODO keep mode state;
       ed.bs();
       if (ed.cx > 0) {
@@ -278,7 +295,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       gotoxy(ed, fs);
       bout.bputch(ed.current_char());
     } break;
-    case RETURN: {
+    case FsedCommand::key_return: {
       int orig_start_line = ed.curli;
       ed.curline().wrapped = false;
       // Insert inserts after the current line
@@ -300,7 +317,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.cx = 0;
       ed.invalidate_to_eof(orig_start_line);
     } break;
-    case ESC: {
+    case FsedCommand::menu: {
       bout.PutsXY(1, fs.command_line_y(), "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2?|#9=Help{not impl}): ");
       switch (fs.bgetch()) { 
       case 's':
@@ -348,18 +365,10 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       } break;
       }
     } break;
-    case CI: {
+    case FsedCommand::toggle_insovr: {
       ed.toggle_ins_ovr_mode();
     } break;
     default: {
-      if (key < 0xff && key >= 32) {
-        const auto c = static_cast<char>(key & 0xff);
-        gotoxy(ed, fs);
-        bout.bputch(c);
-        if (ed.add(c) == editor_add_result_t::wrapped) {
-          advance_cy(ed, view);
-        }
-      }
     } break;
     } // switch
 

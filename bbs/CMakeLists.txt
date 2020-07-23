@@ -43,6 +43,7 @@ set(COMMON_SOURCES
  external_edit_wwiv.cpp
  extract.cpp
  finduser.cpp
+ fsed/commands.cpp
  fsed/common.cpp
  fsed/fsed.cpp
  fsed/line.cpp
