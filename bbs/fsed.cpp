@@ -377,10 +377,14 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       if (ed.cy > 0) {
         --ed.cy;
         --ed.curli;
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        ed.cx = std::min<int>(ed.cx, right_max);
       }
       else if (ed.curli > 0) {
         // scroll
         --ed.curli;
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        ed.cx = std::min<int>(ed.cx, right_max);
         view.top_line = ed.curli;
         ed.invalidate_to_eof(view.top_line);
       }
@@ -388,6 +392,8 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
     case COMMAND_DOWN: {
       if (ed.curli < ssize(ed.lines) - 1) {
         ++ed.curli;
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        ed.cx = std::min<int>(ed.cx, right_max);
         advance_cy(ed, view);
       }
     } break;
@@ -400,6 +406,8 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.cy = std::max<int>(ed.cy - up, 0);
       ed.curli = std::max<int>(ed.curli - up, 0);
       view.top_line = ed.curli - ed.cy;
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+      ed.cx = std::min<int>(ed.cx, right_max);
       ed.invalidate_to_eof(view.top_line);
     } break;
     case COMMAND_PAGEDN: {
@@ -411,6 +419,8 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       }
       ed.curli += dn;
       ed.cy += dn;
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+      ed.cx = std::min<int>(ed.cx, right_max);
       if (ed.cy >= view.max_view_lines()) {
         // will need to scroll
         ed.cy = view.max_view_lines();
@@ -424,8 +434,8 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       }
     } break;
     case COMMAND_RIGHT: {
-      // TODO: add option to only cursor right to EOL
-      const auto right_max = view.max_view_columns();
+      // TODO: add option to cursor right to end of view
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
       if (ed.cx < right_max) {
         ++ed.cx;
       }
