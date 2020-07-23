@@ -245,6 +245,9 @@ static void HandleScanReadFind(int& nMessageNumber, MsgScanOption& scan_option) 
   char* pszTempFindString = nullptr;
   if (!a()->context().made_find_str()) {
     pszTempFindString = strupr(stripcolors(get_post(nMessageNumber)->title));
+    if (strlen(pszTempFindString) >= 20) {
+      pszTempFindString[20] = '\0';
+    }
     to_char_array(s_szFindString, pszTempFindString);
     a()->context().made_find_str(true);
   } else {
