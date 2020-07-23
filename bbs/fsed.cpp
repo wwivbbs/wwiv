@@ -280,35 +280,52 @@ static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
   }
 }
 
+static int last_space_before(line_t& line, int maxlen) {
+  if (line.size() < maxlen) {
+    return line.size();
+  }
+  auto& text = line.text;
+  if (text.empty()) {
+    return 0;
+  }
+  for (int i = ssize(text) - 1; i > 0; i--) {
+    char c = text.at(i);
+    if (c == '\t' || c == ' ') {
+      return i;
+    }
+  }
+  return 0;
+}
+
 bool fsed(const std::filesystem::path& path) {
   MessageEditorData data{};
   data.title = path.string();
-editor_t ed{};
-auto file_lines = read_file(path, ed.maxli);
-if (!file_lines.empty()) {
-  ed.lines = std::move(file_lines);
-}
+  editor_t ed{};
+  auto file_lines = read_file(path, ed.maxli);
+  if (!file_lines.empty()) {
+    ed.lines = std::move(file_lines);
+  }
 
-int anon = 0;
-auto save = fsed(ed, data, &anon, true);
+  int anon = 0;
+  auto save = fsed(ed, data, &anon, true);
 
-bout.cls();
-bout << "Text:" << wwiv::endl;
-for (const auto& l : ed.to_lines()) {
-  bout << l << wwiv::endl;
-}
-if (!save) {
-  return false;
-}
+  bout.cls();
+  bout << "Text:" << wwiv::endl;
+  for (const auto& l : ed.to_lines()) {
+    bout << l << wwiv::endl;
+  }
+  if (!save) {
+    return false;
+  }
 
-TextFile f(path, "wt");
-if (!f) {
-  return false;
-}
-for (const auto& l : ed.to_lines()) {
-  f.WriteLine(l);
-}
-return true;
+  TextFile f(path, "wt");
+  if (!f) {
+    return false;
+  }
+  for (const auto& l : ed.to_lines()) {
+    f.WriteLine(l);
+  }
+  return true;
 }
 
 bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data,
@@ -461,6 +478,22 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
           ed.cx = ed.curline().size();
           ed.invalidate_to_eof(ed.curli);
         }
+      } else if (ed.curli > 0) {
+        auto& prev = ed.lines.at(ed.curli - 1);
+        auto& cur = ed.curline();
+        auto last_pos = std::max<int>(0, ed.max_line_len - prev.size() - 1);
+        const int new_cx = prev.size();
+        if (cur.size() < last_pos) {
+          prev.text.append(cur.text);
+          ed.remove_line();
+        } else if (int space = last_space_before(cur, last_pos) > 0) {
+          prev.text.append(cur.text.substr(0, space));
+          cur.text = cur.text.substr(space);
+        }
+        --ed.cy;
+        --ed.curli;
+        ed.cx = new_cx;
+        ed.invalidate_to_eof(ed.curli);
       }
       gotoxy(ed, fs);
       bout.bputch(ed.current_char());
@@ -605,7 +638,7 @@ void FsedView::redraw() {
   bout << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
   bout << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
 
-  bout.curatr(oldcuratr);
+  bout.SystemColor(oldcuratr);
   fs_.DrawTopBar();
   fs_.DrawBottomBar("");
 }
@@ -621,7 +654,7 @@ void FsedView::draw_bottom_bar(editor_t& ed) {
     sy = ed.cy;
     sl = ed.curli;
   }
-  bout.curatr(sc);
+  bout.SystemColor(sc);
   gotoxy(ed);
 }
 

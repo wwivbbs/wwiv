@@ -86,13 +86,19 @@ public:
   bool bs();
   // Gets the current character
   char current_char();
-  // Update mode
+  // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
+  // matters on add, bs, and del
   void toggle_ins_ovr_mode() {
     mode_ = (mode_ == ins_ovr_mode_t::ins) ? ins_ovr_mode_t::ovr : ins_ovr_mode_t::ins;
   }
 
+  // Get the internal state if the editor is in INSERT or OVERWRITE mode.
   ins_ovr_mode_t mode() const noexcept { return mode_; };
 
+  /**
+   * Return the text as a vector of strings in WWIV format (meaning the last
+   * character is a \x1 if the line is wrapped.
+   */
   std::vector<std::string> to_lines();
 
   // Listeners

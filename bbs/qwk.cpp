@@ -485,7 +485,7 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
       temp.append(ansi_string);
 
       pos += 2;
-      bout.curatr(save_curatr);
+      bout.SystemColor(save_curatr);
     } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;

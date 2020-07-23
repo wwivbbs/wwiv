@@ -76,7 +76,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   auto y = screen_length_ - 1;
   bout_.GotoXY(1, y);
   const auto saved_color = bout.curatr();
-  wwiv::core::ScopeExit at_ext([=] { bout.curatr(saved_color); });
+  wwiv::core::ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
 
   bout << "|09" << static_cast<unsigned char>(198)
        << string(screen_width_ - 2, static_cast<unsigned char>(205))
@@ -86,7 +86,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
     return;
   }
 
-  int x = screen_width_ - 10 - text.size();
+  int x = screen_width_ - 10 - ssize(text);
   bout_.GotoXY(x, y);
   bout << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
        << " |16|09" << static_cast<unsigned char>(198);
