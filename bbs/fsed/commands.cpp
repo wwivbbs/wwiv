@@ -41,6 +41,7 @@ std::map<int, FsedCommand> CreateDefaultKeyMap() {
   map.emplace(ESC, FsedCommand::menu);
   map.emplace(CI, FsedCommand::toggle_insovr);
   map.emplace(RETURN, FsedCommand::key_return);
+
   return map;
 }
 

@@ -160,8 +160,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       // No key binding
       continue;
     }
-    auto cmd = it->second;
-    switch (cmd) {
+    switch (it->second) {
     case FsedCommand::cursor_up: {
       if (ed.cy > 0) {
         --ed.cy;
