@@ -26,7 +26,7 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/exceptions.h"
-#include "bbs/fsed.h"
+#include "bbs/fsed/fsed.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"

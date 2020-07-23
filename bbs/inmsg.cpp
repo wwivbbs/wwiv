@@ -24,7 +24,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/external_edit.h"
-#include "bbs/fsed.h"
+#include "bbs/fsed/fsed.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"

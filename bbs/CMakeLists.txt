@@ -43,7 +43,10 @@ set(COMMON_SOURCES
  external_edit_wwiv.cpp
  extract.cpp
  finduser.cpp
- fsed.cpp
+ fsed/common.cpp
+ fsed/fsed.cpp
+ fsed/line.cpp
+ fsed/editor.cpp
  full_screen.cpp
  gfiles.cpp
  gfileedit.cpp

@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "bbs/fsed.h"
+#include "bbs/fsed/fsed.h"
 
 #include "bbs/bbs.h"
 #include "bbs/bgetch.h"
@@ -24,6 +24,9 @@
 #include "bbs/output.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
+#include "bbs/fsed/common.h"
+#include "bbs/fsed/editor.h"
+#include "bbs/fsed/line.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -38,235 +41,6 @@ using namespace wwiv::strings;
 /////////////////////
 // LOCALS
 
-std::vector<line_t> read_file(const std::filesystem::path& path, int line_length) {
-  TextFile f(path, "rt");
-  if (!f) {
-    return {};
-  }
-  auto lines = f.ReadFileIntoVector();
-
-  std::vector<line_t> out;
-  for (auto l : lines) {
-    do {
-      const auto size_wc = size_without_colors(l);
-      if (size_wc <= line_length) {
-        line_t lt{};
-        lt.wrapped = false;
-        lt.text = l;
-        out.emplace_back(lt);
-        break;
-      }
-      // We have a long line
-      auto pos = line_length;
-      while (pos > 0 && l[pos] > 32) {
-        pos--;
-      }
-      if (pos == 0) {
-        pos = line_length;
-      }
-      auto subset_of_l = l.substr(0, pos);
-      l = l.substr(pos + 1);
-      line_t lt{};
-      lt.wrapped = true;
-      lt.text = l;
-      out.emplace_back(lt);
-    } while (true);
-  }
-  return out;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// LINE
-
-line_add_result_t line_t::add(int x, char c, ins_ovr_mode_t mode) {
-  while (ssize(text) < x) {
-    text.push_back(' ');
-  }
-  if (x == ssize(text)) {
-    text.push_back(c);
-    return line_add_result_t::no_redraw;
-  } else if (mode == ins_ovr_mode_t::ins) {
-    wwiv::stl::insert_at(text, x, c);
-    return line_add_result_t::needs_redraw;
-  } else {
-    text[x] = c;
-    return line_add_result_t::no_redraw;
-  }
-}
-
-line_add_result_t line_t::del(int x, ins_ovr_mode_t) {
-  if (x < 0) {
-    return line_add_result_t::error;
-  }
-  auto result = (x == ssize(text)) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
-  if (!wwiv::stl::erase_at(text, x)) {
-    return line_add_result_t ::error;
-  }
-  return result;
-}
-
-line_add_result_t line_t::bs(int x, ins_ovr_mode_t mode) { 
-  if (x <= 0) {
-    return line_add_result_t::error;
-  }
-  return del(x - 1, mode);
-}
-
-int line_t::size() const { 
-  return ssize(text);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// EDITOR
-
-line_t& editor_t::curline() {
-  // TODO: insert return statement here
-  while (curli >= ssize(lines)) {
-    lines.emplace_back();
-  }
-  return lines.at(curli);
-} 
-
-bool editor_t::insert_line() { 
-  if (ssize(lines)  >= this->maxli) {
-    return false;
-  }
-  return wwiv::stl::insert_at(lines, curli, line_t{});
-}
-
-bool editor_t::remove_line() { 
-  if (lines.empty()) {
-    return false;
-  }
-  return wwiv::stl::erase_at(lines, curli);
-}
-
-editor_add_result_t editor_t::add(char c) { 
-  auto& line = curline(); 
-  auto line_result = line.add(cx, c, mode_);
-  if (line_result == line_add_result_t::error) {
-    return editor_add_result_t::error;
-  }
-  auto start_line = curli;
-  ++cx;
-  if (cx < max_line_len) {
-    // no  wrapping is needed
-    if (line_result == line_add_result_t::needs_redraw) {
-      invalidate_range(start_line, curli);
-    }
-    return editor_add_result_t::added;
-  }
-  int last_space = line.text.find_last_of(" \t");
-  line.wrapped = true;
-  if (last_space != -1 && (max_line_len - last_space) < (max_line_len / 2)) {
-    // Word Wrap
-    auto nline = line.text.substr(last_space);
-    line.text = line.text.substr(0, last_space);
-    ++curli;
-    curline().text = nline;
-    cx = ssize(curline().text);
-  } else {
-    // Character wrap    
-    ++curli;
-    cx %= max_line_len;
-  }
-  // Create the new line.
-  curline();
-  invalidate_range(start_line, curli);
-  return editor_add_result_t::wrapped;
-}
-
-char editor_t::current_char() {
-  const auto& line = curline();
-  return (cx >= wwiv::stl::ssize(line.text)) ? ' ' : line.text.at(cx);
-}
-
-bool editor_t::del() { 
-  auto r = curline().del(cx, mode_);
-  if (r == line_add_result_t::error) {
-    return false;
-  }
-  if (r == line_add_result_t::needs_redraw) {
-    invalidate_to_eof(curli);
-  }
-  return true;
-}
-
-bool editor_t::bs() { 
-  auto r = curline().bs(cx, mode_);
-  if (r == line_add_result_t::error) {
-    return false;
-  }
-  if (r == line_add_result_t::needs_redraw) {
-    invalidate_to_eof(curli);
-  }
-  return true;
-}
-
-bool editor_t::add_callback(editor_range_invalidated_fn fn) {
-  callbacks_.emplace_back(fn);
-  return true;
-}
-void editor_t::invalidate_to_eol() {
-  editor_range_t r{};
-  r.start.line = r.end.line = curli;
-  r.start.x = cx;
-  r.end.x = ssize(curline().text);
-  for (auto& c : callbacks_) {
-    c(*this, r);
-  }
-}
-
-void editor_t::invalidate_to_eof() {
-  invalidate_to_eof(curli);
-}
-
-void editor_t::invalidate_to_eof(int start_line) {
-  invalidate_range(start_line, ssize(lines));
-}
-
-void editor_t::invalidate_range(int start_line, int end_line) {
-  editor_range_t r{};
-  r.start.line = start_line;
-  r.start.x = cx;
-  r.end.line = end_line;
-  for (auto& c : callbacks_) {
-    c(*this, r);
-  }
-}
-
-std::vector<std::string> editor_t::to_lines() { 
-  std::vector<std::string> out;
-  for (auto l : lines) {
-    wwiv::strings::StringTrimCRLF(&l.text);
-    if (l.wrapped) {
-      // wwiv line wrapping character.
-      l.text.push_back('\x1');
-    }
-    out.emplace_back(l.text);
-  }
-
-  return out;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// MAIN
-
-static FsedView create_frame(MessageEditorData& data, bool file) {
-  const auto screen_width = a()->user()->GetScreenChars();
-  const auto screen_length = a()->user()->GetScreenLines() - 1;
-  const auto num_header_lines = 4;
-  auto fs = FullScreenView(bout, num_header_lines, screen_width, screen_length);
-  auto view = FsedView(fs, data, file);
-  view.redraw();
-  return view;
-}
-
-static void gotoxy(const editor_t& ed, const FullScreenView& fs) { 
-  bout.GotoXY(ed.cx + 1, ed.cy + fs.lines_start());
-}
-
 static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
   // advancy cy if we have room, scroll region otherwise
   if (ed.cy < view.max_view_lines()) {
@@ -280,21 +54,17 @@ static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
   }
 }
 
-static int last_space_before(line_t& line, int maxlen) {
-  if (line.size() < maxlen) {
-    return line.size();
-  }
-  auto& text = line.text;
-  if (text.empty()) {
-    return 0;
-  }
-  for (int i = ssize(text) - 1; i > 0; i--) {
-    char c = text.at(i);
-    if (c == '\t' || c == ' ') {
-      return i;
-    }
-  }
-  return 0;
+/////////////////////////////////////////////////////////////////////////////
+// MAIN
+
+static FsedView create_frame(MessageEditorData& data, bool file) {
+  const auto screen_width = a()->user()->GetScreenChars();
+  const auto screen_length = a()->user()->GetScreenLines() - 1;
+  const auto num_header_lines = 4;
+  auto fs = FullScreenView(bout, num_header_lines, screen_width, screen_length);
+  auto view = FsedView(fs, data, file);
+  view.redraw();
+  return view;
 }
 
 bool fsed(const std::filesystem::path& path) {
