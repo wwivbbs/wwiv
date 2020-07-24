@@ -159,8 +159,8 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
         return 1;
       }
       const auto& files = o.value();
-      bout << "|#2CompSize     Size   Date   Time  CRC-32   File Name" << std::endl;
-      bout << "|#7======== -------- ======== ----- ======== ----------------------------------" << std::endl;
+      bout << "|#2CompSize     Size   Date   Time  CRC-32   File Name" << wwiv::endl;
+      bout << "|#7======== -------- ======== ----- ======== ----------------------------------" << wwiv::endl;
       int line_num = 0;
       for (const auto& f : files) {
         const auto dt = DateTime::from_time_t(f.dt);
@@ -168,7 +168,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
         auto t = dt.to_string("%I:%M");
         auto line = fmt::format("{:>8} {:>8} {:<8} {:<5} {:>08x} {}", f.compress_size,
                                 f.uncompress_size, d, t, f.crc32, f.filename);
-        bout << ((++line_num % 2) ? "|#9" : "|#1") << line << std::endl;
+        bout << ((++line_num % 2) ? "|#9" : "|#1") << line << wwiv::endl;
       }
     } else {
       return_code = ExecuteExternalProgram(cmd.cmd, a()->spawn_option(SPAWNOPT_ARCH_L));
