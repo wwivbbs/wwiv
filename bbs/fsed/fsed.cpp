@@ -162,6 +162,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
     }
     switch (it->second) {
     case FsedCommand::cursor_up: {
+      auto previous_line = ed.curli;
       if (ed.cy > 0) {
         --ed.cy;
         --ed.curli;
@@ -176,16 +177,20 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         view.top_line = ed.curli;
         ed.invalidate_to_eof(view.top_line);
       }
+      view.draw_current_line(ed, previous_line);
     } break;
     case FsedCommand::cursor_down: {
+      auto previous_line = ed.curli;
       if (ed.curli < ssize(ed.lines) - 1) {
         ++ed.curli;
         const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
         ed.cx = std::min<int>(ed.cx, right_max);
         advance_cy(ed, view);
       }
+      view.draw_current_line(ed, previous_line);
     } break;
     case FsedCommand::cursor_pgup: {
+      auto previous_line = ed.curli;
       const auto up = std::min<int>(ed.curli, view.max_view_lines());
       // nothing to do!
       if (up == 0) {
@@ -197,8 +202,10 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
       ed.cx = std::min<int>(ed.cx, right_max);
       ed.invalidate_to_eof(view.top_line);
+      view.draw_current_line(ed, previous_line);
     } break;
     case FsedCommand::cursor_pgdown: {
+      auto previous_line = ed.curli;
       const auto dn =
           std::min<int>(view.max_view_lines(), std::max<int>(0, ssize(ed.lines) - ed.curli - 1));
       if (dn == 0) {
@@ -215,6 +222,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         view.top_line = ed.curli - ed.cy;
         ed.invalidate_to_eof(view.top_line);
       }
+      view.draw_current_line(ed, previous_line);
     } break;
     case FsedCommand::cursor_left: {
       if (ed.cx > 0) {
@@ -235,6 +243,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       if (ed.remove_line()) {
         ed.invalidate_to_eof(ed.curli);
       }
+      view.draw_current_line(ed, ed.curli);
     } break;
     case FsedCommand::cursor_end:{
       ed.cx = ed.curline().size();
@@ -249,6 +258,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         // delete line
         if (ed.remove_line()) {
           ed.invalidate_to_eof(ed.curli);
+          view.draw_current_line(ed, ed.curli);
         }
       }
     } break;
@@ -262,6 +272,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.invalidate_to_eol();
     } break;
     case FsedCommand::backspace: {
+      auto previous_line = ed.curli;
       // TODO keep mode state;
       ed.bs();
       if (ed.cx > 0) {
@@ -291,6 +302,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         ed.cx = new_cx;
         ed.invalidate_to_eof(ed.curli);
       }
+      view.draw_current_line(ed, previous_line);
       gotoxy(ed, fs);
       bout.bputch(ed.current_char());
     } break;
@@ -315,6 +327,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       advance_cy(ed, view);
       ed.cx = 0;
       ed.invalidate_to_eof(orig_start_line);
+      view.draw_current_line(ed, orig_start_line);
     } break;
     case FsedCommand::menu: {
       bout.PutsXY(1, fs.command_line_y(), "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2?|#9=Help{not impl}): ");
@@ -391,6 +404,26 @@ void FsedView::gotoxy(const editor_t& ed) {
   bout.GotoXY(ed.cx + 1, ed.cy - top_line + fs_.lines_start());
 }
 
+void FsedView::draw_current_line(editor_t& ed, int previous_line) { 
+  if (previous_line != ed.curli) {
+    auto py = previous_line - top_line + fs_.lines_start();
+    bout.GotoXY(0, py);
+    bout.bputs(ed.lines.at(previous_line).text);
+    bout.clreol();
+  }
+
+  auto y = ed.curli - top_line + fs_.lines_start(); 
+  bout.GotoXY(0, y);
+  bout.Color(0);
+  for (const auto& c : ed.curline().text) {
+    // Draw char by char for the current line so we don't display
+    // color codes where we are editing.
+    bout.bputch(c);
+  }
+  bout.clreol();
+  gotoxy(ed);
+}
+
 void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
   // TODO: optimize for first line
 
@@ -411,7 +444,15 @@ void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
     }
     bout.GotoXY(0, y);
     auto& rl = e.lines.at(i);
-    bout.bputs(rl.text);
+    if (i == e.curli) {
+      for (const auto& c : rl.text) {
+        // Draw char by char for the current line so we don't display
+        // color codes where we are editing.
+        bout.bputch(c);
+      }
+    } else {
+      bout.bputs(rl.text);
+    }
     bout.clreol();
   }
   gotoxy(e);

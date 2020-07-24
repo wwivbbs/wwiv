@@ -39,6 +39,9 @@ public:
   void gotoxy(const editor_t& ed);
   int max_view_lines() const { return max_view_lines_; }
   int max_view_columns() const { return max_view_columns_; }
+  // Draws the current line without colors, and redraws the previous
+  // line with colors.
+  void draw_current_line(editor_t& e, int previous_line);
   // Updates the editor line number based on the cy and fs view of the 
   // world.
   void handle_editor_invalidate(editor_t&, editor_range_t t);
