@@ -74,7 +74,7 @@ bool fsed(const std::filesystem::path& path) {
   editor_t ed{};
   auto file_lines = read_file(path, ed.maxli);
   if (!file_lines.empty()) {
-    ed.lines = std::move(file_lines);
+    ed.set_lines(std::move(file_lines));
   }
 
   int anon = 0;
@@ -106,7 +106,7 @@ bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorD
   // TODO anon
   for (auto l : lin) {
     bool wrapped = !l.empty() && l.back() == '\x1';
-    ed.lines.emplace_back(line_t{ wrapped, l });
+    ed.emplace_back(line_t{ wrapped, l });
   }
   if (!fsed(ed, data, setanon, file)) {
     return false;
@@ -166,13 +166,13 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       if (ed.cy > 0) {
         --ed.cy;
         --ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
         ed.cx = std::min<int>(ed.cx, right_max);
       }
       else if (ed.curli > 0) {
         // scroll
         --ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
         ed.cx = std::min<int>(ed.cx, right_max);
         view.top_line = ed.curli;
         ed.invalidate_to_eof(view.top_line);
@@ -181,9 +181,9 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
     } break;
     case FsedCommand::cursor_down: {
       auto previous_line = ed.curli;
-      if (ed.curli < ssize(ed.lines) - 1) {
+      if (ed.curli < ssize(ed) - 1) {
         ++ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+        const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
         ed.cx = std::min<int>(ed.cx, right_max);
         advance_cy(ed, view);
       }
@@ -199,7 +199,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.cy = std::max<int>(ed.cy - up, 0);
       ed.curli = std::max<int>(ed.curli - up, 0);
       view.top_line = ed.curli - ed.cy;
-      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
       ed.cx = std::min<int>(ed.cx, right_max);
       ed.invalidate_to_eof(view.top_line);
       view.draw_current_line(ed, previous_line);
@@ -207,14 +207,14 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
     case FsedCommand::cursor_pgdown: {
       auto previous_line = ed.curli;
       const auto dn =
-          std::min<int>(view.max_view_lines(), std::max<int>(0, ssize(ed.lines) - ed.curli - 1));
+          std::min<int>(view.max_view_lines(), std::max<int>(0, ssize(ed) - ed.curli - 1));
       if (dn == 0) {
         // nothing to do!
         break;
       }
       ed.curli += dn;
       ed.cy += dn;
-      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
       ed.cx = std::min<int>(ed.cx, right_max);
       if (ed.cy >= view.max_view_lines()) {
         // will need to scroll
@@ -231,7 +231,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
     } break;
     case FsedCommand::cursor_right: {
       // TODO: add option to cursor right to end of view
-      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().size());
+      const auto right_max = std::min<int>(view.max_view_columns(), ed.curline().ssize());
       if (ed.cx < right_max) {
         ++ed.cx;
       }
@@ -246,15 +246,15 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       view.draw_current_line(ed, ed.curli);
     } break;
     case FsedCommand::cursor_end:{
-      ed.cx = ed.curline().size();
+      ed.cx = ed.curline().ssize();
     } break;
     case FsedCommand::delete_to_eol: {
-      if (ed.cx < ed.curline().size()) {
+      if (ed.cx < ed.curline().ssize()) {
         auto& oline = ed.curline();
         oline.text = oline.text.substr(0, ed.cx);
         oline.wrapped = false;
         ed.invalidate_to_eol();
-      } else if (ed.curline().size() == 0) {
+      } else if (ed.curline().ssize() == 0) {
         // delete line
         if (ed.remove_line()) {
           ed.invalidate_to_eof(ed.curli);
@@ -277,20 +277,20 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       ed.bs();
       if (ed.cx > 0) {
         --ed.cx;
-      } else if (ed.curli > 0 && ed.curline().size() == 0) {
+      } else if (ed.curli > 0 && ed.curline().ssize() == 0) {
         // If current line is empty then delete it and move up one line
         if (ed.remove_line()) {
           --ed.cy;
           --ed.curli;
-          ed.cx = ed.curline().size();
+          ed.cx = ed.curline().ssize();
           ed.invalidate_to_eof(ed.curli);
         }
       } else if (ed.curli > 0) {
-        auto& prev = ed.lines.at(ed.curli - 1);
+        auto& prev = ed.line(ed.curli - 1);
         auto& cur = ed.curline();
-        auto last_pos = std::max<int>(0, ed.max_line_len - prev.size() - 1);
-        const int new_cx = prev.size();
-        if (cur.size() < last_pos) {
+        auto last_pos = std::max<int>(0, ed.max_line_len - prev.ssize() - 1);
+        const int new_cx = prev.ssize();
+        if (cur.ssize() < last_pos) {
           prev.text.append(cur.text);
           ed.remove_line();
         } else if (int space = last_space_before(cur, last_pos) > 0) {
@@ -310,7 +310,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       int orig_start_line = ed.curli;
       ed.curline().wrapped = false;
       // Insert inserts after the current line
-      if (ed.cx >= ed.curline().size()) {
+      if (ed.cx >= ed.curline().ssize()) {
         ++ed.curli;
         ed.insert_line();
       } else {
@@ -408,7 +408,7 @@ void FsedView::draw_current_line(editor_t& ed, int previous_line) {
   if (previous_line != ed.curli) {
     auto py = previous_line - top_line + fs_.lines_start();
     bout.GotoXY(0, py);
-    bout.bputs(ed.lines.at(previous_line).text);
+    bout.bputs(ed.line(previous_line).text);
     bout.clreol();
   }
 
@@ -432,7 +432,7 @@ void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
 
   for (int i = start_line; i <= t.end.line; i++) {
     auto y = i - top_line + fs_.lines_start();
-    if (y > fs_.lines_end() || i >= ssize(e.lines)) {
+    if (y > fs_.lines_end() || i >= ssize(e)) {
       // clear the current and then remaining
       bout.GotoXY(0, y);
       bout.clreol();
@@ -443,7 +443,7 @@ void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
       break;
     }
     bout.GotoXY(0, y);
-    auto& rl = e.lines.at(i);
+    auto& rl = e.line(i);
     if (i == e.curli) {
       for (const auto& c : rl.text) {
         // Draw char by char for the current line so we don't display

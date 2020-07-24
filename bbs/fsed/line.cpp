@@ -36,10 +36,10 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 line_add_result_t line_t::add(int x, char c, ins_ovr_mode_t mode) {
-  while (ssize(text) < x) {
+  while (wwiv::stl::ssize(text) < x) {
     text.push_back(' ');
   }
-  if (x == ssize(text)) {
+  if (x == wwiv::stl::ssize(text)) {
     text.push_back(c);
     return line_add_result_t::no_redraw;
   } else if (mode == ins_ovr_mode_t::ins) {
@@ -55,7 +55,7 @@ line_add_result_t line_t::del(int x, ins_ovr_mode_t) {
   if (x < 0) {
     return line_add_result_t::error;
   }
-  auto result = (x == ssize(text)) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
+  auto result = (x == wwiv::stl::ssize(text)) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
   if (!wwiv::stl::erase_at(text, x)) {
     return line_add_result_t ::error;
   }
@@ -69,8 +69,9 @@ line_add_result_t line_t::bs(int x, ins_ovr_mode_t mode) {
   return del(x - 1, mode);
 }
 
-int line_t::size() const { 
-  return ssize(text);
-}
+int line_t::ssize() const { 
+  return wwiv::stl::ssize(text); }
+
+std::size_t line_t::size() const { return text.size(); }
 
 } // namespace wwiv::bbs::fsed

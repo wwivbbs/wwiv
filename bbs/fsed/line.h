@@ -40,7 +40,8 @@ public:
   line_add_result_t del(int x, ins_ovr_mode_t mode);
   line_add_result_t bs(int x, ins_ovr_mode_t mode);
 
-  int size() const;
+  int ssize() const;
+  std::size_t size() const;
 };
 
 }

@@ -85,8 +85,8 @@ void gotoxy(const editor_t& ed, const FullScreenView& fs) {
 
 
 int last_space_before(line_t& line, int maxlen) {
-  if (line.size() < maxlen) {
-    return line.size();
+  if (line.ssize() < maxlen) {
+    return line.ssize();
   }
   auto& text = line.text;
   if (text.empty()) {

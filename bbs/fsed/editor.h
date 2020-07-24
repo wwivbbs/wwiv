@@ -42,8 +42,6 @@ struct editor_range_t {
 
 class editor_t {
 public:
-  // Lines of text
-  mutable std::vector<line_t> lines;
   // cursor X position
   int cx{0};
   // cursor Y positon
@@ -59,6 +57,13 @@ public:
 
   // gets the current line
   line_t& curline();
+  // Gets the line at a position n or throws.
+  line_t& line(int n);
+  bool set_lines(std::vector<line_t>&& n);
+  // return the number of lines.
+  std::size_t size() const { return lines_.size(); }
+  // Adds a new line to the end of the list of lines.
+  void emplace_back(line_t&& n);
   // inserts a new line after curli.
   bool insert_line();
   // deletes the current line.
@@ -93,6 +98,10 @@ public:
   void invalidate_to_eof();
   void invalidate_to_eof(int start_line);
   void invalidate_range(int start_line, int end_line);
+
+private:
+  // Lines of text
+  std::vector<line_t> lines_;
 
   std::vector<editor_range_invalidated_fn> callbacks_;
 };

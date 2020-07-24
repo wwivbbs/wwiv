@@ -24,11 +24,13 @@
 #include "bbs/output.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include "local_io/keycodes.h"
+#include <stdexcept>
 
 namespace wwiv::bbs::fsed {
 
@@ -41,24 +43,42 @@ using namespace wwiv::strings;
 
 line_t& editor_t::curline() {
   // TODO: insert return statement here
-  while (curli >= ssize(lines)) {
-    lines.emplace_back();
+  while (curli >= ssize(lines_)) {
+    lines_.emplace_back();
   }
-  return lines.at(curli);
+  return lines_.at(curli);
 } 
 
+line_t& editor_t::line(int n) { 
+  try {
+    return lines_.at(n);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Exception trying to get line: " << n << "; what: " << e.what();
+    LOG(ERROR) << wwiv::os::stacktrace();
+    throw;
+  }
+}
+
+bool editor_t::set_lines(std::vector<line_t>&& n) {
+  lines_ = n;
+  return true;
+}
+
+void editor_t::emplace_back(line_t&& n) { lines_.emplace_back(n); }
+
+
 bool editor_t::insert_line() { 
-  if (ssize(lines)  >= this->maxli) {
+  if (ssize(lines_)  >= this->maxli) {
     return false;
   }
-  return wwiv::stl::insert_at(lines, curli, line_t{});
+  return wwiv::stl::insert_at(lines_, curli, line_t{});
 }
 
 bool editor_t::remove_line() { 
-  if (lines.empty()) {
+  if (lines_.empty()) {
     return false;
   }
-  return wwiv::stl::erase_at(lines, curli);
+  return wwiv::stl::erase_at(lines_, curli);
 }
 
 editor_add_result_t editor_t::add(char c) { 
@@ -142,7 +162,7 @@ void editor_t::invalidate_to_eof() {
 }
 
 void editor_t::invalidate_to_eof(int start_line) {
-  invalidate_range(start_line, ssize(lines));
+  invalidate_range(start_line, ssize(lines_));
 }
 
 void editor_t::invalidate_range(int start_line, int end_line) {
@@ -157,7 +177,7 @@ void editor_t::invalidate_range(int start_line, int end_line) {
 
 std::vector<std::string> editor_t::to_lines() { 
   std::vector<std::string> out;
-  for (auto l : lines) {
+  for (auto l : lines_) {
     wwiv::strings::StringTrimCRLF(&l.text);
     if (l.wrapped) {
       // wwiv line wrapping character.
