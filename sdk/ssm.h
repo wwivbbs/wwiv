@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/vardec.h"
 #include "sdk/usermanager.h"
 

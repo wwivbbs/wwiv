@@ -21,8 +21,8 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/contact.h"
-#include "sdk/networks.h"
+#include "sdk/net/contact.h"
+#include "sdk/net/networks.h"
 #include <iostream>
 #include <map>
 #include <string>

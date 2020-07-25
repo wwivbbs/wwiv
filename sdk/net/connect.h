@@ -22,7 +22,7 @@
 #include <map>
 #include <string>
 
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 namespace wwiv {
 namespace sdk {

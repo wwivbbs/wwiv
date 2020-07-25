@@ -31,7 +31,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
 #include <string>
 

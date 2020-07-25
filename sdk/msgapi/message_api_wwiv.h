@@ -21,7 +21,7 @@
 #include "sdk/config.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include <filesystem>
 #include <memory>
 #include <string>

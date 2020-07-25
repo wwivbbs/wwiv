@@ -21,7 +21,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include <chrono>
 #include <iostream>
 #include <string>

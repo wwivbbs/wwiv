@@ -21,7 +21,7 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "sdk/net/packets.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <iostream>
 #include <map>
 #include <string>

@@ -32,7 +32,7 @@
 #endif // _WIN32
 
 #include "sdk/vardec.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 #define EXIT_NORMAL     0
 #define EXIT_BAD_PARAMS 1

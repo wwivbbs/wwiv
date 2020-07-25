@@ -20,7 +20,7 @@
 #ifndef __INCLUDED_SUBXTR_H__
 #define __INCLUDED_SUBXTR_H__
 
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/vardec.h"
 #include <string>
 #include <vector>

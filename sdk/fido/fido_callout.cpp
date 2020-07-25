@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress,
                                    cereal::specialization::non_member_load_save_minimal);
-#include "sdk/networks_cereal.h"
+#include "sdk/net/networks_cereal.h"
 
 namespace cereal {
 /*

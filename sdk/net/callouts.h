@@ -18,16 +18,15 @@
 #ifndef __INCLUDED_SDK_NET_CALLOUTS_H__
 #define __INCLUDED_SDK_NET_CALLOUTS_H__
 
+#include "core/datetime.h"
+#include "sdk/net/contact.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 #include <functional>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "core/datetime.h"
-#include "sdk/contact.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
 
 namespace wwiv {
 namespace sdk {

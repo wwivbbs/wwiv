@@ -21,7 +21,7 @@
 #include <chrono>
 #include <cstdint>
 #include <string>
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 void cleanup_net();
 void print_pending_list();

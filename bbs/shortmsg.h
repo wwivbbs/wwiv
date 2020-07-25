@@ -20,7 +20,7 @@
 
 #include <sstream>
 
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/user.h"
 
 class ssm {

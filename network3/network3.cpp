@@ -15,8 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-
-// WWIV5 Network3
+#include "binkp/binkp_config.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
@@ -33,21 +32,20 @@
 #include "fmt/format.h"
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
-#include "binkp/binkp_config.h"
 #include "sdk/bbslist.h"
-#include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/connect.h"
-#include "sdk/contact.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/fido/fido_directories.h"
 #include "sdk/fido/nodelist.h"
 #include "sdk/filenames.h"
+#include "sdk/net/callout.h"
+#include "sdk/net/connect.h"
+#include "sdk/net/contact.h"
+#include "sdk/net/networks.h"
 #include "sdk/net/packets.h"
-#include "sdk/networks.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
-#include "sdk/fido/fido_directories.h"
 #include <cstdlib>
 #include <iostream>
 #include <map>

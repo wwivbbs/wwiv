@@ -21,7 +21,7 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include <ctime>
 #include <filesystem>
 #include <initializer_list>

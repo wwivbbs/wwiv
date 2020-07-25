@@ -28,7 +28,7 @@
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "wwivutil/util.h"
 #include <ctime>
 #include <iomanip>

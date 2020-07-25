@@ -26,7 +26,7 @@
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
-#include "sdk/ftn_msgdupe.h"
+#include "sdk/net/ftn_msgdupe.h"
 #include "sdk_test/sdk_helper.h"
 #include <cstdint>
 #include <cstring>

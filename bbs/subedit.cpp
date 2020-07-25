@@ -34,7 +34,7 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/status.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include <string>

@@ -24,7 +24,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/connect.h"
+#include "sdk/net/connect.h"
 #include "sdk/filenames.h"
 #include <algorithm>
 #include <cctype>

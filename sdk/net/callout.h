@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2020, WWIV Software Services             */
+/*             Copyright (C)2014-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,36 +15,46 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_BINKP_H__
-#define __INCLUDED_SDK_BINKP_H__
+#ifndef __INCLUDED_SDK_CALLOUT_H__
+#define __INCLUDED_SDK_CALLOUT_H__
 
-#include "sdk/net.h"
-#include "sdk/networks.h"
-#include <cstdint>
+#include <initializer_list>
 #include <map>
-#include <optional>
 #include <string>
-#include <tuple>
+
+#include "sdk/net/net.h"
 
 namespace wwiv {
 namespace sdk {
 
-class Binkp {
+  
+class Callout {
  public:
-  Binkp(const std::string& network_dir);
-  virtual ~Binkp();
-  const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
-  const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
+  explicit Callout(const net_networks_rec& net);
+  // VisibleForTesting
+  Callout(std::initializer_list<net_call_out_rec> l);
+  virtual ~Callout();
+  [[nodiscard]] virtual const net_call_out_rec* net_call_out_for(int node) const;
+  [[nodiscard]] virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
+  Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
+
+  bool insert(uint16_t node, const net_call_out_rec& c);
+  bool erase(uint16_t node);
+  virtual bool Save();
+
+  [[nodiscard]] const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
+  [[nodiscard]] std::string ToString() const;
 
  private:
-  std::map<std::string, binkp_session_config_t> node_config_;
-  std::string network_dir_;
+  net_networks_rec net_;
+  std::map<uint16_t, net_call_out_rec> node_config_;
 };
 
-std::optional<std::tuple<std::string, binkp_session_config_t>> ParseBinkConfigLine(const std::string& line);
+[[nodiscard]] bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
+std::string WriteCalloutNetLine(const net_call_out_rec& con);
+std::string CalloutOptionsToString(uint16_t options);
 
-}  // namespace sdk
+}  // namespace net
 }  // namespace wwiv
 
-
-#endif  // __INCLUDED_SDK_BINKP_H__
+#endif  // __INCLUDED_SDK_CALLOUT_H__

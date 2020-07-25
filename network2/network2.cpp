@@ -33,7 +33,7 @@
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/ssm.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"

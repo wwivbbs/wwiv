@@ -23,7 +23,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <chrono>
 #include <map>
 #include <memory>

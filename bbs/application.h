@@ -24,7 +24,7 @@
 #include "bbs/context.h"
 #include "bbs/output.h"
 #include "bbs/runnable.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/vardec.h"
 
 #include <chrono>

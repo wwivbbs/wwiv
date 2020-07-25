@@ -15,6 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "binkp/binkp.h"
+#include "binkp/binkp_config.h"
+#include "binkp/config_exceptions.h"
+#include "binkp/wfile_transfer_file.h"
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -26,17 +30,13 @@
 #include "core/socket_exceptions.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "binkp/binkp.h"
-#include "binkp/binkp_config.h"
-#include "binkp/config_exceptions.h"
-#include "binkp/wfile_transfer_file.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/callout.h"
 #include "sdk/config.h"
-#include "sdk/contact.h"
-#include "sdk/networks.h"
-#include "sdk/status.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/net/callout.h"
+#include "sdk/net/contact.h"
+#include "sdk/net/networks.h"
+#include "sdk/status.h"
 #include <chrono>
 #include <csignal>
 #include <iostream>

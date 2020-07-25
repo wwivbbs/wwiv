@@ -22,7 +22,7 @@
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <iostream>
 #include <map>
 #include <string>

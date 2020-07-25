@@ -20,8 +20,8 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/connect.h"
-#include "sdk/networks.h"
+#include "sdk/net/connect.h"
+#include "sdk/net/networks.h"
 #include <iostream>
 #include <map>
 #include <string>

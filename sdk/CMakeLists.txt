@@ -2,13 +2,13 @@ include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
   bbslist.cpp
-  binkp.cpp
-  callout.cpp
+  net/binkp.cpp
+  net/callout.cpp
   chains.cpp
   config.cpp
-  connect.cpp
-  contact.cpp
-  ftn_msgdupe.cpp
+  net/connect.cpp
+  net/contact.cpp
+  net/ftn_msgdupe.cpp
   ansi/ansi.cpp
   ansi/framebuffer.cpp
   ansi/makeansi.cpp
@@ -39,12 +39,12 @@ set(COMMON_SOURCES
   net/callouts.cpp
   net/packets.cpp
   names.cpp
-  networks.cpp
+  net/networks.cpp
   phone_numbers.cpp
   qscan.cpp
   ssm.cpp
   status.cpp
-  subscribers.cpp
+  net/subscribers.cpp
   subxtr.cpp
   user.cpp
   usermanager.cpp

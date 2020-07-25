@@ -17,6 +17,20 @@
 /**************************************************************************/
 
 // WWIV5 Network1
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/findfiles.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/semaphore_file.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "net_core/net_cmdline.h"
+#include "sdk/bbslist.h"
+#include "sdk/filenames.h"
+#include "sdk/net/contact.h"
+#include "sdk/net/packets.h"
 #include <cctype>
 #include <cstdlib>
 #include <iomanip>
@@ -26,22 +40,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/findfiles.h"
-#include "core/log.h"
-#include "core/os.h"
-#include "core/semaphore_file.h"
-#include "core/scope_exit.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "net_core/net_cmdline.h"
-#include "sdk/net/packets.h"
-
-#include "sdk/bbslist.h"
-#include "sdk/contact.h"
-#include "sdk/filenames.h"
 
 using std::cout;
 using std::endl;

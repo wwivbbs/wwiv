@@ -24,7 +24,7 @@
 #include "core/version.h"
 #include "fmt/format.h"
 #include "sdk/filenames.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include <string>
 #include <utility>
 

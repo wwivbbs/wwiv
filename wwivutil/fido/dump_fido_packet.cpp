@@ -23,7 +23,7 @@
 #include "core/strings.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
-#include "sdk/ftn_msgdupe.h"
+#include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
 #include "wwivutil/util.h"
 #include <iostream>

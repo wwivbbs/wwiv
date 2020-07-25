@@ -23,7 +23,7 @@
 
 #include "core/command_line.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 
 namespace wwiv {
 namespace wwivutil {

@@ -21,7 +21,7 @@
 #include "core/file.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/msgapi/message_wwiv.h"
 #include <set>
 #include <string>

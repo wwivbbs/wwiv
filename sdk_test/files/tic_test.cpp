@@ -21,7 +21,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core_test/file_helper.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/files/tic.h"
 
 using namespace wwiv::core;

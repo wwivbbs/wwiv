@@ -18,9 +18,9 @@
 #ifndef __INCLUDED_NETWORKB_BINKP_CONFIG_H__
 #define __INCLUDED_NETWORKB_BINKP_CONFIG_H__
 
-#include "sdk/binkp.h"
-#include "sdk/callout.h"
-#include "sdk/networks.h"
+#include "sdk/net/binkp.h"
+#include "sdk/net/callout.h"
+#include "sdk/net/networks.h"
 #include <cstdint>
 #include <map>
 #include <memory>

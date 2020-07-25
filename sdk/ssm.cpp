@@ -27,7 +27,7 @@
 #include "sdk/config.h"
 #include "core/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/vardec.h"
 
 using std::endl;

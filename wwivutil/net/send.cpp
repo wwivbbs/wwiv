@@ -22,7 +22,7 @@
 #include "core/strings.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/packets.h"
 #include <iostream>

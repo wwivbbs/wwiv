@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/contact.h"
+#include "sdk/net/contact.h"
 
 #include "core/datafile.h"
 #include "core/datetime.h"
@@ -24,7 +24,7 @@
 #include "core/strings.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <map>
 #include <memory>
 #include <sstream>

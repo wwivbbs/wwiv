@@ -40,7 +40,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/parsed_message.h"
 

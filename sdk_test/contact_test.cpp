@@ -18,9 +18,8 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "sdk/contact.h"
+#include "sdk/net/contact.h"
 #include "gtest/gtest.h"
-
 #include <chrono>
 #include <cstdint>
 #include <string>

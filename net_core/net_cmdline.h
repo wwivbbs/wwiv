@@ -25,8 +25,8 @@
 #include "core/command_line.h"
 #include <filesystem>
 #include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 
 namespace wwiv {
 namespace net {

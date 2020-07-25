@@ -19,7 +19,7 @@
 #define __INCLUDED_BBS_MISCCMD_H__
 
 #include <string>
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 void kill_old_email();
 void list_users(int mode);

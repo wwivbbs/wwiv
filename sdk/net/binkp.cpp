@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/binkp.h"
+#include "sdk/net/binkp.h"
 
 #include "core/file.h"
 #include "core/strings.h"

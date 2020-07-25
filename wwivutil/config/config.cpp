@@ -23,8 +23,8 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 #include <cstdio>
 #include <iomanip>
 #include <iostream>

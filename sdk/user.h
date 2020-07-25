@@ -21,7 +21,7 @@
 #define __INCLUDED_WUSER_H__
 
 #include "core/strings.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/vardec.h"
 #include <chrono>
 #include <cstdint>

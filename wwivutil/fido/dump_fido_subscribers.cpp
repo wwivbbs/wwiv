@@ -25,8 +25,8 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/net.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/net.h"
+#include "sdk/net/subscribers.h"
 
 using std::cout;
 using std::endl;

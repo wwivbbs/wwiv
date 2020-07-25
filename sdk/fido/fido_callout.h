@@ -18,10 +18,10 @@
 #ifndef __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
 #define __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
 
-#include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
-#include "sdk/net.h"
+#include "sdk/net/callout.h"
+#include "sdk/net/net.h"
 #include <initializer_list>
 #include <map>
 #include <memory>

@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_BBS_CONNECT1_H__
 #define __INCLUDED_BBS_CONNECT1_H__
 
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 bool valid_system(int ts);
 net_system_list_rec *next_system(int ts);

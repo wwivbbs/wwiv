@@ -27,7 +27,7 @@
 #include "core/version.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk_test/sdk_helper.h"
 
 using namespace std;

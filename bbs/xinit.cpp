@@ -41,7 +41,7 @@
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"

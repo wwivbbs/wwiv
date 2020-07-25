@@ -23,7 +23,7 @@
 #include "fmt/format.h"
 #include "binkp/config_exceptions.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <map>
 #include <memory>
 #include <sstream>

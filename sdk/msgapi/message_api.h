@@ -19,7 +19,7 @@
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
 
 #include "sdk/msgapi/message_area.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/subxtr.h"
 #include <stdexcept>
 #include <string>

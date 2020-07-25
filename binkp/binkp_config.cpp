@@ -23,7 +23,7 @@
 #include "fmt/format.h"
 #include "fmt/printf.h"
 #include "binkp/config_exceptions.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include <map>

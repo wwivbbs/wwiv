@@ -56,7 +56,7 @@ std::string PrintCommand::GetUsage() const {
  enum class pipe_state_t { text, pipe };
  static std::string PipeCodesToAnsi(const std::string & s) { 
    std::string out;
-   out.reserve(s.size() + 1.1);
+   out.reserve(static_cast<int>(wwiv::stl::ssize(s) * 1.1));
    auto state = pipe_state_t::text;
    std::string curpipe;
    int curatr = 0x07;

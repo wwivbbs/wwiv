@@ -27,8 +27,8 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 
 #include "wwivutil/net/dump_bbsdata.h"
 #include "wwivutil/net/dump_callout.h"

@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 
 namespace wwiv {
 namespace sdk {

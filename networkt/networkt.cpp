@@ -28,7 +28,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/callout.h"
+#include "sdk/net/callout.h"
 #include "sdk/config.h"
 #include "sdk/status.h"
 #include "sdk/fido/fido_directories.h"

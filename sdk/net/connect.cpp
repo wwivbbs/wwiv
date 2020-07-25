@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/connect.h"
+#include "sdk/net/connect.h"
 
 #include "core/file.h"
 #include "core/inifile.h"
@@ -23,7 +23,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <algorithm>
 #include <cctype>
 #include <cfloat>

@@ -34,8 +34,8 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/printf.h"
-#include "sdk/callout.h"
-#include "sdk/contact.h"
+#include "sdk/net/callout.h"
+#include "sdk/net/contact.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
 #include <algorithm>

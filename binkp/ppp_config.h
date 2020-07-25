@@ -19,7 +19,7 @@
 #define __INCLUDED_NETWORKB_PPP_CONFIG_H__
 
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include <cstdint>
 #include <map>
 #include <string>

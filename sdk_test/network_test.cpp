@@ -23,8 +23,8 @@
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
+#include "sdk/net/net.h"
+#include "sdk/net/networks.h"
 #include "sdk_test/sdk_helper.h"
 #include <cstdint>
 #include <iostream>

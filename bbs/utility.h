@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_UTILITY_H__
 #define __INCLUDED_UTILITY_H__
 
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include <string>
 #include <vector>
 

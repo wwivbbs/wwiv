@@ -23,7 +23,7 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/files/dirs.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include <filesystem>
 #include <optional>
 #include <string>

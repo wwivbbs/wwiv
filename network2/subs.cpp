@@ -28,7 +28,7 @@
 #include "network2/context.h"
 #include "sdk/config.h"
 #include "sdk/net/packets.h"
-#include "sdk/subscribers.h"
+#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
 #include <iostream>
 #include <iterator>

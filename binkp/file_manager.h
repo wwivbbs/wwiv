@@ -20,7 +20,7 @@
 
 #include "binkp/remote.h"
 #include "binkp/transfer_file.h"
-#include "sdk/net.h"
+#include "sdk/net/net.h"
 #include "sdk/fido/fido_directories.h"
 #include <functional>
 #include <string>

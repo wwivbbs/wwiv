@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -34,7 +34,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/networks_cereal.h"
+#include "sdk/net/networks_cereal.h"
 
 namespace wwiv::sdk {
 

@@ -31,7 +31,7 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
+#include "sdk/net/networks.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/subacc.h"
