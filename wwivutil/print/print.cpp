@@ -20,6 +20,7 @@
 #include "core/command_line.h"
 #include "core/log.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "local_io/local_io_curses.h"
@@ -27,6 +28,7 @@
 #include "localui/curses_io.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
+#include "sdk/ansi/makeansi.h"
 #include <iostream>
 #include <string>
 
@@ -49,6 +51,59 @@ std::string PrintCommand::GetUsage() const {
   return ss.str();
 }
 
+ std::vector<int> colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
+
+ enum class pipe_state_t { text, pipe };
+ static std::string PipeCodesToAnsi(const std::string & s) { 
+   std::string out;
+   out.reserve(s.size() + 1.1);
+   auto state = pipe_state_t::text;
+   std::string curpipe;
+   int curatr = 0x07;
+   for (auto it = std::begin(s); it != std::end(s); it++) {
+     char c = *it;
+     switch (state) {
+     case pipe_state_t::text: {
+       if (c == '|') {
+         state = pipe_state_t::pipe;
+         curpipe.push_back(c);
+       } else {
+         out.push_back(c);
+       }
+     } break;
+     // grab first
+     case pipe_state_t::pipe: {
+       auto pipe_size = wwiv::stl::ssize(curpipe);
+       if (std::isdigit(c) && pipe_size == 2) {
+         curpipe.push_back(c);
+         std::string ansitext;
+         if (curpipe[1] == '#') {
+           int color = colors.at(curpipe[2] - '0');
+           ansitext = wwiv::sdk::ansi::makeansi(color, curatr);
+           curatr = color;
+         } else {
+           int color = to_number<int>(curpipe.substr(1));
+           ansitext = wwiv::sdk::ansi::makeansi(color, curatr);
+           curatr = color;
+         }
+         out.append(ansitext);
+         curpipe.clear();
+         state = pipe_state_t::text;
+       } else if ((std::isdigit(c) || c == '#') && pipe_size == 1) {
+         curpipe.push_back(c);
+       } else {
+         state = pipe_state_t::text;
+         out.append(curpipe);
+         curpipe.clear();
+       }
+     } break;
+     };
+   } 
+   out.shrink_to_fit();
+   return out;
+ }
+
+
 int PrintCommand::Execute() {
   if (remaining().empty()) {
     std::cout << GetUsage() << GetHelp() << endl;
@@ -56,6 +111,10 @@ int PrintCommand::Execute() {
   }
   TextFile tf(remaining().front(), "rt");
   auto s = tf.ReadFileIntoString();
+
+  if (s.find('|') != std::string::npos) {
+    s = PipeCodesToAnsi(s);
+  }
 
   bool need_pause = false;
   if (!barg("ansi")) {
@@ -80,9 +139,11 @@ int PrintCommand::Execute() {
     AnsiCallbacks cb;
     cb.move_ = [](int x, int y) { VLOG(2) << "moved: x: " << x << "; y:" << y; };
     Ansi ansi(&screen, cb, 0x07);
+    HeartCodeFilter heart(&ansi, {7, 11, 14, 5, 31, 2, 12, 9, 6, 3});
+
     screen.clear();
     for (const auto c : s) {
-      ansi.write(c);
+      heart.write(c);
     }
     if (need_pause) {
       io->GetChar();
