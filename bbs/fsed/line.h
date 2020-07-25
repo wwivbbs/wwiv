@@ -37,6 +37,8 @@ public:
   char ch{0};
 };
 
+enum class line_color_code_format_t { heart, pipe };
+
 class line_t {
 public:
   line_t() : line_t(false, "") {}
