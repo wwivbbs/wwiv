@@ -38,6 +38,7 @@ std::string stripfn(const std::string& file_name);
 std::string get_wildlist(const std::string& file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 bool okfsed();
+bool ok_internal_fsed();
 int ansir_to_flags(uint8_t ansir);
 
 #endif  // __INCLUDED_UTILITY_H__

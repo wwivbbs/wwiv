@@ -211,7 +211,7 @@ public:
   void SetCurrentConferenceFileArea(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
-  [[nodiscard]] bool IsUseExperimentalFsed() const; 
+  [[nodiscard]] bool IsUseInternalFsed() const; 
 
   [[nodiscard]] int GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
@@ -334,7 +334,7 @@ public:
 
   bool newscan_at_login_{false};
   bool internal_zmodem_{true};
-  std::vector<int> experimental_fsed_users_;
+  bool internal_fsed_;
   bool exec_log_syncfoss_{true};
   int m_nNumMessagesReadThisLogon{0};
   int m_nCurrentLanguageNumber{0};

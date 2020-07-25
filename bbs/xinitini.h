@@ -98,7 +98,7 @@ constexpr const char* INI_STR_NO_PURGE_SL = "NO_PURGE_SL";
 // --- New WWIV 5 Settings ---
 constexpr const char* INI_STR_BEGINDAYNODENUMBER = "BEGINDAYNODENUMBER";
 constexpr const char* INI_STR_INTERNALZMODEM = "INTERNALZMODEM";
-constexpr const char* INI_STR_EXPERIMENTAL_FSED_USERS = "EXPERIMENTAL_FSED_USERS";
+constexpr const char* INI_STR_INTERNAL_FSED = "INTERNAL_FSED";
 constexpr const char* INI_STR_EXEC_LOG_SYNCFOSS = "EXEC_LOG_SYNCFOSS";
 constexpr const char* INI_STR_EXEC_CHILD_WAIT_TIME =   "EXEC_CHILD_WAIT_TIME";
 constexpr const char* INI_STR_NEW_SCAN_AT_LOGIN  = "NEW_SCAN_AT_LOGIN";

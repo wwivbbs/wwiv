@@ -592,7 +592,7 @@ bool inmsg(MessageEditorData& data) {
   auto save_message = false;
   auto maxli = GetMaxMessageLinesAllowed();
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
-    if (a()->IsUseExperimentalFsed()) {
+    if (ok_internal_fsed()) {
       save_message = wwiv::bbs::fsed::fsed(lin, maxli, &setanon, data, false);
     } else {
       save_message = InternalMessageEditor(lin, maxli, &setanon, data);

@@ -1127,6 +1127,4 @@ const net_networks_rec& Application::current_net() const {
   return nets_->at(net_num());
 }
 
-bool Application::IsUseExperimentalFsed() const { 
-  return wwiv::stl::contains(experimental_fsed_users_, usernum);
-}
+bool Application::IsUseInternalFsed() const { return internal_fsed_; }

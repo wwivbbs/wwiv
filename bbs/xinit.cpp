@@ -281,7 +281,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   forced_read_subnum_ = ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(INI_STR_INTERNALZMODEM, true);
-  experimental_fsed_users_ = ini.GetIntList(INI_STR_EXPERIMENTAL_FSED_USERS);
+  internal_fsed_ = ini.value<bool>(INI_STR_INTERNAL_FSED, true);
   newscan_at_login_ = ini.value<bool>(INI_STR_NEW_SCAN_AT_LOGIN, true);
   exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
   exec_child_process_wait_time_ = ini.value<int>(INI_STR_EXEC_CHILD_WAIT_TIME, 500);

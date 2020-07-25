@@ -47,7 +47,6 @@
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/dirs.h"
-
 #include <sstream>
 #include <string>
 #include <vector>
@@ -74,28 +73,33 @@ void select_editor() {
       a()->user()->SetDefaultEditor(1);
     } else {
       a()->user()->SetDefaultEditor(0);
-      a()->user()->ClearStatusFlag(User::autoQuote);
     }
     return;
   }
-  bout << "0. Normal non-full screen editor\r\n";
-  std::set<char> odc;
-  for (size_t i = 0; i < a()->editors.size(); i++) {
-    bout << i + 1 << ". " << a()->editors[i].description  << wwiv::endl;
-    if (((i + 1) % 10) == 0) {
-      odc.insert(static_cast<char>((i + 1) / 10));
-    }
+  bout << "0. Defualt line oriented editor\r\n";
+  if (okansi() && a()->IsUseInternalFsed()) {
+    bout << "A. Internal full-screen editor\r\n";
   }
+  for (auto i = 0; i < ssize(a()->editors); i++) {
+    bout << i + 1 << ". " << a()->editors[i].description << wwiv::endl;
+  }
+  std::set<char> keys;
+  keys.insert('Q');
   bout.nl();
-  bout << "|#9Which editor (|#31-" << a()->editors.size() << ", <Q>=leave as is|#9) ? ";
-  string ss = mmkey(odc);
-
-  int nEditor = to_number<int>(ss);
-  if (nEditor >= 1 && nEditor <= ssize(a()->editors)) {
-    a()->user()->SetDefaultEditor(nEditor);
-  } else if (ss == "0") {
+  bout << "|#9Which editor (|#3";
+  if (okansi() && a()->IsUseInternalFsed()) {
+    keys.insert('A');
+    bout << "A, ";
+  }
+  bout << "1-" << a()->editors.size() << ", <Q>=leave as is|#9) ? ";
+  const auto cur_editor = a()->user()->GetDefaultEditor();
+  auto k = input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0, ssize(a()->editors), false);
+  if (k.key == 'A') {
+    a()->user()->SetDefaultEditor(0xff);
+  } else if (k.key == 'Q') {
     a()->user()->SetDefaultEditor(0);
-    a()->user()->ClearStatusFlag(User::autoQuote);
+  } else {
+    a()->user()->SetDefaultEditor(k.num);
   }
 }
 
@@ -147,11 +151,15 @@ static void print_cur_stat() {
   if (okansi()) {
     bout.format("{:<45} {}\r\n", "|#17|#9) Update macros", "|#18|#9) Change colors");
 
-    const auto nEditorNum = a()->user()->GetDefaultEditor();
-    const string editor_name = (nEditorNum > 0 && nEditorNum <= ssize(a()->editors))
-                                   ? a()->editors[nEditorNum - 1].description
-                                   : "None";
-    bout.format("|#19|#9) Full screen editor: |#2{:<16} ", editor_name); 
+    const auto editor_num = a()->user()->GetDefaultEditor();
+    string editor_name = "Line";
+    if (a()->IsUseInternalFsed() && editor_num == 0xff) {
+      editor_name = "Full Screen";
+    }
+    if (editor_num > 0 && editor_num <= ssize(a()->editors)) {
+      editor_name = a()->editors[editor_num - 1].description;
+    }
+    bout.format("|#19|#9) Message editor    : |#2{:<16} ", editor_name); 
     bout << "|#1A|#9) Extended colors   : |#2" << YesNoString(a()->user()->IsUseExtraColor()) << wwiv::endl;
   } else {
     bout << "|#17|#9) Update macros" << wwiv::endl;

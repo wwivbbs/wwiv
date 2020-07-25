@@ -396,6 +396,10 @@ bool okfsed() {
   return okansi() && a()->user()->GetDefaultEditor() > 0 &&
          a()->user()->GetDefaultEditor() <= wwiv::stl::ssize(a()->editors);
 }
+
+bool ok_internal_fsed() { return okansi() && a()->user()->GetDefaultEditor() == 0xff; }
+
+
 template <class _Ty>
 const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
   return std::max(std::min(maxValue, value), minValue);
