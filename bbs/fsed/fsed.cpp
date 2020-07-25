@@ -81,12 +81,6 @@ bool fsed(const std::filesystem::path& path) {
 
   int anon = 0;
   auto save = fsed(ed, data, &anon, true);
-
-  bout.cls();
-  bout << "Text:" << wwiv::endl;
-  for (const auto& l : ed.to_lines()) {
-    bout << l << wwiv::endl;
-  }
   if (!save) {
     return false;
   }

@@ -136,15 +136,30 @@ std::vector<cell_t> line_t::substr(int start) {
   return std::vector<cell_t>(cell_.begin() + start, cell_.end());
 }
 
+static void append_wwiv_color(std::string& out, int wwiv_color, line_color_code_format_t format) {
+  if (format == line_color_code_format_t::heart) {
+    out.push_back('\x3');
+    out.push_back(static_cast<char>(wwiv_color + '0'));
+  } else {
+    out.append(fmt::format("|#{}", wwiv_color));
+  }
+}
+
 std::string line_t::to_colored_text() const {
-  auto last_color = -1;
+  // default the last color to 0 by default)
+  bool changed_color = false;
+  auto last_color = 0;
   std::string out;
   for (const auto& c : cell_) {
     if (c.wwiv_color != last_color) {
-      out.append(fmt::format("|#{}", c.wwiv_color));
+      append_wwiv_color(out, c.wwiv_color, line_color_code_format_t::heart);
       last_color = c.wwiv_color;
+      changed_color = true;
     }
     out.push_back(c.ch);
+  }
+  if (changed_color) {
+    append_wwiv_color(out, 0, line_color_code_format_t::heart);
   }
   return out;
 }
