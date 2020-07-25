@@ -79,8 +79,7 @@ bool fsed(const std::filesystem::path& path) {
     ed.set_lines(std::move(file_lines));
   }
 
-  int anon = 0;
-  auto save = fsed(ed, data, &anon, true);
+  auto save = fsed(ed, data, true);
   if (!save) {
     return false;
   }
@@ -95,8 +94,7 @@ bool fsed(const std::filesystem::path& path) {
   return true;
 }
 
-bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data,
-  bool file) {
+bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file) {
   editor_t ed{};
   ed.maxli = maxli;
   // TODO anon
@@ -104,7 +102,7 @@ bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorD
     bool wrapped = !l.empty() && l.back() == '\x1';
     ed.emplace_back(line_t{ wrapped, l });
   }
-  if (!fsed(ed, data, setanon, file)) {
+  if (!fsed(ed, data, file)) {
     return false;
   }
 
@@ -113,7 +111,7 @@ bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorD
 }
 
 
-bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
+bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file);
   auto& fs = view.fs();
   ed.add_callback([&view](editor_t& e, editor_range_t t) {

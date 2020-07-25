@@ -62,9 +62,8 @@ private:
 };
 
 bool fsed(const std::filesystem::path& path);
-bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file);
-bool fsed(std::vector<std::string>& lin, int maxli, int* setanon, MessageEditorData& data,
-          bool file);
+bool fsed(editor_t& ed, MessageEditorData& data, bool file);
+bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file);
 
 }
 
