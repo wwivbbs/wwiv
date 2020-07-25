@@ -149,6 +149,20 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   set_net_num(orig_netnum);
 }
 
+static std::string net_type_to_string(const network_type_t& t) {
+  switch (t) {
+  case network_type_t::wwivnet:
+    return "WWIV";
+  case network_type_t::ftn:
+    return "FTN";
+  case network_type_t::internet:
+    return "Internet";
+  case network_type_t::news:
+    return "Newsgroup";
+  }
+  return "Unknown";
+}
+
 void post(const PostData& post_data) {
   if (!iscan(a()->current_user_sub_num())) {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
@@ -191,21 +205,12 @@ void post(const PostData& post_data) {
     }
     if (a()->current_net().sysnum != 0) {
       bout << "\r\n|#9This post will go out on: ";
-      for (size_t i = 0; i < a()->current_sub().nets.size(); i++) {
+      for (auto i = 0; i < ssize(a()->current_sub().nets); i++) {
         if (i) {
           bout << "|#9, ";
         }
         const auto& n = a()->nets()[a()->current_sub().nets[i].net_num];
-        bout << "|#2" << n.name << "|#1";
-        if (n.type == network_type_t::wwivnet) {
-          bout << "|#1 (WWIV)";
-        } else if (n.type == network_type_t::ftn) {
-          bout << "|#1 (FTN)";
-        } else if (n.type == network_type_t::internet) {
-          bout << "|#1 (Internet/Wins)";
-        } else if (n.type == network_type_t::news) {
-          bout << "|#1 (Newsgroups)";
-        }
+        bout << "|#2" << n.name << "|#1(" << net_type_to_string(n.type) << ")";
       }
       bout << ".\r\n\n";
     }

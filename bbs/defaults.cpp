@@ -65,39 +65,28 @@ static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 // #define NOTOGGLESYSOP
 
 void select_editor() {
-  if (a()->editors.empty()) {
-    bout << "\r\nNo full screen editors available.\r\n\n";
-    return;
-  } else if (a()->editors.size() == 1) {
-    if (a()->user()->GetDefaultEditor() == 0) {
-      a()->user()->SetDefaultEditor(1);
-    } else {
-      a()->user()->SetDefaultEditor(0);
-    }
-    return;
-  }
-  bout << "0. Defualt line oriented editor\r\n";
+  bout << "|#10|#9) Line Editor\r\n";
   if (okansi() && a()->IsUseInternalFsed()) {
-    bout << "A. Internal full-screen editor\r\n";
+    bout << "|#1A|#9) Full-Screen Editor\r\n";
   }
   for (auto i = 0; i < ssize(a()->editors); i++) {
-    bout << i + 1 << ". " << a()->editors[i].description << wwiv::endl;
+    bout << "|#1" << i + 1 << "|#9) " << a()->editors[i].description << wwiv::endl;
   }
   std::set<char> keys;
   keys.insert('Q');
   bout.nl();
-  bout << "|#9Which editor (|#3";
+  bout << "|#9Which editor (|#1";
   if (okansi() && a()->IsUseInternalFsed()) {
     keys.insert('A');
-    bout << "A, ";
+    bout << "A|#9, |#1";
   }
-  bout << "1-" << a()->editors.size() << ", <Q>=leave as is|#9) ? ";
+  bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
   const auto cur_editor = a()->user()->GetDefaultEditor();
   auto k = input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0, ssize(a()->editors), false);
   if (k.key == 'A') {
     a()->user()->SetDefaultEditor(0xff);
   } else if (k.key == 'Q') {
-    a()->user()->SetDefaultEditor(0);
+    a()->user()->SetDefaultEditor(cur_editor);
   } else {
     a()->user()->SetDefaultEditor(k.num);
   }
