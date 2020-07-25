@@ -120,8 +120,16 @@ What's New in WWIV 5.5 (2020)
 * Fix setting the nscandate (P) from the xfer menu.
 * Fix "years old" display in newuser (#1224)
 + include networkt in builds
-
-
++ The Internal FSED is now available for use.
+  To disable this, please set INTERNAL_FSED=N in WWIV.INI
+  The previous WWIV.INI setting of "EXPERIMENTAL_FSED_USERS"
+  is not longer used.
+  For a user to enable it, they should go to (D)efaults
+  and under "(9) Message Editor" select the option for:
+   "A. Internal full-screen editor"
++ Added a help file (FSED.MSG) for the internal full screen 
+  message editor. Please add it to your wwiv install under
+  the gfiles/ directory.
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

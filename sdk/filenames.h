@@ -91,6 +91,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define FILESDL_NOEXT "filesdl"
 #define FILESUL_NOEXT "filesul"
 #define FILE_ID_DIZ "file_id.diz"
+#define FSED_NOEXT "fsed"
 
 #define FORMASV_MSG "formasv.msg"
 

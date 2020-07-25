@@ -23,6 +23,7 @@
 #include "bbs/message_editor_data.h"
 #include "bbs/output.h"
 #include "bbs/pause.h"
+#include "bbs/printfile.h"
 #include "bbs/quote.h"
 #include "bbs/fsed/commands.h"
 #include "bbs/fsed/common.h"
@@ -33,6 +34,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include "local_io/keycodes.h"
+#include "sdk/filenames.h"
 
 namespace wwiv::bbs::fsed {
 
@@ -264,6 +266,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       }
     } break;
     case FsedCommand::view_redraw: { // redraw
+      view.redraw();
       ed.invalidate_to_eof(0);
     } break;
     case FsedCommand::delete_right: {
@@ -340,7 +343,9 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
       view.draw_current_line(ed, ed.curli);
     } break;
     case FsedCommand::menu: {
-      bout.PutsXY(1, fs.command_line_y(), "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2?|#9=Help{not impl}): ");
+      bout.PutsXY(
+          1, fs.command_line_y(),
+          "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2?|#9=Help): ");
       switch (fs.bgetch()) { 
       case 's':
         [[fallthrough]];
@@ -377,6 +382,19 @@ bool fsed(editor_t& ed, MessageEditorData& data, int* setanon, bool file) {
         advance_cy(ed, view, false);
 
         // Redraw everything, the whole enchilada!
+        view.redraw();
+        ed.invalidate_to_eof(0);
+      } break;
+      case '?': {
+        fs.ClearMessageArea();
+        if (!print_help_file(FSED_NOEXT)) {
+          fs.ClearCommandLine();
+          bout << "|#6Unable to find file: " << FSED_NOEXT;
+        } else {
+          fs.ClearCommandLine();
+        }
+        pausescr();
+        fs.ClearMessageArea();
         view.redraw();
         ed.invalidate_to_eof(0);
       } break;
