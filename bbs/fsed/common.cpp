@@ -50,10 +50,7 @@ std::vector<line_t> read_file(const std::filesystem::path& path, int line_length
     do {
       const auto size_wc = size_without_colors(l);
       if (size_wc <= line_length) {
-        line_t lt{};
-        lt.wrapped = false;
-        lt.text = l;
-        out.emplace_back(lt);
+        out.emplace_back(false, l);
         break;
       }
       // We have a long line
@@ -66,39 +63,15 @@ std::vector<line_t> read_file(const std::filesystem::path& path, int line_length
       }
       auto subset_of_l = l.substr(0, pos);
       l = l.substr(pos + 1);
-      line_t lt{};
-      lt.wrapped = true;
-      lt.text = l;
-      out.emplace_back(lt);
+      out.emplace_back(true, l);
     } while (true);
   }
   return out;
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-// MAIN
-
 void gotoxy(const editor_t& ed, const FullScreenView& fs) { 
   bout.GotoXY(ed.cx + 1, ed.cy + fs.lines_start());
-}
-
-
-int last_space_before(line_t& line, int maxlen) {
-  if (line.ssize() < maxlen) {
-    return line.ssize();
-  }
-  auto& text = line.text;
-  if (text.empty()) {
-    return 0;
-  }
-  for (int i = ssize(text) - 1; i > 0; i--) {
-    char c = text.at(i);
-    if (c == '\t' || c == ' ') {
-      return i;
-    }
-  }
-  return 0;
 }
 
 

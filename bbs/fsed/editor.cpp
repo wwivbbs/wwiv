@@ -46,8 +46,14 @@ line_t& editor_t::curline() {
   while (curli >= ssize(lines_)) {
     lines_.emplace_back();
   }
-  return lines_.at(curli);
-} 
+  try {
+    return lines_.at(curli);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Exception trying to get line: " << curli << "; what: " << e.what();
+    LOG(ERROR) << wwiv::os::stacktrace();
+    throw;
+  }
+}
 
 line_t& editor_t::line(int n) { 
   try {
@@ -71,7 +77,7 @@ bool editor_t::insert_line() {
   if (ssize(lines_)  >= this->maxli) {
     return false;
   }
-  return wwiv::stl::insert_at(lines_, curli, line_t{});
+  return wwiv::stl::insert_at(lines_, curli, line_t());
 }
 
 bool editor_t::remove_line() { 
@@ -96,15 +102,15 @@ editor_add_result_t editor_t::add(char c) {
     }
     return editor_add_result_t::added;
   }
-  int last_space = line.text.find_last_of(" \t");
-  line.wrapped = true;
+  int last_space = line.last_space_before(ssize(line));
+  line.wrapped(true);
   if (last_space != -1 && (max_line_len - last_space) < (max_line_len / 2)) {
     // Word Wrap
-    auto nline = line.text.substr(last_space);
-    line.text = line.text.substr(0, last_space);
+    const auto nline = line.substr(last_space);
+    line.assign(line.substr(0, last_space));
     ++curli;
-    curline().text = nline;
-    cx = ssize(curline().text);
+    curline().assign(nline);
+    cx = ssize(curline());
   } else {
     // Character wrap    
     ++curli;
@@ -116,9 +122,18 @@ editor_add_result_t editor_t::add(char c) {
   return editor_add_result_t::wrapped;
 }
 
-char editor_t::current_char() {
+cell_t editor_t::current_cell() {
   const auto& line = curline();
-  return (cx >= wwiv::stl::ssize(line.text)) ? ' ' : line.text.at(cx);
+  if (cx >= ssize(line)) {
+    return cell_t(0, ' ');
+  }
+  try {
+    return line.cells().at(cx);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Exception trying to get cx: " << cx << "; what: " << e.what();
+    LOG(ERROR) << wwiv::os::stacktrace();
+    throw;
+  }
 }
 
 bool editor_t::del() { 
@@ -147,11 +162,12 @@ bool editor_t::add_callback(editor_range_invalidated_fn fn) {
   callbacks_.emplace_back(fn);
   return true;
 }
+
 void editor_t::invalidate_to_eol() {
   editor_range_t r{};
   r.start.line = r.end.line = curli;
   r.start.x = cx;
-  r.end.x = ssize(curline().text);
+  r.end.x = ssize(curline());
   for (auto& c : callbacks_) {
     c(*this, r);
   }
@@ -178,12 +194,13 @@ void editor_t::invalidate_range(int start_line, int end_line) {
 std::vector<std::string> editor_t::to_lines() { 
   std::vector<std::string> out;
   for (auto l : lines_) {
-    wwiv::strings::StringTrimCRLF(&l.text);
-    if (l.wrapped) {
+    auto t = l.to_colored_text();
+    wwiv::strings::StringTrimCRLF(&t);
+    if (l.wrapped()) {
       // wwiv line wrapping character.
-      l.text.push_back('\x1');
+      t.push_back('\x1');
     }
-    out.emplace_back(l.text);
+    out.emplace_back(t);
   }
 
   return out;

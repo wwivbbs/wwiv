@@ -41,6 +41,7 @@ enum class FsedCommand {
   menu,
   toggle_insovr,
   view_redraw,
+  input_wwiv_color,
 };
 
 std::map<int, FsedCommand> CreateDefaultKeyMap();

@@ -35,18 +35,31 @@ namespace wwiv::bbs::fsed {
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-line_add_result_t line_t::add(int x, char c, ins_ovr_mode_t mode) {
-  while (wwiv::stl::ssize(text) < x) {
-    text.push_back(' ');
+line_t::line_t(bool wrapped, std::string text) : wrapped_(wrapped) {
+  for (const auto c : text) {
+    cell_.emplace_back(wwiv_color_, c);
+    ++size_;
   }
-  if (x == wwiv::stl::ssize(text)) {
-    text.push_back(c);
+}
+
+void line_t::push_back(char c) {
+  cell_.emplace_back(wwiv_color_, c);
+  ++size_;
+}
+
+line_add_result_t line_t::add(int x, char c, ins_ovr_mode_t mode) {
+  while (size_ < x) {
+    push_back(' ');
+  }
+  if (x == size_) {
+    push_back(c);
     return line_add_result_t::no_redraw;
   } else if (mode == ins_ovr_mode_t::ins) {
-    wwiv::stl::insert_at(text, x, c);
+    wwiv::stl::insert_at(cell_, x, cell_t{wwiv_color_, c});
+    ++size_;
     return line_add_result_t::needs_redraw;
   } else {
-    text[x] = c;
+    cell_[x] = cell_t{wwiv_color_, c};
     return line_add_result_t::no_redraw;
   }
 }
@@ -55,9 +68,16 @@ line_add_result_t line_t::del(int x, ins_ovr_mode_t) {
   if (x < 0) {
     return line_add_result_t::error;
   }
-  auto result = (x == wwiv::stl::ssize(text)) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
-  if (!wwiv::stl::erase_at(text, x)) {
+  auto result = (x == size_) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
+  if (!wwiv::stl::erase_at(cell_, x)) {
     return line_add_result_t ::error;
+  }
+  --size_;
+
+  auto new_x = x - 1;
+  if (new_x >= 0 && new_x < size_) {
+    // adopt new color
+    wwiv_color_ = cell_.at(new_x).wwiv_color;
   }
   return result;
 }
@@ -69,9 +89,65 @@ line_add_result_t line_t::bs(int x, ins_ovr_mode_t mode) {
   return del(x - 1, mode);
 }
 
-int line_t::ssize() const { 
-  return wwiv::stl::ssize(text); }
+std::size_t line_t::size() const { return size_; }
 
-std::size_t line_t::size() const { return text.size(); }
+int line_t::last_space_before(int maxlen) { 
+  if (size_ < maxlen) {
+    return size_;
+  }
+  if (cell_.empty()) {
+    return 0;
+  }
+  for (int i = size_ - 1; i > 0; i--) {
+    char c = cell_.at(i).ch;
+    if (c == '\t' || c == ' ') {
+      return i;
+    }
+  }
+  return 0;
+}
+
+line_t& line_t::operator=(const line_t& o) {
+  wrapped_ = o.wrapped_;
+  cell_ = o.cell_;
+  size_ = o.size_;
+  wwiv_color_ = o.wwiv_color_;
+  return *this;
+}
+
+void line_t::assign(const std::vector<cell_t>& cells) {
+  cell_ = cells;
+  size_ = wwiv::stl::ssize(cells);
+}
+
+void line_t::append(const std::vector<cell_t>& cells) {
+  for (const auto& c : cells) {
+    cell_.emplace_back(c);
+  }
+  size_ += wwiv::stl::ssize(cells);
+}
+
+
+std::vector<cell_t> line_t::substr(int start, int end) {
+  return std::vector<cell_t>(cell_.begin() + start, cell_.begin() + end);
+}
+
+std::vector<cell_t> line_t::substr(int start) {
+  return std::vector<cell_t>(cell_.begin() + start, cell_.end());
+}
+
+std::string line_t::to_colored_text() const {
+  auto last_color = -1;
+  std::string out;
+  for (const auto& c : cell_) {
+    if (c.wwiv_color != last_color) {
+      out.append(fmt::format("|#{}", c.wwiv_color));
+      last_color = c.wwiv_color;
+    }
+    out.push_back(c.ch);
+  }
+  return out;
+}
+
 
 } // namespace wwiv::bbs::fsed

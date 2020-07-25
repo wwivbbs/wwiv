@@ -75,7 +75,7 @@ public:
   // backspace over existing character
   bool bs();
   // Gets the current character
-  char current_char();
+  cell_t current_cell();
   // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
   // matters on add, bs, and del
   void toggle_ins_ovr_mode() {

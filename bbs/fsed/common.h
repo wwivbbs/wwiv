@@ -33,8 +33,6 @@ std::vector<line_t> read_file(const std::filesystem::path& path, int line_length
 
 void gotoxy(const editor_t& ed, const FullScreenView& fs);
 
-int last_space_before(line_t& line, int maxlen);
-
 }
 
 #endif

@@ -30,18 +30,51 @@ namespace wwiv::bbs::fsed {
 enum class line_add_result_t { needs_redraw, no_redraw, error };
 enum class ins_ovr_mode_t { ins, ovr };
 
+class cell_t {
+public:
+  cell_t(int co, char cc) : wwiv_color(co), ch(cc) {}
+  int wwiv_color{0};
+  char ch{0};
+};
 
 class line_t {
 public:
-  bool wrapped{false};
-  std::string text;
+  line_t() : line_t(false, "") {}
+  line_t(bool wrapped, std::string text);
+  line_t(std::string text) : line_t(false, text) {}
 
   line_add_result_t add(int x, char c, ins_ovr_mode_t mode);
   line_add_result_t del(int x, ins_ovr_mode_t mode);
   line_add_result_t bs(int x, ins_ovr_mode_t mode);
+  void push_back(char c);
 
-  int ssize() const;
+  bool wrapped() const noexcept { return wrapped_; }
+  void wrapped(bool b) { wrapped_ = b; }
+
   std::size_t size() const;
+
+  // Specialized stuff
+  int last_space_before(int maxlen);
+  void set_wwiv_color(int c) { wwiv_color_ = c; }
+  int wwiv_color() const noexcept { return wwiv_color_; }
+
+  // operators
+  line_t& operator=(const line_t& o);
+
+  void assign(const std::vector<cell_t>& cells);
+  void append(const std::vector<cell_t>& cells);
+  const std::vector<cell_t>& cells() const { return cell_; }
+  std::vector<cell_t> substr(int start, int end);
+  std::vector<cell_t> substr(int start);
+  // Gets a line of text that can be displayed using bputs
+  std::string to_colored_text() const;
+
+private:
+  bool wrapped_{false};
+  std::vector<cell_t> cell_;
+
+  int size_{0};
+  int wwiv_color_{0};
 };
 
 }
