@@ -105,9 +105,11 @@ editor_add_result_t editor_t::add(char c) {
   int last_space = line.last_space_before(ssize(line));
   line.wrapped(true);
   if (last_space != -1 && (max_line_len - last_space) < (max_line_len / 2)) {
-    // Word Wrap
-    const auto nline = line.substr(last_space);
-    line.assign(line.substr(0, last_space));
+    // Word Wrap at the position after the last space. That way the space
+    // end up on the previous line
+    const auto wrap_position = last_space + 1;
+    const auto nline = line.substr(wrap_position);
+    line.assign(line.substr(0, wrap_position));
     ++curli;
     curline().assign(nline);
     cx = ssize(curline());
