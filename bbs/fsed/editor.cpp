@@ -86,7 +86,7 @@ editor_add_result_t editor_t::add(char c) {
   }
   auto start_line = curli;
   ++cx;
-  if (cx < max_line_len) {
+  if (cx < max_line_len_) {
     // no  wrapping is needed
     if (line_result == line_add_result_t::needs_redraw) {
       invalidate_range(start_line, curli);
@@ -95,7 +95,7 @@ editor_add_result_t editor_t::add(char c) {
   }
   int last_space = line.last_space_before(ssize(line));
   line.wrapped(true);
-  if (last_space != -1 && (max_line_len - last_space) < (max_line_len / 2)) {
+  if (last_space != -1 && (max_line_len_ - last_space) < (max_line_len_ / 2)) {
     // Word Wrap at the position after the last space. That way the space
     // end up on the previous line
     const auto wrap_position = last_space + 1;
@@ -107,7 +107,7 @@ editor_add_result_t editor_t::add(char c) {
   } else {
     // Character wrap    
     ++curli;
-    cx %= max_line_len;
+    cx %= max_line_len_;
   }
   // Create the new line.
   curline();

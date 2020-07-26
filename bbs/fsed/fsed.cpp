@@ -118,6 +118,7 @@ bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, boo
 bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file);
   auto& fs = view.fs();
+  ed.set_max_line_len(view.max_view_columns());
   ed.add_callback([&view](editor_t& e, editor_range_t t) {
     view.handle_editor_invalidate(e, t);
     });
@@ -165,13 +166,13 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       if (ed.cy > 0) {
         --ed.cy;
         --ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
         ed.cx = std::min<int>(ed.cx, right_max);
       }
       else if (ed.curli > 0) {
         // scroll
         --ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
         ed.cx = std::min<int>(ed.cx, right_max);
         view.top_line = ed.curli;
         ed.invalidate_to_eof(view.top_line);
@@ -182,7 +183,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       auto previous_line = ed.curli;
       if (ed.curli < ssize(ed) - 1) {
         ++ed.curli;
-        const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
         ed.cx = std::min<int>(ed.cx, right_max);
         advance_cy(ed, view);
       }
@@ -198,7 +199,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       ed.cy = std::max<int>(ed.cy - up, 0);
       ed.curli = std::max<int>(ed.curli - up, 0);
       view.top_line = ed.curli - ed.cy;
-      const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
       ed.cx = std::min<int>(ed.cx, right_max);
       ed.invalidate_to_eof(view.top_line);
       view.draw_current_line(ed, previous_line);
@@ -213,7 +214,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       }
       ed.curli += dn;
       ed.cy += dn;
-      const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
       ed.cx = std::min<int>(ed.cx, right_max);
       if (ed.cy >= view.max_view_lines()) {
         // will need to scroll
@@ -230,7 +231,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
     } break;
     case FsedCommand::cursor_right: {
       // TODO: add option to cursor right to end of view
-      const auto right_max = std::min<int>(view.max_view_columns(), ssize(ed.curline()));
+      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
       if (ed.cx < right_max) {
         ++ed.cx;
       }
@@ -317,7 +318,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       } else if (ed.curli > 0) {
         auto& prev = ed.line(ed.curli - 1);
         auto& cur = ed.curline();
-        auto last_pos = std::max<int>(0, ed.max_line_len - ssize(prev) - 1);
+        auto last_pos = std::max<int>(0, ed.max_line_len() - ssize(prev) - 1);
         const int new_cx = ssize(prev);
         if (ssize(cur) < last_pos) {
           prev.append(cur.cells());

@@ -48,7 +48,6 @@ public:
   // Max number of lines allowed
   int maxli{255};
   // max line length
-  int max_line_len{79};
   // Insert or Overrite mode
   ins_ovr_mode_t mode_{ins_ovr_mode_t::ins};
 
@@ -82,6 +81,10 @@ public:
   // Get the internal state if the editor is in INSERT or OVERWRITE mode.
   ins_ovr_mode_t mode() const noexcept { return mode_; };
 
+  // Sets the max_line_len
+  void set_max_line_len(int n) noexcept { max_line_len_ = n; }
+  int max_line_len() const noexcept { return max_line_len_;  }
+
   /**
    * Return the text as a vector of strings in WWIV format (meaning the last
    * character is a \x1 if the line is wrapped.
@@ -101,6 +104,7 @@ private:
   std::vector<line_t> lines_;
 
   std::vector<editor_range_invalidated_fn> callbacks_;
+  int max_line_len_{79};
 };
 
 
