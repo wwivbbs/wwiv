@@ -34,6 +34,8 @@ enum class FsedCommand {
   cursor_end,
   delete_to_eol,
   delete_line,
+  delete_line_left,
+  delete_word_left,
   delete_right,
   backspace,
   key_return,

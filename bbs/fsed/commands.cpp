@@ -43,6 +43,8 @@ std::map<int, FsedCommand> CreateDefaultKeyMap() {
   map.emplace(CI, FsedCommand::toggle_insovr);
   map.emplace(RETURN, FsedCommand::key_return);
   map.emplace(CP, FsedCommand::input_wwiv_color);
+  map.emplace(CW, FsedCommand::delete_word_left);
+  map.emplace(CX, FsedCommand::delete_line_left);
 
   return map;
 }

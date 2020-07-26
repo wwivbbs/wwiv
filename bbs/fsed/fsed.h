@@ -52,6 +52,7 @@ public:
 public:
   // Top editor line number visible in the viewport.
   int top_line{0};
+  bool debug{false};
 
 private:
   FullScreenView fs_;

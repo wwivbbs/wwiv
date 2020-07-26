@@ -261,6 +261,35 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
         }
       }
     } break;
+    case FsedCommand::delete_line_left: {
+      auto& oline = ed.curline();
+      std::vector<cell_t> empty;
+      oline.assign(empty);
+      ed.cx = 0;
+      oline.wrapped(false);
+      ed.invalidate_to_eol();
+    } break;
+    case FsedCommand::delete_word_left: {
+      if (ed.cx <= 0) {
+        break;
+      }
+      auto& line = ed.curline();
+      auto last_space = line.last_space_before(ed.cx);
+      if (last_space == ed.cx) {
+        break;
+      }
+      auto remainder = line.substr(ed.cx);
+      ed.cx = last_space;
+      if (last_space == 0) {
+        line.assign(remainder);
+      } else {
+        line.assign(line.substr(0, ed.cx));
+        line.append(remainder);
+      }
+      // TODO(rushfan): Should reflow paragraph here.
+      line.wrapped(false);
+      ed.invalidate_to_eol();
+    } break;
     case FsedCommand::view_redraw: { // redraw
       view.redraw();
       ed.invalidate_to_eof(0);
@@ -341,20 +370,20 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
     case FsedCommand::menu: {
       bout.PutsXY(
           1, fs.command_line_y(),
-          "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2?|#9=Help): ");
-      switch (fs.bgetch()) { 
-      case 's':
-        [[fallthrough]];
+          "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, |#2?|#9=Help): ");
+      switch (std::toupper(fs.bgetch() & 0xff)) { 
       case 'S': {
         done = true;
         save = true;
       } break;
-      case 'a':
-        [[fallthrough]];
       case 'A': {
         done = true;
       } break;
-      case 'q':
+      case 'D': {
+        view.debug = !view.debug;
+        view.draw_bottom_bar(ed);
+        fs.ClearCommandLine();
+      } break;
       case 'Q': {
         // Hacky quote solution for now.
         // TODO(rushfan): Do something less lame here.
@@ -403,6 +432,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
     } break;
     case FsedCommand::toggle_insovr: {
       ed.toggle_ins_ovr_mode();
+      view.draw_bottom_bar(ed);
     } break;
     default: {
     } break;
@@ -507,14 +537,20 @@ void FsedView::redraw() {
 void FsedView::draw_bottom_bar(editor_t& ed) {
   auto sc = bout.curatr();
   static int sx = -1, sy = -1, sl = -1;
-  if (sx != ed.cx || sy != ed.cy || sl != ed.curli) {
+  static auto smode = ed.mode();
+  static auto sdebug = debug;
+  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {
     const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     const auto cell = ed.current_cell();
-    fs_.DrawBottomBar(fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli, top_line,
-                                  static_cast<int>(cell.ch), cell.wwiv_color, mode));
+    auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
+                                      top_line, static_cast<int>(cell.ch), cell.wwiv_color, mode)
+                        : fmt::format("[{}]", mode);
+    fs_.DrawBottomBar(text);
     sx = ed.cx;
     sy = ed.cy;
     sl = ed.curli;
+    smode = ed.mode();
+    sdebug = debug;
   }
   bout.SystemColor(sc);
   gotoxy(ed);

@@ -90,7 +90,7 @@ int line_t::last_space_before(int maxlen) {
   if (cell_.empty()) {
     return 0;
   }
-  for (int i = size_ - 1; i > 0; i--) {
+  for (int i = maxlen - 1; i > 0; i--) {
     char c = cell_.at(i).ch;
     if (c == '\t' || c == ' ') {
       return i;
