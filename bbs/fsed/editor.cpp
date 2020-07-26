@@ -152,7 +152,12 @@ bool editor_t::bs() {
 }
 
 bool editor_t::add_callback(editor_range_invalidated_fn fn) {
-  callbacks_.emplace_back(fn);
+  range_callbacks_.emplace_back(fn);
+  return true;
+}
+
+bool editor_t::add_callback(editor_current_line_redraw_fn fn) { 
+  line_callbacks_.emplace_back(fn);
   return true;
 }
 
@@ -161,7 +166,7 @@ void editor_t::invalidate_to_eol() {
   r.start.line = r.end.line = curli;
   r.start.x = cx;
   r.end.x = ssize(curline());
-  for (auto& c : callbacks_) {
+  for (auto& c : range_callbacks_) {
     c(*this, r);
   }
 }
@@ -179,8 +184,14 @@ void editor_t::invalidate_range(int start_line, int end_line) {
   r.start.line = start_line;
   r.start.x = cx;
   r.end.line = end_line;
-  for (auto& c : callbacks_) {
+  for (auto& c : range_callbacks_) {
     c(*this, r);
+  }
+}
+
+void editor_t::current_line_dirty(int previous_line) {
+  for (auto& c : line_callbacks_) {
+    c(*this, previous_line);
   }
 }
 

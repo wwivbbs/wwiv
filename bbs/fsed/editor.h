@@ -22,6 +22,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace wwiv::bbs::fsed {
 
@@ -35,6 +36,13 @@ struct editor_marker_t {
 struct editor_range_t {
   editor_marker_t start;
   editor_marker_t end;
+};
+
+class editor_viewport_t {
+  virtual int max_view_lines() const = 0;
+  virtual int max_view_columns() const = 0;
+  virtual int top_line() const = 0;
+  virtual void set_top_line(int l) = 0;
 };
 
 class editor_t {
@@ -93,18 +101,23 @@ public:
 
   // Listeners
   typedef std::function<void(editor_t&, editor_range_t)> editor_range_invalidated_fn;
+  typedef std::function<void(editor_t&, int)> editor_current_line_redraw_fn;
   bool add_callback(editor_range_invalidated_fn fn);
+  bool add_callback(editor_current_line_redraw_fn fn);
   void invalidate_to_eol();
   void invalidate_to_eof();
   void invalidate_to_eof(int start_line);
   void invalidate_range(int start_line, int end_line);
+  void current_line_dirty(int previous_line);
 
 private:
   // Lines of text
   std::vector<line_t> lines_;
 
-  std::vector<editor_range_invalidated_fn> callbacks_;
+  std::vector<editor_range_invalidated_fn> range_callbacks_;
+  std::vector<editor_current_line_redraw_fn> line_callbacks_;
   int max_line_len_{79};
+  std::shared_ptr<editor_viewport_t> view;
 };
 
 

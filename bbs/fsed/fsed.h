@@ -30,15 +30,15 @@
 
 namespace wwiv::bbs::fsed {
 
-class FsedView {
+class FsedView : public editor_viewport_t {
 public:
   FsedView(FullScreenView fs, MessageEditorData& data, bool file);
   ~FsedView() = default;
 
   FullScreenView& fs();
   void gotoxy(const editor_t& ed);
-  int max_view_lines() const { return max_view_lines_; }
-  int max_view_columns() const { return max_view_columns_; }
+  int max_view_lines() const override { return max_view_lines_; }
+  int max_view_columns() const override { return max_view_columns_; }
   // Draws the current line without colors, and redraws the previous
   // line with colors.
   void draw_current_line(editor_t& e, int previous_line);
@@ -48,10 +48,12 @@ public:
   void redraw();
   void draw_bottom_bar(editor_t& ed);
   int bgetch(editor_t& ed);
+  int top_line() const override { return top_line_; }
+  void set_top_line(int l) override { top_line_ = l; }
 
 public:
   // Top editor line number visible in the viewport.
-  int top_line{0};
+  int top_line_{0};
   bool debug{false};
 
 private:

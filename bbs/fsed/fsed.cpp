@@ -50,9 +50,9 @@ static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
     ++ed.cy;
   } else {
     // scroll
-    view.top_line = ed.curli - ed.cy;
+    view.set_top_line(ed.curli - ed.cy);
     if (invalidate) {
-      ed.invalidate_to_eof(view.top_line);
+      ed.invalidate_to_eof(view.top_line());
     }
   }
 }
@@ -122,6 +122,9 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   ed.add_callback([&view](editor_t& e, editor_range_t t) {
     view.handle_editor_invalidate(e, t);
     });
+  ed.add_callback([&view](editor_t& e, int previous_line) { 
+      view.draw_current_line(e, previous_line);
+    });
 
   int saved_topdata = a()->topdata;
   if (a()->topdata != LocalIO::topdataNone) {
@@ -174,10 +177,10 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
         --ed.curli;
         const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
         ed.cx = std::min<int>(ed.cx, right_max);
-        view.top_line = ed.curli;
-        ed.invalidate_to_eof(view.top_line);
+        view.set_top_line(ed.curli);
+        ed.invalidate_to_eof(view.top_line());
       }
-      view.draw_current_line(ed, previous_line);
+      ed.current_line_dirty(previous_line);
     } break;
     case FsedCommand::cursor_down: {
       auto previous_line = ed.curli;
@@ -187,7 +190,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
         ed.cx = std::min<int>(ed.cx, right_max);
         advance_cy(ed, view);
       }
-      view.draw_current_line(ed, previous_line);
+      ed.current_line_dirty(previous_line);
     } break;
     case FsedCommand::cursor_pgup: {
       auto previous_line = ed.curli;
@@ -198,11 +201,11 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       }
       ed.cy = std::max<int>(ed.cy - up, 0);
       ed.curli = std::max<int>(ed.curli - up, 0);
-      view.top_line = ed.curli - ed.cy;
+      view.set_top_line(ed.curli - ed.cy);
       const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
       ed.cx = std::min<int>(ed.cx, right_max);
-      ed.invalidate_to_eof(view.top_line);
-      view.draw_current_line(ed, previous_line);
+      ed.invalidate_to_eof(view.top_line());
+      ed.current_line_dirty(previous_line);
     } break;
     case FsedCommand::cursor_pgdown: {
       auto previous_line = ed.curli;
@@ -219,10 +222,10 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       if (ed.cy >= view.max_view_lines()) {
         // will need to scroll
         ed.cy = view.max_view_lines();
-        view.top_line = ed.curli - ed.cy;
-        ed.invalidate_to_eof(view.top_line);
+        view.set_top_line(ed.curli - ed.cy);
+        ed.invalidate_to_eof(view.top_line());
       }
-      view.draw_current_line(ed, previous_line);
+      ed.current_line_dirty(previous_line);
     } break;
     case FsedCommand::cursor_left: {
       if (ed.cx > 0) {
@@ -332,7 +335,7 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
         ed.cx = new_cx;
         ed.invalidate_to_eof(ed.curli);
       }
-      view.draw_current_line(ed, previous_line);
+      ed.current_line_dirty(previous_line);
       gotoxy(ed, fs);
       auto c = ed.current_cell();
       bout.Color(c.wwiv_color);
@@ -372,7 +375,10 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       bout.PutsXY(
           1, fs.command_line_y(),
           "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, |#2?|#9=Help): ");
-      switch (std::toupper(fs.bgetch() & 0xff)) { 
+      auto cmd = std::toupper(fs.bgetch() & 0xff);
+      fs.ClearCommandLine();
+      bout.GotoXY(1, fs.command_line_y());
+      switch (cmd) { 
       case 'S': {
         done = true;
         save = true;
@@ -456,12 +462,12 @@ FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
 FullScreenView& FsedView::fs() { return fs_; }
 
 void FsedView::gotoxy(const editor_t& ed) {
-  bout.GotoXY(ed.cx + 1, ed.cy - top_line + fs_.lines_start());
+  bout.GotoXY(ed.cx + 1, ed.cy - top_line() + fs_.lines_start());
 }
 
 void FsedView::draw_current_line(editor_t& ed, int previous_line) { 
   if (previous_line != ed.curli) {
-    auto py = previous_line - top_line + fs_.lines_start();
+    auto py = previous_line - top_line() + fs_.lines_start();
     bout.GotoXY(0, py);
     if (previous_line < ssize(ed)) {
       bout.bputs(ed.line(previous_line).to_colored_text());
@@ -469,7 +475,7 @@ void FsedView::draw_current_line(editor_t& ed, int previous_line) {
     bout.clreol();
   }
 
-  auto y = ed.curli - top_line + fs_.lines_start(); 
+  auto y = ed.curli - top_line() + fs_.lines_start(); 
   bout.GotoXY(0, y);
   bout.Color(0);
   for (const auto& c : ed.curline().cells()) {
@@ -486,16 +492,16 @@ void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
   // TODO: optimize for first line
 
   // Never go below top line.
-  auto start_line = std::max<int>(t.start.line, top_line);
+  auto start_line = std::max<int>(t.start.line, top_line());
   auto last_color = -1;
 
   for (int i = start_line; i <= t.end.line; i++) {
-    auto y = i - top_line + fs_.lines_start();
+    auto y = i - top_line() + fs_.lines_start();
     if (y > fs_.lines_end() || i >= ssize(e)) {
       // clear the current and then remaining
       bout.GotoXY(0, y);
       bout.clreol();
-      for (auto z = t.end.line + 1 - top_line + fs_.lines_start(); z < fs_.lines_end(); z++) {
+      for (auto z = t.end.line + 1 - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
         bout.GotoXY(0, z);
         bout.clreol();
       }
@@ -544,7 +550,7 @@ void FsedView::draw_bottom_bar(editor_t& ed) {
     const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     const auto cell = ed.current_cell();
     auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
-                                      top_line, static_cast<int>(cell.ch), cell.wwiv_color, mode)
+                                      top_line(), static_cast<int>(cell.ch), cell.wwiv_color, mode)
                         : fmt::format("[{}]", mode);
     fs_.DrawBottomBar(text);
     sx = ed.cx;
