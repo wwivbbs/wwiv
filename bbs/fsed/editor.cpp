@@ -28,6 +28,21 @@ namespace wwiv::bbs::fsed {
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+/////////////////////////////////////////////////////////////////////////////
+// LOCALS
+
+static void advance_cy(editor_t& ed, editor_viewport_t& view, bool invalidate = true) {
+  // advancy cy if we have room, scroll region otherwise
+  if (ed.cy < view.max_view_lines()) {
+    ++ed.cy;
+  } else {
+    // scroll
+    view.set_top_line(ed.curli - ed.cy);
+    if (invalidate) {
+      ed.invalidate_to_eof(view.top_line());
+    }
+  }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // EDITOR
@@ -65,7 +80,7 @@ void editor_t::emplace_back(line_t&& n) { lines_.emplace_back(n); }
 
 
 bool editor_t::insert_line() { 
-  if (ssize(lines_)  >= this->maxli) {
+  if (ssize(lines_)  >= maxli()) {
     return false;
   }
   return wwiv::stl::insert_at(lines_, curli, line_t());
@@ -128,6 +143,17 @@ cell_t editor_t::current_cell() {
     throw;
   }
 }
+
+// Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
+// matters on add, bs, and del
+
+void editor_t::toggle_ins_ovr_mode() {
+  mode_ = (mode_ == ins_ovr_mode_t::ins) ? ins_ovr_mode_t::ovr : ins_ovr_mode_t::ins;
+}
+
+// Get the internal state if the editor is in INSERT or OVERWRITE mode.
+
+ins_ovr_mode_t editor_t::mode() const noexcept { return mode_; }
 
 bool editor_t::del() { 
   auto r = curline().del(cx, mode_);

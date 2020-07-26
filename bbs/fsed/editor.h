@@ -39,6 +39,7 @@ struct editor_range_t {
 };
 
 class editor_viewport_t {
+public:
   virtual int max_view_lines() const = 0;
   virtual int max_view_columns() const = 0;
   virtual int top_line() const = 0;
@@ -47,18 +48,17 @@ class editor_viewport_t {
 
 class editor_t {
 public:
+  explicit editor_t(int max_lines) : maxli_(max_lines) {}
+  editor_t() : editor_t(255) {}
+  ~editor_t() = default;
+
   // cursor X position
   int cx{0};
   // cursor Y positon
   int cy{0};
   // Current line number
   int curli{0};
-  // Max number of lines allowed
-  int maxli{255};
-  // max line length
-  // Insert or Overrite mode
-  ins_ovr_mode_t mode_{ins_ovr_mode_t::ins};
-
+  
   // gets the current line
   line_t& curline();
   // Gets the line at a position n or throws.
@@ -80,19 +80,18 @@ public:
   bool bs();
   // Gets the current character
   cell_t current_cell();
+
   // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
   // matters on add, bs, and del
-  void toggle_ins_ovr_mode() {
-    mode_ = (mode_ == ins_ovr_mode_t::ins) ? ins_ovr_mode_t::ovr : ins_ovr_mode_t::ins;
-  }
-
+  void toggle_ins_ovr_mode();
   // Get the internal state if the editor is in INSERT or OVERWRITE mode.
-  ins_ovr_mode_t mode() const noexcept { return mode_; };
+  ins_ovr_mode_t mode() const noexcept;
 
   // Sets the max_line_len
   void set_max_line_len(int n) noexcept { max_line_len_ = n; }
   int max_line_len() const noexcept { return max_line_len_;  }
-
+  // Max number of lines
+  int maxli() const noexcept { return maxli_; }
   /**
    * Return the text as a vector of strings in WWIV format (meaning the last
    * character is a \x1 if the line is wrapped.
@@ -111,13 +110,19 @@ public:
   void current_line_dirty(int previous_line);
 
 private:
+  // Max number of lines allowed
+  int maxli_{255};
   // Lines of text
   std::vector<line_t> lines_;
+  // Insert or Overrite mode
+  ins_ovr_mode_t mode_{ins_ovr_mode_t::ins};
+  // Max number of lines allowed.
+  int max_line_len_{79};
 
   std::vector<editor_range_invalidated_fn> range_callbacks_;
   std::vector<editor_current_line_redraw_fn> line_callbacks_;
-  int max_line_len_{79};
-  std::shared_ptr<editor_viewport_t> view;
+  // Viewport for display
+  std::shared_ptr<editor_viewport_t> view_;
 };
 
 
