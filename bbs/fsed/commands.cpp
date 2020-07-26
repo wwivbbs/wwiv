@@ -16,10 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "bbs/fsed/commands.h"
+
 #include "local_io/keycodes.h"
+#include <map>
 
 namespace wwiv::bbs::fsed {
-
 
 std::map<int, FsedCommand> CreateDefaultKeyMap() { 
   std::map<int, FsedCommand> map;

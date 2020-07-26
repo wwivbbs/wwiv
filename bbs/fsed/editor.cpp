@@ -17,19 +17,10 @@
 /**************************************************************************/
 #include "bbs/fsed/editor.h"
 
-#include "bbs/bbs.h"
-#include "bbs/bgetch.h"
-#include "bbs/full_screen.h"
-#include "bbs/message_editor_data.h"
-#include "bbs/output.h"
-#include "bbs/pause.h"
-#include "bbs/quote.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "fmt/format.h"
-#include "local_io/keycodes.h"
 #include <stdexcept>
 
 namespace wwiv::bbs::fsed {

@@ -18,10 +18,7 @@
 #ifndef __INCLUDED_BBS_FSED_LINE_H__
 #define __INCLUDED_BBS_FSED_LINE_H__
 
-#include "bbs/full_screen.h"
-#include "bbs/message_editor_data.h"
 #include <filesystem>
-#include <functional>
 #include <vector>
 #include <string>
 

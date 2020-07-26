@@ -57,6 +57,10 @@ static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
   }
 }
 
+static void gotoxy(const editor_t& ed, const FullScreenView& fs) {
+  bout.GotoXY(ed.cx + 1, ed.cy + fs.lines_start());
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // MAIN
 

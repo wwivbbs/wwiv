@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_BBS_FSED_COMMANDS_H__
 #define __INCLUDED_BBS_FSED_COMMANDS_H__
 
-#include "local_io/keycodes.h"
 #include <map>
 #include <string>
 
