@@ -68,6 +68,11 @@ static int GetUserNumber(const std::string& name, UserManager& um) {
     if (iequals(name, u.GetName())) {
       return i;
     }
+    // Try to fix emails not matching against real names
+    // when coming from FTN systems.
+    if (iequals(name, u.GetRealName())) {
+      return i;
+    }
   }
   return 0;
 }
