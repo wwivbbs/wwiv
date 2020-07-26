@@ -262,11 +262,11 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
       }
     } break;
     case FsedCommand::delete_line_left: {
-      auto& oline = ed.curline();
-      std::vector<cell_t> empty;
-      oline.assign(empty);
+      auto& line = ed.curline();
+      auto remainder = line.substr(ed.cx);
+      line.assign(remainder);
       ed.cx = 0;
-      oline.wrapped(false);
+      line.wrapped(false);
       ed.invalidate_to_eol();
     } break;
     case FsedCommand::delete_word_left: {
