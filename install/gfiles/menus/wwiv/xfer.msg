@@ -1,4 +1,4 @@
-                         |#4 WWIV 5.1.0 Transfer Menu |#0
+                         |#4 WWIV Transfer Menu |#0
 
 |#5 ÖÄÄÄÄÄÄÄÄÄ|#4 File Transfers |#5ÄÄÄÄÄÄÄÄÄÄÄÄÒÄÄÄÄÄÄÄÄÄÄ|#4 Miscellaneous |#5ÄÄÄÄÄÄÄÄÄ·|#0
 |#5 º |#7D |#1> |#2Download a File                 |#5º |#7C |#1> |#2Chat with Sysop              |#5º|#0
