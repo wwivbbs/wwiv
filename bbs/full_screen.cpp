@@ -46,12 +46,19 @@ FullScreenView::~FullScreenView() = default;
 
 void FullScreenView::PrintTimeoutWarning(int) {
   bout_.GotoXY(1, command_line_);
-  bout_.clreol();
   bout << "|12Press space if you are still there.";
+  bout_.clreol();
 }
 
 void FullScreenView::ClearCommandLine() {
   bout_.GotoXY(1, command_line_);
+  bout_.clreol();
+  bout_.GotoXY(1, command_line_);
+}
+
+void FullScreenView::PutsCommandLine(const std::string& text) {
+  bout_.GotoXY(1, command_line_);
+  bout << text;
   bout_.clreol();
 }
 
@@ -93,7 +100,8 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 }
 
 void FullScreenView::GotoContentAreaTop() {
-  bout_.GotoXY(1, num_header_lines_ + 2); }
+  bout_.GotoXY(1, num_header_lines_ + 2); 
+}
 
 int FullScreenView::bgetch() { 
   return bgetch_event(numlock_status_t::NUMBERS, [&](bgetch_timeout_status_t status, int s) {

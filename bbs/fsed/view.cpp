@@ -50,7 +50,7 @@ FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
 FullScreenView& FsedView::fs() { return fs_; }
 
 void FsedView::gotoxy(const FsedModel& ed) {
-  bout.GotoXY(ed.cx + 1, ed.cy - top_line() + fs_.lines_start());
+  bout.GotoXY(ed.cx + 1, ed.cy + fs_.lines_start()); // - top_line() 
 }
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
@@ -83,9 +83,12 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
   auto start_line = std::max<int>(t.start.line, top_line());
   auto last_color = -1;
 
-  for (int i = start_line; i <= t.end.line; i++) {
+  for (int i = start_line; i < t.end.line; i++) {
     auto y = i - top_line() + fs_.lines_start();
-    if (y > fs_.lines_end() || i >= ssize(e)) {
+    if (y >= fs_.lines_end()) {
+      break;
+    }
+    if (i >= ssize(e)) {
       // clear the current and then remaining
       bout.GotoXY(0, y);
       bout.clreol();

@@ -53,24 +53,22 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
 }
 
 static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save) {
-  bout.PutsXY(1, view.fs().command_line_y(),
-              "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
-              "|#2?|#9=Help): ");
+  view.fs().PutsCommandLine(
+      "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
+      "|#2?|#9=Help): ");
   auto cmd = std::toupper(view.fs().bgetch() & 0xff);
   view.fs().ClearCommandLine();
-  bout.GotoXY(1, view.fs().command_line_y());
   switch (cmd) {
   case 'S':
     done = save = true;
-    return;
+    break;
   case 'A':
     done = true;
     save = false;
-    return;
+    break;
   case 'D': {
     view.debug = !view.debug;
     view.draw_bottom_bar(ed);
-    view.fs().ClearCommandLine();
   } break;
   case 'Q': {
     // Hacky quote solution for now.
@@ -84,11 +82,9 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   } break;
   case '?': {
     view.fs().ClearMessageArea();
+    view.fs().ClearCommandLine();
     if (!print_help_file(FSED_NOEXT)) {
-      view.fs().ClearCommandLine();
       bout << "|#6Unable to find file: " << FSED_NOEXT;
-    } else {
-      view.fs().ClearCommandLine();
     }
     pausescr();
     view.fs().ClearMessageArea();
@@ -98,9 +94,9 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   case ESC:
     [[fallthrough]];
   default: {
-    view.fs().ClearCommandLine();
   } break;
   }
+  view.fs().ClearCommandLine();
 }
 
 bool fsed(const std::filesystem::path& path) {

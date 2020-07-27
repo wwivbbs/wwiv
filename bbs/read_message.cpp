@@ -592,7 +592,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       dirty = false;
       fs.DrawBottomBar(start == last ? "END" : "");
       fs.ClearCommandLine();
-      bout.PutsXY(1, fs.command_line_y(), "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
+      fs.PutsCommandLine("|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
     }
     if (!msg.use_msg_command_handler) {
       result.option = ReadMessageOption::NEXT_MSG;

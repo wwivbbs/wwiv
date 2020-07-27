@@ -446,7 +446,7 @@ void FsedModel::invalidate_to_eof() {
 }
 
 void FsedModel::invalidate_to_eof(int start_line) {
-  invalidate_range(start_line, ssize(lines_));
+  invalidate_range(start_line, ssize(lines_) - 1);
 }
 
 void FsedModel::invalidate_range(int start_line, int end_line) {

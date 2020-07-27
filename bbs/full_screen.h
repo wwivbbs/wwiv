@@ -27,19 +27,26 @@ public:
   FullScreenView(Output& output, int numlines, int swidth, int slength);
   virtual ~FullScreenView();
 
+  /** Displays a timeout warning in the command line area */
   void PrintTimeoutWarning(int);
+  /** Clears the command line area */
   void ClearCommandLine();
+  /** Displays a text in the command line area */
+  void PutsCommandLine(const std::string& text);
+  /** Clears the messagea area (the main body of the full screen view */
   void ClearMessageArea();
+  /** Displays the horizontal bar between the header area and body */
   void DrawTopBar();
+  /** Displays the horizontal bar between the body and command line*/
   void DrawBottomBar(const std::string& text);
+  /** Places the cursor at the top of the body */
   void GotoContentAreaTop();
   
-  int message_height() const { return message_height_; }
-  int lines_start() const { return lines_start_; }
-  int lines_end() const { return lines_end_; }
-  int num_header_lines() const { return num_header_lines_; }
-  int command_line_y() const { return command_line_; }
-  int screen_width() const { return screen_width_; }
+  int message_height() const noexcept { return message_height_; }
+  int lines_start() const noexcept { return lines_start_; }
+  int lines_end() const noexcept { return lines_end_; }
+  int num_header_lines() const noexcept { return num_header_lines_; }
+  int screen_width() const noexcept { return screen_width_; }
 
   // Runs bgetch_event with error message and warning displayed
   // on the status line.
@@ -48,14 +55,13 @@ public:
 private:
   Output& bout_;
 
-  int num_header_lines_ = 0;
-  int screen_width_ = 0;
-  int screen_length_ = 0;
-  int message_height_ = 0;
-  int lines_start_ = 0;
-  int lines_end_ = 0;
-  int command_line_ = 0;
-
+  int num_header_lines_{0};
+  int screen_width_{0};
+  int screen_length_{0};
+  int message_height_{0};
+  int lines_start_{0};
+  int lines_end_{0};
+  int command_line_{0};
 };
 
 
