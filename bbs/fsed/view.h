@@ -15,21 +15,53 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_FSED_H__
-#define __INCLUDED_BBS_FSED_FSED_H__
+#ifndef __INCLUDED_BBS_FSED_VIEW_H__
+#define __INCLUDED_BBS_FSED_VIEW_H__
 
+#include "bbs/full_screen.h"
 #include "bbs/message_editor_data.h"
+#include "bbs/fsed/common.h"
 #include "bbs/fsed/model.h"
 #include "bbs/fsed/line.h"
-#include <filesystem>
+#include <functional>
 #include <vector>
 #include <string>
 
 namespace wwiv::bbs::fsed {
 
-bool fsed(const std::filesystem::path& path);
-bool fsed(FsedModel& ed, MessageEditorData& data, bool file);
-bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file);
+class FsedView : public editor_viewport_t {
+public:
+  FsedView(FullScreenView fs, MessageEditorData& data, bool file);
+  ~FsedView() = default;
+
+  FullScreenView& fs();
+  int max_view_lines() const override { return max_view_lines_; }
+  int max_view_columns() const override { return max_view_columns_; }
+  // Draws the current line without colors, and redraws the previous
+  // line with colors.
+  void draw_current_line(FsedModel& e, int previous_line);
+  // Updates the editor line number based on the cy and fs view of the 
+  // world.
+  void handle_editor_invalidate(FsedModel&, editor_range_t t);
+  void redraw();
+  void draw_bottom_bar(FsedModel& ed);
+  int bgetch(FsedModel& ed);
+  int top_line() const override { return top_line_; }
+  void set_top_line(int l) override { top_line_ = l; }
+  void gotoxy(const FsedModel& ed) override;
+
+public:
+  // Top editor line number visible in the viewport.
+  int top_line_{0};
+  bool debug{false};
+
+private:
+  FullScreenView fs_;
+  int max_view_lines_;
+  int max_view_columns_;
+  MessageEditorData& data_;
+  bool file_{false};
+};
 
 }
 

@@ -47,7 +47,8 @@ set(COMMON_SOURCES
  fsed/common.cpp
  fsed/fsed.cpp
  fsed/line.cpp
- fsed/editor.cpp
+ fsed/model.cpp
+ fsed/view.cpp
  full_screen.cpp
  gfiles.cpp
  gfileedit.cpp

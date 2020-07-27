@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "bbs/fsed/editor.h"
+#include "bbs/fsed/model.h"
 
 #include "core/os.h"
 #include "core/stl.h"
@@ -31,7 +31,7 @@ using namespace wwiv::strings;
 /////////////////////////////////////////////////////////////////////////////
 // LOCALS
 
-static void advance_cy(editor_t& ed, editor_viewport_t& view, bool invalidate = true) {
+static void advance_cy(FsedModel& ed, editor_viewport_t& view, bool invalidate = true) {
   // advancy cy if we have room, scroll region otherwise
   if (ed.cy < view.max_view_lines()) {
     ++ed.cy;
@@ -47,9 +47,9 @@ static void advance_cy(editor_t& ed, editor_viewport_t& view, bool invalidate = 
 /////////////////////////////////////////////////////////////////////////////
 // EDITOR
 
-void editor_t::set_view(const std::shared_ptr<editor_viewport_t>& view) { view_ = view; }
+void FsedModel::set_view(const std::shared_ptr<editor_viewport_t>& view) { view_ = view; }
 
-line_t& editor_t::curline() {
+line_t& FsedModel::curline() {
   // TODO: insert return statement here
   while (curli >= ssize(lines_)) {
     lines_.emplace_back();
@@ -63,7 +63,7 @@ line_t& editor_t::curline() {
   }
 }
 
-line_t& editor_t::line(int n) { 
+line_t& FsedModel::line(int n) { 
   try {
     return lines_.at(n);
   } catch (const std::exception& e) {
@@ -73,22 +73,22 @@ line_t& editor_t::line(int n) {
   }
 }
 
-bool editor_t::set_lines(std::vector<line_t>&& n) {
+bool FsedModel::set_lines(std::vector<line_t>&& n) {
   lines_ = n;
   return true;
 }
 
-void editor_t::emplace_back(line_t&& n) { lines_.emplace_back(n); }
+void FsedModel::emplace_back(line_t&& n) { lines_.emplace_back(n); }
 
 
-bool editor_t::insert_line() { 
+bool FsedModel::insert_line() { 
   if (ssize(lines_)  >= maxli()) {
     return false;
   }
   return wwiv::stl::insert_at(lines_, curli, line_t());
 }
 
-bool editor_t::insert_lines(std::deque<std::string>& lines) {
+bool FsedModel::insert_lines(std::deque<std::string>& lines) {
   while (!lines.empty()) {
     // Insert all quote lines.
     const auto ql = lines.front();
@@ -107,14 +107,14 @@ bool editor_t::insert_lines(std::deque<std::string>& lines) {
   return true;
 }
 
-bool editor_t::remove_line() { 
+bool FsedModel::remove_line() { 
   if (lines_.empty()) {
     return false;
   }
   return wwiv::stl::erase_at(lines_, curli);
 }
 
-editor_add_result_t editor_t::add(char c) { 
+editor_add_result_t FsedModel::add(char c) { 
   auto& line = curline(); 
   auto line_result = line.add(cx, c, mode_);
   if (line_result == line_add_result_t::error) {
@@ -152,7 +152,7 @@ editor_add_result_t editor_t::add(char c) {
   return editor_add_result_t::wrapped;
 }
 
-cell_t editor_t::current_cell() {
+cell_t FsedModel::current_cell() {
   const auto& line = curline();
   if (cx >= ssize(line)) {
     return cell_t(0, ' ');
@@ -166,7 +166,7 @@ cell_t editor_t::current_cell() {
   }
 }
 
-bool editor_t::cursor_up() {
+bool FsedModel::cursor_up() {
   auto previous_line = curli;
   if (cy > 0) {
     --cy;
@@ -185,7 +185,7 @@ bool editor_t::cursor_up() {
   return true;
 }
 
-bool editor_t::cursor_down() {
+bool FsedModel::cursor_down() {
   auto previous_line = curli;
   if (curli < ssize(lines_) - 1) {
     ++curli;
@@ -197,14 +197,14 @@ bool editor_t::cursor_down() {
   return true;
 }
 
-bool editor_t::cursor_left() {
+bool FsedModel::cursor_left() {
   if (cx > 0) {
     --cx;
   }
   return true;
 }
 
-bool editor_t::cursor_right() {
+bool FsedModel::cursor_right() {
   // TODO: add option to cursor right to end of view
   const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
   if (cx < right_max) {
@@ -213,7 +213,7 @@ bool editor_t::cursor_right() {
   return true;
 }
 
-bool editor_t::cursor_pgup() {
+bool FsedModel::cursor_pgup() {
   auto previous_line = curli;
   const auto up = std::min<int>(curli, view_->max_view_lines());
   // nothing to do!
@@ -230,7 +230,7 @@ bool editor_t::cursor_pgup() {
   return true;
 }
 
-bool editor_t::cursor_pgdown() {
+bool FsedModel::cursor_pgdown() {
   auto previous_line = curli;
   const auto dn = std::min<int>(view_->max_view_lines(), std::max<int>(0, ssize(lines_) - curli - 1));
   if (dn == 0) {
@@ -251,12 +251,12 @@ bool editor_t::cursor_pgdown() {
   return true;
 }
 
-bool editor_t::cursor_end() {
+bool FsedModel::cursor_end() {
   cx = ssize(curline());
   return true;
 }
 
-bool editor_t::delete_line() {
+bool FsedModel::delete_line() {
   if (remove_line()) {
     invalidate_to_eof(curli);
   }
@@ -264,7 +264,7 @@ bool editor_t::delete_line() {
   return true;
 }
 
-bool editor_t::delete_to_eol() {
+bool FsedModel::delete_to_eol() {
   if (cx < ssize(curline())) {
     auto& oline = curline();
     oline.assign(oline.substr(0, cx));
@@ -280,7 +280,7 @@ bool editor_t::delete_to_eol() {
   return true;
 }
 
-bool editor_t::delete_line_left() {
+bool FsedModel::delete_line_left() {
   auto& line = curline();
   auto remainder = line.substr(cx);
   line.assign(remainder);
@@ -290,7 +290,7 @@ bool editor_t::delete_line_left() {
   return true;
 }
 
-bool editor_t::delete_word_left() {
+bool FsedModel::delete_word_left() {
   if (cx <= 0) {
     return true;
   }
@@ -313,7 +313,7 @@ bool editor_t::delete_word_left() {
   return true;
 }
 
-bool editor_t::delete_right() {
+bool FsedModel::delete_right() {
   // TODO keep mode state;
   del();
   invalidate_to_eol();
@@ -324,15 +324,15 @@ bool editor_t::delete_right() {
 // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
 // matters on add, bs, and del
 
-void editor_t::toggle_ins_ovr_mode() {
+void FsedModel::toggle_ins_ovr_mode() {
   mode_ = (mode_ == ins_ovr_mode_t::ins) ? ins_ovr_mode_t::ovr : ins_ovr_mode_t::ins;
 }
 
 // Get the internal state if the editor is in INSERT or OVERWRITE mode.
 
-ins_ovr_mode_t editor_t::mode() const noexcept { return mode_; }
+ins_ovr_mode_t FsedModel::mode() const noexcept { return mode_; }
 
-bool editor_t::del() { 
+bool FsedModel::del() { 
   auto r = curline().del(cx, mode_);
   if (r == line_add_result_t::error) {
     return false;
@@ -343,7 +343,7 @@ bool editor_t::del() {
   return true;
 }
 
-bool editor_t::bs_nowrap() { 
+bool FsedModel::bs_nowrap() { 
   auto r = curline().bs(cx, mode_);
   if (r == line_add_result_t::error) {
     return false;
@@ -354,7 +354,7 @@ bool editor_t::bs_nowrap() {
   return true;
 }
 
-bool editor_t::bs() {
+bool FsedModel::bs() {
   auto previous_line = curli;
   // TODO keep mode state;
   bs_nowrap();
@@ -391,7 +391,7 @@ bool editor_t::bs() {
   return true;
 }
 
-bool editor_t::enter() {
+bool FsedModel::enter() {
   int orig_start_line = curli;
   curline().wrapped(false);
   // Insert inserts after the current line
@@ -416,17 +416,17 @@ bool editor_t::enter() {
   return true;
 }
 
-bool editor_t::add_callback(editor_range_invalidated_fn fn) {
+bool FsedModel::add_callback(editor_range_invalidated_fn fn) {
   range_callbacks_.emplace_back(fn);
   return true;
 }
 
-bool editor_t::add_callback(editor_current_line_redraw_fn fn) { 
+bool FsedModel::add_callback(editor_current_line_redraw_fn fn) { 
   line_callbacks_.emplace_back(fn);
   return true;
 }
 
-void editor_t::invalidate_to_eol() {
+void FsedModel::invalidate_to_eol() {
   editor_range_t r{};
   r.start.line = r.end.line = curli;
   r.start.x = cx;
@@ -436,15 +436,15 @@ void editor_t::invalidate_to_eol() {
   }
 }
 
-void editor_t::invalidate_to_eof() {
+void FsedModel::invalidate_to_eof() {
   invalidate_to_eof(curli);
 }
 
-void editor_t::invalidate_to_eof(int start_line) {
+void FsedModel::invalidate_to_eof(int start_line) {
   invalidate_range(start_line, ssize(lines_));
 }
 
-void editor_t::invalidate_range(int start_line, int end_line) {
+void FsedModel::invalidate_range(int start_line, int end_line) {
   editor_range_t r{};
   r.start.line = start_line;
   r.start.x = cx;
@@ -454,13 +454,13 @@ void editor_t::invalidate_range(int start_line, int end_line) {
   }
 }
 
-void editor_t::current_line_dirty(int previous_line) {
+void FsedModel::current_line_dirty(int previous_line) {
   for (auto& c : line_callbacks_) {
     c(*this, previous_line);
   }
 }
 
-std::vector<std::string> editor_t::to_lines() { 
+std::vector<std::string> FsedModel::to_lines() { 
   std::vector<std::string> out;
   for (auto l : lines_) {
     auto t = l.to_colored_text();

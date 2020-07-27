@@ -27,8 +27,9 @@
 #include "bbs/quote.h"
 #include "bbs/fsed/commands.h"
 #include "bbs/fsed/common.h"
-#include "bbs/fsed/editor.h"
+#include "bbs/fsed/model.h"
 #include "bbs/fsed/line.h"
+#include "bbs/fsed/view.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -54,7 +55,7 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
 bool fsed(const std::filesystem::path& path) {
   MessageEditorData data{};
   data.title = path.string();
-  editor_t ed(1000);
+  FsedModel ed(1000);
   auto file_lines = read_file(path, ed.maxli());
   if (!file_lines.empty()) {
     ed.set_lines(std::move(file_lines));
@@ -76,7 +77,7 @@ bool fsed(const std::filesystem::path& path) {
 }
 
 bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file) {
-  editor_t ed(maxli);
+  FsedModel ed(maxli);
   for (auto l : lin) {
     bool wrapped = !l.empty() && l.back() == '\x1';
     ed.emplace_back(line_t{ wrapped, l });
@@ -89,15 +90,15 @@ bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, boo
   return true;
 }
 
-bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
+bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file);
   ed.set_view(view);
   auto& fs = view->fs();
   ed.set_max_line_len(view->max_view_columns());
-  ed.add_callback([&view](editor_t& e, editor_range_t t) {
+  ed.add_callback([&view](FsedModel& e, editor_range_t t) {
     view->handle_editor_invalidate(e, t);
     });
-  ed.add_callback([&view](editor_t& e, int previous_line) { 
+  ed.add_callback([&view](FsedModel& e, int previous_line) { 
       view->draw_current_line(e, previous_line);
     });
 
@@ -260,128 +261,6 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   a()->UpdateTopScreen();
 
   return save;
-}
-
-FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
-    : fs_(std::move(fs)), data_(data), file_(file) {
-  max_view_lines_ = std::min<int>(20, fs.message_height() - 1);
-  max_view_columns_ = std::min<int>(fs.screen_width(), 79);
-}
-
-FullScreenView& FsedView::fs() { return fs_; }
-
-void FsedView::gotoxy(const editor_t& ed) {
-  bout.GotoXY(ed.cx + 1, ed.cy - top_line() + fs_.lines_start());
-}
-
-void FsedView::draw_current_line(editor_t& ed, int previous_line) { 
-  if (previous_line != ed.curli) {
-    auto py = previous_line - top_line() + fs_.lines_start();
-    bout.GotoXY(0, py);
-    if (previous_line < ssize(ed)) {
-      bout.bputs(ed.line(previous_line).to_colored_text());
-    }
-    bout.clreol();
-  }
-
-  auto y = ed.curli - top_line() + fs_.lines_start(); 
-  bout.GotoXY(0, y);
-  bout.Color(0);
-  for (const auto& c : ed.curline().cells()) {
-    // Draw char by char for the current line so we don't display
-    // color codes where we are editing.
-    bout.Color(c.wwiv_color);
-    bout.bputch(c.ch);
-  }
-  bout.clreol();
-  gotoxy(ed);
-}
-
-void FsedView::handle_editor_invalidate(editor_t& e, editor_range_t t) {
-  // TODO: optimize for first line
-
-  // Never go below top line.
-  auto start_line = std::max<int>(t.start.line, top_line());
-  auto last_color = -1;
-
-  for (int i = start_line; i <= t.end.line; i++) {
-    auto y = i - top_line() + fs_.lines_start();
-    if (y > fs_.lines_end() || i >= ssize(e)) {
-      // clear the current and then remaining
-      bout.GotoXY(0, y);
-      bout.clreol();
-      for (auto z = t.end.line + 1 - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-        bout.GotoXY(0, z);
-        bout.clreol();
-      }
-      break;
-    }
-    bout.GotoXY(0, y);
-    auto& rl = e.line(i);
-    if (i == e.curli) {
-      for (const auto& c : rl.cells()) {
-        // Draw char by char for the current line so we don't display
-        // color codes where we are editing.
-        if (c.wwiv_color != last_color) {
-          last_color = c.wwiv_color;
-          bout.Color(c.wwiv_color);
-        }
-        bout.bputch(c.ch);
-      }
-    } else {
-      bout.bputs(rl.to_colored_text());
-    }
-    bout.clreol();
-  }
-  gotoxy(e);
-}
-
-void FsedView::redraw() {
-  auto oldcuratr = bout.curatr();
-  bout.cls();
-  auto to = data_.to_name.empty() ? "All" : data_.to_name;
-  bout << "|#7From: |#2" << data_.from_name << wwiv::endl;
-  bout << "|#7To:   |#2" << to << wwiv::endl;
-  bout << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
-  bout << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
-
-  bout.SystemColor(oldcuratr);
-  fs_.DrawTopBar();
-  fs_.DrawBottomBar("");
-}
-
-void FsedView::draw_bottom_bar(editor_t& ed) {
-  auto sc = bout.curatr();
-  static int sx = -1, sy = -1, sl = -1;
-  static auto smode = ed.mode();
-  static auto sdebug = debug;
-  if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {
-    const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
-    const auto cell = ed.current_cell();
-    auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
-                                      top_line(), static_cast<int>(cell.ch), cell.wwiv_color, mode)
-                        : fmt::format("[{}]", mode);
-    fs_.DrawBottomBar(text);
-    sx = ed.cx;
-    sy = ed.cy;
-    sl = ed.curli;
-    smode = ed.mode();
-    sdebug = debug;
-  }
-  bout.SystemColor(sc);
-  gotoxy(ed);
-}
-
-int FsedView::bgetch(editor_t& ed) {
-  return bgetch_event(numlock_status_t::NUMBERS, std::chrono::seconds(1), [&](bgetch_timeout_status_t status, int s) {
-    if (status == bgetch_timeout_status_t::WARNING) {
-      fs_.PrintTimeoutWarning(s);
-    } else if (status == bgetch_timeout_status_t::CLEAR) {
-      fs_.ClearCommandLine();
-    } else if (status == bgetch_timeout_status_t::IDLE) {
-      draw_bottom_bar(ed);
-    }
-  });
 }
 
 } // namespace wwiv::bbs::fsed

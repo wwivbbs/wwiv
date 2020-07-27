@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_EDITOR_H__
-#define __INCLUDED_BBS_FSED_EDITOR_H__
+#ifndef __INCLUDED_BBS_FSED_MODEL_H__
+#define __INCLUDED_BBS_FSED_MODEL_H__
 
 #include "bbs/fsed/line.h"
 #include <deque>
@@ -39,7 +39,7 @@ struct editor_range_t {
   editor_marker_t end;
 };
 
-class editor_t;
+class FsedModel;
 
 class editor_viewport_t {
 public:
@@ -47,18 +47,18 @@ public:
   virtual int max_view_columns() const = 0;
   virtual int top_line() const = 0;
   virtual void set_top_line(int l) = 0;
-  virtual void gotoxy(const editor_t& ed) = 0;
+  virtual void gotoxy(const FsedModel& ed) = 0;
 };
 
-class editor_t {
+class FsedModel {
 
 public:
   
   // Constructor and Destructors
 
-  explicit editor_t(int max_lines) : maxli_(max_lines) {}
-  editor_t() : editor_t(255) {}
-  ~editor_t() = default;
+  explicit FsedModel(int max_lines) : maxli_(max_lines) {}
+  FsedModel() : FsedModel(255) {}
+  ~FsedModel() = default;
   void set_view(const std::shared_ptr<editor_viewport_t>& view);
 
   //
@@ -139,8 +139,8 @@ public:
   //
   // Listeners, Callbacks and invalidations
   //
-  typedef std::function<void(editor_t&, editor_range_t)> editor_range_invalidated_fn;
-  typedef std::function<void(editor_t&, int)> editor_current_line_redraw_fn;
+  typedef std::function<void(FsedModel&, editor_range_t)> editor_range_invalidated_fn;
+  typedef std::function<void(FsedModel&, int)> editor_current_line_redraw_fn;
   bool add_callback(editor_range_invalidated_fn fn);
   bool add_callback(editor_current_line_redraw_fn fn);
   void invalidate_to_eol();
