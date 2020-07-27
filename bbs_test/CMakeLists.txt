@@ -22,6 +22,7 @@ set(test_sources
   utility_test.cpp
   wutil_test.cpp
   xfer_test.cpp
+  fsed/fsed_model_test.cpp
 )
 
 if(UNIX) 
