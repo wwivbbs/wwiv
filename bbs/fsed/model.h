@@ -114,6 +114,7 @@ public:
   bool cursor_right();
   bool cursor_pgup();
   bool cursor_pgdown();
+  bool cursor_home();
   bool cursor_end();
 
   bool delete_line();

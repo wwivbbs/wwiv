@@ -251,6 +251,11 @@ bool FsedModel::cursor_pgdown() {
   return true;
 }
 
+bool FsedModel::cursor_home() {
+  cx = 0;
+  return true;
+}
+
 bool FsedModel::cursor_end() {
   cx = ssize(curline());
   return true;

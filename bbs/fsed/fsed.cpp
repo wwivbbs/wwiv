@@ -52,6 +52,57 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
   return view;
 }
 
+static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save) {
+  bout.PutsXY(1, view.fs().command_line_y(),
+              "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
+              "|#2?|#9=Help): ");
+  auto cmd = std::toupper(view.fs().bgetch() & 0xff);
+  view.fs().ClearCommandLine();
+  bout.GotoXY(1, view.fs().command_line_y());
+  switch (cmd) {
+  case 'S':
+    done = save = true;
+    return;
+  case 'A':
+    done = true;
+    save = false;
+    return;
+  case 'D': {
+    view.debug = !view.debug;
+    view.draw_bottom_bar(ed);
+    view.fs().ClearCommandLine();
+  } break;
+  case 'Q': {
+    // Hacky quote solution for now.
+    // TODO(rushfan): Do something less lame here.
+    bout.cls();
+    auto quoted_lines = query_quote_lines();
+    if (!quoted_lines.empty()) {
+      ed.insert_lines(quoted_lines);
+      view.redraw();
+    }
+  } break;
+  case '?': {
+    view.fs().ClearMessageArea();
+    if (!print_help_file(FSED_NOEXT)) {
+      view.fs().ClearCommandLine();
+      bout << "|#6Unable to find file: " << FSED_NOEXT;
+    } else {
+      view.fs().ClearCommandLine();
+    }
+    pausescr();
+    view.fs().ClearMessageArea();
+    view.redraw();
+    ed.invalidate_to_eof(0);
+  } break;
+  case ESC:
+    [[fallthrough]];
+  default: {
+    view.fs().ClearCommandLine();
+  } break;
+  }
+}
+
 bool fsed(const std::filesystem::path& path) {
   MessageEditorData data{};
   data.title = path.string();
@@ -157,7 +208,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       ed.cursor_right();
     } break;
     case FsedCommand::cursor_home:{
-      ed.cx = 0;
+      ed.cursor_home();
     } break;
     case FsedCommand::delete_line: {
       ed.delete_line();
@@ -197,55 +248,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       ed.current_line_dirty(ed.curli);
     } break;
     case FsedCommand::menu: {
-      bout.PutsXY(
-          1, fs.command_line_y(),
-          "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, |#2?|#9=Help): ");
-      auto cmd = std::toupper(fs.bgetch() & 0xff);
-      fs.ClearCommandLine();
-      bout.GotoXY(1, fs.command_line_y());
-      switch (cmd) { 
-      case 'S': {
-        done = true;
-        save = true;
-      } break;
-      case 'A': {
-        done = true;
-      } break;
-      case 'D': {
-        view->debug = !view->debug;
-        view->draw_bottom_bar(ed);
-        fs.ClearCommandLine();
-      } break;
-      case 'Q': {
-        // Hacky quote solution for now.
-        // TODO(rushfan): Do something less lame here.
-        bout.cls();
-        auto quoted_lines = query_quote_lines();
-        if (quoted_lines.empty()) {
-          break;
-        }
-        ed.insert_lines(quoted_lines);
-        view->redraw();
-      } break;
-      case '?': {
-        fs.ClearMessageArea();
-        if (!print_help_file(FSED_NOEXT)) {
-          fs.ClearCommandLine();
-          bout << "|#6Unable to find file: " << FSED_NOEXT;
-        } else {
-          fs.ClearCommandLine();
-        }
-        pausescr();
-        fs.ClearMessageArea();
-        view->redraw();
-        ed.invalidate_to_eof(0);
-      } break;
-      case ESC:
-        [[fallthrough]];
-      default: {
-        fs.ClearCommandLine();
-      } break;
-      }
+      show_fsed_menu(ed, *view, done, save);
     } break;
     case FsedCommand::toggle_insovr: {
       ed.toggle_ins_ovr_mode();
