@@ -47,6 +47,8 @@ static void advance_cy(editor_t& ed, editor_viewport_t& view, bool invalidate = 
 /////////////////////////////////////////////////////////////////////////////
 // EDITOR
 
+void editor_t::set_view(const std::shared_ptr<editor_viewport_t>& view) { view_ = view; }
+
 line_t& editor_t::curline() {
   // TODO: insert return statement here
   while (curli >= ssize(lines_)) {
@@ -84,6 +86,25 @@ bool editor_t::insert_line() {
     return false;
   }
   return wwiv::stl::insert_at(lines_, curli, line_t());
+}
+
+bool editor_t::insert_lines(std::deque<std::string>& lines) {
+  while (!lines.empty()) {
+    // Insert all quote lines.
+    const auto ql = lines.front();
+    lines.pop_front();
+    ++curli;
+    insert_line();
+    curline() = line_t(ql);
+    advance_cy(*this, *view_, false);
+  }
+  // Add blank line afterwards to use to start new text.
+  ++curli;
+  insert_line();
+  advance_cy(*this, *view_, false);
+  // Redraw everything, the whole enchilada!
+  invalidate_to_eof(0);
+  return true;
 }
 
 bool editor_t::remove_line() { 
@@ -127,6 +148,7 @@ editor_add_result_t editor_t::add(char c) {
   // Create the new line.
   curline();
   invalidate_range(start_line, curli);
+  advance_cy(*this, *view_);
   return editor_add_result_t::wrapped;
 }
 
@@ -142,6 +164,161 @@ cell_t editor_t::current_cell() {
     LOG(ERROR) << wwiv::os::stacktrace();
     throw;
   }
+}
+
+bool editor_t::cursor_up() {
+  auto previous_line = curli;
+  if (cy > 0) {
+    --cy;
+    --curli;
+    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    cx = std::min<int>(cx, right_max);
+  } else if (curli > 0) {
+    // scroll
+    --curli;
+    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    cx = std::min<int>(cx, right_max);
+    view_->set_top_line(curli);
+    invalidate_to_eof(view_->top_line());
+  }
+  current_line_dirty(previous_line);
+  return true;
+}
+
+bool editor_t::cursor_down() {
+  auto previous_line = curli;
+  if (curli < ssize(lines_) - 1) {
+    ++curli;
+    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    cx = std::min<int>(cx, right_max);
+    advance_cy(*this, *view_);
+  }
+  current_line_dirty(previous_line);
+  return true;
+}
+
+bool editor_t::cursor_left() {
+  if (cx > 0) {
+    --cx;
+  }
+  return true;
+}
+
+bool editor_t::cursor_right() {
+  // TODO: add option to cursor right to end of view
+  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  if (cx < right_max) {
+    ++cx;
+  }
+  return true;
+}
+
+bool editor_t::cursor_pgup() {
+  auto previous_line = curli;
+  const auto up = std::min<int>(curli, view_->max_view_lines());
+  // nothing to do!
+  if (up == 0) {
+    return true;
+  }
+  cy = std::max<int>(cy - up, 0);
+  curli = std::max<int>(curli - up, 0);
+  view_->set_top_line(curli - cy);
+  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  cx = std::min<int>(cx, right_max);
+  invalidate_to_eof(view_->top_line());
+  current_line_dirty(previous_line);
+  return true;
+}
+
+bool editor_t::cursor_pgdown() {
+  auto previous_line = curli;
+  const auto dn = std::min<int>(view_->max_view_lines(), std::max<int>(0, ssize(lines_) - curli - 1));
+  if (dn == 0) {
+    // nothing to do!
+    return true;
+  }
+  curli += dn;
+  cy += dn;
+  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  cx = std::min<int>(cx, right_max);
+  if (cy >= view_->max_view_lines()) {
+    // will need to scroll
+    cy = view_->max_view_lines();
+    view_->set_top_line(curli - cy);
+    invalidate_to_eof(view_->top_line());
+  }
+  current_line_dirty(previous_line);
+  return true;
+}
+
+bool editor_t::cursor_end() {
+  cx = ssize(curline());
+  return true;
+}
+
+bool editor_t::delete_line() {
+  if (remove_line()) {
+    invalidate_to_eof(curli);
+  }
+  current_line_dirty(curli);
+  return true;
+}
+
+bool editor_t::delete_to_eol() {
+  if (cx < ssize(curline())) {
+    auto& oline = curline();
+    oline.assign(oline.substr(0, cx));
+    oline.wrapped(false);
+    invalidate_to_eol();
+  } else if (ssize(curline()) == 0) {
+    // delete line
+    if (remove_line()) {
+      invalidate_to_eof(curli);
+      current_line_dirty(curli);
+    }
+  }
+  return true;
+}
+
+bool editor_t::delete_line_left() {
+  auto& line = curline();
+  auto remainder = line.substr(cx);
+  line.assign(remainder);
+  cx = 0;
+  line.wrapped(false);
+  invalidate_to_eol();
+  return true;
+}
+
+bool editor_t::delete_word_left() {
+  if (cx <= 0) {
+    return true;
+  }
+  auto& line = curline();
+  auto last_space = line.last_space_before(cx);
+  if (last_space == cx) {
+    return true;
+  }
+  auto remainder = line.substr(cx);
+  cx = last_space;
+  if (last_space == 0) {
+    line.assign(remainder);
+  } else {
+    line.assign(line.substr(0, cx));
+    line.append(remainder);
+  }
+  // TODO(rushfan): Should reflow paragraph here.
+  line.wrapped(false);
+  invalidate_to_eol();
+  return true;
+}
+
+bool editor_t::delete_right() {
+  // TODO keep mode state;
+  del();
+  invalidate_to_eol();
+  view_->gotoxy(*this);
+  return true;
 }
 
 // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
@@ -166,7 +343,7 @@ bool editor_t::del() {
   return true;
 }
 
-bool editor_t::bs() { 
+bool editor_t::bs_nowrap() { 
   auto r = curline().bs(cx, mode_);
   if (r == line_add_result_t::error) {
     return false;
@@ -174,6 +351,68 @@ bool editor_t::bs() {
   if (r == line_add_result_t::needs_redraw) {
     invalidate_to_eof(curli);
   }
+  return true;
+}
+
+bool editor_t::bs() {
+  auto previous_line = curli;
+  // TODO keep mode state;
+  bs_nowrap();
+  if (cx > 0) {
+    --cx;
+  } else if (curli > 0 && ssize(curline()) == 0) {
+    // If current line is empty then delete it and move up one line
+    if (remove_line()) {
+      --cy;
+      --curli;
+      cx = ssize(curline());
+      invalidate_to_eof(curli);
+    }
+  } else if (curli > 0) {
+    auto& prev = line(curli - 1);
+    auto& cur = curline();
+    auto last_pos = std::max<int>(0, max_line_len() - ssize(prev) - 1);
+    const int new_cx = ssize(prev);
+    if (ssize(cur) < last_pos) {
+      prev.append(cur.cells());
+      remove_line();
+    } else if (int space = cur.last_space_before(last_pos) > 0) {
+      prev.append(cur.substr(0, space));
+      cur.assign(cur.substr(space));
+    }
+    --cy;
+    --curli;
+    cx = new_cx;
+    invalidate_to_eof(curli);
+  }
+  current_line_dirty(previous_line);
+  view_->gotoxy(*this);
+  curline().set_wwiv_color(current_cell().wwiv_color);
+  return true;
+}
+
+bool editor_t::enter() {
+  int orig_start_line = curli;
+  curline().wrapped(false);
+  // Insert inserts after the current line
+  if (cx >= ssize(curline())) {
+    ++curli;
+    insert_line();
+  } else {
+    // Wrap
+    auto& oline = curline();
+    auto ntext = oline.substr(cx);
+    oline.assign(oline.substr(0, cx));
+    oline.wrapped(false);
+
+    ++curli;
+    insert_line();
+    curline().assign(ntext);
+  }
+  advance_cy(*this, *view_);
+  cx = 0;
+  invalidate_to_eof(orig_start_line);
+  current_line_dirty(orig_start_line);
   return true;
 }
 

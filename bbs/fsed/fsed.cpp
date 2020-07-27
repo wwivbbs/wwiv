@@ -41,29 +41,6 @@ namespace wwiv::bbs::fsed {
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-/////////////////////////////////////////////////////////////////////////////
-// LOCALS
-
-static void advance_cy(editor_t& ed, FsedView& view, bool invalidate = true) {
-  // advancy cy if we have room, scroll region otherwise
-  if (ed.cy < view.max_view_lines()) {
-    ++ed.cy;
-  } else {
-    // scroll
-    view.set_top_line(ed.curli - ed.cy);
-    if (invalidate) {
-      ed.invalidate_to_eof(view.top_line());
-    }
-  }
-}
-
-static void gotoxy(const editor_t& ed, const FullScreenView& fs) {
-  bout.GotoXY(ed.cx + 1, ed.cy + fs.lines_start());
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// MAIN
-
 static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file) {
   const auto screen_width = a()->user()->GetScreenChars();
   const auto screen_length = a()->user()->GetScreenLines() - 1;
@@ -112,9 +89,9 @@ bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, boo
   return true;
 }
 
-
 bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file);
+  ed.set_view(view);
   auto& fs = view->fs();
   ed.set_max_line_len(view->max_view_columns());
   ed.add_callback([&view](editor_t& e, editor_range_t t) {
@@ -142,17 +119,15 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
   const auto keys = CreateDefaultKeyMap();
   // top editor line number in thw viewable area.
   while (!done) {
-    gotoxy(ed, fs);
+    view->gotoxy(ed);
 
     const auto key = view->bgetch(ed);
     if (key < 0xff && key >= 32) {
       const auto c = static_cast<char>(key & 0xff);
-      gotoxy(ed, fs);
+      view->gotoxy(ed);
       bout.Color(ed.curline().wwiv_color());
       bout.bputch(c);
-      if (ed.add(c) == editor_add_result_t::wrapped) {
-        advance_cy(ed, *view);
-      }
+      ed.add(c);
       continue;
     }
 
@@ -163,211 +138,62 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
     }
     switch (it->second) {
     case FsedCommand::cursor_up: {
-      auto previous_line = ed.curli;
-      if (ed.cy > 0) {
-        --ed.cy;
-        --ed.curli;
-        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-        ed.cx = std::min<int>(ed.cx, right_max);
-      }
-      else if (ed.curli > 0) {
-        // scroll
-        --ed.curli;
-        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-        ed.cx = std::min<int>(ed.cx, right_max);
-        view->set_top_line(ed.curli);
-        ed.invalidate_to_eof(view->top_line());
-      }
-      ed.current_line_dirty(previous_line);
+      ed.cursor_up();
     } break;
     case FsedCommand::cursor_down: {
-      auto previous_line = ed.curli;
-      if (ed.curli < ssize(ed) - 1) {
-        ++ed.curli;
-        const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-        ed.cx = std::min<int>(ed.cx, right_max);
-        advance_cy(ed, *view);
-      }
-      ed.current_line_dirty(previous_line);
+      ed.cursor_down();
     } break;
     case FsedCommand::cursor_pgup: {
-      auto previous_line = ed.curli;
-      const auto up = std::min<int>(ed.curli, view->max_view_lines());
-      // nothing to do!
-      if (up == 0) {
-        break;
-      }
-      ed.cy = std::max<int>(ed.cy - up, 0);
-      ed.curli = std::max<int>(ed.curli - up, 0);
-      view->set_top_line(ed.curli - ed.cy);
-      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-      ed.cx = std::min<int>(ed.cx, right_max);
-      ed.invalidate_to_eof(view->top_line());
-      ed.current_line_dirty(previous_line);
+      ed.cursor_pgup();
     } break;
     case FsedCommand::cursor_pgdown: {
-      auto previous_line = ed.curli;
-      const auto dn =
-          std::min<int>(view->max_view_lines(), std::max<int>(0, ssize(ed) - ed.curli - 1));
-      if (dn == 0) {
-        // nothing to do!
-        break;
-      }
-      ed.curli += dn;
-      ed.cy += dn;
-      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-      ed.cx = std::min<int>(ed.cx, right_max);
-      if (ed.cy >= view->max_view_lines()) {
-        // will need to scroll
-        ed.cy = view->max_view_lines();
-        view->set_top_line(ed.curli - ed.cy);
-        ed.invalidate_to_eof(view->top_line());
-      }
-      ed.current_line_dirty(previous_line);
+      ed.cursor_pgdown();
     } break;
     case FsedCommand::cursor_left: {
-      if (ed.cx > 0) {
-        --ed.cx;
-      }
+      ed.cursor_left();
     } break;
     case FsedCommand::cursor_right: {
-      // TODO: add option to cursor right to end of view
-      const auto right_max = std::min<int>(ed.max_line_len(), ssize(ed.curline()));
-      if (ed.cx < right_max) {
-        ++ed.cx;
-      }
+      ed.cursor_right();
     } break;
     case FsedCommand::cursor_home:{
       ed.cx = 0;
     } break;
     case FsedCommand::delete_line: {
-      if (ed.remove_line()) {
-        ed.invalidate_to_eof(ed.curli);
-      }
-      view->draw_current_line(ed, ed.curli);
+      ed.delete_line();
     } break;
     case FsedCommand::cursor_end:{
-      ed.cx = ssize(ed.curline());
+      ed.cursor_end();
     } break;
     case FsedCommand::delete_to_eol: {
-      if (ed.cx < ssize(ed.curline())) {
-        auto& oline = ed.curline();
-        oline.assign(oline.substr(0, ed.cx));
-        oline.wrapped(false);
-        ed.invalidate_to_eol();
-      } else if (ssize(ed.curline()) == 0) {
-        // delete line
-        if (ed.remove_line()) {
-          ed.invalidate_to_eof(ed.curli);
-          view->draw_current_line(ed, ed.curli);
-        }
-      }
+      ed.delete_to_eol();
     } break;
     case FsedCommand::delete_line_left: {
-      auto& line = ed.curline();
-      auto remainder = line.substr(ed.cx);
-      line.assign(remainder);
-      ed.cx = 0;
-      line.wrapped(false);
-      ed.invalidate_to_eol();
+      ed.delete_line_left();
     } break;
     case FsedCommand::delete_word_left: {
-      if (ed.cx <= 0) {
-        break;
-      }
-      auto& line = ed.curline();
-      auto last_space = line.last_space_before(ed.cx);
-      if (last_space == ed.cx) {
-        break;
-      }
-      auto remainder = line.substr(ed.cx);
-      ed.cx = last_space;
-      if (last_space == 0) {
-        line.assign(remainder);
-      } else {
-        line.assign(line.substr(0, ed.cx));
-        line.append(remainder);
-      }
-      // TODO(rushfan): Should reflow paragraph here.
-      line.wrapped(false);
-      ed.invalidate_to_eol();
+      ed.delete_word_left();
     } break;
     case FsedCommand::view_redraw: { // redraw
       view->redraw();
       ed.invalidate_to_eof(0);
     } break;
     case FsedCommand::delete_right: {
-      // TODO keep mode state;
-      ed.del();
-      gotoxy(ed, fs);
-      ed.invalidate_to_eol();
+      ed.delete_right();
     } break;
     case FsedCommand::backspace: {
-      auto previous_line = ed.curli;
-      // TODO keep mode state;
       ed.bs();
-      if (ed.cx > 0) {
-        --ed.cx;
-      } else if (ed.curli > 0 && ssize(ed.curline()) == 0) {
-        // If current line is empty then delete it and move up one line
-        if (ed.remove_line()) {
-          --ed.cy;
-          --ed.curli;
-          ed.cx = ssize(ed.curline());
-          ed.invalidate_to_eof(ed.curli);
-        }
-      } else if (ed.curli > 0) {
-        auto& prev = ed.line(ed.curli - 1);
-        auto& cur = ed.curline();
-        auto last_pos = std::max<int>(0, ed.max_line_len() - ssize(prev) - 1);
-        const int new_cx = ssize(prev);
-        if (ssize(cur) < last_pos) {
-          prev.append(cur.cells());
-          ed.remove_line();
-        } else if (int space = cur.last_space_before(last_pos) > 0) {
-          prev.append(cur.substr(0, space));
-          cur.assign(cur.substr(space));
-        }
-        --ed.cy;
-        --ed.curli;
-        ed.cx = new_cx;
-        ed.invalidate_to_eof(ed.curli);
-      }
-      ed.current_line_dirty(previous_line);
-      gotoxy(ed, fs);
-      auto c = ed.current_cell();
-      bout.Color(c.wwiv_color);
-      bout.bputch(c.ch);
+      bout.Color(ed.curline().wwiv_color());
+      bout.bputch(ed.current_cell().ch);
     } break;
     case FsedCommand::key_return: {
-      int orig_start_line = ed.curli;
-      ed.curline().wrapped(false);
-      // Insert inserts after the current line
-      if (ed.cx >= ssize(ed.curline())) {
-        ++ed.curli;
-        ed.insert_line();
-      } else {
-        // Wrap
-        auto& oline = ed.curline();
-        auto ntext = oline.substr(ed.cx);
-        oline.assign(oline.substr(0, ed.cx));
-        oline.wrapped(false);
-
-        ++ed.curli;
-        ed.insert_line();
-        ed.curline().assign(ntext);
-      }
-      advance_cy(ed, *view);
-      ed.cx = 0;
-      ed.invalidate_to_eof(orig_start_line);
-      view->draw_current_line(ed, orig_start_line);
+      ed.enter();
     } break;
     case FsedCommand::input_wwiv_color: {
       auto cc = bout.getkey();
       if (cc >= '0' && cc <= '9') {
         ed.curline().set_wwiv_color(cc - '0');
       }
-      view->draw_current_line(ed, ed.curli);
+      ed.current_line_dirty(ed.curli);
     } break;
     case FsedCommand::menu: {
       bout.PutsXY(
@@ -397,23 +223,8 @@ bool fsed(editor_t& ed, MessageEditorData& data, bool file) {
         if (quoted_lines.empty()) {
           break;
         }
-        while (!quoted_lines.empty()) {
-          // Insert all quote lines.
-          const auto ql = quoted_lines.front();
-          quoted_lines.pop_front();
-          ++ed.curli;
-          ed.insert_line();
-          ed.curline() = line_t(ql);
-          advance_cy(ed, *view, false);
-        }
-        // Add blank line afterwards to use to start new text.
-        ++ed.curli;
-        ed.insert_line();
-        advance_cy(ed, *view, false);
-
-        // Redraw everything, the whole enchilada!
+        ed.insert_lines(quoted_lines);
         view->redraw();
-        ed.invalidate_to_eof(0);
       } break;
       case '?': {
         fs.ClearMessageArea();

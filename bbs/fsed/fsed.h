@@ -36,7 +36,6 @@ public:
   ~FsedView() = default;
 
   FullScreenView& fs();
-  void gotoxy(const editor_t& ed);
   int max_view_lines() const override { return max_view_lines_; }
   int max_view_columns() const override { return max_view_columns_; }
   // Draws the current line without colors, and redraws the previous
@@ -50,6 +49,7 @@ public:
   int bgetch(editor_t& ed);
   int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
+  void gotoxy(const editor_t& ed) override;
 
 public:
   // Top editor line number visible in the viewport.

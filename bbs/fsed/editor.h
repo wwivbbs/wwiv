@@ -19,6 +19,7 @@
 #define __INCLUDED_BBS_FSED_EDITOR_H__
 
 #include "bbs/fsed/line.h"
+#include <deque>
 #include <functional>
 #include <vector>
 #include <string>
@@ -38,27 +39,32 @@ struct editor_range_t {
   editor_marker_t end;
 };
 
+class editor_t;
+
 class editor_viewport_t {
 public:
   virtual int max_view_lines() const = 0;
   virtual int max_view_columns() const = 0;
   virtual int top_line() const = 0;
   virtual void set_top_line(int l) = 0;
+  virtual void gotoxy(const editor_t& ed) = 0;
 };
 
 class editor_t {
+
 public:
+  
+  // Constructor and Destructors
+
   explicit editor_t(int max_lines) : maxli_(max_lines) {}
   editor_t() : editor_t(255) {}
   ~editor_t() = default;
+  void set_view(const std::shared_ptr<editor_viewport_t>& view);
 
-  // cursor X position
-  int cx{0};
-  // cursor Y positon
-  int cy{0};
-  // Current line number
-  int curli{0};
-  
+  //
+  // Line Operations  
+  //
+
   // gets the current line
   line_t& curline();
   // Gets the line at a position n or throws.
@@ -70,16 +76,51 @@ public:
   void emplace_back(line_t&& n);
   // inserts a new line after curli.
   bool insert_line();
+  // Inserts all of the lines into the editor at the current
+  // position.
+  bool insert_lines(std::deque<std::string>& lines);
   // deletes the current line.
   bool remove_line();
+  /**
+   * Return the text as a vector of strings in WWIV format (meaning the last
+   * character is a \x1 if the line is wrapped.
+   */
+  std::vector<std::string> to_lines();
+
+  //
+  // Character Operations
+  //
   // Adds a char at the current position (cx, curli);
   editor_add_result_t add(char c);
   // deletes current character and shifts left rest
   bool del();
-  // backspace over existing character
+  // backspace over existing character.  Does not handle wrapping the
+  // line onto the previous line
+  bool bs_nowrap();
+  // backspace over existing character.  Wraps the current line onto
+  // the previousline.
   bool bs();
+  // handles the enter key
+  bool enter();
   // Gets the current character
   cell_t current_cell();
+
+  //
+  // Cursor Operations
+  //
+  bool cursor_up();
+  bool cursor_down();
+  bool cursor_left();
+  bool cursor_right();
+  bool cursor_pgup();
+  bool cursor_pgdown();
+  bool cursor_end();
+
+  bool delete_line();
+  bool delete_to_eol();
+  bool delete_line_left();
+  bool delete_word_left();
+  bool delete_right();
 
   // Toggles the internal state if the editor is in INSERT or OVERWRITE mode. This
   // matters on add, bs, and del
@@ -87,18 +128,17 @@ public:
   // Get the internal state if the editor is in INSERT or OVERWRITE mode.
   ins_ovr_mode_t mode() const noexcept;
 
-  // Sets the max_line_len
+  //
+  // Maximums
+  //
   void set_max_line_len(int n) noexcept { max_line_len_ = n; }
   int max_line_len() const noexcept { return max_line_len_;  }
   // Max number of lines
   int maxli() const noexcept { return maxli_; }
-  /**
-   * Return the text as a vector of strings in WWIV format (meaning the last
-   * character is a \x1 if the line is wrapped.
-   */
-  std::vector<std::string> to_lines();
 
-  // Listeners
+  //
+  // Listeners, Callbacks and invalidations
+  //
   typedef std::function<void(editor_t&, editor_range_t)> editor_range_invalidated_fn;
   typedef std::function<void(editor_t&, int)> editor_current_line_redraw_fn;
   bool add_callback(editor_range_invalidated_fn fn);
@@ -108,6 +148,17 @@ public:
   void invalidate_to_eof(int start_line);
   void invalidate_range(int start_line, int end_line);
   void current_line_dirty(int previous_line);
+
+  //
+  // Public values
+  //
+
+  // cursor X position
+  int cx{0};
+  // cursor Y positon
+  int cy{0};
+  // Current line number
+  int curli{0};
 
 private:
   // Max number of lines allowed
