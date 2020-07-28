@@ -552,6 +552,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
         l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
       }
     }
+    bout.Color(0);
     bout << (had_ansi ? "|16" : "|#0") << l;
     bout.clreol();
   }
