@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/automsg.h"
-#include "bbs/basic.h"
+#include "bbs/basic/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"

@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/basic.h"
+#include "bbs/basic/basic.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
@@ -206,7 +206,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
 Runs a WWIVbasic Script
 )", MENU_CAT_SYS, [](MenuItemContext& context) {
       // Runs a basic script from GFILES/
-      wwiv::bbs::RunBasicScript(context.param1);
+      wwiv::bbs::basic::RunBasicScript(context.param1);
     } ));
   m.emplace("PrintFile", MenuItem(R"(<filename>
 

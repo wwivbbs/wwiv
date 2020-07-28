@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/basic.h"
+#include "bbs/basic/basic.h"
 #include "bbs/interpret.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/log.h"
@@ -35,6 +35,7 @@ using std::endl;
 using std::string;
 
 using namespace wwiv::bbs;
+using namespace wwiv::bbs::basic;
 using namespace wwiv::strings;
 
 class TestMacroContext final : public MacroContext {

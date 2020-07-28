@@ -10,7 +10,6 @@ set(COMMON_SOURCES
  asv.cpp
  attach.cpp
  automsg.cpp
- basic.cpp
  batch.cpp
  bbs.cpp
  bbsovl1.cpp
@@ -43,12 +42,6 @@ set(COMMON_SOURCES
  external_edit_wwiv.cpp
  extract.cpp
  finduser.cpp
- fsed/commands.cpp
- fsed/common.cpp
- fsed/fsed.cpp
- fsed/line.cpp
- fsed/model.cpp
- fsed/view.cpp
  full_screen.cpp
  gfiles.cpp
  gfileedit.cpp
@@ -118,6 +111,17 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  workspace.cpp
+ basic/basic.cpp
+ basic/util.cpp
+ basic/wwiv.cpp
+ basic/wwiv_data.cpp
+ basic/wwiv_io.cpp
+ fsed/commands.cpp
+ fsed/common.cpp
+ fsed/fsed.cpp
+ fsed/line.cpp
+ fsed/model.cpp
+ fsed/view.cpp
  ../deps/my_basic/core/my_basic.c
 )
 

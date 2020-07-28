@@ -19,13 +19,13 @@
 #include "bbs/execexternal.h"
 
 
-#include "basic.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/dropfile.h"
 #include "bbs/instmsg.h"
 #include "bbs/wqscn.h"
 #include "bbs/exec.h"
+#include "bbs/basic/basic.h"
 #include "core/log.h"
 
 using namespace wwiv::core;
@@ -103,5 +103,5 @@ int ExecuteExternalProgram(const std::string& command_line, int flags) {
 
   const auto cmd = command_line.substr(BASIC_PREFIX.size());
   LOG(INFO) << "Running basic script: " << cmd;
-  return wwiv::bbs::RunBasicScript(cmd) ? 0 : 1;
+  return wwiv::bbs::basic::RunBasicScript(cmd) ? 0 : 1;
 }
