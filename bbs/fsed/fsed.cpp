@@ -189,68 +189,68 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       continue;
     }
     switch (it->second) {
-    case FsedCommand::cursor_up: {
+    case fsed_command_id::cursor_up: {
       ed.cursor_up();
     } break;
-    case FsedCommand::cursor_down: {
+    case fsed_command_id::cursor_down: {
       ed.cursor_down();
     } break;
-    case FsedCommand::cursor_pgup: {
+    case fsed_command_id::cursor_pgup: {
       ed.cursor_pgup();
     } break;
-    case FsedCommand::cursor_pgdown: {
+    case fsed_command_id::cursor_pgdown: {
       ed.cursor_pgdown();
     } break;
-    case FsedCommand::cursor_left: {
+    case fsed_command_id::cursor_left: {
       ed.cursor_left();
     } break;
-    case FsedCommand::cursor_right: {
+    case fsed_command_id::cursor_right: {
       ed.cursor_right();
     } break;
-    case FsedCommand::cursor_home:{
+    case fsed_command_id::cursor_home:{
       ed.cursor_home();
     } break;
-    case FsedCommand::delete_line: {
+    case fsed_command_id::delete_line: {
       ed.delete_line();
     } break;
-    case FsedCommand::cursor_end:{
+    case fsed_command_id::cursor_end:{
       ed.cursor_end();
     } break;
-    case FsedCommand::delete_to_eol: {
+    case fsed_command_id::delete_to_eol: {
       ed.delete_to_eol();
     } break;
-    case FsedCommand::delete_line_left: {
+    case fsed_command_id::delete_line_left: {
       ed.delete_line_left();
     } break;
-    case FsedCommand::delete_word_left: {
+    case fsed_command_id::delete_word_left: {
       ed.delete_word_left();
     } break;
-    case FsedCommand::view_redraw: { // redraw
+    case fsed_command_id::view_redraw: { // redraw
       view->redraw();
       ed.invalidate_to_eof(0);
     } break;
-    case FsedCommand::delete_right: {
+    case fsed_command_id::delete_right: {
       ed.delete_right();
     } break;
-    case FsedCommand::backspace: {
+    case fsed_command_id::backspace: {
       ed.bs();
       bout.Color(ed.curline().wwiv_color());
       bout.bputch(ed.current_cell().ch);
     } break;
-    case FsedCommand::key_return: {
+    case fsed_command_id::key_return: {
       ed.enter();
     } break;
-    case FsedCommand::input_wwiv_color: {
+    case fsed_command_id::input_wwiv_color: {
       auto cc = bout.getkey();
       if (cc >= '0' && cc <= '9') {
         ed.curline().set_wwiv_color(cc - '0');
       }
       ed.current_line_dirty(ed.curli);
     } break;
-    case FsedCommand::menu: {
+    case fsed_command_id::menu: {
       show_fsed_menu(ed, *view, done, save);
     } break;
-    case FsedCommand::toggle_insovr: {
+    case fsed_command_id::toggle_insovr: {
       ed.toggle_ins_ovr_mode();
       view->draw_bottom_bar(ed);
     } break;

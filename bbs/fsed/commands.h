@@ -18,12 +18,17 @@
 #ifndef __INCLUDED_BBS_FSED_COMMANDS_H__
 #define __INCLUDED_BBS_FSED_COMMANDS_H__
 
+#include <functional>
 #include <map>
+#include <optional>
 #include <string>
 
 namespace wwiv::bbs::fsed {
 
-enum class FsedCommand {
+class FsedModel;
+class FsedView;
+
+enum class fsed_command_id {
   cursor_up,
   cursor_down,
   cursor_pgup, 
@@ -45,7 +50,36 @@ enum class FsedCommand {
   input_wwiv_color,
 };
 
-std::map<int, FsedCommand> CreateDefaultKeyMap();
+typedef std::function<bool(FsedModel&, FsedView& view)> fsed_command_fn;
+
+class FsedCommand {
+public:
+  FsedCommand() = default;
+  FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn);
+  fsed_command_id id() const { return id_; }
+  std::string name() const { return name_; }
+  bool Invoke(FsedModel& mode, FsedView& view);
+
+private:
+  fsed_command_id id_;
+  std::string name_;
+  fsed_command_fn fn_;
+};
+
+class FsedCommands {
+public:
+  std::optional<FsedCommand> get(fsed_command_id id);
+  std::optional<FsedCommand> get(const std::string& id);
+  bool add(FsedCommand cmd);
+  bool AddAll();
+
+private:
+  std::map<fsed_command_id, FsedCommand> by_id_;
+  std::map<std::string, FsedCommand> by_name_;
+};
+
+
+std::map<int, fsed_command_id> CreateDefaultKeyMap();
 
 }
 
