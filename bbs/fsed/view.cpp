@@ -89,13 +89,6 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
       break;
     }
     if (i >= ssize(e)) {
-      // clear the current and then remaining
-      bout.GotoXY(0, y);
-      bout.clreol();
-      for (auto z = t.end.line + 1 - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-        bout.GotoXY(0, z);
-        bout.clreol();
-      }
       break;
     }
     bout.GotoXY(0, y);
@@ -115,6 +108,16 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
     }
     bout.clreol();
   }
+
+  // Clean up the bottom.
+  // clear the current and then remaining
+  if (ssize(e) == t.end.line + 1) {
+    for (auto z = ssize(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
+      bout.GotoXY(0, z);
+      bout.clreol();
+    }
+  }
+
   gotoxy(e);
 }
 
