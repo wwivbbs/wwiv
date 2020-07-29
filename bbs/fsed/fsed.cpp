@@ -85,11 +85,12 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   } break;
   case '?': {
     view.ClearCommandLine();
-    view.ClearCommandLine();
+    view.fs().ClearMessageArea();
     if (!print_help_file(FSED_NOEXT)) {
       bout << "|#6Unable to find file: " << FSED_NOEXT;
     }
     pausescr();
+    view.fs().ClearMessageArea();
     view.ClearCommandLine();
     view.redraw();
     ed.invalidate_to_eof(0);
