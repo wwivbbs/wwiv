@@ -54,12 +54,16 @@ std::map<int, fsed_command_id> CreateDefaultKeyMap() {
 }
 
 
-
 FsedCommand::FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn) 
 : id_(id), name_(std::move(name)), fn_(fn) {}
 
-bool FsedCommand::Invoke(FsedModel& model, FsedView& view) { 
+bool FsedCommand::Invoke(FsedModel& model, FsedView& view) const { 
   return fn_(model, view);
+}
+
+FsedCommands::FsedCommands() {
+  AddAll();
+  keymap_ = CreateDefaultKeyMap();
 }
 
 std::optional<FsedCommand> FsedCommands::get(fsed_command_id id) {
@@ -82,21 +86,15 @@ bool FsedCommands::add(FsedCommand cmd) {
   return true; 
 }
 
-bool FsedCommands::AddAll() { 
-  add(FsedCommand(fsed_command_id::cursor_up, "cursor_up", [](FsedModel& ed, FsedView &) ->bool {
-    return ed.cursor_up();
-  }));
+bool FsedCommands::AddAll() {
+  add(FsedCommand(fsed_command_id::cursor_up, "cursor_up",
+                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_up(); }));
   add(FsedCommand(fsed_command_id::cursor_down, "cursor_down",
-                  [](FsedModel& ed, FsedView&) -> bool {
-                    return ed.cursor_down();
-  }));
-  add(FsedCommand(fsed_command_id::cursor_pgup, "cursor_pgup", [](FsedModel& ed, FsedView&) -> bool {
-    return ed.cursor_pgup();
-  }));
+                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_down(); }));
+  add(FsedCommand(fsed_command_id::cursor_pgup, "cursor_pgup",
+                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_pgup(); }));
   add(FsedCommand(fsed_command_id::cursor_pgdown, "cursor_pgdown",
-                  [](FsedModel& ed, FsedView&) -> bool {
-    return ed.cursor_pgdown();
-  }));
+                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_pgdown(); }));
   add(FsedCommand(fsed_command_id::cursor_left, "cursor_left",
                   [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_left(); }));
   add(FsedCommand(fsed_command_id::cursor_right, "cursor_right",
@@ -115,25 +113,22 @@ bool FsedCommands::AddAll() {
                     ed.invalidate_to_eof(0);
                     return true;
                   }));
-
   add(FsedCommand(fsed_command_id::delete_right, "delete_right",
                   [](FsedModel& ed, FsedView&) -> bool { return ed.delete_right(); }));
-  add(FsedCommand(fsed_command_id::backspace, "backspace",
-                  [&](FsedModel& ed, FsedView&) -> bool { 
+  add(FsedCommand(fsed_command_id::key_return, "key_return",
+                  [](FsedModel& ed, FsedView&) -> bool { return ed.enter(); }));
+  add(FsedCommand(fsed_command_id::backspace, "backspace", [&](FsedModel& ed, FsedView&) -> bool {
     ed.bs();
     bout.Color(ed.curline().wwiv_color());
     bout.bputch(ed.current_cell().ch);
     return true;
-    }));
-  //add(FsedCommand(fsed_command_id::menu, "menu",
-  //                [&](FsedModel& ed, FsedView&) -> bool { 
-  //  }));
+  }));
   add(FsedCommand(fsed_command_id::toggle_insovr, "toggle_insovr",
-                  [](FsedModel& ed, FsedView& view) -> bool { 
-      ed.toggle_ins_ovr_mode();
+                  [](FsedModel& ed, FsedView& view) -> bool {
+                    ed.toggle_ins_ovr_mode();
                     view.draw_bottom_bar(ed);
                     return true;
-    }));
+                  }));
   add(FsedCommand(fsed_command_id::input_wwiv_color, "input_wwiv_color",
                   [](FsedModel& ed, FsedView&) -> bool {
                     auto cc = bout.getkey();
@@ -147,6 +142,26 @@ bool FsedCommands::AddAll() {
                   [](FsedModel& ed, FsedView&) -> bool { return ed.delete_word_left(); }));
   add(FsedCommand(fsed_command_id::delete_line_left, "delete_line_left",
                   [](FsedModel& ed, FsedView&) -> bool { return ed.delete_line_left(); }));
+  return false;
+}
+
+bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view) { 
+  const auto key_it = keymap_.find(key);
+  if (key_it == std::end(keymap_)) {
+    // No key binding
+    return false;
+  }
+  auto cmd_id = key_it->second;
+
+  const auto cmd_it = by_id_.find(cmd_id);
+  if (cmd_it == std::end(by_id_)) {
+    // No command bound for this id.
+    LOG(WARNING) << "No command bound for command id: " << static_cast<int>(cmd_id);
+    return false;
+  }
+  auto& cmd = cmd_it->second;
+  return cmd.Invoke(model, view);
+
   return false;
 }
 

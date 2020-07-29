@@ -159,6 +159,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
     a()->UpdateTopScreen();
   }
 
+
   // Draw the initial contents of the file.
   ed.invalidate_to_eof(0);
   // Draw the bottom bar once to start with.
@@ -167,6 +168,14 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
   fs.GotoContentAreaTop();
   bool done = false;
   bool save = false;
+
+  FsedCommands commands{};
+  // Add the menu command since that needs the state variables
+  // from here.
+  commands.add(FsedCommand(fsed_command_id::menu, "menu", [&](FsedModel& ed, FsedView&) -> bool {
+    show_fsed_menu(ed, *view, done, save);
+    return true;
+  }));
 
   const auto keys = CreateDefaultKeyMap();
   // top editor line number in thw viewable area.
@@ -182,82 +191,9 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       ed.add(c);
       continue;
     }
-
-    const auto it = keys.find(key);
-    if (it == std::end(keys)) {
-      // No key binding
-      continue;
+    if (!commands.TryInterpretChar(key, ed, *view)) {
+      LOG(ERROR) << "Unable to handle key: " << key;
     }
-    switch (it->second) {
-    case fsed_command_id::cursor_up: {
-      ed.cursor_up();
-    } break;
-    case fsed_command_id::cursor_down: {
-      ed.cursor_down();
-    } break;
-    case fsed_command_id::cursor_pgup: {
-      ed.cursor_pgup();
-    } break;
-    case fsed_command_id::cursor_pgdown: {
-      ed.cursor_pgdown();
-    } break;
-    case fsed_command_id::cursor_left: {
-      ed.cursor_left();
-    } break;
-    case fsed_command_id::cursor_right: {
-      ed.cursor_right();
-    } break;
-    case fsed_command_id::cursor_home:{
-      ed.cursor_home();
-    } break;
-    case fsed_command_id::delete_line: {
-      ed.delete_line();
-    } break;
-    case fsed_command_id::cursor_end:{
-      ed.cursor_end();
-    } break;
-    case fsed_command_id::delete_to_eol: {
-      ed.delete_to_eol();
-    } break;
-    case fsed_command_id::delete_line_left: {
-      ed.delete_line_left();
-    } break;
-    case fsed_command_id::delete_word_left: {
-      ed.delete_word_left();
-    } break;
-    case fsed_command_id::view_redraw: { // redraw
-      view->redraw();
-      ed.invalidate_to_eof(0);
-    } break;
-    case fsed_command_id::delete_right: {
-      ed.delete_right();
-    } break;
-    case fsed_command_id::backspace: {
-      ed.bs();
-      bout.Color(ed.curline().wwiv_color());
-      bout.bputch(ed.current_cell().ch);
-    } break;
-    case fsed_command_id::key_return: {
-      ed.enter();
-    } break;
-    case fsed_command_id::input_wwiv_color: {
-      auto cc = bout.getkey();
-      if (cc >= '0' && cc <= '9') {
-        ed.curline().set_wwiv_color(cc - '0');
-      }
-      ed.current_line_dirty(ed.curli);
-    } break;
-    case fsed_command_id::menu: {
-      show_fsed_menu(ed, *view, done, save);
-    } break;
-    case fsed_command_id::toggle_insovr: {
-      ed.toggle_ins_ovr_mode();
-      view->draw_bottom_bar(ed);
-    } break;
-    default: {
-    } break;
-    } // switch
-
   }
 
   a()->topdata = saved_topdata;

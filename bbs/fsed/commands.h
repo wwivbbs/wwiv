@@ -58,7 +58,7 @@ public:
   FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn);
   fsed_command_id id() const { return id_; }
   std::string name() const { return name_; }
-  bool Invoke(FsedModel& mode, FsedView& view);
+  bool Invoke(FsedModel& mode, FsedView& view) const;
 
 private:
   fsed_command_id id_;
@@ -68,14 +68,22 @@ private:
 
 class FsedCommands {
 public:
+  FsedCommands();
   std::optional<FsedCommand> get(fsed_command_id id);
   std::optional<FsedCommand> get(const std::string& id);
   bool add(FsedCommand cmd);
-  bool AddAll();
+
+  /**
+   * Attempts to interpret a key by executing a command.  Returns
+   * true if executed as a command, false otherwise.
+   */
+  bool TryInterpretChar(int key, FsedModel& model, FsedView& view);
 
 private:
+  bool AddAll();
   std::map<fsed_command_id, FsedCommand> by_id_;
   std::map<std::string, FsedCommand> by_name_;
+  std::map<int, fsed_command_id> keymap_;
 };
 
 
