@@ -57,7 +57,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
       "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
       "|#2?|#9=Help): ");
   auto cmd = std::toupper(view.fs().bgetch() & 0xff);
-  view.fs().ClearCommandLine();
+  view.ClearCommandLine();
   switch (cmd) {
   case 'S':
     done = save = true;
@@ -77,18 +77,20 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     auto quoted_lines = query_quote_lines();
     if (!quoted_lines.empty()) {
       ed.insert_lines(quoted_lines);
-      view.redraw();
-      ed.invalidate_to_eof(0);
     }
+    // Even if we don't insert quotes, we still need to
+    // redrawthe frame
+    view.redraw();
+    ed.invalidate_to_eof(0);
   } break;
   case '?': {
-    view.fs().ClearMessageArea();
-    view.fs().ClearCommandLine();
+    view.ClearCommandLine();
+    view.ClearCommandLine();
     if (!print_help_file(FSED_NOEXT)) {
       bout << "|#6Unable to find file: " << FSED_NOEXT;
     }
     pausescr();
-    view.fs().ClearMessageArea();
+    view.ClearCommandLine();
     view.redraw();
     ed.invalidate_to_eof(0);
   } break;
@@ -97,7 +99,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   default: {
   } break;
   }
-  view.fs().ClearCommandLine();
+  view.ClearCommandLine();
 }
 
 bool fsed(const std::filesystem::path& path) {

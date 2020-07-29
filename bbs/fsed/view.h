@@ -49,6 +49,7 @@ public:
   int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const FsedModel& ed) override;
+  void ClearCommandLine();
 
 public:
   // Top editor line number visible in the viewport.

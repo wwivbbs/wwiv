@@ -53,6 +53,10 @@ void FsedView::gotoxy(const FsedModel& ed) {
   bout.GotoXY(ed.cx + 1, ed.cy + fs_.lines_start()); // - top_line() 
 }
 
+void FsedView::ClearCommandLine() { 
+    fs_.PutsCommandLine("|#9(|#2ESC|#9=Menu/Help) ");
+}
+
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
   if (previous_line != ed.curli) {
     auto py = previous_line - top_line() + fs_.lines_start();
@@ -133,6 +137,7 @@ void FsedView::redraw() {
   bout.SystemColor(oldcuratr);
   fs_.DrawTopBar();
   fs_.DrawBottomBar("");
+  ClearCommandLine();
 }
 
 void FsedView::draw_bottom_bar(FsedModel& ed) {
@@ -162,7 +167,7 @@ int FsedView::bgetch(FsedModel& ed) {
     if (status == bgetch_timeout_status_t::WARNING) {
       fs_.PrintTimeoutWarning(s);
     } else if (status == bgetch_timeout_status_t::CLEAR) {
-      fs_.ClearCommandLine();
+      ClearCommandLine();
     } else if (status == bgetch_timeout_status_t::IDLE) {
       draw_bottom_bar(ed);
     }
