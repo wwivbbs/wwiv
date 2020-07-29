@@ -55,11 +55,7 @@ namespace wwiv::bbs::basic {
 
 namespace {
   std::mutex g_script_mutex;
-  // Globals to be used from the interpreter before execution begins
-  std::string script_datadir;
-  std::string script_scriptdir;
 }
-
 
 int my_print(const char* fmt, ...) {
   char buf[1024];
@@ -88,14 +84,14 @@ static bool RegisterMyBasicGlobals() {
   return true;
 }
 
-static std::optional<std::string> ReadBasicFile(const std::string& script_name) {
+static std::optional<std::string> ReadBasicFile(const std::filesystem::path& path,
+                                                const std::string& script_name) {
     if (script_name.find("..") != std::string::npos) {
     LOG(ERROR) << "Invalid script name: " << script_name;
     script_out() << "|#6Invalid script name: " << script_name << "\r\n";
     return std::nullopt;
   }
 
-  const auto path = FilePath(script_scriptdir, script_name);
   if (!File::Exists(path)) {
     LOG(ERROR) << "Unable to locate script: " << path;
     script_out() << "|#6Unable to locate script: " << script_name << "\r\n";
@@ -112,8 +108,9 @@ static std::optional<std::string> ReadBasicFile(const std::string& script_name) 
 }
 
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
-
-  auto o = ReadBasicFile(script_name);
+  const auto* d = get_wwiv_script_userdata(bas);
+  auto path = FilePath(d->script_dir, script_name);
+  auto o = ReadBasicFile(path, script_name);
   if (!o) {
     return false;
   }
@@ -170,14 +167,12 @@ static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, un
 
 Basic::Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx)
   : bout_(o), config_(config), ctx_(ctx) {
-  // Set the static class level variables used in capture-less lambdas.
-  script_datadir = config_.datadir();
-  script_scriptdir = config_.scriptdir();
 
   // Creates the script user-data passed to the interpreter.  This data can be used
   // by the implementation of custom functions.  Values derived from the script name
   // must be set in RunScript.
   script_userdata_.datadir = config_.datadir();
+  script_userdata_.script_dir = config_.scriptdir();
   script_userdata_.ctx = ctx;
   script_userdata_.module = "none";
 
@@ -253,11 +248,11 @@ bool Basic::RunScript(const std::string& script_name) {
     return false;
   }
 
-  const auto module = ScriptBaseName(script_name);
-  auto o = ReadBasicFile(script_name);
+  auto o = ReadBasicFile(path, script_name);
   if (!o) {
     return false;
   }
+  const auto module = ScriptBaseName(script_name);
   return RunScript(module, o.value());
 }
 
