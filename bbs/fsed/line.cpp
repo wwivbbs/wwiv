@@ -27,8 +27,23 @@ namespace wwiv::bbs::fsed {
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+enum class add_cell_state_t { text, heart_color };
+
 line_t::line_t(bool wrapped, std::string text) : wrapped_(wrapped) {
+  add_cell_state_t state = add_cell_state_t::text;
   for (const auto c : text) {
+    if (state == add_cell_state_t::heart_color) {
+      state = add_cell_state_t::text;
+      auto color = static_cast<int>(c - '0');
+      if (color >= 0 && color <= 9) {
+        wwiv_color_ = color;
+      }
+      continue;
+    }
+    if (c == 0x03) {
+      state = add_cell_state_t::heart_color;
+      continue;
+    }
     cell_.emplace_back(wwiv_color_, c);
     ++size_;
   }
@@ -99,6 +114,14 @@ int line_t::last_space_before(int maxlen) {
   return 0;
 }
 
+void line_t::set_wwiv_color(int c) { 
+  wwiv_color_ = c;
+}
+
+int line_t::wwiv_color() const noexcept { 
+  return wwiv_color_; 
+}
+
 line_t& line_t::operator=(const line_t& o) {
   wrapped_ = o.wrapped_;
   cell_ = o.cell_;
@@ -108,17 +131,26 @@ line_t& line_t::operator=(const line_t& o) {
 }
 
 void line_t::assign(const std::vector<cell_t>& cells) {
+  if (cells.empty()) {
+    cell_.clear();
+    size_ = 0;
+    return;
+  }
   cell_ = cells;
   size_ = wwiv::stl::ssize(cells);
+  wwiv_color_ = cells.back().wwiv_color;
 }
 
 void line_t::append(const std::vector<cell_t>& cells) {
+  if (cells.empty()) {
+    return;
+  }
   for (const auto& c : cells) {
     cell_.emplace_back(c);
   }
   size_ += wwiv::stl::ssize(cells);
+  wwiv_color_ = cells.back().wwiv_color;
 }
-
 
 std::vector<cell_t> line_t::substr(int start, int end) {
   return std::vector<cell_t>(cell_.begin() + start, cell_.begin() + end);

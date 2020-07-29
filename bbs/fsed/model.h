@@ -77,7 +77,8 @@ public:
   // inserts a new line after curli.
   bool insert_line();
   // Inserts all of the lines into the editor at the current
-  // position.
+  // position.  These lines may contain heart codes, or pipe
+  // codes or both.
   bool insert_lines(std::deque<std::string>& lines);
   // deletes the current line.
   bool remove_line();

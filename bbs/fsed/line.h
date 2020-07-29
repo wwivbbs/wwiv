@@ -54,8 +54,8 @@ public:
 
   // Specialized stuff
   int last_space_before(int maxlen);
-  void set_wwiv_color(int c) { wwiv_color_ = c; }
-  int wwiv_color() const noexcept { return wwiv_color_; }
+  void set_wwiv_color(int c);
+  int wwiv_color() const noexcept;
 
   // operators
   line_t& operator=(const line_t& o);

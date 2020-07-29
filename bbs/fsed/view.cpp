@@ -83,7 +83,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
   auto start_line = std::max<int>(t.start.line, top_line());
   auto last_color = -1;
 
-  for (int i = start_line; i < t.end.line; i++) {
+  for (int i = start_line; i <= t.end.line; i++) {
     auto y = i - top_line() + fs_.lines_start();
     if (y >= fs_.lines_end()) {
       break;

@@ -141,12 +141,14 @@ editor_add_result_t FsedModel::add(char c) {
     curline().assign(nline);
     cx = ssize(curline());
   } else {
-    // Character wrap    
+    // Character wrap.
+    const auto wwiv_color = curline().wwiv_color();
     ++curli;
     cx %= max_line_len_;
+    // Create the new line and carry over line color
+    auto& nline = curline();
+    nline.set_wwiv_color(wwiv_color);
   }
-  // Create the new line.
-  curline();
   invalidate_range(start_line, curli);
   advance_cy(*this, *view_);
   return editor_add_result_t::wrapped;

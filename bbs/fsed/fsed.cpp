@@ -78,6 +78,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     if (!quoted_lines.empty()) {
       ed.insert_lines(quoted_lines);
       view.redraw();
+      ed.invalidate_to_eof(0);
     }
   } break;
   case '?': {
