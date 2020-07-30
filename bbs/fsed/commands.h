@@ -27,6 +27,7 @@ namespace wwiv::bbs::fsed {
 
 class FsedModel;
 class FsedView;
+class FsedState;
 
 enum class fsed_command_id {
   cursor_up,
@@ -50,7 +51,7 @@ enum class fsed_command_id {
   input_wwiv_color,
 };
 
-typedef std::function<bool(FsedModel&, FsedView& view)> fsed_command_fn;
+typedef std::function<bool(FsedModel&, FsedView& view, FsedState&)> fsed_command_fn;
 
 class FsedCommand {
 public:
@@ -58,7 +59,7 @@ public:
   FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn);
   fsed_command_id id() const { return id_; }
   std::string name() const { return name_; }
-  bool Invoke(FsedModel& mode, FsedView& view) const;
+  bool Invoke(FsedModel& mode, FsedView& view, FsedState& state) const;
 
 private:
   fsed_command_id id_;
@@ -73,21 +74,22 @@ public:
   std::optional<FsedCommand> get(const std::string& id);
   bool add(FsedCommand cmd);
 
+  std::optional<fsed_command_id> get_command_id(int key);
   /**
    * Attempts to interpret a key by executing a command.  Returns
    * true if executed as a command, false otherwise.
    */
-  bool TryInterpretChar(int key, FsedModel& model, FsedView& view);
+  bool TryInterpretChar(int key, FsedModel& model, FsedView& view, FsedState& state);
 
 private:
   bool AddAll();
   std::map<fsed_command_id, FsedCommand> by_id_;
   std::map<std::string, FsedCommand> by_name_;
-  std::map<int, fsed_command_id> keymap_;
+  std::map<int, fsed_command_id> edit_keymap_;
 };
 
 
-std::map<int, fsed_command_id> CreateDefaultKeyMap();
+std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap();
 
 }
 

@@ -46,6 +46,9 @@ public:
   void redraw();
   void draw_bottom_bar(FsedModel& ed);
   int bgetch(FsedModel& ed);
+  void bputch(int color, char ch);
+  void cls();
+  void Color(int c);
   int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const FsedModel& ed) override;

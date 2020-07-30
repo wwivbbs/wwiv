@@ -66,7 +66,7 @@ public:
   std::vector<cell_t> substr(int start, int end);
   std::vector<cell_t> substr(int start);
   // Gets a line of text that can be displayed using bputs
-  std::string to_colored_text() const;
+  std::string to_colored_text(int default_last_color) const;
 
 private:
   bool wrapped_{false};

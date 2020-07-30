@@ -169,10 +169,11 @@ static void append_wwiv_color(std::string& out, int wwiv_color, line_color_code_
   }
 }
 
-std::string line_t::to_colored_text() const {
+std::string line_t::to_colored_text(int default_last_color) const {
   // default the last color to 0 by default)
   bool changed_color = false;
-  auto last_color = 0;
+  // This used to be 0, try -1 so we always set the color explicitly.
+  auto last_color = default_last_color;
   std::string out;
   for (const auto& c : cell_) {
     if (c.wwiv_color != last_color) {

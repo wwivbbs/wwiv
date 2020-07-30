@@ -62,7 +62,7 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     auto py = previous_line - top_line() + fs_.lines_start();
     bout.GotoXY(0, py);
     if (previous_line < ssize(ed)) {
-      bout.bputs(ed.line(previous_line).to_colored_text());
+      bout.bputs(ed.line(previous_line).to_colored_text(-1));
     }
     bout.clreol();
   }
@@ -108,7 +108,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
         bout.bputch(c.ch);
       }
     } else {
-      bout.bputs(rl.to_colored_text());
+      bout.bputs(rl.to_colored_text(-1));
     }
     bout.clreol();
   }
@@ -173,5 +173,15 @@ int FsedView::bgetch(FsedModel& ed) {
     }
   });
 }
+
+void FsedView::bputch(int color, char ch) {
+  bout.Color(color);
+  bout.bputch(ch);
+}
+
+void FsedView::cls() { bout.cls(); }
+
+void FsedView::Color(int c) { bout.Color(c); }
+
 
 } // namespace wwiv::bbs::fsed

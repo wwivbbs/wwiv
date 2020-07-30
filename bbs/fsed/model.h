@@ -27,6 +27,15 @@
 
 namespace wwiv::bbs::fsed {
 
+
+class FsedState {
+public:
+  // mods are "edit", "menu", "command"
+  std::string mode{"edit"};
+  bool save{false};
+  bool done{false};
+};
+
 enum class editor_add_result_t { added, wrapped, error };
 
 struct editor_marker_t {
@@ -177,8 +186,6 @@ private:
   // Viewport for display
   std::shared_ptr<editor_viewport_t> view_;
 };
-
-
 
 }
 

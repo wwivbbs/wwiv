@@ -20,13 +20,17 @@
 #include "bbs/application.h"
 #include "bbs/fsed/model.h"
 #include "bbs/fsed/view.h"
+#include "bbs/quote.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 #include "core/stl.h"
 #include "local_io/keycodes.h"
+#include "sdk/filenames.h"
 #include <map>
 
 namespace wwiv::bbs::fsed {
 
-std::map<int, fsed_command_id> CreateDefaultKeyMap() { 
+std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() { 
   std::map<int, fsed_command_id> map;
   map.emplace(COMMAND_UP, fsed_command_id::cursor_up);
   map.emplace(COMMAND_DOWN, fsed_command_id::cursor_down);
@@ -57,13 +61,13 @@ std::map<int, fsed_command_id> CreateDefaultKeyMap() {
 FsedCommand::FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn) 
 : id_(id), name_(std::move(name)), fn_(fn) {}
 
-bool FsedCommand::Invoke(FsedModel& model, FsedView& view) const { 
-  return fn_(model, view);
+bool FsedCommand::Invoke(FsedModel& model, FsedView& view, FsedState& state) const { 
+  return fn_(model, view, state);
 }
 
 FsedCommands::FsedCommands() {
   AddAll();
-  keymap_ = CreateDefaultKeyMap();
+  edit_keymap_ = CreateDefaultEditModeKeyMap();
 }
 
 std::optional<FsedCommand> FsedCommands::get(fsed_command_id id) {
@@ -86,52 +90,103 @@ bool FsedCommands::add(FsedCommand cmd) {
   return true; 
 }
 
+static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save) {
+  view.fs().PutsCommandLine(
+      "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
+      "|#2?|#9=Help): ");
+  const auto cmd = std::toupper(view.fs().bgetch() & 0xff);
+  view.ClearCommandLine();
+  switch (cmd) {
+  case 'S':
+    done = save = true;
+    break;
+  case 'A':
+    done = true;
+    save = false;
+    break;
+  case 'D': {
+    view.debug = !view.debug;
+    view.draw_bottom_bar(ed);
+  } break;
+  case 'Q': {
+    // Hacky quote solution for now.
+    // TODO(rushfan): Do something less lame here.
+    view.cls();
+    auto quoted_lines = query_quote_lines();
+    if (!quoted_lines.empty()) {
+      ed.insert_lines(quoted_lines);
+    }
+    // Even if we don't insert quotes, we still need to
+    // redrawthe frame
+    view.redraw();
+    ed.invalidate_to_eof(0);
+  } break;
+  case '?': {
+    view.ClearCommandLine();
+    view.fs().ClearMessageArea();
+    if (!print_help_file(FSED_NOEXT)) {
+      view.fs().PutsCommandLine(wwiv::strings::StrCat("|#6Unable to find file: ", FSED_NOEXT));
+    }
+    pausescr();
+    view.fs().ClearMessageArea();
+    view.ClearCommandLine();
+    view.redraw();
+    ed.invalidate_to_eof(0);
+  } break;
+  case ESC:
+    [[fallthrough]];
+  default: {
+  } break;
+  }
+  view.ClearCommandLine();
+}
+
 bool FsedCommands::AddAll() {
   add(FsedCommand(fsed_command_id::cursor_up, "cursor_up",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_up(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_up(); }));
   add(FsedCommand(fsed_command_id::cursor_down, "cursor_down",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_down(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_down(); }));
   add(FsedCommand(fsed_command_id::cursor_pgup, "cursor_pgup",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_pgup(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_pgup(); }));
   add(FsedCommand(fsed_command_id::cursor_pgdown, "cursor_pgdown",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_pgdown(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_pgdown(); }));
   add(FsedCommand(fsed_command_id::cursor_left, "cursor_left",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_left(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_left(); }));
   add(FsedCommand(fsed_command_id::cursor_right, "cursor_right",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_right(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_right(); }));
   add(FsedCommand(fsed_command_id::cursor_home, "cursor_home",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_home(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_home(); }));
   add(FsedCommand(fsed_command_id::delete_line, "delete_line",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.delete_line(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line(); }));
   add(FsedCommand(fsed_command_id::cursor_end, "cursor_end",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.cursor_end(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.cursor_end(); }));
   add(FsedCommand(fsed_command_id::delete_to_eol, "delete_to_eol",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.delete_to_eol(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_to_eol(); }));
   add(FsedCommand(fsed_command_id::view_redraw, "view_redraw",
-                  [](FsedModel& ed, FsedView& view) -> bool {
+                  [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
                     view.redraw();
                     ed.invalidate_to_eof(0);
                     return true;
                   }));
   add(FsedCommand(fsed_command_id::delete_right, "delete_right",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.delete_right(); }));
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_right(); }));
   add(FsedCommand(fsed_command_id::key_return, "key_return",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.enter(); }));
-  add(FsedCommand(fsed_command_id::backspace, "backspace", [&](FsedModel& ed, FsedView&) -> bool {
-    ed.bs();
-    bout.Color(ed.curline().wwiv_color());
-    bout.bputch(ed.current_cell().ch);
-    return true;
+                  [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.enter(); }));
+  add(FsedCommand(fsed_command_id::backspace, "backspace",
+                  [&](FsedModel& ed, FsedView& view, FsedState&) -> bool {
+                    ed.bs();
+                    view.bputch(ed.curline().wwiv_color(), ed.current_cell().ch);
+                    return true;
   }));
   add(FsedCommand(fsed_command_id::toggle_insovr, "toggle_insovr",
-                  [](FsedModel& ed, FsedView& view) -> bool {
+                  [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
                     ed.toggle_ins_ovr_mode();
                     view.draw_bottom_bar(ed);
                     return true;
                   }));
   add(FsedCommand(fsed_command_id::input_wwiv_color, "input_wwiv_color",
-                  [](FsedModel& ed, FsedView&) -> bool {
-                    auto cc = bout.getkey();
+                  [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
+                    auto cc = view.bgetch(ed);
                     if (cc >= '0' && cc <= '9') {
                       ed.curline().set_wwiv_color(cc - '0');
                     }
@@ -139,28 +194,41 @@ bool FsedCommands::AddAll() {
                     return true;
                   }));
   add(FsedCommand(fsed_command_id::delete_word_left, "delete_word_left",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.delete_word_left(); }));
+      [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_word_left(); }));
   add(FsedCommand(fsed_command_id::delete_line_left, "delete_line_left",
-                  [](FsedModel& ed, FsedView&) -> bool { return ed.delete_line_left(); }));
+      [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line_left(); }));
+  add(FsedCommand(fsed_command_id::menu, "menu",
+                  [&](FsedModel& ed, FsedView& view, FsedState& state) -> bool {
+                    show_fsed_menu(ed, view, state.done, state.save);
+                    return true;
+                  }));
+
   return false;
 }
 
-bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view) { 
-  const auto key_it = keymap_.find(key);
-  if (key_it == std::end(keymap_)) {
+std::optional<fsed_command_id> FsedCommands::get_command_id(int key) {
+  const auto key_it = edit_keymap_.find(key);
+  if (key_it == std::end(edit_keymap_)) {
     // No key binding
-    return false;
+    return std::nullopt;
   }
-  auto cmd_id = key_it->second;
+  return {key_it->second};
+}
 
-  const auto cmd_it = by_id_.find(cmd_id);
-  if (cmd_it == std::end(by_id_)) {
-    // No command bound for this id.
-    LOG(WARNING) << "No command bound for command id: " << static_cast<int>(cmd_id);
+bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, FsedState& state) { 
+
+  auto cmd_id = get_command_id(key);
+  if (!cmd_id) {
     return false;
   }
-  auto& cmd = cmd_it->second;
-  return cmd.Invoke(model, view);
+
+  auto cmd = get(cmd_id.value());
+  if (!cmd) {
+    // No command bound for this id.
+    LOG(WARNING) << "No command bound for command id: " << static_cast<int>(cmd_id.value());
+    return false;
+  }
+  return cmd.value().Invoke(model, view, state);
 
   return false;
 }

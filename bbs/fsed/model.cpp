@@ -131,6 +131,7 @@ editor_add_result_t FsedModel::add(char c) {
   }
   int last_space = line.last_space_before(ssize(line));
   line.wrapped(true);
+  const auto wwiv_color = line.wwiv_color();
   if (last_space != -1 && (max_line_len_ - last_space) < (max_line_len_ / 2)) {
     // Word Wrap at the position after the last space. That way the space
     // end up on the previous line
@@ -142,13 +143,13 @@ editor_add_result_t FsedModel::add(char c) {
     cx = ssize(curline());
   } else {
     // Character wrap.
-    const auto wwiv_color = curline().wwiv_color();
     ++curli;
     cx %= max_line_len_;
-    // Create the new line and carry over line color
-    auto& nline = curline();
-    nline.set_wwiv_color(wwiv_color);
   }
+  // Create the new line and carry over line color since we wrapped (either
+  // line or character).
+  curline().set_wwiv_color(wwiv_color);
+
   invalidate_range(start_line, curli);
   advance_cy(*this, *view_);
   return editor_add_result_t::wrapped;
@@ -470,7 +471,7 @@ void FsedModel::current_line_dirty(int previous_line) {
 std::vector<std::string> FsedModel::to_lines() { 
   std::vector<std::string> out;
   for (auto l : lines_) {
-    auto t = l.to_colored_text();
+    auto t = l.to_colored_text(0);
     wwiv::strings::StringTrimCRLF(&t);
     if (l.wrapped()) {
       // wwiv line wrapping character.
