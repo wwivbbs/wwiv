@@ -88,11 +88,9 @@ bool FsedModel::insert_line() {
   return wwiv::stl::insert_at(lines_, curli, line_t());
 }
 
-bool FsedModel::insert_lines(std::deque<std::string>& lines) {
-  while (!lines.empty()) {
+bool FsedModel::insert_lines(std::vector<std::string>& lines) {
+  for (const auto ql : lines) {
     // Insert all quote lines.
-    const auto ql = lines.front();
-    lines.pop_front();
     ++curli;
     insert_line();
     curline() = line_t(ql);

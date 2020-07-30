@@ -201,7 +201,7 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
 }
 
 
-std::deque<std::string> query_quote_lines() {
+std::vector<std::string> query_quote_lines() {
   std::vector<std::string> lines;
 
   if (!quotes_ind || quotes_ind->empty()) {
@@ -277,9 +277,6 @@ std::deque<std::string> query_quote_lines() {
     }
     break;
   } while (!a()->hangup_);
-  std::deque<std::string> r;
-  for (auto it = start_line - 1; it <= end_line - 1; it++) {
-    r.push_back(lines.at(it));
-  }
-  return r;
+  return std::vector<std::string>(std::begin(lines) + start_line - 1,
+                                  std::begin(lines) + end_line);
 }

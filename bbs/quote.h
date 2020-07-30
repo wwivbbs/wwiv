@@ -20,7 +20,7 @@
 
 #include "sdk/vardec.h"
 #include <string>
-#include <deque>
+#include <vector>
 
 enum class quote_date_format_t {
   no_quote, generic, email, post, forward
@@ -31,7 +31,7 @@ void grab_quotes(messagerec* m, const std::string& aux, const std::string& to_na
 void clear_quotes();
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt);
-std::deque<std::string> query_quote_lines();
+std::vector<std::string> query_quote_lines();
 
 // [[ VisibleForTesting ]]
 std::string GetQuoteInitials(const std::string& reply_to_name);

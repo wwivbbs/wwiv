@@ -185,7 +185,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   auto save_message = false;
   auto done = false;
   string rollover_line;
-  std::deque<std::string> quoted_lines;
+  std::vector<std::string> quoted_lines;
   while (!done && !a()->hangup_) {
     while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
       // returning true means we back spaced past the current line.
@@ -221,16 +221,14 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
         if (quoted_lines.empty()) {
           bout.nl();          
         }
-        while (!quoted_lines.empty()) {
-          current_line = quoted_lines.front();
-          quoted_lines.pop_front();
-          bout.bpla(current_line, &abort);
+        for (const auto& ql  : quoted_lines) {
+          bout.bpla(ql, &abort);
           if (curli == ssize(lin)) {
             // we're inserting a new line at the end.
-            lin.emplace_back(current_line);
+            lin.emplace_back(ql);
           } else if (curli < ssize(lin)) {
             // replacing an older line.
-            lin.at(curli).assign(current_line);
+            lin.at(curli).assign(ql);
           }
           curli++;
         } 
