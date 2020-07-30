@@ -118,7 +118,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     }
     // Even if we don't insert quotes, we still need to
     // redrawthe frame
-    view.redraw();
+    view.redraw(ed);
     ed.invalidate_to_eof(0);
   } break;
   case '?': {
@@ -130,7 +130,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     pausescr();
     view.fs().ClearMessageArea();
     view.ClearCommandLine();
-    view.redraw();
+    view.redraw(ed);
     ed.invalidate_to_eof(0);
   } break;
   case ESC:
@@ -164,7 +164,7 @@ bool FsedCommands::AddAll() {
                   [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_to_eol(); }));
   add(FsedCommand(fsed_command_id::view_redraw, "view_redraw",
                   [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
-                    view.redraw();
+                    view.redraw(ed);
                     ed.invalidate_to_eof(0);
                     return true;
                   }));

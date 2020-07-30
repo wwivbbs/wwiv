@@ -125,7 +125,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
   gotoxy(e);
 }
 
-void FsedView::redraw() {
+void FsedView::draw_header() {
   auto oldcuratr = bout.curatr();
   bout.cls();
   auto to = data_.to_name.empty() ? "All" : data_.to_name;
@@ -135,12 +135,23 @@ void FsedView::redraw() {
   bout << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
 
   bout.SystemColor(oldcuratr);
+}
+
+void FsedView::redraw() { 
+  draw_header(); 
   fs_.DrawTopBar();
   fs_.DrawBottomBar("");
   ClearCommandLine();
 }
 
-void FsedView::draw_bottom_bar(FsedModel& ed) {
+void FsedView::redraw(const FsedModel& ed) {
+  draw_header();
+  fs_.DrawTopBar();
+  draw_bottom_bar(ed);
+  ClearCommandLine();
+}
+
+void FsedView::draw_bottom_bar(const FsedModel& ed) {
   auto sc = bout.curatr();
   static int sx = -1, sy = -1, sl = -1;
   static auto smode = ed.mode();

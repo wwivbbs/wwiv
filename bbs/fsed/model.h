@@ -75,9 +75,9 @@ public:
   //
 
   // gets the current line
-  line_t& curline();
+  line_t& curline() const;
   // Gets the line at a position n or throws.
-  line_t& line(int n);
+  line_t& line(int n) const;
   bool set_lines(std::vector<line_t>&& n);
   // return the number of lines.
   std::size_t size() const { return lines_.size(); }
@@ -113,7 +113,7 @@ public:
   // handles the enter key
   bool enter();
   // Gets the current character
-  cell_t current_cell();
+  cell_t current_cell() const;
 
   //
   // Cursor Operations
@@ -174,8 +174,9 @@ public:
 private:
   // Max number of lines allowed
   int maxli_{255};
-  // Lines of text
-  std::vector<line_t> lines_;
+  // Lines of text.  mark mutable so we can add the current line
+  // into the array and stay logically const.
+  mutable std::vector<line_t> lines_;
   // Insert or Overrite mode
   ins_ovr_mode_t mode_{ins_ovr_mode_t::ins};
   // Max number of lines allowed.

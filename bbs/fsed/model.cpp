@@ -49,7 +49,7 @@ static void advance_cy(FsedModel& ed, editor_viewport_t& view, bool invalidate =
 
 void FsedModel::set_view(const std::shared_ptr<editor_viewport_t>& view) { view_ = view; }
 
-line_t& FsedModel::curline() {
+line_t& FsedModel::curline() const {
   // TODO: insert return statement here
   while (curli >= ssize(lines_)) {
     lines_.emplace_back();
@@ -63,7 +63,7 @@ line_t& FsedModel::curline() {
   }
 }
 
-line_t& FsedModel::line(int n) { 
+line_t& FsedModel::line(int n) const { 
   try {
     return lines_.at(n);
   } catch (const std::exception& e) {
@@ -155,7 +155,7 @@ editor_add_result_t FsedModel::add(char c) {
   return editor_add_result_t::wrapped;
 }
 
-cell_t FsedModel::current_cell() {
+cell_t FsedModel::current_cell() const {
   const auto& line = curline();
   if (cx >= ssize(line)) {
     return cell_t(0, ' ');

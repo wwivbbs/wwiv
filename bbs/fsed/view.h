@@ -43,8 +43,10 @@ public:
   // Updates the editor line number based on the cy and fs view of the 
   // world.
   void handle_editor_invalidate(FsedModel&, editor_range_t t);
+  void draw_header();
   void redraw();
-  void draw_bottom_bar(FsedModel& ed);
+  void redraw(const FsedModel& ed);
+  void draw_bottom_bar(const FsedModel& ed);
   int bgetch(FsedModel& ed);
   void bputch(int color, char ch);
   void cls();
