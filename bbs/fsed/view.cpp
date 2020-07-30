@@ -147,13 +147,16 @@ void FsedView::redraw() {
 void FsedView::redraw(const FsedModel& ed) {
   draw_header();
   fs_.DrawTopBar();
+  // reset the cache that is used by draw_bottom_bar so that
+  // the bottom bar will be drawn even if the cursor position
+  // has not changed.
+  sx = sy = sl = -1;
   draw_bottom_bar(ed);
   ClearCommandLine();
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {
   auto sc = bout.curatr();
-  static int sx = -1, sy = -1, sl = -1;
   static auto smode = ed.mode();
   static auto sdebug = debug;
   if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {

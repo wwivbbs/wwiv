@@ -67,6 +67,10 @@ private:
   int max_view_columns_;
   MessageEditorData& data_;
   bool file_{false};
+  //  Saved positions for the bottom bar caching.
+  int sx{-1};
+  int sy{-1};
+  int sl{-1};
 };
 
 }
