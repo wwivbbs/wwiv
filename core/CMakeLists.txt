@@ -13,6 +13,7 @@ set(COMMON_SOURCES
   graphs.cpp
   http_server.cpp
   inifile.cpp
+  ip_address.cpp
   log.cpp
   md5.cpp
   net.cpp
