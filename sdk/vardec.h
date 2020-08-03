@@ -79,8 +79,9 @@ struct userrec {
   // bytes for more strings
   char res_char[13];
 
-  // user's age
-  uint8_t age;
+  // user's age.  No longer used, instead use User::age()
+  // to get it calculated on demand.
+  uint8_t unused_age;
   // if deleted or inactive
   uint8_t inact;
 
@@ -197,6 +198,7 @@ struct userrec {
 
   // reserved for real values
   char res_float[16];
+  // last used IP Address.
   wwiv::core::ip_address last_address;
   // reserved for whatever
   char res_gp[94];
