@@ -27,7 +27,6 @@ void chuser();
 void zlog();
 void auto_purge();
 void beginday(bool displayStatus);
-void set_user_age();
 
 
 #endif  // __INCLUDED_BBS_SYSOPF_H__

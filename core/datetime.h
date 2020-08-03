@@ -41,6 +41,10 @@ std::string daten_to_wwivnet_time(daten_t t);
 std::string time_t_to_wwivnet_time(time_t t);
 daten_t time_t_to_daten(time_t t);
 
+/** Returns the age of a person borh on month m, day d in year y */
+int years_old(int m, int d, int y);
+
+
 /**
  * Returns the current date as 'MM/DD/YY'
  */

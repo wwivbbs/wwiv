@@ -30,6 +30,9 @@ namespace wwiv::core {
 class ip_address final {
 public:
   explicit ip_address(char* data);
+  ip_address() = default;
+  ~ip_address() = default;
+
 
   [[nodiscard]] std::string to_string() const;
   [[nodiscard]] static std::optional<ip_address> from_string(const std::string&);

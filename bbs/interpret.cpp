@@ -71,12 +71,11 @@ std::string MacroContext::interpret(char ch) const {
     case '&':
       return u().HasAnsi() ? "ANSI" : "ASCII";
     case 'A':                               // User's age
-      return to_string(u().GetAge());
+      return to_string(u().age());
     case 'a':                               // User's language
       return a()->cur_lang_name;
     case 'B':                               // User's birthday
-      return fmt::format("{}/{}/{}", u().GetBirthdayMonth(), u().GetBirthdayDay(),
-                         u().GetBirthdayYear());
+      return u().birthday_mmddyy();
     case 'b':                               // Minutes in bank
       return to_string(u().GetTimeBankMinutes());
     case 'C':                               // User's city
@@ -98,7 +97,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'G':                               // MessaGes read
       return to_string(u().GetNumMessagesRead());
     case 'g':                               // Gold
-      return to_string(u().GetGold());
+      return to_string(u().gold());
     case 'I':                               // User's call sIgn
       return u().GetCallsign();
     case 'i':                               // Illegal log-ons

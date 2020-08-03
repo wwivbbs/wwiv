@@ -60,7 +60,7 @@ static bool access_conf(User * u, int sl, const confrec * c) {
   if (dsl < c->mindsl || (c->maxdsl != 0 && dsl > c->maxdsl)) {
     return false;
   }
-  const auto age = u->GetAge();
+  const auto age = u->age();
   if (age < c->minage || (c->maxage != 0 && age > c->maxage)) {
     return false;
   }
@@ -90,7 +90,7 @@ static bool access_sub(User& u, int sl, const subboard_t& s) {
   if (sl < s.readsl) {
     return false;
   }
-  if (u.GetAge() < s.age) {
+  if (u.age() < s.age) {
     return false;
   }
   if (s.ar != 0 && !u.HasArFlag(s.ar)) {
@@ -107,7 +107,7 @@ static bool access_dir(User& u, int sl, wwiv::sdk::files::directory_t& d) {
   if (u.GetDsl() < d.dsl) {
     return false;
   }
-  if (u.GetAge() < d.age) {
+  if (u.age() < d.age) {
     return false;
   }
   if (d.dar && !u.HasDarFlag(d.dar)) {

@@ -64,12 +64,15 @@ std::string ip_address::to_string() const {
     // Even though we store it IPv6 internally, display as IPv4
     return s.substr(7);
   }
-  return StrCat("[", s, "]");
+  return s;
 }
 
 std::optional<ip_address> ip_address::from_string(const std::string& s) { 
   char d[16];
   auto addr{s};
+  if (s.length() < 2) {
+    return std::nullopt;
+  }
   if (s.find(':') == std::string::npos) {
     //make this into a ipv6 address for an ipv4 address
     addr = wwiv::strings::StrCat("0:0:0:0:0:FFFF:", s);

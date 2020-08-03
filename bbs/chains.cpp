@@ -192,7 +192,7 @@ void do_chains() {
     }
     if (a()->effective_sl() < 255) {
       if (c.maxage > 0 && c.maxage < 255) {
-        if (c.minage > a()->user()->GetAge() || c.maxage < a()->user()->GetAge()) {
+        if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
           continue;
         }
       }

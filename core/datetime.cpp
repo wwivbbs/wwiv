@@ -139,6 +139,38 @@ std::string to_string(duration<double> dd) {
   return os.str();
 };
 
+
+int years_old(int m, int d, int y) {
+  auto t = time_t_now();
+  auto* const tm = localtime(&t);
+  y = y - 1900;
+  --m; // Reduce by one because tm_mon is 0-11, not 1-12
+
+  // Find the range of impossible dates (ie, pTm can't be
+  // less than the input date)
+  if (tm->tm_year < y) {
+    return 0;
+  }
+  if (tm->tm_year == y) {
+    if (tm->tm_mon < m) {
+      return 0;
+    }
+    if (tm->tm_mon == m) {
+      if (tm->tm_mday < d) {
+        return 0;
+      }
+    }
+  }
+
+  auto age = tm->tm_year - y;
+  if (tm->tm_mon < m) {
+    --age;
+  } else if (tm->tm_mon == m && tm->tm_mday < d) {
+    --age;
+  }
+  return age;
+}
+
 DateTime parse_yyyymmdd(const std::string& date_str) {
   // Avoid https://developercommunity.visualstudio.com/content/problem/18311/stdget-time-asserts-with-istreambuf-iterator-is-no.html
   std::regex date_time_regex("([0-9]{4})-([0-9]{2})-([0-9]{2})");

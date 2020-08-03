@@ -75,7 +75,7 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->context().qsc));
   a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.GetTimeBankMinutes()));
   a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.GetAssPoints()));
-  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.GetGold()));
+  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.gold()));
   a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", u.uk()));
   a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", u.dk()));
   a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", u.GetFilesUploaded()));
@@ -156,10 +156,10 @@ void OnlineUserEditor() {
     } break;
     case 9: {
       a()->localIO()->GotoXY(wx + 50, wy + 6);
-      auto gold = std::to_string(u.GetGold());
+      auto gold = std::to_string(u.gold());
       rc = a()->localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY);
-      u.SetGold(static_cast<float>(atof(gold.c_str())));
-      a()->localIO()->Format("{:5}", fmt::sprintf("%7.2f", u.GetGold()));
+      u.gold(static_cast<float>(atof(gold.c_str())));
+      a()->localIO()->Format("{:5}", fmt::sprintf("%7.2f", u.gold()));
     } break;
     case 10: {
       a()->localIO()->GotoXY(wx + 22, wy + 8);

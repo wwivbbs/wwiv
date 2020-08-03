@@ -141,7 +141,7 @@ long nsl() {
   if (!a()->IsUserOnline()) {
     return 1;
   }
-  auto tot = dd - a()->system_logon_time();
+  auto tot = duration_cast<seconds>(dd - a()->system_logon_time());
 
   const auto tpl = minutes(a()->effective_slrec().time_per_logon);
   const auto tpd = minutes(a()->effective_slrec().time_per_day);
@@ -149,7 +149,8 @@ long nsl() {
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
   const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time);
   // time left today
-  auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeon() + a()->user()->extra_time());
+  auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
+                                                 a()->user()->extra_time());
   const auto tlt = std::min<seconds>(tlc, tld);
   a()->SetTimeOnlineLimited(false);
   return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));

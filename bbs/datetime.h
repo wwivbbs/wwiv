@@ -27,7 +27,6 @@
 bool isleap(int nYear);
 std::string ctim(long d);
 std::string ctim(std::chrono::duration<double> d);
-int years_old(int nMonth, int nDay, int nYear);
 
 /** 
  * Returns a duration representing the duration since midnight of the current day.

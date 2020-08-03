@@ -609,20 +609,17 @@ static void UpdateLastOnFile() {
 }
 
 static void CheckAndUpdateUserInfo() {
-  if (a()->user()->GetBirthdayYear() == 0) {
+  if (a()->user()->birthday_year() == 0) {
     bout << "\r\nPlease enter the following information:\r\n";
     do {
       bout.nl();
       input_age(a()->user());
       bout.nl();
-      bout.bprintf("%02d/%02d/%02d -- Correct? ",
-          a()->user()->GetBirthdayMonth(),
-          a()->user()->GetBirthdayDay(),
-          a()->user()->GetBirthdayYear());
+      bout.format("{} -- Correct? ", a()->user()->birthday_mmddyy());
       if (!yesno()) {
-        a()->user()->SetBirthdayYear(0);
+        a()->user()->birthday_mdy(0, 0, 0);
       }
-    } while (a()->user()->GetBirthdayYear() == 0);
+    } while (a()->user()->birthday_year() == 0);
   }
 
   if (!a()->user()->GetRealName()[0]) {

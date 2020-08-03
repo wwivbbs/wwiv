@@ -22,6 +22,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/wwivcolors.h"
@@ -37,12 +38,11 @@ using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 User::User() { ZeroUserData(); }
 
-User::~User() {}
+User::~User() = default;
 
 User::User(const User& w) { memcpy(&data, &w.data, sizeof(userrec)); }
 
@@ -128,7 +128,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->SetStatusFlag(User::pauseOnPage);
   u->ClearStatusFlag(User::conference);
   u->ClearStatusFlag(User::nscanFileSystem);
-  u->SetGold(gold);
+  u->gold(gold);
   // Set to N so the BBS will prompt.
   u->SetGender('N');
 
@@ -189,6 +189,34 @@ seconds User::timeon() const {
   return seconds(secs_used);
 }
 
+seconds User::timeontoday() const {
+  auto secs_used = static_cast<int64_t>(data.timeontoday);
+  return seconds(secs_used);
+}
+
+uint8_t User::age() const { 
+  if (data.year == 0 && data.month == 0 && data.day == 0) {
+    // If the birthday is unset, then the age is also unset.
+    return 0;
+  }
+  return static_cast<uint8_t>(years_old(this));
+}
+
+[[nodiscard]] DateTime User::birthday_dt() const { 
+  tm tm{};
+  tm.tm_year = data.year;
+  tm.tm_mon = data.month - 1;
+  tm.tm_mday = data.day;
+  tm.tm_hour = 12;
+  tm.tm_isdst = 0;
+  return DateTime::from_tm(&tm);
+}
+
+[[nodiscard]] std::string User::birthday_mmddyy() const { 
+  std::string s = fmt::format("{:02}/{:02}/{:02}", data.month, data.day, data.year);
+  return s;
+}
+
 void ResetTodayUserStats(User* u) {
   u->data.ontoday = 0;
   u->data.timeontoday = 0;
@@ -203,6 +231,18 @@ int AddCallToday(User* u) {
   return ++u->data.ontoday;
 }
 
+void User::birthday_mdy(int m, int d, int y) {
+  data.month = static_cast<uint8_t>(m);
+  data.day = static_cast<uint8_t>(d);
+  if (y == 0) {
+    data.year = 0;
+  } else {
+    data.year = static_cast<uint8_t>(y - 1900);
+  }
+}
 
-} // namespace sdk
-} // namespace wwiv
+int years_old(const User* u) {
+  return wwiv::core::years_old(u->data.month, u->data.day, u->data.year);
+}
+
+} // namespace wwiv::sdk

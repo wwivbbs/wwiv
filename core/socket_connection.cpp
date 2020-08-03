@@ -163,7 +163,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
 }
 
 /*
- ** Leaving here inc ase I need it again
+ ** Leaving here incase I need it again
 // From: http://stackoverflow.com/questions/2493136/how-can-i-obtain-the-ipv4-address-of-the-client
 // get sockaddr, IPv4 or IPv6:
 static void *get_in_addr(struct sockaddr* sa) {

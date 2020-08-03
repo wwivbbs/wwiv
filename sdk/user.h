@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_WUSER_H__
 #define __INCLUDED_WUSER_H__
 
+#include "core/datetime.h"
 #include "core/strings.h"
 #include "sdk/net/net.h"
 #include "sdk/vardec.h"
@@ -447,12 +448,8 @@ class User {
   void SetEmailAddress(const char *s) {
     strcpy(data.email, s);
   }
-  [[nodiscard]] uint8_t GetAge() const {
-    return data.age;
-  }
-  void SetAge(int n) {
-    data.age = static_cast<uint8_t>(n);
-  }
+  [[nodiscard]] uint8_t age() const;
+
   [[nodiscard]] int8_t GetComputerType() const {
     return data.comp_type;
   }
@@ -576,32 +573,23 @@ class User {
   [[nodiscard]] int GetTimesOnToday() const {
     return data.ontoday;
   }
-  [[nodiscard]] int GetBirthdayMonth() const {
+  /** Sets the birthday to month m, day d, year y */
+  void birthday_mdy(int m, int d, int y);
+
+  [[nodiscard]] int birthday_month() const {
     return data.month;
   }
-  void SetBirthdayMonth(int n) {
-    data.month = static_cast<uint8_t>(n);
-  }
 
-  [[nodiscard]] int GetBirthdayDay() const {
+  [[nodiscard]] int birthday_mday() const {
     return data.day;
   }
-  void SetBirthdayDay(int n) {
-    data.day = static_cast<uint8_t>(n);
-  }
-  [[nodiscard]] int GetBirthdayYear() const {
+  [[nodiscard]] int birthday_year() const {
     return data.year + 1900;
   }
-  [[nodiscard]] int GetBirthdayYearShort() const {
-    return data.year;
-  }
-  void SetBirthdayYear(int n) {
-    if (n == 0){
-      data.year = static_cast<uint8_t>(n);
-    }else{
-      data.year = static_cast<uint8_t>(n-1900);
-    }
-  }
+
+  [[nodiscard]] wwiv::core::DateTime birthday_dt() const;
+  [[nodiscard]] std::string birthday_mmddyy() const;
+
   [[nodiscard]] int GetLanguage() const {
     return data.language;
   }
@@ -817,18 +805,19 @@ class User {
   /** Subtracts extra time to the user, returns the new total extra time. */
   std::chrono::seconds subtract_extratime(std::chrono::duration<double> extra);
   [[nodiscard]] std::chrono::duration<double> extra_time() const noexcept;
-
+  /** Time online in total, in seconds */
   [[nodiscard]] std::chrono::seconds timeon() const;
+  /** Time online today, in seconds */
+  [[nodiscard]] std::chrono::seconds timeontoday() const;
+  /** Add 'd' to the time online in total */
   std::chrono::seconds add_timeon(std::chrono::duration<double> d);
+  /** Add 'd' to the time online for today */
   std::chrono::seconds add_timeon_today(std::chrono::duration<double> d);
   /** Returns the time on as seconds. */
-  [[nodiscard]] float GetTimeOn() const {
-    return data.timeon;
-  }
-  [[nodiscard]] float GetGold() const {
+  [[nodiscard]] float gold() const {
     return data.gold;
   }
-  void SetGold(float f) {
+  void gold(float f) {
     data.gold = f;
   }
 
@@ -839,9 +828,8 @@ class User {
     data.full_desc = b ? 1 : 0;
   }
 
-  [[nodiscard]] bool IsMailboxClosed() const {
-    return (GetForwardUserNumber() == 65535) ? true : false;
-  }
+  [[nodiscard]] bool IsMailboxClosed() const { return GetForwardUserNumber() == 65535; }
+
   void CloseMailbox() {
     SetForwardSystemNumber(0);
     SetForwardUserNumber(65535);
@@ -885,6 +873,7 @@ class User {
 
 void ResetTodayUserStats(User* u);
 int AddCallToday(User* u);
+int years_old(const User* u);
 
   }  // namespace wwiv::sdk
 

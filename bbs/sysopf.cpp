@@ -118,7 +118,7 @@ void valuser(int user_number) {
     bout << "|#9Name: |#2" << unn << wwiv::endl;
     bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
-    bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
+    bout << "|#9Age : |#2" << user.age() << " " << user.GetGender() << wwiv::endl;
     bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
     if (user.GetNote().empty()) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
@@ -794,23 +794,6 @@ void zlog() {
   file.Close();
 }
 
-
-void set_user_age() {
-  auto status = a()->status_manager()->GetStatus();
-  int user_number = 1;
-  do {
-    User user;
-    a()->users()->readuser(&user, user_number);
-    auto age = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
-    if (age != user.GetAge()) {
-      user.SetAge(age);
-      a()->users()->writeuser(&user, user_number);
-    }
-    ++user_number;
-  } while (user_number <= status->GetNumUsers());
-}
-
-
 void auto_purge() {
   int days = 0;
   int skipsl = 0;
@@ -941,10 +924,6 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
   }
   auto_purge();
-  if (displayStatus) {
-    bout << "  |#7* |#1Updating user ages...\r\n";
-  }
-  set_user_age();
   if (displayStatus) {
     bout << "|#7* |#1Done!\r\n";
   }

@@ -903,12 +903,12 @@ bool check_ch(int ch) {
     }
     return false;
   }
-  if (a()->user()->GetAge() < channels[ch].min_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+  if (a()->user()->age() < channels[ch].min_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].min_age
          << "|#9 or older to enter this channel.\r\n";
     return false;
   }
-  if (a()->user()->GetAge() > channels[ch].max_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+  if (a()->user()->age() > channels[ch].max_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
     bout << "\r\n|#9You must be |#1" << channels[ch].max_age
          << "|#9 or younger to enter this channel.\r\n";
     return false;

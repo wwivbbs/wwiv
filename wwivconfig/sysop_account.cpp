@@ -74,7 +74,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
 
   int y = 1;
 
-  User u = {};
+  User u{};
   u.ZeroUserData();
   User::CreateNewUserRecord(&u, config.newuser_sl(), config.newuser_dsl(),
                             config.newuser_restrict(), config.newuser_gold(), newuser_colors,

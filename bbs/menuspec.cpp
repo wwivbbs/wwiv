@@ -234,7 +234,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
       && a()->chains->HasRegisteredChains()
       && a()->effective_sl() < 255) {
     if (c.maxage) {
-      if (c.minage > a()->user()->GetAge() || c.maxage < a()->user()->GetAge()) {
+      if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
         return false;
       }
     }

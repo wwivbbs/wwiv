@@ -79,37 +79,6 @@ std::string ctim(std::chrono::duration<double> d) {
   return ctim(static_cast<long>(std::chrono::duration_cast<seconds>(d).count()));
 }
 
-int years_old(int nMonth, int nDay, int nYear) {
-  auto t = time_t_now();
-  auto* const tm = localtime(&t);
-  nYear = nYear - 1900;
-  --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
-
-  // Find the range of impossible dates (ie, pTm can't be
-  // less than the input date)
-  if (tm->tm_year < nYear) {
-    return 0;
-  }
-  if (tm->tm_year == nYear) {
-    if (tm->tm_mon < nMonth) {
-      return 0;
-    }
-    if (tm->tm_mon == nMonth) {
-      if (tm->tm_mday < nDay) {
-        return 0;
-      }
-    }
-  }
-
-  auto age = tm->tm_year - nYear;
-  if (tm->tm_mon < nMonth) {
-    --age;
-  } else if (tm->tm_mon == nMonth && tm->tm_mday < nDay) {
-    --age;
-  }
-  return age;
-}
-
 system_clock::duration duration_since_midnight(system_clock::time_point now) {
   auto tnow = system_clock::to_time_t(now);
   tm* date = std::localtime(&tnow);

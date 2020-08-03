@@ -35,6 +35,8 @@
 #include <string>
 
 using std::string;
+using std::chrono::duration_cast;
+using std::chrono::seconds;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -221,18 +223,15 @@ void CreatePCBoardSysDropFile() {
     sprintf(pcb.firstname, "%-15.15s", pszFirstName);
     // Don't write password  security
     strcpy(pcb.password, "XXX");
-    pcb.time_on = static_cast<int16_t>(a()->user()->GetTimeOn() / 60);
+    const auto timeon_sec = duration_cast<seconds>(a()->user()->timeon()).count();
+    pcb.time_on = static_cast<int16_t>(timeon_sec / 60);
     pcb.prev_used = 0;
-    double d = a()->user()->GetTimeOn() / 60;
-    int h1 = static_cast<int>(d / 60) / 10;
-    int h2 = static_cast<int>(d / 60) - (h1 * 10);
-    int m1 = static_cast<int>(d - ((h1 * 10 + h2) * 60)) / 10;
-    int m2 = static_cast<int>(d - ((h1 * 10 + h2) * 60)) - (m1 * 10);
-    pcb.time_logged[0] = static_cast<char>(h1 + '0');
-    pcb.time_logged[1] = static_cast<char>(h2 + '0');
+    auto time_has_hhmmss = ctim(a()->user()->timeon());
+    pcb.time_logged[0] = time_has_hhmmss[0];
+    pcb.time_logged[1] = time_has_hhmmss[1];
     pcb.time_logged[2] = ':';
-    pcb.time_logged[3] = static_cast<char>(m1 + '0');
-    pcb.time_logged[4] = static_cast<char>(m2 + '0');
+    pcb.time_logged[3] = time_has_hhmmss[3];
+    pcb.time_logged[4] = time_has_hhmmss[4];
     pcb.time_limit = static_cast<int16_t>(nsl());
     pcb.down_limit = 1024;
     pcb.curconf = static_cast<char>(a()->GetCurrentConferenceMessageArea());
@@ -305,18 +304,7 @@ void CreateCallInfoBbsDropFile() {
                         a()->user()->GetFilesDownloaded(), "8N1",
                         (a()->context().incom()) ? "REMOTE" : "LOCAL",
                         (a()->context().incom()) ? a()->primary_port() : 0));
-    char szDate[81], szTemp[81];
-    strcpy(szDate, "00/00/00");
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayMonth());
-    szTemp[2] = '\0';
-    memmove(&(szDate[2 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayDay());
-    szTemp[2] = '\0';
-    memmove(&(szDate[5 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayYearShort());
-    szTemp[2] = '\0';
-    memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    file.WriteLine(szDate);
+    file.WriteLine(a()->user()->birthday_mmddyy());
     file.WriteLine(a()->context().incom() ? std::to_string(a()->modem_speed_) : "38400");
     file.Close();
   }
@@ -418,21 +406,11 @@ void CreateDoorSysDropFile() {
             0,  // kb dl today
             0); // kb dl/day max
     file.Write(szLine);
-    char szDate[21], szTemp[81];
-    strcpy(szDate, "00/00/00");
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayMonth());
-    szTemp[2] = '\0';
-    memmove(&(szDate[2 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayDay());
-    szTemp[2] = '\0';
-    memmove(&(szDate[5 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", a()->user()->GetBirthdayYearShort());
-    szTemp[2] = '\0';
-    memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    szDate[9] = '\0';
+    auto birthday_date = a()->user()->birthday_mmddyy();
     string gfilesdir = a()->config()->gfilesdir();
     string t = times();
-    sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", szDate,
+    sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
+            birthday_date.c_str(),
             a()->config()->datadir().c_str(), gfilesdir.c_str(),
             a()->config()->sysop_name().c_str(), a()->user()->GetName(),
             "00:01", // event time
@@ -515,8 +493,8 @@ string create_chain_file() {
   if (file.IsOpen()) {
     file.Write(fmt::sprintf(
         "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->usernum, a()->user()->GetName(),
-        a()->user()->GetRealName(), a()->user()->GetCallsign(), a()->user()->GetAge(),
-        a()->user()->GetGender(), a()->user()->GetGold(), a()->user()->GetLastOn(),
+        a()->user()->GetRealName(), a()->user()->GetCallsign(), a()->user()->age(),
+        a()->user()->GetGender(), a()->user()->gold(), a()->user()->GetLastOn(),
         a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl()));
     const auto temporary_log_filename = GetTemporaryInstanceLogFileName();
     const auto gfilesdir = a()->config()->gfilesdir();

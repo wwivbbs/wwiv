@@ -20,6 +20,8 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
+#include "core/ip_address.h"
+
 #ifdef __MSDOS__
 #include "sdk/msdos_stdint.h"
 #else
@@ -194,7 +196,8 @@ struct userrec {
   float gold;
 
   // reserved for real values
-  char res_float[32];
+  char res_float[16];
+  wwiv::core::ip_address last_address;
   // reserved for whatever
   char res_gp[94];
 

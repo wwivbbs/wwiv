@@ -44,3 +44,10 @@ TEST(UserTest, CanCopyToUser) {
 
   EXPECT_STREQ(reinterpret_cast<char*>(u.name), user.GetName());
 }
+
+TEST(UserTest, Birthday) {
+  User u;
+  u.birthday_mdy(2, 15, 1980);
+
+  EXPECT_EQ("02/15/80", u.birthday_mmddyy());
+}

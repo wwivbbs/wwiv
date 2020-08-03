@@ -573,7 +573,7 @@ void Application::UpdateTopScreen() {
     }
     localIO()->PutsXY(0, 3,
                       fmt::sprintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                                   user()->GetNote(), user()->GetGender(), user()->GetAge(),
+                                   user()->GetNote(), user()->GetGender(), user()->age(),
                                    ctypes(user()->GetComputerType()), feedback_waiting));
 
     if (chatcall()) {

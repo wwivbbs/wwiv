@@ -360,7 +360,7 @@ void input_sex() {
   a()->user()->SetGender(onek("MF"));
 }
 
-void input_age(User* pUser) {
+void input_age(User* u) {
   int y = 2000, m = 1, d = 1;
   auto dt = DateTime::now();
 
@@ -369,13 +369,13 @@ void input_age(User* pUser) {
     bout.nl();
     y = static_cast<int>(dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
-    y = input_number<int>(y, 1900, dt.year() - 30);
+    y = input_number<int>(y, 1900, static_cast<int>(dt.year() - 30));
   } while (!a()->hangup_ && y < 1905);
 
   do {
     bout.nl();
     bout << "|#2Month you were born (1-12) : ";
-    m = input_number<int>(pUser->GetBirthdayMonth(), 1, 12);
+    m = input_number<int>(u->birthday_month(), 1, 12);
   } while (!a()->hangup_ && (m > 12 || m < 1));
 
   do {
@@ -390,13 +390,9 @@ void input_age(User* pUser) {
     }
     bout.nl();
     bout << "|#2Day of month you were born (1-31) : ";
-    d = input_number<int>(pUser->GetBirthdayDay(), 1, days_in_month.at(m));
+    d = input_number<int>(u->birthday_mday(), 1, days_in_month.at(m));
   } while (!a()->hangup_ && (d > 31 || d < 1));
-  pUser->SetBirthdayMonth(m);
-  pUser->SetBirthdayDay(d);
-  pUser->SetBirthdayYear(y);
-  pUser->SetAge(
-      years_old(pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(), pUser->GetBirthdayYear()));
+  u->birthday_mdy(m, d, y);
   bout.nl();
 }
 
@@ -788,9 +784,7 @@ void VerifyNewUserFullInfo() {
     bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
     bout << "|#94) Phone No.     : |#2" << u->GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#95) Gender        : |#2" << u->GetGender() << wwiv::endl;
-    bout << "|#96) Birthdate     : |#2" << static_cast<int>(u->GetBirthdayMonth()) << "/"
-         << static_cast<int>(u->GetBirthdayDay()) << "/" << static_cast<int>(u->GetBirthdayYear())
-         << wwiv::endl;
+    bout << "|#96) Birthdate     : |#2" << u->birthday_mmddyy() << wwiv::endl;
     bout << "|#97) Computer type : |#2" << ctypes(u->GetComputerType()) << wwiv::endl;
     bout << "|#98) Screen size   : |#2" << u->GetScreenChars() << " X " << u->GetScreenLines()
          << wwiv::endl;
@@ -896,9 +890,7 @@ void WriteNewUserInfoToSysopLog() {
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << fmt::format("-> {} (Data)", u->GetDataPhoneNumber());
   }
-  sysoplog() << fmt::sprintf("-> %02d/%02d/%02d (%d yr old %s)", u->GetBirthdayMonth(),
-                             u->GetBirthdayDay(), u->GetBirthdayYear(), u->GetAge(),
-                             ((u->GetGender() == 'M') ? "Male" : "Female"));
+  sysoplog() << fmt::format("-> {} ({} yr old {})", u->birthday_mmddyy(), u->age(), u->GetGender());
   sysoplog() << fmt::format("-> Using a {} Computer", ctypes(u->GetComputerType()));
   if (u->GetWWIVRegNumber()) {
     sysoplog() << fmt::sprintf("-> WWIV Registration # %ld", u->GetWWIVRegNumber());
@@ -1266,7 +1258,7 @@ void DoMinimalNewUser() {
     bout.nl();
     bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
     bout.SavePosition();
-    if (u->GetAge() == 0) {
+    if (u->age() == 0) {
       bool ok = false;
       bout.SavePosition();
       do {
@@ -1296,14 +1288,12 @@ void DoMinimalNewUser() {
     if (a()->hangup_) {
       return;
     }
-    u->SetBirthdayMonth(m);
-    u->SetBirthdayDay(d);
-    u->SetBirthdayYear(y);
-    u->SetAge(years_old(m, d, y));
+    u->birthday_mdy(m, d, y);
     cln_nu();
-    bout << "|#2" << mon[std::max<int>(0, u->GetBirthdayMonth() - 1)] << " " << u->GetBirthdayDay()
-         << ", " << u->GetBirthdayYear() << " (" << static_cast<int>(u->GetAge()) << " years old)\r\n"
-         << "|#1[C] Sex (Gender)            : ";
+    auto dt = u->birthday_dt().to_string("%B %d, %Y");
+
+    bout.format("|#2{} ({} years old)\r\n", dt, static_cast<int>(u->age()));
+    bout << "|#1[C] Sex (Gender)            : ";
     bout.SavePosition();
     if (u->GetGender() != 'M' && u->GetGender() != 'F') {
       bout.mpl(1);
@@ -1395,9 +1385,7 @@ void DoMinimalNewUser() {
       u->set_name("");
       break;
     case 'B':
-      u->SetAge(0);
-      // s1 = fmt::sprintf("%02d/%02d/%02d", u->GetBirthdayDay(), u->GetBirthdayMonth(),
-      //        u->GetBirthdayYear());
+      u->birthday_mdy(0, 0, 0);
       break;
     case 'C':
       u->SetGender('N');

@@ -331,7 +331,7 @@ void list_users(int mode) {
       if (user.GetSl() < s.readsl) {
         ok = false;
       }
-      if (user.GetAge() < s.age) {
+      if (user.age() < s.age) {
         ok = false;
       }
       if (s.ar != 0 && !user.HasArFlag(s.ar)) {
@@ -342,7 +342,7 @@ void list_users(int mode) {
       if (user.GetDsl() < d.dsl) {
         ok = false;
       }
-      if (user.GetAge() < d.age) {
+      if (user.age() < d.age) {
         ok = false;
       }
       if (d.dar != 0 && !user.HasDarFlag(d.dar)) {

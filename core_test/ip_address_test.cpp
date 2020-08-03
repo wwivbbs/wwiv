@@ -41,5 +41,5 @@ TEST_F(IpAddressTest, Smoke_Home_V6) {
   auto o = ip_address::from_string("::1");
   EXPECT_TRUE(o.has_value());
   auto a = o.value();
-  EXPECT_EQ("[::1]", a.to_string());
+  EXPECT_EQ("::1", a.to_string());
 }

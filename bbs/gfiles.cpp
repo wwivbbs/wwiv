@@ -507,7 +507,7 @@ void gfiles() {
   std::set<char> odc;
   for (const auto& r : a()->gfilesec) {
     bool ok = true;
-    if (a()->user()->GetAge() < r.age) {
+    if (a()->user()->age() < r.age) {
       ok = false;
     }
     if (a()->effective_sl() < r.sl) {
