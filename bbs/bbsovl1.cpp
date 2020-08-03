@@ -48,6 +48,7 @@
 #include <string>
 
 using std::string;
+using namespace std::chrono;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -95,10 +96,8 @@ void YourInfo() {
   const auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() +
                          a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
-  const auto seconds_used = static_cast<int>(a()->user()->GetTimeOn());
   const auto minutes_used =
-      (seconds_used / SECONDS_PER_MINUTE) +
-      std::chrono::duration_cast<std::chrono::minutes>(a()->duration_used_this_session()).count();
+      duration_cast<minutes>(a()->user()->timeon()  + a()->duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics

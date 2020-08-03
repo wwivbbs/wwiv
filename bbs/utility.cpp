@@ -147,10 +147,10 @@ long nsl() {
   const auto tpd = minutes(a()->effective_slrec().time_per_day);
   const auto extra_time =
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
-  const auto tlc = tpl - tot + extra_time;
-  const auto tlt = std::min(
-      tlc, tpd - tot -
-               seconds(std::lround(a()->user()->GetTimeOnToday() + a()->user()->GetExtraTime())));
+  const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time);
+  // time left today
+  auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeon() + a()->user()->extra_time());
+  const auto tlt = std::min<seconds>(tlc, tld);
   a()->SetTimeOnlineLimited(false);
   return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
 }

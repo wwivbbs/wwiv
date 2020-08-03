@@ -222,7 +222,7 @@ void Application::tleft(bool check_for_timeout) {
 
   // Check for tineout 1st.
   if (check_for_timeout && IsUserOnline()) {
-    if (nsln == 0.0) {
+    if (nsln == 0) {
       bout << "\r\nTime expired.\r\n\n";
       Hangup();
     }

@@ -442,17 +442,10 @@ static void FixUserLinesAndColors() {
 
 static void UpdateUserStatsForLogin() {
   to_char_array(g_szLastLoginDate, date());
-  if (a()->user()->GetLastOn() == g_szLastLoginDate) {
-    a()->user()->SetTimesOnToday(a()->user()->GetTimesOnToday() + 1);
-  } else {
-    a()->user()->SetTimesOnToday(1);
-    a()->user()->SetTimeOnToday(0.0);
-    a()->user()->SetExtraTime(0.0);
-    a()->user()->SetNumPostsToday(0);
-    a()->user()->SetNumEmailSentToday(0);
-    a()->user()->SetNumFeedbackSentToday(0);
+  if (a()->user()->GetLastOn() != g_szLastLoginDate) {
+    wwiv::sdk::ResetTodayUserStats(a()->user());
   }
-  a()->user()->SetNumLogons(a()->user()->GetNumLogons() + 1);
+  wwiv::sdk::AddCallToday(a()->user());
   a()->set_current_user_sub_num(0);
   a()->SetNumMessagesReadThisLogon(0);
   if (a()->udir[0].subnum == 0 && a()->udir[1].subnum > 0) {

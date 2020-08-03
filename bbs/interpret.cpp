@@ -55,8 +55,8 @@ std::string MacroContext::interpret(char ch) const {
       break;
     case '#':                               // User's number
       return to_string(a()->usernum);
-    case '$':                               // File points
-      return to_string(u().GetFilePoints());
+    case '$':                               // File points (UNUSED)
+      return "0"; //to_string(u().GetFilePoints());
     case '*':                               // User reg num
       return to_string(u().GetWWIVRegNumber());
     case '-':                               // Aggravation points

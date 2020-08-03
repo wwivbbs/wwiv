@@ -20,6 +20,7 @@
 
 #include "core/datetime.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
@@ -31,7 +32,6 @@
 #include <iostream>
 #include <memory>
 #include <random>
-#include "core/stl.h"
 
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -121,8 +121,8 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->SetSl(sl);
   u->SetDsl(dsl);
 
-  u->SetTimesOnToday(1);
-  u->SetLastOnDateNumber(0);
+  u->data.ontoday = 1;
+  u->data.daten = 0;
   u->SetRestriction(restr);
 
   u->SetStatusFlag(User::pauseOnPage);
@@ -159,44 +159,50 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   return true;
 }
 
-// TODO(rushfan): May be able to templatize these.
 seconds User::add_extratime(duration<double> extra) {
-  auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
-  extratime_seconds += duration_cast<seconds>(extra).count();
-  SetExtraTime(static_cast<float>(extratime_seconds));
-  return seconds(extratime_seconds);
+  data.extratime += duration_cast<seconds>(extra).count();
+  return seconds(static_cast<int64_t>(data.extratime));
 }
 
 seconds User::subtract_extratime(duration<double> extra) {
-  auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
-  extratime_seconds -= duration_cast<seconds>(extra).count();
-  SetExtraTime(static_cast<float>(extratime_seconds));
-  return seconds(extratime_seconds);
+  data.extratime -= duration_cast<seconds>(extra).count();
+  return seconds(static_cast<int64_t>(data.extratime));
 }
 
 std::chrono::duration<double> User::extra_time() const noexcept{
-  auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
+  auto extratime_seconds = static_cast<int64_t>(data.extratime);
   return seconds(extratime_seconds);
 }
 
 seconds User::add_timeon(duration<double> d) {
-  auto timeon = static_cast<int64_t>(GetTimeOn());
-  timeon += duration_cast<seconds>(d).count();
-  SetTimeOn(static_cast<float>(timeon));
-  return seconds(timeon);
+  data.timeon += duration_cast<seconds>(d).count();
+  return seconds(static_cast<int64_t>(data.timeon));
 }
 
 seconds User::add_timeon_today(duration<double> d) {
-  auto t = static_cast<int64_t>(GetTimeOnToday());
-  t += duration_cast<seconds>(d).count();
-  SetTimeOnToday(static_cast<float>(t));
-  return seconds(t);
+  data.timeontoday += duration_cast<seconds>(d).count();
+  return seconds(static_cast<int64_t>(data.timeontoday));
 }
 
 seconds User::timeon() const {
-  auto secs_used = static_cast<int64_t>(GetTimeOn());
+  auto secs_used = static_cast<int64_t>(data.timeon);
   return seconds(secs_used);
 }
+
+void ResetTodayUserStats(User* u) {
+  u->data.ontoday = 0;
+  u->data.timeontoday = 0;
+  u->data.extratime = 0.0;
+  u->SetNumPostsToday(0);
+  u->SetNumEmailSentToday(0);
+  u->SetNumFeedbackSentToday(0);
+}
+
+int AddCallToday(User* u) { 
+  u->SetNumLogons(u->GetNumLogons() + 1); 
+  return ++u->data.ontoday;
+}
+
 
 } // namespace sdk
 } // namespace wwiv

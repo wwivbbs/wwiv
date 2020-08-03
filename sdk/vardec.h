@@ -165,7 +165,7 @@ struct userrec {
   // user's WWIV reg number
   uint32_t wwiv_regnum;
   // points to spend for files
-  uint32_t filepoints;
+  uint32_t unused_filepoints;
   // numerical registration date
   daten_t unused_registered;
   // numerical expiration date
@@ -178,16 +178,17 @@ struct userrec {
   // reserved for long values
   char res_long[40];
 
-  // time on today
+  // time on today in seconds.
   float timeontoday;
-  // time left today
+  // extra seconds to add to the call/day.  This can come from many
+  // places.
   float extratime;
   // total time on system
   float timeon;
   // $ credit
-  float pos_account;
+  float unused_pos_account;
   // $ debit
-  float neg_account;
+  float unused_neg_account;
 
   // game money
   float gold;

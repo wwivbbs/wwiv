@@ -471,7 +471,7 @@ Bill               User real name
 User callsign (HAM radio)
 21                 User age
 M                  User sex
-16097.00         User gold
+16097.00           User gold
 05/19/89           User last logon date
 80                 User colums
 25                 User width
@@ -480,7 +480,7 @@ M                  User sex
 1                  1 if SysOp, 0 if not
 1                  1 if ANSI, 0 if not
 0                  1 if at remote, 0 if local console
-2225.78         User number of seconds left till logoff
+2225.78            User number of seconds left till logoff
 F:\WWIV\GFILES\    System GFILES directory (gen. txt files)
 F:\WWIV\DATA\      System DATA directory
 890519.LOG         System log of the day

@@ -48,8 +48,7 @@ static constexpr uint32_t cfl_header = 0x80000000;
 constexpr int HOTKEYS_ON = 0;
 constexpr int HOTKEYS_OFF = 1;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 /**
  * User Class - Represents a User record
@@ -577,9 +576,6 @@ class User {
   [[nodiscard]] int GetTimesOnToday() const {
     return data.ontoday;
   }
-  void SetTimesOnToday(int n) {
-    data.ontoday = static_cast<uint8_t>(n);
-  }
   [[nodiscard]] int GetBirthdayMonth() const {
     return data.month;
   }
@@ -809,12 +805,6 @@ class User {
   void SetWWIVRegNumber(uint32_t l) {
     data.wwiv_regnum = l;
   }
-  [[nodiscard]] int GetFilePoints() const {
-    return data.filepoints;
-  }
-  void SetFilePoints(int l) {
-    data.filepoints = l;
-  }
   [[nodiscard]] daten_t GetNewScanDateNumber() const {
     return data.datenscan;
   }
@@ -822,18 +812,6 @@ class User {
     data.datenscan = l;
   }
 
-  [[nodiscard]] float GetTimeOnToday() const {
-    return data.timeontoday;
-  }
-  void SetTimeOnToday(float f) {
-    data.timeontoday = f;
-  }
-  [[nodiscard]] float GetExtraTime() const {
-    return data.extratime;
-  }
-  void SetExtraTime(float f) {
-    data.extratime = f;
-  }
   /** Adds extra time to the user, returns the new total extra time. */
   std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
   /** Subtracts extra time to the user, returns the new total extra time. */
@@ -846,9 +824,6 @@ class User {
   /** Returns the time on as seconds. */
   [[nodiscard]] float GetTimeOn() const {
     return data.timeon;
-  }
-  void SetTimeOn(float f) {
-    data.timeon = f;
   }
   [[nodiscard]] float GetGold() const {
     return data.gold;
@@ -905,9 +880,12 @@ class User {
     uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
     const std::vector<uint8_t>& newuser_colors,
     const std::vector<uint8_t>& newuser_bwcolors);
+
 };
 
-}  // namespace sdk
-}  // namespace wwiv
+void ResetTodayUserStats(User* u);
+int AddCallToday(User* u);
+
+  }  // namespace wwiv::sdk
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__
