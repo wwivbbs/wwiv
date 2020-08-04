@@ -121,7 +121,7 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = window_top_min_;
       break;
     case KEY_END:
-      window_top_ = items_.size() - height_ + window_top_min_;
+      window_top_ = ssize(items_) - height_ + window_top_min_;
       selected_ = window_top_ - window_top_min_;
       break;
 #ifdef __PDCURSES__

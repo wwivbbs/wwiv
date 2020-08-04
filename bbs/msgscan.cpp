@@ -1125,17 +1125,27 @@ static void network_validate() {
   }
 }
 
-static void query_post() {
+// asks if user wants to post, returns true if done, meaning
+// user says Yes (and posts) or No.
+static bool query_post() {
   if (!a()->user()->IsRestrictionPost() &&
       (a()->user()->GetNumPostsToday() < a()->effective_slrec().posts) &&
       (a()->effective_sl() >= a()->current_sub().postsl)) {
-    bout << "|#5Post on " << a()->current_sub().name << "? ";
+    bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->context().clear_irt();
     clear_quotes();
-    if (yesno()) {
+    auto q = ynq();
+    if (q == 'Y') {
       post(PostData());
+      return true;
     }
+    if (q == 'N') {
+      return true;
+    }
+    return false;
   }
+  bout << "|#5Move to the next sub?";
+  return yesno();
 }
 
 static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
@@ -1242,14 +1252,20 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       }
     } break;
     }
+    if (done) {
+      if ((val & 1) && lcs()) {
+        validate();
+      }
+      if ((val & 2) && lcs()) {
+        network_validate();
+      }
+      done = query_post();
+      if (!done) {
+        // back to list title.s
+        scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;
+      }
+    }
   }
-  if ((val & 1) && lcs()) {
-    validate();
-  }
-  if ((val & 2) && lcs()) {
-    network_validate();
-  }
-  query_post();
 }
 
 void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
