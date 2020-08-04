@@ -651,6 +651,19 @@ static void CheckAndUpdateUserInfo() {
   }
 }
 
+static std::string to_string(const net_networks_rec& n) {
+  switch (n.type) { case network_type_t::ftn:
+    return fmt::format("|#9(|#1{}|#9@|#2{}|#9) ", n.fido.fido_address, n.name);
+  case network_type_t::internet:
+    return fmt::format("|#9(|#2{}|#9@|#1Internet|#9) ", n.name);
+  case network_type_t::news:
+    return fmt::format("|#9(|#2{}|#9@|#1News|#9) ", n.name);
+  case network_type_t::wwivnet:
+  default:
+    return fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
+  }
+}
+
 static void DisplayUserLoginInformation() {
   bout.nl();
 
@@ -701,7 +714,7 @@ static void DisplayUserLoginInformation() {
   int width = 0;
   bout << "|#9Networks|#0.......... ";
   for (const auto& n : a()->nets().networks()) {
-    const auto s = fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
+    const auto s = to_string(n);
     const auto len = size_without_colors(s);
     if (width + len >= screen_width) {
       bout.nl();
