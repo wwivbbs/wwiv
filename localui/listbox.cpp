@@ -124,8 +124,9 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = items_.size() - height_ + window_top_min_;
       selected_ = window_top_ - window_top_min_;
       break;
-
-    case KEY_A2:  // upper middle on Virt. keypad. Win10 Terminal started using this
+#ifdef __PDCURSES__
+    case KEY_A2:       // upper middle on Virt. keypad. Win10 Terminal started using this
+#endif
     case KEY_PREVIOUS: // What is this key?
     case KEY_UP:
       if (selected_ + window_top_min_ == window_top_) {
@@ -144,7 +145,9 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = std::max<int>(window_top_, window_top_min_);
       selected_ = std::max<int>(selected_, 0);
     } break;
-    case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
+#ifdef __PDCURSES__
+    case KEY_C2:   // lower middle on Virt. keypad. Win10 Terminal started using this.
+#endif
     case KEY_NEXT: // What is this key?
     case KEY_DOWN: {
       int window_bottom = window_top_ + height_ - window_top_min_ - 1;

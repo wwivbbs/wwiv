@@ -68,13 +68,17 @@ static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfi
         return config.up10;
       case KEY_NPAGE:
         return config.down10;
+#ifdef __PDCURSES__
       case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
+#endif
       case KEY_LEFT:
       case KEY_UP:
         return config.up;
       case KEY_RIGHT:
       case KEY_DOWN:
+#ifdef __PDCURSES__
       case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
+#endif
         return config.dn;
       default:
         continue;
