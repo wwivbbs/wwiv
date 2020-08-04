@@ -230,8 +230,10 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_F(10):
     return F10;
 
+  case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
   case KEY_UP:
     return UPARROW;
+  case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
   case KEY_DOWN:
     return DNARROW;
   case KEY_HOME:
