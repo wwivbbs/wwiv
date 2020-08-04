@@ -240,8 +240,10 @@ static int CursesToWin32KeyCodes(int curses_code) {
     return HOME;
   case KEY_END:
     return END;
+  case KEY_B1: // middle left on Virt. keypad. Win10 Terminal started using this.
   case KEY_LEFT:
     return LARROW;
+  case KEY_B3: // middle right on Vir. keypad. Win10 Terminal started using this.
   case KEY_RIGHT:
     return RARROW;
   case KEY_DELETE:
