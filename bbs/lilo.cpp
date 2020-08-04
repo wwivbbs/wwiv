@@ -584,10 +584,6 @@ static void UpdateLastOnFile() {
     const auto remote_address = a()->remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
-      auto ipaddr = ip_address::from_string(remote_address);
-      if (ipaddr) {
-        a()->user()->last_address(ipaddr.value());
-      }
     }
   }
   if (a()->effective_sl() == 255 && !a()->context().incom()) {
@@ -674,6 +670,7 @@ static void DisplayUserLoginInformation() {
   if (!la.empty()) {
     bout << "|#9Last IP Address|#0... |#2" << a()->user()->last_address() << wwiv::endl;
   }
+
   bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE
        << wwiv::endl;
   if (a()->user()->GetNumIllegalLogons() > 0) {
@@ -700,26 +697,21 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->RefreshStatusCache();
-  for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
-    if (a()->nets()[i].sysnum) {
-      std::ostringstream ss;
-      const auto& n = a()->nets().at(i);
-      ss << "|#9" << n.name << " node|#0" << std::string(13 - n.name.size(), ' ') << "|#2 @" << n.sysnum;
-      auto s1 = ss.str();
-      if (i) {
-        bout << s1;
-        bout.nl();
-      } else {
-        int i1;
-        for (i1 = s1.size(); i1 < 26; i1++) {
-          s1[i1] = ' ';
-        }
-        s1[i1] = '\0';
-        auto status = a()->status_manager()->GetStatus();
-        bout << s1 << "(net" << status->GetNetworkVersion() << ")\r\n";
-      }
+  const auto screen_width = a()->user()->GetScreenChars() - 19;
+  int width = 0;
+  bout << "|#9Networks|#0.......... ";
+  for (const auto& n : a()->nets().networks()) {
+    const auto s = fmt::format("|#9(|#2@{}|#9.|#1{}|#9) ", n.sysnum, n.name);
+    const auto len = size_without_colors(s);
+    if (width + len >= screen_width) {
+      bout.nl();
+      bout << "|#9Networks|#0.......... ";
+      width = 0;
     }
+    bout.bputs(s);
+    width += len;
   }
+  bout.nl();
 
   bout << "|#9OS|#0................ |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance|#0.......... |#2" << a()->instance_number() << "\r\n\n";
@@ -810,6 +802,23 @@ static void CheckUserForVotingBooth() {
   }
 }
 
+// Updates the User::last_address field since we've already displayed
+// it to the user from the last session.
+static void UpdateLastAddress() {
+  if (!a()->context().incom()) {
+    return;
+  }
+  const auto remote_address = a()->remoteIO()->remote_info().address;
+  if (remote_address.empty()) {
+    return;
+  }
+  auto ipaddr = ip_address::from_string(remote_address);
+  if (!ipaddr) {
+    return;
+  }
+  a()->user()->last_address(ipaddr.value());
+}
+
 void logon() {
   if (a()->usernum < 1) {
     Hangup();
@@ -841,6 +850,7 @@ void logon() {
   }
 
   DisplayUserLoginInformation();
+  UpdateLastAddress();
 
   CheckAndUpdateUserInfo();
 
