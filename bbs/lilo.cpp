@@ -584,6 +584,10 @@ static void UpdateLastOnFile() {
     const auto remote_address = a()->remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
+      auto ipaddr = ip_address::from_string(remote_address);
+      if (ipaddr) {
+        a()->user()->last_address(ipaddr.value());
+      }
     }
   }
   if (a()->effective_sl() == 255 && !a()->context().incom()) {
@@ -665,6 +669,10 @@ static void DisplayUserLoginInformation() {
                        << "<" << a()->internetFullEmailAddress << ">\r\n";
   } else {
     bout << "None.\r\n";
+  }
+  auto la = a()->user()->last_address();
+  if (!la.empty()) {
+    bout << "|#9Last IP Address|#0... |#2" << a()->user()->last_address() << wwiv::endl;
   }
   bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE
        << wwiv::endl;

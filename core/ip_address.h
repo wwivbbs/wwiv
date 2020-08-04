@@ -35,6 +35,9 @@ public:
 
 
   [[nodiscard]] std::string to_string() const;
+
+  /** True if this IP Address is an empty address (i.e. 0.0.0.0 or ::) */
+  [[nodiscard]] bool empty() const;
   [[nodiscard]] static std::optional<ip_address> from_string(const std::string&);
   friend inline bool operator==(const ip_address& lhs, const ip_address& rhs);
   friend inline bool operator!=(const ip_address& lhs, const ip_address& rhs);

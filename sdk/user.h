@@ -21,6 +21,7 @@
 #define __INCLUDED_WUSER_H__
 
 #include "core/datetime.h"
+#include "core/ip_address.h"
 #include "core/strings.h"
 #include "sdk/net/net.h"
 #include "sdk/vardec.h"
@@ -573,21 +574,31 @@ class User {
   [[nodiscard]] int GetTimesOnToday() const {
     return data.ontoday;
   }
-  /** Sets the birthday to month m, day d, year y */
+  /** 
+   * Sets the birthday to month m (1-12), day d (1-31), 
+   * year y (full 4 year date)
+   */
   void birthday_mdy(int m, int d, int y);
 
+  /** Gets the current user's birthday month (1-12) */
   [[nodiscard]] int birthday_month() const {
     return data.month;
   }
 
+  /** Gets the current user's birthday day of the month (1-31) */
   [[nodiscard]] int birthday_mday() const {
     return data.day;
   }
+
+  /** Gets the current user's birthday year (i.e. 1990) */
   [[nodiscard]] int birthday_year() const {
     return data.year + 1900;
   }
 
+  /** Gets the current user's birthday as a DateTime */
   [[nodiscard]] wwiv::core::DateTime birthday_dt() const;
+
+  /** Gets the current user's birthday as a string in format "mm/dd/yy" */
   [[nodiscard]] std::string birthday_mmddyy() const;
 
   [[nodiscard]] int GetLanguage() const {
@@ -802,17 +813,25 @@ class User {
 
   /** Adds extra time to the user, returns the new total extra time. */
   std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
+  
   /** Subtracts extra time to the user, returns the new total extra time. */
   std::chrono::seconds subtract_extratime(std::chrono::duration<double> extra);
+
+  /** Total extra time awarded to this user */
   [[nodiscard]] std::chrono::duration<double> extra_time() const noexcept;
+  
   /** Time online in total, in seconds */
   [[nodiscard]] std::chrono::seconds timeon() const;
+  
   /** Time online today, in seconds */
   [[nodiscard]] std::chrono::seconds timeontoday() const;
+  
   /** Add 'd' to the time online in total */
   std::chrono::seconds add_timeon(std::chrono::duration<double> d);
+  
   /** Add 'd' to the time online for today */
   std::chrono::seconds add_timeon_today(std::chrono::duration<double> d);
+
   /** Returns the time on as seconds. */
   [[nodiscard]] float gold() const {
     return data.gold;
@@ -848,8 +867,14 @@ class User {
     SetForwardUserNumber(0);
   }
 
+  /** Sets the last IP address from which this user connected. */
+  void last_address(const wwiv::core::ip_address& a) { data.last_address = a; }
+
+  /** Returns the last IP address from which this user connected. */
+  wwiv::core::ip_address last_address() const { return data.last_address; }
+
   /**
-   * Creates a random password.
+   * Creates a random password in the user's password field.
    */
   bool CreateRandomPassword();
 
@@ -857,13 +882,16 @@ class User {
   [[nodiscard]] bool hotkeys() const;
   void set_hotkeys(bool enabled);
 
-  /** Menu Item */
+  /** The current menu set for the user */
   [[nodiscard]] std::string menu_set() const;
+  
+  /** Sets the current menu set */
   void set_menu_set(const std::string& menu_set);
 
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods
 
+  /** Creates a new user record in 'u' using the default values passed */
   static bool CreateNewUserRecord(User* u,
     uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
     const std::vector<uint8_t>& newuser_colors,
@@ -871,10 +899,15 @@ class User {
 
 };
 
+/** Reset today's user statistics for user u */
 void ResetTodayUserStats(User* u);
+
+/** Increments both the total calls and today's call stats for user 'u' */
 int AddCallToday(User* u);
+
+/** Returns the age in years for user 'u' */
 int years_old(const User* u);
 
-  }  // namespace wwiv::sdk
+}  // namespace wwiv::sdk
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

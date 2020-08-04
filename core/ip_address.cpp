@@ -67,6 +67,15 @@ std::string ip_address::to_string() const {
   return s;
 }
 
+bool ip_address::empty() const {
+  for (const auto d : data_) {
+    if (d != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::optional<ip_address> ip_address::from_string(const std::string& s) { 
   char d[16];
   auto addr{s};

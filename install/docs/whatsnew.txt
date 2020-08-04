@@ -130,6 +130,9 @@ What's New in WWIV 5.5 (2020)
 + Added a help file (FSED.MSG) for the internal full screen 
   message editor. Please add it to your wwiv install under
   the gfiles/ directory.
++ Last IP Address for a user is now saved with the user record and displayed
+  at logon time in lilo.
+
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
