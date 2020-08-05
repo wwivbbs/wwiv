@@ -221,6 +221,10 @@ static FtnControlLineType determine_kludge_line_type(const std::string& line) {
 }
 
 string FidoToWWIVText(const string& ft, bool convert_control_codes) {
+  // Some editors just use \n for line endings, we need \r\n for
+  // FidoToWWIVText to work.  Replace the sole \n with \r\n
+  const auto lf_only = ft.find('\r') == std::string::npos;
+
   // Split text into lines and process one at a time
   // this is easier to handle control lines, etc.
   string wt;
@@ -230,7 +234,11 @@ string FidoToWWIVText(const string& ft, bool convert_control_codes) {
       // FIDOnet style Soft CR. Convert to CR
       wt.push_back(13);
     } else if (c == 10) {
-      // NOP. We're skipping LF's so we can split on CR
+      // NOP. We're skipping LF's so we can split on CR unless we only
+      // have LF.
+      if (lf_only) {
+        wt.push_back(13);
+      }
     } else {
       wt.push_back(c);
     }
