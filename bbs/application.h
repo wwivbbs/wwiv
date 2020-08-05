@@ -313,7 +313,7 @@ public:
    */
   int Run(int argc, char* argv[]) override;
 
-  int ExitBBSImpl(int exit_level, bool perform_shutdown);
+  [[noreturn]] int ExitBBSImpl(int exit_level, bool perform_shutdown);
 
   [[nodiscard]] bool InitializeBBS(bool cleanup_network); // old init() method
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp

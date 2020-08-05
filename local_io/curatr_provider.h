@@ -21,8 +21,7 @@
 
 #include <cstdint>
 
-namespace wwiv {
-namespace local_io {
+namespace wwiv::local_io {
 
 class curatr_provider {
 public:
@@ -31,7 +30,6 @@ public:
   virtual void curatr(int n) = 0;
 };
 
-} // namespace local_io
-} // namespace wwiv
+} // namespace wwiv::local_io
 
 #endif // __INCLUDED_CURATR_PROVIDER_H__

@@ -410,12 +410,12 @@ bool Win32ConsoleIO::KeyPressed() {
  */
 unsigned char Win32ConsoleIO::GetChar() {
   if (extended_key_waiting_) {
-    extended_key_waiting_ = 0;
+    extended_key_waiting_ = false;
     return GetKeyboardChar();
   }
   unsigned char rc = GetKeyboardChar();
   if (rc == 0 || rc == 0xe0) {
-    extended_key_waiting_ = 1;
+    extended_key_waiting_ = true;
   }
   return rc;
 }

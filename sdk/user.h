@@ -307,8 +307,12 @@ class User {
   void ClearArFlag(int nFlag) {
     data.ar &= ~nFlag;
   }
-  [[nodiscard]] bool HasArFlag(int nFlag) const {
-    return (data.ar & nFlag) != 0;
+  [[nodiscard]] bool HasArFlag(int ar) const {
+    if (ar == 0) {
+      // Always have the empty ar
+      return true;
+    }
+    return (data.ar & ar) != 0;
   }
   [[nodiscard]] int GetAr() const {
     return data.ar;
@@ -327,6 +331,10 @@ class User {
     data.dar &= ~nFlag;
   }
   [[nodiscard]] bool HasDarFlag(int nFlag) const {
+    if (nFlag == 0) {
+      // Always have the empty dar
+      return true;
+    }
     return (data.dar & nFlag) != 0;
   }
   [[nodiscard]] int GetDar() const {

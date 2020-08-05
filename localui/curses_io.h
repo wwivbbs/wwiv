@@ -16,12 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_CURSES_IO_H__
-#define __INCLUDED_PLATFORM_CURSES_IO_H__
+#ifndef __INCLUDED_LOCALUI_CURSES_IO_H__
+#define __INCLUDED_LOCALUI_CURSES_IO_H__
 
-#include <memory>
 #include "curses_win.h"
 #include "colors.h"
+#include <memory>
+#include <vector>
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT

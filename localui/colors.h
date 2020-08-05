@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_COLORS_H__
-#define __INCLUDED_PLATFORM_COLORS_H__
+#ifndef __INCLUDED_LOCALUI_COLORS_H__
+#define __INCLUDED_LOCALUI_COLORS_H__
 
 #include <map>
 #include <memory>

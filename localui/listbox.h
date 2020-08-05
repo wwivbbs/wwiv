@@ -16,17 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_LISTBOX_H__
-#define __INCLUDED_PLATFORM_LISTBOX_H__
+#ifndef __INCLUDED_LOCALUI_LISTBOX_H__
+#define __INCLUDED_LOCALUI_LISTBOX_H__
 
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "localui/curses_io.h"
-#include "localui/curses_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -38,7 +37,7 @@ class ListBoxItem {
 public:
   ListBoxItem(const std::string& text, int hotkey = 0, int data = 0)
       : text_(text), hotkey_(hotkey), data_(data) {}
-  ~ListBoxItem() {}
+  ~ListBoxItem() = default;
 
   const std::string& text() const noexcept { return text_; }
   int hotkey() const noexcept { return hotkey_; }
@@ -63,7 +62,7 @@ public:
   // Constructor/Destructor
   ListBox(UIWindow* parent, const std::string& title, std::vector<ListBoxItem>& items);
   ListBox(const ListBox& copy) = delete;
-  virtual ~ListBox() {}
+  virtual ~ListBox() = default;
 
   // Execute the listbox returning the index of the selected item.
   ListBoxResult Run() {
@@ -74,13 +73,13 @@ public:
   }
 
   // Returns the index of the selected item.
-  int selected() const { return selected_; }
-  void set_selected(int s) { selected_ = s; }
+  int selected() const noexcept { return selected_; }
+  void set_selected(int s) noexcept { selected_ = s; }
 
   // List of additionally allowed hotkeys.
   void set_additional_hotkeys(const std::string& hotkeys) { hotkeys_.append(hotkeys); }
   // If true, a selection will return as a hotkey if a hotkey is set on the item.
-  void selection_returns_hotkey(bool selection_returns_hotkey) {
+  void selection_returns_hotkey(bool selection_returns_hotkey) noexcept {
     selection_returns_hotkey_ = selection_returns_hotkey;
   }
   // Sets the extra help items.

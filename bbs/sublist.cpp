@@ -167,15 +167,12 @@ int get_new_posts_count(int subnum) {
 }
 
 void SubList() {
-  int p,
-      wc // color code
-      // message Index
-      ; // new message tally
+  int p, wc; // color code
   char ch;
   bool next;
 
-  int oldConf = a()->GetCurrentConferenceMessageArea();
-  int oldSub = a()->current_user_sub().subnum;
+  int oc = a()->GetCurrentConferenceMessageArea();
+  int old_sub = a()->current_user_sub().subnum;
   int sn = 0;  // current sub number
   auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
 
@@ -195,7 +192,7 @@ void SubList() {
       }
     }
   } else {
-    oldConf = -1;
+    oc = -1;
   }
 
   bool abort = false;
@@ -283,10 +280,10 @@ void SubList() {
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const std::string ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
-            for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
+            for (auto i2 = 0; i2 < ssize(a()->subs().subs()); i2++) {
               if (ss == a()->usub[i2].keys) {
                 a()->set_current_user_sub_num(i2);
-                oldSub = a()->current_user_sub().subnum;
+                old_sub = a()->current_user_sub().subnum;
                 done = true;
                 abort = true;
               }
@@ -295,7 +292,7 @@ void SubList() {
             switch (ss[0]) {
             case 'Q': {
               if (okconf(a()->user())) {
-                setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
+                setuconf(ConferenceType::CONF_SUBS, oc, old_sub);
               }
               done = true;
               abort = true;
@@ -342,14 +339,14 @@ void SubList() {
           if (okconf(a()->user())) {
             jump_conf(ConferenceType::CONF_SUBS);
           }
-          sn = en = oldConf = a()->GetCurrentConferenceMessageArea();
+          sn = en = oc = a()->GetCurrentConferenceMessageArea();
           ns = i = 0;
         }
         if (isdigit(ss.front())) {
           for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
             if (ss == a()->usub[i2].keys) {
               a()->set_current_user_sub_num(i2);
-              oldSub = a()->current_user_sub().subnum;
+              old_sub = a()->current_user_sub().subnum;
               done = true;
               abort = true;
             }
@@ -357,7 +354,7 @@ void SubList() {
         }
       } else {
         if (okconf(a()->user())) {
-          setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
+          setuconf(ConferenceType::CONF_SUBS, oc, old_sub);
         }
         done = true;
       }
@@ -369,7 +366,7 @@ void SubList() {
   } while (!a()->hangup_ && !done);
 
   if (okconf(a()->user())) {
-    setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);
+    setuconf(ConferenceType::CONF_SUBS, oc, old_sub);
   }
 }
 

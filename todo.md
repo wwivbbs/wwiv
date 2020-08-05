@@ -61,6 +61,8 @@ jq ".number" jenkins.json
 * simplify names in WUser
 * add to_number<T> override that takes a default value, and then change to_number<T>
   to return an std::optional<T> as the return type.
+* Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
+  types for characters >0xff. (i.e. KEY_LEFT not LEFT)
 
 
 ## core::File Improvements
