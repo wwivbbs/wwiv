@@ -671,7 +671,7 @@ void qwk_menu() {
     bout.cls();
     printfile("QWK");
     if (so()) {
-      bout.bputs("1) Sysop QWK config");
+      bout.bputs("|#11|#9) Sysop QWK config");
     }
 
     if (qwk_percent) {
@@ -685,7 +685,7 @@ void qwk_menu() {
       allowed.push_back('1');
     }
     allowed.append("7] ");
-    bout << allowed;
+    bout << "Command? ";
     bout.mpl(1);
 
     allowed = "Q\r?CDUBS%";

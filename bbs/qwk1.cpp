@@ -298,17 +298,20 @@ int select_qwk_archiver(struct qwk_junk* qwk_info, int ask) {
 }
 
 string qwk_which_zip() {
+  if (a()->user()->data.qwk_archive == 0) {
+    return "ASK";
+  }
+
   if (a()->user()->data.qwk_archive > 4) {
     a()->user()->data.qwk_archive = 0;
+    return "ASK";
   }
 
-  if (a()->arcs[a()->user()->data.qwk_archive - 1].extension[0] == 0) {
+  if (a()->arcs[a()->user()->data.qwk_archive - 1].extension[0] == '\0') {
     a()->user()->data.qwk_archive = 0;
+    return "ASK";
   }
 
-  if (a()->user()->data.qwk_archive == 0) {
-    return string("ASK");
-  }
   return a()->arcs[a()->user()->data.qwk_archive - 1].extension;
 }
 
@@ -1118,30 +1121,20 @@ void config_qwk_bw() {
   bool done = false;
 
   while (!done && !a()->hangup_) {
-    bout << "A) Scan E-Mail " << qwk_current_text(0);
+    bout << "|#1A|#9) Scan E-Mail                |#2" << qwk_current_text(0) << wwiv::endl;
+    bout << "|#1B|#9) Delete Scanned E-Mail      |#2" << qwk_current_text(1) << wwiv::endl;
+    bout << "|#1C|#9) Set N-Scan of messages     |#2" << qwk_current_text(2) << wwiv::endl;
+    bout << "|#1D|#9) Remove WWIV color codes    |#2" << qwk_current_text(3) << wwiv::endl;
+    bout << "|#1E|#9) Convert WWIV color to ANSI |#2" << qwk_current_text(4) << wwiv::endl;
+    bout << "|#1F|#9) Pack Bulletins             |#2" << qwk_current_text(5) << wwiv::endl;
+    bout << "|#1G|#9) Scan New Files             |#2" << qwk_current_text(6) << wwiv::endl;
+    bout << "|#1H|#9) Remove routing information |#2" << qwk_current_text(7) << wwiv::endl;
+    bout << "|#1I|#9) Archive to pack QWK with   |#2" << qwk_current_text(8) << wwiv::endl;
+    bout << "|#1J|#9) Default transfer protocol  |#2" << qwk_current_text(9) << wwiv::endl;
+    bout << "|#1K|#9) Max messages per pack      |#2" << qwk_current_text(10) << wwiv::endl;
+    bout << "|#1Q|#9) Done" << wwiv::endl;
     bout.nl();
-    bout << "B) Delete Scanned E-Mail " << qwk_current_text(1);
-    bout.nl();
-    bout << "C) Set N-Scan of messages " << qwk_current_text(2);
-    bout.nl();
-    bout << "D) Remove WWIV color codes " << qwk_current_text(3);
-    bout.nl();
-    bout << "E) Convert WWIV color to ANSI " << qwk_current_text(4);
-    bout.nl();
-    bout << "F) Pack Bulletins " << qwk_current_text(5);
-    bout.nl();
-    bout << "G) Scan New Files " << qwk_current_text(6);
-    bout.nl();
-    bout << "H) Remove routing information " << qwk_current_text(7);
-    bout.nl();
-    bout << "I) Archive to pack QWK with " << qwk_current_text(8);
-    bout.nl();
-    bout << "J) Default transfer protocol " << qwk_current_text(9);
-    bout.nl();
-    bout << "K) Max messages per pack " << qwk_current_text(10);
-    bout.nl();
-    bout << "Q) Done";
-
+    bout << "|#9Select? ";
     int key = onek("QABCDEFGHIJK");
 
     if (key == 'Q') {
