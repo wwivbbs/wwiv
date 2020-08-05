@@ -231,27 +231,34 @@ static int CursesToWin32KeyCodes(int curses_code) {
     return F10;
 
 #ifdef __PDCURSES__
+  case KEY_A1:
+    return HOME;
   case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
+    return UPARROW;
+  case KEY_A3:
+    return PGUP;
+  case KEY_B1: // middle left on Virt. keypad. Win10 Terminal started using this.
+    return LARROW;
+  case KEY_B3: // middle right on Vir. keypad. Win10 Terminal started using this.
+    return RARROW;
+  case KEY_C1:
+    return END;
+  case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
+    return DNARROW;
+  case KEY_C3:
+    return PGDN;
 #endif
+
   case KEY_UP:
     return UPARROW;
-#ifdef __PDCURSES__
-  case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
-#endif
   case KEY_DOWN:
     return DNARROW;
   case KEY_HOME:
     return HOME;
   case KEY_END:
     return END;
-#ifdef __PDCURSES__
-  case KEY_B1: // middle left on Virt. keypad. Win10 Terminal started using this.
-#endif
   case KEY_LEFT:
     return LARROW;
-#ifdef __PDCURSES__
-  case KEY_B3: // middle right on Vir. keypad. Win10 Terminal started using this.
-#endif
   case KEY_RIGHT:
     return RARROW;
   case KEY_DELETE:

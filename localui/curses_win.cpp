@@ -132,7 +132,33 @@ int CursesWindow::GetChar() const {
       // but don't return it as a key for the application to (badly) handle.
       continue;
     }
-    return ch;
+    switch (ch) {
+#ifdef __PDCURSES__
+    // Win10 Terminal started using these
+    case KEY_A1:
+      return KEY_HOME;
+    case KEY_A2: // upper middle on Virt. keypad. 
+      return KEY_UP;
+    case KEY_A3:
+      return KEY_PPAGE;
+    case KEY_B1: // middle left on Virt. keypad. Win10 Terminal started using this.
+      return KEY_LEFT;
+    case KEY_B3: // middle right on Vir. keypad. Win10 Terminal started using this.
+      return KEY_RIGHT;
+    case KEY_C1:
+      return KEY_END;
+    case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
+      return KEY_DOWN;
+    case KEY_C3:
+      return KEY_NPAGE;
+#endif
+#ifdef PADENTER
+    case PADENTER:
+      return KEY_ENTER;
+#endif
+    default:
+      return ch;
+    }
   }
 }
 

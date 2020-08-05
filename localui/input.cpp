@@ -68,17 +68,11 @@ static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfi
         return config.up10;
       case KEY_NPAGE:
         return config.down10;
-#ifdef __PDCURSES__
-      case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
-#endif
       case KEY_LEFT:
       case KEY_UP:
         return config.up;
       case KEY_RIGHT:
       case KEY_DOWN:
-#ifdef __PDCURSES__
-      case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
-#endif
         return config.dn;
       default:
         continue;
@@ -523,9 +517,6 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       pos = editlinestrlen(s);
       window->GotoXY(cx + pos, cy);
       break;
-#ifdef __PDCURSES__
-    case KEY_B3: // middle right on Vir. keypad. Win10 Terminal started using this.
-#endif
     case KEY_RIGHT:    // curses
       if (pos < len) { // right
         int nMaxPos = editlinestrlen(s);
@@ -535,9 +526,6 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         }
       }
       break;
-#ifdef __PDCURSES__
-    case KEY_B1: // middle left on Virt. keypad. Win10 Terminal started using this.
-#endif
     case KEY_LEFT:   // curses
       if (pos > 0) { // left
         pos--;
@@ -545,16 +533,10 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       }
       break;
     case CO:     // return
-#ifdef __PDCURSES__
-    case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
-#endif
     case KEY_UP: // curses
       done = true;
       rc = EditlineResult::PREV;
       break;
-#ifdef __PDCURSES__
-    case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
-#endif
     case KEY_DOWN: // curses
       done = true;
       rc = EditlineResult::NEXT;
@@ -582,6 +564,10 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         window->PutsXY(cx, cy, s);
         window->GotoXY(cx + pos, cy);
       }
+      break;
+    case KEY_PPAGE:
+    case KEY_NPAGE:
+      // Ignore page up and page down when editing a line.
       break;
     default: {
       if (raw_ch > 31) {
@@ -720,17 +706,11 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
       done = true;
       *rc = EditlineResult::DONE;
       break;
-#ifdef __PDCURSES__
-    case KEY_A2: // upper middle on Virt. keypad. Win10 Terminal started using this
-#endif
     case KEY_UP:   // UP
     case KEY_BTAB: // SHIFT-TAB
       done = true;
       *rc = EditlineResult::PREV;
       break;
-#ifdef __PDCURSES__
-    case KEY_C2: // lower middle on Virt. keypad. Win10 Terminal started using this.
-#endif
     case KEY_DOWN: // DOWN
       done = true;
       *rc = EditlineResult::NEXT;
