@@ -472,7 +472,7 @@ static void PrintLogonFile() {
 }
 
 static void PrintUserSpecificFiles() {
-  const User* user = a()->user();  // not-owned
+  const auto* user = a()->user();  // not-owned
   printfile(fmt::format("sl{}", user->GetSl()));
   printfile(fmt::format("dsl{}", user->GetDsl()));
 
@@ -726,7 +726,7 @@ static void DisplayUserLoginInformation() {
   }
   bout.nl();
 
-  bout << "|#9OS|#0................ |#2" << wwiv::os::os_version_string() << wwiv::endl;
+  bout << "|#9Host OS|#0........... |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance|#0.......... |#2" << a()->instance_number() << "\r\n\n";
   if (a()->user()->GetForwardUserNumber()) {
     if (a()->user()->GetForwardSystemNumber() != 0) {
@@ -789,15 +789,16 @@ static vector<bool> read_voting() {
   vector<votingrec> votes;
   DataFile<votingrec> file(FilePath(a()->config()->datadir(), VOTING_DAT));
   vector<bool> questused(20);
-  if (file) {
-    file.ReadVector(votes);
-    int cur = 0;
-    for (const auto& v : votes) {
-      if (v.numanswers != 0) {
-        questused[cur] = true;
-      }
-      ++cur;
+  if (!file) {
+    return questused;
+  }
+  file.ReadVector(votes);
+  int cur = 0;
+  for (const auto& v : votes) {
+    if (v.numanswers != 0) {
+      questused[cur] = true;
     }
+    ++cur;
   }
   return questused;
 }
@@ -869,8 +870,6 @@ void logon() {
 
   a()->UpdateTopScreen();
   a()->read_subs();
-  // Is this needed? Doesn't read_subs do it?
-  a()->subs().Load();
   rsm(a()->usernum, a()->user(), true);
 
   LoginCheckForNewMail();
