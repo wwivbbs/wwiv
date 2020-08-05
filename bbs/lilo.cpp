@@ -653,7 +653,7 @@ static void CheckAndUpdateUserInfo() {
 
 static std::string to_string(const net_networks_rec& n) {
   switch (n.type) { case network_type_t::ftn:
-    return fmt::format("|#9(|#1{}|#9@|#2{}|#9) ", n.fido.fido_address, n.name);
+    return fmt::format("|#9(|#2{}|#9@|#1{}|#9) ", n.fido.fido_address, n.name);
   case network_type_t::internet:
     return fmt::format("|#9(|#2{}|#9@|#1Internet|#9) ", n.name);
   case network_type_t::news:
@@ -718,7 +718,7 @@ static void DisplayUserLoginInformation() {
     const auto len = size_without_colors(s);
     if (width + len >= screen_width) {
       bout.nl();
-      bout << "|#9Networks|#0.......... ";
+      bout << "|#0.................. ";
       width = 0;
     }
     bout.bputs(s);
