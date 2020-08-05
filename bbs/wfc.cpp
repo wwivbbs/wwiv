@@ -434,7 +434,7 @@ int WFC::doWFCEvents() {
         const auto current_dir_slash = File::EnsureTrailingSlash(File::current_directory());
         auto net_filename = input_path(current_dir_slash, 50);
         if (!net_filename.empty()) {
-          external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
+          fsed_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
         }
       } break;
       // Print Network Pending list

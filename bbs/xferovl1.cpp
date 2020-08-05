@@ -110,7 +110,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      const auto edit_ok = external_text_edit("extended.dsc", a()->temp_directory(),
+      const auto edit_ok = fsed_text_edit("extended.dsc", a()->temp_directory(),
                                               a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (edit_ok) {

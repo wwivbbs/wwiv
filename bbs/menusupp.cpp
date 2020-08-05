@@ -506,7 +506,7 @@ void EditText() {
   bout << "|#7Enter Filespec: ";
   const auto fn = input_path(50);
   if (!fn.empty()) {
-    external_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
+    fsed_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
 

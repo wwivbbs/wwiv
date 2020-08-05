@@ -49,5 +49,7 @@ bool DoExternalMessageEditor(wwiv::bbs::MessageEditorData& data, int maxli, int*
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory,
                         int numlines, int flags);
+bool fsed_text_edit(const std::string& edit_filename, const std::string& new_directory,
+                    int numlines, int flags);
 
 #endif // __INCLUDED_EXTERNAL_EDIT_H__

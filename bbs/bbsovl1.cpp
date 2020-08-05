@@ -292,7 +292,7 @@ void text_edit() {
     return;
   }
   sysoplog() << "@ Edited: " << filename;
-  if (okfsed()) {
-    external_text_edit(filename, a()->config()->gfilesdir(), 500, MSGED_FLAG_NO_TAGLINE);
+  if (ok_external_fsed()) {
+    fsed_text_edit(filename, a()->config()->gfilesdir(), 500, MSGED_FLAG_NO_TAGLINE);
   }
 }

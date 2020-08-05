@@ -393,9 +393,11 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   return 0;
 }
 
-bool okfsed() {
-  return okansi() && a()->user()->GetDefaultEditor() > 0 &&
-         a()->user()->GetDefaultEditor() <= wwiv::stl::ssize(a()->editors);
+bool okfsed() { return ok_internal_fsed() || ok_external_fsed(); }
+
+bool ok_external_fsed() {
+  const auto ed = a()->user()->GetDefaultEditor();
+  return okansi() && ed > 0 && ed != 0xff && ed <= wwiv::stl::ssize(a()->editors);
 }
 
 bool ok_internal_fsed() { return okansi() && a()->user()->GetDefaultEditor() == 0xff; }

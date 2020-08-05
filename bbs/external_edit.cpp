@@ -28,6 +28,7 @@
 #include "bbs/pause.h"
 #include "bbs/stuffin.h"
 #include "bbs/utility.h"
+#include "bbs/fsed/fsed.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -146,4 +147,14 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   }
   
   return external_edit_internal(edit_filename, working_directory, editor, numlines);
+}
+
+bool fsed_text_edit(const std::string& edit_filename, const std::string& new_directory,
+  int numlines, int flags) {
+  if (ok_external_fsed()) {
+    return external_text_edit(edit_filename, new_directory, numlines, flags);
+  }
+  std::filesystem::path p{edit_filename};
+  const auto dir = p.parent_path();
+  return wwiv::bbs::fsed::fsed(p);
 }

@@ -590,15 +590,20 @@ bool inmsg(MessageEditorData& data) {
   auto save_message = false;
   auto maxli = GetMaxMessageLinesAllowed();
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
+    save_message = InternalMessageEditor(lin, maxli, &setanon, data);
+  } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
     if (ok_internal_fsed()) {
+      if (File::Exists(exted_filename)) {
+        // We have autoquote or a file loaded into the workspace.
+        TextFile editor_file(exted_filename, "r");
+        lin = editor_file.ReadFileIntoVector();
+      }
       save_message = wwiv::bbs::fsed::fsed(lin, maxli, data, false);
     } else {
-      save_message = InternalMessageEditor(lin, maxli, &setanon, data);
+      save_message = DoExternalMessageEditor(data, maxli, &setanon);
+      TextFile editor_file(exted_filename, "r");
+      lin = editor_file.ReadFileIntoVector();
     }
-  } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    save_message = DoExternalMessageEditor(data, maxli, &setanon);
-    TextFile editor_file(exted_filename, "r");
-    lin = editor_file.ReadFileIntoVector();
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) { // "auto-send mail message"
     use_workspace = false;
     save_message = File::Exists(exted_filename);

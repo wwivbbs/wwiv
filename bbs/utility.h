@@ -37,7 +37,11 @@ void giveup_timeslice();
 std::string stripfn(const std::string& file_name);
 std::string get_wildlist(const std::string& file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
+/** True if an external fsed is defined and user has ansi */
+bool ok_external_fsed();
+/** True if an external or internal fsed is allowed */
 bool okfsed();
+/** True if an internal fsed is enabled and user has ansi */
 bool ok_internal_fsed();
 int ansir_to_flags(uint8_t ansir);
 
