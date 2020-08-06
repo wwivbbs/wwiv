@@ -999,7 +999,7 @@ bool GuestCheck() {
 
 void SetSubNumber(const char *pszSubKeys) {
   for (uint16_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
-    if (IsEquals(a()->usub[i].keys, pszSubKeys)) {
+    if (a()->usub[i].keys == pszSubKeys) {
       a()->set_current_user_sub_num(i);
     }
   }
@@ -1007,7 +1007,7 @@ void SetSubNumber(const char *pszSubKeys) {
 
 void SetDirNumber(const char *pszDirectoryKeys) {
   for (auto i = 0; i < ssize(a()->dirs()); i++) {
-    if (IsEquals(a()->udir[i].keys, pszDirectoryKeys)) {
+    if (a()->udir[i].keys == pszDirectoryKeys) {
       a()->set_current_user_dir_num(i);
     }
   }

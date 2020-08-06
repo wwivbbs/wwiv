@@ -135,7 +135,7 @@ static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
     if (ss1[last].subnum == sub) {
       return;
     }
-    if (ss1[last].keys[0] == 0) {
+    if (ss1[last].keys.empty()) {
       last_num = last + 1;
     }
   }
@@ -146,13 +146,13 @@ static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
 
   if (key) {
     ss1[last].subnum = static_cast<int16_t>(sub);
-    ss1[last].keys[0] = key;
+    ss1[last].keys = key;
   } else {
     for (int i = last; i > last_num; i--) {
       ss1[i] = ss1[ i - 1 ];
     }
     ss1[last_num].subnum = static_cast<int16_t>(sub);
-    ss1[last_num].keys[0] = 0;
+    ss1[last_num].keys.clear();
   }
 }
 
@@ -267,8 +267,8 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
 
   uint16_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
 
-  for (size_t i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
-    snprintf(ss1[i].keys, sizeof(ss1[i].keys), "%d", i1++);
+  for (size_t i = 0; i < ns && ss1[i].keys.empty() && ss1[i].subnum != -1; i++) {
+    ss1[i].keys = std::to_string(i1++);
   }
 
   for (i1 = 0; (i1 < ns) && (ss1[i1].subnum != -1); i1++) {
@@ -392,7 +392,7 @@ bool ok_multiple_conf(wwiv::sdk::User* user, const std::vector<userconfrec>& uc)
   if (!okconf(user)) {
     return false;
   }
-  return a()->uconfsub.size() > 1 && uc.at(1).confnum != -1;
+  return uc.size() > 1 && uc.at(1).confnum != -1;
 }
 
 int16_t userconf_to_subconf(int uc) { 

@@ -959,7 +959,7 @@ static void undrawscan(int filepos, long tagged) {
 
 static long is_inscan(int dir) {
   bool sysdir = false;
-  if (IsEquals(a()->udir[0].keys, "0")) {
+  if (a()->udir[0].keys == "0") {
     sysdir = true;
   }
 
@@ -1075,7 +1075,7 @@ void config_scan_plus(int type) {
               (1L << (a()->usub[top + pos].subnum % 32));
         }
         else {
-          auto sysdir = IsEquals(a()->udir[0].keys, "0");
+          auto sysdir = a()->udir[0].keys == "0";
           for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
             const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
@@ -1123,7 +1123,7 @@ void config_scan_plus(int type) {
             a()->context().qsc_q[a()->usub[top + pos].subnum / 32] ^=
                 (1L << (a()->usub[top + pos].subnum % 32));
           } else {
-            bool sysdir = IsEquals(a()->udir[0].keys, "0");
+            bool sysdir = a()->udir[0].keys == "0";
             for (int this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
               const auto s = fmt::format("{}", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
