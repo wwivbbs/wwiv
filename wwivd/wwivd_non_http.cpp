@@ -332,7 +332,6 @@ void ConnectionHandler::HandleBinkPConnection() {
   } catch (const std::exception& e) {
     LOG(ERROR) << "HandleBinkPConnection: Handled Uncaught Exception: " << e.what();
   }
-  VLOG(1) << "Exiting HandleBinkPConnection (exception)";
 }
 
 ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {

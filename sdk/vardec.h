@@ -749,10 +749,6 @@ struct usersubrec {
   int16_t subnum;
 };
 
-struct userconfrec {
-  int16_t confnum;
-};
-
 // USERREC.inact
 #define inact_deleted 0x01
 #define inact_inactive 0x02
@@ -1086,7 +1082,6 @@ static_assert(sizeof(chainregrec) == 64, "chainregrec == 64");
 static_assert(sizeof(newexternalrec) == 512, "newexternalrec == 512");
 static_assert(sizeof(editorrec) == 366, "editorrec == 366");
 static_assert(sizeof(usersubrec) == 7, "usersubrec == 7");
-static_assert(sizeof(userconfrec) == 2, "userconfrec == 2");
 static_assert(sizeof(ext_desc_type) == 15, "ext_desc_type == 15");
 static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
 static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");

@@ -31,6 +31,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
@@ -146,7 +147,7 @@ void build_qwk_packet() {
 
   remove_from_temp("*.*", a()->qwk_directory(), false);
 
-  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     save_conf = true;
     tmp_disable_conf(true);
   }

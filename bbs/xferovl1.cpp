@@ -23,6 +23,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/external_edit.h"
@@ -717,7 +718,7 @@ void download() {
           s = aligns(s);
           rtn = try_to_download(s, a()->current_user_dir().subnum);
           if (rtn == 0) {
-            if (a()->uconfdir[1].confnum != -10 && okconf(a()->user())) {
+            if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
               bout.backline();
               bout << " |#5Search all conferences? ";
               const auto ch = onek_ncr("YN\r");

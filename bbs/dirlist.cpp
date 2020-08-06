@@ -55,7 +55,7 @@ void dirlist(int mode) {
     int p = 1;
     int i = sn;
 
-    while (i <= en && a()->uconfdir[i].confnum != -1 && !abort) {
+    while (i <= en && has_userconf_to_dirconf(i) && !abort) {
       auto i1 = 0;
       while (i1 < a()->dirs().size() && a()->udir[i1].subnum != -1 && !abort) {
         std::string s;
@@ -64,7 +64,7 @@ void dirlist(int mode) {
           p = 0;
           firstp = i1;
           bout.cls();
-          if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
+          if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
             auto conf_name = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
             s = fmt::sprintf(" [ Conference %c ] [ %s ] ",
                              a()->dirconfs[a()->uconfdir[i].confnum].designator, conf_name);
@@ -152,7 +152,7 @@ void dirlist(int mode) {
       p = 1;
       DisplayHorizontalBar(78, 7);
       if (okconf(a()->user())) {
-        if (a()->uconfdir[1].confnum != -1) {
+        if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
           bout.bprintf("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
                                             is ? 0 : 1, is ? nd - 1 : nd);
         } else {

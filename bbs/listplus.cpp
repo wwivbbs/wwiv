@@ -22,6 +22,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
@@ -1457,7 +1458,7 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
 int search_criteria(search_record* sr) {
   int all_conf = 1;
 
-  const auto useconf = (a()->uconfdir[1].confnum != -1 && okconf(a()->user()));
+  const auto useconf = ok_multiple_conf(a()->user(), a()->uconfdir);
 
 LP_SEARCH_HELP:
   sr->search_extended = lp_config.search_extended_on ? true : false;

@@ -20,9 +20,10 @@
 
 #include <cstdint>
 
-#include "bbs/bbs.h"
-#include "bbs/uedit.h"
 #include "bbs/application.h"
+#include "bbs/bbs.h"
+#include "bbs/confutil.h"
+#include "bbs/uedit.h"
 #include "bbs/xfer.h"
 
 using std::string;

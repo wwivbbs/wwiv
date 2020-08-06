@@ -19,10 +19,10 @@
 #include "bbs/valscan.h"
 
 #include <algorithm>
-
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
@@ -49,7 +49,7 @@ void valscan() {
   int ac = 0;
   auto os = a()->current_user_sub_num();
 
-  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     ac = 1;
     tmp_disable_conf(true);
   }

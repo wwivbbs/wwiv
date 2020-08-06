@@ -33,7 +33,7 @@ using namespace wwiv::strings;
 void HopSub() {
   bool abort = false;
   int nc = 0;
-  while (a()->uconfsub[nc].confnum != -1) {
+  while (has_userconf_to_subconf(nc)) {
     nc++;
   }
 
@@ -104,7 +104,7 @@ void HopDir() {
   bool abort = false;
 
   int nc = 0;
-  while (a()->uconfdir[nc].confnum != -1) {
+  while (has_userconf_to_dirconf(nc)) {
     nc++;
   }
 

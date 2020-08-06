@@ -36,6 +36,7 @@
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
@@ -522,7 +523,7 @@ void upload_reply_packet() {
   write_qwk_cfg(qwk_cfg);
 
   const auto save_sub = a()->current_user_sub_num();
-  if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     save_conf = 1;
     tmp_disable_conf(true);
   }

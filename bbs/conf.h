@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "bbs/confutil.h"
 #include "core/transaction.h"
 #include "sdk/vardec.h"
 
@@ -42,6 +41,8 @@ typedef uint16_t subconf_t;
 static constexpr int CONF_UPDATE_INSERT = 1;
 static constexpr int CONF_UPDATE_DELETE = 2;
 static constexpr int CONF_UPDATE_SWAP = 3;
+
+enum class ConferenceType { CONF_SUBS, CONF_DIRS };
 
 /** 
  * Note: This isn't used on disk 
@@ -79,6 +80,10 @@ struct confrec {
   uint16_t maxnum;
   // "Sub" numbers in the conference
   std::set<subconf_t> subs;
+};
+
+struct userconfrec {
+  int16_t confnum;
 };
 
 class conf_info_t {

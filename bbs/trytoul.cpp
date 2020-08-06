@@ -20,6 +20,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
 #include "bbs/listplus.h"
@@ -329,7 +330,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 int try_to_ul(const string& file_name) {
   bool ac = false;
 
-  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     ac = true;
     tmp_disable_conf(true);
   }

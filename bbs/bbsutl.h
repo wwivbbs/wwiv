@@ -19,7 +19,6 @@
 #define __INCLUDED_BBS_BBSUTL_H__
 
 #include <string>
-#include "sdk/user.h"
 
 bool inli(std::string* outBuffer, std::string* rollover, std::string::size_type maxlen, bool add_crlf = true,
   bool bAllowPrevious = false, bool two_color_chatmode = false, bool clear_previous_line = false);
@@ -36,7 +35,6 @@ int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);
 std::string YesNoString(bool bYesNo);
-bool okconf(wwiv::sdk::User *pUser);
 void* BbsAllocA(size_t num_bytes);
 
 #endif  // __INCLUDED_BBS_BBSUTL_H__

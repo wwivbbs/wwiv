@@ -732,17 +732,18 @@ static void config_nscan() {
   const int os = a()->current_user_dir().subnum;
 
   do {
-    if (okconf(a()->user()) && a()->uconfdir[1].confnum != -1) {
+    if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
       abort = false;
       std::string s1 = " ";
       bout.nl();
       bout << "Select Conference: \r\n\n";
       size_t i = 0;
-      while (i < a()->dirconfs.size() && a()->uconfdir[i].confnum != -1 && !abort) {
-        const auto cn = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
-        const auto s2 = StrCat(a()->dirconfs[a()->uconfdir[i].confnum].designator, ") ", cn);
+      while (i < a()->dirconfs.size() && has_userconf_to_dirconf(i) && !abort) {
+        const auto confnum = a()->uconfdir[i].confnum;
+        const auto cn = stripcolors(a()->dirconfs[confnum].conf_name);
+        const auto s2 = StrCat(a()->dirconfs[confnum].designator, ") ", cn);
         bout.bpla(s2, &abort);
-        s1.push_back(static_cast<char>(a()->dirconfs[a()->uconfdir[i].confnum].designator));
+        s1.push_back(static_cast<char>(a()->dirconfs[confnum].designator));
         i++;
       }
       bout.nl();
@@ -756,7 +757,7 @@ static void config_nscan() {
       done1 = true;
       break;
     default:
-      if (okconf(a()->user()) && a()->dirconfs.size() > 1) {
+      if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
         size_t i = 0;
         while (ch != a()->dirconfs[a()->uconfdir[i].confnum].designator &&
                i < a()->dirconfs.size()) {
@@ -798,7 +799,7 @@ static void config_nscan() {
       while (!done && !a()->hangup_);
       break;
     }
-    if (!okconf(a()->user()) || a()->uconfdir[1].confnum == -1) {
+    if (!ok_multiple_conf(a()->user(), a()->uconfdir)) {
       done1 = true;
     }
   }
@@ -872,7 +873,7 @@ void finddescription() {
 
   bout.nl();
   bool ac = false;
-  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout << "|#5All conferences? ";
     ac = yesno();
     if (ac) {

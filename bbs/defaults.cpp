@@ -402,16 +402,15 @@ void config_qscan() {
   bool done1 = false;
   do {
     char ch;
-    if (okconf(a()->user()) && a()->uconfsub[1].confnum != -1) {
+    if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       std::string conf_list{" "};
       bool abort = false;
       bout << "\r\nSelect Conference: \r\n\n";
       size_t i = 0;
-      while (i < a()->subconfs.size() && a()->uconfsub[i].confnum != -1 && !abort) {
-        bout.bpla(StrCat(a()->subconfs[a()->uconfsub[i].confnum].designator, ") ",
-                stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name)), &abort);
-        const auto c = static_cast<char>(a()->subconfs[a()->uconfsub[i].confnum].designator);
-        conf_list.push_back(c);
+      while (i < a()->subconfs.size() && has_userconf_to_subconf(i) && !abort) {
+        const auto& c = a()->subconfs[a()->uconfsub[i].confnum];
+        bout.bpla(fmt::format("{}) {}", c.designator, stripcolors(c.conf_name)), &abort);
+        conf_list.push_back(static_cast<char>(c.designator));
         i++;
       }
       bout.nl();
@@ -425,7 +424,7 @@ void config_qscan() {
       done1 = true;
       break;
     default:
-      if (okconf(a()->user()) && a()->uconfsub[1].confnum != -1) {
+      if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
         size_t i = 0;
         while ((ch != a()->subconfs[a()->uconfsub[i].confnum].designator) &&
                (i < a()->subconfs.size())) {
@@ -466,7 +465,7 @@ void config_qscan() {
       } while (!done && !a()->hangup_);
       break;
     }
-    if (!okconf(a()->user()) || a()->uconfsub[1].confnum == -1) {
+    if (!ok_multiple_conf(a()->user(), a()->uconfsub)) {
       done1 = true;
     }
 
@@ -860,8 +859,7 @@ static int GetMaxLinesToShowForScanPlus() {
 }
 
 static void list_config_scan_plus(int first, int *amount, int type) {
-
-  bool bUseConf = (a()->subconfs.size() > 1 && okconf(a()->user())) ? true : false;
+  bool bUseConf = ok_multiple_conf(a()->user(), a()->uconfsub);
 
   bout.cls();
   bout.clear_lines_listed();
@@ -981,7 +979,7 @@ void config_scan_plus(int type) {
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
 
-  int useconf = (a()->subconfs.size() > 1 && okconf(a()->user()));
+  int useconf = ok_multiple_conf(a()->user(), a()->uconfsub);
   a()->topdata = LocalIO::topdataNone;
   a()->UpdateTopScreen();
 

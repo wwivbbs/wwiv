@@ -18,10 +18,34 @@
 #ifndef __INCLUDED_BBS_CONFUTIL_H__
 #define __INCLUDED_BBS_CONFUTIL_H__
 
-enum class ConferenceType { CONF_SUBS, CONF_DIRS };
-
+#include "bbs/conf.h"
+#include "sdk/user.h"
+#include <vector>
 
 void setuconf(ConferenceType type, int num, int old_subnum);
 void changedsl();
 
-#endif  // __INCLUDED_BBS_CONFUTIL_H__
+/*
+ * Checks status of given userrec to see if conferencing is turned on.
+ */
+bool okconf(wwiv::sdk::User* pUser);
+
+/*
+ * Checks status of given userrec to see if conferencing is turned on 
+ * *and* that multiple conferences are defined.
+ */
+bool ok_multiple_conf(wwiv::sdk::User* pUser, const std::vector<userconfrec>& uc);
+
+/** Returns the real conference number for user conference at position uc */
+int16_t userconf_to_subconf(int uc);
+
+/** Returns the real conference number for user conference at position uc */
+int16_t userconf_to_dirconf(int uc);
+
+/** Returns true if a user conference exists at position uc */
+bool has_userconf_to_subconf(int uc);
+
+/** Returns true if a user conference exists at position uc */
+bool has_userconf_to_dirconf(int uc);
+
+#endif // __INCLUDED_BBS_CONFUTIL_H__

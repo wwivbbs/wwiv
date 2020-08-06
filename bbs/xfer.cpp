@@ -24,6 +24,7 @@
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/execexternal.h"
@@ -412,7 +413,7 @@ void nscanall() {
   bool scan_all_confs = false;
   a()->context().scanned_files(true);
 
-  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
     bout << "|#5All conferences? ";
     scan_all_confs = yesno();
@@ -468,7 +469,7 @@ void searchall() {
   }
 
   bool bScanAllConfs = false;
-  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
     bout << "|#5All conferences? ";
     bScanAllConfs = yesno();

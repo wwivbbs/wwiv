@@ -488,17 +488,6 @@ std::string YesNoString(bool bYesNo) {
   return bYesNo ? str_yes : str_no;
 }
 
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(wwiv::sdk::User *pUser) {
-  if (a()->context().disable_conf()) {
-    return false;
-  }
-
-  return pUser->HasStatusFlag(wwiv::sdk::User::conference);
-}
-
 void *BbsAllocA(size_t size) {
   void* p = calloc(size + 1, 1);
   CHECK_NOTNULL(p);

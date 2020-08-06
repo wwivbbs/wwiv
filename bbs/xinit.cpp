@@ -679,8 +679,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   usub.resize(config()->max_subs());
   udir.resize(config()->max_dirs());
-  uconfsub.resize(MAX_CONFERENCES);
-  uconfdir.resize(MAX_CONFERENCES);
+  //uconfsub.resize(MAX_CONFERENCES);
+  //uconfdir.resize(MAX_CONFERENCES);
 
   network_extension_ = ".net";
   const auto wwiv_instance = environment_variable("WWIV_INSTANCE");

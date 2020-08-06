@@ -47,7 +47,7 @@ void old_sublist() {
   int sn = 0;
   int en = ssize(a()->subconfs) - 1;
   if (okconf(a()->user())) {
-    if (a()->uconfsub[1].confnum != -1) {
+    if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
       char ch = onek("Q A");
@@ -69,8 +69,8 @@ void old_sublist() {
   bout.bpla("|#9Sub-Conferences Available: ", &abort);
   bout.nl();
   int i = sn;
-  while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
-    if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  while (i <= en && has_userconf_to_subconf(i) && !abort) {
+    if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       setuconf(ConferenceType::CONF_SUBS, i, -1);
       auto cn = stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name);
       auto s = fmt::sprintf("|#1%s %c|#0:|#2 %s", "Conference",
@@ -203,7 +203,7 @@ void SubList() {
     size_t i1 = 0;
     while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
       int ns = 0;
-      if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+      if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
         setuconf(ConferenceType::CONF_SUBS, i, -1);
         i1 = 0;
       }
@@ -214,7 +214,7 @@ void SubList() {
           firstp = i1;
           bout.cls();
           std::string s;
-          if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+          if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
             s = fmt::sprintf("Conference %c: %s",
                              a()->subconfs[a()->uconfsub[i].confnum].designator,
                              stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name));
@@ -313,7 +313,7 @@ void SubList() {
         p = 1;
         DisplayHorizontalBar(78, 7);
         if (okconf(a()->user())) {
-          if (a()->uconfsub[1].confnum != -1) {
+          if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
             bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
             bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);

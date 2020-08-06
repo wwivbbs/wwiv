@@ -631,7 +631,7 @@ void NewMsgsAllConfs() {
 
   write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
   bout.newline = false;
-  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     ac = true;
     tmp_disable_conf(true);
   }
@@ -715,7 +715,7 @@ void FastGoodBye() {
 void NewFilesAllConfs() {
   bout.nl();
   int ac = 0;
-  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     ac = 1;
     tmp_disable_conf(true);
   }

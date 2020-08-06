@@ -22,6 +22,7 @@
 #include "bbs/bbsutl2.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
+#include "bbs/confutil.h"
 #include "bbs/pause.h"
 #include "bbs/datetime.h"
 #include "fmt/printf.h"
@@ -104,17 +105,23 @@ std::string MacroContext::interpret(char ch) const {
       return to_string(u().GetNumIllegalLogons());
     case 'J': {                             // Message conference
       const int x = a()->GetCurrentConferenceMessageArea();
-      if (x < 0 || x >= wwiv::stl::ssize(a()->uconfsub)) {
+      if (!has_userconf_to_subconf(x)) {
         return {};
       }
-      const int cnum = a()->uconfsub[x].confnum;
+      const int cnum = userconf_to_subconf(x);
       if (cnum < 0 || cnum >= wwiv::stl::ssize(a()->uconfsub)) {
         return {};
       }
       return a()->subconfs[cnum].conf_name;
     }
-    case 'j':                               // Transfer conference
-      return a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name;
+    case 'j': { // Transfer conference
+      const int x = a()->GetCurrentConferenceFileArea();
+      if (!has_userconf_to_dirconf(x)) {
+        return {};
+      }
+      const auto cn = userconf_to_dirconf(x);
+      return a()->dirconfs[cn].conf_name;
+    } break;
     case 'K':                               // Kb uploaded
       return to_string(u().uk());
     case 'k':                               // Kb downloaded
