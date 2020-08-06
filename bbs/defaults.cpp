@@ -395,7 +395,7 @@ void config_qscan() {
     return;
   }
 
-  const auto oc = a()->GetCurrentConferenceMessageArea();
+  const auto oc = a()->current_user_sub_conf_num();
   const auto os = a()->current_user_sub().subnum;
 
   bool done;
@@ -867,10 +867,10 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   if (bUseConf) {
     string s;
     if (type == 0) {
-      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum].conf_name, 26);
+      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->current_user_sub_conf_num()].confnum].conf_name, 26);
     }
     else {
-      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name, 26);
+      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->current_user_dir_conf_num()].confnum].conf_name, 26);
     }
     bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
@@ -1197,25 +1197,25 @@ void config_scan_plus(int type) {
         case 6:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if (a()->GetCurrentConferenceMessageArea() > 0) {
-                a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() - 1);
+              if (a()->current_user_sub_conf_num() > 0) {
+                a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() - 1);
               } else {
-                while ((a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0) &&
-                       (a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1)) {
-                  a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
+                while ((a()->uconfsub[a()->current_user_sub_conf_num() + 1].confnum >= 0) &&
+                       (a()->current_user_sub_conf_num() < a()->subconfs.size() - 1)) {
+                  a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1);
                 }
               }
-              setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
+              setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
             } else {
-              if (a()->GetCurrentConferenceFileArea() > 0) {
-                a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() - 1);
+              if (a()->current_user_dir_conf_num() > 0) {
+                a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() - 1);
               } else {
-                while (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0 &&
-                       a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1) {
-                  a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
+                while (a()->uconfdir[a()->current_user_dir_conf_num() + 1].confnum >= 0 &&
+                       a()->current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
+                  a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() + 1);
                 }
               }
-              setuconf(ConferenceType::CONF_DIRS, a()->GetCurrentConferenceFileArea(), -1);
+              setuconf(ConferenceType::CONF_DIRS, a()->current_user_dir_conf_num(), -1);
             }
             pos = 0;
             menu_done = true;
@@ -1225,23 +1225,23 @@ void config_scan_plus(int type) {
         case 7:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if ((a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1)
-                  && (a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0)) {
-                a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
+              if ((a()->current_user_sub_conf_num() < a()->subconfs.size() - 1)
+                  && (a()->uconfsub[a()->current_user_sub_conf_num() + 1].confnum >= 0)) {
+                a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1);
               } else {
-                a()->SetCurrentConferenceMessageArea(0);
+                a()->set_current_user_sub_conf_num(0);
               }
-              setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
+              setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
             }
 
             else {
-              if ((a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1)
-                  && (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0)) {
-                a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
+              if ((a()->current_user_dir_conf_num() < a()->dirconfs.size() - 1)
+                  && (a()->uconfdir[a()->current_user_dir_conf_num() + 1].confnum >= 0)) {
+                a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() + 1);
               } else {
-                a()->SetCurrentConferenceFileArea(0);
+                a()->set_current_user_dir_conf_num(0);
               }
-              setuconf(ConferenceType::CONF_DIRS, a()->GetCurrentConferenceFileArea(), -1);
+              setuconf(ConferenceType::CONF_DIRS, a()->current_user_dir_conf_num(), -1);
             }
             pos = 0;
             menu_done = true;

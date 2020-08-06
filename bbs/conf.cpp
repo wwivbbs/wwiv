@@ -67,16 +67,16 @@ void tmp_disable_conf(bool disable) {
     disable_conf_cnt++;
     if (okconf(a()->user())) {
       a()->context().disable_conf(true);
-      ocs = a()->GetCurrentConferenceMessageArea();
+      ocs = a()->current_user_sub_conf_num();
       oss = a()->current_user_sub().subnum;
-      ocd = a()->GetCurrentConferenceFileArea();
+      ocd = a()->current_user_dir_conf_num();
       osd = a()->current_user_dir().subnum;
       setuconf(ConferenceType::CONF_SUBS, -1, oss);
       setuconf(ConferenceType::CONF_DIRS, -1, osd);
     }
   } else if (disable_conf_cnt) {
     disable_conf_cnt--;
-    if ((disable_conf_cnt == 0) && a()->context().disable_conf()) {
+    if (disable_conf_cnt == 0 && a()->context().disable_conf()) {
       a()->context().disable_conf(false);
       setuconf(ConferenceType::CONF_SUBS, ocs, oss);
       setuconf(ConferenceType::CONF_DIRS, ocd, osd);

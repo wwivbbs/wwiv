@@ -295,16 +295,16 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
   switch (nConferenceType) {
   case ConferenceType::CONF_SUBS:
     if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_subconf(num)) {
-      a()->SetCurrentConferenceMessageArea(num);
-      setconf(nConferenceType, a()->usub, userconf_to_subconf(a()->GetCurrentConferenceMessageArea()), nOldSubNumber);
+      a()->set_current_user_sub_conf_num(num);
+      setconf(nConferenceType, a()->usub, userconf_to_subconf(a()->current_user_sub_conf_num()), nOldSubNumber);
     } else {
       setconf(nConferenceType, a()->usub, -1, nOldSubNumber);
     }
     break;
   case ConferenceType::CONF_DIRS:
     if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_dirconf(num)) {
-      a()->SetCurrentConferenceFileArea(num);
-      setconf(nConferenceType, a()->udir, a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum, nOldSubNumber);
+      a()->set_current_user_dir_conf_num(num);
+      setconf(nConferenceType, a()->udir, a()->uconfdir[a()->current_user_dir_conf_num()].confnum, nOldSubNumber);
     } else {
       setconf(nConferenceType, a()->udir, -1, nOldSubNumber);
     }
@@ -316,8 +316,8 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
 }
 
 void changedsl() {
-  int ocurconfsub = userconf_to_subconf(a()->GetCurrentConferenceMessageArea());
-  int ocurconfdir = userconf_to_subconf(a()->GetCurrentConferenceFileArea());
+  int ocurconfsub = userconf_to_subconf(a()->current_user_sub_conf_num());
+  int ocurconfdir = userconf_to_subconf(a()->current_user_dir_conf_num());
   a()->UpdateTopScreen();
 
   a()->uconfsub.clear();
@@ -344,37 +344,37 @@ void changedsl() {
   }
 
   // Move to first message area in new conference
-  for (a()->SetCurrentConferenceMessageArea(0);
-       (a()->GetCurrentConferenceMessageArea() < MAX_CONFERENCES) &&
-       has_userconf_to_subconf(a()->GetCurrentConferenceMessageArea());
-       a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1)) {
-    if (userconf_to_subconf(a()->GetCurrentConferenceMessageArea()) == ocurconfsub) {
+  for (a()->set_current_user_sub_conf_num(0);
+       (a()->current_user_sub_conf_num() < MAX_CONFERENCES) &&
+       has_userconf_to_subconf(a()->current_user_sub_conf_num());
+       a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1)) {
+    if (userconf_to_subconf(a()->current_user_sub_conf_num()) == ocurconfsub) {
       break;
     }
   }
 
-  if (a()->GetCurrentConferenceMessageArea() >= MAX_CONFERENCES ||
-      has_userconf_to_subconf(a()->GetCurrentConferenceMessageArea())) {
-    a()->SetCurrentConferenceMessageArea(0);
+  if (a()->current_user_sub_conf_num() >= MAX_CONFERENCES ||
+      has_userconf_to_subconf(a()->current_user_sub_conf_num())) {
+    a()->set_current_user_sub_conf_num(0);
   }
 
-  for (a()->SetCurrentConferenceFileArea(0);
-       (a()->GetCurrentConferenceFileArea() < MAX_CONFERENCES)
-       && has_userconf_to_dirconf(a()->GetCurrentConferenceFileArea());
-       a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1)) {
-    if (a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum == ocurconfdir) {
+  for (a()->set_current_user_dir_conf_num(0);
+       (a()->current_user_dir_conf_num() < MAX_CONFERENCES)
+       && has_userconf_to_dirconf(a()->current_user_dir_conf_num());
+       a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() + 1)) {
+    if (a()->uconfdir[a()->current_user_dir_conf_num()].confnum == ocurconfdir) {
       break;
     }
   }
 
-  if (a()->GetCurrentConferenceFileArea() >= MAX_CONFERENCES ||
-      !has_userconf_to_dirconf(a()->GetCurrentConferenceFileArea())) {
-    a()->SetCurrentConferenceFileArea(0);
+  if (a()->current_user_dir_conf_num() >= MAX_CONFERENCES ||
+      !has_userconf_to_dirconf(a()->current_user_dir_conf_num())) {
+    a()->set_current_user_dir_conf_num(0);
   }
 
   if (okconf(a()->user())) {
-    setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
-    setuconf(ConferenceType::CONF_DIRS, a()->GetCurrentConferenceFileArea(), -1);
+    setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
+    setuconf(ConferenceType::CONF_DIRS, a()->current_user_dir_conf_num(), -1);
   } else {
     setconf(ConferenceType::CONF_SUBS, a()->usub, -1, -1);
     setconf(ConferenceType::CONF_DIRS, a()->udir, -1, -1);

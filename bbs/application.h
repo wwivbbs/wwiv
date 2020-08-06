@@ -204,11 +204,11 @@ public:
 
   [[nodiscard]] const net_networks_rec& current_net() const;
 
-  [[nodiscard]] uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
-  void SetCurrentConferenceMessageArea(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t current_user_sub_conf_num() const { return current_conf_msgarea_; }
+  void set_current_user_sub_conf_num(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
-  void SetCurrentConferenceFileArea(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
+  [[nodiscard]] uint16_t current_user_dir_conf_num() const { return current_conf_filearea_; }
+  void set_current_user_dir_conf_num(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 

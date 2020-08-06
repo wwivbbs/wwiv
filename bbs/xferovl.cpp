@@ -728,7 +728,7 @@ static void config_nscan() {
     return;
   }
   bool done1 = false;
-  const int oc = a()->GetCurrentConferenceFileArea();
+  const int oc = a()->current_user_dir_conf_num();
   const int os = a()->current_user_dir().subnum;
 
   do {

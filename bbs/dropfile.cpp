@@ -234,7 +234,7 @@ void CreatePCBoardSysDropFile() {
     pcb.time_logged[4] = time_has_hhmmss[4];
     pcb.time_limit = static_cast<int16_t>(nsl());
     pcb.down_limit = 1024;
-    pcb.curconf = static_cast<char>(a()->GetCurrentConferenceMessageArea());
+    pcb.curconf = static_cast<char>(a()->current_user_sub_conf_num());
     strcpy(pcb.slanguage, a()->cur_lang_name.c_str());
     strcpy(pcb.name, a()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
@@ -250,7 +250,7 @@ void CreatePCBoardSysDropFile() {
     to_char_array_no_null(pcb.lastevent, status->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
-    pcb.lastconfarea = static_cast<int16_t>(a()->GetCurrentConferenceMessageArea());
+    pcb.lastconfarea = static_cast<int16_t>(a()->current_user_sub_conf_num());
     // End Additions
 
     pcbFile.Write(&pcb, sizeof(pcb));

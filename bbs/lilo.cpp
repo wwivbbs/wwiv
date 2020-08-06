@@ -342,8 +342,8 @@ void getuser() {
 
   // Let's set this to 0 here since we don't have a user yet.
   a()->usernum = 0;
-  a()->SetCurrentConferenceMessageArea(0);
-  a()->SetCurrentConferenceFileArea(0);
+  a()->set_current_user_sub_conf_num(0);
+  a()->set_current_user_dir_conf_num(0);
   a()->effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
@@ -898,18 +898,18 @@ void logon() {
 
   // Handle case of first conf with no subs avail
   if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
-    for (a()->SetCurrentConferenceMessageArea(0); 
-         (a()->GetCurrentConferenceMessageArea() < ssize(a()->subconfs))
-         && (a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum != -1);
-         a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1)) {
-      setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
+    for (a()->set_current_user_sub_conf_num(0); 
+         (a()->current_user_sub_conf_num() < ssize(a()->subconfs))
+         && (a()->uconfsub[a()->current_user_sub_conf_num()].confnum != -1);
+         a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1)) {
+      setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
       if (a()->usub[0].subnum != -1) {
         break;
       }
     }
     if (a()->usub[0].subnum == -1) {
-      a()->SetCurrentConferenceMessageArea(0);
-      setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
+      a()->set_current_user_sub_conf_num(0);
+      setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
     }
   }
 

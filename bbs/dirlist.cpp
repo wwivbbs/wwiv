@@ -42,11 +42,11 @@
 /** Displays the available file areas for the current user. */
 void dirlist(int mode) {
   bool next   = false;
-  int oc      = a()->GetCurrentConferenceFileArea();
+  int oc      = a()->current_user_dir_conf_num();
   int os      = a()->current_user_dir().subnum;
   int nd      = 0;
-  int sn      = a()->GetCurrentConferenceFileArea();
-  int en      = a()->GetCurrentConferenceFileArea();
+  int sn      = a()->current_user_dir_conf_num();
+  int en      = a()->current_user_dir_conf_num();
   bool done   = false;
 
   do {
@@ -174,7 +174,7 @@ void dirlist(int mode) {
         if (okconf(a()->user())) {
           jump_conf(ConferenceType::CONF_DIRS);
         }
-        sn = en = oc = a()->GetCurrentConferenceFileArea();
+        sn = en = oc = a()->current_user_dir_conf_num();
         nd = i = 0;
         is = false;
       }

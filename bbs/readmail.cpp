@@ -793,7 +793,7 @@ void readmail(int mode) {
           if (!a()->IsUserOnline()) {
             a()->set_current_user_sub_num(0);
             a()->SetCurrentReadMessageArea(0);
-            a()->SetCurrentConferenceMessageArea(0);
+            a()->set_current_user_sub_conf_num(0);
           }
           tmp_disable_conf(true);
           bout.nl();
