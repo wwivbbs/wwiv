@@ -28,10 +28,97 @@
 #include <random>
 #include <sstream>
 #include <stack>
+#include <stdexcept>
 
 using namespace wwiv::strings;
 
 namespace wwiv::core::parser {
+
+
+parse_error::parse_error(const std::string& m)
+      : ::std::runtime_error(m) {}
+
+      ///////////////////////////////////////////////////////////////////////////
+// Factor
+
+std::string to_string(Operator o) {
+  switch (o) {
+  case Operator::add:
+    return "add";
+  case Operator::div:
+    return "div";
+  case Operator::eq:
+    return "eq";
+  case Operator::ge:
+    return "ge";
+  case Operator::gt:
+    return "gt";
+  case Operator::le:
+    return "le";
+  case Operator::mul:
+    return "mul";
+  case Operator::ne:
+    return "ne";
+  case Operator::sub:
+    return "sub";
+  case Operator:: or:
+    return "or";
+  case Operator::and:
+    return "and";
+  default:
+    return fmt::format("UNKNOWN ({})", static_cast<int>(o));
+  }
+}
+
+std::string to_string(AstType t) {
+  switch (t) {
+  case AstType::LOGICAL_OP:
+    return "LOGICAL_OP";
+  case AstType::BINOP:
+    return "binop";
+  case AstType::UNOP:
+    return "unop";
+  case AstType::PAREN:
+    return "paren";
+  case AstType::EXPR:
+    return "expr";
+  case AstType::FACTOR:
+    return "factor";
+  case AstType::TAUTOLOGY:
+    return "tautology";
+  case AstType::ERROR:
+    return "error";
+  case AstType::ROOT:
+    return "root";
+  }
+  return "unknown";
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Factor
+
+Factor::Factor(FactorType t, int v, const std::string& s)
+    : Expression(AstType::FACTOR), factor_type_(t), val(v), sval(s) {}
+
+std::string to_string(FactorType t) {
+  switch (t) {
+  case FactorType::int_value:
+    return "int_value";
+  case FactorType::string_val:
+    return "string_val";
+  case FactorType::variable:
+    return "variable";
+  }
+  return "FactorType::UNKNOWN";
+}
+
+std::string Factor::ToString(int indent) {
+  auto pad = std::string(indent, ' ');
+  return fmt::format("{}Factor: {} '{}'", pad, to_string(factor_type_),
+                     factor_type_ == FactorType::int_value ? std::to_string(val) : sval);
+}
+
+void Factor::accept(AstVisitor* visitor) { visitor->visit(this); }
 
 static std::unique_ptr<Factor> createFactor(const Token& token) {
   const auto& l = token.lexmeme;
@@ -56,7 +143,7 @@ static std::unique_ptr<LogicalOperatorNode> createLogicalOperator(const Token& t
   return {};
 }
 
-    static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& token) {
+static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& token) {
   switch (token.type) {
   case TokenType::add:
     return std::make_unique<BinaryOperatorNode>(Operator::add);
@@ -95,32 +182,32 @@ void Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   stack.pop();
 
   // Set op
-  if (op->type_ == AstType::BINOP) {
+  if (op->ast_type() == AstType::BINOP) {
     auto oper = dynamic_cast<BinaryOperatorNode*>(op.get());
-    expr->op = oper->oper;
-  } else if (op->type_ == AstType::LOGICAL_OP) {
+    expr->op_ = oper->oper;
+  } else if (op->ast_type() == AstType::LOGICAL_OP) {
     auto oper = dynamic_cast<LogicalOperatorNode*>(op.get());
-    expr->op = oper->oper;
+    expr->op_ = oper->oper;
   } else {
     stack.push(
-        std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op->type_))));
+        std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op->ast_type()))));
     return;
   }
   // Set left
-  if (left->type_ == AstType::FACTOR) {
+  if (left->ast_type() == AstType::FACTOR) {
     auto factor = dynamic_cast<Factor*>(left.release());
-    expr->left_factor = std::unique_ptr<Factor>(factor);
-  } else if (left->type_ == AstType::EXPR) {
+    expr->left_ = std::unique_ptr<Factor>(factor);
+  } else if (left->ast_type() == AstType::EXPR) {
     auto factor = dynamic_cast<Expression*>(left.release());
-    expr->left_expression = std::unique_ptr<Expression>(factor);
+    expr->left_ = std::unique_ptr<Expression>(factor);
   }
   // Set right
-  if (right->type_ == AstType::FACTOR) {
+  if (right->ast_type() == AstType::FACTOR) {
     auto factor = dynamic_cast<Factor*>(right.release());
-    expr->right_factor = std::unique_ptr<Factor>(factor);
-  } else if (right->type_ == AstType::EXPR) {
+    expr->right_ = std::unique_ptr<Factor>(factor);
+  } else if (right->ast_type() == AstType::EXPR) {
     auto factor = dynamic_cast<Expression*>(right.release());
-    expr->right_expression = std::unique_ptr<Expression>(factor);
+    expr->right_ = std::unique_ptr<Expression>(factor);
   }
   stack.push(std::move(expr));
 }
@@ -206,7 +293,7 @@ bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack) {
   if (stack.empty()) {
     return false;
   }
-  const auto t = stack.top()->type_;
+  const auto t = stack.top()->ast_type();
   return t == AstType::BINOP || t == AstType::LOGICAL_OP;
 }  
 
@@ -254,114 +341,90 @@ std::unique_ptr<RootNode> Ast::parse(
   return root;
 }
 
-Factor::Factor(FactorType t, int v, const std::string& s)
-    : AstNode(AstType::FACTOR), type(t), val(v), sval(s) {}
-
-std::string to_string(FactorType t) {
-  switch (t) { 
-  case FactorType::int_value:
-    return "FactorType::int_value";
-  case FactorType::string_val:
-    return "FactorType::string_val";
-  case FactorType::variable:
-    return "FactorType::variable";
+bool Ast::parse(const Lexer& l) {
+  auto tokens = l.tokens();
+  auto it = std::begin(tokens);
+  root_ = parse(it, std::end(tokens));
+  if (!root_) {
+    return false;
   }
-  return "FactorType::UNKNOWN";
+  return root_->node->ast_type() != AstType::ERROR;
 }
 
-std::string to_string(Operator o) {
-  switch (o) {
-  case Operator::add:
-    return "Operator::add";
-  case Operator::div:
-    return "Operator::div";
-  case Operator::eq:
-    return "Operator::eq";
-  case Operator::ge:
-    return "Operator::ge";
-  case Operator::gt:
-    return "Operator::gt";
-  case Operator::le:
-    return "Operator::le";
-  case Operator::mul:
-    return "Operator::mul";
-  case Operator::ne:
-    return "Operator::ne";
-  case Operator::sub:
-    return "Operator::sub";
-  case Operator::or:
-    return "Operator::or";
-  case Operator::and:
-    return "Operator::and";
-  default:
-    return "Operator::UNKNOWN";
-  }
+AstNode* Ast::root() { 
+  return root_->node.get();
 }
-
-
-std::string Factor::ToString() { 
-  return fmt::format("Factor: {} {}", to_string(type),
-                      type == FactorType::int_value ? std::to_string(val) : sval);
-}
-
-std::string to_string(AstType t) {
-  switch (t) {
-  case AstType::LOGICAL_OP:
-    return "AstType::LOGICAL_OP";
-  case AstType::BINOP:
-    return "AstType: binop";
-  case AstType::UNOP:
-    return "AstType: unop";
-  case AstType::PAREN:
-    return "AstType: paren";
-  case AstType::EXPR:
-    return "AstType: expr";
-  case AstType::FACTOR:
-    return "AstType: factor";
-  case AstType::TAUTOLOGY:
-    return "AstType: tautology";
-  case AstType::ERROR:
-    return "AstType: error";
-  case AstType::ROOT:
-    return "AstType: root";
-  }
-  return "AstType::unknown";
-}
-
 
 std::string AstNode::ToString() { 
-  return fmt::format("AstNode: {}", to_string(type_));
+  return fmt::format("AstNode: {}", to_string(ast_type_)); }
+
+void AstNode::accept(AstVisitor* visitor) { 
+  auto* expr = dynamic_cast<Expression*>(this);
+  if (expr) {
+    visitor->visit(expr);
+    return;
+  }
+  visitor->visit(this); 
 }
 
-std::string Expression::ToString() { 
+int Expression::expression_id = 0;
+
+std::string Expression::ToString() { return ToString(true, 0); }
+
+std::string Expression::ToString(bool include_children) { return ToString(include_children, 0); }
+
+std::string Expression::ToString(bool include_children, int indent) { 
   std::ostringstream ss;
-  ss << AstNode::ToString() << " [";
-  if (left_factor) {
-    ss << "Expression: \n";
-    ss << "LF: " << left_factor->ToString() << "\n";
+  std::string pad{"  "};
+  if (indent > 0) {
+    //pad.append(fmt::format("({})", indent));
+    pad.append(std::string(indent, ' '));
   }
-  if (left_expression) {
-    ss << "LE: " << left_expression->ToString() << "\n";
+  ss << "\r\n";
+  ss << pad << "Expression (" << id_ << "): ";
+  if (auto* l = dynamic_cast<Factor*>(left())) {
+    ss << pad << "[Left: " << l->ToString(0) << "]";
+  } else if (left_ && include_children) {
+    ss << pad << "[Left: " << left_->ToString(indent + 4) << " ]";
+  } else if (left_) {
+    ss << pad << "[Left: EXPRESSION #" << left_->id() << "]";
   }
-  ss << "OP: " << to_string(op) << "\n";
-  if (right_factor) {
-    ss << "RF: " << right_factor->ToString() << "\n";
-  }
-  if (right_expression) {
-    ss << "RE: " << right_expression->ToString() << "\n";
+  ss << "\r\n";
+  ss << pad << "[OP: '" << to_string(op_) << "']";
+  ss << "\r\n";
+  if (auto* f = dynamic_cast<Factor*>(right())) {
+    ss << pad << "[Right: " << f->ToString(0) << "]";
+  } else if (right_ && include_children) {
+    ss << pad << "[Right: " << right_->ToString(indent + 4) << "]";
+  } else if (right_) {
+    ss << pad << "[Right: EXPRESSION #" << right_->id() << "]";
   }
   return ss.str();
+}
+
+void Expression::accept(AstVisitor* visitor) { 
+  if (auto* f = dynamic_cast<Factor*>(left())) {
+    f->accept(visitor);
+  } else if (auto* e = dynamic_cast<Expression*>(left())) {
+    e->accept(visitor);
+  }
+  if (auto* r = dynamic_cast<Factor*>(right())) {
+    r->accept(visitor);
+  } else if (auto* e = dynamic_cast<Expression*>(right())) {
+    e->accept(visitor);
+  }
+  visitor->visit(this);
 }
 
 std::string RootNode::ToString() { return fmt::format("ROOT: {}\n", node->ToString()); }
 
 
 std::string BinaryOperatorNode::ToString() { 
-  return fmt::format("BinaryOperatorNode: ", to_string(oper));
+  return fmt::format("BinOp: ", to_string(oper));
 }
 
 std::string LogicalOperatorNode::ToString() {
-  return fmt::format("LogicalOperatorNode: ", to_string(oper));
+  return fmt::format("LogOp: ", to_string(oper));
 }
 
 } // namespace wwiv::core::parser

@@ -39,63 +39,120 @@ public:
   AstTest() {}
 
   ::testing::AssertionResult HasOp(Expression *e, Operator op) {
-    if (e->op == op)
+    if (e->op() == op)
       return ::testing::AssertionSuccess();
-    return ::testing::AssertionFailure() << to_string(e->op) << " was not: " << to_string(op);
+    return ::testing::AssertionFailure()
+           << to_string(e->op()) << " was not: " << to_string(op) << "; Expr: " << e->ToString();
   }
-  ::testing::AssertionResult HasLeftVariable(Expression* e, std::string v) {
-    if (!e->left_factor)
-      return ::testing::AssertionFailure() << "missing left variable: " << v;
-    auto val = e->left_factor->value();
-    if (val == v) {
+
+  ::testing::AssertionResult HasFactor(Expression* e, std::string expected, const std::string& lr) {
+    auto* f = dynamic_cast<Factor*>(e);
+    if (!f)
+      return ::testing::AssertionFailure() << "missing " << lr << " factor: " << expected;
+    auto val = f->value();
+    if (val == expected) {
       return ::testing::AssertionSuccess();
     }
-    return ::testing::AssertionFailure() << v << " != " << val;
+    return ::testing::AssertionFailure()
+           << expected << " != " << val << "; Expr: " << e->ToString();
+  }
+  ::testing::AssertionResult HasLeftFactor(Expression* e, std::string expected) {
+    return HasFactor(e->left(), expected, "left");
+  }
+  ::testing::AssertionResult HasRightFactor(Expression* e, std::string expected) {
+    return HasFactor(e->right(), expected, "right");
+  }
+  ::testing::AssertionResult HasExpression(Expression* e, std::string l, Operator op,
+                                           std::string r) {
+    auto has_op = HasOp(e, op);
+    if (!has_op)
+      return has_op;
+    auto has_left = HasLeftFactor(e, l);
+    if (!has_left) {
+      return has_left;
+    }
+    auto has_right = HasRightFactor(e, r);
+    if (!has_right) {
+      return has_right;
+    }
+    return ::testing::AssertionSuccess();
   }
 };
 
 TEST_F(AstTest, Expr_Add) { 
   Lexer l("1+2"); 
 
-  auto tokens = l.tokens();
-  ASSERT_TRUE(l.ok());
-  auto it = std::begin(tokens);
-  Ast ast{};
-  auto root = ast.parse(it, std::end(tokens));
-  LOG(INFO) << root->ToString();
+  Ast ast;
+  ASSERT_TRUE(ast.parse(l));
+  auto* root = dynamic_cast<Expression*>(ast.root());
+  VLOG(1) << root->ToString();
+
+  EXPECT_TRUE(HasLeftFactor(root, "1"));
+  EXPECT_TRUE(HasOp(root, Operator::add));
+  EXPECT_TRUE(HasRightFactor(root, "2"));
 }
 
 TEST_F(AstTest, Expr_Eq) {
   Lexer l("user.sl>200");
 
-  auto tokens = l.tokens();
-  ASSERT_TRUE(l.ok());
-  auto it = std::begin(tokens);
   Ast ast;
-  auto root = ast.parse(it, std::end(tokens));
-  LOG(INFO) << root->ToString();
+  ASSERT_TRUE(ast.parse(l));
+  auto* root = dynamic_cast<Expression*>(ast.root());
+  VLOG(1) << root->ToString();
+
+  EXPECT_TRUE(HasLeftFactor(root, "user.sl"));
+  EXPECT_TRUE(HasOp(root, Operator::gt));
+  EXPECT_TRUE(HasRightFactor(root, "200"));
+
+  EXPECT_TRUE(HasExpression(root, "user.sl", Operator::gt, "200"));
 }
 
 TEST_F(AstTest, Expr_Parens) {
   Lexer l("(user.sl>200) || user.ar == 'A'");
 
-  auto tokens = l.tokens();
-  ASSERT_TRUE(l.ok());
-  auto it = std::begin(tokens);
   Ast ast;
-  auto root = ast.parse(it, std::end(tokens));
-  LOG(INFO) << root->ToString();
-  ASSERT_EQ(AstType::EXPR, root->node->type_);
+  ASSERT_TRUE(ast.parse(l));
+  auto* root = ast.root();
+  VLOG(1) << root->ToString();
 
-  auto expr = dynamic_cast<Expression*>(root->node.get());
+  auto expr = dynamic_cast<Expression*>(root);
+  CHECK_NOTNULL(expr);
   EXPECT_TRUE(HasOp(expr, Operator::or));
   ASSERT_NE(nullptr, expr);
 
-  auto left = dynamic_cast<Expression*>(expr->left_expression.get());
-  LOG(INFO) << "Left: " << left->ToString();
-  EXPECT_TRUE(HasOp(left, Operator:: gt));
-  EXPECT_TRUE(HasLeftVariable(left, "user.sl"));
-  auto right = dynamic_cast<Expression*>(expr->right_expression.get());
-  LOG(INFO) << "Right: " << right->ToString();
-  EXPECT_TRUE(HasOp(right, Operator::eq));
+  auto left = dynamic_cast<Expression*>(expr->left());
+  VLOG(1) << "Left: " << left->ToString();
+  EXPECT_TRUE(HasExpression(left, "user.sl", Operator::gt, "200"));
+  auto right = dynamic_cast<Expression*>(expr->right());
+  VLOG(1) << "Right: " << right->ToString();
+  EXPECT_TRUE(HasExpression(right, "user.ar", Operator::eq, "A"));
+}
+
+
+TEST_F(AstTest, Visitor) {
+  Lexer l("((user.sl>200) || user.ar == 'A') || user.sl == 255");
+
+  class PrintVisitor : public AstVisitor {
+  public:
+    virtual void visit(AstNode* n) {
+      LOG(INFO) << "Visit AstNode: " << n->ToString();
+    };
+    virtual void visit(Expression* n) {
+      LOG(INFO) << "Visit Expression: " << n->ToString(false);
+      ++count;
+    };
+    virtual void visit(Factor* n) {
+      LOG(INFO) << "Visit Factor: " << n->ToString();
+      ++count;
+    };
+    int count{0};
+  };
+
+  Ast ast;
+  ASSERT_TRUE(ast.parse(l));
+  auto* root = ast.root();
+  PrintVisitor v{};
+  root->accept(&v);
+
+  EXPECT_EQ(11, v.count);
 }
