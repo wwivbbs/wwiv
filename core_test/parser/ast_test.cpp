@@ -37,6 +37,21 @@ using namespace wwiv::core::parser;
 class AstTest : public ::testing::Test {
 public:
   AstTest() {}
+
+  ::testing::AssertionResult HasOp(Expression *e, Operator op) {
+    if (e->op == op)
+      return ::testing::AssertionSuccess();
+    return ::testing::AssertionFailure() << to_string(e->op) << " was not: " << to_string(op);
+  }
+  ::testing::AssertionResult HasLeftVariable(Expression* e, std::string v) {
+    if (!e->left_factor)
+      return ::testing::AssertionFailure() << "missing left variable: " << v;
+    auto val = e->left_factor->value();
+    if (val == v) {
+      return ::testing::AssertionSuccess();
+    }
+    return ::testing::AssertionFailure() << v << " != " << val;
+  }
 };
 
 TEST_F(AstTest, Expr_Add) { 
@@ -70,4 +85,17 @@ TEST_F(AstTest, Expr_Parens) {
   Ast ast;
   auto root = ast.parse(it, std::end(tokens));
   LOG(INFO) << root->ToString();
+  ASSERT_EQ(AstType::EXPR, root->node->type_);
+
+  auto expr = dynamic_cast<Expression*>(root->node.get());
+  EXPECT_TRUE(HasOp(expr, Operator::or));
+  ASSERT_NE(nullptr, expr);
+
+  auto left = dynamic_cast<Expression*>(expr->left_expression.get());
+  LOG(INFO) << "Left: " << left->ToString();
+  EXPECT_TRUE(HasOp(left, Operator:: gt));
+  EXPECT_TRUE(HasLeftVariable(left, "user.sl"));
+  auto right = dynamic_cast<Expression*>(expr->right_expression.get());
+  LOG(INFO) << "Right: " << right->ToString();
+  EXPECT_TRUE(HasOp(right, Operator::eq));
 }

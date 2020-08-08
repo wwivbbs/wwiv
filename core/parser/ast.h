@@ -61,7 +61,7 @@ protected:
 
 public:
   virtual std::string ToString() override;
-
+  std::string value() const { return type == FactorType::int_value ? std::to_string(val) : sval; }
   FactorType type;
   int val;
   std::string sval;
@@ -131,9 +131,8 @@ class Ast final {
 public:
   Ast() = default;
 
-  std::unique_ptr<AstNode> parse(std::vector<Token>::iterator& begin,
-                                        const std::vector<Token>::iterator& end);
-  //const std::stack<std::unique_ptr<AstNode>>& stk() { return stack; }
+  std::unique_ptr<RootNode> parse(std::vector<Token>::iterator& begin,
+                                  const std::vector<Token>::iterator& end);
 
 private:
   std::unique_ptr<AstNode> parseExpression(std::vector<Token>::iterator& begin,
@@ -143,6 +142,8 @@ private:
   bool need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack);
   void reduce(std::stack<std::unique_ptr<AstNode>>& stack);
 };
+
+std::string to_string(Operator o);
 
 } // namespace wwiv::core
 

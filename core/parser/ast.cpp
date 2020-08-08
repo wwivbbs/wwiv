@@ -210,7 +210,7 @@ bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack) {
   return t == AstType::BINOP || t == AstType::LOGICAL_OP;
 }  
 
-std::unique_ptr<AstNode> Ast::parse(
+std::unique_ptr<RootNode> Ast::parse(
     std::vector<Token>::iterator& begin, const std::vector<Token>::iterator& end) {
   std::stack<std::unique_ptr<AstNode>> stack;
   for (auto it = begin; it != end;) {
@@ -219,8 +219,8 @@ std::unique_ptr<AstNode> Ast::parse(
     case TokenType::lparen: {
       auto expr = parseGroup(it, end);
       if (!expr || it == end) {
-        return std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexmeme));
+        return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
+            StrCat("Unable to parse expression starting at: ", it->lexmeme)));
       }
       stack.push(std::move(expr));
       } break;
@@ -235,8 +235,8 @@ std::unique_ptr<AstNode> Ast::parse(
       bool nr = need_reduce(stack);
       auto expr = parseExpression(it, end);
       if (!expr) {
-        return std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexmeme));
+        return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
+            StrCat("Unable to parse expression starting at: ", it->lexmeme)));
       }
       stack.push(std::move(expr));
       if (nr) {
