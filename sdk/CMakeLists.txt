@@ -2,13 +2,18 @@ include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
   bbslist.cpp
-  net/binkp.cpp
-  net/callout.cpp
   chains.cpp
   config.cpp
-  net/connect.cpp
-  net/contact.cpp
-  net/ftn_msgdupe.cpp
+  names.cpp
+  phone_numbers.cpp
+  qscan.cpp
+  ssm.cpp
+  status.cpp
+  subxtr.cpp
+  user.cpp
+  usermanager.cpp
+  wwivd_config.cpp
+  acs/eval.cpp
   ansi/ansi.cpp
   ansi/framebuffer.cpp
   ansi/makeansi.cpp
@@ -36,19 +41,15 @@ set(COMMON_SOURCES
   msgapi/message_wwiv.cpp
   msgapi/parsed_message.cpp
   msgapi/type2_text.cpp
+  net/binkp.cpp
+  net/callout.cpp
+  net/connect.cpp
+  net/contact.cpp
+  net/ftn_msgdupe.cpp
   net/callouts.cpp
   net/packets.cpp
-  names.cpp
   net/networks.cpp
-  phone_numbers.cpp
-  qscan.cpp
-  ssm.cpp
-  status.cpp
   net/subscribers.cpp
-  subxtr.cpp
-  user.cpp
-  usermanager.cpp
-  wwivd_config.cpp
    )
 
 set_max_warnings()

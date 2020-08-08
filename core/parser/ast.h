@@ -87,7 +87,7 @@ public:
 
 protected:
   // Constructor for subclasses of expressions to use to eval.
-  Expression(AstType t) : AstNode(t) {}
+  Expression(AstType t) : AstNode(t), id_(++expression_id) {}
 };
 
 class Factor : public Expression {
@@ -100,6 +100,9 @@ public:
   FactorType factor_type() const noexcept { return factor_type_; }
   std::string value() const {
     return factor_type_ == FactorType::int_value ? std::to_string(val) : sval;
+  }
+  int int_value() const {
+    return factor_type_ == FactorType::int_value ? val : -1;
   }
   virtual void accept(AstVisitor* visitor) override;
 
@@ -189,6 +192,7 @@ private:
 };
 
 std::string to_string(Operator o);
+std::string to_symbol(Operator o);
 
 } // namespace wwiv::core
 

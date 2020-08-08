@@ -70,6 +70,38 @@ std::string to_string(Operator o) {
   }
 }
 
+
+std::string to_symbol(Operator o) {
+  switch (o) {
+  case Operator::add:
+    return "+";
+  case Operator::div:
+    return "/";
+  case Operator::eq:
+    return "==";
+  case Operator::ge:
+    return ">=";
+  case Operator::gt:
+    return ">";
+  case Operator::le:
+    return "<=";
+  case Operator::lt:
+    return "<";
+  case Operator::mul:
+    return "*";
+  case Operator::ne:
+    return "!=";
+  case Operator::sub:
+    return "-";
+  case Operator:: or:
+    return "||";
+  case Operator::and:
+    return "&&";
+  default:
+    return fmt::format("UNKNOWN ({})", static_cast<int>(o));
+  }
+}
+
 std::string to_string(AstType t) {
   switch (t) {
   case AstType::LOGICAL_OP:
@@ -114,7 +146,7 @@ std::string to_string(FactorType t) {
 
 std::string Factor::ToString(int indent) {
   auto pad = std::string(indent, ' ');
-  return fmt::format("{}Factor: {} '{}'", pad, to_string(factor_type_),
+  return fmt::format("{}Factor #{}: {} '{}'", pad, id(), to_string(factor_type_),
                      factor_type_ == FactorType::int_value ? std::to_string(val) : sval);
 }
 

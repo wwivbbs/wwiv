@@ -110,6 +110,11 @@ jq ".number" jenkins.json
   add a 3rd parameter for the external description.  Or put it into the FileRecord
   class.
 
+## Parser
+***
+* Move expression/factor ID into ast class.
+* add token into astnodes
+* Add line/col position info into token.
 
 ## Open Questions
 ***

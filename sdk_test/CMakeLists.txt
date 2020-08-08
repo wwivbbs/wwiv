@@ -21,6 +21,7 @@ set(test_sources
   subxtr_test.cpp
   type2_text_test.cpp
   user_test.cpp
+  acs/acs_test.cpp
   ansi/ansi_test.cpp
   ansi/framebuffer_test.cpp
   ansi/makeansi_test.cpp
