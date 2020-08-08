@@ -25,6 +25,8 @@ set(test_sources
   textfile_test.cpp
   transaction_test.cpp
   uuid_test.cpp
+  parser/ast_test.cpp
+  parser/lexer_test.cpp
 )
 
 set_max_warnings()

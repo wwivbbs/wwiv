@@ -26,6 +26,9 @@ set(COMMON_SOURCES
   textfile.cpp
   uuid.cpp
   version.cpp
+  parser/ast.cpp
+  parser/lexer.cpp
+  parser/token.cpp
   )
 
 if(UNIX) 
