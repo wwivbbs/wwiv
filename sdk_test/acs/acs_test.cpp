@@ -75,8 +75,26 @@ TEST_F(AcsTest, Or) {
   EXPECT_TRUE(eval->eval());
 }
 
-TEST_F(AcsTest, Multiple_Group) {
+TEST_F(AcsTest, Multiple_Group_SL) {
   user_.SetSl(201);
+  user_.SetDsl(100);
+  user_.set_name("SYSOP");
   createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
   EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Multiple_Group_DSL) {
+  user_.SetSl(10);
+  user_.SetDsl(201);
+  user_.set_name("SYSOP");
+  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Multiple_Group_None) {
+  user_.SetSl(22);
+  user_.SetDsl(12);
+  user_.set_name("SYSOP");
+  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
+  EXPECT_FALSE(eval->eval());
 }

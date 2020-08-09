@@ -180,7 +180,7 @@ static Value evalToBool(Value l, Operator op, Value r) {
 }
 
 void Eval::visit(Expression* n) { 
-  LOG(INFO) << "Evaluating: " << n->ToString(false);  
+  //LOG(INFO) << "Evaluating: " << n->ToString(false);  
   std::optional<Value> left;
   if (auto* factor = dynamic_cast<Factor*>(n->left())) {
     left = to_value(factor);
