@@ -215,9 +215,10 @@ void Eval::visit(Factor* n) {
 }
 
 bool Eval::eval() {
+  VLOG(1) << "Eval:eval: " << expression_;
   Lexer l(expression_);
   if (!l.ok()) {
-    LOG(ERROR) << "Failed to lex expression: " << expression_;
+    LOG(ERROR) << "Failed to lex expression: '" << expression_ << "'";
     return false;
   }
 
@@ -230,6 +231,7 @@ bool Eval::eval() {
     LOG(ERROR) << "Failed to parse expression: " << expression_;
     return false;
   }
+  VLOG(1) << "Root: " << root->ToString();
 
   root->accept(this);
 

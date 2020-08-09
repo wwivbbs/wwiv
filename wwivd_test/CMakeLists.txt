@@ -3,17 +3,9 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(test_sources
   wwivd_non_http_test.cpp
 )
+list(APPEND test_sources wwivd_test_main.cpp)
+
 set_max_warnings()
-
-if(NOT UNIX)
-  list(APPEND test_sources wwivd_test_main.cpp)
-endif()
 add_executable(wwivd_tests ${test_sources})
-
-if(UNIX)
-  target_link_libraries(wwivd_tests wwivd_lib core core_fixtures sdk gtest_main)
-else()
-  target_link_libraries(wwivd_tests wwivd_lib core_fixtures core sdk gtest)
-endif()
-
+target_link_libraries(wwivd_tests wwivd_lib core_fixtures core sdk gtest)
 add_test(wwivd_tests wwivd_tests)

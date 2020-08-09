@@ -39,6 +39,7 @@ enum class FsedFlags {
 class MessageEditorData {
 public:
   MessageEditorData();
+  MessageEditorData(std::string fn);
   ~MessageEditorData() = default;
 
   [[nodiscard]] bool is_email() const;

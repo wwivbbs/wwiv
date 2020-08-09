@@ -85,6 +85,15 @@ TEST_F(LexerTest, Eq) {
   EXPECT_TOKEN_EQ(t[2], TokenType::number, "10");
 }
 
+TEST_F(LexerTest, UserSlGt) {
+  Lexer l("user.sl>200");
+  ASSERT_TRUE(l.ok());
+
+  const auto& t = l.tokens();
+  EXPECT_EQ(3u, t.size());
+  EXPECT_TOKEN_EQ(t[1], TokenType::gt, "");
+}
+
 TEST_F(LexerTest, Or) {
   Lexer l("(user.sl>200) || user.ar == 'A'");
   ASSERT_TRUE(l.ok());

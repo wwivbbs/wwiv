@@ -27,9 +27,10 @@ using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::strings;
 
-wwiv::bbs::MessageEditorData::MessageEditorData() {
-  from_name = a()->names()->UserName(a()->usernum);
-}
+wwiv::bbs::MessageEditorData::MessageEditorData() 
+    : MessageEditorData(a()->names()->UserName(a()->usernum)) {}
+
+MessageEditorData::MessageEditorData(std::string fn) : from_name(std::move(fn)) {}
 
 bool MessageEditorData::is_email() const {
   return iequals(aux, "email");

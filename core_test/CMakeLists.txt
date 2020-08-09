@@ -28,21 +28,12 @@ set(test_sources
   parser/ast_test.cpp
   parser/lexer_test.cpp
 )
+list(APPEND test_sources core_test_main.cpp)
 
 set_max_warnings()
 
 add_library(core_fixtures ${fixture_sources})
-
 target_link_libraries(core_fixtures core)
-if(NOT UNIX)
-  list(APPEND test_sources core_test_main.cpp)
-endif()
 add_executable(core_tests ${test_sources})
-
-if(UNIX)
-  target_link_libraries(core_tests core_fixtures core gtest_main)
-else()
-  target_link_libraries(core_tests core_fixtures core gtest)
-endif()
-
+target_link_libraries(core_tests core_fixtures core gtest)
 add_test(core_tests core_tests)

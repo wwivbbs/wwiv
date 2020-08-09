@@ -41,7 +41,7 @@ TEST(Msgbase1Test, AddFtnMsgid_Smoke) {
   BbsHelper helper;
   helper.SetUp();
 
-  MessageEditorData data{};
+  MessageEditorData data("Random Username");
   const std::string msgid = "1:2/3 deadbeef";
   FidoAddress addr("1:2/3");
   data.text = "Hello World\r\n\004"

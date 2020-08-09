@@ -26,7 +26,7 @@
 namespace wwiv::core::parser {
 
 struct LexerState {
-  bool ok;
+  bool ok{true};
   std::string err;
 };
 

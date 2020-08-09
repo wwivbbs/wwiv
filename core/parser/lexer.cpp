@@ -26,8 +26,6 @@
 #include <sstream>
 #include <unordered_set>
 
-enum class lexer_state_t { normal, in_char, in_string, in_mult_comment };
-
 namespace wwiv::core::parser {
 
 std::optional<char> peek(std::string::iterator& it, const std::string::iterator& end) {
@@ -45,7 +43,6 @@ static std::unordered_set<char> WS = {' ', '\r', '\n', '\t'};
 Lexer::Lexer(std::string source)
     : source_(std::move(source)), tok_eof(TokenType::eof), start(std::begin(source_)),
       end(std::end(source_)) { 
-  auto state = lexer_state_t::normal;
 
   auto it = start;
   while (it != end) {
@@ -249,22 +246,31 @@ Token& Lexer::next() {
   return *iter_++;
 }
 
-bool Lexer::ok() { return state_.ok; }
+bool Lexer::ok() { 
+  if (!state_.ok) {
+    LOG(ERROR) << "Lexer state !ok: " << state_.err;
+  }
+  return state_.ok;
+}
 
 const std::vector<Token>& Lexer::tokens() const { return tokens_; }
 
 void Lexer::emit(TokenType t) { 
+  VLOG(1) << "Emitting TokenType: " << static_cast<int>(t);
   tokens_.emplace_back(t);
 }
 
 void Lexer::emit(TokenType t, std::string l ) { 
-  tokens_.emplace_back(t, std::move(l)); 
+  VLOG(1) << "Emitting TokenType: " << static_cast<int>(t) << "; l: '" << l << "'";
+  tokens_.emplace_back(t, std::move(l));
 }
 
 void Lexer::error(std::string::iterator& it, std::string message) { 
   auto d = std::distance(start, it);
   auto msg = fmt::format("Error at pos: '{}', {}", d, message);
   emit(TokenType::error, msg);
+  state_.ok = false;
+  state_.err = msg;
 }
 
 } // namespace wwiv::core::parser

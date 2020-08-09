@@ -36,18 +36,12 @@ set(test_sources
   net/callouts_test.cpp
   net/packets_test.cpp
 )
-if (WIN32)
-  list(APPEND test_sources sdk_test_main.cpp)
-endif()
+list(APPEND test_sources sdk_test_main.cpp)
 
 set_max_warnings()
 
 add_executable(sdk_tests ${test_sources})
 
-if (UNIX)
-target_link_libraries(sdk_tests core core_fixtures gtest_main sdk)
-elseif(WIN32)
 target_link_libraries(sdk_tests core core_fixtures gtest sdk)
-endif()
 
 add_test(sdk_tests, sdk_tests)
