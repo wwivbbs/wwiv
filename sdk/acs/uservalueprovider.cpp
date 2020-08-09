@@ -15,44 +15,52 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_H__
-#define __INCLUDED_SDK_ACS_EVAL_H__
+#include "sdk/acs/uservalueprovider.h"
 
-#include "core/parser/ast.h"
-#include "core/parser/lexer.h"
-#include "sdk/acs/value.h"
-#include "sdk/acs/valueprovider.h"
-#include <any>
-#include <iostream>
-#include <map>
-#include <unordered_map>
-#include <memory>
+#include "core/log.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
+#include "sdk/user.h"
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
+
+using namespace wwiv::core;
+using namespace wwiv::core::parser;
+using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
+// TODO(rushfan): Move this to sdk, this is from bbs/arword.cpp
+static std::string word_to_arstr(int ar) {
+  if (!ar) {
+    return {};
+  }
+  std::string arstr;
+  for (int i = 0; i < 16; i++) {
+    if ((1 << i) & ar) {
+      arstr.push_back(static_cast<char>('A' + i));
+    }
+  }
+  return arstr;
+}
 
-class Eval : public wwiv::core::parser::AstVisitor {
-public:
-  explicit Eval(std::string expression);
-  ~Eval() = default;
+std::optional<Value> UserValueProvider::value(const std::string& name) {
+  if (iequals(name, "sl")) {
+    return std::make_optional<Value>(user_->GetSl());
+  } else if (iequals(name, "dsl")) {
+    return std::make_optional<Value>(user_->GetDsl());
+  } else if (iequals(name, "age")) {
+    return std::make_optional<Value>(user_->age());
+  } else if (iequals(name, "ar")) {
+    return std::make_optional<Value>(word_to_arstr(user_->GetAr()));
+  } else if (iequals(name, "dar")) {
+    return std::make_optional<Value>(word_to_arstr(user_->GetDar()));
+  } else if (iequals(name, "name")) {
+    return std::make_optional<Value>(user_->GetName());
+  }
+  return std::nullopt;
+}
 
-  bool eval();
-  bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
-  std::optional<Value> to_value(wwiv::core::parser::Factor* n);
-
-  virtual void visit(wwiv::core::parser::AstNode*) override {}
-  virtual void visit(wwiv::core::parser::Expression* n) override;
-  virtual void visit(wwiv::core::parser::Factor* n) override;
-
-private:
-  std::string expression_;
-  std::map<std::string, std::unique_ptr<ValueProvider>> providers_;
-  std::unordered_map<int, Value> values_;
-};  // class
-
-} 
-
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+}

@@ -15,44 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_H__
-#define __INCLUDED_SDK_ACS_EVAL_H__
+#ifndef __INCLUDED_SDK_ACS_USERVALUEPROVIDER_H__
+#define __INCLUDED_SDK_ACS_USERVALUEPROVIDER_H__
 
-#include "core/parser/ast.h"
-#include "core/parser/lexer.h"
+#include "sdk/user.h"
 #include "sdk/acs/value.h"
 #include "sdk/acs/valueprovider.h"
 #include <any>
-#include <iostream>
-#include <map>
-#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 namespace wwiv::sdk::acs {
 
 
-class Eval : public wwiv::core::parser::AstVisitor {
+class UserValueProvider : public ValueProvider {
 public:
-  explicit Eval(std::string expression);
-  ~Eval() = default;
-
-  bool eval();
-  bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
-  std::optional<Value> to_value(wwiv::core::parser::Factor* n);
-
-  virtual void visit(wwiv::core::parser::AstNode*) override {}
-  virtual void visit(wwiv::core::parser::Expression* n) override;
-  virtual void visit(wwiv::core::parser::Factor* n) override;
+  UserValueProvider(wwiv::sdk::User* user) : ValueProvider("user"), user_(user) {}
+  std::optional<Value> value(const std::string& name) override;
 
 private:
-  std::string expression_;
-  std::map<std::string, std::unique_ptr<ValueProvider>> providers_;
-  std::unordered_map<int, Value> values_;
-};  // class
+  wwiv::sdk::User* user_;
+};
 
-} 
+}
 
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+#endif // __INCLUDED_SDK_ACS_EVAL_H__

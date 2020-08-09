@@ -15,44 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_H__
-#define __INCLUDED_SDK_ACS_EVAL_H__
+#ifndef __INCLUDED_SDK_ACS_VALUEPROIVDER_H__
+#define __INCLUDED_SDK_ACS_VALUEPROIVDER_H__
 
-#include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/acs/value.h"
-#include "sdk/acs/valueprovider.h"
-#include <any>
-#include <iostream>
-#include <map>
-#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 namespace wwiv::sdk::acs {
 
 
-class Eval : public wwiv::core::parser::AstVisitor {
+/** Provides a value for an identifier of the form "prefix.value" */
+class ValueProvider {
 public:
-  explicit Eval(std::string expression);
-  ~Eval() = default;
+  ValueProvider(const std::string& prefix) : prefix_(prefix) {}
+  virtual ~ValueProvider() = default;
 
-  bool eval();
-  bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
-  std::optional<Value> to_value(wwiv::core::parser::Factor* n);
-
-  virtual void visit(wwiv::core::parser::AstNode*) override {}
-  virtual void visit(wwiv::core::parser::Expression* n) override;
-  virtual void visit(wwiv::core::parser::Factor* n) override;
+  virtual std::optional<Value> value(const std::string& name) = 0;
 
 private:
-  std::string expression_;
-  std::map<std::string, std::unique_ptr<ValueProvider>> providers_;
-  std::unordered_map<int, Value> values_;
-};  // class
+  const std::string prefix_;
+};
 
-} 
+}
 
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+#endif // __INCLUDED_SDK_ACS_EVAL_H__

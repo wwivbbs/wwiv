@@ -18,10 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "sdk/acs/eval.h"
 #include "core/parser/ast.h"
 #include "core/parser/lexer.h"
 #include "sdk/user.h"
+#include "sdk/acs/eval.h"
+#include "sdk/acs/uservalueprovider.h"
 #include <string>
 #include <iostream>
 

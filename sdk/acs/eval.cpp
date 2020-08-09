@@ -22,7 +22,6 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/user.h"
 #include <optional>
 #include <string>
 #include <utility>
@@ -34,51 +33,12 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
-std::tuple<std::string, std::string> split_obj_name(const std::string& name) {
+static std::tuple<std::string, std::string> split_obj_name(const std::string& name) {
   auto last = name.rfind('.');
   if (last == std::string::npos) {
     return std::make_tuple("", name);
   }
   return std::make_tuple(name.substr(0, last), name.substr(last + 1));
-}
-
-std::ostream& operator<<(std::ostream& os, const Value& a) {
-  if (a.value_type == ValueType::number) {
-    os << std::any_cast<int>(a.value);
-  } else if (a.value_type == ValueType::number) {
-    os << std::any_cast<std::string>(a.value);
-  }
-  return os;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Providers
-
-// TODO(rushfan): Move this to sdk, this is from bbs/arword.cpp
-static std::string word_to_arstr(int ar) {
-  if (!ar) {
-    return {};
-  }
-  std::string arstr;
-  for (int i = 0; i < 16; i++) {
-    if ((1 << i) & ar) {
-      arstr.push_back(static_cast<char>('A' + i));
-    }
-  }
-  return arstr;
-}
-
-std::optional<Value> UserValueProvider::value(const std::string& name) { 
-  if (iequals(name, "sl")) {
-    return {Value(user_->GetSl())};
-  } else if (iequals(name, "dsl")) {
-    return {Value(user_->GetDsl())};
-  } else if (iequals(name, "ar")) {
-    return Value(word_to_arstr(user_->GetAr()));
-  } else if (iequals(name, "name")) {
-    return Value(user_->GetName());
-  }
-  return std::nullopt;
 }
 
 std::optional<Value> Eval::to_value(Factor* n) {
@@ -104,83 +64,9 @@ std::optional<Value> Eval::to_value(Factor* n) {
 
 Eval::Eval(std::string expression) : expression_(std::move(expression)) {}
 
-static Value evalToBool(Value l, Operator op, Value r) {
-  const auto vt = l.value_type;
-  switch (op) { 
-  case Operator::add:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() + r.as_number());
-    }
-    return Value(StrCat(l.as_string(), r.as_string()));
-  case Operator::sub:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() - r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-  case Operator::mul:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() * r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::div:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() / r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::gt:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() > r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::ge:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() >= r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::lt:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() < r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::le:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() <= r.as_number());
-    }
-    LOG(ERROR) << to_string(op) << " is only allowed on numbers";
-    break;
-  case Operator::eq:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() == r.as_number());
-    } else if (vt == ValueType::boolean) {
-      return Value(l.as_boolean() == r.as_boolean());
-    } else if (vt == ValueType::string) {
-      return Value(iequals(l.as_string(), r.as_string()));
-    }
-    break;
-  case Operator::ne:
-    if (vt == ValueType::number) {
-      return Value(l.as_number() != r.as_number());
-    } else if (vt == ValueType::boolean) {
-      return Value(l.as_boolean() != r.as_boolean());
-    } else if (vt == ValueType::string) {
-      return Value(!iequals(l.as_string(), r.as_string()));
-    }
-    break;
-  case Operator::logical_or:
-    return Value(l.as_boolean() || r.as_boolean());
-  case Operator::logical_and:
-    return Value(l.as_boolean() && r.as_boolean());
-  }
-  return Value(false);
-}
 
 void Eval::visit(Expression* n) { 
-  //LOG(INFO) << "Evaluating: " << n->ToString(false);  
+  VLOG(2) << "Evaluating: " << n->ToString(false);  
   std::optional<Value> left;
   if (auto* factor = dynamic_cast<Factor*>(n->left())) {
     left = to_value(factor);
@@ -195,10 +81,10 @@ void Eval::visit(Expression* n) {
     // left must be expression, grab it from the cache.
     right = values_[n->right()->id()];
   }
-  LOG(INFO) << "EVAL: " << left.value() << " " << to_symbol(n->op()) << " " << right.value();
+  VLOG(1) << "EVAL: L: " << left.value() << " " << to_symbol(n->op()) << " " << right.value();
 
   // cache value
-  auto result = evalToBool(left.value(), n->op(), right.value());
+  auto result = Value::eval(left.value(), n->op(), right.value());
   values_[n->id()] = result;
 }
 
@@ -250,41 +136,5 @@ bool Eval::add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p) {
   return true; 
 }
 
-
-int Value::as_number() { 
-  if (value_type == ValueType::number) {
-    return std::any_cast<int>(value);
-  } else if (value_type == ValueType::number) {
-    return to_number<int>(std::any_cast<std::string>(value));
-  } else if (value_type == ValueType::boolean) {
-    const auto b = std::any_cast<bool>(value);
-    return b ? 1 : 0;
-  }
-  return 0; 
-}
-
-std::string Value::as_string() { 
-  if (value_type == ValueType::number) {
-    return std::to_string(std::any_cast<int>(value));
-  } else if (value_type == ValueType::number) {
-    return std::any_cast<std::string>(value);
-  } else if (value_type == ValueType::boolean) {
-    const auto b = std::any_cast<bool>(value);
-    return b ? "true" : "false";
-  }
-  return "";
-}
-
-bool Value::as_boolean() { 
-  if (value_type == ValueType::string) {
-    const auto s = std::any_cast<std::string>(value);
-    return iequals(s, "true");
-  } else if (value_type == ValueType::number) {
-    return std::any_cast<int>(value) != 0;
-  } else if (value_type == ValueType::boolean) {
-    return std::any_cast<bool>(value);
-  }
-  return false;
-}
 
 } // namespace wwiv::sdk::acs

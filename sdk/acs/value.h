@@ -15,44 +15,44 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_H__
-#define __INCLUDED_SDK_ACS_EVAL_H__
+#ifndef __INCLUDED_SDK_ACS_VALUE_H__
+#define __INCLUDED_SDK_ACS_VALUE_H__
 
 #include "core/parser/ast.h"
 #include "core/parser/lexer.h"
-#include "sdk/acs/value.h"
-#include "sdk/acs/valueprovider.h"
+#include "sdk/user.h"
 #include <any>
 #include <iostream>
 #include <map>
-#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace wwiv::sdk::acs {
 
+enum class ValueType { unknown, number, string, boolean };
 
-class Eval : public wwiv::core::parser::AstVisitor {
+class Value {
 public:
-  explicit Eval(std::string expression);
-  ~Eval() = default;
+  Value() : value_type(ValueType::unknown) {}
+  Value(bool v) : value_type(ValueType::boolean), value(std::make_any<bool>(v)) {}
+  Value(int v) : value_type(ValueType::number), value(std::make_any<int>(v)) {}
+  Value(std::string v) : value_type(ValueType::string), value(std::make_any<std::string>(v)) {}
 
-  bool eval();
-  bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
-  std::optional<Value> to_value(wwiv::core::parser::Factor* n);
+  int as_number();
+  std::string as_string();
+  bool as_boolean();
 
-  virtual void visit(wwiv::core::parser::AstNode*) override {}
-  virtual void visit(wwiv::core::parser::Expression* n) override;
-  virtual void visit(wwiv::core::parser::Factor* n) override;
+  static Value eval(Value l, wwiv::core::parser::Operator op, Value r);
 
-private:
-  std::string expression_;
-  std::map<std::string, std::unique_ptr<ValueProvider>> providers_;
-  std::unordered_map<int, Value> values_;
-};  // class
+  ValueType value_type;
+  std::any value;
+};
 
-} 
+std::ostream& operator<<(std::ostream& os, const Value& a);
 
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+}
+
+#endif // __INCLUDED_SDK_ACS_EVAL_H__
