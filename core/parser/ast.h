@@ -64,6 +64,7 @@ enum class FactorType { int_value, string_val, variable };
 
 class Factor;
 
+//[[DebuggerDisplay("op={op_} l={left_} r={right_}")]]
 class Expression : public AstNode {
 public:
   static int expression_id;
@@ -185,8 +186,8 @@ private:
                                       const std::vector<Token>::iterator& end);
   std::unique_ptr<RootNode> parse(std::vector<Token>::iterator& begin,
                                   const std::vector<Token>::iterator& end);
-  bool need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack);
-  void reduce(std::stack<std::unique_ptr<AstNode>>& stack);
+  bool need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool allow_logical);
+  bool reduce(std::stack<std::unique_ptr<AstNode>>& stack);
 
   std::unique_ptr<RootNode> root_;
 };

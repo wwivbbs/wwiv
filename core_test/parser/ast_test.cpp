@@ -117,7 +117,7 @@ TEST_F(AstTest, Expr_Parens) {
 
   auto expr = dynamic_cast<Expression*>(root);
   CHECK_NOTNULL(expr);
-  EXPECT_TRUE(HasOp(expr, Operator::logical_or));
+  EXPECT_TRUE(HasOp(expr, Operator::logical_or)) << root->ToString();
   ASSERT_NE(nullptr, expr);
 
   auto left = dynamic_cast<Expression*>(expr->left());
@@ -155,4 +155,7 @@ TEST_F(AstTest, Visitor) {
   root->accept(&v);
 
   EXPECT_EQ(11, v.count);
+
+  LOG(INFO) << "======================================================================";
+  LOG(INFO) << root->ToString();
 }

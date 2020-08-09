@@ -75,6 +75,8 @@ std::optional<Value> UserValueProvider::value(const std::string& name) {
     return {Value(user_->GetDsl())};
   } else if (iequals(name, "ar")) {
     return Value(word_to_arstr(user_->GetAr()));
+  } else if (iequals(name, "name")) {
+    return Value(user_->GetName());
   }
   return std::nullopt;
 }

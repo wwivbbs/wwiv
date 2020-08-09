@@ -204,7 +204,7 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
   return {};
 }
 
-void Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
+bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   auto expr = std::make_unique<Expression>();
   auto right = std::move(stack.top());
   stack.pop();
@@ -223,7 +223,7 @@ void Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   } else {
     stack.push(
         std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op->ast_type()))));
-    return;
+    return false;
   }
   // Set left
   if (left->ast_type() == AstType::FACTOR) {
@@ -242,6 +242,7 @@ void Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
     expr->right_ = std::unique_ptr<Expression>(factor);
   }
   stack.push(std::move(expr));
+  return true;
 }
 
 std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
@@ -252,6 +253,17 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     case TokenType::rparen: {
       // If we have a right parens, we are no longer in an expression.
       // exit now before advancing it;
+
+      // Flatten out any repeating logical conditions here,  we should end with
+      // one single tree node at the root.
+      while (stack.size() > 1) {
+        if (!reduce(stack)) {
+          break;
+        }
+      }
+      if (stack.size() != 1) {
+        LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+      }
       auto ret = std::move(stack.top());
       stack.pop();
       return ret;
@@ -269,7 +281,7 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
         return std::make_unique<ErrorNode>(
             StrCat("Unable to parse expression starting at: ", it->lexmeme));
       }
-      const auto nr = need_reduce(stack);
+      const auto nr = need_reduce(stack, false);
       stack.push(createFactor(*it));
       if (nr) {
         // One identifier and one operator
@@ -293,7 +305,20 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     case TokenType::logical_and: {
       stack.push(createLogicalOperator(*it));
     } break;
+    default: {
+    } break;
+      // ignore
     }
+  }
+  // Flatten out any repeating logical conditions here,  we should end with
+  // one single tree node at the root.
+  while (stack.size() > 1) {
+    if (!reduce(stack)) {
+      break;
+    }
+  }
+  if (stack.size() != 1) {
+    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
   }
   auto ret = std::move(stack.top());
   stack.pop();
@@ -308,25 +333,49 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
   }
   // Skip lparen
   ++it;
-  auto expr = parseExpression(it, end);
-  if (!expr) {
-    return std::make_unique<ErrorNode>(
-        StrCat("Unable to parse expression starting at: ", it->lexmeme));
+  std::stack<std::unique_ptr<AstNode>> stack;
+  while (it != end && it->type != TokenType::rparen) {
+    auto expr = parseExpression(it, end);
+    if (!expr) {
+      return std::make_unique<ErrorNode>(
+          StrCat("Unable to parse expression starting at: ", it->lexmeme));
+    }
+    stack.push(std::move(expr));
+    if (it == end || it->type != TokenType::rparen) {
+      LOG(ERROR) << "Missing right parens";
+      auto pos = it == end ? "end" : it->lexmeme;
+      return std::make_unique<ErrorNode>(StrCat("Unable to parse expression starting at: ", pos));
+    }
   }
-  if (it == end || it->type != TokenType::rparen) {
-    LOG(ERROR) << "Missing right parens";
-    auto pos = it == end ? "end" : it->lexmeme;
-    return std::make_unique<ErrorNode>(StrCat("Unable to parse expression starting at: ", pos));
+  // Flatten out any repeating logical conditions here,  we should end with
+  // one single tree node at the root.
+  while (stack.size() > 1) {
+    if (!reduce(stack)) {
+      break;
+    }
   }
-  return expr;
+  if (stack.size() != 1) {
+    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+  }
+  auto root = std::move(stack.top());
+  stack.pop();
+  return root;
 }
 
-bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack) {
+/** 
+ * True if we need to reduce the stack.  We only allow logical_operations to trigger
+ * reduce if we are betwen expressions (this happens at partse, not at parseExpression
+ */
+bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool allow_logical) {
   if (stack.empty()) {
     return false;
   }
   const auto t = stack.top()->ast_type();
-  return t == AstType::BINOP || t == AstType::LOGICAL_OP;
+  bool nr = t == AstType::BINOP;
+  if (allow_logical && t == AstType::LOGICAL_OP) {
+    return true;
+  }
+  return nr;
 }  
 
 std::unique_ptr<RootNode> Ast::parse(
@@ -351,7 +400,7 @@ std::unique_ptr<RootNode> Ast::parse(
 
     default: {
       // Try to reduce.
-      bool nr = need_reduce(stack);
+      bool nr = need_reduce(stack, true);
       auto expr = parseExpression(it, end);
       if (!expr) {
         return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
@@ -367,6 +416,9 @@ std::unique_ptr<RootNode> Ast::parse(
     if (it != end) {
       ++it;
     }
+  }
+  if (stack.size() != 1) {
+    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
   }
   auto root = std::make_unique<RootNode>(std::move(stack.top()));
   stack.pop();
@@ -422,7 +474,7 @@ std::string Expression::ToString(bool include_children, int indent) {
     ss << pad << "[Left: EXPRESSION #" << left_->id() << "]";
   }
   ss << "\r\n";
-  ss << pad << "[OP: '" << to_string(op_) << "']";
+  ss << pad << "[OP: '" << to_string(op_) << "'](" << id_ << ")";
   ss << "\r\n";
   if (auto* f = dynamic_cast<Factor*>(right())) {
     ss << pad << "[Right: " << f->ToString(0) << "]";

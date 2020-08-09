@@ -68,3 +68,15 @@ TEST_F(AcsTest, DummySL_LT_False) {
 
   EXPECT_FALSE(eval->eval());
 }
+
+TEST_F(AcsTest, Or) {
+  user_.SetSl(201);
+  createEval("user.sl>200 || user.dsl > 200 || user.name == \"Rushfan\"");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Multiple_Group) {
+  user_.SetSl(201);
+  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
+  EXPECT_TRUE(eval->eval());
+}
