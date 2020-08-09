@@ -169,9 +169,9 @@ static Value evalToBool(Value l, Operator op, Value r) {
       return Value(!iequals(l.as_string(), r.as_string()));
     }
     break;
-  case Operator::or:
+  case Operator::logical_or:
     return Value(l.as_boolean() || r.as_boolean());
-  case Operator::and:
+  case Operator::logical_and:
     return Value(l.as_boolean() && r.as_boolean());
   }
   return Value(false);

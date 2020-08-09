@@ -91,5 +91,5 @@ TEST_F(LexerTest, Or) {
 
   const auto& t = l.tokens();
   EXPECT_EQ(9u, t.size());
-  EXPECT_TOKEN_EQ(t[5], TokenType::or, "");
+  EXPECT_TOKEN_EQ(t[5], TokenType::logical_or, "");
 }

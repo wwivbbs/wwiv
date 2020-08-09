@@ -70,7 +70,7 @@ Lexer::Lexer(std::string source)
         emit(TokenType::ne);
         ++it;
       } else {
-        emit(TokenType::not);
+        emit(TokenType::negate);
       }
     } break;
     case '>': {
@@ -117,7 +117,7 @@ Lexer::Lexer(std::string source)
       break;
     case '&': {
       if (peek(it, end) == '&') {
-        emit(TokenType::and);
+        emit(TokenType::logical_and);
         ++it;
       } else {
         error(it, "& is not a valid token; did you mean '&&'?");
@@ -125,7 +125,7 @@ Lexer::Lexer(std::string source)
     } break;
     case '|': {
       if (peek(it, end) == '|') {
-        emit(TokenType::or);
+        emit(TokenType::logical_or);
         ++it;
       } else {
         error(it, "| is not a valid token; did you mean '||'?");

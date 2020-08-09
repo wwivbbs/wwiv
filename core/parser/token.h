@@ -32,7 +32,7 @@ enum class TokenType {
   eq,         //  ==
   assign,     //  =
   ne,         //  !=
-  not,        //  !
+  negate,     //  !
   gt,         //  >
   ge,         //  >=
   lt,         //  <
@@ -48,8 +48,8 @@ enum class TokenType {
   eof,        // EOF of ^Z
   identifier, // [A-Za-z0-9.]
   number,     // [0-9]
-  and,        // &&
-  or,         // ||
+  logical_and, // &&
+  logical_or,  // ||
   error
 };
 

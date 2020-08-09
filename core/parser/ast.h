@@ -58,7 +58,7 @@ private:
   const AstType ast_type_;
 };
 
-enum class Operator { add, sub, mul, div, gt, ge, lt, le, eq, ne, or, and };
+enum class Operator { add, sub, mul, div, gt, ge, lt, le, eq, ne, logical_or, logical_and };
 
 enum class FactorType { int_value, string_val, variable };
 

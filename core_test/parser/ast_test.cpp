@@ -117,7 +117,7 @@ TEST_F(AstTest, Expr_Parens) {
 
   auto expr = dynamic_cast<Expression*>(root);
   CHECK_NOTNULL(expr);
-  EXPECT_TRUE(HasOp(expr, Operator::or));
+  EXPECT_TRUE(HasOp(expr, Operator::logical_or));
   ASSERT_NE(nullptr, expr);
 
   auto left = dynamic_cast<Expression*>(expr->left());

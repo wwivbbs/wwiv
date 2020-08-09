@@ -61,9 +61,9 @@ std::string to_string(Operator o) {
     return "ne";
   case Operator::sub:
     return "sub";
-  case Operator:: or:
+  case Operator::logical_or:
     return "or";
-  case Operator::and:
+  case Operator::logical_and:
     return "and";
   default:
     return fmt::format("UNKNOWN ({})", static_cast<int>(o));
@@ -93,9 +93,9 @@ std::string to_symbol(Operator o) {
     return "!=";
   case Operator::sub:
     return "-";
-  case Operator:: or:
+  case Operator::logical_or:
     return "||";
-  case Operator::and:
+  case Operator::logical_and:
     return "&&";
   default:
     return fmt::format("UNKNOWN ({})", static_cast<int>(o));
@@ -166,10 +166,10 @@ static std::unique_ptr<Factor> createFactor(const Token& token) {
 
 static std::unique_ptr<LogicalOperatorNode> createLogicalOperator(const Token& token) {
   switch (token.type) {
-  case TokenType::or:
-    return std::make_unique<LogicalOperatorNode>(Operator::or);
-  case TokenType::and:
-    return std::make_unique<LogicalOperatorNode>(Operator::and);
+  case TokenType::logical_or:
+    return std::make_unique<LogicalOperatorNode>(Operator::logical_or);
+  case TokenType::logical_and:
+    return std::make_unique<LogicalOperatorNode>(Operator::logical_and);
   }
   LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexmeme;
   return {};
@@ -289,8 +289,8 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     case TokenType::sub: {
       stack.push(createBinaryOperator(*it));
     } break;
-    case TokenType::or: 
-    case TokenType::and: {
+    case TokenType::logical_or: 
+    case TokenType::logical_and: {
       stack.push(createLogicalOperator(*it));
     } break;
     }
@@ -344,8 +344,8 @@ std::unique_ptr<RootNode> Ast::parse(
       stack.push(std::move(expr));
       } break;
 
-    case TokenType::and:
-    case TokenType::or: {
+    case TokenType::logical_and:
+    case TokenType::logical_or: {
       stack.push(createLogicalOperator(*it));
     } break;
 
