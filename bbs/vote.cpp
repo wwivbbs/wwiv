@@ -90,7 +90,7 @@ static bool print_question(int i, int ii) {
   }
 
   a()->status_manager()->RefreshStatusCache();
-  const auto b = fmt::format("|#9Users voting: |#2%4.1f%%\r\n",
+  const auto b = fmt::sprintf("|#9Users voting: |#2%4.1f%%\r\n",
                        static_cast<double>(t) /
                            static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
   bout.bpla(b, &abort);
