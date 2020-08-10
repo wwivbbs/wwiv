@@ -31,7 +31,7 @@ using namespace wwiv::core::parser;
 #define EXPECT_TOKEN_EQ(tok, typ, m)                                                               \
   {                                                                                                \
     EXPECT_EQ((tok).type, typ);                                                                    \
-    EXPECT_EQ((tok).lexmeme, m);                                                                    \
+    EXPECT_EQ((tok).lexeme, m);                                                                    \
   }
 
 class AstTest : public ::testing::Test {

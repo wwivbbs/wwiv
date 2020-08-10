@@ -29,7 +29,7 @@ namespace wwiv::core::parser {
 
 Token::Token(TokenType t) : type(t) {}
 
-Token::Token(TokenType t, std::string l) : type(t), lexmeme(l) {}
+Token::Token(TokenType t, std::string l) : type(t), lexeme(l) {}
 
 
 } 

@@ -58,7 +58,7 @@ public:
   explicit Token(TokenType t);
   Token(TokenType t, std::string l);
   TokenType type;
-  std::string lexmeme;
+  std::string lexeme;
 };
 
 } // namespace wwiv::core

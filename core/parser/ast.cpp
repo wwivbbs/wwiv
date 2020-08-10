@@ -153,7 +153,7 @@ std::string Factor::ToString(int indent) {
 void Factor::accept(AstVisitor* visitor) { visitor->visit(this); }
 
 static std::unique_ptr<Factor> createFactor(const Token& token) {
-  const auto& l = token.lexmeme;
+  const auto& l = token.lexeme;
 
   if (token.type == TokenType::string || token.type == TokenType::character) {
     return std::make_unique<String>(l);
@@ -171,7 +171,7 @@ static std::unique_ptr<LogicalOperatorNode> createLogicalOperator(const Token& t
   case TokenType::logical_and:
     return std::make_unique<LogicalOperatorNode>(Operator::logical_and);
   }
-  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexmeme;
+  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexeme;
   return {};
 }
 
@@ -200,7 +200,7 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
   case TokenType::sub:
     return std::make_unique<BinaryOperatorNode>(Operator::sub);
   }
-  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexmeme;
+  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexeme;
   return {};
 }
 
@@ -270,16 +270,16 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     }
     case TokenType::comment:
       // skip
-      LOG(INFO) << "comment: " << it->lexmeme;
+      LOG(INFO) << "comment: " << it->lexeme;
       break;
     case TokenType::string:
     case TokenType::character:
     case TokenType::number:
     case TokenType::identifier: {
-      const auto l = it->lexmeme;
+      const auto l = it->lexeme;
       if (l.empty()) {
         return std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexmeme));
+            StrCat("Unable to parse expression starting at: ", it->lexeme));
       }
       const auto nr = need_reduce(stack, false);
       stack.push(createFactor(*it));
@@ -329,7 +329,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
                                          const std::vector<Token>::iterator& end) {
   if ((it+1) == end) {
     return std::make_unique<ErrorNode>(
-        StrCat("Unable to parse expression starting at: ", it->lexmeme));
+        StrCat("Unable to parse expression starting at: ", it->lexeme));
   }
   // Skip lparen
   ++it;
@@ -338,12 +338,12 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     auto expr = parseExpression(it, end);
     if (!expr) {
       return std::make_unique<ErrorNode>(
-          StrCat("Unable to parse expression starting at: ", it->lexmeme));
+          StrCat("Unable to parse expression starting at: ", it->lexeme));
     }
     stack.push(std::move(expr));
     if (it == end || it->type != TokenType::rparen) {
       LOG(ERROR) << "Missing right parens";
-      auto pos = it == end ? "end" : it->lexmeme;
+      auto pos = it == end ? "end" : it->lexeme;
       return std::make_unique<ErrorNode>(StrCat("Unable to parse expression starting at: ", pos));
     }
   }
@@ -388,7 +388,7 @@ std::unique_ptr<RootNode> Ast::parse(
       auto expr = parseGroup(it, end);
       if (!expr || it == end) {
         return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexmeme)));
+            StrCat("Unable to parse expression starting at: ", it->lexeme)));
       }
       stack.push(std::move(expr));
       } break;
@@ -404,7 +404,7 @@ std::unique_ptr<RootNode> Ast::parse(
       auto expr = parseExpression(it, end);
       if (!expr) {
         return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexmeme)));
+            StrCat("Unable to parse expression starting at: ", it->lexeme)));
       }
       stack.push(std::move(expr));
       if (nr) {
