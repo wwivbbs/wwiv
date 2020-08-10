@@ -26,12 +26,16 @@
 namespace wwiv::sdk::acs {
 
 
-/** Provides a value for an identifier of the form "prefix.value" */
+/** Provides a value for an identifier of the form "object.attribute" */
 class ValueProvider {
 public:
   ValueProvider(const std::string& prefix) : prefix_(prefix) {}
   virtual ~ValueProvider() = default;
 
+  /** 
+   * Optionally gets the attribute for this object.  name should just be
+   * the 'attribute' and not the full object.attribute name. *
+   */
   virtual std::optional<Value> value(const std::string& name) = 0;
 
 private:

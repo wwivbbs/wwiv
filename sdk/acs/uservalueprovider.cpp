@@ -46,19 +46,24 @@ static std::string word_to_arstr(int ar) {
   return arstr;
 }
 
+/** Shorthand to create an optional Value */
+template <typename T> static std::optional<Value> val(T&& v) {
+  return std::make_optional<Value>(std::forward<T>(v));
+}
+
 std::optional<Value> UserValueProvider::value(const std::string& name) {
   if (iequals(name, "sl")) {
-    return std::make_optional<Value>(user_->GetSl());
+    return val(user_->GetSl());
   } else if (iequals(name, "dsl")) {
-    return std::make_optional<Value>(user_->GetDsl());
+    return val(user_->GetDsl());
   } else if (iequals(name, "age")) {
-    return std::make_optional<Value>(user_->age());
+    return val(user_->age());
   } else if (iequals(name, "ar")) {
-    return std::make_optional<Value>(word_to_arstr(user_->GetAr()));
+    return val(word_to_arstr(user_->GetAr()));
   } else if (iequals(name, "dar")) {
-    return std::make_optional<Value>(word_to_arstr(user_->GetDar()));
+    return val(word_to_arstr(user_->GetDar()));
   } else if (iequals(name, "name")) {
-    return std::make_optional<Value>(user_->GetName());
+    return val(user_->GetName());
   }
   return std::nullopt;
 }

@@ -28,9 +28,15 @@
 
 namespace wwiv::sdk::acs {
 
-
+/**
+ * ValueProvider for "user" record attributes.
+ */
 class UserValueProvider : public ValueProvider {
 public:
+  /** 
+   * Constructs a new ValueProvider.  'user' must remain valid for 
+   * the duration of this instance lifetime.
+   */
   UserValueProvider(wwiv::sdk::User* user) : ValueProvider("user"), user_(user) {}
   std::optional<Value> value(const std::string& name) override;
 

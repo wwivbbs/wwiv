@@ -24,7 +24,6 @@
 #include "sdk/acs/valueprovider.h"
 #include <any>
 #include <iostream>
-#include <map>
 #include <unordered_map>
 #include <memory>
 #include <optional>
@@ -33,23 +32,26 @@
 
 namespace wwiv::sdk::acs {
 
-
+/** 
+ * Evaluation engine for evaluating expressions provides.
+ */
 class Eval : public wwiv::core::parser::AstVisitor {
 public:
   explicit Eval(std::string expression);
-  ~Eval() = default;
+  virtual ~Eval() = default;
 
   bool eval();
   bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
   std::optional<Value> to_value(wwiv::core::parser::Factor* n);
 
+  // Visitor implementation
   virtual void visit(wwiv::core::parser::AstNode*) override {}
   virtual void visit(wwiv::core::parser::Expression* n) override;
   virtual void visit(wwiv::core::parser::Factor* n) override;
 
 private:
   std::string expression_;
-  std::map<std::string, std::unique_ptr<ValueProvider>> providers_;
+  std::unordered_map<std::string, std::unique_ptr<ValueProvider>> providers_;
   std::unordered_map<int, Value> values_;
 };  // class
 
