@@ -55,11 +55,17 @@ enum class TokenType {
 
 class Token final {
 public:
-  explicit Token(TokenType t);
-  Token(TokenType t, std::string l);
+  Token(TokenType t, int pos);
+  Token(TokenType t, std::string l, int pos);
   TokenType type;
   std::string lexeme;
+  int pos;
 };
+
+std::ostream& operator<<(std::ostream& os, const TokenType& a);
+std::ostream& operator<<(std::ostream& os, const Token& a);
+std::string to_string(TokenType t);
+std::string to_string(Token t);
 
 } // namespace wwiv::core
 

@@ -41,12 +41,11 @@ std::optional<char> peek(std::string::iterator& it, const std::string::iterator&
 static std::unordered_set<char> WS = {' ', '\r', '\n', '\t'};
 
 Lexer::Lexer(std::string source)
-    : source_(std::move(source)), tok_eof(TokenType::eof), start(std::begin(source_)),
-      end(std::end(source_)) { 
+    : source_(std::move(source)), tok_eof(TokenType::eof, wwiv::stl::ssize(source_)), 
+      start(std::begin(source_)), end(std::end(source_)), it_(start) { 
 
-  auto it = start;
-  while (it != end) {
-    auto c = *it;
+  while (it_ != end) {
+    auto c = *it_;
     switch (c) {
     case '(':
       emit(TokenType::lparen);
@@ -55,33 +54,33 @@ Lexer::Lexer(std::string source)
       emit(TokenType::rparen);
       break;
     case '=': {
-      if (peek(it, end) == '=') {
+      if (peek(it_, end) == '=') {
         emit(TokenType::eq);
-        ++it;
+        ++it_;
       } else {
         emit(TokenType::assign);
       }
     } break;
     case '!': {
-      if (peek(it, end) == '=') {
+      if (peek(it_, end) == '=') {
         emit(TokenType::ne);
-        ++it;
+        ++it_;
       } else {
         emit(TokenType::negate);
       }
     } break;
     case '>': {
-      if (peek(it, end) == '=') {
+      if (peek(it_, end) == '=') {
         emit(TokenType::ge);
-        ++it;
+        ++it_;
       } else {
         emit(TokenType::gt);
       }
     } break;
     case '<': {
-      if (peek(it, end) == '=') {
+      if (peek(it_, end) == '=') {
         emit(TokenType::le);
-        ++it;
+        ++it_;
       } else {
         emit(TokenType::lt);
       }
@@ -96,143 +95,146 @@ Lexer::Lexer(std::string source)
       emit(TokenType::mul);
       break;
     case '/':
-      if (peek(it, end) == '*') {
-        ++it; // skip / and *
-        comment(++it);
+      if (peek(it_, end) == '*') {
+        ++it_; // skip / and *
+        ++it_; // skip / and *
+        comment();
       } else {
         emit(TokenType::div);
       }
       break;
     case '\'': // char
-      character(++it);
+      ++it_;   // skip '
+      character();
       break;
     case '"': // string
-      string(++it);
+      ++it_;  // skip "
+      string();
       break;
     case ';':
       emit(TokenType::semicolon);
       break;
     case '&': {
-      if (peek(it, end) == '&') {
+      if (peek(it_, end) == '&') {
         emit(TokenType::logical_and);
-        ++it;
+        ++it_;
       } else {
-        error(it, "& is not a valid token; did you mean '&&'?");
+        error("& is not a valid token; did you mean '&&'?");
       }
     } break;
     case '|': {
-      if (peek(it, end) == '|') {
+      if (peek(it_, end) == '|') {
         emit(TokenType::logical_or);
-        ++it;
+        ++it_;
       } else {
-        error(it, "| is not a valid token; did you mean '||'?");
+        error("| is not a valid token; did you mean '||'?");
       }
     } break;
     default: {
       if (wwiv::stl::contains(WS, c)) {
         // skip WS
         break;
-      } else if (isalpha(*it)) {
-        identifier(it);
-      } else if (isdigit(*it)) {
-        number(it);
+      } else if (isalpha(*it_)) {
+        identifier();
+      } else if (isdigit(*it_)) {
+        number();
       }
     } break;
     }
 
     // advance iterator
-    if (it == end) {
+    if (it_ == end) {
       break;
     }
-    ++it;
+    ++it_;
   }
 
-  iter_ = std::begin(tokens_);
+  token_iter_ = std::begin(tokens_);
 }
 
-void Lexer::comment(std::string::iterator& it) { 
+void Lexer::comment() { 
   std::string tx;
-  while ( it != end) {
-    if (*it == '*' && peek(it, end) == '/') {
+  while ( it_ != end) {
+    if (*it_ == '*' && peek(it_, end) == '/') {
       // end if comment.
-      ++it; // skip end of comment.
+      ++it_; // skip end of comment.
       emit(TokenType::comment, tx);
       return;
     }
-    tx.push_back(*it++);
+    tx.push_back(*it_++);
   }
 }
 
-void Lexer::string(std::string::iterator& it) {
+void Lexer::string() {
   std::string tx;
-  while (it != end) {
-    if (*it == '"') {
+  while (it_ != end) {
+    if (*it_ == '"') {
       // end if comment.
       emit(TokenType::string, tx);
       return;
     }
-    tx.push_back(*it++);
+    tx.push_back(*it_++);
   }
   if (!tx.empty()) {
-    error(it, "EOF before end of string");
+    error("EOF before end of string");
   }
 }
 
-void Lexer::character(std::string::iterator& it) {
+void Lexer::character() {
   std::string tx;
-  while (it != end) {
-    if (*it == '\'') {
+  while (it_ != end) {
+    if (*it_ == '\'') {
       // end if comment.
       if (tx.size() == 1) {
         emit(TokenType::character, tx);
         return;
       } else {
-        error(it, fmt::format("Expected a single character, got '{}'"));
+        error(fmt::format("Expected a single character, got '{}'"));
         return;
       }
       return;
     }
-    tx.push_back(*it++);
+    tx.push_back(*it_++);
   }
   if (!tx.empty()) {
-    error(it, "EOF before end of character");
+    error("EOF before end of character");
   }
 }
 
-void Lexer::identifier(std::string::iterator& it) {
+void Lexer::identifier() {
   std::string tx;
-  while (it != end) {
-    const auto c = *it;
+  while (it_ != end) {
+    const auto c = *it_;
     if (!isalnum(c) && c != '.') {
       // end if identifier.
-      if (it != start) {
+      if (it_ != start) {
         // put back token
-        --it;
+        --it_;
       }
       emit(TokenType::identifier, tx);
       return;
     }
-    tx.push_back(*it++);
+    tx.push_back(*it_++);
   }
   if (!tx.empty()) {
     emit(TokenType::identifier, tx);
   }
 }
 
-void Lexer::number(std::string::iterator& it) {
+void Lexer::number() {
   std::string tx;
-  while (it != end) {
-    const auto c = *it;
+  while (it_ != end) {
+    const auto c = *it_;
     if (!isdigit(c)) {
       // end if identifier.
-      if (it != start) {
+      if (it_ != start) {
         // put back token
-        --it;
+        --it_;
       }
       emit(TokenType::number, tx);
       return;
     }
-    tx.push_back(*it++);
+    tx.push_back(*it_++);
   }
   if (!tx.empty()) {
     emit(TokenType::number, tx);
@@ -240,10 +242,10 @@ void Lexer::number(std::string::iterator& it) {
 }
 
 Token& Lexer::next() {
-  if (iter_ == std::end(tokens_)) {
+  if (token_iter_ == std::end(tokens_)) {
     return tok_eof;
   }
-  return *iter_++;
+  return *token_iter_++;
 }
 
 bool Lexer::ok() { 
@@ -257,20 +259,30 @@ const std::vector<Token>& Lexer::tokens() const { return tokens_; }
 
 void Lexer::emit(TokenType t) { 
   VLOG(1) << "Emitting TokenType: " << static_cast<int>(t);
-  tokens_.emplace_back(t);
+  const auto pos = std::distance(start, it_);
+  tokens_.emplace_back(t, pos);
 }
 
-void Lexer::emit(TokenType t, std::string l ) { 
+void Lexer::emit(TokenType t, std::string l) { 
   VLOG(1) << "Emitting TokenType: " << static_cast<int>(t) << "; l: '" << l << "'";
-  tokens_.emplace_back(t, std::move(l));
+  const auto pos = std::distance(start, it_);
+  tokens_.emplace_back(t, std::move(l), pos);
 }
 
-void Lexer::error(std::string::iterator& it, std::string message) { 
-  auto d = std::distance(start, it);
-  auto msg = fmt::format("Error at pos: '{}', {}", d, message);
+void Lexer::error(std::string message) { 
+  const auto pos = std::distance(start, it_);
+  const auto msg = fmt::format("Error at pos: '{}', {}", pos, message);
   emit(TokenType::error, msg);
   state_.ok = false;
   state_.err = msg;
+}
+
+std::ostream& operator<<(std::ostream& os, const Lexer& a) {
+  os << "Lexer: expression: '" << a.source_ << "'; Tokens: ";
+  for (const auto& t : a.tokens()) {
+    os << t << ", ";
+  }
+  return os;
 }
 
 } // namespace wwiv::core::parser

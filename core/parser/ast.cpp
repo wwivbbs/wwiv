@@ -306,6 +306,7 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
       stack.push(createLogicalOperator(*it));
     } break;
     default: {
+      LOG(INFO) << "Unexpected token: " << *it;
     } break;
       // ignore
     }

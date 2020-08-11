@@ -32,6 +32,24 @@ using namespace wwiv::core::parser;
     EXPECT_EQ((tok).lexeme, m);                                                                    \
   }
 
+#define EXPECT_ID_OP_NUM(t, m, o, n)                                                               \
+  {                                                                                                \
+    EXPECT_EQ(3u, t.size());                                                                       \
+    EXPECT_TOKEN_EQ((t[0]), TokenType::identifier, m);                                           \
+    EXPECT_TOKEN_EQ((t[1]), o, "");                                                                    \
+    EXPECT_TOKEN_EQ((t[2]), TokenType::number, n);                                           \
+  }
+
+#define EXPECT_LEXER_ID_OP_NUM(l, m, o, n)                                                         \
+  {                                                                                                \
+    ASSERT_TRUE(l.ok());                                                                             \
+    const auto t = l.tokens();                                                                     \
+    EXPECT_EQ(3u, t.size());                                                                       \
+    EXPECT_TOKEN_EQ((t[0]), TokenType::identifier, m);                                             \
+    EXPECT_TOKEN_EQ((t[1]), o, "");                                                                \
+    EXPECT_TOKEN_EQ((t[2]), TokenType::number, n);                                                 \
+  }
+
 class LexerTest : public ::testing::Test {
 public:
   LexerTest() {}
@@ -76,22 +94,27 @@ TEST_F(LexerTest, Parens) {
 
 TEST_F(LexerTest, Eq) {
   Lexer l("user.sl == 10");
-  ASSERT_TRUE(l.ok());
-
-  const auto& t = l.tokens();
-  EXPECT_EQ(3u, t.size());
-  EXPECT_TOKEN_EQ(t[0], TokenType::identifier, "user.sl");
-  EXPECT_TOKEN_EQ(t[1], TokenType::eq, "");
-  EXPECT_TOKEN_EQ(t[2], TokenType::number, "10");
+  EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::eq, "10");
 }
 
 TEST_F(LexerTest, UserSlGt) {
   Lexer l("user.sl>200");
-  ASSERT_TRUE(l.ok());
+  EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::gt, "200");
+}
 
-  const auto& t = l.tokens();
-  EXPECT_EQ(3u, t.size());
-  EXPECT_TOKEN_EQ(t[1], TokenType::gt, "");
+TEST_F(LexerTest, UserDSlGe) {
+  Lexer l("user.dsl>=201");
+  EXPECT_LEXER_ID_OP_NUM(l, "user.dsl", TokenType::ge, "201");
+}
+
+TEST_F(LexerTest, UserSlLt) {
+  Lexer l("user.sl<255");
+  EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::lt, "255");
+}
+
+TEST_F(LexerTest, UserSlLe) {
+  Lexer l("user.sl<=255");
+  EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::le, "255");
 }
 
 TEST_F(LexerTest, Or) {
@@ -101,4 +124,12 @@ TEST_F(LexerTest, Or) {
   const auto& t = l.tokens();
   EXPECT_EQ(9u, t.size());
   EXPECT_TOKEN_EQ(t[5], TokenType::logical_or, "");
+}
+
+TEST_F(LexerTest, Smoke_Error) {
+  Lexer l("user.sl&10");
+  EXPECT_FALSE(l.ok());
+  const auto& t = l.tokens();
+  ASSERT_GE(t.size(), 2u) << l;
+  EXPECT_EQ(t[1].type, TokenType::error) << l;
 }

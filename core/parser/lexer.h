@@ -33,11 +33,11 @@ struct LexerState {
 class Lexer final {
 public:
   Lexer(std::string source);
-  void comment(std::string::iterator& it);
-  void character(std::string::iterator& it);
-  void string(std::string::iterator& it);
-  void identifier(std::string::iterator& it);
-  void number(std::string::iterator& it);
+  void comment();
+  void character();
+  void string();
+  void identifier();
+  void number();
 
   Token& next();
   bool ok();
@@ -50,13 +50,16 @@ public:
   Token tok_eof;
   std::string::iterator start;
   std::string::iterator end;
-  decltype(tokens_)::iterator iter_;
+  std::string::iterator it_;
+  decltype(tokens_)::iterator token_iter_;
 
 private:
   void emit(TokenType);
   void emit(TokenType, std::string);
-  void error(std::string::iterator& it, std::string message);
+  void error(std::string message);
 };
+
+std::ostream& operator<<(std::ostream& os, const Lexer& l);
 
 } // namespace wwiv::core::parser
 
