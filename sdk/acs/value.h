@@ -49,6 +49,7 @@ public:
 
 inline bool operator==(const Ar& lhs, const Ar& rhs) { return lhs.eq(rhs); }
 inline bool operator!=(const Ar& lhs, const Ar& rhs) { return !lhs.eq(rhs); }
+std::ostream& operator<<(std::ostream& os, const Ar& a);
 
 
 enum class ValueType { unknown, number, string, boolean, ar };
@@ -66,6 +67,8 @@ public:
   std::string as_string();
   bool as_boolean();
   Ar as_ar();
+
+  bool is_boolean() const { return value_type == ValueType::boolean; }
 
   static Value eval(Value l, wwiv::core::parser::Operator op, Value r);
 

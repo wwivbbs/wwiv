@@ -20,6 +20,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "sdk/acs/eval_error.h"
 #include "sdk/user.h"
 #include <optional>
 #include <string>
@@ -32,19 +33,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
-// TODO(rushfan): Move this to sdk, this is from bbs/arword.cpp
-static std::string word_to_arstr(int ar) {
-  if (!ar) {
-    return {};
-  }
-  std::string arstr;
-  for (int i = 0; i < 16; i++) {
-    if ((1 << i) & ar) {
-      arstr.push_back(static_cast<char>('A' + i));
-    }
-  }
-  return arstr;
-}
 
 /** Shorthand to create an optional Value */
 template <typename T> static std::optional<Value> val(T&& v) {
@@ -65,7 +53,7 @@ std::optional<Value> UserValueProvider::value(const std::string& name) {
   } else if (iequals(name, "name")) {
     return val(user_->GetName());
   }
-  return std::nullopt;
+  throw eval_error(fmt::format("No user attribute named 'user.{}' exists.", name));
 }
 
 }

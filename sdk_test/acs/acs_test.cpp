@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "core/log.h"
+#include "core/strings.h"
 #include "core/parser/ast.h"
 #include "core/parser/lexer.h"
 #include "sdk/user.h"
@@ -98,6 +100,7 @@ TEST_F(AcsTest, Multiple_Group_None) {
   user_.set_name("SYSOP");
   createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
   EXPECT_FALSE(eval->eval());
+  LOG(INFO) << wwiv::strings::JoinStrings(eval->debug_info(), "\r\n");
 }
 
 TEST_F(AcsTest, Ar_Pass) {
@@ -110,4 +113,12 @@ TEST_F(AcsTest, Ar_Fail) {
   user_.SetAr(5); // a || c
   createEval("user.ar == 'B'");
   EXPECT_FALSE(eval->eval());
+}
+
+TEST_F(AcsTest, BadAttrOnUser) {
+  createEval("user.foo<20");
+
+  EXPECT_FALSE(eval->eval());
+  EXPECT_EQ(eval->error_text(), "No user attribute named 'user.foo' exists.");
+  LOG(INFO) << wwiv::strings::JoinStrings(eval->debug_info(), "\r\n");
 }

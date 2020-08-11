@@ -22,6 +22,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "sdk/acs/eval_error.h"
 #include <optional>
 #include <string>
 #include <utility>
@@ -81,10 +82,17 @@ void Eval::visit(Expression* n) {
     // left must be expression, grab it from the cache.
     right = values_[n->right()->id()];
   }
-  VLOG(1) << "EVAL: L: " << left.value() << " " << to_symbol(n->op()) << " " << right.value();
+
+  auto eval_expr = fmt::format("{} {} {}", left.value(), to_symbol(n->op()), right.value());
+  VLOG(1) << "EVAL: " << eval_expr;
 
   // cache value
   auto result = Value::eval(left.value(), n->op(), right.value());
+  if (result.is_boolean()) {
+    debug_info_.emplace_back(fmt::format("Expression '{}' evaluated to {}. Stored as id: '{}'",
+                                         eval_expr, result.as_boolean() ? "true" : "false",
+                                         n->id()));
+  }
   values_[n->id()] = result;
 }
 
@@ -102,9 +110,14 @@ void Eval::visit(Factor* n) {
 
 bool Eval::eval() {
   VLOG(1) << "Eval:eval: " << expression_;
+  debug_info_.emplace_back(fmt::format("Evaluating Expression: '{}'", expression_));
+
   Lexer l(expression_);
   if (!l.ok()) {
-    LOG(ERROR) << "Failed to lex expression: '" << expression_ << "'";
+    error_text_ = fmt::format("Failed to lex expression: '{}'", expression_);
+    VLOG(1) << error_text_;
+    debug_info_.emplace_back(error_text_);
+
     return false;
   }
 
@@ -114,19 +127,31 @@ bool Eval::eval() {
   }
   auto* root = ast.root();
   if (!root) {
-    LOG(ERROR) << "Failed to parse expression: " << expression_;
+    error_text_ = fmt::format("Failed to parse expression: '{}'.", expression_);
+    VLOG(1) << error_text_;
+    debug_info_.emplace_back(error_text_);
     return false;
   }
   VLOG(1) << "Root: " << root->ToString();
 
-  root->accept(this);
+  try {
+    root->accept(this);
 
-  if (auto expr = dynamic_cast<Expression*>(root)) {
-    auto it = values_.find(expr->id());
-    if (it == std::end(values_)) {
-      return false;
+    if (auto expr = dynamic_cast<Expression*>(root)) {
+      auto it = values_.find(expr->id());
+      if (it == std::end(values_)) {
+        error_text_ = fmt::format("Unable to find expression id: '{}'.", expr->id());
+        VLOG(1) << error_text_;
+        debug_info_.emplace_back(error_text_);
+        return false;
+      }
+      return it->second.as_boolean();
     }
-    return it->second.as_boolean();
+  } catch (const eval_error& error) {
+    error_text_ = error.what();
+    VLOG(1) << "Eval Error: " << error_text_;
+    debug_info_.emplace_back(error_text_);
+    return false;
   }
   return false;
 }

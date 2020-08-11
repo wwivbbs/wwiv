@@ -44,7 +44,22 @@ public:
   bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
   std::optional<Value> to_value(wwiv::core::parser::Factor* n);
 
+  /** 
+   * Gets the error text that occured when failing to evaluate the expresson, 
+   * or empty string if none exists.
+   */
+  const std::string error_text() const noexcept { return error_text_; }
+  const bool error() const noexcept { return !error_text_.empty(); }
+  
+  ///////////////////////////////////////////////////////////////////////////
+  // Debug support:  This writes out debug_info lines as the statement is 
+  // evaluated. Used to explain how the statement was evaluated.
+  const std::vector<std::string>& debug_info() const { return debug_info_; }
+
+  ///////////////////////////////////////////////////////////////////////////
   // Visitor implementation
+  //
+
   virtual void visit(wwiv::core::parser::AstNode*) override {}
   virtual void visit(wwiv::core::parser::Expression* n) override;
   virtual void visit(wwiv::core::parser::Factor* n) override;
@@ -53,6 +68,8 @@ private:
   std::string expression_;
   std::unordered_map<std::string, std::unique_ptr<ValueProvider>> providers_;
   std::unordered_map<int, Value> values_;
+  std::string error_text_;
+  std::vector<std::string> debug_info_;
 };  // class
 
 } 

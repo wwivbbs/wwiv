@@ -21,6 +21,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/user.h"
+#include "sdk/acs/eval_error.h"
 #include <optional>
 #include <string>
 #include <utility>
@@ -69,9 +70,14 @@ bool Ar::eq(const Ar& that) const {
   return ar_ == 0 || that.ar_ == 0 || (ar_ & that.ar_);
 }
 
-std::string Ar::as_string() const { return word_to_arstr(ar_);  }
+std::string Ar::as_string() const { return fmt::format("Ar({})", word_to_arstr(ar_));  }
 
 int Ar::as_integer() const { return ar_; }
+
+std::ostream& operator<<(std::ostream& os, const Ar& a) {
+  os << a.as_string();
+  return os;
+}
 
 
 std::ostream& operator<<(std::ostream& os, const Value& a) {
@@ -80,10 +86,11 @@ std::ostream& operator<<(std::ostream& os, const Value& a) {
   } else if (a.value_type == ValueType::string) {
     os << std::any_cast<std::string>(a.value);
   } else if (a.value_type == ValueType::boolean) {
-    os << std::any_cast<bool>(a.value) ? "true" : "false";
+    os << (std::any_cast<bool>(a.value) ? "true" : "false");
+  } else if (a.value_type == ValueType::ar) {
+    os << std::any_cast<Ar>(a.value);
   } else {
-    os << "[unknown value of type: " << a.value.type().name() << "/" << a.value.type().raw_name()
-       << "]";
+    os << "[unknown value of type: " << a.value.type().name() << "]";
   }
   return os;
 }
@@ -234,9 +241,11 @@ Ar Value::as_ar() {
   case ValueType::string:
     return Ar(std::any_cast<std::string>(value));
   case ValueType::unknown:
+  default:
     DLOG(FATAL) << "ValueType::unknown";
     break;
   }
+  throw eval_error(fmt::format("Unable to coerce valuetype: {} to Ar", static_cast<int>(value_type)));
 }
 
 

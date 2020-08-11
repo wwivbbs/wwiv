@@ -382,48 +382,53 @@ bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool al
 std::unique_ptr<RootNode> Ast::parse(
     std::vector<Token>::iterator& begin, const std::vector<Token>::iterator& end) {
   std::stack<std::unique_ptr<AstNode>> stack;
-  for (auto it = begin; it != end;) {
-    const auto& t = *it;
-    switch (t.type) { 
-    case TokenType::lparen: {
-      auto expr = parseGroup(it, end);
-      if (!expr || it == end) {
-        return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexeme)));
-      }
-      stack.push(std::move(expr));
+  try {
+    for (auto it = begin; it != end;) {
+      const auto& t = *it;
+      switch (t.type) { 
+      case TokenType::lparen: {
+        auto expr = parseGroup(it, end);
+        if (!expr || it == end) {
+          return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
+              StrCat("Unable to parse expression starting at: ", it->lexeme)));
+        }
+        stack.push(std::move(expr));
+        } break;
+
+      case TokenType::logical_and:
+      case TokenType::logical_or: {
+        stack.push(createLogicalOperator(*it));
       } break;
 
-    case TokenType::logical_and:
-    case TokenType::logical_or: {
-      stack.push(createLogicalOperator(*it));
-    } break;
-
-    default: {
-      // Try to reduce.
-      bool nr = need_reduce(stack, true);
-      auto expr = parseExpression(it, end);
-      if (!expr) {
-        return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-            StrCat("Unable to parse expression starting at: ", it->lexeme)));
+      default: {
+        // Try to reduce.
+        bool nr = need_reduce(stack, true);
+        auto expr = parseExpression(it, end);
+        if (!expr) {
+          return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
+              StrCat("Unable to parse expression starting at: ", it->lexeme)));
+        }
+        stack.push(std::move(expr));
+        if (nr) {
+          reduce(stack);
+        }
+      } break;
       }
-      stack.push(std::move(expr));
-      if (nr) {
-        reduce(stack);
-      }
-    } break;
-    }
 
-    if (it != end) {
-      ++it;
+      if (it != end) {
+        ++it;
+      }
     }
+    if (stack.size() != 1) {
+      LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+    }
+    auto root = std::make_unique<RootNode>(std::move(stack.top()));
+    stack.pop();
+    return root;
+  } catch (const parse_error& e) {
+    auto en = std::make_unique<ErrorNode>(e.what());
+    return std::make_unique<RootNode>(std::move(en));
   }
-  if (stack.size() != 1) {
-    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
-  }
-  auto root = std::make_unique<RootNode>(std::move(stack.top()));
-  stack.pop();
-  return root;
 }
 
 bool Ast::parse(const Lexer& l) {
