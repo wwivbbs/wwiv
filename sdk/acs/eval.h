@@ -49,7 +49,7 @@ public:
    * or empty string if none exists.
    */
   const std::string error_text() const noexcept { return error_text_; }
-  const bool error() const noexcept { return !error_text_.empty(); }
+  bool error() const noexcept { return !error_text_.empty(); }
   
   ///////////////////////////////////////////////////////////////////////////
   // Debug support:  This writes out debug_info lines as the statement is 
