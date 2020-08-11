@@ -97,6 +97,11 @@ TEST_F(LexerTest, Eq) {
   EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::eq, "10");
 }
 
+TEST_F(LexerTest, NotEq) {
+  Lexer l("user.sl != 11");
+  EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::ne, "11");
+}
+
 TEST_F(LexerTest, UserSlGt) {
   Lexer l("user.sl>200");
   EXPECT_LEXER_ID_OP_NUM(l, "user.sl", TokenType::gt, "200");
@@ -124,6 +129,15 @@ TEST_F(LexerTest, Or) {
   const auto& t = l.tokens();
   EXPECT_EQ(9u, t.size());
   EXPECT_TOKEN_EQ(t[5], TokenType::logical_or, "");
+}
+
+TEST_F(LexerTest, And) {
+  Lexer l("(user.sl>20) && user.ar == 'A'");
+  ASSERT_TRUE(l.ok());
+
+  const auto& t = l.tokens();
+  EXPECT_EQ(9u, t.size());
+  EXPECT_TOKEN_EQ(t[5], TokenType::logical_and, "");
 }
 
 TEST_F(LexerTest, Smoke_Error) {
