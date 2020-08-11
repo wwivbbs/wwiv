@@ -59,9 +59,9 @@ std::optional<Value> UserValueProvider::value(const std::string& name) {
   } else if (iequals(name, "age")) {
     return val(user_->age());
   } else if (iequals(name, "ar")) {
-    return val(word_to_arstr(user_->GetAr()));
+    return val(Ar(user_->GetAr()));
   } else if (iequals(name, "dar")) {
-    return val(word_to_arstr(user_->GetDar()));
+    return val(Ar(user_->GetDar()));
   } else if (iequals(name, "name")) {
     return val(user_->GetName());
   }

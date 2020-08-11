@@ -31,83 +31,47 @@ using namespace wwiv::core;
 using namespace wwiv::core::parser;
 using namespace wwiv::sdk::acs;
 
-class AcsTest : public ::testing::Test {
+class ArTest : public ::testing::Test {
 public:
-  AcsTest() {}
+  ArTest() {}
 
-  void createEval(const std::string& expr) { 
-    eval = std::make_unique<Eval>(expr);
-    eval->add("user", std::make_unique<UserValueProvider>(&user_));
-
-  }
-  std::unique_ptr<Eval> eval;
-  wwiv::sdk::User user_;
 };
 
-TEST_F(AcsTest, SL_GT_Pass) {
-  user_.SetSl(201);
-  createEval("user.sl>200");
-  EXPECT_TRUE(eval->eval());
+TEST_F(ArTest, Eq) { 
+  Ar a('A');
+  Ar abcd("ABCD");
+  EXPECT_EQ(abcd, a);
+  EXPECT_EQ(a, abcd);
 }
 
-TEST_F(AcsTest, SL_GT_False) {
-  user_.SetSl(10);
-  createEval("user.sl>200");
-  EXPECT_FALSE(eval->eval());
+TEST_F(ArTest, Ne) {
+  Ar a('A');
+  Ar cde("CDE");
+  EXPECT_NE(cde, a);
+  EXPECT_NE(a, cde);
 }
 
-TEST_F(AcsTest, DummySL_LT) {
-  user_.SetSl(10);
-  createEval("user.sl<200");
+TEST_F(ArTest, Eq_Conversion) {
+  Ar a('A');
+  Ar abcd("ABCD");
 
-  EXPECT_TRUE(eval->eval());
+  EXPECT_EQ(abcd, 'A');
+  EXPECT_EQ(abcd, "A");
+  EXPECT_EQ("A", abcd);
+  EXPECT_EQ("A", abcd);
 }
 
-TEST_F(AcsTest, DummySL_LT_False) {
-  user_.SetSl(25);
-  createEval("user.sl<20");
-
-  EXPECT_FALSE(eval->eval());
+TEST_F(ArTest, Ne_Conversion) {
+  Ar a('A');
+  Ar cde("CDE");
+  EXPECT_NE(cde, 'A');
+  EXPECT_NE(cde, "A");
+  EXPECT_NE('A', cde);
+  EXPECT_NE("A", cde);
 }
 
-TEST_F(AcsTest, Or) {
-  user_.SetSl(201);
-  createEval("user.sl>200 || user.dsl > 200 || user.name == \"Rushfan\"");
-  EXPECT_TRUE(eval->eval());
-}
-
-TEST_F(AcsTest, Multiple_Group_SL) {
-  user_.SetSl(201);
-  user_.SetDsl(100);
-  user_.set_name("SYSOP");
-  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
-  EXPECT_TRUE(eval->eval());
-}
-
-TEST_F(AcsTest, Multiple_Group_DSL) {
-  user_.SetSl(10);
-  user_.SetDsl(201);
-  user_.set_name("SYSOP");
-  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
-  EXPECT_TRUE(eval->eval());
-}
-
-TEST_F(AcsTest, Multiple_Group_None) {
-  user_.SetSl(22);
-  user_.SetDsl(12);
-  user_.set_name("SYSOP");
-  createEval("(user.sl>200 || user.dsl > 200) || user.name == \"Rushfan\"");
-  EXPECT_FALSE(eval->eval());
-}
-
-TEST_F(AcsTest, Ar_Pass) {
-  user_.SetAr(2);  // B
-  createEval("user.ar == 'B'");
-  EXPECT_TRUE(eval->eval());
-}
-
-TEST_F(AcsTest, Ar_Fail) {
-  user_.SetAr(5); // a || c
-  createEval("user.ar == 'B'");
-  EXPECT_FALSE(eval->eval());
+TEST_F(ArTest, Eq_Empty) {
+  Ar e(0);
+  EXPECT_EQ(e, "A");
+  EXPECT_EQ("A", e);
 }

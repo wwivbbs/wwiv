@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "sdk/acs/value.h"
 
-
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -32,6 +31,48 @@ using namespace wwiv::core::parser;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
+
+// TODO(rushfan): Move this to sdk, this is from bbs/arword.cpp
+static std::string word_to_arstr(int ar) {
+  if (!ar) {
+    return {};
+  }
+  std::string arstr;
+  for (int i = 0; i < 16; i++) {
+    if ((1 << i) & ar) {
+      arstr.push_back(static_cast<char>('A' + i));
+    }
+  }
+  return arstr;
+}
+
+static uint16_t str_to_arword(const std::string& arstr) {
+  uint16_t rar = 0;
+  auto s = ToStringUpperCase(arstr);
+
+  for (int i = 0; i < 16; i++) {
+    if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {
+      rar |= (1 << i);
+    }
+  }
+  return rar;
+}
+
+Ar::Ar(int ar) : ar_(static_cast<uint16_t>(ar)) {}
+
+Ar::Ar(char ar) : ar_(static_cast<uint16_t>(1 << (ar - 'A'))) {}
+
+Ar::Ar(const std::string ar) : ar_(str_to_arword(ar)) {}
+
+bool Ar::eq(const Ar& that) const {
+  // Always return true if either side allows everything.
+  return ar_ == 0 || that.ar_ == 0 || (ar_ & that.ar_);
+}
+
+std::string Ar::as_string() const { return word_to_arstr(ar_);  }
+
+int Ar::as_integer() const { return ar_; }
+
 
 std::ostream& operator<<(std::ostream& os, const Value& a) {
   if (a.value_type == ValueType::number) {
@@ -50,6 +91,7 @@ std::ostream& operator<<(std::ostream& os, const Value& a) {
 //static 
 Value Value::eval(Value l, Operator op, Value r) {
   const auto vt = l.value_type;
+  const auto rvt = r.value_type;
   switch (op) {
   case Operator::add:
     if (vt == ValueType::number) {
@@ -104,6 +146,8 @@ Value Value::eval(Value l, Operator op, Value r) {
       return Value(l.as_boolean() == r.as_boolean());
     } else if (vt == ValueType::string) {
       return Value(iequals(l.as_string(), r.as_string()));
+    } else if (vt == ValueType::ar) {
+      return Value(l.as_ar() == r.as_ar());
     }
     break;
   case Operator::ne:
@@ -113,6 +157,8 @@ Value Value::eval(Value l, Operator op, Value r) {
       return Value(l.as_boolean() != r.as_boolean());
     } else if (vt == ValueType::string) {
       return Value(!iequals(l.as_string(), r.as_string()));
+    } else if (vt == ValueType::ar) {
+      return Value(l.as_ar() != r.as_ar());
     }
     break;
   case Operator::logical_or:
@@ -125,40 +171,73 @@ Value Value::eval(Value l, Operator op, Value r) {
 
 
 int Value::as_number() {
-  if (value_type == ValueType::number) {
+  switch (value_type) {
+  case ValueType::number:
     return std::any_cast<int>(value);
-  } else if (value_type == ValueType::string) {
+  case ValueType::string:
     return to_number<int>(std::any_cast<std::string>(value));
-  } else if (value_type == ValueType::boolean) {
+  case ValueType::boolean: {
     const auto b = std::any_cast<bool>(value);
     return b ? 1 : 0;
   }
-  return 0;
+  case ValueType::ar:
+    return std::any_cast<Ar>(value).as_integer();
+  default:
+    return 0;
+  }
 }
 
 std::string Value::as_string() {
-  if (value_type == ValueType::number) {
+  switch (value_type) {
+  case ValueType::number:
     return std::to_string(std::any_cast<int>(value));
-  } else if (value_type == ValueType::string) {
+  case ValueType::string:
     return std::any_cast<std::string>(value);
-  } else if (value_type == ValueType::boolean) {
+  case ValueType::boolean: {
     const auto b = std::any_cast<bool>(value);
     return b ? "true" : "false";
   }
-  DLOG(FATAL) << "unknown value type: " << static_cast<int>(value_type);
-  return "";
+  case ValueType::ar:
+    return std::any_cast<Ar>(value).as_string();
+    break;
+  default:
+    DLOG(FATAL) << "unknown value type: " << static_cast<int>(value_type);
+    return "";
+  }
 }
 
 bool Value::as_boolean() {
-  if (value_type == ValueType::string) {
+  switch (value_type) {
+  case ValueType::string: {
     const auto s = std::any_cast<std::string>(value);
     return iequals(s, "true");
-  } else if (value_type == ValueType::number) {
-    return std::any_cast<int>(value) != 0;
-  } else if (value_type == ValueType::boolean) {
-    return std::any_cast<bool>(value);
   }
-  return false;
+  case ValueType::number:
+    return std::any_cast<int>(value) != 0;
+  case ValueType::boolean:
+    return std::any_cast<bool>(value);
+  case ValueType::ar:
+    return false;
+  default:
+    return false;
+  }
 }
+
+Ar Value::as_ar() {
+  switch (value_type) {
+  case ValueType::ar:
+    return std::any_cast<Ar>(value);
+  case ValueType::boolean:
+    return Ar(0);
+  case ValueType::number:
+    return Ar(0);
+  case ValueType::string:
+    return Ar(std::any_cast<std::string>(value));
+  case ValueType::unknown:
+    DLOG(FATAL) << "ValueType::unknown";
+    break;
+  }
+}
+
 
 }
