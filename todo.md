@@ -112,9 +112,6 @@ jq ".number" jenkins.json
 
 ## Parser
 ***
-* Move expression/factor ID into ast class.
-* add token into astnodes
-* Add line/col position info into token.
 
 ## Open Questions
 ***

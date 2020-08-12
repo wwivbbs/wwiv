@@ -132,6 +132,10 @@ What's New in WWIV 5.5 (2020)
   the gfiles/ directory.
 + Last IP Address for a user is now saved with the user record and displayed
   at logon time in lilo.
++ WWIV now supports an ACS language such as "user.sl > 200" that will be used
+  in expressions requiring access checks in the future.
++ Added "WWIVUTIL ACS" command to validate ACS expressions and also execute
+  them against users to test the result.
 
 
 What's New in WWIV 5.5 (2019)

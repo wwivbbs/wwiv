@@ -58,7 +58,7 @@ private:
   const AstType ast_type_;
 };
 
-enum class Operator { add, sub, mul, div, gt, ge, lt, le, eq, ne, logical_or, logical_and };
+enum class Operator { add, sub, mul, div, gt, ge, lt, le, eq, ne, logical_or, logical_and, UNKNOWN };
 
 enum class FactorType { int_value, string_val, variable };
 
@@ -68,7 +68,8 @@ class Factor;
 class Expression : public AstNode {
 public:
   static int expression_id;
-  Expression() : AstNode(AstType::EXPR), id_(++expression_id) {}
+  //Expression() : AstNode(AstType::EXPR), id_(++expression_id) {}
+  Expression(std::unique_ptr<Expression>&& left, Operator op, std::unique_ptr<Expression>&& right);
 
   Expression* left() { return left_.get(); }
   Expression* right() { return right_.get(); }
@@ -81,10 +82,10 @@ public:
 
   // Used when constructing these.
   // TODO(rushfan): Move into constructor and construct these fully.
-  Operator op_;
-  std::unique_ptr<Expression> left_;
-  std::unique_ptr<Expression> right_;
   int id_;
+  std::unique_ptr<Expression> left_;
+  Operator op_;
+  std::unique_ptr<Expression> right_;
 
 protected:
   // Constructor for subclasses of expressions to use to eval.
@@ -147,18 +148,25 @@ public:
   std::string message;
 };
 
-class BinaryOperatorNode : public AstNode {
+class OperatorNode : public AstNode {
+protected:
+  OperatorNode(Operator o, AstType t) : AstNode(t), oper(o) {}
+
 public:
-  BinaryOperatorNode(Operator o) : AstNode(AstType::BINOP), oper(o) {}
-  virtual std::string ToString() override;
-  Operator oper;
+  virtual std::string ToString() = 0;
+  const Operator oper;
 };
 
-class LogicalOperatorNode : public AstNode {
+class BinaryOperatorNode : public OperatorNode {
 public:
-  LogicalOperatorNode(Operator o) : AstNode(AstType::LOGICAL_OP), oper(o) {}
+  BinaryOperatorNode(Operator o) : OperatorNode(o, AstType::BINOP) {}
   virtual std::string ToString() override;
-  Operator oper;
+};
+
+class LogicalOperatorNode : public OperatorNode {
+public:
+  LogicalOperatorNode(Operator o) : OperatorNode(o, AstType::LOGICAL_OP) {}
+  virtual std::string ToString() override;
 };
 
 struct parse_error : public std::runtime_error {

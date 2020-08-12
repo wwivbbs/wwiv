@@ -34,11 +34,10 @@ using namespace wwiv::strings;
 
 namespace wwiv::core::parser {
 
-
 parse_error::parse_error(const std::string& m)
       : ::std::runtime_error(m) {}
 
-      ///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 // Factor
 
 std::string to_string(Operator o) {
@@ -69,7 +68,6 @@ std::string to_string(Operator o) {
     return fmt::format("UNKNOWN ({})", static_cast<int>(o));
   }
 }
-
 
 std::string to_symbol(Operator o) {
   switch (o) {
@@ -171,8 +169,8 @@ static std::unique_ptr<LogicalOperatorNode> createLogicalOperator(const Token& t
   case TokenType::logical_and:
     return std::make_unique<LogicalOperatorNode>(Operator::logical_and);
   }
-  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexeme;
-  return {};
+  throw parse_error(fmt::format("Unexpected token found trying to create logical operator: ",
+                                to_string(token)));
 }
 
 static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& token) {
@@ -200,48 +198,46 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
   case TokenType::sub:
     return std::make_unique<BinaryOperatorNode>(Operator::sub);
   }
-  LOG(ERROR) << "Should never happen: " << static_cast<int>(token.type) << ": " << token.lexeme;
-  return {};
+  throw parse_error(
+      fmt::format("Unexpected token found trying to create logical operator: ", to_string(token)));
 }
 
 bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
-  auto expr = std::make_unique<Expression>();
-  auto right = std::move(stack.top());
+  auto right_ast = std::move(stack.top());
   stack.pop();
-  auto op = std::move(stack.top());
+  auto op_ast = std::move(stack.top());
   stack.pop();
-  auto left = std::move(stack.top());
+  auto left_ast = std::move(stack.top());
   stack.pop();
-
+  
   // Set op
-  if (op->ast_type() == AstType::BINOP) {
-    auto oper = dynamic_cast<BinaryOperatorNode*>(op.get());
-    expr->op_ = oper->oper;
-  } else if (op->ast_type() == AstType::LOGICAL_OP) {
-    auto oper = dynamic_cast<LogicalOperatorNode*>(op.get());
-    expr->op_ = oper->oper;
+  Operator op{Operator::UNKNOWN};
+  if (auto oper = dynamic_cast<OperatorNode*>(op_ast.get())) {
+    op = oper->oper;
   } else {
     stack.push(
-        std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op->ast_type()))));
+        std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op_ast->ast_type()))));
     return false;
   }
   // Set left
-  if (left->ast_type() == AstType::FACTOR) {
-    auto factor = dynamic_cast<Factor*>(left.release());
-    expr->left_ = std::unique_ptr<Factor>(factor);
-  } else if (left->ast_type() == AstType::EXPR) {
-    auto factor = dynamic_cast<Expression*>(left.release());
-    expr->left_ = std::unique_ptr<Expression>(factor);
+  std::unique_ptr<Expression> left;
+  if (left_ast->ast_type() == AstType::FACTOR) {
+    auto factor = dynamic_cast<Factor*>(left_ast.release());
+    left = std::unique_ptr<Factor>(factor);
+  } else if (left_ast->ast_type() == AstType::EXPR) {
+    auto factor = dynamic_cast<Expression*>(left_ast.release());
+    left = std::unique_ptr<Expression>(factor);
   }
+  std::unique_ptr<Expression> right;
   // Set right
-  if (right->ast_type() == AstType::FACTOR) {
-    auto factor = dynamic_cast<Factor*>(right.release());
-    expr->right_ = std::unique_ptr<Factor>(factor);
-  } else if (right->ast_type() == AstType::EXPR) {
-    auto factor = dynamic_cast<Expression*>(right.release());
-    expr->right_ = std::unique_ptr<Expression>(factor);
+  if (right_ast->ast_type() == AstType::FACTOR) {
+    auto factor = dynamic_cast<Factor*>(right_ast.release());
+    right = std::unique_ptr<Factor>(factor);
+  } else if (right_ast->ast_type() == AstType::EXPR) {
+    auto factor = dynamic_cast<Expression*>(right_ast.release());
+    right = std::unique_ptr<Expression>(factor);
   }
-  stack.push(std::move(expr));
+  stack.push(std::make_unique<Expression>(std::move(left), op, std::move(right)));
   return true;
 }
 
@@ -319,7 +315,8 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     }
   }
   if (stack.size() != 1) {
-    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+    throw parse_error(
+        fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
   }
   auto ret = std::move(stack.top());
   stack.pop();
@@ -344,9 +341,9 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     }
     stack.push(std::move(expr));
     if (it == end || it->type != TokenType::rparen) {
-      LOG(ERROR) << "Missing right parens";
+      VLOG(1) << "Missing right parens";
       auto pos = it == end ? "end" : it->lexeme;
-      return std::make_unique<ErrorNode>(StrCat("Unable to parse expression starting at: ", pos));
+      return std::make_unique<ErrorNode>(StrCat("Missing right parens at: ", pos));
     }
   }
   // Flatten out any repeating logical conditions here,  we should end with
@@ -357,7 +354,8 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     }
   }
   if (stack.size() != 1) {
-    LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+    throw parse_error(
+        fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
   }
   auto root = std::move(stack.top());
   stack.pop();
@@ -373,7 +371,7 @@ bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool al
     return false;
   }
   const auto t = stack.top()->ast_type();
-  bool nr = t == AstType::BINOP;
+  const bool nr = t == AstType::BINOP;
   if (allow_logical && t == AstType::LOGICAL_OP) {
     return true;
   }
@@ -391,7 +389,7 @@ std::unique_ptr<RootNode> Ast::parse(
         auto expr = parseGroup(it, end);
         if (!expr || it == end) {
           return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-              StrCat("Unable to parse expression starting at: ", it->lexeme)));
+              StrCat("Unable to parse expression starting at: ", t)));
         }
         stack.push(std::move(expr));
         } break;
@@ -403,11 +401,11 @@ std::unique_ptr<RootNode> Ast::parse(
 
       default: {
         // Try to reduce.
-        bool nr = need_reduce(stack, true);
+        const bool nr = need_reduce(stack, true);
         auto expr = parseExpression(it, end);
         if (!expr) {
           return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
-              StrCat("Unable to parse expression starting at: ", it->lexeme)));
+              StrCat("Unable to parse expression starting at: ", t)));
         }
         stack.push(std::move(expr));
         if (nr) {
@@ -421,7 +419,8 @@ std::unique_ptr<RootNode> Ast::parse(
       }
     }
     if (stack.size() != 1) {
-      LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+      throw parse_error(
+          fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
     }
     auto root = std::make_unique<RootNode>(std::move(stack.top()));
     stack.pop();
@@ -460,6 +459,11 @@ void AstNode::accept(AstVisitor* visitor) {
 
 int Expression::expression_id = 0;
 
+Expression::Expression(std::unique_ptr<Expression>&& left, Operator op,
+                       std::unique_ptr<Expression>&& right) 
+  : AstNode(AstType::EXPR), id_(++expression_id), left_(std::move(left)), op_(op),
+      right_(std::move(right)) {}
+
 std::string Expression::ToString() { return ToString(true, 0); }
 
 std::string Expression::ToString(bool include_children) { return ToString(include_children, 0); }
@@ -468,7 +472,6 @@ std::string Expression::ToString(bool include_children, int indent) {
   std::ostringstream ss;
   std::string pad{"  "};
   if (indent > 0) {
-    //pad.append(fmt::format("({})", indent));
     pad.append(std::string(indent, ' '));
   }
   ss << "\r\n";
