@@ -334,6 +334,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
   }
   // Skip lparen
   ++it;
+
   std::stack<std::unique_ptr<AstNode>> stack;
   while (it != end && it->type != TokenType::rparen) {
     auto expr = parseExpression(it, end);

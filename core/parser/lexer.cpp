@@ -250,7 +250,7 @@ Token& Lexer::next() {
 
 bool Lexer::ok() { 
   if (!state_.ok) {
-    LOG(ERROR) << "Lexer state !ok: " << state_.err;
+    VLOG(1) << "Lexer state !ok: " << state_.err;
   }
   return state_.ok;
 }

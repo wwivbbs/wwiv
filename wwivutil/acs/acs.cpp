@@ -57,7 +57,6 @@ int AcsCommand::Execute() {
   }
   const auto expr = remaining().front();
   const auto user_number = iarg("user");
-  std::cout << "Evaluate: '" << expr << "'" << std::endl;
 
   UserManager userMgr(*config()->config());
   User user{};
@@ -70,22 +69,24 @@ int AcsCommand::Execute() {
   eval.add("user", std::make_unique<UserValueProvider>(&user));
 
   bool result = eval.eval();
+  std::cout << "Evaluate: '" << expr << "' ";
   if (!result) {
-    std::cout << "Expression evaluated to FALSE" << std::endl;
+    std::cout << "evaluated to FALSE" << std::endl;
   } else {
-    std::cout << "Expression evaluated to TRUE" << std::endl;
+    std::cout << "evaluated to TRUE" << std::endl;
   }
   std::cout << std::endl;
 
   if (eval.error()) {
-    std::cout << "Expression evaluation had the following error: " << eval.error_text()
+    std::cout << "Expression has the following error: " << eval.error_text()
               << std::endl;
+    return 1;
   }
 
   if (barg("debug")) {
-    std::cout << "Evaluation Execution Trace: " << std::endl;
+    std::cout << "Execution Trace: " << std::endl;
     for (const auto& l : eval.debug_info()) {
-      std::cout << "    " << l << std::endl;
+      std::cout << "       + " << l << std::endl;
     }
   }
 

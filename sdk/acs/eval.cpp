@@ -83,7 +83,8 @@ void Eval::visit(Expression* n) {
     right = values_[n->right()->id()];
   }
 
-  auto eval_expr = fmt::format("{} {} {}", left.value(), to_symbol(n->op()), right.value());
+  auto eval_expr = fmt::format("{}(id:{}) {} {}(id:{})", left.value(), n->left()->id(),
+                               to_symbol(n->op()), right.value(), n->right()->id());
   VLOG(1) << "EVAL: " << eval_expr;
 
   // cache value
@@ -114,10 +115,16 @@ bool Eval::eval() {
 
   Lexer l(expression_);
   if (!l.ok()) {
-    error_text_ = fmt::format("Failed to lex expression: '{}'", expression_);
+    std::string error_token;
+    for (const auto& t : l.tokens()) {
+      if (t.type == TokenType::error) {
+        error_token += to_string(t);
+      }
+    }
+    error_text_ =
+        fmt::format("Failed to lex expression: '{}'; \r\nError {}: ", expression_, error_token);
     VLOG(1) << error_text_;
     debug_info_.emplace_back(error_text_);
-
     return false;
   }
 
