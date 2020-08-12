@@ -18,20 +18,14 @@
 /**************************************************************************/
 #include "wwivutil/wwivutil.h"
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "core/command_line.h"
-#include "core/log.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/scope_exit.h"
-#include "core/strings.h"
 #include "core/stl.h"
+#include "core/strings.h"
 #include "sdk/config.h"
+#include "wwivutil/acs/acs.h"
 #include "wwivutil/config/config.h"
 #include "wwivutil/fido/fido.h"
 #include "wwivutil/files/files.h"
@@ -40,6 +34,12 @@
 #include "wwivutil/net/net.h"
 #include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::map;
 using std::string;
@@ -47,12 +47,8 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-using wwiv::wwivutil::fido::FidoCommand;
-using wwiv::wwivutil::files::FilesCommand;
 
-
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class WWIVUtil {
 public:
@@ -67,15 +63,15 @@ public:
   int Main() {
     ScopeExit at_exit(Logger::ExitLogger);
     try {
+      Add(std::make_unique<wwiv::wwivutil::acs::AcsCommand>());
       Add(std::make_unique<ConfigCommand>());
-      Add(std::make_unique<FilesCommand>());
+      Add(std::make_unique<wwiv::wwivutil::fido::FidoCommand>());
+      Add(std::make_unique<wwiv::wwivutil::files::FilesCommand>());
+      Add(std::make_unique<FixCommand>());
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<NetCommand>());
-      Add(std::make_unique<FixCommand>());
-      Add(std::make_unique<FidoCommand>());
-      Add(std::make_unique<StatusCommand>());
       Add(std::make_unique<PrintCommand>());
-
+      Add(std::make_unique<StatusCommand>());
       if (!cmdline_.Parse()) { return 1; }
       Config config(cmdline_.bbsdir());
       if (!config.IsInitialized()) {
@@ -114,8 +110,7 @@ private:
   std::unique_ptr<Configuration> command_config_;
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace wwiv::wwivutil
 
 int main(int argc, char *argv[]) {
   wwiv::wwivutil::WWIVUtil wwivutil(argc, argv);
