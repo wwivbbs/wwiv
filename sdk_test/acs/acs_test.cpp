@@ -122,3 +122,9 @@ TEST_F(AcsTest, BadAttrOnUser) {
   EXPECT_EQ(eval->error_text(), "No user attribute named 'user.foo' exists.");
   LOG(INFO) << wwiv::strings::JoinStrings(eval->debug_info(), "\r\n");
 }
+
+TEST_F(AcsTest, BadExpression) { 
+  createEval("foo == ~ foo");
+  EXPECT_FALSE(eval->eval());
+  LOG(INFO) << wwiv::strings::JoinStrings(eval->debug_info(), "\r\n");
+}

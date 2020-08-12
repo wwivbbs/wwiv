@@ -100,6 +100,10 @@ std::string to_symbol(Operator o) {
   }
 }
 
+std::string to_string(const AstNode& n) { 
+  return n.ToString();
+}
+
 std::string to_string(AstType t) {
   switch (t) {
   case AstType::LOGICAL_OP:
@@ -142,7 +146,7 @@ std::string to_string(FactorType t) {
   return "FactorType::UNKNOWN";
 }
 
-std::string Factor::ToString(int indent) {
+std::string Factor::ToString(int indent) const {
   auto pad = std::string(indent, ' ');
   return fmt::format("{}Factor #{}: {} '{}'", pad, id(), to_string(factor_type_),
                      factor_type_ == FactorType::int_value ? std::to_string(val) : sval);
@@ -178,7 +182,7 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
   case TokenType::add:
     return std::make_unique<BinaryOperatorNode>(Operator::add);
   case TokenType::assign:
-    LOG(FATAL) << "return std::make_unique<BinaryOperatorNode>(Operator::ass);";
+    throw parse_error("Assignment operators are not allowed.");
   case TokenType::div:
     return std::make_unique<BinaryOperatorNode>(Operator::div);
   case TokenType::eq:
@@ -215,9 +219,7 @@ bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   if (auto oper = dynamic_cast<OperatorNode*>(op_ast.get())) {
     op = oper->oper;
   } else {
-    stack.push(
-        std::make_unique<ErrorNode>(StrCat("Expected BINOP at: ", static_cast<int>(op_ast->ast_type()))));
-    return false;
+    throw parse_error(fmt::format("Expected BINOP at: {}", to_string(*op_ast.get())));
   }
   // Set left
   std::unique_ptr<Expression> left;
@@ -258,11 +260,10 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
         }
       }
       if (stack.size() != 1) {
-        LOG(ERROR) << "The Stack size should be one at the root, we have: " << stack.size();
+        throw parse_error(
+            fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
       }
-      auto ret = std::move(stack.top());
-      stack.pop();
-      return ret;
+      return std::move(stack.top());
     }
     case TokenType::comment:
       // skip
@@ -318,9 +319,7 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
     throw parse_error(
         fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
   }
-  auto ret = std::move(stack.top());
-  stack.pop();
-  return ret;
+  return std::move(stack.top());
 }
 
 std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
@@ -357,9 +356,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     throw parse_error(
         fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
   }
-  auto root = std::move(stack.top());
-  stack.pop();
-  return root;
+  return std::move(stack.top());
 }
 
 /** 
@@ -422,12 +419,9 @@ std::unique_ptr<RootNode> Ast::parse(
       throw parse_error(
           fmt::format("The Stack size should be one at the root, we have: ", stack.size()));
     }
-    auto root = std::make_unique<RootNode>(std::move(stack.top()));
-    stack.pop();
-    return root;
+    return std::make_unique<RootNode>(std::move(stack.top()));
   } catch (const parse_error& e) {
-    auto en = std::make_unique<ErrorNode>(e.what());
-    return std::make_unique<RootNode>(std::move(en));
+    return std::make_unique<RootNode>(std::make_unique<ErrorNode>(e.what()));
   }
 }
 
@@ -445,8 +439,9 @@ AstNode* Ast::root() {
   return root_->node.get();
 }
 
-std::string AstNode::ToString() { 
-  return fmt::format("AstNode: {}", to_string(ast_type_)); }
+std::string AstNode::ToString() const { 
+  return fmt::format("AstNode: {}", to_string(ast_type_)); 
+}
 
 void AstNode::accept(AstVisitor* visitor) { 
   auto* expr = dynamic_cast<Expression*>(this);
@@ -464,11 +459,13 @@ Expression::Expression(std::unique_ptr<Expression>&& left, Operator op,
   : AstNode(AstType::EXPR), id_(++expression_id), left_(std::move(left)), op_(op),
       right_(std::move(right)) {}
 
-std::string Expression::ToString() { return ToString(true, 0); }
+std::string Expression::ToString() const { return ToString(true, 0); }
 
-std::string Expression::ToString(bool include_children) { return ToString(include_children, 0); }
+std::string Expression::ToString(bool include_children) const {
+  return ToString(include_children, 0);
+}
 
-std::string Expression::ToString(bool include_children, int indent) { 
+std::string Expression::ToString(bool include_children, int indent) const { 
   std::ostringstream ss;
   std::string pad{"  "};
   if (indent > 0) {
@@ -510,14 +507,14 @@ void Expression::accept(AstVisitor* visitor) {
   visitor->visit(this);
 }
 
-std::string RootNode::ToString() { return fmt::format("ROOT: {}\n", node->ToString()); }
+std::string RootNode::ToString() const { return fmt::format("ROOT: {}\n", node->ToString()); }
 
 
-std::string BinaryOperatorNode::ToString() { 
+std::string BinaryOperatorNode::ToString() const { 
   return fmt::format("BinOp: ", to_string(oper));
 }
 
-std::string LogicalOperatorNode::ToString() {
+std::string LogicalOperatorNode::ToString() const {
   return fmt::format("LogOp: ", to_string(oper));
 }
 

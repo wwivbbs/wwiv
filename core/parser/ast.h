@@ -51,7 +51,7 @@ public:
   AstNode(AstType t) : ast_type_(t) {}
   virtual ~AstNode() = default;
   AstType ast_type() const noexcept { return ast_type_; }
-  virtual std::string ToString();
+  virtual std::string ToString() const;
   virtual void accept(AstVisitor* visitor);
 
 private:
@@ -71,13 +71,13 @@ public:
   //Expression() : AstNode(AstType::EXPR), id_(++expression_id) {}
   Expression(std::unique_ptr<Expression>&& left, Operator op, std::unique_ptr<Expression>&& right);
 
-  Expression* left() { return left_.get(); }
-  Expression* right() { return right_.get(); }
+  Expression* left() const { return left_.get(); }
+  Expression* right() const { return right_.get(); }
   Operator op() const noexcept { return op_; }
   int id() const noexcept { return id_; }
-  virtual std::string ToString() override;
-  virtual std::string ToString(bool include_children);
-  virtual std::string ToString(bool include_children, int indent);
+  virtual std::string ToString() const override;
+  virtual std::string ToString(bool include_children) const;
+  virtual std::string ToString(bool include_children, int indent) const;
   virtual void accept(AstVisitor* visitor) override;
 
   // Used when constructing these.
@@ -97,8 +97,8 @@ protected:
   Factor(FactorType t, int v, const std::string& s);
 
 public:
-  virtual std::string ToString() override { return ToString(0); };
-  virtual std::string ToString(int indent);
+  virtual std::string ToString() const override { return ToString(0); };
+  virtual std::string ToString(int indent) const;
   FactorType factor_type() const noexcept { return factor_type_; }
   std::string value() const {
     return factor_type_ == FactorType::int_value ? std::to_string(val) : sval;
@@ -132,7 +132,7 @@ public:
 class RootNode : public AstNode {
 public:
   RootNode(std::unique_ptr<AstNode>&& n) : AstNode(AstType::ROOT), node(std::move(n)) {}
-  virtual std::string ToString() override;
+  virtual std::string ToString() const override;
 
   std::unique_ptr<AstNode> node;
 };
@@ -153,20 +153,20 @@ protected:
   OperatorNode(Operator o, AstType t) : AstNode(t), oper(o) {}
 
 public:
-  virtual std::string ToString() = 0;
+  virtual std::string ToString() const = 0;
   const Operator oper;
 };
 
 class BinaryOperatorNode : public OperatorNode {
 public:
   BinaryOperatorNode(Operator o) : OperatorNode(o, AstType::BINOP) {}
-  virtual std::string ToString() override;
+  virtual std::string ToString() const override;
 };
 
 class LogicalOperatorNode : public OperatorNode {
 public:
   LogicalOperatorNode(Operator o) : OperatorNode(o, AstType::LOGICAL_OP) {}
-  virtual std::string ToString() override;
+  virtual std::string ToString() const override;
 };
 
 struct parse_error : public std::runtime_error {
@@ -202,6 +202,7 @@ private:
 
 std::string to_string(Operator o);
 std::string to_symbol(Operator o);
+std::string to_string(const AstNode& n);
 
 } // namespace wwiv::core
 

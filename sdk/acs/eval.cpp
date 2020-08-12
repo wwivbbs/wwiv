@@ -57,10 +57,10 @@ std::optional<Value> Eval::to_value(Factor* n) {
         return {o.value()};
       }
     }
-
+    throw eval_error(fmt::format("No object named '{}' exists.", n->value()));
   } break;
   }
-  return std::nullopt;
+  throw eval_error(fmt::format("Error finding factor for object: '{}'.", to_string(*n)));
 }
 
 Eval::Eval(std::string expression) : expression_(std::move(expression)) {}
