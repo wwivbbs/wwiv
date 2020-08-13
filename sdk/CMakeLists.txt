@@ -14,6 +14,7 @@ set(COMMON_SOURCES
   usermanager.cpp
   wwivd_config.cpp
   acs/eval.cpp
+  acs/expr.cpp
   acs/value.cpp
   acs/valueprovider.cpp
   acs/uservalueprovider.cpp

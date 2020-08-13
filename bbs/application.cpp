@@ -326,7 +326,7 @@ void Application::handle_sysop_key(uint8_t key) {
         std::uniform_int_distribution dist_len{10, 30};
         std::uniform_int_distribution dist{1, 256};
         for (auto i = 0; i < dist_len(e); i++) {
-          bout.bputch(static_cast<unsigned char>(dist(e)));
+          bout.bputch(static_cast<char>(dist(e) & 0xff));
         }
         remoteIO()->disconnect();
         Hangup();
@@ -717,11 +717,11 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
-      sysoplog(false);
+      sysoplog(false) << "";
       sysoplog(false) << "WWIV " << short_version() << ", inst " << instance_number()
                       << ", taken down at " << times() << " on " << fulldate() << " with exit code "
                       << exit_level << ".";
-      sysoplog(false);
+      sysoplog(false) << "";
     }
     catsl();
     clog << "\r\n";

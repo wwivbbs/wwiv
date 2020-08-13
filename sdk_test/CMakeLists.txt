@@ -23,6 +23,7 @@ set(test_sources
   user_test.cpp
   acs/acs_test.cpp
   acs/ar_test.cpp
+  acs/expr_test.cpp
   acs/value_test.cpp
   ansi/ansi_test.cpp
   ansi/framebuffer_test.cpp

@@ -4,6 +4,7 @@ include_directories(../deps/cereal/include)
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
+ acs.cpp
  application.cpp
  archivers.cpp
  arword.cpp
