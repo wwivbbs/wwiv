@@ -20,6 +20,7 @@
 #include "bbs/basic/util.h"
 #include "bbs/interpret.h"
 #include "bbs/menu.h"
+#include "bbs/acs.h"
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
 
@@ -55,6 +56,22 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg) {
       wwiv::menus::InterpretCommand(nullptr, arg);
+    }
+    return MB_FUNC_OK;
+  });
+
+  mb_register_func(bas, "EVAL", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    char* arg = nullptr;
+    if (mb_has_arg(bas, l)) {
+      mb_check(mb_pop_string(bas, l, &arg));
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    if (arg) {
+      auto ret = wwiv::bbs::check_acs(arg);
+      mb_push_int(bas, l, ret ? 1 : 0);
+    } else {
+      mb_push_int(bas, l, 0);
     }
     return MB_FUNC_OK;
   });
