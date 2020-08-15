@@ -33,7 +33,6 @@
 #include <exception>
 #include <string>
 
-using cereal::make_nvp;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
@@ -44,16 +43,6 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress,
 #include "sdk/net/networks_cereal.h"
 
 namespace cereal {
-/*
-#define SERIALIZE(n, field)                                                                        \
-  {                                                                                                \
-    try {                                                                                          \
-      ar(cereal::make_nvp(#field, n.field));                                                       \
-    } catch (const cereal::Exception&) {                                                           \
-      ar.setNextName(nullptr);                                                                     \
-    }                                                                                              \
-  }
-*/
 
 template <class Archive>
 inline std::string save_minimal(Archive const&, const wwiv::sdk::fido::FidoAddress& a) {

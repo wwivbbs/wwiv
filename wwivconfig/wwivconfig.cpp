@@ -203,12 +203,11 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
   File file(config.config_filename());
   if (file.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-
     if (!dialog_yn(curses_out->window(), "Upgrade config.dat from 4.x format?")) {
       return ShouldContinue::EXIT;
     }
     window->Bkgd(' ');
-    convert_config_424_to_430(window, config);
+    convert_config_424_to_430(window, config.datadir(), config.config_filename());
   }
 
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
@@ -217,25 +216,21 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
   file.Close();
 
   // Check for 5.2 config
-  {
-    static const std::string expected_sig = "WWIV";
-    if (expected_sig != cfg.header.header.signature) {
-      // We don't have a 5.2 header, let's convert.
-      if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2 format?")) {
-        return ShouldContinue::EXIT;
-      }
-
-      convert_config_to_52(window, config);
-      {
-        if (file.Open(File::modeBinary | File::modeReadOnly)) {
-          file.Read(&cfg, sizeof(configrec));
-        }
-        file.Close();
-      }
+  static const std::string expected_sig = "WWIV";
+  if (expected_sig != cfg.header.header.signature) {
+    // We don't have a 5.2 header, let's convert.
+    if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2+ format?")) {
+      return ShouldContinue::EXIT;
     }
-    ensure_latest_5x_config(window, config, cfg);
-  }
 
+    convert_config_to_52(window, config.config_filename());
+    if (file.Open(File::modeBinary | File::modeReadOnly)) {
+      file.Read(&cfg, sizeof(configrec));
+    }
+    file.Close();
+  }
+  ensure_latest_5x_config(window, config.datadir(), config.config_filename(),
+                          cfg.header.header.config_revision_number);
   ensure_offsets_are_updated(window, config);
   return ShouldContinue::CONTINUE;
 }

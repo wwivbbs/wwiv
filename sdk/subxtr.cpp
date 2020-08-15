@@ -44,6 +44,7 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+
 namespace wwiv::sdk {
 
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
@@ -52,6 +53,14 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
 std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
 
+#define SERIALIZE(n, field)                                                                        \
+  {                                                                                                \
+    try {                                                                                          \
+      ar(cereal::make_nvp(#field, n.field));                                                       \
+    } catch (const cereal::Exception&) {                                                           \
+      ar.setNextName(nullptr);                                                                     \
+    }                                                                                              \
+  } // NOLINT(cppcoreguidelines-macro-usage)
 
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
@@ -82,64 +91,18 @@ void serialize(Archive & ar, subboard_network_data_t& s) {
   }
 }
 
-template <class Archive>
-void serialize(Archive & ar, subboard_t& s) {
-  ar(make_nvp("name", s.name));
-  try {
-    ar(make_nvp("desc", s.desc));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("filename", s.filename));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("key", s.key));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("readsl", s.readsl));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("postsl", s.postsl));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("anony", s.anony));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("age", s.age));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("maxmsgs", s.maxmsgs));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("ar", s.ar));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("storage_type", s.storage_type));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("nets", s.nets));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
+template <class Archive> void serialize(Archive& ar, subboard_t& s) { 
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, key);
+  SERIALIZE(s, readsl);
+  SERIALIZE(s, postsl);
+  SERIALIZE(s, anony);
+  SERIALIZE(s, age);
+  SERIALIZE(s, maxmsgs);
+  SERIALIZE(s, ar);
+  SERIALIZE(s, storage_type);
+  SERIALIZE(s, nets);
 }
 
 bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, std::vector<subboard_t>& s) {
@@ -148,6 +111,7 @@ bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, std
   JsonFile f(path, "subs", s);
   return f.Load();
 }
+
 
 //static 
 bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const std::vector<subboard_t>& s) {

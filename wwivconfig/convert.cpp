@@ -102,8 +102,8 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   return true;
 }
 
-bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
-  File file(config.config_filename());
+bool convert_config_to_52(UIWindow* window, const std::string& config_filename) {
+  File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
   }
@@ -132,10 +132,41 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
   return true;
 }
 
-static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
-  ShowBanner(window, "Updating to latest 5.2 format...");
+static bool update_config_revision_number(const std::string& config_filename,
+                                          const uint32_t config_revision_number) {
+  File file(config_filename);
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+    return false;
+  }
+  configrec syscfg53{};
+  if (file.Read(&syscfg53, sizeof(configrec)) < static_cast<int>(sizeof(configrec))) {
+    return false;
+  }
+  // Good housekeeping clear out unused fields.
+  memset(syscfg53.res, 0, sizeof(syscfg53.res));
+  memset(syscfg53.unused1, 0, sizeof(syscfg53.unused1));
+  memset(syscfg53.unused2, 0, sizeof(syscfg53.unused2));
+  memset(syscfg53.unused3, 0, sizeof(syscfg53.unused3));
+  memset(syscfg53.unused4, 0, sizeof(syscfg53.unused4));
+  memset(syscfg53.unused5, 0, sizeof(syscfg53.unused5));
+  memset(syscfg53.unused6, 0, sizeof(syscfg53.unused6));
+  memset(syscfg53.unused7, 0, sizeof(syscfg53.unused7));
+  memset(syscfg53.unused8, 0, sizeof(syscfg53.unused8));
+  memset(syscfg53.unused9, 0, sizeof(syscfg53.unused9));
 
-  auto users_lst = FilePath(config.datadir(), USER_LST);
+  // Update config_revision_number to the specified version
+  syscfg53.header.header.config_revision_number = config_revision_number;
+
+  file.Seek(0, File::Whence::begin);
+  file.Write(&syscfg53, sizeof(configrec));
+  file.Close();
+  return true;
+}
+
+static bool convert_to_v1(UIWindow* window, const std::string& datadir, const std::string& config_filename) {
+  ShowBanner(window, "Updating to 5.2.1+ format...");
+
+  auto users_lst = FilePath(datadir, USER_LST);
   auto backup_file = users_lst;
   backup_file += ".backup.pre-wwivconfig-upgrade";
 
@@ -144,7 +175,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   // Note we ignore the ec since we fail open.
   copy_file(users_lst, backup_file, ec);
 
-  DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
+  DataFile<userrec> usersFile(FilePath(datadir, USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                               File::shareDenyReadWrite);
   if (!usersFile) {
@@ -192,33 +223,9 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
 
   // Update config.dat with new version to consider this "successful"
   // enough of an upgrade at this point.
-  {
-    File file(config.config_filename());
-    if (!file.Open(File::modeBinary | File::modeReadWrite)) {
-      return false;
-    }
-    configrec syscfg53{};
-    if (file.Read(&syscfg53, sizeof(configrec)) < static_cast<int>(sizeof(configrec))) {
-      return false;
-    }
-    memset(syscfg53.res, 0, sizeof(syscfg53.res));
-    memset(syscfg53.unused1, 0, sizeof(syscfg53.unused1));
-    memset(syscfg53.unused2, 0, sizeof(syscfg53.unused2));
-    memset(syscfg53.unused3, 0, sizeof(syscfg53.unused3));
-    memset(syscfg53.unused4, 0, sizeof(syscfg53.unused4));
-    memset(syscfg53.unused5, 0, sizeof(syscfg53.unused5));
-    memset(syscfg53.unused6, 0, sizeof(syscfg53.unused6));
-    memset(syscfg53.unused7, 0, sizeof(syscfg53.unused7));
-    memset(syscfg53.unused8, 0, sizeof(syscfg53.unused8));
-    memset(syscfg53.unused9, 0, sizeof(syscfg53.unused9));
-    syscfg53.header.header.config_revision_number = 1;
+  update_config_revision_number(config_filename, 1);
 
-    file.Seek(0, File::Whence::begin);
-    file.Write(&syscfg53, sizeof(configrec));
-    file.Close();
-  }
-
-  const auto config_usr_filename = FilePath(config.datadir(), "config.usr");
+  const auto config_usr_filename = FilePath(datadir, "config.usr");
   DataFile<user_config> configUsrFile(config_usr_filename, File::modeReadOnly | File::modeBinary,
                                       File::shareDenyWrite);
   if (!configUsrFile) {
@@ -254,29 +261,38 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   File::Remove(config_usr_filename);
 
   // 2nd version of config.usr that wwivconfig was mistakenly creating.
-  const auto user_dat_fn = FilePath(config.datadir(), "user.dat");
+  const auto user_dat_fn = FilePath(datadir, "user.dat");
   File::Remove(user_dat_fn);
 
-  messagebox(window, "Converted to config version #1");
+  messagebox(window, "Converted to config version v1");
   return true;
 }
 
-bool ensure_latest_5x_config(UIWindow* window, const wwiv::sdk::Config& config,
-                             const configrec& cr) {
-  const auto v = cr.header.header.config_revision_number;
-  if (v < 1) {
-    if (!convert_to_52_1(window, config)) {
-      return false;
-    }
-  }
+static bool convert_to_v2(UIWindow* window, const std::string& datadir,
+                          const std::string& config_filename) {
+  ShowBanner(window, "Updating to 5.2.2+ format...");
+  LOG(INFO) << datadir;
+  // Mark config.dat as upgraded.
+  update_config_revision_number(config_filename, 2);
+  return true;
+}
+
+bool ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
+                             const std::string& config_filename,
+                             const uint32_t config_revision_number) {
 
   // add others
-
+  if (config_revision_number < 1) {
+    return convert_to_v1(window, datadir, config_filename);
+  }
+  if (config_revision_number < 2) {
+    return //convert_to_v2(window, datadir, config_filename);
+  }
   return true;
 }
 
-void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config) {
-  File file(config.config_filename());
+void convert_config_424_to_430(UIWindow* window, const std::string& datadir, const std::string& config_filename) {
+  File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return;
   }
@@ -308,11 +324,11 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   file.Write(&syscfg53, sizeof(configrec));
   file.Close();
 
-  File archiver(FilePath(config.datadir(), ARCHIVER_DAT));
+  File archiver(FilePath(datadir, ARCHIVER_DAT));
   if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
     window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Puts("Creating new file....\n");
-    create_arcs(window, config.datadir());
+    create_arcs(window, datadir);
     window->Puts("\n");
     if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");

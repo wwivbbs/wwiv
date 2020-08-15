@@ -64,8 +64,8 @@ public:
         return false;
       }
       std::stringstream ss(text);
-      cereal::JSONInputArchive load(ss);
-      load(cereal::make_nvp(key_, t_));
+      cereal::JSONInputArchive ar(ss);
+      ar(cereal::make_nvp(key_, t_));
       return true;
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
@@ -76,8 +76,8 @@ public:
   bool Save() {
     std::ostringstream ss;
     try {
-      cereal::JSONOutputArchive save(ss);
-      save(cereal::make_nvp(key_, t_));
+      cereal::JSONOutputArchive ar(ss);
+      ar(cereal::make_nvp(key_, t_));
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;

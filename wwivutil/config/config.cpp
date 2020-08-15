@@ -57,25 +57,24 @@ static int show_version(const Config& config) {
   return 0;
 }
 
-void save_config(configrec& c) {
+bool save_config(configrec& c) {
   DataFile<configrec> file(CONFIG_DAT,
                            File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   if (file) {
-    file.Write(&c);
+    return file.Write(&c);
   }
+  return false;
 }
 
-static int set_version(const Config& config, uint16_t wwiv_ver, uint32_t revision) {
+static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revision) {
   if (!config.versioned_config_dat()) {
     cout << "Can only set the wwiv_ersion and config revision on a 5.1 or higher versioned "
             "config.dat"
          << std::endl;
-    return 1;
+    return false;
   }
 
   configrec cfg430 = *config.config();
-  cout << cfg430.systemname << std::endl;
-  cout << " set_version: wwiv_ver: " << wwiv_ver << " set_version: " << revision << std::endl;
   auto& h = cfg430.header.header;
   if (wwiv_ver >= 500) {
     cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
@@ -89,9 +88,12 @@ static int set_version(const Config& config, uint16_t wwiv_ver, uint32_t revisio
   memset(&h.unused, 0, sizeof(h.unused));
   h.padding[0] = 0;
 
-  cout << "Wrote Config.dat" << std::endl;
-  save_config(cfg430);
-  return 0;
+  if (wwiv_ver >= 500 || revision > 0) {
+    cout << "Wrote Config.dat" << std::endl;
+    return save_config(cfg430);
+  }
+  cout << "Nothing changed; Nothing to do." << std::endl << std::endl;
+  return false;
 }
 
 class ConfigVersionCommand : public UtilCommand {
@@ -115,8 +117,12 @@ public:
       return show_version(*this->config()->config());
     }
     if (set_or_get == "set") {
-      return set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
-                         iarg("revision"));
+      if (!set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
+                       iarg("revision"))) {
+        std::cout << GetUsage() << GetHelp() << endl;
+        return 1;
+      }
+      return 0;
     }
     return 1;
   }
