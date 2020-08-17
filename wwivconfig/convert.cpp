@@ -285,9 +285,9 @@ bool ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
   if (config_revision_number < 1) {
     return convert_to_v1(window, datadir, config_filename);
   }
-  if (config_revision_number < 2) {
-    return //convert_to_v2(window, datadir, config_filename);
-  }
+  //if (config_revision_number < 2) {
+  //  return convert_to_v2(window, datadir, config_filename);
+  //}
   return true;
 }
 
