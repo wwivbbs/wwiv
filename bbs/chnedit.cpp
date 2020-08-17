@@ -259,6 +259,7 @@ static void modify_chain(int chain_num) {
     } break;
     case 'E':
       c.ansi = !c.ansi;
+      break;
     case 'F':
       c.exec_mode++;
       break;
