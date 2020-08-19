@@ -2,7 +2,7 @@
 #
 # CMake for WWIV
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 project(wwiv)
 
 
@@ -72,54 +72,56 @@ if (WWIV_BUILD_TESTS)
   add_subdirectory(wwivd_test)
 endif (WWIV_BUILD_TESTS)
 
-# Create build.nfo
-message(STATUS "Writing ${CMAKE_BINARY_DIR}/BUILD.NFO")
-file(
-  WRITE "${CMAKE_BINARY_DIR}/build.nfo"
-  "Build URL $ENV{BUILD_URL}\n"
-  "Build Version: $ENV{BUILD_NUMBER}\n\n"
-)
+if (WWIV_INSTALL)
+  # Create build.nfo
+  message(STATUS "Writing ${CMAKE_BINARY_DIR}/BUILD.NFO")
+  file(
+    WRITE "${CMAKE_BINARY_DIR}/build.nfo"
+    "Build URL $ENV{BUILD_URL}\n"
+    "Build Version: $ENV{BUILD_NUMBER}\n\n"
+  )
 
-if(WWIV_ZIP_INSTALL_FILES)
-  create_datafile_archive("data" "${WWIV_INSTALL_SRC}/data")
-  create_datafile_archive("inifiles" "${WWIV_INSTALL_SRC}/inifiles")
-  create_datafile_archive("gfiles" "${WWIV_INSTALL_SRC}/gfiles")
-  create_datafile_archive("scripts" "${WWIV_INSTALL_SRC}/scripts")
-  create_datafile_archive("zip-city" "${WWIV_INSTALL_SRC}/zip-city")
-  create_datafile_archive("regions" "${WWIV_INSTALL_SRC}/regions")
-  if (UNIX)
-    create_datafile_archive("unix" "${WWIV_INSTALL_SRC}/platform/unix")
+  if(WWIV_ZIP_INSTALL_FILES)
+    create_datafile_archive("data" "${WWIV_INSTALL_SRC}/data")
+    create_datafile_archive("inifiles" "${WWIV_INSTALL_SRC}/inifiles")
+    create_datafile_archive("gfiles" "${WWIV_INSTALL_SRC}/gfiles")
+    create_datafile_archive("scripts" "${WWIV_INSTALL_SRC}/scripts")
+    create_datafile_archive("zip-city" "${WWIV_INSTALL_SRC}/zip-city")
+    create_datafile_archive("regions" "${WWIV_INSTALL_SRC}/regions")
+    if (UNIX)
+      create_datafile_archive("unix" "${WWIV_INSTALL_SRC}/platform/unix")
+    endif()
   endif()
-endif()
 
-install(TARGETS bbs DESTINATION .)
-install(TARGETS network DESTINATION .)
-install(TARGETS networkb DESTINATION .)
-install(TARGETS networkc DESTINATION .)
-install(TARGETS networkf DESTINATION .)
-install(TARGETS networkt DESTINATION .)
-install(TARGETS network1 DESTINATION .)
-install(TARGETS network2 DESTINATION .)
-install(TARGETS network3 DESTINATION .)
-install(TARGETS wwivconfig DESTINATION .)
-install(TARGETS wwivd DESTINATION .)
-install(TARGETS wwivutil DESTINATION .)
+  install(TARGETS bbs DESTINATION .)
+  install(TARGETS network DESTINATION .)
+  install(TARGETS networkb DESTINATION .)
+  install(TARGETS networkc DESTINATION .)
+  install(TARGETS networkf DESTINATION .)
+  install(TARGETS networkt DESTINATION .)
+  install(TARGETS network1 DESTINATION .)
+  install(TARGETS network2 DESTINATION .)
+  install(TARGETS network3 DESTINATION .)
+  install(TARGETS wwivconfig DESTINATION .)
+  install(TARGETS wwivd DESTINATION .)
+  install(TARGETS wwivutil DESTINATION .)
 
-if (UNIX)
-  set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/unix")
-  # Copy shell scripts, rest can be from unix.zip
-  file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.sh")
-  file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.bash")
-  foreach(file ${PLATFORM_FILES})
-    message(DEBUG "Installing ${file}")
+  if (UNIX)
+    set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/unix")
+    # Copy shell scripts, rest can be from unix.zip
+    file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.sh")
+    file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.bash")
+    foreach(file ${PLATFORM_FILES})
+      message(DEBUG "Installing ${file}")
+      INSTALL(FILES "${file}" DESTINATION .)
+    endforeach()
+  elseif(WIN32)
+    set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/win32")
+    install(DIRECTORY "${PLATFORM_DIR}" DESTINATION .)
+  endif()
+
+  file(GLOB DOCS_FILES "${WWIV_INSTALL_SRC}/docs/*")
+  foreach(file ${DOCS_FILES})
     INSTALL(FILES "${file}" DESTINATION .)
   endforeach()
-elseif(WIN32)
-  set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/win32")
-  install(DIRECTORY "${PLATFORM_DIR}" DESTINATION .)
-endif()
-
-file(GLOB DOCS_FILES "${WWIV_INSTALL_SRC}/docs/*")
-foreach(file ${DOCS_FILES})
-  INSTALL(FILES "${file}" DESTINATION .)
-endforeach()
+endif (WWIV_INSTALL)

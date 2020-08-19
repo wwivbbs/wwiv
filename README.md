@@ -6,8 +6,7 @@ WWIV is compiled with the following compilers:
 - MS Visual C++ 2019 Community Edition.
 - GCC 8.3 (or later) on Linux 
   (Debian10, Centos8 (with GCC 8 via SCL) or Ubuntu)
-
-You will need CMake 3.9 or later to build WWIV.
+- CMake 3.13 or newer
 
 ***
 
@@ -69,7 +68,7 @@ Package | Comments
 ------- | ----------
 git | to grab the source code for compiling  
 ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
-cmake | 3.9 or later
+cmake | 3.13 or later
 make | for cryptlib
 ninja-build | 1.8 or later, earlier versions probably work too
 g++ | 8.3.0 or later (easiest to install via build-essential on debian)
