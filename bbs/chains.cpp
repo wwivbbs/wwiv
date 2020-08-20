@@ -89,7 +89,6 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
 // Displays the list of chains to a user
 // Note: we aren't using a const map since [] doesn't work for const maps.
 static void show_chains(int *mapp, std::map<int, int>& map) {
-  bout.Color(0);
   bout.cls();
   bout.nl();
   bool abort = false;

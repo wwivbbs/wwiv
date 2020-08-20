@@ -842,7 +842,6 @@ void logon() {
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
   get_user_ppp_addr();
   bout.ResetColors();
-  bout.Color(0);
   bout.cls();
 
   FixUserLinesAndColors();
