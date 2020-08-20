@@ -173,6 +173,8 @@ void Output::backline() {
  * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
  */
 void Output::cls() {
+  // Adding color 0 so previous color would not be picked up. #1245
+  Color(0);  
   if (okansi()) {
     bputs("\x1b[2J");
     GotoXY(1, 1);
