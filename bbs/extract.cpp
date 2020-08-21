@@ -38,7 +38,7 @@ static std::optional<std::string> get_extract_dir() {
   print_help_file(MEXTRACT_NOEXT);
   do {
     bout << "|#5(Q=Quit) Which (D,G,T) ? ";
-    const auto ch1 = onek("Q234?");
+    const auto ch1 = onek("QGDT?");
     switch (ch1) {
     case 'G':
       return a()->config()->gfilesdir();
