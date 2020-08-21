@@ -215,7 +215,7 @@ void do_chains() {
     show_chains(&mapp, map);
     a()->tleft(true);
     bout.nl();
-    bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
+    bout << "|#5Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
     if (mapp < 100) {
       ss = mmkey(odc);

@@ -37,18 +37,20 @@ using namespace wwiv::strings;
 static std::optional<std::string> get_extract_dir() {
   print_help_file(MEXTRACT_NOEXT);
   do {
-    bout << "|#5Which (2-4,Q,?): ";
+    bout << "|#5(Q=Quit) Which (D,G,T) ? ";
     const auto ch1 = onek("Q234?");
     switch (ch1) {
-    case '2':
+    case 'G':
       return a()->config()->gfilesdir();
-    case '3':
+    case 'D':
       return a()->config()->datadir();
-    case '4':
+    case 'T':
       return a()->temp_directory();
     case '?':
       print_help_file(MEXTRACT_NOEXT);
       break;
+    case 'Q':
+      return std::nullopt;
     }
   } while (!a()->hangup_);
   return std::nullopt;
