@@ -217,10 +217,6 @@ std::vector<std::string> query_quote_lines() {
     auto end = std::end(*quotes_ind);
     num_lines = 1;
     auto abort = false;
-    if (quotes_ind->size() >= 2) {
-      ++iter;
-      ++iter;
-    }
     for (; iter != end; ++iter) {
       // Skip control line (^D)
       auto& line = *iter;
