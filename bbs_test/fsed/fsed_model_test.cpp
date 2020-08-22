@@ -121,7 +121,7 @@ TEST_F(FsedModelTest, PageUp_NoScroll) {
 TEST_F(FsedModelTest, PageUp_Scroll) {
   AddTestLines(100);
   EXPECT_EQ(100, ed.curli);
-  EXPECT_EQ(9, ed.cy);
+  EXPECT_EQ(10, ed.cy);
 
   // Scroll up
   ed.cursor_pgup();
