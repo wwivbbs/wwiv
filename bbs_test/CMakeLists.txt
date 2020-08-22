@@ -1,6 +1,7 @@
 
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../deps/cereal/include)
+include(GoogleTest)
 
 set(test_sources
   basic_test.cpp
@@ -44,4 +45,4 @@ else()
   target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest)
 endif()
 
-add_test(bbs_tests_test bbs_tests)
+gtest_discover_tests(bbs_tests)

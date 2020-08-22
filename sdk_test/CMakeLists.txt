@@ -1,5 +1,6 @@
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../deps/cereal/include)
+include(GoogleTest)
 
 set(test_sources
   callout_test.cpp
@@ -47,4 +48,4 @@ add_executable(sdk_tests ${test_sources})
 
 target_link_libraries(sdk_tests core core_fixtures gtest sdk)
 
-add_test(sdk_tests, sdk_tests)
+gtest_discover_tests(sdk_tests)

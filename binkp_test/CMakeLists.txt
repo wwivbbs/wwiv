@@ -1,3 +1,4 @@
+include(GoogleTest)
 enable_testing()
 
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -19,5 +20,5 @@ set_max_warnings()
 add_executable(binkp_tests ${test_sources})
 target_link_libraries(binkp_tests binkp_lib core core_fixtures gtest sdk)
  
-add_test(binkp_tests binkp_tests)
+gtest_discover_tests(binkp_tests)
 

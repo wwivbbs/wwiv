@@ -36,6 +36,7 @@ rm ${WORKSPACE}/wwiv-*.tar.gz || /bin/true
 rm ${CMAKE_BINARY_DIR}/wwiv-*.tar.gz || /bin/true
 rm ${CMAKE_BINARY_DIR}/CMakeCache.txt
 rm -rf "${WWIV_RELEASE_DIR}"
+rm -rf "${CMAKE_BINARY_DIR}/Testing"
 
 set -e
 

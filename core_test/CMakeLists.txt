@@ -1,4 +1,5 @@
 include_directories(${GTEST_INCLUDE_DIRS})
+include(GoogleTest)
 
 set(fixture_sources
   file_helper.cpp 
@@ -36,4 +37,4 @@ add_library(core_fixtures ${fixture_sources})
 target_link_libraries(core_fixtures core)
 add_executable(core_tests ${test_sources})
 target_link_libraries(core_tests core_fixtures core gtest)
-add_test(core_tests core_tests)
+gtest_discover_tests(core_tests)

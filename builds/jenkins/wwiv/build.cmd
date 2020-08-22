@@ -58,6 +58,7 @@ call %VCVARS_ALL% %WWIV_ARCH%
 mkdir %CMAKE_BINARY_DIR%
 del %CMAKE_BINARY_DIR%\CMakeCache.txt
 rmdir /s/q %CMAKE_BINARY_DIR%\CMakeFiles
+rmdir /s/q %CMAKE_BINARY_DIR%\Testing
 
 cd %WORKSPACE%
 mkdir %WWIV_RELEASE_DIR%
