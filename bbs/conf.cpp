@@ -507,7 +507,7 @@ static void modify_conf(ConferenceType conftype, int which) {
       ok = true;
       for (int i = 0; i < ssize(info.confs); i++) {
         if (i == n) {
-          i++;
+          continue;
         }
         if (ok && (info.confs[i].designator == ch1)) {
           ok = false;
