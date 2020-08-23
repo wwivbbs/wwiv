@@ -40,7 +40,7 @@ public:
   [[nodiscard]] const std::vector<net_networks_rec>& networks() const { return networks_; }
   [[nodiscard]] const net_networks_rec& at(size_type num) const { return networks_.at(num); }
   [[nodiscard]] const net_networks_rec& at(const std::string& name) const;
-  net_networks_rec& at(size_type num) { return networks_.at(num); }
+  net_networks_rec& at(size_type num);
   net_networks_rec& at(const std::string& name);
   std::optional<const net_networks_rec> by_uuid(const wwiv::core::uuid_t& uuid);
   std::optional<const net_networks_rec> by_uuid(const std::string& uuid_text);

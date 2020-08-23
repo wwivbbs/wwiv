@@ -337,7 +337,8 @@ static std::string fixup_user_entered_email(const std::string& s) {
 }
 
 void readmail(int mode) {
-  int i, i1, i2, curmail = 0, nn = 0, delme;
+  int i, i1, i2, curmail = 0, delme;
+  uint8_t nn = 0;
   bool done, okmail;
   char s2[81], *ss2, mnu[81];
   mailrec m{};
@@ -407,7 +408,16 @@ void readmail(int mode) {
         continue;
       }
 
+      net_networks_rec net{};
       nn = network_number_from(&m);
+      if (nn <= a()->nets().size()) {
+        net = a()->nets()[nn];
+      } else {
+        net.sysnum = -1;
+        net.type = network_type_t::wwivnet;
+        net.name = fmt::format("<deleted network #{}>", nn);
+        nn = 255;
+      }
       std::ostringstream ss(std::ostringstream::ate);
       ss << "|#2" << fmt::sprintf("%3d", i + 1) << (m.status & status_seen ? " " : "|#3*")
          << (okansi() ? '\xB3' : '|') << "|#1 ";
@@ -418,7 +428,7 @@ void readmail(int mode) {
         if (m.fromsys == 0) {
           if (m.fromuser == 65535) {
             if (nn != 255) {
-              ss << a()->nets()[nn].name;
+              ss << net.name;
             }
           } else {
             ss << a()->names()->UserName(m.fromuser);
@@ -434,7 +444,7 @@ void readmail(int mode) {
           }
           std::string s1;
           if (nn == 255) {
-            s1 = fmt::format("#{} @{}.<deleted network>", m.fromuser, m.fromsys);
+            s1 = fmt::format("#{} @{}.", m.fromuser, m.fromsys, net.name);
           } else {
             if (auto o = readfile(&m.msg, "email")) {
               // we know b is much bigger than s2, so don't
@@ -446,15 +456,15 @@ void readmail(int mode) {
                 s1 = stripcolors(ss2);
               } else {
                 s1 = fmt::format("{} {}@{}.{} ({})", stripcolors(strip_to_node(ss2)), m.fromuser,
-                                 m.fromsys, a()->nets()[nn].name, system_name);
+                                 m.fromsys, net.name, system_name);
               }
               if (s1.size() > a()->mail_who_field_len) {
                 s1.resize(a()->mail_who_field_len);
               }
             } else {
-              if (wwiv::stl::ssize(a()->nets()) > 1) {
+              if (ssize(a()->nets()) > 1) {
                 s1 = fmt::format("#{} @{}.{} ({})", m.fromuser, m.fromsys,
-                                 a()->nets()[nn].name, system_name);
+                                 net.name, system_name);
               } else {
                 s1 = fmt::format("#{} @{} ({})", m.fromuser, m.fromsys, system_name);
               }

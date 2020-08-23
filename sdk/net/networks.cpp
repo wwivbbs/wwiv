@@ -23,6 +23,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include <stdexcept>
@@ -63,7 +64,35 @@ const net_networks_rec& Networks::at(const std::string& name) const {
       return n;
     }
   }
-  throw std::out_of_range(StrCat("Unable to find network named: ", name));
+  const auto msg = fmt::format("Unable to find network named: {}", name);
+  LOG(ERROR) << msg;
+  throw std::out_of_range(msg);
+}
+
+static net_networks_rec create_255_network() {
+  net_networks_rec net{};
+  net.sysnum = static_cast<uint16_t>(-1);
+  net.type = network_type_t::wwivnet;
+  net.name = "<deleted network #255>";
+  net.dir = "DELETED";
+  return net;
+}
+
+static net_networks_rec network_255 = create_255_network();
+
+net_networks_rec& Networks::at(size_type num) { 
+   if (num == 255) {
+    // A network num 255 (-1 wrapped at uint8_t boundary) means an
+    // invalid network in WWIV.
+    return network_255;
+  } else if (num >= ssize(networks_)) {
+    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+    // A network num 255 (-1 wrapped at uint8_t boundary) means an
+    // invalid network in WWIV.
+    return network_255;
+  }
+  return networks_.at(num); 
 }
 
 net_networks_rec& Networks::at(const std::string& name) {
@@ -72,7 +101,9 @@ net_networks_rec& Networks::at(const std::string& name) {
       return n;
     }
   }
-  throw std::out_of_range(StrCat("Unable to find network named: ", name));
+  const auto msg = fmt::format("Unable to find network named: {}", name);
+  LOG(ERROR) << msg;
+  throw std::out_of_range(msg);
 }
 
 std::optional<const net_networks_rec> Networks::by_uuid(const wwiv::core::uuid_t& uuid) {
