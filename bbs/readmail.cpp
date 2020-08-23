@@ -344,7 +344,6 @@ void readmail(int mode) {
   mailrec m1{};
   char ch;
   int num_mail, num_mail1;
-  //uint16_t user_number, system_number;
   net_system_list_rec* csne;
   filestatusrec fsr{};
   bool attach_exists = false;
