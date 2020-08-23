@@ -74,6 +74,10 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     -DWWIV_BUILD_NUMBER=%BUILD_NUMBER% ^
     -DWWIV_DISTRO=%WWIV_DISTRO% ^
     %WORKSPACE% || exit /b
+
+echo "Copy CL32.DLL so tests can use it in post-config"
+copy /y/v %WWIV_INSTALL_SRC%\platform\win32\cl32.dll %CMAKE_BINARY_DIR%
+
 cmake --build . --config Release || exit /b
 
 @echo =============================================================================
