@@ -153,7 +153,7 @@ static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, c
   }
 }
 
-static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, unsigned short row, unsigned short col) {
+static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int p, unsigned short row, unsigned short col) {
   const string file = (f) ? f : "(null)";
   VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
 
@@ -163,6 +163,8 @@ static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, un
   mb_unrefvar(p);
   mb_unrefvar(row);
   mb_unrefvar(col);
+
+  return MB_FUNC_OK;
 }
 
 Basic::Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx)
@@ -181,6 +183,7 @@ Basic::Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx
   bas_ = SetupBasicInterpreter();
   RegisterDefaultNamespaces();
 
+   mb_debug_set_stepped_handler(bas_, _on_stepped);
 }
 
 static std::string ScriptBaseName(const std::string& script_name) {

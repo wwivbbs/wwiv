@@ -15,20 +15,26 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include  "bbs/basic/util.h"
-#include "bbs/application.h"
+#include "bbs/basic/util.h"
+
+//#include "bbs/application.h"
 #include "bbs/output.h"
 #include "core/log.h"
 #include "deps/my_basic/core/my_basic.h"
-
 #include <string>
 
 namespace wwiv::bbs::basic {
 
 static Output* script_out_{nullptr};
-Output& script_out() { return script_out_ != nullptr ? *script_out_ : bout; }
-void set_script_out(Output* o) { script_out_ = o; }
 
+Output& script_out() { 
+  CHECK_NOTNULL(script_out_);
+  return *script_out_; 
+}
+
+void set_script_out(Output* o) { 
+  script_out_ = o; 
+}
 
 char* BasicStrDup(const std::string& s) { 
   return mb_memdup(s.c_str(), s.size() + 1);

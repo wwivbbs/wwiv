@@ -7,9 +7,6 @@
   cmake .. -DCMAKE_INSTALL_PREFIX=<location>
   cmake --build . --target install
 
-* use cpack
-  cpack -G ZIP
-
 
 # Install
 curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json
@@ -28,6 +25,7 @@ jq ".number" jenkins.json
 * zone:region/node is acceptible (not just zone:net/node)
 * Add ability to convert between a FidoPackedMessage and FidoStoredMessage.  Then 
   we can move dupes to a badmessage area as FidoStoredMessage (.msg)
+* Update BBS list for network to use FTN nodelist.
 
 
 ## Ini Files and Configuration
