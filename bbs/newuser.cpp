@@ -981,10 +981,12 @@ void newuser() {
     return;
   }
 
-  if (check_ansi()) {
+  if (check_ansi() == 1) {
     a()->user()->SetStatusFlag(User::ansi);
     a()->user()->SetStatusFlag(User::status_color);
     a()->user()->SetStatusFlag(User::extraColor);
+    // 0xff is the internal FSED.
+    a()->user()->SetDefaultEditor(0xff);
   }
   printfile(SYSTEM_NOEXT);
   bout.nl();
