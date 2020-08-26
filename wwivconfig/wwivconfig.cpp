@@ -421,10 +421,19 @@ int WInitApp::main(int argc, char** argv) {
   }
   CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
 
+  // Create archiver.dat with defaults if it does not exist.
   {
     File archiverfile(FilePath(config.datadir(), ARCHIVER_DAT));
     if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
       create_arcs(window, config.datadir());
+    }
+  }
+
+  // Create wwivd.json with defaults if it does not exist.
+  if (!File::Exists(FilePath(config.datadir(), "wwivd.json"))) {
+    auto c = LoadDaemonConfig(config);
+    if (!SaveDaemonConfig(config, c)) {
+      LOG(ERROR) << "Error saving wwivd.json";
     }
   }
 

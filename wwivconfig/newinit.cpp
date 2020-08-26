@@ -35,6 +35,7 @@
 #include "sdk/files/dirs.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/utility.h"
+#include "wwivconfig/wwivd_ui.h"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -291,6 +292,11 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     dirs.Save();
   }
 
+  // Create wwivd.json
+  auto c = LoadDaemonConfig(config);
+  if (!SaveDaemonConfig(config, c)) {
+    LOG(ERROR) << "Error saving wwivd.json";
+  }
   window->Puts(".\n");
 
   window->SetColor(SchemeId::PROMPT);

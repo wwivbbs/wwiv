@@ -282,8 +282,11 @@ static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
   return e;
 }
 
-void wwivd_ui(const wwiv::sdk::Config& config) {
+bool SaveDaemonConfig(const wwiv::sdk::Config& config, wwivd_config_t& c) {
+  return c.Save(config);
+}
 
+wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config) {
   wwivd_config_t c{};
   if (!c.Load(config)) {
     c.binkp_port = -1;
@@ -312,6 +315,11 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     // a default entry for WWIV.
     c.bbses.push_back(CreateWWIVMatrixEntry());
   }
+  return c;
+}
+
+void wwivd_ui(const wwiv::sdk::Config& config) {
+  wwivd_config_t c = LoadDaemonConfig(config);
 
   EditItems items{};
   int y = 1;
@@ -385,7 +393,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
 
   items.Run("wwivd Configuration");
-  if (!c.Save(config)) {
+  if (!SaveDaemonConfig(config, c)) {
     messagebox(items.window(), "Error saving wwivd.json");
   }
 }

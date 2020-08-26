@@ -20,7 +20,10 @@
 #define __INCLUDED_WWIVD_UI_H__
 
 #include "sdk/config.h"
+#include "sdk/wwivd_config.h"
 
 void wwivd_ui(const wwiv::sdk::Config& config);
+wwiv::sdk::wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config);
+bool SaveDaemonConfig(const wwiv::sdk::Config& config, wwiv::sdk::wwivd_config_t& c);
 
 #endif // __INCLUDED_WWIVD_UI_H__
