@@ -156,9 +156,9 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       counter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
       auto nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
-      LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
 
       if (a()->IsExecLogSyncFoss()) {
+        // LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
         for (unsigned int n_lp = 0; n_lp < nNumReadFromComm; n_lp++) {
           fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[n_lp]));
         }
@@ -190,9 +190,17 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         LogToSync("Created MailSlot\r\n");
       }
 
-      DWORD dwNumWrittenToSlot = 0;
-      WriteFile(hSyncWriteSlot, szReadBuffer, nNumReadFromComm, &dwNumWrittenToSlot, nullptr);
-      LogToSync(StrCat("Wrote [", dwNumWrittenToSlot, "] to MailSlot\r\n"));
+      if (nNumReadFromComm == 3 && static_cast<uint8_t>(szReadBuffer[0]) == 0xff) {
+        // IAC, skip over them so we ignore them for now.
+        // We do this in exec_unix.cpp too.
+        LOG(INFO) << "IAC";
+      } else {
+        DWORD dwNumWrittenToSlot = 0;
+        WriteFile(hSyncWriteSlot, szReadBuffer, nNumReadFromComm, &dwNumWrittenToSlot, nullptr);
+        if (a()->IsExecLogSyncFoss()) {
+          LogToSync(StrCat("Wrote [", dwNumWrittenToSlot, "] to MailSlot\r\n"));
+        }
+      }
     }
 
     int nBufferPtr      = 0;    // BufPtr
@@ -203,7 +211,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     if (GetMailslotInfo(hSyncReadSlot, nullptr, &dwNextSize, &dwNumMessages, &dwReadTimeOut)) {
       if (dwNumMessages > 0) {
         // Too verbose.
-        // LogToSync(StrCat("[", dwNumMessages, "/", std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000), "] slot messages\r\n"));
+        if (a()->IsExecLogSyncFoss()) {
+          LogToSync(StrCat("[", dwNumMessages, "/", std::min<DWORD>(dwNumMessages,
+          CONST_SBBSFOS_BUFFER_SIZE - 1000), "] slot messages\r\n"));
+        }
         dwNumMessages = std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000);
         dwNextSize = 0;
 
@@ -241,11 +252,12 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           // ExpandWWIVHeartCodes( szReadBuffer );
           // int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
         } else {
-          auto num_written = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
-          // Too verbose.
-          // LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
+          const auto num_written = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
+          if (a()->IsExecLogSyncFoss()) {
+            // Too verbose.
+            LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
+          }
         }
-
       }
       if (a()->IsExecLogSyncFoss()) {
         if (szReadBuffer[CONST_SBBSFOS_BUFFER_SIZE + 1] != '\xFE') {
@@ -424,7 +436,7 @@ int exec_cmdline(const string& commandLine, int flags) {
   if (bUsingSync) {
     a()->remoteIO()->set_binary_mode(true);
     const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
-    LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
+    LogToSync(StrCat("DoSyncFosLoopNT: Returned ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
 
     if (sync_loop_status) {
       DWORD dwExitCode = 0;
@@ -437,11 +449,11 @@ int exec_cmdline(const string& commandLine, int flags) {
         LogToSync(fmt::format("Sync Process Exit Code: {}", dwExitCode));
       }
     }
+    fclose(hLogFile);
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
   }
-  fclose(hLogFile);
 
   DWORD dwExitCode = 0;
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
