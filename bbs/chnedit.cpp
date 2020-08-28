@@ -85,6 +85,7 @@ void ShowChainCommandLineHelp() {
   bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
   bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
   bout << "|#1   %H    |#9 Socket Handle \r\n";
+  bout << "|#1   %I    |#9 TEMP directory for the instance \r\n";
   bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
   bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
   bout << "|#1   %N    |#9 Node (Instance) number\r\n";
@@ -156,6 +157,14 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
   } while (!done && !a()->hangup_);
 }
 
+static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
+  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Emulate DOS FOSSIL", "STDIO"};
+  try {
+    return names.at(static_cast<size_t>(t));
+  } catch (std::out_of_range&) {
+    return names.at(0);
+  }
+}
 
 static void modify_chain(int chain_num) {
   auto c = a()->chains->at(chain_num);
@@ -169,7 +178,7 @@ static void modify_chain(int chain_num) {
     bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
     bout << "|#9D) AR           : |#2" << word_to_arstr(c.ar, "None.") << wwiv::endl;
     bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
-    bout << "|#9F) Exec Mode:     |#2" << Chains::exec_mode_to_string(c.exec_mode) << wwiv::endl;
+    bout << "|#9F) Exec Mode:     |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
     bout << "|#9I) Launch From  : |#2"
          << YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
                             "BBS Root Directory")
@@ -262,6 +271,18 @@ static void modify_chain(int chain_num) {
       break;
     case 'F':
       c.exec_mode++;
+#ifdef _WIN32
+      if (c.exec_mode == chain_exec_mode_t::stdio) {
+        c.exec_mode++;
+      }
+#else
+      if (c.exec_mode == chain_exec_mode_t::dos) {
+        c.exec_mode++;
+      }
+      if (c.exec_mode == chain_exec_mode_t::fossil) {
+        c.exec_mode++;
+      }
+#endif
       break;
     case 'I':
       c.dir++;
