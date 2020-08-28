@@ -315,12 +315,18 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     unzip_file(window, "scripts.zip", "scripts");
     unzip_file(window, "data.zip", "data");
 
+#ifdef WIN32
+    // Unzip netfoss to "${WWIV_DIR}/nf"
+    unzip_file(window, "netf123r.zip", "nf");
+#endif
+
     auto cwd = File::current_directory();
     auto data = FilePath(cwd, "data");
     File::set_current_directory(data);
 
     unzip_file(window, "regions.zip", "regions");
     unzip_file(window, "zip-city.zip", "zip-city");
+
     File::set_current_directory(cwd);
   }
 

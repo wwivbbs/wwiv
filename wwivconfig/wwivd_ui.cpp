@@ -290,7 +290,12 @@ wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config) {
   wwivd_config_t c{};
   if (!c.Load(config)) {
     c.binkp_port = -1;
-    c.telnet_port = 2323;
+    c.telnet_port = 
+#ifdef _WIN32
+        23;
+#else
+        2323;
+#endif
     c.http_port = 8080;
     c.http_address = "127.0.0.1";
     c.binkp_cmd = File::FixPathSeparators("./networkb --receive --handle=@H");

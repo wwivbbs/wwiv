@@ -91,7 +91,12 @@ public:
    * Matrix Logon Settings
    */
 
-  int telnet_port = 2323;
+  int telnet_port = 
+#ifdef _WIN32
+    23;
+#else
+    2323;
+#endif
   int ssh_port = -1;
   /** Filename (under WWIV/GFILES) to display before showing the shuttle logon menu */
   std::string matrix_filename;

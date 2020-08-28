@@ -99,8 +99,10 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   u.data.restrict = 0;
   u.SetStatusFlag(User::ansi);
   u.SetStatusFlag(User::status_color);
-  // Enable the internal FSED for the sysop.
+  u.SetStatusFlag(User::extraColor);
+  // Enable the internal FSED and full screen reader for the sysop.
   u.SetDefaultEditor(0xff);
+  u.SetStatusFlag(User::fullScreenReader);
   usermanager.writeuser(&u, 1);
 
   {

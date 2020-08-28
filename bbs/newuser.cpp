@@ -985,6 +985,7 @@ void newuser() {
     a()->user()->SetStatusFlag(User::ansi);
     a()->user()->SetStatusFlag(User::status_color);
     a()->user()->SetStatusFlag(User::extraColor);
+    a()->user()->SetStatusFlag(User::fullScreenReader);
     // 0xff is the internal FSED.
     a()->user()->SetDefaultEditor(0xff);
   }

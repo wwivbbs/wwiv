@@ -984,7 +984,6 @@ constexpr uint16_t  EFLAG_QWK_DIR = 0x2000;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-constexpr const char* SPAWNOPT_TIMED = "TIMED";
 constexpr const char* SPAWNOPT_NEWUSER = "NEWUSER";
 constexpr const char* SPAWNOPT_BEGINDAY = "BEGINDAY";
 constexpr const char* SPAWNOPT_LOGON = "LOGON";
@@ -1000,7 +999,6 @@ constexpr const char* SPAWNOPT_ARCH_D = "ARCH_D";
 constexpr const char* SPAWNOPT_ARCH_K = "ARCH_K";
 constexpr const char* SPAWNOPT_ARCH_T = "ARCH_T";
 constexpr const char* SPAWNOPT_LOGOFF = "LOGOFF";
-constexpr const char* SPAWNOPT_NETWORK = "NETWORK";
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INI_TAG "WWIV"
