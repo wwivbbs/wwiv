@@ -38,7 +38,7 @@ public:
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<net_networks_rec>& networks() const { return networks_; }
-  [[nodiscard]] const net_networks_rec& at(size_type num) const { return networks_.at(num); }
+  [[nodiscard]] const net_networks_rec& at(size_type num) const;
   [[nodiscard]] const net_networks_rec& at(const std::string& name) const;
   net_networks_rec& at(size_type num);
   net_networks_rec& at(const std::string& name);

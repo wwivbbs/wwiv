@@ -91,6 +91,25 @@ static net_networks_rec create_empty_network() {
 
 static net_networks_rec network_empty = create_empty_network();
 
+const net_networks_rec& Networks::at(size_type num) const { 
+  if (networks_.empty()) {
+    return network_255;
+  }
+  if (num == 255) {
+    // A network num 255 (-1 wrapped at uint8_t boundary) means an
+    // invalid network in WWIV.
+    return network_255;
+  }
+  if (num >= ssize(networks_)) {
+    DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+    LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
+    // A network num 255 (-1 wrapped at uint8_t boundary) means an
+    // invalid network in WWIV.
+    return network_255;
+  }
+  return networks_.at(num);
+}
+
 net_networks_rec& Networks::at(size_type num) { 
   if (networks_.empty()) {
     return network_255;
