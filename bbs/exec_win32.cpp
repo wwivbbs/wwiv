@@ -202,7 +202,8 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 
     if (GetMailslotInfo(hSyncReadSlot, nullptr, &dwNextSize, &dwNumMessages, &dwReadTimeOut)) {
       if (dwNumMessages > 0) {
-        LogToSync(StrCat("[", dwNumMessages, "/", std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000), "] slot messages\r\n"));
+        // Too verbose.
+        // LogToSync(StrCat("[", dwNumMessages, "/", std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000), "] slot messages\r\n"));
         dwNumMessages = std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000);
         dwNextSize = 0;
 
@@ -241,7 +242,8 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           // int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
         } else {
           auto num_written = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
-          LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
+          // Too verbose.
+          // LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
         }
 
       }
@@ -423,20 +425,23 @@ int exec_cmdline(const string& commandLine, int flags) {
     a()->remoteIO()->set_binary_mode(true);
     const auto sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
-    fclose(hLogFile);
 
     if (sync_loop_status) {
       DWORD dwExitCode = 0;
       GetExitCodeProcess(pi.hProcess, &dwExitCode);
       if (dwExitCode == STILL_ACTIVE) {
-        LOG(INFO) << "Terminating sync process.";
+        LogToSync("Terminating Sync Process");
+        LOG(INFO) << "Terminating Sync process.";
         TerminateProcess(pi.hProcess, 0);
+      } else {
+        LogToSync(fmt::format("Sync Process Exit Code: {}", dwExitCode));
       }
     }
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
   }
+  fclose(hLogFile);
 
   DWORD dwExitCode = 0;
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
