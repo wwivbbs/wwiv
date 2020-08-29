@@ -138,6 +138,15 @@ What's New in WWIV 5.5 (2020)
   them against users to test the result.
 ! Updated menu commands in extract post, please copy over MEXTRACT.MSG from
   gfiles.zip to your GFILES directory.
+* fix crash renaming conference key in ConfEdit
+* Create wwivd.json if it's missing in wwivconfig. (#1248)
+* Only list chain exec modes (in chainedit) that work for the platform.
+* Fixed EXEC_LOG_SYNCFOSS string in wwiv.ini
+! default wwivd port to 23 on windows (#1251)
++ Enable full screen reader for sysop and users with ansi by default. (#1252)
++ Enable full screen editor for sysop and users with ansi by default. (#1252)
++ Bundle netfoss with the install (#1253)
+* Removed unused spawnopts for NETWORK and TIMED as they were not used
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
