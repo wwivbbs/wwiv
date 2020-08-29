@@ -332,8 +332,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   const auto num_header_lines = 2;
   bout.litebar(fmt::format("Sub #{} - {}  ({} messages.)", a()->current_user_sub_num(),
                 a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea()));
-  bout << "|14      Num"
-       << " " << std::left << std::setw(43) << "Title" << std::left << "From\r\n";
+  bout.format("|14      Num {:<42} From\r\n", "Title");
   bout.clear_lines_listed();
   return FullScreenView(bout, num_header_lines, screen_width, screen_length);
 }
