@@ -1,0 +1,1565 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                               Areafix Revision 1.30
+
+
+
+
+
+                         Originally Written by Greg Dawson
+
+
+
+
+
+         (C) Copyright 1988-92 by Greg Dawson and George Peace (1:270/101).
+                                All Rights Reserved.
+
+
+
+
+
+                                   January, 1992
+
+     Areafix v1.30                                                     Page 2
+     ------------------------------------------------------------------------
+
+
+
+                                 Table of Contents
+
+
+       INTRODUCTION.........................................................4
+
+       WHAT'S NEW SINCE 1.20?...............................................4
+
+       WHAT'S NEW SINCE 1.10?...............................................6
+
+       COMMAND LINE OPTIONS.................................................7
+         EC.................................................................7
+         FIND...............................................................7
+         ADD................................................................7
+         DELETE.............................................................7
+         DROP...............................................................8
+         REMOTEDELETEAREA...................................................8
+         NOTIFY.............................................................8
+         QUERY..............................................................8
+         <node>.............................................................9
+         <echo(s)>..........................................................9
+         -c<Areafix.Ctl>....................................................9
+         -a<Areas.Bbs>......................................................9
+         -e.................................................................9
+         -h<1|2>...........................................................10
+         -k................................................................10
+         -l................................................................10
+         -m................................................................11
+         -n<filename.ext>..................................................11
+         -r................................................................11
+
+       CONFIGURATION FILE..................................................12
+         Address...........................................................12
+         Assume............................................................12
+         PointNet..........................................................12
+         NetMail...........................................................13
+         ScanPath..........................................................13
+         AreasFile.........................................................13
+         SystemType........................................................13
+         Sysop.............................................................13
+         LogFile...........................................................14
+         LogAllChanges.....................................................14
+         SortNodes.........................................................14
+         Format............................................................14
+         Alias.............................................................15
+         FileShare.........................................................15
+         NewAreasProcess...................................................15
+         NewAreasPath......................................................16
+         NewAreasNoDir.....................................................16
+         NewAreasNoPassthru................................................16
+         NewAreaNumber.....................................................16
+         NewAreasNodes.....................................................17
+         NewAreasCreate....................................................17
+         PurgeAreas........................................................17
+         PurgeFile.........................................................18
+
+     Areafix v1.30                                                     Page 3
+     ------------------------------------------------------------------------
+
+
+
+         PurgeRemove.......................................................18
+         KeyDefault........................................................18
+         Password (Address Access).........................................19
+         ProtectDefault....................................................20
+         LockDefault.......................................................20
+         Protect (Area Access).............................................20
+         Echo_List.........................................................21
+         NoRescan..........................................................21
+         NoQuery...........................................................21
+         QuickBBSRescanList................................................21
+         RescanList........................................................22
+         RescanListAddress.................................................23
+         ShowFeeds.........................................................23
+         SaveProcessedMsgs.................................................23
+         KillSent..........................................................23
+         ForceIntl.........................................................23
+         AlertNode.........................................................23
+         No_Response_List..................................................24
+         NotifyHeader......................................................24
+         NotifyExclude.....................................................24
+         NotifyWithEchoList................................................24
+         No_Notify_List....................................................24
+         RemoteDeletion....................................................25
+         RemoteDeletionNotify..............................................25
+         RemoteDeletionForward.............................................25
+         RemoteDeletionRemove..............................................25
+         Forward_List......................................................26
+         Forward_Que.......................................................26
+
+       DOS ERRORLEVEL EXIT CODES...........................................28
+
+       CONFIGURATION MAXIMUMS..............................................28
+
+       ENVIRONMENT VARIABLE................................................28
+
+       PACKAGING LIST......................................................29
+
+       BUG REPORTS.........................................................29
+
+       DISCLAIMER..........................................................29
+
+       BEGWARE.............................................................30
+
+     Areafix v1.30                                                     Page 4
+     ------------------------------------------------------------------------
+
+
+
+                                    INTRODUCTION
+
+
+       Areafix is  a maintenance  utility  for  EchoMail  distribution  lists
+       (Areas.Bbs). It  accepts input  from command  line  or  NetMail.  This
+       document covers  installation parameters  and command  line operation.
+       The file Areafix.Use covers NetMail access.
+
+       Please look  over the  documentation carefully.  Though  most  of  the
+       commands have  not changed,  you might rediscover some old tricks that
+       have faded from memory with time.
+
+       If you  are upgrading  from v1.10 to this version you will need to add
+       your zone number to the "address" definition in Areafix.Ctl. All other
+       Areafix.Ctl directives  can remain as they were with v1.10. No changes
+       are required  to plug  in this version if you are upgrading from v1.20
+       though you might receive a benign Areafix.Ctl warning message.
+
+
+
+                               WHAT'S NEW SINCE 1.20?
+
+
+         *  AreaFix.Ctl accepts as many Password and Protect lines as
+            available memory will permit.
+
+         *  Remote area deletion requests can be forwarded to your up-/down-
+            links.
+
+         *  A default security profile can be assigned to areas with no
+            Protect entry in Areafix.Ctl.
+
+         *  Lock/key security is available to supplement Password and Protect
+            security levels.
+
+         *  Privilege masks are available to tailor Password entries.
+
+         *  Dead-end passthru EchoMail areas can be purged from Areas.Bbs
+            automatically.
+
+         *  Purge and remote deletion operations can be configured to remove
+            affected message subdirectories.
+
+         *  Find and Query output (manual or remote) includes queued forward
+            request information.
+
+         *  4-D addressing (zone:net/node.point) is supported throughout
+            Areafix.Ctl and Areas.Bbs.
+
+         *  Notify messages can be generated for individual addresses.
+
+         *  Remote requests that fail security checks are always saved.
+
+         *  INTL kludge lines can be forced on all Areafix output messages.
+
+     Areafix v1.30                                                     Page 5
+     ------------------------------------------------------------------------
+
+
+
+         *  Areafix can assume alternate Zone: or Zone:Net identities for
+            multi-address environments.
+
+         *  Areafix no longer reads the entire message body until processing
+            is actually required.
+
+         *  ShortForm and LongForm directives for Areas.Bbs format control
+            have been replaced by the Format directive. Format accepts one of
+            three choices: Short, Long, or Zone. Absence of a Format
+            directive implies "normal" Areas.Bbs format with zone information
+            provided where necessary and net number provided on all entries.
+
+            Format Short   all entries are abbreviated to their shortest form
+            Format Long    all entries are expanded to include full notation
+            Format Zone    the first entry for each area always includes zone
+
+         *  Netmail replies to areafix requests can be shortened to omit the
+            list of active areas.
+
+     Areafix v1.30                                                     Page 6
+     ------------------------------------------------------------------------
+
+
+
+                               WHAT'S NEW SINCE 1.10?
+
+
+         *  AreaFix is now "zone aware" using INTL or MSGID addressing
+            extensions. All addresses in AreaFix.Ctl and on the command line
+            now accept a zone number. Except for the "address" definition in
+            Areafix.Ctl zones are optional.
+
+         *  AreaFix recognizes add/delete requests from "your" points using
+            MSGID or FMPT addressing extensions. AreaFix translates the point
+            format to/from pointnet/point.
+
+         *  Configuration maximums have been expanded to more closely reflect
+            current processing needs.
+
+         *  Command line switch -R is available to force a rescan when doing
+            a manual add.
+
+         *  Forward requests are now limited to one per day for each
+            area/address combination to help limit uplink netmail area
+            flooding.
+
+         *  Actual area names are now used for request processing in addition
+            to the original CRC16 method. This eliminates 'dupe CRC' problems
+            while retaining most of the speed advantage of CRC checking.
+
+         *  NetMail responses with =many= add/delete requests no longer
+            overrun the 16k message buffer. Large responses are split into
+            multiple messages.
+
+         *  A delete request for a non-existent echo no longer generates an
+            auto-request to your feed.
+
+         *  A NetMail query (-Q) is no longer honored if the password is
+            incorrect.
+
+         *  A netmail add request for a protected area returns an already
+            active response if the area is already active. The previous
+            version returned a misleading protected area rejection response.
+
+         *  Forward list processing now recognizes the specified list format
+            if different from areas.bbs format.
+
+     Areafix v1.30                                                     Page 7
+     ------------------------------------------------------------------------
+
+
+
+                                COMMAND LINE OPTIONS
+
+
+                 Areafix [<[EC] [FIND] [ADD] [DELETE] [NOTIFY] [QUERY] [DROP]
+                 [REMOTEAREADELETE]>] [<node>] [<echo(s)>] [-c<Areafix.Ctl>]
+                 [-a<Areas.Bbs>]
+                 [-e] [-h<1|2>] [-k] [-l] [-m] [-n<notify.Txt>] [-r]
+
+
+       EC                                                                    
+
+
+       Automatic Echo  Change. This  tells Areafix  to process  any  net/node
+       changes and/or  new echomail areas. This is what you would call normal
+       Areafix operation. Example:
+
+                 Areafix EC
+
+
+       FIND                                                                  
+
+
+       Command line  mode. Find  the echos  a specific  node is  listed  for.
+       Example:
+
+                 Areafix FIND 106/111
+
+
+       ADD                                                                   
+
+
+       Command line  mode. This  instructs Areafix  to add a specific node to
+       one or more echos. Example:
+
+                 Areafix ADD 1:106/111 Tech C_Echo Comm
+                 Areafix ADD 106/111 all
+
+
+       DELETE                                                                
+
+
+       Command line  mode. This  instructs Areafix  to delete a specific node
+       from one or more echos. Example:
+
+                 Areafix DELETE 106/111 Tech C_Echo Comm
+                 Areafix DELETE 1:106/111 all
+
+     Areafix v1.30                                                     Page 8
+     ------------------------------------------------------------------------
+
+
+
+       DROP                                                                  
+
+
+       Command line mode. Areafix will perform a single level deletion of all
+       links for the requested areas. Links with Areafix.Ctl Password entries
+       will receive  delete requests  addressed to Areafix (-areaname). Links
+       without Password  entries will  receive text requests. The Areafix.Ctl
+       PurgeRemove directive  controls deletion  of messages  and directories
+       orphaned by this operation.
+
+                 Areafix DROP Sysop Flame
+
+
+       REMOTEDELETEAREA                                                      
+
+
+       Command line  mode. Areafix  will remove  specified areas as if remote
+       area delete  requests (AutoDelete  or ~areaname)  had arrived. Actions
+       are determined by the RemoteDeletion series of Areafix.Ctl directives.
+       Be careful with this one! Example:
+
+                 Areafix REMOTEDELETEAREA Sysop Flame
+
+
+       NOTIFY                                                                
+
+
+       Notify will send a list of connected areas to all your the uplinks and
+       downlinks. Areafix.Ctl directive NotifyHeader defines a file to import
+       into each  notification message  sent. NotifyWithList will file-attach
+       the Echo_List filename to all notify messages. Example:
+
+                 Areafix NOTIFY
+
+       If you'd  like to  exclude certain nodes, see the control file command
+       'NotifyExclude'.
+
+       If you  want  to  generate  notification  messages  for  only  certain
+       addresses list those addresses on the command line:
+
+                 Areafix NOTIFY 270/1 101 211 273/715 6:62/2
+
+
+       QUERY                                                                 
+
+
+       This is functionally the same as the subject line switch '-q'. It will
+       return a list of echos that are available to a given node.
+
+     Areafix v1.30                                                     Page 9
+     ------------------------------------------------------------------------
+
+
+
+       <node>                                                                
+
+
+       The Zone:Net/Node.Point  for command  line mode.  If you leave out the
+       zone or  zone and network number, the program will default to your own
+       zone or zone and net. Point defaults to 0. Example:
+
+                 Areafix FIND 1:106/111
+                 Areafix FIND 106/111
+                 Areafix FIND 111
+                 Areafix FIND 270/101.8
+
+
+       <echo(s)>                                                             
+
+
+       The list  of echos  for ADD  and DELETE  modes. "All"  is  a  wildcard
+       areaname that performs the operation on all areanames.
+
+
+       -c<Areafix.Ctl>                                                       
+
+
+       By default,  Areafix will  look for the configuration file by the name
+       'Areafix.Ctl' in  the default  directory.  If  you'd  like  to  use  a
+       different name or path, here's the place. Example:
+
+                 Areafix EC -cC:\Config\Areafix.Ctl
+
+       Note: This  will override the environment variable. For information on
+       that, see the section entitled "Environment variable".
+
+
+       -a<Areas.Bbs>                                                         
+
+
+       Areafix will  use the  EchoMail  control  file  as  specified  in  the
+       configuration file  'Areafix.Ctl'. This option can be used to override
+       that. Example:
+
+                 Areafix EC -aC:\Config\Areas.Bbs
+
+
+       -e                                                                    
+
+
+       This switch  will reverse  the effect  of specifying or not specifying
+       the "NewAreasProcess"  option in  the Areafix  configuration file.  In
+       other words,  if you specify "NewAreasProcess" =and= the -e switch, no
+       new areas  will be  processed. On the other hand, if you don't specify
+       "NewAreasProcess" and  =do= specify  the -e switch, the new areas will
+       be processed. Example:
+
+     Areafix v1.30                                                    Page 10
+     ------------------------------------------------------------------------
+
+
+
+                 %         <
+                 NewAreasProcess     <  Under this configuration, new
+                 %         <  areas WILL NOT be processed.
+                           <
+
+                 Areafix EC -e       <
+
+
+
+                 %         <
+                 % NewAreasProcess   <  Under this configuration, the new
+                 %         <  areas WILL be processed.
+                           <
+
+                 Areafix EC -e       <
+
+
+       -h<1|2>                                                               
+
+
+       A previous version of Areafix would delete 1.msg from each area if the
+       user specified  a '-r'  for "rescan"  on the  message subject line. If
+       you're running  with two  high water marks, this can become a problem.
+       By default,  Areafix will reset high water mark #1 to do a rescan. Use
+       this option  if you'd  like to  specify high  water mark  #2  instead.
+       Example:
+
+                 Areafix EC -h2
+
+
+       -k                                                                    
+
+
+       This tells  Areafix to  always flag any messages created as kill after
+       sending. Example:
+
+                 Areafix QUERY 1:106/111 -m -k
+
+
+       -l                                                                    
+
+
+       Temporarily  reverses   the  action   of  the  Areafix.Ctl  directives
+       No_Response_List and  No_Notify_List. For  example,  if  you  normally
+       operate  with   notify   generating   the   list   of   active   areas
+       (No_Notify_List commented  out) this  switch can be used together with
+       the -n  switch to  generate a  special text-only mailing to all active
+       echomail connections:
+
+                 Areafix NOTIFY -l -nC:\MYFILES\I_QUIT.TXT
+
+     Areafix v1.30                                                    Page 11
+     ------------------------------------------------------------------------
+
+
+
+       -m                                                                    
+
+
+       This switch  will cause Areafix to create a message to the listed node
+       when doing  a FIND, ADD, DELETE, or QUERY. The letter 'k' can be added
+       to this  switch (as in -mk) to flag any messages creates as kill after
+       sending. This has the same effect as -m -k. Example:
+
+                 Areafix FIND 106/111 -m
+
+       This will  create a  message to  106/111 informing  him of which areas
+       he's active  for. This switch will do nothing when used in conjunction
+       with the EC and NOTIFY functions.
+
+
+       -n<filename.ext>                                                      
+
+
+       Overrides the  Areafix.Ctl NotifyHeader parameter. This switch is used
+       as a temporary override of the standard Areafix notify header text. If
+       the file  named on  the parameter is found its entire contents will be
+       transferred to  the body  of all  Notify messages.  The file  must  be
+       standard ANSI  text suitable  for NetMail  exchange.  See  -l  for  an
+       example.
+
+
+       -r                                                                    
+
+
+       This switch  forces a  rescan of  all areas  added via  a command line
+       manual add request. The areafix.ctl norescan parameter is ignored.
+
+     Areafix v1.30                                                    Page 12
+     ------------------------------------------------------------------------
+
+
+
+                                 CONFIGURATION FILE
+
+
+
+       Address                                                      (Limit 1)
+       Aka                                                                   
+
+       Defines your  primary zone:net/node  number and  optionally up  to 255
+       additional addresses. All three primary address components (zone, net,
+       node) =must=  be provided.  Point number  is not  required unless non-
+       zero:
+
+                 Address   <Zone:Net/Node.Point>
+                 Aka       <Zone:Net/Node.Point>
+
+       The first  Address or  Aka defined  is the  default or primary address
+       Areafix will  use thruout  its processing.  Additional  addresses  are
+       interpreted as  "aka" addresses.  All addresses  should be defined via
+       the Address  parameter. Aka  is maintained only for compatibility with
+       previous Areafix versions.
+
+       The zone from the first directive will be used as the default zone for
+       all following control file processing and request processing.
+
+
+       Assume Zone                                                 (Limit: 1)
+       Assume Net                                                            
+
+       This activates  either  ZONE  or  ZONE:NET  address  assumption.  This
+       feature tries  to be  smart about  multi-zone operations.  When either
+       type of  address assumption  is active  areafix uses  the netmail "to"
+       address only  until the  request is  validated against your configured
+       addresses. At  that point your system identity is changed to match the
+       caller's.
+
+       If ZONE  assumption is  active Areafix  locates the  first address/aka
+       defined for  a matching  ZONE and  assumes that  Zone:Net/Node as  its
+       primary address.  NET  assumption  locates  the  first  entry  with  a
+       matching ZONE:NET.
+
+       From this  point on  all mail  Areafix generates  will ASSUME the full
+       ZONE:NET/NODE identity  of the  matching address/aka.  If no  matching
+       address is  located Areafix  uses the  first  Address/Aka  configured.
+       Example:
+
+                 Assume Net
+
+
+       PointNet                                                    (Limit: 1)
+
+       This parameter is provided for compatibility with Areafix version 1.20
+       control files  and mail  handlers that  do not  use 4-D  addressing in
+       Areas.Bbs handling.
+
+     Areafix v1.30                                                    Page 13
+     ------------------------------------------------------------------------
+
+
+
+       Defines your  private net  number for  limited point  support. NetMail
+       requests  arriving   from  one   of  your  points  (FMPT  #  or  MSGID
+       z:n/n.point)  will   be  changed  to  pointnet/point  for  processing.
+       Example:
+
+                 PointNet 30500
+
+       If your  address is defined as 1:270/101 and your pointnet as 30500, a
+       request from 1:270/101.13 will be 'remapped' to address 1:30500/13 for
+       request processing.
+
+
+       NetMail <path>                                              (Limit: 1)
+
+       The full  path to your where your net messages are kept. This is where
+       Areafix searches for incoming requests and places its responses:
+
+                 C:\Msg\NetMail
+
+
+       ScanPath <path>                                             (Limit: 6)
+
+       You can  specify up  to 3  additional paths  to scan from. One example
+       might be your bad message directory (for creation of new areas):
+
+                 C:\Msg\Bad_Msgs
+
+
+       AreasFile <file>                 (Limit: 10 files totaling 2048 areas)
+
+       This is  the name  of your EchoMail control file(s). It's important to
+       know that  Areafix searches  them  sequentially  when  looking  for  a
+       matching area. It will only add and delete nodes from the first match.
+       New areas will always be added to the last control file listed.
+
+
+       SystemType <type>                                           (Limit: 1)
+
+       Defines the  format for all defined AreasFile lists. This controls how
+       Areafix interprets  directory and  passthru  information  as  well  as
+       creation of  new areas. Valid system types are ConfMail, QM, Opus, PM,
+       QuickBBS, and  Squish. It  is important  to specify the proper control
+       file type.  If you don't, you run the risk of scrambling the format of
+       the file. Be sure it's set properly.
+
+       Example: SystemType QM
+
+
+       Sysop <your name>                                           (Limit: 1)
+
+       This is  your name.  It'll default  to "SysOp"  if  not  present.  All
+       response and  notification  messages  generated  by  AreaFix  will  be
+       addressed "from" this name. The string can be up to 35 characters.
+
+     Areafix v1.30                                                    Page 14
+     ------------------------------------------------------------------------
+
+
+
+       LogFile <file>                                              (Limit: 1)
+
+       If you  specify a  file here,  Areafix will  keep a log of what it has
+       done. If you comment this out, there will be no log file.
+
+
+       LogAllChanges
+
+       This instructs  Areafix to  log any  activities done in manual mode as
+       well as auto mode. The default is only do logging in auto mode.
+
+
+       SortNodes
+
+       When Areafix creates or changes an area, all but the first node listed
+       (the feed) will be sorted if this option is enabled.
+
+
+       Format Short
+
+       By default,  Areafix will use the net/node form of nodes when updating
+       an area entry. The form is as such:
+
+                 106/111 106/112 106/113 106/113.2 106/113.4 22/4 22/5
+
+       Optionally, you can tell Areafix to use the short from:
+
+                 106/111 112 113 .2 .4 22/4 5
+
+       Keep in  mind, though,  that some programs might not support the short
+       form and  thus might not work properly with this setting. Format Short
+       and Format Zone can be combined.
+
+       It should  be noted  that areafix can always READ the short form. This
+       option just tells the program whether or not to WRITE it that way. One
+       quick way  to convert  your control  to and from the short form is the
+       following...
+
+       To make  all nodes  the 'short' form (net/node 999/999 can be any node
+       you don't list):
+
+                 %
+                 Format Short
+                 %
+
+                 Areafix ADD 999/999 all
+                 Areafix DEL 999/999 all
+
+       And, to convert it back to the normal form:
+
+                 %
+                 % Format Short
+                 %
+
+     Areafix v1.30                                                    Page 15
+     ------------------------------------------------------------------------
+
+
+
+                 Areafix ADD 999/999 all
+                 Areafix DEL 999/999 all
+
+
+       Format Long
+
+       This command directs areafix to use the full zone:net/node format when
+       updating an area entry. The format is:
+
+                 1:106/111 1:106/112 1:106/113 1:106/113.2 1:106/113.4
+
+       This format wastes space in your EchoMail control files and may not be
+       fully compatible with some toss/scan/edit programs.
+
+
+       Format Zone
+
+       This command  directs areafix  to always  use the  full  zone:net/node
+       format on  the first  entry for each area when updating an area entry.
+       The format is:
+
+                 1:106/111 106/112 106/113 106/113.2 106/113.4
+
+       This format wastes space in your EchoMail control files and may not be
+       fully compatible  with some  toss/scan/edit programs. Format Short and
+       Format Zone can be combined.
+
+
+       Alias <name>                                               (Limit: 10)
+
+       When looking for messages to process, Areafix will always look for the
+       message  subject   line  addressed   to  "Areafix".  You  can  specify
+       additional names here. Example:
+
+                 Alias Autoecho
+                 Alias Areamanager
+
+
+       FileShare
+
+       Activates support  for MS-DOS  (v3 and above) and OS/2 file sharing on
+       all control  and message  files except Areafix.Ctl. All opens will use
+       the Deny None attribute. Example:
+
+                 FileShare
+
+
+       NewAreasProcess
+
+       This  command   tells  Areafix  to  automatically  create  new  areas,
+       subdirectories (see  NewAreasNoDir), and  control  file  entries  upon
+       encountering unknown  areas. Under  QuickBBS, the  subdirectory is not
+       created.
+
+     Areafix v1.30                                                    Page 16
+     ------------------------------------------------------------------------
+
+
+
+       For more  information, see the '-e' command line switch and the config
+       file option "QuickBBSRescanList".
+
+
+       NewAreasPath <path>                                         (Limit: 1)
+
+       This is  the subdirectory off which the new areas are created. Areafix
+       will add  a backslash if you do not provide one. Both of the following
+       are the same as far as Areafix is concerned:
+
+                 NewAreasPath C:\Msg
+                 NewAreasPath C:\Msg\
+
+       Areafix  will   try  to  create  area  TEST  as  C:\Msg\TEST.  If  the
+       subdirectory  cannot   be  created   Areafix  will  try  creating  the
+       subdirectory by  removing the last character as in C:\Msg\TES and then
+       C:\Msg\TE and  finally C:\Msg\T. Areafix will report failure only when
+       it has run through all the (shortened) possibilities.
+
+
+       NewAreasNoDir
+
+       If enabled  (not commented  out) this  will turn off efforts to create
+       subdirectories for  new areas. NewAreasNoDir is assumed for SystemType
+       QuickBBS and Squish operations.
+
+       Note  that  when  directories  are  not  created  Areafix  treats  the
+       directory name  as a  comment field  and  does  not  assure  that  all
+       directory names placed in Areas.Bbs are unique.
+
+
+       NewAreasNoPassthru
+
+       If enabled  (not commented out) this tells Areafix to create new areas
+       as  non-passthru  local  areas  by  omitting  the  passthru  indicator
+       character (#).  This  affects  all  SystemTypes  except  ConfMail  and
+       QuickBBS. ConfMail  defaults to  non-passthru and QuickBBS format uses
+       NewAreaNumber to control passthru area creation.
+
+
+       NewAreaNumber <tag>                                         (Limit: 1)
+
+       If you  have "NewAreasProcess"  enabled, and an Opus or QuickBBS style
+       control file,  then you can tell areafix which area number (or tag) it
+       should use  for the  new areas.  Keep in mind that under Opus, Areafix
+       will, by default, mark the area pass-through with the '#' sign between
+       the area name and node numbers.
+
+       If you don't specify a <tag>, then it defaults to "99" under Opus, and
+       "P" under QuickBBS. Here's an example of a newly created area:
+
+            Opus:
+
+                 <tag> <Subdirectory> <Area name> # <nodes>
+
+     Areafix v1.30                                                    Page 17
+     ------------------------------------------------------------------------
+
+
+
+            QuickBBS:
+
+       <tag>
+
+
+
+       <Area name> <nodes>
+
+
+       NewAreasNodes <nodes>                      (Limit: 255 on only 1 line)
+
+       These are  the nodes  to add  when a new area is created. Areafix will
+       add the originating node as the first address if it is not one of your
+       configured addresses:
+
+                 NewAreasNodes 1:106/111 1:270/211
+
+
+       NewAreasCreate <nodes>                     (Limit: 255 on only 1 line)
+
+       Normally, when  everything is set correctly, Areafix will create a new
+       area no  matter where  the  message  originated  from.  Here  you  can
+       instruct Areafix to only create the new area if the message originated
+       from one of '<nodes>'. Looky here...
+
+                 NewAreasCreate 106/386 889
+
+       In the  above example,  Areafix will  only create  the new area if the
+       message came  from either  106/386 or  106/889. If  no  NewAreasCreate
+       addresses were defined any address could create a new area.
+
+
+       PurgeAreas
+
+       Enables automatic  EchoMail area Purge operations. A Purge occurs when
+       an incoming  area delete  request leaves  only  one  connection  to  a
+       passthru area.  The Purge  operation sends  a delete  request  to  the
+       remaining feed  address, deletes  the area from Areas.Bbs, and records
+       the purge  data. The  data is stored in the filename identified by the
+       PurgeFile directive.  This stored  information is  used  to  determine
+       action if additional traffic arrives in a purged area.
+
+       Unsolicited traffic  arriving from a purged address will be recognized
+       and deleted.  Add /  Delete requests  from any  address as well as new
+       traffic from a non-purged address will clear purged status for an area
+       and allow  normal operations  [request forward and new area create] to
+       resume.
+
+       A global Purge operation can be forced by adding a nonexistent address
+       to all areas (AreaFix Add 9999/9999 All) and immediately removing that
+       address (AreaFix  Del 9999/9999  All). This  effectively "touches" all
+       areas defined in all defined area definition files.
+
+     Areafix v1.30                                                    Page 18
+     ------------------------------------------------------------------------
+
+
+
+       PurgeFile <filename>                                        (Limit: 1)
+
+       Identifies the  location and  name (as  a full  filespec) of the Purge
+       data file.  Information pertaining  to automatic  passthru area  purge
+       operations is  stored in this file. Information includes the area tag,
+       purge date,  and last  feed  address.  This  information  is  used  to
+       intercept additional traffic arriving from the purged feed address and
+       to recognize  any valid  new "feeds"  for affected echos.. The default
+       filespec is AreaFix.Del.
+
+       You can  make manual entries in the file. The format of entries in the
+       file is:
+
+            P <purged (feed) node> <area name> <purge date as mm/dd/yyyy>
+
+       Example: Purge_File O:\Areafix\Areafix.Del
+
+
+       PurgeRemove
+
+       Triggers removal  of message  subdirectories for  all  purged  message
+       areas.  All   files  are   deleted  from   the  subdirectory  and  the
+       subdirectory itself  is removed.  File protection  and  subdirectories
+       within a  message subdirectory  will prevent  the operation from being
+       completed. The Areafix program will not abort if this operation fails.
+
+       Example: PurgeRemove
+
+
+       KeyDefault
+
+       Defines the  default password  Key string. This key string is assigned
+       to all addresses (Password entries) without key values or with the "."
+       default substitution  key value.  This value  can be  used  to  reduce
+       Areafix.Ctl maintenance requirements. If no KeyDefault string is found
+       AreaFix will  default to  "KeyDefault ?*"  to allow request forwarding
+       and  idle   passthru  area  purge.  The  KeyDefault  can  contain  any
+       combination of:
+
+         +  List privilege settings in response messages to this address
+
+         ~  Allow remote deletion requests from this address
+
+         @  Allow remote deletion request forwarding to this address
+
+         ?  Allow requests from this address to be forwarded to uplinks
+
+         *  Allow dead-end areas to be purged if this address is the feed
+
+         &  Allow new areas to be created by this address
+
+         #  Add this address to new areas created.
+
+     Areafix v1.30                                                    Page 19
+     ------------------------------------------------------------------------
+
+
+
+         $  Always include the active area list with reply/notify messages.
+            This should be set to allow overrides of the global
+            No_Response_List and No_Notify_List parameters.
+
+       NOTE: Area request forwarding WILL NOT WORK unless the node making the
+       request is  configured to  forward either  via the KeyDefault ? or the
+       Password key ? setting.
+
+        Example:
+
+                 KeyDefault PAY@?
+
+
+       Password <net/node> <password> <accesslevel> [key [sysop]]     (Limit:
+                                                                        none)
+
+       In order for a node to have access to Areafix, it must have a password
+       set here.  The password is then entered on the message subject line of
+       the change  request message.  The access level may be from 0 to 32767,
+       with 32767  being the  highest, most  privileged level.  The length of
+       passwords  should  be  limited  to  8  characters,  and  is  NOT  case
+       sensitive.
+
+       An optional  security "key"  can be  defined for  a node.  Once access
+       level is  validated the  key will  be used in conjunction with an area
+       LOCK to  further qualify  access for  an EchoMail area. The key string
+       can include any or all of A-Z and 0-5.
+
+       In addition to the 32 optional key characters, the following privilege
+       option mask characters can be added to the field:
+
+         .  KeyDefault key and privilege values will be assigned to this
+            address. Other key values can be used with this flag.
+
+         -  No key or privilege values are assigned to this address.
+
+         +  List privilege settings in response messages to this address
+
+         ~  Allow remote deletion requests from this address
+
+         @  Allow remote deletion request forwarding to this address
+
+         ?  Allow requests from this address to be forwarded to uplinks
+
+         *  Allow dead-end areas to be purged if this address is the feed
+
+         &  Allow new areas to be created by this address
+
+         #  Add this address to new areas created.
+
+         $  Always include the active area list with reply/notify messages.
+            This should be set to allow individual overrides of the global
+            No_Response_List and No_Notify_List parameters.
+
+     Areafix v1.30                                                    Page 20
+     ------------------------------------------------------------------------
+
+
+
+       An optional  sysop name can follow the key/privilege field. Sysop name
+       is a  positional parameter  -- it  must be  the  fifth  field  on  the
+       Password line.  As such  the key/privilege  field must be specified if
+       sysop name  is specified. The Sysop name can be any number of words up
+       to 35 characters. Underlines will be converted to blanks.
+
+       The '.'  and '-'  privilege option masks can be used in cases where no
+       explicit list is wanted or needed.
+
+       Example:
+
+                 Password  106/111   Teddy     100       ABCDEF4@*
+                 Password  270/211   Friend    101       ~@*?      Gary Rux
+                 Password  13/13     Bug       24        .         No Name
+
+       Node 106/111 can add any EchoMail area with a security level of 100 or
+       below and with a Lock string consisting of ABCDEF4 or ABC or ADF or 4.
+       Access to  an area  with a  lock string  of ABCDEFG4  would be  denied
+       because the node does not have 'G' in the key string.
+
+       Option  mask   values  @   and  *   are  also   active   to   indicate
+       RemoteDeletionForward is enabled and Purge is disabled for the node.
+
+
+       ProtectDefault
+
+       Defines the  default protect  security level.  This security  level is
+       assigned to  all EchoMail areas not named on Protect lines. This might
+       be useful  in a situation where most areas are a single level. In that
+       case ProtectDefault  can be  used for global security level assignment
+       and Protect can be used for exceptions. Example:
+
+                 ProtectDefault 10
+
+
+       LockDefault
+
+       Defines the  default protect Lock string. This lock string is assigned
+       to all  EchoMail areas  not named  on Protect  lines as  well  as  all
+       EchoMail areas  with no lock/privilege values assigned. It can be used
+       in the same way as ProtectDefault and KeyDefault to reduce Areafix.Ctl
+       maintenance requirements. Example:
+
+                 LockDefault PAY*
+
+
+       Protect <area> <minimum access level> [lock]             (Limit: none)
+
+       The minimum  access level  can be from 0 to 32767. A user must have at
+       least that access level or higher (listed with the 'password' command)
+       to add the area. He can always delete himself from the area, no matter
+       what the access level is.
+
+     Areafix v1.30                                                    Page 21
+     ------------------------------------------------------------------------
+
+
+
+       An optional  security "lock"  can be  defined for an area. Once access
+       level is  validated access  to an area with a Lock string defined will
+       be limited to nodes with a matching Key. An area with a lock string of
+       ABC can  be accessed  by keys ABC, ABC123, and ABCDEF4. Nodes with key
+       strings AC and AB will not be able to access the area.
+
+       Example:
+
+                 Protect   qm_echo   10        
+                 Protect   qm_beta   0         GREG
+
+       If LockDefault is set to  PAY*  the first Protect line will be treated
+       internally as if entered as:
+
+                 Protect   qm_echo   10        PAY*
+
+
+       Echo_List <path>                                            (Limit: 1)
+
+       When the  user specifies a '-l' subject line switch, Areafix will send
+       back the  first matching  file (if  one is specified) listed here. You
+       may use wildcards, the program will only send the first match, though.
+
+
+       NoRescan
+
+       This switch  will cause  Areafix to  ignore the  message subject  line
+       switch '-r'.
+
+
+       NoQuery
+
+       This switch  will cause  Areafix to  ignore the  message subject  line
+       switch '-q'.
+
+
+       QuickBBSRescanList <file>                                   (Limit: 1)
+
+       Areafix can  do  =kludge=  rescans  with  QuickBBS  when  operated  in
+       conjunction with  Fastfwd.Exe (available  from a number of BBSs). With
+       this option  enabled, Areafix  will  create  a  batch  file  named  as
+       '<file>'.  The format being...
+
+                 FASTFWD A 1 <area number> <area name> <net/node>
+
+       Each area the user wants to rescan will have an entry here. It is your
+       responsibility to  delete the file after running it, otherwise it will
+       be appended to by Areafix.
+
+       If you  need further  information,  please  read  the  docs  that  are
+       included in Fastfwd or an equivalent program.
+
+
+       RescanList <filename   command...>                          (Limit: 1)
+
+     Areafix v1.30                                                    Page 22
+     ------------------------------------------------------------------------
+
+
+
+
+       Directs Areafix  to generate lines in a text file for each request for
+       an area  rescan. The  first  parameter  following  RescanList  is  the
+       filename that will receive the rescan text lines. Anything else on the
+       line will be copied to each rescan text line as the command string and
+       will be followed by 5 fields.
+
+       The filename is the required name of the file that will receive rescan
+       list entries.  Command is  optional and  defines the command that will
+       precede area  / address  information in  rescan list  entries. If  the
+       command parameter  is not  used the  word "Rescan"  is inserted.  Five
+       'arguments' will be written to rescan list entries:
+
+       The format of lines in the file are ...
+
+                 <command...>  area  zone  net  node  point
+
+       The parameters  are presented separately for flexibility. Programs can
+       use the  individual address  components individually  or combine  them
+       into one or more strings if needed.
+
+       The 5  arguments are  always present  and will  always be separated by
+       spaces. This  allows BATch  file parameter  substitution  with  little
+       difficulty. For example, considering the command line:
+
+                 Areafix Add 2:243/47 INTERUSER FN_SYSOP -R
+
+       If Areafix.Ctl shows:
+
+                 RescanList C:\Files\Rescan.Bat ReScanMe
+
+       lines will be written to C:\Files\Rescan.Bat as:
+
+                 ReScanMe INTERUSER 2 243 47 0
+                 ReScanMe FN_SYSOP 2 243 47 0
+
+       Or if Areafix.Ctl shows:
+
+                 RescanList C:\Files\Rescan.Bat Command /C DoIt
+
+       lines will be written to C:\Files\Rescan.Bat as:
+
+                 Command /C DoIt INTERUSER 2 243 47 0
+                 Command /C DoIt FN_SYSOP 2 243 47 0
+
+       In this second example if DoIt is a BATch file it might look like:
+
+                 MyProg ReScan %1 %2:%3/%4
+
+       The resulting lines will resolve to:
+
+                 MyProg ReScan INTERUSER 2:243/47
+                 MyProg ReScan FN_SYSOP 2:243/47
+
+     Areafix v1.30                                                    Page 23
+     ------------------------------------------------------------------------
+
+
+
+       RescanListAddress                                           (Limit: 1)
+
+       Controls the  format of  the address  field in  RescanList output. The
+       parameter accepts  one argument  -- either List or String. List is the
+       default.
+
+       List format  presents the address components as space separated fields
+       as in the example above.
+
+       String format presents the address in the familiar zone:net/node.point
+       format. The point is omitted if zero.
+
+
+       ShowFeeds
+
+       At the  end of  a return  message, Areafix  will list  which echos the
+       receiving node  is currently setup for. If you specify this option and
+       the receiving  node is  the FIRST  node listed  for the  in the  area,
+       Areafix will  put a  '*' (asterisk)  beside the  area (on  the  return
+       message), indicating he's the feed.
+
+
+       SaveProcessedMsgs
+
+       By default,  Areafix will  delete the inbound messages after they have
+       been processed. If you'd rather save them, specify this option and the
+       program will  mark them  with the "Received" flag instead. The program
+       will skip any messages marked with that flag.
+
+
+       KillSent
+
+       To mark  return messages  as Kill  after Sending, use this option. See
+       the command line "-k" option to override this.
+
+
+       ForceIntl
+
+       Forces all  messages generated  by AreaFix  to include an ^AINTL line.
+       The line  is ordinarily  generated  only  when  the  destination  zone
+       differs  from  the  home  zone.  This  switch  forces  the  INTL  line
+       regardless of origin or destination zone.
+
+       ForecIntl is  forced active  whenever using  an aka address to process
+       requests. This is done to assure that return messages are addressed to
+       the proper zone.
+
+
+       AlertNode <net/node>                                        (Limit: 1)
+
+       This option  allows you  to forward  a copy  of return  messages to  a
+       specific address ( zone:net/node.point ). The copy will be bypassed of
+       the return message is already going to the alert address.
+
+     Areafix v1.30                                                    Page 24
+     ------------------------------------------------------------------------
+
+
+
+       No_Response_List
+
+       Indicates (when uncommented) that return messages should not include a
+       list of  active areas.  The default  is  to  include  the  list.  This
+       parameter can  save a  considerable  amount  of  processing  and  disk
+       resources on an active system. Examples:
+
+                 include list of active areas: % No_Response_List
+                 omit list of active areas:    No_Response_List
+
+       The command  line -l  switch provides  a temporary  reversal  of  this
+       parameter.
+
+
+       NotifyHeader <file>                                         (Limit: 1)
+
+       The default header message for the NOTIFY function is...
+
+            "Please check the following list against your EchoMail control
+            file."
+
+       If you'd  like to  use something  different, then  specify the file in
+       which your  message is located. Although not absolutely necessary, try
+       to keep the size of this file under 4k.
+
+       The -n command line switch is a temporary override of this parameter.
+
+
+       NotifyExclude <nodes>                                      (Limit: 64)
+
+       If you'd  like to  exclude certain  nodes from  the  NOTIFY  function,
+       specify them here.
+
+
+       NotifyWithEchoList
+
+       This instructs  Areafix to enclose what's listed under 'EchoList' with
+       each NOTIFY message.
+
+
+       No_Notify_List
+
+       Indicates (when uncommented) that Notify messages should not include a
+       list of  active areas.  The default  is  to  include  the  list.  This
+       parameter can  save a  considerable  amount  of  processing  and  disk
+       resources on an active system. Examples:
+
+                 include list of active areas: % No_Notify_List
+                 omit list of active areas:    No_Notify_List
+
+       The command  line -l  switch provides  a temporary  reversal  of  this
+       parameter.
+
+     Areafix v1.30                                                    Page 25
+     ------------------------------------------------------------------------
+
+
+
+       RemoteDeletion <node> <to> <password (subj)>               (Limit: 10)
+
+       This option  should be  used  with  extreme  care.  It  gives  certain
+       individuals the power to delete any given area from your control file.
+       The program  will not,  however, remove  any files  from the messages'
+       subdirectory.
+
+       Use this  option if  you'd like  someone (probably  your net EC) to be
+       able to  manage your  control file  remotely. It can come in handy for
+       deleting non-distributed areas without sysop intervention.
+
+       In order for it to work, the message must addressed to the name listed
+       in the  message '<to>'  field, with the proper password (subject line)
+       entry. The  format for  the body  of the  message is  simply the  area
+       name(s) to be deleted, the same way Areafix works.
+
+
+       RemoteDeletionNotify
+
+       When  an  area  is  discontinued,  all  listed  nodes  (that  are  not
+       configured to  forward) will  be sent  a termination  notice with this
+       command enabled.
+
+
+       RemoteDeletionForward
+
+       This is both very POWERFUL and very DANGEROUS. It can be a useful tool
+       but must be used carefully and conservatively.
+
+       When an area is discontinued via a RemoteDeletion request AreaFix will
+       send automated  RemoteDeletion  requests  to  all  affected  addresses
+       rather than notifying them as with RemoteDeletionNotify.
+
+       If an  affected address is listed on a Protect configuration directive
+       and the   @   privilege  flag  value  is  set  for  that  address  the
+       RemoteDeletionNotify message  is replaced  by a  message addressed  to
+       AutoDelete using  the password  listed on  the  Protect  line.  If  no
+       Protect line  exists for  an address the standard RemoteDeletionNotify
+       message is generated.
+
+       The end  result is  that each  system in  the distribution  chain  can
+       configure whether to accept AutoDelete traffic, from whom, and whether
+       and to  whom to  forward the  messages farther  along the distribution
+       chain.
+
+
+       RemoteDeletionRemove
+
+       Triggers removal  of message  subdirectories for  all remotely deleted
+       message areas.  All files  are deleted  from the  subdirectory and the
+       subdirectory itself  is removed.  File protection  and  subdirectories
+       within a  message subdirectory  will prevent  the operation from being
+       completed.
+
+     Areafix v1.30                                                    Page 26
+     ------------------------------------------------------------------------
+
+
+
+                 Example: RemoteDeletionRemove
+
+
+       Forward_List <list file> <format> <node> <password> [from] (Limit: 10)
+
+       In the  past, it was necessary for the sysop to manually request areas
+       from his  uplink when  one  of  his  downlinks  wanted  something  not
+       carried. This feature solves that problem.
+
+       You can specify up to 10 files that contain a list of what's available
+       from your  uplink(s). The  files will  be searched in sequential order
+       for the  first area name match. Then, Areafix will send an Areafix add
+       message to the listed node requesting the area and add an entry to the
+       Forward_Que file (see below).
+
+       When the  area arrives,  Areafix will  create the  new area,  add  the
+       original requesting  node(s), inform  them  that  the  area  has  been
+       activated.
+
+       Valid system  types are  ConfMail, Opus, PM, QM, QuickBBS, Squish, and
+       Text. Text format is one area name per line. The area name must be the
+       first field  (word) on the line. Additional information can follow the
+       area name but will be ignored:
+
+                 COMM      PC Communications
+                 TECH      PC Technical
+                 ^Z
+
+       The optional  FROM  field  lets  you  define  a  network  address  (as
+       Zone:Net/Node) that  Areafix will  use  in  requests  it  forwards  to
+       uplinks.
+
+
+       Forward_Que <file>                                          (Limit: 1)
+
+       This is  the file that holds the request forwarding queue. The file is
+       scanned every  time you do an "Areafix EC" function. If one or more of
+       the areas  listed here  are found  in the  EchoMail control  file, the
+       corresponding net/node will be added and notified.
+
+       Keep in  mind, though,  that Areafix  treats the new addition the same
+       way it would treat an inbound change request (in a message).
+
+       Thus if  the node  no longer  has a password, or the area is protected
+       higher than  his access  level, the change request will fail. Both the
+       sysop (via  the log  file) and  the end  user (via  a message) will be
+       informed.
+
+       You may make manual additions to this file if you wish. The format is:
+
+                 <requesting (downlink) node> <uplink (feed) node> <area
+                 name> <date>
+
+     Areafix v1.30                                                    Page 27
+     ------------------------------------------------------------------------
+
+
+
+       A typical entry might go as follows:
+
+                 1:104/1 1:13/13 CHATTER 10/1/1991
+
+     Areafix v1.30                                                    Page 28
+     ------------------------------------------------------------------------
+
+
+
+                             DOS ERRORLEVEL EXIT CODES
+
+
+       Areafix will terminate with one of the following DOS errorlevels set:
+
+         0  No messages were processed, or there were no changes made.
+
+         1  Areafix messages were processed and/or NetMail was generated.
+
+         2  New areas were created (and possibly Areafix messages were
+            processed).
+
+         3  Error during processing.
+
+
+
+
+                               CONFIGURATION MAXIMUMS
+
+
+       These are  the maximum  values configured  into Areafix. If a value is
+       not listed the maximum value is determined by available memory and the
+       combination of options and features selected.
+
+                 Max areas in all files.............2048
+                 Max line length in areas.bbs.......4096
+                 Max forward que file slots.........none
+                 Max purge log file slots...........none
+                 Max nodes in all areas.............1024
+                 Max nodes per area.................1024
+                 Max password defines...............none
+                 Max protect defines................none
+                 Max new areas per execution........128
+                 Max inbound messages per run.......50
+                 Max aka addresses..................255
+                 Max alias names....................10
+                 Max area control files.............10
+                 Max forward_list entries...........10
+                 Max forward list areas.............none
+                 Max purge list entries.............none
+                 Max remote delete requests.........10
+                 Max request scan paths.............6
+
+
+
+                                ENVIRONMENT VARIABLE
+
+
+       If you  intend to  run Areafix  from  a  path  other  than  where  the
+       configuration file  is located  and would  rather  not  use  the  '-c'
+       command  line   option,  you   can  use   the   environment   variable
+       "AREAFIX=<pathname>" to locate the file. Example:
+
+                 C:\> Set AREAFIX=C:\Config\Areafix.Ctl
+
+     Areafix v1.30                                                    Page 29
+     ------------------------------------------------------------------------
+
+
+
+
+
+                                   PACKAGING LIST
+
+
+                 Read.Me..................Information file.
+
+                 Areafix.Ctl..............Sample configuration file.
+
+                 Areafix.Exe..............The executable.
+
+                 Areafix.Doc..............Documentation.
+
+                 Areafix.Use..............User Guide (for you and your
+                                          downlinks) originally by Jeffrey
+                                          Nonken (1:273/715)
+
+
+
+                                    BUG REPORTS
+
+
+       If you  experience  a  problem  with  Areafix,  please  send  as  much
+       information as  possible about  it to  George Peace at 1:270/101. Your
+       report will  be worked  on as  available  time  permits.  Include  (if
+       possible) at least the following in a uniquely named archive:
+
+         *  Your Areafix control file (Areafix.Ctl).
+
+         *  Your EchoMail control files (Areas.Bbs).
+
+         *  The command line you used to invoke Areafix.
+
+         *  The messages (if any) Areafix had problems with.
+
+         *  Both your Config.Sys and Autoexec.Bat files.
+
+         *  A full description of what happened and how to recreate the
+            trouble.
+
+
+
+                                     DISCLAIMER
+
+
+       This program  is guaranteed  to do  absolutely nothing. Use it at your
+       own risk.  No warranty  is stated or implied. The authors shall not be
+       responsible for  any damages  resulting  from  its  use,  directly  or
+       indirectly.
+
+       This program  is copyrighted  and is the sole property of the authors.
+       It may not be distributed in modified form or without documentation.
+
+     Areafix v1.30                                                    Page 30
+     ------------------------------------------------------------------------
+
+
+
+       No fee  other than  the cost of duplication/postage may be charged for
+       distribution of this program.
+
+       You may use the software only after agreeing upon the above terms.
+
+
+
+                                      BEGWARE
+
+
+       As always,  the Areafix  program may  be  used  without  registration,
+       crippled code,  or demands  for payment  to the  author. It's  been my
+       pleasure to participate in the Areafix project for all of us.
+
+       If you  enjoy using  Areafix and  the World's economy has been kind to
+       you I  hope you  will consider  forwarding $10(USD) to George Peace at
+       P.O. Box 6501, Harrisburg, Pa 17112, USA. It would mean alot to me.
+
+
+
+       Thanks for using Areafix!
