@@ -991,7 +991,6 @@ constexpr const char* SPAWNOPT_CLEANUP = "CLEANUP";
 constexpr const char* SPAWNOPT_ULCHK = "ULCHK";
 constexpr const char* SPAWNOPT_PROT_SINGLE = "PROT_SINGLE";
 constexpr const char* SPAWNOPT_PROT_BATCH = "PROT_BATCH";
-constexpr const char* SPAWNOPT_CHAT = "CHAT";
 constexpr const char* SPAWNOPT_ARCH_E = "ARCH_E";
 constexpr const char* SPAWNOPT_ARCH_L = "ARCH_L";
 constexpr const char* SPAWNOPT_ARCH_A = "ARCH_A";

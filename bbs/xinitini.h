@@ -40,9 +40,6 @@ constexpr const char* INI_STR_CLEANUP_CMD = "CLEANUP_CMD";
 constexpr const char* INI_STR_V_SCAN_CMD = "VSCAN_CMD";
 constexpr const char* INI_STR_TERMINAL_CMD = "TERMINAL_CMD";
 
-//---NETWORK SETTINGS--
-constexpr const char* INI_STR_NET_CALLOUT = "NET_CALLOUT";
-
 //---SYSTEM SETTINGS--
 constexpr const char* INI_STR_FORCE_FBACK = "FORCE_FBACK";
 constexpr const char* INI_STR_FORCE_NEWUSER = "FORCE_NEWUSER";

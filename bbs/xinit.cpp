@@ -154,14 +154,13 @@ static uint16_t str2restrict(const std::string& s) {
 
 // See #defines SPAWNOPT_XXXX in vardec.h for these.
 static std::map<std::string, uint16_t> eventinfo = {
-    {"TIMED", EFLAG_NONE},       {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
-    {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},      {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
+    {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
+    {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},
     {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_BATCH_DIR},
-    {"CHAT", EFLAG_NONE},
     {"ARCH_E", EFLAG_NONE},      {"ARCH_L", EFLAG_NONE},      {"ARCH_A", EFLAG_NONE},
     {"ARCH_D", EFLAG_NONE},      {"ARCH_K", EFLAG_NONE},      {"ARCH_T", EFLAG_NONE},
     {"NET_CMD1", EFLAG_NETPROG}, {"NET_CMD2", EFLAG_NETPROG}, {"LOGOFF", EFLAG_NONE},
-    {"NETWORK", EFLAG_NETPROG},  {"CLEANUP", EFLAG_NONE},
+    {"CLEANUP", EFLAG_NONE},
 };
 
 // TODO(rushfan): If we nee this elsewhere add it into IniFile
