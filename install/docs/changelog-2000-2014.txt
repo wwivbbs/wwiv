@@ -1117,8 +1117,8 @@ DATE:  08/04/2002
 
 CHANGES:
 Tons since the last update, check CVS sources for full list. (I know,
-I should be better about writing these dcwn... but I get sidetracked 
-easily... maybe I just have ADHD... Hmm... What was I talking about again?)
+I should be better about writing these down... but I get sidetracked 
+easily...)
 
 Better OS detection (again).  Detects XP properly now.
 Building with Microsoft Visual C++.NET now, so this has allowed me to find
@@ -1527,7 +1527,7 @@ Major changes since Build 12
 7)  It now builds with GCC/Mingw32 again
 8)  It now builds and runs with Borland C++ 5.5 Free Command Line Tools. 
     (see makefile.bcc)
-9)  Changed WApplication to WBbsApp (Main Application)9) 
+9)  Changed WApplication to WBbsApp (Main Application) 
 10) Started adding C++ objects
 	WSession	- Current user session information
 	WComm		- Base class for serial/socket communications
@@ -1562,7 +1562,7 @@ build it.  (I'll get it working under Borland's Free C++ 5.5 compiler soon)
 After one connection, it exits to DOS.  (But it works)
 
 3) It now can run under EleBBS's telsrv.exe (Their telnet server process)...
-Just rename this to elebbs.exe, and copy over ELEONFIG.EXE and TELSRV.EXE 
+Just rename this to elebbs.exe, and copy over ELCONFIG.EXE and TELSRV.EXE 
 from an EleBBS distribution.  Then modify it in ELCONFIG to start with Node #1.
 
 4) You no longer have to set WWIV_INSTANCE to do multi-node (just passing the

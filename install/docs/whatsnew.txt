@@ -9,6 +9,11 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+What's New in WWIV 5.6
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 What's New in WWIV 5.5 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Change message of warning from inactivity. (#1197)

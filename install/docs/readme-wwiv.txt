@@ -11,7 +11,7 @@ older init.exe if you have it still.
 The command line parameters have changed quite a bit, I suggest running
 "bbs -? | more" to see the list of changes.
 
-So far, WWIV 5.5 is still fully compatable with your existing WWIV 4.30
+So far, WWIV 5.x is still fully upgradable from your existing WWIV 4.30
 and 5.x installations (Just drop it in and run wwivconfig to upgrade the 
 data files and go for the most part).
 
