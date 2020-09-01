@@ -427,7 +427,6 @@ public:
   bool in_chatroom_{false};
   bool chatline_{false};
   int modem_speed_{0};
-  bool mci_enabled_{true};
 
 protected:
   /*!

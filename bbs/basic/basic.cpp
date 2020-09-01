@@ -261,7 +261,7 @@ bool Basic::RunScript(const std::string& script_name) {
 
 
 bool RunBasicScript(const std::string& script_name) {
-  BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+  BbsMacroContext ctx(a()->user(), bout.mci_enabled());
   Basic basic(bout, *a()->config(), &ctx);
   return basic.RunScript(script_name);
 }

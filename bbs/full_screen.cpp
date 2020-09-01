@@ -18,9 +18,9 @@
 /**************************************************************************/
 #include "bbs/full_screen.h"
 
-#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bgetch.h"
+#include "bbs/output.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -46,7 +46,7 @@ FullScreenView::~FullScreenView() = default;
 
 void FullScreenView::PrintTimeoutWarning(int) {
   bout_.GotoXY(1, command_line_);
-  bout << "|12Press space if you are still there.";
+  bout_.bputs("|12Press space if you are still there.");
   bout_.clreol();
 }
 
@@ -58,7 +58,7 @@ void FullScreenView::ClearCommandLine() {
 
 void FullScreenView::PutsCommandLine(const std::string& text) {
   bout_.GotoXY(1, command_line_);
-  bout << text;
+  bout_ << text;
   bout_.clreol();
 }
 
@@ -85,9 +85,9 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto saved_color = bout.curatr();
   wwiv::core::ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
 
-  bout << "|09" << static_cast<unsigned char>(198)
-       << string(screen_width_ - 2, static_cast<unsigned char>(205))
-       << static_cast<unsigned char>(181);
+  bout_ << "|09" << static_cast<unsigned char>(198)
+        << string(screen_width_ - 2, static_cast<unsigned char>(205))
+        << static_cast<unsigned char>(181);
 
   if (text.empty()) {
     return;
@@ -95,8 +95,8 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 
   int x = screen_width_ - 10 - ssize(text);
   bout_.GotoXY(x, y);
-  bout << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
-       << " |16|09" << static_cast<unsigned char>(198);
+  bout_ << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
+        << " |16|09" << static_cast<unsigned char>(198);
 }
 
 void FullScreenView::GotoContentAreaTop() {

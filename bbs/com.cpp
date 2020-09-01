@@ -16,20 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <algorithm>
+#include "bbs/com.h"
 
 #include "bbs/bbsutl.h"
 #include "bbs/datetime.h"
 #include "bbs/exceptions.h"
 #include "bbs/execexternal.h"
 #include "bbs/stuffin.h"
-#include "local_io/keycodes.h"
 #include "bbs/remote_io.h"
 #include "bbs/bbs.h"
-#include "bbs/com.h"
 #include "bbs/sysoplog.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
+#include <algorithm>
 
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

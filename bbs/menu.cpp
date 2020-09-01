@@ -438,9 +438,9 @@ void MenuInstance::PrintMenuPrompt() const {
   }
 }
 
-void TurnMCIOff() { a()->mci_enabled_ = false; }
+void TurnMCIOff() { bout.disable_mci(); }
 
-void TurnMCIOn() { a()->mci_enabled_ = true; }
+void TurnMCIOn() { bout.enable_mci(); }
 
 void ConfigUserMenuSet() {
   bout.cls();

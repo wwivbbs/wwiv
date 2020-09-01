@@ -220,6 +220,11 @@ public:
   // reset the state of Output
   void reset();
 
+  [[nodiscard]] bool mci_enabled() const noexcept { return mci_enabled_; }
+  void enable_mci() { mci_enabled_ = true; }
+  void disable_mci() { mci_enabled_ = false; }
+  void set_mci_enabled(bool e) { mci_enabled_ = e; }
+
 public:
   int lines_listed_{0};
   bool newline{true};
@@ -242,6 +247,7 @@ private:
   bool ansi_movement_occurred_{false};
   uint8_t curatr_{7};
   bool okskey_{true};
+  bool mci_enabled_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
 };

@@ -245,7 +245,7 @@ void display_message_text(const std::string& text, bool* next) {
   if (ansi && a()->topdata && a()->IsUserOnline()) {
     a()->UpdateTopScreen();
   }
-  a()->mci_enabled_ = false;
+  bout.disable_mci();
 }
 
 static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string default_name,
@@ -339,7 +339,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 
   UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
-    a()->mci_enabled_ = false;
+    bout.disable_mci();
     SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
   }
 
@@ -563,7 +563,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   bout.SystemColor(7);
   bout.clear_ansi_movement_occurred();
   *next = false;
-  a()->mci_enabled_ = an != 0;
+  bout.set_mci_enabled(an != 0);
 
   bout.cls();
   auto fs = display_type2_message_header(msg);
@@ -724,12 +724,12 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
   bout.lines_listed_ = info.num_header_lines();
   bout.clear_ansi_movement_occurred();
   *next = false;
-  a()->mci_enabled_ = true;
+  bout.enable_mci();
   if (msg.message_anony == 0) {
-    a()->mci_enabled_ = false;
+    bout.disable_mci();
   }
   display_message_text(msg.message_text, next);
-  a()->mci_enabled_ = false;
+  bout.disable_mci();
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {

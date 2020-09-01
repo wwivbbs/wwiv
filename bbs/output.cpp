@@ -23,7 +23,6 @@
 #include "bbs/com.h"
 #include "bbs/instmsg.h"
 #include "bbs/interpret.h"
-#include "bbs/utility.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -41,6 +40,10 @@ using namespace wwiv::sdk::ansi;
 
 Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
 Output::~Output() = default;
+
+static bool okansi(const wwiv::sdk::User* user) {
+  return user->HasAnsi();
+}
 
 void Output::SetLocalIO(LocalIO* local_io) {
   // We would use a()->user()->GetScreenChars() but I don't think we
@@ -66,7 +69,7 @@ void Output::ResetColors() {
 }
 
 void Output::GotoXY(int x, int y) {
-  if (okansi()) {
+  if (okansi(a()->user())) {
     // Don't get Y get too big or mTelnet will not be happy
     y = std::min<int>(y, a()->screenlinest);
     bputs(StrCat("\x1b[", y, ";", x, "H"));
@@ -142,7 +145,7 @@ std::string Output::MakeColor(int wwiv_color) {
 }
 
 std::string Output::MakeSystemColor(int c) const {
-  if (!okansi()) {
+  if (!okansi(a()->user())) {
     return "";
   }
   return wwiv::sdk::ansi::makeansi(c, curatr());
@@ -153,7 +156,7 @@ std::string Output::MakeSystemColor(wwiv::sdk::Color c) const {
 }
 
 void Output::litebar(const std::string& msg) {
-  if (okansi()) {
+  if (okansi(a()->user())) {
     bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
@@ -175,7 +178,7 @@ void Output::backline() {
 void Output::cls() {
   // Adding color 0 so previous color would not be picked up. #1245
   Color(0);  
-  if (okansi()) {
+  if (okansi(a()->user())) {
     bputs("\x1b[2J");
     GotoXY(1, 1);
   } else {
@@ -188,7 +191,7 @@ void Output::cls() {
  * Clears the current line to the end.
  */
 void Output::clreol() {
-  if (okansi()) {
+  if (okansi(a()->user())) {
     bputs("\x1b[K");
   }
 }
@@ -199,7 +202,7 @@ void Output::clear_whole_line() {
 }
 
 void Output::mpl(int length) {
-  if (!okansi()) {
+  if (!okansi(a()->user())) {
     return;
   }
   Color(4);
@@ -258,7 +261,7 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '@') {
         ++it;
-        BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+        BbsMacroContext ctx(a()->user(), mci_enabled());
         auto s = ctx.interpret(*it++);
         bout.bputs(s);
       }
@@ -284,7 +287,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CO, true);  break; }
       ++it;
       if (it == fin) { bputch(CO, true);  break; }
-      BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+      BbsMacroContext ctx(a()->user(), mci_enabled());
       auto s = ctx.interpret(*it++);
       bout.bputs(s);
     } else if (it == fin) { 
@@ -322,8 +325,8 @@ int Output::bputs(const std::string& text, bool *abort, bool *next) {
 }
 
 void Output::move_up_if_newline(int num_lines) {
-  if (okansi() && !newline) {
-    const auto s = StrCat("\r\x1b[", num_lines, "A");
+  if (okansi(a()->user()) && !newline) {
+    const auto s = fmt::format("\r\x1b[{}A", num_lines);
     bputs(s);
   }
 }
