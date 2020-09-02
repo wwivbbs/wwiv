@@ -192,6 +192,7 @@ if [[ "${group_exist}" -eq 0 && "${FORCE}" == "false" ]]; then
 fi
 say "Checking if wwiv user (${WWIV_USER}) exists"
 wwiv_user_exists "${WWIV_USER}"
+user_exist=$?
 if [[ ${user_exist} -eq 0 && "${FORCE}" == "false" ]]; then
   say "User (${WWIV_USER}) already exists, too.  Please verify your user"
   say "name choice and re-run the installer or add --force to the commandline."
@@ -241,6 +242,9 @@ say "WWIV_USER: ${WWIV_USER}"
 say "WWIV_GROUP: ${WWIV_GROUP}"
 say ""
 
+# Unzip the unix archive.
+unzip -n -q unix.zip
+
 WWIV_TEMPLATE_PATH="systemd/*.template"
 if [[ ${WWIV_OS} == "SunOS" ]]; then
   WWIV_TEMPLATE_PATH="svcadm/*.template"
@@ -267,7 +271,7 @@ say "About to initialize the WWIV BBS data files"
 pausescr
 
 say "Initializing data files"
-${RUN} sudo -u${WWIV_USER} "${WWIV_DIR}/wwivconfig --initialize"
+${RUN} sudo -u${WWIV_USER} "${WWIV_DIR}/wwivconfig" --initialize
 say "Installation complete"
 
 echo
