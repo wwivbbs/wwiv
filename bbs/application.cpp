@@ -188,6 +188,11 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
   bout.SetComm(remote_io);
 }
 
+bool Application::ReadCurrentUser() { 
+  DCHECK_GE(usernum, 1);
+  return ReadCurrentUser(usernum);
+}
+
 bool Application::ReadCurrentUser(int user_number) {
   if (!users()->readuser(user(), user_number)) {
     return false;
@@ -202,9 +207,17 @@ void Application::reset_effective_sl() {
   effective_sl_ = user()->GetSl(); 
 }
 void Application::effective_sl(int nSl) { effective_sl_ = nSl; }
-int Application::effective_sl() const { return effective_sl_; }
-const slrec& Application::effective_slrec() const { return config()->sl(effective_sl_); }
 
+int Application::effective_sl() const { return effective_sl_; }
+
+const slrec& Application::effective_slrec() const { 
+  return config()->sl(effective_sl_);
+}
+
+bool Application::WriteCurrentUser() {
+  DCHECK_GE(usernum, 1);
+  return WriteCurrentUser(usernum); 
+}
 
 bool Application::WriteCurrentUser(int user_number) {
 
@@ -629,7 +642,7 @@ void Application::set_language_number(int n) {
   }
 }
 
-bool Application::GetCaller() {
+get_caller_t Application::GetCaller() {
   wwiv::bbs::WFC wfc(this);
   remoteIO()->remote_info().clear();
   frequent_init();
@@ -656,30 +669,25 @@ bool Application::GetCaller() {
   }
   screenlinest = defscreenbottom + 1;
 
-  const auto lokb = wfc.doWFCEvents();
+  const auto [lokb, unx] = wfc.doWFCEvents();
 
-  if (lokb) {
-    modem_speed_ = 38400;
-  }
-
-  using_modem = a()->context().incom() ? 1 : 0;
-  if (lokb == 2) {
-    using_modem = -1;
-  }
-  if (lokb == 999) {
+  if (lokb == wwiv::bbs::wfc_events_t::exit) {
     // Magic exit from WWIV
-    return false;
+    return get_caller_t::exit;
   }
 
+  using_modem = a()->context().incom();
+  modem_speed_ = 38400;
   bout.okskey(true);
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
 
-  return true;
+  return (lokb == wwiv::bbs::wfc_events_t::login_fast) ? get_caller_t::fast_login: get_caller_t::normal_login;
 }
 
 void Application::GotCaller(int ms) {
+  localIO()->SetTopLine(0);
   frequent_init();
   wfc_cls(a());
   modem_speed_ = ms;
@@ -696,9 +704,9 @@ void Application::GotCaller(int ms) {
   if (ms) {
     a()->context().incom(true);
     a()->context().outcom(true);
-    using_modem = 1;
+    using_modem = true;
   } else {
-    using_modem = 0;
+    using_modem = false;
     a()->context().incom(false);
     a()->context().outcom(false);
   }
@@ -827,7 +835,7 @@ int Application::Run(int argc, char* argv[]) {
       // Set it false until we call LiLo
       user_already_on_ = true;
       ooneuser = true;
-      using_modem = 0;
+      using_modem = false;
       a()->context().incom(true);
       a()->context().outcom(false);
       type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
@@ -978,25 +986,26 @@ int Application::Run(int argc, char* argv[]) {
       // set in logon() which could cause problems if we get hung up before then.
       SetLogonTime();
 
+      auto gt = get_caller_t::exit;
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
           GotCaller(ui);
         } else {
-          if (!GetCaller()) {
+          gt = GetCaller();
+          if (gt == get_caller_t::exit) {
             // GetCaller returning false means time to exit.
             return Application::exitLevelOK;
           }
         }
       }
 
-      if (using_modem > -1) {
+      if (gt == get_caller_t::normal_login) {
         if (!this_usernum_from_commandline) {
           getuser();
         }
       } else {
-        using_modem = 0;
+        using_modem = false;
         a()->context().okmacro(true);
-        usernum = unx_;
         reset_effective_sl();
         changedsl();
       }

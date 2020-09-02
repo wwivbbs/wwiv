@@ -26,26 +26,27 @@
 
 void wfc_cls(Application* a);
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
+
+enum class local_logon_t { exit, prompt, fast };
+enum class wfc_events_t { exit, login, login_fast };
 
 class WFC {
 public:
   WFC(Application* a);
   virtual ~WFC();
 
-  int doWFCEvents();
+  std::tuple<wfc_events_t, int> doWFCEvents();
 
 private:
-  int LocalLogon();
+  std::tuple<local_logon_t, int> LocalLogon();
   void DrawScreen();
   void Clear();
 
-  Application* a_ = nullptr;
-  int status_ = 0;
+  Application* a_{nullptr};
+  int status_{0};
 };
 
-}  // namespace bbs
-}  // namespace wwiv
+}  // namespace wwiv::bbs
 
 #endif  // __INCLUDED_BBS_WFC_H__

@@ -71,7 +71,7 @@ static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Info");
   menu_items->push_back("ViewZip");
 
-  if (a()->using_modem != 0) {
+  if (a()->using_modem) {
     menu_items->push_back("Dload");
   } else {
     menu_items->push_back("Move");

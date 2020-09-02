@@ -87,6 +87,7 @@ class WWIVMessageApi;
 } // namespace sdk
 } // namespace wwiv
 
+enum class get_caller_t { exit, fast_login, normal_login };
 /**
  * Application - Holds information and status data about the current user
  * session on the BBS. (i.e. user record, and all data/variables
@@ -133,9 +134,9 @@ public:
    */
   void SetCommForTest(RemoteIO* remote_io);
 
-  bool ReadCurrentUser() { return ReadCurrentUser(usernum); }
+  bool ReadCurrentUser();
   bool ReadCurrentUser(int user_number);
-  bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
+  bool WriteCurrentUser();
   bool WriteCurrentUser(int user_number);
 
   void reset_effective_sl();
@@ -354,7 +355,7 @@ public:
   int m_nMaxNetworkNumber{0};
   int subchg{0};
   int topdata{0};
-  int using_modem{0};
+  bool using_modem{false};
   int screenlinest{25};
   int defscreenbottom{24};
 
@@ -373,7 +374,7 @@ public:
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
 
-  uint16_t usernum{};
+  int usernum{0};
 
   asv_rec asv{};
 
@@ -414,9 +415,6 @@ public:
   std::string upload_cmd;       // upload event
   std::string terminal_command; // Terminal command
 
-  // TODO(rushfan): Make this private. This is needed by WFC
-  uint16_t unx_{};
-
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
   bool received_short_message_{false};
@@ -431,7 +429,7 @@ protected:
   /*!
    * @function GetCaller WFC Screen loop
    */
-  bool GetCaller();
+  get_caller_t GetCaller();
 
   /*!
    * @function GotCaller login routines

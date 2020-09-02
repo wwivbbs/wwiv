@@ -95,7 +95,7 @@ void cleanup_net() {
     return;
   }
   a()->context().hangup(true);
-  a()->using_modem = 0;
+  a()->using_modem = false;
   if (a()->IsUserOnline()) {
     hang_it_up();
   }

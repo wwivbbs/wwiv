@@ -242,16 +242,14 @@ WFC::WFC(Application* a) : a_(a) {
 
 WFC::~WFC() = default;
 
-int WFC::doWFCEvents() {
+std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
   unsigned char ch = 0;
-  int lokb = 0;
   LocalIO* io = a_->localIO();
 
   const auto last_date_status = a()->status_manager()->GetStatus();
-  do {
+  for (;;) {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     a_->set_net_num(0);
-    bool any = false;
     a_->set_at_wfc(true);
 
     // If the date has changed since we last checked, then then run the beginday event.
@@ -263,7 +261,6 @@ int WFC::doWFCEvents() {
       }
     }
 
-    lokb = 0;
     a_->SetCurrentSpeed("KB");
     // try to check for packets to send every minute.
     DrawScreen();
@@ -285,16 +282,21 @@ int WFC::doWFCEvents() {
     }
     if (ch) {
       a_->set_at_wfc(true);
-      any = true;
       bout.okskey(true);
       resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
         // Local Logon
-      case SPACE:
-        lokb = LocalLogon();
+      case SPACE: {
+        auto [ll, unx] = LocalLogon();
+        if (ll == local_logon_t::fast) {
+          return std::make_tuple(wfc_events_t::login_fast, unx);
+        } else if (ll == local_logon_t::prompt) {
+          return std::make_tuple(wfc_events_t::login, -1);
+        }
         break;
-        // Show WFC Menu
+      }
+      // Show WFC Menu
       case '?': {
         string helpFileName = SWFC_NOEXT;
         char chHelp = ESC;
@@ -338,8 +340,7 @@ int WFC::doWFCEvents() {
         io->GotoXY(2, 23);
         bout << "|#7Exit the BBS? ";
         if (yesno()) {
-          // lokb value of 999 means exit bbs.
-          return 999;
+          return std::make_tuple(wfc_events_t::exit, -1);
         }
         io->Cls();
         break;
@@ -445,8 +446,7 @@ int WFC::doWFCEvents() {
       // Quit BBS
       case 'Q':
         io->GotoXY(2, 23);
-        // lokb value of 999 means exit bbs.
-        return 999;
+        return std::make_tuple(wfc_events_t::exit, -1);
         // Read All Mail
       case 'R':
         Clear();
@@ -502,102 +502,96 @@ int WFC::doWFCEvents() {
         bout.getkey();
       } break;
       }
-      Clear(); // moved from after getch
-      if (!a()->context().incom() && !lokb) {
-        frequent_init();
-        a_->ReadCurrentUser(sysop_usernum);
-        read_qscn(1, a()->context().qsc, false);
-        a_->reset_effective_sl();
-        a_->usernum = sysop_usernum;
-      }
+      Clear();
+      frequent_init();
+      a_->ReadCurrentUser(sysop_usernum);
+      read_qscn(1, a()->context().qsc, false);
+      a_->reset_effective_sl();
+      a_->usernum = sysop_usernum;
+
       catsl();
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     }
 
-    if (!any) {
-      giveup_timeslice();
-    }
-  } while (!a()->context().incom() && !lokb);
-  return lokb;
+    giveup_timeslice();
+  }
 }
 
-int WFC::LocalLogon() {
+std::tuple<local_logon_t, int> WFC::LocalLogon() {
   a_->localIO()->GotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
   auto d = steady_clock::now();
-  int lokb = 0;
   // TODO(rushfan): use wwiv::os::wait_for
   while (!a_->localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
     wwiv::os::sleep_for(10ms);
   }
 
-  if (a_->localIO()->KeyPressed()) {
-    auto ch = to_upper_case<char>(a_->localIO()->GetChar());
-    if (ch == 'Y') {
-      a_->localIO()->Puts(YesNoString(true));
-      bout << wwiv::endl;
-      lokb = 1;
-    } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
-      // The ch == 224 is a Win32'ism
-      a_->localIO()->GetChar();
-    } else {
-      auto fast = false;
-
-      if (ch == 'F') { // 'F' for Fast
-        a_->unx_ = 1;
-        fast = true;
-      } else {
-        switch (ch) {
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-          fast = true;
-          a_->unx_ = ch - '0';
-          break;
-        }
-      }
-      if (!fast || a_->unx_ > a_->status_manager()->GetUserCount()) {
-        return lokb;
-      }
-
-      User tu;
-      a_->users()->readuser_nocache(&tu, a_->unx_);
-      if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
-        return lokb;
-      }
-
-      a_->usernum = a_->unx_;
-      auto saved_at_wfc = a_->at_wfc();
-      a_->set_at_wfc(false);
-      a_->ReadCurrentUser();
-      read_qscn(a_->usernum, a()->context().qsc, false);
-      a_->set_at_wfc(saved_at_wfc);
-      bout.bputch(ch);
-      a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
-      lokb = 2;
-      a_->reset_effective_sl();
-      changedsl();
-      if (!set_language(a_->user()->GetLanguage())) {
-        a_->user()->SetLanguage(0);
-        set_language(0);
-      }
-      return lokb;
-    }
-    if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
-      // The 224 is a Win32'ism
-      a_->localIO()->GetChar();
-    }
-  }
-  if (lokb == 0) {
+  if (!a_->localIO()->KeyPressed()) {
     a_->Cls();
+    return std::make_tuple(local_logon_t::exit, -1);
   }
-  return lokb;
+
+  int unx = -1;
+  const auto ch = to_upper_case<char>(a_->localIO()->GetChar());
+  switch (ch) {
+  case 'Y': {
+    a_->localIO()->Puts(YesNoString(true));
+    bout << wwiv::endl;
+    return std::make_tuple(local_logon_t::prompt, -1);
+  }
+  case 0:
+  case 224: {
+    // The ch == 224 is a Win32'ism
+    a_->localIO()->GetChar();
+    return std::make_tuple(local_logon_t::exit, -1);
+  }
+  case 'F':  // 'F' for Fast
+  case '1':
+    unx = 1;
+    break;
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    unx = ch - '0';
+    break;
+  default:
+    return std::make_tuple(local_logon_t::exit, -1);
+  }
+
+  // We have a user number to try in unx to use for a
+  // fast login.
+
+  if (unx > a_->status_manager()->GetUserCount()) {
+    return std::make_tuple(local_logon_t::exit, -1);
+  }
+
+  User tu;
+  a_->users()->readuser_nocache(&tu, unx);
+  if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
+    return std::make_tuple(local_logon_t::exit, -1);
+  }
+
+  a_->usernum = unx;
+  auto saved_at_wfc = a_->at_wfc();
+  a_->set_at_wfc(false);
+  a_->ReadCurrentUser();
+  read_qscn(a_->usernum, a()->context().qsc, false);
+  a_->set_at_wfc(saved_at_wfc);
+  bout.bputch(ch);
+  a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
+  a_->reset_effective_sl();
+  changedsl();
+
+  if (!set_language(a_->user()->GetLanguage())) {
+    a_->user()->SetLanguage(0);
+    set_language(0);
+  }
+  return std::make_tuple(local_logon_t::fast, unx);
 }
 
 } // namespace wwiv

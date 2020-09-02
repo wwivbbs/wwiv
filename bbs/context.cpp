@@ -55,7 +55,6 @@ void SessionContext::reset() {
   a_->SetCurrentReadMessageArea(-1);
   a_->set_current_user_sub_conf_num(0);
   a_->set_current_user_dir_conf_num(0);
-  a_->localIO()->SetTopLine(0);
   a_->screenlinest = a_->defscreenbottom + 1;
   hangup(false);
   a_->SetChatReason("");
@@ -63,7 +62,7 @@ void SessionContext::reset() {
   a_->chatting_ = 0;
   a_->received_short_message_ = false;
   a_->set_extratimecall(std::chrono::seconds(0));
-  a_->using_modem = 0;
+  a_->using_modem = false;
   a_->SetTimeOnlineLimited(false);
 
   bout.charbufferpointer_ = 0;

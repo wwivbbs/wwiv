@@ -141,9 +141,8 @@ static void GetNamePartForDropFile(bool lastName, char* name) {
 }
 
 static long GetMinutesRemainingForDropFile() {
-  auto time_left = std::max<long>((nsl() / 60) - 1L, 0);
-  auto using_modem = a()->using_modem != 0;
-  if (!using_modem) {
+  const auto time_left = std::max<long>((nsl() / 60) - 1L, 0);
+  if (!a()->using_modem) {
     // When we generate a dropfile from the WFC, give it a suitable amount
     // of time remaining vs. 1 minute since we don't have an active session.
     // Also allow at least an hour for all local users.
