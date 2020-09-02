@@ -72,7 +72,7 @@ void move_file() {
   bool done = false;
   tmp_disable_conf(true);
 
-  while (!a()->hangup_ && nCurRecNum > 0 && !done) {
+  while (!a()->context().hangup() && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
     auto f = a()->current_file_area()->ReadFile(nCurRecNum);
     const auto dir = a()->dirs()[a()->current_user_dir().subnum];
@@ -96,7 +96,7 @@ void move_file() {
           dliscan();
         }
       }
-      while (!a()->hangup_ && ss[0] == '?');
+      while (!a()->context().hangup() && ss[0] == '?');
       d1 = -1;
       if (!ss.empty()) {
         for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
@@ -204,7 +204,7 @@ void rename_file() {
   bout.nl();
   const auto original_filename = s;
   int nRecNum = recno(s);
-  while (nRecNum > 0 && !a()->hangup_) {
+  while (nRecNum > 0 && !a()->context().hangup()) {
     int nCurRecNum = nRecNum;
     auto f = a()->current_file_area()->ReadFile(nRecNum);
     const auto& dir = a()->dirs()[a()->current_user_dir().subnum];
@@ -526,7 +526,7 @@ bool uploadall(uint16_t directory_num) {
   auto aborted = false;
   for (const auto& f : ff) {
     aborted = checka();
-    if (aborted || a()->hangup_ || a()->current_file_area()->number_of_files() >= maxf) {
+    if (aborted || a()->context().hangup() || a()->current_file_area()->number_of_files() >= maxf) {
       break;
     }
     if (!maybe_upload(f.name, directory_num, "")) {
@@ -675,7 +675,7 @@ void edit_database() {
       return;
     }
   }
-  while (!a()->hangup_);
+  while (!a()->context().hangup());
 }
 
 void add_to_file_database(const std::string& file_name) {
@@ -796,14 +796,14 @@ static void config_nscan() {
           }
         }
       }
-      while (!done && !a()->hangup_);
+      while (!done && !a()->context().hangup());
       break;
     }
     if (!ok_multiple_conf(a()->user(), a()->uconfdir)) {
       done1 = true;
     }
   }
-  while (!done1 && !a()->hangup_);
+  while (!done1 && !a()->context().hangup());
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
@@ -862,7 +862,7 @@ void xfer_defaults() {
       break;
     }
   }
-  while (!done && !a()->hangup_);
+  while (!done && !a()->context().hangup());
 }
 
 void finddescription() {
@@ -893,7 +893,7 @@ void finddescription() {
   auto color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (auto i = 0; i < a()->dirs().size() && !abort && !a()->hangup_ && (a()->udir[i].subnum != -1);
+  for (auto i = 0; i < a()->dirs().size() && !abort && !a()->context().hangup() && (a()->udir[i].subnum != -1);
        i++) {
     const auto ii1 = a()->udir[i].subnum;
     int pts;
@@ -920,7 +920,7 @@ void finddescription() {
       a()->set_current_user_dir_num(i);
       dliscan();
       for (auto i1 = 1;
-           i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_; i1++) {
+           i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->context().hangup(); i1++) {
         auto f = a()->current_file_area()->ReadFile(i1);
         auto desc = ToStringUpperCase(f.description());
 
@@ -975,5 +975,5 @@ void arc_l() {
       nRecordNum = nrecno(file_spec, nRecordNum);
     }
   }
-  while (nRecordNum > 0 && !a()->hangup_ && !abort);
+  while (nRecordNum > 0 && !a()->context().hangup() && !abort);
 }

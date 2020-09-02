@@ -371,7 +371,7 @@ static void change_colors() {
         bout << "\r\nNot saved, then.\r\n\n";
       }
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }
 
 void l_config_qscan() {
@@ -462,14 +462,14 @@ void config_qscan() {
             l_config_qscan();
           }
         }
-      } while (!done && !a()->hangup_);
+      } while (!done && !a()->context().hangup());
       break;
     }
     if (!ok_multiple_conf(a()->user(), a()->uconfsub)) {
       done1 = true;
     }
 
-  } while (!done1 && !a()->hangup_);
+  } while (!done1 && !a()->context().hangup());
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, oc, os);
@@ -558,7 +558,7 @@ static void macroedit(char *macro_text) {
       break;
     }
     macro_text[i + 1] = 0;
-  } while (!done && i < 80 && !a()->hangup_);
+  } while (!done && i < 80 && !a()->context().hangup());
   bout.okskey(true);
   bout.Color(0);
   bout.nl();
@@ -609,7 +609,7 @@ static void make_macros() {
       done = true;
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }
 
 static void change_password() {
@@ -728,7 +728,7 @@ void defaults(bool& need_menu_reload) {
   do {
     print_cur_stat();
     a()->tleft(true);
-    if (a()->hangup_) {
+    if (a()->context().hangup()) {
       return;
     }
     bout.nl();
@@ -846,7 +846,7 @@ void defaults(bool& need_menu_reload) {
       enter_regnum();
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   a()->WriteCurrentUser();
 }
 
@@ -1001,7 +1001,7 @@ void config_scan_plus(int type) {
     menu_items.push_back("?");
   }
   bool done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     amount = 0;
     list_config_scan_plus(top, &amount, type);
     if (!amount) {
@@ -1017,7 +1017,7 @@ void config_scan_plus(int type) {
     }
     bool redraw = true;
     bool menu_done = false;
-    while (!menu_done && !a()->hangup_ && !done) {
+    while (!menu_done && !a()->context().hangup() && !done) {
       command = side_menu(&side_pos, redraw, menu_items, 1,
                           a()->user()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :

@@ -813,9 +813,9 @@ void readmail(int mode) {
             if (ss1[0] == '?') {
               old_sublist();
             }
-          } while ((!a()->hangup_) && (ss1[0] == '?'));
+          } while ((!a()->context().hangup()) && (ss1[0] == '?'));
           i = -1;
-          if ((ss1[0] == 0) || a()->hangup_) {
+          if ((ss1[0] == 0) || a()->context().hangup()) {
             i1 = 0;
             bout.nl();
             tmp_disable_conf(false);
@@ -1217,8 +1217,8 @@ void readmail(int mode) {
         }
         break;
       }
-    } while (!i1 && !a()->hangup_);
-  } while (!a()->hangup_ && !done);
+    } while (!i1 && !a()->context().hangup());
+  } while (!a()->context().hangup() && !done);
 }
 
 int check_new_mail(int user_number) {

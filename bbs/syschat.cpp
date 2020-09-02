@@ -476,7 +476,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         }
         break;
       }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 
   if (ch != RETURN) {
     if (side == 0) {
@@ -627,7 +627,7 @@ void chat1(const char* chat_line, bool two_way) {
       chatFile.Close();
       a()->localIO()->Puts("-] Chat file closed.\r\n");
     }
-    if (a()->hangup_) {
+    if (a()->context().hangup()) {
       a()->chatting_ = 0;
     }
   } while (a()->chatting_);

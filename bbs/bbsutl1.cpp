@@ -281,7 +281,7 @@ bool ValidateSysopPassword() {
 
 /**
  * Hangs up the modem if user online. Whether using modem or not, sets
- * a()->hangup_ to 1.
+ * a()->context().hangup() to 1.
  */
 void hang_it_up() {
   if (!a()->context().ok_modem_stuff()) {

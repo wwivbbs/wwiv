@@ -636,7 +636,7 @@ bool Application::GetCaller() {
   usernum = 0;
   // Since hang_it_up sets hangup_ = true, let's ensure we're always
   // not in this state when we enter the WFC.
-  hangup_ = false;
+  context().hangup(false);
   set_at_wfc(false);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   // We'll read the sysop record for defaults, but let's set
@@ -922,7 +922,7 @@ int Application::Run(int argc, char* argv[]) {
     usernum = 0;
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
-    hangup_ = false;
+    context().hangup(false);
     set_at_wfc(true);
     const auto cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
     switch (cmd) {
@@ -952,7 +952,7 @@ int Application::Run(int argc, char* argv[]) {
     usernum = 0;
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
-    hangup_ = false;
+    context().hangup(false);
     wwiv::bbs::fsed::fsed(fsed);
     return oklevel_;
   }
@@ -1006,7 +1006,7 @@ int Application::Run(int argc, char* argv[]) {
       logon();
       setiia(seconds(5));
       set_net_num(0);
-      while (!hangup_ && usernum > 0) {
+      while (!context().hangup() && usernum > 0) {
         CheckForHangup();
         filelist.clear();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);

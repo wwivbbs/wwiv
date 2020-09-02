@@ -350,7 +350,7 @@ void listfiles() {
 
   auto* area = a()->current_file_area();
   bool abort = false;
-  for (int i = 1; i <= area->number_of_files() && !abort && !a()->hangup_; i++) {
+  for (int i = 1; i <= area->number_of_files() && !abort && !a()->context().hangup(); i++) {
     auto f = area->ReadFile(i);
     if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
       if (need_title) {
@@ -385,7 +385,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
       return;
     }
     auto* area = a()->current_file_area();
-    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->hangup_;
+    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->context().hangup();
          i++) {
       CheckForHangup();
       auto f = area->ReadFile(i);
@@ -488,7 +488,7 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->hangup_
+  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->context().hangup()
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;
@@ -516,7 +516,7 @@ void searchall() {
       dliscan();
       bool need_title = true;
       auto* area = a()->current_file_area();
-      for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->hangup_;
+      for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->context().hangup();
            i1++) {
         auto f = area->ReadFile(i1);
         if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {

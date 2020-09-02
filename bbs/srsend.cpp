@@ -144,7 +144,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
       a()->localIO()->PutsXY(69, 4, std::to_string(nNumErrors));
       a()->localIO()->PutsXY(69, 5, std::to_string(*terr));
     }
-  } while (!done && !a()->hangup_ && !*abort);
+  } while (!done && !a()->context().hangup() && !*abort);
 
   if (ch == 6) {
     return 6;
@@ -161,7 +161,7 @@ bool okstart(bool *use_crc, bool *abort) {
   bool done = false;
 
   const seconds s90(90);
-  while (steady_clock::now() - d < s90 && !done && !a()->hangup_ && !*abort) {
+  while (steady_clock::now() - d < s90 && !done && !a()->context().hangup() && !*abort) {
     const char ch = gettimeout(91, abort);
     if (ch == 'C') {
       *use_crc = true;
@@ -231,7 +231,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
   if (!okstart(&use_crc, &abort)) {
     abort = true;
   }
-  if (use_ymodem && !abort && !a()->hangup_) {
+  if (use_ymodem && !abort && !a()->context().hangup()) {
     ch = send_b(file, file_size, 5, 0, &use_crc, fn, &terr, &abort);
     if (ch == CX) {
       abort = true;
@@ -242,7 +242,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
     }
   }
   bool bUse1kBlocks = false;
-  while (!a()->hangup_ && !abort && cp < file_size) {
+  while (!a()->context().hangup() && !abort && cp < file_size) {
     bUse1kBlocks = (use_ymodem) ? true : false;
     if ((file_size - cp) < 128L) {
       bUse1kBlocks = false;
@@ -266,7 +266,7 @@ void xymodem_send(const std::filesystem::path& path, bool *sent, double *percent
       cp += GetXYModemBlockSize(bUse1kBlocks);
     }
   }
-  if (!a()->hangup_ && !abort) {
+  if (!a()->context().hangup() && !abort) {
     send_b(file, 0L, 2, 0, &use_crc, fn, &terr, &abort);
   }
   if (!abort) {

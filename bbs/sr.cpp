@@ -75,7 +75,7 @@ char gettimeout(long ds, bool *abort) {
 
   const seconds d(ds);
   const auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->hangup_ && !*abort) {
+  while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->context().hangup() && !*abort) {
     if (a()->localIO()->KeyPressed()) {
       const char ch = a()->localIO()->GetChar();
       if (ch == 0) {
@@ -375,9 +375,9 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
     auto num_read = file.Read(b, 1024);
     auto lTotalBytes = 0L;
     auto abort = false;
-    while (num_read && !a()->hangup_ && !abort) {
+    while (num_read && !a()->context().hangup() && !abort) {
       auto nBufferPos = 0;
-      while (!a()->hangup_ && !abort && nBufferPos < num_read) {
+      while (!a()->context().hangup() && !abort && nBufferPos < num_read) {
         CheckForHangup();
         bout.bputch(b[nBufferPos++]);
         checka(&abort);

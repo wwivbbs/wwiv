@@ -249,7 +249,7 @@ void attach_file(int mode) {
                   } else {
                     done3 = true;
                   }
-                } while (!done3 && !a()->hangup_);
+                } while (!done3 && !a()->context().hangup());
               }
               File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
@@ -378,8 +378,8 @@ void attach_file(int mode) {
         }
         break;
         }
-      } while (!a()->hangup_ && !done1);
+      } while (!a()->context().hangup() && !done1);
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }
 

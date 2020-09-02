@@ -94,7 +94,7 @@ void cleanup_net() {
   if (a()->nets()[0].sysnum == 0 && wwiv::stl::ssize(a()->nets()) == 1) {
     return;
   }
-  a()->hangup_ = false;
+  a()->context().hangup(true);
   a()->using_modem = 0;
   if (a()->IsUserOnline()) {
     hang_it_up();

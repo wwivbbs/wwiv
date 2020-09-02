@@ -215,7 +215,7 @@ void valuser(int user_number) {
           user.ToggleArFlag(1 << ch1);
           ch1 = 0;
         }
-      } while (!a()->hangup_ && ch1 != RETURN);
+      } while (!a()->context().hangup() && ch1 != RETURN);
     }
     bout.nl();
     ch1 = 0;
@@ -234,7 +234,7 @@ void valuser(int user_number) {
           user.ToggleDarFlag(1 << ch1);
           ch1 = 0;
         }
-      } while (!a()->hangup_ && ch1 != RETURN);
+      } while (!a()->context().hangup() && ch1 != RETURN);
     }
     bout.nl();
     ch1     = 0;
@@ -267,7 +267,7 @@ void valuser(int user_number) {
         ch1 = 0;
         print_help_file(SRESTRCT_NOEXT);
       }
-    } while (!a()->hangup_ && ch1 == 0);
+    } while (!a()->context().hangup() && ch1 == 0);
     a()->users()->writeuser(&user, user_number);
     bout.nl();
   } else {
@@ -312,7 +312,7 @@ void print_net_listing(bool bForcePause) {
     }
   }
   bool done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout.cls();
     if (wwiv::stl::ssize(a()->nets()) > 1) {
       std::set<char> odc;
@@ -640,7 +640,7 @@ void mailr() {
   }
   auto nRecordNumber = (pFileEmail->length() / sizeof(mailrec)) - 1;
   char c = ' ';
-  while (nRecordNumber >= 0 && c != 'Q' && !a()->hangup_) {
+  while (nRecordNumber >= 0 && c != 'Q' && !a()->context().hangup()) {
     pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     if (m.touser != 0) {
@@ -721,7 +721,7 @@ void mailr() {
           }
         }
         bout.nl(2);
-      } while ((c == 'R') && (!a()->hangup_));
+      } while ((c == 'R') && (!a()->context().hangup()));
 
       pFileEmail = OpenEmailFile(false);
       if (!pFileEmail->IsOpen()) {
@@ -769,7 +769,7 @@ void zlog() {
   bout.nl(2);
   bout.bpla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
   bout.bpla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
-  while (i < 97 && !abort && !a()->hangup_ && z.date[0] != 0) {
+  while (i < 97 && !abort && !a()->context().hangup() && z.date[0] != 0) {
     int nTimePerUser = 0;
     if (z.calls) {
       nTimePerUser = z.active / z.calls;

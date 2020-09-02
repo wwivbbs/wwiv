@@ -160,7 +160,7 @@ void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_fo
                 time_t tt) {
   const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
   File::Remove(fn);
-  if (a()->hangup_) {
+  if (a()->context().hangup()) {
     return ;
   }
 
@@ -234,7 +234,7 @@ std::vector<std::string> query_quote_lines() {
     --num_lines;
     bout.nl();
 
-    if (lines.empty() || a()->hangup_) {
+    if (lines.empty() || a()->context().hangup()) {
       return {};
     }
     bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
@@ -272,7 +272,7 @@ std::vector<std::string> query_quote_lines() {
       return {};
     }
     break;
-  } while (!a()->hangup_);
+  } while (!a()->context().hangup());
   return std::vector<std::string>(std::begin(lines) + start_line - 1,
                                   std::begin(lines) + end_line);
 }

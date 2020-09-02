@@ -95,6 +95,7 @@ void frequent_init() {
 
   // Context Globals to move to Application
   // Context Globals in Application
+  a()->ReadCurrentUser(1);
   a()->context().reset();
   use_workspace = false;
 
@@ -301,7 +302,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     bout.SystemColor(smc->normal_menu_item);
 
     for (const string& menu_item : menu_items) {
-      if (a()->hangup_) {
+      if (a()->context().hangup()) {
         break;
       }
       bout.GotoXY(positions[x], ypos);
@@ -322,7 +323,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   }
   bout.SystemColor(smc->normal_menu_item);
 
-  while (!a()->hangup_) {
+  while (!a()->context().hangup()) {
     int event = bgetch_event(numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;

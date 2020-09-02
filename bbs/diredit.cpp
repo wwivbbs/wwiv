@@ -210,7 +210,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
       done = true;
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   
 }
 
@@ -371,7 +371,7 @@ void modify_dir(int n) {
       edit_ftn_area_tags(r.area_tags);
     } break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 
   a()->dirs()[n] = r;
 }
@@ -616,7 +616,7 @@ void dlboardedit() {
       }
     } break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   a()->dirs().Save();
   if (confchg) {
     save_confs(ConferenceType::CONF_DIRS);

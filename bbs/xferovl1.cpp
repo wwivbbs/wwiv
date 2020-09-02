@@ -294,7 +294,7 @@ int read_idz(bool prompt_for_mask, int tempdir) {
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n", dir.name,
                a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
-  for (auto i = 1; i <= area->number_of_files() && !a()->hangup_ && !abort; i++) {
+  for (auto i = 1; i <= area->number_of_files() && !a()->context().hangup() && !abort; i++) {
     auto f = area->ReadFile(i);
     const auto fn = f.aligned_filename();
     if (aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
@@ -442,7 +442,7 @@ void tag_files(bool& need_title) {
     return;
   }
   a()->tleft(true);
-  if (a()->hangup_) {
+  if (a()->context().hangup()) {
     return;
   }
   bout.clear_lines_listed();
@@ -450,7 +450,7 @@ void tag_files(bool& need_title) {
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   auto done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout.clear_lines_listed();
     const auto ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     bout.clear_lines_listed();
@@ -664,7 +664,7 @@ int try_to_download(const std::string& file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  } while (i > 0 && ok && !a()->hangup_);
+  } while (i > 0 && ok && !a()->context().hangup());
 
   if (rtn == -2) {
     return -2;
@@ -770,14 +770,14 @@ void download() {
           done = true;
         }
       }
-      while (!ok && !a()->hangup_);
+      while (!ok && !a()->context().hangup());
     }
     i++;
     if (rtn == -2) {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !a()->hangup_ && i <= ssize(a()->batch().entry));
+  } while (!done && !a()->context().hangup() && i <= ssize(a()->batch().entry));
 
   if (!a()->batch().numbatchdl()) {
     return;
@@ -914,7 +914,7 @@ void removefilesnotthere(int dn, int* autodel) {
   const auto all_files = aligns("*.*");
   int i = recno(all_files);
   bool abort = false;
-  while (!a()->hangup_ && i > 0 && !abort) {
+  while (!a()->context().hangup() && i > 0 && !abort) {
     auto* area = a()->current_file_area();
     auto f = area->ReadFile(i);
     auto candidate_fn = FilePath(a()->dirs()[dn].path, f);

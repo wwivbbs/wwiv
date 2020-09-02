@@ -51,7 +51,7 @@ static std::string input_password_minimal(int max_length) {
   std::string pw;
   bout.mpl(max_length);
 
-  while (!a()->hangup_) {
+  while (!a()->context().hangup()) {
     unsigned char ch = bout.getkey();
 
     if (ch > 31) {
@@ -121,7 +121,7 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
   int curpos = 0, in_ansi = 0;
   bool done = false;
 
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     unsigned char chCurrent = bout.getkey();
 
     a()->chatline_ = (curpos != 0);
@@ -244,7 +244,7 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
       in_ansi = 0;
     }
   }
-  if (a()->hangup_) {
+  if (a()->context().hangup()) {
     out_text[0] = '\0';
   }
 }
@@ -494,7 +494,7 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     }
     szTemp[nLength] = '\0';
     CheckForHangup();
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   if (nLength) {
     strcpy(out_text, szTemp);
   } else {
@@ -619,7 +619,7 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
     text = std::to_string(result);
     last_ok = colorize(last_ok, result, minv, maxv);
   }
-  while (!a()->hangup_) {
+  while (!a()->context().hangup()) {
     auto ch = bout.getkey();
     if (std::isdigit(ch)) {
       // digit

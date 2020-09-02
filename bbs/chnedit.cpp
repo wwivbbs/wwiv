@@ -154,7 +154,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
       }
     } break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
@@ -318,7 +318,7 @@ static void modify_chain(int chain_num) {
       }
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   a()->chains->at(chain_num) = c;
 }
 
@@ -393,7 +393,7 @@ void chainedit() {
       }
     } break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 
   a()->chains->Save();
 }

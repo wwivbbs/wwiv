@@ -61,7 +61,7 @@ TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
 
 static char GetKeyForPause() {
   char ch = 0;
-  while (ch == 0 && !a()->hangup_) {
+  while (ch == 0 && !a()->context().hangup()) {
     ch = bgetch();
     sleep_for(milliseconds(50));
     CheckForHangup();
@@ -117,7 +117,7 @@ void pausescr() {
     int warned = 0;
     char ch;
     do {
-      while (!bkbhit() && !a()->hangup_) {
+      while (!bkbhit() && !a()->context().hangup()) {
         auto tstop = time_t_now();
         auto ttotal = difftime(tstop, tstart);
         if (ttotal == 120) {
@@ -150,7 +150,7 @@ void pausescr() {
         CheckForHangup();
       }
       ch = GetKeyForPause();
-    } while (!ch && !a()->hangup_);
+    } while (!ch && !a()->context().hangup());
     for (int i3 = 0; i3 < i1; i3++) {
       bout.bputch(' ');
     }

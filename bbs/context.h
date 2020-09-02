@@ -89,6 +89,9 @@ public:
   void irt(const std::string& irt);
   void clear_irt() { irt_[0] = '\0'; }
 
+  [[nodiscard]] bool hangup() const noexcept { return hangup_; }
+  void hangup(bool h) { hangup_ = h; }
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -107,6 +110,7 @@ private:
   bool disable_pause_{false};
   bool scanned_files_{false};
   bool made_find_str_{false};
+  bool hangup_{false};
 };
 
 } // namespace bbs

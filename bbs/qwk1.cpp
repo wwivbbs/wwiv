@@ -165,7 +165,7 @@ void qwk_remove_email() {
       done = true;
     }
 
-  } while (!a()->hangup_ && !done);
+  } while (!a()->context().hangup() && !done);
 }
 
 void qwk_gather_email(qwk_junk* qwk_info) {
@@ -254,7 +254,7 @@ void qwk_gather_email(qwk_junk* qwk_info) {
       done = true;
     }
 
-  } while (!a()->hangup_ && !done);
+  } while (!a()->context().hangup() && !done);
 
   qwk_info->in_email = 0;
 }
@@ -419,7 +419,7 @@ static void process_reply_dat(const std::string& name) {
 
   bout.cls();
 
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bool to_email = false;
 
     lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
@@ -705,12 +705,12 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
   slrec ss{};
   char user_name[101];
 
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     if (pass > 0) {
       int done5 = 0;
       char substr[5];
 
-      while (!done5 && !a()->hangup_) {
+      while (!done5 && !a()->context().hangup()) {
         bout.nl();
         bout << "Then which sub?  ?=List  Q=Don't Post :";
         input(substr, 3);
@@ -738,7 +738,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     a()->set_current_user_sub_num(static_cast<uint16_t>(sub));
 
     // Busy files... allow to retry
-    while (!a()->hangup_) {
+    while (!a()->context().hangup()) {
       if (!qwk_iscan_literal(a()->current_user_sub_num())) {
         bout.nl();
         bout << "MSG file is busy on another instance, try again?";
@@ -841,7 +841,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
   qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
 
   if (m.stored_as != 0xffffffff) {
-    while (!a()->hangup_) {
+    while (!a()->context().hangup()) {
       int f = qwk_iscan_literal(a()->GetCurrentReadMessageArea());
 
       if (f == -1) {
@@ -901,7 +901,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
       int i = 1;
       dm = 0;
-      while (dm == 0 && i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->hangup_) {
+      while (dm == 0 && i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->context().hangup()) {
         if ((get_post(i)->status & status_no_delete) == 0) {
           dm = i;
         }
@@ -939,7 +939,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
 static void modify_bulletins(qwk_config& qwk_cfg) {
   char s[101], t[101];
 
-  while (!a()->hangup_) {
+  while (!a()->context().hangup()) {
     bout.nl();
     bout << "Add - Delete - ? List - Quit";
     bout.mpl(1);
@@ -1012,7 +1012,7 @@ void qwk_sysop() {
   auto qwk_cfg = read_qwk_cfg();
 
   bool done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     auto sn = qwk_system_name(qwk_cfg);
     bout.cls();
     bout.bprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
@@ -1121,7 +1121,7 @@ static string qwk_current_text(int pos) {
 void config_qwk_bw() {
   bool done = false;
 
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout << "|#1A|#9) Scan E-Mail                |#2" << qwk_current_text(0) << wwiv::endl;
     bout << "|#1B|#9) Delete Scanned E-Mail      |#2" << qwk_current_text(1) << wwiv::endl;
     bout << "|#1C|#9) Set N-Scan of messages     |#2" << qwk_current_text(2) << wwiv::endl;

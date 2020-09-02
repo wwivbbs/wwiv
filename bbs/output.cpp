@@ -239,7 +239,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 
 int Output::bputs(const string& text) {
   CheckForHangup();
-  if (text.empty() || a()->hangup_) { return 0; }
+  if (text.empty() || a()->context().hangup()) { return 0; }
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);

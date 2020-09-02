@@ -92,7 +92,7 @@ static void listbatch() {
   bout.nl(2);
   int current_num = 0;
   for (const auto& b : a()->batch().entry) {
-    if (abort || a()->hangup_) {
+    if (abort || a()->context().hangup()) {
       break;
     }
     string buffer;
@@ -292,7 +292,7 @@ static void bihangup() {
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to Hangup, or any other key to return to system.\r\n";
 
-  while (!bkbhit() && !a()->hangup_) {
+  while (!bkbhit() && !a()->context().hangup()) {
     const auto dd = steady_clock::now();
     const auto elapsed = dd - batch_lastchar;
     if (elapsed > nextbeep) {
@@ -382,7 +382,7 @@ void zmbatchdl(bool bHangupAfterDl) {
       a()->batch().delbatch(cur);
     }
   }
-  while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
+  while (ok && !a()->context().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
@@ -413,7 +413,7 @@ char end_ymodem_batch1() {
       }
     }
   }
-  while (!done && !a()->hangup_ && !bAbort);
+  while (!done && !a()->context().hangup() && !bAbort);
   if (ch == CF) {
     return CF;
   }
@@ -431,7 +431,7 @@ static void end_ymodem_batch() {
   if (!okstart(&ucrc, &abort)) {
     abort = true;
   }
-  if (!abort && !a()->hangup_) {
+  if (!abort && !a()->context().hangup()) {
     const char ch = end_ymodem_batch1();
     if (ch == CX) {
       abort = true;
@@ -511,9 +511,9 @@ void ymbatchdl(bool bHangupAfterDl) {
       a()->batch().delbatch(cur);
     }
   }
-  while (ok && !a()->hangup_ && ssize(a()->batch().entry) > cur && !bRatioBad);
+  while (ok && !a()->context().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
 
-  if (ok && !a()->hangup_) {
+  if (ok && !a()->context().hangup()) {
     end_ymodem_batch();
   }
   if (bRatioBad) {
@@ -796,7 +796,7 @@ int batchdl(int mode) {
       break;
     }
   }
-  while (!done && !a()->hangup_);
+  while (!done && !a()->context().hangup());
   return 0;
 }
 
@@ -842,7 +842,7 @@ void upload(int dn) {
       break;
     }
   }
-  while (!done && !a()->hangup_);
+  while (!done && !a()->context().hangup());
 }
 
 std::chrono::seconds time_to_transfer(int32_t file_size, int32_t modem_speed) {

@@ -421,7 +421,6 @@ public:
   // Figure out a better way
   bool received_short_message_{false};
   bool emchg_{false};
-  bool hangup_{false};
   int chatting_{0};
   bool no_hangup_{false};
   bool in_chatroom_{false};

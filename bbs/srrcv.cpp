@@ -54,7 +54,7 @@ char modemkey(int* tout) {
     return 0;
   }
   auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !a()->hangup_) {
+  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !a()->context().hangup()) {
     CheckForHangup();
   }
   if (bkbhitraw()) {
@@ -94,16 +94,16 @@ int receive_block(char* b, unsigned char* bln, bool use_crc) {
     *bln = bn;
     crc = 0;
     checksum = 0;
-    for (int i = 0; (i < 128) && (!a()->hangup_); i++) {
+    for (int i = 0; (i < 128) && (!a()->context().hangup()); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!use_crc && !a()->hangup_) {
+    if (!use_crc && !a()->context().hangup()) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
         err = 2;
       }
-    } else if (!a()->hangup_) {
+    } else if (!a()->context().hangup()) {
       int cc1 = crc;
       bn = modemkey(&tout);
       bn1 = modemkey(&tout);
@@ -124,16 +124,16 @@ int receive_block(char* b, unsigned char* bln, bool use_crc) {
       err = 3;
     }
     *bln = bn;
-    for (int i = 0; (i < 1024) && (!a()->hangup_); i++) {
+    for (int i = 0; (i < 1024) && (!a()->context().hangup()); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!use_crc && !a()->hangup_) {
+    if (!use_crc && !a()->context().hangup()) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
         err = 2;
       }
-    } else if (!a()->hangup_) {
+    } else if (!a()->context().hangup()) {
       int cc1 = crc;
       bn = modemkey(&tout);
       bn1 = modemkey(&tout);
@@ -206,7 +206,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     }
 
     auto d1 = steady_clock::now();
-    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !a()->hangup_) {
+    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !a()->context().hangup()) {
       CheckForHangup();
       if (a()->localIO()->KeyPressed()) {
         ch = a()->localIO()->GetChar();
@@ -218,7 +218,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
         }
       }
     }
-  } while (!bkbhitraw() && !a()->hangup_);
+  } while (!bkbhitraw() && !a()->context().hangup());
 
   int i = 0;
   do {
@@ -323,7 +323,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     if (i != 5) {
       lasteot = false;
     }
-  } while (!a()->hangup_ && !done);
+  } while (!a()->context().hangup() && !done);
   a()->localIO()->GotoXY(nOldXPos, nOldYPos);
   if (ok) {
     file.Close();

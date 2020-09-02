@@ -210,13 +210,13 @@ void kill_old_email() {
         }
         break;
         }
-      } while (!a()->hangup_ && !done1);
+      } while (!a()->context().hangup() && !done1);
       pFileEmail = OpenEmailFile(false);
       if (!pFileEmail->IsOpen()) {
         break;
       }
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   pFileEmail->Close();
 }
 
@@ -272,7 +272,7 @@ void list_users(int mode) {
   File userList(FilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
 
-  for (int i = 0; (i < nNumUserRecords) && !abort && !a()->hangup_; i++) {
+  for (int i = 0; (i < nNumUserRecords) && !abort && !a()->context().hangup(); i++) {
     a()->usernum = 0;
     if (ncnm > 5) {
       count++;
@@ -501,7 +501,7 @@ void time_bank() {
       done = true;
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }
 
 int getnetnum(const std::string& network_name) {

@@ -186,7 +186,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   auto done = false;
   string rollover_line;
   std::vector<std::string> quoted_lines;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
       // returning true means we back spaced past the current line.
       // intuitive eh?
@@ -201,7 +201,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
         curli = 0;
       }
     }
-    if (a()->hangup_) {
+    if (a()->context().hangup()) {
       done = true;
     }
     check_message_size = true;

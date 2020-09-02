@@ -234,5 +234,5 @@ void vote() {
     } else if (answer == "?") {
       print_quest(mapp, &map[0]);
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 }

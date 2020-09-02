@@ -52,7 +52,7 @@ static std::optional<std::string> get_extract_dir() {
     case 'Q':
       return std::nullopt;
     }
-  } while (!a()->hangup_);
+  } while (!a()->context().hangup());
   return std::nullopt;
 }
 
@@ -94,9 +94,9 @@ void extract_out(const std::string& text, const std::string& title) {
       break;
     }
     bout.nl();
-  } while (!a()->hangup_ && !done);
+  } while (!a()->context().hangup() && !done);
 
-  if (a()->hangup_) {
+  if (a()->context().hangup()) {
     return;
   }
   TextFile file(path, mode);

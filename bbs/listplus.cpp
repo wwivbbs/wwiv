@@ -660,7 +660,7 @@ void sysop_configure() {
 
   load_lp_config();
 
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout.cls();
     printfile(LPSYSOP_NOEXT);
     bout.PutsXYSC(38, 2, lp_config.normal_highlight, fmt::sprintf("%3d", lp_config.normal_highlight));
@@ -972,7 +972,7 @@ void config_file_list() {
   }
 
   bool done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     update_user_config_screen(&u, which);
     int key = onek("Q2346789H!@#$%^&*(");
     switch (key) {
@@ -1213,7 +1213,7 @@ static int remove_filename(const std::string& file_name, int dn) {
   bool abort = false;
   bool rdlp = false;
   int ret = 1;
-  while (!a()->hangup_ && i > 0 && !abort) {
+  while (!a()->context().hangup() && i > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(i);
     if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
       bout.nl();
@@ -1282,7 +1282,7 @@ static int move_filename(const std::string& file_name, int dn) {
 
   tmp_disable_conf(true);
   wwiv::bbs::TempDisablePause diable_pause;
-  while (!a()->hangup_ && nRecNum > 0 && !done) {
+  while (!a()->context().hangup() && nRecNum > 0 && !done) {
     int cp = nRecNum;
     const auto& dir = a()->dirs()[dn];
     auto f = a()->current_file_area()->ReadFile(nRecNum);
@@ -1315,7 +1315,7 @@ static int move_filename(const std::string& file_name, int dn) {
             dliscan1(dn);
           }
         }
-        while (!a()->hangup_ && ss[0] == '?');
+        while (!a()->context().hangup() && ss[0] == '?');
 
         nDestDirNum = -1;
         if (ss[0]) {
@@ -1583,7 +1583,7 @@ void view_file(const std::string& aligned_file_name) {
       i = nrecno(aligned_file_name, i);
     }
   }
-  while (i > 0 && !a()->hangup_ && !abort);
+  while (i > 0 && !a()->context().hangup() && !abort);
   bout.nl();
   pausescr();
 }
@@ -1622,7 +1622,7 @@ int lp_try_to_download(const std::string& file_mask, int dn) {
       i = nrecno(file_mask, i);
     }
   }
-  while (i > 0 && ok && !a()->hangup_);
+  while (i > 0 && ok && !a()->context().hangup());
   if (rtn == -2) {
     return -2;
   }

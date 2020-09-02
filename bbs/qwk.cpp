@@ -223,7 +223,7 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (uint16_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->hangup_) && !qwk_info.abort && msgs_ok; i++) {
+  for (uint16_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->context().hangup()) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (a()->context().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
@@ -262,8 +262,8 @@ void build_qwk_packet() {
     finish_qwk(&qwk_info);
   }
 
-  // Restore on a()->hangup_ too, someone might have hungup in the middle of building the list
-  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->hangup_) {
+  // Restore on a()->context().hangup() too, someone might have hungup in the middle of building the list
+  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->context().hangup()) {
     save_qscan.restore();
     if (qwk_info.abort) {
       sysoplog() << "Aborted";
@@ -282,7 +282,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
   const auto sn = a()->usub[bn].subnum;
 
-  if (a()->hangup_ || (sn < 0)) {
+  if (a()->context().hangup() || (sn < 0)) {
     return;
   }
 
@@ -373,7 +373,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     ++amount;
     checka(&qwk_info->abort);
 
-  } while (!done && !a()->hangup_ && !qwk_info->abort);
+  } while (!done && !a()->context().hangup() && !qwk_info->abort);
   bout.bputch('\r');
 }
 
@@ -520,7 +520,7 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
 static void qwk_remove_null(char *memory, int size) {
   int pos = 0;
 
-  while (pos < size && !a()->hangup_) {
+  while (pos < size && !a()->context().hangup()) {
     if (memory[pos] == 0) {
       (memory)[pos] = ' ';
     }
@@ -631,7 +631,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec_pos += static_cast<uint16_t>(amount_blocks);
 
   int cur_block = 2;
-  while (cur_block <= amount_blocks && !a()->hangup_) {
+  while (cur_block <= amount_blocks && !a()->context().hangup()) {
     size_t this_pos;
     memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
     this_pos = (cur_block - 2) * sizeof(qwk_info->qwk_rec);
@@ -668,7 +668,7 @@ void qwk_menu() {
   const auto qwk_cfg = read_qwk_cfg();
 
   auto done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout.cls();
     printfile("QWK");
     if (so()) {
@@ -993,7 +993,7 @@ void qwk_nscan() {
         write(newfile,  s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
-        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->hangup_); i5++) {
+        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->context().hangup()); i5++) {
           SETREC(f, i5);
           read(f, &u, sizeof(uploadsrec));
           if (u.daten >= a()->context().nscandate()) {
@@ -1135,7 +1135,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   }
 
   if (a()->context().incom()) {
-    while (!done && !qwk_info->abort && !a()->hangup_) {
+    while (!done && !qwk_info->abort && !a()->context().hangup()) {
       bool abort = false;
       qwk_send_file(qwk_file_to_send, &sent, &abort);
       if (sent) {
@@ -1160,7 +1160,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         qwk_info->abort = true;
       }
     }
-  } else while (!done && !a()->hangup_ && !qwk_info->abort) {
+  } else while (!done && !a()->context().hangup() && !qwk_info->abort) {
     bout.Color(2);
     bout << "Move to what dir? ";
     bout.mpl(60);

@@ -103,7 +103,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     return 0;
   }
   bool ok = true;
-  while (nRecordNumber > 0 && ok && !a()->hangup_) {
+  while (nRecordNumber > 0 && ok && !a()->context().hangup()) {
     a()->tleft(true);
     auto f = a()->current_file_area()->ReadFile(nRecordNumber);
     bout.nl();
@@ -260,7 +260,7 @@ void ChangeSubNumber() {
 
 void ChangeDirNumber() {
   auto done = false;
-  while (!done && !a()->hangup_) {
+  while (!done && !a()->context().hangup()) {
     bout << "|#7Select Dir number : |#0";
 
     const auto s = mmkey(MMKeyAreaType::dirs);

@@ -194,7 +194,7 @@ void dirlist(int mode) {
       }
       done = true;
     }
-  } while (!a()->hangup_ && !done);
+  } while (!a()->context().hangup() && !done);
 }
 
 

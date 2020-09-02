@@ -139,7 +139,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
   bool abort = false;
   int current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
-    if (a()->hangup_ || abort) { break; }
+    if (a()->context().hangup() || abort) { break; }
     if (++current_count % 25 == 0) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
@@ -939,9 +939,9 @@ void logoff() {
   }
   setiia(std::chrono::seconds(5));
   a()->remoteIO()->disconnect();
-  // Don't need hangup here, but *do* want to ensure that a()->hangup_ is true.
-  a()->hangup_ = true;
-  VLOG(1) << "Setting a()->hangup_=true in logoff";
+  // Don't need hangup here, but *do* want to ensure that a()->context().hangup() is true.
+  a()->context().hangup(true);
+  VLOG(1) << "Setting a()->context().hangup()=true in logoff";
   if (a()->usernum < 1) {
     return;
   }

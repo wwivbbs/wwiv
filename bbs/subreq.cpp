@@ -400,7 +400,7 @@ void sub_xtr_add(int n, int nn) {
       } catch (const fido::bad_fidonet_address& e) {
         bout << "Bad Address: " << e.what();
       }
-    } while (!done && !a()->hangup_);
+    } while (!done && !a()->context().hangup());
 
   } else {
     int ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);

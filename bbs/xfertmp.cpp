@@ -71,7 +71,7 @@ void move_file_t() {
       bout << "File not found.\r\n";
       pausescr();
     }
-    while (!a()->hangup_ && temp_record_num > 0) {
+    while (!a()->context().hangup() && temp_record_num > 0) {
       auto cur_pos = temp_record_num;
       auto f = a()->current_file_area()->ReadFile(temp_record_num);
       const auto& dir = a()->dirs()[a()->batch().entry[pos].dir()];
@@ -95,7 +95,7 @@ void move_file_t() {
             dliscan1(a()->batch().entry[pos].dir());
           }
         }
-        while (!a()->hangup_ && (dirnum.front() == '?'));
+        while (!a()->context().hangup() && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
           for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
@@ -179,7 +179,7 @@ void removefile() {
   remove_fn = aligns(remove_fn);
   auto record_num = recno(remove_fn);
   auto abort = false;
-  while (!a()->hangup_ && record_num > 0 && !abort) {
+  while (!a()->context().hangup() && record_num > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(record_num);
     if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->usernum)) {
       const auto& dir = a()->dirs()[a()->current_user_dir().subnum];

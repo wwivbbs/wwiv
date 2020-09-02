@@ -86,10 +86,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
   } else {
     char temp[10];
 
-    // The a()->hangup_ check is below so uploads get uploaded even on a()->hangup_
+    // The a()->context().hangup() check is below so uploads get uploaded even on a()->context().hangup()
     done = false;
     while (!done) {
-      if (a()->hangup_) {
+      if (a()->context().hangup()) {
         if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
           dn = a()->config()->new_uploads_dir();
         } else {
@@ -210,7 +210,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bool file_id_avail = get_file_idz(f, a()->dirs()[dn]);
   done = false;
 
-  while (!done && !a()->hangup_ && !file_id_avail) {
+  while (!done && !a()->context().hangup() && !file_id_avail) {
     bout.cls();
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";

@@ -318,7 +318,7 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
 
   for (auto word = 1; word <= num_words; word++) {
     CheckForHangup();
-    if (a()->hangup_) {
+    if (a()->context().hangup()) {
       return false;
     }
 
@@ -675,7 +675,7 @@ static void modify_conf(ConferenceType conftype, int which) {
       done = true;
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
 
   if (changed) {
     save_confs(conftype);
@@ -784,7 +784,7 @@ void conf_edit(ConferenceType conftype) {
       list_confs(conftype, 1);
       break;
     }
-  } while (!done && !a()->hangup_);
+  } while (!done && !a()->context().hangup());
   if (!a()->at_wfc()) {
     changedsl();
   }
@@ -905,7 +905,7 @@ int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs)
         bout << "\r\n|#6Invalid conference designator!\r\n";
       }
     }
-  } while (!ok && !a()->hangup_);
+  } while (!ok && !a()->context().hangup());
   return i;
 }
 
