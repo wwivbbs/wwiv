@@ -160,9 +160,6 @@ public:
   [[nodiscard]] bool IsCarbonCopyEnabled() const { return allow_cc_; }
   void SetCarbonCopyEnabled(bool b) { allow_cc_ = b; }
 
-  [[nodiscard]] bool IsUserOnline() const { return user_online_; }
-  void SetUserOnline(bool b) { user_online_ = b; }
-
   [[nodiscard]] int language_number() const;
 
   void set_language_number(int n);
@@ -194,22 +191,12 @@ public:
   // not usub.
   // The most common usage pattern is:
   // iscan(a()->current_user_sub_num());
-  // if (a()->GetCurrentReadMessageArea() < 0) { ... }
-
-  // Note: This may be set to -1 to mean no area.
-  [[nodiscard]] int GetCurrentReadMessageArea() const { return current_read_message_area; }
-  void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
+  // if (a()->context().GetCurrentReadMessageArea() < 0) { ... }
 
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;
 
   [[nodiscard]] const net_networks_rec& current_net() const;
-
-  [[nodiscard]] uint16_t current_user_sub_conf_num() const { return current_conf_msgarea_; }
-  void set_current_user_sub_conf_num(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
-
-  [[nodiscard]] uint16_t current_user_dir_conf_num() const { return current_conf_filearea_; }
-  void set_current_user_dir_conf_num(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
 
   [[nodiscard]] bool IsUseInternalZmodem() const { return internal_zmodem_; }
   [[nodiscard]] bool IsUseInternalFsed() const; 
@@ -224,9 +211,6 @@ public:
   void SetExecChildProcessWaitTime(int n) { exec_child_process_wait_time_ = n; }
 
   [[nodiscard]] bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
-
-  [[nodiscard]] bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
-  void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
   [[nodiscard]] int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
@@ -259,15 +243,6 @@ public:
 
   [[nodiscard]] bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
-  void SetChatReason(const std::string& chat_reason) {
-    chat_reason_ = chat_reason;
-    chatcall_ = !chat_reason.empty();
-  }
-
-  /** Is the chat call alert (user wanted to chat with the sysop. enabled? */
-  [[nodiscard]] bool chatcall() const { return chatcall_; }
-  /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
-  void clear_chatcall() { chatcall_ = false; }
 
   /** Returns the WWIV SDK Config Object. */
   [[nodiscard]] wwiv::sdk::Config* config() const;
@@ -306,6 +281,8 @@ public:
   std::chrono::seconds add_extratimecall(std::chrono::duration<double> et);
   std::chrono::seconds subtract_extratimecall(std::chrono::duration<double> et);
 
+  void frequent_init();
+
   /*!
    * @function Run main bbs loop - Invoked from the application
    *           main method.
@@ -329,9 +306,7 @@ public:
 
   uint16_t forced_read_subnum_{0};
   bool allow_cc_ = false;
-  bool user_online_{false};
   bool quoting_ = false;
-  bool m_bTimeOnlineLimited{false};
 
   bool newscan_at_login_{false};
   bool internal_zmodem_{true};
@@ -342,9 +317,6 @@ public:
   uint16_t user_dir_num_{0};
   uint16_t user_sub_num_{0};
   // This one should stay in int since -1 is an allowed value.
-  int current_read_message_area{0};
-  uint16_t current_conf_msgarea_{0};
-  uint16_t current_conf_filearea_{0};
   int m_nNumMsgsInCurrentSub{0};
 
   int beginday_node_number_{1};
@@ -354,10 +326,6 @@ public:
   int network_num_{0};
   int m_nMaxNetworkNumber{0};
   int subchg{0};
-  int topdata{0};
-  bool using_modem{false};
-  int screenlinest{25};
-  int defscreenbottom{24};
 
   std::string internetPopDomain;
   std::string internetEmailDomain;
@@ -367,7 +335,6 @@ public:
   bool m_bInternetUseRealNames{false};
   std::string language_dir;
   std::string cur_lang_name;
-  std::string chat_reason_;
   std::string net_email_name;
   std::string temp_directory_;
   std::string batch_directory_;
@@ -417,9 +384,7 @@ public:
 
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
-  bool received_short_message_{false};
   bool emchg_{false};
-  int chatting_{0};
   bool no_hangup_{false};
   bool in_chatroom_{false};
   bool chatline_{false};
@@ -476,7 +441,6 @@ private:
   std::string network_extension_;
   bool user_already_on_{false};
   bool at_wfc_{false};
-  bool chatcall_{false};
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;

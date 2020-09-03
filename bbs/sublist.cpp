@@ -40,7 +40,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void old_sublist() {
-  int oc = a()->current_user_sub_conf_num();
+  int oc = a()->context().current_user_sub_conf_num();
   int os = a()->current_user_sub().subnum;
 
   bool abort = false;
@@ -54,8 +54,8 @@ void old_sublist() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->current_user_sub_conf_num();
-        en = a()->current_user_sub_conf_num();
+        sn = a()->context().current_user_sub_conf_num();
+        en = a()->context().current_user_sub_conf_num();
         break;
       case 'Q':
         return;
@@ -171,7 +171,7 @@ void SubList() {
   char ch;
   bool next;
 
-  int oc = a()->current_user_sub_conf_num();
+  int oc = a()->context().current_user_sub_conf_num();
   int old_sub = a()->current_user_sub().subnum;
   int sn = 0;  // current sub number
   auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
@@ -184,8 +184,8 @@ void SubList() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->current_user_sub_conf_num();
-        en = a()->current_user_sub_conf_num();
+        sn = a()->context().current_user_sub_conf_num();
+        en = a()->context().current_user_sub_conf_num();
         break;
       case 'Q':
         return;
@@ -273,7 +273,7 @@ void SubList() {
         bout.bputs(sdf, &abort, &next);
         bout.nl();
         auto lastp = i1++;
-        if (bout.lines_listed() >= a()->screenlinest - 2) {
+        if (bout.lines_listed() >= a()->context().num_screen_lines() - 2) {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
@@ -339,7 +339,7 @@ void SubList() {
           if (okconf(a()->user())) {
             jump_conf(ConferenceType::CONF_SUBS);
           }
-          sn = en = oc = a()->current_user_sub_conf_num();
+          sn = en = oc = a()->context().current_user_sub_conf_num();
           ns = i = 0;
         }
         if (isdigit(ss.front())) {

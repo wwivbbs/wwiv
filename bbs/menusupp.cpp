@@ -128,27 +128,27 @@ void DirList() {
 
 void UpSubConf() {
   if (okconf(a()->user())) {
-    if ((a()->current_user_sub_conf_num() < a()->subconfs.size() - 1)
-        && (a()->uconfsub[a()->current_user_sub_conf_num() + 1].confnum >= 0)) {
-      a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1);
+    if ((a()->context().current_user_sub_conf_num() < a()->subconfs.size() - 1)
+        && (a()->uconfsub[a()->context().current_user_sub_conf_num() + 1].confnum >= 0)) {
+      a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1);
     } else {
-      a()->set_current_user_sub_conf_num(0);
+      a()->context().set_current_user_sub_conf_num(0);
     }
-    setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
+    setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
   }
 }
 
 void DownSubConf() {
   if (okconf(a()->user())) {
-    if (a()->current_user_sub_conf_num() > 0) {
-      a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() - 1);
+    if (a()->context().current_user_sub_conf_num() > 0) {
+      a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() - 1);
     } else {
-      while (a()->uconfsub[a()->current_user_sub_conf_num() + 1].confnum >= 0 &&
-             a()->current_user_sub_conf_num() < a()->subconfs.size() - 1) {
-        a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1);
+      while (a()->uconfsub[a()->context().current_user_sub_conf_num() + 1].confnum >= 0 &&
+             a()->context().current_user_sub_conf_num() < a()->subconfs.size() - 1) {
+        a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1);
       }
     }
-    setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
+    setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
   }
 }
 
@@ -333,8 +333,8 @@ void GoodBye() {
         a()->user()->SetLastSubNum(a()->current_user_sub_num());
         a()->user()->SetLastDirNum(a()->current_user_dir_num());
         if (okconf(a()->user())) {
-          a()->user()->SetLastSubConf(a()->current_user_sub_conf_num());
-          a()->user()->SetLastDirConf(a()->current_user_dir_conf_num());
+          a()->user()->SetLastSubConf(a()->context().current_user_sub_conf_num());
+          a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
         }
         LogOffCmd();
         Hangup();
@@ -357,8 +357,8 @@ void GoodBye() {
       a()->user()->SetLastSubNum(a()->current_user_sub_num());
       a()->user()->SetLastDirNum(a()->current_user_dir_num());
       if (okconf(a()->user())) {
-        a()->user()->SetLastSubConf(a()->current_user_sub_conf_num());
-        a()->user()->SetLastDirConf(a()->current_user_dir_conf_num());
+        a()->user()->SetLastSubConf(a()->context().current_user_sub_conf_num());
+        a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
       }
       LogOffCmd();
       Hangup();
@@ -705,8 +705,8 @@ void FastGoodBye() {
   a()->user()->SetLastSubNum(a()->current_user_sub_num());
   a()->user()->SetLastDirNum(a()->current_user_dir_num());
   if (okconf(a()->user())) {
-    a()->user()->SetLastSubConf(a()->current_user_sub_conf_num());
-    a()->user()->SetLastDirConf(a()->current_user_dir_conf_num());
+    a()->user()->SetLastSubConf(a()->context().current_user_sub_conf_num());
+    a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
   }
   LogOffCmd();
   Hangup();
@@ -817,13 +817,13 @@ void UploadFilesBBS() {
 
 void UpDirConf() {
   if (okconf(a()->user())) {
-    if (a()->current_user_dir_conf_num() < a()->dirconfs.size() - 1
-        && a()->uconfdir[a()->current_user_dir_conf_num() + 1].confnum >= 0) {
-      a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() + 1);
+    if (a()->context().current_user_dir_conf_num() < a()->dirconfs.size() - 1
+        && a()->uconfdir[a()->context().current_user_dir_conf_num() + 1].confnum >= 0) {
+      a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() + 1);
     } else {
-      a()->set_current_user_dir_conf_num(0);
+      a()->context().set_current_user_dir_conf_num(0);
     }
-    setuconf(ConferenceType::CONF_DIRS, a()->current_user_dir_conf_num(), -1);
+    setuconf(ConferenceType::CONF_DIRS, a()->context().current_user_dir_conf_num(), -1);
   }
 }
 
@@ -838,15 +838,15 @@ void UpDir() {
 
 void DownDirConf() {
   if (okconf(a()->user())) {
-    if (a()->current_user_dir_conf_num() > 0) {
-      a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num());
+    if (a()->context().current_user_dir_conf_num() > 0) {
+      a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num());
     } else {
-      while (a()->uconfdir[a()->current_user_dir_conf_num() + 1].confnum >= 0 &&
-             a()->current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
-        a()->set_current_user_dir_conf_num(a()->current_user_dir_conf_num() + 1);
+      while (a()->uconfdir[a()->context().current_user_dir_conf_num() + 1].confnum >= 0 &&
+             a()->context().current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
+        a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() + 1);
       }
     }
-    setuconf(ConferenceType::CONF_DIRS, a()->current_user_dir_conf_num(), -1);
+    setuconf(ConferenceType::CONF_DIRS, a()->context().current_user_dir_conf_num(), -1);
   }
 }
 

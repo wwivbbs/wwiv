@@ -64,7 +64,7 @@ static void PrintTime() {
   bout.nl(2);
   auto dt = DateTime::now();
   bout << "|#2" << dt.to_string() << wwiv::endl;
-  if (a()->IsUserOnline()) {
+  if (a()->context().IsUserOnline()) {
     auto time_on = std::chrono::system_clock::now() - a()->system_logon_time();
     auto seconds_on = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
     bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;

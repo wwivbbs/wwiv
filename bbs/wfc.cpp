@@ -385,10 +385,10 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'I': {
         Clear();
         a_->usernum = 1;
-        a_->SetUserOnline(true);
+        a_->context().SetUserOnline(true);
         get_user_ppp_addr();
         send_inet_email();
-        a_->SetUserOnline(false);
+        a_->context().SetUserOnline(false);
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
       } break;
@@ -503,7 +503,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       } break;
       }
       Clear();
-      frequent_init();
+      a_->frequent_init();
       a_->ReadCurrentUser(sysop_usernum);
       read_qscn(1, a()->context().qsc, false);
       a_->reset_effective_sl();

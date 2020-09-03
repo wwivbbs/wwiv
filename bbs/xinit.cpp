@@ -664,7 +664,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
   statusMgr->RefreshStatusCache();
-  topdata = LocalIO::topdataUser;
+  localIO()->topdata(LocalIO::topdata_t::user);
 
   // Set DSZLOG
   dsz_logfile_name_ = FilePath(temp_directory(), "dsz.log").string();
@@ -673,13 +673,11 @@ bool Application::InitializeBBS(bool cleanup_network) {
   }
   // SET BBS environment variable.
   set_environment_variable("BBS", full_version());
-  context().InitalizeContext();
+  context().InitalizeContext(*config());
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   usub.resize(config()->max_subs());
   udir.resize(config()->max_dirs());
-  //uconfsub.resize(MAX_CONFERENCES);
-  //uconfdir.resize(MAX_CONFERENCES);
 
   network_extension_ = ".net";
   const auto wwiv_instance = environment_variable("WWIV_INSTANCE");

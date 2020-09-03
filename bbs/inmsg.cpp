@@ -61,10 +61,10 @@ using namespace wwiv::strings;
 static const char crlf[] = "\r\n";
 
 static bool GetMessageToName(MessageEditorData& data) {
-  // If a()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+  // If a()->context().GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
-  if (a()->GetCurrentReadMessageArea() == -1 || data.is_email()) {
+  if (a()->context().GetCurrentReadMessageArea() == -1 || data.is_email()) {
     return false;
   }
 
@@ -407,7 +407,7 @@ static std::filesystem::path FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& to_name) {
-  if (a()->subs().subs().empty() && a()->GetCurrentReadMessageArea() <= 0) {
+  if (a()->subs().subs().empty() && a()->context().GetCurrentReadMessageArea() <= 0) {
     return;
   }
   if (is_email) {

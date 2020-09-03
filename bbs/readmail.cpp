@@ -799,10 +799,10 @@ void readmail(int mode) {
           break;
         }
         if (so()) {
-          if (!a()->IsUserOnline()) {
+          if (!a()->context().IsUserOnline()) {
             a()->set_current_user_sub_num(0);
-            a()->SetCurrentReadMessageArea(0);
-            a()->set_current_user_sub_conf_num(0);
+            a()->context().SetCurrentReadMessageArea(0);
+            a()->context().set_current_user_sub_conf_num(0);
           }
           tmp_disable_conf(true);
           bout.nl();

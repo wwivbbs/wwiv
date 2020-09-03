@@ -528,8 +528,8 @@ static void insert_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (a()->GetCurrentReadMessageArea() >= n) {
-    a()->SetCurrentReadMessageArea(a()->GetCurrentReadMessageArea() + 1);
+  if (a()->context().GetCurrentReadMessageArea() >= n) {
+    a()->context().SetCurrentReadMessageArea(a()->context().GetCurrentReadMessageArea() + 1);
   }
 }
 
@@ -584,10 +584,10 @@ static void delete_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (a()->GetCurrentReadMessageArea() == n) {
-    a()->SetCurrentReadMessageArea(-1);
-  } else if (a()->GetCurrentReadMessageArea() > n) {
-    a()->SetCurrentReadMessageArea(a()->GetCurrentReadMessageArea() - 1);
+  if (a()->context().GetCurrentReadMessageArea() == n) {
+    a()->context().SetCurrentReadMessageArea(-1);
+  } else if (a()->context().GetCurrentReadMessageArea() > n) {
+    a()->context().SetCurrentReadMessageArea(a()->context().GetCurrentReadMessageArea() - 1);
   }
 }
 

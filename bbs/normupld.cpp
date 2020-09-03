@@ -234,7 +234,7 @@ void normalupload(int dn) {
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
-            if (a()->IsUserOnline()) {
+            if (a()->context().IsUserOnline()) {
               a()->UpdateTopScreen();
             }
           }

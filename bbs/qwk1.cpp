@@ -751,7 +751,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       }
     }
 
-    if (a()->GetCurrentReadMessageArea() < 0) {
+    if (a()->context().GetCurrentReadMessageArea() < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 
@@ -842,7 +842,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
 
   if (m.stored_as != 0xffffffff) {
     while (!a()->context().hangup()) {
-      int f = qwk_iscan_literal(a()->GetCurrentReadMessageArea());
+      int f = qwk_iscan_literal(a()->context().GetCurrentReadMessageArea());
 
       if (f == -1) {
         bout.nl();

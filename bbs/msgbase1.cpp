@@ -168,7 +168,7 @@ void post(const PostData& post_data) {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
     return;
   }
-  if (a()->GetCurrentReadMessageArea() < 0) {
+  if (a()->context().GetCurrentReadMessageArea() < 0) {
     bout << "\r\nNo subs available.\r\n\n";
     return;
   }
@@ -190,7 +190,7 @@ void post(const PostData& post_data) {
   MessageEditorData data;
   messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
-  data.anonymous_flag = a()->subs().sub(a()->GetCurrentReadMessageArea()).anony & 0x0f;
+  data.anonymous_flag = a()->subs().sub(a()->context().GetCurrentReadMessageArea()).anony & 0x0f;
   if (data.anonymous_flag == 0 && a()->effective_slrec().ability & ability_post_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
@@ -217,7 +217,7 @@ void post(const PostData& post_data) {
   }
   const auto start_time = DateTime::now().to_system_clock();
 
-  write_inst(INST_LOC_POST, a()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
+  write_inst(INST_LOC_POST, a()->context().GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
   data.fsed_flags = FsedFlags::FSED;
   data.msged_flags =
@@ -418,11 +418,12 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
 
     if (a()->GetNumMessagesInCurrentMessageArea() > 0 &&
         i <= a()->GetNumMessagesInCurrentMessageArea() &&
-        get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
+        get_post(i)->qscan > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
       const auto status = a()->status_manager()->GetStatus();
-      a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = status->GetQScanPointer() - 1;
+      a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] =
+          status->GetQScanPointer() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);
@@ -474,7 +475,7 @@ void ScanMessageTitles() {
     return;
   }
   bout.nl();
-  if (a()->GetCurrentReadMessageArea() < 0) {
+  if (a()->context().GetCurrentReadMessageArea() < 0) {
     bout << "No subs available.\r\n";
     return;
   }
@@ -501,7 +502,7 @@ void remove_post() {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n\n";
     return;
   }
-  if (a()->GetCurrentReadMessageArea() < 0) {
+  if (a()->context().GetCurrentReadMessageArea() < 0) {
     bout << "\r\nNo subs available.\r\n\n";
     return;
   }

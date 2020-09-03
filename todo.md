@@ -2,6 +2,14 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
+
+## FSED Externalize
+
+* move topdata to localio.
+* pass localio into session context
+* 
+
+
 ## Build Cleanup.
 * add some cmake install targets
   cmake .. -DCMAKE_INSTALL_PREFIX=<location>

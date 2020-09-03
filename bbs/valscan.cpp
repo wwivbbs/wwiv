@@ -58,7 +58,7 @@ void valscan() {
     if (!iscan(sn)) {
       continue;
     }
-    if (a()->GetCurrentReadMessageArea() < 0) {
+    if (a()->context().GetCurrentReadMessageArea() < 0) {
       return;
     }
 

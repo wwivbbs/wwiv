@@ -76,13 +76,6 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
   auto tFileTime = File::Exists(tft_fn) ? File::last_write_time(tft_fn) : 0;
 
   auto num_screen_lines = a()->user()->GetScreenLines();
-  if (!a()->using_modem) {
-    auto newtl = a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()
-                     ? 0
-                     : a()->localIO()->GetTopLine();
-    num_screen_lines = a()->defscreenbottom + 1 - newtl;
-  }
-
   const auto cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(),
                                 std::to_string(a()->user()->GetScreenChars()),
                                 std::to_string(num_screen_lines), std::to_string(numlines), "");

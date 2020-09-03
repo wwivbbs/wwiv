@@ -67,9 +67,9 @@ void tmp_disable_conf(bool disable) {
     disable_conf_cnt++;
     if (okconf(a()->user())) {
       a()->context().disable_conf(true);
-      ocs = a()->current_user_sub_conf_num();
+      ocs = a()->context().current_user_sub_conf_num();
       oss = a()->current_user_sub().subnum;
-      ocd = a()->current_user_dir_conf_num();
+      ocd = a()->context().current_user_dir_conf_num();
       osd = a()->current_user_dir().subnum;
       setuconf(ConferenceType::CONF_SUBS, -1, oss);
       setuconf(ConferenceType::CONF_DIRS, -1, osd);

@@ -242,7 +242,8 @@ void display_message_text(const std::string& text, bool* next) {
   }
   bout.Color(0);
   bout.nl();
-  if (ansi && a()->topdata && a()->IsUserOnline()) {
+  if (ansi && a()->localIO()->topdata() != LocalIO::topdata_t::none &&
+      a()->context().IsUserOnline()) {
     a()->UpdateTopScreen();
   }
   bout.disable_mci();
@@ -753,8 +754,8 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
 }
 
 static void update_qscan(uint32_t qscan) {
-  if (qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
-    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = qscan;
+  if (qscan > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) {
+    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] = qscan;
   }
 
 #ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER

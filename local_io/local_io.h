@@ -49,9 +49,7 @@ public:
   static constexpr int cursorNormal = 1;
   static constexpr int cursorSolid = 2;
 
-  static constexpr int topdataNone = 0;
-  static constexpr int topdataSystem = 1;
-  static constexpr int topdataUser = 2;
+  enum class topdata_t { none, system, user };
 
   [[nodiscard]] int GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
@@ -128,6 +126,10 @@ public:
   virtual void DisableLocalIO() {}
   virtual void ReenableLocalIO() {}
 
+  [[nodiscard]] topdata_t topdata() const noexcept { return topdata_; }
+  void topdata(topdata_t t) { topdata_ = t; }
+  void increment_topdata();
+
   // curatr_provider interface
   virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
   virtual wwiv::local_io::curatr_provider* curatr_provider();
@@ -143,6 +145,7 @@ private:
   uint8_t user_editor_color_{9};
   uint8_t edit_line_color_{31};
   wwiv::local_io::curatr_provider* curatr_;
+  topdata_t topdata_{topdata_t::none};
 };
 
 #endif // __INCLUDED_PLATFORM_LOCALIO_H__

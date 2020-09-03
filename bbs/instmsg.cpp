@@ -141,7 +141,7 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
   switch (ih->main) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
-    if (ih->msg_size > 0 && a()->IsUserOnline() && !a()->context().hangup()) {
+    if (ih->msg_size > 0 && a()->context().IsUserOnline() && !a()->context().hangup()) {
       const auto line = bout.SaveCurrentLine();
       bout.nl(2);
       if (a()->in_chatroom_) {
@@ -314,7 +314,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
 
   unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
-  if (a()->IsUserOnline()) {
+  if (a()->context().IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
     if (chat_invis) {
       cf |= INST_FLAGS_INVIS;
@@ -338,7 +338,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>(a()->using_modem ? a()->modem_speed_ : 0);
+    uint16_t ms = static_cast<uint16_t>(a()->context().using_modem() ? a()->modem_speed_ : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;
@@ -374,7 +374,7 @@ void write_inst(int loc, int subloc, int flags) {
   if (loc == INST_LOC_DOWN) {
     re_write = true;
   } else {
-    if (a()->IsUserOnline()) {
+    if (a()->context().IsUserOnline()) {
       if (ti.user != a()->usernum) {
         re_write = true;
         if (a()->usernum > 0 && a()->usernum <= a()->config()->max_users()) {

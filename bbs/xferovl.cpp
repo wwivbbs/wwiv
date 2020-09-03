@@ -728,7 +728,7 @@ static void config_nscan() {
     return;
   }
   bool done1 = false;
-  const int oc = a()->current_user_dir_conf_num();
+  const int oc = a()->context().current_user_dir_conf_num();
   const int os = a()->current_user_dir().subnum;
 
   do {
@@ -926,7 +926,7 @@ void finddescription() {
 
         if (desc.find(search_string) != std::string::npos) {
           if (need_title) {
-            if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
+            if (bout.lines_listed() >= a()->context().num_screen_lines() - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {

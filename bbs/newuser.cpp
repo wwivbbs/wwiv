@@ -443,7 +443,7 @@ void input_screensize() {
 
   a()->user()->SetScreenChars(x);
   a()->user()->SetScreenLines(y);
-  a()->screenlinest = y;
+  a()->context().num_screen_lines(y);
 }
 
 bool CheckPasswordComplexity(User*, string& password) {
@@ -598,7 +598,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 // Clears a()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 static bool CreateNewUserRecord() {
-  a()->context().ResetQScanPointers();
+  a()->context().ResetQScanPointers(*a()->config());
 
   auto u = a()->user();
   a()->reset_effective_sl();
@@ -969,7 +969,7 @@ void newuser() {
                                   a()->instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
-  a()->screenlinest = 25;
+  a()->context().num_screen_lines(25);
 
   if (!CreateNewUserRecord()) {
     return;
@@ -1207,13 +1207,13 @@ bool check_dupes(const char* pszPhoneNumber) {
 void noabort(const char* file_name) {
   bool oic = false;
 
-  if (a()->using_modem) {
+  if (a()->context().using_modem()) {
     oic = a()->context().incom();
     a()->context().incom(false);
     bout.dump();
   }
   printfile(file_name);
-  if (a()->using_modem) {
+  if (a()->context().using_modem()) {
     bout.dump();
     a()->context().incom(oic);
   }
@@ -1235,8 +1235,8 @@ void DoMinimalNewUser() {
 
   bout.newline = false;
   bool done = false;
-  int nSaveTopData = a()->topdata;
-  a()->topdata = LocalIO::topdataNone;
+  auto saved_topdata = a()->localIO()->topdata();
+  a()->localIO()->topdata(LocalIO::topdata_t::none);
   a()->UpdateTopScreen();
   do {
     bout.cls();
@@ -1413,7 +1413,7 @@ void DoMinimalNewUser() {
   if (a()->editors.size() && u->HasAnsi()) {
     u->SetDefaultEditor(1);
   }
-  a()->topdata = nSaveTopData;
+  a()->localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();
   bout.newline = true;
 }

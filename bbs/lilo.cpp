@@ -303,7 +303,7 @@ static void CheckCallRestrictions() {
 }
 
 static void logon_guest() {
-  a()->SetUserOnline(true);
+  a()->context().SetUserOnline(true);
   bout.nl(2);
   input_ansistat();
 
@@ -342,8 +342,8 @@ void getuser() {
 
   // Let's set this to 0 here since we don't have a user yet.
   a()->usernum = 0;
-  a()->set_current_user_sub_conf_num(0);
-  a()->set_current_user_dir_conf_num(0);
+  a()->context().set_current_user_sub_conf_num(0);
+  a()->context().set_current_user_dir_conf_num(0);
   a()->effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
@@ -760,7 +760,7 @@ static void DisplayUserLoginInformation() {
     read_inet_addr(internet_addr, a()->usernum);
     bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
   }
-  if (a()->IsTimeOnlineLimited()) {
+  if (a()->context().IsTimeOnlineLimited()) {
     bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
   }
 }
@@ -838,7 +838,7 @@ void logon() {
     Hangup();
     return;
   }
-  a()->SetUserOnline(true);
+  a()->context().SetUserOnline(true);
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
   get_user_ppp_addr();
   bout.ResetColors();
@@ -897,18 +897,18 @@ void logon() {
 
   // Handle case of first conf with no subs avail
   if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
-    for (a()->set_current_user_sub_conf_num(0); 
-         (a()->current_user_sub_conf_num() < ssize(a()->subconfs))
-         && (a()->uconfsub[a()->current_user_sub_conf_num()].confnum != -1);
-         a()->set_current_user_sub_conf_num(a()->current_user_sub_conf_num() + 1)) {
-      setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
+    for (a()->context().set_current_user_sub_conf_num(0); 
+         (a()->context().current_user_sub_conf_num() < ssize(a()->subconfs))
+         && (a()->uconfsub[a()->context().current_user_sub_conf_num()].confnum != -1);
+         a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1)) {
+      setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
       if (a()->usub[0].subnum != -1) {
         break;
       }
     }
     if (a()->usub[0].subnum == -1) {
-      a()->set_current_user_sub_conf_num(0);
-      setuconf(ConferenceType::CONF_SUBS, a()->current_user_sub_conf_num(), -1);
+      a()->context().set_current_user_sub_conf_num(0);
+      setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
     }
   }
 
@@ -1016,7 +1016,7 @@ void logoff() {
       pFileEmail->Close();
     }
   }
-  if (a()->received_short_message_) {
+  if (received_short_message()) {
     File smwFile(FilePath(a()->config()->datadir(), SMW_DAT));
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));

@@ -41,7 +41,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   [[maybe_unused]] auto _ = create_chain_file();
 
   // get ready to run it
-  if (a()->IsUserOnline()) {
+  if (a()->context().IsUserOnline()) {
     a()->WriteCurrentUser();
     write_qscn(a()->usernum, a()->context().qsc, false);
   }
@@ -75,7 +75,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   File::set_current_directory(a()->bbspath());
 
   // Reread the user record.
-  if (a()->IsUserOnline()) {
+  if (a()->context().IsUserOnline()) {
     a()->ReadCurrentUser();
     read_qscn(a()->usernum, a()->context().qsc, false, true);
     a()->UpdateTopScreen();

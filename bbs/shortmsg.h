@@ -43,4 +43,10 @@ private:
 
 void rsm(int nUserNum, wwiv::sdk::User* pUser, bool bAskToSaveMsgs);
 
+// True if we've received a short message this session.
+bool received_short_message();
+
+// Set the state if a short message has been received this session.
+void received_short_message(bool b);
+
 #endif // __INCLUDED_BBS_SHORTMSG_H__

@@ -355,7 +355,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
     const auto& wh = dynamic_cast<const WWIVMessageHeader&>(h);
-    if (wh.last_read() > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
+    if (wh.last_read() > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) {
       line[0] = '*';
     }
   }
@@ -430,7 +430,8 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
 static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(
+      api->Open(a()->current_sub(), a()->context().GetCurrentReadMessageArea()));
   if (!area) {
     ReadMessageResult result;
     result.command = 0;
@@ -615,7 +616,8 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
 static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(
+      api->Open(a()->current_sub(), a()->context().GetCurrentReadMessageArea()));
   if (!area) {
     return;
   }
@@ -631,11 +633,11 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   bout << "|#7" << static_cast<unsigned char>(198)
        << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
-  auto num_title_lines = std::max<int>(a()->screenlinest - 6, 1);
+  auto num_title_lines = std::max<int>(a()->context().num_screen_lines() - 6, 1);
   int i = 0;
   while (!abort && ++i <= num_title_lines) {
     ++msgnum;
-    const string line = CreateLine(area->ReadMessage(msgnum), msgnum);
+    const auto line = CreateLine(area->ReadMessage(msgnum), msgnum);
     bout.bpla(line, &abort);
     if (msgnum >= num_msgs_in_area) {
       abort = true;
@@ -1272,7 +1274,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
 
   int val = 0;
   iscan(a()->current_user_sub_num());
-  if (a()->GetCurrentReadMessageArea() < 0) {
+  if (a()->context().GetCurrentReadMessageArea() < 0) {
     bout.nl();
     bout << "No subs available.\r\n\n";
     return;

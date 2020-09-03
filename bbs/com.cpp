@@ -42,8 +42,8 @@ extern char str_quit[];
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of a()->context().hangup()
 bool CheckForHangup() {
-  if (!a()->context().hangup() && a()->using_modem && !a()->remoteIO()->connected()) {
-    if (a()->IsUserOnline()) {
+  if (!a()->context().hangup() && a()->context().using_modem() && !a()->remoteIO()->connected()) {
+    if (a()->context().IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
     Hangup();

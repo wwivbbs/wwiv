@@ -327,14 +327,15 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
     if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
         && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
-      if ((get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) ||
+      if ((get_post(i)->qscan > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) ||
           qwk_percent) {
         qwk_start_read(i, qwk_info);  // read messsage
       }
     }
 
     auto status = a()->status_manager()->GetStatus();
-    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = status->GetQScanPointer() - 1;
+    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] =
+        status->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
   } 
   bout.Color(0);
@@ -343,7 +344,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   a()->context().clear_irt();
 
-  if (a()->GetCurrentReadMessageArea() < 0) {
+  if (a()->context().GetCurrentReadMessageArea() < 0) {
     return;
   }
   // Used to be inside do loop
@@ -397,8 +398,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
 
   if (p->qscan >
-      a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
-    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = p->qscan; // And here
+      a()->context()
+          .qsc_p[a()->context().GetCurrentReadMessageArea()]) { // Update qscan pointer right here
+    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] = p->qscan; // And here
   }
 }
 

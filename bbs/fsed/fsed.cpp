@@ -99,9 +99,9 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       view->draw_current_line(e, previous_line);
     });
 
-  const auto saved_topdata = a()->topdata;
-  if (a()->topdata != LocalIO::topdataNone) {
-    a()->topdata = LocalIO::topdataNone;
+  const auto saved_topdata = a()->localIO()->topdata();
+  if (a()->localIO()->topdata() != LocalIO::topdata_t::none) {
+    a()->localIO()->topdata(LocalIO::topdata_t::none);
     a()->UpdateTopScreen();
   }
 
@@ -134,7 +134,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
     }
   }
 
-  a()->topdata = saved_topdata;
+  a()->localIO()->topdata(saved_topdata);
   a()->UpdateTopScreen();
 
   return state.save;

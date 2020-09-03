@@ -277,15 +277,15 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     strcpy(out_text, szTemp);
     return;
   }
-  int nTopDataSaved = a()->topdata;
-  if (a()->topdata != LocalIO::topdataNone) {
-    a()->topdata = LocalIO::topdataNone;
+  const auto saved_topdata = a()->localIO()->topdata();
+  if (a()->localIO()->topdata() != LocalIO::topdata_t::none) {
+    a()->localIO()->topdata(LocalIO::topdata_t::none);
     a()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
   }
-  auto nTopLineSaved = a()->localIO()->GetTopLine();
+  auto saved_topline = a()->localIO()->GetTopLine();
   a()->localIO()->SetTopLine(0);
   int pos = 0;
   int nLength = 0;
@@ -501,8 +501,8 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     out_text[0] = '\0';
   }
 
-  a()->topdata = nTopDataSaved;
-  a()->localIO()->SetTopLine(nTopLineSaved);
+  a()->localIO()->topdata(saved_topdata);
+  a()->localIO()->SetTopLine(saved_topline);
 
   bout.Color(0);
   bout.nl();

@@ -149,7 +149,7 @@ bool iscan1(int sub_index) {
   }
 
   // set sub
-  a()->SetCurrentReadMessageArea(sub_index);
+  a()->context().SetCurrentReadMessageArea(sub_index);
   a()->subchg = 0;
 
   // read in first rec, specifying # posts

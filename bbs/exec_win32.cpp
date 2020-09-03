@@ -134,7 +134,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   int counter = 0;
   for (;;) {
     counter++;
-    if (a()->using_modem && (!a()->remoteIO()->connected())) {
+    if (a()->context().using_modem() && (!a()->remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
       LogToSync("Setting Hangup Event and Sleeping\r\n");
       ::Sleep(1000);
@@ -335,7 +335,7 @@ int exec_cmdline(const string& commandLine, int flags) {
   bool bShouldUseSync = false;
   bool bUsingSync = false;
   int nSyncMode = 0;
-  if (a()->using_modem) {
+  if (a()->context().using_modem()) {
     if (flags & EFLAG_FOSSIL) {
       bShouldUseSync = true;
     } else if (flags & EFLAG_COMIO) {
@@ -386,7 +386,7 @@ int exec_cmdline(const string& commandLine, int flags) {
   }
   si.lpTitle = title.get();
 
-  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
+  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->context().using_modem()) {
     a()->remoteIO()->close(true);
   }
 
@@ -415,7 +415,7 @@ int exec_cmdline(const string& commandLine, int flags) {
     sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Message: " << error_message;
 
     // If we return here, we may have to reopen the communications port.
-    if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
+    if (a()->context().ok_modem_stuff() && !bUsingSync && a()->context().using_modem()) {
       a()->remoteIO()->open();
     }
     // Restore old binary mode.
@@ -465,7 +465,7 @@ int exec_cmdline(const string& commandLine, int flags) {
   a()->remoteIO()->set_binary_mode(saved_binary_mode);
 
   // reengage comm stuff
-  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
+  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->context().using_modem()) {
     a()->remoteIO()->open();
   }
 

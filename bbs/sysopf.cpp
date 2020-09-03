@@ -716,7 +716,7 @@ void mailr() {
             bout << "Mail file changed; try again.\r\n";
           }
           pFileEmail->Close();
-          if (!a()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
+          if (!a()->context().IsUserOnline() && m.touser == 1 && m.tosys == 0) {
             a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
           }
         }

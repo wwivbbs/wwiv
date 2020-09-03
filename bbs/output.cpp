@@ -71,7 +71,7 @@ void Output::ResetColors() {
 void Output::GotoXY(int x, int y) {
   if (okansi(a()->user())) {
     // Don't get Y get too big or mTelnet will not be happy
-    y = std::min<int>(y, a()->screenlinest);
+    y = std::min<int>(y, a()->context().num_screen_lines());
     bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
 }

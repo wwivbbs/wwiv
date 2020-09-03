@@ -159,7 +159,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       bout.nl(2);
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
-      if (a()->IsUserOnline()) {
+      if (a()->context().IsUserOnline()) {
         a()->UpdateTopScreen();
       }
     } else {
@@ -221,7 +221,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.ansi && !okansi()) {
     return false;
   }
-  if (c.local_only && a()->using_modem) {
+  if (c.local_only && a()->context().using_modem()) {
     return false;
   }
   if (c.sl > a()->effective_sl()) {

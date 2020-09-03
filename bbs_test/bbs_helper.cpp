@@ -82,7 +82,7 @@ void BbsHelper::SetUp() {
   user_ = a()->user();
   // No pause in tests.
   user_->ClearStatusFlag(User::pauseOnPage);
-  a()->screenlinest = std::numeric_limits<int>::max();
+  a()->context().num_screen_lines(std::numeric_limits<int>::max());
 
   // Create a reasonable default user.  Some tests (bputch/bputs tests)
   // Require a properly constructed user.

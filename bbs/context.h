@@ -18,35 +18,41 @@
 #ifndef __INCLUDED_BBS_CONTEXT_H__
 #define __INCLUDED_BBS_CONTEXT_H__
 
+#include "core/wwivport.h"
+#include "sdk/config.h"
 #include <cstdint>
 #include <memory>
 #include <string>
 
-#include "core/wwivport.h"
+class LocalIO;
 
-class Application;
+namespace wwiv::bbs {
 
-namespace wwiv {
-namespace bbs {
+enum class chatting_t { none, one_way, two_way };
 
 class SessionContext {
 public:
-  explicit SessionContext(Application* a);
+  explicit SessionContext(LocalIO* io);
   virtual ~SessionContext() = default;
 
   /**
    * Initializes an empty context, called after Config.dat
    * has been read and processed.
    */
-  void InitalizeContext();
+  void InitalizeContext(const wwiv::sdk::Config& config);
   /**
    * Clears the qscan pointers.
    */
-  void ResetQScanPointers();
+  void ResetQScanPointers(const wwiv::sdk::Config& config);
+
   /**
    * Resets the application level context.
    */
   void reset();
+
+  /** Resets the local IO pointer */
+  void reset_local_io(LocalIO* io);
+
   bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
   void ok_modem_stuff(bool o) { ok_modem_stuff_ = o; }
 
@@ -92,11 +98,48 @@ public:
   [[nodiscard]] bool hangup() const noexcept { return hangup_; }
   void hangup(bool h) { hangup_ = h; }
 
+  [[nodiscard]] int num_screen_lines() const noexcept { return num_screen_lines_; }
+  void num_screen_lines(int n) { num_screen_lines_ = n; }
+
+  [[nodiscard]] chatting_t chatting() const noexcept { return chatting_; }
+  void chatting(chatting_t n) { chatting_ = n; }
+
+  [[nodiscard]] bool using_modem() const noexcept { return using_modem_; }
+  void using_modem(bool n) { using_modem_ = n; }
+
+  void chat_reason(const std::string& chat_reason) {
+    chat_reason_ = chat_reason;
+    chatcall_ = !chat_reason.empty();
+  }
+
+  [[nodiscard]] std::string chat_reason() const noexcept { return chat_reason_; }
+
+  /** Is the chat call alert (user wanted to chat with the sysop. enabled? */
+  [[nodiscard]] bool chatcall() const { return chatcall_; }
+  /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
+  void clear_chatcall() { chatcall_ = false; }
+
+  // Note: This may be set to -1 to mean no area.
+  [[nodiscard]] int GetCurrentReadMessageArea() const { return current_read_message_area; }
+  void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
+
+  [[nodiscard]] uint16_t current_user_sub_conf_num() const { return current_conf_msgarea_; }
+  void set_current_user_sub_conf_num(int n) { current_conf_msgarea_ = static_cast<uint16_t>(n); }
+
+  [[nodiscard]] uint16_t current_user_dir_conf_num() const { return current_conf_filearea_; }
+  void set_current_user_dir_conf_num(int n) { current_conf_filearea_ = static_cast<uint16_t>(n); }
+
+  [[nodiscard]] bool IsUserOnline() const { return user_online_; }
+  void SetUserOnline(bool b) { user_online_ = b; }
+
+  [[nodiscard]] bool IsTimeOnlineLimited() const { return time_limited_; }
+  void SetTimeOnlineLimited(bool b) { time_limited_ = b; }
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
 private:
-  Application* a_;
+  LocalIO* io_;
   std::unique_ptr<uint32_t[]> qscan_;
 
   bool ok_modem_stuff_{false};
@@ -111,9 +154,19 @@ private:
   bool scanned_files_{false};
   bool made_find_str_{false};
   bool hangup_{false};
+  int num_screen_lines_{25};
+  chatting_t chatting_{chatting_t::none};
+  bool using_modem_{false};
+  bool chatcall_{false};
+  std::string chat_reason_;
+
+  int current_read_message_area{0};
+  uint16_t current_conf_msgarea_{0};
+  uint16_t current_conf_filearea_{0};
+  bool user_online_{false};
+  bool time_limited_{false};
 };
 
-} // namespace bbs
-} // namespace wwiv
+} // namespace wwiv::bbs
 
 #endif // __INCLUDED_BBS_CONTEXT_H__

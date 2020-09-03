@@ -93,7 +93,7 @@ int Output::bputch(char c, bool use_buffer) {
       x_ = 0;
       bout.lines_listed_++;
       // change Build3 + 5.0 to fix message read.
-      if (bout.lines_listed() >= (a()->screenlinest - 1)) {
+      if (bout.lines_listed() >= (a()->context().num_screen_lines() - 1)) {
         if (a()->user()->HasPause()) {
           pausescr();
         }

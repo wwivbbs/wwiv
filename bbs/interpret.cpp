@@ -104,7 +104,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'i':                               // Illegal log-ons
       return to_string(u().GetNumIllegalLogons());
     case 'J': {                             // Message conference
-      const int x = a()->current_user_sub_conf_num();
+      const int x = a()->context().current_user_sub_conf_num();
       if (!has_userconf_to_subconf(x)) {
         return {};
       }
@@ -115,7 +115,7 @@ std::string MacroContext::interpret(char ch) const {
       return a()->subconfs[cnum].conf_name;
     }
     case 'j': { // Transfer conference
-      const int x = a()->current_user_dir_conf_num();
+      const int x = a()->context().current_user_dir_conf_num();
       if (!has_userconf_to_dirconf(x)) {
         return {};
       }

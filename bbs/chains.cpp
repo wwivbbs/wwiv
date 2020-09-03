@@ -180,7 +180,7 @@ void do_chains() {
     if (c.ansi && !okansi()) {
       continue;
     }
-    if (c.local_only && a()->using_modem) {
+    if (c.local_only && a()->context().using_modem()) {
       continue;
     }
     if (c.sl > a()->effective_sl()) {

@@ -89,7 +89,7 @@ struct pcboard_sys_rec {
 static constexpr int NULL_HANDLE = 0;
 
 static int GetDoor32CommType() {
-  if (!a()->using_modem) {
+  if (!a()->context().using_modem()) {
     return 0;
   }
 #ifdef _WIN32
@@ -142,7 +142,7 @@ static void GetNamePartForDropFile(bool lastName, char* name) {
 
 static long GetMinutesRemainingForDropFile() {
   const auto time_left = std::max<long>((nsl() / 60) - 1L, 0);
-  if (!a()->using_modem) {
+  if (!a()->context().using_modem()) {
     // When we generate a dropfile from the WFC, give it a suitable amount
     // of time remaining vs. 1 minute since we don't have an active session.
     // Also allow at least an hour for all local users.
@@ -161,7 +161,7 @@ void CreateDoorInfoDropFile() {
     f.WriteLine(a()->config()->sysop_name());
     f.WriteLine();
     f.WriteLine(fmt::sprintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
-    f.WriteLine(fmt::sprintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
+    f.WriteLine(fmt::sprintf ("%u BAUD,N,8,1", ((a()->context().using_modem()) ? a()->modem_speed_ : 0)));
     f.WriteLine("0");
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       char szTemp[81];
@@ -233,7 +233,7 @@ void CreatePCBoardSysDropFile() {
     pcb.time_logged[4] = time_has_hhmmss[4];
     pcb.time_limit = static_cast<int16_t>(nsl());
     pcb.down_limit = 1024;
-    pcb.curconf = static_cast<char>(a()->current_user_sub_conf_num());
+    pcb.curconf = static_cast<char>(a()->context().current_user_sub_conf_num());
     strcpy(pcb.slanguage, a()->cur_lang_name.c_str());
     strcpy(pcb.name, a()->user()->GetName());
     pcb.sminsleft = pcb.time_limit;
@@ -249,7 +249,7 @@ void CreatePCBoardSysDropFile() {
     to_char_array_no_null(pcb.lastevent, status->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
-    pcb.lastconfarea = static_cast<int16_t>(a()->current_user_sub_conf_num());
+    pcb.lastconfarea = static_cast<int16_t>(a()->context().current_user_sub_conf_num());
     // End Additions
 
     pcbFile.Write(&pcb, sizeof(pcb));
@@ -377,9 +377,9 @@ void CreateDoorSysDropFile() {
     char szLine[255];
     const auto cspeed = std::to_string(a()->modem_speed_);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
-            (a()->using_modem) ? a()->primary_port() : 0, cspeed.c_str(), '8',
+            (a()->context().using_modem()) ? a()->primary_port() : 0, cspeed.c_str(), '8',
             a()->instance_number(), // node
-            (a()->using_modem) ? a()->modem_speed_ : 38400,
+            (a()->context().using_modem()) ? a()->modem_speed_ : 38400,
             'Y', // screen display
             'N', // log to printer
             'N', // page bell
@@ -500,7 +500,7 @@ string create_chain_file() {
     file.Write(fmt::sprintf("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
                             a()->context().incom(), nsl(), gfilesdir, a()->config()->datadir(),
                             temporary_log_filename));
-    if (a()->using_modem) {
+    if (a()->context().using_modem()) {
       file.WriteLine(a()->modem_speed_);
     } else {
       file.WriteLine("KB");

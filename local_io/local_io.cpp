@@ -57,3 +57,17 @@ EditlineResult LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_ke
 EditlineResult LocalIO::EditLine(std::string& s, int len, AllowedKeys allowed_keys) {
   return EditLine(s, len, allowed_keys, {});
 }
+
+void LocalIO::increment_topdata() {
+  switch (topdata_) {
+  case topdata_t::none:
+    topdata_ = topdata_t::system;
+    break;
+  case topdata_t::system:
+    topdata_ = topdata_t::user;
+    break;
+  case topdata_t::user:
+    topdata_ = topdata_t::none;
+    break;
+  }
+}

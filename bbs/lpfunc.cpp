@@ -71,7 +71,7 @@ static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Info");
   menu_items->push_back("ViewZip");
 
-  if (a()->using_modem) {
+  if (a()->context().using_modem()) {
     menu_items->push_back("Dload");
   } else {
     menu_items->push_back("Move");
@@ -300,7 +300,7 @@ ADD_OR_REMOVE_BATCH:
                           auto tf =
                               FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
-                          if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
+                          if (sysop_mode || !a()->context().using_modem() || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos].numbytes);
                           } else if (lp_config.request_file) {
@@ -355,7 +355,7 @@ ADD_OR_REMOVE_BATCH:
                     menu_pos = 0;
                     break;
                   case 5:
-                    if (!sysop_mode && a()->using_modem) {
+                    if (!sysop_mode && a()->context().using_modem()) {
                       bout.cls();
                       menu_done = true;
                       save_file_pos = file_pos;
@@ -374,7 +374,7 @@ ADD_OR_REMOVE_BATCH:
                             auto tf =
                                 FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
-                            if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
+                            if (sysop_mode || !a()->context().using_modem() || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
                                            file_recs[file_pos].numbytes);
                             } else if (lp_config.request_file) {

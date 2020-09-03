@@ -357,7 +357,7 @@ int try_to_ul(const string& file_name) {
   // it clean and up to date
   File::Copy(src, dest); // copy file from batch dir,to try2ul dir */
 
-  if (a()->IsUserOnline()) {
+  if (a()->context().IsUserOnline()) {
     a()->UpdateTopScreen();
   }
 

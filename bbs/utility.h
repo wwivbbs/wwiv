@@ -28,7 +28,6 @@ bool sysop1();
 void ToggleScrollLockKey();
 bool okansi();
 void reset_disable_conf();
-void frequent_init();
 double ratio();
 double post_ratio();
 long nsl();

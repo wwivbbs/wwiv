@@ -16,11 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "bbs/context.h"
+
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "local_io/local_io.h"
 #include "sdk/config.h"
-
 #include <chrono>
 #include <string>
 
@@ -28,48 +29,47 @@ namespace wwiv::bbs {
 
 using namespace wwiv::strings;
 
-SessionContext::SessionContext(Application* a)
-  : irt_{}, a_(a) {
-}
+SessionContext::SessionContext(LocalIO* io)
+    : irt_{}, io_(io) {}
 
-void SessionContext::InitalizeContext() {
-  const auto c = a_->config();
-  const auto qscan_length = c->qscn_len() / sizeof(uint32_t);
+void SessionContext::InitalizeContext(const wwiv::sdk::Config& c) {
+  const auto qscan_length = c.qscn_len() / sizeof(uint32_t);
   qscan_ = std::make_unique<uint32_t[]>(qscan_length);
   qsc = qscan_.get();
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (c->max_dirs() + 31) / 32;
-  qsc_p = qsc_q + (c->max_subs() + 31) / 32;
-  ResetQScanPointers();
+  qsc_q = qsc_n + (c.max_dirs() + 31) / 32;
+  qsc_p = qsc_q + (c.max_subs() + 31) / 32;
+  ResetQScanPointers(c);
 }
 
-void SessionContext::ResetQScanPointers() {
-  const auto& c = a_->config();
-  memset(qsc, 0, c->qscn_len());
+void SessionContext::ResetQScanPointers(const wwiv::sdk::Config& c) {
+  memset(qsc, 0, c.qscn_len());
   *qsc = 999;
-  memset(qsc_n, 0xff, ((c->max_dirs() + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((c->max_subs() + 31) / 32) * 4);
+  memset(qsc_n, 0xff, ((c.max_dirs() + 31) / 32) * 4);
+  memset(qsc_q, 0xff, ((c.max_subs() + 31) / 32) * 4);
 }
 
 void SessionContext::reset() {
-  a_->SetCurrentReadMessageArea(-1);
-  a_->set_current_user_sub_conf_num(0);
-  a_->set_current_user_dir_conf_num(0);
-  a_->screenlinest = a_->defscreenbottom + 1;
-  hangup(false);
-  a_->SetChatReason("");
-  a_->SetUserOnline(false);
-  a_->chatting_ = 0;
-  a_->received_short_message_ = false;
-  a_->set_extratimecall(std::chrono::seconds(0));
-  a_->using_modem = false;
-  a_->SetTimeOnlineLimited(false);
+  SetCurrentReadMessageArea(-1);
+  set_current_user_sub_conf_num(0);
+  set_current_user_dir_conf_num(0);
+  SetUserOnline(false);
+  SetTimeOnlineLimited(false);
 
-  bout.charbufferpointer_ = 0;
+  chat_reason("");
+  num_screen_lines(io_->GetDefaultScreenBottom() + 1);
+  hangup(false);
+  chatting(chatting_t::none);
+  using_modem(false);
   clear_irt();
   outcom(false);
   incom(false);
   okmacro(true);
+}
+
+void SessionContext::reset_local_io(LocalIO* io) { 
+  DCHECK_NE(io, nullptr);
+  io_ = io; 
 }
 
 void SessionContext::irt(const std::string& irt) { 

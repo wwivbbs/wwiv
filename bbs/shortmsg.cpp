@@ -84,7 +84,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
     }
   }
   file.Close();
-  a()->received_short_message_ = true;
+  received_short_message(true);
   if (bShownAnyMessage) {
     bout.nl();
   }
@@ -177,3 +177,6 @@ ssm::~ssm() {
   }
 }
 
+static bool received_short_message_{false};
+bool received_short_message() { return received_short_message_; }
+void received_short_message(bool b) { received_short_message_ = b; }

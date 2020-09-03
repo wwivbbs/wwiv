@@ -26,6 +26,7 @@
 #include "bbs/connect1.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/shortmsg.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/findfiles.h"
@@ -86,31 +87,6 @@ void remove_from_temp(const std::string& file_name, const std::string& directory
  */
 bool okansi() { return a()->user()->HasAnsi(); }
 
-/**
- * Should be called after a user is logged off, and will initialize
- * screen-access variables.
- */
-void frequent_init() {
-  setiia(seconds(5));
-
-  // Context Globals to move to Application
-  // Context Globals in Application
-  a()->ReadCurrentUser(1);
-  a()->context().reset();
-  use_workspace = false;
-
-  set_net_num(0);
-  read_qscn(1, a()->context().qsc, false);
-  set_language(a()->user()->GetLanguage());
-  reset_disable_conf();
-
-  // Output context
-  bout.reset();
-  bout.okskey(true);
-
-  // DSZ Log
-  File::Remove(a()->dsz_logfile_name_, true);
-}
 
 /**
  * Gets the current users upload/download ratio.
@@ -139,7 +115,7 @@ double post_ratio() {
 
 long nsl() {
   const auto dd = system_clock::now();
-  if (!a()->IsUserOnline()) {
+  if (!a()->context().IsUserOnline()) {
     return 1;
   }
   auto tot = duration_cast<seconds>(dd - a()->system_logon_time());
@@ -153,7 +129,7 @@ long nsl() {
   auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
                                                  a()->user()->extra_time());
   const auto tlt = std::min<seconds>(tlc, tld);
-  a()->SetTimeOnlineLimited(false);
+  a()->context().SetTimeOnlineLimited(false);
   return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
 }
 

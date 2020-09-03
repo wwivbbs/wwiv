@@ -33,12 +33,14 @@
 #include "bbs/netsup.h"
 #include "bbs/null_remote_io.h"
 #include "bbs/remote_io.h"
+#include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
+#include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/command_line.h"
 #include "core/os.h"
@@ -103,9 +105,9 @@ Output bout;
 
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
-      session_context_(this) {
+      session_context_(localIO) {
   ::bout.SetLocalIO(localIO);
-  SetCurrentReadMessageArea(-1);
+  session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 
   tzset();
@@ -141,11 +143,11 @@ LocalIO* Application::localIO() const { return local_io_.get(); }
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   ::bout.SetLocalIO(wlocal_io);
+  context().reset_local_io(wlocal_io);
 
   const auto screen_bottom = localIO()->GetDefaultScreenBottom();
   localIO()->SetScreenBottom(screen_bottom);
-  defscreenbottom = screen_bottom;
-  screenlinest = screen_bottom + 1;
+  context().num_screen_lines(screen_bottom + 1);
 
   ClearTopScreenProtection();
   return true;
@@ -199,7 +201,8 @@ bool Application::ReadCurrentUser(int user_number) {
   }
   last_read_user_number_ = user_number;
   // Update all other session variables that are dependent.
-  screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
+  context().num_screen_lines(context().using_modem() ? user()->GetScreenLines()
+                                          : localIO()->GetDefaultScreenBottom() + 1);
   return true;
 }
 
@@ -234,7 +237,7 @@ void Application::tleft(bool check_for_timeout) {
   const auto nsln = nsl();
 
   // Check for tineout 1st.
-  if (check_for_timeout && IsUserOnline()) {
+  if (check_for_timeout && context().IsUserOnline()) {
     if (nsln == 0) {
       bout << "\r\nTime expired.\r\n\n";
       Hangup();
@@ -244,7 +247,7 @@ void Application::tleft(bool check_for_timeout) {
 
   // If we're not displaying the time left or password on the
   // topdata display, leave now.
-  if (topdata == LocalIO::topdataNone) {
+  if (localIO()->topdata() == LocalIO::topdata_t::none) {
     return;
   }
 
@@ -257,7 +260,8 @@ void Application::tleft(bool check_for_timeout) {
   const auto cc = bout.curatr();
   bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
-  const auto line_number = (chatcall() && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  const auto line_number =
+      (context().chatcall() && (localIO()->topdata() == LocalIO::topdata_t::user)) ? 5 : 4;
 
   localIO()->PutsXY(1, line_number, GetCurrentSpeed());
   for (auto i = localIO()->WhereX(); i < 23; i++) {
@@ -275,19 +279,21 @@ void Application::tleft(bool check_for_timeout) {
   const auto min_left = nsln / SECONDS_PER_MINUTE;
   const auto secs_left = nsln % SECONDS_PER_MINUTE;
   const auto tleft_display = fmt::sprintf("T-%4ldm %2lds", min_left, secs_left);
-  switch (topdata) {
-  case LocalIO::topdataSystem: {
-    if (IsUserOnline()) {
+  switch (localIO()->topdata()) {
+  case LocalIO::topdata_t::system: {
+    if (context().IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
     }
   } break;
-  case LocalIO::topdataUser: {
-    if (IsUserOnline()) {
+  case LocalIO::topdata_t::user: {
+    if (context().IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
     } else {
       localIO()->PutsXY(18, 3, user()->GetPassword());
     }
   } break;
+  case LocalIO::topdata_t::none:
+    break;
   }
   localIO()->SetTopLine(ctl);
   bout.curatr(cc);
@@ -312,21 +318,18 @@ void Application::handle_sysop_key(uint8_t key) {
         // Used to be shutdown bbs in 3 minutes.
         break;
       case F2: /* F2 */
-        topdata++;
-        if (topdata > LocalIO::topdataUser) {
-          topdata = LocalIO::topdataNone;
-        }
+        localIO()->increment_topdata();
         UpdateTopScreen();
         break;
       case F3: /* F3 */
-        if (using_modem) {
-          a()->context().incom(!a()->context().incom());
+        if (context().using_modem()) {
+          context().incom(!context().incom());
           bout.dump();
           tleft(false);
         }
         break;
       case F4: /* F4 */
-        clear_chatcall();
+        context().clear_chatcall();
         UpdateTopScreen();
         break;
       case F5: /* F5 */
@@ -372,25 +375,25 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F10: /* F10 */
-        if (chatting_ == 0) {
+        if (context().chatting() == wwiv::bbs::chatting_t::none) {
           if (config()->sysconfig_flags() & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
           }
         } else {
-          chatting_ = 0;
+          context().chatting(wwiv::bbs::chatting_t::none);
         }
         break;
       case CF10: /* Ctrl-F10 */
-        if (chatting_ == 0) {
+        if (context().chatting() == wwiv::bbs::chatting_t::none) {
           chat1("", false);
         } else {
-          chatting_ = 0;
+          context().chatting(wwiv::bbs::chatting_t::none);
         }
         break;
       case HOME: /* HOME */
-        if (chatting_ == 1) {
+        if (context().chatting() == wwiv::bbs::chatting_t::one_way) {
           toggle_chat_file();
         }
         break;
@@ -442,28 +445,28 @@ void Application::UpdateTopScreen() {
 
   auto lll = bout.lines_listed();
 
-  if (so() && !a()->context().incom()) {
-    topdata = LocalIO::topdataNone;
+  if (so() && !context().incom()) {
+    localIO()->topdata(LocalIO::topdata_t::none);
   }
 
 #ifdef _WIN32
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
-    const string username_num = names()->UserName(usernum);
-    string title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
+    const auto username_num = names()->UserName(usernum);
+    const auto title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
 
-  switch (topdata) {
-  case LocalIO::topdataNone:
+  switch (localIO()->topdata()) {
+  case LocalIO::topdata_t::none:
     localIO()->set_protect(0);
     break;
-  case LocalIO::topdataSystem:
+  case LocalIO::topdata_t::system:
     localIO()->set_protect(5);
     break;
-  case LocalIO::topdataUser:
-    if (chatcall()) {
+  case LocalIO::topdata_t::user:
+    if (context().chatcall()) {
       localIO()->set_protect(6);
     } else {
       if (localIO()->GetTopLine() == 6) {
@@ -475,8 +478,8 @@ void Application::UpdateTopScreen() {
   }
   // This used to be inside of localIO::set_protect but that
   // made absolutely no sense, so pulled it out here
-  if (!using_modem) {
-    screenlinest = defscreenbottom + 1 - localIO()->GetTopLine();
+  if (!context().using_modem()) {
+    context().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1 - localIO()->GetTopLine());
   }
 
   auto cx = localIO()->WhereX();
@@ -490,10 +493,10 @@ void Application::UpdateTopScreen() {
   }
   sl[80] = '\0';
 
-  switch (topdata) {
-  case LocalIO::topdataNone:
+  switch (localIO()->topdata()) {
+  case LocalIO::topdata_t::none:
     break;
-  case LocalIO::topdataSystem: {
+  case LocalIO::topdata_t::system: {
     localIO()->PutsXY(0, 0,
                       fmt::format("{:>50}  Activity for {:>8}:      ", config()->system_name(),
                                   status->GetLastDate()));
@@ -524,7 +527,7 @@ void Application::UpdateTopScreen() {
             user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
             status->GetNumFeedbackSentToday()));
   } break;
-  case LocalIO::topdataUser: {
+  case LocalIO::topdata_t::user: {
     to_char_array(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
       if (user()->HasArFlag(1 << i)) {
@@ -589,8 +592,8 @@ void Application::UpdateTopScreen() {
                                    user()->GetNote(), user()->GetGender(), user()->age(),
                                    ctypes(user()->GetComputerType()), feedback_waiting));
 
-    if (chatcall()) {
-      localIO()->PutsXY(0, 4, fmt::format("{:<80}", chat_reason_));
+    if (context() .chatcall()) {
+      localIO()->PutsXY(0, 4, fmt::format("{:<80}", context().chat_reason()));
     }
   } break;
   }
@@ -607,8 +610,8 @@ void Application::UpdateTopScreen() {
 
 void Application::ClearTopScreenProtection() {
   localIO()->set_protect(0);
-  if (!using_modem) {
-    screenlinest = defscreenbottom + 1 - localIO()->GetTopLine();
+  if (!context().using_modem()) {
+    context().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1 - localIO()->GetTopLine());
   }
 }
 
@@ -667,7 +670,7 @@ get_caller_t Application::GetCaller() {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
   }
-  screenlinest = defscreenbottom + 1;
+  context().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1);
 
   const auto [lokb, unx] = wfc.doWFCEvents();
 
@@ -676,7 +679,7 @@ get_caller_t Application::GetCaller() {
     return get_caller_t::exit;
   }
 
-  using_modem = a()->context().incom();
+  context().using_modem(context().incom());
   modem_speed_ = 38400;
   bout.okskey(true);
   Cls();
@@ -702,13 +705,13 @@ void Application::GotCaller(int ms) {
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   if (ms) {
-    a()->context().incom(true);
-    a()->context().outcom(true);
-    using_modem = true;
+    context().incom(true);
+    context().outcom(true);
+    context().using_modem(true);
   } else {
-    using_modem = false;
-    a()->context().incom(false);
-    a()->context().outcom(false);
+    context().using_modem(false);
+    context().incom(false);
+    context().outcom(false);
   }
 }
 
@@ -835,9 +838,9 @@ int Application::Run(int argc, char* argv[]) {
       // Set it false until we call LiLo
       user_already_on_ = true;
       ooneuser = true;
-      using_modem = false;
-      a()->context().incom(true);
-      a()->context().outcom(false);
+      context().using_modem(false);
+      context().incom(true);
+      context().outcom(false);
       type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
     } else {
       clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
@@ -976,7 +979,7 @@ int Application::Run(int argc, char* argv[]) {
         read_qscn(usernum, context().qsc, false);
         reset_effective_sl();
         changedsl();
-        a()->context().okmacro(true);
+        context().okmacro(true);
       } else {
         this_usernum_from_commandline = 0;
       }
@@ -1004,8 +1007,8 @@ int Application::Run(int argc, char* argv[]) {
           getuser();
         }
       } else {
-        using_modem = false;
-        a()->context().okmacro(true);
+        context().using_modem(false);
+        context().okmacro(true);
         reset_effective_sl();
         changedsl();
       }
@@ -1027,7 +1030,7 @@ int Application::Run(int argc, char* argv[]) {
         }
       }
     } catch (const wwiv::bbs::hangup_error& h) {
-      if (IsUserOnline()) {
+      if (context().IsUserOnline()) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
         sysoplog() << h.what();
@@ -1047,7 +1050,7 @@ int Application::Run(int argc, char* argv[]) {
       }
       batch().clear();
     }
-    if (!no_hangup_ && using_modem && context().ok_modem_stuff()) {
+    if (!no_hangup_ && context().using_modem() && context().ok_modem_stuff()) {
       hang_it_up();
     }
     catsl();
@@ -1101,7 +1104,7 @@ void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileAr
 Batch& Application::batch() { return batch_; }
 
 const subboard_t& Application::current_sub() const {
-  return subs().sub(GetCurrentReadMessageArea());
+  return subs().sub(session_context_.GetCurrentReadMessageArea());
 }
 
 const files::directory_t& Application::current_dir() const {
@@ -1137,3 +1140,32 @@ const net_networks_rec& Application::current_net() const {
 }
 
 bool Application::IsUseInternalFsed() const { return internal_fsed_; }
+
+/**
+ * Should be called after a user is logged off, and will initialize
+ * screen-access variables.
+ */
+void Application::frequent_init() {
+  setiia(seconds(5));
+
+  // Context Globals to move to Application
+  // Context Globals in Application
+  set_extratimecall(std::chrono::seconds(0));
+  ReadCurrentUser(1);
+  context().reset();
+  bout.charbufferpointer_ = 0;
+  received_short_message(false);
+  use_workspace = false;
+
+  set_net_num(0);
+  read_qscn(1, context().qsc, false);
+  set_language(user()->GetLanguage());
+  reset_disable_conf();
+
+  // Output context
+  bout.reset();
+  bout.okskey(true);
+
+  // DSZ Log
+  File::Remove(dsz_logfile_name_, true);
+}

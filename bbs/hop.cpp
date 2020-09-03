@@ -55,7 +55,7 @@ void HopSub() {
   }
 
   int c = 0;
-  int oc = a()->current_user_sub_conf_num();
+  int oc = a()->context().current_user_sub_conf_num();
   int os = a()->current_user_sub().subnum;
 
   while ((c < nc) && !abort) {
@@ -126,7 +126,7 @@ void HopDir() {
   }
 
   int c = 0;
-  auto oc = a()->current_user_dir_conf_num();
+  auto oc = a()->context().current_user_dir_conf_num();
   auto os = a()->current_user_dir().subnum;
 
   while (c < nc && !abort) {

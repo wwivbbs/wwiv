@@ -41,6 +41,7 @@
 
 using std::string;
 using std::chrono::duration_cast;
+using namespace wwiv::bbs;
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::os;
@@ -104,8 +105,8 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
 void RequestChat() {
   bout.nl(2);
   if (sysop2() && !a()->user()->IsRestrictionChat()) {
-    if (a()->chatcall()) {
-      a()->clear_chatcall();
+    if (a()->context().chatcall()) {
+      a()->context().clear_chatcall();
       bout << "Chat call turned off.\r\n";
       a()->UpdateTopScreen();
     } else {
@@ -118,7 +119,7 @@ void RequestChat() {
         const auto cr = fmt::format("Chat: {}", chatReason);
         bout.nl();
         sysoplog() << cr;
-        a()->SetChatReason(cr);
+        a()->context().chat_reason(cr);
         a()->UpdateTopScreen();
         bout << "Chat call turned ON.\r\n";
         bout.nl();
@@ -175,7 +176,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
   int i;
   int i1;
 
-  const auto cm = a()->chatting_;
+  const auto cm = a()->context().chatting();
   const auto begx = a()->localIO()->WhereX();
   if (!rollover->empty()) {
     if (bout.charbufferpointer_) {
@@ -258,10 +259,8 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
       side = 1;
       bout.Color(5);
     }
-    if (cm) {
-      if (a()->chatting_ == 0) {
-        ch = RETURN;
-      }
+    if (cm != chatting_t::none && a()->context().chatting() == chatting_t::none) {
+      ch = RETURN;
     }
     if (ch >= SPACE) {
       if (side == 0) {
@@ -333,7 +332,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
     } else
       switch (ch) {
       case 7: {
-        if (a()->chatting_ && a()->context().outcom()) {
+        if (a()->context().chatting() != chatting_t::none && a()->context().outcom()) {
           bout.rputch(7);
         }
       } break;
@@ -552,13 +551,13 @@ void chat1(const char* chat_line, bool two_way) {
     return;
   }
 
-  a()->clear_chatcall();
+  a()->context().clear_chatcall();
   if (two_way) {
     write_inst(INST_LOC_CHAT2, 0, INST_FLAGS_NONE);
-    a()->chatting_ = 2;
+    a()->context().chatting(chatting_t::two_way);
   } else {
     write_inst(INST_LOC_CHAT, 0, INST_FLAGS_NONE);
-    a()->chatting_ = 1;
+    a()->context().chatting(chatting_t::one_way);
   }
   auto tc_start = steady_clock::now();
   File chatFile(FilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
@@ -566,12 +565,12 @@ void chat1(const char* chat_line, bool two_way) {
   auto line = bout.SaveCurrentLine();
 
   bout.nl(2);
-  int nSaveTopData = a()->topdata;
+  const auto saved_topdata = a()->localIO()->topdata();
   if (two_way) {
     a()->Cls();
     cp0 = cp1 = 0;
-    if (a()->defscreenbottom == 24) {
-      a()->topdata = LocalIO::topdataNone;
+    if (a()->localIO()->GetDefaultScreenBottom() == 24) {
+      a()->localIO()->topdata(LocalIO::topdata_t::none);
       a()->UpdateTopScreen();
     }
     bout.cls();
@@ -587,10 +586,10 @@ void chat1(const char* chat_line, bool two_way) {
     }
     bout.flush();
     const auto unn = a()->names()->UserName(a()->usernum);
-    auto s = fmt::format(" {} chatting with {} ", sysop_name, unn);
-    auto x = (a()->user()->GetScreenChars() - stripcolors(s).size()) / 2;
+    const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
+    const auto x = (a()->user()->GetScreenChars() - stripcolors(s).size()) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);
-    bout << "|#4" << s;
+    bout.bputs(s);
     bout.GotoXY(1, 1);
   }
   bout << "|#7" << sysop_name << "'s here...";
@@ -628,9 +627,9 @@ void chat1(const char* chat_line, bool two_way) {
       a()->localIO()->Puts("-] Chat file closed.\r\n");
     }
     if (a()->context().hangup()) {
-      a()->chatting_ = 0;
+      a()->context().chatting(chatting_t::none);
     }
-  } while (a()->chatting_);
+  } while (a()->context().chatting() != chatting_t::none);
 
   s_chat_file = false;
   if (side0) {
@@ -649,11 +648,11 @@ void chat1(const char* chat_line, bool two_way) {
 
   bout.nl();
   bout << "|#7Chat mode over...\r\n\n";
-  a()->chatting_ = 0;
+  a()->context().chatting(chatting_t::none);
   auto tc_used = duration_cast<seconds>(steady_clock::now() - tc_start);
   a()->add_extratimecall(tc_used);
-  a()->topdata = nSaveTopData;
-  if (a()->IsUserOnline()) {
+  a()->localIO()->topdata(saved_topdata);
+  if (a()->context().IsUserOnline()) {
     a()->UpdateTopScreen();
   }
   bout.RestoreCurrentLine(line);

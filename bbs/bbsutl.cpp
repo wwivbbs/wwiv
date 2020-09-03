@@ -37,6 +37,7 @@
 using std::string;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
+using namespace wwiv::bbs;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -78,7 +79,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     return false;
   }
 
-  int cm = a()->chatting_;
+  auto cm = a()->context().chatting();
 
   auto begx = bout.wherex();
   if (rollover[0] != 0) {
@@ -115,10 +116,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     if (two_color) {
       bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
     }
-    if (cm) {
-      if (a()->chatting_ == 0) {
+    if (cm != chatting_t::none && a()->context().chatting() == chatting_t::none) {
         ch = RETURN;
-      }
     }
     if (ch >= SPACE) {
       if ((bout.wherex() < (a()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {

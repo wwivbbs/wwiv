@@ -361,7 +361,7 @@ void listfiles() {
       printinfo(&f.u(), &abort);
 
       // Moved to here from bputch.cpp
-      if (bout.lines_listed() >= a()->screenlinest - 3) {
+      if (bout.lines_listed() >= a()->context().num_screen_lines() - 3) {
         if (!a()->filelist.empty()) {
           tag_files(need_title);
           bout.clear_lines_listed();
@@ -391,7 +391,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
       auto f = area->ReadFile(i);
       if (f.u().daten >= a()->context().nscandate()) {
         if (need_title) {
-          if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
+          if (bout.lines_listed() >= a()->context().num_screen_lines() - 7 && !a()->filelist.empty()) {
             tag_files(need_title);
           }
           if (need_title) {
@@ -521,7 +521,7 @@ void searchall() {
         auto f = area->ReadFile(i1);
         if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
           if (need_title) {
-            if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
+            if (bout.lines_listed() >= a()->context().num_screen_lines() - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {
