@@ -414,7 +414,7 @@ int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> id
 
   while (true) {
     CheckForHangup();
-    if (context().hangup()) {
+    if (a()->context().hangup()) {
       return 0;
     }
     auto dd = steady_clock::now();
@@ -443,7 +443,7 @@ int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> id
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
-    if (!context().incom() || a()->localIO()->KeyPressed()) {
+    if (!a()->context().incom() || a()->localIO()->KeyPressed()) {
       // Check for local keys
       return bgetch_handle_key_translation(a()->localIO()->GetChar(), numlock_mode);
     }
