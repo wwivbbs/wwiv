@@ -386,8 +386,6 @@ public:
   // Figure out a better way
   bool emchg_{false};
   bool no_hangup_{false};
-  bool in_chatroom_{false};
-  bool chatline_{false};
   int modem_speed_{0};
 
 protected:

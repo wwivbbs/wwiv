@@ -107,6 +107,13 @@ Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(localIO) {
   ::bout.SetLocalIO(localIO);
+  bout.set_inst_msg_processor([]() {
+    if (inst_msg_waiting() && !a()->context().chatline()) {
+      process_inst_msgs();
+    }
+  });
+  bout.set_context_provider([]() ->wwiv::bbs::SessionContext& { return a()->context(); });
+  bout.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
   session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 

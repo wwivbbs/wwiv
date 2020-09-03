@@ -309,7 +309,6 @@ static void bihangup() {
       Hangup();
       return;
     }
-    giveup_timeslice();
     CheckForHangup();
   }
   const auto ch = bout.getkey();

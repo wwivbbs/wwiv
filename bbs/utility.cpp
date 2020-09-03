@@ -175,10 +175,8 @@ void giveup_timeslice() {
   sleep_for(milliseconds(100));
   yield();
 
-  if (!a()->in_chatroom_ || !a()->chatline_) {
-    if (inst_msg_waiting()) {
-      process_inst_msgs();
-    }
+  if (inst_msg_waiting() && (!a()->context().in_chatroom() || !a()->context().chatline())) {
+    process_inst_msgs();
   }
 }
 

@@ -16,20 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#include <chrono>
+#include "bbs/pause.h"
 
 #include "bbs/bbs.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
-#include "bbs/instmsg.h"
+#include "bbs/instmsg.h"  // setiia
 #include "local_io/keycodes.h"
-#include "bbs/pause.h"
 #include "bbs/utility.h"
-
 #include "core/datetime.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include <chrono>
 
 extern char str_pause[];
 

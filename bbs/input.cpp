@@ -124,7 +124,7 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
   while (!done && !a()->context().hangup()) {
     unsigned char chCurrent = bout.getkey();
 
-    a()->chatline_ = (curpos != 0);
+    a()->context().chatline(curpos != 0);
 
     if (in_ansi) {
       if (in_ansi == 1 && chCurrent != '[') {

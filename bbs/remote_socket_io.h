@@ -21,7 +21,6 @@
 
 #include "bbs/remote_io.h"
 #include "core/net.h"
-
 #include <atomic>
 #include <cstdint>
 #include <mutex>

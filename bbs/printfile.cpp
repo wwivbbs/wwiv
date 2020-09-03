@@ -19,9 +19,6 @@
 #include "bbs/printfile.h"
 
 #include <memory>
-#include <string>
-#include <vector>
-
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -33,6 +30,8 @@
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include <string>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;

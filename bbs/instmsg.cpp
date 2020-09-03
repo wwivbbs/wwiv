@@ -144,7 +144,7 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
     if (ih->msg_size > 0 && a()->context().IsUserOnline() && !a()->context().hangup()) {
       const auto line = bout.SaveCurrentLine();
       bout.nl(2);
-      if (a()->in_chatroom_) {
+      if (a()->context().in_chatroom()) {
         i = 0;
         bout << msg << "\r\n";
         bout.RestoreCurrentLine(line);

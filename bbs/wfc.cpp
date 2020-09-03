@@ -71,10 +71,10 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::os::random_number;
 using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
+using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -278,7 +278,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       }
     } else {
       ch = 0;
-      giveup_timeslice();
+      sleep_for(milliseconds(100));
+      yield();
     }
     if (ch) {
       a_->set_at_wfc(true);
@@ -513,7 +514,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     }
 
-    giveup_timeslice();
+    sleep_for(milliseconds(100));
+    yield();
   }
 }
 

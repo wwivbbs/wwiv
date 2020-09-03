@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "bbs/fsed/commands.h"
 
-#include "bbs/application.h"
 #include "bbs/fsed/model.h"
 #include "bbs/fsed/view.h"
 #include "bbs/quote.h"

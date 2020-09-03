@@ -18,10 +18,8 @@
 /**************************************************************************/
 #include "bbs/output.h"
 
-#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/instmsg.h"
 #include "bbs/interpret.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -41,12 +39,12 @@ using namespace wwiv::sdk::ansi;
 Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
 Output::~Output() = default;
 
-static bool okansi(const wwiv::sdk::User* user) {
-  return user->HasAnsi();
+static bool okansi(const wwiv::sdk::User& user) {
+  return user.HasAnsi();
 }
 
 void Output::SetLocalIO(LocalIO* local_io) {
-  // We would use a()->user()->GetScreenChars() but I don't think we
+  // We would use user().GetScreenChars() but I don't think we
   // have a live user when we create this.
   screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
   AnsiCallbacks cb;
@@ -69,9 +67,9 @@ void Output::ResetColors() {
 }
 
 void Output::GotoXY(int x, int y) {
-  if (okansi(a()->user())) {
+  if (okansi(user())) {
     // Don't get Y get too big or mTelnet will not be happy
-    y = std::min<int>(y, a()->context().num_screen_lines());
+    y = std::min<int>(y, context().num_screen_lines());
     bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
 }
@@ -113,11 +111,7 @@ void Output::RestorePosition() {
 void Output::nl(int nNumLines) {
   for (auto i = 0; i < nNumLines; i++) {
     bputs("\r\n");
-    // TODO Change this to fire a notification to a Subject
-    // that we should process instant messages now.
-    if (inst_msg_waiting() && !a()->chatline_) {
-      process_inst_msgs();
-    }
+    inst_msg_processor();
   }
 }
 
@@ -135,7 +129,7 @@ void Output::SystemColor(int c) {
 }
 
 std::string Output::MakeColor(int wwiv_color) {
-  const auto c = a()->user()->color(wwiv_color);
+  const auto c = user().color(wwiv_color);
   if (c == curatr()) {
     return "";
   }
@@ -145,7 +139,7 @@ std::string Output::MakeColor(int wwiv_color) {
 }
 
 std::string Output::MakeSystemColor(int c) const {
-  if (!okansi(a()->user())) {
+  if (!okansi(user())) {
     return "";
   }
   return wwiv::sdk::ansi::makeansi(c, curatr());
@@ -156,7 +150,7 @@ std::string Output::MakeSystemColor(wwiv::sdk::Color c) const {
 }
 
 void Output::litebar(const std::string& msg) {
-  if (okansi(a()->user())) {
+  if (okansi(user())) {
     bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
@@ -178,7 +172,7 @@ void Output::backline() {
 void Output::cls() {
   // Adding color 0 so previous color would not be picked up. #1245
   Color(0);  
-  if (okansi(a()->user())) {
+  if (okansi(user())) {
     bputs("\x1b[2J");
     GotoXY(1, 1);
   } else {
@@ -191,7 +185,7 @@ void Output::cls() {
  * Clears the current line to the end.
  */
 void Output::clreol() {
-  if (okansi(a()->user())) {
+  if (okansi(user())) {
     bputs("\x1b[K");
   }
 }
@@ -202,7 +196,7 @@ void Output::clear_whole_line() {
 }
 
 void Output::mpl(int length) {
-  if (!okansi(a()->user())) {
+  if (!okansi(user())) {
     return;
   }
   Color(4);
@@ -239,7 +233,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 
 int Output::bputs(const string& text) {
   CheckForHangup();
-  if (text.empty() || a()->context().hangup()) { return 0; }
+  if (text.empty() || context().hangup()) { return 0; }
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
@@ -261,7 +255,7 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '@') {
         ++it;
-        BbsMacroContext ctx(a()->user(), mci_enabled());
+        BbsMacroContext ctx(&user(), mci_enabled());
         auto s = ctx.interpret(*it++);
         bout.bputs(s);
       }
@@ -287,7 +281,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CO, true);  break; }
       ++it;
       if (it == fin) { bputch(CO, true);  break; }
-      BbsMacroContext ctx(a()->user(), mci_enabled());
+      BbsMacroContext ctx(&user(), mci_enabled());
       auto s = ctx.interpret(*it++);
       bout.bputs(s);
     } else if (it == fin) { 
@@ -325,8 +319,25 @@ int Output::bputs(const std::string& text, bool *abort, bool *next) {
 }
 
 void Output::move_up_if_newline(int num_lines) {
-  if (okansi(a()->user()) && !newline) {
+  if (okansi(user()) && !newline) {
     const auto s = fmt::format("\r\x1b[{}A", num_lines);
     bputs(s);
   }
 }
+
+
+void Output::set_context_provider(std::function<wwiv::bbs::SessionContext&()> c) {
+  context_provider_ = std::move(c);
+}
+
+void Output::set_user_provider(std::function<wwiv::sdk::User&()> c) {
+  user_provider_ = std::move(c);
+}
+
+void Output::set_inst_msg_processor(std::function<void()> c) { 
+  inst_msg_processor_ = std::move(c); 
+}
+
+void Output::inst_msg_processor() { inst_msg_processor_(); }
+wwiv::sdk::User& Output::user() const { return user_provider_(); }
+wwiv::bbs::SessionContext& Output::context() const { return context_provider_(); }

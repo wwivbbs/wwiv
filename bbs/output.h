@@ -20,11 +20,13 @@
 #ifndef __INCLUDED_BBS_OUTPUT_H__
 #define __INCLUDED_BBS_OUTPUT_H__
 
+#include "bbs/context.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
+#include "sdk/user.h"
 #include "sdk/wwivcolors.h"
 #include <chrono>
 #include <memory>
@@ -44,12 +46,29 @@ public:
   int color;
 };
 
+/** 
+ * Creates the Output class responsible for displaying information both
+ * locally and remotely.
+ * 
+ * To use this class you must set the following:
+ * - LocalIO
+ * - RemoteIO
+ * - Context Provider
+ * - User Provider
+ * [Optional] Instance Message Processor.
+ * 
+ * These may be modified after being set, so RAII does not work.
+ */
 class Output final : public wwiv::local_io::curatr_provider {
 protected:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
 
 public:
+
+  typedef std::function<wwiv::bbs::SessionContext&()> context_provider_t;
+  typedef std::function<wwiv::sdk::User&()> user_provider_t;
+  typedef std::function<void()> inst_msg_processor_t;
   Output();
   ~Output();
 
@@ -58,6 +77,13 @@ public:
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
+
+  /** Sets the provider for the session context */
+  void set_context_provider(std::function<wwiv::bbs::SessionContext&()>);
+  /** Sets the provider for the user */
+  void set_user_provider(std::function<wwiv::sdk::User&()>);
+  /** Sets the provider for the callback to process instance messages */
+  void set_inst_msg_processor(std::function<void()>);
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -225,6 +251,10 @@ public:
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
+  void inst_msg_processor();
+  wwiv::sdk::User& user() const;
+  wwiv::bbs::SessionContext& context() const;
+
 public:
   int lines_listed_{0};
   bool newline{true};
@@ -250,6 +280,10 @@ private:
   bool mci_enabled_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
+
+  context_provider_t context_provider_;
+  user_provider_t user_provider_;
+  inst_msg_processor_t inst_msg_processor_;
 };
 
 /**

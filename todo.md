@@ -5,9 +5,12 @@
 
 ## FSED Externalize
 
-* move topdata to localio.
-* pass localio into session context
-* 
+* move chatline_ to context
+* Create Input class, add Output to it as a member var. Name it "bin"
+* move IsLastKeyLocal to Input
+* Create common module, move bout, bin, remoteio, remotesocket, and
+  other stuff to it. 
+* move bout.getkey to Input
 
 
 ## Build Cleanup.

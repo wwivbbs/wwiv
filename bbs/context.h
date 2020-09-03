@@ -119,6 +119,12 @@ public:
   /** Clears the chat call alert (user wanted to chat with the sysop. enabled? */
   void clear_chatcall() { chatcall_ = false; }
 
+  [[nodiscard]] bool chatline() const { return chatline_; }
+  void chatline(bool n) { chatline_ = n; }
+
+  [[nodiscard]] bool in_chatroom() const { return in_chatroom_; }
+  void in_chatroom(bool n) { in_chatroom_ = n; }
+
   // Note: This may be set to -1 to mean no area.
   [[nodiscard]] int GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
@@ -159,6 +165,8 @@ private:
   bool using_modem_{false};
   bool chatcall_{false};
   std::string chat_reason_;
+  bool chatline_{false};
+  bool in_chatroom_{false};
 
   int current_read_message_area{0};
   uint16_t current_conf_msgarea_{0};

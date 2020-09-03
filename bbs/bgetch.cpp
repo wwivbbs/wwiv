@@ -194,8 +194,9 @@ bool bkbhitraw() {
 }
 
 bool bkbhit() {
-  if (a()->localIO()->KeyPressed() || a()->context().incom() && bkbhitraw() ||
-      bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_]) {
+  if (a()->localIO()->KeyPressed() || 
+      (a()->context().incom() && bkbhitraw()) ||
+      (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) {
     return true;
   }
   return false;
@@ -221,8 +222,8 @@ SavedLine Output::SaveCurrentLine() {
 }
 
 void Output::dump() {
-  if (a()->context().ok_modem_stuff()) {
-    a()->remoteIO()->purgeIn();
+  if (context().ok_modem_stuff()) {
+    remoteIO()->purgeIn();
   }
 }
 
@@ -261,10 +262,10 @@ char Output::getkey(bool allow_extended_input) {
   char ch = 0;
   do {
     CheckForHangup();
-    while (!bkbhit() && !a()->context().hangup()) {
+    while (!bkbhit() && !context().hangup()) {
       // Try to make hangups happen faster.
-      if (a()->context().incom() && a()->context().ok_modem_stuff() &&
-          !a()->remoteIO()->connected()) {
+      if (context().incom() && context().ok_modem_stuff() &&
+          !remoteIO()->connected()) {
         Hangup();
       }
       CheckForHangup();
@@ -413,7 +414,7 @@ int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> id
 
   while (true) {
     CheckForHangup();
-    if (a()->context().hangup()) {
+    if (context().hangup()) {
       return 0;
     }
     auto dd = steady_clock::now();
@@ -442,7 +443,7 @@ int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> id
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
-    if (!a()->context().incom() || a()->localIO()->KeyPressed()) {
+    if (!context().incom() || a()->localIO()->KeyPressed()) {
       // Check for local keys
       return bgetch_handle_key_translation(a()->localIO()->GetChar(), numlock_mode);
     }
