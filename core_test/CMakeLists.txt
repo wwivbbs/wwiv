@@ -11,6 +11,7 @@ set(test_sources
   command_line_test.cpp
   datetime_test.cpp
   datafile_test.cpp
+  eventbus_test.cpp
   fake_clock_test.cpp
   findfiles_test.cpp
   file_test.cpp

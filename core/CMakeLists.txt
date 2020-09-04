@@ -6,6 +6,7 @@ set(COMMON_SOURCES
   command_line.cpp
   connection.cpp
   datetime.cpp
+  eventbus.cpp
   fake_clock.cpp
   file.cpp
   file_lock.cpp
