@@ -30,26 +30,36 @@ public:
   EventBus b;
 };
 
-TEST_F(EventBusTest, Const_Class_Handler) { 
-  struct MessagePosted {
-    int num;
-  };
+struct MessagePosted {
+  int num;
+};
+
+TEST_F(EventBusTest, Function) { 
   int num = 1;
-  b.add_handler<MessagePosted>([&num](const MessagePosted& m) {
-    //const auto n = std::any_cast<MessagePosted>(m).num;
-    std::cout << "m.num: " << m.num << std::endl;
-    num += m.num;
-  });
+  b.add_handler<MessagePosted>([&num](MessagePosted m) { num += m.num; });
 
   MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, num);
 }
 
-TEST_F(EventBusTest, Any) {
-  struct MessagePosted {
-    int num;
-  };
+TEST_F(EventBusTest, Function_Zero_Args) {
+  int num = 1;
+  b.add_handler<MessagePosted>([&num]() { num++; });
+
+  MessagePosted m{1};
+  b.invoke(m);
+  EXPECT_EQ(2, num);
+}
+TEST_F(EventBusTest, Function_Const) {
+  int num = 1;
+  b.add_handler<MessagePosted>([&num](const MessagePosted& m) { num += m.num; });
+
+  MessagePosted m{1};
+  b.invoke(m);
+  EXPECT_EQ(2, num);
+}
+TEST_F(EventBusTest, Function_Any) {
   int num = 1;
   b.add_handler<MessagePosted>([&num](std::any m) {
     const auto n = std::any_cast<MessagePosted>(m).num;
@@ -62,28 +72,30 @@ TEST_F(EventBusTest, Any) {
   EXPECT_EQ(2, num);
 }
 
-TEST_F(EventBusTest, Class) {
-  struct MessagePosted {
-    int num;
-  };
-  int num = 1;
-  b.add_handler<MessagePosted>([&num](MessagePosted m) {
-    // const auto n = std::any_cast<MessagePosted>(m).num;
-    std::cout << "m.num: " << m.num << std::endl;
-    num += m.num;
-  });
+static int method_num = 1;
+void Method(MessagePosted m) { method_num += m.num; };
+
+TEST_F(EventBusTest, Method) {
+  b.add_handler<MessagePosted>(Method);
 
   MessagePosted m{1};
   b.invoke(m);
-  EXPECT_EQ(2, num);
+  EXPECT_EQ(2, method_num);
 }
 
-TEST_F(EventBusTest, Empty) {
+TEST_F(EventBusTest, Class) {
   struct Empty {
     int x;
   };
-  int num = 1;
-  b.add_handler<Empty>([&num](Empty) { num++; });
-  b.invoke(Empty{});
-  EXPECT_EQ(2, num);
+
+  class Class {
+  public:
+    int num{1};
+    void Method(MessagePosted m) { num += m.num; };
+  };
+
+  Class c;
+  b.add_handler<MessagePosted>(&Class::Method, &c);
+  b.invoke(MessagePosted{1});
+  EXPECT_EQ(2, c.num);
 }

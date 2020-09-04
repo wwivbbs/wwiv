@@ -20,6 +20,7 @@
 #define __INCLUDED_CORE_EVENTBUS_H__
 
 #include "core/log.h"
+#include "core/callable/callable.hpp"
 #include <any>
 #include <functional>
 #include <memory>
@@ -29,15 +30,6 @@
 
 
 namespace wwiv::core {
-
-// https://stackoverflow.com/questions/9044866/
-  template <typename T> struct num_args {};
-
-template <typename R, typename... Args>
-struct num_args<std::function<R(Args...)>> {
-  static constexpr size_t value = sizeof...(Args);
-};
-
 
 class Event {
 public:
@@ -60,12 +52,17 @@ public:
   template<typename T, typename H> void add_handler(H handler) {
     static_assert(!std::is_reference<T>::value, "add_handler: Handler param must not be reference");
     const std::string name = typeid(T).name();
-    if constexpr (num_args<H>::value == 0) {
-      handlers_.emplace(name, [f = std::forward<H>(handler)](auto value) { f(); });
+    if constexpr (callable_traits<H>::argc == 0) {
+      handlers_.emplace(name, [handler](std::any) { handler(); });
     } else {
       handlers_.emplace(name,
                         [f = std::forward<H>(handler)](auto value) { f(std::any_cast<T>(value)); });
     }
+  }
+  template <typename T, typename M, typename I> void add_handler(M method, I instance) {
+    const std::string name = typeid(T).name();
+    std::function<void(MessagePosted)> f = std::bind(method, instance, std::placeholders::_1);
+    handlers_.emplace(name, [f](auto value) { f(std::any_cast<T>(value)); });
   }
 
   template <typename T> void invoke(const T& event_type) {
