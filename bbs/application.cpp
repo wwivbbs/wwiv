@@ -17,63 +17,66 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/application.h"
+
 #include "bbs/asv.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl2.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
-#include "common/exceptions.h"
-#include "fsed/fsed.h"
+#include "bbs/diredit.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
 #include "bbs/null_remote_io.h"
-#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
+#include "bbs/subedit.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
-#include "common/workspace.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/exceptions.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/remote_io.h"
+#include "common/workspace.h"
 #include "core/command_line.h"
 #include "core/os.h"
-#include "core/strings.h"
 #include "core/strings-ng.h"
+#include "core/strings.h"
 #include "core/version.h"
 #include "fmt/printf.h"
+#include "fsed/fsed.h"
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/local_io_curses.h"
 // ReSharper disable once CppUnusedIncludeDirective
-#include "chnedit.h"
-#include "diredit.h"
-#include "subedit.h"
+#include "bbs/chnedit.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
+#include "sdk/files/files.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "sdk/files/files.h"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <stdexcept>
 #include <string>
-#include <random>
 
 #if defined(_WIN32)
 #include <crtdbg.h>
@@ -106,13 +109,16 @@ Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(localIO) {
   ::bout.SetLocalIO(localIO);
+  ::bin.SetLocalIO(localIO);
   bout.set_inst_msg_processor([]() {
     if (inst_msg_waiting() && !a()->context().chatline()) {
       process_inst_msgs();
     }
   });
-  bout.set_context_provider([]() ->wwiv::bbs::SessionContext& { return a()->context(); });
+  bout.set_context_provider([]() -> wwiv::bbs::SessionContext& { return a()->context(); });
+  bin.set_context_provider([]() -> wwiv::bbs::SessionContext& { return a()->context(); });
   bout.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
+  bin.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
   session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 

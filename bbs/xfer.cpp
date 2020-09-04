@@ -367,7 +367,7 @@ void listfiles() {
           bout.clear_lines_listed();
         }
       }
-    } else if (bkbhit()) {
+    } else if (bin.bkbhit()) {
       checka(&abort);
     }
   }
@@ -401,7 +401,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
         }
 
         printinfo(&f.u(), abort);
-      } else if (bkbhit()) {
+      } else if (bin.bkbhit()) {
         checka(abort);
       }
     }
@@ -530,7 +530,7 @@ void searchall() {
             }
           }
           printinfo(&f.u(), &abort);
-        } else if (bkbhit()) {
+        } else if (bin.bkbhit()) {
           checka(&abort);
         }
       }

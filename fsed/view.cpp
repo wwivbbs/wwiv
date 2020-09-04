@@ -38,6 +38,7 @@
 
 namespace wwiv::bbs::fsed {
 
+using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -177,12 +178,13 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
 }
 
 int FsedView::bgetch(FsedModel& ed) {
-  return bgetch_event(numlock_status_t::NUMBERS, std::chrono::seconds(1), [&](bgetch_timeout_status_t status, int s) {
-    if (status == bgetch_timeout_status_t::WARNING) {
+  return bin.bgetch_event(Input::numlock_status_t::NUMBERS, std::chrono::seconds(1),
+                      [&](Input::bgetch_timeout_status_t status, int s) {
+                        if (status == Input::bgetch_timeout_status_t::WARNING) {
       fs_.PrintTimeoutWarning(s);
-    } else if (status == bgetch_timeout_status_t::CLEAR) {
+                        } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
       ClearCommandLine();
-    } else if (status == bgetch_timeout_status_t::IDLE) {
+                        } else if (status == Input::bgetch_timeout_status_t::IDLE) {
       draw_bottom_bar(ed);
     }
   });

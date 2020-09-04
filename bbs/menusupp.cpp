@@ -87,7 +87,7 @@
 #include <string>
 
 using std::string;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::bbs;
 using namespace wwiv::core;

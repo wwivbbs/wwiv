@@ -39,7 +39,7 @@
 #include "sdk/files/dirs.h"
 
 using std::string;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::stl;

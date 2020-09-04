@@ -41,7 +41,7 @@
 #include <vector>
 
 using std::string;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

@@ -53,7 +53,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

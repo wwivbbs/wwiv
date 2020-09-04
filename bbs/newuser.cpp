@@ -66,7 +66,7 @@
 
 using std::string;
 using std::chrono::milliseconds;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::os;

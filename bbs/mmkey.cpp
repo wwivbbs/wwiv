@@ -40,7 +40,7 @@ static char mmkey_getch() {
   if (!mmkey_use_bgetch_event) {
     return bout.getkey(false);
   }
-  const auto bge = bgetch_event(numlock_status_t::NUMBERS);
+  const auto bge = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
   if (do_sysop_command(bge)) {
     // Handle local sysop commands.
     return 0;

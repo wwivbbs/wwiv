@@ -936,7 +936,7 @@ void finddescription() {
           }
 
           printinfo(&f.u(), &abort);
-        } else if (bkbhit()) {
+        } else if (bin.bkbhit()) {
           checka(&abort);
         }
       }

@@ -18,21 +18,21 @@
 /**************************************************************************/
 #include "bbs/bbsutl.h"
 
-#include <chrono>
-#include <string>
-
+#include "bbs/bbs.h"
+#include "bbs/interpret.h"
+#include "bbs/utility.h"
 #include "common/bgetch.h"
 #include "common/com.h"
 #include "common/datetime.h"
-#include "bbs/interpret.h"
-#include "bbs/bbs.h"
-#include "local_io/keycodes.h"
+#include "common/input.h"
 #include "common/pause.h"
-#include "bbs/utility.h"
-#include "core/strings.h"
 #include "core/stl.h"
+#include "core/strings.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
+#include <chrono>
+#include <string>
 
 using std::string;
 using std::chrono::seconds;
@@ -341,9 +341,9 @@ bool checka(bool *abort, bool *next) {
     *abort = true;
     bout.clearnsp();
   }
-  while (bkbhit() && !*abort && !a()->context().hangup()) {
+  while (bin.bkbhit() && !*abort && !a()->context().hangup()) {
     CheckForHangup();
-    char ch = bgetch();
+    char ch = bin.bgetch();
     switch (ch) {
     case CN:
       bout.clear_lines_listed();
@@ -398,8 +398,8 @@ int check_ansi() {
     return 1;
   }
 
-  while (bkbhitraw()) {
-    bgetchraw();
+  while (bin.bkbhitraw()) {
+    bin.bgetchraw();
   }
 
   bout.rputs("\x1b[6n");
@@ -408,12 +408,12 @@ int check_ansi() {
 
   while (steady_clock::now() < l) {
     CheckForHangup();
-    auto ch = bgetchraw();
+    auto ch = bin.bgetchraw();
     if (ch == '\x1b') {
       l = steady_clock::now() + seconds(1);
       while (steady_clock::now() < l) {
         CheckForHangup();
-        ch = bgetchraw();
+        ch = bin.bgetchraw();
         if (ch) {
           if ((ch < '0' || ch > '9') && ch != ';' && ch != '[') {
             return 1;

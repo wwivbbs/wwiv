@@ -33,7 +33,7 @@
 #include <string>
 
 using std::string;
-using wwiv::bbs::InputMode;
+using wwiv::common::InputMode;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -317,7 +317,7 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     bout.SavePosition();
     bout.Right(pos);
 
-    int c = bgetch_event(numlock_status_t::NUMBERS);
+    int c = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
     last_input_char = static_cast<char>(c & 0xff);
     switch (c) {
     case CX:  // Control-X

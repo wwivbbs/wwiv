@@ -20,6 +20,7 @@
 
 //#include "bbs/bbs.h"
 #include "common/bgetch.h"
+#include "common/input.h"
 #include "common/output.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -30,6 +31,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -104,10 +106,11 @@ void FullScreenView::GotoContentAreaTop() {
 }
 
 int FullScreenView::bgetch() { 
-  return bgetch_event(numlock_status_t::NUMBERS, [&](bgetch_timeout_status_t status, int s) {
-    if (status == bgetch_timeout_status_t::WARNING) {
+  return bin.bgetch_event(Input::numlock_status_t::NUMBERS,
+                      [&](Input::bgetch_timeout_status_t status, int s) {
+                        if (status == Input::bgetch_timeout_status_t::WARNING) {
       PrintTimeoutWarning(s);
-    } else if (status == bgetch_timeout_status_t::CLEAR) {
+                        } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
       ClearCommandLine();
     }
   });

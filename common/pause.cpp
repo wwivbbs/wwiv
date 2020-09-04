@@ -18,8 +18,8 @@
 /**************************************************************************/
 #include "common/pause.h"
 
-//#include "bbs/bbs.h"
 #include "common/bgetch.h"
+#include "common/input.h"
 #include "common/com.h"
 #include "common/context.h"
 #include "bbs/instmsg.h"  // setiia
@@ -60,7 +60,7 @@ TempDisablePause::TempDisablePause(Output& out)
 char Output::GetKeyForPause() {
   char ch = 0;
   while (ch == 0 && !context().hangup()) {
-    ch = bgetch();
+    ch = bin.bgetch();
     sleep_for(milliseconds(50));
     CheckForHangup();
   }
@@ -69,7 +69,7 @@ char Output::GetKeyForPause() {
   case ESC:
   case 'Q':
   case 'N':
-    if (!bkbhit()) {
+    if (!bin.bkbhit()) {
       nsp_ = -1;
     }
     break;
@@ -114,7 +114,7 @@ void Output::pausescr() {
     int warned = 0;
     char ch;
     do {
-      while (!bkbhit() && !context().hangup()) {
+      while (!bin.bkbhit() && !context().hangup()) {
         auto tstop = time_t_now();
         auto ttotal = difftime(tstop, tstart);
         if (ttotal == 120) {

@@ -23,18 +23,16 @@
 #include "common/context.h"
 #include "common/remote_io.h"
 #include "sdk/user.h"
+#include <chrono>
+#include <functional>
 #include <set>
 #include <string>
 
 namespace wwiv {
-namespace bbs {
-
-  // Text editing modes for input routines
-  enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
-
-} // namespace bbs
-
 namespace common {
+
+// Text editing modes for input routines
+enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
 
 /**
  * Creates the Output class responsible for displaying information both
@@ -64,11 +62,29 @@ public:
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   /** Sets the provider for the session context */
-  void set_context_provider(std::function<wwiv::bbs::SessionContext&()>);
+  void set_context_provider(std::function<wwiv::bbs::SessionContext&()> c) { context_provider_ = std::move(c); }
   /** Sets the provider for the user */
-  void set_user_provider(std::function<wwiv::sdk::User&()>);
-  /** Sets the provider for the callback to process instance messages */
-  void set_inst_msg_processor(std::function<void()>);
+  void set_user_provider(std::function<wwiv::sdk::User&()> c) { user_provider_ = std::move(c);}
+
+  char bgetch(bool allow_extended_input = false);
+  char bgetchraw();
+  bool bkbhitraw();
+  bool bkbhit();
+
+  // For bgetch_event, decides if the number pad turns '8' into an arrow etc.. or not
+  enum class numlock_status_t { NUMBERS, NOTNUMBERS };
+
+  enum class bgetch_timeout_status_t { WARNING, CLEAR, IDLE };
+
+  typedef std::function<void(bgetch_timeout_status_t, int)> bgetch_callback_fn;
+  int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time,
+                   bgetch_callback_fn cb);
+  int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb);
+  int bgetch_event(numlock_status_t numlock_mode);
+
+private:
+  int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
+  int bgetch_handle_escape(int key);
 
 private:
   LocalIO* local_io_{nullptr};

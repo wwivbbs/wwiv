@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/bbs.h"
 #include "common/bgetch.h"
+#include "common/input.h"
 #include "common/com.h"
 #include "bbs/crc.h"
 #include "common/datetime.h"
@@ -45,8 +46,8 @@ bool NewZModemReceiveFile(const std::string& file_name);
 extern unsigned char checksum;
 
 char modemkey(int* tout) {
-  if (bkbhitraw()) {
-    char ch = bgetchraw();
+  if (bin.bkbhitraw()) {
+    char ch = bin.bgetchraw();
     calc_CRC(ch);
     return ch;
   }
@@ -54,11 +55,11 @@ char modemkey(int* tout) {
     return 0;
   }
   auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !a()->context().hangup()) {
+  while (steady_clock::now() - d1 < milliseconds(500) && !bin.bkbhitraw() && !a()->context().hangup()) {
     CheckForHangup();
   }
-  if (bkbhitraw()) {
-    char ch = bgetchraw();
+  if (bin.bkbhitraw()) {
+    char ch = bin.bgetchraw();
     calc_CRC(ch);
     return ch;
   }
@@ -206,7 +207,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     }
 
     auto d1 = steady_clock::now();
-    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !a()->context().hangup()) {
+    while (steady_clock::now() - d1 < seconds(10) && !bin.bkbhitraw() && !a()->context().hangup()) {
       CheckForHangup();
       if (a()->localIO()->KeyPressed()) {
         ch = a()->localIO()->GetChar();
@@ -218,7 +219,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
         }
       }
     }
-  } while (!bkbhitraw() && !a()->context().hangup());
+  } while (!bin.bkbhitraw() && !a()->context().hangup());
 
   int i = 0;
   do {

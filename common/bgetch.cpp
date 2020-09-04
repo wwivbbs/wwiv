@@ -42,17 +42,104 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static steady_clock::time_point time_lastchar_pressed;
+static void lastchar_pressed() { time_lastchar_pressed = steady_clock::now(); }
 
-static void lastchar_pressed() {
-  time_lastchar_pressed = steady_clock::now();
+void Output::RedrawCurrentLine() {
+  SavedLine line = bout.SaveCurrentLine();
+  bout.nl();
+  bout.RestoreCurrentLine(line);
 }
 
-static void resetnsp() {
-  if (bout.nsp() == 1 && !(a()->user()->HasPause())) {
-    a()->user()->ToggleStatusFlag(User::pauseOnPage);
+
+bool Output::RestoreCurrentLine(const SavedLine& line) {
+  if (bout.wherex()) {
+    bout.nl();
   }
-  bout.clearnsp();
+  for (const auto& c : line.line) {
+    bout.SystemColor(c.second);
+    bout.bputch(c.first, true);
+  }
+  bout.flush();
+  bout.SystemColor(line.color);
+
+  return true;
 }
+
+SavedLine Output::SaveCurrentLine() { return {current_line_, curatr()}; }
+
+void Output::dump() {
+  if (context().ok_modem_stuff()) {
+    remoteIO()->purgeIn();
+  }
+}
+
+int Output::wherex() {
+  int x = localIO()->WhereX();
+  if (x != x_) {
+    VLOG(1) << "x: " << x << " != x_: " << x_;
+  }
+  return x_;
+}
+
+std::chrono::duration<double> Output::key_timeout() const {
+  if (so()) {
+    return sysop_key_timeout_;
+  }
+  return non_sysop_key_timeout_;
+}
+
+/* This function returns one character from either the local keyboard or
+ * remote com port (if applicable).  After 1.5 minutes of inactivity, a
+ * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
+ */
+char Output::getkey(bool allow_extended_input) {
+  resetnsp();
+  bool beepyet = false;
+  lastchar_pressed();
+
+  auto tv = key_timeout();
+  auto tv1 = tv - minutes(1);
+  if (tv1 < seconds(10)) {
+    tv1 = seconds(10);
+  }
+
+  // Since were waitig for a key, reset the # of lines we've displayed since a pause.
+  bout.clear_lines_listed();
+  char ch = 0;
+  do {
+    CheckForHangup();
+    while (!bin.bkbhit() && !context().hangup()) {
+      // Try to make hangups happen faster.
+      if (context().incom() && context().ok_modem_stuff() && !remoteIO()->connected()) {
+        Hangup();
+      }
+      CheckForHangup();
+      giveup_timeslice();
+      auto dd = steady_clock::now();
+      auto diff = dd - time_lastchar_pressed;
+      if (diff > tv1 && !beepyet) {
+        beepyet = true;
+        bout.bputch(CG);
+      }
+      if (diff > tv) {
+        bout.nl();
+        bout << "Call back later when you are there.\r\n";
+        Hangup();
+      }
+    }
+    ch = bin.bgetch(allow_extended_input);
+  } while (!ch);
+  return ch;
+}
+
+void Output::reset() {
+  newline = true;
+  ansi_->reset();
+  curatr(0x07);
+  clear_lines_listed();
+}
+
+namespace wwiv::common {
 
 static void PrintTime() {
   SavedLine line = bout.SaveCurrentLine();
@@ -63,7 +150,8 @@ static void PrintTime() {
   bout << "|#2" << dt.to_string() << wwiv::endl;
   if (a()->context().IsUserOnline()) {
     auto time_on = std::chrono::system_clock::now() - a()->system_logon_time();
-    auto seconds_on = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
+    auto seconds_on =
+        static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
     bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
   }
@@ -71,13 +159,7 @@ static void PrintTime() {
   bout.RestoreCurrentLine(line);
 }
 
-void Output::RedrawCurrentLine() {
-  SavedLine line = bout.SaveCurrentLine();
-  bout.nl();
-  bout.RestoreCurrentLine(line);
-}
-
-static void HandleControlKey(char *ch) {
+static void HandleControlKey(char* ch) {
   char c = *ch;
 
   if (c == CBACKSPACE) {
@@ -85,9 +167,9 @@ static void HandleControlKey(char *ch) {
   }
   if (bout.okskey()) {
     switch (c) {
-    case CA:   // CTRL-A
-    case CD:   // CTRL-D
-    case CF:   // CTRL-F
+    case CA: // CTRL-A
+    case CD: // CTRL-D
+    case CF: // CTRL-F
       if (a()->context().okmacro() && !bout.charbufferpointer_) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         auto macroNum = MACRO_KEY_TABLE[(int)c];
@@ -98,10 +180,10 @@ static void HandleControlKey(char *ch) {
         }
       }
       break;
-    case CT:  // CTRL - T
+    case CT: // CTRL - T
       PrintTime();
       break;
-    case CU: {  // CTRL-U
+    case CU: { // CTRL-U
       SavedLine line = bout.SaveCurrentLine();
       bout.Color(0);
       bout.nl(2);
@@ -112,12 +194,12 @@ static void HandleControlKey(char *ch) {
     case 18: // CR
       bout.RedrawCurrentLine();
       break;
-    case CL:  // CTRL - L
+    case CL: // CTRL - L
       if (so()) {
         toggle_invis();
       }
       break;
-    case CN:  // CTRL - N
+    case CN: // CTRL - N
       toggle_avail();
       break;
     case CY:
@@ -133,7 +215,7 @@ static void HandleControlKey(char *ch) {
  * is no input, a zero is returned.  Function keys hit are interpreted as
  * such within the routine and not returned.
  */
-char bgetch(bool allow_extended_input) {
+char Input::bgetch(bool allow_extended_input) {
   char ch = 0;
 
   if (bout.charbufferpointer_) {
@@ -169,7 +251,7 @@ char bgetch(bool allow_extended_input) {
   return ch;
 }
 
-char bgetchraw() {
+char Input::bgetchraw() {
   if (a()->context().ok_modem_stuff() && nullptr != a()->remoteIO()) {
     if (a()->remoteIO()->incoming()) {
       return (a()->remoteIO()->getW());
@@ -181,7 +263,7 @@ char bgetchraw() {
   return 0;
 }
 
-bool bkbhitraw() {
+bool Input::bkbhitraw() {
   if (a()->context().ok_modem_stuff()) {
     return (a()->remoteIO()->incoming() || a()->localIO()->KeyPressed());
   } else if (a()->localIO()->KeyPressed()) {
@@ -190,107 +272,13 @@ bool bkbhitraw() {
   return false;
 }
 
-bool bkbhit() {
-  if (a()->localIO()->KeyPressed() || 
-      (a()->context().incom() && bkbhitraw()) ||
+bool Input::bkbhit() {
+  if (a()->localIO()->KeyPressed() || (a()->context().incom() && bkbhitraw()) ||
       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) {
     return true;
   }
   return false;
 }
-
-
-bool Output::RestoreCurrentLine(const SavedLine& line) {
-  if (bout.wherex()) {
-    bout.nl();
-  }
-  for (const auto& c : line.line) {
-    bout.SystemColor(c.second);
-    bout.bputch(c.first, true);
-  }
-  bout.flush();
-  bout.SystemColor(line.color);
-
-  return true;
-}
-
-SavedLine Output::SaveCurrentLine() {
-  return {current_line_, curatr()};
-}
-
-void Output::dump() {
-  if (context().ok_modem_stuff()) {
-    remoteIO()->purgeIn();
-  }
-}
-
-int Output::wherex() { 
-  int x = localIO()->WhereX();
-  if (x != x_) {
-    VLOG(1) << "x: " << x << " != x_: " << x_;
-  }
-  return x_; 
-}
-
-std::chrono::duration<double> Output::key_timeout() const { 
-  if (so()) {
-    return sysop_key_timeout_;
-  }
-  return non_sysop_key_timeout_; 
-}
-
-/* This function returns one character from either the local keyboard or
-* remote com port (if applicable).  After 1.5 minutes of inactivity, a
-* beep is sounded.  After 3 minutes of inactivity, the user is hung up.
-*/
-char Output::getkey(bool allow_extended_input) {
-  resetnsp();
-  bool beepyet = false;
-  lastchar_pressed();
-
-  auto tv = key_timeout();
-  auto tv1 = tv - minutes(1);
-  if (tv1 < seconds(10)) {
-    tv1 = seconds(10);
-  }
-
-  // Since were waitig for a key, reset the # of lines we've displayed since a pause.
-  bout.clear_lines_listed();
-  char ch = 0;
-  do {
-    CheckForHangup();
-    while (!bkbhit() && !context().hangup()) {
-      // Try to make hangups happen faster.
-      if (context().incom() && context().ok_modem_stuff() &&
-          !remoteIO()->connected()) {
-        Hangup();
-      }
-      CheckForHangup();
-      giveup_timeslice();
-      auto dd = steady_clock::now();
-      auto diff = dd - time_lastchar_pressed;
-      if (diff > tv1 && !beepyet) {
-        beepyet = true;
-        bout.bputch(CG);
-      }
-      if (diff > tv) {
-        bout.nl();
-        bout << "Call back later when you are there.\r\n";
-        Hangup();
-      }
-    }
-    ch = bgetch(allow_extended_input);
-  } while (!ch);
-  return ch;
-}
-
-void Output::reset() {
-  newline = true;
-  ansi_->reset();
-  curatr(0x07);
-  clear_lines_listed();
-}
-
 
 // The final character of an ansi sequence
 #define OB ('[')
@@ -339,11 +327,11 @@ static int get_command_for_ansi_key(int key) {
   }
 }
 
-int bgetch_event(numlock_status_t numlock_mode) {
+int Input::bgetch_event(numlock_status_t numlock_mode) {
   return bgetch_event(numlock_mode, [](bgetch_timeout_status_t, int) {});
 }
 
-int bgetch_handle_escape(int key) {
+int Input::bgetch_handle_escape(int key) {
   time_t esc_time1 = time(nullptr);
   time_t esc_time2 = time(nullptr);
   do {
@@ -370,7 +358,7 @@ int bgetch_handle_escape(int key) {
   return key;
 }
 
-int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
+int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   if (key == CBACKSPACE) {
     return COMMAND_DELETE;
   }
@@ -392,11 +380,11 @@ int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
   return key;
 }
 
-int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb) {
+int Input::bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb) {
   return bgetch_event(numlock_mode, std::chrono::hours(24), cb);
 }
 
-int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time,
+int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time,
                  bgetch_callback_fn cb) {
   a()->tleft(true);
   bout.resetnsp();
@@ -452,3 +440,6 @@ int bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> id
   }
   return 0; // must have hung up
 }
+
+
+} // namespace wwiv::common

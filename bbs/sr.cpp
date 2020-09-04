@@ -24,6 +24,7 @@
 #include "common/com.h"
 #include "bbs/crc.h"
 #include "common/datetime.h"
+#include "common/input.h"
 #include "bbs/execexternal.h"
 #include "bbs/srrcv.h"
 #include "bbs/srsend.h"
@@ -69,13 +70,13 @@ void calc_CRC(unsigned char b) {
 
 
 char gettimeout(long ds, bool *abort) {
-  if (bkbhitraw()) {
-    return bgetchraw();
+  if (bin.bkbhitraw()) {
+    return bin.bgetchraw();
   }
 
   const seconds d(ds);
   const auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->context().hangup() && !*abort) {
+  while (steady_clock::now() - d1 < d && !bin.bkbhitraw() && !a()->context().hangup() && !*abort) {
     if (a()->localIO()->KeyPressed()) {
       const char ch = a()->localIO()->GetChar();
       if (ch == 0) {
@@ -86,7 +87,7 @@ char gettimeout(long ds, bool *abort) {
     }
     CheckForHangup();
   }
-  return bkbhitraw() ? bgetchraw() : 0;
+  return bin.bkbhitraw() ? bin.bgetchraw() : 0;
 }
 
 

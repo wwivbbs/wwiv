@@ -292,7 +292,7 @@ static void bihangup() {
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to Hangup, or any other key to return to system.\r\n";
 
-  while (!bkbhit() && !a()->context().hangup()) {
+  while (!bin.bkbhit() && !a()->context().hangup()) {
     const auto dd = steady_clock::now();
     const auto elapsed = dd - batch_lastchar;
     if (elapsed > nextbeep) {

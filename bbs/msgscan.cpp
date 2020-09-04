@@ -494,11 +494,13 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
       fs.PutsCommandLine("|#9(|#2Q|#9=Quit, |#2?|#9=Help): ");
     }
     need_redraw = false;
-    auto key =
-        bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t status, int s) {
-          if (status == bgetch_timeout_status_t::WARNING) {
+    auto key = bin.bgetch_event(
+        wwiv::common::Input::numlock_status_t::NOTNUMBERS,
+                     [&](wwiv::common::Input::bgetch_timeout_status_t status, int s) {
+                              if (status == wwiv::common::Input::bgetch_timeout_status_t::WARNING) {
             fs.PrintTimeoutWarning(s);
-          } else if (status == bgetch_timeout_status_t::CLEAR) {
+                              } else if (status ==
+                                         wwiv::common::Input::bgetch_timeout_status_t::CLEAR) {
             fs.ClearCommandLine();
           }
         });

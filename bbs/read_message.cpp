@@ -24,6 +24,7 @@
 #include "common/bgetch.h"
 #include "common/com.h"
 #include "bbs/connect1.h"
+#include "common/input.h"
 #include "common/full_screen.h"
 #include "common/message_file.h"
 #include "common/pause.h"
@@ -600,10 +601,12 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       result.option = ReadMessageOption::NEXT_MSG;
       return result;
     }
-    auto key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) {
-      if (st == bgetch_timeout_status_t::WARNING) {
+    auto key = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NOTNUMBERS,
+                         [&](wwiv::common::Input::bgetch_timeout_status_t st, int s) {
+                              if (st == wwiv::common::Input::bgetch_timeout_status_t::WARNING) {
         fs.PrintTimeoutWarning(s);
-      } else if (st == bgetch_timeout_status_t::CLEAR) {
+                              } else if (st ==
+                                         wwiv::common::Input::bgetch_timeout_status_t::CLEAR) {
         fs.ClearCommandLine();
       }
     });

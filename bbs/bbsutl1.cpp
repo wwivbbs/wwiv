@@ -336,7 +336,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   // scan each line, ignore lines with words<2
   string soundLine;
   while (soundFile.ReadLine(&soundLine)) {
-    if (abortable && bkbhit()) {
+    if (abortable && bin.bkbhit()) {
       break;
     }
     const auto nw = wordcount(soundLine, DELIMS_WHITE);
