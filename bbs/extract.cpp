@@ -19,11 +19,11 @@
 #include "bbs/extract.h"
 
 #include "bbs/bbs.h"
-#include "bbs/com.h"
-#include "bbs/input.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "bbs/misccmd.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
@@ -108,6 +108,6 @@ void extract_out(const std::string& text, const std::string& title) {
   file.Write(text);
   bout <<  "|#9Message written to|#0: |#2" << file << wwiv::endl;
   bout.nl();
-  pausescr();
+  bout.pausescr();
 }
 

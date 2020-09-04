@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_BBS_BASIC_UTIL_H__
 #define __INCLUDED_BBS_BASIC_UTIL_H__
 
-#include "bbs/output.h"
+#include "common/output.h"
 #include <string>
 
 struct mb_interpreter_t;

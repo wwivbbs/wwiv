@@ -21,13 +21,13 @@
 #include <chrono>
 #include <string>
 
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
-#include "bbs/datetime.h"
+#include "common/bgetch.h"
+#include "common/com.h"
+#include "common/datetime.h"
 #include "bbs/interpret.h"
 #include "bbs/bbs.h"
 #include "local_io/keycodes.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/stl.h"
@@ -45,9 +45,6 @@ static char str_yes[81],
             str_no[81];
 char  str_pause[81],
       str_quit[81];
-
-// in pause.cpp
-extern int nsp; 
 
 bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool add_crlf,
           bool allow_previous, bool two_color, bool clear_previous_line) {
@@ -340,9 +337,9 @@ bool checka(bool *abort) {
  * returns the value of abort
  */
 bool checka(bool *abort, bool *next) {
-  if (nsp == -1) {
+  if (bout.nsp() == -1) {
     *abort = true;
-    clearnsp();
+    bout.clearnsp();
   }
   while (bkbhit() && !*abort && !a()->context().hangup()) {
     CheckForHangup();

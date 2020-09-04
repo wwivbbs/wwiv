@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 
 /** Null remote session. */
 /**

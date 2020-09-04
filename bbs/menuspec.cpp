@@ -21,7 +21,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/chains.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"

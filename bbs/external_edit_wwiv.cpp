@@ -22,7 +22,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"

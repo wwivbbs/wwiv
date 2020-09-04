@@ -19,11 +19,11 @@
 #include "bbs/voteedit.h"
 
 #include "bbs/bbsutl.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/names.h"

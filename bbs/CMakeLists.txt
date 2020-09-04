@@ -19,18 +19,13 @@ set(COMMON_SOURCES
  bbsutl.cpp
  bbsutl1.cpp
  bbsutl2.cpp
- bgetch.cpp
- bputch.cpp
  chains.cpp
  chat.cpp
  chnedit.cpp
- com.cpp
  conf.cpp
  confutil.cpp
  connect1.cpp
- context.cpp
  crc.cpp
- datetime.cpp
  defaults.cpp
  diredit.cpp
  dirlist.cpp
@@ -43,13 +38,11 @@ set(COMMON_SOURCES
  external_edit_wwiv.cpp
  extract.cpp
  finduser.cpp
- full_screen.cpp
  gfiles.cpp
  gfileedit.cpp
  hop.cpp
  inetmsg.cpp
  inmsg.cpp
- input.cpp
  instmsg.cpp
  interpret.cpp
  lilo.cpp
@@ -60,8 +53,6 @@ set(COMMON_SOURCES
  menu_parser.cpp
  menuspec.cpp
  menusupp.cpp
- message_editor_data.cpp
- message_file.cpp
  misccmd.cpp
  mmkey.cpp
  msgbase1.cpp
@@ -72,15 +63,11 @@ set(COMMON_SOURCES
  newuser.cpp
  new_bbslist.cpp
  normupld.cpp
- pause.cpp
- printfile.cpp
  save_qscan.cpp
- quote.cpp
  qwk.cpp
  qwk1.cpp
  readmail.cpp
  read_message.cpp
- remote_socket_io.cpp
  shortmsg.cpp
  showfiles.cpp
  sr.cpp
@@ -102,8 +89,6 @@ set(COMMON_SOURCES
  valscan.cpp
  vote.cpp
  voteedit.cpp
- remote_io.cpp
- output.cpp
  wqscn.cpp
  xfer.cpp
  xferovl.cpp
@@ -111,18 +96,11 @@ set(COMMON_SOURCES
  xfertmp.cpp
  xinit.cpp
  wfc.cpp
- workspace.cpp
  basic/basic.cpp
  basic/util.cpp
  basic/wwiv.cpp
  basic/wwiv_data.cpp
  basic/wwiv_io.cpp
- fsed/commands.cpp
- fsed/common.cpp
- fsed/fsed.cpp
- fsed/line.cpp
- fsed/model.cpp
- fsed/view.cpp
  ../deps/my_basic/core/my_basic.c
 )
 
@@ -172,7 +150,9 @@ target_link_libraries(
   bbs_lib 
   local_io 
   localui 
+  common
   core 
+  fsed
   sdk 
   CL342_LIB 
   ${CMAKE_THREAD_LIBS_INIT} 

@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "bbs/bbs.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/qwk.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/datafile.h"

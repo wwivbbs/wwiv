@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/application.h"
 #include "sdk/status.h"
 #include "sdk/user.h"

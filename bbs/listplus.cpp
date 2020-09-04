@@ -20,17 +20,17 @@
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/dirlist.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/lpfunc.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -275,20 +275,20 @@ int lp_add_batch(const std::string& file_name, int dn, int fs) {
   if (a()->batch().size() >= a()->max_batch) {
     bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
     bout << "No room left in batch queue.\r\n";
-    pausescr();
+    bout.pausescr();
   } else if (!ratio_ok()) {
-    pausescr();
+    bout.pausescr();
   } else {
     if (nsl() <= a()->batch().dl_time_in_secs() + time_to_transfer(a()->modem_speed_, fs).count() &&
         !so()) {
       bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
       bout << "Not enough time left in queue.\r\n";
-      pausescr();
+      bout.pausescr();
     } else {
       if (dn == -1) {
         bout.GotoXY(1, a()->user()->GetScreenLines() - 1);
         bout << "Can't add temporary file to batch queue.\r\n";
-        pausescr();
+        bout.pausescr();
       } else {
         a()->batch().AddBatch({file_name, dn, fs, true});
         return 1;
@@ -506,7 +506,7 @@ void show_fileinfo(uploadsrec* u) {
   bout.Color(7);
   bout << string(78, '\xCD');
   bout.nl();
-  pausescr();
+  bout.pausescr();
 }
 
 int check_lines_needed(uploadsrec* u) {
@@ -1281,7 +1281,7 @@ static int move_filename(const std::string& file_name, int dn) {
   bool ok = false;
 
   tmp_disable_conf(true);
-  wwiv::bbs::TempDisablePause diable_pause;
+  wwiv::bbs::TempDisablePause diable_pause(bout);
   while (!a()->context().hangup() && nRecNum > 0 && !done) {
     int cp = nRecNum;
     const auto& dir = a()->dirs()[dn];
@@ -1506,13 +1506,13 @@ LP_SEARCH_HELP:
               sysoplog() << "Filespec: " << sr->filemask;
             } else {
               bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
-              pausescr();
+              bout.pausescr();
               sr->filemask[0] = '\0';
             }
           }
         } else {
           bout << "|#6Invalid filespec: " << sr->filemask << wwiv::endl;
-          pausescr();
+          bout.pausescr();
           sr->filemask[0] = 0;
         }
       }
@@ -1585,7 +1585,7 @@ void view_file(const std::string& aligned_file_name) {
   }
   while (i > 0 && !a()->context().hangup() && !abort);
   bout.nl();
-  pausescr();
+  bout.pausescr();
 }
 
 int lp_try_to_download(const std::string& file_mask, int dn) {
@@ -1694,5 +1694,5 @@ void request_file(const std::string& file_name) {
   } else {
     bout << "File request NOT sent\r\n";
   }
-  pausescr();
+  bout.pausescr();
 }

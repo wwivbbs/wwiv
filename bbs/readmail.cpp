@@ -23,21 +23,21 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/extract.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/message_file.h"
+#include "common/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
-#include "bbs/quote.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/shortmsg.h"
 #include "bbs/showfiles.h"
@@ -47,7 +47,7 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -313,7 +313,7 @@ void delete_attachment(unsigned long daten, int forceit) {
         } else {
           bout << "\r\nOrphaned attach " << fsr.filename << " remains in "
                << a()->GetAttachmentDirectory() << wwiv::endl;
-          pausescr();
+          bout.pausescr();
         }
       } else {
         l = fileAttach.Read(&fsr, sizeof(filestatusrec));

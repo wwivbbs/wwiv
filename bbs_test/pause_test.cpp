@@ -23,7 +23,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -47,7 +47,7 @@ protected:
 TEST_F(PauseTest, Smoke) {
   helper.user()->SetStatusFlag(User::pauseOnPage);
   {
-    TempDisablePause disable_pause;
+    TempDisablePause disable_pause(bout);
     EXPECT_FALSE(helper.user()->HasPause());
   }
   EXPECT_TRUE(helper.user()->HasPause());

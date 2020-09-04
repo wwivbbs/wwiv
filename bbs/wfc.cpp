@@ -23,21 +23,21 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
 #include "bbs/chnedit.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/diredit.h"
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
 #include "bbs/inetmsg.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/readmail.h"
 #include "bbs/ssh.h"
 #include "bbs/subedit.h"
@@ -45,7 +45,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/voteedit.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -284,7 +284,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     if (ch) {
       a_->set_at_wfc(true);
       bout.okskey(true);
-      resetnsp();
+      bout.resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
         // Local Logon
@@ -375,7 +375,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         bout.bputs("|#1Enter Number: ");
         auto x = input_number_or_key_raw(1, 0, 2112, true, {'Q', '?', '/'});
         bout << "key: " << x.key << "; num: " << x.num;
-        pausescr();
+        bout.pausescr();
       } break;
       // GfileEdit
       case 'G':

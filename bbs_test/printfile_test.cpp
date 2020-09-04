@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "bbs/bbs.h"
-#include "bbs/printfile.h"
+#include "common/printfile.h"
 #include "bbs_test/bbs_helper.h"
 #include "core_test/file_helper.h"
 #include <iostream>

@@ -57,11 +57,11 @@ add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
 target_link_libraries(core fmt::fmt-header-only)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 if (UNIX)
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  # using regular Clang or AppleClang
-	target_link_libraries(core c++fs)
-else()
-	target_link_libraries(core stdc++fs)
-endif()
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # using regular Clang or AppleClang
+  	target_link_libraries(core c++fs)
+  else()
+  	target_link_libraries(core stdc++fs)
+  endif()
 endif()
 

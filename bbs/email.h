@@ -20,7 +20,7 @@
 
 #include <memory>
 #include <string>
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 #include "core/file.h"
 #include "sdk/vardec.h"
 

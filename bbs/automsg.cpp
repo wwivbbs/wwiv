@@ -23,11 +23,11 @@
 #include <vector>
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/email.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/quote.h"
+#include "common/quote.h"
 #include "bbs/application.h"
 #include "sdk/status.h"
 #include "core/strings.h"

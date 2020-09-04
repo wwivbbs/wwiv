@@ -21,16 +21,16 @@
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/external_edit.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -263,7 +263,7 @@ int read_idz_all() {
   int count = 0;
 
   tmp_disable_conf(true);
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
   a()->ClearTopScreenProtection();
   for (auto i = 0;
        i < a()->dirs().size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed(); i++) {
@@ -283,7 +283,7 @@ int read_idz(bool prompt_for_mask, int tempdir) {
   std::unique_ptr<TempDisablePause> disable_pause;
   std::string s = "*.*";
   if (prompt_for_mask) {
-    disable_pause.reset(new TempDisablePause);
+    disable_pause.reset(new TempDisablePause(bout));
     a()->ClearTopScreenProtection();
     dliscan();
     s = file_mask();
@@ -457,7 +457,7 @@ void tag_files(bool& need_title) {
     switch (ch) {
     case '?': {
       print_help_file(TTAGGING_NOEXT);
-      pausescr();
+      bout.pausescr();
       relist();
     }
     break;
@@ -473,7 +473,7 @@ void tag_files(bool& need_title) {
     case 'D':
       batchdl(1);
       bout.nl();
-      pausescr();
+      bout.pausescr();
       bout.cls();
       done = true;
       break;
@@ -497,7 +497,7 @@ void tag_files(bool& need_title) {
         bout.format("|#1Directory  : |#2#{}, {}\r\n", keys, dir.name);
         printfileinfo(&f.u, dir);
         bout.nl();
-        pausescr();
+        bout.pausescr();
         relist();
       }
     }
@@ -538,11 +538,11 @@ void tag_files(bool& need_title) {
         }
         if (!File::Exists(s1)) {
           bout << "|#6File not there.\r\n";
-          pausescr();
+          bout.pausescr();
           break;
         }
         list_arc_out(s1.string(), "");
-        pausescr();
+        bout.pausescr();
         a()->UpdateTopScreen();
         bout.cls();
         relist();
@@ -961,7 +961,7 @@ void removenotthere() {
   }
 
   tmp_disable_conf(true);
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
   int autodel = 0;
   bout.nl();
   bout << "|#5Remove N/A files in all directories? ";

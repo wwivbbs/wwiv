@@ -17,10 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/crc.h"
-#include "bbs/datetime.h"
-#include "bbs/remote_io.h"
+#include "common/datetime.h"
+#include "common/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/xfer.h"
 #include "core/numbers.h"

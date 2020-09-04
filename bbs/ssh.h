@@ -23,8 +23,8 @@
 #include <mutex>
 #include <string>
 
-#include "bbs/remote_io.h"
-#include "bbs/remote_socket_io.h"
+#include "common/remote_io.h"
+#include "common/remote_socket_io.h"
 
 namespace wwiv {
 namespace bbs {

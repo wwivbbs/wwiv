@@ -29,16 +29,16 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/make_abs_cmd.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/save_qscan.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
@@ -151,7 +151,7 @@ void build_qwk_packet() {
     save_conf = true;
     tmp_disable_conf(true);
   }
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
 
   auto qwk_cfg = read_qwk_cfg();
   max_msgs = qwk_cfg.max_msgs;
@@ -601,7 +601,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   if (write(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = true; // Must be out of disk space
     bout.bputs("Write error");
-    pausescr();
+    bout.pausescr();
   }
 
   // Save Qwk NDX

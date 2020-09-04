@@ -22,13 +22,13 @@
 
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "local_io/keycodes.h"
 #include "bbs/bbs.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/wqscn.h"
 #include "core/datafile.h"
 #include "core/stl.h"
@@ -291,7 +291,7 @@ void modify_dir(int n) {
           File::set_current_directory(a()->bbspath());
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
-            pausescr();
+            bout.pausescr();
             s.clear();
           }
         }
@@ -301,7 +301,7 @@ void modify_dir(int n) {
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";
           bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
-          pausescr();
+          bout.pausescr();
         }
       }
     } break;

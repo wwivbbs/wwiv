@@ -28,8 +28,8 @@
 #include "bbs/menu_parser.h"
 #include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
@@ -264,7 +264,7 @@ Runs a WWIVbasic Script
 
   Pauses the screen, like 'pausescr()' in C code
 )", MENU_CAT_SYS, [](MenuItemContext&) {
-      pausescr();
+      bout.pausescr();
     } ));
   m.emplace("ConfigUserMenuSet", MenuItem(R"(
 

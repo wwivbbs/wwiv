@@ -23,8 +23,8 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/confutil.h"
-#include "bbs/pause.h"
-#include "bbs/datetime.h"
+#include "common/pause.h"
+#include "common/datetime.h"
 #include "fmt/printf.h"
 #include "core/strings.h"
 #include "core/datetime.h"
@@ -67,7 +67,7 @@ std::string MacroContext::interpret(char ch) const {
     case ';':                               // Directory number
       return a()->current_user_dir().keys;
     case '!':                               // Built-in pause
-      pausescr();
+      bout.pausescr();
       return "";
     case '&':
       return u().HasAnsi() ? "ANSI" : "ASCII";

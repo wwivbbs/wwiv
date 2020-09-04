@@ -21,7 +21,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/mmkey.h"
 #include "bbs/utility.h"
 #include "core/strings.h"

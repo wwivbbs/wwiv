@@ -24,11 +24,11 @@
 #include "bbs/external_edit_qbbs.h"
 #include "bbs/external_edit_wwiv.h"
 #include "bbs/make_abs_cmd.h"
-#include "bbs/message_editor_data.h"
-#include "bbs/pause.h"
+#include "common/message_editor_data.h"
+#include "common/pause.h"
 #include "bbs/stuffin.h"
 #include "bbs/utility.h"
-#include "bbs/fsed/fsed.h"
+#include "fsed/fsed.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -49,7 +49,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
   string editorCommand = (a()->context().incom()) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
-    pausescr();
+    bout.pausescr();
     return false;
   }
 
@@ -58,7 +58,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
     if (File::is_directory(edit_filename)) {
       bout.nl();
       bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
-      pausescr();
+      bout.pausescr();
       return false;
     }
   }
@@ -126,7 +126,7 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   const auto editor_number = a()->user()->GetDefaultEditor() - 1;
   if (editor_number >= wwiv::stl::ssize(a()->editors) || !okansi()) {
     bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
-    pausescr();
+    bout.pausescr();
     return false;
   }
 

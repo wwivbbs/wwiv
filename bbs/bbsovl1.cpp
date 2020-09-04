@@ -21,20 +21,20 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/external_edit.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/message_editor_data.h"
-#include "bbs/pause.h"
-#include "bbs/quote.h"
+#include "common/message_editor_data.h"
+#include "common/pause.h"
+#include "common/quote.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -107,7 +107,7 @@ void YourInfo() {
        << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
-  pausescr();
+  bout.pausescr();
 }
 
 /**

@@ -22,11 +22,11 @@
 #include "arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
-#include "bbs/datetime.h"
+#include "common/com.h"
+#include "common/datetime.h"
 #include "bbs/gfiles.h"
-#include "bbs/input.h"
-#include "bbs/pause.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "bbs/xfer.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -145,7 +145,7 @@ void modify_sec(int n) {
         } else {
           bout << "\r\nA directory already exists under this filename.\r\n\n";
         }
-        pausescr();
+        bout.pausescr();
       }
     }
     break;

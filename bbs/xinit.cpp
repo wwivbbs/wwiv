@@ -24,10 +24,10 @@
 #include "bbs/connect1.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
 #include "core/log.h"
@@ -572,7 +572,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
             << "\r\nInitializing BBS..." << std::endl;
   use_workspace = false;
 
-  clearnsp();
+  bout.clearnsp();
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(temp_directory())) {
     if (!File::mkdirs(temp_directory())) {
@@ -696,7 +696,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   VLOG(1) << "Reading Conferences.";
   read_all_conferences();
 
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
   remove_from_temp("*.*", temp_directory(), false);
   remove_from_temp("*.*", batch_directory(), false);
 

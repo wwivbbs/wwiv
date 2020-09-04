@@ -22,22 +22,22 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
+#include "common/bgetch.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/extract.h"
-#include "bbs/full_screen.h"
-#include "bbs/input.h"
+#include "common/full_screen.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/message_file.h"
+#include "common/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
-#include "bbs/quote.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/showfiles.h"
 #include "bbs/sr.h"
@@ -46,7 +46,7 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/xfer.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -597,11 +597,11 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
           if (!printfile(TITLE_FSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << TITLE_FSED_NOEXT;
-            pausescr();
+            bout.pausescr();
             fs.ClearCommandLine();
           } else {
             fs.ClearCommandLine();
-            pausescr();
+            bout.pausescr();
             fs.ClearCommandLine();
           }
         } break;
@@ -960,7 +960,7 @@ static void HandleToggleUnAnonymous(int msg_num) {
 
 static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& nextsub,
                                  bool& title_scan, bool& done, bool& quit, int& val) {
-  resetnsp();
+  bout.resetnsp();
   string read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
   char szUserInput[81];

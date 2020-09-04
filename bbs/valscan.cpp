@@ -20,14 +20,14 @@
 
 #include <algorithm>
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/subacc.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
 #include "core/strings.h"

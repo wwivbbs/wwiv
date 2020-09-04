@@ -17,11 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
+#include "common/bgetch.h"
+#include "common/com.h"
 #include "bbs/crc.h"
-#include "bbs/datetime.h"
-#include "bbs/remote_io.h"
+#include "common/datetime.h"
+#include "common/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"

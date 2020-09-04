@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"

@@ -22,20 +22,20 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/common.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/inetmsg.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
@@ -804,7 +804,7 @@ void defaults(bool& need_menu_reload) {
           write_inet_addr(internetAddress, a()->usernum);
         } else {
           bout << "\r\n|#6Invalid address format.\r\n\n";
-          pausescr();
+          bout.pausescr();
         }
       } else {
         bout << "|#5Delete Internet address? ";
@@ -1034,7 +1034,7 @@ void config_scan_plus(int type) {
       case CO:
         bout.cls();
         print_help_file(SCONFIG_HLP);
-        pausescr();
+        bout.pausescr();
         menu_done = true;
         amount = 0;
         break;
@@ -1255,7 +1255,7 @@ void config_scan_plus(int type) {
         case 9:
           bout.cls();
           print_help_file(SCONFIG_HLP);
-          pausescr();
+          bout.pausescr();
           menu_done = true;
           amount = 0;
           if (!useconf) {

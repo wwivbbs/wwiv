@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "bbs/output.h"
+#include "common/output.h"
 #include "bbs/bbs.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"

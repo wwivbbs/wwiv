@@ -17,13 +17,13 @@
 /**************************************************************************/
 #include  "bbs/basic/wwiv_io.h"
 
-#include "bbs/com.h"
-#include "bbs/input.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "bbs/interpret.h"
 #include "bbs/menu.h"
-#include "bbs/output.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/basic/util.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -153,7 +153,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
   mb_register_func(bas, "PAUSE", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    pausescr();
+    bout.pausescr();
     return MB_FUNC_OK;
   });
 

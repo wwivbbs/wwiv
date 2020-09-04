@@ -20,7 +20,7 @@
 
 #include "wwivconfig/wwivconfig.h"
 
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"

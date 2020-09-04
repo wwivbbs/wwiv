@@ -18,11 +18,11 @@
 /**************************************************************************/
 #include "bbs/mmkey.h"
 
-
 #include "bbsovl3.h"
 #include "bbs/bbs.h"
-#include "bbs/bgetch.h"
-#include "bbs/input.h"
+#include "common/bgetch.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -52,6 +52,18 @@ static char mmkey_getch() {
     return 0;
   }
   return static_cast<char>(bge & 0xff);
+}
+
+static int max_sub_key(std::vector<usersubrec>& container) {
+  int key = 0;
+  for (const auto& r : container) {
+    int current_key = to_number<int>(r.keys);
+    if (current_key == 0) {
+      return key;
+    }
+    key = current_key;
+  }
+  return key;
 }
 
 string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
@@ -123,18 +135,7 @@ string mmkey(std::set<char>& x) {
   return mmkey(x, xx, false);
 }
 
-static int max_sub_key(std::vector<usersubrec>& container) {
-  int key = 0;
-  for (const auto& r : container) {
-    int current_key = to_number<int>(r.keys);
-    if (current_key == 0) {
-      return key;
-    }
-    key = current_key;
-  }
-  return key;
-}
- 
+
 std::string mmkey(MMKeyAreaType dl, bool bListOption) {
   std::set<char> x = {'/'};
   std::set<char> xx{};

@@ -21,13 +21,13 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
+#include "common/bgetch.h"
+#include "common/com.h"
 #include "bbs/connect1.h"
-#include "bbs/full_screen.h"
-#include "bbs/message_file.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/full_screen.h"
+#include "common/message_file.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
 #include "core/file.h"
@@ -698,7 +698,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
             fs.ClearCommandLine();
           }
           if (lcs()) {
-            pausescr();
+            bout.pausescr();
             fs.ClearMessageArea();
             if (!print_help_file(MBFSED_SYSOP_NOEXT)) {
               fs.ClearCommandLine();
@@ -706,7 +706,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
             }
           }
           fs.ClearCommandLine();
-          pausescr();
+          bout.pausescr();
           fs.ClearCommandLine();
         } else {
           result.option = ReadMessageOption::COMMAND;

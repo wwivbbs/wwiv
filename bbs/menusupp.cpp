@@ -29,10 +29,10 @@
 #include "bbs/chains.h"
 #include "bbs/chat.h"
 #include "bbs/chnedit.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
@@ -43,7 +43,7 @@
 #include "bbs/gfileedit.h"
 #include "bbs/gfiles.h"
 #include "bbs/inetmsg.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/listplus.h"
 #include "bbs/menu.h"
@@ -53,9 +53,9 @@
 #include "bbs/multmail.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
-#include "bbs/quote.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/quote.h"
 #include "bbs/readmail.h"
 #include "bbs/stuffin.h"
 #include "bbs/subedit.h"
@@ -65,7 +65,7 @@
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
@@ -209,7 +209,7 @@ void Defaults(bool& need_menu_reload) {
   if (GuestCheck()) {
     write_inst(INST_LOC_DEFAULTS, 0, INST_FLAGS_NONE);
     if (printfile(DEFAULTS_NOEXT)) {
-      pausescr();
+      bout.pausescr();
     }
     defaults(need_menu_reload);
   }
@@ -235,11 +235,11 @@ void SystemInfo() {
 
   if (printfile(LOGON_NOEXT)) {
     // Only display the pause if the file is not empty and contains information
-    pausescr();
+    bout.pausescr();
   }
 
   if (printfile(SYSTEM_NOEXT)) {
-    pausescr();
+    bout.pausescr();
   }
 }
 
@@ -327,7 +327,7 @@ void GoodBye() {
         auto secs_used = std::chrono::duration_cast<std::chrono::seconds>(used_this_session);
         bout <<  "Time on   = " << ctim(static_cast<long>(secs_used.count())) << wwiv::endl;
         {
-          TempDisablePause disable_pause;
+          TempDisablePause disable_pause(bout);
           printfile(LOGOFF_NOEXT);
         }
         a()->user()->SetLastSubNum(a()->current_user_sub_num());
@@ -351,7 +351,7 @@ void GoodBye() {
       const auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
       bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
       {
-        TempDisablePause disable_pause;
+        TempDisablePause disable_pause(bout);
         printfile(LOGOFF_NOEXT);
       }
       a()->user()->SetLastSubNum(a()->current_user_sub_num());
@@ -438,7 +438,7 @@ void WWIVVersion() {
   }
 
   bout.nl(3);
-  pausescr();
+  bout.pausescr();
 }
 
 void JumpEdit() {
@@ -623,7 +623,7 @@ void UploadPost() {
 void WhoIsOnline() {
   multi_instance();
   bout.nl();
-  pausescr();
+  bout.pausescr();
 }
 
 void NewMsgsAllConfs() {
@@ -773,7 +773,7 @@ void SortDirs() {
     nType = 2;
   }
 
-  TempDisablePause disable_paise;
+  TempDisablePause disable_pause(bout);
   if (bSortAll) {
     sort_all(nType);
   } else {
@@ -786,7 +786,7 @@ void ReverseSort() {
   bout << "|#5Sort all dirs? ";
   bool bSortAll = yesno();
   bout.nl();
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
   if (bSortAll) {
     sort_all(1);
   } else {

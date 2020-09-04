@@ -19,12 +19,12 @@
 #include "bbs/subreq.h"
 
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/stl.h"
@@ -102,7 +102,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype,
   } else {
     bout << "Automated drop request sent to @" << tosys << wwiv::endl;
   }
-  pausescr();
+  bout.pausescr();
 }
 
 static constexpr short OPTION_AUTO = 0x0001;
@@ -448,7 +448,7 @@ void sub_xtr_add(int n, int nn) {
       } else {
         bout.nl();
         bout << "The host is not listed in the network.\r\n";
-        pausescr();
+        bout.pausescr();
       }
     }
   }

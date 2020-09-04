@@ -20,9 +20,9 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/datetime.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/datetime.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/utility.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -50,8 +50,6 @@ static bool chat_invis;
 // Local functions
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
-
-using wwiv::bbs::TempDisablePause;
 
 static steady_clock::time_point last_iia;
 static std::chrono::milliseconds iia;

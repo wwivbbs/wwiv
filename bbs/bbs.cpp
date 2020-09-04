@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "bbs/bbs.h"
 
-#include "exceptions.h"
+#include "common/exceptions.h"
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"

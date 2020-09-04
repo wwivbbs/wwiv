@@ -20,17 +20,17 @@
 #include "bbs/batch.h"
 
 #include "bbs/bbs.h"
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
-#include "bbs/datetime.h"
+#include "common/bgetch.h"
+#include "common/com.h"
+#include "common/datetime.h"
 #include "bbs/dsz.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/make_abs_cmd.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
-#include "bbs/remote_io.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/srsend.h"
@@ -836,7 +836,7 @@ void upload(int dn) {
     case '?':
       bout << "This is help?";
       bout.nl();
-      pausescr();
+      bout.pausescr();
       done = false;
       break;
     }

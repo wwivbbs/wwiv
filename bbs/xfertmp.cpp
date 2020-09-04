@@ -20,13 +20,13 @@
 #include "bbs/xfertmp.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/dirlist.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
@@ -59,7 +59,7 @@ void move_file_t() {
   if (a()->batch().empty()) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
-    pausescr();
+    bout.pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
   for (auto pos = a()->batch().ssize() - 1; pos >= 0; pos--) {
@@ -69,7 +69,7 @@ void move_file_t() {
     int temp_record_num = recno(cur_batch_fn);
     if (temp_record_num < 0) {
       bout << "File not found.\r\n";
-      pausescr();
+      bout.pausescr();
     }
     while (!a()->context().hangup() && temp_record_num > 0) {
       auto cur_pos = temp_record_num;

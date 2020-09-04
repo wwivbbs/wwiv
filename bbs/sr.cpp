@@ -20,10 +20,10 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bgetch.h"
-#include "bbs/com.h"
+#include "common/bgetch.h"
+#include "common/com.h"
 #include "bbs/crc.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/srrcv.h"
 #include "bbs/srsend.h"

@@ -22,20 +22,20 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/finduser.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/read_message.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
@@ -419,7 +419,7 @@ void print_net_listing(bool bForcePause) {
         }
         if (abort) {
           bout << "|#6Area code must be a 3-digit number!\r\n";
-          pausescr();
+          bout.pausescr();
           cmdbit = 0;
         }
         break;
@@ -430,7 +430,7 @@ void print_net_listing(bool bForcePause) {
         input(s, 2);
         if ((s[0] == 0) || (to_number<int>(s) < 1)) {
           bout << "|#6Invalid group number!\r\n";
-          pausescr();
+          bout.pausescr();
           cmdbit = 0;
           break;
         }
@@ -455,7 +455,7 @@ void print_net_listing(bool bForcePause) {
         input(substr, 40);
         if (substr[0] == 0) {
           bout << "|#6Enter a substring!\r\n";
-          pausescr();
+          bout.pausescr();
           cmdbit = 0;
         }
         break;
@@ -466,7 +466,7 @@ void print_net_listing(bool bForcePause) {
         input(phstr, 12);
         if (phstr[0] == 0) {
           bout << "|#6Enter a phone substring!\r\n";
-          pausescr();
+          bout.pausescr();
           cmdbit = 0;
         }
         break;
@@ -490,7 +490,7 @@ void print_net_listing(bool bForcePause) {
       auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
       if (bbslist.empty()) {
         bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
-        pausescr();
+        bout.pausescr();
         continue;
       }
       to_char_array(s, "000-000-0000");
@@ -617,7 +617,7 @@ void print_net_listing(bool bForcePause) {
         bout << "|#1Systems Listed |#7: |#2" << slist;
       }
       bout.nl(2);
-      pausescr();
+      bout.pausescr();
     }
   }
   if (bForcePause && bHadPause) {

@@ -38,7 +38,7 @@
 #endif
 
 #include "bbs/bbs.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 
 #include "core/log.h"
 #include "core/os.h"

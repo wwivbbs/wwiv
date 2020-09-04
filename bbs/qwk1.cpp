@@ -34,17 +34,17 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
-#include "bbs/message_file.h"
+#include "common/input.h"
+#include "common/message_file.h"
 #include "bbs/msgbase1.h"
-#include "bbs/pause.h"
-#include "bbs/quote.h"
+#include "common/pause.h"
+#include "common/quote.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
@@ -407,7 +407,7 @@ static void process_reply_dat(const std::string& name) {
     bout.nl();
     bout.Color(3);
     bout.bputs("Can't open packet.");
-    pausescr();
+    bout.pausescr();
     return;
   }
 
@@ -499,7 +499,7 @@ static void process_reply_dat(const std::string& name) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
-        pausescr();
+        bout.pausescr();
       } else {
         qwk_post_text(text.c_str(), title, to_number<int16_t>(tosub) - 1);
       }
@@ -542,7 +542,7 @@ void upload_reply_packet() {
     } else {
       bout << "Please copy the REP file to the following directory: " << wwiv::endl;
       bout << "'" << a()->qwk_directory() << "'" << wwiv::endl;
-      pausescr();
+      bout.pausescr();
     }
 
     if (rec) {
@@ -594,7 +594,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       bout.nl();
       bout.bputs("Sorry, not enough disk space left.");
       bout.nl();
-      pausescr();
+      bout.pausescr();
       return;
     }
 
@@ -604,7 +604,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       bout.nl();
       if ((un == 0) && (sy == 0)) {
         bout.bputs("Forwarded to unknown user.");
-        pausescr();
+        bout.pausescr();
         return;
       }
     }

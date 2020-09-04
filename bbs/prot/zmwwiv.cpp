@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"

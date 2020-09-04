@@ -20,7 +20,7 @@
 
 #include "bbs/inmsg.h"
 #include "local_io/keycodes.h"
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 #include "bbs/msgbase1.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/datetime.h"

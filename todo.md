@@ -11,6 +11,8 @@
 * Create common module, move bout, bin, remoteio, remotesocket, and
   other stuff to it. 
 * move bout.getkey to Input
+* ** Put back in mmkey_getch's do_sysop_command
+* 
 
 
 ## Build Cleanup.

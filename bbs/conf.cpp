@@ -21,11 +21,11 @@
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -516,7 +516,7 @@ static void modify_conf(ConferenceType conftype, int which) {
       if (!ok) {
         bout.nl();
         bout << "|#6That designator already in use!\r\n";
-        pausescr();
+        bout.pausescr();
         break;
       }
       c.designator = ch1;

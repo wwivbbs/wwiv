@@ -23,16 +23,16 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
-#include "bbs/exceptions.h"
-#include "bbs/fsed/fsed.h"
+#include "common/exceptions.h"
+#include "fsed/fsed.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
 #include "bbs/null_remote_io.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
 #include "bbs/syschat.h"
@@ -40,7 +40,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/command_line.h"
 #include "core/os.h"
@@ -80,7 +80,7 @@
 // Needed for isatty
 // ReSharper disable once CppUnusedIncludeDirective
 #include <io.h>
-#include "bbs/remote_socket_io.h"
+#include "common/remote_socket_io.h"
 #include "local_io/local_io_win32.h"
 #else
 // ReSharper disable once CppUnusedIncludeDirective
@@ -101,7 +101,6 @@ using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-Output bout;
 
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),

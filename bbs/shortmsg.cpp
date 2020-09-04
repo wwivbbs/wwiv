@@ -20,7 +20,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"

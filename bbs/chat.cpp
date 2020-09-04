@@ -19,12 +19,12 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
-#include "bbs/input.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -183,7 +183,7 @@ void chat_room() {
     ini.Close();
   } else {
     bout << "|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n";
-    pausescr();
+    bout.pausescr();
     return;
   }
   cleanup_chat();
@@ -198,7 +198,7 @@ void chat_room() {
   } else {
     if (a()->user()->IsRestrictionMultiNodeChat() || !check_ch(1)) {
       bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
-      pausescr();
+      bout.pausescr();
       return;
     }
     loc = INST_LOC_CH1;
@@ -208,7 +208,7 @@ void chat_room() {
     bout.nl();
   }
 
-  TempDisablePause disable_pause;
+  TempDisablePause disable_pause(bout);
   a()->context().chatline(false);
   a()->context().in_chatroom(true);
   auto oiia = setiia(std::chrono::milliseconds(500));

@@ -22,7 +22,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/dropfile.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/utility.h"
 #include "core/file.h"
 #include "core/strings.h"

@@ -20,7 +20,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"

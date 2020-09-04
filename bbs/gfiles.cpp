@@ -20,12 +20,12 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/gfileedit.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -185,7 +185,7 @@ void list_sec(int *map, int nmap) {
       bout.bpla(s1, &abort);
       bout.Color(0);
       bout.nl();
-      pausescr();
+      bout.pausescr();
       gfl_hdr(1);
     }
   }
@@ -315,7 +315,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       bout.bpla(s1, &abort);
       bout.Color(0);
       bout.nl();
-      pausescr();
+      bout.pausescr();
       gfl_hdr(1);
     }
   }

@@ -23,8 +23,8 @@
 #include "bbs/bbsutl.h"
 #include "bbs/common.h"
 #include "bbs/listplus.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/stl.h"
@@ -227,7 +227,7 @@ int listfiles_plus_function(int type) {
                 case CO:
                   bout.cls();
                   print_help_file(LISTPLUS_HLP);
-                  pausescr();
+                  bout.pausescr();
                   menu_done = true;
                   amount = lines = matches = 0;
                   save_file_pos = file_pos;
@@ -293,7 +293,7 @@ ADD_OR_REMOVE_BATCH:
                         menu_done = true;
                         amount = lines = matches = 0;
                         save_file_pos = file_pos;
-                        pausescr();
+                        bout.pausescr();
                       } else {
                         redraw = false;
                         if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
@@ -361,13 +361,13 @@ ADD_OR_REMOVE_BATCH:
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
                       if (!ratio_ok()) {
-                        pausescr();
+                        bout.pausescr();
                       } else {
                         if (!ratio_ok()  && !sysop_mode) {
                           menu_done = true;
                           amount = lines = matches = 0;
                           save_file_pos = file_pos;
-                          pausescr();
+                          bout.pausescr();
                         } else {
                           redraw = false;
                           if (!(a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
@@ -467,7 +467,7 @@ TOGGLE_EXTENDED:
                   case 10:
                     bout.cls();
                     print_help_file(LISTPLUS_HLP);
-                    pausescr();
+                    bout.pausescr();
                     menu_done = true;
                     amount = lines = matches = 0;
                     save_file_pos = file_pos;

@@ -19,7 +19,7 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/interpret.h"
 #include "bbs/basic/util.h"
 #include "bbs/basic/wwiv.h"

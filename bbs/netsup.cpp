@@ -21,11 +21,11 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/wfc.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -231,7 +231,7 @@ void print_pending_list() {
           atc, a()->network_name(), r->systemnumber(), bsent, brec, bwait, r->numfails(),
           last_contact_sent);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
-        pausescr();
+        bout.pausescr();
         lines = 0;
       }
     }
@@ -279,7 +279,7 @@ void print_pending_list() {
   bout.nl();
   a()->user()->SetStatus(ss);
   if (!a()->context().IsUserOnline() && bout.lines_listed()) {
-    pausescr();
+    bout.pausescr();
   }
 }
 

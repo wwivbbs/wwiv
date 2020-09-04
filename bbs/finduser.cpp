@@ -19,7 +19,7 @@
 #include "bbs/finduser.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/names.h"

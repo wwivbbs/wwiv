@@ -24,9 +24,9 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
@@ -34,18 +34,18 @@
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
 #include "bbs/inmsg.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/lilo.h"
-#include "bbs/message_file.h"
+#include "common/message_file.h"
 #include "bbs/mmkey.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
-#include "bbs/workspace.h"
+#include "common/workspace.h"
 #include "bbs/wqscn.h"
 #include "core/inifile.h"
 #include "core/os.h"
@@ -766,7 +766,7 @@ void DoNewUserASV() {
       bout.nl();
       printfile(ASV_NOEXT);
       bout.nl();
-      pausescr();
+      bout.pausescr();
     }
   }
 }
@@ -991,10 +991,10 @@ void newuser() {
   }
   printfile(SYSTEM_NOEXT);
   bout.nl();
-  pausescr();
+  bout.pausescr();
   printfile(NEWUSER_NOEXT);
   bout.nl();
-  pausescr();
+  bout.pausescr();
   bout.cls();
   bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
   if (!noyes()) {

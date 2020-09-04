@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/fsed/model.h"
+#include "fsed/model.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core/stl.h"

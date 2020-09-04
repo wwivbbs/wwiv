@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_EXTERNAL_EDIT_H__
 #define __INCLUDED_EXTERNAL_EDIT_H__
 
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 #include <string>
 
 #include "sdk/vardec.h"

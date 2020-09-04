@@ -21,8 +21,8 @@
 
 #include "bbs/batch.h"
 #include "bbs/conf.h"
-#include "bbs/context.h"
-#include "bbs/output.h"
+#include "common/context.h"
+#include "common/output.h"
 #include "bbs/runnable.h"
 #include "sdk/net/networks.h"
 #include "sdk/vardec.h"
@@ -53,7 +53,6 @@ struct tagrec_t {
   uint16_t dir_mask;
 };
 
-extern Output bout;
 enum class CommunicationType;
 class LocalIO;
 class RemoteIO;

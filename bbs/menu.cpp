@@ -20,13 +20,13 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
-#include "bbs/input.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "core/findfiles.h"
@@ -478,7 +478,7 @@ void ConfigUserMenuSet() {
       }
       bout.nl();
       bout << "|#6That menu set does not exists, resetting to the default menu set" << wwiv::endl;
-      pausescr();
+      bout.pausescr();
       if (a()->user()->menu_set().empty()) {
         a()->user()->set_menu_set("wwiv");
       }

@@ -18,13 +18,13 @@
 /**************************************************************************/
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/dirlist.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/listplus.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
@@ -118,7 +118,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
         d = a()->dirs()[dn];
         if (d.mask & mask_no_uploads && !dcs()) {
           bout << "Can't upload there...\r\n";
-          pausescr();
+          bout.pausescr();
         } else {
           dn = a()->udir[x].subnum;
           done = true;

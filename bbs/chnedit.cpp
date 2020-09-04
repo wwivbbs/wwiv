@@ -20,10 +20,10 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/finduser.h"
-#include "bbs/input.h"
-#include "bbs/pause.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "bbs/utility.h"
 #include "core/datafile.h"
 #include "core/stl.h"
@@ -137,7 +137,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
     case 'A': {
       if (c.regby.size() > 5) {
         bout << "|#6Only 5 sponsors allowed." << wwiv::endl;
-        pausescr();
+        bout.pausescr();
         break;
       }
       auto nn = input(30, true);

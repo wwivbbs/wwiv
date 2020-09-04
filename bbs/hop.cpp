@@ -18,12 +18,12 @@
 /**************************************************************************/
 
 #include "bbs/bbsovl3.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"

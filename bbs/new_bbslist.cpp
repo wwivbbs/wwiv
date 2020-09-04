@@ -21,9 +21,9 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/com.h"
-#include "bbs/input.h"
-#include "bbs/pause.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "bbs/sysopf.h"
 #include "core/file.h"
 #include "core/stl.h"
@@ -185,7 +185,7 @@ static void DeleteBbsListEntry() {
 
   if (entries.empty()) {
     bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
-    pausescr();
+    bout.pausescr();
     return;
   }
 
@@ -246,7 +246,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   if (!has_telnet && !has_pots) {
     bout.nl();
     bout << "|#6Either a modem or telnet connection is required." << wwiv::endl;
-    pausescr();
+    bout.pausescr();
     return false;
   }
 

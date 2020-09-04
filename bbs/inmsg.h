@@ -19,7 +19,7 @@
 #define __INCLUDED_BBS_INMSG_H__
 
 #include "bbs/external_edit.h"
-#include "bbs/message_editor_data.h"
+#include "common/message_editor_data.h"
 
 bool inmsg(wwiv::bbs::MessageEditorData& data);
 

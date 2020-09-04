@@ -18,7 +18,7 @@
 #include "bbs/basic/util.h"
 
 //#include "bbs/application.h"
-#include "bbs/output.h"
+#include "common/output.h"
 #include "core/log.h"
 #include "deps/my_basic/core/my_basic.h"
 #include <string>

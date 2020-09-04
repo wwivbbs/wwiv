@@ -23,25 +23,25 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
-#include "bbs/pause.h"
-#include "bbs/printfile.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "bbs/readmail.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
@@ -308,7 +308,7 @@ static void logon_guest() {
   input_ansistat();
 
   printfile(GUEST_NOEXT);
-  pausescr();
+  bout.pausescr();
 
   string userName, reason;
   int count = 0;
@@ -467,7 +467,7 @@ static void PrintLogonFile() {
   }
   play_sdf(LOGON_NOEXT, false);
   if (!printfile(LOGON_NOEXT)) {
-    pausescr();
+    bout.pausescr();
   }
 }
 
@@ -560,7 +560,7 @@ static void UpdateLastOnFile() {
       }
     }
     bout.nl(2);
-    pausescr();
+    bout.pausescr();
   }
 
   auto status = a()->status_manager()->GetStatus();
@@ -854,7 +854,7 @@ void logon() {
   a()->SetLogonTime();
   a()->UpdateTopScreen();
   bout.nl(2);
-  pausescr();
+  bout.pausescr();
   if (!a()->logon_cmd.empty()) {
     bout.nl();
     const auto cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");

@@ -26,7 +26,7 @@
 #include <sstream>
 
 #include "bbs/bbs.h"
-#include "bbs/remote_io.h"
+#include "common/remote_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/application.h"
 #include "core/file.h"

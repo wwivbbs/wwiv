@@ -19,15 +19,15 @@
 #include "bbs/misccmd.h"
 
 #include "bbs/bbs.h"
-#include "bbs/com.h"
+#include "common/com.h"
 #include "bbs/confutil.h"
-#include "bbs/datetime.h"
+#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
-#include "bbs/input.h"
+#include "common/input.h"
 #include "bbs/msgbase1.h"
-#include "bbs/pause.h"
+#include "common/pause.h"
 #include "bbs/read_message.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -413,7 +413,7 @@ void list_users(int mode) {
     bout.nl(2);
     bout << "|#1" << num << " user(s) have access and " << numscn << " user(s) scan this subboard.";
     bout.nl();
-    pausescr();
+    bout.pausescr();
   }
   a()->ReadCurrentUser(snum);
   read_qscn(snum, a()->context().qsc, false);
