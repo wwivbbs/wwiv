@@ -980,6 +980,10 @@ int Application::Run(int argc, char* argv[]) {
     return oklevel_;
   }
 
+#if 0
+  a()->localIO()->Puts("Debug: Press any key...");
+  a()->localIO()->GetChar();
+#endif // 0
   do {
     if (this_usernum_from_commandline) {
       usernum = this_usernum_from_commandline;
@@ -1001,7 +1005,7 @@ int Application::Run(int argc, char* argv[]) {
       // set in logon() which could cause problems if we get hung up before then.
       SetLogonTime();
 
-      auto gt = get_caller_t::exit;
+      auto gt = get_caller_t::normal_login;
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
           GotCaller(ui);
