@@ -18,42 +18,36 @@
 #ifndef __INCLUDED_BBS_INTERPRET_H__
 #define __INCLUDED_BBS_INTERPRET_H__
 
-#include "bbs/bbs.h"
+#include "common/context.h"
 #include "sdk/ansi/ansi.h"
+#include "sdk/files/dirs.h"
 #include "sdk/user.h"
 #include <string>
 
+
+wwiv::bbs::BbsContext CreateBbsContext();
+
 class MacroContext {
 public:
-  virtual ~MacroContext() = default;
-  virtual const wwiv::sdk::User& u() const = 0;
-  virtual const wwiv::sdk::files::directory_t& dir() const = 0;
-  virtual bool mci_enabled() const = 0;
-  virtual std::string interpret(char c) const;
-};
+  MacroContext(const wwiv::bbs::Context* context) : context_(context) {}
+  ~MacroContext() = default;
 
-class BbsMacroContext : public MacroContext {
-public:
-  BbsMacroContext(const wwiv::sdk::User* u, bool mci_enabled) : u_(u), mci_enabled_(mci_enabled) {}
-  const wwiv::sdk::User& u() const override { return *u_; }
-  const wwiv::sdk::files::directory_t& dir() const override { return a()->current_dir(); }
-  bool mci_enabled() const override { return mci_enabled_; }
+  std::string interpret(char c) const;
 
 private:
-  const wwiv::sdk::User* u_;
-  bool mci_enabled_;
+  const wwiv::bbs::Context* context_{nullptr};
 };
 
-class BbsMacroFiilter : public wwiv::sdk::ansi::AnsiFilter {
+class BbsMacroFilter : public wwiv::sdk::ansi::AnsiFilter {
 public:
-  BbsMacroFiilter(wwiv::sdk::ansi::AnsiFilter* chain, const BbsMacroContext* ctx)
+  BbsMacroFilter(wwiv::sdk::ansi::AnsiFilter* chain, const MacroContext* ctx)
       : chain_(chain), ctx_(ctx){};
   bool write(char c) override;
   bool attr(uint8_t a) override;
 
 private:
   wwiv::sdk::ansi::AnsiFilter* chain_;
-  const BbsMacroContext* ctx_;
+  const MacroContext* ctx_;
   bool in_pipe_{false};
   bool in_macro_{false};
 };

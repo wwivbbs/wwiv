@@ -176,7 +176,7 @@ public:
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
   [[nodiscard]] uint16_t current_user_dir_num() const { return user_dir_num_; }
-  void set_current_user_dir_num(int n) { user_dir_num_ = static_cast<uint16_t>(n); }
+  void set_current_user_dir_num(int n);
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
@@ -218,19 +218,6 @@ public:
   [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() const { return statusMgr.get(); }
   [[nodiscard]] wwiv::sdk::UserManager* users() const { return user_manager_.get(); }
 
-  //[[nodiscard]] const std::string& temp_directory() const {
-  //  return context().dirs().temp_directory();
-  //}
-  //[[nodiscard]] const std::string& batch_directory() const { 
-  //  return context().dirs().batch_directory();
-  //}
-  ///**
-  // * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
-  // * leave it open for changing in the future.
-  // */
-  //[[nodiscard]] const std::string& qwk_directory() const { 
-  //  return context().dirs().qwk_directory();
-  //}
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;

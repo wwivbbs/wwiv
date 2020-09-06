@@ -29,9 +29,7 @@
 #include <map>
 #include <vector>
 
-namespace wwiv {
-namespace net {
-namespace network2 {
+namespace wwiv::net::network2 {
   
 /** 
  * Context for data needed by network processing.
@@ -72,8 +70,6 @@ public:
   bool subs_initialized{false};
 };
 
-} // namespace network2
-} // namespace net
-} // namespace wwiv
+} // namespace wwiv::net::network2
 
 #endif // __INCLUDED_NETWORK2_CONTEXT_H__

@@ -1127,6 +1127,13 @@ const subboard_t& Application::current_sub() const {
   return subs().sub(session_context_.GetCurrentReadMessageArea());
 }
 
+
+void Application::set_current_user_dir_num(int n) { 
+  user_dir_num_ = static_cast<uint16_t>(n); 
+  // Update the value in the context.
+  context().current_dir(current_dir());
+}
+
 const files::directory_t& Application::current_dir() const {
  return dirs()[current_user_dir().subnum];
 }

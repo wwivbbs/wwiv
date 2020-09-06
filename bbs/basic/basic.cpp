@@ -167,7 +167,7 @@ static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int 
   return MB_FUNC_OK;
 }
 
-Basic::Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx)
+Basic::Basic(Output& o, const wwiv::sdk::Config& config, const Context* ctx)
   : bout_(o), config_(config), ctx_(ctx) {
 
   // Creates the script user-data passed to the interpreter.  This data can be used
@@ -261,7 +261,7 @@ bool Basic::RunScript(const std::string& script_name) {
 
 
 bool RunBasicScript(const std::string& script_name) {
-  BbsMacroContext ctx(a()->user(), bout.mci_enabled());
+  BbsContext ctx = CreateBbsContext();
   Basic basic(bout, *a()->config(), &ctx);
   return basic.RunScript(script_name);
 }

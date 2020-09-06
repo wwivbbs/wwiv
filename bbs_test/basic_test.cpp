@@ -38,7 +38,7 @@ using namespace wwiv::bbs;
 using namespace wwiv::bbs::basic;
 using namespace wwiv::strings;
 
-class TestMacroContext final : public MacroContext {
+class TestMacroContext final : public Context {
 public:
   explicit TestMacroContext(BbsHelper& helper) : helper_(helper) {}
   [[nodiscard]] const wwiv::sdk::User& u() const override { return *helper_.user(); }

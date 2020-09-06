@@ -18,12 +18,11 @@
 #ifndef __INCLUDED_BBS_BASIC_UTIL_H__
 #define __INCLUDED_BBS_BASIC_UTIL_H__
 
+#include "common/context.h"
 #include "common/output.h"
 #include <string>
 
 struct mb_interpreter_t;
-// From interpret.h
-class MacroContext;
 
 namespace wwiv::bbs::basic {
 
@@ -36,7 +35,7 @@ struct wwiv_script_userdata_t {
   std::string datadir;
   std::string script_dir;
   std::string module;
-  const MacroContext* ctx;
+  const Context* ctx;
 };
 
 /**

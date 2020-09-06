@@ -32,7 +32,7 @@ namespace wwiv::bbs::basic {
 
 class Basic {
 public:
-  Basic(Output& o, const wwiv::sdk::Config& config, const MacroContext* ctx);
+  Basic(Output& o, const wwiv::sdk::Config& config, const Context* ctx);
 
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
@@ -44,7 +44,7 @@ private:
 
   Output& bout_;
   const wwiv::sdk::Config& config_;
-  const MacroContext* ctx_;
+  const Context* ctx_;
   wwiv_script_userdata_t script_userdata_;
 
   mb_interpreter_t* bas_;

@@ -35,6 +35,7 @@
 
 using std::ostream;
 using std::string;
+using namespace wwiv::bbs;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
 
@@ -239,6 +240,8 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 int Output::bputs(const string& text) {
   wwiv::core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || context().hangup()) { return 0; }
+  BbsContext bbs_ctx(context(), &user(), mci_enabled());
+  MacroContext ctx(&bbs_ctx);
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
@@ -260,7 +263,6 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '@') {
         ++it;
-        BbsMacroContext ctx(&user(), mci_enabled());
         auto s = ctx.interpret(*it++);
         bout.bputs(s);
       }
@@ -286,7 +288,6 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CO, true);  break; }
       ++it;
       if (it == fin) { bputch(CO, true);  break; }
-      BbsMacroContext ctx(&user(), mci_enabled());
       auto s = ctx.interpret(*it++);
       bout.bputs(s);
     } else if (it == fin) { 

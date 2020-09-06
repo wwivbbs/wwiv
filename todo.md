@@ -8,7 +8,7 @@
 * move IsLastKeyLocal to Input
 * move bout.getkey to Input
 * ** Put back in mmkey_getch's do_sysop_command
-* Move MacroContext form interpret,h to common. Rename it context.
+* Move Context form interpret,h to common. Rename it context.
   Add sessioncontext as a member variable there so this new context
   has the session, user, current sub, current dir. That's enough for
   most parts of code that need the state.

@@ -21,6 +21,8 @@
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
+#include "sdk/user.h"
+#include "sdk/files/dirs.h"
 #include <cstdint>
 #include <filesystem>
 #include <memory>
@@ -188,6 +190,9 @@ public:
   [[nodiscard]] Dirs& dirs() { return dirs_; }
   void dirs(Dirs d) { dirs_ = d; }
 
+  [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const { return current_dir_; }
+  void current_dir(const wwiv::sdk::files::directory_t& dir) { current_dir_ = dir; }
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -222,6 +227,31 @@ private:
   bool time_limited_{false};
   std::chrono::system_clock::time_point system_logon_time_;
   Dirs dirs_;
+  wwiv::sdk::files::directory_t current_dir_;
+};
+
+class Context {
+public:
+  virtual ~Context() = default;
+  virtual const wwiv::sdk::User& u() const = 0;
+  virtual const wwiv::sdk::files::directory_t& dir() const = 0;
+  virtual bool mci_enabled() const = 0;
+};
+
+class BbsContext : public Context {
+public:
+  BbsContext(const wwiv::bbs::SessionContext& c, const wwiv::sdk::User* u, bool mci_enabled)
+      : session_context_(c), u_(u), mci_enabled_(mci_enabled) {}
+  const wwiv::sdk::User& u() const override { return *u_; }
+  const wwiv::sdk::files::directory_t& dir() const override {
+    return session_context_.current_dir();
+  }
+  bool mci_enabled() const override { return mci_enabled_; }
+
+private:
+  const wwiv::bbs::SessionContext& session_context_;
+  const wwiv::sdk::User* u_;
+  bool mci_enabled_;
 };
 
 } // namespace wwiv::bbs
