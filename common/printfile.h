@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PRINTFILE_H__
-#define __INCLUDED_PRINTFILE_H__
+#ifndef __INCLUDED_COMMON_PRINTFILE_H__
+#define __INCLUDED_COMMON_PRINTFILE_H__
 
 #include <string>
 #include <filesystem>
@@ -30,4 +30,4 @@ bool printfile_path(const std::filesystem::path& file_path, bool abortable = tru
 bool print_help_file(const std::string& filename);
 bool printfile_random(const std::string& base_fn);
 
-#endif  // __INCLUDED_PRINTFILE_H__
+#endif  // __INCLUDED_COMMON_PRINTFILE_H__

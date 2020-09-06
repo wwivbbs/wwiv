@@ -50,7 +50,7 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
 }
 
 bool fsed(const std::filesystem::path& path) {
-  MessageEditorData data{};
+  MessageEditorData data("<<NO USERNAME>>"); // anonymous username
   data.title = path.string();
   FsedModel ed(1000);
   auto file_lines = read_file(path, ed.maxli());

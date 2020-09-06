@@ -41,7 +41,7 @@
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "common/input.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
 #include "common/pause.h"
 #include "common/quote.h"
@@ -585,7 +585,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
   a()->sess().clear_irt();
   auto [un, sy] = parse_email_info(to);
-  clear_quotes();
+  clear_quotes(a()->sess());
 
   if (un || sy) {
     net_system_list_rec* csne = nullptr;

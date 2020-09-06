@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 
 #include "bbs/bbs.h"
 #include "core/file.h"

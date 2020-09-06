@@ -24,7 +24,6 @@
 #include "common/com.h"
 #include "common/common_events.h"
 #include "common/input.h"
-#include "common/message_file.h"
 #include "common/printfile.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
@@ -77,8 +76,8 @@ string GetQuoteInitials(const string& orig_name) {
   return FirstLettersOfVectorAsString(parts);
 }
 
-void clear_quotes() {
-  File::Remove(FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT), true);
+void clear_quotes(wwiv::bbs::SessionContext& ctx) {
+  File::Remove(FilePath(ctx.dirs().temp_directory(), QUOTES_TXT), true);
 
   quotes_ind.reset();
 }
@@ -183,7 +182,7 @@ void grab_quotes(std::string& raw_text, const std::string& to_name) {
     raw_text.pop_back();
   }
 
-  clear_quotes();
+  clear_quotes(a()->sess());
   File f(FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT));
   if (f.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
     f.Write(raw_text);

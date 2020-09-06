@@ -25,7 +25,7 @@
 #include "bbs/finduser.h"
 #include "bbs/inmsg.h"
 #include "common/input.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "core/datetime.h"
@@ -64,7 +64,7 @@ void multimail(int *pnUserNumber, int numu) {
   }
   bout.nl();
 
-  MessageEditorData data;
+  MessageEditorData data(a()->names()->UserName(a()->usernum));
   data.need_title = true;
   if (a()->effective_slrec().ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;

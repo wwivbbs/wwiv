@@ -21,7 +21,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/connect1.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "common/output.h"
 #include "core/datetime.h"
 #include "core/file.h"

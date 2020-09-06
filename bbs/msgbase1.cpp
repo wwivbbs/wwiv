@@ -27,7 +27,7 @@
 #include "common/input.h"
 #include "bbs/instmsg.h"
 #include "common/message_editor_data.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/msgscan.h"
 #include "bbs/netsup.h"
 #include "bbs/shortmsg.h"
@@ -43,6 +43,7 @@
 #include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/subscribers.h"
+#include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
@@ -187,7 +188,7 @@ void post(const PostData& post_data) {
     return;
   }
 
-  MessageEditorData data;
+  MessageEditorData data(a()->names()->UserName(a()->usernum));
   messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
   data.anonymous_flag = a()->subs().sub(a()->sess().GetCurrentReadMessageArea()).anony & 0x0f;

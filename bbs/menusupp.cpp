@@ -370,7 +370,7 @@ void GoodBye() {
 
 void WWIV_PostMessage() {
   a()->sess().clear_irt();
-  clear_quotes();
+  clear_quotes(a()->sess());
   if (a()->usub[0].subnum != -1) {
     post(PostData());
   }

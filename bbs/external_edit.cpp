@@ -33,6 +33,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/names.h"
 #include <string>
 
 using std::string;
@@ -130,7 +131,7 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   }
 
   const auto& editor = a()->editors[editor_number];
-  MessageEditorData data{};
+  MessageEditorData data(a()->names()->UserName(a()->usernum));
   data.msged_flags = flags;
   int setanon = 0;
   auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->sess().dirs().temp_directory());

@@ -563,7 +563,7 @@ bool inmsg(MessageEditorData& data) {
     // isn't so convoluted.
     bout.charbufferpointer_ = 0;
     bout.charbuffer[0] = '\0';
-    clear_quotes();
+    clear_quotes(a()->sess());
     File::Remove(exted_filename);
   });
 

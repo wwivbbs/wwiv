@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_QUOTE_H__
 #define __INCLUDED_BBS_QUOTE_H__
 
+#include "common/context.h"
 #include "sdk/vardec.h"
 #include <string>
 #include <vector>
@@ -27,7 +28,7 @@ enum class quote_date_format_t {
 };
 
 void grab_quotes(std::string& raw_text, const std::string& to_name);
-void clear_quotes();
+void clear_quotes(wwiv::bbs::SessionContext& ctx);
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt);
 std::vector<std::string> query_quote_lines();

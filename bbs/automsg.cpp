@@ -171,7 +171,7 @@ void do_automessage() {
       write_automessage();
       break;
     case 'A': {
-      clear_quotes();
+      clear_quotes(a()->sess());
       const auto status = a()->status_manager()->GetStatus();
       if (status->GetAutoMessageAuthorUserNumber() > 0) {
         email("Re: AutoMessage", static_cast<uint16_t>(status->GetAutoMessageAuthorUserNumber()), 0,

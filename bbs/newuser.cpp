@@ -37,7 +37,7 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "bbs/lilo.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "common/pause.h"
 #include "common/printfile.h"
@@ -1432,7 +1432,7 @@ void new_mail() {
   LoadFileIntoWorkspace(file, true, true);
   use_workspace = true;
 
-  MessageEditorData data;
+  MessageEditorData data(a()->names()->UserName(a()->usernum));
   data.title = StrCat("Welcome to ", a()->config()->system_name(), "!");
   data.need_title = true;
   data.anonymous_flag = 0;

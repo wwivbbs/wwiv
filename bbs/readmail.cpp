@@ -32,7 +32,7 @@
 #include "bbs/extract.h"
 #include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "common/pause.h"
@@ -726,7 +726,7 @@ void readmail(int mode) {
             LoadFileIntoWorkspace(fn, true);
             num_mail = a()->user()->GetNumFeedbackSent() + a()->user()->GetNumEmailSent() +
                        a()->user()->GetNumNetEmailSent();
-            clear_quotes();
+            clear_quotes(a()->sess());
             if (m.fromuser != 65535) {
               email(m.title, m.fromuser, m.fromsys, false, m.anony);
             }
@@ -1106,7 +1106,7 @@ void readmail(int mode) {
           } else {
             email("", m.fromuser, m.fromsys, false, m.anony);
           }
-          clear_quotes();
+          clear_quotes(a()->sess());
         }
         num_mail1 = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
                     static_cast<long>(a()->user()->GetNumEmailSent()) +

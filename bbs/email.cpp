@@ -28,7 +28,7 @@
 #include "bbs/inmsg.h"
 #include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "common/quote.h"
 #include "bbs/sysoplog.h"
@@ -484,7 +484,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   write_inst(INST_LOC_EMAIL, (system_number == 0) ? user_number : 0, INST_FLAGS_NONE);
 
   msg.storage_type = EMAIL_STORAGE;
-  MessageEditorData data;
+  MessageEditorData data(a()->names()->UserName(a()->usernum));
   data.title = title;
   data.need_title = true;
   data.fsed_flags = (bAllowFSED) ? FsedFlags::FSED : FsedFlags::NOFSED;
@@ -669,7 +669,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
       i = 0;
     }
   }
-  clear_quotes();
+  clear_quotes(a()->sess());
   if (i) {
     email(title, user_number, system_number, false, 0);
   }

@@ -177,7 +177,7 @@ void send_email() {
   }
 
   auto [user_number, system_number] = parse_email_info(username);
-  clear_quotes();
+  clear_quotes(a()->sess());
   if (user_number || system_number) {
     email("", user_number, system_number, false, 0);
   }
@@ -222,7 +222,7 @@ void feedback(bool bNewUserFeedback) {
   int i;
   char onek_str[20], ch;
 
-  clear_quotes();
+  clear_quotes(a()->sess());
 
   if (bNewUserFeedback) {
     auto title =

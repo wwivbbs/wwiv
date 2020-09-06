@@ -26,7 +26,7 @@
 #include "bbs/connect1.h"
 #include "common/input.h"
 #include "common/full_screen.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "common/pause.h"
 #include "common/printfile.h"
 #include "bbs/subacc.h"

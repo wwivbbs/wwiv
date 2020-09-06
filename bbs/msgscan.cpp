@@ -32,7 +32,7 @@
 #include "common/full_screen.h"
 #include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/message_file.h"
+#include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "common/pause.h"
@@ -148,7 +148,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
       email(a()->sess().irt(), post->owneruser, post->ownersys, false, post->anony);
-      clear_quotes();
+      clear_quotes(a()->sess());
     }
   } else if (user_input[0] == '@') {
     bout.nl();
@@ -236,7 +236,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     } else {
       email("", post->owneruser, post->ownersys, false, post->anony);
     }
-    clear_quotes();
+    clear_quotes(a()->sess());
   }
 }
 
@@ -812,7 +812,7 @@ void HandleMessageReply(int& msg_num) {
   r.text = m.message_text;
   post(PostData(r));
   resynch(&msg_num, &p2);
-  clear_quotes();
+  clear_quotes(a()->sess());
 }
 
 static void HandleMessageDelete(int& msg_num) {
@@ -1136,7 +1136,7 @@ static bool query_post() {
       (a()->effective_sl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->sess().clear_irt();
-    clear_quotes();
+    clear_quotes(a()->sess());
     auto q = bin.ynq();
     if (q == 'Y') {
       post(PostData());
