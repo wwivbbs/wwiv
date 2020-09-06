@@ -22,6 +22,8 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "bbs/mmkey.h"
 #include "bbs/utility.h"
 #include "core/strings.h"
@@ -144,7 +146,7 @@ static void vote_question(int i, int ii) {
   bout <<  message;
   bout.nl(2);
   bout << "|#5Change it? ";
-  if (!yesno()) {
+  if (!bin.yesno()) {
     return;
   }
 

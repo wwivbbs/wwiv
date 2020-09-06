@@ -43,7 +43,7 @@ using namespace wwiv::strings;
 
 static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   bout << "|#5Send email request to the host now? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     auto title = StrCat("Sub type ", ni->stype);
     if (bAdd) {
       title += " - ADD request";
@@ -200,7 +200,7 @@ static int find_hostfor(const net_networks_rec& net, const std::string& type, sh
         bout << "Sub : " << ss << wwiv::endl;
         bout.nl();
         bout << "|#5Is this the sub you want? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           done = true;
           *ui = h;
           *opt = o;
@@ -232,7 +232,7 @@ void sub_xtr_del(int n, int nn, int f) {
     if (ok) {
       if (opt & OPTION_AUTO) {
         bout << "|#5Attempt automated drop request? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
         }
       } else {
@@ -240,7 +240,7 @@ void sub_xtr_del(int n, int nn, int f) {
       }
     } else {
       bout << "|#5Attempt automated drop request? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
       } else {
         maybe_netmail(&xn, false);
@@ -328,7 +328,7 @@ void sub_xtr_add(int n, int nn) {
   if (net.type == network_type_t::wwivnet || net.type == network_type_t::internet ||
       net.type == network_type_t::news) {
     bout << "|#5Will you be hosting the sub? ";
-    is_hosting = yesno();
+    is_hosting = bin.yesno();
   }
 
   if (is_hosting) {
@@ -339,12 +339,12 @@ void sub_xtr_add(int n, int nn) {
     }
 
     bout << "|#5Allow auto add/drop requests? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_ADDDROP;
     }
 
     bout << "|#5Make this sub public (in subs.lst)?";
-    if (noyes()) {
+    if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories(net)) {
         gc = 0;
@@ -386,10 +386,10 @@ void sub_xtr_add(int n, int nn) {
     auto addresses = wwiv::sdk::ReadFidoSubcriberFile(sub_file_name);
     bool done = false;
     do {
-      CheckForHangup();
+      a()->CheckForHangup();
       bout.nl();
       bout << "|#2Which FTN system (address) is the host? ";
-      const auto host = input_text(20);
+      const auto host = bin.input_text(20);
       try {
         wwiv::sdk::fido::FidoAddress a(host);
         addresses.insert(a);
@@ -429,7 +429,7 @@ void sub_xtr_add(int n, int nn) {
           bout.nl();
           if (opt & OPTION_AUTO) {
             bout << "|#5Attempt automated add request? ";
-            if (yesno()) {
+            if (bin.yesno()) {
               sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
             }
           } else {
@@ -438,7 +438,7 @@ void sub_xtr_add(int n, int nn) {
         } else {
           bout.nl();
           bout << "|#5Attempt automated add request? ";
-          bool bTryAutoAddReq = yesno();
+          bool bTryAutoAddReq = bin.yesno();
           if (bTryAutoAddReq) {
             sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
           } else {

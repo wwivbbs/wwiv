@@ -240,7 +240,7 @@ static void modify_chain(int chain_num) {
     case 'A': {
       bout.nl();
       bout << "|#7New Description? ";
-      auto descr = input_text(c.description, 40);
+      auto descr = bin.input_text(c.description, 40);
       if (!descr.empty()) {
         c.description = descr;
       }
@@ -249,7 +249,7 @@ static void modify_chain(int chain_num) {
       bout.cls();
       ShowChainCommandLineHelp();
       bout << "\r\n|#9Enter Command Line.\r\n|#7:";
-      c.filename = input_cmdline(c.filename, 79);
+      c.filename = bin.input_cmdline(c.filename, 79);
     } break;
     case 'C': {
       bout.nl();
@@ -387,7 +387,7 @@ void chainedit() {
       if (r.num >= 0 && r.num < ssize(a()->chains->chains())) {
         bout.nl();
         bout << "|#5Delete " << a()->chains->at(r.num).description << "? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           delete_chain(r.num);
         }
       }

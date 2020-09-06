@@ -136,7 +136,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
   string name_to_delete;
 
   if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    const auto full_pathname = FilePath(a()->temp_directory(), file_name);
+    const auto full_pathname = FilePath(a()->context().dirs().temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
       const auto name_in_dir = FilePath(dir, file_name);
       File::Copy(name_in_dir, full_pathname);
@@ -387,7 +387,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
     auto* area = a()->current_file_area();
     for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->context().hangup();
          i++) {
-      CheckForHangup();
+      a()->CheckForHangup();
       auto f = area->ReadFile(i);
       if (f.u().daten >= a()->context().nscandate()) {
         if (need_title) {
@@ -416,7 +416,7 @@ void nscanall() {
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
     bout << "|#5All conferences? ";
-    scan_all_confs = yesno();
+    scan_all_confs = bin.yesno();
     bout.nl();
     if (scan_all_confs) {
       tmp_disable_conf(true);
@@ -472,7 +472,7 @@ void searchall() {
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
     bout << "|#5All conferences? ";
-    bScanAllConfs = yesno();
+    bScanAllConfs = bin.yesno();
     bout.nl();
     if (bScanAllConfs) {
       tmp_disable_conf(true);

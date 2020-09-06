@@ -89,7 +89,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg > 0) {
-      const auto s = input_text("", arg);
+      const auto s = bin.input_text("", arg);
       mb_push_string(bas, l, BasicStrDup(s));
     }
     return MB_FUNC_OK;
@@ -130,7 +130,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
       script_out().bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
-    const auto ret = yesno();
+    const auto ret = bin.yesno();
 
     mb_push_int(bas, l, ret ? 1 : 0);
     return MB_FUNC_OK;
@@ -144,7 +144,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
       script_out().bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
-    const auto ret = noyes();
+    const auto ret = bin.noyes();
 
     mb_push_int(bas, l, ret ? 1 : 0);
     return MB_FUNC_OK;

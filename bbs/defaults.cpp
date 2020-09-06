@@ -330,7 +330,7 @@ static void change_colors() {
       } else {
         bout.nl();
         bout << "|#9Inversed? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
             nc = static_cast<char>(0 | ((a()->user()->GetBWColor(1) & 0x07) << 4));
           } else {
@@ -345,12 +345,12 @@ static void change_colors() {
         }
       }
       bout << "|#9Bold? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         nc |= 0x08;
       }
 
       bout << "|#9Blinking? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         nc |= 0x80;
       }
 
@@ -360,7 +360,7 @@ static void change_colors() {
       bout.Color(0);
       bout.nl(2);
       bout << "|#8Is this OK? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if (a()->user()->HasColor()) {
           a()->user()->SetColor(nColorNum, nc);
@@ -563,7 +563,7 @@ static void macroedit(char *macro_text) {
   bout.Color(0);
   bout.nl();
   bout << "|#9Is this okay? ";
-  if (!yesno()) {
+  if (!bin.yesno()) {
     *macro_text = '\0';
   }
 }
@@ -615,20 +615,20 @@ static void make_macros() {
 static void change_password() {
   bout.nl();
   bout << "|#9Change password? ";
-  if (!yesno()) {
+  if (!bin.yesno()) {
     return;
   }
 
   bout.nl();
-  string password = input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
+  string password = bin.input_password("|#9You must now enter your current password.\r\n|#7: ", 8);
   if (password != a()->user()->GetPassword()) {
     bout << "\r\nIncorrect.\r\n\n";
     return;
   }
   bout.nl(2);
-  password = input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", 8);
+  password = bin.input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", 8);
   bout.nl(2);
-  string password2 = input_password("|#9Repeat password for verification.\r\n|#7: ", 8);
+  string password2 = bin.input_password("|#9Repeat password for verification.\r\n|#7: ", 8);
   if (password == password2) {
     if (password2.length() < 3) {
       bout.nl();
@@ -646,15 +646,15 @@ static void change_password() {
 static void modify_mailbox() {
   bout.nl();
   bout << "|#9Do you want to close your mailbox? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     bout << "|#5Are you sure? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       a()->user()->CloseMailbox();
       return;
     }
   }
   bout << "|#5Do you want to forward your mail? ";
-  if (!yesno()) {
+  if (!bin.yesno()) {
     a()->user()->ClearMailboxForward();
     return;
   }
@@ -663,9 +663,9 @@ static void modify_mailbox() {
     if (network_number != -1) {
       a()->set_net_num(network_number);
       bout << "|#5Do you want to forward to your Internet address? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        auto entered_address = input_text(a()->user()->GetEmailAddress(), 75);
+        auto entered_address = bin.input_text(a()->user()->GetEmailAddress(), 75);
         if (check_inet_addr(entered_address)) {
           a()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address, a()->usernum);
@@ -797,7 +797,7 @@ void defaults(bool& need_menu_reload) {
     case 'I': {
       bout.nl();
       bout << "|#9Enter your Internet mailing address.\r\n|#7:";
-      auto internetAddress = input_text(65);
+      auto internetAddress = bin.input_text(65);
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress)) {
           a()->user()->SetEmailAddress(internetAddress.c_str());
@@ -808,7 +808,7 @@ void defaults(bool& need_menu_reload) {
         }
       } else {
         bout << "|#5Delete Internet address? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           a()->user()->SetEmailAddress("");
         }
       }
@@ -828,7 +828,7 @@ void defaults(bool& need_menu_reload) {
         a()->user()->ClearStatusFlag(User::noMsgs);
         bout.nl();
         bout << "|#5Allow messages sent between instances? ";
-        if (!yesno()) {
+        if (!bin.yesno()) {
           a()->user()->SetStatusFlag(User::noMsgs);
         }
       }

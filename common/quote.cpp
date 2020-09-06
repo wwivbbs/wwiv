@@ -22,10 +22,12 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl2.h"
 #include "common/com.h"
+#include "common/common_events.h"
 #include "common/input.h"
 #include "common/message_file.h"
 #include "common/printfile.h"
 #include "core/datetime.h"
+#include "core/eventbus.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
@@ -76,7 +78,7 @@ string GetQuoteInitials(const string& orig_name) {
 }
 
 void clear_quotes() {
-  File::Remove(FilePath(a()->temp_directory(), QUOTES_TXT), true);
+  File::Remove(FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT), true);
 
   quotes_ind.reset();
 }
@@ -158,11 +160,8 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
 
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt) {
-  const auto fn = FilePath(a()->temp_directory(), INPUT_MSG);
+  const auto fn = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
   File::Remove(fn);
-  if (a()->context().hangup()) {
-    return ;
-  }
 
   TextFile f(fn, "w");
   if (!f) {
@@ -185,7 +184,7 @@ void grab_quotes(std::string& raw_text, const std::string& to_name) {
   }
 
   clear_quotes();
-  File f(FilePath(a()->temp_directory(), QUOTES_TXT));
+  File f(FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT));
   if (f.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
     f.Write(raw_text);
   }
@@ -193,13 +192,6 @@ void grab_quotes(std::string& raw_text, const std::string& to_name) {
   quotes_ind = std::make_unique<std::vector<std::string>>(
       create_quoted_text_from_message(raw_text, to_name, quote_date_format_t::no_quote, 0));
 }
-
-void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
-  if (auto o = readfile(m, message_filename)) {
-    grab_quotes(o.value(), to_name);
-  }
-}
-
 
 std::vector<std::string> query_quote_lines() {
   std::vector<std::string> lines;
@@ -233,7 +225,8 @@ std::vector<std::string> query_quote_lines() {
     };
     --num_lines;
     bout.nl();
-
+    // If the user has hungup, this will throw an exception.
+    bus().invoke<CheckForHangupEvent>();
     if (lines.empty() || a()->context().hangup()) {
       return {};
     }
@@ -268,7 +261,7 @@ std::vector<std::string> query_quote_lines() {
     } else {
       bout << "|#5Quote lines " << start_line << "-" << end_line << "? ";
     }
-    if (!noyes()) {
+    if (!bin.noyes()) {
       return {};
     }
     break;

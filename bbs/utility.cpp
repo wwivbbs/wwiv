@@ -118,7 +118,7 @@ long nsl() {
   if (!a()->context().IsUserOnline()) {
     return 1;
   }
-  auto tot = duration_cast<seconds>(dd - a()->system_logon_time());
+  auto tot = duration_cast<seconds>(dd - a()->context().system_logon_time());
 
   const auto tpl = minutes(a()->effective_slrec().time_per_logon);
   const auto tpd = minutes(a()->effective_slrec().time_per_day);
@@ -245,7 +245,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   if (i == 1) {
     bout << "One file found: " << f->name << wwiv::endl;
     bout << "Use this file? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       return pszPath;
     }
     pszPath[0] = '\0';

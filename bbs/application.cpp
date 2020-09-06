@@ -26,6 +26,7 @@
 #include "bbs/bbsutl2.h"
 #include "bbs/confutil.h"
 #include "bbs/diredit.h"
+#include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
@@ -33,6 +34,7 @@
 #include "bbs/null_remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
+#include "bbs/stuffin.h"
 #include "bbs/subedit.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
@@ -41,11 +43,13 @@
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "common/com.h"
+#include "core/eventbus.h"
 #include "common/exceptions.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "common/remote_io.h"
 #include "common/workspace.h"
+#include "common/common_events.h"
 #include "core/command_line.h"
 #include "core/os.h"
 #include "core/strings-ng.h"
@@ -110,11 +114,7 @@ Application::Application(LocalIO* localIO)
       session_context_(localIO) {
   ::bout.SetLocalIO(localIO);
   ::bin.SetLocalIO(localIO);
-  bout.set_inst_msg_processor([]() {
-    if (inst_msg_waiting() && !a()->context().chatline()) {
-      process_inst_msgs();
-    }
-  });
+
   bout.set_context_provider([]() -> wwiv::bbs::SessionContext& { return a()->context(); });
   bin.set_context_provider([]() -> wwiv::bbs::SessionContext& { return a()->context(); });
   bout.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
@@ -149,12 +149,14 @@ Application::~Application() {
 }
 
 wwiv::bbs::SessionContext& Application::context() { return session_context_; }
+const wwiv::bbs::SessionContext& Application::context() const { return session_context_; }
 
 LocalIO* Application::localIO() const { return local_io_.get(); }
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   ::bout.SetLocalIO(wlocal_io);
+  ::bin.SetLocalIO(wlocal_io);
   context().reset_local_io(wlocal_io);
 
   const auto screen_bottom = localIO()->GetDefaultScreenBottom();
@@ -195,6 +197,7 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   } break;
   }
   bout.SetComm(comm_.get());
+  bin.SetComm(comm_.get());
 }
 
 void Application::SetCommForTest(RemoteIO* remote_io) {
@@ -252,7 +255,7 @@ void Application::tleft(bool check_for_timeout) {
   if (check_for_timeout && context().IsUserOnline()) {
     if (nsln == 0) {
       bout << "\r\nTime expired.\r\n\n";
-      Hangup();
+      a()->Hangup();
     }
     return;
   }
@@ -346,7 +349,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F5: /* F5 */
         remoteIO()->disconnect();
-        Hangup();
+        a()->Hangup();
         break;
       case SF5: { /* Shift-F5 */
         std::random_device rd;
@@ -357,12 +360,12 @@ void Application::handle_sysop_key(uint8_t key) {
           bout.bputch(static_cast<char>(dist(e) & 0xff));
         }
         remoteIO()->disconnect();
-        Hangup();
+        a()->Hangup();
         } break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
         remoteIO()->disconnect();
-        Hangup();
+        a()->Hangup();
         break;
       case F6: /* F6 - was Toggle Sysop Alert*/
         tleft(false);
@@ -579,7 +582,7 @@ void Application::UpdateTopScreen() {
     if (user()->GetWWIVRegNumber()) {
       callsign_or_regnum = std::to_string(user()->GetWWIVRegNumber());
     }
-    auto used_this_session = (system_clock::now() - system_logon_time());
+    auto used_this_session = (system_clock::now() - context().system_logon_time());
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
@@ -653,7 +656,7 @@ void Application::set_language_number(int n) {
   m_nCurrentLanguageNumber = n;
   if (n >= 0 && n <= static_cast<int>(languages.size())) {
     cur_lang_name = languages[n].name;
-    language_dir = languages[n].dir;
+    context().dirs().language_directory(languages[n].dir);
   }
 }
 
@@ -1003,8 +1006,8 @@ int Application::Run(int argc, char* argv[]) {
     try {
       // Try setting this at the top of the try loop. It's currently only
       // set in logon() which could cause problems if we get hung up before then.
-      SetLogonTime();
-
+      context().SetLogonTime();
+      
       auto gt = get_caller_t::normal_login;
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
@@ -1055,8 +1058,9 @@ int Application::Run(int argc, char* argv[]) {
     logoff();
     {
       // post_logoff_cleanup
-      remove_from_temp("*.*", temp_directory(), false);
-      remove_from_temp("*.*", batch_directory(), false);
+      remove_from_temp("*.*", context().dirs().temp_directory(), false);
+      remove_from_temp("*.*", context().dirs().batch_directory(), false);
+      remove_from_temp("*.*", context().dirs().qwk_directory(), false);
       if (!batch().entry.empty() && batch().ssize() != batch().numbatchdl()) {
         for (const auto& b : batch().entry) {
           if (!b.sending()) {
@@ -1184,4 +1188,32 @@ void Application::frequent_init() {
 
   // DSZ Log
   File::Remove(dsz_logfile_name_, true);
+}
+
+// This function checks to see if the user logged on to the com port has
+// hung up.  Obviously, if no user is logged on remotely, this does nothing.
+// returns the value of context().hangup()
+bool Application::CheckForHangup() {
+  if (!context().hangup() && context().using_modem() && !remoteIO()->connected()) {
+    if (context().IsUserOnline()) {
+      sysoplog() << "Hung Up.";
+    }
+    a()->Hangup();
+  }
+  return context().hangup();
+}
+
+void Application::Hangup() {
+  if (!cleanup_cmd.empty()) {
+    bout.nl();
+    const auto cmd = stuff_in(cleanup_cmd, "", "", "", "", "");
+    ExecuteExternalProgram(cmd, spawn_option(SPAWNOPT_CLEANUP));
+    bout.nl(2);
+  }
+  if (context().hangup()) {
+    return;
+  }
+  context().hangup(true);
+  VLOG(1) << "Invoked Hangup()";
+  throw wwiv::bbs::hangup_error(user()->GetName());
 }

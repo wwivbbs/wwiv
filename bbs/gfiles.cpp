@@ -24,6 +24,7 @@
 #include "bbs/gfileedit.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
+#include "common/input.h"
 #include "common/pause.h"
 #include "common/printfile.h"
 #include "bbs/sr.h"
@@ -406,9 +407,9 @@ void gfile_sec(int sn) {
       i = to_number<int>(ss1);
       if (i > 0 && i <= nf) {
         bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
-        if (yesno()) {
+        if (bin.yesno()) {
           bout << "|#5Erase file too? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             const auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
             File::Remove(FilePath(a()->config()->gfilesdir(), file_name));
           }

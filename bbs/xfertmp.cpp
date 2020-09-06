@@ -77,7 +77,7 @@ void move_file_t() {
       const auto& dir = a()->dirs()[a()->batch().entry[pos].dir()];
       printfileinfo(&f.u(), dir);
       bout << "|#5Move this (Y/N/Q)? ";
-      const auto ch = ynq();
+      const auto ch = bin.ynq();
       if (ch == 'Q') {
         tmp_disable_conf(false);
         dliscan();
@@ -130,7 +130,7 @@ void move_file_t() {
       }
       if (ok) {
         bout << "|#5Reset upload time for file? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           f.set_date(DateTime::now());
         }
         --cur_pos;
@@ -189,7 +189,7 @@ void removefile() {
       } else {
         printfileinfo(&f.u(), dir);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
-        auto ch = ynq();
+        auto ch = bin.ynq();
         if (ch == 'Q') {
           abort = true;
         } else if (ch == 'Y') {
@@ -197,14 +197,14 @@ void removefile() {
           bool bDeleteFileToo = false;
           if (dcs()) {
             bout << "|#5Delete file too? ";
-            bDeleteFileToo = yesno();
+            bDeleteFileToo = bin.yesno();
             if (bDeleteFileToo && (f.u().ownersys == 0)) {
               bout << "|#5Remove DL points? ";
-              bRemoveDlPoints = yesno();
+              bRemoveDlPoints = bin.yesno();
             }
             bout.nl();
             bout << "|#5Remove from ALLOW.DAT? ";
-            if (yesno()) {
+            if (bin.yesno()) {
               remove_from_file_database(f.aligned_filename());
             }
           } else {

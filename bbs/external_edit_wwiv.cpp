@@ -40,22 +40,18 @@ struct fedit_data_rec {
   char tlen, ttl[81], anon;
 };
 
-static void RemoveEditorFileFromTemp(const string& filename) {
-  File::Remove(FilePath(a()->temp_directory(), filename), true);
-}
-
 std::string ExternalWWIVMessageEditor::editor_filename() const { return INPUT_MSG; }
 
 ExternalWWIVMessageEditor ::~ExternalWWIVMessageEditor() { this->CleanupControlFiles(); }
 
 void ExternalWWIVMessageEditor::CleanupControlFiles() {
-  RemoveEditorFileFromTemp(FEDIT_INF);
-  RemoveEditorFileFromTemp(RESULT_ED);
-  RemoveEditorFileFromTemp(EDITOR_INF);
+  File::Remove(FilePath(temp_directory_, FEDIT_INF), true);
+  File::Remove(FilePath(temp_directory_, RESULT_ED), true);
+  File::Remove(FilePath(temp_directory_, EDITOR_INF), true);
 }
 
-static void ReadWWIVResultFiles(string* title, int* anon) {
-  auto fp = FilePath(a()->temp_directory(), RESULT_ED);
+static void ReadWWIVResultFiles(string* title, int* anon, const std::string& tempdir) {
+  auto fp = FilePath(tempdir, RESULT_ED);
   if (File::Exists(fp)) {
     TextFile file(fp, "rt");
     string anon_string;
@@ -67,10 +63,10 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (File::Exists(FilePath(a()->temp_directory(), FEDIT_INF))) {
+  } else if (File::Exists(FilePath(tempdir, FEDIT_INF))) {
     fedit_data_rec fedit_data{};
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    File file(FilePath(a()->temp_directory(), FEDIT_INF));
+    File file(FilePath(tempdir, FEDIT_INF));
     file.Open(File::modeBinary | File::modeReadOnly);
     if (file.Read(&fedit_data, sizeof(fedit_data))) {
       title->assign(fedit_data.ttl);
@@ -80,8 +76,8 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name,
-                                        const string& to_name, int flags) {
-  TextFile f(FilePath(a()->temp_directory(), EDITOR_INF), "wt");
+                                        const string& to_name, int flags, const std::string& tempdir) {
+  TextFile f(FilePath(tempdir, EDITOR_INF), "wt");
   if (f.IsOpen()) {
     if (!to_name.empty()) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -103,10 +99,10 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
     // disable tag lines by creating a DISABLE.TAG file
     TextFile fileDisableTag(DISABLE_TAG, "w");
   } else {
-    RemoveEditorFileFromTemp(DISABLE_TAG);
+    File::Remove(FilePath(tempdir, DISABLE_TAG), true);
   }
   if (title.empty()) {
-    RemoveEditorFileFromTemp(QUOTES_TXT);
+    File::Remove(FilePath(tempdir, QUOTES_TXT), true);
   }
 
   // Write FEDIT.INF
@@ -116,7 +112,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   to_char_array(fedit_data.ttl, title);
   fedit_data.anon = 0;
 
-  File fedit_inf(FilePath(a()->temp_directory(), FEDIT_INF));
+  File fedit_inf(FilePath(tempdir, FEDIT_INF));
   if (fedit_inf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate,
                      File::shareDenyReadWrite)) {
     fedit_inf.Write(&fedit_data, sizeof(fedit_data));
@@ -126,13 +122,13 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
 
 bool ExternalWWIVMessageEditor::Before() {
   CleanupControlFiles();
-  WriteWWIVEditorControlFiles(data_.title, data_.sub_name, data_.to_name, data_.msged_flags);
+  WriteWWIVEditorControlFiles(data_.title, data_.sub_name, data_.to_name, data_.msged_flags, temp_directory_);
 
   return true;
 }
 
 bool ExternalWWIVMessageEditor::After() { 
-  ReadWWIVResultFiles(&data_.title, setanon_); 
+  ReadWWIVResultFiles(&data_.title, setanon_, temp_directory_); 
   return true;
 }
 

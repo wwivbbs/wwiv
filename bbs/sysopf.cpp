@@ -138,7 +138,7 @@ void valuser(int user_number) {
         if (nSl == -1) {
           bout.nl();
           bout << "|#9Delete? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             a()->users()->delete_user(user_number);
             bout.nl();
             bout << "|#6Deleted.\r\n\n";
@@ -485,7 +485,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.nl();
       bout << "|#1Print BBS region info? ";
-      bool useregion = yesno();
+      bool useregion = bin.yesno();
 
       auto bbslist = BbsListNet::ReadBbsDataNet(net.dir);
       if (bbslist.empty()) {

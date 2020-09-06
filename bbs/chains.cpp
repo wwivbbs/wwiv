@@ -143,7 +143,7 @@ void run_chain(int chain_num) {
       return;
     } else {
       bout << message << "Care to join in? ";
-      if (!yesno()) {
+      if (!bin.yesno()) {
         return;
       }
     }
@@ -220,7 +220,7 @@ void do_chains() {
     if (mapp < 100) {
       ss = mmkey(odc);
     } else {
-      ss = input_upper(3);
+      ss = bin.input_upper(3);
     }
     int chain_num = to_number<int>(ss);
     if (chain_num > 0 && chain_num <= mapp) {

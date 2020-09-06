@@ -70,7 +70,7 @@ void multimail(int *pnUserNumber, int numu) {
     data.anonymous_flag = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
-  bool show_all = yesno();
+  bool show_all = bin.yesno();
   int j = 0;
   auto s1 = fmt::sprintf("\003""6CC: \003""1");
 
@@ -407,6 +407,6 @@ void slash_e() {
       }
       break;
     }
-    CheckForHangup();
+    a()->CheckForHangup();
   } while (!done);
 }

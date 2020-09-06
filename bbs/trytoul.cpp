@@ -141,7 +141,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     if (so()) {
       bout.nl();
       bout << "|#5In filename database - add anyway? ";
-      if (!yesno()) {
+      if (!bin.yesno()) {
         t2u_error(file_name, "|#6File either already here or unwanted.");
         return 1;
       }
@@ -188,7 +188,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
-      if (yesno() == 0) {
+      if (bin.yesno() == 0) {
         t2u_error(file_name, "That file is already here.");
         return 1;
       }
@@ -197,7 +197,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  const auto src = FilePath(a()->batch_directory(), file_name);
+  const auto src = FilePath(a()->context().dirs().batch_directory(), file_name);
   const auto dest = FilePath(d.path, file_name);
 
   if (File::Exists(dest)) {
@@ -223,7 +223,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     switch (key) {
     case 'Q':
       bout << "Are you sure, file will be lost? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         t2u_error(file_name, "Changed mind");
         // move file back to batch dir
         File::Move(dest, src);
@@ -234,7 +234,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     case 'A': {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
-      auto desc = input_text(58);
+      auto desc = bin.input_text(58);
       f.set_description(desc);
     } break;
 
@@ -244,11 +244,11 @@ static int try_to_ul_wh(const string& orig_file_name) {
       bout.nl();
       auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
       bout << "|#5Modify extended description? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         bout.nl();
         if (!ss.empty()) {
           bout << "|#5Delete it? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             area->DeleteExtendedDescription(f.filename());
             f.set_mask(mask_extended, false);
           } else {
@@ -348,7 +348,7 @@ int try_to_ul(const string& file_name) {
 
   sysoplog() << fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name);
 
-  const auto src = FilePath(a()->batch_directory(), file_name);
+  const auto src = FilePath(a()->context().dirs().batch_directory(), file_name);
   const auto dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I choose to

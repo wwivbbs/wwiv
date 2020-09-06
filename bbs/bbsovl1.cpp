@@ -97,7 +97,7 @@ void YourInfo() {
                          a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
   const auto minutes_used =
-      duration_cast<minutes>(a()->user()->timeon()  + a()->duration_used_this_session()).count();
+      duration_cast<minutes>(a()->user()->timeon()  + a()->context().duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
@@ -125,7 +125,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(FilePath(a()->temp_directory(), INPUT_MSG));
+  File file(FilePath(a()->context().dirs().temp_directory(), INPUT_MSG));
   const auto max_bytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << max_bytes << wwiv::endl << wwiv::endl;
@@ -155,7 +155,7 @@ void send_email() {
   a()->context().clear_irt();
 
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  auto username = input_text(75);
+  auto username = bin.input_text(75);
   const auto atpos = username.find_first_of('@');
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
     if (username.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == string::npos) {
@@ -207,7 +207,7 @@ void edit_confs() {
     case 'Q':
       return;
     }
-    CheckForHangup();
+    a()->CheckForHangup();
   }
 }
 
@@ -287,7 +287,7 @@ void feedback(bool bNewUserFeedback) {
 void text_edit() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  const auto filename = input_filename(12);
+  const auto filename = bin.input_filename(12);
   if (filename.find(".log") != string::npos || !okfn(filename)) {
     return;
   }

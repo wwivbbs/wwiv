@@ -77,7 +77,7 @@ static std::string dirdata(int n) {
 static void showdirs() {
   bout.cls();
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
-  const auto pattern = input_text(20);
+  const auto pattern = bin.input_text(20);
   bool abort = false;
   bout.bpla("|#2##   DAR Area Description              FileName DSL AGE FIL PATH", &abort);
   bout.bpla("|#7==== --- ============================= -------- === --- === -------------------", &abort);
@@ -161,7 +161,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
     case 'A': {
       wwiv::sdk::files::dir_area_t da{};
       bout << "Enter Name? ";
-      da.area_tag = input_upper(12);
+      da.area_tag = bin.input_upper(12);
       const auto r = select_network();
       if (!r) {
         break;
@@ -179,7 +179,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
         break;
       }
       bout << "Are you sure?";
-      if (noyes()) {
+      if (bin.noyes()) {
         erase_at(area_tags, r.num - 1);
       }
     } break;
@@ -195,14 +195,14 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
       }
       wwiv::sdk::files::dir_area_t da{};
       bout << "Enter Name? ";
-      da.area_tag = input_upper(12);
+      da.area_tag = bin.input_upper(12);
       const auto nr = select_network();
       if (!nr) {
         break;
       }
       da.net_uuid = nr.value().uuid;
       bout << "Are you sure?";
-      if (noyes()) {
+      if (bin.noyes()) {
         area_tags[r.num - 1] = da;
       }
     } break;
@@ -262,7 +262,7 @@ void modify_dir(int n) {
     case 'A': {
       bout.nl();
       bout << "|#2New name? ";
-      auto s = input_text(r.name, 40);
+      auto s = bin.input_text(r.name, 40);
       if (!s.empty()) {
         r.name = s;
       }
@@ -271,7 +271,7 @@ void modify_dir(int n) {
     {
       bout.nl();
       bout << "|#2New filename? ";
-      auto s = input_filename(r.filename, 8);
+      auto s = bin.input_filename(r.filename, 8);
       if (!s.empty() && !contains(s, '.')) {
         r.filename = s;
       }
@@ -284,7 +284,7 @@ void modify_dir(int n) {
            << "|#9The current path is:\r\n"
            << "|#1" << r.path << wwiv::endl << wwiv::endl;
       bout << " \b";
-      auto s = input_path(r.path, 79);
+      auto s = bin.input_path(r.path, 79);
       if (!s.empty()) {
         const string dir{s};
         if (!File::Exists(dir)) {
@@ -363,7 +363,7 @@ void modify_dir(int n) {
       r.mask &= ~mask_wwivreg;
       bout.nl();
       bout << "|#5Require WWIV 4.xx registration? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         r.mask |= mask_wwivreg;
       }
       break;
@@ -602,13 +602,13 @@ void dlboardedit() {
       if (s[0] != 0 && i >= 0 && i < a()->dirs().size()) {
         bout.nl();
         bout << "|#5Delete " << a()->dirs()[i].name << "? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           std::string fn = a()->dirs()[i].filename;
           delete_dir(i);
           confchg = 1;
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".dir")));
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".ext")));
           }

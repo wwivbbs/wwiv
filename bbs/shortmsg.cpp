@@ -21,6 +21,8 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
@@ -66,7 +68,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
         if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
           if (!bHandledMessage && bAskToSaveMsgs) {
             bout << "|#5Would you like to save this notification? ";
-            bHandledMessage = !yesno();
+            bHandledMessage = !bin.yesno();
           }
         } else {
           bHandledMessage = true;

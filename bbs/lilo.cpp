@@ -150,7 +150,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
     StringUpperCase(&temp_user_name);
     if (user_name == temp_user_name && !a()->user()->IsUserDeleted()) {
       bout << "|#5Do you mean " << a()->names()->UserName(n.number) << "? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         return current_user;
       }
     }
@@ -166,7 +166,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 
   string user_name;
   if (remote_username.empty()) {
-    user_name = input_upper(30);
+    user_name = bin.input_upper(30);
   } else {
     bout << remote_username << wwiv::endl;
     user_name = remote_username;
@@ -178,7 +178,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
     LOG(INFO) << "Trashcan name entered from IP: " << a()->remoteIO()->remote_info().address
               << "; name: " << user_name;
     hang_it_up();
-    Hangup();
+    a()->Hangup();
     return 0;
   }
 
@@ -206,7 +206,7 @@ bool IsPhoneRequired() {
 
 bool VerifyPhoneNumber() {
   if (IsPhoneNumberUSAFormat(a()->user()) || !a()->user()->GetCountry()[0]) {
-    string phoneNumber = input_password("PH: ###-###-", 4);
+    string phoneNumber = bin.input_password("PH: ###-###-", 4);
 
     if (phoneNumber != &a()->user()->GetVoicePhoneNumber()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
@@ -225,12 +225,12 @@ static bool VerifyPassword(string remote_password) {
     return true;
   }
 
-  string password = input_password("PW: ", 8);
+  string password = bin.input_password("PW: ", 8);
   return (password == a()->user()->GetPassword());
 }
 
 static bool VerifySysopPassword() {
-  string password = input_password("SY: ", 20);
+  string password = bin.input_password("SY: ", 20);
   return (password == a()->config()->system_password()) ? true : false;
 }
 
@@ -259,12 +259,12 @@ static void LeaveBadPasswordFeedback(int ans) {
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
   bout << "|#9Would you like to leave Feedback to " << a()->config()->sysop_name() << "? ";
-  if (!yesno()) {
+  if (!bin.yesno()) {
     return;
   }
   bout.nl();
   bout << "What is your NAME or HANDLE? ";
-  auto tempName = input_proper("", 31);
+  auto tempName = bin.input_proper("", 31);
   if (tempName.empty()) {
     return;
   }
@@ -298,7 +298,7 @@ static void CheckCallRestrictions() {
       a()->user()->GetTimesOnToday() > 0) {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
-    Hangup();
+    a()->Hangup();
   }
 }
 
@@ -314,9 +314,9 @@ static void logon_guest() {
   int count = 0;
   do {
     bout << "\r\n|#5Enter your real name : ";
-    userName = input_upper(25);
+    userName = bin.input_upper(25);
     bout << "\r\n|#5Purpose of your call?\r\n";
-    reason = input_text(79);
+    reason = bin.input_text(79);
     if (!userName.empty() && !reason.empty()) {
       break;
     }
@@ -326,7 +326,7 @@ static void logon_guest() {
   if (count >= 3) {
     printfile(REJECT_NOEXT);
     ssm(1) << "Guest Account failed to enter name and purpose";
-    Hangup();
+    a()->Hangup();
   } else {
     ssm(1) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
   }
@@ -426,7 +426,7 @@ void getuser() {
 
   CheckCallRestrictions();
   if (!ok) {
-    Hangup();
+    a()->Hangup();
   }
 }
 
@@ -616,7 +616,7 @@ static void CheckAndUpdateUserInfo() {
       input_age(a()->user());
       bout.nl();
       bout.format("{} -- Correct? ", a()->user()->birthday_mmddyy());
-      if (!yesno()) {
+      if (!bin.yesno()) {
         a()->user()->birthday_mdy(0, 0, 0);
       }
     } while (a()->user()->birthday_year() == 0);
@@ -773,7 +773,7 @@ static void LoginCheckForNewMail() {
       bout << "|#9You have |#2" << nNumNewMessages 
            << "|#9 new message(s).\r\n\r\n"
            << "|#9Read your mail now? ";
-      if (noyes()) {
+      if (bin.noyes()) {
         readmail(1);
       }
     } else {
@@ -835,7 +835,7 @@ static void UpdateLastAddress() {
 
 void logon() {
   if (a()->usernum < 1) {
-    Hangup();
+    a()->Hangup();
     return;
   }
   a()->context().SetUserOnline(true);
@@ -851,7 +851,7 @@ void logon() {
   PrintUserSpecificFiles();
 
   read_automessage();
-  a()->SetLogonTime();
+  a()->context().SetLogonTime();
   a()->UpdateTopScreen();
   bout.nl(2);
   bout.pausescr();
@@ -890,7 +890,7 @@ void logon() {
   // New Message Scan
   if (a()->IsNewScanAtLogin()) {
     bout << "\r\n|#5Scan All Message Areas For New Messages? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       NewMsgsAllConfs();
     }
   }
@@ -959,7 +959,7 @@ void logoff() {
 
   a()->user()->SetNumIllegalLogons(0);
   auto seconds_used_duration = duration_cast<seconds>(
-      std::chrono::system_clock::now() - a()->system_logon_time() - a()->extratimecall());
+      std::chrono::system_clock::now() - a()->context().system_logon_time() - a()->extratimecall());
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 
@@ -973,7 +973,7 @@ void logoff() {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
   a()->user()->SetLastOnDateNumber(daten_t_now());
-  auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
+  auto used_this_session = (std::chrono::system_clock::now() - a()->context().system_logon_time());
   auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
       << "   Time on: "  << min_used.count() << " minutes.";

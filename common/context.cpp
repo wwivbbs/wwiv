@@ -17,19 +17,27 @@
 /**************************************************************************/
 #include "common/context.h"
 
+#include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "local_io/local_io.h"
 #include "sdk/config.h"
 #include <chrono>
+#include <filesystem>
 #include <string>
 
 namespace wwiv::bbs {
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace std::chrono;
+
+Dirs::Dirs(const std::filesystem::path& bbsdir)
+    : Dirs(FilePath(bbsdir, "temp").string(), FilePath(bbsdir, "batch").string(),
+           FilePath(bbsdir, "batch").string()) {}
 
 SessionContext::SessionContext(LocalIO* io)
-    : irt_{}, io_(io) {}
+    : irt_{}, io_(io), dirs_(File::current_directory()) {}
 
 void SessionContext::InitalizeContext(const wwiv::sdk::Config& c) {
   const auto qscan_length = c.qscn_len() / sizeof(uint32_t);
@@ -73,6 +81,12 @@ void SessionContext::reset_local_io(LocalIO* io) {
 
 void SessionContext::irt(const std::string& irt) { 
   to_char_array(irt_, irt); 
+}
+
+void SessionContext::SetLogonTime() { system_logon_time_ = std::chrono::system_clock::now(); }
+
+seconds SessionContext::duration_used_this_session() const {
+  return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
 }

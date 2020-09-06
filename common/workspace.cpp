@@ -48,7 +48,7 @@ void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bo
     b[lOrigSize++] = CZ;
   }
 
-  File fileOut(FilePath(a()->temp_directory(), INPUT_MSG));
+  File fileOut(FilePath(a()->context().dirs().temp_directory(), INPUT_MSG));
   fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();

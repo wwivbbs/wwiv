@@ -34,6 +34,11 @@ namespace common {
 // Text editing modes for input routines
 enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
 
+template <typename T> struct input_result_t {
+  T num{0};
+  char key{0};
+};
+
 /**
  * Creates the Output class responsible for displaying information both
  * locally and remotely.
@@ -61,6 +66,9 @@ public:
   void SetComm(RemoteIO* comm) { comm_ = comm; }
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
+  wwiv::sdk::User& user() const;
+  wwiv::bbs::SessionContext& context() const;
+
   /** Sets the provider for the session context */
   void set_context_provider(std::function<wwiv::bbs::SessionContext&()> c) { context_provider_ = std::move(c); }
   /** Sets the provider for the user */
@@ -82,9 +90,81 @@ public:
   int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb);
   int bgetch_event(numlock_status_t numlock_mode);
 
+  bool yesno();
+  bool noyes();
+  char ynq();
+
+  // Private for input_xxx
+  void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
+  std::string Input1(const std::string& orig_text, int max_length, bool bInsert,
+                            InputMode mode);
+  void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl);
+  std::string input_password(const std::string& prompt_text, int max_length);
+  input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
+                                                  bool setdefault, const std::set<char>& hotkeys);
+
+  /**
+   * Inputs filename up to length max_length.
+   */
+  std::string input_filename(int max_length);
+
+  /**
+   * Inputs filename up to length max_length.
+   */
+  std::string input_filename(const std::string& orig_text, int max_length);
+
+  std::string input_path(const std::string& orig_text, int max_length);
+
+  std::string input_path(int max_length);
+
+  std::string input_cmdline(const std::string& orig_text, int max_length);
+
+
+/**
+   * Inputs phone number up to length max_length.
+   */
+  std::string input_phonenumber(const std::string& orig_text, int max_length);
+
+  /**
+   * Inputs random text (upper and lower case) up to length max_length.
+   */
+  std::string input_text(const std::string& orig_text, int max_length);
+
+  /**
+   * Inputs random text (upper and lower case) up to length max_length
+   * with the ability to turn on or off the MPL.
+   */
+  std::string input_text(const std::string& orig_text, bool mpl, int max_length);
+
+  /**
+   * Inputs random text (upper and lower case) up to length max_length.
+   */
+  std::string input_text(int max_length);
+
+  /**
+   * Inputs random text (upper case) up to length max_length.
+   */
+  std::string input_upper(const std::string& orig_text, int max_length);
+
+  /**
+   * Inputs random text (upper case) up to length max_length.
+   */
+  std::string input_upper(int max_length);
+
+  /**
+   * Inputs random text (In Proper Case) up to length max_length.
+   */
+  std::string input_proper(const std::string& orig_text, int max_length);
+
+  /**
+   * Inputs a date (10-digit) of MM/DD/YYYY.
+   */
+  std::string input_date_mmddyyyy(const std::string& orig_text);
+
 private:
   int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
   int bgetch_handle_escape(int key);
+  std::string input_password_minimal(int max_length);
 
 private:
   LocalIO* local_io_{nullptr};
@@ -101,89 +181,6 @@ extern wwiv::common::Input bin;
 void input(char* out_text, int max_length, bool auto_mpl = false);
 std::string input(int max_length, bool auto_mpl = false);
 
-/**
- * Inputs password up to length max_length after displaying prompt_text
- */
-std::string input_password(const std::string& prompt_text, int max_length);
-
-/**
- * Inputs filename up to length max_length.
- */
-std::string input_filename(int max_length);
-
-/**
- * Inputs filename up to length max_length.
- */
-std::string input_filename(const std::string& orig_text, int max_length);
-
-/**
- * Inputs full file path up to length max_length.
- */
-std::string input_path(int max_length);
-
-/**
- * Inputs full file path up to length max_length.
- */
-std::string input_path(const std::string& orig_text, int max_length);
-
-/**
- * Inputs commandline up to length max_length.
- */
-std::string input_cmdline(const std::string& orig_text, int max_length);
-
-/**
- * Inputs phone number up to length max_length.
- */
-std::string input_phonenumber(const std::string& orig_text, int max_length);
-
-/**
- * Inputs random text (upper and lower case) up to length max_length.
- */
-std::string input_text(const std::string& orig_text, int max_length);
-
-/**
- * Inputs random text (upper and lower case) up to length max_length
- * with the ability to turn on or off the MPL.
- */
-std::string input_text(const std::string& orig_text, bool mpl, int max_length);
-
-/**
- * Inputs random text (upper and lower case) up to length max_length.
- */
-std::string input_text(int max_length);
-
-/**
- * Inputs random text (upper case) up to length max_length.
- */
-std::string input_upper(const std::string& orig_text, int max_length);
-
-/**
- * Inputs random text (upper case) up to length max_length.
- */
-std::string input_upper(int max_length);
-
-/**
- * Inputs random text (In Proper Case) up to length max_length.
- */
-std::string input_proper(const std::string& orig_text, int max_length);
-
-/**
- * Inputs a date (10-digit) of MM/DD/YYYY.
- */
-std::string input_date_mmddyyyy(const std::string& orig_text);
-
-template <typename T> 
-struct input_result_t { 
-  T num{0};
-  char key{0};
-};
-
-/**
- * Raw input_number method. Clients should use input_number or  input_number_hotkey instead.
- */
-input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
-                                                bool setdefault, const std::set<char>& hotkeys);
-
 
 //TODO(rushfan): Using an int64_t for the min/max both here and in input_number_or_key_raw
 //               is a bit wonky, but works for probably all case in WWIV since it won't be
@@ -197,17 +194,18 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
 template <typename T>
 T input_number(T current_value, int64_t min_value = std::numeric_limits<T>::min(),
                int64_t max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  auto r = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
+  auto r = bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
   return (r.key != 0) ? current_value : static_cast<T>(r.num);
 }
 
 template <typename T>
-input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
-                                      int min_value = std::numeric_limits<T>::min(),
-                                      int max_value = std::numeric_limits<T>::max(),
-                                      bool set_default_value = false) {
-  auto orig = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
-  input_result_t<T> r{static_cast<T>(orig.num), orig.key};
+wwiv::common::input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
+                                                    int min_value = std::numeric_limits<T>::min(),
+                                                    int max_value = std::numeric_limits<T>::max(),
+                                                    bool set_default_value = false) {
+  auto orig =
+      bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
+  wwiv::common::input_result_t<T> r{static_cast<T>(orig.num), orig.key};
   return r;
 }
 

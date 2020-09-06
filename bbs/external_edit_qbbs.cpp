@@ -37,10 +37,6 @@ using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static void RemoveEditorFileFromTemp(const string& filename) {
-  File::Remove(FilePath(a()->temp_directory(), filename), true);
-}
-
 std::string ExternalQBBSMessageEditor::editor_filename() const { return MSGTMP; }
 
 ExternalQBBSMessageEditor ::~ExternalQBBSMessageEditor() {
@@ -48,8 +44,8 @@ ExternalQBBSMessageEditor ::~ExternalQBBSMessageEditor() {
 }
 
 void ExternalQBBSMessageEditor::CleanupControlFiles() {
-  RemoveEditorFileFromTemp(MSGINF);
-  RemoveEditorFileFromTemp(MSGTMP);
+  File::Remove(FilePath(temp_directory_, MSGINF), true);
+  File::Remove(FilePath(temp_directory_, MSGTMP), true);
 }
 
 /**
@@ -65,14 +61,15 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  * line 6: Private flag ("YES" or "NO")
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
-                        const string& to_name, bool real_name) {
-  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wd");
+                        const string& to_name, bool real_name, const std::string& temp_directory,
+                        const wwiv::sdk::User& user) {
+  TextFile file(FilePath(temp_directory, MSGINF), "wd");
   if (!file.IsOpen()) {
     return false;
   }
 
   // line 1: Who the message is FROM
-  file.WriteLine(real_name ? a()->user()->GetRealName() : a()->user()->GetName());
+  file.WriteLine(real_name ? user.GetRealName() : user.GetName());
   if (!to_name.empty()) {
     // line 2: Who the message is TO
     file.WriteLine(to_name);
@@ -111,7 +108,7 @@ static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
   if (!in) {
     return false; 
   }
-  File out(FilePath(a()->temp_directory(), MSGTMP));
+  File out(FilePath(tmpdir, MSGTMP));
   if (!out.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                 File::modeTruncate)) {
     return false;
@@ -136,7 +133,8 @@ bool ExternalQBBSMessageEditor::Before() {
   CleanupControlFiles();
   CreateMsgTmpFromQuotesTxt(temp_directory_);
   bool real_name = data_.anonymous_flag & anony_real_name;
-  return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name, real_name);
+  return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name, real_name,
+                     temp_directory_, *a()->user());
 }
 
 bool ExternalQBBSMessageEditor::After() {

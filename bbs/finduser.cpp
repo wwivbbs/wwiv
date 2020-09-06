@@ -20,6 +20,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "common/com.h"
+#include "common/input.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
@@ -93,7 +94,7 @@ int finduser1(const string& searchString) {
     }
 
     bout << "|#5Do you mean " << a()->names()->UserName(n.number) << " (Y/N/Q)? ";
-    const auto ch = ynq();
+    const auto ch = bin.ynq();
     if (ch == 'Y') {
       return n.number;
     }

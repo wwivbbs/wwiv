@@ -18,15 +18,46 @@
 #ifndef __INCLUDED_BBS_CONTEXT_H__
 #define __INCLUDED_BBS_CONTEXT_H__
 
+#include "core/file.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <string>
 
 class LocalIO;
 
 namespace wwiv::bbs {
+
+class Dirs {
+public:
+  explicit Dirs(const std::filesystem::path& bbsdir);
+  Dirs(const std::string& temp, const std::string& batch, const std::string& qwk)
+      : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk) {}
+
+  [[nodiscard]] const std::string& temp_directory() const noexcept { return temp_directory_; }
+  [[nodiscard]] const std::string& batch_directory() const noexcept { return batch_directory_; }
+
+  /**
+   * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
+   * leave it open for changing in the future.
+   */
+  [[nodiscard]] const std::string& qwk_directory() const noexcept { return qwk_directory_; }
+
+  [[nodiscard]] const std::string& language_directory() const noexcept {
+    return language_directory_;
+  }
+  void language_directory(const std::string& l) {
+    language_directory_ = l;
+  }
+
+private:
+  std::string temp_directory_;
+  std::string batch_directory_;
+  std::string qwk_directory_;
+  std::string language_directory_;
+};
 
 enum class chatting_t { none, one_way, two_way };
 
@@ -141,6 +172,22 @@ public:
   [[nodiscard]] bool IsTimeOnlineLimited() const { return time_limited_; }
   void SetTimeOnlineLimited(bool b) { time_limited_ = b; }
 
+  // Sets the time that the user has logged in.
+  void SetLogonTime();
+
+  // Returns the time that the user has logged in.  If the user has not yet
+  // logged in, return the time the bbs started.
+  [[nodiscard]] std::chrono::system_clock::time_point system_logon_time() const {
+    return system_logon_time_;
+  }
+
+  // Returns the duration used this bbs session.
+  [[nodiscard]] std::chrono::seconds duration_used_this_session() const;
+
+  [[nodiscard]] const Dirs& dirs() const noexcept { return dirs_; }
+  [[nodiscard]] Dirs& dirs() { return dirs_; }
+  void dirs(Dirs d) { dirs_ = d; }
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -173,6 +220,8 @@ private:
   uint16_t current_conf_filearea_{0};
   bool user_online_{false};
   bool time_limited_{false};
+  std::chrono::system_clock::time_point system_logon_time_;
+  Dirs dirs_;
 };
 
 } // namespace wwiv::bbs

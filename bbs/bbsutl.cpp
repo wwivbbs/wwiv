@@ -342,7 +342,7 @@ bool checka(bool *abort, bool *next) {
     bout.clearnsp();
   }
   while (bin.bkbhit() && !*abort && !a()->context().hangup()) {
-    CheckForHangup();
+    a()->CheckForHangup();
     char ch = bin.bgetch();
     switch (ch) {
     case CN:
@@ -407,12 +407,12 @@ int check_ansi() {
   auto l = now + seconds(3);
 
   while (steady_clock::now() < l) {
-    CheckForHangup();
+    a()->CheckForHangup();
     auto ch = bin.bgetchraw();
     if (ch == '\x1b') {
       l = steady_clock::now() + seconds(1);
       while (steady_clock::now() < l) {
-        CheckForHangup();
+        a()->CheckForHangup();
         ch = bin.bgetchraw();
         if (ch) {
           if ((ch < '0' || ch > '9') && ch != ';' && ch != '[') {

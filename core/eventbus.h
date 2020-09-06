@@ -59,11 +59,14 @@ public:
                         [f = std::forward<H>(handler)](auto value) { f(std::any_cast<T>(value)); });
     }
   }
+
   template <typename T, typename M, typename I> void add_handler(M method, I instance) {
     const std::string name = typeid(T).name();
     std::function<void(MessagePosted)> f = std::bind(method, instance, std::placeholders::_1);
     handlers_.emplace(name, [f](auto value) { f(std::any_cast<T>(value)); });
   }
+
+  template <typename T> void invoke() { invoke(T{}); }
 
   template <typename T> void invoke(const T& event_type) {
     const std::string name = typeid(T).name();

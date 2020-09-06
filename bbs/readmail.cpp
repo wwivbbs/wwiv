@@ -99,7 +99,7 @@ static void purgemail(vector<tmpmailrec>& mloc, int mw, int* curmail, mailrec* m
       }
     }
   }
-  if (yesno()) {
+  if (bin.yesno()) {
     auto pFileEmail(OpenEmailFile(true));
     if (!pFileEmail->IsOpen()) {
       return;
@@ -260,7 +260,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
   if (system_number) {
     bout << "Add @" << system_number << "." << net.name << " to subtype " << subtype << "? ";
   }
-  if (!system_number || !noyes()) {
+  if (!system_number || !bin.noyes()) {
     bout << "|#2System Number: ";
     const auto s = input(5, true);
     if (s.empty()) {
@@ -279,7 +279,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
     // TODO find replacement for autosend.exe
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         const auto autosend = FilePath(a()->bindir(), "autosend");
         const auto cmd = StrCat(autosend.string(), " ", subtype, " ", system_number, " .", network_number);
         ExecuteExternalProgram(cmd, EFLAG_NONE);
@@ -305,7 +305,7 @@ void delete_attachment(unsigned long daten, int forceit) {
         if (!forceit) {
           if (so()) {
             bout << "|#5Delete attached file? ";
-            delfile = yesno();
+            delfile = bin.yesno();
           }
         }
         if (delfile) {
@@ -757,7 +757,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(FilePath(a()->temp_directory(), INPUT_MSG));
+              File::Remove(FilePath(a()->context().dirs().temp_directory(), INPUT_MSG));
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";
@@ -895,7 +895,7 @@ void readmail(int mode) {
           break;
         }
         bout << "|#5Delete this message? ";
-        if (!noyes()) {
+        if (!bin.noyes()) {
           break;
         }
         if (m.fromsys != 0) {
@@ -986,7 +986,7 @@ void readmail(int mode) {
             }
             if (ok_to_mail(un, sn, false)) {
               bout << "|#5Forward to " << fwd_email_name << "? ";
-              if (yesno()) {
+              if (bin.yesno()) {
                 auto file(OpenEmailFile(true));
                 if (!file->IsOpen()) {
                   break;
@@ -998,7 +998,7 @@ void readmail(int mode) {
                   break;
                 }
                 bout << "|#5Delete this message? ";
-                if (yesno()) {
+                if (bin.yesno()) {
                   if (m.status & status_file) {
                     delete_attachment(m.daten, 0);
                   }
@@ -1175,11 +1175,11 @@ void readmail(int mode) {
           break;
         }
         bout << "\r\n|#2Filename: ";
-        string fileName = input_path(50);
+        string fileName = bin.input_path(50);
         if (!fileName.empty()) {
           bout.nl();
           bout << "|#5Allow editing? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             bout.nl();
             LoadFileIntoWorkspace(fileName, false);
           } else {
@@ -1200,7 +1200,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName)) {
             break;
           }
-          const auto fn = FilePath(a()->temp_directory(), downloadFileName);
+          const auto fn = FilePath(a()->context().dirs().temp_directory(), downloadFileName);
           File::Remove(fn);
           TextFile tf(fn, "w");
           tf.Write(b);

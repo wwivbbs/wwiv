@@ -88,22 +88,22 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       } else {
         bout << "|#5Enter a new extended description? ";
       }
-      if (!yesno()) {
+      if (!bin.yesno()) {
         return;
       }
     } else {
       bout.nl();
       bout << "|#5Enter an extended description? ";
-      if (!yesno()) {
+      if (!bin.yesno()) {
         return;
       }
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "w");
+        TextFile file(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
+        File::Remove(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"));
       }
 
       const auto saved_screen_chars = a()->user()->GetScreenChars();
@@ -111,11 +111,11 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      const auto edit_ok = fsed_text_edit("extended.dsc", a()->temp_directory(),
+      const auto edit_ok = fsed_text_edit("extended.dsc", a()->context().dirs().temp_directory(),
                                               a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (edit_ok) {
-        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
+        TextFile file(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (auto i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
@@ -178,7 +178,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       a()->user()->SetScreenChars(nSavedScreenSize);
     }
     bout << "|#5Is this what you want? ";
-    i = !yesno();
+    i = !bin.yesno();
     if (i) {
       sss->clear();
     }
@@ -196,8 +196,8 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
 }
 
 static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem::path& p) {
-  File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
+  File::Remove(FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->context().dirs().temp_directory(), DESC_SDI));
 
   if (!p.has_extension() || !has_arc_cmd_for_ext(p.extension().string().substr(1))) {
     return std::nullopt;
@@ -209,9 +209,9 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
     return std::nullopt;
   }
   ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
-  auto diz_fn = FilePath(a()->temp_directory(), FILE_ID_DIZ);
+  auto diz_fn = FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
-    diz_fn = FilePath(a()->temp_directory(), DESC_SDI);
+    diz_fn = FilePath(a()->context().dirs().temp_directory(), DESC_SDI);
   }
   if (!File::Exists(diz_fn)) {
     return std::nullopt;
@@ -221,8 +221,8 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
 
 bool get_file_idz(FileRecord& fr, const directory_t& dir) {
   ScopeExit at_exit([] {
-    File::Remove(FilePath(a()->temp_directory(), FILE_ID_DIZ));
-    File::Remove(FilePath(a()->temp_directory(), DESC_SDI));
+    File::Remove(FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ));
+    File::Remove(FilePath(a()->context().dirs().temp_directory(), DESC_SDI));
   });
 
   if (!a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && dir.mask & mask_cdrom) {
@@ -377,7 +377,7 @@ void tag_it() {
         auto s = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
           auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
-          s = FilePath(a()->temp_directory(), FileName(f.u.filename));
+          s = FilePath(a()->context().dirs().temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s)) {
             File::Copy(s2, s);
           }
@@ -531,7 +531,7 @@ void tag_files(bool& need_title) {
         auto s1 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (a()->dirs()[f.directory].mask & mask_cdrom) {
           auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
-          s1 = FilePath(a()->temp_directory(), FileName(f.u.filename));
+          s1 = FilePath(a()->context().dirs().temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -588,7 +588,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
     if (to_upper_case<char>(ch) == 'Y') {
       if (dir.mask & mask_cdrom) {
         const auto src = FilePath(dir.path, ufn);
-        const auto dest = FilePath(a()->temp_directory(), ufn);
+        const auto dest = FilePath(a()->context().dirs().temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
@@ -801,7 +801,7 @@ void download() {
     return;
   }
   bout << "|#5Hang up after transfer? ";
-  const bool had = yesno();
+  const bool had = bin.yesno();
   const int ip = get_protocol(xfertype::xf_down_batch);
   if (ip > 0) {
     switch (ip) {
@@ -889,7 +889,7 @@ void SetNewFileScanDate() {
   bout << "|#9Enter new limiting date in the following format:\r\n";
   bout << "|#1 MM/DD/YYYY\r\n|#7:";
   bout.mpl(8);
-  const auto ag = input_date_mmddyyyy("");
+  const auto ag = bin.input_date_mmddyyyy("");
   bout.nl();
   if (!ag.empty()) {
     auto o = mmddyy_to_mdyo(ag);
@@ -965,7 +965,7 @@ void removenotthere() {
   int autodel = 0;
   bout.nl();
   bout << "|#5Remove N/A files in all directories? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 &&
                      !a()->localIO()->KeyPressed(); i++) {
       bout.nl();

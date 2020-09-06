@@ -27,7 +27,6 @@ enum class quote_date_format_t {
 };
 
 void grab_quotes(std::string& raw_text, const std::string& to_name);
-void grab_quotes(messagerec* m, const std::string& aux, const std::string& to_name);
 void clear_quotes();
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt);

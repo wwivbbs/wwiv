@@ -45,7 +45,7 @@ static std::optional<std::string> get_extract_dir() {
     case 'D':
       return a()->config()->datadir();
     case 'T':
-      return a()->temp_directory();
+      return a()->context().dirs().temp_directory();
     case '?':
       print_help_file(MEXTRACT_NOEXT);
       break;
@@ -67,7 +67,7 @@ void extract_out(const std::string& text, const std::string& title) {
   std::string mode = "wt";
   do {
     bout << "|#2Save under what filename? ";
-    const auto fn = input_filename(50);
+    const auto fn = bin.input_filename(50);
     if (fn.empty()) {
       return;
     }

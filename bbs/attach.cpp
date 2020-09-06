@@ -191,7 +191,7 @@ void attach_file(int mode) {
               if (so()) {
                 if (a()->context().incom()) {
                   bout << "|#5Upload from remote? ";
-                  if (yesno()) {
+                  if (bin.yesno()) {
                     bRemoteUpload = true;
                   }
                 }
@@ -214,7 +214,7 @@ void attach_file(int mode) {
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), stripfn(file_to_attach)).string();
                     bout.nl();
                     bout << "|#5" << file_to_attach << "? ";
-                    if (!yesno()) {
+                    if (!bin.yesno()) {
                       found = true;
                     }
                   }
@@ -235,7 +235,7 @@ void attach_file(int mode) {
                 do {
                   found = true;
                   bout << "|#5New name? ";
-                  if (yesno()) {
+                  if (bin.yesno()) {
                     bout << "|#5Filename: ";
                     new_filename = input(12, true);
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), new_filename).string();
@@ -294,7 +294,7 @@ void attach_file(int mode) {
                     }
                     fsr.id = m.daten;
                     bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
-                    if (yesno()) {
+                    if (bin.yesno()) {
                       m.status ^= status_file;
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                       pFileEmail->Write(&m, sizeof(mailrec));

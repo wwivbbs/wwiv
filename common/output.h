@@ -82,8 +82,6 @@ public:
   void set_context_provider(std::function<wwiv::bbs::SessionContext&()>);
   /** Sets the provider for the user */
   void set_user_provider(std::function<wwiv::sdk::User&()>);
-  /** Sets the provider for the callback to process instance messages */
-  void set_inst_msg_processor(std::function<void()>);
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -251,7 +249,6 @@ public:
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
-  void inst_msg_processor();
   wwiv::sdk::User& user() const;
   wwiv::bbs::SessionContext& context() const;
 
@@ -293,7 +290,6 @@ private:
 
   context_provider_t context_provider_;
   user_provider_t user_provider_;
-  inst_msg_processor_t inst_msg_processor_;
   int nsp_{0};
 };
 

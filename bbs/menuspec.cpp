@@ -22,6 +22,8 @@
 #include "bbs/bbsutl.h"
 #include "bbs/chains.h"
 #include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
@@ -120,7 +122,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
       auto s1 = FilePath(dir.path, f);
       if (dir.mask & mask_cdrom) {
-        s1 = FilePath(a()->temp_directory(), f);
+        s1 = FilePath(a()->context().dirs().temp_directory(), f);
         if (!File::Exists(s1)) {
           File::Copy(FilePath(dir.path, f), s1);
         }
@@ -214,7 +216,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
       return false;
     }
     bout << inuse_msg << " Care to join in? ";
-    if (!(yesno())) {
+    if (!(bin.yesno())) {
       return false;
     }
   }

@@ -62,7 +62,7 @@ void kill_old_email() {
   filestatusrec fsr{};
 
   bout << "|#5List mail starting at most recent? ";
-  bool forward = yesno();
+  bool forward = bin.yesno();
   auto pFileEmail(OpenEmailFile(false));
   if (!pFileEmail->IsOpen()) {
     bout << "\r\nNo mail.\r\n";
@@ -239,10 +239,10 @@ void list_users(int mode) {
 
   bout.nl();
   bout << "|#5Sort by user number? ";
-  bool bSortByUserNumber = yesno();
+  bool bSortByUserNumber = bin.yesno();
   bout.nl();
   bout << "|#5Search for a name or city? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     bout.nl();
     bout << "|#5Enter text to find: ";
     input(szFindText, 10, true);

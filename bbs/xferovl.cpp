@@ -80,7 +80,7 @@ void move_file() {
     printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
-    const auto ch = ynq();
+    const auto ch = bin.ynq();
     std::filesystem::path src_fn;
     if (ch == 'Q') {
       done = true;
@@ -131,7 +131,7 @@ void move_file() {
     }
     if (ok && !done) {
       bout << "|#5Reset upload time for file? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         f.set_date(DateTime::now());
       }
       --nCurrentPos;
@@ -212,7 +212,7 @@ void rename_file() {
     printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
-    const char ch = ynq();
+    const char ch = bin.ynq();
     if (ch == 'Q') {
       break;
     }
@@ -252,18 +252,18 @@ void rename_file() {
     }
     bout << "\r\nNew description:\r\n|#2: ";
     auto* area = a()->current_file_area();
-    auto desc = input_text(58);
+    auto desc = bin.input_text(58);
     if (!desc.empty()) {
       f.set_description(desc);
     }
     auto ss = area->ReadExtendedDescriptionAsString(f).value_or("");
     bout.nl(2);
     bout << "|#5Modify extended description? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       bout.nl();
       if (!ss.empty()) {
         bout << "|#5Delete it? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           area->DeleteExtendedDescription(f, nCurRecNum);
           f.set_extended_description(false);
         } else {
@@ -338,7 +338,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
       bout << "|#1 Description: " << f.description() << wwiv::endl;
     } else {
       bout << "|#9Enter a description for this file.\r\n|#7: ";
-      auto desc = input_text(58);
+      auto desc = bin.input_text(58);
       f.set_description(desc);
     }
     bout.nl();
@@ -372,13 +372,13 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const st
   if (i == -1) {
     if (!is_uploadable(file_name) && dcs()) {
       bout.format("{:<12}: |#5In filename database - add anyway? ", file_name);
-      const auto ch = ynq();
+      const auto ch = bin.ynq();
       if (ch == *str_quit) {
         return false;
       }
       if (ch == YesNoString(false)[0]) {
         bout << "|#5Delete it? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           File::Remove(FilePath(a()->dirs()[directory_num].path, file_name));
         }
         bout.nl();
@@ -875,7 +875,7 @@ void finddescription() {
   bool ac = false;
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout << "|#5All conferences? ";
-    ac = yesno();
+    ac = bin.yesno();
     if (ac) {
       tmp_disable_conf(true);
     }

@@ -117,7 +117,7 @@ void modify_sec(int n) {
     case 'A': {
       bout.nl();
       bout << "|#2New name? ";
-      auto name = input_text(40);
+      auto name = bin.input_text(40);
       if (s[0]) {
         to_char_array(r.name, name);
       }
@@ -136,7 +136,7 @@ void modify_sec(int n) {
         if (!File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             File dir(FilePath(a()->config()->gfilesdir(), r.filename));
             File::mkdirs(dir);
           } else {
@@ -263,7 +263,7 @@ void gfileedit() {
       if (s[0] != 0 && i >= 0 && i < ssize(a()->gfilesec)) {
         bout.nl();
         bout << "|#5Delete " << a()->gfilesec[i].name << "?";
-        if (yesno()) {
+        if (bin.yesno()) {
           delete_sec(i);
         }
       }
@@ -302,7 +302,7 @@ bool fill_sec(int sn) {
     }
     if (i) {
       bout << "|#2" << s << " : ";
-      auto s1s = input_text(60);
+      auto s1s = bin.input_text(60);
       if (!s1s.empty()) {
         chd = 1;
         i = 0;

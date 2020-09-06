@@ -20,10 +20,11 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "bbs/utility.h"
 #include "common/bgetch.h"
 #include "common/com.h"
-#include "bbs/utility.h"
-#include "core/stl.h"
+#include "common/common_events.h"
+#include "core/eventbus.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
 #include <algorithm>
@@ -33,7 +34,8 @@
 #include <string>
 
 using std::string;
-using wwiv::common::InputMode;
+using namespace wwiv::common;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -49,211 +51,112 @@ static const std::string valid_letters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN
 // This needs to work across input1 and input_password
 static unsigned char last_input_char;
 
-static std::string input_password_minimal(int max_length) {
-  const char mask_char = okansi() ? '\xFE' : 'X';
-  std::string pw;
-  bout.mpl(max_length);
+// TODO(rushfan): Make this a WWIV ini setting.
+static const uint8_t input_background_char = 32; // Was '\xB1';
 
-  while (!a()->context().hangup()) {
-    unsigned char ch = bout.getkey();
 
-    if (ch > 31) {
-      ch = upcase(ch);
-      if (ssize(pw) < max_length && ch) {
-        pw.push_back(ch);
-        bout.bputch(mask_char);
-      }
-      continue;
-    }
-    switch (ch) {
-    case SOFTRETURN:
-      // Handle the case where some telnet clients only return \n vs \r\n
-      if (last_input_char != RETURN) {
-        bout.nl();
-        last_input_char = ch;
-        return pw;
-      }
-      break;
-    case CN:
-    case RETURN:
-      bout.nl();
-      last_input_char = ch;
-      return pw;
-      break;
-    case CW: // Ctrl-W
-      while (!pw.empty() && pw.back() != SPACE) {
-        pw.pop_back();
-        bout.bs();
-      }
-      break;
-    case BACKSPACE:
-      if (!pw.empty()) {
-        pw.pop_back();
-        bout.bs();
-      }
-      break;
-    case CU:
-    case CX:
-      while (!pw.empty()) {
-        pw.pop_back();
-        bout.bs();
-      }
-      break;
-    }
-    last_input_char = ch;
+// This will input an upper-case string
+void input(char* out_text, int max_length, bool auto_mpl) {
+  bin.input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
+}
+
+// This will input an upper-case string
+string input(int max_length, bool auto_mpl) {
+  const auto line = std::make_unique<char[]>(max_length + 1);
+  input(line.get(), max_length, auto_mpl);
+  return line.get();
+}
+
+
+static int max_length_for_number(int64_t n) {
+  return (n == 0) ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
+}
+
+static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
+  bool ok = (result >= minv && result <= maxv);
+  if (ok != last_ok) {
+    bout.RestorePosition();
+    bout.SavePosition();
+    bout.mpl(max_length_for_number(maxv));
+    bout.Color(ok ? 4 : 6);
+    bout.bputs(std::to_string(result));
   }
-  return "";
+  return ok;
+}
+
+
+namespace wwiv::common {
+
+// TODO(rushfan): HACK - Fix this and put back language suppor
+static std::string YesNoString(bool bYesNo) { return bYesNo ? "Yes" : "No"; }
+
+static void print_yn(bool yes) {
+  bout << YesNoString(yes);
+  bout.nl();
+}
+
+/* The keyboard is checked for either a Y, N, or C/R to be hit.  C/R is
+ * assumed to be the same as a N.  Yes or No is output, and yn is set to
+ * zero if No was returned, and bin.yesno() is non-zero if Y was hit.
+ */
+bool Input::yesno() {
+  char ch = 0;
+
+  bout.Color(1);
+  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] && ch != RETURN)
+    ;
+
+  if (ch == YesNoString(true)[0]) {
+    print_yn(true);
+  } else {
+    print_yn(false);
+  }
+  return (ch == YesNoString(true)[0]) ? true : false;
 }
 
 /**
- * This will input a line of data, maximum max_length characters long, terminated
- * by a C/R.  if (lc) is non-zero, lowercase is allowed, otherwise all
- * characters are converted to uppercase.
- * @param out_text the text entered by the user (output value)
- * @param max_length Maximum length to allow for the input text
- * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER,
- * or InputMode::FILENAME
- * @param crend output the CR/LF if one is entered.
- * @param auto_mpl Call bout.mpl(max_length) automatically.
+ * This is the same as bin.yesno(), except C/R is assumed to be "Y"
  */
-static void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl) {
-  if (auto_mpl) {
-    bout.mpl(max_length);
+bool Input::noyes() {
+  char ch = 0;
+
+  bout.Color(1);
+  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] && ch != RETURN)
+    ;
+
+  if (ch == YesNoString(false)[0]) {
+    print_yn(false);
+  } else {
+    print_yn(true);
   }
-
-  int curpos = 0, in_ansi = 0;
-  bool done = false;
-
-  while (!done && !a()->context().hangup()) {
-    unsigned char chCurrent = bout.getkey();
-
-    a()->context().chatline(curpos != 0);
-
-    if (in_ansi) {
-      if (in_ansi == 1 && chCurrent != '[') {
-        in_ansi = 0;
-      } else {
-        if (in_ansi == 1) {
-          in_ansi = 2;
-        } else {
-          if ((chCurrent < '0' || chCurrent > '9') && chCurrent != ';') {
-            in_ansi = 3;
-          } else {
-            in_ansi = 2;
-          }
-        }
-      }
-    }
-    if (!in_ansi) {
-      if (chCurrent > 31) {
-        switch (lc) {
-        case InputMode::UPPER:
-          chCurrent = upcase(chCurrent);
-          break;
-        case InputMode::MIXED:
-          break;
-        case InputMode::PROPER:
-          chCurrent = upcase(chCurrent);
-          if (curpos) {
-            bool found = valid_letters.find(out_text[curpos - 1]) != std::string::npos;
-            if (found || out_text[curpos - 1] == 39) {
-              if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
-                chCurrent = locase(chCurrent);
-              }
-            }
-          }
-          break;
-	case InputMode::CMDLINE:
-        case InputMode::FILENAME:
-        case InputMode::FULL_PATH_NAME: {
-          string disallowed =
-              lc == InputMode::FILENAME ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
-          if (disallowed.find(chCurrent) != std::string::npos) {
-            chCurrent = 0;
-          } else if (lc != InputMode::CMDLINE) {
-            // Lowercase filenames on all platforms, not just Win32.
-	    // Leave commandlines alone.
-            chCurrent = to_lower_case(chCurrent);
-          }
-        } break;
-        }
-        if (curpos < max_length && chCurrent) {
-          out_text[curpos++] = chCurrent;
-          bout.bputch(chCurrent);
-        }
-      } else {
-        switch (chCurrent) {
-        case SOFTRETURN:
-          if (last_input_char != RETURN) {
-            //
-            // Handle the "one-off" case where UNIX telnet clients only return
-            // '\n' (#10) instead of '\r' (#13).
-            //
-            out_text[curpos] = '\0';
-            done = true;
-            if (bout.newline || crend) {
-              bout.nl();
-            }
-          }
-          break;
-        case CN:
-        case RETURN:
-          out_text[curpos] = '\0';
-          done = true;
-          if (bout.newline || crend) {
-            bout.nl();
-          }
-          break;
-        case CW: // Ctrl-W
-          if (curpos) {
-            do {
-              curpos--;
-              bout.bs();
-              if (out_text[curpos] == CZ) {
-                bout.bs();
-              }
-            } while (curpos && out_text[curpos - 1] != SPACE);
-          }
-          break;
-        case CZ:
-          break;
-        case BACKSPACE:
-          if (curpos) {
-            curpos--;
-            bout.bs();
-            if (out_text[curpos] == CZ) {
-              bout.bs();
-            }
-          }
-          break;
-        case CU:
-        case CX:
-          while (curpos) {
-            curpos--;
-            bout.bs();
-            if (out_text[curpos] == CZ) {
-              bout.bs();
-            }
-          }
-          break;
-        case ESC:
-          in_ansi = 1;
-          break;
-        }
-        last_input_char = chCurrent;
-      }
-    }
-    if (in_ansi == 3) {
-      in_ansi = 0;
-    }
-  }
-  if (a()->context().hangup()) {
-    out_text[0] = '\0';
-  }
+  return ch == YesNoString(true)[0] || ch == RETURN;
 }
 
-// TODO(rushfan): Make this a WWIV ini setting.
-static const uint8_t input_background_char = 32; // Was '\xB1';
+char Input::ynq() {
+  char ch = 0;
+
+  bout.Color(1);
+  const char str_quit[] = "Quit";
+  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+         ch != YesNoString(false)[0] && ch != *str_quit && ch != RETURN) {
+    // NOP
+    ;
+  }
+  if (ch == YesNoString(true)[0]) {
+    ch = 'Y';
+    print_yn(true);
+  } else if (ch == *str_quit) {
+    ch = 'Q';
+    bout << str_quit;
+    bout.nl();
+  } else {
+    ch = 'N';
+    print_yn(false);
+  }
+  return ch;
+}
 
 //==================================================================
 // Function: Input1
@@ -269,7 +172,7 @@ static const uint8_t input_background_char = 32; // Was '\xB1';
 //
 // Returns: length of string
 //==================================================================
-static void Input1(char* out_text, const string& orig_text, int max_length, bool bInsert,
+void Input::Input1(char* out_text, const string& orig_text, int max_length, bool bInsert,
                    InputMode mode) {
   char szTemp[255];
   static const char dash = '-';
@@ -280,16 +183,16 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     strcpy(out_text, szTemp);
     return;
   }
-  const auto saved_topdata = a()->localIO()->topdata();
-  if (a()->localIO()->topdata() != LocalIO::topdata_t::none) {
-    a()->localIO()->topdata(LocalIO::topdata_t::none);
-    a()->UpdateTopScreen();
+  const auto saved_topdata = localIO()->topdata();
+  if (localIO()->topdata() != LocalIO::topdata_t::none) {
+    localIO()->topdata(LocalIO::topdata_t::none);
+    bus().invoke<UpdateTopScreenEvent>();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
   }
-  auto saved_topline = a()->localIO()->GetTopLine();
-  a()->localIO()->SetTopLine(0);
+  auto saved_topline = localIO()->GetTopLine();
+  localIO()->SetTopLine(0);
   int pos = 0;
   int nLength = 0;
   szTemp[0] = '\0';
@@ -423,15 +326,12 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     default:
       if (c < 255 && c > 31 &&
           ((bInsert && nLength < max_length) || (!bInsert && pos < max_length))) {
-        if (mode != InputMode::MIXED &&
-	    mode != InputMode::FILENAME &&
-	    mode != InputMode::CMDLINE &&
+        if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::CMDLINE &&
             mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
         }
-        if (mode == InputMode::FILENAME ||
-	    mode == InputMode::FULL_PATH_NAME ||
-	    mode == InputMode::CMDLINE) {
+        if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME ||
+            mode == InputMode::CMDLINE) {
           if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
             // Force lowercase filenames but not commandlines.
             c = to_lower_case<unsigned char>(static_cast<unsigned char>(c));
@@ -496,118 +396,242 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
       break;
     }
     szTemp[nLength] = '\0';
-    CheckForHangup();
-  } while (!done && !a()->context().hangup());
+    wwiv::core::bus().invoke<CheckForHangupEvent>();
+  } while (!done && !context().hangup());
   if (nLength) {
     strcpy(out_text, szTemp);
   } else {
     out_text[0] = '\0';
   }
 
-  a()->localIO()->topdata(saved_topdata);
-  a()->localIO()->SetTopLine(saved_topline);
+  localIO()->topdata(saved_topdata);
+  localIO()->SetTopLine(saved_topline);
 
   bout.Color(0);
   bout.nl();
 }
 
-static string Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
+string Input::Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
   auto line = std::make_unique<char[]>(max_length + 1);
   Input1(line.get(), orig_text, max_length, bInsert, mode);
   return line.get();
 }
 
-// This will input an upper-case string
-void input(char* out_text, int max_length, bool auto_mpl) {
-  input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
+/**
+ * This will input a line of data, maximum max_length characters long, terminated
+ * by a C/R.  if (lc) is non-zero, lowercase is allowed, otherwise all
+ * characters are converted to uppercase.
+ * @param out_text the text entered by the user (output value)
+ * @param max_length Maximum length to allow for the input text
+ * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER,
+ * or InputMode::FILENAME
+ * @param crend output the CR/LF if one is entered.
+ * @param auto_mpl Call bout.mpl(max_length) automatically.
+ */
+void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl) {
+  if (auto_mpl) {
+    bout.mpl(max_length);
+  }
+
+  int curpos = 0, in_ansi = 0;
+  bool done = false;
+
+  while (!done && !context().hangup()) {
+    unsigned char chCurrent = bout.getkey();
+
+    context().chatline(curpos != 0);
+
+    if (in_ansi) {
+      if (in_ansi == 1 && chCurrent != '[') {
+        in_ansi = 0;
+      } else {
+        if (in_ansi == 1) {
+          in_ansi = 2;
+        } else {
+          if ((chCurrent < '0' || chCurrent > '9') && chCurrent != ';') {
+            in_ansi = 3;
+          } else {
+            in_ansi = 2;
+          }
+        }
+      }
+    }
+    if (!in_ansi) {
+      if (chCurrent > 31) {
+        switch (lc) {
+        case InputMode::UPPER:
+          chCurrent = upcase(chCurrent);
+          break;
+        case InputMode::MIXED:
+          break;
+        case InputMode::PROPER:
+          chCurrent = upcase(chCurrent);
+          if (curpos) {
+            bool found = valid_letters.find(out_text[curpos - 1]) != std::string::npos;
+            if (found || out_text[curpos - 1] == 39) {
+              if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
+                chCurrent = locase(chCurrent);
+              }
+            }
+          }
+          break;
+        case InputMode::CMDLINE:
+        case InputMode::FILENAME:
+        case InputMode::FULL_PATH_NAME: {
+          string disallowed =
+              lc == InputMode::FILENAME ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
+          if (disallowed.find(chCurrent) != std::string::npos) {
+            chCurrent = 0;
+          } else if (lc != InputMode::CMDLINE) {
+            // Lowercase filenames on all platforms, not just Win32.
+            // Leave commandlines alone.
+            chCurrent = to_lower_case(chCurrent);
+          }
+        } break;
+        }
+        if (curpos < max_length && chCurrent) {
+          out_text[curpos++] = chCurrent;
+          bout.bputch(chCurrent);
+        }
+      } else {
+        switch (chCurrent) {
+        case SOFTRETURN:
+          if (last_input_char != RETURN) {
+            //
+            // Handle the "one-off" case where UNIX telnet clients only return
+            // '\n' (#10) instead of '\r' (#13).
+            //
+            out_text[curpos] = '\0';
+            done = true;
+            if (bout.newline || crend) {
+              bout.nl();
+            }
+          }
+          break;
+        case CN:
+        case RETURN:
+          out_text[curpos] = '\0';
+          done = true;
+          if (bout.newline || crend) {
+            bout.nl();
+          }
+          break;
+        case CW: // Ctrl-W
+          if (curpos) {
+            do {
+              curpos--;
+              bout.bs();
+              if (out_text[curpos] == CZ) {
+                bout.bs();
+              }
+            } while (curpos && out_text[curpos - 1] != SPACE);
+          }
+          break;
+        case CZ:
+          break;
+        case BACKSPACE:
+          if (curpos) {
+            curpos--;
+            bout.bs();
+            if (out_text[curpos] == CZ) {
+              bout.bs();
+            }
+          }
+          break;
+        case CU:
+        case CX:
+          while (curpos) {
+            curpos--;
+            bout.bs();
+            if (out_text[curpos] == CZ) {
+              bout.bs();
+            }
+          }
+          break;
+        case ESC:
+          in_ansi = 1;
+          break;
+        }
+        last_input_char = chCurrent;
+      }
+    }
+    if (in_ansi == 3) {
+      in_ansi = 0;
+    }
+  }
+  if (context().hangup()) {
+    out_text[0] = '\0';
+  }
 }
 
-// This will input an upper-case string
-string input(int max_length, bool auto_mpl) {
-  const auto line = std::make_unique<char[]>(max_length + 1);
-  input(line.get(), max_length, auto_mpl);
-  return line.get();
+// private
+std::string Input::input_password_minimal(int max_length) {
+  const char mask_char = okansi() ? '\xFE' : 'X';
+  std::string pw;
+  bout.mpl(max_length);
+
+  while (!context().hangup()) {
+    unsigned char ch = bout.getkey();
+
+    if (ch > 31) {
+      ch = upcase(ch);
+      if (ssize(pw) < max_length && ch) {
+        pw.push_back(ch);
+        bout.bputch(mask_char);
+      }
+      continue;
+    }
+    switch (ch) {
+    case SOFTRETURN:
+      // Handle the case where some telnet clients only return \n vs \r\n
+      if (last_input_char != RETURN) {
+        bout.nl();
+        last_input_char = ch;
+        return pw;
+      }
+      break;
+    case CN:
+    case RETURN:
+      bout.nl();
+      last_input_char = ch;
+      return pw;
+      break;
+    case CW: // Ctrl-W
+      while (!pw.empty() && pw.back() != SPACE) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    case BACKSPACE:
+      if (!pw.empty()) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    case CU:
+    case CX:
+      while (!pw.empty()) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    }
+    last_input_char = ch;
+  }
+  return "";
 }
 
-std::string input_password(const string& prompt_text, int max_length) {
+std::string Input::input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
   return input_password_minimal(max_length);
 }
 
-std::string input_filename(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::FILENAME);
-}
-
-std::string input_filename(int max_length) {
-  return input_filename("", max_length);
-}
-
-std::string input_path(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
-}
-
-std::string input_path(int max_length) { return input_path("", max_length); }
-
-std::string input_cmdline(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::CMDLINE);
-}
-
-std::string input_phonenumber(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::PHONE);
-}
-
-std::string input_text(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::MIXED);
-}
-
-std::string input_text(const std::string& orig_text, bool mpl, int max_length) {
-  if (mpl) {
-    return Input1(orig_text, max_length, true, InputMode::MIXED);
-  }
-  if (max_length > 255) {
-    return "";
-  }
-  char s[255];
-  input1(s, max_length, InputMode::MIXED, true, false);
-  return s;
-}
-
-std::string input_text(int max_length) { 
-  return Input1("", max_length, true, InputMode::MIXED);
-}
-
-std::string input_upper(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::UPPER);
-}
-
-std::string input_upper(int max_length) { return input_upper("", max_length); }
-
-std::string input_proper(const std::string& orig_text, int max_length) {
-  return Input1(orig_text, max_length, true, InputMode::PROPER);
-}
-
-std::string input_date_mmddyyyy(const std::string& orig_text) {
-  return Input1(orig_text, 10, true, InputMode::DATE);
-}
-
-static int max_length_for_number(int64_t n) {
-  return (n == 0) ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
-}
-
-static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
-  bool ok = (result >= minv && result <= maxv);
-  if (ok != last_ok) {
-    bout.RestorePosition();
-    bout.SavePosition();
-    bout.mpl(max_length_for_number(maxv));
-    bout.Color(ok ? 4 : 6);
-    bout.bputs(std::to_string(result));
-  }
-  return ok;
-}
-
-input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
-                                                bool setdefault, const std::set<char>& hotkeys) {
+/**
+ * Raw input_number method. Clients should use input_number or  input_number_hotkey instead.
+ */
+input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
+                                                       bool setdefault,
+                                                       const std::set<char>& hotkeys) {
   const auto max_length = max_length_for_number(maxv);
   std::string text;
   bout.mpl(max_length);
@@ -622,7 +646,7 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
     text = std::to_string(result);
     last_ok = colorize(last_ok, result, minv, maxv);
   }
-  while (!a()->context().hangup()) {
+  while (!context().hangup()) {
     auto ch = bout.getkey();
     if (std::isdigit(ch)) {
       // digit
@@ -687,4 +711,63 @@ input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64
     }
   }
   return {0, 0};
+}
+
+std::string Input::input_filename(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::FILENAME);
+}
+
+std::string Input::input_filename(int max_length) { return input_filename("", max_length); }
+
+std::string Input::input_path(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
+}
+
+std::string Input::input_path(int max_length) { return input_path("", max_length); }
+
+std::string Input::input_cmdline(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::CMDLINE);
+}
+
+
+std::string Input::input_phonenumber(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::PHONE);
+}
+
+std::string Input::input_text(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::MIXED);
+}
+
+std::string Input::input_text(const std::string& orig_text, bool mpl, int max_length) {
+  if (mpl) {
+    return Input1(orig_text, max_length, true, InputMode::MIXED);
+  }
+  if (max_length > 255) {
+    return "";
+  }
+  char s[255];
+  input1(s, max_length, InputMode::MIXED, true, false);
+  return s;
+}
+
+std::string Input::input_text(int max_length) {
+  return Input1("", max_length, true, InputMode::MIXED);
+}
+
+std::string Input::input_upper(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::UPPER);
+}
+
+std::string Input::input_upper(int max_length) { return input_upper("", max_length); }
+
+std::string Input::input_proper(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::PROPER);
+}
+
+std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
+  return Input1(orig_text, 10, true, InputMode::DATE);
+}
+
+wwiv::sdk::User& Input::user() const { return user_provider_(); }
+wwiv::bbs::SessionContext& Input::context() const { return context_provider_(); }
 }

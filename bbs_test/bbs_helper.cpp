@@ -74,7 +74,7 @@ void BbsHelper::SetUp() {
 
   auto sysconfig = make_unique<configrec>();
 
-  a()->language_dir = dir_en_gfiles_;
+  a()->context().dirs().language_directory(dir_en_gfiles_);
   auto config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
   config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);

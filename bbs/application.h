@@ -109,6 +109,7 @@ public:
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
   [[nodiscard]] wwiv::bbs::SessionContext& context();
+  [[nodiscard]] const wwiv::bbs::SessionContext& context() const;
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -217,13 +218,19 @@ public:
   [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() const { return statusMgr.get(); }
   [[nodiscard]] wwiv::sdk::UserManager* users() const { return user_manager_.get(); }
 
-  [[nodiscard]] const std::string& temp_directory() const { return temp_directory_; }
-  [[nodiscard]] const std::string& batch_directory() const { return batch_directory_; }
-  /**
-   * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
-   * leave it open for changing in the future.
-   */
-  [[nodiscard]] const std::string& qwk_directory() const { return batch_directory_; }
+  //[[nodiscard]] const std::string& temp_directory() const {
+  //  return context().dirs().temp_directory();
+  //}
+  //[[nodiscard]] const std::string& batch_directory() const { 
+  //  return context().dirs().batch_directory();
+  //}
+  ///**
+  // * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
+  // * leave it open for changing in the future.
+  // */
+  //[[nodiscard]] const std::string& qwk_directory() const { 
+  //  return context().dirs().qwk_directory();
+  //}
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;
@@ -271,9 +278,6 @@ public:
 
   bool read_subs();
   bool create_message_api();
-  void SetLogonTime();
-  [[nodiscard]] std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
-  [[nodiscard]] std::chrono::seconds duration_used_this_session() const;
 
   [[nodiscard]] std::chrono::seconds extratimecall() const;
   std::chrono::seconds set_extratimecall(std::chrono::duration<double> et);
@@ -281,6 +285,8 @@ public:
   std::chrono::seconds subtract_extratimecall(std::chrono::duration<double> et);
 
   void frequent_init();
+  bool CheckForHangup();
+  void Hangup();
 
   /*!
    * @function Run main bbs loop - Invoked from the application
@@ -332,11 +338,8 @@ public:
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
   bool m_bInternetUseRealNames{false};
-  std::string language_dir;
   std::string cur_lang_name;
   std::string net_email_name;
-  std::string temp_directory_;
-  std::string batch_directory_;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
 
@@ -462,7 +465,6 @@ private:
   std::map<const std::string, uint16_t> spawn_opts_;
   bool full_screen_read_prompt_{true};
   int last_read_user_number_{0};
-  std::chrono::system_clock::time_point system_logon_time_;
   std::chrono::duration<double> extratimecall_{};
 };
 

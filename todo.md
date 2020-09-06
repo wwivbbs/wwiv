@@ -5,14 +5,14 @@
 
 ## FSED Externalize
 
-* move chatline_ to context
-* Create Input class, add Output to it as a member var. Name it "bin"
 * move IsLastKeyLocal to Input
-* Create common module, move bout, bin, remoteio, remotesocket, and
-  other stuff to it. 
 * move bout.getkey to Input
 * ** Put back in mmkey_getch's do_sysop_command
-* 
+* Move MacroContext form interpret,h to common. Rename it context.
+  Add sessioncontext as a member variable there so this new context
+  has the session, user, current sub, current dir. That's enough for
+  most parts of code that need the state.
+* remove UnixConsoleIO::tleft - it's not used (lives in Application now)
 
 
 ## Build Cleanup.

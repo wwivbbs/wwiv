@@ -48,7 +48,7 @@ extern unsigned char checksum;
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   int nBlockSize = 0;
 
-  CheckForHangup();
+  a()->CheckForHangup();
   switch (block_type) {
   case 5:
     nBlockSize = 128;

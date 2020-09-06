@@ -111,7 +111,7 @@ void RequestChat() {
       a()->UpdateTopScreen();
     } else {
       bout << "|#9Enter Reason for chat: \r\n|#0:";
-      auto chatReason = input_text(70);
+      auto chatReason = bin.input_text(70);
       if (!chatReason.empty()) {
         if (!play_sdf(CHAT_NOEXT, false)) {
           chatsound(100, 800, 10, 10, 25, 5);

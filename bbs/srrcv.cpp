@@ -56,7 +56,7 @@ char modemkey(int* tout) {
   }
   auto d1 = steady_clock::now();
   while (steady_clock::now() - d1 < milliseconds(500) && !bin.bkbhitraw() && !a()->context().hangup()) {
-    CheckForHangup();
+    a()->CheckForHangup();
   }
   if (bin.bkbhitraw()) {
     char ch = bin.bgetchraw();
@@ -208,7 +208,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
 
     auto d1 = steady_clock::now();
     while (steady_clock::now() - d1 < seconds(10) && !bin.bkbhitraw() && !a()->context().hangup()) {
-      CheckForHangup();
+      a()->CheckForHangup();
       if (a()->localIO()->KeyPressed()) {
         ch = a()->localIO()->GetChar();
         if (ch == 0) {

@@ -19,8 +19,10 @@
 #include "common/output.h"
 
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/interpret.h"
+#include "common/com.h"
+#include "common/common_events.h"
+#include "core/eventbus.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -114,7 +116,7 @@ void Output::RestorePosition() {
 void Output::nl(int nNumLines) {
   for (auto i = 0; i < nNumLines; i++) {
     bputs("\r\n");
-    inst_msg_processor();
+    wwiv::core::bus().invoke(ProcessInstanceMessages{});
   }
 }
 
@@ -235,7 +237,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 }
 
 int Output::bputs(const string& text) {
-  CheckForHangup();
+  wwiv::core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || context().hangup()) { return 0; }
 
   auto it = std::cbegin(text);
@@ -312,7 +314,7 @@ int Output::bpla(const std::string& text, bool *abort) {
 
 // This one doesn't do a newline. (used to be osan)
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
-  CheckForHangup();
+  wwiv::core::bus().invoke<CheckForHangupEvent>();
   checka(abort, next);
   auto ret = 0;
   if (!checka(abort, next)) {
@@ -337,10 +339,5 @@ void Output::set_user_provider(std::function<wwiv::sdk::User&()> c) {
   user_provider_ = std::move(c);
 }
 
-void Output::set_inst_msg_processor(std::function<void()> c) { 
-  inst_msg_processor_ = std::move(c); 
-}
-
-void Output::inst_msg_processor() { inst_msg_processor_(); }
 wwiv::sdk::User& Output::user() const { return user_provider_(); }
 wwiv::bbs::SessionContext& Output::context() const { return context_provider_(); }

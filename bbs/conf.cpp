@@ -317,7 +317,7 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
   auto num_words = wordcount(pszNumbersText, ",");
 
   for (auto word = 1; word <= num_words; word++) {
-    CheckForHangup();
+    a()->CheckForHangup();
     if (a()->context().hangup()) {
       return false;
     }
@@ -525,7 +525,7 @@ static void modify_conf(ConferenceType conftype, int which) {
     case 'B': {
       bout.nl();
       bout << "|#2Conference Name: ";
-      auto cname = input_text(60);
+      auto cname = bin.input_text(60);
       if (!cname.empty()) {
         c.conf_name = cname;
         changed = true;

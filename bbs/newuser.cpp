@@ -35,6 +35,7 @@
 #include "bbs/inetmsg.h"
 #include "bbs/inmsg.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "bbs/lilo.h"
 #include "common/message_file.h"
 #include "bbs/mmkey.h"
@@ -99,7 +100,7 @@ static void input_phone() {
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    phoneNumber = input_phonenumber(a()->user()->GetVoicePhoneNumber(), 12);
+    phoneNumber = bin.input_phonenumber(a()->user()->GetVoicePhoneNumber(), 12);
 
     ok = valid_phone(phoneNumber);
     if (!ok) {
@@ -119,7 +120,7 @@ void input_dataphone() {
     bout << "|#3Enter your DATA phone no. in the form. \r\n";
     bout << "|#3 ###-###-#### - Press Enter to use [" << a()->user()->GetVoicePhoneNumber()
          << "].\r\n";
-    string data_phone_number = input_phonenumber(a()->user()->GetDataPhoneNumber(), 12);
+    string data_phone_number = bin.input_phonenumber(a()->user()->GetDataPhoneNumber(), 12);
     if (data_phone_number[0] == '\0') {
       data_phone_number = a()->user()->GetVoicePhoneNumber();
     }
@@ -181,7 +182,7 @@ static bool check_name(const string& user_name) {
     LOG(INFO) << "Trashcan name entered from IP: " << a()->remoteIO()->remote_info().address
               << "; name: " << user_name;
     hang_it_up();
-    Hangup();
+    a()->Hangup();
     return false;
   }
   return true;
@@ -197,7 +198,7 @@ void input_name() {
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
-    string temp_local_name = input_upper(a()->user()->GetName(), 30);
+    string temp_local_name = bin.input_upper(a()->user()->GetName(), 30);
     ok = check_name(temp_local_name);
     if (ok) {
       a()->user()->set_name(temp_local_name.c_str());
@@ -207,7 +208,7 @@ void input_name() {
       ++count;
       if (count == 3) {
         hang_it_up();
-        Hangup();
+        a()->Hangup();
       }
     }
   } while (!ok && !a()->context().hangup());
@@ -218,7 +219,7 @@ void input_realname() {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
-      string temp_local_name = input_proper(a()->user()->GetRealName(), 30);
+      string temp_local_name = bin.input_proper(a()->user()->GetRealName(), 30);
       if (temp_local_name.empty()) {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
@@ -234,7 +235,7 @@ void input_realname() {
 static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  string s = input_upper(6);
+  string s = bin.input_upper(6);
   a()->user()->SetCallsign(s.c_str());
 }
 
@@ -269,7 +270,7 @@ void input_street() {
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
-    street = input_proper(a()->user()->GetStreet(), 30);
+    street = bin.input_proper(a()->user()->GetStreet(), 30);
 
     if (street.empty()) {
       bout.nl();
@@ -286,7 +287,7 @@ void input_city() {
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    city = input_proper(a()->user()->GetCity(), 30);
+    city = bin.input_proper(a()->user()->GetCity(), 30);
 
     if (city.empty()) {
       bout.nl();
@@ -306,7 +307,7 @@ void input_state() {
       bout << "|#3Enter your state (i.e. CA). \r\n";
     }
     bout << "|#2:";
-    state = input_upper(2);
+    state = bin.input_upper(2);
 
     if (state.empty()) {
       bout.nl();
@@ -323,7 +324,7 @@ void input_country() {
     bout << "|#3Enter your country (i.e. USA). \r\n";
     bout << "|#3Hit Enter for \"USA\"\r\n";
     bout << "|#2:";
-    country = input_upper(3);
+    country = bin.input_upper(3);
     if (country.empty()) {
       country = "USA";
     }
@@ -344,7 +345,7 @@ void input_zipcode() {
       len = 7;
     }
     bout << "|#2:";
-    zipcode = input_upper(len);
+    zipcode = bin.input_upper(len);
 
     if (zipcode.empty()) {
       bout.nl();
@@ -461,7 +462,7 @@ void input_pw(User* pUser) {
     ok = true;
     password.clear();
     bout.nl();
-    password = input_password("|#3Please enter a new password, 3-8 chars.\r\n", 8);
+    password = bin.input_password("|#3Please enter a new password, 3-8 chars.\r\n", 8);
 
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
@@ -492,11 +493,11 @@ void input_ansistat() {
     bout << "[0;4mTEST[0m\r\n";
     bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
   }
-  if (noyes()) {
+  if (bin.noyes()) {
     a()->user()->SetStatusFlag(User::ansi);
     bout.nl();
     bout << "|#5Do you want color? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       a()->user()->SetStatusFlag(User::status_color);
       a()->user()->SetStatusFlag(User::extraColor);
     } else {
@@ -633,7 +634,7 @@ bool CanCreateNewUserAccountHere() {
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
-      auto password = input_password("New User Password :", 20);
+      auto password = bin.input_password("New User Password :", 20);
       if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
@@ -709,7 +710,7 @@ void DoFullNewUser() {
     if (a()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(u->GetDataPhoneNumber())) {
         if (a()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
-          Hangup();
+          a()->Hangup();
           return;
         }
       }
@@ -723,7 +724,7 @@ void DoFullNewUser() {
   if (a()->editors.size() && u->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       select_editor();
     } else {
       DefaultToWWIVEditIfPossible();
@@ -731,7 +732,7 @@ void DoFullNewUser() {
     bout.nl();
   }
   bout << "|#5Select a default transfer protocol? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     bout.nl();
     bout << "Enter your default protocol, or 0 for none.\r\n\n";
     const auto protocol = get_protocol(xfertype::xf_down);
@@ -752,10 +753,10 @@ void DoNewUserASV() {
       a()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       bout.nl();
       bout << "|#5Please enter your BBS name and number.\r\n";
-      auto note = input_text(60);
+      auto note = bin.input_text(60);
       a()->user()->SetNote(note.c_str());
       a()->user()->SetSl(a()->asv.sl);
       a()->user()->SetDsl(a()->asv.dsl);
@@ -914,7 +915,7 @@ void VerifyNewUserPassword() {
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
-    string password = input_password("|#9PW: ", 8);
+    string password = bin.input_password("|#9PW: ", 8);
     if (password == a()->user()->GetPassword()) {
       ok = true;
     }
@@ -941,7 +942,7 @@ void SendNewUserFeedbackIfRequired() {
     if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
       a()->users()->delete_user(a()->usernum);
-      Hangup();
+      a()->Hangup();
       return;
     }
   }
@@ -977,7 +978,7 @@ void newuser() {
 
   input_language();
   if (!CanCreateNewUserAccountHere() || a()->context().hangup()) {
-    Hangup();
+    a()->Hangup();
     return;
   }
 
@@ -997,9 +998,9 @@ void newuser() {
   bout.pausescr();
   bout.cls();
   bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
-  if (!noyes()) {
+  if (!bin.noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
-    Hangup();
+    a()->Hangup();
     return;
   }
 
@@ -1015,7 +1016,7 @@ void newuser() {
   bout.nl(4);
   bout << "Random password: " << a()->user()->GetPassword() << wwiv::endl << wwiv::endl;
   bout << "|#5Do you want a different password (Y/N)? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     input_pw(a()->user());
   }
 
@@ -1039,7 +1040,7 @@ void newuser() {
   if (usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
-    Hangup();
+    a()->Hangup();
     return;
   } else if (usernum == 1) {
     a()->usernum = static_cast<uint16_t>(usernum);
@@ -1150,7 +1151,7 @@ bool check_zip(const std::string& zipcode, int mode) {
   if (found) {
     if (mode != 2) {
       bout << "\r\n|#2" << city << ", " << state << "  USA? (y/N): ";
-      if (yesno()) {
+      if (bin.yesno()) {
         a()->user()->SetCity(city);
         a()->user()->SetState(state);
         a()->user()->SetCountry("USA");
@@ -1247,7 +1248,7 @@ void DoMinimalNewUser() {
       std::string temp_name;
       do {
         bout.SavePosition();
-        temp_name = input_upper("", 30);
+        temp_name = bin.input_upper("", 30);
         ok = check_name(temp_name);
         if (!ok) {
           cln_nu();
@@ -1267,7 +1268,7 @@ void DoMinimalNewUser() {
       do {
         ok = false;
         cln_nu();
-        auto s = input_date_mmddyyyy("");
+        auto s = bin.input_date_mmddyyyy("");
         if (s.size() == 10) {
           m = to_number<int>(StrCat(s[0], s[1]));
           d = to_number<int>(StrCat(s[3], s[4]));
@@ -1307,7 +1308,7 @@ void DoMinimalNewUser() {
     bout << "|#1[D] Country                 : ";
     bout.SavePosition();
     if (u->GetCountry()[0] == '\0') {
-      auto country = input_upper("", 3);
+      auto country = bin.input_upper("", 3);
       if (!country.empty()) {
         u->SetCountry(country.c_str());
       } else {
@@ -1322,11 +1323,11 @@ void DoMinimalNewUser() {
       bool ok = false;
       do {
         if (IsEquals(u->GetCountry(), "USA")) {
-          auto zip = input_upper(u->GetZipcode(), 5);
+          auto zip = bin.input_upper(u->GetZipcode(), 5);
           check_zip(zip, 2);
           u->SetZipcode(zip.c_str());
         } else {
-          auto zip = input_upper(u->GetZipcode(), 7);
+          auto zip = bin.input_upper(u->GetZipcode(), 7);
           u->SetZipcode(zip.c_str());
         }
         if (u->GetZipcode()[0]) {
@@ -1341,7 +1342,7 @@ void DoMinimalNewUser() {
     if (u->GetCity()[0] == 0) {
       bool ok = false;
       do {
-        auto city = input_proper(u->GetCity(), 30);
+        auto city = bin.input_proper(u->GetCity(), 30);
         u->SetCity(city.c_str());
         if (u->GetCity()[0]) {
           ok = true;
@@ -1351,7 +1352,7 @@ void DoMinimalNewUser() {
       if (u->GetState()[0] == 0) {
         do {
           ok = false;
-          auto state = input_upper(u->GetState(), 2);
+          auto state = bin.input_upper(u->GetState(), 2);
           u->SetState(state.c_str());
           if (u->GetState()[0]) {
             ok = true;
@@ -1365,7 +1366,7 @@ void DoMinimalNewUser() {
     bout << "|#1[G] Internet Mail Address   : ";
     bout.SavePosition();
     if (u->GetEmailAddress().empty()) {
-      auto emailAddress = input_text("", 44);
+      auto emailAddress = bin.input_text("", 44);
       u->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(u->GetEmailAddress())) {
         cln_nu();

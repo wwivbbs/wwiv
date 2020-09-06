@@ -117,7 +117,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         cp++;
         if (ch == '/' && cmd1[0] == '/') {
           bout.newline = true;
-          return input_upper(50);
+          return bin.input_upper(50);
         }
         if (cp == p + 1) {
           bout.nl();

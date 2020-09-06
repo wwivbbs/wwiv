@@ -95,7 +95,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
 bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
-  TextFile fp(FilePath(a()->qwk_directory(), "CONTROL.DAT"), "wd");
+  TextFile fp(FilePath(a()->context().dirs().qwk_directory(), "CONTROL.DAT"), "wd");
   if (!fp) {
     return false;
   }
@@ -145,7 +145,7 @@ void build_qwk_packet() {
   auto save_conf = false;
   SaveQScanPointers save_qscan;
 
-  remove_from_temp("*.*", a()->qwk_directory(), false);
+  remove_from_temp("*.*", a()->context().dirs().qwk_directory(), false);
 
   if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     save_conf = true;
@@ -168,7 +168,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const auto filename = FilePath(a()->batch_directory(), MESSAGES_DAT).string();
+  const auto filename = FilePath(a()->context().dirs().batch_directory(), MESSAGES_DAT).string();
   qwk_junk qwk_info{};
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
@@ -237,7 +237,7 @@ void build_qwk_packet() {
   if (qwk_info.abort) {
     bout.Color(1);
     bout << "Abort everything? (NO=Download what I have gathered)";
-    if (!yesno()) {
+    if (!bin.yesno()) {
       qwk_info.abort = 0;
     }
   }
@@ -615,8 +615,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Create new index if it hasnt been already
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
-      const auto filename =
-          fmt::sprintf("%s%03d.NDX", a()->qwk_directory(), a()->current_user_sub().subnum + 1);
+      const auto filename = fmt::sprintf("%s%03d.NDX", 
+        a()->context().dirs().qwk_directory(),
+                                         a()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
       }
@@ -714,7 +715,8 @@ void qwk_menu() {
 
     case 'D': {
       sysoplog() << "Download QWK packet";
-      auto namepath = FilePath(a()->qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
+      auto namepath =
+          FilePath(a()->context().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -727,7 +729,8 @@ void qwk_menu() {
     case 'B': {
       sysoplog() << "Down/Up QWK/REP packet";
 
-      auto namepath = FilePath(a()->qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
+      auto namepath =
+          FilePath(a()->context().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -1071,19 +1074,19 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     if (!qwk_cfg.hello.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
-      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.hello);
+      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.hello);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.news.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.news);
-      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.news);
+      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.news);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.bye.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
-      auto parem2 = FilePath(a()->qwk_directory(), qwk_cfg.bye);
+      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.bye);
     }
 
     for (const auto& b : qwk_cfg.bulletins) {
@@ -1094,7 +1097,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       // If we want to only copy if bulletin is newer than the users laston date:
       // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
-      auto parem2 = FilePath(a()->qwk_directory(), b.name);
+      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), b.name);
       File::Copy(b.path, parem2);
     }
   }
@@ -1110,13 +1113,13 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
   string qwk_file_to_send;
   if (!qwk_info->abort) {
-    auto parem1 = FilePath(a()->qwk_directory(), qwkname);
-    auto parem2 = FilePath(a()->qwk_directory(), "*.*");
+    auto parem1 = FilePath(a()->context().dirs().qwk_directory(), qwkname);
+    auto parem2 = FilePath(a()->context().dirs().qwk_directory(), "*.*");
 
     auto command = stuff_in(a()->arcs[archiver].arca, parem1.string(), parem2.string(), "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = StrCat(a()->qwk_directory(), qwkname);
+    qwk_file_to_send = StrCat(a()->context().dirs().qwk_directory(), qwkname);
     // TODO(rushfan): Should we just have a make abs path?
     make_abs_cmd(a()->bbsdir(), &qwk_file_to_send);
 
@@ -1149,7 +1152,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         bout.Color(1);
         bout << "Try transfer again?";
 
-        if (!noyes()) {
+        if (!bin.noyes()) {
           done = true;
           abort = true;
           qwk_info->abort = true;
@@ -1176,15 +1179,15 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     if (File::Exists(nfile)) {
       bout << "|#5File Exists. Would you like to overrite it?";
-      if (yesno()) {
+      if (bin.yesno()) {
         File::Remove(nfile);
       }
     }
 
-    auto ofile = FilePath(a()->qwk_directory(), qwkname);
+    auto ofile = FilePath(a()->context().dirs().qwk_directory(), qwkname);
     if (!replacefile(ofile.string(), nfile.string())) {
       bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
-      if (!noyes()) {
+      if (!bin.noyes()) {
         qwk_info->abort = true;
         done = true;
       }

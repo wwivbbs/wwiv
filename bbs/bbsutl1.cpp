@@ -275,7 +275,7 @@ bool ValidateSysopPassword() {
   if (!a()->context().incom()) {
     return true;
   }
-  const auto password = input_password("|#7SY: ", 20);
+  const auto password = bin.input_password("|#7SY: ", 20);
   return password == a()->config()->system_password();
 }
 
@@ -288,7 +288,7 @@ void hang_it_up() {
     return;
   }
   a()->remoteIO()->disconnect();
-  Hangup();
+  a()->Hangup();
 }
 
 /**

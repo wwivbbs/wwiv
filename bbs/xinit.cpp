@@ -24,11 +24,14 @@
 #include "bbs/connect1.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
-#include "common/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "bbs/xinitini.h"
+#include "common/common_events.h"
+#include "common/pause.h"
 #include "common/workspace.h"
 #include "core/datafile.h"
+#include "core/eventbus.h"
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -39,6 +42,7 @@
 #include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/files/files.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/net/networks.h"
@@ -50,10 +54,6 @@
 #include <chrono>
 #include <memory>
 #include <string>
-
-// Additional INI file function and structure
-#include "bbs/xinitini.h"
-#include "sdk/files/files.h"
 
 using std::string;
 using std::chrono::duration;
@@ -346,9 +346,13 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
+  // Set the directories (temp, batch, language)
   const auto base_dir = bbsdir();
-  temp_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
-  batch_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
+  const auto temp = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
+  const auto batch = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
+
+  wwiv::bbs::Dirs d(temp, batch, batch);
+  context().dirs(d);
 
   const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
@@ -387,10 +391,6 @@ bool Application::ReadConfig() {
   if (!ReadInstanceSettings(instance_number(), ini)) {
     return false;
   }
-
-  const auto b = bbsdir();
-  temp_directory_ = File::absolute(b, temp_directory());
-  batch_directory_ = File::absolute(b, batch_directory());
 
   return true;
 }
@@ -464,12 +464,6 @@ bool Application::create_message_api() {
 
   fileapi_ = std::make_unique<files::FileApi>(config_->datadir());
   return true;
-}
-
-void Application::SetLogonTime() { system_logon_time_ = std::chrono::system_clock::now(); }
-
-seconds Application::duration_used_this_session() const {
-  return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
 seconds Application::extratimecall() const {
@@ -574,18 +568,18 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   bout.clearnsp();
   VLOG(1) << "Processing configuration file: WWIV.INI.";
-  if (!File::Exists(temp_directory())) {
-    if (!File::mkdirs(temp_directory())) {
+  if (!File::Exists(context().dirs().temp_directory())) {
+    if (!File::mkdirs(context().dirs().temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << temp_directory() << "'";
+      LOG(ERROR) << "It is now set to: '" << context().dirs().temp_directory() << "'";
       return false;
     }
   }
 
-  if (!File::Exists(batch_directory())) {
-    if (!File::mkdirs(batch_directory())) {
+  if (!File::Exists(context().dirs().batch_directory())) {
+    if (!File::mkdirs(context().dirs().batch_directory())) {
       LOG(ERROR) << "Your batch dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << batch_directory() << "'";
+      LOG(ERROR) << "It is now set to: '" << context().dirs().batch_directory() << "'";
       return false;
     }
   }
@@ -667,7 +661,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   localIO()->topdata(LocalIO::topdata_t::user);
 
   // Set DSZLOG
-  dsz_logfile_name_ = FilePath(temp_directory(), "dsz.log").string();
+  dsz_logfile_name_ = FilePath(context().dirs().temp_directory(), "dsz.log").string();
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
@@ -697,8 +691,9 @@ bool Application::InitializeBBS(bool cleanup_network) {
   read_all_conferences();
 
   TempDisablePause disable_pause(bout);
-  remove_from_temp("*.*", temp_directory(), false);
-  remove_from_temp("*.*", batch_directory(), false);
+  remove_from_temp("*.*", context().dirs().temp_directory(), false);
+  remove_from_temp("*.*", context().dirs().batch_directory(), false);
+  remove_from_temp("*.*", context().dirs().qwk_directory(), false);
 
   if (cleanup_network) {
     cleanup_net();
@@ -711,6 +706,22 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+
+  //using namespace wwiv::common;
+  // Register Application Level Callbacks
+  bus().add_handler<ProcessInstanceMessages>([this]() {
+    if (inst_msg_waiting() && !context().chatline()) {
+      process_inst_msgs();
+    }
+  });
+  bus().add_handler<CheckForHangupEvent>([]() { a()->CheckForHangup(); });
+  bus().add_handler<HangupEvent>([]() { a()->Hangup(); });
+  bus().add_handler<UpdateTopScreenEvent>([]() { a()->UpdateTopScreen(); });
+  bus().add_handler<UpdateTimeLeft>(
+      [](const UpdateTimeLeft& u) { a()->tleft(u.check_for_timeout); });
+  bus().add_handler<HandleSysopKey>(
+      [](const HandleSysopKey& k) { a()->handle_sysop_key(k.key); });
+
   return true;
 }
 

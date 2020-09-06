@@ -94,8 +94,7 @@ CreateExternalMessageEditor(const editorrec& editor, MessageEditorData& data, in
     return std::make_unique<ExternalQBBSMessageEditor>(editor, data, maxli, setanon,
                                                        temp_directory);
   }
-  return std::make_unique<ExternalWWIVMessageEditor>(editor, data, maxli, setanon,
-                                                     a()->temp_directory());
+  return std::make_unique<ExternalWWIVMessageEditor>(editor, data, maxli, setanon, temp_directory);
 }
 
 bool ExternalMessageEditor::Run() {
@@ -116,7 +115,7 @@ bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
   }
 
   const auto& editor = a()->editors[editor_number];
-  auto eme = CreateExternalMessageEditor(editor, data, maxli, setanon, a()->temp_directory());
+  auto eme = CreateExternalMessageEditor(editor, data, maxli, setanon, a()->context().dirs().temp_directory());
   return eme->Run();
 }
 
@@ -134,7 +133,7 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   MessageEditorData data{};
   data.msged_flags = flags;
   int setanon = 0;
-  auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->temp_directory());
+  auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->context().dirs().temp_directory());
   if (!eme->Before()) {
     return false;
   }

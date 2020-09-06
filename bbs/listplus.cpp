@@ -796,7 +796,7 @@ short SelectColor(int which) {
   } else {
     bout.nl();
     bout << "|#5Inversed? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
         nc = 0 | ((a()->user()->GetBWColor(1) & 0x07) << 4);
       } else {
@@ -812,13 +812,13 @@ short SelectColor(int which) {
   }
 
   bout << "|#5Intensified? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     nc |= 0x08;
   }
 
   if (which == 2) {
     bout << "|#5Blinking? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       nc |= 0x80;
     }
   }
@@ -829,7 +829,7 @@ short SelectColor(int which) {
   bout.nl();
 
   bout << "|#5Is this OK? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     return nc;
   }
   return -1;
@@ -1110,7 +1110,7 @@ static int rename_filename(const std::string& file_name, int dn) {
     printfileinfo(&f.u(), dir);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
-    char ch = ynq();
+    char ch = bin.ynq();
     if (ch == 'Q') {
       ret = 0;
       break;
@@ -1152,18 +1152,18 @@ static int rename_filename(const std::string& file_name, int dn) {
     }
     bout.nl();
     bout << "New description:\r\n|#2: ";
-    auto desc = input_text(f.u().description, 58);
+    auto desc = bin.input_text(f.u().description, 58);
     if (!desc.empty()) {
       f.set_description(desc);
     }
     auto ss = area->ReadExtendedDescriptionAsString(f).value_or(std::string());
     bout.nl(2);
     bout << "|#5Modify extended description? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       bout.nl();
       if (!ss.empty()) {
         bout << "|#5Delete it? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           area->DeleteExtendedDescription(f, current_file_position);
           f.set_extended_description(false);
         } else {
@@ -1219,7 +1219,7 @@ static int remove_filename(const std::string& file_name, int dn) {
       bout.nl();
       printfileinfo(&f.u(), dir);
       bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
-      char ch = ynq();
+      char ch = bin.ynq();
       if (ch == 'Q') {
         ret = 0;
         abort = true;
@@ -1228,13 +1228,13 @@ static int remove_filename(const std::string& file_name, int dn) {
         bool rm = false;
         if (dcs()) {
           bout << "|#5Delete file too? ";
-          rm = yesno();
+          rm = bin.yesno();
           if (rm && f.u().ownersys == 0) {
             bout << "|#5Remove DL points? ";
-            rdlp = yesno();
+            rdlp = bin.yesno();
           }
           bout << "|#5Remove from ALLOW.DAT? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             remove_from_file_database(fn);
           }
         } else {
@@ -1297,7 +1297,7 @@ static int move_filename(const std::string& file_name, int dn) {
       bout << YesNoString(true);
       bout.nl();
     } else {
-      ch = ynq();
+      ch = bin.ynq();
     }
 
     if (ch == 'Q') {
@@ -1328,7 +1328,7 @@ static int move_filename(const std::string& file_name, int dn) {
 
         if (a()->batch().size() > 1) {
           bout << "|#5Move all tagged files? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             bulk_move = 1;
             bulk_dir = nDestDirNum;
           }
@@ -1365,7 +1365,7 @@ static int move_filename(const std::string& file_name, int dn) {
     if (ok && !done) {
       if (!bulk_move) {
         bout << "|#5Reset upload time for file? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           f.set_date(DateTime::now());
         }
       } else {
@@ -1633,7 +1633,7 @@ void download_plus(const std::string& file_name) {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       batchdl(1);
       return;
     }
@@ -1688,7 +1688,7 @@ void request_file(const std::string& file_name) {
   printfile(LPFREQ_NOEXT);
   bout << "|#2File missing.  Request it? ";
 
-  if (noyes()) {
+  if (bin.noyes()) {
     ssm(1) << a()->user()->GetName() << " is requesting file " << file_name;
     bout << "File request sent\r\n";
   } else {

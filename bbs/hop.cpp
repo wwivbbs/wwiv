@@ -46,7 +46,7 @@ void HopSub() {
   if (okansi()) {
     bout.newline = false;
   }
-  auto partial = ToStringUpperCase(input_text(40));
+  auto partial = ToStringUpperCase(bin.input_text(40));
   if (partial.empty()) {
     return;
   }
@@ -117,7 +117,7 @@ void HopDir() {
   if (okansi()) {
     bout.newline = false;
   }
-  auto partial = ToStringUpperCase(input_text(20));
+  auto partial = ToStringUpperCase(bin.input_text(20));
   if (partial.empty()) {
     return;
   }

@@ -74,7 +74,7 @@ int my_input(const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
     script_out().bputs(prompt);
   }
-  const auto v = input_text("", size);
+  const auto v = bin.input_text("", size);
   strcpy(buf, v.c_str());
   return v.size();
 }

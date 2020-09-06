@@ -137,7 +137,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
   if (user_input[0] == 'O' && (so() || lcs())) {
     show_files("*.frm", a()->config()->gfilesdir().c_str());
     bout << "|#2Which form letter: ";
-    auto fn = input_filename("", 8);
+    auto fn = bin.input_filename("", 8);
     if (fn.empty()) {
       return;
     }
@@ -214,7 +214,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
         }
         bout.nl();
         bout << "|#5Allow editing? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           bout.nl();
           LoadFileIntoWorkspace(filename, false);
         } else {
@@ -222,7 +222,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        auto tmpfn = FilePath(a()->temp_directory(), INPUT_MSG);
+        auto tmpfn = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
         if (File::Exists(tmpfn)) {
           File::Remove(tmpfn);
         }
@@ -303,7 +303,7 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
       }
       if (!(tmp_msgnum % 100)) {
         a()->tleft(true);
-        CheckForHangup();
+        a()->CheckForHangup();
       }
     }
     if (auto o = readfile(&(get_post(tmp_msgnum)->msg), a()->current_sub().filename)) {
@@ -471,7 +471,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
   bool need_redraw = true;
   int last_selected = selected;
   while (!done) {
-    CheckForHangup();
+    a()->CheckForHangup();
     auto lines = CreateMessageTitleVector(area.get(), window_top, height);
     if (need_redraw) {
       // Full redraw of the screen
@@ -659,11 +659,11 @@ static void HandleMessageDownload(int msgnum) {
     auto b = o.value();
     bout << "|#1Message Download -\r\n\n";
     bout << "|#2Filename to use? ";
-    const auto filename = input_filename(12);
+    const auto filename = bin.input_filename(12);
     if (!okfn(filename)) {
       return;
     }
-    const auto f = FilePath(a()->temp_directory(), filename);
+    const auto f = FilePath(a()->context().dirs().temp_directory(), filename);
     File::Remove(f);
     TextFile tf(f, "wt");
     tf.Write(b);
@@ -720,7 +720,7 @@ void HandleMessageMove(int& msg_num) {
       auto b = readfile(&(p2.msg), (a()->current_sub().filename)).value_or("");
       bout.nl();
       bout << "|#5Delete original post? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         delete_message(msg_num);
         if (msg_num > 1) {
           msg_num--;
@@ -773,13 +773,13 @@ static void HandleMessageLoad() {
   }
   bout.nl();
   bout << "|#2Filename: ";
-  const auto fn = input_path(50);
+  const auto fn = bin.input_path(50);
   if (fn.empty()) {
     return;
   }
   bout.nl();
   bout << "|#5Allow editing? ";
-  bool no_edit_allowed = !yesno();
+  bool no_edit_allowed = !bin.yesno();
   bout.nl();
   LoadFileIntoWorkspace(fn, no_edit_allowed);
 }
@@ -824,7 +824,7 @@ static void HandleMessageDelete(int& msg_num) {
   }
 
   bout << "|#5Delete message #" << msg_num << ". Are you sure?";
-  if (!noyes()) {
+  if (!bin.noyes()) {
     return;
   }
 
@@ -935,14 +935,14 @@ static void HandleTogglePendingNet(int msg_num, int& val) {
 static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
   bout << "\r\n|#5Remove '" << subname << "' from your Q-Scan? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     a()->context().qsc_q[a()->current_user_sub().subnum / 32] ^=
         (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
 
   bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     auto status = a()->status_manager()->GetStatus();
     a()->context().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
   }
@@ -1088,7 +1088,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
 static void validate() {
   bout.nl();
   bout << "|#5Validate messages here? ";
-  if (noyes()) {
+  if (bin.noyes()) {
     wwiv::bbs::OpenSub opened_sub(true);
     for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {
       postrec* p3 = get_post(i);
@@ -1103,7 +1103,7 @@ static void validate() {
 static void network_validate() {
   bout.nl();
   bout << "|#5Network validate here? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     int nNumMsgsSent = 0;
     vector<postrec> to_validate;
     {
@@ -1137,7 +1137,7 @@ static bool query_post() {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->context().clear_irt();
     clear_quotes();
-    auto q = ynq();
+    auto q = bin.ynq();
     if (q == 'Y') {
       post(PostData());
       return true;
@@ -1148,14 +1148,14 @@ static bool query_post() {
     return false;
   }
   bout << "|#5Move to the next sub?";
-  return yesno();
+  return bin.yesno();
 }
 
 static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
   bool done = false;
   int val = 0;
   while (!done) {
-    CheckForHangup();
+    a()->CheckForHangup();
     ReadMessageResult result{};
     if (scan_option == MsgScanOption::SCAN_OPTION_READ_MESSAGE) {
       if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
@@ -1295,7 +1295,7 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
   bool quit = false;
   do {
     a()->tleft(true);
-    CheckForHangup();
+    a()->CheckForHangup();
     set_net_num((a()->current_sub().nets.empty()) ? 0 : a()->current_sub().nets[0].net_num);
     if (scan_option != MsgScanOption::SCAN_OPTION_READ_PROMPT) {
       resynch(&msg_num, nullptr);

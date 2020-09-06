@@ -23,21 +23,16 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
 #include "bbs/chnedit.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/diredit.h"
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
 #include "bbs/inetmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/readmail.h"
 #include "bbs/ssh.h"
 #include "bbs/subedit.h"
@@ -45,8 +40,14 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/voteedit.h"
-#include "common/workspace.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/workspace.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -340,7 +341,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case ESC:
         io->GotoXY(2, 23);
         bout << "|#7Exit the BBS? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           return std::make_tuple(wfc_events_t::exit, -1);
         }
         io->Cls();
@@ -373,7 +374,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'F': {
         Clear();
         bout.bputs("|#1Enter Number: ");
-        auto x = input_number_or_key_raw(1, 0, 2112, true, {'Q', '?', '/'});
+        auto x = bin.input_number_or_key_raw(1, 0, 2112, true, {'Q', '?', '/'});
         bout << "key: " << x.key << "; num: " << x.num;
         bout.pausescr();
       } break;
@@ -403,7 +404,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         Clear();
         a_->usernum = 1;
         bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-        auto buffer = input_path(50);
+        auto buffer = bin.input_path(50);
         LoadFileIntoWorkspace(buffer, false);
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
@@ -434,7 +435,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
         const auto current_dir_slash = File::EnsureTrailingSlash(File::current_directory());
-        auto net_filename = input_path(current_dir_slash, 50);
+        auto net_filename = bin.input_path(current_dir_slash, 50);
         if (!net_filename.empty()) {
           fsed_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
         }

@@ -28,6 +28,8 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "common/quote.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "bbs/application.h"
 #include "sdk/status.h"
 #include "core/strings.h"
@@ -102,11 +104,11 @@ static void write_automessage() {
   bool bAnonStatus = false;
   if (a()->effective_slrec().ability & ability_post_anony) {
     bout << "|#9Anonymous? ";
-    bAnonStatus = yesno();
+    bAnonStatus = bin.yesno();
   }
 
   bout << "|#9Is this OK? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     a()->status_manager()->Run([bAnonStatus](WStatus& s) {
       s.SetAutoMessageAnonymous(bAnonStatus);
       s.SetAutoMessageAuthorUserNumber(a()->usernum);
@@ -179,7 +181,7 @@ void do_automessage() {
     break;
     case 'D':
       bout << "\r\n|#3Delete Auto-message, Are you sure? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         File::Remove(file);
       }
       bout.nl(2);
@@ -189,7 +191,7 @@ void do_automessage() {
         bout << "\r\n|#3Message is already locked.\r\n\n";
       } else {
         bout <<  "|#9Do you want to lock the Auto-message? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           /////////////////////////////////////////////////////////
           // This makes a file in your GFILES dir 1 bytes long,
           // to tell the board if it is locked or not. It consists
@@ -206,7 +208,7 @@ void do_automessage() {
         bout << "Message not locked.\r\n";
       } else {
         bout << "|#5Unlock message? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           File::Remove(lock_file);
         }
       }

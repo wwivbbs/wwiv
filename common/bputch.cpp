@@ -44,7 +44,7 @@ int Output::bputch(char c, bool use_buffer) {
     needs_color_reset_at_newline_ = false;
   }
 
-  if (a()->context().outcom() && c != TAB) {
+  if (context().outcom() && c != TAB) {
     if (c == SOFTRETURN) {
 #ifdef __unix__
       rputch('\r', use_buffer);
@@ -74,7 +74,7 @@ int Output::bputch(char c, bool use_buffer) {
       current_line_.push_back({c, static_cast<uint8_t>(curatr())});
     }
 
-    const auto screen_width = a()->user()->GetScreenChars();
+    const auto screen_width = user().GetScreenChars();
     if (c == BACKSPACE) {
       --x_;  
       if (x_ < 0) {
@@ -93,8 +93,8 @@ int Output::bputch(char c, bool use_buffer) {
       x_ = 0;
       bout.lines_listed_++;
       // change Build3 + 5.0 to fix message read.
-      if (bout.lines_listed() >= (a()->context().num_screen_lines() - 1)) {
-        if (a()->user()->HasPause()) {
+      if (bout.lines_listed() >= (context().num_screen_lines() - 1)) {
+        if (user().HasPause()) {
           bout.pausescr();
         }
         bout.clear_lines_listed();   // change Build3
@@ -111,20 +111,20 @@ int Output::bputch(char c, bool use_buffer) {
  */
 void Output::rputs(const std::string& text) {
   // Rushfan fix for COM/IP weirdness
-  if (a()->context().ok_modem_stuff()) {
-    a()->remoteIO()->write(text.c_str(), text.size());
+  if (context().ok_modem_stuff()) {
+    remoteIO()->write(text.c_str(), text.size());
   }
 }
 
 void Output::flush() {
   if (!bputch_buffer_.empty()) {
-    a()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
+    remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
     bputch_buffer_.clear();
   }
 }
 
 void Output::rputch(char ch, bool use_buffer_) {
-  if (!a()->context().ok_modem_stuff() || a()->remoteIO() == nullptr) {
+  if (!context().ok_modem_stuff() || remoteIO() == nullptr) {
     return;
   }
   if (use_buffer_) {
@@ -140,7 +140,7 @@ void Output::rputch(char ch, bool use_buffer_) {
     flush();
   }
   else {
-    a()->remoteIO()->put(ch);
+    remoteIO()->put(ch);
   }
 }
 

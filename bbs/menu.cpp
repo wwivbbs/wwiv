@@ -49,7 +49,7 @@ using namespace wwiv::stl;
 namespace wwiv::menus {
 
 static std::filesystem::path GetMenuDirectory() {
-  return FilePath(a()->language_dir, "menus");
+  return FilePath(a()->context().dirs().language_directory(), "menus");
 }
 
 static std::filesystem::path GetMenuDirectory(const string menu_path) {
@@ -65,13 +65,13 @@ static bool CheckMenuPassword(const string& original_password) {
   const string expected_password =
       (original_password == "*SYSTEM") ? a()->config()->system_password() : original_password;
   bout.nl();
-  const auto actual_password = input_password("|#2SY: ", 20);
+  const auto actual_password = bin.input_password("|#2SY: ", 20);
   return actual_password == expected_password;
 }
 
 static void StartMenus() {
   while (true) {
-    CheckForHangup();
+    a()->CheckForHangup();
     if (!ValidateMenuSet(a()->user()->menu_set())) {
       ConfigUserMenuSet();
     }
@@ -210,7 +210,7 @@ void mainmenu() {
 
 void MenuInstance::RunMenu() {
   if (!open_ && iequals(menu_name_, "main")) {
-    Hangup();
+    a()->Hangup();
     return;
   }
 
@@ -471,7 +471,7 @@ void ConfigUserMenuSet() {
         bout << "|#9Menu Set : |#2" << menuSetName << " :  |#1"
              << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
-        if (noyes()) {
+        if (bin.noyes()) {
           a()->user()->set_menu_set(menuSetName);
           break;
         }

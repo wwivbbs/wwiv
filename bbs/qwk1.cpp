@@ -216,9 +216,9 @@ void qwk_gather_email(qwk_junk* qwk_info) {
 
   qwk_info->in_email = 1;
 
-  auto filename = FilePath(a()->qwk_directory(), "PERSONAL.NDX");
+  auto filename = FilePath(a()->context().dirs().qwk_directory(), "PERSONAL.NDX");
   qwk_info->personal = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  filename = FilePath(a()->qwk_directory(), "000.NDX");
+  filename = FilePath(a()->context().dirs().qwk_directory(), "000.NDX");
   qwk_info->zero = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   do {
@@ -363,7 +363,7 @@ static std::filesystem::path ready_reply_packet(const std::string& packet_name, 
   const auto command = stuff_in(archiver.arce, packet_name, msg_name, "", "", "");
 
   ExecuteExternalProgram(command, EFLAG_QWK_DIR);
-  return FilePath(a()->qwk_directory(), msg_name);
+  return FilePath(a()->context().dirs().qwk_directory(), msg_name);
 }
 
 // Takes reply packet and converts '227' (ã) to '13' and removes QWK style
@@ -460,7 +460,7 @@ static void process_reply_dat(const std::string& name) {
         bout.nl(2);
         bout.Color(7);
         bout << "Route into E-Mail?";
-        if (noyes()) {
+        if (bin.noyes()) {
           to_email = true;
         }
       }
@@ -531,9 +531,9 @@ void upload_reply_packet() {
   const auto rep_name = StrCat(qwk_system_name(qwk_cfg), ".REP");
 
   bout.format("Hit 'Y' to upload reply packet {} :", rep_name);
-  const auto rep_path = FilePath(a()->qwk_directory(), rep_name);
+  const auto rep_path = FilePath(a()->context().dirs().qwk_directory(), rep_name);
 
-  const auto do_it = yesno();
+  const auto do_it = bin.yesno();
 
   if (do_it) {
     if (a()->context().incom()) {
@@ -541,7 +541,7 @@ void upload_reply_packet() {
       sleep_for(milliseconds(500));
     } else {
       bout << "Please copy the REP file to the following directory: " << wwiv::endl;
-      bout << "'" << a()->qwk_directory() << "'" << wwiv::endl;
+      bout << "'" << a()->context().dirs().qwk_directory() << "'" << wwiv::endl;
       bout.pausescr();
     }
 
@@ -643,7 +643,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
     bout.Color(5);
     bout << "Correct? ";
 
-    if (!yesno()) {
+    if (!bin.yesno()) {
       return;
     }
 
@@ -742,7 +742,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       if (!qwk_iscan_literal(a()->current_user_sub_num())) {
         bout.nl();
         bout << "MSG file is busy on another instance, try again?";
-        if (!noyes()) {
+        if (!bin.noyes()) {
           ++pass;
           continue;
         }
@@ -822,7 +822,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     bout.Color(5);
     bout << "Correct? ";
 
-    if (noyes()) {
+    if (bin.noyes()) {
       done = 1;
     } else {
       ++pass;
@@ -847,7 +847,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       if (f == -1) {
         bout.nl();
         bout << "MSG file is busy on another instance, try again?";
-        if (!noyes()) {
+        if (!bin.noyes()) {
           return;
         }
       } else {
@@ -860,7 +860,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     if (an) {
       bout.Color(1);
       bout << "Anonymous?";
-      an = yesno() ? 1 : 0;
+      an = bin.yesno() ? 1 : 0;
     }
     bout.nl();
 
@@ -970,7 +970,7 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
 
       if (!File::Exists(s)) {
         bout << "File doesn't exist, continue?";
-        if (!yesno()) {
+        if (!bin.yesno()) {
           break;
         }
       }

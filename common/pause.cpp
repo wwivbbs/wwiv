@@ -21,11 +21,13 @@
 #include "common/bgetch.h"
 #include "common/input.h"
 #include "common/com.h"
+#include "common/common_events.h"
 #include "common/context.h"
 #include "bbs/instmsg.h"  // setiia
 #include "local_io/keycodes.h"
 #include "bbs/utility.h"
 #include "core/datetime.h"
+#include "core/eventbus.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include <chrono>
@@ -62,7 +64,7 @@ char Output::GetKeyForPause() {
   while (ch == 0 && !context().hangup()) {
     ch = bin.bgetch();
     sleep_for(milliseconds(50));
-    CheckForHangup();
+    bus().invoke<CheckForHangupEvent>();
   }
   int nKey = to_upper_case<int>(ch);
   switch (nKey) {
@@ -144,7 +146,7 @@ void Output::pausescr() {
           }
         }
         sleep_for(milliseconds(50));
-        CheckForHangup();
+        bus().invoke<CheckForHangupEvent>();
       }
       ch = GetKeyForPause();
     } while (!ch && !context().hangup());

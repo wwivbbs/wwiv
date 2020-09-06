@@ -77,7 +77,7 @@ static bool GetMessageToName(MessageEditorData& data) {
     if (a()->nets()[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
       bout << "|#2To   : ";
       bout.newline = false;
-      const auto to_name = input_text("All", 40);
+      const auto to_name = bin.input_text("All", 40);
       bout.newline = saved_newline;
       if (to_name.empty()) {
         data.to_name = "All";
@@ -149,7 +149,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         data.title.assign(s1);
       }
     } else {
-      data.title = input_text(60);
+      data.title = bin.input_text(60);
     }
   } else {
     if (data.silent_mode || force_title) {
@@ -157,7 +157,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
-      data.title = input_text(60);
+      data.title = bin.input_text(60);
     }
   }
 }
@@ -297,7 +297,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if (cmd == "/TI") {
         check_message_size = false;
         bout << "|#1Subj|#7: |#2" ;
-        data.title = input_text(60);
+        data.title = bin.input_text(60);
         bout << "Continue...\r\n\n";
       }
       if (cmd.length() > 3) {
@@ -458,7 +458,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const auto quotes_filename = FilePath(a()->temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -474,7 +474,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const auto msginf_filename = FilePath(a()->temp_directory(), "msginf");
+  const auto msginf_filename = FilePath(a()->context().dirs().temp_directory(), "msginf");
   File::Copy(quotes_filename, msginf_filename);
 }
 
@@ -493,7 +493,7 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
       }
     } else {
       bout << "|#5Anonymous? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         *anony = anony_sender;
       } else {
         *anony = 0;
@@ -545,7 +545,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = FilePath(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }

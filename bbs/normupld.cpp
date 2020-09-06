@@ -70,7 +70,7 @@ void normalupload(int dn) {
       if (so()) {
         bout.nl();
         bout << "|#5In filename database - add anyway? ";
-        if (!yesno()) {
+        if (!bin.yesno()) {
           input_fn.clear();
         }
       } else {
@@ -129,13 +129,13 @@ void normalupload(int dn) {
     }
   }
   const auto receive_fn = FilePath(d.path, files::unalign(input_fn));
-  if (ok && yesno()) {
+  if (ok && bin.yesno()) {
     if (File::Exists(receive_fn)) {
       if (dcs()) {
         xfer = false;
         bout.nl(2);
         bout << "File already exists.\r\n|#5Add to database anyway? ";
-        if (!yesno()) {
+        if (!bin.yesno()) {
           ok = 0;
         }
       } else {
@@ -151,7 +151,7 @@ void normalupload(int dn) {
     if (d.mask & mask_PD && ok) {
       bout.nl();
       bout << "|#5Is this program PD/Shareware? ";
-      if (!yesno()) {
+      if (!bin.yesno()) {
         bout.nl();
         bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
@@ -167,7 +167,7 @@ void normalupload(int dn) {
     if (ok) {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
-      auto desc = input_text(58);
+      auto desc = bin.input_text(58);
       f.set_description(desc);
       bout.nl();
       string ext_desc;

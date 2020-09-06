@@ -303,7 +303,7 @@ void sendout_email(EmailData& data) {
         && userRecord.GetForwardSystemNumber() == 0
         && !data.silent_mode) {
       bout << "|#5Attach a file to this message? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         attach_file(1);
       }
     }
@@ -511,7 +511,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     bout.nl();
     bout << "|#9Copy this mail to others? ";
     nNumUsers = 0;
-    if (yesno()) {
+    if (bin.yesno()) {
       bool done = false;
       carbon_copy[nNumUsers].user_number = user_number;
       carbon_copy[nNumUsers].system_number = system_number;
@@ -543,7 +543,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       } while (!done);
       if (cc) {
         bout << "|#9Show Recipients in message? ";
-        bcc = !yesno();
+        bcc = !bin.yesno();
       }
     }
   }
@@ -653,7 +653,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
     a()->users()->readuser(&userRecord, user_number);
     if (!userRecord.IsUserDeleted()) {
       bout << "|#5E-mail " << a()->names()->UserName(user_number) << "? ";
-      if (!yesno()) {
+      if (!bin.yesno()) {
         i = 0;
       }
     } else {
@@ -665,7 +665,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
     } else {
       bout << "|#5E-mail User " << user_number << " @" << system_number << " ? ";
     }
-    if (!yesno()) {
+    if (!bin.yesno()) {
       i = 0;
     }
   }

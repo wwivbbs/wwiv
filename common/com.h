@@ -20,11 +20,6 @@
 
 #include <string>
 
-bool CheckForHangup();
-void Hangup();
-bool yesno();
-bool noyes();
-char ynq();
 char onek(const std::string& allowable, bool auto_mpl = false);
 char onek_ncr(const std::string& allowable);
 

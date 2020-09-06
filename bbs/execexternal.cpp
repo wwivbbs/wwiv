@@ -34,7 +34,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   LOG(INFO) << "ExecuteExternalProgram: " << commandLine;
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
-    if (CheckForHangup()) {
+    if (a()->CheckForHangup()) {
       return -1;
     }
   }
@@ -53,11 +53,11 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
 
   auto exec_dir = a()->bbsdir();
   if (nFlags & EFLAG_TEMP_DIR) {
-    exec_dir = a()->temp_directory();
+    exec_dir = a()->context().dirs().temp_directory();
   } else if (nFlags & EFLAG_BATCH_DIR) {
-    exec_dir = a()->batch_directory();
+    exec_dir = a()->context().dirs().batch_directory();
   } else if (nFlags & EFLAG_QWK_DIR) {
-    exec_dir = a()->qwk_directory();
+    exec_dir = a()->context().dirs().qwk_directory();
   }
   if (!(nFlags & EFLAG_NO_CHANGE_DIR)) {
     if (!File::set_current_directory(exec_dir)) {

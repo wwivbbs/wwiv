@@ -142,7 +142,8 @@ std::string MacroContext::interpret(char ch) const {
       return to_string(u().GetTimesOnToday());
     case 'o': {
       // Time on today
-      const auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
+      const auto used_this_session =
+          (std::chrono::system_clock::now() - a()->context().system_logon_time());
       const auto min_used = u().timeon() + used_this_session;
       return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
     }

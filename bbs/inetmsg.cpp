@@ -117,7 +117,7 @@ void send_inet_email() {
        << " <" << a()->internetFullEmailAddress << ">";
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
-  a()->net_email_name = input_text(75);
+  a()->net_email_name = bin.input_text(75);
   if (check_inet_addr(a()->net_email_name)) {
     unsigned short user_number = 0;
     unsigned short system_number = INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
@@ -193,7 +193,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   }
   const auto& net = a()->nets().at(inet_net_num);
   TextFile in(FilePath(net.dir, ACCT_INI), "rt");
-  TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
+  TextFile out(FilePath(a()->context().dirs().temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {
     char szLine[260];
     while (in.ReadLine(szLine, 255)) {

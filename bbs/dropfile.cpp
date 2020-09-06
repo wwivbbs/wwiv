@@ -102,22 +102,23 @@ static int GetDoor32CommType() {
 static int GetDoor32Emulation() { return (okansi()) ? 1 : 0; }
 
 std::filesystem::path create_dropfile_path(drop_file_t dropfile_type) {
+  const auto tempdir = a()->context().dirs().temp_directory();
   switch (dropfile_type) {
   case drop_file_t::CHAIN_TXT:
-    return FilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
+    return FilePath(tempdir, DROPFILE_CHAIN_TXT);
   case drop_file_t::DORINFO_DEF:
-    return FilePath(a()->temp_directory(), "dorinfo1.def");
+    return FilePath(tempdir, "dorinfo1.def");
   case drop_file_t::PCBOARD_SYS:
-    return FilePath(a()->temp_directory(), "pcboard.sys");
+    return FilePath(tempdir, "pcboard.sys");
   case drop_file_t::CALLINFO_BBS:
-    return FilePath(a()->temp_directory(), "callinfo.bbs");
+    return FilePath(tempdir, "callinfo.bbs");
   case drop_file_t::DOOR_SYS:
-    return FilePath(a()->temp_directory(), "door.sys");
+    return FilePath(tempdir, "door.sys");
   case drop_file_t::DOOR32_SYS:
-    return FilePath(a()->temp_directory(), "door32.sys");
+    return FilePath(tempdir, "door32.sys");
   default:
     // Default to CHAIN.TXT since this is the native WWIV format
-    return FilePath(a()->temp_directory(), DROPFILE_CHAIN_TXT);
+    return FilePath(tempdir, DROPFILE_CHAIN_TXT);
   }
 }
 
@@ -280,7 +281,7 @@ void CreateCallInfoBbsDropFile() {
       file.WriteLine("3");
     }
     string t = times();
-    auto start_duration = duration_since_midnight(a()->system_logon_time());
+    auto start_duration = duration_since_midnight(a()->context().system_logon_time());
     auto start_minute = std::chrono::duration_cast<std::chrono::minutes>(start_duration).count();
     file.WriteLine(" ");
     file.WriteLine(a()->user()->GetSl());
@@ -479,10 +480,10 @@ string create_chain_file() {
   const auto cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
-  const auto start_duration = duration_since_midnight(a()->system_logon_time());
+  const auto start_duration = duration_since_midnight(a()->context().system_logon_time());
   const auto start_second =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
-  const auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
+  const auto used_duration = std::chrono::system_clock::now() - a()->context().system_logon_time();
   const auto seconds_used =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 

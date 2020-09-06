@@ -201,14 +201,14 @@ static void modify_sub(int n) {
       break;
     case 'A': {
       bout << "|#2New name? ";
-      auto new_name = input_text(r.name, 40);
+      auto new_name = bin.input_text(r.name, 40);
       if (!new_name.empty()) {
         r.name = new_name;
       }
     } break;
     case 'B': {
       bout << "|#2New base filename (e.g. 'GENERAL')? ";
-      auto new_fn = input_filename(r.filename, 8);
+      auto new_fn = bin.input_filename(r.filename, 8);
       if (new_fn.empty() || contains(new_fn, '.') || new_fn == r.filename) {
         break;
       }
@@ -221,7 +221,7 @@ static void modify_sub(int n) {
              << wwiv::endl
              << wwiv::endl
              << "|#5Use anyway? ";
-        if (!yesno()) {
+        if (!bin.yesno()) {
           break;
         }
       }
@@ -241,7 +241,7 @@ static void modify_sub(int n) {
           new_fn != "NONAME" && old_subname != "NONAME") {
         bout.nl();
         bout << "|#7Rename current data files (.SUB/.DAT)? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           File::Rename(old_sub_fullpath, new_sub_fullpath);
           File::Rename(old_msg_fullpath, new_msg_fullpath);
         }
@@ -376,7 +376,7 @@ static void modify_sub(int n) {
       bout.nl();
       bout << "|#5Require sysop validation for network posts? ";
       r.anony &= ~anony_val_net;
-      if (yesno()) {
+      if (bin.yesno()) {
         r.anony |= anony_val_net;
       }
       break;
@@ -384,7 +384,7 @@ static void modify_sub(int n) {
       bout.nl();
       bout << "|#5Require ANSI to read this sub? ";
       r.anony &= ~anony_ansi_only;
-      if (yesno()) {
+      if (bin.yesno()) {
         r.anony |= anony_ansi_only;
       }
       break;
@@ -392,20 +392,20 @@ static void modify_sub(int n) {
       bout.nl();
       bout << "|#5Disable tag lines for this sub? ";
       r.anony &= ~anony_no_tag;
-      if (yesno()) {
+      if (bin.yesno()) {
         r.anony |= anony_no_tag;
       }
       break;
     case 'O': {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
-      a()->subs().sub(n).desc = input_text(a()->subs().sub(n).desc, 60);
+      a()->subs().sub(n).desc = bin.input_text(a()->subs().sub(n).desc, 60);
     } break;
     case 'P':
       bout.nl();
       bout << "|#5Disable the Full Screen Reader for this sub? ";
       r.anony &= ~anony_no_fullscreen;
-      if (yesno()) {
+      if (bin.yesno()) {
         r.anony |= anony_no_fullscreen;
       }
       break;
@@ -693,13 +693,13 @@ void boardedit() {
       if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           auto fn = a()->subs().sub(subnum).filename;
           delete_sub(subnum);
           confchg = true;
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
-          if (yesno()) {
+          if (bin.yesno()) {
             File::Remove(FilePath(a()->config()->datadir(), StrCat(fn, ".sub")));
             File::Remove(FilePath(a()->config()->msgsdir(), StrCat(fn, ".dat")));
           }

@@ -586,7 +586,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   result.lines_start = fs.lines_start();
   result.lines_end = fs.lines_end();
   for ( ;; ) {
-    CheckForHangup();
+    a()->CheckForHangup();
 
     if (dirty) {
       bout.Color(0);

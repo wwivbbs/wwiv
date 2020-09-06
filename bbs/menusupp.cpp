@@ -175,7 +175,7 @@ void UpSub() {
 void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
-  const string userName = input_upper(30);
+  const string userName = bin.input_upper(30);
   const int nUserNum = finduser1(userName);
   if (nUserNum > 0) {
     sysoplog() << "@ Validated user #" << nUserNum;
@@ -276,7 +276,7 @@ void NewMessageScan() {
   if (okconf(a()->user())) {
     bout.nl();
     bout << "|#5New message scan in all conferences? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       NewMsgsAllConfs();
       return;
     }
@@ -292,11 +292,11 @@ void GoodBye() {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       batchdl(1);
     }
   }
-  auto filename = FilePath(a()->language_dir, LOGOFF_MAT);
+  auto filename = FilePath(a()->context().dirs().language_directory(), LOGOFF_MAT);
   if (!File::Exists(filename)) {
     filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
@@ -323,7 +323,8 @@ void GoodBye() {
         cycle = 1;
         write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
         bout.cls();
-        auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
+        auto used_this_session =
+            (std::chrono::system_clock::now() - a()->context().system_logon_time());
         auto secs_used = std::chrono::duration_cast<std::chrono::seconds>(used_this_session);
         bout <<  "Time on   = " << ctim(static_cast<long>(secs_used.count())) << wwiv::endl;
         {
@@ -337,17 +338,18 @@ void GoodBye() {
           a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
         }
         LogOffCmd();
-        Hangup();
+        a()->Hangup();
         break;
       }
     } while (cycle == 0);
   } else {
     bout.nl(2);
     bout << "|#5Log Off? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       bout.cls();
-      const auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
+      const auto used_this_session =
+          (std::chrono::system_clock::now() - a()->context().system_logon_time());
       const auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
       bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
       {
@@ -361,7 +363,7 @@ void GoodBye() {
         a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
       }
       LogOffCmd();
-      Hangup();
+      a()->Hangup();
     }
   }
 }
@@ -486,11 +488,11 @@ void DirEdit() {
 void LoadTextFile() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  const auto fileName = input_path("", 50);
+  const auto fileName = bin.input_path("", 50);
   if (!fileName.empty()) {
     bout.nl();
     bout << "|#5Allow editing? ";
-    if (yesno()) {
+    if (bin.yesno()) {
       bout.nl();
       LoadFileIntoWorkspace(fileName, false);
     } else {
@@ -504,7 +506,7 @@ void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   bout.nl();
   bout << "|#7Enter Filespec: ";
-  const auto fn = input_path(50);
+  const auto fn = bin.input_path(50);
   if (!fn.empty()) {
     fsed_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
   }
@@ -529,7 +531,7 @@ void ReloadMenus() {
 
 void ResetQscan() {
   bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= a()->users()->num_user_records(); i++) {
       read_qscn(i, a()->context().qsc, true);
@@ -698,7 +700,7 @@ void FastGoodBye() {
   if (a()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
-    if (noyes()) {
+    if (bin.noyes()) {
       batchdl(1);
     }
   }
@@ -709,7 +711,7 @@ void FastGoodBye() {
     a()->user()->SetLastDirConf(a()->context().current_user_dir_conf_num());
   }
   LogOffCmd();
-  Hangup();
+  a()->Hangup();
 }
 
 void NewFilesAllConfs() {
@@ -728,7 +730,7 @@ void NewFilesAllConfs() {
 void ReadIDZ() {
   bout.nl();
   bout << "|#5Read FILE_ID.DIZ for all directories? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     read_idz_all();
   } else {
     read_idz(true, a()->current_user_dir_num());
@@ -764,12 +766,12 @@ void MoveFiles() {
 void SortDirs() {
   bout.nl();
   bout << "|#5Sort all dirs? ";
-  bool bSortAll = yesno();
+  bool bSortAll = bin.yesno();
   bout.nl();
   bout << "|#5Sort by date? ";
 
   int nType = 0;
-  if (yesno()) {
+  if (bin.yesno()) {
     nType = 2;
   }
 
@@ -784,7 +786,7 @@ void SortDirs() {
 void ReverseSort() {
   bout.nl();
   bout << "|#5Sort all dirs? ";
-  bool bSortAll = yesno();
+  bool bSortAll = bin.yesno();
   bout.nl();
   TempDisablePause disable_pause(bout);
   if (bSortAll) {
@@ -809,7 +811,7 @@ void UploadFilesBBS() {
   if (ch != 'Q') {
     bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
     bout.mpl(77);
-    const auto filespec = input_text(80);
+    const auto filespec = bin.input_text(80);
     const auto type = (ch == '1') ? 2 : 0;
     upload_files(filespec, a()->current_user_dir_num(), type);
   }
@@ -917,7 +919,7 @@ void NewFileScan() {
   bool need_title = true;
   bout.nl();
   bout << "|#5Search all directories? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     nscanall();
   } else {
     bout.nl();

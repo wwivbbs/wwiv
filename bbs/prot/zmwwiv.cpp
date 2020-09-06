@@ -134,7 +134,7 @@ bool NewZModemReceiveFile(const std::string& file_name) {
   const auto ret = doIO(&info) == ZmDone;
   if (ret) {
     const auto fn = wwiv::sdk::files::unalign(file_name);
-    const auto old_fn = FilePath(a()->temp_directory(), fn);
+    const auto old_fn = FilePath(a()->context().dirs().temp_directory(), fn);
     File::Move(old_fn, fn);
   }
   return ret;
@@ -345,7 +345,7 @@ void ZStatus(int type, int value, char* msg) {
 
 FILE* ZOpenFile(char* file_name, u_long crc, ZModem* info) {
   char szTempFileName[MAX_PATH];
-  sprintf(szTempFileName, "%s%s", a()->temp_directory().c_str(), file_name);
+  sprintf(szTempFileName, "%s%s", a()->context().dirs().temp_directory().c_str(), file_name);
 #if defined(_DEBUG)
   zmodemlog("ZOpenFile filename=%s %s\r\n", file_name, szTempFileName);
 #endif

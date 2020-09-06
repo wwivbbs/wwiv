@@ -85,7 +85,7 @@ char gettimeout(long ds, bool *abort) {
         *abort = true;
       }
     }
-    CheckForHangup();
+    a()->CheckForHangup();
   }
   return bin.bkbhitraw() ? bin.bgetchraw() : 0;
 }
@@ -379,7 +379,7 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
     while (num_read && !a()->context().hangup() && !abort) {
       auto nBufferPos = 0;
       while (!a()->context().hangup() && !abort && nBufferPos < num_read) {
-        CheckForHangup();
+        a()->CheckForHangup();
         bout.bputch(b[nBufferPos++]);
         checka(&abort);
       }

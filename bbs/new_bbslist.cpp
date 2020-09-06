@@ -239,9 +239,9 @@ static bool IsBBSPhoneNumberUnique(
 static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   bout.nl();
   bout << "|#9Does this BBS have a modem line? (y/N) : ";
-  bool has_pots = noyes();
+  bool has_pots = bin.noyes();
   bout << "|#9Is this BBS telnettable? (Y/n)         : ";
-  bool has_telnet = yesno();
+  bool has_telnet = bin.yesno();
 
   if (!has_telnet && !has_pots) {
     bout.nl();
@@ -254,7 +254,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   BbsListEntry entry = {};
   if (has_pots) {
     bout << "|#9Enter the Modem Number   : ";
-    auto phone_number = input_phonenumber("", 12);
+    auto phone_number = bin.input_phonenumber("", 12);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
@@ -269,7 +269,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
 
   if (has_telnet) {
     bout << "|#9Enter the Telnet Address : ";
-    string telnet_address = input_text("", 50);
+    string telnet_address = bin.input_text("", 50);
     bout.nl();
     if (!telnet_address.empty()) {
       entry.addresses.push_back({"telnet", telnet_address});
@@ -277,19 +277,19 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   }
 
   bout << "|#9Enter the BBS Name       : ";
-  entry.name = input_text("", 50);
+  entry.name = bin.input_text("", 50);
   bout.nl();
   bout << "|#9Enter BBS Type (ex. WWIV): ";
-  entry.software = input_upper("WWIV", 12);
+  entry.software = bin.input_upper("WWIV", 12);
   bout.nl();
   bout << "|#9Enter the BBS Location   : ";
-  entry.location = input_upper("", 50);
+  entry.location = bin.input_upper("", 50);
   bout.nl();
   bout << "|#9Enter the Sysop Name     : ";
-  entry.sysop_name = input_text("", 50);
+  entry.sysop_name = bin.input_text("", 50);
   bout.nl(2);
   bout << "|#5Is this information correct? ";
-  if (yesno()) {
+  if (bin.yesno()) {
     entries.emplace_back(entry);
     bout << "\r\n|#3This entry will be added to BBS list.\r\n";
     return true;

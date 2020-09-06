@@ -197,7 +197,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         }
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
-          const auto source_filename = FilePath(a()->batch_directory(), file_name);
+          const auto source_filename = FilePath(a()->context().dirs().batch_directory(), file_name);
           const auto dest_filename = FilePath(a()->dirs()[b.dir()].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
@@ -250,7 +250,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(FilePath(a()->batch_directory(), file_name));
+    File::Remove(FilePath(a()->context().dirs().batch_directory(), file_name));
   }
 }
 
@@ -306,14 +306,14 @@ static void bihangup() {
       bout << "Thank you for calling.";
       bout.nl();
       a()->remoteIO()->disconnect();
-      Hangup();
+      a()->Hangup();
       return;
     }
-    CheckForHangup();
+    a()->CheckForHangup();
   }
   const auto ch = bout.getkey();
   if (ch == 'h' || ch == 'H') {
-    Hangup();
+    a()->Hangup();
   }
 }
 
@@ -364,7 +364,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         if (a()->dirs()[dir_num].mask & mask_cdrom) {
           auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
           // update the send filename and copy it from the CD-ROM
-          send_filename = FilePath(a()->temp_directory(), f);
+          send_filename = FilePath(a()->context().dirs().temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -436,7 +436,7 @@ static void end_ymodem_batch() {
       abort = true;
     }
     if (ch == CU) {
-      const auto fn = FilePath(a()->temp_directory(),
+      const auto fn = FilePath(a()->context().dirs().temp_directory(),
                                    StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);
@@ -494,7 +494,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         auto send_filename = FilePath(a()->dirs()[dir_num].path, f);
         if (a()->dirs()[dir_num].mask & mask_cdrom) {
           auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
-          send_filename = FilePath(a()->temp_directory(), f);
+          send_filename = FilePath(a()->context().dirs().temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -566,7 +566,8 @@ static std::filesystem::path make_dl_batch_list() {
     }
     string filename_to_send;
     if (a()->dirs()[b.dir()].mask & mask_cdrom) {
-      const auto fileToSend = FilePath(a()->temp_directory(), files::FileName(b.aligned_filename()));
+      const auto fileToSend =
+          FilePath(a()->context().dirs().temp_directory(), files::FileName(b.aligned_filename()));
       if (!File::Exists(fileToSend)) {
         auto sourceFile = FilePath(a()->dirs()[b.dir()].path, files::FileName(b.aligned_filename()));
         File::Copy(sourceFile, fileToSend);
@@ -725,7 +726,7 @@ int batchdl(int mode) {
     break;
     case 'C':
       bout << "|#5Clear queue? ";
-      if (yesno()) {
+      if (bin.yesno()) {
         for (const auto& b : a()->batch().entry) { didnt_upload(b); }
         a()->batch().entry.clear();
         bout << "Queue cleared.\r\n";
@@ -739,7 +740,7 @@ int batchdl(int mode) {
       if (mode != 3) {
         bout.nl();
         bout << "|#5Hang up after transfer? ";
-        const auto hangup_after_dl = yesno();
+        const auto hangup_after_dl = bin.yesno();
         bout.nl(2);
         int i = get_protocol(xfertype::xf_up_batch);
         if (i > 0) {
@@ -768,7 +769,7 @@ int batchdl(int mode) {
           break;
         }
         bout << "|#5Hang up after transfer? ";
-        const auto hangup_after_dl = yesno();
+        const auto hangup_after_dl = bin.yesno();
         bout.nl();
         int i = get_protocol(xfertype::xf_down_batch);
         if (i > 0) {

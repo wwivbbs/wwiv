@@ -215,14 +215,14 @@ void chat_room() {
 
   bool bActionMode = true;
   while (!a()->context().hangup()) {
-    CheckForHangup();
+    a()->CheckForHangup();
     if (inst_msg_waiting()) {
       process_inst_msgs(); 
     }
     bout << "|#1: " << szColorString;
     a()->tleft(true);
     a()->context().chatline(false);
-    auto message = input_text("", false, 255);
+    auto message = bin.input_text("", false, 255);
     if (message.empty()) {
       intro(loc);
     } else {
@@ -582,7 +582,7 @@ void page_user(int loc) {
   multi_instance();
   bout.nl();
   while ((i < 1 || i > num_instances()) && !a()->context().hangup()) {
-    CheckForHangup();
+    a()->CheckForHangup();
     bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
     auto s = input(2);
     if (!s.empty() && s.front() == 'Q') {
@@ -831,7 +831,7 @@ int change_channels(int loc) {
   list_channels();
   bout.nl();
   while ((temploc < 1 || temploc > 10) && !a()->context().hangup()) {
-    CheckForHangup();
+    a()->CheckForHangup();
     bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
     input(szMessage, 2);
     if (to_upper_case_char(szMessage[0]) == 'Q') {
@@ -846,7 +846,7 @@ int change_channels(int loc) {
     } else {
       if (a()->user()->GetSl() >= g_nChatOpSecLvl || so()) {
         bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
-        if (yesno()) {
+        if (bin.yesno()) {
           ch_ok = 1;
         }
       } else {
