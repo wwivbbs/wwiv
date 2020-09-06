@@ -536,7 +536,7 @@ void readmail(int mode) {
       okmail = false;
       bout.nl(3);
     } else {
-      strcpy(a()->context().irt_, m.title);
+      strcpy(a()->sess().irt_, m.title);
       abort = false;
       i = ((ability_read_email_anony & sl.ability) != 0);
       okmail = true;
@@ -757,7 +757,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(FilePath(a()->context().dirs().temp_directory(), INPUT_MSG));
+              File::Remove(FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG));
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";
@@ -799,10 +799,10 @@ void readmail(int mode) {
           break;
         }
         if (so()) {
-          if (!a()->context().IsUserOnline()) {
+          if (!a()->sess().IsUserOnline()) {
             a()->set_current_user_sub_num(0);
-            a()->context().SetCurrentReadMessageArea(0);
-            a()->context().set_current_user_sub_conf_num(0);
+            a()->sess().SetCurrentReadMessageArea(0);
+            a()->sess().set_current_user_sub_conf_num(0);
           }
           tmp_disable_conf(true);
           bout.nl();
@@ -813,9 +813,9 @@ void readmail(int mode) {
             if (ss1[0] == '?') {
               old_sublist();
             }
-          } while ((!a()->context().hangup()) && (ss1[0] == '?'));
+          } while ((!a()->sess().hangup()) && (ss1[0] == '?'));
           i = -1;
-          if ((ss1[0] == 0) || a()->context().hangup()) {
+          if ((ss1[0] == 0) || a()->sess().hangup()) {
             i1 = 0;
             bout.nl();
             tmp_disable_conf(false);
@@ -1200,7 +1200,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName)) {
             break;
           }
-          const auto fn = FilePath(a()->context().dirs().temp_directory(), downloadFileName);
+          const auto fn = FilePath(a()->sess().dirs().temp_directory(), downloadFileName);
           File::Remove(fn);
           TextFile tf(fn, "w");
           tf.Write(b);
@@ -1217,8 +1217,8 @@ void readmail(int mode) {
         }
         break;
       }
-    } while (!i1 && !a()->context().hangup());
-  } while (!a()->context().hangup() && !done);
+    } while (!i1 && !a()->sess().hangup());
+  } while (!a()->sess().hangup() && !done);
 }
 
 int check_new_mail(int user_number) {

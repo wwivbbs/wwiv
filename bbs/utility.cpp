@@ -115,10 +115,10 @@ double post_ratio() {
 
 long nsl() {
   const auto dd = system_clock::now();
-  if (!a()->context().IsUserOnline()) {
+  if (!a()->sess().IsUserOnline()) {
     return 1;
   }
-  auto tot = duration_cast<seconds>(dd - a()->context().system_logon_time());
+  auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
 
   const auto tpl = minutes(a()->effective_slrec().time_per_logon);
   const auto tpd = minutes(a()->effective_slrec().time_per_day);
@@ -129,7 +129,7 @@ long nsl() {
   auto tld = std::chrono::duration_cast<seconds>(tpd - tot - a()->user()->timeontoday() +
                                                  a()->user()->extra_time());
   const auto tlt = std::min<seconds>(tlc, tld);
-  a()->context().SetTimeOnlineLimited(false);
+  a()->sess().SetTimeOnlineLimited(false);
   return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
 }
 
@@ -175,7 +175,7 @@ void giveup_timeslice() {
   sleep_for(milliseconds(100));
   yield();
 
-  if (inst_msg_waiting() && (!a()->context().in_chatroom() || !a()->context().chatline())) {
+  if (inst_msg_waiting() && (!a()->sess().in_chatroom() || !a()->sess().chatline())) {
     process_inst_msgs();
   }
 }
@@ -276,7 +276,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     bout.SystemColor(smc->normal_menu_item);
 
     for (const string& menu_item : menu_items) {
-      if (a()->context().hangup()) {
+      if (a()->sess().hangup()) {
         break;
       }
       bout.GotoXY(positions[x], ypos);
@@ -297,7 +297,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   }
   bout.SystemColor(smc->normal_menu_item);
 
-  while (!a()->context().hangup()) {
+  while (!a()->sess().hangup()) {
     int event = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;

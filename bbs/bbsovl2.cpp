@@ -52,8 +52,8 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXY(wx, wy + 7, bar);
   a()->localIO()->PutsXY(wx, wy + 11, bar);
   a()->localIO()->PutsXY(wx, wy + 13, bar);
-  if (*a()->context().qsc > 999) {
-    *a()->context().qsc = 999;
+  if (*a()->sess().qsc > 999) {
+    *a()->sess().qsc = 999;
   }
   std::string restrict;
   for (int i = 0; i <= 15; i++) {
@@ -72,7 +72,7 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
   a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", u.GetExempt()));
   a()->localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
-  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->context().qsc));
+  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", *a()->sess().qsc));
   a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", u.GetTimeBankMinutes()));
   a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", u.GetAssPoints()));
   a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", u.gold()));
@@ -135,9 +135,9 @@ void OnlineUserEditor() {
     } break;
     case 6: {
       a()->localIO()->GotoXY(wx + 22, wy + 5);
-      auto sysopsub = std::to_string(*a()->context().qsc);
+      auto sysopsub = std::to_string(*a()->sess().qsc);
       rc = a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY);
-      *a()->context().qsc = to_number<uint32_t>(sysopsub);
+      *a()->sess().qsc = to_number<uint32_t>(sysopsub);
       a()->localIO()->Format("{:3}", sysopsub);
     } break;
     case 7: {
@@ -261,13 +261,13 @@ void OnlineUserEditor() {
 void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bout.Color(nColorCode);
   sleep_for(milliseconds(nCharDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->context().hangup(); ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
     bout.bputch(*iter);
     sleep_for(milliseconds(nCharDelay));
   }
 
   sleep_for(milliseconds(nStringDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->context().hangup(); ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
     bout.bs();
     sleep_for(milliseconds(5));
   }
@@ -284,7 +284,7 @@ void SpinPuts(const string& strText, int nColorCode) {
   if (okansi()) {
     bout.Color(nColorCode);
     const int dly = 30;
-    for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->context().hangup(); ++iter) {
+    for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->sess().hangup(); ++iter) {
       sleep_for(milliseconds(dly));
       bout << "/";
       bout.Left(1);

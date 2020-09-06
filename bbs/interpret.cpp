@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 
 
 BbsContext CreateBbsContext() {
-  return BbsContext(a()->context(), a()->user(), bout.mci_enabled());
+  return BbsContext(a()->sess(), a()->user(), bout.mci_enabled());
 }
 
 std::string MacroContext::interpret(char ch) const {
@@ -51,7 +51,7 @@ std::string MacroContext::interpret(char ch) const {
   try {
     switch (ch) {
     case '@':                               // Dir name
-      return context_->dir().name;
+      return context_->session_context().current_dir().name;
     case '~':                               // Total mails/feedbacks sent
       return to_string(context_->u().GetNumEmailSent() + context_->u().GetNumFeedbackSent() +
                        context_->u().GetNumNetEmailSent());
@@ -110,7 +110,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'i':                               // Illegal log-ons
       return to_string(context_->u().GetNumIllegalLogons());
     case 'J': {                             // Message conference
-      const int x = a()->context().current_user_sub_conf_num();
+      const int x = a()->sess().current_user_sub_conf_num();
       if (!has_userconf_to_subconf(x)) {
         return {};
       }
@@ -121,7 +121,7 @@ std::string MacroContext::interpret(char ch) const {
       return a()->subconfs[cnum].conf_name;
     }
     case 'j': { // Transfer conference
-      const int x = a()->context().current_user_dir_conf_num();
+      const int x = a()->sess().current_user_dir_conf_num();
       if (!has_userconf_to_dirconf(x)) {
         return {};
       }
@@ -149,7 +149,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'o': {
       // Time on today
       const auto used_this_session =
-          (std::chrono::system_clock::now() - a()->context().system_logon_time());
+          (std::chrono::system_clock::now() - a()->sess().system_logon_time());
       const auto min_used = context_->u().timeon() + used_this_session;
       return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
     }

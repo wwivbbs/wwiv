@@ -30,14 +30,14 @@ namespace bbs {
 SaveQScanPointers::SaveQScanPointers() : restore_(false) {
   save_qsc_p_.reset(new uint32_t[a()->config()->max_subs()]);
   for (int i = 0; i < a()->config()->max_subs(); i++) {
-    save_qsc_p_[i] = a()->context().qsc_p[i];
+    save_qsc_p_[i] = a()->sess().qsc_p[i];
   }
 }
 
 SaveQScanPointers::~SaveQScanPointers() {
   if (restore_) {
     for (int i = 0; i < a()->config()->max_subs(); i++) {
-      a()->context().qsc_p[i] = save_qsc_p_[i];
+      a()->sess().qsc_p[i] = save_qsc_p_[i];
     }
   }
 }

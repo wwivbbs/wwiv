@@ -189,7 +189,7 @@ void attach_file(int mode) {
               found = false;
               bout.nl();
               if (so()) {
-                if (a()->context().incom()) {
+                if (a()->sess().incom()) {
                   bout << "|#5Upload from remote? ";
                   if (bin.yesno()) {
                     bRemoteUpload = true;
@@ -249,7 +249,7 @@ void attach_file(int mode) {
                   } else {
                     done3 = true;
                   }
-                } while (!done3 && !a()->context().hangup());
+                } while (!done3 && !a()->sess().hangup());
               }
               File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
@@ -378,8 +378,8 @@ void attach_file(int mode) {
         }
         break;
         }
-      } while (!a()->context().hangup() && !done1);
+      } while (!a()->sess().hangup() && !done1);
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 }
 

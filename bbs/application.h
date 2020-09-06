@@ -108,8 +108,10 @@ public:
   virtual ~Application();
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
-  [[nodiscard]] wwiv::bbs::SessionContext& context();
-  [[nodiscard]] const wwiv::bbs::SessionContext& context() const;
+  [[nodiscard]] wwiv::bbs::BbsContext context();
+  [[nodiscard]] const wwiv::bbs::BbsContext context() const;
+  [[nodiscard]] wwiv::bbs::SessionContext& sess();
+  [[nodiscard]] const wwiv::bbs::SessionContext& sess() const;
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -191,7 +193,7 @@ public:
   // not usub.
   // The most common usage pattern is:
   // iscan(a()->current_user_sub_num());
-  // if (a()->context().GetCurrentReadMessageArea() < 0) { ... }
+  // if (a()->sess().GetCurrentReadMessageArea() < 0) { ... }
 
   [[nodiscard]] const wwiv::sdk::subboard_t& current_sub() const;
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const;

@@ -209,19 +209,19 @@ void chat_room() {
   }
 
   TempDisablePause disable_pause(bout);
-  a()->context().chatline(false);
-  a()->context().in_chatroom(true);
+  a()->sess().chatline(false);
+  a()->sess().in_chatroom(true);
   auto oiia = setiia(std::chrono::milliseconds(500));
 
   bool bActionMode = true;
-  while (!a()->context().hangup()) {
+  while (!a()->sess().hangup()) {
     a()->CheckForHangup();
     if (inst_msg_waiting()) {
       process_inst_msgs(); 
     }
     bout << "|#1: " << szColorString;
     a()->tleft(true);
-    a()->context().chatline(false);
+    a()->sess().chatline(false);
     auto message = bin.input_text("", false, 255);
     if (message.empty()) {
       intro(loc);
@@ -238,7 +238,7 @@ void chat_room() {
   setiia(oiia);
   moving(false, loc);
   free_actions();
-  a()->context().in_chatroom(false);
+  a()->sess().in_chatroom(false);
 }
 
 int rip_words(int start_pos, const char* message, char* wd, int size, char lookfor) {
@@ -581,7 +581,7 @@ void page_user(int loc) {
   bout.nl();
   multi_instance();
   bout.nl();
-  while ((i < 1 || i > num_instances()) && !a()->context().hangup()) {
+  while ((i < 1 || i > num_instances()) && !a()->sess().hangup()) {
     a()->CheckForHangup();
     bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
     auto s = input(2);
@@ -830,7 +830,7 @@ int change_channels(int loc) {
   bout.nl();
   list_channels();
   bout.nl();
-  while ((temploc < 1 || temploc > 10) && !a()->context().hangup()) {
+  while ((temploc < 1 || temploc > 10) && !a()->sess().hangup()) {
     a()->CheckForHangup();
     bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
     input(szMessage, 2);

@@ -47,11 +47,11 @@ void close_qscn() {
 
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead) {
   if (!bForceRead) {
-    if ((a()->context().IsUserOnline() && user_number == a()->usernum) ||
+    if ((a()->sess().IsUserOnline() && user_number == a()->usernum) ||
         (a()->at_wfc() && user_number == 1)) {
-      if (qscn != a()->context().qsc) {
+      if (qscn != a()->sess().qsc) {
         for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {
-          qscn[i] = a()->context().qsc[i];
+          qscn[i] = a()->sess().qsc[i];
         }
       }
       return;
@@ -72,21 +72,21 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     close_qscn();
   }
 
-  a()->context().ResetQScanPointers(*a()->config());
+  a()->sess().ResetQScanPointers(*a()->config());
 }
 
 
 void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
   if ((user_number < 1) || (user_number > a()->config()->max_users()) ||
-      a()->context().guest_user()) {
+      a()->sess().guest_user()) {
     return;
   }
 
-  if ((a()->context().IsUserOnline() && (user_number == a()->usernum)) ||
+  if ((a()->sess().IsUserOnline() && (user_number == a()->usernum)) ||
       (a()->at_wfc() && user_number == 1)) {
-    if (a()->context().qsc != qscn) {
+    if (a()->sess().qsc != qscn) {
       for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {
-        a()->context().qsc[i] = qscn[i];
+        a()->sess().qsc[i] = qscn[i];
       }
     }
   }

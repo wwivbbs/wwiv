@@ -272,7 +272,7 @@ bool ValidateSysopPassword() {
   if (!so()) {
     return false;
   }
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return true;
   }
   const auto password = bin.input_password("|#7SY: ", 20);
@@ -281,10 +281,10 @@ bool ValidateSysopPassword() {
 
 /**
  * Hangs up the modem if user online. Whether using modem or not, sets
- * a()->context().hangup() to 1.
+ * a()->sess().hangup() to 1.
  */
 void hang_it_up() {
-  if (!a()->context().ok_modem_stuff()) {
+  if (!a()->sess().ok_modem_stuff()) {
     return;
   }
   a()->remoteIO()->disconnect();

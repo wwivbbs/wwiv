@@ -78,7 +78,7 @@ string GetQuoteInitials(const string& orig_name) {
 }
 
 void clear_quotes() {
-  File::Remove(FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT), true);
+  File::Remove(FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT), true);
 
   quotes_ind.reset();
 }
@@ -160,7 +160,7 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
 
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt) {
-  const auto fn = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
+  const auto fn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
   File::Remove(fn);
 
   TextFile f(fn, "w");
@@ -184,7 +184,7 @@ void grab_quotes(std::string& raw_text, const std::string& to_name) {
   }
 
   clear_quotes();
-  File f(FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT));
+  File f(FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT));
   if (f.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
     f.Write(raw_text);
   }
@@ -227,7 +227,7 @@ std::vector<std::string> query_quote_lines() {
     bout.nl();
     // If the user has hungup, this will throw an exception.
     bus().invoke<CheckForHangupEvent>();
-    if (lines.empty() || a()->context().hangup()) {
+    if (lines.empty() || a()->sess().hangup()) {
       return {};
     }
     bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
@@ -265,7 +265,7 @@ std::vector<std::string> query_quote_lines() {
       return {};
     }
     break;
-  } while (!a()->context().hangup());
+  } while (!a()->sess().hangup());
   return std::vector<std::string>(std::begin(lines) + start_line - 1,
                                   std::begin(lines) + end_line);
 }

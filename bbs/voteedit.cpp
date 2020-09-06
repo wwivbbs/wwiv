@@ -137,7 +137,7 @@ void ivotes() {
     if (i > 0 && i < 21) {
       set_question(i - 1);
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 }
 
 

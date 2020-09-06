@@ -42,11 +42,11 @@
 /** Displays the available file areas for the current user. */
 void dirlist(int mode) {
   bool next   = false;
-  int oc      = a()->context().current_user_dir_conf_num();
+  int oc      = a()->sess().current_user_dir_conf_num();
   int os      = a()->current_user_dir().subnum;
   int nd      = 0;
-  int sn      = a()->context().current_user_dir_conf_num();
-  int en      = a()->context().current_user_dir_conf_num();
+  int sn      = a()->sess().current_user_dir_conf_num();
+  int en      = a()->sess().current_user_dir_conf_num();
   bool done   = false;
 
   do {
@@ -83,7 +83,7 @@ void dirlist(int mode) {
           is = true;
         }
         std::string scanme = "|#6No ";
-        if (a()->context().qsc_n[directory_number / 32] & (1L << (directory_number % 32))) {
+        if (a()->sess().qsc_n[directory_number / 32] & (1L << (directory_number % 32))) {
           scanme = "|#5Yes";
         }
         dliscan1(dir);
@@ -105,7 +105,7 @@ void dirlist(int mode) {
         }
         int lastp = i1++;
         bout.nl();
-        if (bout.lines_listed() >= a()->context().num_screen_lines() - 2 && mode == 0) {
+        if (bout.lines_listed() >= a()->sess().num_screen_lines() - 2 && mode == 0) {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
@@ -174,7 +174,7 @@ void dirlist(int mode) {
         if (okconf(a()->user())) {
           jump_conf(ConferenceType::CONF_DIRS);
         }
-        sn = en = oc = a()->context().current_user_dir_conf_num();
+        sn = en = oc = a()->sess().current_user_dir_conf_num();
         nd = i = 0;
         is = false;
       }
@@ -194,7 +194,7 @@ void dirlist(int mode) {
       }
       done = true;
     }
-  } while (!a()->context().hangup() && !done);
+  } while (!a()->sess().hangup() && !done);
 }
 
 

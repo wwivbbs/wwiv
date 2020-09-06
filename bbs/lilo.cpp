@@ -139,7 +139,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
   bool abort = false;
   int current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
-    if (a()->context().hangup() || abort) { break; }
+    if (a()->sess().hangup() || abort) { break; }
     if (++current_count % 25 == 0) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
@@ -303,7 +303,7 @@ static void CheckCallRestrictions() {
 }
 
 static void logon_guest() {
-  a()->context().SetUserOnline(true);
+  a()->sess().SetUserOnline(true);
   bout.nl(2);
   input_ansistat();
 
@@ -334,16 +334,16 @@ static void logon_guest() {
 
 void getuser() {
   // Reset the key timeout to 30 seconds while trying to log in a user.
-  ScopeExit at_exit([] { a()->context().okmacro(true); bout.reset_key_timeout(); });
+  ScopeExit at_exit([] { a()->sess().okmacro(true); bout.reset_key_timeout(); });
 
-  a()->context().okmacro(false);
+  a()->sess().okmacro(false);
   // TODO(rushfan): uncomment this
   //bout.set_logon_key_timeout();
 
   // Let's set this to 0 here since we don't have a user yet.
   a()->usernum = 0;
-  a()->context().set_current_user_sub_conf_num(0);
-  a()->context().set_current_user_dir_conf_num(0);
+  a()->sess().set_current_user_sub_conf_num(0);
+  a()->sess().set_current_user_dir_conf_num(0);
   a()->effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
@@ -372,7 +372,7 @@ void getuser() {
     if (usernum > 0) {
       a()->usernum = static_cast<uint16_t>(usernum);
       a()->ReadCurrentUser();
-      read_qscn(a()->usernum, a()->context().qsc, false);
+      read_qscn(a()->usernum, a()->sess().qsc, false);
       if (!set_language(a()->user()->GetLanguage())) {
         a()->user()->SetLanguage(0);
         set_language(0);
@@ -383,7 +383,7 @@ void getuser() {
         continue;
       }
       ok = true;
-      if (a()->context().guest_user()) {
+      if (a()->sess().guest_user()) {
         logon_guest();
       } else {
         a()->effective_sl(a()->config()->newuser_sl());
@@ -396,7 +396,7 @@ void getuser() {
             ok = false;
           }
         }
-        if (a()->user()->GetSl() == 255 && a()->context().incom() && ok) {
+        if (a()->user()->GetSl() == 255 && a()->sess().incom() && ok) {
           if (!VerifySysopPassword()) {
             ok = false;
           }
@@ -453,7 +453,7 @@ static void UpdateUserStatsForLogin() {
   } else {
     a()->set_current_user_dir_num(0);
   }
-  if (a()->effective_sl() != 255 && !a()->context().guest_user()) {
+  if (a()->effective_sl() != 255 && !a()->sess().guest_user()) {
     a()->status_manager()->Run([](WStatus& s) {
       s.IncrementCallerNumber();
       s.IncrementNumCallsToday();
@@ -462,7 +462,7 @@ static void UpdateUserStatsForLogin() {
 }
 
 static void PrintLogonFile() {
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return;
   }
   play_sdf(LOGON_NOEXT, false);
@@ -580,13 +580,13 @@ static void UpdateLastOnFile() {
     sysoplog(false) << stripcolors(sysop_log_line);
     sysoplog(false) << "";
   }
-  if (a()->context().incom()) {
+  if (a()->sess().incom()) {
     const auto remote_address = a()->remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
     }
   }
-  if (a()->effective_sl() == 255 && !a()->context().incom()) {
+  if (a()->effective_sl() == 255 && !a()->sess().incom()) {
     return;
   }
 
@@ -760,7 +760,7 @@ static void DisplayUserLoginInformation() {
     read_inet_addr(internet_addr, a()->usernum);
     bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
   }
-  if (a()->context().IsTimeOnlineLimited()) {
+  if (a()->sess().IsTimeOnlineLimited()) {
     bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
   }
 }
@@ -819,7 +819,7 @@ static void CheckUserForVotingBooth() {
 // Updates the User::last_address field since we've already displayed
 // it to the user from the last session.
 static void UpdateLastAddress() {
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return;
   }
   const auto remote_address = a()->remoteIO()->remote_info().address;
@@ -838,7 +838,7 @@ void logon() {
     a()->Hangup();
     return;
   }
-  a()->context().SetUserOnline(true);
+  a()->sess().SetUserOnline(true);
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
   get_user_ppp_addr();
   bout.ResetColors();
@@ -851,7 +851,7 @@ void logon() {
   PrintUserSpecificFiles();
 
   read_automessage();
-  a()->context().SetLogonTime();
+  a()->sess().SetLogonTime();
   a()->UpdateTopScreen();
   bout.nl(2);
   bout.pausescr();
@@ -874,15 +874,15 @@ void logon() {
   LoginCheckForNewMail();
 
   if (a()->user()->GetNewScanDateNumber()) {
-    a()->context().nscandate(a()->user()->GetNewScanDateNumber());
+    a()->sess().nscandate(a()->user()->GetNewScanDateNumber());
   } else {
-    a()->context().nscandate(a()->user()->GetLastOnDateNumber());
+    a()->sess().nscandate(a()->user()->GetLastOnDateNumber());
   }
   a()->batch().clear();
 
   CheckUserForVotingBooth();
 
-  if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
+  if ((a()->sess().incom() || sysop1()) && a()->user()->GetSl() < 255) {
     broadcast(fmt::format("{} Just logged on!", a()->user()->GetName()));
   }
   setiia(std::chrono::seconds(5));
@@ -897,27 +897,27 @@ void logon() {
 
   // Handle case of first conf with no subs avail
   if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
-    for (a()->context().set_current_user_sub_conf_num(0); 
-         (a()->context().current_user_sub_conf_num() < ssize(a()->subconfs))
-         && (a()->uconfsub[a()->context().current_user_sub_conf_num()].confnum != -1);
-         a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1)) {
-      setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
+    for (a()->sess().set_current_user_sub_conf_num(0); 
+         (a()->sess().current_user_sub_conf_num() < ssize(a()->subconfs))
+         && (a()->uconfsub[a()->sess().current_user_sub_conf_num()].confnum != -1);
+         a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1)) {
+      setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
       if (a()->usub[0].subnum != -1) {
         break;
       }
     }
     if (a()->usub[0].subnum == -1) {
-      a()->context().set_current_user_sub_conf_num(0);
-      setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
+      a()->sess().set_current_user_sub_conf_num(0);
+      setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
     }
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     bool nextsub = false;
     if (a()->user()->GetSl() < 255) {
-      a()->context().forcescansub(true);
+      a()->sess().forcescansub(true);
       qscan(a()->GetForcedReadSubNumber(), nextsub);
-      a()->context().forcescansub(false);
+      a()->sess().forcescansub(false);
     } else {
       qscan(a()->GetForcedReadSubNumber(), nextsub);
     }
@@ -928,27 +928,27 @@ void logon() {
 void logoff() {
   mailrec m;
 
-  if (a()->context().incom()) {
+  if (a()->sess().incom()) {
     play_sdf(LOGOFF_NOEXT, false);
   }
 
   if (a()->usernum > 0) {
-    if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
+    if ((a()->sess().incom() || sysop1()) && a()->user()->GetSl() < 255) {
       broadcast(fmt::format("{} Just logged off!", a()->user()->GetName()));
     }
   }
   setiia(std::chrono::seconds(5));
   a()->remoteIO()->disconnect();
-  // Don't need hangup here, but *do* want to ensure that a()->context().hangup() is true.
-  a()->context().hangup(true);
-  VLOG(1) << "Setting a()->context().hangup()=true in logoff";
+  // Don't need hangup here, but *do* want to ensure that a()->sess().hangup() is true.
+  a()->sess().hangup(true);
+  VLOG(1) << "Setting a()->sess().hangup()=true in logoff";
   if (a()->usernum < 1) {
     return;
   }
 
   string text = "  Logged Off At ";
   text += times();
-  if (a()->effective_sl() != 255 || a()->context().incom()) {
+  if (a()->effective_sl() != 255 || a()->sess().incom()) {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }
@@ -959,7 +959,7 @@ void logoff() {
 
   a()->user()->SetNumIllegalLogons(0);
   auto seconds_used_duration = duration_cast<seconds>(
-      std::chrono::system_clock::now() - a()->context().system_logon_time() - a()->extratimecall());
+      std::chrono::system_clock::now() - a()->sess().system_logon_time() - a()->extratimecall());
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 
@@ -969,11 +969,11 @@ void logoff() {
     s.SetMinutesActiveToday(active_today + minutes_used_now);
   });
 
-  if (a()->context().scanned_files()) {
+  if (a()->sess().scanned_files()) {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
   a()->user()->SetLastOnDateNumber(daten_t_now());
-  auto used_this_session = (std::chrono::system_clock::now() - a()->context().system_logon_time());
+  auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
   auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
       << "   Time on: "  << min_used.count() << " minutes.";
@@ -1043,6 +1043,6 @@ void logoff() {
     }
   }
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->context().qsc, false);
+  write_qscn(a()->usernum, a()->sess().qsc, false);
 }
 

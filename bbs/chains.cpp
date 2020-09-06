@@ -102,7 +102,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     } else {
       bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
-    for (int i = 0; i < *mapp && !abort && !a()->context().hangup(); i++) {
+    for (int i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       const auto& c = a()->chains->at(map[i]);
       show_chain(c, okansi(), i+1, abort);
     }
@@ -114,10 +114,10 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-    for (int i = 0; i < *mapp && !abort && !a()->context().hangup(); i++) {
+    for (int i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       bout.bputs(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
       i++;
-      if (!abort && !a()->context().hangup()) {
+      if (!abort && !a()->sess().hangup()) {
         if (i >= *mapp) {
           bout.bpla(fmt::sprintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
@@ -180,7 +180,7 @@ void do_chains() {
     if (c.ansi && !okansi()) {
       continue;
     }
-    if (c.local_only && a()->context().using_modem()) {
+    if (c.local_only && a()->sess().using_modem()) {
       continue;
     }
     if (c.sl > a()->effective_sl()) {
@@ -240,6 +240,6 @@ void do_chains() {
         start += 14;
       }
     }
-  } while (!a()->context().hangup()  && !done);
+  } while (!a()->sess().hangup()  && !done);
 }
 

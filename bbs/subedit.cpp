@@ -410,7 +410,7 @@ static void modify_sub(int n) {
       }
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   a()->subs().set_sub(n, r);
 }
 
@@ -528,8 +528,8 @@ static void insert_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (a()->context().GetCurrentReadMessageArea() >= n) {
-    a()->context().SetCurrentReadMessageArea(a()->context().GetCurrentReadMessageArea() + 1);
+  if (a()->sess().GetCurrentReadMessageArea() >= n) {
+    a()->sess().SetCurrentReadMessageArea(a()->sess().GetCurrentReadMessageArea() + 1);
   }
 }
 
@@ -584,10 +584,10 @@ static void delete_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (a()->context().GetCurrentReadMessageArea() == n) {
-    a()->context().SetCurrentReadMessageArea(-1);
-  } else if (a()->context().GetCurrentReadMessageArea() > n) {
-    a()->context().SetCurrentReadMessageArea(a()->context().GetCurrentReadMessageArea() - 1);
+  if (a()->sess().GetCurrentReadMessageArea() == n) {
+    a()->sess().SetCurrentReadMessageArea(-1);
+  } else if (a()->sess().GetCurrentReadMessageArea() > n) {
+    a()->sess().SetCurrentReadMessageArea(a()->sess().GetCurrentReadMessageArea() - 1);
   }
 }
 
@@ -638,7 +638,7 @@ void boardedit() {
         if (subnum2 < subnum1) {
           subnum1++;
         }
-        write_qscn(a()->usernum, a()->context().qsc, true);
+        write_qscn(a()->usernum, a()->sess().qsc, true);
         bout << "|#1Moving sub now...Please wait...";
         insert_sub(subnum2);
         swap_subs(subnum1, subnum2);
@@ -707,7 +707,7 @@ void boardedit() {
       }
     } break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   save_subs();
   if (!a()->at_wfc()) {
     changedsl();

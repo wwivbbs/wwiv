@@ -190,7 +190,7 @@ void modify_sec(int n) {
       }
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   a()->gfilesec[n] = r;
 }
 
@@ -269,7 +269,7 @@ void gfileedit() {
       }
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 
   DataFile<gfiledirrec> file(FilePath(a()->config()->datadir(), GFILE_DAT),
 	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
@@ -290,7 +290,7 @@ bool fill_sec(int sn) {
   bool ok{true};
   int chd = 0;
   for (const auto& f : ff) {
-    if (nf >= a()->gfilesec[sn].maxfiles || a()->context().hangup() || !ok) {
+    if (nf >= a()->gfilesec[sn].maxfiles || a()->sess().hangup() || !ok) {
       break;
     }
     to_char_array(s, aligns(f.name));

@@ -66,18 +66,18 @@ void tmp_disable_conf(bool disable) {
   if (disable) {
     disable_conf_cnt++;
     if (okconf(a()->user())) {
-      a()->context().disable_conf(true);
-      ocs = a()->context().current_user_sub_conf_num();
+      a()->sess().disable_conf(true);
+      ocs = a()->sess().current_user_sub_conf_num();
       oss = a()->current_user_sub().subnum;
-      ocd = a()->context().current_user_dir_conf_num();
+      ocd = a()->sess().current_user_dir_conf_num();
       osd = a()->current_user_dir().subnum;
       setuconf(ConferenceType::CONF_SUBS, -1, oss);
       setuconf(ConferenceType::CONF_DIRS, -1, osd);
     }
   } else if (disable_conf_cnt) {
     disable_conf_cnt--;
-    if (disable_conf_cnt == 0 && a()->context().disable_conf()) {
-      a()->context().disable_conf(false);
+    if (disable_conf_cnt == 0 && a()->sess().disable_conf()) {
+      a()->sess().disable_conf(false);
       setuconf(ConferenceType::CONF_SUBS, ocs, oss);
       setuconf(ConferenceType::CONF_DIRS, ocd, osd);
     }
@@ -318,7 +318,7 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
 
   for (auto word = 1; word <= num_words; word++) {
     a()->CheckForHangup();
-    if (a()->context().hangup()) {
+    if (a()->sess().hangup()) {
       return false;
     }
 
@@ -675,7 +675,7 @@ static void modify_conf(ConferenceType conftype, int which) {
       done = true;
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 
   if (changed) {
     save_confs(conftype);
@@ -784,7 +784,7 @@ void conf_edit(ConferenceType conftype) {
       list_confs(conftype, 1);
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   if (!a()->at_wfc()) {
     changedsl();
   }
@@ -905,7 +905,7 @@ int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs)
         bout << "\r\n|#6Invalid conference designator!\r\n";
       }
     }
-  } while (!ok && !a()->context().hangup());
+  } while (!ok && !a()->sess().hangup());
   return i;
 }
 

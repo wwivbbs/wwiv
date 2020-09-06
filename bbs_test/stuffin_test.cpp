@@ -36,13 +36,13 @@ class StuffInTest : public testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    a()->context().incom(false);
+    a()->sess().incom(false);
     a()->modem_speed_ = 0;
   }
 
 public:
   static std::string t(const std::string& name) {
-    return FilePath(a()->context().dirs().temp_directory(), name).string();
+    return FilePath(a()->sess().dirs().temp_directory(), name).string();
   }
 
   BbsHelper helper;
@@ -99,10 +99,10 @@ TEST_F(StuffInTest, AllDropFiles) {
 //  %N       Instance number                   "1"
 //  %P       Com port number                   "1"
 TEST_F(StuffInTest, PortAndNode) {
-  a()->context().incom(false);
+  a()->sess().incom(false);
   EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
 
-  a()->context().incom(true);
+  a()->sess().incom(true);
   EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
   EXPECT_EQ(string("42"), stuff_in("%N", "", "", "", "", ""));

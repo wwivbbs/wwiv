@@ -40,13 +40,14 @@ using namespace wwiv::strings;
 
 class TestMacroContext final : public Context {
 public:
-  explicit TestMacroContext(BbsHelper& helper) : helper_(helper) {}
+  explicit TestMacroContext(BbsHelper& helper)
+      : helper_(helper), sess_ctx_(helper_.io()->local_io()) {}
   [[nodiscard]] const wwiv::sdk::User& u() const override { return *helper_.user(); }
-  [[nodiscard]] const wwiv::sdk::files::directory_t& dir() const override { return dir_; }
+  virtual const wwiv::bbs::SessionContext& session_context() const override { return sess_ctx_; }
   [[nodiscard]] bool mci_enabled() const override { return true; };
 
   BbsHelper& helper_;
-  wwiv::sdk::files::directory_t dir_{};
+  wwiv::bbs::SessionContext sess_ctx_;
 };
 
 class BasicTest : public ::testing::Test {

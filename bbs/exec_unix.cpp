@@ -216,7 +216,7 @@ int exec_cmdline(const std::string& cmdline, int flags) {
     LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";
   }
 
-  if (a()->context().ok_modem_stuff()) {
+  if (a()->sess().ok_modem_stuff()) {
     LOG(INFO) << "Temporarily pausing comm for spawn";
     a()->remoteIO()->close(true);
   }
@@ -224,7 +224,7 @@ int exec_cmdline(const std::string& cmdline, int flags) {
   auto i = UnixSpawn(cmdline, flags, a()->remoteIO()->GetDoorHandle());
 
   // reengage comm stuff
-  if (a()->context().ok_modem_stuff()) {
+  if (a()->sess().ok_modem_stuff()) {
     a()->remoteIO()->open();
   }
   return i;

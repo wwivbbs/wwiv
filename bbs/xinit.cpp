@@ -352,7 +352,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   const auto batch = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
   wwiv::bbs::Dirs d(temp, batch, batch);
-  context().dirs(d);
+  sess().dirs(d);
 
   const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
@@ -434,11 +434,11 @@ bool Application::read_subs() {
 }
 
 class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
-  [[nodiscard]] uint32_t last_read(int area) const override { return a()->context().qsc_p[area]; }
+  [[nodiscard]] uint32_t last_read(int area) const override { return a()->sess().qsc_p[area]; }
 
   void set_last_read(int area, uint32_t last_read) override {
     if (area >= 0) {
-      a()->context().qsc_p[area] = last_read;
+      a()->sess().qsc_p[area] = last_read;
     }
   }
 
@@ -568,18 +568,18 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   bout.clearnsp();
   VLOG(1) << "Processing configuration file: WWIV.INI.";
-  if (!File::Exists(context().dirs().temp_directory())) {
-    if (!File::mkdirs(context().dirs().temp_directory())) {
+  if (!File::Exists(sess().dirs().temp_directory())) {
+    if (!File::mkdirs(sess().dirs().temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << context().dirs().temp_directory() << "'";
+      LOG(ERROR) << "It is now set to: '" << sess().dirs().temp_directory() << "'";
       return false;
     }
   }
 
-  if (!File::Exists(context().dirs().batch_directory())) {
-    if (!File::mkdirs(context().dirs().batch_directory())) {
+  if (!File::Exists(sess().dirs().batch_directory())) {
+    if (!File::mkdirs(sess().dirs().batch_directory())) {
       LOG(ERROR) << "Your batch dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << context().dirs().batch_directory() << "'";
+      LOG(ERROR) << "It is now set to: '" << sess().dirs().batch_directory() << "'";
       return false;
     }
   }
@@ -661,13 +661,13 @@ bool Application::InitializeBBS(bool cleanup_network) {
   localIO()->topdata(LocalIO::topdata_t::user);
 
   // Set DSZLOG
-  dsz_logfile_name_ = FilePath(context().dirs().temp_directory(), "dsz.log").string();
+  dsz_logfile_name_ = FilePath(sess().dirs().temp_directory(), "dsz.log").string();
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
   // SET BBS environment variable.
   set_environment_variable("BBS", full_version());
-  context().InitalizeContext(*config());
+  sess().InitalizeContext(*config());
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   usub.resize(config()->max_subs());
@@ -691,9 +691,9 @@ bool Application::InitializeBBS(bool cleanup_network) {
   read_all_conferences();
 
   TempDisablePause disable_pause(bout);
-  remove_from_temp("*.*", context().dirs().temp_directory(), false);
-  remove_from_temp("*.*", context().dirs().batch_directory(), false);
-  remove_from_temp("*.*", context().dirs().qwk_directory(), false);
+  remove_from_temp("*.*", sess().dirs().temp_directory(), false);
+  remove_from_temp("*.*", sess().dirs().batch_directory(), false);
+  remove_from_temp("*.*", sess().dirs().qwk_directory(), false);
 
   if (cleanup_network) {
     cleanup_net();
@@ -710,7 +710,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   //using namespace wwiv::common;
   // Register Application Level Callbacks
   bus().add_handler<ProcessInstanceMessages>([this]() {
-    if (inst_msg_waiting() && !context().chatline()) {
+    if (inst_msg_waiting() && !sess().chatline()) {
       process_inst_msgs();
     }
   });

@@ -54,15 +54,15 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (size_t sn = 0; sn < a()->subs().subs().size() && !a()->context().hangup() && !done; sn++) {
+  for (size_t sn = 0; sn < a()->subs().subs().size() && !a()->sess().hangup() && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
-    if (a()->context().GetCurrentReadMessageArea() < 0) {
+    if (a()->sess().GetCurrentReadMessageArea() < 0) {
       return;
     }
 
-    uint32_t sq = a()->context().qsc_p[sn];
+    uint32_t sq = a()->sess().qsc_p[sn];
 
     // Must be sub with validation "on"
     if (a()->current_sub().nets.empty()
@@ -79,7 +79,7 @@ void valscan() {
 
     bout.move_up_if_newline(2);
 
-    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->context().hangup() && !done; i++) {    // was i = 0
+    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->sess().hangup() && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {
         a()->CheckForHangup();
         a()->tleft(true);
@@ -163,7 +163,7 @@ void valscan() {
         }
       }
     }
-    a()->context().qsc_p[sn] = sq;
+    a()->sess().qsc_p[sn] = sq;
   }
 
   if (ac) {

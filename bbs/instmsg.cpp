@@ -139,10 +139,10 @@ static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
   switch (ih->main) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
-    if (ih->msg_size > 0 && a()->context().IsUserOnline() && !a()->context().hangup()) {
+    if (ih->msg_size > 0 && a()->sess().IsUserOnline() && !a()->sess().hangup()) {
       const auto line = bout.SaveCurrentLine();
       bout.nl(2);
-      if (a()->context().in_chatroom()) {
+      if (a()->sess().in_chatroom()) {
         i = 0;
         bout << msg << "\r\n";
         bout.RestoreCurrentLine(line);
@@ -176,7 +176,7 @@ void process_inst_msgs() {
   string fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
-    if (a()->context().hangup()) { break; }
+    if (a()->sess().hangup()) { break; }
     File file(FilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file;
@@ -312,7 +312,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
 
   unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
-  if (a()->context().IsUserOnline()) {
+  if (a()->sess().IsUserOnline()) {
     cf |= INST_FLAGS_ONLINE;
     if (chat_invis) {
       cf |= INST_FLAGS_INVIS;
@@ -336,7 +336,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>(a()->context().using_modem() ? a()->modem_speed_ : 0);
+    uint16_t ms = static_cast<uint16_t>(a()->sess().using_modem() ? a()->modem_speed_ : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;
@@ -372,7 +372,7 @@ void write_inst(int loc, int subloc, int flags) {
   if (loc == INST_LOC_DOWN) {
     re_write = true;
   } else {
-    if (a()->context().IsUserOnline()) {
+    if (a()->sess().IsUserOnline()) {
       if (ti.user != a()->usernum) {
         re_write = true;
         if (a()->usernum > 0 && a()->usernum <= a()->config()->max_users()) {

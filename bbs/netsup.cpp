@@ -94,9 +94,9 @@ void cleanup_net() {
   if (a()->nets()[0].sysnum == 0 && wwiv::stl::ssize(a()->nets()) == 1) {
     return;
   }
-  a()->context().hangup(true);
-  a()->context().using_modem(false);
-  if (a()->context().IsUserOnline()) {
+  a()->sess().hangup(true);
+  a()->sess().using_modem(false);
+  if (a()->sess().IsUserOnline()) {
     hang_it_up();
   }
 
@@ -123,7 +123,7 @@ void cleanup_net() {
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
     ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG);
     a()->status_manager()->RefreshStatusCache();
-    a()->context().SetCurrentReadMessageArea(-1);
+    a()->sess().SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
   }
   a()->Cls();
@@ -278,7 +278,7 @@ void print_pending_list() {
           "\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   bout.nl();
   a()->user()->SetStatus(ss);
-  if (!a()->context().IsUserOnline() && bout.lines_listed()) {
+  if (!a()->sess().IsUserOnline() && bout.lines_listed()) {
     bout.pausescr();
   }
 }

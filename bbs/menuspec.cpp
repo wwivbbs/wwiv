@@ -105,7 +105,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
     return 0;
   }
   bool ok = true;
-  while (nRecordNumber > 0 && ok && !a()->context().hangup()) {
+  while (nRecordNumber > 0 && ok && !a()->sess().hangup()) {
     a()->tleft(true);
     auto f = a()->current_file_area()->ReadFile(nRecordNumber);
     bout.nl();
@@ -122,7 +122,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
       auto s1 = FilePath(dir.path, f);
       if (dir.mask & mask_cdrom) {
-        s1 = FilePath(a()->context().dirs().temp_directory(), f);
+        s1 = FilePath(a()->sess().dirs().temp_directory(), f);
         if (!File::Exists(s1)) {
           File::Copy(FilePath(dir.path, f), s1);
         }
@@ -161,7 +161,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
       bout.nl(2);
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
-      if (a()->context().IsUserOnline()) {
+      if (a()->sess().IsUserOnline()) {
         a()->UpdateTopScreen();
       }
     } else {
@@ -223,7 +223,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.ansi && !okansi()) {
     return false;
   }
-  if (c.local_only && a()->context().using_modem()) {
+  if (c.local_only && a()->sess().using_modem()) {
     return false;
   }
   if (c.sl > a()->effective_sl()) {
@@ -262,7 +262,7 @@ void ChangeSubNumber() {
 
 void ChangeDirNumber() {
   auto done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     bout << "|#7Select Dir number : |#0";
 
     const auto s = mmkey(MMKeyAreaType::dirs);

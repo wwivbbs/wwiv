@@ -371,7 +371,7 @@ static void change_colors() {
         bout << "\r\nNot saved, then.\r\n\n";
       }
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 }
 
 void l_config_qscan() {
@@ -379,7 +379,7 @@ void l_config_qscan() {
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
     bout.bpla(fmt::sprintf("%c %s. %s",
-                           (a()->context().qsc_q[a()->usub[i].subnum / 32] &
+                           (a()->sess().qsc_q[a()->usub[i].subnum / 32] &
                             (1L << (a()->usub[i].subnum % 32)))
                                ? '*'
                                : ' ',
@@ -395,7 +395,7 @@ void config_qscan() {
     return;
   }
 
-  const auto oc = a()->context().current_user_sub_conf_num();
+  const auto oc = a()->sess().current_user_sub_conf_num();
   const auto os = a()->current_user_sub().subnum;
 
   bool done;
@@ -446,13 +446,13 @@ void config_qscan() {
         if (!s.empty()) {
           for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
             if (s == a()->usub[i].keys) {
-              a()->context().qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
+              a()->sess().qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
             }
             if (s == "S") {
-              a()->context().qsc_q[a()->usub[i].subnum / 32] |= (1L << (a()->usub[i].subnum % 32));
+              a()->sess().qsc_q[a()->usub[i].subnum / 32] |= (1L << (a()->usub[i].subnum % 32));
             }
             if (s == "C") {
-              a()->context().qsc_q[a()->usub[i].subnum / 32] &= ~(1L << (a()->usub[i].subnum % 32));
+              a()->sess().qsc_q[a()->usub[i].subnum / 32] &= ~(1L << (a()->usub[i].subnum % 32));
             }
           }
           if (s == "Q") {
@@ -462,14 +462,14 @@ void config_qscan() {
             l_config_qscan();
           }
         }
-      } while (!done && !a()->context().hangup());
+      } while (!done && !a()->sess().hangup());
       break;
     }
     if (!ok_multiple_conf(a()->user(), a()->uconfsub)) {
       done1 = true;
     }
 
-  } while (!done1 && !a()->context().hangup());
+  } while (!done1 && !a()->sess().hangup());
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, oc, os);
@@ -558,7 +558,7 @@ static void macroedit(char *macro_text) {
       break;
     }
     macro_text[i + 1] = 0;
-  } while (!done && i < 80 && !a()->context().hangup());
+  } while (!done && i < 80 && !a()->sess().hangup());
   bout.okskey(true);
   bout.Color(0);
   bout.nl();
@@ -609,7 +609,7 @@ static void make_macros() {
       done = true;
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 }
 
 static void change_password() {
@@ -728,7 +728,7 @@ void defaults(bool& need_menu_reload) {
   do {
     print_cur_stat();
     a()->tleft(true);
-    if (a()->context().hangup()) {
+    if (a()->sess().hangup()) {
       return;
     }
     bout.nl();
@@ -846,7 +846,7 @@ void defaults(bool& need_menu_reload) {
       enter_regnum();
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   a()->WriteCurrentUser();
 }
 
@@ -867,10 +867,10 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   if (bUseConf) {
     string s;
     if (type == 0) {
-      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->context().current_user_sub_conf_num()].confnum].conf_name, 26);
+      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->sess().current_user_sub_conf_num()].confnum].conf_name, 26);
     }
     else {
-      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->context().current_user_dir_conf_num()].confnum].conf_name, 26);
+      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum].conf_name, 26);
     }
     bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
@@ -889,7 +889,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
          *amount < max_lines * 2; this_sub++) {
       bout.clear_lines_listed();
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
-              (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
+              (a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               a()->subs().sub(a()->usub[this_sub].subnum).name);
       if (s.length() > 44) {
         s.resize(44);
@@ -909,7 +909,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
-                            a()->context().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
+                            a()->sess().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
                                                                                             : ' ',
         a()->dirs()[alias_dir].name);
       s[44] = 0;
@@ -967,7 +967,7 @@ static long is_inscan(int dir) {
     const auto key = std::to_string(sysdir ? dir : dir + 1);
     if (key == a()->udir[this_dir].keys) {
       const auto ad = a()->udir[this_dir].subnum;
-      return a()->context().qsc_n[ad / 32] & 1L << ad % 32;
+      return a()->sess().qsc_n[ad / 32] & 1L << ad % 32;
     }
   }
   return 0;
@@ -1001,7 +1001,7 @@ void config_scan_plus(int type) {
     menu_items.push_back("?");
   }
   bool done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     amount = 0;
     list_config_scan_plus(top, &amount, type);
     if (!amount) {
@@ -1013,11 +1013,11 @@ void config_scan_plus(int type) {
     }
     if (!done) {
       drawscan(pos, type ? is_inscan(top + pos) :
-               a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+               a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
     }
     bool redraw = true;
     bool menu_done = false;
-    while (!menu_done && !a()->context().hangup() && !done) {
+    while (!menu_done && !a()->sess().hangup() && !done) {
       command = side_menu(&side_pos, redraw, menu_items, 1,
                           a()->user()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :
@@ -1040,24 +1040,24 @@ void config_scan_plus(int type) {
         break;
       case COMMAND_DOWN:
         undrawscan(pos, type ? is_inscan(top + pos) :
-                   a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+                   a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
         ++pos;
         if (pos >= amount) {
           pos = 0;
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-                 a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+                 a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
       case COMMAND_UP:
-        undrawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+        undrawscan(pos, type ? is_inscan(top + pos) : a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] &
                                    (1L << (a()->usub[top + pos].subnum % 32)));
         if (!pos) {
           pos = amount - 1;
         } else {
           --pos;
         }
-        drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+        drawscan(pos, type ? is_inscan(top + pos) : a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] &
                                  (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
@@ -1065,12 +1065,12 @@ void config_scan_plus(int type) {
         if (type == 0) {
 #ifdef NOTOGGLESYSOP
           if (a()->usub[top + pos].subnum == 0) {
-            a()->context().qsc_q[a()->usub[top +g pos].subnum / 32] |=
+            a()->sess().qsc_q[a()->usub[top +g pos].subnum / 32] |=
                 (1L << (a()->usub[top + pos].subnum % 32));
           }
           else
 #endif
-              a()->context()
+              a()->sess()
                   .qsc_q[a()->usub[top + pos].subnum / 32] ^=
               (1L << (a()->usub[top + pos].subnum % 32));
         }
@@ -1080,11 +1080,11 @@ void config_scan_plus(int type) {
             const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
-              a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
+              a()->sess().qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
           }
         }
-        drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+        drawscan(pos, type ? is_inscan(top + pos) : a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] &
                                  (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
       } break;
@@ -1120,7 +1120,7 @@ void config_scan_plus(int type) {
           break;
         case 2:
           if (type == 0) {
-            a()->context().qsc_q[a()->usub[top + pos].subnum / 32] ^=
+            a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] ^=
                 (1L << (a()->usub[top + pos].subnum % 32));
           } else {
             bool sysdir = a()->udir[0].keys == "0";
@@ -1128,29 +1128,29 @@ void config_scan_plus(int type) {
               const auto s = fmt::format("{}", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
-                a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
+                a()->sess().qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
             }
           }
           drawscan(pos, type ? is_inscan(top + pos)
-                             : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+                             : a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] &
                                    (1L << (a()->usub[top + pos].subnum % 32)));
           redraw = false;
           break;
         case 3:
           if (type == 0) {
             for (size_t this_sub = 0; this_sub < a()->subs().subs().size(); this_sub++) {
-              if (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] &
+              if (a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] &
                   (1L << (a()->usub[this_sub].subnum % 32))) {
-                a()->context().qsc_q[a()->usub[this_sub].subnum / 32] ^=
+                a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] ^=
                     (1L << (a()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
-              if (a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
+              if (a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] &
                   (1L << (a()->udir[this_dir].subnum % 32))) {
-                a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
+                a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] ^=
                     1L << (a()->udir[this_dir].subnum % 32);
               }
             }
@@ -1162,17 +1162,17 @@ void config_scan_plus(int type) {
         case 4:
           if (type == 0) {
             for (auto this_sub = 0; this_sub < ssize(a()->subs().subs()); this_sub++) {
-              if (!(a()->context().qsc_q[a()->usub[this_sub].subnum / 32] &
+              if (!(a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] &
                     (1L << (a()->usub[this_sub].subnum % 32)))) {
-                a()->context().qsc_q[a()->usub[this_sub].subnum / 32] ^=
+                a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] ^=
                     (1L << (a()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
-              if (!(a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
+              if (!(a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] &
                     (1L << (a()->udir[this_dir].subnum % 32)))) {
-                a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
+                a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] ^=
                     1L << (a()->udir[this_dir].subnum % 32);
               }
             }
@@ -1197,25 +1197,25 @@ void config_scan_plus(int type) {
         case 6:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if (a()->context().current_user_sub_conf_num() > 0) {
-                a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() - 1);
+              if (a()->sess().current_user_sub_conf_num() > 0) {
+                a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() - 1);
               } else {
-                while ((a()->uconfsub[a()->context().current_user_sub_conf_num() + 1].confnum >= 0) &&
-                       (a()->context().current_user_sub_conf_num() < a()->subconfs.size() - 1)) {
-                  a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1);
+                while ((a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0) &&
+                       (a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1)) {
+                  a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
                 }
               }
-              setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
+              setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
             } else {
-              if (a()->context().current_user_dir_conf_num() > 0) {
-                a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() - 1);
+              if (a()->sess().current_user_dir_conf_num() > 0) {
+                a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() - 1);
               } else {
-                while (a()->uconfdir[a()->context().current_user_dir_conf_num() + 1].confnum >= 0 &&
-                       a()->context().current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
-                  a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() + 1);
+                while (a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0 &&
+                       a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
+                  a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
                 }
               }
-              setuconf(ConferenceType::CONF_DIRS, a()->context().current_user_dir_conf_num(), -1);
+              setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
             }
             pos = 0;
             menu_done = true;
@@ -1225,23 +1225,23 @@ void config_scan_plus(int type) {
         case 7:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if ((a()->context().current_user_sub_conf_num() < a()->subconfs.size() - 1)
-                  && (a()->uconfsub[a()->context().current_user_sub_conf_num() + 1].confnum >= 0)) {
-                a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1);
+              if ((a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1)
+                  && (a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0)) {
+                a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
               } else {
-                a()->context().set_current_user_sub_conf_num(0);
+                a()->sess().set_current_user_sub_conf_num(0);
               }
-              setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
+              setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
             }
 
             else {
-              if ((a()->context().current_user_dir_conf_num() < a()->dirconfs.size() - 1)
-                  && (a()->uconfdir[a()->context().current_user_dir_conf_num() + 1].confnum >= 0)) {
-                a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() + 1);
+              if ((a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1)
+                  && (a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0)) {
+                a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
               } else {
-                a()->context().set_current_user_dir_conf_num(0);
+                a()->sess().set_current_user_dir_conf_num(0);
               }
-              setuconf(ConferenceType::CONF_DIRS, a()->context().current_user_dir_conf_num(), -1);
+              setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
             }
             pos = 0;
             menu_done = true;

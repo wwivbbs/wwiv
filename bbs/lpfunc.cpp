@@ -71,7 +71,7 @@ static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Info");
   menu_items->push_back("ViewZip");
 
-  if (a()->context().using_modem()) {
+  if (a()->sess().using_modem()) {
     menu_items->push_back("Dload");
   } else {
     menu_items->push_back("Move");
@@ -126,7 +126,7 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (uint16_t this_dir = 0; this_dir < a()->dirs().size() && (!a()->context().hangup()) && (a()->udir[this_dir].subnum != -1)
+  for (uint16_t this_dir = 0; this_dir < a()->dirs().size() && (!a()->sess().hangup()) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
@@ -137,7 +137,7 @@ int listfiles_plus_function(int type) {
         scan_dir = true;
       }
     } else {
-      if (a()->context().qsc_n[also_this_dir / 32] & (1L << (also_this_dir % 32))) {
+      if (a()->sess().qsc_n[also_this_dir / 32] & (1L << (also_this_dir % 32))) {
         scan_dir = true;
       }
 
@@ -157,7 +157,7 @@ int listfiles_plus_function(int type) {
       int lines = 0;
       int changedir = 0;
 
-      while (!done && !a()->context().hangup() && !all_done) {
+      while (!done && !a()->sess().hangup() && !all_done) {
         checka(&all_done);
         if (!amount) {
           print_searching(&search_rec);
@@ -201,7 +201,7 @@ int listfiles_plus_function(int type) {
               bool redraw = true;
               save_file_pos = 0;
               bool menu_done = false;
-              while (!menu_done && !a()->context().hangup()) {
+              while (!menu_done && !a()->sess().hangup()) {
                 int command = side_menu(&menu_pos, redraw, menu_items, 2, max_lines + first_file_pos() + 1, &smc);
                 redraw = true;
                 bulk_move = 0;
@@ -300,7 +300,7 @@ ADD_OR_REMOVE_BATCH:
                           auto tf =
                               FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
-                          if (sysop_mode || !a()->context().using_modem() || File::Exists(tf)) {
+                          if (sysop_mode || !a()->sess().using_modem() || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos].numbytes);
                           } else if (lp_config.request_file) {
@@ -355,7 +355,7 @@ ADD_OR_REMOVE_BATCH:
                     menu_pos = 0;
                     break;
                   case 5:
-                    if (!sysop_mode && a()->context().using_modem()) {
+                    if (!sysop_mode && a()->sess().using_modem()) {
                       bout.cls();
                       menu_done = true;
                       save_file_pos = file_pos;
@@ -374,7 +374,7 @@ ADD_OR_REMOVE_BATCH:
                             auto tf =
                                 FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                                              wwiv::sdk::files::unalign(file_recs[file_pos].filename));
-                            if (sysop_mode || !a()->context().using_modem() || File::Exists(tf)) {
+                            if (sysop_mode || !a()->sess().using_modem() || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos].filename, a()->current_user_dir().subnum,
                                            file_recs[file_pos].numbytes);
                             } else if (lp_config.request_file) {

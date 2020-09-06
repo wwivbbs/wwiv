@@ -143,7 +143,7 @@ void normalupload(int dn) {
         bout << "That file is already here.\r\n\n";
         ok = 0;
       }
-    } else if (!a()->context().incom()) {
+    } else if (!a()->sess().incom()) {
       bout.nl();
       bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
       ok = 0;
@@ -234,7 +234,7 @@ void normalupload(int dn) {
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
-            if (a()->context().IsUserOnline()) {
+            if (a()->sess().IsUserOnline()) {
               a()->UpdateTopScreen();
             }
           }

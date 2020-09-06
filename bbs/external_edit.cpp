@@ -46,7 +46,7 @@ using namespace wwiv::strings;
 static bool external_edit_internal(const string& edit_filename, const string& working_directory,
                                    const editorrec& editor, int numlines) {
 
-  string editorCommand = (a()->context().incom()) ? editor.filename : editor.filenamecon;
+  string editorCommand = (a()->sess().incom()) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
     bout.pausescr();
@@ -115,7 +115,7 @@ bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
   }
 
   const auto& editor = a()->editors[editor_number];
-  auto eme = CreateExternalMessageEditor(editor, data, maxli, setanon, a()->context().dirs().temp_directory());
+  auto eme = CreateExternalMessageEditor(editor, data, maxli, setanon, a()->sess().dirs().temp_directory());
   return eme->Run();
 }
 
@@ -133,7 +133,7 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   MessageEditorData data{};
   data.msged_flags = flags;
   int setanon = 0;
-  auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->context().dirs().temp_directory());
+  auto eme = CreateExternalMessageEditor(editor, data, numlines, &setanon, a()->sess().dirs().temp_directory());
   if (!eme->Before()) {
     return false;
   }

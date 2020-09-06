@@ -76,7 +76,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     return false;
   }
 
-  auto cm = a()->context().chatting();
+  auto cm = a()->sess().chatting();
 
   auto begx = bout.wherex();
   if (rollover[0] != 0) {
@@ -113,7 +113,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     if (two_color) {
       bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
     }
-    if (cm != chatting_t::none && a()->context().chatting() == chatting_t::none) {
+    if (cm != chatting_t::none && a()->sess().chatting() == chatting_t::none) {
         ch = RETURN;
     }
     if (ch >= SPACE) {
@@ -234,9 +234,9 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
       break;
       }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 
-  if (a()->context().hangup()) {
+  if (a()->sess().hangup()) {
     // Caller isn't here, so we are not saving any message.
     return false;
   }
@@ -302,10 +302,10 @@ bool lcs() {
   }
 
   if (a()->effective_slrec().ability & ability_limited_cosysop) {
-    if (*a()->context().qsc == 999) {
+    if (*a()->sess().qsc == 999) {
       return true;
     }
-    return (*a()->context().qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
+    return (*a()->sess().qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
   }
   return false;
 }
@@ -342,7 +342,7 @@ bool checka(bool *abort, bool *next) {
     *abort = true;
     bout.clearnsp();
   }
-  while (bin.bkbhit() && !*abort && !a()->context().hangup()) {
+  while (bin.bkbhit() && !*abort && !a()->sess().hangup()) {
     a()->CheckForHangup();
     char ch = bin.bgetch();
     switch (ch) {
@@ -395,7 +395,7 @@ bool sysop2() {
 // cursor position interrogation ANSI sequence for remote detection.
 // If the user is asked and choosed NO, then -1 is returned.
 int check_ansi() {
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return 1;
   }
 

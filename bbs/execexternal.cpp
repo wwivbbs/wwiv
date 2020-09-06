@@ -41,9 +41,9 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   [[maybe_unused]] auto _ = create_chain_file();
 
   // get ready to run it
-  if (a()->context().IsUserOnline()) {
+  if (a()->sess().IsUserOnline()) {
     a()->WriteCurrentUser();
-    write_qscn(a()->usernum, a()->context().qsc, false);
+    write_qscn(a()->usernum, a()->sess().qsc, false);
   }
 
   // extra processing for net programs
@@ -53,11 +53,11 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
 
   auto exec_dir = a()->bbsdir();
   if (nFlags & EFLAG_TEMP_DIR) {
-    exec_dir = a()->context().dirs().temp_directory();
+    exec_dir = a()->sess().dirs().temp_directory();
   } else if (nFlags & EFLAG_BATCH_DIR) {
-    exec_dir = a()->context().dirs().batch_directory();
+    exec_dir = a()->sess().dirs().batch_directory();
   } else if (nFlags & EFLAG_QWK_DIR) {
-    exec_dir = a()->context().dirs().qwk_directory();
+    exec_dir = a()->sess().dirs().qwk_directory();
   }
   if (!(nFlags & EFLAG_NO_CHANGE_DIR)) {
     if (!File::set_current_directory(exec_dir)) {
@@ -75,9 +75,9 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   File::set_current_directory(a()->bbspath());
 
   // Reread the user record.
-  if (a()->context().IsUserOnline()) {
+  if (a()->sess().IsUserOnline()) {
     a()->ReadCurrentUser();
-    read_qscn(a()->usernum, a()->context().qsc, false, true);
+    read_qscn(a()->usernum, a()->sess().qsc, false, true);
     a()->UpdateTopScreen();
   }
 

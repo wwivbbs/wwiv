@@ -71,7 +71,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   if (a()->upload_cmd.empty()) {
     return true;
   }
-  const auto comport = std::to_string(a()->context().incom() ? a()->primary_port() : 0);
+  const auto comport = std::to_string(a()->sess().incom() ? a()->primary_port() : 0);
   const auto cmdLine =
       stuff_in(a()->upload_cmd, create_chain_file(), a()->dirs()[directory_num].path,
                FileName(u->filename).unaligned_filename(), comport, "");
@@ -136,7 +136,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
   string name_to_delete;
 
   if (a()->dirs()[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    const auto full_pathname = FilePath(a()->context().dirs().temp_directory(), file_name);
+    const auto full_pathname = FilePath(a()->sess().dirs().temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
       const auto name_in_dir = FilePath(dir, file_name);
       File::Copy(name_in_dir, full_pathname);
@@ -350,7 +350,7 @@ void listfiles() {
 
   auto* area = a()->current_file_area();
   bool abort = false;
-  for (int i = 1; i <= area->number_of_files() && !abort && !a()->context().hangup(); i++) {
+  for (int i = 1; i <= area->number_of_files() && !abort && !a()->sess().hangup(); i++) {
     auto f = area->ReadFile(i);
     if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
       if (need_title) {
@@ -361,7 +361,7 @@ void listfiles() {
       printinfo(&f.u(), &abort);
 
       // Moved to here from bputch.cpp
-      if (bout.lines_listed() >= a()->context().num_screen_lines() - 3) {
+      if (bout.lines_listed() >= a()->sess().num_screen_lines() - 3) {
         if (!a()->filelist.empty()) {
           tag_files(need_title);
           bout.clear_lines_listed();
@@ -378,20 +378,20 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
   const auto old_cur_dir = a()->current_user_dir_num();
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
-  if (this_date >= a()->context().nscandate()) {
+  if (this_date >= a()->sess().nscandate()) {
     if (okansi()) {
       *abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
       a()->set_current_user_dir_num(old_cur_dir);
       return;
     }
     auto* area = a()->current_file_area();
-    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->context().hangup();
+    for (int i = 1; i <= a()->current_file_area()->number_of_files() && !*abort && !a()->sess().hangup();
          i++) {
       a()->CheckForHangup();
       auto f = area->ReadFile(i);
-      if (f.u().daten >= a()->context().nscandate()) {
+      if (f.u().daten >= a()->sess().nscandate()) {
         if (need_title) {
-          if (bout.lines_listed() >= a()->context().num_screen_lines() - 7 && !a()->filelist.empty()) {
+          if (bout.lines_listed() >= a()->sess().num_screen_lines() - 7 && !a()->filelist.empty()) {
             tag_files(need_title);
           }
           if (need_title) {
@@ -411,7 +411,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
 
 void nscanall() {
   bool scan_all_confs = false;
-  a()->context().scanned_files(true);
+  a()->sess().scanned_files(true);
 
   if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
     bout.nl();
@@ -451,7 +451,7 @@ void nscanall() {
       }
     }
     int nSubNum = a()->udir[i].subnum;
-    if (a()->context().qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
+    if (a()->sess().qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
       bool need_title = true;
       nscandir(i, need_title, &abort);
     }
@@ -488,11 +488,11 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->context().hangup()
+  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->sess().hangup()
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;
-    if (a()->context().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
+    if (a()->sess().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
       bIsDirMarked = true;
     }
     bIsDirMarked = true;
@@ -516,12 +516,12 @@ void searchall() {
       dliscan();
       bool need_title = true;
       auto* area = a()->current_file_area();
-      for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->context().hangup();
+      for (int i1 = 1; i1 <= a()->current_file_area()->number_of_files() && !abort && !a()->sess().hangup();
            i1++) {
         auto f = area->ReadFile(i1);
         if (wwiv::sdk::files::aligned_wildcard_match(filemask, f.aligned_filename())) {
           if (need_title) {
-            if (bout.lines_listed() >= a()->context().num_screen_lines() - 7 && !a()->filelist.empty()) {
+            if (bout.lines_listed() >= a()->sess().num_screen_lines() - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {

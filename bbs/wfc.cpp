@@ -269,7 +269,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     if (io->KeyPressed()) {
       a_->set_at_wfc(false);
       a_->ReadCurrentUser(sysop_usernum);
-      read_qscn(1, a()->context().qsc, false);
+      read_qscn(1, a()->sess().qsc, false);
       a_->set_at_wfc(true);
       ch = to_upper_case<char>(io->GetChar());
       if (ch == 0) {
@@ -387,10 +387,10 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'I': {
         Clear();
         a_->usernum = 1;
-        a_->context().SetUserOnline(true);
+        a_->sess().SetUserOnline(true);
         get_user_ppp_addr();
         send_inet_email();
-        a_->context().SetUserOnline(false);
+        a_->sess().SetUserOnline(false);
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
       } break;
@@ -507,7 +507,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       Clear();
       a_->frequent_init();
       a_->ReadCurrentUser(sysop_usernum);
-      read_qscn(1, a()->context().qsc, false);
+      read_qscn(1, a()->sess().qsc, false);
       a_->reset_effective_sl();
       a_->usernum = sysop_usernum;
 
@@ -583,7 +583,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   auto saved_at_wfc = a_->at_wfc();
   a_->set_at_wfc(false);
   a_->ReadCurrentUser();
-  read_qscn(a_->usernum, a()->context().qsc, false);
+  read_qscn(a_->usernum, a()->sess().qsc, false);
   a_->set_at_wfc(saved_at_wfc);
   bout.bputch(ch);
   a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");

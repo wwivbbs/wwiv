@@ -92,7 +92,7 @@ static void listbatch() {
   bout.nl(2);
   int current_num = 0;
   for (const auto& b : a()->batch().entry) {
-    if (abort || a()->context().hangup()) {
+    if (abort || a()->sess().hangup()) {
       break;
     }
     string buffer;
@@ -197,7 +197,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         }
         while (nRecNum != -1 && f.numbytes() != 0);
         if (nRecNum != -1 && f.numbytes() == 0) {
-          const auto source_filename = FilePath(a()->context().dirs().batch_directory(), file_name);
+          const auto source_filename = FilePath(a()->sess().dirs().batch_directory(), file_name);
           const auto dest_filename = FilePath(a()->dirs()[b.dir()].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             File::Rename(source_filename, dest_filename);
@@ -250,7 +250,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplog() << fmt::sprintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(FilePath(a()->context().dirs().batch_directory(), file_name));
+    File::Remove(FilePath(a()->sess().dirs().batch_directory(), file_name));
   }
 }
 
@@ -292,7 +292,7 @@ static void bihangup() {
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to Hangup, or any other key to return to system.\r\n";
 
-  while (!bin.bkbhit() && !a()->context().hangup()) {
+  while (!bin.bkbhit() && !a()->sess().hangup()) {
     const auto dd = steady_clock::now();
     const auto elapsed = dd - batch_lastchar;
     if (elapsed > nextbeep) {
@@ -320,7 +320,7 @@ static void bihangup() {
 void zmbatchdl(bool bHangupAfterDl) {
   int cur = 0;
 
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return;
   }
 
@@ -364,7 +364,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         if (a()->dirs()[dir_num].mask & mask_cdrom) {
           auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
           // update the send filename and copy it from the CD-ROM
-          send_filename = FilePath(a()->context().dirs().temp_directory(), f);
+          send_filename = FilePath(a()->sess().dirs().temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -381,7 +381,7 @@ void zmbatchdl(bool bHangupAfterDl) {
       a()->batch().delbatch(cur);
     }
   }
-  while (ok && !a()->context().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
+  while (ok && !a()->sess().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
 
   if (bRatioBad) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
@@ -412,7 +412,7 @@ char end_ymodem_batch1() {
       }
     }
   }
-  while (!done && !a()->context().hangup() && !bAbort);
+  while (!done && !a()->sess().hangup() && !bAbort);
   if (ch == CF) {
     return CF;
   }
@@ -430,13 +430,13 @@ static void end_ymodem_batch() {
   if (!okstart(&ucrc, &abort)) {
     abort = true;
   }
-  if (!abort && !a()->context().hangup()) {
+  if (!abort && !a()->sess().hangup()) {
     const char ch = end_ymodem_batch1();
     if (ch == CX) {
       abort = true;
     }
     if (ch == CU) {
-      const auto fn = FilePath(a()->context().dirs().temp_directory(),
+      const auto fn = FilePath(a()->sess().dirs().temp_directory(),
                                    StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
       File::Remove(fn);
       File nullFile(fn);
@@ -452,7 +452,7 @@ static void end_ymodem_batch() {
 void ymbatchdl(bool bHangupAfterDl) {
   int cur = 0;
 
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     return;
   }
   auto message = StrCat("Ymodem Download: Files - ", a()->batch().size(),
@@ -494,7 +494,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         auto send_filename = FilePath(a()->dirs()[dir_num].path, f);
         if (a()->dirs()[dir_num].mask & mask_cdrom) {
           auto orig_filename = FilePath(a()->dirs()[dir_num].path, f);
-          send_filename = FilePath(a()->context().dirs().temp_directory(), f);
+          send_filename = FilePath(a()->sess().dirs().temp_directory(), f);
           if (!File::Exists(send_filename)) {
             File::Copy(orig_filename, send_filename);
           }
@@ -510,9 +510,9 @@ void ymbatchdl(bool bHangupAfterDl) {
       a()->batch().delbatch(cur);
     }
   }
-  while (ok && !a()->context().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
+  while (ok && !a()->sess().hangup() && ssize(a()->batch().entry) > cur && !bRatioBad);
 
-  if (ok && !a()->context().hangup()) {
+  if (ok && !a()->sess().hangup()) {
     end_ymodem_batch();
   }
   if (bRatioBad) {
@@ -567,7 +567,7 @@ static std::filesystem::path make_dl_batch_list() {
     string filename_to_send;
     if (a()->dirs()[b.dir()].mask & mask_cdrom) {
       const auto fileToSend =
-          FilePath(a()->context().dirs().temp_directory(), files::FileName(b.aligned_filename()));
+          FilePath(a()->sess().dirs().temp_directory(), files::FileName(b.aligned_filename()));
       if (!File::Exists(fileToSend)) {
         auto sourceFile = FilePath(a()->dirs()[b.dir()].path, files::FileName(b.aligned_filename()));
         File::Copy(sourceFile, fileToSend);
@@ -613,7 +613,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                                       user_name_number, a()->modem_speed_, dl, commandLine);
     a()->localIO()->Puts(message);
-    if (a()->context().incom()) {
+    if (a()->sess().incom()) {
       File::Remove(a()->dsz_logfile_name_, true);
       ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_PROT_BATCH) | EFLAG_BATCH_DIR);
       if (bHangupAfterDl) {
@@ -796,7 +796,7 @@ int batchdl(int mode) {
       break;
     }
   }
-  while (!done && !a()->context().hangup());
+  while (!done && !a()->sess().hangup());
   return 0;
 }
 
@@ -842,7 +842,7 @@ void upload(int dn) {
       break;
     }
   }
-  while (!done && !a()->context().hangup());
+  while (!done && !a()->sess().hangup());
 }
 
 std::chrono::seconds time_to_transfer(int32_t file_size, int32_t modem_speed) {

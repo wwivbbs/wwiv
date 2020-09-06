@@ -61,10 +61,10 @@ using namespace wwiv::strings;
 static const char crlf[] = "\r\n";
 
 static bool GetMessageToName(MessageEditorData& data) {
-  // If a()->context().GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+  // If a()->sess().GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
-  if (a()->context().GetCurrentReadMessageArea() == -1 || data.is_email()) {
+  if (a()->sess().GetCurrentReadMessageArea() == -1 || data.is_email()) {
     return false;
   }
 
@@ -87,7 +87,7 @@ static bool GetMessageToName(MessageEditorData& data) {
         data.to_name = to_name;
       }
       return true;
-      // WTF??? strcpy(a()->context().irt_, "\xAB");
+      // WTF??? strcpy(a()->sess().irt_, "\xAB");
     }
   }
 
@@ -105,20 +105,20 @@ static void GetMessageTitle(MessageEditorData& data) {
       bout << data.title;
       return;
     }
-    auto irt = a()->context().irt();
+    auto irt = a()->sess().irt();
     if (!irt.empty() && irt.front() != '\xAB') {
       string s1;
       auto ch = '\0';
-      irt = stripcolors(StringTrim(a()->context().irt()));
+      irt = stripcolors(StringTrim(a()->sess().irt()));
       if (strncasecmp(irt.c_str(), "re:", 3) != 0) {
         if (data.silent_mode) {
           s1 = irt;
-          a()->context().clear_irt();
+          a()->sess().clear_irt();
         } else {
           s1 = StrCat("Re: ", irt);
         }
       } else {
-        s1 = a()->context().irt();
+        s1 = a()->sess().irt();
       }
       if (s1.length() > 60) {
         s1.resize(60);
@@ -153,7 +153,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     }
   } else {
     if (data.silent_mode || force_title) {
-      data.title = a()->context().irt();
+      data.title = a()->sess().irt();
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
@@ -186,7 +186,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   auto done = false;
   string rollover_line;
   std::vector<std::string> quoted_lines;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
       // returning true means we back spaced past the current line.
       // intuitive eh?
@@ -201,7 +201,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
         curli = 0;
       }
     }
-    if (a()->context().hangup()) {
+    if (a()->sess().hangup()) {
       done = true;
     }
     check_message_size = true;
@@ -407,7 +407,7 @@ static std::filesystem::path FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& to_name) {
-  if (a()->subs().subs().empty() && a()->context().GetCurrentReadMessageArea() <= 0) {
+  if (a()->subs().subs().empty() && a()->sess().GetCurrentReadMessageArea() <= 0) {
     return;
   }
   if (is_email) {
@@ -458,7 +458,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const auto quotes_filename = FilePath(a()->context().dirs().temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -474,7 +474,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const auto msginf_filename = FilePath(a()->context().dirs().temp_directory(), "msginf");
+  const auto msginf_filename = FilePath(a()->sess().dirs().temp_directory(), "msginf");
   File::Copy(quotes_filename, msginf_filename);
 }
 
@@ -545,7 +545,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
+  const auto exted_filename = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }

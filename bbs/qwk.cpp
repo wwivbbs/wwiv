@@ -95,7 +95,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
 bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
-  TextFile fp(FilePath(a()->context().dirs().qwk_directory(), "CONTROL.DAT"), "wd");
+  TextFile fp(FilePath(a()->sess().dirs().qwk_directory(), "CONTROL.DAT"), "wd");
   if (!fp) {
     return false;
   }
@@ -113,7 +113,7 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_in
   fp.WriteLine(qwk_info->qwk_rec_num);
   
   const auto max_size = a()->subs().subs().size();
-  const qscan_bitset qb(a()->context().qsc_q, max_size);
+  const qscan_bitset qb(a()->sess().qsc_q, max_size);
   std::vector<std::pair<int, std::string>> subs_list;
   for (size_t cur = 0; a()->usub[cur].subnum != -1 && cur < max_size; cur++) {
     const auto subnum = a()->usub[cur].subnum;
@@ -145,7 +145,7 @@ void build_qwk_packet() {
   auto save_conf = false;
   SaveQScanPointers save_qscan;
 
-  remove_from_temp("*.*", a()->context().dirs().qwk_directory(), false);
+  remove_from_temp("*.*", a()->sess().dirs().qwk_directory(), false);
 
   if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
     save_conf = true;
@@ -168,7 +168,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const auto filename = FilePath(a()->context().dirs().batch_directory(), MESSAGES_DAT).string();
+  const auto filename = FilePath(a()->sess().dirs().batch_directory(), MESSAGES_DAT).string();
   qwk_junk qwk_info{};
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
@@ -223,9 +223,9 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (uint16_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->context().hangup()) && !qwk_info.abort && msgs_ok; i++) {
+  for (uint16_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->sess().hangup()) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
-    if (a()->context().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
+    if (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
   }
@@ -262,8 +262,8 @@ void build_qwk_packet() {
     finish_qwk(&qwk_info);
   }
 
-  // Restore on a()->context().hangup() too, someone might have hungup in the middle of building the list
-  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->context().hangup()) {
+  // Restore on a()->sess().hangup() too, someone might have hungup in the middle of building the list
+  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->sess().hangup()) {
     save_qscan.restore();
     if (qwk_info.abort) {
       sysoplog() << "Aborted";
@@ -282,11 +282,11 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
   const auto sn = a()->usub[bn].subnum;
 
-  if (a()->context().hangup() || (sn < 0)) {
+  if (a()->sess().hangup() || (sn < 0)) {
     return;
   }
 
-  auto qscnptrx = a()->context().qsc_p[sn];
+  auto qscnptrx = a()->sess().qsc_p[sn];
   const auto sd = WWIVReadLastRead(sn);
 
   if (qwk_percent || (!sd || sd > qscnptrx)) {
@@ -299,7 +299,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
       return;
     }
 
-    qscnptrx = a()->context().qsc_p[sn];
+    qscnptrx = a()->sess().qsc_p[sn];
 
     if (!qwk_percent) {
       // Find out what message number we are on
@@ -327,14 +327,14 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
     if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
         && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
-      if ((get_post(i)->qscan > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) ||
+      if ((get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) ||
           qwk_percent) {
         qwk_start_read(i, qwk_info);  // read messsage
       }
     }
 
     auto status = a()->status_manager()->GetStatus();
-    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] =
+    a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] =
         status->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
   } 
@@ -342,9 +342,9 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 }
 
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
-  a()->context().clear_irt();
+  a()->sess().clear_irt();
 
-  if (a()->context().GetCurrentReadMessageArea() < 0) {
+  if (a()->sess().GetCurrentReadMessageArea() < 0) {
     return;
   }
   // Used to be inside do loop
@@ -374,7 +374,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     ++amount;
     checka(&qwk_info->abort);
 
-  } while (!done && !a()->context().hangup() && !qwk_info->abort);
+  } while (!done && !a()->sess().hangup() && !qwk_info->abort);
   bout.bputch('\r');
 }
 
@@ -398,9 +398,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
 
   if (p->qscan >
-      a()->context()
-          .qsc_p[a()->context().GetCurrentReadMessageArea()]) { // Update qscan pointer right here
-    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] = p->qscan; // And here
+      a()->sess()
+          .qsc_p[a()->sess().GetCurrentReadMessageArea()]) { // Update qscan pointer right here
+    a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] = p->qscan; // And here
   }
 }
 
@@ -522,7 +522,7 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
 static void qwk_remove_null(char *memory, int size) {
   int pos = 0;
 
-  while (pos < size && !a()->context().hangup()) {
+  while (pos < size && !a()->sess().hangup()) {
     if (memory[pos] == 0) {
       (memory)[pos] = ' ';
     }
@@ -616,7 +616,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
       const auto filename = fmt::sprintf("%s%03d.NDX", 
-        a()->context().dirs().qwk_directory(),
+        a()->sess().dirs().qwk_directory(),
                                          a()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
@@ -634,7 +634,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec_pos += static_cast<uint16_t>(amount_blocks);
 
   int cur_block = 2;
-  while (cur_block <= amount_blocks && !a()->context().hangup()) {
+  while (cur_block <= amount_blocks && !a()->sess().hangup()) {
     size_t this_pos;
     memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
     this_pos = (cur_block - 2) * sizeof(qwk_info->qwk_rec);
@@ -671,7 +671,7 @@ void qwk_menu() {
   const auto qwk_cfg = read_qwk_cfg();
 
   auto done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     bout.cls();
     printfile("QWK");
     if (so()) {
@@ -716,7 +716,7 @@ void qwk_menu() {
     case 'D': {
       sysoplog() << "Download QWK packet";
       auto namepath =
-          FilePath(a()->context().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
+          FilePath(a()->sess().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -730,7 +730,7 @@ void qwk_menu() {
       sysoplog() << "Down/Up QWK/REP packet";
 
       auto namepath =
-          FilePath(a()->context().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
+          FilePath(a()->sess().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
       File::Remove(namepath);
 
       build_qwk_packet();
@@ -982,26 +982,26 @@ void qwk_nscan() {
     }
 
     i1 = a()->udir[i].subnum;
-    if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
+    if (a()->sess().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       if ((dir_dates[a()->udir[i].subnum]) &&
-          (dir_dates[a()->udir[i].subnum] < a()->context().nscandate())) {
+          (dir_dates[a()->udir[i].subnum] < a()->sess().nscandate())) {
         continue;
       }
 
       od = a()->current_user_dir_num();
       a()->set_current_user_dir_num(i);
       dliscan();
-      if (this_date >= a()->context().nscandate()) {
+      if (this_date >= a()->sess().nscandate()) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
                 a()->dirs()[a()->current_user_dir().subnum].name,
                 a()->current_user_dir().keys, numf, "files");
         write(newfile,  s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
-        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->context().hangup()); i5++) {
+        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->sess().hangup()); i5++) {
           SETREC(f, i5);
           read(f, &u, sizeof(uploadsrec));
-          if (u.daten >= a()->context().nscandate()) {
+          if (u.daten >= a()->sess().nscandate()) {
             sprintf(s, "%s %5ldk  %s\r\n", u.filename, (long) bytes_to_k(u.numbytes), u.description);
             write(newfile,  s, strlen(s));
 
@@ -1074,19 +1074,19 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     if (!qwk_cfg.hello.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.hello);
-      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.hello);
+      auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), qwk_cfg.hello);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.news.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.news);
-      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.news);
+      auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), qwk_cfg.news);
       File::Copy(parem1, parem2);
     }
 
     if (!qwk_cfg.bye.empty()) {
       auto parem1 = FilePath(a()->config()->gfilesdir(), qwk_cfg.bye);
-      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), qwk_cfg.bye);
+      auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), qwk_cfg.bye);
     }
 
     for (const auto& b : qwk_cfg.bulletins) {
@@ -1097,7 +1097,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       // If we want to only copy if bulletin is newer than the users laston date:
       // if(file_daten(qwk_cfg.blt[x]) > date_to_daten(a()->user()->GetLastOnDateNumber()))
-      auto parem2 = FilePath(a()->context().dirs().qwk_directory(), b.name);
+      auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), b.name);
       File::Copy(b.path, parem2);
     }
   }
@@ -1113,13 +1113,13 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
   string qwk_file_to_send;
   if (!qwk_info->abort) {
-    auto parem1 = FilePath(a()->context().dirs().qwk_directory(), qwkname);
-    auto parem2 = FilePath(a()->context().dirs().qwk_directory(), "*.*");
+    auto parem1 = FilePath(a()->sess().dirs().qwk_directory(), qwkname);
+    auto parem2 = FilePath(a()->sess().dirs().qwk_directory(), "*.*");
 
     auto command = stuff_in(a()->arcs[archiver].arca, parem1.string(), parem2.string(), "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = StrCat(a()->context().dirs().qwk_directory(), qwkname);
+    qwk_file_to_send = StrCat(a()->sess().dirs().qwk_directory(), qwkname);
     // TODO(rushfan): Should we just have a make abs path?
     make_abs_cmd(a()->bbsdir(), &qwk_file_to_send);
 
@@ -1139,8 +1139,8 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     }
   }
 
-  if (a()->context().incom()) {
-    while (!done && !qwk_info->abort && !a()->context().hangup()) {
+  if (a()->sess().incom()) {
+    while (!done && !qwk_info->abort && !a()->sess().hangup()) {
       bool abort = false;
       qwk_send_file(qwk_file_to_send, &sent, &abort);
       if (sent) {
@@ -1165,7 +1165,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         qwk_info->abort = true;
       }
     }
-  } else while (!done && !a()->context().hangup() && !qwk_info->abort) {
+  } else while (!done && !a()->sess().hangup() && !qwk_info->abort) {
     bout.Color(2);
     bout << "Move to what dir? ";
     bout.mpl(60);
@@ -1184,7 +1184,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       }
     }
 
-    auto ofile = FilePath(a()->context().dirs().qwk_directory(), qwkname);
+    auto ofile = FilePath(a()->sess().dirs().qwk_directory(), qwkname);
     if (!replacefile(ofile.string(), nfile.string())) {
       bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
       if (!bin.noyes()) {

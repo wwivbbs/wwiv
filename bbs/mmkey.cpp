@@ -77,7 +77,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         ch = upcase(ch);
         return string(1, ch);
       }
-    } while ((ch <= ' ' || ch > 126) && !a()->context().hangup());
+    } while ((ch <= ' ' || ch > 126) && !a()->sess().hangup());
     ch = upcase(ch);
     bout.bputch(ch);
     if (ch == RETURN) {
@@ -100,7 +100,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
     do {
       do {
         ch = mmkey_getch();
-      } while (((ch < ' ' && ch != RETURN && ch != BACKSPACE) || ch > 126) && !a()->context().hangup());
+      } while (((ch < ' ' && ch != RETURN && ch != BACKSPACE) || ch > 126) && !a()->sess().hangup());
       ch = upcase(ch);
       if (ch == RETURN) {
         bout.nl();
@@ -126,7 +126,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         }
       }
     } while (cp > 0);
-  } while (!a()->context().hangup());
+  } while (!a()->sess().hangup());
   return{};
 }
 

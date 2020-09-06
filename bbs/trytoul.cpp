@@ -86,10 +86,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
   } else {
     char temp[10];
 
-    // The a()->context().hangup() check is below so uploads get uploaded even on a()->context().hangup()
+    // The a()->sess().hangup() check is below so uploads get uploaded even on a()->sess().hangup()
     done = false;
     while (!done) {
-      if (a()->context().hangup()) {
+      if (a()->sess().hangup()) {
         if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
           dn = a()->config()->new_uploads_dir();
         } else {
@@ -197,7 +197,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  const auto src = FilePath(a()->context().dirs().batch_directory(), file_name);
+  const auto src = FilePath(a()->sess().dirs().batch_directory(), file_name);
   const auto dest = FilePath(d.path, file_name);
 
   if (File::Exists(dest)) {
@@ -210,7 +210,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bool file_id_avail = get_file_idz(f, a()->dirs()[dn]);
   done = false;
 
-  while (!done && !a()->context().hangup() && !file_id_avail) {
+  while (!done && !a()->sess().hangup() && !file_id_avail) {
     bout.cls();
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
@@ -348,7 +348,7 @@ int try_to_ul(const string& file_name) {
 
   sysoplog() << fmt::format("Failed to upload {}, moving to TRY2UL dir", file_name);
 
-  const auto src = FilePath(a()->context().dirs().batch_directory(), file_name);
+  const auto src = FilePath(a()->sess().dirs().batch_directory(), file_name);
   const auto dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I choose to
@@ -357,7 +357,7 @@ int try_to_ul(const string& file_name) {
   // it clean and up to date
   File::Copy(src, dest); // copy file from batch dir,to try2ul dir */
 
-  if (a()->context().IsUserOnline()) {
+  if (a()->sess().IsUserOnline()) {
     a()->UpdateTopScreen();
   }
 

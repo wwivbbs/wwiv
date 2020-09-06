@@ -97,7 +97,7 @@ void YourInfo() {
                          a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
   const auto minutes_used =
-      duration_cast<minutes>(a()->user()->timeon()  + a()->context().duration_used_this_session()).count();
+      duration_cast<minutes>(a()->user()->timeon()  + a()->sess().duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
@@ -125,7 +125,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(FilePath(a()->context().dirs().temp_directory(), INPUT_MSG));
+  File file(FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG));
   const auto max_bytes = 250 * static_cast<File::size_type>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << max_bytes << wwiv::endl << wwiv::endl;
@@ -152,7 +152,7 @@ void upload_post() {
  */
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  a()->context().clear_irt();
+  a()->sess().clear_irt();
 
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
   auto username = bin.input_text(75);
@@ -191,7 +191,7 @@ void edit_confs() {
     return;
   }
 
-  while (!a()->context().hangup()) {
+  while (!a()->sess().hangup()) {
     bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
     bout << "|#21|#9)|#1 Subs\r\n";
     bout << "|#22|#9)|#1 Dirs\r\n";
@@ -233,7 +233,7 @@ void feedback(bool bNewUserFeedback) {
     email(title, 1, 0, true, 0, false);
     return;
   }
-  if (a()->context().guest_user()) {
+  if (a()->sess().guest_user()) {
     a()->status_manager()->RefreshStatusCache();
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;

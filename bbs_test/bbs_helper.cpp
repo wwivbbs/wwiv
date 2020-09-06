@@ -74,7 +74,7 @@ void BbsHelper::SetUp() {
 
   auto sysconfig = make_unique<configrec>();
 
-  a()->context().dirs().language_directory(dir_en_gfiles_);
+  a()->sess().dirs().language_directory(dir_en_gfiles_);
   auto config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
   config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);
@@ -82,7 +82,7 @@ void BbsHelper::SetUp() {
   user_ = a()->user();
   // No pause in tests.
   user_->ClearStatusFlag(User::pauseOnPage);
-  a()->context().num_screen_lines(std::numeric_limits<int>::max());
+  a()->sess().num_screen_lines(std::numeric_limits<int>::max());
 
   // Create a reasonable default user.  Some tests (bputch/bputs tests)
   // Require a properly constructed user.
@@ -96,8 +96,8 @@ void BbsHelper::SetUp() {
   // Reset the color attribute to 7 between tests.
   bout.curatr(7);
   // We need this true so our bputch tests can capture remote.
-  a()->context().outcom(true);
-  a()->context().ok_modem_stuff(true);
+  a()->sess().outcom(true);
+  a()->sess().ok_modem_stuff(true);
 }
 
 void BbsHelper::TearDown() {

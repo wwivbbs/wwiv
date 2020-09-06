@@ -43,7 +43,7 @@ using namespace wwiv::strings;
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 std::filesystem::path CreateFullPathToPrint(const string& basename) {
-  std::vector<string> dirs{a()->context().dirs().language_directory(), a()->config()->gfilesdir()};
+  std::vector<string> dirs{a()->sess().dirs().language_directory(), a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
     auto file{FilePath(base, basename)};
     if (basename.find('.') != string::npos) {
@@ -156,7 +156,7 @@ void print_local_file(const string& filename) {
 }
 
 bool printfile_random(const std::string& base_fn) {
-  const auto& dir = a()->context().dirs().language_directory();
+  const auto& dir = a()->sess().dirs().language_directory();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
   if (File::Exists(dot_zero)) {
     auto screens = 0;

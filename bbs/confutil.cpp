@@ -64,7 +64,7 @@ static bool access_conf(User * u, int sl, const confrec * c) {
   if (age < c->minage || (c->maxage != 0 && age > c->maxage)) {
     return false;
   }
-  if (a()->context().incom() && a()->modem_speed_ < c->minbps) {
+  if (a()->sess().incom() && a()->modem_speed_ < c->minbps) {
     return false;
   }
   if (c->ar && !u->HasArFlag(c->ar)) {
@@ -295,16 +295,16 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
   switch (nConferenceType) {
   case ConferenceType::CONF_SUBS:
     if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_subconf(num)) {
-      a()->context().set_current_user_sub_conf_num(num);
-      setconf(nConferenceType, a()->usub, userconf_to_subconf(a()->context().current_user_sub_conf_num()), nOldSubNumber);
+      a()->sess().set_current_user_sub_conf_num(num);
+      setconf(nConferenceType, a()->usub, userconf_to_subconf(a()->sess().current_user_sub_conf_num()), nOldSubNumber);
     } else {
       setconf(nConferenceType, a()->usub, -1, nOldSubNumber);
     }
     break;
   case ConferenceType::CONF_DIRS:
     if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_dirconf(num)) {
-      a()->context().set_current_user_dir_conf_num(num);
-      setconf(nConferenceType, a()->udir, a()->uconfdir[a()->context().current_user_dir_conf_num()].confnum, nOldSubNumber);
+      a()->sess().set_current_user_dir_conf_num(num);
+      setconf(nConferenceType, a()->udir, a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum, nOldSubNumber);
     } else {
       setconf(nConferenceType, a()->udir, -1, nOldSubNumber);
     }
@@ -316,8 +316,8 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
 }
 
 void changedsl() {
-  int ocurconfsub = userconf_to_subconf(a()->context().current_user_sub_conf_num());
-  int ocurconfdir = userconf_to_subconf(a()->context().current_user_dir_conf_num());
+  int ocurconfsub = userconf_to_subconf(a()->sess().current_user_sub_conf_num());
+  int ocurconfdir = userconf_to_subconf(a()->sess().current_user_dir_conf_num());
   a()->UpdateTopScreen();
 
   a()->uconfsub.clear();
@@ -344,37 +344,37 @@ void changedsl() {
   }
 
   // Move to first message area in new conference
-  for (a()->context().set_current_user_sub_conf_num(0);
-       (a()->context().current_user_sub_conf_num() < MAX_CONFERENCES) &&
-       has_userconf_to_subconf(a()->context().current_user_sub_conf_num());
-       a()->context().set_current_user_sub_conf_num(a()->context().current_user_sub_conf_num() + 1)) {
-    if (userconf_to_subconf(a()->context().current_user_sub_conf_num()) == ocurconfsub) {
+  for (a()->sess().set_current_user_sub_conf_num(0);
+       (a()->sess().current_user_sub_conf_num() < MAX_CONFERENCES) &&
+       has_userconf_to_subconf(a()->sess().current_user_sub_conf_num());
+       a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1)) {
+    if (userconf_to_subconf(a()->sess().current_user_sub_conf_num()) == ocurconfsub) {
       break;
     }
   }
 
-  if (a()->context().current_user_sub_conf_num() >= MAX_CONFERENCES ||
-      has_userconf_to_subconf(a()->context().current_user_sub_conf_num())) {
-    a()->context().set_current_user_sub_conf_num(0);
+  if (a()->sess().current_user_sub_conf_num() >= MAX_CONFERENCES ||
+      has_userconf_to_subconf(a()->sess().current_user_sub_conf_num())) {
+    a()->sess().set_current_user_sub_conf_num(0);
   }
 
-  for (a()->context().set_current_user_dir_conf_num(0);
-       (a()->context().current_user_dir_conf_num() < MAX_CONFERENCES)
-       && has_userconf_to_dirconf(a()->context().current_user_dir_conf_num());
-       a()->context().set_current_user_dir_conf_num(a()->context().current_user_dir_conf_num() + 1)) {
-    if (a()->uconfdir[a()->context().current_user_dir_conf_num()].confnum == ocurconfdir) {
+  for (a()->sess().set_current_user_dir_conf_num(0);
+       (a()->sess().current_user_dir_conf_num() < MAX_CONFERENCES)
+       && has_userconf_to_dirconf(a()->sess().current_user_dir_conf_num());
+       a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1)) {
+    if (a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum == ocurconfdir) {
       break;
     }
   }
 
-  if (a()->context().current_user_dir_conf_num() >= MAX_CONFERENCES ||
-      !has_userconf_to_dirconf(a()->context().current_user_dir_conf_num())) {
-    a()->context().set_current_user_dir_conf_num(0);
+  if (a()->sess().current_user_dir_conf_num() >= MAX_CONFERENCES ||
+      !has_userconf_to_dirconf(a()->sess().current_user_dir_conf_num())) {
+    a()->sess().set_current_user_dir_conf_num(0);
   }
 
   if (okconf(a()->user())) {
-    setuconf(ConferenceType::CONF_SUBS, a()->context().current_user_sub_conf_num(), -1);
-    setuconf(ConferenceType::CONF_DIRS, a()->context().current_user_dir_conf_num(), -1);
+    setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
+    setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
   } else {
     setconf(ConferenceType::CONF_SUBS, a()->usub, -1, -1);
     setconf(ConferenceType::CONF_DIRS, a()->udir, -1, -1);
@@ -382,7 +382,7 @@ void changedsl() {
 }
 
 bool okconf(wwiv::sdk::User* user) {
-  if (a()->context().disable_conf()) {
+  if (a()->sess().disable_conf()) {
     return false;
   }
   return user->HasStatusFlag(wwiv::sdk::User::conference);

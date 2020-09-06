@@ -40,7 +40,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void old_sublist() {
-  int oc = a()->context().current_user_sub_conf_num();
+  int oc = a()->sess().current_user_sub_conf_num();
   int os = a()->current_user_sub().subnum;
 
   bool abort = false;
@@ -54,8 +54,8 @@ void old_sublist() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->context().current_user_sub_conf_num();
-        en = a()->context().current_user_sub_conf_num();
+        sn = a()->sess().current_user_sub_conf_num();
+        en = a()->sess().current_user_sub_conf_num();
         break;
       case 'Q':
         return;
@@ -82,7 +82,7 @@ void old_sublist() {
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
       std::ostringstream os1;
       os1 << fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
-      if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
+      if (a()->sess().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
         os1 << " - ";
       } else {
         os1 << "  ";
@@ -140,7 +140,7 @@ void old_sublist() {
  */
 int get_new_posts_count(int subnum) {
   const auto num = a()->GetNumMessagesInCurrentMessageArea();
-  const auto q = a()->context().qsc_p[subnum];
+  const auto q = a()->sess().qsc_p[subnum];
   if (num == 0) {
     return 0;
   }
@@ -159,7 +159,7 @@ int get_new_posts_count(int subnum) {
   if (last_qscan < static_cast<int64_t>(q)) {
     msgIndex = 1;
     while (msgIndex <= a()->GetNumMessagesInCurrentMessageArea() &&
-           get_post(msgIndex)->qscan <= a()->context().qsc_p[subnum]) {
+           get_post(msgIndex)->qscan <= a()->sess().qsc_p[subnum]) {
       ++msgIndex;
     }
   }
@@ -171,7 +171,7 @@ void SubList() {
   char ch;
   bool next;
 
-  int oc = a()->context().current_user_sub_conf_num();
+  int oc = a()->sess().current_user_sub_conf_num();
   int old_sub = a()->current_user_sub().subnum;
   int sn = 0;  // current sub number
   auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
@@ -184,8 +184,8 @@ void SubList() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->context().current_user_sub_conf_num();
-        en = a()->context().current_user_sub_conf_num();
+        sn = a()->sess().current_user_sub_conf_num();
+        en = a()->sess().current_user_sub_conf_num();
         break;
       case 'Q':
         return;
@@ -228,7 +228,7 @@ void SubList() {
         }
         ++ns;
         std::string yns =
-            (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32)))
+            (a()->sess().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32)))
                 ? "|#5Yes"
                 : "|#6No ";
         iscan(i1);
@@ -273,7 +273,7 @@ void SubList() {
         bout.bputs(sdf, &abort, &next);
         bout.nl();
         auto lastp = i1++;
-        if (bout.lines_listed() >= a()->context().num_screen_lines() - 2) {
+        if (bout.lines_listed() >= a()->sess().num_screen_lines() - 2) {
           p = 1;
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
@@ -339,7 +339,7 @@ void SubList() {
           if (okconf(a()->user())) {
             jump_conf(ConferenceType::CONF_SUBS);
           }
-          sn = en = oc = a()->context().current_user_sub_conf_num();
+          sn = en = oc = a()->sess().current_user_sub_conf_num();
           ns = i = 0;
         }
         if (isdigit(ss.front())) {
@@ -363,7 +363,7 @@ void SubList() {
       bout.bpla("None.", &abort);
       bout.nl();
     }
-  } while (!a()->context().hangup() && !done);
+  } while (!a()->sess().hangup() && !done);
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, oc, old_sub);

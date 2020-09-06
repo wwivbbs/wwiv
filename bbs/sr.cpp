@@ -76,7 +76,7 @@ char gettimeout(long ds, bool *abort) {
 
   const seconds d(ds);
   const auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < d && !bin.bkbhitraw() && !a()->context().hangup() && !*abort) {
+  while (steady_clock::now() - d1 < d && !bin.bkbhitraw() && !a()->sess().hangup() && !*abort) {
     if (a()->localIO()->KeyPressed()) {
       const char ch = a()->localIO()->GetChar();
       if (ch == 0) {
@@ -127,7 +127,7 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
     a()->localIO()->Puts("\r\n\r\n");
     a()->localIO()->Puts(command);
     a()->localIO()->Puts("\r\n");
-    if (a()->context().incom()) {
+    if (a()->sess().incom()) {
       return ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
     }
   }
@@ -376,9 +376,9 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
     auto num_read = file.Read(b, 1024);
     auto lTotalBytes = 0L;
     auto abort = false;
-    while (num_read && !a()->context().hangup() && !abort) {
+    while (num_read && !a()->sess().hangup() && !abort) {
       auto nBufferPos = 0;
-      while (!a()->context().hangup() && !abort && nBufferPos < num_read) {
+      while (!a()->sess().hangup() && !abort && nBufferPos < num_read) {
         a()->CheckForHangup();
         bout.bputch(b[nBufferPos++]);
         checka(&abort);
@@ -414,7 +414,7 @@ void maybe_internal(const std::filesystem::path& path, bool* xferred, double* pe
     }
     return;
   }
-  if (!a()->context().incom()) {
+  if (!a()->sess().incom()) {
     bout << "Would use internal " << prot_name(prot) << wwiv::endl;
     return;
   }
@@ -590,7 +590,7 @@ void receive_file(const std::filesystem::path& path, int* received, const std::s
     }
     break;
   default:
-    if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && a()->context().incom()) {
+    if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && a()->sess().incom()) {
       extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, path, false);
       *received = File::Exists(path);
     }

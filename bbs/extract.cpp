@@ -45,14 +45,14 @@ static std::optional<std::string> get_extract_dir() {
     case 'D':
       return a()->config()->datadir();
     case 'T':
-      return a()->context().dirs().temp_directory();
+      return a()->sess().dirs().temp_directory();
     case '?':
       print_help_file(MEXTRACT_NOEXT);
       break;
     case 'Q':
       return std::nullopt;
     }
-  } while (!a()->context().hangup());
+  } while (!a()->sess().hangup());
   return std::nullopt;
 }
 
@@ -94,9 +94,9 @@ void extract_out(const std::string& text, const std::string& title) {
       break;
     }
     bout.nl();
-  } while (!a()->context().hangup() && !done);
+  } while (!a()->sess().hangup() && !done);
 
-  if (a()->context().hangup()) {
+  if (a()->sess().hangup()) {
     return;
   }
   TextFile file(path, mode);

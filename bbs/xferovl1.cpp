@@ -100,10 +100,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"), "w");
+        TextFile file(FilePath(a()->sess().dirs().temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"));
+        File::Remove(FilePath(a()->sess().dirs().temp_directory(), "extended.dsc"));
       }
 
       const auto saved_screen_chars = a()->user()->GetScreenChars();
@@ -111,11 +111,11 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         a()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      const auto edit_ok = fsed_text_edit("extended.dsc", a()->context().dirs().temp_directory(),
+      const auto edit_ok = fsed_text_edit("extended.dsc", a()->sess().dirs().temp_directory(),
                                               a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (edit_ok) {
-        TextFile file(FilePath(a()->context().dirs().temp_directory(), "extended.dsc"), "r");
+        TextFile file(FilePath(a()->sess().dirs().temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (auto i3 = wwiv::stl::ssize(*sss) - 1; i3 >= 0; i3--) {
@@ -196,8 +196,8 @@ static bool has_arc_cmd_for_ext(const std::string& ext) {
 }
 
 static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem::path& p) {
-  File::Remove(FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ));
-  File::Remove(FilePath(a()->context().dirs().temp_directory(), DESC_SDI));
+  File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
+  File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
 
   if (!p.has_extension() || !has_arc_cmd_for_ext(p.extension().string().substr(1))) {
     return std::nullopt;
@@ -209,9 +209,9 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
     return std::nullopt;
   }
   ExecuteExternalProgram(cmd.value().cmd, EFLAG_NOHUP | EFLAG_TEMP_DIR);
-  auto diz_fn = FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ);
+  auto diz_fn = FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ);
   if (!File::Exists(diz_fn)) {
-    diz_fn = FilePath(a()->context().dirs().temp_directory(), DESC_SDI);
+    diz_fn = FilePath(a()->sess().dirs().temp_directory(), DESC_SDI);
   }
   if (!File::Exists(diz_fn)) {
     return std::nullopt;
@@ -221,8 +221,8 @@ static std::optional<std::filesystem::path> PathToTempdDiz(const std::filesystem
 
 bool get_file_idz(FileRecord& fr, const directory_t& dir) {
   ScopeExit at_exit([] {
-    File::Remove(FilePath(a()->context().dirs().temp_directory(), FILE_ID_DIZ));
-    File::Remove(FilePath(a()->context().dirs().temp_directory(), DESC_SDI));
+    File::Remove(FilePath(a()->sess().dirs().temp_directory(), FILE_ID_DIZ));
+    File::Remove(FilePath(a()->sess().dirs().temp_directory(), DESC_SDI));
   });
 
   if (!a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && dir.mask & mask_cdrom) {
@@ -294,7 +294,7 @@ int read_idz(bool prompt_for_mask, int tempdir) {
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n", dir.name,
                a()->udir[tempdir].keys);
   auto* area = a()->current_file_area();
-  for (auto i = 1; i <= area->number_of_files() && !a()->context().hangup() && !abort; i++) {
+  for (auto i = 1; i <= area->number_of_files() && !a()->sess().hangup() && !abort; i++) {
     auto f = area->ReadFile(i);
     const auto fn = f.aligned_filename();
     if (aligned_wildcard_match(s, fn) && !ends_with(fn, ".COM") && !ends_with(fn, ".EXE")) {
@@ -377,7 +377,7 @@ void tag_it() {
         auto s = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
           auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
-          s = FilePath(a()->context().dirs().temp_directory(), FileName(f.u.filename));
+          s = FilePath(a()->sess().dirs().temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s)) {
             File::Copy(s2, s);
           }
@@ -442,7 +442,7 @@ void tag_files(bool& need_title) {
     return;
   }
   a()->tleft(true);
-  if (a()->context().hangup()) {
+  if (a()->sess().hangup()) {
     return;
   }
   bout.clear_lines_listed();
@@ -450,7 +450,7 @@ void tag_files(bool& need_title) {
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   auto done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     bout.clear_lines_listed();
     const auto ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     bout.clear_lines_listed();
@@ -531,7 +531,7 @@ void tag_files(bool& need_title) {
         auto s1 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
         if (a()->dirs()[f.directory].mask & mask_cdrom) {
           auto s2 = FilePath(a()->dirs()[f.directory].path, FileName(f.u.filename));
-          s1 = FilePath(a()->context().dirs().temp_directory(), FileName(f.u.filename));
+          s1 = FilePath(a()->sess().dirs().temp_directory(), FileName(f.u.filename));
           if (!File::Exists(s1)) {
             File::Copy(s2, s1);
           }
@@ -588,7 +588,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
     if (to_upper_case<char>(ch) == 'Y') {
       if (dir.mask & mask_cdrom) {
         const auto src = FilePath(dir.path, ufn);
-        const auto dest = FilePath(a()->context().dirs().temp_directory(), ufn);
+        const auto dest = FilePath(a()->sess().dirs().temp_directory(), ufn);
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
@@ -664,7 +664,7 @@ int try_to_download(const std::string& file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  } while (i > 0 && ok && !a()->context().hangup());
+  } while (i > 0 && ok && !a()->sess().hangup());
 
   if (rtn == -2) {
     return -2;
@@ -770,14 +770,14 @@ void download() {
           done = true;
         }
       }
-      while (!ok && !a()->context().hangup());
+      while (!ok && !a()->sess().hangup());
     }
     i++;
     if (rtn == -2) {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !a()->context().hangup() && i <= ssize(a()->batch().entry));
+  } while (!done && !a()->sess().hangup() && i <= ssize(a()->batch().entry));
 
   if (!a()->batch().numbatchdl()) {
     return;
@@ -883,7 +883,7 @@ static std::optional<DateTime> mmddyy_to_mdyo(std::string s) {
 
 void SetNewFileScanDate() {
   bout.nl();
-  const auto current_dt = DateTime::from_daten(a()->context().nscandate());
+  const auto current_dt = DateTime::from_daten(a()->sess().nscandate());
   bout << "|#9Current limiting date: |#2" << current_dt.to_string("%m/%d/%Y") << wwiv::endl;
   bout.nl();
   bout << "|#9Enter new limiting date in the following format:\r\n";
@@ -895,14 +895,14 @@ void SetNewFileScanDate() {
     auto o = mmddyy_to_mdyo(ag);
     if (o.has_value()) {
       const auto& dt = o.value();
-      a()->context().nscandate(dt.to_daten_t());
+      a()->sess().nscandate(dt.to_daten_t());
 
       // Display the new nscan date
       bout << "|#9New Limiting Date: |#2" << dt.to_string("%m/%d/%Y") << "\r\n";
 
       // Hack to make sure the date covers everything since we had to increment the hour by one
       // to show the right date on some versions of MSVC
-      a()->context().nscandate(a()->context().nscandate() - SECONDS_PER_HOUR);
+      a()->sess().nscandate(a()->sess().nscandate() - SECONDS_PER_HOUR);
     }
   }
 }
@@ -914,7 +914,7 @@ void removefilesnotthere(int dn, int* autodel) {
   const auto all_files = aligns("*.*");
   int i = recno(all_files);
   bool abort = false;
-  while (!a()->context().hangup() && i > 0 && !abort) {
+  while (!a()->sess().hangup() && i > 0 && !abort) {
     auto* area = a()->current_file_area();
     auto f = area->ReadFile(i);
     auto candidate_fn = FilePath(a()->dirs()[dn].path, f);

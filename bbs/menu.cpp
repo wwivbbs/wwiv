@@ -49,7 +49,7 @@ using namespace wwiv::stl;
 namespace wwiv::menus {
 
 static std::filesystem::path GetMenuDirectory() {
-  return FilePath(a()->context().dirs().language_directory(), "menus");
+  return FilePath(a()->sess().dirs().language_directory(), "menus");
 }
 
 static std::filesystem::path GetMenuDirectory(const string menu_path) {

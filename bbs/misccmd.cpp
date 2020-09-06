@@ -210,13 +210,13 @@ void kill_old_email() {
         }
         break;
         }
-      } while (!a()->context().hangup() && !done1);
+      } while (!a()->sess().hangup() && !done1);
       pFileEmail = OpenEmailFile(false);
       if (!pFileEmail->IsOpen()) {
         break;
       }
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
   pFileEmail->Close();
 }
 
@@ -266,13 +266,13 @@ void list_users(int mode) {
   int numscn  = 0;
   int color   = 3;
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->context().qsc, false);
+  write_qscn(a()->usernum, a()->sess().qsc, false);
   a()->status_manager()->RefreshStatusCache();
 
   File userList(FilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
 
-  for (int i = 0; (i < nNumUserRecords) && !abort && !a()->context().hangup(); i++) {
+  for (int i = 0; (i < nNumUserRecords) && !abort && !a()->sess().hangup(); i++) {
     a()->usernum = 0;
     if (ncnm > 5) {
       count++;
@@ -317,9 +317,9 @@ void list_users(int mode) {
 
     int user_number = (bSortByUserNumber) ? i + 1 : a()->names()->names_vector()[i].number;
     a()->users()->readuser(&user, user_number);
-    read_qscn(user_number, a()->context().qsc, false);
+    read_qscn(user_number, a()->sess().qsc, false);
     changedsl();
-    bool in_qscan = (a()->context().qsc_q[a()->current_user_sub().subnum / 32] &
+    bool in_qscan = (a()->sess().qsc_q[a()->current_user_sub().subnum / 32] &
                      (1L << (a()->current_user_sub().subnum % 32)))
                         ? true
                         : false;
@@ -416,7 +416,7 @@ void list_users(int mode) {
     bout.pausescr();
   }
   a()->ReadCurrentUser(snum);
-  read_qscn(snum, a()->context().qsc, false);
+  read_qscn(snum, a()->sess().qsc, false);
   a()->usernum = snum;
   changedsl();
 }
@@ -501,7 +501,7 @@ void time_bank() {
       done = true;
       break;
     }
-  } while (!done && !a()->context().hangup());
+  } while (!done && !a()->sess().hangup());
 }
 
 int getnetnum(const std::string& network_name) {

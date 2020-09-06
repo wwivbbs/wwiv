@@ -80,7 +80,7 @@ using namespace wwiv::strings;
 static char s_szFindString[21];
 
 static string GetScanReadPrompts(int msg_num) {
-  if (a()->context().forcescansub()) {
+  if (a()->sess().forcescansub()) {
     if (msg_num < a()->GetNumMessagesInCurrentMessageArea()) {
       return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
     } else {
@@ -147,7 +147,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
-      email(a()->context().irt(), post->owneruser, post->ownersys, false, post->anony);
+      email(a()->sess().irt(), post->owneruser, post->ownersys, false, post->anony);
       clear_quotes();
     }
   } else if (user_input[0] == '@') {
@@ -222,7 +222,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        auto tmpfn = FilePath(a()->context().dirs().temp_directory(), INPUT_MSG);
+        auto tmpfn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
         if (File::Exists(tmpfn)) {
           File::Remove(tmpfn);
         }
@@ -242,13 +242,13 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
 
 static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
   char* pFindStr = nullptr;
-  if (!a()->context().made_find_str()) {
+  if (!a()->sess().made_find_str()) {
     pFindStr = strupr(stripcolors(get_post(msgno)->title));
     if (strlen(pFindStr) >= 20) {
       pFindStr[20] = '\0';
     }
     to_char_array(s_szFindString, pFindStr);
-    a()->context().made_find_str(true);
+    a()->sess().made_find_str(true);
   } else {
     pFindStr = &s_szFindString[0];
   }
@@ -355,7 +355,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
     const auto& wh = dynamic_cast<const WWIVMessageHeader&>(h);
-    if (wh.last_read() > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) {
+    if (wh.last_read() > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
       line[0] = '*';
     }
   }
@@ -431,7 +431,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
   bout.cls();
   auto api = a()->msgapi();
   unique_ptr<MessageArea> area(
-      api->Open(a()->current_sub(), a()->context().GetCurrentReadMessageArea()));
+      api->Open(a()->current_sub(), a()->sess().GetCurrentReadMessageArea()));
   if (!area) {
     ReadMessageResult result;
     result.command = 0;
@@ -619,7 +619,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
   unique_ptr<MessageArea> area(
-      api->Open(a()->current_sub(), a()->context().GetCurrentReadMessageArea()));
+      api->Open(a()->current_sub(), a()->sess().GetCurrentReadMessageArea()));
   if (!area) {
     return;
   }
@@ -635,7 +635,7 @@ static void HandleListTitles(int& msgnum, MsgScanOption& scan_option_type) {
   bout << "|#7" << static_cast<unsigned char>(198)
        << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181) << "\r\n";
-  auto num_title_lines = std::max<int>(a()->context().num_screen_lines() - 6, 1);
+  auto num_title_lines = std::max<int>(a()->sess().num_screen_lines() - 6, 1);
   int i = 0;
   while (!abort && ++i <= num_title_lines) {
     ++msgnum;
@@ -663,7 +663,7 @@ static void HandleMessageDownload(int msgnum) {
     if (!okfn(filename)) {
       return;
     }
-    const auto f = FilePath(a()->context().dirs().temp_directory(), filename);
+    const auto f = FilePath(a()->sess().dirs().temp_directory(), filename);
     File::Remove(f);
     TextFile tf(f, "wt");
     tf.Write(b);
@@ -804,7 +804,7 @@ void HandleMessageReply(int& msg_num) {
   }
 
   if (!m.title.empty()) {
-    a()->context().irt(m.title);
+    a()->sess().irt(m.title);
   }
   PostReplyToData r;
   r.name = m.from_user_name;
@@ -874,7 +874,7 @@ static void HandleMessageExtract(int& msgnum) {
 }
 
 static void HandleMessageHelp() {
-  if (a()->context().forcescansub()) {
+  if (a()->sess().forcescansub()) {
     printfile(MUSTREAD_NOEXT);
   } else if (lcs()) {
     print_help_file(SMBMAIN_NOEXT);
@@ -936,7 +936,7 @@ static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
   bout << "\r\n|#5Remove '" << subname << "' from your Q-Scan? ";
   if (bin.yesno()) {
-    a()->context().qsc_q[a()->current_user_sub().subnum / 32] ^=
+    a()->sess().qsc_q[a()->current_user_sub().subnum / 32] ^=
         (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
@@ -944,7 +944,7 @@ static void HandleRemoveFromNewScan() {
   bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
   if (bin.yesno()) {
     auto status = a()->status_manager()->GetStatus();
-    a()->context().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
+    a()->sess().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
   }
 }
 
@@ -995,7 +995,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
     scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     msgnum = nUserInput;
   } else if (szUserInput[1] == '\0') {
-    if (a()->context().forcescansub()) {
+    if (a()->sess().forcescansub()) {
       return;
     }
     switch (szUserInput[0]) {
@@ -1135,7 +1135,7 @@ static bool query_post() {
       (a()->user()->GetNumPostsToday() < a()->effective_slrec().posts) &&
       (a()->effective_sl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
-    a()->context().clear_irt();
+    a()->sess().clear_irt();
     clear_quotes();
     auto q = bin.ynq();
     if (q == 'Y') {
@@ -1272,11 +1272,11 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
 }
 
 void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
-  a()->context().clear_irt();
+  a()->sess().clear_irt();
 
   int val = 0;
   iscan(a()->current_user_sub_num());
-  if (a()->context().GetCurrentReadMessageArea() < 0) {
+  if (a()->sess().GetCurrentReadMessageArea() < 0) {
     bout.nl();
     bout << "No subs available.\r\n\n";
     return;
@@ -1312,13 +1312,13 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
     case MsgScanOption::SCAN_OPTION_READ_MESSAGE: { // Read Message
       bool next = false;
       if (msg_num > 0 && msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
-        bool old_incom = a()->context().incom();
-        if (a()->context().forcescansub()) {
-          a()->context().incom(false);
+        bool old_incom = a()->sess().incom();
+        if (a()->sess().forcescansub()) {
+          a()->sess().incom(false);
         }
         read_post(msg_num, &next, &val);
-        if (a()->context().forcescansub()) {
-          a()->context().incom(old_incom);
+        if (a()->sess().forcescansub()) {
+          a()->sess().incom(old_incom);
         }
       }
       bout.Color(0);

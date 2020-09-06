@@ -244,7 +244,7 @@ void display_message_text(const std::string& text, bool* next) {
   bout.Color(0);
   bout.nl();
   if (ansi && a()->localIO()->topdata() != LocalIO::topdata_t::none &&
-      a()->context().IsUserOnline()) {
+      a()->sess().IsUserOnline()) {
     a()->UpdateTopScreen();
   }
   bout.disable_mci();
@@ -757,8 +757,8 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
 }
 
 static void update_qscan(uint32_t qscan) {
-  if (qscan > a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()]) {
-    a()->context().qsc_p[a()->context().GetCurrentReadMessageArea()] = qscan;
+  if (qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
+    a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] = qscan;
   }
 
 #ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
@@ -795,7 +795,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), read_it,
                               cs.filename.c_str(), p.ownersys, p.owneruser);
   m.subboard_flags = cs.anony;
-  if (a()->context().forcescansub()) {
+  if (a()->sess().forcescansub()) {
     m.flags.insert(MessageFlags::FORCED);
   }
 
@@ -825,7 +825,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     *val |= 1;
   }
   m.title = p.title;
-  strncpy(a()->context().irt_, p.title, 60);
+  strncpy(a()->sess().irt_, p.title, 60);
 
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);

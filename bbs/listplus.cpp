@@ -540,10 +540,10 @@ int prep_search_rec(search_record* r, int type) {
     }
   } else if (type == LP_NSCAN_DIR) {
     r->alldirs = THIS_DIR;
-    r->nscandate = a()->context().nscandate();
+    r->nscandate = a()->sess().nscandate();
   } else if (type == LP_NSCAN_NSCAN) {
-    a()->context().scanned_files(true);
-    r->nscandate = a()->context().nscandate();
+    a()->sess().scanned_files(true);
+    r->nscandate = a()->sess().nscandate();
     r->alldirs = ALL_DIRS;
   } else {
     sysoplog() << "Undef LP type";
@@ -660,7 +660,7 @@ void sysop_configure() {
 
   load_lp_config();
 
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     bout.cls();
     printfile(LPSYSOP_NOEXT);
     bout.PutsXYSC(38, 2, lp_config.normal_highlight, fmt::sprintf("%3d", lp_config.normal_highlight));
@@ -972,7 +972,7 @@ void config_file_list() {
   }
 
   bool done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     update_user_config_screen(&u, which);
     int key = onek("Q2346789H!@#$%^&*(");
     switch (key) {
@@ -1213,7 +1213,7 @@ static int remove_filename(const std::string& file_name, int dn) {
   bool abort = false;
   bool rdlp = false;
   int ret = 1;
-  while (!a()->context().hangup() && i > 0 && !abort) {
+  while (!a()->sess().hangup() && i > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(i);
     if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
       bout.nl();
@@ -1282,7 +1282,7 @@ static int move_filename(const std::string& file_name, int dn) {
 
   tmp_disable_conf(true);
   wwiv::bbs::TempDisablePause diable_pause(bout);
-  while (!a()->context().hangup() && nRecNum > 0 && !done) {
+  while (!a()->sess().hangup() && nRecNum > 0 && !done) {
     int cp = nRecNum;
     const auto& dir = a()->dirs()[dn];
     auto f = a()->current_file_area()->ReadFile(nRecNum);
@@ -1315,7 +1315,7 @@ static int move_filename(const std::string& file_name, int dn) {
             dliscan1(dn);
           }
         }
-        while (!a()->context().hangup() && ss[0] == '?');
+        while (!a()->sess().hangup() && ss[0] == '?');
 
         nDestDirNum = -1;
         if (ss[0]) {
@@ -1483,7 +1483,7 @@ LP_SEARCH_HELP:
          << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
          << wwiv::endl;
     const auto conf_name = stripcolors(
-        a()->dirconfs[a()->uconfdir[a()->context().current_user_dir_conf_num()].confnum].conf_name);
+        a()->dirconfs[a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum].conf_name);
     bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : conf_name) <<
         wwiv::endl;
     bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") <<
@@ -1583,7 +1583,7 @@ void view_file(const std::string& aligned_file_name) {
       i = nrecno(aligned_file_name, i);
     }
   }
-  while (i > 0 && !a()->context().hangup() && !abort);
+  while (i > 0 && !a()->sess().hangup() && !abort);
   bout.nl();
   bout.pausescr();
 }
@@ -1622,7 +1622,7 @@ int lp_try_to_download(const std::string& file_mask, int dn) {
       i = nrecno(file_mask, i);
     }
   }
-  while (i > 0 && ok && !a()->context().hangup());
+  while (i > 0 && ok && !a()->sess().hangup());
   if (rtn == -2) {
     return -2;
   }

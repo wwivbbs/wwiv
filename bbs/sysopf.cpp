@@ -215,7 +215,7 @@ void valuser(int user_number) {
           user.ToggleArFlag(1 << ch1);
           ch1 = 0;
         }
-      } while (!a()->context().hangup() && ch1 != RETURN);
+      } while (!a()->sess().hangup() && ch1 != RETURN);
     }
     bout.nl();
     ch1 = 0;
@@ -234,7 +234,7 @@ void valuser(int user_number) {
           user.ToggleDarFlag(1 << ch1);
           ch1 = 0;
         }
-      } while (!a()->context().hangup() && ch1 != RETURN);
+      } while (!a()->sess().hangup() && ch1 != RETURN);
     }
     bout.nl();
     ch1     = 0;
@@ -267,7 +267,7 @@ void valuser(int user_number) {
         ch1 = 0;
         print_help_file(SRESTRCT_NOEXT);
       }
-    } while (!a()->context().hangup() && ch1 == 0);
+    } while (!a()->sess().hangup() && ch1 == 0);
     a()->users()->writeuser(&user, user_number);
     bout.nl();
   } else {
@@ -312,7 +312,7 @@ void print_net_listing(bool bForcePause) {
     }
   }
   bool done = false;
-  while (!done && !a()->context().hangup()) {
+  while (!done && !a()->sess().hangup()) {
     bout.cls();
     if (wwiv::stl::ssize(a()->nets()) > 1) {
       std::set<char> odc;
@@ -640,7 +640,7 @@ void mailr() {
   }
   auto nRecordNumber = (pFileEmail->length() / sizeof(mailrec)) - 1;
   char c = ' ';
-  while (nRecordNumber >= 0 && c != 'Q' && !a()->context().hangup()) {
+  while (nRecordNumber >= 0 && c != 'Q' && !a()->sess().hangup()) {
     pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     if (m.touser != 0) {
@@ -716,12 +716,12 @@ void mailr() {
             bout << "Mail file changed; try again.\r\n";
           }
           pFileEmail->Close();
-          if (!a()->context().IsUserOnline() && m.touser == 1 && m.tosys == 0) {
+          if (!a()->sess().IsUserOnline() && m.touser == 1 && m.tosys == 0) {
             a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
           }
         }
         bout.nl(2);
-      } while ((c == 'R') && (!a()->context().hangup()));
+      } while ((c == 'R') && (!a()->sess().hangup()));
 
       pFileEmail = OpenEmailFile(false);
       if (!pFileEmail->IsOpen()) {
@@ -745,9 +745,9 @@ void chuser() {
     return;
   }
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->context().qsc, false);
+  write_qscn(a()->usernum, a()->sess().qsc, false);
   a()->ReadCurrentUser(user_number);
-  read_qscn(user_number, a()->context().qsc, false);
+  read_qscn(user_number, a()->sess().qsc, false);
   a()->usernum = static_cast<uint16_t>(user_number);
   a()->effective_sl(255);
   sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
@@ -769,7 +769,7 @@ void zlog() {
   bout.nl(2);
   bout.bpla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
   bout.bpla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
-  while (i < 97 && !abort && !a()->context().hangup() && z.date[0] != 0) {
+  while (i < 97 && !abort && !a()->sess().hangup() && z.date[0] != 0) {
     int nTimePerUser = 0;
     if (z.calls) {
       nTimePerUser = z.active / z.calls;
