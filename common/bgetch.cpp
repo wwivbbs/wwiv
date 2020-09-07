@@ -18,19 +18,16 @@
 /**************************************************************************/
 #include "common/bgetch.h"
 
-#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/chat.h"
 #include "common/com.h"
+#include "common/common_events.h"
 #include "common/context.h"
 #include "common/datetime.h"
-#include "bbs/instmsg.h"
-#include "bbs/multinst.h"
-#include "bbs/utility.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "core/eventbus.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/eventbus.h"
-#include "common/common_events.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include <chrono>
@@ -40,7 +37,7 @@
 using std::chrono::minutes;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
-using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -85,7 +82,7 @@ int Output::wherex() {
   return x_;
 }
 
-std::chrono::duration<double> Output::key_timeout() const {
+std::chrono::duration<double> Input::key_timeout() const {
   if (so()) {
     return sysop_key_timeout_;
   }
@@ -96,8 +93,8 @@ std::chrono::duration<double> Output::key_timeout() const {
  * remote com port (if applicable).  After 1.5 minutes of inactivity, a
  * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
  */
-char Output::getkey(bool allow_extended_input) {
-  resetnsp();
+char Input::getkey(bool allow_extended_input) {
+  bout.resetnsp();
   bool beepyet = false;
   lastchar_pressed();
 
@@ -118,7 +115,9 @@ char Output::getkey(bool allow_extended_input) {
         wwiv::core::bus().invoke<HangupEvent>();
       }
       wwiv::core::bus().invoke<CheckForHangupEvent>();
-      giveup_timeslice();
+      wwiv::core::bus().invoke<ProcessInstanceMessages>();
+      wwiv::core::bus().invoke<GiveupTimeslices>();
+      
       auto dd = steady_clock::now();
       auto diff = dd - time_lastchar_pressed;
       if (diff > tv1 && !beepyet) {
@@ -145,23 +144,6 @@ void Output::reset() {
 
 namespace wwiv::common {
 
-static void PrintTime(const SessionContext& context) {
-  SavedLine line = bout.SaveCurrentLine();
-
-  bout.Color(0);
-  bout.nl(2);
-  auto dt = DateTime::now();
-  bout << "|#2" << dt.to_string() << wwiv::endl;
-  if (context.IsUserOnline()) {
-    auto time_on = std::chrono::system_clock::now() - context.system_logon_time();
-    auto seconds_on =
-        static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
-    bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
-    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
-  }
-  bout.nl();
-  bout.RestoreCurrentLine(line);
-}
 
 static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk::User& user) {
   char c = *ch;
@@ -185,13 +167,13 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
       }
       break;
     case CT: // CTRL - T
-      PrintTime(context);
+      bus().invoke<DisplayTimeLeft>();
       break;
     case CU: { // CTRL-U
       SavedLine line = bout.SaveCurrentLine();
       bout.Color(0);
       bout.nl(2);
-      multi_instance();
+      bus().invoke<DisplayMultiInstanceStatus>();
       bout.nl();
       bout.RestoreCurrentLine(line);
     } break;
@@ -200,11 +182,11 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
       break;
     case CL: // CTRL - L
       if (so()) {
-        toggle_invis();
+        bus().invoke<ToggleInvisble>();
       }
       break;
     case CN: // CTRL - N
-      toggle_avail();
+      bus().invoke<ToggleAvailable>();
       break;
     case CY:
       user.ToggleStatusFlag(User::pauseOnPage);
@@ -234,7 +216,7 @@ char Input::bgetch(bool allow_extended_input) {
   }
   if (localIO()->KeyPressed()) {
     ch = localIO()->GetChar();
-    bout.SetLastKeyLocal(true);
+    bin.SetLastKeyLocal(true);
     if (!allow_extended_input) {
       if (!ch) {
         ch = localIO()->GetChar();
@@ -245,7 +227,7 @@ char Input::bgetch(bool allow_extended_input) {
     lastchar_pressed();
   } else if (context().incom() && bkbhitraw()) {
     ch = bgetchraw();
-    bout.SetLastKeyLocal(false);
+    bin.SetLastKeyLocal(false);
   }
 
   if (!allow_extended_input) {
@@ -258,10 +240,10 @@ char Input::bgetch(bool allow_extended_input) {
 char Input::bgetchraw() {
   if (context().ok_modem_stuff() && nullptr != remoteIO()) {
     if (remoteIO()->incoming()) {
-      return (remoteIO()->getW());
+      return static_cast<char>(remoteIO()->getW());
     }
     if (localIO()->KeyPressed()) {
-      return localIO()->GetChar();
+      return static_cast<char>(localIO()->GetChar());
     }
   }
   return 0;
@@ -341,13 +323,13 @@ int Input::bgetch_handle_escape(int key) {
   do {
     esc_time2 = time(nullptr);
     if (bkbhitraw()) {
-      key = static_cast<int>(bout.getkey(true));
+      key = static_cast<int>(bin.getkey(true));
       if (key == OB || key == O) {
-        key = static_cast<int>(bout.getkey(true));
+        key = static_cast<int>(bin.getkey(true));
 
         // Check for a second set of brackets
         if (key == OB || key == O) {
-          key = static_cast<int>(bout.getkey(true));
+          key = static_cast<int>(bin.getkey(true));
         }
         return get_command_for_ansi_key(key);
       } else {
@@ -397,7 +379,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
 
 
   auto beepyet{false};
-  auto tv = bout.key_timeout();
+  auto tv = bin.key_timeout();
   auto tv1 = tv - std::chrono::minutes(1);
   bool once = true;
 
@@ -425,7 +407,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
     }
 
     if (!bkbhitraw() && !localIO()->KeyPressed()) {
-      giveup_timeslice();
+      wwiv::core::bus().invoke<GiveupTimeslices>();
       continue;
     }
     if (beepyet) {
@@ -437,7 +419,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
       return bgetch_handle_key_translation(localIO()->GetChar(), numlock_mode);
     }
     if (bkbhitraw()) {
-      auto key = static_cast<int>(bout.getkey(true));
+      auto key = static_cast<int>(bin.getkey(true));
       return (key == ESC) ? bgetch_handle_escape(key)
                : bgetch_handle_key_translation(key, numlock_mode);
     }

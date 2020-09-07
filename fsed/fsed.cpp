@@ -36,6 +36,7 @@
 
 namespace wwiv::bbs::fsed {
 
+using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

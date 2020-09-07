@@ -61,6 +61,7 @@ using std::chrono::system_clock;
 using wwiv::sdk::fido::FidoAddress;
 
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;

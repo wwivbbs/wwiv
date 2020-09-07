@@ -54,7 +54,7 @@ template <typename T> struct input_result_t {
  */
 class Input final {
 public:
-  typedef std::function<wwiv::bbs::Context&()> context_provider_t;
+  typedef std::function<wwiv::common::Context&()> context_provider_t;
   typedef std::function<void()> inst_msg_processor_t;
   Input() = default;
   ~Input() = default;
@@ -65,8 +65,11 @@ public:
   void SetComm(RemoteIO* comm) { comm_ = comm; }
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
+  [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
+  void SetLastKeyLocal(bool b) { last_key_local_ = b; }
+
   wwiv::sdk::User& user();
-  wwiv::bbs::SessionContext& context();
+  wwiv::common::SessionContext& context();
 
   /** Sets the provider for the session context */
   void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
@@ -75,6 +78,18 @@ public:
   char bgetchraw();
   bool bkbhitraw();
   bool bkbhit();
+  char getkey(bool allow_extended_input = false);
+
+  // Key Timeouts
+  [[nodiscard]] std::chrono::duration<double> key_timeout() const;
+  void set_key_timeout(std::chrono::duration<double> k) { non_sysop_key_timeout_ = k; }
+  void set_sysop_key_timeout(std::chrono::duration<double> k) { sysop_key_timeout_ = k; }
+  void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }
+  void set_logon_key_timeout(std::chrono::duration<double> k) { logon_key_timeout_ = k; }
+
+  // Key Timeout manipulators.
+  void set_logon_key_timeout() { non_sysop_key_timeout_ = logon_key_timeout_; };
+  void reset_key_timeout() { non_sysop_key_timeout_ = default_key_timeout_; }
 
   // For bgetch_event, decides if the number pad turns '8' into an arrow etc.. or not
   enum class numlock_status_t { NUMBERS, NOTNUMBERS };
@@ -167,6 +182,12 @@ private:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
   mutable context_provider_t context_provider_;
+  bool last_key_local_{true};
+
+  std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
+  std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
+  std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);
+  std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 };
 
 } // namespace common

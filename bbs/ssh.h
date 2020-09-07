@@ -68,7 +68,7 @@ private:
   std::string remote_password_;
 };
 
-class IOSSH: public RemoteIO {
+class IOSSH: public wwiv::common::RemoteIO {
 public:
   IOSSH(SOCKET socket, Key& key);
   virtual ~IOSSH();

@@ -33,6 +33,7 @@
 using std::string;
 using wwiv::core::ScopeExit;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

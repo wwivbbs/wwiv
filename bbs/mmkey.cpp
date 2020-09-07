@@ -38,7 +38,7 @@ static bool mmkey_use_bgetch_event = true;
 
 static char mmkey_getch() {
   if (!mmkey_use_bgetch_event) {
-    return bout.getkey(false);
+    return bin.getkey(false);
   }
   const auto bge = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
   if (do_sysop_command(bge)) {

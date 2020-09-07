@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
@@ -48,7 +50,7 @@ static void ProcessLocalKeyDuringZmodem() {
     return;
   }
   const auto c = a()->localIO()->GetChar();
-  bout.SetLastKeyLocal(true);
+  bin.SetLastKeyLocal(true);
   if (!c) {
     a()->handle_sysop_key(a()->localIO()->GetChar());
   }

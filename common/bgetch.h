@@ -18,7 +18,7 @@
 #ifndef __INCLUDED_BBS_BGETCH_H__
 #define __INCLUDED_BBS_BGETCH_H__
 
-// TODO(rushfan): Should probably get rid of bgetch.sh
+// TODO(rushfan): Should probably get rid of bgetch.h
 #include "common/input.h"
 
 #endif  // __INCLUDED_BBS_BGETCH_H__

@@ -31,8 +31,8 @@
 using std::cout;
 using std::endl;
 using std::string;
-
-using wwiv::sdk::User;
+using namespace wwiv::common;
+using namespace wwiv::sdk;
 
 class QuoteTest : public ::testing::Test {
 protected:

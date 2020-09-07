@@ -32,8 +32,8 @@ using std::cout;
 using std::endl;
 using std::string;
 
-using wwiv::bbs::TempDisablePause;
 using wwiv::sdk::User;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 

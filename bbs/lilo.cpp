@@ -334,7 +334,7 @@ static void logon_guest() {
 
 void getuser() {
   // Reset the key timeout to 30 seconds while trying to log in a user.
-  ScopeExit at_exit([] { a()->sess().okmacro(true); bout.reset_key_timeout(); });
+  ScopeExit at_exit([] { a()->sess().okmacro(true); bin.reset_key_timeout(); });
 
   a()->sess().okmacro(false);
   // TODO(rushfan): uncomment this

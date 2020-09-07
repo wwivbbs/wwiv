@@ -28,8 +28,9 @@
 namespace wwiv::bbs::fsed {
 
 bool fsed(const std::filesystem::path& path);
-bool fsed(FsedModel& ed, MessageEditorData& data, bool file);
-bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file);
+bool fsed(FsedModel& ed, wwiv::common::MessageEditorData& data, bool file);
+bool fsed(std::vector<std::string>& lin, int maxli, wwiv::common::MessageEditorData& data,
+          bool file);
 
 }
 

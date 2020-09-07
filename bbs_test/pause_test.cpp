@@ -32,7 +32,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-using wwiv::bbs::TempDisablePause;
+using namespace wwiv::common;
 using wwiv::sdk::User;
 
 class PauseTest : public ::testing::Test {

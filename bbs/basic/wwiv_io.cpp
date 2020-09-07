@@ -98,7 +98,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
   mb_register_func(bas, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    const auto ch = script_out().getkey();
+    const auto ch = script_in().getkey();
     char s[2] = {ch, 0};
     mb_push_string(bas, l, BasicStrDup(s));
     return MB_FUNC_OK;

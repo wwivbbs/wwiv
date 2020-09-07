@@ -23,12 +23,12 @@
 #include <string>
 #include <vector>
 
-enum class quote_date_format_t {
-  no_quote, generic, email, post, forward
-};
+namespace wwiv::common {
+
+enum class quote_date_format_t { no_quote, generic, email, post, forward };
 
 void grab_quotes(std::string& raw_text, const std::string& to_name);
-void clear_quotes(wwiv::bbs::SessionContext& ctx);
+void clear_quotes(wwiv::common::SessionContext& ctx);
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
                 time_t tt);
 std::vector<std::string> query_quote_lines();
@@ -36,5 +36,6 @@ std::vector<std::string> query_quote_lines();
 // [[ VisibleForTesting ]]
 std::string GetQuoteInitials(const std::string& reply_to_name);
 
+} // namespace wwiv::common
 
 #endif  // __INCLUDED_BBS_QUOTE_H__

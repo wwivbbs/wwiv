@@ -74,6 +74,7 @@ using std::unique_ptr;
 using std::vector;
 using namespace std::chrono;
 using namespace std::chrono_literals;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -306,7 +307,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
           io->Cls();
           bout.nl();
           print_help_file(helpFileName);
-          chHelp = bout.getkey();
+          chHelp = bin.getkey();
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);
       } break;
@@ -405,7 +406,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         a_->usernum = 1;
         bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
         auto buffer = bin.input_path(50);
-        LoadFileIntoWorkspace(buffer, false);
+        LoadFileIntoWorkspace(a()->context(), buffer, false);
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
@@ -458,13 +459,13 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         // Print Current Status
       case 'S':
         prstatus();
-        bout.getkey();
+        bin.getkey();
         break;
       case 'T':
         if (a()->terminal_command.empty()) {
           bout << "Terminal Command not specified. " << wwiv::endl
                << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
-          bout.getkey();
+          bin.getkey();
           break;
         }
         exec_cmdline(a()->terminal_command, INST_FLAGS_NONE);
@@ -501,7 +502,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'Z': {
         zlog();
         bout.nl();
-        bout.getkey();
+        bin.getkey();
       } break;
       }
       Clear();

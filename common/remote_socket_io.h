@@ -36,7 +36,7 @@ typedef int HANDLE;
 typedef int SOCKET;
 #endif // _WIN32
 
-class RemoteSocketIO : public RemoteIO {
+class RemoteSocketIO : public wwiv::common::RemoteIO {
  public:
   static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
   static const uint8_t TELNET_OPTION_IAC = 255;

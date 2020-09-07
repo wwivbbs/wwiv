@@ -18,17 +18,17 @@
 /**************************************************************************/
 #include "common/message_editor_data.h"
 
-#include "bbs/bbs.h"
 #include "core/strings.h"
 #include "sdk/names.h"
 #include <string>
 
 using std::string;
-using namespace wwiv::bbs;
 using namespace wwiv::strings;
+
+namespace wwiv::common {
 
 MessageEditorData::MessageEditorData(std::string fn) : from_name(std::move(fn)) {}
 
-bool MessageEditorData::is_email() const {
-  return iequals(aux, "email");
-}
+bool MessageEditorData::is_email() const { return iequals(aux, "email"); }
+
+} // namespace wwiv::common

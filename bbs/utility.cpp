@@ -168,18 +168,6 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
   file.Close();
 }
 
-/**
- * Tells the OS that it is safe to preempt this task now.
- */
-void giveup_timeslice() {
-  sleep_for(milliseconds(100));
-  yield();
-
-  if (inst_msg_waiting() && (!a()->sess().in_chatroom() || !a()->sess().chatline())) {
-    process_inst_msgs();
-  }
-}
-
 std::string stripfn(const std::string& file_name) {
   std::filesystem::path p(file_name);
   if (!p.has_filename()) {
@@ -236,7 +224,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
     }
     ++f;
     bout.bprintf("%12.12s ", f->name);
-    if (bout.getkey() == SPACE) {
+    if (bin.getkey() == SPACE) {
       bout.nl();
       break;
     }

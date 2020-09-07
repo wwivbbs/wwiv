@@ -45,6 +45,8 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+namespace wwiv::common {
+
 static std::unique_ptr<std::vector<std::string>> quotes_ind;
 
 static string FirstLettersOfVectorAsString(const vector<string>& parts) {
@@ -76,7 +78,7 @@ string GetQuoteInitials(const string& orig_name) {
   return FirstLettersOfVectorAsString(parts);
 }
 
-void clear_quotes(wwiv::bbs::SessionContext& ctx) {
+void clear_quotes(wwiv::common::SessionContext& ctx) {
   File::Remove(FilePath(ctx.dirs().temp_directory(), QUOTES_TXT), true);
 
   quotes_ind.reset();
@@ -99,16 +101,16 @@ static std::string to_quote_date_line(quote_date_format_t type, time_t tt, const
   std::string date_line;
   switch (type) {
   case quote_date_format_t::generic:
-    date_line = fmt::sprintf("%c3On %c1%s, %c2%s%c3 wrote:%c0", 0x03, 0x03, datetime, 0x03, tb,
-                             0x03, 0x03);
+    date_line =
+        fmt::sprintf("%c3On %c1%s, %c2%s%c3 wrote:%c0", 0x03, 0x03, datetime, 0x03, tb, 0x03, 0x03);
     break;
   case quote_date_format_t::email:
     date_line = fmt::sprintf("%c3In your e-mail of %c2%s%c3, you wrote:%c0", 0x03, 0x03, datetime,
                              0x03, 0x03);
     break;
   case quote_date_format_t::post:
-    date_line = fmt::sprintf("%c3In a message posted %c2%s%c3, you wrote:%c0", 0x03, 0x03,
-                             datetime, 0x03, 0x03);
+    date_line = fmt::sprintf("%c3In a message posted %c2%s%c3, you wrote:%c0", 0x03, 0x03, datetime,
+                             0x03, 0x03);
     break;
   case quote_date_format_t::forward:
     date_line = fmt::sprintf("%c3Message forwarded from %c2%s%c3, sent on %s.%c0", 0x03, 0x03, tb,
@@ -148,11 +150,15 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
     out.emplace_back(to_quote_date_line(type, tt, properize(strip_to_node(to_node))));
   }
 
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     auto line = *it;
-    StringReplace(&line, "\x03""0", "\x03""5");
-    out.emplace_back(fmt::sprintf("%c%c%s%c%c> %c%c%s%c0",
-                     0x03, '1', quote_initials, 0x03, '7', 0x03, '5', line, 0x03));
+    StringReplace(&line,
+                  "\x03"
+                  "0",
+                  "\x03"
+                  "5");
+    out.emplace_back(fmt::sprintf("%c%c%s%c%c> %c%c%s%c0", 0x03, '1', quote_initials, 0x03, '7',
+                                  0x03, '5', line, 0x03));
   }
   return out;
 }
@@ -230,8 +236,8 @@ std::vector<std::string> query_quote_lines() {
       return {};
     }
     bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
-    auto k = input_number_hotkey(1, {'Q','?'}, 1, num_lines);
-    
+    auto k = input_number_hotkey(1, {'Q', '?'}, 1, num_lines);
+
     if (k.key == 'Q') {
       return {};
     }
@@ -244,7 +250,7 @@ std::vector<std::string> query_quote_lines() {
       end_line = start_line;
     } else {
       bout.format("|#2through line {} - {} ? (Q=quit) ", start_line, num_lines);
-      k = input_number_hotkey(start_line, {'Q','?'}, start_line, num_lines);
+      k = input_number_hotkey(start_line, {'Q', '?'}, start_line, num_lines);
       if (k.key == 'Q') {
         return {};
       }
@@ -265,6 +271,7 @@ std::vector<std::string> query_quote_lines() {
     }
     break;
   } while (!a()->sess().hangup());
-  return std::vector<std::string>(std::begin(lines) + start_line - 1,
-                                  std::begin(lines) + end_line);
+  return std::vector<std::string>(std::begin(lines) + start_line - 1, std::begin(lines) + end_line);
 }
+
+} // namespace wwiv::common

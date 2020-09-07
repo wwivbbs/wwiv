@@ -18,11 +18,15 @@
 #ifndef __INCLUDED_COMMON_EVENTS_H__
 #define __INCLUDED_COMMON_EVENTS_H__
 
+#include <cstdint>
+
+namespace wwiv::common {
+
 // The BBS Should attempt to process inter-instance messages.
 struct ProcessInstanceMessages {};
 
 // The BBS Should check if the user hungup.
-struct CheckForHangupEvent{};
+struct CheckForHangupEvent {};
 
 // Notify the BBS that the user has hungup, forcefully if needed.
 struct HangupEvent {};
@@ -41,5 +45,23 @@ struct UpdateTimeLeft {
 struct HandleSysopKey {
   uint8_t key{0};
 };
+
+// Should giveup timeslices to other processes
+// The BBS Should attempt to process inter-instance messages.
+struct GiveupTimeslices {};
+
+// Display the time on and time left.
+struct DisplayTimeLeft {};
+
+// Display the instance status in a multi-instance system.
+struct DisplayMultiInstanceStatus {};
+
+// Display the invisible status for multi-node chat
+struct ToggleInvisble {};
+
+// Display the available status for multi-node chat
+struct ToggleAvailable {};
+
+} // namespace wwiv::common
 
 #endif

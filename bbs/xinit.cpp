@@ -23,11 +23,15 @@
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/instmsg.h"
+#include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xinitini.h"
 #include "common/common_events.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "common/pause.h"
 #include "common/workspace.h"
 #include "core/datafile.h"
@@ -59,7 +63,7 @@ using std::string;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::seconds;
-using wwiv::bbs::TempDisablePause;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -323,9 +327,9 @@ void Application::ReadINIFile(IniFile& ini) {
   max_gfilesec = std::min<uint16_t>(max_gfilesec, 999);
 
   full_screen_read_prompt_ = ini.value<bool>("FULL_SCREEN_READER", true);
-  bout.set_logon_key_timeout(seconds(std::max<int>(10, ini.value<int>("LOGON_KEY_TIMEOUT", 30))));
-  bout.set_default_key_timeout(seconds(std::max<int>(30, ini.value<int>("USER_KEY_TIMEOUT", 180))));
-  bout.set_sysop_key_timeout(seconds(std::max<int>(30, ini.value<int>("SYSOP_KEY_TIMEOUT", 600))));
+  bin.set_logon_key_timeout(seconds(std::max<int>(10, ini.value<int>("LOGON_KEY_TIMEOUT", 30))));
+  bin.set_default_key_timeout(seconds(std::max<int>(30, ini.value<int>("USER_KEY_TIMEOUT", 180))));
+  bin.set_sysop_key_timeout(seconds(std::max<int>(30, ini.value<int>("SYSOP_KEY_TIMEOUT", 600))));
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
@@ -351,7 +355,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   const auto temp = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
   const auto batch = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
-  wwiv::bbs::Dirs d(temp, batch, batch);
+  wwiv::common::Dirs d(temp, batch, batch);
   sess().dirs(d);
 
   const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
@@ -557,6 +561,24 @@ void Application::read_gfile() {
   }
 }
 
+static void PrintTime(const wwiv::common::SessionContext& context) {
+  SavedLine line = bout.SaveCurrentLine();
+
+  bout.Color(0);
+  bout.nl(2);
+  auto dt = DateTime::now();
+  bout << "|#2" << dt.to_string() << wwiv::endl;
+  if (context.IsUserOnline()) {
+    auto time_on = std::chrono::system_clock::now() - context.system_logon_time();
+    auto seconds_on =
+        static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
+    bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
+    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
+  }
+  bout.nl();
+  bout.RestoreCurrentLine(line);
+}
+
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
   std::clog << std::endl
@@ -721,6 +743,20 @@ bool Application::InitializeBBS(bool cleanup_network) {
       [](const UpdateTimeLeft& u) { a()->tleft(u.check_for_timeout); });
   bus().add_handler<HandleSysopKey>(
       [](const HandleSysopKey& k) { a()->handle_sysop_key(k.key); });
+  bus().add_handler<GiveupTimeslices>([]() { 
+    yield();
+    if (inst_msg_waiting() && (!a()->sess().in_chatroom() || !a()->sess().chatline())) {
+      process_inst_msgs();
+    } else {
+      sleep_for(std::chrono::milliseconds(100));
+    }
+    yield();
+  });
+  bus().add_handler<DisplayTimeLeft>([]() { PrintTime(a()->sess()); });
+  bus().add_handler<DisplayMultiInstanceStatus>([]() { multi_instance(); });
+
+  bus().add_handler<ToggleAvailable>([]() { toggle_avail(); });
+  bus().add_handler<ToggleInvisble>([]() { toggle_invis(); });
 
   return true;
 }

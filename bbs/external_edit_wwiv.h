@@ -27,7 +27,7 @@
 
 class ExternalWWIVMessageEditor : public ExternalMessageEditor {
 public:
-  ExternalWWIVMessageEditor(const editorrec& editor, wwiv::bbs::MessageEditorData& data, int maxli,
+  ExternalWWIVMessageEditor(const editorrec& editor, wwiv::common::MessageEditorData& data, int maxli,
                             int* setanon, const std::string& temp_directory)
       : ExternalMessageEditor(editor, data, maxli, setanon, temp_directory) {}
   virtual ~ExternalWWIVMessageEditor();

@@ -19,6 +19,7 @@
 #define __INCLUDED_BBS_BASIC_UTIL_H__
 
 #include "common/context.h"
+#include "common/input.h"
 #include "common/output.h"
 #include <string>
 
@@ -27,15 +28,17 @@ struct mb_interpreter_t;
 namespace wwiv::bbs::basic {
 
 char* BasicStrDup(const std::string& s);
-void set_script_out(Output* o);
+void set_script_out(wwiv::common::Output* o);
+void set_script_in(wwiv::common::Input* o);
 
-Output& script_out();
+wwiv::common::Input& script_in();
+wwiv::common::Output& script_out();
 
 struct wwiv_script_userdata_t {
   std::string datadir;
   std::string script_dir;
   std::string module;
-  Context* ctx;
+  wwiv::common::Context* ctx;
 };
 
 /**

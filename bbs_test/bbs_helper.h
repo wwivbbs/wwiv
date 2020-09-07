@@ -67,10 +67,10 @@ public:
   std::string captured();
   std::string rcaptured();
   LocalIO* local_io() const { return local_io_; }
-  RemoteIO* remote_io() const { return remote_io_; }
+  wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
 private:
   LocalIO* local_io_;
-  RemoteIO* remote_io_;
+  wwiv::common::RemoteIO* remote_io_;
   std::string captured_;
   std::string rcaptured_;
 };
@@ -107,7 +107,7 @@ public:
   std::string* captured_;
 };
 
-class TestRemoteIO : public RemoteIO {
+class TestRemoteIO : public wwiv::common::RemoteIO {
 public:
   TestRemoteIO(std::string* captured);
   virtual ~TestRemoteIO() = default;

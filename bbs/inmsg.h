@@ -21,6 +21,6 @@
 #include "bbs/external_edit.h"
 #include "common/message_editor_data.h"
 
-bool inmsg(wwiv::bbs::MessageEditorData& data);
+bool inmsg(wwiv::common::MessageEditorData& data);
 
 #endif  // __INCLUDED_BBS_INMSG_H__

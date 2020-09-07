@@ -20,11 +20,12 @@
 
 #include <string>
 
+namespace wwiv::common {
 class Output;
 
 class FullScreenView {
 public:
-  FullScreenView(Output& output, int numlines, int swidth, int slength);
+  FullScreenView(wwiv::common::Output& output, int numlines, int swidth, int slength);
   virtual ~FullScreenView();
 
   /** Displays a timeout warning in the command line area */
@@ -41,7 +42,7 @@ public:
   void DrawBottomBar(const std::string& text);
   /** Places the cursor at the top of the body */
   void GotoContentAreaTop();
-  
+
   int message_height() const noexcept { return message_height_; }
   int lines_start() const noexcept { return lines_start_; }
   int lines_end() const noexcept { return lines_end_; }
@@ -53,7 +54,7 @@ public:
   int bgetch();
 
 private:
-  Output& bout_;
+  wwiv::common::Output& bout_;
 
   int num_header_lines_{0};
   int screen_width_{0};
@@ -64,5 +65,6 @@ private:
   int command_line_{0};
 };
 
+} // namespace wwiv::common
 
 #endif  // __INCLUDED_BBS_FULL_SCREEN_H__

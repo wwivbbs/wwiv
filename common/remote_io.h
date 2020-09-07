@@ -22,7 +22,9 @@
 
 #include <string>
 
-enum class CommunicationType {
+namespace wwiv::common {
+
+  enum class CommunicationType {
   NONE,
   TELNET,
   SSH,
@@ -81,6 +83,9 @@ private:
   static std::string error_text_;
   RemoteInfo remote_info_;
 };
+
+
+} // namespace wwiv::common
 
 #endif  // #if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
 

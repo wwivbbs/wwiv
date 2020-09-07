@@ -29,9 +29,11 @@
 
 namespace wwiv::bbs::fsed {
 
+ using namespace wwiv::common;
+
 class FsedView : public editor_viewport_t {
 public:
-  FsedView(FullScreenView fs, MessageEditorData& data, bool file);
+  FsedView(FullScreenView fs, wwiv::common::MessageEditorData& data, bool file);
   ~FsedView() = default;
 
   FullScreenView& fs();
@@ -65,7 +67,7 @@ private:
   FullScreenView fs_;
   int max_view_lines_;
   int max_view_columns_;
-  MessageEditorData& data_;
+  wwiv::common::MessageEditorData& data_;
   bool file_{false};
   //  Saved positions for the bottom bar caching.
   int sx{-1};

@@ -69,7 +69,7 @@ int bbsmain(int argc, char *argv[]) {
     bbs.reset(CreateSession(new StdioLocalIO()));
     const auto return_code = bbs->Run(argc, argv);
     return bbs->ExitBBSImpl(return_code, false);
-  } catch (const wwiv::bbs::hangup_error& e) {
+  } catch (const wwiv::common::hangup_error& e) {
     LOG(ERROR) << "BBS User Hung Up: " << e.what();
     if (bbs) {
       return bbs->ExitBBSImpl(Application::exitLevelOK, false);

@@ -1281,7 +1281,7 @@ static int move_filename(const std::string& file_name, int dn) {
   bool ok = false;
 
   tmp_disable_conf(true);
-  wwiv::bbs::TempDisablePause diable_pause(bout);
+  wwiv::common::TempDisablePause diable_pause(bout);
   while (!a()->sess().hangup() && nRecNum > 0 && !done) {
     int cp = nRecNum;
     const auto& dir = a()->dirs()[dn];

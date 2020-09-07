@@ -18,13 +18,12 @@
 /**************************************************************************/
 #include "common/input.h"
 
-#include "bbs/application.h"
-#include "bbs/bbs.h"
-#include "bbs/utility.h"
 #include "common/bgetch.h"
 #include "common/com.h"
 #include "common/common_events.h"
+#include "common/output.h"
 #include "core/eventbus.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
 #include <algorithm>
@@ -42,7 +41,7 @@ using namespace wwiv::strings;
 static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
 static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 
-// static global bout.
+// static global bin.
 wwiv::common::Input bin;
 
 // TODO: put back in high ascii characters after finding proper hex codes
@@ -54,6 +53,7 @@ static unsigned char last_input_char;
 // TODO(rushfan): Make this a WWIV ini setting.
 static const uint8_t input_background_char = 32; // Was '\xB1';
 
+static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
 
 // This will input an upper-case string
 void input(char* out_text, int max_length, bool auto_mpl) {
@@ -103,7 +103,7 @@ bool Input::yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
@@ -122,7 +122,7 @@ bool Input::noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
@@ -139,7 +139,7 @@ char Input::ynq() {
 
   bout.Color(1);
   const char str_quit[] = "Quit";
-  while (!context().hangup() && (ch = to_upper_case(bout.getkey())) != YesNoString(true)[0] &&
+  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != *str_quit && ch != RETURN) {
     // NOP
     ;
@@ -178,7 +178,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
   static const char dash = '-';
   static const char slash = '/';
 
-  if (!okansi()) {
+  if (!okansi(user())) {
     input1(szTemp, max_length, mode, true, false);
     strcpy(out_text, szTemp);
     return;
@@ -437,7 +437,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
   bool done = false;
 
   while (!done && !context().hangup()) {
-    unsigned char chCurrent = bout.getkey();
+    unsigned char chCurrent = bin.getkey();
 
     context().chatline(curpos != 0);
 
@@ -566,12 +566,12 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
 
 // private
 std::string Input::input_password_minimal(int max_length) {
-  const char mask_char = okansi() ? '\xFE' : 'X';
+  const char mask_char = okansi(user()) ? '\xFE' : 'X';
   std::string pw;
   bout.mpl(max_length);
 
   while (!context().hangup()) {
-    unsigned char ch = bout.getkey();
+    unsigned char ch = bin.getkey();
 
     if (ch > 31) {
       ch = upcase(ch);
@@ -647,7 +647,7 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
     last_ok = colorize(last_ok, result, minv, maxv);
   }
   while (!context().hangup()) {
-    auto ch = bout.getkey();
+    auto ch = bin.getkey();
     if (std::isdigit(ch)) {
       // digit
       if (ssize(text) < max_length && ch) {
@@ -770,7 +770,7 @@ std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
 
 wwiv::sdk::User& Input::user() { return context_provider_().u(); }
 
-wwiv::bbs::SessionContext& Input::context() {
+wwiv::common::SessionContext& Input::context() {
   return context_provider_().session_context();
 }
 

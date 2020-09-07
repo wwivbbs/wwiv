@@ -21,6 +21,7 @@
 #define __INCLUDED_BBS_OUTPUT_H__
 
 #include "common/context.h"
+#include "common/remote_io.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
@@ -35,9 +36,9 @@
 #include <utility>
 #include <vector>
 
-typedef std::basic_ostream<char>&(ENDL_TYPE_O)(std::basic_ostream<char>&);
+namespace wwiv::common {
 
-class RemoteIO;
+typedef std::basic_ostream<char>&(ENDL_TYPE_O)(std::basic_ostream<char>&);
 
 class SavedLine {
 public:
@@ -46,17 +47,17 @@ public:
   int color;
 };
 
-/** 
+/**
  * Creates the Output class responsible for displaying information both
  * locally and remotely.
- * 
+ *
  * To use this class you must set the following:
  * - LocalIO
  * - RemoteIO
  * - Context Provider
  * - User Provider
  * [Optional] Instance Message Processor.
- * 
+ *
  * These may be modified after being set, so RAII does not work.
  */
 class Output final : public wwiv::local_io::curatr_provider {
@@ -65,8 +66,7 @@ protected:
   RemoteIO* comm_{nullptr};
 
 public:
-
-  typedef std::function<wwiv::bbs::Context&()> context_provider_t;
+  typedef std::function<wwiv::common::Context&()> context_provider_t;
   typedef std::function<void()> inst_msg_processor_t;
   Output();
   ~Output();
@@ -100,7 +100,7 @@ public:
 
   /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
- 
+
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
 
@@ -204,27 +204,15 @@ public:
   void flush();
   void rputch(char ch, bool use_buffer = false);
   void rputs(const std::string& text);
-  char getkey(bool allow_extended_input = false);
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();
   void dump();
   void clear_lines_listed() { lines_listed_ = 0; }
   [[nodiscard]] int lines_listed() const noexcept { return lines_listed_; }
   int wherex();
-  [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
-  void SetLastKeyLocal(bool b) { last_key_local_ = b; }
   void RedrawCurrentLine();
 
-  // Key Timeouts
-  [[nodiscard]] std::chrono::duration<double> key_timeout() const;
-  void set_key_timeout(std::chrono::duration<double> k) { non_sysop_key_timeout_ = k; }
-  void set_sysop_key_timeout(std::chrono::duration<double> k) { sysop_key_timeout_ = k; }
-  void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }
-  void set_logon_key_timeout(std::chrono::duration<double> k) { logon_key_timeout_ = k; }
-
-  // Key Timeout manipulators.
-  void set_logon_key_timeout() { non_sysop_key_timeout_ = logon_key_timeout_; };
-  void reset_key_timeout() { non_sysop_key_timeout_ = default_key_timeout_; }
+  // ANSI helpers.
   void move_up_if_newline(int num_lines);
 
   // ANSI movement happened.
@@ -247,7 +235,7 @@ public:
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
   wwiv::sdk::User& user();
-  wwiv::bbs::SessionContext& context();
+  wwiv::common::SessionContext& context();
 
   // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
   // in pause.cpp
@@ -269,14 +257,9 @@ private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   int x_{0};
-  bool last_key_local_{true};
   // Means we need to reset the color before displaying our
   // next newline character.
   bool needs_color_reset_at_newline_{false};
-  std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
-  std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
-  std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);
-  std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 
   bool ansi_movement_occurred_{false};
   uint8_t curatr_{7};
@@ -289,6 +272,8 @@ private:
   int nsp_{0};
 };
 
+} // namespace wwiv::common 
+
 /**
  * This is wwiv::endl, notice it does not flush the buffer afterwards.
  */
@@ -300,8 +285,7 @@ std::basic_ostream<charT, traits>& endl(std::basic_ostream<charT, traits>& strm)
 }
 } // namespace wwiv
 
-
 // Extern for everyone else.
-extern Output bout;
+extern wwiv::common::Output bout;
 
 #endif // __INCLUDED_BBS_OUTPUT_H__

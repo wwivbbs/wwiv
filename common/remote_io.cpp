@@ -24,6 +24,8 @@
 #include "fmt/format.h"
 #include <string>
 
+namespace wwiv::common {
+
 // static
 std::string RemoteIO::error_text_;
 
@@ -49,3 +51,5 @@ std::string RemoteIO::GetLastErrorText() {
 #endif
   return error_text_;
 }
+
+} // namespace wwiv::common

@@ -26,7 +26,7 @@
 
 class EmailData {
 public:
-  EmailData(const wwiv::bbs::MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
+  EmailData(const wwiv::common::MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
   explicit EmailData() {}
   ~EmailData() {}
 

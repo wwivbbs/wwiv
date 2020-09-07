@@ -5,15 +5,13 @@
 
 ## FSED Externalize
 
-* move IsLastKeyLocal to Input
-* move bout.getkey to Input
-* ** Put back in mmkey_getch's do_sysop_command
-* Move Context form interpret,h to common. Rename it context.
-  Add sessioncontext as a member variable there so this new context
-  has the session, user, current sub, current dir. That's enough for
-  most parts of code that need the state.
 * remove UnixConsoleIO::tleft - it's not used (lives in Application now)
-
+* move resetnsp, nsp and clearnsp to Input
+* move okskey to Input
+* move all of printfile to Output
+* move charbuffer, charbufferpointer_ and all that nonsense to Input
+* move Output to wwiv::common
+* move rest of common code to wwiv::common
 
 ## Build Cleanup.
 * add some cmake install targets

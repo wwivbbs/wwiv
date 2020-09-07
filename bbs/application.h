@@ -53,12 +53,16 @@ struct tagrec_t {
   uint16_t dir_mask;
 };
 
-enum class CommunicationType;
 class LocalIO;
-class RemoteIO;
+
 struct net_networks_rec;
 
 namespace wwiv {
+  namespace common {
+enum class CommunicationType;
+class RemoteIO;
+
+}
 namespace core {
 class IniFile;
 }
@@ -108,15 +112,15 @@ public:
   virtual ~Application();
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
-  [[nodiscard]] wwiv::bbs::Context& context();
-  [[nodiscard]] const wwiv::bbs::Context& context() const;
-  [[nodiscard]] wwiv::bbs::SessionContext& sess();
-  [[nodiscard]] const wwiv::bbs::SessionContext& sess() const;
+  [[nodiscard]] wwiv::common::Context& context();
+  [[nodiscard]] const wwiv::common::Context& context() const;
+  [[nodiscard]] wwiv::common::SessionContext& sess();
+  [[nodiscard]] const wwiv::common::SessionContext& sess() const;
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
-  [[nodiscard]] RemoteIO* remoteIO() const { return comm_.get(); }
+  [[nodiscard]] wwiv::common::RemoteIO* remoteIO() const { return comm_.get(); }
   [[nodiscard]] LocalIO* localIO() const;
   bool reset_local_io(LocalIO* wlocal_io);
   [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
@@ -129,12 +133,12 @@ public:
   void Cls();
 
   /*! @function CreateComm Creates up the communications subsystem */
-  void CreateComm(unsigned int nHandle, CommunicationType type);
+  void CreateComm(unsigned int nHandle, wwiv::common::CommunicationType type);
   /**
    * Sets the RemoteIO handle for testing.
    * NOTE: This should only be used in unit tests.
    */
-  void SetCommForTest(RemoteIO* remote_io);
+  void SetCommForTest(wwiv::common::RemoteIO* remote_io);
 
   bool ReadCurrentUser();
   bool ReadCurrentUser(int user_number);
@@ -412,7 +416,7 @@ private:
   std::unique_ptr<LocalIO> local_io_;
   int oklevel_;
   int errorlevel_;
-  wwiv::bbs::SessionContext session_context_;
+  wwiv::common::SessionContext session_context_;
 
   /*!
    * The current working directory.
@@ -436,7 +440,7 @@ private:
   std::string attach_dir_;
   std::unique_ptr<wwiv::sdk::User> thisuser_;
   int effective_sl_{0};
-  std::unique_ptr<RemoteIO> comm_;
+  std::unique_ptr<wwiv::common::RemoteIO> comm_;
   std::string current_speed_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Names> names_;
@@ -455,7 +459,7 @@ private:
   bool full_screen_read_prompt_{true};
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};
-  std::unique_ptr<wwiv::bbs::Context> context_;
+  std::unique_ptr<wwiv::common::Context> context_;
 };
 
 #endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

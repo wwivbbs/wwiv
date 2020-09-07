@@ -71,6 +71,7 @@
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

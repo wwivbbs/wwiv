@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "bbs/menusupp.h"
+
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
 #include "bbs/basic/basic.h"
@@ -29,10 +29,8 @@
 #include "bbs/chains.h"
 #include "bbs/chat.h"
 #include "bbs/chnedit.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/diredit.h"
 #include "bbs/dirlist.h"
@@ -43,7 +41,6 @@
 #include "bbs/gfileedit.h"
 #include "bbs/gfiles.h"
 #include "bbs/inetmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/listplus.h"
 #include "bbs/menu.h"
@@ -53,9 +50,6 @@
 #include "bbs/multmail.h"
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
-#include "common/pause.h"
-#include "common/printfile.h"
-#include "common/quote.h"
 #include "bbs/readmail.h"
 #include "bbs/stuffin.h"
 #include "bbs/subedit.h"
@@ -65,12 +59,18 @@
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
-#include "common/workspace.h"
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/quote.h"
+#include "common/workspace.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -79,17 +79,16 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
+#include "sdk/files/dirs.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "sdk/files/dirs.h"
 #include <memory>
 #include <string>
 
 using std::string;
-using wwiv::common::InputMode;
-using wwiv::bbs::TempDisablePause;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
@@ -494,10 +493,10 @@ void LoadTextFile() {
     bout << "|#5Allow editing? ";
     if (bin.yesno()) {
       bout.nl();
-      LoadFileIntoWorkspace(fileName, false);
+      LoadFileIntoWorkspace(a()->context(), fileName, false);
     } else {
       bout.nl();
-      LoadFileIntoWorkspace(fileName, true);
+      LoadFileIntoWorkspace(a()->context(), fileName, true);
     }
   }
 }

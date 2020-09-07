@@ -15,14 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_EXCEPTIONS_H__
-#define __INCLUDED_BBS_EXCEPTIONS_H__
+#ifndef __INCLUDED_COMMON_EXCEPTIONS_H__
+#define __INCLUDED_COMMON_EXCEPTIONS_H__
 
 #include "core/strings.h"
 #include <exception>
 #include <stdexcept>
 
-namespace wwiv::bbs {
+namespace wwiv::common {
 
 
 struct hangup_error : public std::runtime_error {
@@ -30,7 +30,7 @@ struct hangup_error : public std::runtime_error {
    : std::runtime_error(wwiv::strings::StrCat(username, " hung up.")) {}
 };
 
-}  // namespace wwiv::bbs
+}  // namespace wwiv::common
 
 
-#endif  // __INCLUDED_BBS_EXCEPTIONS_H__
+#endif  // __INCLUDED_COMMON_EXCEPTIONS_H__

@@ -28,7 +28,7 @@
 /**
  * Base Communication Class.
  */
-class NullRemoteIO : public RemoteIO {
+class NullRemoteIO : public wwiv::common::RemoteIO {
  public:
   NullRemoteIO() : RemoteIO() {}
   virtual ~NullRemoteIO() {}

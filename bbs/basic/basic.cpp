@@ -167,8 +167,9 @@ static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int 
   return MB_FUNC_OK;
 }
 
-Basic::Basic(Output& o, const wwiv::sdk::Config& config, Context* ctx)
-  : bout_(o), config_(config), ctx_(ctx) {
+Basic::Basic(wwiv::common::Input& i, wwiv::common::Output& o, const wwiv::sdk::Config& config,
+             wwiv::common::Context* ctx)
+    : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
   // Creates the script user-data passed to the interpreter.  This data can be used
   // by the implementation of custom functions.  Values derived from the script name
@@ -233,6 +234,7 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 
   std::lock_guard<std::mutex> guard(g_script_mutex);
   set_script_out(&bout_);
+  set_script_in(&bin_);
   const auto ret = mb_run(bas_, false);
   mb_close(&bas_);
 
@@ -261,7 +263,7 @@ bool Basic::RunScript(const std::string& script_name) {
 
 
 bool RunBasicScript(const std::string& script_name) {
-  Basic basic(bout, *a()->config(), &a()->context());
+  Basic basic(bin, bout, *a()->config(), &a()->context());
   return basic.RunScript(script_name);
 }
 

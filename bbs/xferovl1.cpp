@@ -18,19 +18,15 @@
 /**************************************************************************/
 #include "bbs/xferovl1.h"
 
+#include "bbs/archivers.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "common/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/external_edit.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -38,7 +34,11 @@
 #include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
 #include "bbs/xfertmp.h"
-#include "bbs/archivers.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/pause.h"
+#include "common/printfile.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/numbers.h"
@@ -67,6 +67,7 @@ static const char* invalid_chars = "Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×
 using std::string;
 using wwiv::sdk::files::FileName;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::files;
@@ -320,7 +321,7 @@ void tag_it() {
 
   if (a()->batch().size() >= a()->max_batch) {
     bout << "|#6No room left in batch queue.";
-    bout.getkey();
+    bin.getkey();
     return;
   }
   bout << "|#2Which file(s) (1-" << a()->filelist.size()
@@ -569,7 +570,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
 
   if (nsl() <= a()->batch().dl_time_in_secs() + t) {
     bout << "|#6 Insufficient time remaining... press any key.";
-    bout.getkey();
+    bin.getkey();
   } else {
     if (dn == -1) {
       return 0;
@@ -592,7 +593,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
         if (!File::Exists(dest)) {
           if (!File::Copy(src, dest)) {
             bout << "|#6 file unavailable... press any key.";
-            bout.getkey();
+            bin.getkey();
           }
           bout.backline();
           bout.clreol();
@@ -603,7 +604,7 @@ int add_batch(std::string& description, const std::string& aligned_file_name, in
           bout << "\r";
           bout.clreol();
           bout << "|#6 file unavailable... press any key.";
-          bout.getkey();
+          bin.getkey();
           bout << "\r";
           bout.clreol();
           return 0;
@@ -760,7 +761,7 @@ void download() {
             }
             if (!foundany) {
               bout << "|#6 File not found... press any key.";
-              bout.getkey();
+              bin.getkey();
               bout.backline();
               ok = false;
             }

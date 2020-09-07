@@ -273,7 +273,7 @@ void attach_file(int mode) {
                     ok = 1;
                   } else {
                     bout << "\r\n|#6Error in copy.\r\n";
-                    bout.getkey();
+                    bin.getkey();
                   }
                 } else {
                   const auto full_path = FilePath(a()->GetAttachmentDirectory(), file_to_attach);

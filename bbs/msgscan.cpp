@@ -71,6 +71,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::endl;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -146,7 +147,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
       full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
     }
     if (File::Exists(full_pathname)) {
-      LoadFileIntoWorkspace(full_pathname, true);
+      LoadFileIntoWorkspace(a()->context(), full_pathname, true);
       email(a()->sess().irt(), post->owneruser, post->ownersys, false, post->anony);
       clear_quotes(a()->sess());
     }
@@ -216,10 +217,10 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
         bout << "|#5Allow editing? ";
         if (bin.yesno()) {
           bout.nl();
-          LoadFileIntoWorkspace(filename, false);
+          LoadFileIntoWorkspace(a()->context(), filename, false);
         } else {
           bout.nl();
-          LoadFileIntoWorkspace(filename, true);
+          LoadFileIntoWorkspace(a()->context(), filename, true);
         }
         send_email();
         auto tmpfn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
@@ -781,7 +782,7 @@ static void HandleMessageLoad() {
   bout << "|#5Allow editing? ";
   bool no_edit_allowed = !bin.yesno();
   bout.nl();
-  LoadFileIntoWorkspace(fn, no_edit_allowed);
+  LoadFileIntoWorkspace(a()->context(), fn, no_edit_allowed);
 }
 
 void HandleMessageReply(int& msg_num) {

@@ -18,14 +18,11 @@
 /**************************************************************************/
 #include "common/com.h"
 
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
-#include "bbs/execexternal.h"
-#include "bbs/stuffin.h"
-#include "bbs/sysoplog.h"
 #include "common/common_events.h"
 #include "common/datetime.h"
 #include "common/exceptions.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "common/remote_io.h"
 #include "core/eventbus.h"
 #include "core/stl.h"
@@ -33,6 +30,7 @@
 #include "local_io/keycodes.h"
 #include <algorithm>
 
+using namespace wwiv::common;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -53,7 +51,7 @@ char onek(const std::string& allowable, bool auto_mpl) {
 char onek_ncr(const std::string& allowable) {
   while (true) {
     wwiv::core::bus().invoke<CheckForHangupEvent>();
-    auto ch = to_upper_case(bout.getkey());
+    auto ch = to_upper_case(bin.getkey());
     if (contains(allowable, ch)) {
       return ch;
     }

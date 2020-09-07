@@ -17,13 +17,15 @@
 /**************************************************************************/
 #include "bbs/basic/util.h"
 
-//#include "bbs/application.h"
+#include "common/input.h"
 #include "common/output.h"
 #include "core/log.h"
 #include "deps/my_basic/core/my_basic.h"
 #include <string>
 
 namespace wwiv::bbs::basic {
+
+using namespace wwiv::common;
 
 static Output* script_out_{nullptr};
 
@@ -34,6 +36,17 @@ Output& script_out() {
 
 void set_script_out(Output* o) { 
   script_out_ = o; 
+}
+
+static wwiv::common::Input* script_in_{nullptr};
+
+wwiv::common::Input& script_in() {
+  CHECK_NOTNULL(script_in_);
+  return *script_in_;
+}
+
+void set_script_in(wwiv::common::Input* o) { 
+  script_in_ = o;
 }
 
 char* BasicStrDup(const std::string& s) { 

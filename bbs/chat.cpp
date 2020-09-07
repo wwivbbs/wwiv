@@ -35,6 +35,8 @@
 #include <string>
 
 using std::string;
+using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -88,8 +90,6 @@ bool check_ch(int ch);
 void load_channels(IniFile& pIniFile);
 int userinst(char* user);
 bool usercomp(const char* st1, const char* st2);
-
-using wwiv::bbs::TempDisablePause;
 
 static int grabname(const std::string& orig, int channel) {
   int node = 0;

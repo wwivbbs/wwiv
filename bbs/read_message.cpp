@@ -52,6 +52,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;

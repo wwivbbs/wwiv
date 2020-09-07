@@ -24,9 +24,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
-#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
@@ -34,20 +32,22 @@
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
 #include "bbs/inmsg.h"
-#include "common/input.h"
-#include "common/output.h"
 #include "bbs/lilo.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
-#include "common/workspace.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/printfile.h"
+#include "common/workspace.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/stl.h"
@@ -69,6 +69,7 @@ using std::string;
 using std::chrono::milliseconds;
 using wwiv::common::InputMode;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -78,7 +79,6 @@ using namespace wwiv::strings;
 // Local function prototypes
 
 static bool CreateNewUserRecord();
-bool CreateRandomPassword();
 
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();
@@ -1429,7 +1429,7 @@ void new_mail() {
   }
   const auto save_ed = a()->user()->GetDefaultEditor();
   a()->user()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file, true, true);
+  LoadFileIntoWorkspace(a()->context(), file, true, true);
   use_workspace = true;
 
   MessageEditorData data(a()->names()->UserName(a()->usernum));

@@ -101,6 +101,7 @@ using std::max;
 using std::min;
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -109,12 +110,12 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Implementation of Context for the Application
-class ApplicationContext : public wwiv::bbs::Context {
+class ApplicationContext : public wwiv::common::Context {
 public:
   ApplicationContext(Application* app) : app_(app) {}
   virtual ~ApplicationContext() = default;
   wwiv::sdk::User& u() override { return *app_->user(); }
-  wwiv::bbs::SessionContext& session_context() override { return app_->sess(); }
+  wwiv::common::SessionContext& session_context() override { return app_->sess(); }
   bool mci_enabled() const override { return bout.mci_enabled(); }
   const wwiv::sdk::Config& config() const override { return *app_->config(); }
 
@@ -131,8 +132,8 @@ Application::Application(LocalIO* localIO)
   context_ = std::make_unique<ApplicationContext>(this);
 
   bout.set_context_provider(
-      [this]() -> wwiv::bbs::Context& { return *this->context_.get(); });
-  bin.set_context_provider([this]() -> wwiv::bbs::Context& { return *this->context_.get(); });
+      [this]() -> wwiv::common::Context& { return *this->context_.get(); });
+  bin.set_context_provider([this]() -> wwiv::common::Context& { return *this->context_.get(); });
   session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 
@@ -162,12 +163,12 @@ Application::~Application() {
   curses_out = nullptr;
 }
 
-wwiv::bbs::SessionContext& Application::sess() { return session_context_; }
-const wwiv::bbs::SessionContext& Application::sess() const { return session_context_; }
+wwiv::common::SessionContext& Application::sess() { return session_context_; }
+const wwiv::common::SessionContext& Application::sess() const { return session_context_; }
 
-wwiv::bbs::Context& Application::context() { return *context_.get(); }
+wwiv::common::Context& Application::context() { return *context_.get(); }
 
-const wwiv::bbs::Context & Application::context() const { return *context_.get(); }
+const wwiv::common::Context & Application::context() const { return *context_.get(); }
 
 LocalIO* Application::localIO() const { return local_io_.get(); }
 
@@ -408,25 +409,25 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F10: /* F10 */
-        if (sess().chatting() == wwiv::bbs::chatting_t::none) {
+        if (sess().chatting() == wwiv::common::chatting_t::none) {
           if (config()->sysconfig_flags() & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
           }
         } else {
-          sess().chatting(wwiv::bbs::chatting_t::none);
+          sess().chatting(wwiv::common::chatting_t::none);
         }
         break;
       case CF10: /* Ctrl-F10 */
-        if (sess().chatting() == wwiv::bbs::chatting_t::none) {
+        if (sess().chatting() == wwiv::common::chatting_t::none) {
           chat1("", false);
         } else {
-          sess().chatting(wwiv::bbs::chatting_t::none);
+          sess().chatting(wwiv::common::chatting_t::none);
         }
         break;
       case HOME: /* HOME */
-        if (sess().chatting() == wwiv::bbs::chatting_t::one_way) {
+        if (sess().chatting() == wwiv::common::chatting_t::one_way) {
           toggle_chat_file();
         }
         break;
@@ -1066,7 +1067,7 @@ int Application::Run(int argc, char* argv[]) {
           sysoplog() << le.what();
         }
       }
-    } catch (const wwiv::bbs::hangup_error& h) {
+    } catch (const wwiv::common::hangup_error& h) {
       if (sess().IsUserOnline()) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
@@ -1240,5 +1241,5 @@ void Application::Hangup() {
   }
   sess().hangup(true);
   VLOG(1) << "Invoked Hangup()";
-  throw wwiv::bbs::hangup_error(user()->GetName());
+  throw wwiv::common::hangup_error(user()->GetName());
 }

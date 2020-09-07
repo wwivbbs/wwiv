@@ -26,7 +26,7 @@
 
 class ExternalMessageEditor {
 public:
-  ExternalMessageEditor(const editorrec& editor, wwiv::bbs::MessageEditorData& data, int maxli, int* setanon,
+  ExternalMessageEditor(const editorrec& editor, wwiv::common::MessageEditorData& data, int maxli, int* setanon,
                         const std::string& temp_directory)
       : editor_(editor), data_(data), maxli_(maxli), setanon_(setanon),
         temp_directory_(temp_directory){};
@@ -40,12 +40,12 @@ public:
 
 protected:
   const editorrec editor_;
-  wwiv::bbs::MessageEditorData& data_;
+  wwiv::common::MessageEditorData& data_;
   const int maxli_;
   int* setanon_;
   const std::string temp_directory_;
 };
-bool DoExternalMessageEditor(wwiv::bbs::MessageEditorData& data, int maxli, int* setanon);
+bool DoExternalMessageEditor(wwiv::common::MessageEditorData& data, int maxli, int* setanon);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory,
                         int numlines, int flags);

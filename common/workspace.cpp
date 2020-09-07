@@ -21,39 +21,35 @@
 #include <memory>
 #include <string>
 #include "core/file.h"
-#include "bbs/bbs.h"
-#include "bbs/utility.h"
-#include "bbs/application.h"
+#include "core/textfile.h"
+#include "common/context.h"
+#include "common/output.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+
+namespace wwiv::common {
 
 bool use_workspace;
 
 using std::unique_ptr;
 using namespace wwiv::core;
 
-// TODO(rushfan): Rewrite this using TextFile::ReadFileIntoString
-void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bool silent_mode) {
-  File fileOrig(filename);
-  if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "\r\nFile not found.\r\n\n";
+void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem::path& filename,
+                           bool no_edit_allowed, bool silent_mode) {
+  TextFile tf(filename, "rt");
+  if (!tf) {
+    return;
+  }
+  auto contents = tf.ReadFileIntoString();
+  if (contents.empty()) {
     return;
   }
 
-  auto lOrigSize = fileOrig.length();
-  unique_ptr<char[]> b(new char[lOrigSize + 1024]);
-  fileOrig.Read(b.get(), lOrigSize);
-  fileOrig.Close();
-  if (b[lOrigSize - 1] != CZ) {
-    b[lOrigSize++] = CZ;
-  }
+  TextFile input_msg(FilePath(context.session_context().dirs().temp_directory(), INPUT_MSG), "wt");
+  input_msg.Write(contents);
 
-  File fileOut(FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG));
-  fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  fileOut.Write(b.get(), lOrigSize);
-  fileOut.Close();
-
-  use_workspace = (no_edit_allowed || !okfsed()) ? true : false;
+  bool ok_fsed = context.u().GetDefaultEditor() != 0;
+  use_workspace = (no_edit_allowed || !ok_fsed);
 
   if (!silent_mode) {
     bout << "\r\nFile loaded into workspace.\r\n\n";
@@ -63,6 +59,4 @@ void LoadFileIntoWorkspace(const std::string& filename, bool no_edit_allowed, bo
   }
 }
 
-void LoadFileIntoWorkspace(const std::filesystem::path& file_path, bool no_edit_allowed, bool silent_mode) {
-  LoadFileIntoWorkspace(file_path.string(), no_edit_allowed, silent_mode);
-}
+} // namespace wwiv::comon

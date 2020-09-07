@@ -18,16 +18,13 @@
 /**************************************************************************/
 #include "common/output.h"
 
-#include "bbs/application.h"
-#include "bbs/bbs.h"
-#include "bbs/interpret.h"
 #include "common/pause.h"
 #include "common/remote_io.h"
-#include "bbs/utility.h"
 #include "core/strings.h"
 #include "local_io/keycodes.h"
 #include <string>
 
+using namespace wwiv::common;
 using namespace wwiv::strings;
 
 /**

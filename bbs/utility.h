@@ -32,7 +32,6 @@ double ratio();
 double post_ratio();
 long nsl();
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname);
-void giveup_timeslice();
 std::string stripfn(const std::string& file_name);
 std::string get_wildlist(const std::string& file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);

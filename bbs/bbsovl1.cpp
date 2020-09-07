@@ -50,6 +50,7 @@
 using std::string;
 using namespace std::chrono;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

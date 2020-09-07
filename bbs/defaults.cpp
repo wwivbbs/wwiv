@@ -517,7 +517,7 @@ static void macroedit(char *macro_text) {
   bool toggle = false;
   int textclr = 0;
   do {
-    char ch = bout.getkey();
+    char ch = bin.getkey();
     switch (ch) {
     case CZ:
       done = true;

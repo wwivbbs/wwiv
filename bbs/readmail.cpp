@@ -66,6 +66,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -723,7 +724,7 @@ void readmail(int mode) {
             fn = FilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
           }
           if (File::Exists(fn)) {
-            LoadFileIntoWorkspace(fn, true);
+            LoadFileIntoWorkspace(a()->context(), fn, true);
             num_mail = a()->user()->GetNumFeedbackSent() + a()->user()->GetNumEmailSent() +
                        a()->user()->GetNumNetEmailSent();
             clear_quotes(a()->sess());
@@ -1181,10 +1182,10 @@ void readmail(int mode) {
           bout << "|#5Allow editing? ";
           if (bin.yesno()) {
             bout.nl();
-            LoadFileIntoWorkspace(fileName, false);
+            LoadFileIntoWorkspace(a()->context(), fileName, false);
           } else {
             bout.nl();
-            LoadFileIntoWorkspace(fileName, true);
+            LoadFileIntoWorkspace(a()->context(), fileName, true);
           }
         }
       } break;

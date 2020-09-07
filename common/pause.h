@@ -25,15 +25,13 @@
 #include "sdk/user.h"
 
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::common {
 
 class TempDisablePause : public wwiv::core::Transaction {
 public:
   TempDisablePause(Output& out);
 };
 
-}  // namespace bbs
-}  // namespace wwiv
+}  // namespace
 
 #endif  // __INCLUDED_PAUSE_H__

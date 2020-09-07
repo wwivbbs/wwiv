@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CONTEXT_H__
-#define __INCLUDED_BBS_CONTEXT_H__
+#ifndef __INCLUDED_COMMON_CONTEXT_H__
+#define __INCLUDED_COMMON_CONTEXT_H__
 
 #include "core/file.h"
 #include "core/wwivport.h"
@@ -30,7 +30,7 @@
 
 class LocalIO;
 
-namespace wwiv::bbs {
+namespace wwiv::common {
 
 class Dirs {
 public:
@@ -234,11 +234,11 @@ class Context {
 public:
   virtual ~Context() = default;
   virtual wwiv::sdk::User& u() = 0;
-  virtual wwiv::bbs::SessionContext& session_context() = 0;
+  virtual wwiv::common::SessionContext& session_context() = 0;
   virtual bool mci_enabled() const = 0;
   virtual const wwiv::sdk::Config& config() const = 0;
 };
 
-} // namespace wwiv::bbs
+} // namespace wwiv::common
 
-#endif // __INCLUDED_BBS_CONTEXT_H__
+#endif // __INCLUDED_COMMON_CONTEXT_H__

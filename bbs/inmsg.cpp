@@ -53,6 +53,7 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::common::InputMode;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -125,9 +126,9 @@ static void GetMessageTitle(MessageEditorData& data) {
       }
       if (!data.silent_mode && !force_title) {
         bout << s1;
-        ch = bout.getkey();
+        ch = bin.getkey();
         if (ch == 10) {
-          ch = bout.getkey();
+          ch = bin.getkey();
         }
       } else {
         data.title.assign(s1);

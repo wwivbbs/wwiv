@@ -35,13 +35,13 @@
 extern char str_pause[];
 
 using std::chrono::milliseconds;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::common {
 
 TempDisablePause::TempDisablePause(Output& out)
     : wwiv::core::Transaction([&out] {
@@ -55,9 +55,6 @@ TempDisablePause::TempDisablePause(Output& out)
     out.user().ClearStatusFlag(User::pauseOnPage);
   }
 }
-
-}  // namespace bbs
-}  // namespace wwiv
 
 char Output::GetKeyForPause() {
   char ch = 0;
@@ -186,3 +183,5 @@ void Output::resetnsp() {
 void Output::clearnsp() { nsp_ = 0; }
 
 int Output::nsp() const noexcept { return nsp_; }
+
+} // namespace wwiv::common

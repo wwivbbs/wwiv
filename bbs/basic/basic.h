@@ -21,6 +21,9 @@
 #include <string>
 #include "bbs/basic/util.h"
 
+namespace wwiv::common {
+class Input;
+}
 class Output;
 
 namespace wwiv::sdk {
@@ -32,7 +35,8 @@ namespace wwiv::bbs::basic {
 
 class Basic {
 public:
-  Basic(Output& o, const wwiv::sdk::Config& config, Context* ctx);
+  Basic(wwiv::common::Input& i, wwiv::common::Output& o, const wwiv::sdk::Config& config,
+        wwiv::common::Context* ctx);
 
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
@@ -42,9 +46,10 @@ private:
   bool RegisterDefaultNamespaces();
   static mb_interpreter_t* SetupBasicInterpreter();
 
-  Output& bout_;
+  wwiv::common::Input& bin_;
+  wwiv::common::Output& bout_;
   const wwiv::sdk::Config& config_;
-  const Context* ctx_;
+  const wwiv::common::Context* ctx_;
   wwiv_script_userdata_t script_userdata_;
 
   mb_interpreter_t* bas_;

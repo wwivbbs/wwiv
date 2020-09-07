@@ -18,8 +18,8 @@
 /**************************************************************************/
 #include "common/output.h"
 
-#include "bbs/bbsutl.h"
-#include "bbs/interpret.h"
+#include "bbs/bbsutl.h"    // checka
+#include "bbs/interpret.h" // MacroContext
 #include "common/com.h"
 #include "common/common_events.h"
 #include "core/eventbus.h"
@@ -35,7 +35,7 @@
 
 using std::ostream;
 using std::string;
-using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
 
@@ -338,6 +338,6 @@ void Output::set_context_provider(context_provider_t c) {
 
 wwiv::sdk::User& Output::user() { return context_provider_().u(); }
 
-wwiv::bbs::SessionContext& Output::context() {
+wwiv::common::SessionContext& Output::context() {
   return context_provider_().session_context();
 }

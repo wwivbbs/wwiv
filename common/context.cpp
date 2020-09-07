@@ -26,7 +26,7 @@
 #include <filesystem>
 #include <string>
 
-namespace wwiv::bbs {
+namespace wwiv::common {
 
 using namespace wwiv::core;
 using namespace wwiv::strings;

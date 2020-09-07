@@ -21,8 +21,7 @@
 #include <cstdint>
 #include <string>
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::common {
 
 
 constexpr int MSGED_FLAG_NONE = 0;
@@ -65,7 +64,6 @@ public:
   std::string text;
 };
 
-} // namespace bbs
-} // namespace wwiv
+} // namespace wwiv::common
 
 #endif // __INCLUDED_BBS_MESSAGE_EDITOR_DATA_H__

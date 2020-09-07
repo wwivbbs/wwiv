@@ -32,24 +32,23 @@
 
 #endif  // _WIN32
 
+#include "core/log.h"
+#include "core/net.h"
+#include "core/os.h"
+#include "cryptlib.h"
 #include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
 
-#include "cryptlib.h"
-
-#include "core/log.h"
-#include "core/net.h"
-#include "core/os.h"
-
+using wwiv::common::RemoteInfo;
+using wwiv::common::RemoteIO;
 using std::string;
 using std::thread;
 using std::unique_ptr;
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs{
 
 struct socket_error: public std::runtime_error {
   socket_error(const std::string& message): std::runtime_error(message) {}
@@ -469,5 +468,4 @@ unsigned int IOSSH::GetDoorHandle() const {
   return io_->GetDoorHandle();
 }
 
-}
-}
+} // namespace wwiv::bbs

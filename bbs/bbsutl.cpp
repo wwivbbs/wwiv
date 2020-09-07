@@ -38,6 +38,7 @@ using std::string;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
 using namespace wwiv::bbs;
+using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -109,9 +110,9 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
   bool done = false;
   unsigned char ch = '\0';
   do {
-    ch = bout.getkey();
+    ch = bin.getkey();
     if (two_color) {
-      bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
+      bout.Color(bin.IsLastKeyLocal() ? 1 : 0);
     }
     if (cm != chatting_t::none && a()->sess().chatting() == chatting_t::none) {
         ch = RETURN;
@@ -202,13 +203,13 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         break;
       case CP:                            // Ctrl-P
         if (cp < nMaxLen - 1) {
-          ch = bout.getkey();
+          ch = bin.getkey();
           if (ch >= SPACE && ch <= 126) {
             buffer[cp++] = CC;
             buffer[cp++] = ch;
             bout.Color(ch - '0');
           } else if (ch == CP && cp < nMaxLen - 2) {
-            ch = bout.getkey();
+            ch = bin.getkey();
             if (ch != CP) {
               buffer[cp++] = CO;
               buffer[cp++] = CO;
@@ -360,7 +361,7 @@ bool checka(bool *abort, bool *next) {
     case 'p':
     case CS:
       bout.clear_lines_listed();
-      ch = bout.getkey();
+      ch = bin.getkey();
       break;
     }
   }

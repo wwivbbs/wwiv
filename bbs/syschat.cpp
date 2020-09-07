@@ -43,6 +43,7 @@ using std::string;
 using std::chrono::duration_cast;
 using namespace wwiv::bbs;
 using namespace std::chrono;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -195,8 +196,8 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
   int side = 0;
   char ch;
   do {
-    ch = bout.getkey();
-    if (bout.IsLastKeyLocal()) {
+    ch = bin.getkey();
+    if (bin.IsLastKeyLocal()) {
       if (a()->localIO()->WhereY() == 11) {
         bout.GotoXY(1, 12);
         for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
@@ -433,7 +434,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
       case CP: /* Ctrl-P */
         if (side == 0) {
           if (cp0 < max_length - 1) {
-            ch = bout.getkey();
+            ch = bin.getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
               side0[a()->localIO()->WhereY()][cp0++] = CC;
               side0[a()->localIO()->WhereY()][cp0++] = ch;
@@ -442,7 +443,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
           }
         } else {
           if (cp1 < max_length - 1) {
-            ch = bout.getkey();
+            ch = bin.getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
               side1[a()->localIO()->WhereY() - 13][cp1++] = CC;
               side1[a()->localIO()->WhereY() - 13][cp1++] = ch;

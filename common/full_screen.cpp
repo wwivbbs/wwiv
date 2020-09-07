@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "common/full_screen.h"
 
-//#include "bbs/bbs.h"
 #include "common/bgetch.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -35,9 +34,10 @@ using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+namespace wwiv::common {
 
-FullScreenView::FullScreenView(Output& output, int numlines, int swidth, int slength) 
-: bout_(output), num_header_lines_(numlines), screen_width_(swidth), screen_length_(slength) {
+FullScreenView::FullScreenView(Output& output, int numlines, int swidth, int slength)
+    : bout_(output), num_header_lines_(numlines), screen_width_(swidth), screen_length_(slength) {
   message_height_ = screen_length_ - num_header_lines_ - 2 - 1;
   lines_start_ = num_header_lines_ + 2;
   lines_end_ = lines_start_ + message_height_;
@@ -75,7 +75,7 @@ void FullScreenView::ClearMessageArea() {
 void FullScreenView::DrawTopBar() {
   bout_.GotoXY(1, num_header_lines_ + 1);
   std::ostringstream ss;
-  ss << "|#7" << static_cast<unsigned char>(198) 
+  ss << "|#7" << static_cast<unsigned char>(198)
      << string(screen_width_ - 2, static_cast<unsigned char>(205))
      << static_cast<unsigned char>(181);
   bout_.bputs(ss.str());
@@ -97,21 +97,21 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
 
   int x = screen_width_ - 10 - ssize(text);
   bout_.GotoXY(x, y);
-  bout_ << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
-        << " |16|09" << static_cast<unsigned char>(198);
+  bout_ << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text << " |16|09"
+        << static_cast<unsigned char>(198);
 }
 
-void FullScreenView::GotoContentAreaTop() {
-  bout_.GotoXY(1, num_header_lines_ + 2); 
-}
+void FullScreenView::GotoContentAreaTop() { bout_.GotoXY(1, num_header_lines_ + 2); }
 
-int FullScreenView::bgetch() { 
+int FullScreenView::bgetch() {
   return bin.bgetch_event(Input::numlock_status_t::NUMBERS,
-                      [&](Input::bgetch_timeout_status_t status, int s) {
-                        if (status == Input::bgetch_timeout_status_t::WARNING) {
-      PrintTimeoutWarning(s);
-                        } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
-      ClearCommandLine();
-    }
-  });
+                          [&](Input::bgetch_timeout_status_t status, int s) {
+                            if (status == Input::bgetch_timeout_status_t::WARNING) {
+                              PrintTimeoutWarning(s);
+                            } else if (status == Input::bgetch_timeout_status_t::CLEAR) {
+                              ClearCommandLine();
+                            }
+                          });
 }
+
+} // namespace wwiv::common
