@@ -463,7 +463,7 @@ void ConfigUserMenuSet() {
       auto r = ListMenuDirs();
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
-      auto sel = input_number<int>(1, 1, r.size(), false);
+      auto sel = bin.input_number<int>(1, 1, r.size(), false);
       const auto menuSetName = r.at(sel);
       if (ValidateMenuSet(menuSetName)) {
         MenuDescriptions descriptions(GetMenuDirectory());
@@ -511,7 +511,7 @@ void ConfigUserMenuSet() {
 
 string MenuInstance::GetCommand() const {
   if (!a()->user()->hotkeys()) {
-    return input(50);
+    return bin.input(50);
   }
   if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
     write_inst(INST_LOC_XFER, a()->current_user_dir().subnum, INST_FLAGS_NONE);

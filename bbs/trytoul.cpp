@@ -101,7 +101,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       // The sleep_for used to be a wait_sec_or_hit( 1 )
       sleep_for(milliseconds(500));
       bout << "\r\nUpload " << file_name << " to which dir? <CR>=0 ?=List \r\n";
-      input(temp, 5, true);
+      bin.input(temp, 5, true);
       StringTrim(temp);
       if (temp[0] == '?') {
         dirlist(1);

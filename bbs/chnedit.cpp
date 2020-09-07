@@ -140,14 +140,14 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
         bout.pausescr();
         break;
       }
-      auto nn = input(30, true);
+      auto nn = bin.input(30, true);
       auto user_number = finduser1(nn);
       if (user_number > 0) {
         c.regby.insert(static_cast<int16_t>(user_number));
       }
     } break;
     case 'R': {
-      auto nn = input(30, true);
+      auto nn = bin.input(30, true);
       auto user_number = finduser1(nn);
       if (user_number > 0) {
         c.regby.erase(static_cast<int16_t>(user_number));
@@ -254,7 +254,7 @@ static void modify_chain(int chain_num) {
     case 'C': {
       bout.nl();
       bout << "|#7New SL? ";
-      c.sl = input_number(c.sl);
+      c.sl = bin.input_number(c.sl);
     } break;
     case 'D': {
       bout.nl();
@@ -302,15 +302,15 @@ static void modify_chain(int chain_num) {
     case 'M': {
       bout.nl();
       bout << "|#5Times Run : ";
-      c.usage = input_number(c.usage);
+      c.usage = bin.input_number(c.usage);
     } break;
     case 'N':
       bout.nl();
       bout << "|#5New minimum age? ";
-      c.minage = input_number(c.minage);
+      c.minage = bin.input_number(c.minage);
       if (c.minage > 0) {
         bout << "|#5New maximum age? ";
-        auto maxage = input_number(c.maxage);
+        auto maxage = bin.input_number(c.maxage);
         if (maxage < c.minage) {
           break;
         }
@@ -358,7 +358,7 @@ void chainedit() {
     case 'M': {
       bout.nl();
       bout << "|#2(Q=Quit) Chain number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 0, ssize(a()->chains->chains()), false);
+      auto r = bin.input_number_hotkey(0, {'Q'}, 0, ssize(a()->chains->chains()), false);
       if (r.key != 'Q' && r.num < ssize(a()->chains->chains())) {
         modify_chain(r.num);
       }
@@ -367,7 +367,7 @@ void chainedit() {
       if (a()->chains->chains().size() < a()->max_chains) {
         bout.nl();
         bout << "|#2(Q=Quit) Insert before which chain ('$' for end) : ";
-        auto r = input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
+        auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
         if (r.key == 'Q') {
           break;
         }
@@ -380,7 +380,7 @@ void chainedit() {
     case 'D': {
       bout.nl();
       bout << "|#2(Q=Quit) Delete which chain? ";
-      auto r = input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
+      auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
       if (r.key == 'Q') {
         break;
       }

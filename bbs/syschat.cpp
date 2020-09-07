@@ -180,15 +180,15 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
   const auto cm = a()->sess().chatting();
   const auto begx = a()->localIO()->WhereX();
   if (!rollover->empty()) {
-    if (bout.charbufferpointer_) {
+    if (bin.charbufferpointer_) {
       char szTempBuffer[255];
       to_char_array(szTempBuffer, *rollover);
-      strcat(szTempBuffer, &bout.charbuffer[bout.charbufferpointer_]);
-      strcpy(&bout.charbuffer[1], szTempBuffer);
-      bout.charbufferpointer_ = 1;
+      strcat(szTempBuffer, &bin.charbuffer[bin.charbufferpointer_]);
+      strcpy(&bin.charbuffer[1], szTempBuffer);
+      bin.charbufferpointer_ = 1;
     } else {
-      strcpy(&bout.charbuffer[1], rollover->c_str());
-      bout.charbufferpointer_ = 1;
+      strcpy(&bin.charbuffer[1], rollover->c_str());
+      bin.charbufferpointer_ = 1;
     }
     rollover->clear();
   }

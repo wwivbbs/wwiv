@@ -47,7 +47,6 @@ class UnixConsoleIO : public LocalIO {
   virtual void set_protect(int l) override;
   virtual void savescreen() override;
   virtual void restorescreen() override;
-  virtual void tleft(bool bCheckForTimeOut) override;
   virtual bool LocalKeyPressed() override;
   virtual unsigned char LocalGetChar() override;
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;

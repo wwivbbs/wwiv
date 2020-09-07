@@ -168,7 +168,7 @@ void removefile() {
   dliscan();
   bout.nl();
   bout << "|#9Enter filename to remove.\r\n:";
-  auto remove_fn = input(12, true);
+  auto remove_fn = bin.input(12, true);
   if (remove_fn.empty()) {
     return;
   }

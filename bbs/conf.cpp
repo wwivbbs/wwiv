@@ -21,10 +21,10 @@
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
-#include "common/input.h"
 #include "bbs/mmkey.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "common/pause.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -33,9 +33,8 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"
-
+#include "sdk/subxtr.h"
 #include <algorithm>
 #include <filesystem>
 #include <string>
@@ -308,12 +307,12 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
   memset(intarray, 0, sizeof(intarray));
   list.clear();
 
-  // check for input string
+  // check for bin.input( string
   if (!pszNumbersText) {
     return false;
   }
 
-  // get num "words" in input string
+  // get num "words" in bin.input( string
   auto num_words = wordcount(pszNumbersText, ",");
 
   for (auto word = 1; word <= num_words; word++) {
@@ -383,7 +382,7 @@ void addsubconf(ConferenceType conftype, confrec* c, subconf_t* which) {
   if (which == nullptr) {
     bout.nl();
     bout << "|#2Add: ";
-    string text = input(60, true);
+    string text = bin.input(60, true);
     if (text.empty()) {
       return;
     }
@@ -417,7 +416,7 @@ static void delsubconf(confrec* c, subconf_t* which) {
   if (which == nullptr) {
     bout.nl();
     bout << "|#2Remove: ";
-    string text = input(60, true);
+    string text = bin.input(60, true);
     if (text.empty()) {
       return;
     }
@@ -534,37 +533,37 @@ static void modify_conf(ConferenceType conftype, int which) {
     case 'C': {
       bout.nl();
       bout << "|#2Min SL: ";
-      c.minsl = input_number(c.minsl);
+      c.minsl = bin.input_number(c.minsl);
       changed = true;
     } break;
     case 'D':
       bout.nl();
       bout << "|#2Max SL: ";
-      c.maxsl = input_number(c.maxsl);
+      c.maxsl = bin.input_number(c.maxsl);
       changed = true;
       break;
     case 'E':
       bout.nl();
       bout << "|#2Min DSL: ";
-      c.mindsl = input_number(c.mindsl);
+      c.mindsl = bin.input_number(c.mindsl);
       changed = true;
       break;
     case 'F':
       bout.nl();
       bout << "|#2Max DSL";
-      c.maxdsl = input_number(c.maxdsl);
+      c.maxdsl = bin.input_number(c.maxdsl);
       changed = true;
       break;
     case 'G':
       bout.nl();
       bout << "|#2Min Age: ";
-      c.minage = input_number<uint8_t>(c.minage, 0, 255, true);
+      c.minage = bin.input_number<uint8_t>(c.minage, 0, 255, true);
       changed = true;
       break;
     case 'H':
       bout.nl();
       bout << "|#2Max Age: ";
-      c.maxage = input_number(c.maxage);
+      c.maxage = bin.input_number(c.maxage);
       changed = true;
       break;
     case 'I': {
@@ -598,7 +597,7 @@ static void modify_conf(ConferenceType conftype, int which) {
     case 'K':
       bout.nl();
       bout << "|#2Min BPS Rate: ";
-      c.minbps = input_number(c.minbps);
+      c.minbps = bin.input_number(c.minbps);
       changed = true;
       break;
     case 'L': {

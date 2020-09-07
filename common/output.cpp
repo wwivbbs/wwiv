@@ -42,7 +42,7 @@ using namespace wwiv::sdk::ansi;
 // static global bout.
 Output bout;
 
-Output::Output() { memset(charbuffer, 0, sizeof(charbuffer)); }
+Output::Output() = default;
 Output::~Output() = default;
 
 static bool okansi(const wwiv::sdk::User& user) {

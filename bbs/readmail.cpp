@@ -247,7 +247,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
   bout.nl();
   bout << "|#1Adding subscriber to subscriber list...\r\n\n";
   bout << "|#2SubType: ";
-  const auto subtype = input(7, true);
+  const auto subtype = bin.input(7, true);
   if (subtype.empty()) {
     return;
   }
@@ -263,7 +263,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
   }
   if (!system_number || !bin.noyes()) {
     bout << "|#2System Number: ";
-    const auto s = input(5, true);
+    const auto s = bin.input(5, true);
     if (s.empty()) {
       return;
     }
@@ -509,7 +509,7 @@ void readmail(int mode) {
     bout.nl();
     bout
         << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
-    auto user_selection = input(3, true);
+    auto user_selection = bin.input(3, true);
     if (contains(user_selection, 'Q')) {
       return;
     }
@@ -715,7 +715,7 @@ void readmail(int mode) {
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
           show_files("*.frm", a()->config()->gfilesdir().c_str());
           bout << "|#2Which form letter: ";
-          auto user_input = input(8, true);
+          auto user_input = bin.input(8, true);
           if (user_input.empty()) {
             break;
           }
@@ -768,7 +768,7 @@ void readmail(int mode) {
       } break;
       case 'G': {
         bout << "|#2Go to which (1-" << mw << ") ? |#0";
-        auto user_input = input(3);
+        auto user_input = bin.input(3);
         i1 = to_number<int>(user_input);
         if (i1 > 0 && i1 <= mw) {
           curmail = i1 - 1;
@@ -953,14 +953,15 @@ void readmail(int mode) {
           // TODO: optimize this since we also call readfile in grab_user_name
           auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (auto o = readfile(&(m.msg), "email")) {
-            auto_quote(o.value(), reply_to_name, quote_date_format_t::forward, m.daten);
+            auto_quote(o.value(), reply_to_name, quote_date_format_t::forward, m.daten,
+                       a()->context());
             send_email();
           }
           break;
         }
 
         bout << "|#2Forward to: ";
-        auto user_input = fixup_user_entered_email(input(75));
+        auto user_input = fixup_user_entered_email(bin.input(75));
         auto [un, sn] = parse_email_info(user_input);
         if (un || sn) {
           if (ForwardMessage(&un, &sn)) {
@@ -1092,14 +1093,15 @@ void readmail(int mode) {
             if (okfsed() && a()->user()->IsUseAutoQuote()) {
               // used to be 1 or 2 depending on s[0] == '@', but
               // that's allowable now and @ was never in the beginning.
-              auto_quote(o.value(), reply_to_name, quote_date_format_t::email, m.daten);
+              auto_quote(o.value(), reply_to_name, quote_date_format_t::email, m.daten,
+                         a()->context());
             }
-            grab_quotes(o.value(), reply_to_name);
+            grab_quotes(o.value(), reply_to_name, a()->context());
           }
 
           if (ch == '@') {
             bout << "\r\n|#9Enter user name or number:\r\n:";
-            auto user_email = fixup_user_entered_email(input(75, true));
+            auto user_email = fixup_user_entered_email(bin.input(75, true));
             auto [un, sy] = parse_email_info(user_email);
             if (un || sy) {
               email("", un, sy, false, 0);
@@ -1197,7 +1199,7 @@ void readmail(int mode) {
           }
           auto b = o.value();
           bout << "E-mail download -\r\n\n|#2Filename: ";
-          auto downloadFileName = input(12);
+          auto downloadFileName = bin.input(12);
           if (!okfn(downloadFileName)) {
             break;
           }

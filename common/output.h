@@ -223,9 +223,6 @@ public:
   [[nodiscard]] uint8_t curatr() const noexcept override { return curatr_; }
   void curatr(int n) override { curatr_ = static_cast<uint8_t>(n); }
 
-  [[nodiscard]] bool okskey() const noexcept { return okskey_; }
-  void okskey(bool n) { okskey_ = n; }
-
   // reset the state of Output
   void reset();
 
@@ -254,8 +251,6 @@ public:
 public:
   int lines_listed_{0};
   bool newline{true};
-  int charbufferpointer_{0};
-  char charbuffer[255]{};
 
 private:
   char GetKeyForPause();
@@ -270,7 +265,6 @@ private:
 
   bool ansi_movement_occurred_{false};
   uint8_t curatr_{7};
-  bool okskey_{true};
   bool mci_enabled_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;

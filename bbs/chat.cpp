@@ -583,7 +583,7 @@ void page_user(int loc) {
   while ((i < 1 || i > num_instances()) && !a()->sess().hangup()) {
     a()->CheckForHangup();
     bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
-    auto s = input(2);
+    auto s = bin.input(2);
     if (!s.empty() && s.front() == 'Q') {
       return;
     }
@@ -832,7 +832,7 @@ int change_channels(int loc) {
   while ((temploc < 1 || temploc > 10) && !a()->sess().hangup()) {
     a()->CheckForHangup();
     bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
-    input(szMessage, 2);
+    bin.input(szMessage, 2);
     if (to_upper_case_char(szMessage[0]) == 'Q') {
       return loc;
     }

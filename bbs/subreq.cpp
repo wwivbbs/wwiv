@@ -319,7 +319,7 @@ void sub_xtr_add(int n, int nn) {
   } else {
     bout << "|#2What sub type? ";
   }
-  xnp.stype = input(stype_len, true);
+  xnp.stype = bin.input(stype_len, true);
   if (xnp.stype.empty()) {
     return;
   }
@@ -351,7 +351,7 @@ void sub_xtr_add(int n, int nn) {
         while (!gc) {
           bout.nl();
           bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
-          input(s, 3);
+          bin.input(s, 3);
           i = to_number<uint16_t>(s);
           if (i || IsEquals(s, "0")) {
             TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
@@ -408,7 +408,7 @@ void sub_xtr_add(int n, int nn) {
     if (!ok) {
       bout.nl();
       bout << "|#2Which system (number) is the host? ";
-      input(szDescription, 6);
+      bin.input(szDescription, 6);
       xnp.host = to_number<uint16_t>(szDescription);
       szDescription[0] = '\0';
     }

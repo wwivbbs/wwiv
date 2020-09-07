@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "fsed/commands.h"
 
+#include "bbs/bbs.h" // for a() temporarily
 #include "fsed/model.h"
 #include "fsed/view.h"
 #include "common/quote.h"
@@ -111,7 +112,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     // Hacky quote solution for now.
     // TODO(rushfan): Do something less lame here.
     view.cls();
-    auto quoted_lines = query_quote_lines();
+    auto quoted_lines = query_quote_lines(a()->sess());
     if (!quoted_lines.empty()) {
       ed.insert_lines(quoted_lines);
     }

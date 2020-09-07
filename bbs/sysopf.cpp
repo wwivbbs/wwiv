@@ -125,7 +125,7 @@ void valuser(int user_number) {
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
     if (user.GetSl() != 255 && user.GetSl() < a()->effective_sl()) {
       bout << "|#9New : ";
-      input(s, 3, true);
+      bin.input(s, 3, true);
       if (s[0]) {
         int nSl = to_number<unsigned int>(s);
         if (!a()->at_wfc() && nSl >= static_cast<int>(a()->effective_sl())) {
@@ -153,7 +153,7 @@ void valuser(int user_number) {
     bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
     if (user.GetDsl() != 255 && user.GetDsl() < a()->user()->GetDsl()) {
       bout << "|#9New ? ";
-      input(s, 3, true);
+      bin.input(s, 3, true);
       if (s[0]) {
         int nDsl = to_number<unsigned int>(s);
         if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->GetDsl())) {
@@ -405,7 +405,7 @@ void print_net_listing(bool bForcePause) {
         cmdbit = NET_SEARCH_AREACODE;
         bout.nl();
         bout << "|#1Enter Area Code|#2: |#0";
-        input(acstr, 3);
+        bin.input(acstr, 3);
         if (strlen(acstr) != 3) {
           abort = true;
         }
@@ -426,7 +426,7 @@ void print_net_listing(bool bForcePause) {
         cmdbit = NET_SEARCH_GROUP;
         bout.nl();
         bout << "|#1Enter group number|#2: |#0";
-        input(s, 2);
+        bin.input(s, 2);
         if ((s[0] == 0) || (to_number<int>(s) < 1)) {
           bout << "|#6Invalid group number!\r\n";
           bout.pausescr();
@@ -451,7 +451,7 @@ void print_net_listing(bool bForcePause) {
         cmdbit = NET_SEARCH_SUBSTR;
         bout.nl();
         bout << "|#1Enter SubString|#2: |#0";
-        input(substr, 40);
+        bin.input(substr, 40);
         if (substr[0] == 0) {
           bout << "|#6Enter a substring!\r\n";
           bout.pausescr();
@@ -462,7 +462,7 @@ void print_net_listing(bool bForcePause) {
         cmdbit = NET_SEARCH_PHSUBSTR;
         bout.nl();
         bout << "|#1Enter phone substring|#2: |#0";
-        input(phstr, 12);
+        bin.input(phstr, 12);
         if (phstr[0] == 0) {
           bout << "|#6Enter a phone substring!\r\n";
           bout.pausescr();
@@ -737,7 +737,7 @@ void chuser() {
   }
 
   bout << "|#9Enter user to change to: ";
-  const auto userName = input(30, true);
+  const auto userName = bin.input(30, true);
   const auto user_number = finduser1(userName);
   if (user_number <= 0) {
     bout << "|#6Unknown user.\r\n";

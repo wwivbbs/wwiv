@@ -325,7 +325,7 @@ void tag_it() {
   }
   bout << "|#2Which file(s) (1-" << a()->filelist.size()
       << ", *=All, 0=Quit)? ";
-  auto s3 = input(30, true);
+  auto s3 = bin.input(30, true);
   if (!s3.empty() && s3.front() == '*') {
     s3.clear();
     for (size_t i2 = 0; i2 < a()->filelist.size() && i2 < 78; i2++) {
@@ -480,7 +480,7 @@ void tag_files(bool& need_title) {
     case 'E': {
       bout.clear_lines_listed();
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
-      auto s = input(2, true);
+      auto s = bin.input(2, true);
       const auto i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
@@ -524,7 +524,7 @@ void tag_files(bool& need_title) {
       break;
     case 'V': {
       bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
-      auto s = input(2, true);
+      auto s = bin.input(2, true);
       int i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
@@ -709,7 +709,7 @@ void download() {
         bout.Color(1);
         const bool onl = bout.newline;
         bout.newline = false;
-        auto s = input(12);
+        auto s = bin.input(12);
         bout.newline = onl;
         if (!s.empty() && s.front() != ' ') {
           if (strchr(s.c_str(), '.') == nullptr) {

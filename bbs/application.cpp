@@ -336,7 +336,7 @@ void Application::tleft(bool check_for_timeout) {
 }
 
 void Application::handle_sysop_key(uint8_t key) {
-  if (bout.okskey()) {
+  if (bin.okskey()) {
     if (key >= AF1 && key <= AF10) {
       set_autoval(key - 104);
     } else {
@@ -716,7 +716,7 @@ get_caller_t Application::GetCaller() {
 
   sess().using_modem(sess().incom());
   modem_speed_ = 38400;
-  bout.okskey(true);
+  bin.okskey(true);
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
@@ -1200,7 +1200,7 @@ void Application::frequent_init() {
   set_extratimecall(std::chrono::seconds(0));
   ReadCurrentUser(1);
   sess().reset();
-  bout.charbufferpointer_ = 0;
+  bin.charbufferpointer_ = 0;
   received_short_message(false);
   use_workspace = false;
 
@@ -1211,7 +1211,7 @@ void Application::frequent_init() {
 
   // Output context
   bout.reset();
-  bout.okskey(true);
+  bin.okskey(true);
 
   // DSZ Log
   File::Remove(dsz_logfile_name_, true);

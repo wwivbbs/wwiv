@@ -712,7 +712,7 @@ int batchdl(int mode) {
     case 'R': {
       bout.nl();
       bout << "|#9Remove which? ";
-      string s = input(4);
+      string s = bin.input(4);
       auto i = to_number<int>(s);
       if (i > 0 && i <= ssize(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i - 1]);

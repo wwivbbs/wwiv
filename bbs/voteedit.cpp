@@ -129,7 +129,7 @@ void ivotes() {
     print_quests();
     bout.nl();
     bout << "|#2Which (Q=Quit) ? ";
-    std::string questionum = input(2);
+    std::string questionum = bin.input(2);
     if (questionum == "Q") {
       done = true;
     }

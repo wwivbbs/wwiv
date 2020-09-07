@@ -191,7 +191,7 @@ static void DeleteBbsListEntry() {
 
   ReadBBSList(entries);
   bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
-  auto r = input_number_hotkey(1, {'Q'}, 1, 9999, false);
+  auto r = bin.input_number_hotkey(1, {'Q'}, 1, 9999, false);
   if (r.key == 'Q' || r.num == 0) {
     return;
   }

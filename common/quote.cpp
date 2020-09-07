@@ -18,8 +18,6 @@
 /**************************************************************************/
 #include "common/quote.h"
 
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/bbsutl2.h"
 #include "common/com.h"
 #include "common/common_events.h"
@@ -84,11 +82,11 @@ void clear_quotes(wwiv::common::SessionContext& ctx) {
   quotes_ind.reset();
 }
 
-static string to_quote_date_format(time_t t) {
+static string to_quote_date_format(time_t t, bool use_24h_format) {
   const auto dt = DateTime::from_time_t(t);
   std::ostringstream ss;
   ss << dt.to_string("%A,%B %d, %Y") << " at ";
-  if (a()->user()->IsUse24HourClock()) {
+  if (use_24h_format) {
     ss << dt.to_string("%H:%M");
   } else {
     ss << dt.to_string("%I:%M %p");
@@ -96,8 +94,9 @@ static string to_quote_date_format(time_t t) {
   return ss.str();
 }
 
-static std::string to_quote_date_line(quote_date_format_t type, time_t tt, const string& tb) {
-  const auto datetime = to_quote_date_format(tt);
+static std::string to_quote_date_line(quote_date_format_t type, bool use_24h_format, time_t tt,
+                                      const string& tb) {
+  const auto datetime = to_quote_date_format(tt, use_24h_format);
   std::string date_line;
   switch (type) {
   case quote_date_format_t::generic:
@@ -127,6 +126,7 @@ static std::string to_quote_date_line(quote_date_format_t type, time_t tt, const
 static std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
                                                                 const std::string& to_name,
                                                                 quote_date_format_t type,
+                                                                bool use_24h_format,
                                                                 time_t tt) {
   const msgapi::WWIVParsedMessageText pmt(raw_text);
   msgapi::parsed_message_lines_style_t style{};
@@ -147,7 +147,7 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
   const auto quote_initials = GetQuoteInitials(to_name);
   std::vector<std::string> out;
   if (type != quote_date_format_t::no_quote) {
-    out.emplace_back(to_quote_date_line(type, tt, properize(strip_to_node(to_node))));
+    out.emplace_back(to_quote_date_line(type, use_24h_format, tt, properize(strip_to_node(to_node))));
   }
 
   for (; it != end; ++it) {
@@ -164,41 +164,43 @@ static std::vector<std::string> create_quoted_text_from_message(std::string& raw
 }
 
 void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
-                time_t tt) {
-  const auto fn = FilePath(a()->sess().dirs().temp_directory(), INPUT_MSG);
+                time_t tt, wwiv::common::Context& ctx) {
+  const auto fn = FilePath(ctx.session_context().dirs().temp_directory(), INPUT_MSG);
   File::Remove(fn);
 
   TextFile f(fn, "w");
   if (!f) {
     return;
   }
-  auto lines = create_quoted_text_from_message(raw_text, to_name, type, tt);
+  const auto use_24h_format = ctx.u().IsUse24HourClock();
+  auto lines = create_quoted_text_from_message(raw_text, to_name, type, use_24h_format, tt);
   for (const auto& l : lines) {
     f.WriteLine(l);
   }
-  if (a()->user()->GetNumMessagesPosted() < 10) {
+  if (ctx.u().GetNumMessagesPosted() < 10) {
     bout.printfile(QUOTE_NOEXT);
   }
 }
 
-void grab_quotes(std::string& raw_text, const std::string& to_name) {
+void grab_quotes(std::string& raw_text, const std::string& to_name, wwiv::common::Context& ctx) {
   if (raw_text.back() == CZ) {
     // Since CZ isn't special on Win32/Linux. Don't write it out
     // to the quotes file.
     raw_text.pop_back();
   }
 
-  clear_quotes(a()->sess());
-  File f(FilePath(a()->sess().dirs().temp_directory(), QUOTES_TXT));
+  clear_quotes(ctx.session_context());
+  File f(FilePath(ctx.session_context().dirs().temp_directory(), QUOTES_TXT));
   if (f.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
     f.Write(raw_text);
   }
 
-  quotes_ind = std::make_unique<std::vector<std::string>>(
-      create_quoted_text_from_message(raw_text, to_name, quote_date_format_t::no_quote, 0));
+  const auto use_24h_format = ctx.u().IsUse24HourClock();
+  quotes_ind = std::make_unique<std::vector<std::string>>(create_quoted_text_from_message(
+      raw_text, to_name, quote_date_format_t::no_quote, use_24h_format, 0));
 }
 
-std::vector<std::string> query_quote_lines() {
+std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
   std::vector<std::string> lines;
 
   if (!quotes_ind || quotes_ind->empty()) {
@@ -232,11 +234,11 @@ std::vector<std::string> query_quote_lines() {
     bout.nl();
     // If the user has hungup, this will throw an exception.
     bus().invoke<CheckForHangupEvent>();
-    if (lines.empty() || a()->sess().hangup()) {
+    if (lines.empty() || ctx.hangup()) {
       return {};
     }
     bout.format("|#2Quote from line 1-{}? (?=relist, Q=quit) ", num_lines);
-    auto k = input_number_hotkey(1, {'Q', '?'}, 1, num_lines);
+    auto k = bin.input_number_hotkey(1, {'Q', '?'}, 1, num_lines);
 
     if (k.key == 'Q') {
       return {};
@@ -250,7 +252,7 @@ std::vector<std::string> query_quote_lines() {
       end_line = start_line;
     } else {
       bout.format("|#2through line {} - {} ? (Q=quit) ", start_line, num_lines);
-      k = input_number_hotkey(start_line, {'Q', '?'}, start_line, num_lines);
+      k = bin.input_number_hotkey(start_line, {'Q', '?'}, start_line, num_lines);
       if (k.key == 'Q') {
         return {};
       }
@@ -270,7 +272,7 @@ std::vector<std::string> query_quote_lines() {
       return {};
     }
     break;
-  } while (!a()->sess().hangup());
+  } while (!ctx.hangup());
   return std::vector<std::string>(std::begin(lines) + start_line - 1, std::begin(lines) + end_line);
 }
 

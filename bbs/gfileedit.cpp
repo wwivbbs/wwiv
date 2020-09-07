@@ -130,7 +130,7 @@ void modify_sec(int n) {
       }
       bout.nl();
       bout << "|#2New filename? ";
-      input(s, 8);
+      bin.input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
         if (!File::Exists(FilePath(a()->config()->gfilesdir(), r.filename))) {
@@ -152,7 +152,7 @@ void modify_sec(int n) {
     case 'C': {
       bout.nl();
       bout << "|#2New SL? ";
-      input(s, 3);
+      bin.input(s, 3);
       int i = to_number<int>(s);
       if (i >= 0 && i < 256 && s[0]) {
         r.sl = static_cast<unsigned char>(i);
@@ -162,7 +162,7 @@ void modify_sec(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      input(s, 3);
+      bin.input(s, 3);
       int i = to_number<int>(s);
       if ((i >= 0) && (i < 128) && (s[0])) {
         r.age = static_cast<unsigned char>(i);
@@ -172,7 +172,7 @@ void modify_sec(int n) {
     case 'E': {
       bout.nl();
       bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
-      input(s, 3);
+      bin.input(s, 3);
       int i = to_number<int>(s);
       if ((i >= 0) && (i < 99) && (s[0])) {
         r.maxfiles = static_cast<uint16_t>(i);
@@ -238,7 +238,7 @@ void gfileedit() {
     case 'M':
       bout.nl();
       bout << "|#2Section number? ";
-      input(s, 2);
+      bin.input(s, 2);
       i = to_number<int>(s);
       if (s[0] != 0 && i >= 0 && i < ssize(a()->gfilesec)) {
         modify_sec(i);
@@ -248,7 +248,7 @@ void gfileedit() {
       if (ssize(a()->gfilesec) < a()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
-        input(s, 2);
+        bin.input(s, 2);
         i = to_number<int>(s);
         if (s[0] != 0 && i >= 0 && i <= ssize(a()->gfilesec)) {
           insert_sec(i);
@@ -258,7 +258,7 @@ void gfileedit() {
     case 'D':
       bout.nl();
       bout << "|#2Delete which section? ";
-      input(s, 2);
+      bin.input(s, 2);
       i = to_number<int>(s);
       if (s[0] != 0 && i >= 0 && i < ssize(a()->gfilesec)) {
         bout.nl();

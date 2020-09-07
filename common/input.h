@@ -28,8 +28,7 @@
 #include <set>
 #include <string>
 
-namespace wwiv {
-namespace common {
+namespace wwiv::common {
 
 // Text editing modes for input routines
 enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
@@ -56,8 +55,8 @@ class Input final {
 public:
   typedef std::function<wwiv::common::Context&()> context_provider_t;
   typedef std::function<void()> inst_msg_processor_t;
-  Input() = default;
-  ~Input() = default;
+  Input();
+  ~Input();
 
   void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
   [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
@@ -88,9 +87,16 @@ public:
   void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }
   void set_logon_key_timeout(std::chrono::duration<double> k) { logon_key_timeout_ = k; }
 
+  //
   // Key Timeout manipulators.
+  //
+
   void set_logon_key_timeout() { non_sysop_key_timeout_ = logon_key_timeout_; };
   void reset_key_timeout() { non_sysop_key_timeout_ = default_key_timeout_; }
+  
+  //
+  // bgetch_event - bgetch with cursor keys and such.
+  //
 
   // For bgetch_event, decides if the number pad turns '8' into an arrow etc.. or not
   enum class numlock_status_t { NUMBERS, NOTNUMBERS };
@@ -103,19 +109,25 @@ public:
   int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb);
   int bgetch_event(numlock_status_t numlock_mode);
 
+  //
   // Yes/No/Quit prompts
+  //
 
   bool yesno();
   bool noyes();
   char ynq();
 
-  // Need Screen Pause? 
+  //
+  // Need Screen Pause. Used by Yes/No/Continue prompts.
+  //
 
   void clearnsp();
   void resetnsp();
   int nsp() const noexcept;
   void nsp(int n);
 
+  [[nodiscard]] bool okskey() const noexcept { return okskey_; }
+  void okskey(bool n) { okskey_ = n; }
 
   // Private for input_xxx
   void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
@@ -143,7 +155,7 @@ public:
   std::string input_cmdline(const std::string& orig_text, int max_length);
 
 
-/**
+  /**
    * Inputs phone number up to length max_length.
    */
   std::string input_phonenumber(const std::string& orig_text, int max_length);
@@ -184,6 +196,43 @@ public:
    */
   std::string input_date_mmddyyyy(const std::string& orig_text);
 
+  
+void input(char* out_text, int max_length, bool auto_mpl = false);
+  std::string input(int max_length, bool auto_mpl = false);
+
+  // TODO(rushfan): Using an int64_t for the min/max both here and in input_number_or_key_raw
+  //               is a bit wonky, but works for probably all case in WWIV since it won't be
+  //               using int64_t user input most likely ever.  Otherwise need to wait till compilers
+  //               are happy enough with auto everywhere to pass through caller types.
+  /**
+   * Inputs a number of type T within the range of min_value and max_value.
+   * If set_default_value is true (the default) then the input box will have
+   * the current_value populated.
+   */
+  template <typename T>
+  T input_number(T current_value, int64_t min_value = std::numeric_limits<T>::min(),
+                 int64_t max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
+    auto r =
+        bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
+    return (r.key != 0) ? current_value : static_cast<T>(r.num);
+  }
+
+  template <typename T>
+  wwiv::common::input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
+                                                      int min_value = std::numeric_limits<T>::min(),
+                                                      int max_value = std::numeric_limits<T>::max(),
+                                                      bool set_default_value = false) {
+    auto orig =
+        bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
+    wwiv::common::input_result_t<T> r{static_cast<T>(orig.num), orig.key};
+    return r;
+  }
+
+public:
+  // Used for macros.  TODO: Make this private
+  int charbufferpointer_{0};
+  char charbuffer[255]{};
+
 private:
   int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
   int bgetch_handle_escape(int key);
@@ -195,7 +244,7 @@ private:
   mutable context_provider_t context_provider_;
   bool last_key_local_{true};
   int nsp_{0};
-
+  bool okskey_{true};
 
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
@@ -203,40 +252,9 @@ private:
   std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 };
 
-} // namespace common
-} // namespace wwiv
+} // namespace wwiv::common
 
 extern wwiv::common::Input bin;
 
-void input(char* out_text, int max_length, bool auto_mpl = false);
-std::string input(int max_length, bool auto_mpl = false);
-
-
-//TODO(rushfan): Using an int64_t for the min/max both here and in input_number_or_key_raw
-//               is a bit wonky, but works for probably all case in WWIV since it won't be
-//               using int64_t user input most likely ever.  Otherwise need to wait till compilers
-//               are happy enough with auto everywhere to pass through caller types.
-/**
- * Inputs a number of type T within the range of min_value and max_value.
- * If set_default_value is true (the default) then the input box will have
- * the current_value populated.
- */
-template <typename T>
-T input_number(T current_value, int64_t min_value = std::numeric_limits<T>::min(),
-               int64_t max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  auto r = bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
-  return (r.key != 0) ? current_value : static_cast<T>(r.num);
-}
-
-template <typename T>
-wwiv::common::input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
-                                                    int min_value = std::numeric_limits<T>::min(),
-                                                    int max_value = std::numeric_limits<T>::max(),
-                                                    bool set_default_value = false) {
-  auto orig =
-      bin.input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
-  wwiv::common::input_result_t<T> r{static_cast<T>(orig.num), orig.key};
-  return r;
-}
 
 #endif // __INCLUDED_INPUT_H__

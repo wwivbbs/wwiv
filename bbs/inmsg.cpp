@@ -216,7 +216,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         check_message_size = false;
-        quoted_lines = query_quote_lines();
+        quoted_lines = query_quote_lines(a()->sess());
 
         if (quoted_lines.empty()) {
           bout.nl();          
@@ -561,8 +561,8 @@ bool inmsg(MessageEditorData& data) {
     setiia(oiia);
     // Might not need to do this anymore since quoting
     // isn't so convoluted.
-    bout.charbufferpointer_ = 0;
-    bout.charbuffer[0] = '\0';
+    bin.charbufferpointer_ = 0;
+    bin.charbuffer[0] = '\0';
     clear_quotes(a()->sess());
     File::Remove(exted_filename);
   });

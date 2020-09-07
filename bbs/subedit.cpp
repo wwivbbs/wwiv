@@ -63,7 +63,7 @@ static void showsubs() {
   bout.cls();
   bool abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
-  string substring = input(20, true);
+  string substring = bin.input(20, true);
   bout.bpla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE",
             &abort);
   bout.bpla("|#7==== == ------------------------------------- ======== --- === -- ===== -------",
@@ -256,12 +256,12 @@ static void modify_sub(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New Read SL? ";
-      r.readsl = input_number(r.readsl);
+      r.readsl = bin.input_number(r.readsl);
     } break;
     case 'E': {
       bout.nl();
       bout << "|#2New Post SL? ";
-      r.postsl = input_number(r.postsl);
+      r.postsl = bin.input_number(r.postsl);
     } break;
     case 'F': {
       string allowed("NYDFR");
@@ -298,12 +298,12 @@ static void modify_sub(int n) {
     case 'G': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      r.age = input_number(r.age);
+      r.age = bin.input_number(r.age);
     } break;
     case 'H': {
       bout.nl();
       bout << "|#2New Max Msgs? ";
-      r.maxmsgs = input_number(r.maxmsgs);
+      r.maxmsgs = bin.input_number(r.maxmsgs);
     } break;
     case 'I': {
       bout.nl();
@@ -367,7 +367,7 @@ static void modify_sub(int n) {
     case 'K': {
       bout.nl();
       bout << "|#2New Storage Type ( 2 ) ? ";
-      auto new_type = input_number<uint8_t>(r.storage_type, 2, 2);
+      auto new_type = bin.input_number<uint8_t>(r.storage_type, 2, 2);
       if (new_type == 2) {
         r.storage_type = new_type;
       }
@@ -615,7 +615,7 @@ void boardedit() {
     case 'M': {
       bout.nl();
       bout << "|#2Sub number? ";
-      const int subnum = input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
+      const int subnum = bin.input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         modify_sub(subnum);
       }
@@ -624,13 +624,13 @@ void boardedit() {
       if (a()->subs().subs().size() < a()->config()->max_subs()) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        int subnum1 = input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
+        int subnum1 = bin.input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        const int subnum2 = input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
+        const int subnum2 = bin.input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
         if (subnum2 <= 0) {
           break;
         }
@@ -655,7 +655,7 @@ void boardedit() {
       }
       bout.nl();
       bout << "|#2Insert before which sub ('$' for end) : ";
-      auto s = input(4);
+      auto s = bin.input(4);
       subconf_t subnum;
       if (s[0] == '$') {
         subnum = static_cast<subconf_t>(ssize(a()->subs().subs()));
@@ -689,7 +689,7 @@ void boardedit() {
     case 'D': {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      const int subnum = input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
+      const int subnum = bin.input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";

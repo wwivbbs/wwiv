@@ -241,7 +241,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   }
   pszPath[t] = '\0';
   bout << "Filename: ";
-  input(file_mask, 12, true);
+  bin.input(file_mask, 12, true);
   strcat(pszPath, file_mask);
   return pszPath;
 }

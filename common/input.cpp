@@ -38,11 +38,13 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
-static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
-
 // static global bin.
 wwiv::common::Input bin;
+
+namespace wwiv::common {
+
+static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
+static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 
 // TODO: put back in high ascii characters after finding proper hex codes
 static const std::string valid_letters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -55,13 +57,16 @@ static const uint8_t input_background_char = 32; // Was '\xB1';
 
 static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
 
+Input::Input() { memset(charbuffer, 0, sizeof(charbuffer)); }
+Input::~Input() = default;
+
 // This will input an upper-case string
-void input(char* out_text, int max_length, bool auto_mpl) {
-  bin.input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
+void Input::input(char* out_text, int max_length, bool auto_mpl) {
+  input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
 }
 
 // This will input an upper-case string
-string input(int max_length, bool auto_mpl) {
+string Input::input(int max_length, bool auto_mpl) {
   const auto line = std::make_unique<char[]>(max_length + 1);
   input(line.get(), max_length, auto_mpl);
   return line.get();
@@ -83,9 +88,6 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
   }
   return ok;
 }
-
-
-namespace wwiv::common {
 
 // TODO(rushfan): HACK - Fix this and put back language suppor
 static std::string YesNoString(bool bYesNo) { return bYesNo ? "Yes" : "No"; }

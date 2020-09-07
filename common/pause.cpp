@@ -25,7 +25,6 @@
 #include "common/context.h"
 #include "bbs/instmsg.h"  // setiia
 #include "local_io/keycodes.h"
-#include "bbs/utility.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
 #include "core/os.h"
@@ -85,6 +84,8 @@ char Output::GetKeyForPause() {
   return ch;
 }
 
+static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
+
 void Output::pausescr() {
   bin.clearnsp();
   auto oiia = setiia(std::chrono::milliseconds(0));
@@ -97,7 +98,7 @@ void Output::pausescr() {
     sess().incom(true);
   }
 
-  if (okansi()) {
+  if (okansi(user())) {
     ResetColors();
 
     i1 = strlen(stripcolors(ss));

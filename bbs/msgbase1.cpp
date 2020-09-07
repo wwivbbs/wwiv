@@ -488,7 +488,8 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
        << "|#9): ";
-  const auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
+  const auto r =
+      bin.input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea(), false);
   auto nextsub = false;
   if (r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
@@ -523,7 +524,7 @@ void remove_post() {
     }
   }
   bout << "\r\n|#2Remove which? ";
-  auto postnum = input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
+  auto postnum = bin.input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
     if (get_post(postnum)->ownersys == 0 && get_post(postnum)->owneruser == a()->usernum ||

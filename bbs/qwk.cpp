@@ -757,7 +757,7 @@ void qwk_menu() {
       bout << "Enter percent of all messages in all QSCAN subs to pack:";
       bout.mpl(3);
       char temp[101];
-      input(temp, 3);
+      bin.input(temp, 3);
       qwk_percent = to_number<int>(temp);
       if (qwk_percent > 100) {
         qwk_percent = 100;
@@ -926,7 +926,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.mpl(5);
 
   char temp[6];
-  input(temp, 5);
+  bin.input(temp, 5);
 
   if (!temp[0]) {
     return 0;
@@ -936,7 +936,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
 
   bout << "Most messages you want per sub? ";
   bout.mpl(5);
-  input(temp, 5);
+  bin.input(temp, 5);
 
   if (!temp[0]) {
     return 0;
@@ -1170,7 +1170,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     bout.Color(2);
     bout << "Move to what dir? ";
     bout.mpl(60);
-    auto new_dir = input(60);
+    auto new_dir = bin.input(60);
     StringTrim(new_dir);
     if (new_dir.empty()) {
       continue;

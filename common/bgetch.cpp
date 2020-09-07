@@ -151,18 +151,18 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
   if (c == CBACKSPACE) {
     c = BACKSPACE;
   }
-  if (bout.okskey()) {
+  if (bin.okskey()) {
     switch (c) {
     case CA: // CTRL-A
     case CD: // CTRL-D
     case CF: // CTRL-F
-      if (context.okmacro() && !bout.charbufferpointer_) {
+      if (context.okmacro() && !bin.charbufferpointer_) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         auto macroNum = MACRO_KEY_TABLE[(int)c];
-        to_char_array(bout.charbuffer, user.GetMacro(macroNum));
-        c = bout.charbuffer[0];
+        to_char_array(bin.charbuffer, user.GetMacro(macroNum));
+        c = bin.charbuffer[0];
         if (c) {
-          bout.charbufferpointer_ = 1;
+          bin.charbufferpointer_ = 1;
         }
       }
       break;
@@ -204,14 +204,14 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
 char Input::bgetch(bool allow_extended_input) {
   char ch = 0;
 
-  if (bout.charbufferpointer_) {
-    if (!bout.charbuffer[bout.charbufferpointer_]) {
-      bout.charbufferpointer_ = bout.charbuffer[0] = 0;
+  if (charbufferpointer_) {
+    if (!charbuffer[charbufferpointer_]) {
+      charbufferpointer_ = charbuffer[0] = 0;
     } else {
-      if ((bout.charbuffer[bout.charbufferpointer_]) == CC) {
-        bout.charbuffer[bout.charbufferpointer_] = CP;
+      if ((charbuffer[charbufferpointer_]) == CC) {
+        charbuffer[charbufferpointer_] = CP;
       }
-      return bout.charbuffer[bout.charbufferpointer_++];
+      return charbuffer[charbufferpointer_++];
     }
   }
   if (localIO()->KeyPressed()) {
@@ -260,7 +260,7 @@ bool Input::bkbhitraw() {
 
 bool Input::bkbhit() {
   if (localIO()->KeyPressed() || (sess().incom() && bkbhitraw()) ||
-      (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) {
+      (charbufferpointer_ && charbuffer[charbufferpointer_])) {
     return true;
   }
   return false;

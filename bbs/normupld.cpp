@@ -62,7 +62,7 @@ void normalupload(int dn) {
     return;
   }
   bout << "|#9Filename: ";
-  auto input_fn = input(12);
+  auto input_fn = bin.input(12);
   if (!okfn(input_fn)) {
     input_fn.clear();
   } else {

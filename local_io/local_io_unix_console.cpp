@@ -218,9 +218,6 @@ void UnixConsoleIO::set_protect(int l) {
 void UnixConsoleIO::savescreen() {}
 void UnixConsoleIO::restorescreen() {}
 
-
-void UnixConsoleIO::tleft(bool bCheckForTimeOut) {}
-
 bool UnixConsoleIO::LocalKeyPressed() { 
   struct pollfd p;
 

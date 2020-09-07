@@ -20,23 +20,23 @@
 
 #include <string>
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "common/input.h"
-#include "local_io/keycodes.h"
-#include "bbs/bbs.h"
-#include "common/pause.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/usermanager.h"
-#include "sdk/user.h"
+#include "local_io/keycodes.h"
 #include "sdk/files/dirs.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 using std::string;
 using wwiv::common::InputMode;
@@ -108,7 +108,7 @@ std::optional<net_networks_rec> select_network() {
   }
   bout.nl();
   bout << "|#2(Q=Quit) Select Network Number : ";
-  const auto r = input_number_hotkey(0, {'Q'}, 1, num, false);
+  const auto r = bin.input_number_hotkey(0, {'Q'}, 1, num, false);
   if (r.key == 'Q') {
     return std::nullopt;
   }
@@ -174,7 +174,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
         break;
       }
       bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      auto r = bin.input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
       if (r.key == 'Q') {
         break;
       }
@@ -189,7 +189,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
         break;
       }
       bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      auto r = bin.input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
       if (r.key == 'Q') {
         break;
       }
@@ -308,20 +308,20 @@ void modify_dir(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New DSL? ";
-      r.dsl = input_number(r.dsl);
+      r.dsl = bin.input_number(r.dsl);
     }
     break;
     case 'E': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      r.age = input_number(r.age);
+      r.age = bin.input_number(r.age);
     }
     break;
     case 'F':
     {
       bout.nl();
       bout << "|#2New max files? ";
-      r.maxfiles = input_number(r.maxfiles);
+      r.maxfiles = bin.input_number(r.maxfiles);
     } break;
     case 'G':
     {
@@ -529,7 +529,7 @@ void dlboardedit() {
     {
       bout.nl();
       bout << "|#2(Q=Quit) Dir number? ";
-      auto r = input_number_hotkey(0, {'Q'}, 0, a()->dirs().size());
+      auto r = bin.input_number_hotkey(0, {'Q'}, 0, a()->dirs().size());
       if (r.key == 'Q') {
         break;
       }
@@ -539,14 +539,14 @@ void dlboardedit() {
       if (a()->dirs().size() < a()->config()->max_dirs()) {
         bout.nl();
         bout << "|#2Take dir number? ";
-        input(s, 4);
+        bin.input(s, 4);
         int i1 = to_number<int>(s);
         if (!s[0] || i1 < 0 || i1 >= a()->dirs().size()) {
           break;
         }
         bout.nl();
         bout << "|#2And put before dir number? ";
-        input(s, 4);
+        bin.input(s, 4);
         i2 = to_number<int>(s);
         if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > a()->dirs().size() || i1 == i2) {
           break;
@@ -570,7 +570,7 @@ void dlboardedit() {
       if (a()->dirs().size() < a()->config()->max_dirs()) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
-        input(s, 4);
+        bin.input(s, 4);
         auto i = to_number<subconf_t>(s);
         if (s[0] != 0 && i >= 0 && i <= a()->dirs().size()) {
           insert_dir(i);
@@ -597,7 +597,7 @@ void dlboardedit() {
     {
       bout.nl();
       bout << "|#2Delete which dir? ";
-      input(s, 4);
+      bin.input(s, 4);
       const auto i = to_number<int>(s);
       if (s[0] != 0 && i >= 0 && i < a()->dirs().size()) {
         bout.nl();

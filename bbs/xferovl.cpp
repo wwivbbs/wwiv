@@ -192,7 +192,7 @@ void sort_all(int type) {
 void rename_file() {
   bout.nl(2);
   bout << "|#2File to rename: ";
-  auto s = input(12);
+  auto s = bin.input(12);
   if (s.empty()) {
     return;
   }
@@ -222,7 +222,7 @@ void rename_file() {
     }
     bout.nl();
     bout << "|#2New filename? ";
-    s = input(12);
+    s = bin.input(12);
     if (!okfn(s)) {
       s.clear();
     }
@@ -658,7 +658,7 @@ void edit_database() {
     case 'A': {
       bout.nl();
       bout << "|#2Filename: ";
-      auto s = input(12, true);
+      auto s = bin.input(12, true);
       if (!s.empty()) {
         add_to_file_database(s);
       }
@@ -666,7 +666,7 @@ void edit_database() {
     case 'R': {
       bout.nl();
       bout << "|#2Filename: ";
-      auto s = input(12, true);
+      auto s = bin.input(12, true);
       if (!s.empty()) {
         remove_from_file_database(s);
       }
@@ -852,7 +852,7 @@ void xfer_defaults() {
           << "|#7)\r\n";
       bout << "|#9Current # lines: |#2" << a()->user()->GetNumExtended() << wwiv::endl;
       bout << "|#7: ";
-      input(s, 3);
+      bin.input(s, 3);
       if (s[0]) {
         i = to_number<int>(s);
         if ((i >= 0) && (i <= a()->max_extend_lines)) {
@@ -882,7 +882,7 @@ void finddescription() {
   }
   bout << "\r\nFind description -\r\n\n";
   bout << "Enter string to search for in file description:\r\n:";
-  const auto search_string = input(58);
+  const auto search_string = bin.input(58);
   if (search_string.empty()) {
     tmp_disable_conf(false);
     return;
@@ -952,7 +952,7 @@ void finddescription() {
 void arc_l() {
   bout.nl();
   bout << "|#2File for listing: ";
-  auto file_spec = input(12);
+  auto file_spec = bin.input(12);
   if (file_spec.find('.') == std::string::npos) {
     file_spec += ".*";
   }

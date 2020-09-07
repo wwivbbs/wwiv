@@ -679,8 +679,8 @@ void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* na
   ScopeExit at_exit([=]() {
     // Might not need to do this anymore since quoting
     // isn't so convoluted.
-    bout.charbufferpointer_ = 0;
-    bout.charbuffer[0] = 0;
+    bin.charbufferpointer_ = 0;
+    bin.charbuffer[0] = 0;
   });
 
   auto m = *m1;
@@ -713,7 +713,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       while (!done5 && !a()->sess().hangup()) {
         bout.nl();
         bout << "Then which sub?  ?=List  Q=Don't Post :";
-        input(substr, 3);
+        bin.input(substr, 3);
 
         StringTrim(substr);
         sub = a()->usub[to_number<int>(substr) - 1].subnum;
@@ -955,7 +955,7 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
       bout << "Which one?";
       bout.mpl(2);
 
-      input(s, 2);
+      bin.input(s, 2);
       const int x = to_number<int>(s);
       // Delete the one at the right position.
       if (x >= 0 && x < ssize(qwk_cfg.bulletins)) {
@@ -966,7 +966,7 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
     case 'A': {
       bout.nl();
       bout.bputs("Enter complete path to Bulletin");
-      input(s, 80);
+      bin.input(s, 80);
 
       if (!File::Exists(s)) {
         bout << "File doesn't exist, continue?";
@@ -976,7 +976,7 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
       }
 
       bout.bputs("Now enter its bulletin name, in the format BLT-????.???");
-      input(t, BNAME_SIZE);
+      bin.input(t, BNAME_SIZE);
 
       if (strncasecmp(t, "BLT-", 4) != 0) {
         bout.bputs("Improper format");
@@ -1033,13 +1033,13 @@ void qwk_sysop() {
 
     switch (x) {
     case '1':
-      qwk_cfg.hello = input(12);
+      qwk_cfg.hello = bin.input(12);
       break;
     case '2':
-      qwk_cfg.news = input(12);
+      qwk_cfg.news = bin.input(12);
       break;
     case '3':
-      qwk_cfg.bye = input(12);
+      qwk_cfg.bye = bin.input(12);
       break;
     case '4': {
       sn = qwk_system_name(qwk_cfg);
@@ -1049,7 +1049,7 @@ void qwk_sysop() {
       bout.bprintf("Current name : %s", sn);
       bout.nl();
       bout << "Enter new packet name: ";
-      sn = input(8);
+      sn = bin.input(8);
       if (!sn.empty()) {
         qwk_cfg.packet_name = sn;
       }
@@ -1060,7 +1060,7 @@ void qwk_sysop() {
       bout.Color(1);
       bout << "Enter max messages per packet, 0=No Max: ";
       bout.mpl(5);
-      auto tmp = input(5);
+      auto tmp = bin.input(5);
       qwk_cfg.max_msgs = to_number<uint16_t>(tmp);
     } break;
     case '6':

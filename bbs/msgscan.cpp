@@ -117,13 +117,13 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
 
   if (auto o = readfile(&post->msg, a()->current_sub().filename)) {
     auto b = o.value();
-    grab_quotes(b, reply_to_name);
+    grab_quotes(b, reply_to_name, a()->context());
 
     if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
         msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
       const auto type =
           user_input[0] == '@' ? quote_date_format_t::generic : quote_date_format_t::post;
-      auto_quote(b, reply_to_name, type, post->daten);
+      auto_quote(b, reply_to_name, type, post->daten, a()->context());
     }
   }
 
@@ -167,7 +167,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
       bout.nl();
       bout << "|#9Enter user name or number:\r\n:";
       char un_nn[81];
-      input(un_nn, 75, true);
+      bin.input(un_nn, 75, true);
       auto at_pos = strcspn(un_nn, "@");
       if (at_pos != strlen(un_nn) && isalpha(un_nn[at_pos + 1])) {
         if (strstr(un_nn, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
@@ -267,7 +267,7 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
   bout.nl();
   bout << "|#7Find what? (CR=\"" << pFindStr << "\")|#1";
   char szFindString[81];
-  input(szFindString, 20);
+  bin.input(szFindString, 20);
   if (!*szFindString) {
     to_char_array(szFindString, pFindStr);
   } else {
@@ -580,7 +580,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
         case 'J': {
           fs.ClearCommandLine();
           bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
-          msgnum = input_number(msgnum, 1, num_msgs_in_area, false);
+          msgnum = bin.input_number(msgnum, 1, num_msgs_in_area, false);
 
           ReadMessageResult result;
           result.option = ReadMessageOption::READ_MESSAGE;
@@ -795,13 +795,14 @@ void HandleMessageReply(int& msg_num) {
                               cs.filename.c_str(), p2.ownersys, p2.owneruser);
   m.title = p2.title;
 
-  grab_quotes(m.raw_message_text, m.from_user_name);
+  grab_quotes(m.raw_message_text, m.from_user_name, a()->context());
 
   if (okfsed() && a()->user()->IsUseAutoQuote() && msg_num > 0 &&
       msg_num <= a()->GetNumMessagesInCurrentMessageArea()) {
     // auto_quote needs the raw message text like from readfile(), so that
     // the top two lines are header information.
-    auto_quote(m.raw_message_text, m.from_user_name, quote_date_format_t::generic, p2.daten);
+    auto_quote(m.raw_message_text, m.from_user_name, quote_date_format_t::generic, p2.daten,
+               a()->context());
   }
 
   if (!m.title.empty()) {
@@ -850,7 +851,7 @@ static void HandleMessageDelete(int& msg_num) {
     bout.nl();
     bout << "|#2Remove how many posts credit? ";
     uint16_t num_credits =
-        input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.GetNumMessagesPosted()));
+        bin.input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.GetNumMessagesPosted()));
     if (num_credits != 0) {
       tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - num_credits);
     }
@@ -968,7 +969,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
   bout.nl();
   char szUserInput[81];
   bout << read_prompt;
-  input(szUserInput, 5, true);
+  bin.input(szUserInput, 5, true);
   resynch(&msgnum, nullptr);
   while (szUserInput[0] == 32) {
     char szTempBuffer[255];
@@ -1196,7 +1197,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     case ReadMessageOption::JUMP_TO_MSG: {
       const auto max_msgnum = a()->GetNumMessagesInCurrentMessageArea();
       bout << "Enter Message Number (1-" << max_msgnum << ") :";
-      msgnum = input_number(msgnum, 0, max_msgnum, false);
+      msgnum = bin.input_number(msgnum, 0, max_msgnum, false);
       if (msgnum < 1) {
         done = true;
       }

@@ -22,30 +22,30 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/common.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/inetmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
-#include "common/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
+#include "sdk/files/dirs.h"
 #include "sdk/names.h"
 #include "sdk/usermanager.h"
-#include "sdk/files/dirs.h"
 #include <sstream>
 #include <string>
 #include <vector>
@@ -81,7 +81,8 @@ void select_editor() {
   }
   bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
   const auto cur_editor = a()->user()->GetDefaultEditor();
-  auto k = input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0, ssize(a()->editors), false);
+  auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
+                                   ssize(a()->editors), false);
   if (k.key == 'A') {
     a()->user()->SetDefaultEditor(0xff);
   } else if (k.key == 'Q') {
@@ -278,7 +279,7 @@ static void change_colors() {
         os << "Note              ";
         break;
       case 4:
-        os << "Input line        ";
+        os << "bin.input( line        ";
         break;
       case 5:
         os << "Yes/No Question   ";
@@ -509,7 +510,7 @@ static void macroedit(char *macro_text) {
   *macro_text = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
-  bout.okskey(false);
+  bin.okskey(false);
   bout.Color(0);
   bool done = false;
   int i = 0;
@@ -558,7 +559,7 @@ static void macroedit(char *macro_text) {
     }
     macro_text[i + 1] = 0;
   } while (!done && i < 80 && !a()->sess().hangup());
-  bout.okskey(true);
+  bin.okskey(true);
   bout.Color(0);
   bout.nl();
   bout << "|#9Is this okay? ";
@@ -678,7 +679,7 @@ static void modify_mailbox() {
   }
   bout.nl();
   bout << "|#2Forward to? ";
-  const auto entered_forward_to = input(40);
+  const auto entered_forward_to = bin.input(40);
 
   auto [tu, ts] = parse_email_info(entered_forward_to);
   a()->user()->SetForwardUserNumber(tu);
@@ -709,7 +710,7 @@ static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n"
        << "|#20 |#9being all, |#210 |#9being none.\r\n"
        << "|#2What value? ";
-  auto r = input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
+  auto r = bin.input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
   if (r.key != 'Q') {
     a()->user()->SetOptionalVal(r.num);
   }
@@ -717,7 +718,7 @@ static void optional_lines() {
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  auto regnum = input_number(a()->user()->GetWWIVRegNumber());
+  auto regnum = bin.input_number(a()->user()->GetWWIVRegNumber());
   a()->user()->SetWWIVRegNumber(regnum);
   changedsl();
 }

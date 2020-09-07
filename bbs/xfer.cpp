@@ -327,7 +327,7 @@ std::string file_mask(const std::string& prompt) {
     bout.nl();
     bout << prompt;
   }
-  auto s = input(12);
+  auto s = bin.input(12);
   if (s.empty()) {
     s = "*.*";
   }

@@ -522,7 +522,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       nNumUsers++;
       do {
         bout << "|#9Enter Address (blank to end) : ";
-        string emailAddress = input(75);
+        string emailAddress = bin.input(75);
         if (emailAddress.empty()) {
           done = true;
           break;

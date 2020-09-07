@@ -245,7 +245,7 @@ void list_users(int mode) {
   if (bin.yesno()) {
     bout.nl();
     bout << "|#5Enter text to find: ";
-    input(szFindText, 10, true);
+    bin.input(szFindText, 10, true);
   } else {
     szFindText[0] = '\0';
   }
@@ -461,7 +461,7 @@ void time_bank() {
     case 'D':
       bout.nl();
       bout << "|#1Deposit how many minutes: ";
-      input(s, 3, true);
+      bin.input(s, 3, true);
       i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();
@@ -484,7 +484,7 @@ void time_bank() {
         break;
       }
       bout << "|#1Withdraw How Many Minutes: ";
-      input(s, 3, true);
+      bin.input(s, 3, true);
       i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();

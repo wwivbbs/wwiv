@@ -740,12 +740,12 @@ void sysop_configure() {
       } break;
     case 'J':
       bout << "Enter max amount of lines to show (0=disabled) ";
-      input(s, 2, true);
+      bin.input(s, 2, true);
       lp_config.max_screen_lines_to_show = to_number<int16_t>(s);
       break;
     case 'K':
       bout << "Enter minimum extended description lines to show ";
-      input(s, 2, true);
+      bin.input(s, 2, true);
       lp_config.show_at_least_extended = to_number<int16_t>(s);
       break;
     case 'L':
@@ -1121,7 +1121,7 @@ static int rename_filename(const std::string& file_name, int dn) {
     }
     bout.nl();
     bout << "|#2New filename? ";
-    auto new_filename = input(12);
+    auto new_filename = bin.input(12);
     if (!okfn(new_filename)) {
       new_filename.clear();
     }
@@ -1496,7 +1496,7 @@ LP_SEARCH_HELP:
     switch (x) {
     case 'A':
       bout << "Filename (wildcards okay) : ";
-      sr->filemask = input(12, true);
+      sr->filemask = bin.input(12, true);
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
           if (sr->filemask.size() < 8) {
@@ -1520,7 +1520,7 @@ LP_SEARCH_HELP:
 
     case 'B':
       bout << "Keyword(s) : ";
-      sr->search = input(60, true);
+      sr->search = bin.input(60, true);
       if (sr->search[0]) {
         sysoplog() << "Keyword: " << sr->search;
       }

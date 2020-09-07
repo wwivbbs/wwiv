@@ -265,7 +265,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     a_->SetCurrentSpeed("KB");
     // try to check for packets to send every minute.
     DrawScreen();
-    bout.okskey(false);
+    bin.okskey(false);
     if (io->KeyPressed()) {
       a_->set_at_wfc(false);
       a_->ReadCurrentUser(sysop_usernum);
@@ -284,7 +284,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     }
     if (ch) {
       a_->set_at_wfc(true);
-      bout.okskey(true);
+      bin.okskey(true);
       bin.resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {

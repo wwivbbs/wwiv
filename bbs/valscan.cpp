@@ -138,7 +138,7 @@ void valscan() {
                       bout.nl();
                       bout << "|#2Remove how many posts credit? ";
                       char szNumCredits[ 11 ];
-                      input(szNumCredits, 3, true);
+                      bin.input(szNumCredits, 3, true);
                       int num_post_credits = 1;
                       if (szNumCredits[0]) {
                         num_post_credits = to_number<int>(szNumCredits);

@@ -212,7 +212,7 @@ int oneuser() {
     }
   } else {
     bout << "|#2>";
-    input(s, 40);
+    bin.input(s, 40);
   }
   auto user_number_int = finduser1(s);
   if (user_number_int == 65535) {
@@ -355,7 +355,7 @@ void slash_e() {
 
       bout.nl();
       bout << "|#2Which? ";
-      input(s, 8);
+      bin.input(s, 8);
 
       File fileMailList(FilePath(a()->config()->datadir(), s));
       if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
@@ -390,7 +390,7 @@ void slash_e() {
       if (numu) {
         bout.nl();
         bout << "|#2Delete which? ";
-        input(s, 2);
+        bin.input(s, 2);
         i = to_number<int>(s);
         if ((i > 0) && (i <= numu)) {
           --numu;

@@ -197,7 +197,7 @@ void attach_file(int mode) {
                 }
                 if (!bRemoteUpload) {
                   bout << "|#5Path/filename (wildcards okay) : \r\n";
-                  file_to_attach = input(35, true);
+                  file_to_attach = bin.input(35, true);
                   if (!file_to_attach.empty()) {
                     bout.nl();
                     if (strchr(file_to_attach.c_str(), '*') != nullptr || strchr(file_to_attach.c_str(), '?') != nullptr) {
@@ -223,7 +223,7 @@ void attach_file(int mode) {
               std::string new_filename;
               if (!so() || bRemoteUpload) {
                 bout << "|#2Filename: ";
-                file_to_attach = input(12, true);
+                file_to_attach = bin.input(12, true);
                 new_filename = FilePath(a()->GetAttachmentDirectory(), file_to_attach).string();
                 if (!okfn(file_to_attach) || strchr(file_to_attach.c_str(), '?')) {
                   found = true;
@@ -237,7 +237,7 @@ void attach_file(int mode) {
                   bout << "|#5New name? ";
                   if (bin.yesno()) {
                     bout << "|#5Filename: ";
-                    new_filename = input(12, true);
+                    new_filename = bin.input(12, true);
                     full_pathname = FilePath(a()->GetAttachmentDirectory(), new_filename).string();
                     if (okfn(new_filename) && !strchr(new_filename.c_str(), '?') && !File::Exists(new_filename)) {
                       found = false;

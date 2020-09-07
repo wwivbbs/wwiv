@@ -369,13 +369,13 @@ void input_age(User* u) {
     bout.nl();
     y = static_cast<int>(dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
-    y = input_number<int>(y, 1900, static_cast<int>(dt.year() - 30));
+    y = bin.input_number<int>(y, 1900, static_cast<int>(dt.year() - 30));
   } while (!a()->sess().hangup() && y < 1905);
 
   do {
     bout.nl();
     bout << "|#2Month you were born (1-12) : ";
-    m = input_number<int>(u->birthday_month(), 1, 12);
+    m = bin.input_number<int>(u->birthday_month(), 1, 12);
   } while (!a()->sess().hangup() && (m > 12 || m < 1));
 
   do {
@@ -390,7 +390,7 @@ void input_age(User* u) {
     }
     bout.nl();
     bout << "|#2Day of month you were born (1-31) : ";
-    d = input_number<int>(u->birthday_mday(), 1, days_in_month.at(m));
+    d = bin.input_number<int>(u->birthday_mday(), 1, days_in_month.at(m));
   } while (!a()->sess().hangup() && (d > 31 || d < 1));
   u->birthday_mdy(m, d, y);
   bout.nl();
@@ -410,7 +410,7 @@ void input_comptype() {
     bout.nl();
     bout << "|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
     bout << "|#2:";
-    ct = input_number(1, 1, i, false);
+    ct = bin.input_number(1, 1, i, false);
     ok = true;
     if (ct < 1 || ct > i) {
       ok = false;
@@ -430,14 +430,14 @@ void input_screensize() {
   do {
     bout.nl();
     bout << "|#3How wide is your screen (chars, <CR>=80) ?\r\n|#2:";
-    x = input_number(80, 32, 80, true);
+    x = bin.input_number(80, 32, 80, true);
     ok = true;
   } while (!ok && !a()->sess().hangup());
 
   do {
     bout.nl();
     bout << "|#3How tall is your screen (lines, <CR>=24) ?\r\n|#2:";
-    y = input_number(24, 8, 60, true);
+    y = bin.input_number(24, 8, 60, true);
     ok = true;
   } while (!ok && !a()->sess().hangup());
 
