@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
  using namespace wwiv::common;
 
@@ -65,6 +65,7 @@ public:
 
 private:
   FullScreenView fs_;
+  wwiv::common::Output& bout_;
   int max_view_lines_;
   int max_view_columns_;
   wwiv::common::MessageEditorData& data_;

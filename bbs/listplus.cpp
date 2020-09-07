@@ -1579,7 +1579,7 @@ void view_file(const std::string& aligned_file_name) {
       if (i1) {
         abort = true;
       }
-      checka(&abort);
+      bin.checka(&abort);
       i = nrecno(aligned_file_name, i);
     }
   }
@@ -1595,7 +1595,7 @@ int lp_try_to_download(const std::string& file_mask, int dn) {
   dliscan1(dn);
   int i = recno(file_mask);
   if (i <= 0) {
-    checka(&abort);
+    bin.checka(&abort);
     return abort ? -1 : 0;
   }
   bool ok = true;

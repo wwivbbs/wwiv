@@ -787,9 +787,9 @@ void Input::nsp(int n) { nsp_ = n; }
 
 wwiv::sdk::User& Input::user() { return context_provider_().u(); }
 
-wwiv::common::SessionContext& Input::sess() {
-  return context_provider_().session_context();
-}
+wwiv::common::SessionContext& Input::sess() { return context_provider_().session_context(); }
+
+wwiv::common::SessionContext& Input::sess() const { return context_provider_().session_context(); }
 
 wwiv::common::Context& Input::context() { return context_provider_(); }
 

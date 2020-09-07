@@ -736,6 +736,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
       process_inst_msgs();
     }
   });
+  bus().add_handler<ResetProcessingInstanceMessages>([]() { setiia(std::chrono::seconds(5)); });
+  bus().add_handler<PauseProcessingInstanceMessages>([]() { setiia(std::chrono::seconds(0)); });
   bus().add_handler<CheckForHangupEvent>([]() { a()->CheckForHangup(); });
   bus().add_handler<HangupEvent>([]() { a()->Hangup(); });
   bus().add_handler<UpdateTopScreenEvent>([]() { a()->UpdateTopScreen(); });

@@ -209,7 +209,7 @@ void display_message_text(const std::string& text, bool* next) {
               bout.bputch(SPACE);
             } 
             bout.nl();
-            checka(&abort, next);
+            bin.checka(&abort, next);
           }
         }
         line_len_ptr = 0;
@@ -221,7 +221,7 @@ void display_message_text(const std::string& text, bool* next) {
       if (ctrla == false) {
         if (ctrld != -1) {
           bout.nl();
-          checka(&abort, next);
+          bin.checka(&abort, next);
         }
       } else {
         ctrla = false;

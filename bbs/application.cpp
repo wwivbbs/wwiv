@@ -242,14 +242,11 @@ bool Application::ReadCurrentUser(int user_number) {
 }
 
 void Application::reset_effective_sl() {
-  effective_sl_ = user()->GetSl(); 
+  sess().effective_sl(user()->GetSl());
 }
-void Application::effective_sl(int nSl) { effective_sl_ = nSl; }
-
-int Application::effective_sl() const { return effective_sl_; }
 
 const slrec& Application::effective_slrec() const { 
-  return config()->sl(effective_sl_);
+  return config()->sl(sess().effective_sl());
 }
 
 bool Application::WriteCurrentUser() {
@@ -286,7 +283,7 @@ void Application::tleft(bool check_for_timeout) {
     return;
   }
 
-  const auto temp_sysop = user()->GetSl() != 255 && effective_sl() == 255;
+  const auto temp_sysop = user()->GetSl() != 255 && sess().effective_sl() == 255;
   const auto sysop_available = wwiv::common::sysop1();
 
   const auto cx = localIO()->WhereX();
@@ -400,8 +397,8 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F9: /* F9 */
         if (user()->GetSl() != 255) {
-          if (effective_sl() != 255) {
-            effective_sl(255);
+          if (sess().effective_sl() != 255) {
+            sess().effective_sl(255);
           } else {
             reset_effective_sl();
           }
@@ -675,7 +672,7 @@ int Application::language_number() const { return m_nCurrentLanguageNumber; }
 void Application::set_language_number(int n) {
   m_nCurrentLanguageNumber = n;
   if (n >= 0 && n <= static_cast<int>(languages.size())) {
-    cur_lang_name = languages[n].name;
+    sess().current_language(languages[n].name);
     sess().dirs().language_directory(languages[n].dir);
   }
 }
@@ -999,7 +996,7 @@ int Application::Run(int argc, char* argv[]) {
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
     sess().hangup(false);
-    wwiv::bbs::fsed::fsed(fsed);
+    wwiv::fsed::fsed(a()->context(), fsed);
     return oklevel_;
   }
 

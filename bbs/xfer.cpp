@@ -307,7 +307,7 @@ void printtitle(bool *abort) {
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
 
-  checka(abort);
+  bin.checka(abort);
   bout.Color(2);
   bout << "\r"
     << a()->dirs()[a()->current_user_dir().subnum].name
@@ -369,7 +369,7 @@ void listfiles() {
         }
       }
     } else if (bin.bkbhit()) {
-      checka(&abort);
+      bin.checka(&abort);
     }
   }
   endlist(1);
@@ -403,7 +403,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
 
         printinfo(&f.u(), abort);
       } else if (bin.bkbhit()) {
-        checka(abort);
+        bin.checka(abort);
       }
     }
   }
@@ -532,7 +532,7 @@ void searchall() {
           }
           printinfo(&f.u(), &abort);
         } else if (bin.bkbhit()) {
-          checka(&abort);
+          bin.checka(&abort);
         }
       }
     }

@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_FSED_FSED_H__
 #define __INCLUDED_BBS_FSED_FSED_H__
 
+#include "common/context.h"
 #include "common/message_editor_data.h"
 #include "fsed/model.h"
 #include "fsed/line.h"
@@ -25,11 +26,13 @@
 #include <vector>
 #include <string>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
-bool fsed(const std::filesystem::path& path);
-bool fsed(FsedModel& ed, wwiv::common::MessageEditorData& data, bool file);
-bool fsed(std::vector<std::string>& lin, int maxli, wwiv::common::MessageEditorData& data,
+bool fsed(wwiv::common::Context&ctx, const std::filesystem::path& path);
+bool fsed(wwiv::common::Context& ctx, FsedModel& ed, wwiv::common::MessageEditorData& data,
+          bool file);
+bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
+          wwiv::common::MessageEditorData& data,
           bool file);
 
 }

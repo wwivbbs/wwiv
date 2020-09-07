@@ -200,7 +200,7 @@ void build_qwk_packet() {
     qwk_gather_email(&qwk_info);
   }
 
-  checka(&qwk_info.abort);
+  bin.checka(&qwk_info.abort);
 
   bout.cls();
   if (!qwk_info.abort) {
@@ -208,13 +208,13 @@ void build_qwk_packet() {
       << '\xC2' << string(4, '\xC4') << '\xBF' << wwiv::endl;
   }
 
-  checka(&qwk_info.abort);
+  bin.checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
     bout << "|#7\xB3|#2Sub |#7\xB3|#3Sub Name" << string(52, ' ') << "|#7\xB3|#8Total|#7\xB3|#5New |#7\xB3" << wwiv::endl;
   }
 
-  checka(&qwk_info.abort);
+  bin.checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
     bout << "|#7" << "\xC3" << string(4, '\xC4')
@@ -324,7 +324,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
     bout.bputs(subinfo);
     bout.nl();
 
-    checka(&qwk_info->abort);
+    bin.checka(&qwk_info->abort);
 
     if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
         && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
@@ -373,7 +373,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
       done = true;
     }
     ++amount;
-    checka(&qwk_info->abort);
+    bin.checka(&qwk_info->abort);
 
   } while (!done && !a()->sess().hangup() && !qwk_info->abort);
   bout.bputch('\r');
@@ -965,7 +965,7 @@ void qwk_nscan() {
   }
 
   for (i = 0; (i < num_dirs) && (!abort) && (a()->udir[i].subnum != -1); i++) {
-    checka(&abort);
+    bin.checka(&abort);
     count++;
 
     bout.bprintf("%d.", color);
@@ -1043,7 +1043,7 @@ void qwk_nscan() {
 #endif
 
           } else if (!empty()) {
-            checka(&abort);
+            bin.checka(&abort);
           }
 
         }

@@ -146,8 +146,6 @@ public:
   bool WriteCurrentUser(int user_number);
 
   void reset_effective_sl();
-  void effective_sl(int nSl);
-  [[nodiscard]] int effective_sl() const;
   [[nodiscard]] const slrec& effective_slrec() const;
 
   [[nodiscard]] int GetChatNameSelectionColor() const { return chatname_color_; }
@@ -331,7 +329,6 @@ public:
   std::string internetFullEmailAddress;
   std::string usenetReferencesLine;
   bool m_bInternetUseRealNames{false};
-  std::string cur_lang_name;
   std::string net_email_name;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
@@ -439,7 +436,6 @@ private:
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
   std::unique_ptr<wwiv::sdk::User> thisuser_;
-  int effective_sl_{0};
   std::unique_ptr<wwiv::common::RemoteIO> comm_;
   std::string current_speed_;
   std::unique_ptr<wwiv::sdk::Config> config_;

@@ -84,7 +84,7 @@ static void StartMenus() {
 }
 
 static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
-  if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->effective_sl() < pHeader->nMinSL) ||
+  if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->sess().effective_sl() < pHeader->nMinSL) ||
       (a()->user()->GetDsl() < pHeader->nMinDSL)) {
     return false;
   }
@@ -130,8 +130,8 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
 
 static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
   // if deleted, return as failed
-  if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->effective_sl() < pMenu->nMinSL) ||
-      (a()->effective_sl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
+  if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->sess().effective_sl() < pMenu->nMinSL) ||
+      (a()->sess().effective_sl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
       (a()->user()->GetDsl() < pMenu->nMinDSL) ||
       (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
     return false;

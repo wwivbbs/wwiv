@@ -19,8 +19,10 @@
 #include "common/full_screen.h"
 
 #include "common/bgetch.h"
+#include "common/common_events.h"
 #include "common/input.h"
 #include "common/output.h"
+#include "core/eventbus.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -31,6 +33,7 @@
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::common;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -42,9 +45,19 @@ FullScreenView::FullScreenView(Output& output, int numlines, int swidth, int sle
   lines_start_ = num_header_lines_ + 2;
   lines_end_ = lines_start_ + message_height_;
   command_line_ = screen_length_;
+  
+  //Save the topdata.
+  saved_topdata = output.localIO()->topdata();
+  if (output.localIO()->topdata() != LocalIO::topdata_t::none) {
+    output.localIO()->topdata(LocalIO::topdata_t::none);
+    bus().invoke<UpdateTopScreenEvent>();
+  }
 }
 
-FullScreenView::~FullScreenView() = default;
+FullScreenView::~FullScreenView() {
+  bout_.localIO()->topdata(saved_topdata);
+  bus().invoke<UpdateTopScreenEvent>();
+}
 
 void FullScreenView::PrintTimeoutWarning(int) {
   bout_.GotoXY(1, command_line_);

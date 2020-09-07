@@ -165,7 +165,7 @@ static void print_cur_stat() {
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (a()->languages.size() > 1) {
-    bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->cur_lang_name);
+    bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->sess().current_language());
   }
   if (num_instances() > 1) {
     bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!a()->user()->IsIgnoreNodeMessages());

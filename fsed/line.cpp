@@ -22,7 +22,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -190,4 +190,4 @@ std::string line_t::to_colored_text(int default_last_color) const {
 }
 
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

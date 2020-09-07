@@ -178,7 +178,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         return false;
       }
       c = &(a()->subconfs[which]);
-      if (!access_conf(a()->user(), a()->effective_sl(), c)) {
+      if (!access_conf(a()->user(), a()->sess().effective_sl(), c)) {
         return false;
       }
     }
@@ -197,7 +197,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         return false;
       }
       c = &(a()->dirconfs[which]);
-      if (!access_conf(a()->user(), a()->effective_sl(), c)) {
+      if (!access_conf(a()->user(), a()->sess().effective_sl(), c)) {
         return false;
       }
     }
@@ -217,13 +217,13 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     for (const auto sub : c->subs) {
       switch (type) {
       case ConferenceType::CONF_SUBS:
-        if (access_sub(*a()->user(), a()->effective_sl(),
+        if (access_sub(*a()->user(), a()->sess().effective_sl(),
                        a()->subs().sub(sub))) {
           addusub(ss1, ns, sub, a()->subs().sub(sub).key);
         }
         break;
       case ConferenceType::CONF_DIRS:
-        if (access_dir(*a()->user(), a()->effective_sl(),
+        if (access_dir(*a()->user(), a()->sess().effective_sl(),
                        a()->dirs()[sub])) {
           addusub(ss1, ns, sub, 0);
         }
@@ -237,9 +237,9 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     switch (type) {
     case ConferenceType::CONF_SUBS:
       for (const auto& conf : a()->subconfs) {
-        if (access_conf(a()->user(), a()->effective_sl(), &conf)) {
+        if (access_conf(a()->user(), a()->sess().effective_sl(), &conf)) {
           for (const auto sub : conf.subs) {
-            if (access_sub(*a()->user(), a()->effective_sl(), a()->subs().sub(sub))) {
+            if (access_sub(*a()->user(), a()->sess().effective_sl(), a()->subs().sub(sub))) {
               addusub(ss1, ns, sub, a()->subs().sub(sub).key);
             }
           }
@@ -248,9 +248,9 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
       break;
     case ConferenceType::CONF_DIRS:
       for (const auto& conf : a()->dirconfs) {
-        if (access_conf(a()->user(), a()->effective_sl(), &conf)) {
+        if (access_conf(a()->user(), a()->sess().effective_sl(), &conf)) {
           for (const auto& sub : conf.subs) {
-            if (access_dir(*a()->user(), a()->effective_sl(),
+            if (access_dir(*a()->user(), a()->sess().effective_sl(),
                            a()->dirs()[sub])) {
               addusub(ss1, ns, sub, 0);
             }
@@ -325,7 +325,7 @@ void changedsl() {
 
   int i = 0;
   for (const auto& c : a()->subconfs) {
-    if (access_conf(a()->user(), a()->effective_sl(), &c)) {
+    if (access_conf(a()->user(), a()->sess().effective_sl(), &c)) {
       userconfrec c1{};
       c1.confnum = static_cast<int16_t>(i);
       a()->uconfsub.emplace_back(c1);
@@ -335,7 +335,7 @@ void changedsl() {
 
   i = 0;
   for (const auto& c : a()->dirconfs) {
-    if (access_conf(a()->user(), a()->effective_sl(), &c)) {
+    if (access_conf(a()->user(), a()->sess().effective_sl(), &c)) {
       userconfrec c1{};
       c1.confnum = static_cast<int16_t>(i);
       a()->uconfdir.emplace_back(c1);

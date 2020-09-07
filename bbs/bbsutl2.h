@@ -21,6 +21,5 @@
 #include <string>
 
 std::string ctypes(int num);
-std::string strip_to_node(const std::string& txt);
 
 #endif  // __INCLUDED_BBS_BBSUTL2_H__

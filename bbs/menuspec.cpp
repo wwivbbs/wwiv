@@ -97,7 +97,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
 
   int nRecordNumber = recno(dl_fn);
   if (nRecordNumber <= 0) {
-    checka(&abort);
+    bin.checka(&abort);
     if (abort) {
       return -1;
     }
@@ -226,7 +226,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.local_only && a()->sess().using_modem()) {
     return false;
   }
-  if (c.sl > a()->effective_sl()) {
+  if (c.sl > a()->sess().effective_sl()) {
     return false;
   }
   if (c.ar && !a()->user()->HasArFlag(c.ar)) {
@@ -234,7 +234,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   }
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
       && a()->chains->HasRegisteredChains()
-      && a()->effective_sl() < 255) {
+      && a()->sess().effective_sl() < 255) {
     if (c.maxage) {
       if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
         return false;

@@ -598,7 +598,7 @@ bool inmsg(MessageEditorData& data) {
         TextFile editor_file(exted_filename, "r");
         lin = editor_file.ReadFileIntoVector();
       }
-      save_message = wwiv::bbs::fsed::fsed(lin, maxli, data, false);
+      save_message = wwiv::fsed::fsed(a()->context(), lin, maxli, data, false);
     } else {
       save_message = DoExternalMessageEditor(data, maxli, &setanon);
       TextFile editor_file(exted_filename, "r");

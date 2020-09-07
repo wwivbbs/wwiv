@@ -23,7 +23,7 @@
 #include "fmt/format.h"
 #include <stdexcept>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -482,4 +482,4 @@ std::vector<std::string> FsedModel::to_lines() {
 }
 
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

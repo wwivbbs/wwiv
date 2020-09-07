@@ -300,7 +300,7 @@ void sendout_email(EmailData& data) {
       logMessage += ">UNKNOWN<";
     }
     if (data.system_number == 0 
-        && a()->effective_sl() > a()->config()->newuser_sl()
+        && a()->sess().effective_sl() > a()->config()->newuser_sl()
         && userRecord.GetForwardSystemNumber() == 0
         && !data.silent_mode) {
       bout << "|#5Attach a file to this message? ";

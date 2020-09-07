@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_BBSUTL_H__
 #define __INCLUDED_BBS_BBSUTL_H__
 
+#include "common/input.h"
 #include <string>
 
 bool inli(std::string* outBuffer, std::string* rollover, std::string::size_type maxlen, bool add_crlf = true,
@@ -27,14 +28,12 @@ bool inli(char *buffer, char *rollover, std::string::size_type maxlen, bool add_
 bool so();
 bool cs();
 bool lcs();
-bool checka();
-bool checka(bool *abort);
-bool checka(bool *abort, bool *next);
 bool sysop2();
 int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);
 std::string YesNoString(bool bYesNo);
 void* BbsAllocA(size_t num_bytes);
+
 
 #endif  // __INCLUDED_BBS_BBSUTL_H__

@@ -17,11 +17,12 @@
 /**************************************************************************/
 #include "fsed/fsed.h"
 
-#include "bbs/bbs.h"
 #include "common/bgetch.h"
+#include "common/common_events.h"
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
 #include "common/output.h"
+#include "core/eventbus.h"
 #include "fsed/commands.h"
 #include "fsed/common.h"
 #include "fsed/model.h"
@@ -34,15 +35,16 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 using namespace wwiv::common;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file) {
-  const auto screen_width = a()->user()->GetScreenChars();
-  const auto screen_length = a()->user()->GetScreenLines() - 1;
+static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file, const wwiv::sdk::User* user) {
+  const auto screen_width = (user != nullptr) ? user->GetScreenChars() : 80;
+  const auto screen_length = (user != nullptr) ? user->GetScreenLines() - 1 : 24;
   const auto num_header_lines = 4;
   auto fs = FullScreenView(bout, num_header_lines, screen_width, screen_length);
   auto view = std::make_shared<FsedView>(fs, data, file);
@@ -50,7 +52,7 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
   return view;
 }
 
-bool fsed(const std::filesystem::path& path) {
+bool fsed(wwiv::common::Context& ctx, const std::filesystem::path& path) {
   MessageEditorData data("<<NO USERNAME>>"); // anonymous username
   data.title = path.string();
   FsedModel ed(1000);
@@ -59,7 +61,7 @@ bool fsed(const std::filesystem::path& path) {
     ed.set_lines(std::move(file_lines));
   }
 
-  auto save = fsed(ed, data, true);
+  auto save = fsed(ctx, ed, data, true);
   if (!save) {
     return false;
   }
@@ -74,13 +76,14 @@ bool fsed(const std::filesystem::path& path) {
   return true;
 }
 
-bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, bool file) {
+bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
+          MessageEditorData& data, bool file) {
   FsedModel ed(maxli);
   for (auto l : lin) {
     bool wrapped = !l.empty() && l.back() == '\x1';
     ed.emplace_back(line_t{ wrapped, l });
   }
-  if (!fsed(ed, data, file)) {
+  if (!fsed(ctx, ed, data, file)) {
     return false;
   }
 
@@ -88,8 +91,8 @@ bool fsed(std::vector<std::string>& lin, int maxli, MessageEditorData& data, boo
   return true;
 }
 
-bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
-  auto view = create_frame(data, file);
+bool fsed(wwiv::common::Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
+  auto view = create_frame(data, file, &ctx.u());
   ed.set_view(view);
   auto& fs = view->fs();
   ed.set_max_line_len(view->max_view_columns());
@@ -100,12 +103,6 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
       view->draw_current_line(e, previous_line);
     });
 
-  const auto saved_topdata = a()->localIO()->topdata();
-  if (a()->localIO()->topdata() != LocalIO::topdata_t::none) {
-    a()->localIO()->topdata(LocalIO::topdata_t::none);
-    a()->UpdateTopScreen();
-  }
-
   // Draw the initial contents of the file.
   ed.invalidate_to_eof(0);
   // Draw the bottom bar once to start with.
@@ -114,7 +111,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
   fs.GotoContentAreaTop();
   FsedState state{};
 
-  FsedCommands commands{};
+  FsedCommands commands(ctx);
   // Add the menu command since that needs the state variables
   // from here.
 
@@ -135,10 +132,7 @@ bool fsed(FsedModel& ed, MessageEditorData& data, bool file) {
     }
   }
 
-  a()->localIO()->topdata(saved_topdata);
-  a()->UpdateTopScreen();
-
   return state.save;
 }
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

@@ -456,8 +456,8 @@ void readmail(int mode) {
                   m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
                 s1 = stripcolors(ss2);
               } else {
-                s1 = fmt::format("{} {}@{}.{} ({})", stripcolors(strip_to_node(ss2)), m.fromuser,
-                                 m.fromsys, net.name, system_name);
+                s1 = fmt::format("{} {}@{}.{} ({})", stripcolors(wwiv::common::strip_to_node(ss2)),
+                                 m.fromuser, m.fromsys, net.name, system_name);
               }
               if (s1.size() > a()->mail_who_field_len) {
                 s1.resize(a()->mail_who_field_len);
@@ -828,7 +828,7 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            if (a()->effective_sl() < a()->subs().sub(a()->usub[i].subnum).postsl) {
+            if (a()->sess().effective_sl() < a()->subs().sub(a()->usub[i].subnum).postsl) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }

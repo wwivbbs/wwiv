@@ -193,6 +193,12 @@ public:
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const { return current_dir_; }
   void current_dir(const wwiv::sdk::files::directory_t& dir) { current_dir_ = dir; }
 
+  void effective_sl(int n) { effective_sl_ = n; }
+  [[nodiscard]] int effective_sl() const { return effective_sl_; }
+
+  void current_language(const std::string& l) { current_lang_name_ = l; }
+  [[nodiscard]] std::string current_language() const noexcept { return current_lang_name_; }
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -228,6 +234,8 @@ private:
   std::chrono::system_clock::time_point system_logon_time_;
   Dirs dirs_;
   wwiv::sdk::files::directory_t current_dir_;
+  int effective_sl_{0};
+  std::string current_lang_name_{"English"};
 };
 
 class Context {

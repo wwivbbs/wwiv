@@ -120,7 +120,7 @@ static void vote_question(int i, int ii) {
   votingrec v;
 
   bool pqo = print_question(i, ii);
-  if (a()->user()->IsRestrictionVote() || a()->effective_sl() <= 10 || !pqo) {
+  if (a()->user()->IsRestrictionVote() || a()->sess().effective_sl() <= 10 || !pqo) {
     return;
   }
 

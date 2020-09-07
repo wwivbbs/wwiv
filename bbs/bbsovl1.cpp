@@ -85,8 +85,8 @@ void YourInfo() {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
   }
   bout << "|#9Security Level : |#2" << a()->user()->GetSl() << wwiv::endl;
-  if (a()->effective_sl() != a()->user()->GetSl()) {
-    bout << "|#1 (temporarily |#2" << a()->effective_sl() << "|#1)";
+  if (a()->sess().effective_sl() != a()->user()->GetSl()) {
+    bout << "|#1 (temporarily |#2" << a()->sess().effective_sl() << "|#1)";
   }
   bout.nl();
   bout << "|#9Transfer SL    : |#2" << a()->user()->GetDsl() << wwiv::endl;

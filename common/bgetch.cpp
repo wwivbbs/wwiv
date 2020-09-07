@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "common/bgetch.h"
 
-#include "bbs/bbsutl.h"
 #include "common/com.h"
 #include "common/common_events.h"
 #include "common/context.h"
@@ -44,6 +43,8 @@ using namespace wwiv::strings;
 
 static steady_clock::time_point time_lastchar_pressed;
 static void lastchar_pressed() { time_lastchar_pressed = steady_clock::now(); }
+
+static bool so(const wwiv::common::SessionContext& sess) { return (sess.effective_sl() == 255); }
 
 void Output::RedrawCurrentLine() {
   SavedLine line = bout.SaveCurrentLine();
@@ -83,7 +84,7 @@ int Output::wherex() {
 }
 
 std::chrono::duration<double> Input::key_timeout() const {
-  if (so()) {
+  if (so(sess())) {
     return sysop_key_timeout_;
   }
   return non_sysop_key_timeout_;
@@ -181,7 +182,7 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
       bout.RedrawCurrentLine();
       break;
     case CL: // CTRL - L
-      if (so()) {
+      if (so(context)) {
         bus().invoke<ToggleInvisble>();
       }
       break;

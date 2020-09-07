@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_FULL_SCREEN_H__
 #define __INCLUDED_BBS_FULL_SCREEN_H__
 
+#include "local_io/local_io.h"
 #include <string>
 
 namespace wwiv::common {
@@ -53,6 +54,9 @@ public:
   // on the status line.
   int bgetch();
 
+  // Write through to this full screen's output.
+  wwiv::common::Output& out() { return bout_; }
+
 private:
   wwiv::common::Output& bout_;
 
@@ -63,6 +67,8 @@ private:
   int lines_start_{0};
   int lines_end_{0};
   int command_line_{0};
+
+  LocalIO::topdata_t saved_topdata{LocalIO::topdata_t::none};
 };
 
 } // namespace wwiv::common

@@ -17,18 +17,17 @@
 /**************************************************************************/
 #include "fsed/commands.h"
 
-#include "bbs/bbs.h" // for a() temporarily
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/quote.h"
+#include "core/stl.h"
 #include "fsed/model.h"
 #include "fsed/view.h"
-#include "common/quote.h"
-#include "common/pause.h"
-#include "common/output.h"
-#include "core/stl.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include <map>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() { 
   std::map<int, fsed_command_id> map;
@@ -65,7 +64,7 @@ bool FsedCommand::Invoke(FsedModel& model, FsedView& view, FsedState& state) con
   return fn_(model, view, state);
 }
 
-FsedCommands::FsedCommands() {
+FsedCommands::FsedCommands(wwiv::common::Context& ctx) : ctx_(ctx) {
   AddAll();
   edit_keymap_ = CreateDefaultEditModeKeyMap();
 }
@@ -90,7 +89,8 @@ bool FsedCommands::add(FsedCommand cmd) {
   return true; 
 }
 
-static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save) {
+static void show_fsed_menu(wwiv::common::Context& ctx, FsedModel& ed, FsedView& view, bool& done,
+                           bool& save) {
   view.fs().PutsCommandLine(
       "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
       "|#2?|#9=Help): ");
@@ -112,7 +112,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
     // Hacky quote solution for now.
     // TODO(rushfan): Do something less lame here.
     view.cls();
-    auto quoted_lines = query_quote_lines(a()->sess());
+    auto quoted_lines = query_quote_lines(ctx.session_context());
     if (!quoted_lines.empty()) {
       ed.insert_lines(quoted_lines);
     }
@@ -124,10 +124,10 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   case '?': {
     view.ClearCommandLine();
     view.fs().ClearMessageArea();
-    if (!bout.print_help_file(FSED_NOEXT)) {
+    if (!view.fs().out().print_help_file(FSED_NOEXT)) {
       view.fs().PutsCommandLine(wwiv::strings::StrCat("|#6Unable to find file: ", FSED_NOEXT));
     }
-    bout.pausescr();
+    view.fs().out().pausescr();
     view.fs().ClearMessageArea();
     view.ClearCommandLine();
     view.redraw(ed);
@@ -199,7 +199,7 @@ bool FsedCommands::AddAll() {
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line_left(); }));
   add(FsedCommand(fsed_command_id::menu, "menu",
                   [&](FsedModel& ed, FsedView& view, FsedState& state) -> bool {
-                    show_fsed_menu(ed, view, state.done, state.save);
+                    show_fsed_menu(ctx_, ed, view, state.done, state.save);
                     return true;
                   }));
 
@@ -233,4 +233,4 @@ bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, F
   return false;
 }
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

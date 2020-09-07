@@ -18,12 +18,19 @@
 #ifndef __INCLUDED_COMMON_EVENTS_H__
 #define __INCLUDED_COMMON_EVENTS_H__
 
+#include <chrono>
 #include <cstdint>
 
 namespace wwiv::common {
 
 // The BBS Should attempt to process inter-instance messages.
 struct ProcessInstanceMessages {};
+
+// The BBS Should attempt to process inter-instance messages.
+struct ResetProcessingInstanceMessages {};
+
+// The BBS Should attempt to process inter-instance messages.
+struct PauseProcessingInstanceMessages {};
 
 // The BBS Should check if the user hungup.
 struct CheckForHangupEvent {};

@@ -294,7 +294,7 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
     } else {
       tmp_msgnum--;
     }
-    if (checka()) {
+    if (bin.checka()) {
       break;
     }
     if (!(tmp_msgnum % 5)) {
@@ -707,7 +707,7 @@ void HandleMessageMove(int& msg_num) {
       }
     }
     if (nTempSubNum != -1) {
-      if (a()->effective_sl() < a()->subs().sub(a()->usub[nTempSubNum].subnum).postsl) {
+      if (a()->sess().effective_sl() < a()->subs().sub(a()->usub[nTempSubNum].subnum).postsl) {
         bout.nl();
         bout << "Sorry, you don't have post access on that sub.\r\n\n";
         nTempSubNum = -1;
@@ -1135,7 +1135,7 @@ static void network_validate() {
 static bool query_post() {
   if (!a()->user()->IsRestrictionPost() &&
       (a()->user()->GetNumPostsToday() < a()->effective_slrec().posts) &&
-      (a()->effective_sl() >= a()->current_sub().postsl)) {
+      (a()->sess().effective_sl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->sess().clear_irt();
     clear_quotes(a()->sess());

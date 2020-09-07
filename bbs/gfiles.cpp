@@ -511,7 +511,7 @@ void gfiles() {
     if (a()->user()->age() < r.age) {
       ok = false;
     }
-    if (a()->effective_sl() < r.sl) {
+    if (a()->sess().effective_sl() < r.sl) {
       ok = false;
     }
     if (!a()->user()->HasArFlag(r.ar) && r.ar) {

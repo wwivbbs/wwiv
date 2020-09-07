@@ -307,7 +307,7 @@ int read_idz(bool prompt_for_mask, int tempdir) {
         }
       }
     }
-    checka(&abort);
+    bin.checka(&abort);
   }
   if (prompt_for_mask) {
     a()->UpdateTopScreen();
@@ -640,7 +640,7 @@ int try_to_download(const std::string& file_mask, int dn) {
   dliscan1(dn);
   int i = recno(file_mask);
   if (i <= 0) {
-    checka(&abort);
+    bin.checka(&abort);
     return abort ? -1 : 0;
   }
   bool ok = true;
@@ -948,7 +948,7 @@ void removefilesnotthere(int dn, int* autodel) {
     }
     i = nrecno(all_files, i);
     bool next = true;
-    checka(&abort, &next);
+    bin.checka(&abort, &next);
     if (!next) {
       i = 0;
     }

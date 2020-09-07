@@ -483,7 +483,7 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
             ++description;
           }
           ok = maybe_upload(fn1, directory_num, description);
-          checka(&abort);
+          bin.checka(&abort);
           if (abort) {
             ok = false;
           }
@@ -525,7 +525,7 @@ bool uploadall(uint16_t directory_num) {
   FindFiles ff(path_mask, FindFilesType::files);
   auto aborted = false;
   for (const auto& f : ff) {
-    aborted = checka();
+    aborted = bin.checka();
     if (aborted || a()->sess().hangup() || a()->current_file_area()->number_of_files() >= maxf) {
       break;
     }
@@ -937,7 +937,7 @@ void finddescription() {
 
           printinfo(&f.u(), &abort);
         } else if (bin.bkbhit()) {
-          checka(&abort);
+          bin.checka(&abort);
         }
       }
     }
@@ -971,7 +971,7 @@ void arc_l() {
       if (i1) {
         abort = true;
       }
-      checka(&abort);
+      bin.checka(&abort);
       nRecordNum = nrecno(file_spec, nRecordNum);
     }
   }

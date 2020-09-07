@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "fsed/view.h"
 
-#include "bbs/bbs.h"
 #include "common/bgetch.h"
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
@@ -36,14 +35,14 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
-    : fs_(std::move(fs)), data_(data), file_(file) {
+    : fs_(std::move(fs)), bout_(fs_.out()), data_(data), file_(file) {
   max_view_lines_ = std::min<int>(20, fs.message_height() - 1);
   max_view_columns_ = std::min<int>(fs.screen_width(), 79);
 }
@@ -51,7 +50,7 @@ FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
 FullScreenView& FsedView::fs() { return fs_; }
 
 void FsedView::gotoxy(const FsedModel& ed) {
-  bout.GotoXY(ed.cx + 1, ed.cy + fs_.lines_start()); // - top_line() 
+  bout_.GotoXY(ed.cx + 1, ed.cy + fs_.lines_start()); // - top_line() 
 }
 
 void FsedView::ClearCommandLine() { 
@@ -61,23 +60,23 @@ void FsedView::ClearCommandLine() {
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
   if (previous_line != ed.curli) {
     auto py = previous_line - top_line() + fs_.lines_start();
-    bout.GotoXY(0, py);
+    bout_.GotoXY(0, py);
     if (previous_line < ssize(ed)) {
-      bout.bputs(ed.line(previous_line).to_colored_text(-1));
+      bout_.bputs(ed.line(previous_line).to_colored_text(-1));
     }
-    bout.clreol();
+    bout_.clreol();
   }
 
   auto y = ed.curli - top_line() + fs_.lines_start(); 
-  bout.GotoXY(0, y);
-  bout.Color(0);
+  bout_.GotoXY(0, y);
+  bout_.Color(0);
   for (const auto& c : ed.curline().cells()) {
     // Draw char by char for the current line so we don't display
     // color codes where we are editing.
-    bout.Color(c.wwiv_color);
-    bout.bputch(c.ch);
+    bout_.Color(c.wwiv_color);
+    bout_.bputch(c.ch);
   }
-  bout.clreol();
+  bout_.clreol();
   gotoxy(ed);
 }
 
@@ -96,7 +95,7 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
     if (i >= ssize(e)) {
       break;
     }
-    bout.GotoXY(0, y);
+    bout_.GotoXY(0, y);
     auto& rl = e.line(i);
     if (i == e.curli) {
       for (const auto& c : rl.cells()) {
@@ -104,22 +103,22 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
         // color codes where we are editing.
         if (c.wwiv_color != last_color) {
           last_color = c.wwiv_color;
-          bout.Color(c.wwiv_color);
+          bout_.Color(c.wwiv_color);
         }
-        bout.bputch(c.ch);
+        bout_.bputch(c.ch);
       }
     } else {
-      bout.bputs(rl.to_colored_text(-1));
+      bout_.bputs(rl.to_colored_text(-1));
     }
-    bout.clreol();
+    bout_.clreol();
   }
 
   // Clean up the bottom.
   // clear the current and then remaining
   if (ssize(e) == t.end.line + 1) {
     for (auto z = ssize(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
-      bout.GotoXY(0, z);
-      bout.clreol();
+      bout_.GotoXY(0, z);
+      bout_.clreol();
     }
   }
 
@@ -127,15 +126,15 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
 }
 
 void FsedView::draw_header() {
-  auto oldcuratr = bout.curatr();
-  bout.cls();
+  auto oldcuratr = bout_.curatr();
+  bout_.cls();
   auto to = data_.to_name.empty() ? "All" : data_.to_name;
-  bout << "|#7From: |#2" << data_.from_name << wwiv::endl;
-  bout << "|#7To:   |#2" << to << wwiv::endl;
-  bout << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
-  bout << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
+  bout_ << "|#7From: |#2" << data_.from_name << wwiv::endl;
+  bout_ << "|#7To:   |#2" << to << wwiv::endl;
+  bout_ << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
+  bout_ << "|#7" << (file_ ? "File: " : "Subj: ") << "|#2" << data_.title << wwiv::endl;
 
-  bout.SystemColor(oldcuratr);
+  bout_.SystemColor(oldcuratr);
 }
 
 void FsedView::redraw() { 
@@ -157,7 +156,7 @@ void FsedView::redraw(const FsedModel& ed) {
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {
-  auto sc = bout.curatr();
+  auto sc = bout_.curatr();
   static auto smode = ed.mode();
   static auto sdebug = debug;
   if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {
@@ -173,7 +172,7 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
     smode = ed.mode();
     sdebug = debug;
   }
-  bout.SystemColor(sc);
+  bout_.SystemColor(sc);
   gotoxy(ed);
 }
 
@@ -191,13 +190,13 @@ int FsedView::bgetch(FsedModel& ed) {
 }
 
 void FsedView::bputch(int color, char ch) {
-  bout.Color(color);
-  bout.bputch(ch);
+  bout_.Color(color);
+  bout_.bputch(ch);
 }
 
-void FsedView::cls() { bout.cls(); }
+void FsedView::cls() { bout_.cls(); }
 
-void FsedView::Color(int c) { bout.Color(c); }
+void FsedView::Color(int c) { bout_.Color(c); }
 
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

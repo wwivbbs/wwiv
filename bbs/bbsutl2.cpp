@@ -67,31 +67,3 @@ std::string ctypes(int num) {
   }
   return default_ctypes[num];
 }
-
-string strip_to_node(const string& txt) {
-  std::ostringstream os;
-  if (txt.find("@") != string::npos) {
-    bool ok = true;
-    for (auto i = txt.begin(); i != txt.end(); i++) {
-      if (ok) {
-        os << *i;
-      }
-      if ((i + 1) != txt.end() && (i + 2) != txt.end() && *(i + 2) == '#') {
-        ok = false;
-      }
-    }
-    return os.str();
-  } else if (txt.find("AT") != string::npos) {
-    bool ok = true;
-    for (string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
-      if (ok) {
-        os << *i;
-      }
-      if (*(i + 1) == '`') {
-        ok = false;
-      }
-    }
-    return os.str();
-  }
-  return txt;
-}

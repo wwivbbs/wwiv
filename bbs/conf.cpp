@@ -118,7 +118,7 @@ void jump_conf(ConferenceType conftype) {
   string allowable = " ";
   bout.nl();
   for (const auto& uc : info.uc) {
-    if (uc.confnum == -1 || checka())
+    if (uc.confnum == -1 || bin.checka())
       break;
     const auto ac = static_cast<char>(info.confs[uc.confnum].designator);
     bout << "|#2" << ac << "|#7)|#1 " << stripcolors(info.confs[uc.confnum].conf_name) << "\r\n";

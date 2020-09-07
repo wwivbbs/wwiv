@@ -18,10 +18,10 @@
 /**************************************************************************/
 #include "common/output.h"
 
-#include "bbs/bbsutl.h"    // checka
 #include "bbs/interpret.h" // MacroContext
 #include "common/com.h"
 #include "common/common_events.h"
+#include "common/input.h"
 #include "core/eventbus.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -306,7 +306,7 @@ int Output::bputs(const string& text) {
 int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
   const auto ret = bputs(text, abort, &dummy);
-  if (!checka(abort, &dummy)) {
+  if (!bin.checka(abort, &dummy)) {
     nl();
   }
   return ret;
@@ -315,9 +315,9 @@ int Output::bpla(const std::string& text, bool *abort) {
 // This one doesn't do a newline. (used to be osan)
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
   wwiv::core::bus().invoke<CheckForHangupEvent>();
-  checka(abort, next);
+  bin.checka(abort, next);
   auto ret = 0;
-  if (!checka(abort, next)) {
+  if (!bin.checka(abort, next)) {
     ret = bputs(text);
   }
   return ret;

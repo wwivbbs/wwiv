@@ -129,7 +129,7 @@ int listfiles_plus_function(int type) {
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
-    checka(&all_done);
+    bin.checka(&all_done);
 
     if (search_rec.alldirs == THIS_DIR) {
       if (this_dir == save_dir) {
@@ -157,7 +157,7 @@ int listfiles_plus_function(int type) {
       int changedir = 0;
 
       while (!done && !a()->sess().hangup() && !all_done) {
-        checka(&all_done);
+        bin.checka(&all_done);
         if (!amount) {
           print_searching(&search_rec);
         }

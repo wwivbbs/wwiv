@@ -274,7 +274,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 // Returns 1 if current user has sysop access (permanent or temporary), else
 // returns 0.
 bool so() {
-  return (a()->effective_sl() == 255);
+  return (a()->sess().effective_sl() == 255);
 }
 
 /**
@@ -310,63 +310,6 @@ bool lcs() {
   return false;
 }
 
-/**
- * Checks to see if user aborted whatever he/she was doing.
- * Sets abort to true if control-C/X or Q was pressed.
- * returns the value of abort
- */
-bool checka() {
-  bool ignored_abort = false;
-  bool ignored_next = false;
-  return checka(&ignored_abort, &ignored_next);
-}
-
-/**
- * Checks to see if user aborted whatever he/she was doing.
- * Sets abort to true if control-C/X or Q was pressed.
- * returns the value of abort
- */
-bool checka(bool *abort) {
-  bool ignored_next = false;
-  return checka(abort, &ignored_next);
-}
-
-/**
- * Checks to see if user aborted whatever he/she was doing.
- * Sets next to true if control-N was hit, for zipping past messages quickly.
- * Sets abort to true if control-C/X or Q was pressed.
- * returns the value of abort
- */
-bool checka(bool *abort, bool *next) {
-  if (bin.nsp() == -1) {
-    *abort = true;
-    bin.clearnsp();
-  }
-  while (bin.bkbhit() && !*abort && !a()->sess().hangup()) {
-    a()->CheckForHangup();
-    char ch = bin.bgetch();
-    switch (ch) {
-    case CN:
-      bout.clear_lines_listed();
-      *next = true;
-    case CC:
-    case SPACE:
-    case CX:
-    case 'Q':
-    case 'q':
-      bout.clear_lines_listed();
-      *abort = true;
-      break;
-    case 'P':
-    case 'p':
-    case CS:
-      bout.clear_lines_listed();
-      ch = bin.getkey();
-      break;
-    }
-  }
-  return *abort;
-}
 
 // Returns 1 if sysop is "chattable", else returns 0. Takes into account
 // current user's chat restriction (if any) and sysop high and low times,

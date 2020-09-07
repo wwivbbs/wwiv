@@ -76,7 +76,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'A':                               // User's age
       return to_string(context_->u().age());
     case 'a':                               // User's language
-      return a()->cur_lang_name;
+      return context_->session_context().current_language();
     case 'B':                               // User's birthday
       return context_->u().birthday_mmddyy();
     case 'b':                               // Minutes in bank
@@ -106,7 +106,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'i':                               // Illegal log-ons
       return to_string(context_->u().GetNumIllegalLogons());
     case 'J': {                             // Message conference
-      const int x = a()->sess().current_user_sub_conf_num();
+      const int x = context_->session_context().current_user_sub_conf_num();
       if (!has_userconf_to_subconf(x)) {
         return {};
       }
@@ -145,12 +145,12 @@ std::string MacroContext::interpret(char ch) const {
     case 'o': {
       // Time on today
       const auto used_this_session =
-          (std::chrono::system_clock::now() - a()->sess().system_logon_time());
+          (std::chrono::system_clock::now() - context_->session_context().system_logon_time());
       const auto min_used = context_->u().timeon() + used_this_session;
       return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
     }
     case 'P':                               // BBS phone
-      return a()->config()->system_phone();
+      return context_->config().system_phone();
     case 'p':                               // User's phone
       return context_->u().GetDataPhoneNumber();
     case 'R':                               // User's real name
@@ -179,7 +179,7 @@ std::string MacroContext::interpret(char ch) const {
     case 'X':                               // User's sex
       return fmt::sprintf("%c", context_->u().GetGender());
     case 'Y':                               // Your BBS name
-      return a()->config()->system_name();
+      return context_->config().system_name();
     case 'y':                               // Computer type
       return ctypes(context_->u().GetComputerType());
     case 'Z':                               // User's zip code

@@ -4,11 +4,7 @@
 
 
 ## FSED Externalize
-
-* remove UnixConsoleIO::tleft - it's not used (lives in Application now)
-* move resetnsp, nsp and clearnsp to Input
-* move okskey to Input
-* move charbuffer, charbufferpointer_ and all that nonsense to Input
+* continue to move things interpret needs into the sessioncontext.
 
 ## Build Cleanup.
 * add some cmake install targets

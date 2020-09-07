@@ -382,10 +382,10 @@ void ascii_send(const std::filesystem::path& path, bool* sent, double* percent) 
       while (!a()->sess().hangup() && !abort && nBufferPos < num_read) {
         a()->CheckForHangup();
         bout.bputch(b[nBufferPos++]);
-        checka(&abort);
+        bin.checka(&abort);
       }
       lTotalBytes += nBufferPos;
-      checka(&abort);
+      bin.checka(&abort);
       num_read = file.Read(b, 1024);
     }
     file.Close();

@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 std::vector<line_t> read_file(const std::filesystem::path& path, int line_length);
 

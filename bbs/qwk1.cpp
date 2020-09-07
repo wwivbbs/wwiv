@@ -773,7 +773,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     }
 
     // User doesn't have enough sl to post on sub
-    if (a()->effective_sl() < a()->current_sub().postsl) {
+    if (a()->sess().effective_sl() < a()->current_sub().postsl) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();
@@ -990,7 +990,9 @@ static void modify_bulletins(qwk_config& qwk_cfg) {
     case '?': {
       int x = 1;
       for (const auto& b : qwk_cfg.bulletins) {
-        if (checka()) { break; }
+        if (bin.checka()) {
+          break;
+        }
         bout.bprintf("[%d] %s Is copied over from", x++, b.name);
         bout.nl();
         bout.Color(7);

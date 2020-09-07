@@ -123,12 +123,12 @@ void valuser(int user_number) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-    if (user.GetSl() != 255 && user.GetSl() < a()->effective_sl()) {
+    if (user.GetSl() != 255 && user.GetSl() < a()->sess().effective_sl()) {
       bout << "|#9New : ";
       bin.input(s, 3, true);
       if (s[0]) {
         int nSl = to_number<unsigned int>(s);
-        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->effective_sl())) {
+        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->sess().effective_sl())) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -748,7 +748,7 @@ void chuser() {
   a()->ReadCurrentUser(user_number);
   read_qscn(user_number, a()->sess().qsc, false);
   a()->usernum = static_cast<uint16_t>(user_number);
-  a()->effective_sl(255);
+  a()->sess().effective_sl(255);
   sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
   changedsl();
   a()->UpdateTopScreen();

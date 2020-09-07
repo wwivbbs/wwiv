@@ -23,11 +23,11 @@
 #include "common/com.h"
 #include "common/common_events.h"
 #include "common/context.h"
-#include "bbs/instmsg.h"  // setiia
 #include "local_io/keycodes.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include <chrono>
 
@@ -88,7 +88,9 @@ static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
 
 void Output::pausescr() {
   bin.clearnsp();
-  auto oiia = setiia(std::chrono::milliseconds(0));
+  wwiv::core::bus().invoke<PauseProcessingInstanceMessages>();
+  wwiv::core::ScopeExit at_exit(
+      [] { wwiv::core::bus().invoke<ResetProcessingInstanceMessages>(); });
   char* ss = str_pause;
   int i1;
   int i2 = i1 = strlen(ss);
@@ -139,7 +141,6 @@ void Output::pausescr() {
             }
             Left(i1);
             SystemColor(i);
-            setiia(oiia);
             return;
           }
         }
@@ -153,8 +154,6 @@ void Output::pausescr() {
     }
     Left(i1);
     SystemColor(i);
-    setiia(oiia);
-
   } else {
     // nonansi code path
     for (int i3 = 0; i3 < i2; i3++) {

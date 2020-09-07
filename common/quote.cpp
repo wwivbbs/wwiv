@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "common/quote.h"
 
-#include "bbs/bbsutl2.h"
 #include "common/com.h"
 #include "common/common_events.h"
 #include "common/input.h"
@@ -274,6 +273,34 @@ std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx) {
     break;
   } while (!ctx.hangup());
   return std::vector<std::string>(std::begin(lines) + start_line - 1, std::begin(lines) + end_line);
+}
+
+string strip_to_node(const string& txt) {
+  std::ostringstream os;
+  if (txt.find("@") != string::npos) {
+    bool ok = true;
+    for (auto i = txt.begin(); i != txt.end(); i++) {
+      if (ok) {
+        os << *i;
+      }
+      if ((i + 1) != txt.end() && (i + 2) != txt.end() && *(i + 2) == '#') {
+        ok = false;
+      }
+    }
+    return os.str();
+  } else if (txt.find("AT") != string::npos) {
+    bool ok = true;
+    for (string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
+      if (ok) {
+        os << *i;
+      }
+      if (*(i + 1) == '`') {
+        ok = false;
+      }
+    }
+    return os.str();
+  }
+  return txt;
 }
 
 } // namespace wwiv::common

@@ -466,7 +466,7 @@ void time_bank() {
       if (i > 0) {
         nsln = nsl();
         if ((i + a()->user()->GetTimeBankMinutes()) > a()->config()->sl(
-              a()->effective_sl()).time_per_logon) {
+              a()->sess().effective_sl()).time_per_logon) {
           i = a()->effective_slrec().time_per_logon - a()->user()->GetTimeBankMinutes();
         }
         if (i > (nsln / SECONDS_PER_MINUTE)) {

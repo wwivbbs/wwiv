@@ -31,14 +31,14 @@ using std::endl;
 using std::string;
 using namespace wwiv::stl;
 
-class FakeView : public wwiv::bbs::fsed::editor_viewport_t {
+class FakeView : public wwiv::fsed::editor_viewport_t {
 public:
   // Inherited via editor_viewport_t
   int max_view_lines() const override { return 10; }
   int max_view_columns() const override { return 20; }
   int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
-  void gotoxy(const wwiv::bbs::fsed::FsedModel& ed) override { 
+  void gotoxy(const wwiv::fsed::FsedModel& ed) override { 
     x_ = ed.cx;
     y_ = ed.cy;
   }
@@ -71,7 +71,7 @@ protected:
     }
   }
 
-  wwiv::bbs::fsed::FsedModel ed{255};
+  wwiv::fsed::FsedModel ed{255};
   std::shared_ptr<FakeView> view;
 };
 

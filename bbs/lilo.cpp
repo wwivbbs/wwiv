@@ -155,7 +155,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
         return current_user;
       }
     }
-    checka(&abort);
+    bin.checka(&abort);
   }
   return 0;
 }
@@ -345,7 +345,7 @@ void getuser() {
   a()->usernum = 0;
   a()->sess().set_current_user_sub_conf_num(0);
   a()->sess().set_current_user_dir_conf_num(0);
-  a()->effective_sl(a()->config()->newuser_sl());
+  a()->sess().effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
   const auto& ip = a()->remoteIO()->remote_info().address;
@@ -387,7 +387,7 @@ void getuser() {
       if (a()->sess().guest_user()) {
         logon_guest();
       } else {
-        a()->effective_sl(a()->config()->newuser_sl());
+        a()->sess().effective_sl(a()->config()->newuser_sl());
         if (!VerifyPassword(remote_password)) {
           ok = false;
         }
@@ -454,7 +454,7 @@ static void UpdateUserStatsForLogin() {
   } else {
     a()->set_current_user_dir_num(0);
   }
-  if (a()->effective_sl() != 255 && !a()->sess().guest_user()) {
+  if (a()->sess().effective_sl() != 255 && !a()->sess().guest_user()) {
     a()->status_manager()->Run([](WStatus& s) {
       s.IncrementCallerNumber();
       s.IncrementNumCallsToday();
@@ -513,15 +513,9 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
     const string username_num = a()->names()->UserName(a()->usernum);
     const string t = times();
     const string f = fulldate();
-    log_line = fmt::sprintf(
-      "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
-      status.GetCallerNumber(),
-      username_num,
-      a()->cur_lang_name,
-      t,
-      f,
-      a()->GetCurrentSpeed(),
-      a()->user()->GetTimesOnToday());
+    log_line = fmt::sprintf("|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
+                            status.GetCallerNumber(), username_num, a()->sess().current_language(),
+                            t, f, a()->GetCurrentSpeed(), a()->user()->GetTimesOnToday());
   }
   return log_line;
 }
@@ -556,7 +550,7 @@ static void UpdateLastOnFile() {
         needs_header = false;
       }
       bout << line << wwiv::endl;
-      if (checka()) {
+      if (bin.checka()) {
         break;
       }
     }
@@ -587,12 +581,12 @@ static void UpdateLastOnFile() {
       sysoplog() << "Remote IP: " << remote_address;
     }
   }
-  if (a()->effective_sl() == 255 && !a()->sess().incom()) {
+  if (a()->sess().effective_sl() == 255 && !a()->sess().incom()) {
     return;
   }
 
   // add line to laston.txt. We keep 8 lines
-  if (a()->effective_sl() != 255) {
+  if (a()->sess().effective_sl() != 255) {
     TextFile lastonFile(laston_txt_filename, "w");
     if (lastonFile.IsOpen()) {
       auto it = lines.begin();
@@ -806,7 +800,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   vector<bool> questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->effective_sl() > a()->config()->newuser_sl()) {
+  if (!a()->user()->IsRestrictionVote() && a()->sess().effective_sl() > a()->config()->newuser_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();
@@ -949,7 +943,7 @@ void logoff() {
 
   string text = "  Logged Off At ";
   text += times();
-  if (a()->effective_sl() != 255 || a()->sess().incom()) {
+  if (a()->sess().effective_sl() != 255 || a()->sess().incom()) {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }

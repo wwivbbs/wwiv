@@ -150,5 +150,5 @@ bool fsed_text_edit(const std::string& edit_filename, const std::string& new_dir
   }
   std::filesystem::path p{edit_filename};
   const auto dir = p.parent_path();
-  return wwiv::bbs::fsed::fsed(p);
+  return wwiv::fsed::fsed(a()->context(), p);
 }

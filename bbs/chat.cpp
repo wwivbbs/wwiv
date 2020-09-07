@@ -214,6 +214,7 @@ void chat_room() {
 
   bool bActionMode = true;
   while (!a()->sess().hangup()) {
+    setiia(std::chrono::milliseconds(500));
     a()->CheckForHangup();
     if (inst_msg_waiting()) {
       process_inst_msgs(); 

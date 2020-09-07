@@ -21,7 +21,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -62,4 +62,4 @@ std::vector<line_t> read_file(const std::filesystem::path& path, int line_length
 
 
 
-} // namespace wwiv::bbs::fsed
+} // namespace wwiv::fsed

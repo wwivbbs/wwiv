@@ -25,7 +25,7 @@
 #include <string>
 #include <memory>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 
 class FsedState {

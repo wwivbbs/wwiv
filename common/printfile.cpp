@@ -18,8 +18,7 @@
 /**************************************************************************/
 #include "common/printfile.h"
 
-#include <memory>
-#include "bbs/bbsutl.h"
+#include "common/input.h"
 #include "common/pause.h"
 #include "core/file.h"
 #include "core/os.h"
@@ -28,6 +27,7 @@
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -120,7 +120,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
       // we do not want to render in the bbs.
       break;
     }
-    if (abortable && checka()) {
+    if (abortable && bin.checka()) {
       break;
     }
   }

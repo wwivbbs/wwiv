@@ -69,6 +69,7 @@ public:
 
   wwiv::sdk::User& user();
   wwiv::common::SessionContext& sess();
+  wwiv::common::SessionContext& sess() const;
   wwiv::common::Context& context();
 
   /** Sets the provider for the session context */
@@ -227,6 +228,14 @@ void input(char* out_text, int max_length, bool auto_mpl = false);
     wwiv::common::input_result_t<T> r{static_cast<T>(orig.num), orig.key};
     return r;
   }
+
+  //
+  // Check for Abort
+  //
+
+  bool checka();
+  bool checka(bool* abort);
+  bool checka(bool* abort, bool* next);
 
 public:
   // Used for macros.  TODO: Make this private

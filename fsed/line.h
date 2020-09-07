@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 enum class line_add_result_t { needs_redraw, no_redraw, error };
 enum class ins_ovr_mode_t { ins, ovr };

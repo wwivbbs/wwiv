@@ -34,6 +34,8 @@ void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_fo
                 time_t tt, wwiv::common::Context& ctx);
 std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx);
 
+std::string strip_to_node(const std::string& txt);
+
 // [[ VisibleForTesting ]]
 std::string GetQuoteInitials(const std::string& reply_to_name);
 

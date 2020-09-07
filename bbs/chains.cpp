@@ -182,13 +182,13 @@ void do_chains() {
     if (c.local_only && a()->sess().using_modem()) {
       continue;
     }
-    if (c.sl > a()->effective_sl()) {
+    if (c.sl > a()->sess().effective_sl()) {
       continue;
     }
     if (c.ar && !a()->user()->HasArFlag(c.ar)) {
       continue;
     }
-    if (a()->effective_sl() < 255) {
+    if (a()->sess().effective_sl() < 255) {
       if (c.maxage > 0 && c.maxage < 255) {
         if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
           continue;

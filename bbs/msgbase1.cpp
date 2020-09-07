@@ -184,7 +184,7 @@ void post(const PostData& post_data) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
-  if (a()->effective_sl() < a()->current_sub().postsl) {
+  if (a()->sess().effective_sl() < a()->current_sub().postsl) {
     bout << "\r\nYou can't post here.\r\n\n";
     return;
   }
@@ -453,7 +453,7 @@ void nscan(uint16_t start_subnum) {
       qscan(i, nextsub);
     }
     bool abort = false;
-    checka(&abort);
+    bin.checka(&abort);
     if (abort) {
       nextsub = false;
     }

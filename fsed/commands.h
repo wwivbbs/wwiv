@@ -18,12 +18,13 @@
 #ifndef __INCLUDED_BBS_FSED_COMMANDS_H__
 #define __INCLUDED_BBS_FSED_COMMANDS_H__
 
+#include "common/context.h"
 #include <functional>
 #include <map>
 #include <optional>
 #include <string>
 
-namespace wwiv::bbs::fsed {
+namespace wwiv::fsed {
 
 class FsedModel;
 class FsedView;
@@ -69,7 +70,8 @@ private:
 
 class FsedCommands {
 public:
-  FsedCommands();
+  FsedCommands() = delete;
+  FsedCommands(wwiv::common::Context& ctx);
   std::optional<FsedCommand> get(fsed_command_id id);
   std::optional<FsedCommand> get(const std::string& id);
   bool add(FsedCommand cmd);
@@ -83,6 +85,8 @@ public:
 
 private:
   bool AddAll();
+
+  wwiv::common::Context& ctx_; 
   std::map<fsed_command_id, FsedCommand> by_id_;
   std::map<std::string, FsedCommand> by_name_;
   std::map<int, fsed_command_id> edit_keymap_;
