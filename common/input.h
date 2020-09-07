@@ -54,8 +54,7 @@ template <typename T> struct input_result_t {
  */
 class Input final {
 public:
-  typedef std::function<wwiv::bbs::SessionContext&()> context_provider_t;
-  typedef std::function<wwiv::sdk::User&()> user_provider_t;
+  typedef std::function<wwiv::bbs::Context&()> context_provider_t;
   typedef std::function<void()> inst_msg_processor_t;
   Input() = default;
   ~Input() = default;
@@ -66,13 +65,11 @@ public:
   void SetComm(RemoteIO* comm) { comm_ = comm; }
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
-  wwiv::sdk::User& user() const;
-  wwiv::bbs::SessionContext& context() const;
+  wwiv::sdk::User& user();
+  wwiv::bbs::SessionContext& context();
 
   /** Sets the provider for the session context */
-  void set_context_provider(std::function<wwiv::bbs::SessionContext&()> c) { context_provider_ = std::move(c); }
-  /** Sets the provider for the user */
-  void set_user_provider(std::function<wwiv::sdk::User&()> c) { user_provider_ = std::move(c);}
+  void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
 
   char bgetch(bool allow_extended_input = false);
   char bgetchraw();
@@ -169,8 +166,7 @@ private:
 private:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
-  context_provider_t context_provider_;
-  user_provider_t user_provider_;
+  mutable context_provider_t context_provider_;
 };
 
 } // namespace common

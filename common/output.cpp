@@ -144,14 +144,14 @@ std::string Output::MakeColor(int wwiv_color) {
   return MakeSystemColor(c);
 }
 
-std::string Output::MakeSystemColor(int c) const {
+std::string Output::MakeSystemColor(int c) {
   if (!okansi(user())) {
     return "";
   }
   return wwiv::sdk::ansi::makeansi(c, curatr());
 }
 
-std::string Output::MakeSystemColor(wwiv::sdk::Color c) const {
+std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
   return MakeSystemColor(static_cast<uint8_t>(c));
 }
 
@@ -240,8 +240,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 int Output::bputs(const string& text) {
   wwiv::core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || context().hangup()) { return 0; }
-  BbsContext bbs_ctx(context(), &user(), mci_enabled());
-  MacroContext ctx(&bbs_ctx);
+  MacroContext ctx(&context_provider_());
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
@@ -332,13 +331,13 @@ void Output::move_up_if_newline(int num_lines) {
 }
 
 
-void Output::set_context_provider(std::function<wwiv::bbs::SessionContext&()> c) {
+void Output::set_context_provider(context_provider_t c) {
   context_provider_ = std::move(c);
 }
 
-void Output::set_user_provider(std::function<wwiv::sdk::User&()> c) {
-  user_provider_ = std::move(c);
-}
 
-wwiv::sdk::User& Output::user() const { return user_provider_(); }
-wwiv::bbs::SessionContext& Output::context() const { return context_provider_(); }
+wwiv::sdk::User& Output::user() { return context_provider_().u(); }
+
+wwiv::bbs::SessionContext& Output::context() {
+  return context_provider_().session_context();
+}

@@ -42,9 +42,10 @@ class TestMacroContext final : public Context {
 public:
   explicit TestMacroContext(BbsHelper& helper)
       : helper_(helper), sess_ctx_(helper_.io()->local_io()) {}
-  [[nodiscard]] const wwiv::sdk::User& u() const override { return *helper_.user(); }
-  virtual const wwiv::bbs::SessionContext& session_context() const override { return sess_ctx_; }
+  [[nodiscard]] wwiv::sdk::User& u() override { return *helper_.user(); }
+  virtual wwiv::bbs::SessionContext& session_context() override { return sess_ctx_; }
   [[nodiscard]] bool mci_enabled() const override { return true; };
+  [[nodiscard]] const wwiv::sdk::Config& config() const { return *helper_.app_->config(); }
 
   BbsHelper& helper_;
   wwiv::bbs::SessionContext sess_ctx_;

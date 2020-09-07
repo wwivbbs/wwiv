@@ -85,7 +85,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
 
-    const auto* d = get_wwiv_script_userdata(bas);
+    auto* d = get_wwiv_script_userdata(bas);
     MacroContext ctx(d->ctx);
     const auto s = ctx.interpret(*arg);
     mb_check(mb_attempt_close_bracket(bas, l));

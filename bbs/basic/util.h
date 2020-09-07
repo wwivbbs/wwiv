@@ -35,7 +35,7 @@ struct wwiv_script_userdata_t {
   std::string datadir;
   std::string script_dir;
   std::string module;
-  const Context* ctx;
+  Context* ctx;
 };
 
 /**

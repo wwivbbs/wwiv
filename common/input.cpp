@@ -768,6 +768,10 @@ std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
   return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
-wwiv::sdk::User& Input::user() const { return user_provider_(); }
-wwiv::bbs::SessionContext& Input::context() const { return context_provider_(); }
+wwiv::sdk::User& Input::user() { return context_provider_().u(); }
+
+wwiv::bbs::SessionContext& Input::context() {
+  return context_provider_().session_context();
+}
+
 }

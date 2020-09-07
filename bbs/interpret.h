@@ -25,17 +25,15 @@
 #include <string>
 
 
-wwiv::bbs::BbsContext CreateBbsContext();
-
 class MacroContext {
 public:
-  MacroContext(const wwiv::bbs::Context* context) : context_(context) {}
+  MacroContext(wwiv::bbs::Context* context) : context_(context) {}
   ~MacroContext() = default;
 
   std::string interpret(char c) const;
 
 private:
-  const wwiv::bbs::Context* context_{nullptr};
+  wwiv::bbs::Context* context_{nullptr};
 };
 
 class BbsMacroFilter : public wwiv::sdk::ansi::AnsiFilter {

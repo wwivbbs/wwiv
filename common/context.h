@@ -233,23 +233,10 @@ private:
 class Context {
 public:
   virtual ~Context() = default;
-  virtual const wwiv::sdk::User& u() const = 0;
-  virtual const wwiv::bbs::SessionContext& session_context() const = 0;
+  virtual wwiv::sdk::User& u() = 0;
+  virtual wwiv::bbs::SessionContext& session_context() = 0;
   virtual bool mci_enabled() const = 0;
-};
-
-class BbsContext : public Context {
-public:
-  BbsContext(const wwiv::bbs::SessionContext& c, const wwiv::sdk::User* u, bool mci_enabled)
-      : session_context_(c), u_(u), mci_enabled_(mci_enabled) {}
-  const wwiv::sdk::User& u() const override { return *u_; }
-  const wwiv::bbs::SessionContext& session_context() const override { return session_context_; }
-  bool mci_enabled() const override { return mci_enabled_; }
-
-private:
-  const wwiv::bbs::SessionContext& session_context_;
-  const wwiv::sdk::User* u_;
-  bool mci_enabled_;
+  virtual const wwiv::sdk::Config& config() const = 0;
 };
 
 } // namespace wwiv::bbs

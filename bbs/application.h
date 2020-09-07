@@ -108,8 +108,8 @@ public:
   virtual ~Application();
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
-  [[nodiscard]] wwiv::bbs::BbsContext context();
-  [[nodiscard]] const wwiv::bbs::BbsContext context() const;
+  [[nodiscard]] wwiv::bbs::Context& context();
+  [[nodiscard]] const wwiv::bbs::Context& context() const;
   [[nodiscard]] wwiv::bbs::SessionContext& sess();
   [[nodiscard]] const wwiv::bbs::SessionContext& sess() const;
 
@@ -455,6 +455,7 @@ private:
   bool full_screen_read_prompt_{true};
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};
+  std::unique_ptr<wwiv::bbs::Context> context_;
 };
 
 #endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

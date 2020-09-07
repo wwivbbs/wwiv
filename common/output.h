@@ -66,8 +66,7 @@ protected:
 
 public:
 
-  typedef std::function<wwiv::bbs::SessionContext&()> context_provider_t;
-  typedef std::function<wwiv::sdk::User&()> user_provider_t;
+  typedef std::function<wwiv::bbs::Context&()> context_provider_t;
   typedef std::function<void()> inst_msg_processor_t;
   Output();
   ~Output();
@@ -79,9 +78,7 @@ public:
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   /** Sets the provider for the session context */
-  void set_context_provider(std::function<wwiv::bbs::SessionContext&()>);
-  /** Sets the provider for the user */
-  void set_user_provider(std::function<wwiv::sdk::User&()>);
+  void set_context_provider(context_provider_t);
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -98,8 +95,8 @@ public:
   void SystemColor(int c);
   void SystemColor(wwiv::sdk::Color color);
   [[nodiscard]] std::string MakeColor(int wwiv_color);
-  [[nodiscard]] std::string MakeSystemColor(int c) const;
-  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color) const;
+  [[nodiscard]] std::string MakeSystemColor(int c);
+  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color);
 
   /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
@@ -249,8 +246,8 @@ public:
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
-  wwiv::sdk::User& user() const;
-  wwiv::bbs::SessionContext& context() const;
+  wwiv::sdk::User& user();
+  wwiv::bbs::SessionContext& context();
 
   // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
   // in pause.cpp
@@ -288,8 +285,7 @@ private:
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
 
-  context_provider_t context_provider_;
-  user_provider_t user_provider_;
+  mutable context_provider_t context_provider_;
   int nsp_{0};
 };
 

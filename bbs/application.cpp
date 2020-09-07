@@ -108,19 +108,31 @@ using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+// Implementation of Context for the Application
+class ApplicationContext : public wwiv::bbs::Context {
+public:
+  ApplicationContext(Application* app) : app_(app) {}
+  virtual ~ApplicationContext() = default;
+  wwiv::sdk::User& u() override { return *app_->user(); }
+  wwiv::bbs::SessionContext& session_context() override { return app_->sess(); }
+  bool mci_enabled() const override { return bout.mci_enabled(); }
+  const wwiv::sdk::Config& config() const override { return *app_->config(); }
+
+private:
+  Application* app_;
+};
+
 
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(localIO) {
   ::bout.SetLocalIO(localIO);
   ::bin.SetLocalIO(localIO);
+  context_ = std::make_unique<ApplicationContext>(this);
 
   bout.set_context_provider(
-      [this]() -> wwiv::bbs::SessionContext& { return this->session_context_; });
-  bin.set_context_provider(
-      [this]() -> wwiv::bbs::SessionContext& { return this->session_context_; });
-  bout.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
-  bin.set_user_provider([]() -> wwiv::sdk::User& { return *a()->user(); });
+      [this]() -> wwiv::bbs::Context& { return *this->context_.get(); });
+  bin.set_context_provider([this]() -> wwiv::bbs::Context& { return *this->context_.get(); });
   session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 
@@ -150,15 +162,12 @@ Application::~Application() {
   curses_out = nullptr;
 }
 
-wwiv::bbs::BbsContext Application::context() { 
-  return wwiv::bbs::BbsContext(sess(), user(), bout.mci_enabled());
-}
-const wwiv::bbs::BbsContext Application::context() const {
-  return wwiv::bbs::BbsContext(sess(), user(), bout.mci_enabled());
-}
-
 wwiv::bbs::SessionContext& Application::sess() { return session_context_; }
 const wwiv::bbs::SessionContext& Application::sess() const { return session_context_; }
+
+wwiv::bbs::Context& Application::context() { return *context_.get(); }
+
+const wwiv::bbs::Context & Application::context() const { return *context_.get(); }
 
 LocalIO* Application::localIO() const { return local_io_.get(); }
 

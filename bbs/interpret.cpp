@@ -40,10 +40,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
-BbsContext CreateBbsContext() {
-  return BbsContext(a()->sess(), a()->user(), bout.mci_enabled());
-}
-
 std::string MacroContext::interpret(char ch) const {
   if (!context_->mci_enabled()) {
     return "";
