@@ -234,8 +234,10 @@ public:
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
 
+  // Data used by Output. Should this be protected?
   wwiv::sdk::User& user();
-  wwiv::common::SessionContext& context();
+  wwiv::common::SessionContext& sess();
+  wwiv::common::Context& context();
 
   // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
   // in pause.cpp
@@ -243,6 +245,14 @@ public:
   void clearnsp();
   void resetnsp();
   int nsp() const noexcept;
+
+  // PrintFile and friends
+  void print_local_file(const std::string& filename);
+  bool printfile(const std::string& filename, bool abortable = true, bool force_pause = true);
+  bool printfile_path(const std::filesystem::path& file_path, bool abortable = true,
+                      bool force_pause = true);
+  bool print_help_file(const std::string& filename);
+  bool printfile_random(const std::string& base_fn);
 
 public:
   int lines_listed_{0};

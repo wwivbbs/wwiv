@@ -23,7 +23,6 @@
 #include "bbs/menu.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/basic/util.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -75,7 +74,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     if (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      printfile(arg);
+      script_out().printfile(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;

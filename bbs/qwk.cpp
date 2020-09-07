@@ -674,7 +674,7 @@ void qwk_menu() {
   auto done = false;
   while (!done && !a()->sess().hangup()) {
     bout.cls();
-    printfile("QWK");
+    bout.printfile("QWK");
     if (so()) {
       bout.bputs("|#11|#9) Sysop QWK config");
     }

@@ -20,23 +20,23 @@
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/dirlist.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/lpfunc.h"
 #include "bbs/mmkey.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -45,12 +45,12 @@
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/files/dirs.h"
+#include "sdk/files/files.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/wwivcolors.h"
-#include "sdk/files/dirs.h"
-#include "sdk/files/files.h"
 #include <algorithm>
 #include <csignal>
 #include <string>
@@ -662,7 +662,7 @@ void sysop_configure() {
 
   while (!done && !a()->sess().hangup()) {
     bout.cls();
-    printfile(LPSYSOP_NOEXT);
+    bout.printfile(LPSYSOP_NOEXT);
     bout.PutsXYSC(38, 2, lp_config.normal_highlight, fmt::sprintf("%3d", lp_config.normal_highlight));
     bout.PutsXYSC(77, 2, lp_config.normal_menu_item, fmt::sprintf("%3d", lp_config.normal_menu_item));
     bout.PutsXYSC(38, 3, lp_config.current_highlight, fmt::sprintf("%3d", lp_config.current_highlight));
@@ -962,7 +962,7 @@ void config_file_list() {
   load_lp_config();
 
   bout.cls();
-  printfile(LPCONFIG_NOEXT);
+  bout.printfile(LPCONFIG_NOEXT);
   if (!(a()->user()->data.lp_options & cfl_fname)) {
     a()->user()->data.lp_options |= cfl_fname;
   }
@@ -1464,7 +1464,7 @@ LP_SEARCH_HELP:
   sr->search_extended = lp_config.search_extended_on ? true : false;
 
   bout.cls();
-  printfile(LPSEARCH_NOEXT);
+  bout.printfile(LPSEARCH_NOEXT);
 
   bool done = false;
   char x{0};
@@ -1685,7 +1685,7 @@ void request_file(const std::string& file_name) {
   bout.cls();
   bout.nl();
 
-  printfile(LPFREQ_NOEXT);
+  bout.printfile(LPFREQ_NOEXT);
   bout << "|#2File missing.  Request it? ";
 
   if (bin.noyes()) {

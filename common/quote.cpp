@@ -24,7 +24,7 @@
 #include "common/com.h"
 #include "common/common_events.h"
 #include "common/input.h"
-#include "common/printfile.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
 #include "core/strings.h"
@@ -177,7 +177,7 @@ void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_fo
     f.WriteLine(l);
   }
   if (a()->user()->GetNumMessagesPosted() < 10) {
-    printfile(QUOTE_NOEXT);
+    bout.printfile(QUOTE_NOEXT);
   }
 }
 

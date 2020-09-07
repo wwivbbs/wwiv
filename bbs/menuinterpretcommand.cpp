@@ -23,18 +23,18 @@
 #include "bbs/bbsutl.h"
 #include "bbs/hop.h"
 #include "bbs/menu.h"
+#include "bbs/menu_parser.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
-#include "bbs/menu_parser.h"
 #include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
+#include "common/output.h"
+#include "common/pause.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include <functional>
@@ -214,13 +214,13 @@ Runs a WWIVbasic Script
   then the language dir, then the gfilesdir.  It will use the usual checks to
   determin .ANS, or .MSG if not specified.
 )", MENU_CAT_SYS, [](MenuItemContext& context) {
-      printfile(context.param1, true);
+                                    bout.printfile(context.param1, true);
     } ));
   m.emplace("PrintFileNA", MenuItem(R"(<filename>
 
   Just like PrintFile, but the user can not abort it with the space bar.
 )", MENU_CAT_SYS, [](MenuItemContext& context) {
-      printfile(context.param1, false);
+                                      bout.printfile(context.param1, false);
     } ));
   m.emplace("SetSubNumber", MenuItem(R"(<key>
 

@@ -207,7 +207,7 @@ void AutoMessage() {
 void Defaults(bool& need_menu_reload) {
   if (GuestCheck()) {
     write_inst(INST_LOC_DEFAULTS, 0, INST_FLAGS_NONE);
-    if (printfile(DEFAULTS_NOEXT)) {
+    if (bout.printfile(DEFAULTS_NOEXT)) {
       bout.pausescr();
     }
     defaults(need_menu_reload);
@@ -225,19 +225,19 @@ void FeedBack() {
 
 void Bulletins() {
   write_inst(INST_LOC_GFILES, 0, INST_FLAGS_NONE);
-  printfile(GFILES_NOEXT);
+  bout.printfile(GFILES_NOEXT);
   gfiles();
 }
 
 void SystemInfo() {
   WWIVVersion();
 
-  if (printfile(LOGON_NOEXT)) {
+  if (bout.printfile(LOGON_NOEXT)) {
     // Only display the pause if the file is not empty and contains information
     bout.pausescr();
   }
 
-  if (printfile(SYSTEM_NOEXT)) {
+  if (bout.printfile(SYSTEM_NOEXT)) {
     bout.pausescr();
   }
 }
@@ -264,7 +264,7 @@ void LastCallers() {
   }
   const char filler_char = okansi() ? '\xCD' : '=';
   bout << "|#7" << string(79, filler_char) << wwiv::endl;
-  printfile(LASTON_TXT);
+  bout.printfile(LASTON_TXT);
 }
 
 void ReadEMail() {
@@ -303,7 +303,7 @@ void GoodBye() {
     int cycle = 0;
     do {
       bout.cls();
-      printfile(filename.string());
+      bout.printfile(filename.string());
       int ch = onek("QFTO", true);
       switch (ch) {
       case 'Q':
@@ -328,7 +328,7 @@ void GoodBye() {
         bout <<  "Time on   = " << ctim(static_cast<long>(secs_used.count())) << wwiv::endl;
         {
           TempDisablePause disable_pause(bout);
-          printfile(LOGOFF_NOEXT);
+          bout.printfile(LOGOFF_NOEXT);
         }
         a()->user()->SetLastSubNum(a()->current_user_sub_num());
         a()->user()->SetLastDirNum(a()->current_user_dir_num());
@@ -353,7 +353,7 @@ void GoodBye() {
       bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
       {
         TempDisablePause disable_pause(bout);
-        printfile(LOGOFF_NOEXT);
+        bout.printfile(LOGOFF_NOEXT);
       }
       a()->user()->SetLastSubNum(a()->current_user_sub_num());
       a()->user()->SetLastDirNum(a()->current_user_dir_num());
@@ -558,11 +558,11 @@ void InitVotes() {
 
 void ReadLog() {
   const string sysop_log_file = GetSysopLogFileName(date());
-  print_local_file(sysop_log_file);
+  bout.print_local_file(sysop_log_file);
 }
 
 void ReadNetLog() {
-  print_local_file("net.log");
+  bout.print_local_file("net.log");
 }
 
 void PrintPending() {
@@ -586,7 +586,7 @@ void VotePrint() {
 
 void YesterdaysLog() {
   const auto status = a()->status_manager()->GetStatus();
-  print_local_file(status->GetLogFileName(1));
+  bout.print_local_file(status->GetLogFileName(1));
 }
 
 void ZLog() {
@@ -605,13 +605,13 @@ void ViewNetDataLog() {
       done = true;
       break;
     case '0':
-      print_local_file("netdat0.log");
+      bout.print_local_file("netdat0.log");
       break;
     case '1':
-      print_local_file("netdat1.log");
+      bout.print_local_file("netdat1.log");
       break;
     case '2':
-      print_local_file("netdat2.log");
+      bout.print_local_file("netdat2.log");
       break;
     }
   }
@@ -868,7 +868,7 @@ void ListUsersDL() {
 
 void PrintDSZLog() {
   if (File::Exists(a()->dsz_logfile_name_)) {
-    print_local_file(a()->dsz_logfile_name_);
+    bout.print_local_file(a()->dsz_logfile_name_);
   }
 }
 
@@ -886,7 +886,7 @@ void BatchMenu() {
 
 void Download() {
   play_sdf(DOWNLOAD_NOEXT, false);
-  printfile(DOWNLOAD_NOEXT);
+  bout.printfile(DOWNLOAD_NOEXT);
   download();
 }
 
@@ -950,7 +950,7 @@ void XferDefaults() {
 
 void Upload() {
   play_sdf(UPLOAD_NOEXT, false);
-  printfile(UPLOAD_NOEXT);
+  bout.printfile(UPLOAD_NOEXT);
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
     if (a()->config()->new_uploads_dir() < a()->dirs().size()) {
@@ -968,7 +968,7 @@ void YourInfoDL() {
 }
 
 void UploadToSysop() {
-  printfile(ZUPLOAD_NOEXT);
+  bout.printfile(ZUPLOAD_NOEXT);
   bout.nl(2);
   bout << "Sending file to sysop :-\r\n\n";
   upload(0);

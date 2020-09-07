@@ -46,7 +46,6 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "common/workspace.h"
 #include "core/inifile.h"
 #include "core/os.h"
@@ -765,7 +764,7 @@ void DoNewUserASV() {
       a()->user()->SetExempt(a()->asv.exempt);
       a()->user()->SetRestriction(a()->asv.restrict);
       bout.nl();
-      printfile(ASV_NOEXT);
+      bout.printfile(ASV_NOEXT);
       bout.nl();
       bout.pausescr();
     }
@@ -934,13 +933,13 @@ void SendNewUserFeedbackIfRequired() {
 
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
-  } else if (printfile(FEEDBACK_NOEXT)) {
+  } else if (bout.printfile(FEEDBACK_NOEXT)) {
     sysoplog(false) << "";
   }
   feedback(true);
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
-      printfile(NOFBACK_NOEXT);
+      bout.printfile(NOFBACK_NOEXT);
       a()->users()->delete_user(a()->usernum);
       a()->Hangup();
       return;
@@ -990,10 +989,10 @@ void newuser() {
     // 0xff is the internal FSED.
     a()->user()->SetDefaultEditor(0xff);
   }
-  printfile(SYSTEM_NOEXT);
+  bout.printfile(SYSTEM_NOEXT);
   bout.nl();
   bout.pausescr();
-  printfile(NEWUSER_NOEXT);
+  bout.printfile(NEWUSER_NOEXT);
   bout.nl();
   bout.pausescr();
   bout.cls();
@@ -1213,7 +1212,7 @@ void noabort(const char* file_name) {
     a()->sess().incom(false);
     bout.dump();
   }
-  printfile(file_name);
+  bout.printfile(file_name);
   if (a()->sess().using_modem()) {
     bout.dump();
     a()->sess().incom(oic);

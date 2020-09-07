@@ -21,16 +21,16 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/bgetch.h"
-#include "common/com.h"
 #include "bbs/connect1.h"
-#include "common/input.h"
-#include "common/full_screen.h"
 #include "bbs/message_file.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
+#include "common/bgetch.h"
+#include "common/com.h"
+#include "common/full_screen.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -41,10 +41,9 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/msgapi/parsed_message.h"
 #include "sdk/net/net.h"
 #include "sdk/subxtr.h"
-#include "sdk/msgapi/parsed_message.h"
-
 #include <cctype>
 #include <memory>
 #include <stdexcept>
@@ -695,7 +694,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         } else if (key == '?') {
           result.option = ReadMessageOption::NONE;
           fs.ClearMessageArea();
-          if (!print_help_file(MBFSED_NOEXT)) {
+          if (!bout.print_help_file(MBFSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           } else {
@@ -704,7 +703,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           if (lcs()) {
             bout.pausescr();
             fs.ClearMessageArea();
-            if (!print_help_file(MBFSED_SYSOP_NOEXT)) {
+            if (!bout.print_help_file(MBFSED_SYSOP_NOEXT)) {
               fs.ClearCommandLine();
               bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
             }

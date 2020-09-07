@@ -69,7 +69,7 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
 SavedLine Output::SaveCurrentLine() { return {current_line_, curatr()}; }
 
 void Output::dump() {
-  if (context().ok_modem_stuff()) {
+  if (sess().ok_modem_stuff()) {
     remoteIO()->purgeIn();
   }
 }
@@ -109,9 +109,9 @@ char Input::getkey(bool allow_extended_input) {
   char ch = 0;
   do {
     wwiv::core::bus().invoke<CheckForHangupEvent>();
-    while (!bin.bkbhit() && !context().hangup()) {
+    while (!bin.bkbhit() && !sess().hangup()) {
       // Try to make hangups happen faster.
-      if (context().incom() && context().ok_modem_stuff() && !remoteIO()->connected()) {
+      if (sess().incom() && sess().ok_modem_stuff() && !remoteIO()->connected()) {
         wwiv::core::bus().invoke<HangupEvent>();
       }
       wwiv::core::bus().invoke<CheckForHangupEvent>();
@@ -225,20 +225,20 @@ char Input::bgetch(bool allow_extended_input) {
       }
     }
     lastchar_pressed();
-  } else if (context().incom() && bkbhitraw()) {
+  } else if (sess().incom() && bkbhitraw()) {
     ch = bgetchraw();
     bin.SetLastKeyLocal(false);
   }
 
   if (!allow_extended_input) {
-    HandleControlKey(&ch, context(), user());
+    HandleControlKey(&ch, sess(), user());
   }
 
   return ch;
 }
 
 char Input::bgetchraw() {
-  if (context().ok_modem_stuff() && nullptr != remoteIO()) {
+  if (sess().ok_modem_stuff() && nullptr != remoteIO()) {
     if (remoteIO()->incoming()) {
       return static_cast<char>(remoteIO()->getW());
     }
@@ -250,7 +250,7 @@ char Input::bgetchraw() {
 }
 
 bool Input::bkbhitraw() {
-  if (context().ok_modem_stuff()) {
+  if (sess().ok_modem_stuff()) {
     return (remoteIO()->incoming() || localIO()->KeyPressed());
   } else if (localIO()->KeyPressed()) {
     return true;
@@ -259,7 +259,7 @@ bool Input::bkbhitraw() {
 }
 
 bool Input::bkbhit() {
-  if (localIO()->KeyPressed() || (context().incom() && bkbhitraw()) ||
+  if (localIO()->KeyPressed() || (sess().incom() && bkbhitraw()) ||
       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) {
     return true;
   }
@@ -385,7 +385,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
 
   while (true) {
     wwiv::core::bus().invoke<CheckForHangupEvent>();
-    if (context().hangup()) {
+    if (sess().hangup()) {
       return 0;
     }
     auto dd = steady_clock::now();
@@ -414,7 +414,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
-    if (!context().incom() || localIO()->KeyPressed()) {
+    if (!sess().incom() || localIO()->KeyPressed()) {
       // Check for local keys
       return bgetch_handle_key_translation(localIO()->GetChar(), numlock_mode);
     }

@@ -46,7 +46,6 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "common/workspace.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -306,7 +305,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         do {
           io->Cls();
           bout.nl();
-          print_help_file(helpFileName);
+          bout.print_help_file(helpFileName);
           chHelp = bin.getkey();
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);
@@ -327,7 +326,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
           case '0':
           case '1':
           case '2': {
-            print_local_file(fmt::format("netdat{}.log", ch));
+            bout.print_local_file(fmt::format("netdat{}.log", ch));
           } break;
           }
         }
@@ -415,7 +414,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'L': {
         Clear();
         auto status = a()->status_manager()->GetStatus();
-        print_local_file(status->GetLogFileName(0));
+        bout.print_local_file(status->GetLogFileName(0));
       } break;
       // Read User Mail
       case 'M': {
@@ -428,7 +427,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Print Net Log
       case 'N': {
         Clear();
-        print_local_file("net.log");
+        bout.print_local_file("net.log");
       } break;
       // EditTextFile
       case 'O': {
@@ -496,7 +495,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       case 'Y': {
         Clear();
         auto status = a()->status_manager()->GetStatus();
-        print_local_file(status->GetLogFileName(1));
+        bout.print_local_file(status->GetLogFileName(1));
       } break;
       // Print Activity (Z) Log
       case 'Z': {

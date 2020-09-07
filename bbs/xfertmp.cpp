@@ -26,7 +26,6 @@
 #include "common/input.h"
 #include "bbs/mmkey.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"

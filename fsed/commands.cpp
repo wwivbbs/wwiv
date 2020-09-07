@@ -21,7 +21,7 @@
 #include "fsed/view.h"
 #include "common/quote.h"
 #include "common/pause.h"
-#include "common/printfile.h"
+#include "common/output.h"
 #include "core/stl.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
@@ -123,7 +123,7 @@ static void show_fsed_menu(FsedModel& ed, FsedView& view, bool& done, bool& save
   case '?': {
     view.ClearCommandLine();
     view.fs().ClearMessageArea();
-    if (!print_help_file(FSED_NOEXT)) {
+    if (!bout.print_help_file(FSED_NOEXT)) {
       view.fs().PutsCommandLine(wwiv::strings::StrCat("|#6Unable to find file: ", FSED_NOEXT));
     }
     bout.pausescr();

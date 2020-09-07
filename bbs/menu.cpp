@@ -20,15 +20,15 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
 #include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -335,7 +335,7 @@ string MenuInstance::GetHelpFileName() const {
 
 void MenuInstance::DisplayMenu() const {
   const auto filename = GetHelpFileName();
-  if (!printfile(filename, true)) {
+  if (!bout.printfile(filename, true)) {
     GenerateMenu();
   }
 }
@@ -445,7 +445,7 @@ void TurnMCIOn() { bout.enable_mci(); }
 void ConfigUserMenuSet() {
   bout.cls();
   bout.litebar("Configure Menus");
-  printfile(MENUWEL_NOEXT);
+  bout.printfile(MENUWEL_NOEXT);
   bool done = false;
   while (!done) {
     bout.nl();
@@ -487,7 +487,7 @@ void ConfigUserMenuSet() {
       a()->user()->set_hotkeys(!a()->user()->hotkeys());
       break;
     case '?':
-      printfile(MENUWEL_NOEXT);
+      bout.printfile(MENUWEL_NOEXT);
       continue; // bypass the below cls()
     }
     bout.cls();

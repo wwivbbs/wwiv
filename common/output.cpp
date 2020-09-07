@@ -75,7 +75,7 @@ void Output::ResetColors() {
 void Output::GotoXY(int x, int y) {
   if (okansi(user())) {
     // Don't get Y get too big or mTelnet will not be happy
-    y = std::min<int>(y, context().num_screen_lines());
+    y = std::min<int>(y, sess().num_screen_lines());
     bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
 }
@@ -239,7 +239,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 
 int Output::bputs(const string& text) {
   wwiv::core::bus().invoke<CheckForHangupEvent>();
-  if (text.empty() || context().hangup()) { return 0; }
+  if (text.empty() || sess().hangup()) { return 0; }
   MacroContext ctx(&context_provider_());
 
   auto it = std::cbegin(text);
@@ -338,6 +338,10 @@ void Output::set_context_provider(context_provider_t c) {
 
 wwiv::sdk::User& Output::user() { return context_provider_().u(); }
 
-wwiv::common::SessionContext& Output::context() {
+wwiv::common::SessionContext& Output::sess() {
   return context_provider_().session_context();
+}
+
+wwiv::common::Context& Output::context() { 
+  return context_provider_(); 
 }

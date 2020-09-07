@@ -35,7 +35,6 @@
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
@@ -1033,7 +1032,7 @@ void config_scan_plus(int type) {
       case '?':
       case CO:
         bout.cls();
-        print_help_file(SCONFIG_HLP);
+        bout.print_help_file(SCONFIG_HLP);
         bout.pausescr();
         menu_done = true;
         amount = 0;
@@ -1254,7 +1253,7 @@ void config_scan_plus(int type) {
           break;
         case 9:
           bout.cls();
-          print_help_file(SCONFIG_HLP);
+          bout.print_help_file(SCONFIG_HLP);
           bout.pausescr();
           menu_done = true;
           amount = 0;

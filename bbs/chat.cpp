@@ -24,7 +24,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -383,7 +382,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     bActionHandled = 0;
   } else if (iequals(raw_message, "?") || iequals(raw_message, "/?")) {
     bActionHandled = 0;
-    print_help_file(CHAT_NOEXT);
+    bout.print_help_file(CHAT_NOEXT);
   } else if (bActionHandled && raw_message[0] == '>') {
     bActionHandled = 0;
     int nUserNum = grabname(raw_message + 1, loc);

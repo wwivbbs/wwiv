@@ -22,22 +22,14 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/bgetch.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/extract.h"
-#include "common/full_screen.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
-#include "common/pause.h"
-#include "common/printfile.h"
-#include "common/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/showfiles.h"
 #include "bbs/sr.h"
@@ -46,8 +38,16 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "common/workspace.h"
 #include "bbs/xfer.h"
+#include "common/bgetch.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/full_screen.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/quote.h"
+#include "common/workspace.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -597,7 +597,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
         case '?': {
           need_redraw = true;
           fs.ClearMessageArea();
-          if (!printfile(TITLE_FSED_NOEXT)) {
+          if (!bout.printfile(TITLE_FSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << TITLE_FSED_NOEXT;
             bout.pausescr();
@@ -876,11 +876,11 @@ static void HandleMessageExtract(int& msgnum) {
 
 static void HandleMessageHelp() {
   if (a()->sess().forcescansub()) {
-    printfile(MUSTREAD_NOEXT);
+    bout.printfile(MUSTREAD_NOEXT);
   } else if (lcs()) {
-    print_help_file(SMBMAIN_NOEXT);
+    bout.print_help_file(SMBMAIN_NOEXT);
   } else {
-    print_help_file(MBMAIN_NOEXT);
+    bout.print_help_file(MBMAIN_NOEXT);
   }
 }
 

@@ -23,32 +23,31 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/defaults.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
-#include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/readmail.h"
-#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
 #include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/remote_io.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -123,8 +122,8 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
     a()->user()->SetStatusFlag(User::status_color);
   }
   bout.nl();
-  if (!printfile_random(WELCOME_NOEXT)) {
-    printfile(WELCOME_NOEXT);
+  if (!bout.printfile_random(WELCOME_NOEXT)) {
+    bout.printfile(WELCOME_NOEXT);
   }
   if (bout.curatr() != 7) {
     bout.ResetColors();
@@ -309,7 +308,7 @@ static void logon_guest() {
   bout.nl(2);
   input_ansistat();
 
-  printfile(GUEST_NOEXT);
+  bout.printfile(GUEST_NOEXT);
   bout.pausescr();
 
   string userName, reason;
@@ -326,7 +325,7 @@ static void logon_guest() {
   } while (count < 3);
 
   if (count >= 3) {
-    printfile(REJECT_NOEXT);
+    bout.printfile(REJECT_NOEXT);
     ssm(1) << "Guest Account failed to enter name and purpose";
     a()->Hangup();
   } else {
@@ -468,26 +467,26 @@ static void PrintLogonFile() {
     return;
   }
   play_sdf(LOGON_NOEXT, false);
-  if (!printfile(LOGON_NOEXT)) {
+  if (!bout.printfile(LOGON_NOEXT)) {
     bout.pausescr();
   }
 }
 
 static void PrintUserSpecificFiles() {
   const auto* user = a()->user();  // not-owned
-  printfile(fmt::format("sl{}", user->GetSl()));
-  printfile(fmt::format("dsl{}", user->GetDsl()));
+  bout.printfile(fmt::format("sl{}", user->GetSl()));
+  bout.printfile(fmt::format("dsl{}", user->GetDsl()));
 
   const int short_size = std::numeric_limits<uint16_t>::digits - 1;
   for (int i=0; i < short_size; i++) {
     if (user->HasArFlag(1 << i)) {
-      printfile(fmt::format("ar{}", static_cast<char>('A' + i)));
+      bout.printfile(fmt::format("ar{}", static_cast<char>('A' + i)));
     }
   }
 
   for (int i=0; i < short_size; i++) {
     if (user->HasDarFlag(1 << i)) {
-      printfile(fmt::format("dar{}", static_cast<char>('A' + i)));
+      bout.printfile(fmt::format("dar{}", static_cast<char>('A' + i)));
     }
   }
 }

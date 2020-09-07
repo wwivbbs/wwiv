@@ -38,7 +38,6 @@
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/numbers.h"
@@ -457,7 +456,7 @@ void tag_files(bool& need_title) {
     bout.clear_lines_listed();
     switch (ch) {
     case '?': {
-      print_help_file(TTAGGING_NOEXT);
+      bout.print_help_file(TTAGGING_NOEXT);
       bout.pausescr();
       relist();
     }

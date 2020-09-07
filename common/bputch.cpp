@@ -41,7 +41,7 @@ int Output::bputch(char c, bool use_buffer) {
     needs_color_reset_at_newline_ = false;
   }
 
-  if (context().outcom() && c != TAB) {
+  if (sess().outcom() && c != TAB) {
     if (c == SOFTRETURN) {
 #ifdef __unix__
       rputch('\r', use_buffer);
@@ -90,7 +90,7 @@ int Output::bputch(char c, bool use_buffer) {
       x_ = 0;
       bout.lines_listed_++;
       // change Build3 + 5.0 to fix message read.
-      if (bout.lines_listed() >= (context().num_screen_lines() - 1)) {
+      if (bout.lines_listed() >= (sess().num_screen_lines() - 1)) {
         if (user().HasPause()) {
           bout.pausescr();
         }
@@ -108,7 +108,7 @@ int Output::bputch(char c, bool use_buffer) {
  */
 void Output::rputs(const std::string& text) {
   // Rushfan fix for COM/IP weirdness
-  if (context().ok_modem_stuff()) {
+  if (sess().ok_modem_stuff()) {
     remoteIO()->write(text.c_str(), text.size());
   }
 }
@@ -121,7 +121,7 @@ void Output::flush() {
 }
 
 void Output::rputch(char ch, bool use_buffer_) {
-  if (!context().ok_modem_stuff() || remoteIO() == nullptr) {
+  if (!sess().ok_modem_stuff() || remoteIO() == nullptr) {
     return;
   }
   if (use_buffer_) {

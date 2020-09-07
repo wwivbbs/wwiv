@@ -19,15 +19,18 @@
 #ifndef __INCLUDED_COMMON_PRINTFILE_H__
 #define __INCLUDED_COMMON_PRINTFILE_H__
 
+#include "common/output.h"
 #include <string>
 #include <filesystem>
+#include <vector>
+
+namespace wwiv::common {
 
 /** [VisibleForTesting] */
-std::filesystem::path CreateFullPathToPrint(const std::string& basename);
-void print_local_file(const std::string& filename);
-bool printfile(const std::string& filename, bool abortable = true, bool force_pause = true);
-bool printfile_path(const std::filesystem::path& file_path, bool abortable = true, bool force_pause = true);
-bool print_help_file(const std::string& filename);
-bool printfile_random(const std::string& base_fn);
+std::filesystem::path CreateFullPathToPrint(const std::vector<std::string>& dirs,
+                                            const wwiv::sdk::User& user,
+                                            const std::string& basename);
+
+} // namespace wwiv::common
 
 #endif  // __INCLUDED_COMMON_PRINTFILE_H__

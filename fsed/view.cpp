@@ -23,7 +23,7 @@
 #include "common/message_editor_data.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include "common/printfile.h"
+#include "common/output.h"
 #include "common/quote.h"
 #include "fsed/commands.h"
 #include "fsed/common.h"

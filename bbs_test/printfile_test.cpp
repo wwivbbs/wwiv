@@ -18,7 +18,8 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/bbs.h"
+#include "core/file.h"
+#include "common/output.h"
 #include "common/printfile.h"
 #include "bbs_test/bbs_helper.h"
 #include "core_test/file_helper.h"
@@ -30,16 +31,29 @@ using std::endl;
 using std::string;
 
 using wwiv::sdk::User;
+using namespace wwiv::common;
+using namespace wwiv::core;
 
 class PrintFileTest : public ::testing::Test {
 protected:
-  void SetUp() override { helper.SetUp(); }
+  void SetUp() override { 
+    helper.SetUp(); 
+    auto lang = FilePath(helper.files().TempDir(), "en/gfiles");
+    auto gfiles = FilePath(helper.files().TempDir(), "gfiles");
+    dirs.push_back(lang.string());
+    dirs.push_back(gfiles.string());
+  }
 
   std::filesystem::path CreateTempFile(const std::string& name) {
     return helper.files().CreateTempFile(name, "1");
   }
+  std::filesystem::path CreateFullPathToPrint(const std::string& basename){
+    return wwiv::common::CreateFullPathToPrint(dirs, *helper.user(), basename);
+  }
+
   BbsHelper helper{};
-};
+  std::vector<string> dirs;
+  };
 
 TEST_F(PrintFileTest, LanguageDir) {
   const auto expected_ans = CreateTempFile("en/gfiles/one.ans");

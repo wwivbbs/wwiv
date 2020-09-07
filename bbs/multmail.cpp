@@ -20,14 +20,14 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/email.h"
 #include "bbs/finduser.h"
 #include "bbs/inmsg.h"
-#include "common/input.h"
 #include "bbs/message_file.h"
-#include "common/printfile.h"
 #include "bbs/sysoplog.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
@@ -323,7 +323,7 @@ void slash_e() {
     ch = onek("QAMDEL?");
     switch (ch) {
     case '?':
-      printfile(MMAIL_NOEXT);
+      bout.printfile(MMAIL_NOEXT);
       break;
     case 'Q':
       done = true;

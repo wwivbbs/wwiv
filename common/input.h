@@ -69,7 +69,8 @@ public:
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
   wwiv::sdk::User& user();
-  wwiv::common::SessionContext& context();
+  wwiv::common::SessionContext& sess();
+  wwiv::common::Context& context();
 
   /** Sets the provider for the session context */
   void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }

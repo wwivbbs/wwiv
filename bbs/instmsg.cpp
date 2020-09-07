@@ -22,7 +22,6 @@
 #include "bbs/bbsutl.h"
 #include "common/datetime.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/utility.h"
 #include "core/file.h"
 #include "core/findfiles.h"

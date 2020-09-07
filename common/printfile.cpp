@@ -19,8 +19,6 @@
 #include "common/printfile.h"
 
 #include <memory>
-#include "bbs/application.h"
-#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "common/pause.h"
 #include "core/file.h"
@@ -33,6 +31,8 @@
 #include <string>
 #include <vector>
 
+namespace wwiv::common {
+
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
@@ -42,8 +42,9 @@ using namespace wwiv::strings;
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-std::filesystem::path CreateFullPathToPrint(const string& basename) {
-  std::vector<string> dirs{a()->sess().dirs().language_directory(), a()->config()->gfilesdir()};
+std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, 
+  const wwiv::sdk::User& user,
+  const string& basename) {
   for (const auto& base : dirs) {
     auto file{FilePath(base, basename)};
     if (basename.find('.') != string::npos) {
@@ -55,8 +56,8 @@ std::filesystem::path CreateFullPathToPrint(const string& basename) {
       continue;
     }
     auto candidate{file};
-    if (a()->user()->HasAnsi()) {
-      if (a()->user()->HasColor()) {
+    if (user.HasAnsi()) {
+      if (user.HasColor()) {
         // ANSI and color
         candidate.replace_extension(".ans");
         if (File::Exists(candidate)) {
@@ -90,7 +91,7 @@ std::filesystem::path CreateFullPathToPrint(const string& basename) {
  *
  * @return true if the file exists and is not zero length
  */
-bool printfile_path(const std::filesystem::path& file_path, bool abortable, bool force_pause) {
+bool Output::printfile_path(const std::filesystem::path& file_path, bool abortable, bool force_pause) {
   if (!File::Exists(file_path)) {
     // No need to print a file that does not exist.
     return false;
@@ -127,8 +128,11 @@ bool printfile_path(const std::filesystem::path& file_path, bool abortable, bool
   return !v.empty();
 }
 
-bool printfile(const std::string& filename, bool abortable, bool force_pause) {
-  const auto full_path_name = CreateFullPathToPrint(filename);
+bool Output::printfile(const std::string& filename, bool abortable, bool force_pause) {
+  std::vector<string> dirs{sess().dirs().language_directory(), 
+    context().config().gfilesdir()};
+
+  const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), filename);
   return printfile_path(full_path_name, abortable, force_pause);
 }
 
@@ -137,7 +141,7 @@ bool printfile(const std::string& filename, bool abortable, bool force_pause) {
  *
  * A help file is a normal file displayed with printfile.
  */
-bool print_help_file(const std::string& filename) {
+bool Output::print_help_file(const std::string& filename) {
   if (!printfile(filename)) {
     bout << "No help available.  File '" << filename << "' does not exist.\r\n";
     return false;
@@ -149,14 +153,14 @@ bool print_help_file(const std::string& filename) {
  * Displays a file locally, using LIST util if so defined in WWIV.INI,
  * otherwise uses normal TTY output.
  */
-void print_local_file(const string& filename) {
+void Output::print_local_file(const string& filename) {
   printfile(filename);
   bout.nl(2);
   bout.pausescr();
 }
 
-bool printfile_random(const std::string& base_fn) {
-  const auto& dir = a()->sess().dirs().language_directory();
+bool Output::printfile_random(const std::string& base_fn) {
+  const auto& dir = sess().dirs().language_directory();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
   if (File::Exists(dot_zero)) {
     auto screens = 0;
@@ -173,3 +177,5 @@ bool printfile_random(const std::string& base_fn) {
   }
   return false;
 }
+
+} // namespace wwiv::common

@@ -45,20 +45,20 @@ namespace wwiv::common {
 
 TempDisablePause::TempDisablePause(Output& out)
     : wwiv::core::Transaction([&out] {
-    if (out.context().disable_pause()) {
-      out.context().disable_pause(false);
+    if (out.sess().disable_pause()) {
+      out.sess().disable_pause(false);
       out.user().SetStatusFlag(User::pauseOnPage);
     }
   }, nullptr) {
   if (out.user().HasPause()) {
-    out.context().disable_pause(true);
+    out.sess().disable_pause(true);
     out.user().ClearStatusFlag(User::pauseOnPage);
   }
 }
 
 char Output::GetKeyForPause() {
   char ch = 0;
-  while (ch == 0 && !context().hangup()) {
+  while (ch == 0 && !sess().hangup()) {
     ch = bin.bgetch();
     sleep_for(milliseconds(50));
     bus().invoke<CheckForHangupEvent>();
@@ -91,10 +91,10 @@ void Output::pausescr() {
   char* ss = str_pause;
   int i1;
   int i2 = i1 = strlen(ss);
-  bool com_freeze = context().incom();
+  bool com_freeze = sess().incom();
 
-  if (!context().incom() && context().outcom()) {
-    context().incom(true);
+  if (!sess().incom() && sess().outcom()) {
+    sess().incom(true);
   }
 
   if (okansi()) {
@@ -113,7 +113,7 @@ void Output::pausescr() {
     int warned = 0;
     char ch;
     do {
-      while (!bin.bkbhit() && !context().hangup()) {
+      while (!bin.bkbhit() && !sess().hangup()) {
         auto tstop = time_t_now();
         auto ttotal = difftime(tstop, tstart);
         if (ttotal == 120) {
@@ -146,7 +146,7 @@ void Output::pausescr() {
         bus().invoke<CheckForHangupEvent>();
       }
       ch = GetKeyForPause();
-    } while (!ch && !context().hangup());
+    } while (!ch && !sess().hangup());
     for (int i3 = 0; i3 < i1; i3++) {
       bputch(' ');
     }
@@ -169,7 +169,7 @@ void Output::pausescr() {
   }
 
   if (!com_freeze) {
-    context().incom(false);
+    sess().incom(false);
   }
 }
 

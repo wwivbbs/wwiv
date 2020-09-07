@@ -23,21 +23,15 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/extract.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
-#include "common/pause.h"
-#include "common/printfile.h"
-#include "common/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/shortmsg.h"
 #include "bbs/showfiles.h"
@@ -47,8 +41,14 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "common/workspace.h"
 #include "bbs/xfer.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/pause.h"
+#include "common/quote.h"
+#include "common/workspace.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -792,7 +792,7 @@ void readmail(int mode) {
       case 'R':
         break;
       case '?':
-        printfile(mnu);
+        bout.printfile(mnu);
         i1 = 0;
         break;
       case 'M':

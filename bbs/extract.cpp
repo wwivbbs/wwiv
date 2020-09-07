@@ -23,7 +23,6 @@
 #include "common/input.h"
 #include "bbs/misccmd.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
@@ -35,7 +34,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static std::optional<std::string> get_extract_dir() {
-  print_help_file(MEXTRACT_NOEXT);
+  bout.print_help_file(MEXTRACT_NOEXT);
   do {
     bout << "|#5(Q=Quit) Which (D,G,T) ? ";
     const auto ch1 = onek("QGDT?");
@@ -47,7 +46,7 @@ static std::optional<std::string> get_extract_dir() {
     case 'T':
       return a()->sess().dirs().temp_directory();
     case '?':
-      print_help_file(MEXTRACT_NOEXT);
+      bout.print_help_file(MEXTRACT_NOEXT);
       break;
     case 'Q':
       return std::nullopt;

@@ -103,7 +103,7 @@ bool Input::yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
@@ -122,7 +122,7 @@ bool Input::noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != RETURN)
     ;
 
@@ -139,7 +139,7 @@ char Input::ynq() {
 
   bout.Color(1);
   const char str_quit[] = "Quit";
-  while (!context().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
+  while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != *str_quit && ch != RETURN) {
     // NOP
     ;
@@ -397,7 +397,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
     }
     szTemp[nLength] = '\0';
     wwiv::core::bus().invoke<CheckForHangupEvent>();
-  } while (!done && !context().hangup());
+  } while (!done && !sess().hangup());
   if (nLength) {
     strcpy(out_text, szTemp);
   } else {
@@ -436,10 +436,10 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
   int curpos = 0, in_ansi = 0;
   bool done = false;
 
-  while (!done && !context().hangup()) {
+  while (!done && !sess().hangup()) {
     unsigned char chCurrent = bin.getkey();
 
-    context().chatline(curpos != 0);
+    sess().chatline(curpos != 0);
 
     if (in_ansi) {
       if (in_ansi == 1 && chCurrent != '[') {
@@ -559,7 +559,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
       in_ansi = 0;
     }
   }
-  if (context().hangup()) {
+  if (sess().hangup()) {
     out_text[0] = '\0';
   }
 }
@@ -570,7 +570,7 @@ std::string Input::input_password_minimal(int max_length) {
   std::string pw;
   bout.mpl(max_length);
 
-  while (!context().hangup()) {
+  while (!sess().hangup()) {
     unsigned char ch = bin.getkey();
 
     if (ch > 31) {
@@ -646,7 +646,7 @@ input_result_t<int64_t> Input::input_number_or_key_raw(int64_t cur, int64_t minv
     text = std::to_string(result);
     last_ok = colorize(last_ok, result, minv, maxv);
   }
-  while (!context().hangup()) {
+  while (!sess().hangup()) {
     auto ch = bin.getkey();
     if (std::isdigit(ch)) {
       // digit
@@ -770,8 +770,10 @@ std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
 
 wwiv::sdk::User& Input::user() { return context_provider_().u(); }
 
-wwiv::common::SessionContext& Input::context() {
+wwiv::common::SessionContext& Input::sess() {
   return context_provider_().session_context();
 }
+
+wwiv::common::Context& Input::context() { return context_provider_(); }
 
 }

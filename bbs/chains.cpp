@@ -25,7 +25,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
-#include "common/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -167,7 +166,7 @@ void run_chain(int chain_num) {
 // Main high-level function for chain access and execution.
 
 void do_chains() {
-  printfile(CHAINS_NOEXT);
+  bout.printfile(CHAINS_NOEXT);
 
   std::map<int, int> map;
 

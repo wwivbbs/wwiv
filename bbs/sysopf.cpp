@@ -35,7 +35,6 @@
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/read_message.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
@@ -265,7 +264,7 @@ void valuser(int user_number) {
       }
       if (ch1 == '?') {
         ch1 = 0;
-        print_help_file(SRESTRCT_NOEXT);
+        bout.print_help_file(SRESTRCT_NOEXT);
       }
     } while (!a()->sess().hangup() && ch1 == 0);
     a()->users()->writeuser(&user, user_number);

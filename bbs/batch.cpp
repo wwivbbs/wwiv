@@ -29,7 +29,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/make_abs_cmd.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
@@ -699,7 +698,7 @@ int batchdl(int mode) {
     }
     switch (ch) {
     case '?':
-      printfile(TBATCH_NOEXT);
+      bout.printfile(TBATCH_NOEXT);
       break;
     case 'Q':
       if (mode == 3) {
@@ -812,7 +811,7 @@ void upload(int dn) {
   listbatch();
   bout << "Upload - " << free_space << "k free.";
   bout.nl();
-  printfile(TRY2UL_NOEXT);
+  bout.printfile(TRY2UL_NOEXT);
 
   bool done = false;
   do {

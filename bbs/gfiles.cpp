@@ -25,8 +25,8 @@
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "common/input.h"
+#include "common/output.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
@@ -432,7 +432,7 @@ void gfile_sec(int sn) {
     } else if (i > 0 && i <= nf) {
       auto file_name = FilePath(a()->config()->gfilesdir(),
                                 FilePath(a()->gfilesec[sn].filename, g[i - 1].filename));
-      i1 = printfile_path(file_name);
+      i1 = bout.printfile_path(file_name);
       a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
         sysoplog() << "Read G-file '" << g[i - 1].filename << "'";

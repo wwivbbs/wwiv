@@ -27,7 +27,6 @@
 #include "fsed/fsed.h"
 #include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/printfile.h"
 #include "common/quote.h"
 #include "bbs/utility.h"
 #include "common/workspace.h"
@@ -213,7 +212,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
           cmd == "/H" ||
           cmd == "/?") {
         check_message_size = false;
-        print_help_file(EDITOR_NOEXT);
+        bout.print_help_file(EDITOR_NOEXT);
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         check_message_size = false;

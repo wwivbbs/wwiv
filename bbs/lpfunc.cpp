@@ -24,7 +24,6 @@
 #include "bbs/common.h"
 #include "bbs/listplus.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/stl.h"
@@ -226,7 +225,7 @@ int listfiles_plus_function(int type) {
                 case '?':
                 case CO:
                   bout.cls();
-                  print_help_file(LISTPLUS_HLP);
+                  bout.print_help_file(LISTPLUS_HLP);
                   bout.pausescr();
                   menu_done = true;
                   amount = lines = matches = 0;
@@ -466,7 +465,7 @@ TOGGLE_EXTENDED:
                     break;
                   case 10:
                     bout.cls();
-                    print_help_file(LISTPLUS_HLP);
+                    bout.print_help_file(LISTPLUS_HLP);
                     bout.pausescr();
                     menu_done = true;
                     amount = lines = matches = 0;
