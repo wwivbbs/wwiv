@@ -26,6 +26,8 @@
 #include "local_io/wconstants.h"
 #include <string>
 
+namespace wwiv::common {
+
 using std::string;
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -56,9 +58,7 @@ bool sysop1() {
 #endif
 }
 
-bool isleap(int year) {
-  return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
-}
+bool isleap(int year) { return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0); }
 
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
@@ -104,3 +104,5 @@ int minutes_since_midnight() {
   const auto d = duration_since_midnight(system_clock::now());
   return duration_cast<minutes>(d).count();
 }
+
+} // namespace wwiv::common

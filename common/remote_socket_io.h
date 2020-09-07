@@ -36,6 +36,8 @@ typedef int HANDLE;
 typedef int SOCKET;
 #endif // _WIN32
 
+namespace wwiv::common {
+
 class RemoteSocketIO : public wwiv::common::RemoteIO {
  public:
   static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
@@ -78,8 +80,7 @@ class RemoteSocketIO : public wwiv::common::RemoteIO {
   bool incoming() override;
   void StopThreads();
   void StartThreads();
-  unsigned int GetHandle() const;
-  unsigned int GetDoorHandle() const;
+  unsigned int GetHandle() const override;
   bool valid_socket() const { return (socket_ != INVALID_SOCKET); }
 
  private:
@@ -96,6 +97,9 @@ class RemoteSocketIO : public wwiv::common::RemoteIO {
   bool threads_started_ = false;
   bool telnet_ = true;
 };
+
+
+} // namespace wwiv::common
 
 #endif  // __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
 

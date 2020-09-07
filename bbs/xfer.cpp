@@ -51,6 +51,7 @@
 
 using std::string;
 using wwiv::sdk::files::FileName;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

@@ -48,6 +48,7 @@
 #include "bbs/trashcan.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
+#include "common/datetime.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -74,6 +75,7 @@ using std::chrono::seconds;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;

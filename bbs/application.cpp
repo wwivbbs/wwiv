@@ -44,6 +44,7 @@
 #include "bbs/wqscn.h"
 #include "common/com.h"
 #include "core/eventbus.h"
+#include "common/datetime.h"
 #include "common/exceptions.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -286,7 +287,7 @@ void Application::tleft(bool check_for_timeout) {
   }
 
   const auto temp_sysop = user()->GetSl() != 255 && effective_sl() == 255;
-  const auto sysop_available = sysop1();
+  const auto sysop_available = wwiv::common::sysop1();
 
   const auto cx = localIO()->WhereX();
   const auto cy = localIO()->WhereY();

@@ -24,8 +24,6 @@
 #include <vector>
 
 void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
-bool sysop1();
-void ToggleScrollLockKey();
 bool okansi();
 void reset_disable_conf();
 double ratio();
@@ -43,5 +41,5 @@ bool okfsed();
 bool ok_internal_fsed();
 int ansir_to_flags(uint8_t ansir);
 
-#endif  // __INCLUDED_UTILITY_H__
+#endif  // __INCLUDED_UT`ILITY_H__
 

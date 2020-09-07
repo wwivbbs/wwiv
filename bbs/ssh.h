@@ -48,7 +48,7 @@ private:
 class SSHSession {
 public:
   SSHSession(int socket_handle, const Key& key);
-  virtual ~SSHSession() { close();  }
+  virtual ~SSHSession() { close(); }
   int PushData(const char* data, size_t size);
   int PopData(char* data, size_t buffer_size);
   int socket_handle() const { return socket_handle_; }
@@ -60,9 +60,9 @@ public:
 
 private:
   mutable std::mutex mu_;
-  int session_ = 0;
-  int socket_handle_ = -1;
-  bool initialized_ = false;
+  int session_{0};
+  int socket_handle_{-1};
+  bool initialized_{false};
   std::atomic<bool> closed_;
   std::string remote_username_;
   std::string remote_password_;
@@ -91,8 +91,8 @@ public:
 private:
   std::thread ssh_receive_thread_;
   std::thread ssh_send_thread_;
-  bool initialized_ = false;
-  std::unique_ptr<RemoteSocketIO> io_;
+  bool initialized_{false};
+  std::unique_ptr<wwiv::common::RemoteSocketIO> io_;
   SOCKET ssh_socket_;
   SOCKET plain_socket_;
   SSHSession session_;

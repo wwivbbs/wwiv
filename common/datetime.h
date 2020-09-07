@@ -24,23 +24,32 @@
 #include <ctime>
 #include <string>
 
+namespace wwiv::common {
+
 bool isleap(int nYear);
 std::string ctim(long d);
 std::string ctim(std::chrono::duration<double> d);
 
-/** 
+/**
  * Returns a duration representing the duration since midnight of the current day.
  */
-std::chrono::system_clock::duration duration_since_midnight(std::chrono::system_clock::time_point now);
+std::chrono::system_clock::duration
+duration_since_midnight(std::chrono::system_clock::time_point now);
 
 /**
  * Returns a time_point representing minutes past midnight in the current day.
  */
 std::chrono::system_clock::time_point minutes_after_midnight(int minutes);
-/** 
- * Returns an integer for the number of minutes since midnight. 
+/**
+ * Returns an integer for the number of minutes since midnight.
  * N.B. This is the same as duration_cast<minutes>(duration_since_midnight(now())).count();
  */
 int minutes_since_midnight();
+
+// This really shouldn't be here.
+bool sysop1();
+void ToggleScrollLockKey();
+
+} // namespace wwiv::common 
 
 #endif // __INCLUDED_DATETIME_H__

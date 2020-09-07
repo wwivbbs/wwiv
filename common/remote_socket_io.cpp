@@ -43,12 +43,14 @@ typedef int socklen_t;
 #include <memory>
 #include <system_error>
 
-using std::chrono::milliseconds;
+namespace wwiv::common {
+
 using std::lock_guard;
 using std::make_unique;
 using std::string;
 using std::thread;
 using std::unique_ptr;
+using std::chrono::milliseconds;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
 using namespace wwiv::core;
@@ -56,8 +58,8 @@ using namespace wwiv::strings;
 
 // N.B. mutex and yield are defines in Solaris.
 
-struct socket_error: public std::runtime_error {
-  explicit socket_error(const string& message): std::runtime_error(message) {}
+struct socket_error : public std::runtime_error {
+  explicit socket_error(const string& message) : std::runtime_error(message) {}
 };
 
 static bool socket_avail(SOCKET sock, int seconds) {
@@ -77,7 +79,7 @@ static bool socket_avail(SOCKET sock, int seconds) {
 }
 
 RemoteSocketIO::RemoteSocketIO(unsigned int socket_handle, bool telnet)
-  : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
+    : socket_(static_cast<SOCKET>(socket_handle)), telnet_(telnet) {
   // assigning the value to a static causes this only to be
   // initialized once.
   [[maybe_unused]] static bool once = RemoteSocketIO::Initialize();
@@ -98,13 +100,7 @@ RemoteSocketIO::RemoteSocketIO(unsigned int socket_handle, bool telnet)
   }
 }
 
-unsigned int RemoteSocketIO::GetHandle() const {
-  return static_cast<unsigned int>(socket_);
-}
-
-unsigned int RemoteSocketIO::GetDoorHandle() const {
-  return GetHandle();
-}
+unsigned int RemoteSocketIO::GetHandle() const { return static_cast<unsigned int>(socket_); }
 
 bool RemoteSocketIO::open() {
   if (socket_ == INVALID_SOCKET) {
@@ -116,36 +112,24 @@ bool RemoteSocketIO::open() {
   GetRemotePeerAddress(socket_, remote_info().address);
   GetRemotePeerHostname(socket_, remote_info().address_name);
   if (telnet_) {
-    { 
-      unsigned char s[3] = {
-          RemoteSocketIO::TELNET_OPTION_IAC,
-          RemoteSocketIO::TELNET_OPTION_DONT,
-          RemoteSocketIO::TELNET_OPTION_ECHO
-      };
-      write(reinterpret_cast<char*>(s), 3, true);
-    }
-    { 
-      unsigned char s[3] = {
-          RemoteSocketIO::TELNET_OPTION_IAC,
-          RemoteSocketIO::TELNET_OPTION_WILL,
-          RemoteSocketIO::TELNET_OPTION_ECHO
-      };
-      write(reinterpret_cast<char*>(s), 3, true);
-    }
-    { 
-      unsigned char s[3] = {
-          RemoteSocketIO::TELNET_OPTION_IAC,
-          RemoteSocketIO::TELNET_OPTION_WILL,
-          RemoteSocketIO::TELNET_OPTION_SUPPRESSS_GA
-      };
+    {
+      unsigned char s[3] = {RemoteSocketIO::TELNET_OPTION_IAC, RemoteSocketIO::TELNET_OPTION_DONT,
+                            RemoteSocketIO::TELNET_OPTION_ECHO};
       write(reinterpret_cast<char*>(s), 3, true);
     }
     {
-      unsigned char s[3] = { 
-          RemoteSocketIO::TELNET_OPTION_IAC,
-          RemoteSocketIO::TELNET_OPTION_DONT,
-          RemoteSocketIO::TELNET_OPTION_LINEMODE 
-      };
+      unsigned char s[3] = {RemoteSocketIO::TELNET_OPTION_IAC, RemoteSocketIO::TELNET_OPTION_WILL,
+                            RemoteSocketIO::TELNET_OPTION_ECHO};
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
+    {
+      unsigned char s[3] = {RemoteSocketIO::TELNET_OPTION_IAC, RemoteSocketIO::TELNET_OPTION_WILL,
+                            RemoteSocketIO::TELNET_OPTION_SUPPRESSS_GA};
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
+    {
+      unsigned char s[3] = {RemoteSocketIO::TELNET_OPTION_IAC, RemoteSocketIO::TELNET_OPTION_DONT,
+                            RemoteSocketIO::TELNET_OPTION_LINEMODE};
       write(reinterpret_cast<char*>(s), 3, true);
     }
   }
@@ -167,9 +151,11 @@ void RemoteSocketIO::close(bool temporary) {
 
 unsigned int RemoteSocketIO::put(unsigned char ch) {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return 0; }
+  if (!valid_socket()) {
+    return 0;
+  }
 
-  unsigned char szBuffer[3] = { ch, 0, 0 };
+  unsigned char szBuffer[3] = {ch, 0, 0};
   if (ch == TELNET_OPTION_IAC) {
     szBuffer[1] = ch;
   }
@@ -183,7 +169,9 @@ unsigned int RemoteSocketIO::put(unsigned char ch) {
 }
 
 unsigned char RemoteSocketIO::getW() {
-  if (!valid_socket()) { return 0; }
+  if (!valid_socket()) {
+    return 0;
+  }
   char ch = 0;
   std::lock_guard<std::mutex> lock(mu_);
   if (!queue_.empty()) {
@@ -195,7 +183,9 @@ unsigned char RemoteSocketIO::getW() {
 
 bool RemoteSocketIO::disconnect() {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return false; }
+  if (!valid_socket()) {
+    return false;
+  }
 
   closesocket(socket_);
   socket_ = INVALID_SOCKET;
@@ -204,7 +194,9 @@ bool RemoteSocketIO::disconnect() {
 
 void RemoteSocketIO::purgeIn() {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return; }
+  if (!valid_socket()) {
+    return;
+  }
 
   std::lock_guard<std::mutex> lock(mu_);
   while (!queue_.empty()) {
@@ -212,9 +204,11 @@ void RemoteSocketIO::purgeIn() {
   }
 }
 
-unsigned int RemoteSocketIO::read(char *buffer, unsigned int count) {
+unsigned int RemoteSocketIO::read(char* buffer, unsigned int count) {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return 0; }
+  if (!valid_socket()) {
+    return 0;
+  }
 
   unsigned int num_read = 0;
   auto* temp = buffer;
@@ -230,9 +224,11 @@ unsigned int RemoteSocketIO::read(char *buffer, unsigned int count) {
   return num_read;
 }
 
-unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool bNoTranslation) {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return 0; }
+  if (!valid_socket()) {
+    return 0;
+  }
 
   const auto tmp_buffer = make_unique<char[]>(count * 2 + 100);
   memset(tmp_buffer.get(), 0, count * 2 + 100);
@@ -274,7 +270,9 @@ bool RemoteSocketIO::connected() {
 
 bool RemoteSocketIO::incoming() {
   // Early return on invalid sockets.
-  if (!valid_socket()) { return false; }
+  if (!valid_socket()) {
+    return false;
+  }
 
   lock_guard<std::mutex> lock(mu_);
   return !queue_.empty();
@@ -300,8 +298,7 @@ void RemoteSocketIO::StopThreads() {
       read_thread_.join();
     }
   } catch (const std::system_error& e) {
-    LOG(ERROR) << "Caught system_error with code: " << e.code()
-        << "; meaning: " << e.what();
+    LOG(ERROR) << "Caught system_error with code: " << e.code() << "; meaning: " << e.what();
   }
 }
 
@@ -324,7 +321,7 @@ RemoteSocketIO::~RemoteSocketIO() {
 
 #ifdef _WIN32
     WSACleanup();
-#endif  // _WIN32
+#endif // _WIN32
   } catch (const std::exception& e) {
     std::cerr << e.what();
   }
@@ -361,7 +358,7 @@ bool RemoteSocketIO::Initialize() {
     }
   }
   return err == 0;
-#else 
+#else
   return true;
 #endif
 }
@@ -404,24 +401,23 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   switch (nCmd) {
   case TELNET_OPTION_NOP: {
     // TELNET_OPTION_NOP
-  }
-  break;
+  } break;
   case TELNET_OPTION_BRK: {
     // TELNET_OPTION_BRK;
-  }
-  break;
+  } break;
   case TELNET_OPTION_WILL: {
-    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL",
+    // nParam);
     // ::OutputDebugString(s.c_str());
-  }
-  break;
+  } break;
   case TELNET_OPTION_WONT: {
-    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam);
+    // const string s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT",
+    // nParam);
     // ::OutputDebugString(s.c_str());
-  }
-  break;
+  } break;
   case TELNET_OPTION_DO: {
-    // const string do_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam);
+    // const string do_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO",
+    // nParam);
     // ::OutputDebugString(do_s.c_str());
     switch (nParam) {
     case TELNET_OPTION_SUPPRESSS_GA: {
@@ -432,20 +428,18 @@ void RemoteSocketIO::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
       s[3] = 0;
       write(s, 3, true);
       // Sent TELNET IAC WILL SUPPRESSS GA
+    } break;
     }
-    break;
-    }
-  }
-  break;
+  } break;
   case TELNET_OPTION_DONT: {
-    // const string dont_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam);
+    // const string dont_s = fmt::sprintf("[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT",
+    // nParam);
     // ::OutputDebugString(dont_s.c_str());
-  }
-  break;
+  } break;
   }
 }
 
-void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) {
+void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char* buffer) {
   // Add the data to the input buffer
   for (auto num_sleeps = 0; num_sleeps < 10 && queue_.size() > 32678; ++num_sleeps) {
     sleep_for(milliseconds(100));
@@ -461,7 +455,7 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) 
   }
   for (auto i = nStart; i < nEnd; i++) {
     if (static_cast<unsigned char>(buffer[i]) == 255) {
-      if ((i + 1) < nEnd  && static_cast<unsigned char>(buffer[i + 1]) == 255) {
+      if ((i + 1) < nEnd && static_cast<unsigned char>(buffer[i + 1]) == 255) {
         queue_.push(buffer[i + 1]);
         i++;
       } else if ((i + 2) < nEnd) {
@@ -479,3 +473,5 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) 
     }
   }
 }
+
+} // namespace wwiv::common

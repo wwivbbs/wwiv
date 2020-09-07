@@ -10,8 +10,6 @@
 * move okskey to Input
 * move all of printfile to Output
 * move charbuffer, charbufferpointer_ and all that nonsense to Input
-* move Output to wwiv::common
-* move rest of common code to wwiv::common
 
 ## Build Cleanup.
 * add some cmake install targets

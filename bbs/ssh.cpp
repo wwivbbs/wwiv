@@ -43,6 +43,7 @@
 #include <thread>
 
 using wwiv::common::RemoteInfo;
+using wwiv::common::RemoteSocketIO;
 using wwiv::common::RemoteIO;
 using std::string;
 using std::thread;
