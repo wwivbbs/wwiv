@@ -103,9 +103,19 @@ public:
   int bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb);
   int bgetch_event(numlock_status_t numlock_mode);
 
+  // Yes/No/Quit prompts
+
   bool yesno();
   bool noyes();
   char ynq();
+
+  // Need Screen Pause? 
+
+  void clearnsp();
+  void resetnsp();
+  int nsp() const noexcept;
+  void nsp(int n);
+
 
   // Private for input_xxx
   void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
@@ -184,6 +194,8 @@ private:
   RemoteIO* comm_{nullptr};
   mutable context_provider_t context_provider_;
   bool last_key_local_{true};
+  int nsp_{0};
+
 
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);

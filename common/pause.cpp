@@ -69,13 +69,13 @@ char Output::GetKeyForPause() {
   case 'Q':
   case 'N':
     if (!bin.bkbhit()) {
-      nsp_ = -1;
+      bin.nsp(-1);
     }
     break;
   case 'C':
   case '=':
     if (user().HasPause()) {
-      nsp_ = 1;
+      bin.nsp(1);
       user().ToggleStatusFlag(User::pauseOnPage);
     }
     break;
@@ -86,7 +86,7 @@ char Output::GetKeyForPause() {
 }
 
 void Output::pausescr() {
-  nsp_ = 0;
+  bin.clearnsp();
   auto oiia = setiia(std::chrono::milliseconds(0));
   char* ss = str_pause;
   int i1;
@@ -173,15 +173,5 @@ void Output::pausescr() {
   }
 }
 
-void Output::resetnsp() {
-  if (nsp_ == 1 && !user().HasPause()) {
-    user().ToggleStatusFlag(User::pauseOnPage);
-  }
-  clearnsp();
-}
-
-void Output::clearnsp() { nsp_ = 0; }
-
-int Output::nsp() const noexcept { return nsp_; }
 
 } // namespace wwiv::common

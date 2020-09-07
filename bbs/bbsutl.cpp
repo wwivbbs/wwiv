@@ -338,9 +338,9 @@ bool checka(bool *abort) {
  * returns the value of abort
  */
 bool checka(bool *abort, bool *next) {
-  if (bout.nsp() == -1) {
+  if (bin.nsp() == -1) {
     *abort = true;
-    bout.clearnsp();
+    bin.clearnsp();
   }
   while (bin.bkbhit() && !*abort && !a()->sess().hangup()) {
     a()->CheckForHangup();

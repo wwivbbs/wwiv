@@ -94,7 +94,7 @@ std::chrono::duration<double> Input::key_timeout() const {
  * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
  */
 char Input::getkey(bool allow_extended_input) {
-  bout.resetnsp();
+  resetnsp();
   bool beepyet = false;
   lastchar_pressed();
 
@@ -373,7 +373,7 @@ int Input::bgetch_event(numlock_status_t numlock_mode, bgetch_callback_fn cb) {
 int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<double> idle_time,
                  bgetch_callback_fn cb) {
   bus().invoke<UpdateTimeLeft>(UpdateTimeLeft{true});
-  bout.resetnsp();
+  resetnsp();
   lastchar_pressed();
   bout.clear_lines_listed();
 

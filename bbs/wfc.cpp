@@ -285,7 +285,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     if (ch) {
       a_->set_at_wfc(true);
       bout.okskey(true);
-      bout.resetnsp();
+      bin.resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
         // Local Logon

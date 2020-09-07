@@ -588,7 +588,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
             << "\r\nInitializing BBS..." << std::endl;
   use_workspace = false;
 
-  bout.clearnsp();
+  bin.clearnsp();
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(sess().dirs().temp_directory())) {
     if (!File::mkdirs(sess().dirs().temp_directory())) {

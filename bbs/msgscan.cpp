@@ -963,7 +963,7 @@ static void HandleToggleUnAnonymous(int msg_num) {
 
 static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& nextsub,
                                  bool& title_scan, bool& done, bool& quit, int& val) {
-  bout.resetnsp();
+  bin.resetnsp();
   string read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
   char szUserInput[81];

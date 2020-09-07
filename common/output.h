@@ -242,9 +242,6 @@ public:
   // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
   // in pause.cpp
   void pausescr();
-  void clearnsp();
-  void resetnsp();
-  int nsp() const noexcept;
 
   // PrintFile and friends
   void print_local_file(const std::string& filename);
@@ -279,7 +276,6 @@ private:
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
 
   mutable context_provider_t context_provider_;
-  int nsp_{0};
 };
 
 } // namespace wwiv::common 

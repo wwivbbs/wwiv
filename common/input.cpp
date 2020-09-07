@@ -768,6 +768,21 @@ std::string Input::input_date_mmddyyyy(const std::string& orig_text) {
   return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
+void Input::resetnsp() {
+  if (nsp() == 1 && !user().HasPause()) {
+    user().ToggleStatusFlag(wwiv::sdk::User::pauseOnPage);
+  }
+  clearnsp();
+}
+
+void Input::clearnsp() { nsp_ = 0; }
+
+int Input::nsp() const noexcept { return nsp_; }
+
+void Input::nsp(int n) { nsp_ = n; }
+
+// Context stuff
+
 wwiv::sdk::User& Input::user() { return context_provider_().u(); }
 
 wwiv::common::SessionContext& Input::sess() {
