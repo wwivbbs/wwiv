@@ -8,7 +8,6 @@
 * remove UnixConsoleIO::tleft - it's not used (lives in Application now)
 * move resetnsp, nsp and clearnsp to Input
 * move okskey to Input
-* move all of printfile to Output
 * move charbuffer, charbufferpointer_ and all that nonsense to Input
 
 ## Build Cleanup.
