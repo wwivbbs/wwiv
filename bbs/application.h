@@ -21,6 +21,7 @@
 
 #include "bbs/batch.h"
 #include "bbs/conf.h"
+#include "bbs/interpret.h"
 #include "common/context.h"
 #include "common/output.h"
 #include "bbs/runnable.h"
@@ -456,6 +457,7 @@ private:
   int last_read_user_number_{0};
   std::chrono::duration<double> extratimecall_{};
   std::unique_ptr<wwiv::common::Context> context_;
+  BbsMacroContext bbs_macro_context_;
 };
 
 #endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

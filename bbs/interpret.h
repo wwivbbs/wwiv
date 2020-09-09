@@ -19,33 +19,30 @@
 #define __INCLUDED_BBS_INTERPRET_H__
 
 #include "common/context.h"
+#include "common/macro_context.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/files/dirs.h"
 #include "sdk/user.h"
 #include <string>
 
-
-class MacroContext {
+class BbsMacroContext : public wwiv::common::MacroContext {
 public:
-  MacroContext(wwiv::common::Context* context) : context_(context) {}
-  ~MacroContext() = default;
+  BbsMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
+  ~BbsMacroContext() = default;
 
-  std::string interpret(char c) const;
-
-private:
-  wwiv::common::Context* context_{nullptr};
+  std::string interpret(char c) const override;
 };
 
 class BbsMacroFilter : public wwiv::sdk::ansi::AnsiFilter {
 public:
-  BbsMacroFilter(wwiv::sdk::ansi::AnsiFilter* chain, const MacroContext* ctx)
+  BbsMacroFilter(wwiv::sdk::ansi::AnsiFilter* chain, const wwiv::common::MacroContext* ctx)
       : chain_(chain), ctx_(ctx){};
   bool write(char c) override;
   bool attr(uint8_t a) override;
 
 private:
   wwiv::sdk::ansi::AnsiFilter* chain_;
-  const MacroContext* ctx_;
+  const wwiv::common::MacroContext* ctx_;
   bool in_pipe_{false};
   bool in_macro_{false};
 };

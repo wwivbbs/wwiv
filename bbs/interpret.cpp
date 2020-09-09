@@ -23,6 +23,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/confutil.h"
+#include "common/macro_context.h"
 #include "common/pause.h"
 #include "common/datetime.h"
 #include "fmt/printf.h"
@@ -40,7 +41,10 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
-std::string MacroContext::interpret(char ch) const {
+std::string BbsMacroContext::interpret(char ch) const {
+  if (!context_) {
+    return "";
+  }
   if (!context_->mci_enabled()) {
     return "";
   }

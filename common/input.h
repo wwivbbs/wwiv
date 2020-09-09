@@ -43,25 +43,12 @@ template <typename T> struct input_result_t {
  * Creates the Output class responsible for displaying information both
  * locally and remotely.
  *
- * To use this class you must set the following:
- * - LocalIO
- * - RemoteIO
- * - Context Provider
- * - User Provider
- *
- * These may be modified after being set, so RAII does not work.
+ * To use this class you must set the needed fields from IOBase.
  */
 class Input final : public IOBase {
 public:
-  //typedef std::function<wwiv::common::Context&()> context_provider_t;
   Input();
   ~Input();
-
-  //void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
-  //[[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
-
-  //void SetComm(RemoteIO* comm) { comm_ = comm; }
-  //[[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
@@ -121,12 +108,14 @@ public:
   [[nodiscard]] bool okskey() const noexcept { return okskey_; }
   void okskey(bool n) { okskey_ = n; }
 
-  // Private for input_xxx
-  void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
-  std::string Input1(const std::string& orig_text, int max_length, bool bInsert,
-                            InputMode mode);
-  void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl);
+  /**
+   * Inputs password up to length max_length.
+   */
   std::string input_password(const std::string& prompt_text, int max_length);
+
+  /**
+   * Inputs number or a key contained in hotkeys.
+   */
   input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
                                                   bool setdefault, const std::set<char>& hotkeys);
 
@@ -136,16 +125,24 @@ public:
   std::string input_filename(int max_length);
 
   /**
-   * Inputs filename up to length max_length.
+   * Inputs filename (without directory separators) up to length max_length.
    */
   std::string input_filename(const std::string& orig_text, int max_length);
 
+  /**
+   * Inputs path (including directory separators) up to length max_length.
+   */
   std::string input_path(const std::string& orig_text, int max_length);
 
+  /**
+   * Inputs path (including directory separators) up to length max_length.
+   */
   std::string input_path(int max_length);
 
+  /**
+   * Inputs command-line up to length max_length.
+   */
   std::string input_cmdline(const std::string& orig_text, int max_length);
-
 
   /**
    * Inputs phone number up to length max_length.
@@ -188,8 +185,11 @@ public:
    */
   std::string input_date_mmddyyyy(const std::string& orig_text);
 
-  
-void input(char* out_text, int max_length, bool auto_mpl = false);
+  /**
+   * Inputs a string in upper case.  These should probably all be replaced
+   * by calling the appropriate input_xxx routine.
+   */
+  void input(char* out_text, int max_length, bool auto_mpl = false);
   std::string input(int max_length, bool auto_mpl = false);
 
   // TODO(rushfan): Using an int64_t for the min/max both here and in input_number_or_key_raw
@@ -228,15 +228,24 @@ void input(char* out_text, int max_length, bool auto_mpl = false);
   bool checka(bool* abort);
   bool checka(bool* abort, bool* next);
 
-public:
   // Used for macros.  TODO: Make this private
   int charbufferpointer_{0};
   char charbuffer[255]{};
 
 private:
-  int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
-  int bgetch_handle_escape(int key);
+  // Used by input_xxx
+  void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert,
+              InputMode mode);
+  // Used by input_xxx
+  std::string Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode);
+  // used by input_xxx
+  void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl);
+  // used by input_password
   std::string input_password_minimal(int max_length);
+  // used by bgetch_event
+  int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode);
+  // used by bgetch_event
+  int bgetch_handle_escape(int key);
 
 private:
   LocalIO* local_io_{nullptr};

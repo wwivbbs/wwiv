@@ -22,6 +22,7 @@
 
 #include "common/context.h"
 #include "common/iobase.h"
+#include "common/macro_context.h"
 #include "common/remote_io.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
@@ -62,15 +63,14 @@ public:
  * These may be modified after being set, so RAII does not work.
  */
 class Output final : public wwiv::local_io::curatr_provider, public IOBase {
-protected:
-  LocalIO* local_io_{nullptr};
-  RemoteIO* comm_{nullptr};
-
 public:
+  typedef std::function<wwiv::common::MacroContext&()> macro_context_provider_t;
   Output();
   ~Output();
 
   void SetLocalIO(LocalIO* local_io) override;
+  /** Sets the provider for the session context */
+  void set_macro_context_provider(macro_context_provider_t c) { macro_context_provider_ = std::move(c); }
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -255,6 +255,7 @@ private:
   bool mci_enabled_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
+  mutable macro_context_provider_t macro_context_provider_;
 };
 
 } // namespace wwiv::common 

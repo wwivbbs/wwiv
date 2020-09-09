@@ -28,6 +28,7 @@
 #include "bbs/diredit.h"
 #include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
+#include "bbs/interpret.h"
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
@@ -127,14 +128,16 @@ private:
 
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
-      session_context_(localIO) {
+      session_context_(localIO), context_(std::make_unique<ApplicationContext>(this)),
+      bbs_macro_context_(context_.get()) {
   ::bout.SetLocalIO(localIO);
-  ::bin.SetLocalIO(localIO);
-  context_ = std::make_unique<ApplicationContext>(this);
+  bout.set_context_provider([this]() -> wwiv::common::Context& { return *this->context_.get(); });
+  bout.set_macro_context_provider(
+      [this]() -> wwiv::common::MacroContext& { return bbs_macro_context_; });
 
-  bout.set_context_provider(
-      [this]() -> wwiv::common::Context& { return *this->context_.get(); });
+  ::bin.SetLocalIO(localIO);
   bin.set_context_provider([this]() -> wwiv::common::Context& { return *this->context_.get(); });
+
   session_context_.SetCurrentReadMessageArea(-1);
   thisuser_ = std::make_unique<wwiv::sdk::User>();
 

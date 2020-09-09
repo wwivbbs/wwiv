@@ -18,8 +18,8 @@
 /**************************************************************************/
 #include "common/output.h"
 
-#include "bbs/interpret.h" // MacroContext
 #include "common/com.h"
+#include "common/macro_context.h"
 #include "common/common_events.h"
 #include "common/input.h"
 #include "core/eventbus.h"
@@ -240,7 +240,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 int Output::bputs(const string& text) {
   wwiv::core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || sess().hangup()) { return 0; }
-  MacroContext ctx(&context_provider_());
+  auto& ctx = macro_context_provider_();
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
