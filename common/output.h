@@ -21,6 +21,7 @@
 #define __INCLUDED_BBS_OUTPUT_H__
 
 #include "common/context.h"
+#include "common/iobase.h"
 #include "common/remote_io.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
@@ -60,25 +61,16 @@ public:
  *
  * These may be modified after being set, so RAII does not work.
  */
-class Output final : public wwiv::local_io::curatr_provider {
+class Output final : public wwiv::local_io::curatr_provider, public IOBase {
 protected:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
 
 public:
-  typedef std::function<wwiv::common::Context&()> context_provider_t;
-  typedef std::function<void()> inst_msg_processor_t;
   Output();
   ~Output();
 
-  void SetLocalIO(LocalIO* local_io);
-  [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
-
-  void SetComm(RemoteIO* comm) { comm_ = comm; }
-  [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
-
-  /** Sets the provider for the session context */
-  void set_context_provider(context_provider_t);
+  void SetLocalIO(LocalIO* local_io) override;
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -230,11 +222,6 @@ public:
   void enable_mci() { mci_enabled_ = true; }
   void disable_mci() { mci_enabled_ = false; }
   void set_mci_enabled(bool e) { mci_enabled_ = e; }
-
-  // Data used by Output. Should this be protected?
-  wwiv::sdk::User& user();
-  wwiv::common::SessionContext& sess();
-  wwiv::common::Context& context();
 
   // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
   // in pause.cpp

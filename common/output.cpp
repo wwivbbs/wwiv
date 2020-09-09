@@ -57,9 +57,9 @@ void Output::SetLocalIO(LocalIO* local_io) {
   cb.move_ = [&](int /* x */, int /* y */) { ansi_movement_occurred_ = true; };
   ansi_ = std::make_unique<Ansi>(screen_.get(), cb, static_cast<uint8_t>(0x07));
 
-  local_io_ = local_io;
+  IOBase::SetLocalIO(local_io);
   // Reset the curatr_provider on local_io since screen resets it.
-  local_io_->set_curatr_provider(this);
+  localIO()->set_curatr_provider(this);
 }
 
 
@@ -328,20 +328,4 @@ void Output::move_up_if_newline(int num_lines) {
     const auto s = fmt::format("\r\x1b[{}A", num_lines);
     bputs(s);
   }
-}
-
-
-void Output::set_context_provider(context_provider_t c) {
-  context_provider_ = std::move(c);
-}
-
-
-wwiv::sdk::User& Output::user() { return context_provider_().u(); }
-
-wwiv::common::SessionContext& Output::sess() {
-  return context_provider_().session_context();
-}
-
-wwiv::common::Context& Output::context() { 
-  return context_provider_(); 
 }

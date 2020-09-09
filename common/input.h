@@ -20,6 +20,7 @@
 #define __INCLUDED_INPUT_H__
 
 #include "core/strings.h"
+#include "common/iobase.h"
 #include "common/context.h"
 #include "common/remote_io.h"
 #include "sdk/user.h"
@@ -47,33 +48,31 @@ template <typename T> struct input_result_t {
  * - RemoteIO
  * - Context Provider
  * - User Provider
- * [Optional] Instance Message Processor.
  *
  * These may be modified after being set, so RAII does not work.
  */
-class Input final {
+class Input final : public IOBase {
 public:
-  typedef std::function<wwiv::common::Context&()> context_provider_t;
-  typedef std::function<void()> inst_msg_processor_t;
+  //typedef std::function<wwiv::common::Context&()> context_provider_t;
   Input();
   ~Input();
 
-  void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
-  [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
+  //void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
+  //[[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
 
-  void SetComm(RemoteIO* comm) { comm_ = comm; }
-  [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
+  //void SetComm(RemoteIO* comm) { comm_ = comm; }
+  //[[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
-  wwiv::sdk::User& user();
-  wwiv::common::SessionContext& sess();
-  wwiv::common::SessionContext& sess() const;
-  wwiv::common::Context& context();
+  //wwiv::sdk::User& user();
+  //wwiv::common::SessionContext& sess();
+  //wwiv::common::SessionContext& sess() const;
+  //wwiv::common::Context& context();
 
-  /** Sets the provider for the session context */
-  void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
+  ///** Sets the provider for the session context */
+  //void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
 
   char bgetch(bool allow_extended_input = false);
   char bgetchraw();

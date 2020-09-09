@@ -11,7 +11,7 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.6
 ~~~~~~~~~~~~~~~~~~~~~~
-
+* Update instance.dat when a node exits. 
 
 
 What's New in WWIV 5.5 (2020)
