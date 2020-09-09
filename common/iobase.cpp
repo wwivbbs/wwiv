@@ -18,29 +18,36 @@
 /**************************************************************************/
 #include "common/iobase.h"
 
-#include "core/eventbus.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "local_io/keycodes.h"
+#include "core/log.h"
+#include <functional>
 #include <string>
 
 using std::string;
-using namespace wwiv::common;
 using namespace wwiv::core;
-using namespace wwiv::stl;
-using namespace wwiv::strings;
 
 
 namespace wwiv::common {
 
 // Context stuff
 
-wwiv::sdk::User& IOBase::user() { return context_provider_().u(); }
+wwiv::sdk::User& IOBase::user() { 
+  DCHECK(context_provider_);
+  return context_provider_().u();
+}
 
-wwiv::common::SessionContext& IOBase::sess() { return context_provider_().session_context(); }
+wwiv::common::SessionContext& IOBase::sess() { 
+  DCHECK(context_provider_);
+  return context_provider_().session_context();
+}
 
-wwiv::common::SessionContext& IOBase::sess() const { return context_provider_().session_context(); }
+wwiv::common::SessionContext& IOBase::sess() const { 
+  DCHECK(context_provider_);
+  return context_provider_().session_context();
+}
 
-wwiv::common::Context& IOBase::context() { return context_provider_(); }
+wwiv::common::Context& IOBase::context() { 
+  DCHECK(context_provider_);
+  return context_provider_(); 
+}
 
 }

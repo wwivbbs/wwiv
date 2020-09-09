@@ -255,8 +255,6 @@ private:
   bool mci_enabled_{true};
   std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
   std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
-
-  mutable context_provider_t context_provider_;
 };
 
 } // namespace wwiv::common 

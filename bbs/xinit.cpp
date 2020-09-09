@@ -713,6 +713,8 @@ bool Application::InitializeBBS(bool cleanup_network) {
   read_all_conferences();
 
   TempDisablePause disable_pause(bout);
+  const auto t = session_context_.dirs().temp_directory();
+  const auto t2 = sess().dirs().temp_directory();
   remove_from_temp("*.*", sess().dirs().temp_directory(), false);
   remove_from_temp("*.*", sess().dirs().batch_directory(), false);
   remove_from_temp("*.*", sess().dirs().qwk_directory(), false);

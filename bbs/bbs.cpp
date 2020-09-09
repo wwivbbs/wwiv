@@ -67,7 +67,7 @@ int bbsmain(int argc, char *argv[]) {
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     bbs.reset(CreateSession(new StdioLocalIO()));
-    const auto return_code = bbs->Run(argc, argv);
+    const auto return_code = bbs->Run(argc, argv); 
     return bbs->ExitBBSImpl(return_code, true);
   } catch (const wwiv::common::hangup_error& e) {
     LOG(ERROR) << "BBS User Hung Up: " << e.what();

@@ -50,6 +50,8 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
 #define CHECK_GT(x, y) LOG_IF(!(x > y), FATAL)
 #ifdef WWIV_CORE_LOG_DEBUG
+#define DCHECK(x) LOG_IF(!(x), FATAL)
+
 #define DCHECK_LE(x, y) CHECK_LE(x, y)
 
 #define DCHECK_EQ(x, y) CHECK_EQ(x, y)
@@ -63,6 +65,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define DLOG(LEVEL) LOG_##LEVEL
 
 #else
+#define DCHECK(x) LOG_IGNORED(x)
 #define DCHECK_LE(x, y) LOG_IGNORED(x)
 #define DCHECK_EQ(x, y) LOG_IGNORED(x)
 #define DCHECK_NE(x, y) LOG_IGNORED(x)
@@ -71,7 +74,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define DLOG(LEVEL) LOG_IGNORED(LEVEL)
 #endif
 
-#define CHECK_NOTNULL(x) CHECK(x != nullptr)
+#define CHECK_NOTNULL(x) CHECK((x) != nullptr)
 #define LOG_IF(condition, LEVEL)                                                                   \
   if (condition)                                                                                   \
   LOG(LEVEL)

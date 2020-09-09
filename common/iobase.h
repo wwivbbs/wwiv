@@ -60,7 +60,7 @@ public:
   wwiv::common::SessionContext& sess() const;
   wwiv::common::Context& context();
 
-private:
+protected:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
   mutable context_provider_t context_provider_;

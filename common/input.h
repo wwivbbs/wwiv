@@ -66,14 +66,6 @@ public:
   [[nodiscard]] bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
-  //wwiv::sdk::User& user();
-  //wwiv::common::SessionContext& sess();
-  //wwiv::common::SessionContext& sess() const;
-  //wwiv::common::Context& context();
-
-  ///** Sets the provider for the session context */
-  //void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
-
   char bgetch(bool allow_extended_input = false);
   char bgetchraw();
   bool bkbhitraw();
@@ -249,7 +241,6 @@ private:
 private:
   LocalIO* local_io_{nullptr};
   RemoteIO* comm_{nullptr};
-  mutable context_provider_t context_provider_;
   bool last_key_local_{true};
   int nsp_{0};
   bool okskey_{true};
