@@ -31,6 +31,10 @@ public:
   ~BbsMacroContext() = default;
 
   std::string interpret(char c) const override;
+  void set_config(wwiv::sdk::Config* config) { config_ = config; }
+
+private:
+  wwiv::sdk::Config* config_{nullptr};
 };
 
 class BbsMacroFilter : public wwiv::sdk::ansi::AnsiFilter {

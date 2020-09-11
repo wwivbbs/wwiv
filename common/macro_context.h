@@ -14,45 +14,27 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "common/com.h"
+#ifndef __INCLUDED_COMMON_MACRO_CONTEXT_H__
+#define __INCLUDED_COMMON_MACRO_CONTEXT_H__
 
-#include "common/common_events.h"
-#include "common/datetime.h"
-#include "common/exceptions.h"
-#include "common/input.h"
-#include "common/output.h"
-#include "common/remote_io.h"
-#include "core/eventbus.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "local_io/keycodes.h"
-#include <algorithm>
+#include "common/context.h"
+#include <string>
 
-using namespace wwiv::common;
-using namespace wwiv::sdk;
-using namespace wwiv::stl;
-using namespace wwiv::strings;
+namespace wwiv::common {
 
-char onek(const std::string& allowable, bool auto_mpl) {
-  if (auto_mpl) {
-    bout.mpl(1);
-  }
-  char ch = onek_ncr(allowable);
-  bout.nl();
-  return ch;
-}
+class MacroContext {
+public:
+  MacroContext(wwiv::common::Context* context) : context_(context) {}
+  ~MacroContext() = default;
 
-// Like onek but does not put cursor down a line
-// One key, no carriage return
-char onek_ncr(const std::string& allowable) {
-  while (true) {
-    wwiv::core::bus().invoke<CheckForHangupEvent>();
-    auto ch = to_upper_case(bin.getkey());
-    if (contains(allowable, ch)) {
-      return ch;
-    }
-  }
-  return 0;
-}
+  virtual std::string interpret(char c) const = 0;
+  wwiv::common::Context* context() { return context_; }
+
+protected:
+  wwiv::common::Context* context_{nullptr};
+};
+
+} // namespace wwiv::common
+
+#endif // __INCLUDED_BBS_INTERPRET_H__

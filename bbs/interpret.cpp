@@ -154,7 +154,7 @@ std::string BbsMacroContext::interpret(char ch) const {
       return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
     }
     case 'P':                               // BBS phone
-      return context_->config().system_phone();
+      return (config_ == nullptr) ? "" : config_->system_phone();
     case 'p':                               // User's phone
       return context_->u().GetDataPhoneNumber();
     case 'R':                               // User's real name
@@ -183,7 +183,7 @@ std::string BbsMacroContext::interpret(char ch) const {
     case 'X':                               // User's sex
       return fmt::sprintf("%c", context_->u().GetGender());
     case 'Y':                               // Your BBS name
-      return context_->config().system_name();
+      return (config_ == nullptr) ? "" : config_->system_name();
     case 'y':                               // Computer type
       return ctypes(context_->u().GetComputerType());
     case 'Z':                               // User's zip code

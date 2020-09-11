@@ -44,8 +44,9 @@ using namespace wwiv::stl;
 
 static char str_yes[81],
             str_no[81];
-char  str_pause[81],
-      str_quit[81];
+extern char str_pause[];
+extern char str_quit[];
+
 
 bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool add_crlf,
           bool allow_previous, bool two_color, bool clear_previous_line) {
@@ -396,8 +397,9 @@ bool set_language_1(int n) {
 
   to_char_array(str_yes, "Yes");
   to_char_array(str_no, "No");
-  to_char_array(str_quit, "Quit");
-  to_char_array(str_pause, "More? [Y/n/c]");
+  // to_char_array doesn't work since these were declared outside of this file.
+  strcpy(str_quit, "Quit");
+  strcpy(str_pause, "More? [Y/n/c]");
   str_yes[0] = upcase(str_yes[0]);
   str_no[0] = upcase(str_no[0]);
   str_quit[0] = upcase(str_quit[0]);

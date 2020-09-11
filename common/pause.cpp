@@ -31,7 +31,7 @@
 #include "core/strings.h"
 #include <chrono>
 
-extern char str_pause[];
+char str_pause[81], str_quit[81];
 
 using std::chrono::milliseconds;
 using namespace wwiv::common;

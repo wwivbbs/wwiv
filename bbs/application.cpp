@@ -32,7 +32,6 @@
 #include "bbs/lilo.h"
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
-#include "bbs/null_remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
 #include "bbs/stuffin.h"
@@ -48,6 +47,7 @@
 #include "common/datetime.h"
 #include "common/exceptions.h"
 #include "common/input.h"
+#include "common/null_remote_io.h"
 #include "common/output.h"
 #include "common/remote_io.h"
 #include "common/workspace.h"
@@ -119,7 +119,6 @@ public:
   wwiv::sdk::User& u() override { return *app_->user(); }
   wwiv::common::SessionContext& session_context() override { return app_->sess(); }
   bool mci_enabled() const override { return bout.mci_enabled(); }
-  const wwiv::sdk::Config& config() const override { return *app_->config(); }
 
 private:
   Application* app_;
@@ -234,6 +233,7 @@ bool Application::ReadCurrentUser() {
 }
 
 bool Application::ReadCurrentUser(int user_number) {
+  DCHECK_GE(user_number, 1);
   if (!users()->readuser(user(), user_number)) {
     return false;
   }
@@ -258,10 +258,9 @@ bool Application::WriteCurrentUser() {
 }
 
 bool Application::WriteCurrentUser(int user_number) {
+  DCHECK_GE(usernum, 1) << "Trying to call WriteCurrentUser with user_number 0";
 
-  if (user_number == 0) {
-    LOG(ERROR) << "Trying to call WriteCurrentUser with user_number 0";
-  } else if (user_number != last_read_user_number_) {
+  if (user_number != last_read_user_number_) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
                << "; last_read_user_number_: " << last_read_user_number_;
   }

@@ -355,8 +355,11 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   const auto temp = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
   const auto batch = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
-  wwiv::common::Dirs d(temp, batch, batch);
+  wwiv::common::Dirs d(temp, batch, batch, config()->gfilesdir());
   sess().dirs(d);
+
+  // Set config for macro processing.
+  bbs_macro_context_.set_config(config());
 
   const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
@@ -589,6 +592,9 @@ bool Application::InitializeBBS(bool cleanup_network) {
   use_workspace = false;
 
   bin.clearnsp();
+
+  // Set dirs in the session context first.
+
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(sess().dirs().temp_directory())) {
     if (!File::mkdirs(sess().dirs().temp_directory())) {

@@ -67,6 +67,9 @@ static void edit_editor(editorrec& e) {
       new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
 #ifndef _WIN32
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
+#else
+  // Clear the flag if it's set accidentially.
+  e.ansir &= ~ansir_stdio;
 #endif
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;

@@ -35,17 +35,26 @@ namespace wwiv::common {
 class Dirs {
 public:
   explicit Dirs(const std::filesystem::path& bbsdir);
-  Dirs(const std::string& temp, const std::string& batch, const std::string& qwk)
-      : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk) {}
+  Dirs(const std::string& temp, const std::string& batch, const std::string& qwk,
+       const std::string& gfiles)
+      : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
+        gfiles_directory_(gfiles) {}
 
   [[nodiscard]] const std::string& temp_directory() const noexcept { return temp_directory_; }
+  void temp_directory(std::string& d) { temp_directory_ = d; }
+
   [[nodiscard]] const std::string& batch_directory() const noexcept { return batch_directory_; }
+  void batch_directory(std::string& d) { batch_directory_ = d; }
 
   /**
    * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
    * leave it open for changing in the future.
    */
   [[nodiscard]] const std::string& qwk_directory() const noexcept { return qwk_directory_; }
+  void qwk_directory(std::string& d) { qwk_directory_ = d; }
+
+  [[nodiscard]] const std::string& gfiles_directory() const noexcept { return gfiles_directory_; }
+  void gfiles_directory(std::string& d) { gfiles_directory_ = d; }
 
   [[nodiscard]] const std::string& language_directory() const noexcept {
     return language_directory_;
@@ -59,6 +68,7 @@ private:
   std::string batch_directory_;
   std::string qwk_directory_;
   std::string language_directory_;
+  std::string gfiles_directory_;
 };
 
 enum class chatting_t { none, one_way, two_way };
@@ -244,7 +254,6 @@ public:
   virtual wwiv::sdk::User& u() = 0;
   virtual wwiv::common::SessionContext& session_context() = 0;
   virtual bool mci_enabled() const = 0;
-  virtual const wwiv::sdk::Config& config() const = 0;
 };
 
 } // namespace wwiv::common

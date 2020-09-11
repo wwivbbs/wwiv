@@ -4,7 +4,9 @@
 
 
 ## FSED Externalize
-* continue to move things interpret needs into the sessioncontext.
+* create code to read drop file
+* create code to read qbbs/wwiv style editor file.
+* rename u() user() in context.
 
 ## Build Cleanup.
 * add some cmake install targets

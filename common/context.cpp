@@ -34,7 +34,7 @@ using namespace std::chrono;
 
 Dirs::Dirs(const std::filesystem::path& bbsdir)
     : Dirs(FilePath(bbsdir, "temp").string(), FilePath(bbsdir, "batch").string(),
-           FilePath(bbsdir, "batch").string()) {}
+           FilePath(bbsdir, "batch").string(), FilePath(bbsdir, "gfiles").string()) {}
 
 SessionContext::SessionContext(LocalIO* io)
     : irt_{}, io_(io), dirs_(File::current_directory()) {}

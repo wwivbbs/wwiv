@@ -62,6 +62,7 @@ add_subdirectory(networkt)
 add_subdirectory(sdk)
 add_subdirectory(wwivconfig)
 add_subdirectory(wwivd)
+add_subdirectory(wwivfsed)
 add_subdirectory(wwivutil)
 
 if (WWIV_BUILD_TESTS)
