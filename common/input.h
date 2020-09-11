@@ -30,6 +30,12 @@
 #include <string>
 
 namespace wwiv::common {
+  class Input;
+}
+
+extern wwiv::common::Input bin;
+
+namespace wwiv::common {
 
 // Text editing modes for input routines
 enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, CMDLINE, DATE, PHONE };
@@ -262,7 +268,6 @@ private:
 
 } // namespace wwiv::common
 
-extern wwiv::common::Input bin;
 
 
 #endif // __INCLUDED_INPUT_H__

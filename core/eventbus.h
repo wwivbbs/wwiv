@@ -62,7 +62,7 @@ public:
 
   template <typename T, typename M, typename I> void add_handler(M method, I instance) {
     const std::string name = typeid(T).name();
-    std::function<void(MessagePosted)> f = std::bind(method, instance, std::placeholders::_1);
+    std::function<void(T)> f = std::bind(method, instance, std::placeholders::_1);
     handlers_.emplace(name, [f](auto value) { f(std::any_cast<T>(value)); });
   }
 
