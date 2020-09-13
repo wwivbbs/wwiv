@@ -20,7 +20,7 @@
 #include "core/command_line.h"
 #include "core/inifile.h"
 #include "core/log.h"
-
+#include "core/version.h"
 #include "common/null_remote_io.h"
 #include "common/remote_socket_io.h"
 #include "local_io/null_local_io.h"
@@ -63,7 +63,7 @@ LocalIO* FsedConfig::CreateLocalIO() {
 #if defined(_WIN32)
     return new Win32ConsoleIO();
 #else
-    if (local) {
+    if (local_) {
       CursesIO::Init(fmt::sprintf("WWIVfsed %s", full_version()));
       return new CursesLocalIO(curses_out->GetMaxY());
     }

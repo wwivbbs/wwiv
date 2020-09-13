@@ -49,6 +49,9 @@
 #include <exception>
 #include <string>
 
+#ifndef _WIN32
+#include "localui/curses_io.h"
+#endif
 
 
 using namespace wwiv::common;
