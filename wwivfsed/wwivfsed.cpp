@@ -191,7 +191,7 @@ bool FsedApplication::LoadQuotesWWIV(const MessageEditorData& data) {
 }
 
 bool FsedApplication::LoadQuotesQBBS(const MessageEditorData&) {
-  TextFile f(FilePath(File::current_directory(), QUOTES_TXT), "rt");
+  TextFile f(FilePath(File::current_directory(), MSGTMP), "rt");
   if (!f) {
     return false;
   }
