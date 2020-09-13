@@ -65,6 +65,7 @@ private:
   // information files from the BBS.
   wwiv::common::MessageEditorData CreateMessageEditorData();
   bool LoadQuotesWWIV(const wwiv::common::MessageEditorData& data);
+  bool LoadQuotesQBBS(const wwiv::common::MessageEditorData& data);
   bool DoFsed();
 
   [[nodiscard]] wwiv::common::Context& context() { return context_; }

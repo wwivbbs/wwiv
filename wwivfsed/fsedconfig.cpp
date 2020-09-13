@@ -41,13 +41,25 @@ using namespace wwiv::sdk;
 namespace wwiv::wwivfsed {
 
 
-FsedConfig::FsedConfig(const CommandLine& cmdline) : root_(cmdline.program_path().parent_path()) {
+FsedConfig::FsedConfig(const CommandLine& cmdline) 
+  : root_(cmdline.program_path().parent_path()), help_path_(FilePath(root_, "gfiles")) {
   auto path = FilePath(root_, "wwivfsed.ini");
   IniFile ini(path, {"WWIVFSED"});
   if (ini.IsOpen()) {
-    LOG(ERROR) << "Unable to read wwivfsed.ini.";
+    VLOG(1) << "Using wwivfsed.ini: '" << path.string() << "'";
+    auto bt = ini.value<std::string>("bbs_type", "wwiv");
+    bbs_type_ = iequals(bt, "wwiv") ? FsedConfig::bbs_type::wwiv : FsedConfig::bbs_type::qbbs;
+    std::filesystem::path p = ini.value<std::string>("help_path", "gfiles");
+    if (p.is_absolute()) {
+      help_path_ = p;
+    } else {
+      help_path_ = FilePath(root_, p);
+    }
   }
 
+  if (!File::Exists(help_path_)) {
+    LOG(WARNING) << "Help Path does not exist '" << help_path_ << "'";
+  }
   local_ = cmdline.barg("local");
   pause_ = cmdline.barg("pause");
   socket_handle_ = cmdline.iarg("socket_handle");
@@ -81,7 +93,7 @@ wwiv::common::RemoteIO* FsedConfig::CreateRemoteIO() {
   return new RemoteSocketIO(socket_handle_, false);
 }
 
-std::filesystem::path FsedConfig::help_path() const { return FilePath(root_, help_path_); }
+std::filesystem::path FsedConfig::help_path() const { return help_path_; }
 
 std::filesystem::path FsedConfig::file_path() const {
   if (!file_path_.empty()) {

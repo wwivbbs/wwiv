@@ -52,7 +52,7 @@ public:
 
 private:
   const std::filesystem::path root_;
-  std::string help_path_{"gfiles"};
+  std::filesystem::path help_path_;
   enum bbs_type bbs_type_{bbs_type::wwiv};
   int socket_handle_{-1};
   bool local_{false};

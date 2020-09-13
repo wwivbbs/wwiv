@@ -163,7 +163,8 @@ MessageEditorData FsedApplication::CreateMessageEditorData() {
   data.to_name = lines.at(1);
   data.title = lines.at(2);
   data.sub_name = lines.at(4);
-  // TODO(rushfan): Load QBBS quotes
+
+  LoadQuotesQBBS(data);
   return data;
 }
 
@@ -184,6 +185,20 @@ bool FsedApplication::LoadQuotesWWIV(const MessageEditorData& data) {
     return false;
   }
   std::vector<std::string> lines(std::begin(orig_lines) + min_size, std::end(orig_lines));
+
+  set_quotes_ind(std::make_unique<std::vector<std::string>>(lines));
+  return true;
+}
+
+bool FsedApplication::LoadQuotesQBBS(const MessageEditorData&) {
+  TextFile f(FilePath(File::current_directory(), QUOTES_TXT), "rt");
+  if (!f) {
+    return false;
+  }
+  auto lines = f.ReadFileIntoVector();
+  if (lines.size() <= 1) {
+    return false;
+  }
 
   set_quotes_ind(std::make_unique<std::vector<std::string>>(lines));
   return true;
