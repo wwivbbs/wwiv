@@ -13,6 +13,9 @@ What's New in WWIV 5.6
 ~~~~~~~~~~~~~~~~~~~~~~
 * Update instance.dat when a node exits. 
 + Start of WWIVfsed. WWIV's internal FSED as an external.
+! Arguments on linux must not start with '-'' and not '/', this is also
+  how standard arguments work on Linux.  Windows still accepts arguments
+  either like "/N" or "-N".
 
 
 What's New in WWIV 5.5 (2020)
