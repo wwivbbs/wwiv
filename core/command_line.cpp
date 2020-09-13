@@ -73,7 +73,9 @@ static std::string CreateProgramName(const std::string& arg) {
 
 // TODO(rushfan): Make the static command for the root commandline here and pass it as the invoker.
 CommandLine::CommandLine(const std::vector<std::string>& args, const std::string& dot_argument)
-  : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) {
+  : CommandLineCommand("", ""), 
+    program_name_(CreateProgramName(args[0])),
+    program_path_(std::filesystem::path(args[0])) {
   set_raw_args(args);
   set_dot_argument(dot_argument);
 }

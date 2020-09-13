@@ -24,8 +24,8 @@
 #include "common/message_editor_data.h"
 #include "common/null_remote_io.h"
 #include "common/output.h"
+#include "common/quote.h"
 #include "common/remote_io.h"
-#include "common/remote_socket_io.h"
 #include "core/command_line.h"
 #include "core/eventbus.h"
 #include "fsed/commands.h"
@@ -43,32 +43,28 @@
 #include "fmt/format.h"
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
-#include "local_io/null_local_io.h"
 #include "sdk/filenames.h"
+#include "wwivfsed/fsedconfig.h"
 #include <cstdlib>
 #include <exception>
 #include <string>
 
-// isatty
-#ifdef _WIN32
-#include "local_io/local_io_win32.h"
-#include <io.h>
-#else
-#include "local_io/local_io_curses.h"
-#include "localui/curses_io.h"
-#include <unistd.h>
-#endif
+
 
 using namespace wwiv::common;
 using namespace wwiv::core;
+using namespace wwiv::fsed;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
 namespace wwiv::wwivfsed {
 
-FsedApplication::FsedApplication(bool local, LocalIO* local_io, wwiv::common::RemoteIO* remote_io)
-    : local_(local), context_(local_io), local_io_(local_io), remote_io_(remote_io),
+FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
+    : config_(std::move(config)), 
+      local_io_(config_->CreateLocalIO()), 
+      remote_io_(config_->CreateRemoteIO()), 
+      context_(local_io_.get()),
       fake_macro_context_(&context_) {
   bout.SetLocalIO(local_io_.get());
   bout.SetComm(remote_io_.get());
@@ -80,7 +76,7 @@ FsedApplication::FsedApplication(bool local, LocalIO* local_io, wwiv::common::Re
   bin.SetComm(remote_io_.get());
   bin.set_context_provider([this]() -> wwiv::common::Context& { return this->context(); });
 
-  if (local_) {
+  if (config_->local()) {
     context_.sess_.incom(false);
     context_.sess_.outcom(false);
     context_.sess_.using_modem(false);
@@ -106,7 +102,7 @@ FsedApplication::FsedApplication(bool local, LocalIO* local_io, wwiv::common::Re
   }
 
   bus().add_handler<CheckForHangupEvent>([this]() { 
-    if (local_) {
+    if (config_->local()) {
       return;
     }
     if (!context_.sess_.hangup() && !remote_io_->connected()) {
@@ -133,7 +129,97 @@ FsedApplication::~FsedApplication() {
   remote_io_->close(false);
 }
 
-int FsedApplication::Run(CommandLine& cmdline) { 
+MessageEditorData FsedApplication::CreateMessageEditorData() {
+  
+  if (config().bbs_type() == FsedConfig::bbs_type::wwiv) {
+    // WWIV: editor.inf
+    TextFile f(FilePath(File::current_directory(), "editor.inf"), "rt");
+    auto lines = f.ReadFileIntoVector();
+    lines.resize(9);
+
+    MessageEditorData data(lines.at(3));
+    data.msged_flags = to_number<int>(lines.at(6));
+    if (data.msged_flags & 2 /* MSGED_FLAG_HAS_REPLY_NAME */) {
+      // TODO(rushfan): Figure out how to get to_name from text.
+      //data.to_name = lines.at()
+    }
+    data.title = lines.at(0);
+    data.sub_name = lines.at(1);
+    LoadQuotesWWIV(data);
+    return data;
+  }
+  // QBBS: msginf
+  TextFile f(FilePath(File::current_directory(), "msginf"), "rt");
+  auto lines = f.ReadFileIntoVector();
+  lines.resize(6);
+  MessageEditorData data(lines.at(0));
+  data.to_name = lines.at(1);
+  data.title = lines.at(2);
+  data.sub_name = lines.at(4);
+  // TODO(rushfan): Load QBBS quotes
+  return data;
+}
+
+bool FsedApplication::LoadQuotesWWIV(const MessageEditorData& data) {
+  TextFile f(FilePath(File::current_directory(), QUOTES_TXT), "rt");
+  if (!f) {
+    return false;
+  }
+  auto orig_lines = f.ReadFileIntoVector();
+  std::size_t min_size = 2;
+  if (data.msged_flags & 2) {
+    min_size++;
+  }
+  if (data.msged_flags & 4) {
+    min_size++;
+  }
+  if (orig_lines.size() <= min_size) {
+    return false;
+  }
+  std::vector<std::string> lines(std::begin(orig_lines) + min_size, std::end(orig_lines));
+
+  set_quotes_ind(std::make_unique<std::vector<std::string>>(lines));
+  return true;
+}
+
+
+bool FsedApplication::DoFsed() {
+  auto path = config_->file_path();
+
+  // Create MessageEditorData and Load Quotes.
+  MessageEditorData data{CreateMessageEditorData()};
+
+  // Data needs to_name, from_name, sub_name, title
+  FsedModel ed(1000);
+  auto file_lines = read_file(path, ed.maxli());
+  if (!file_lines.empty()) {
+    ed.set_lines(std::move(file_lines));
+  }
+
+  auto save = wwiv::fsed::fsed(context(), ed, data, false);
+  if (!save) {
+    return false;
+  }
+
+  TextFile f(path, "wt");
+  if (!f) {
+    return false;
+  }
+  for (const auto& l : ed.to_lines()) {
+    f.WriteLine(l);
+  }
+  return true;
+}
+
+
+int FsedApplication::Run() { 
+  local_io_->Puts("pause...");
+  local_io_->GetChar();
+
+  if (!config_->local() && config_->socket_handle() == 0) {
+    LOG(ERROR) << "Invalid Socket Handle Provided: " << config_->socket_handle();
+  }
+
   auto remote_opened = remote_io_->open(); 
   if (!remote_opened) {
     // Remote side disconnected.
@@ -141,42 +227,16 @@ int FsedApplication::Run(CommandLine& cmdline) {
     return 1;
   }
 
-  auto remaining = cmdline.remaining();
-  std::filesystem::path path = (remaining.empty()) ? "INPUT.MSG" : remaining.front();
-
-  bool ok = wwiv::fsed::fsed(context(), path);
+  bool ok = DoFsed();
   return ok ? 0 : 1;
 }
 
 
 } // namespace wwiv::wwivfsed
-static LocalIO* CreateLocalIO(bool local) {
-  if (local && !isatty(fileno(stdin))) {
-    LOG(ERROR) << "WTF - No isatty?";
-  }
-  if (local) {
-#if defined(_WIN32)
-    return new Win32ConsoleIO();
-#else
-    if (local) {
-      CursesIO::Init(fmt::sprintf("WWIVfsed %s", full_version()));
-      return new CursesLocalIO(curses_out->GetMaxY());
-    }
-#endif
-  }
-  return new NullLocalIO();
-}
-
-static RemoteIO* CreateRemoteIO(int handle, bool local) { 
-  if (local) {
-    return new NullRemoteIO();
-  }
-  return new RemoteSocketIO(handle, false); 
-}
 
 int main(int argc, char** argv) {
-  LoggerConfig config(LogDirFromConfig);
-  Logger::Init(argc, argv, config);
+  LoggerConfig logger_config(LogDirFromConfig);
+  Logger::Init(argc, argv, logger_config);
 
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
@@ -202,15 +262,9 @@ int main(int argc, char** argv) {
   LOG(INFO) << "wwivfsed - WWIV5 Full-Screen Editor.";
 
   try {
-    const auto local = cmdline.barg("local");
-    auto handle = cmdline.iarg("socket_handle");
-    if (!local && handle == 0) {
-      LOG(ERROR) << "Invalid Socket Handle Provided: " << handle;
-      return EXIT_FAILURE;
-    }
     auto app = std::make_unique<wwiv::wwivfsed::FsedApplication>(
-      local, CreateLocalIO(local), CreateRemoteIO(handle, local));
-    return app->Run(cmdline);
+        std::make_unique<wwiv::wwivfsed::FsedConfig>(cmdline));
+    return app->Run();
   } catch (const std::exception& e) {
     LOG(ERROR) << "Caught top level exception: " << e.what();
     return EXIT_FAILURE;

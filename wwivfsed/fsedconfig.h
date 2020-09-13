@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                   Copyright (C)2020, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,37 +15,48 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_QUOTE_H__
-#define __INCLUDED_BBS_QUOTE_H__
+#ifndef __INCLUDED_WWIVFSED_FSEDCONFIG_H__
+#define __INCLUDED_WWIVFSED_FSEDCONFIG_H__
 
 #include "common/context.h"
-#include "sdk/vardec.h"
+#include "common/macro_context.h"
+#include "common/message_editor_data.h"
+#include "common/remote_io.h"
+#include "core/command_line.h"
+#include "fsed/line.h"
+#include "fsed/model.h"
+#include "local_io/local_io.h"
+#include <filesystem>
 #include <string>
 #include <vector>
 
-namespace wwiv::common {
+namespace wwiv::wwivfsed {
 
-enum class quote_date_format_t { no_quote, generic, email, post, forward };
+class FsedConfig final  {
+public:
+  explicit FsedConfig(const wwiv::core::CommandLine& cmdline);
+  ~FsedConfig() = default;
 
-void grab_quotes(std::string& raw_text, const std::string& to_name,
-                 wwiv::common::Context& ctx);
-void clear_quotes(wwiv::common::SessionContext& ctx);
-void auto_quote(std::string& raw_text, const std::string& to_name, quote_date_format_t type,
-                time_t tt, wwiv::common::Context& ctx);
-std::vector<std::string> query_quote_lines(wwiv::common::SessionContext& ctx);
+  enum class bbs_type { wwiv, qbbs };
 
-std::string strip_to_node(const std::string& txt);
+  const std::string& help_path() const noexcept { return help_path_; }
+  bbs_type bbs_type() const noexcept { return bbs_type_; }
+  int socket_handle() const noexcept { return socket_handle_; }
+  bool local() const noexcept { return local_; }
+  std::filesystem::path file_path() const;
 
-std::vector<std::string> create_quoted_text_from_message(
-    std::string& raw_text, const std::string& to_name, quote_date_format_t type,
-    bool use_24h_format,
-    time_t tt);
-void set_quotes_ind(std::unique_ptr<std::vector<std::string>>&&);
+  LocalIO* CreateLocalIO();
+  wwiv::common::RemoteIO* CreateRemoteIO();
 
+private:
+  const std::filesystem::path root_;
+  std::string help_path_{"gfiles"};
+  enum bbs_type bbs_type_{bbs_type::wwiv};
+  int socket_handle_{-1};
+  bool local_{false};
+  std::filesystem::path file_path_;
+};
 
-    // [[ VisibleForTesting ]]
-std::string GetQuoteInitials(const std::string& reply_to_name);
+} // namespace wwiv::wwivfsed
 
-} // namespace wwiv::common
-
-#endif  // __INCLUDED_BBS_QUOTE_H__
+#endif

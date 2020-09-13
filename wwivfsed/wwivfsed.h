@@ -26,6 +26,7 @@
 #include "fsed/model.h"
 #include "fsed/line.h"
 #include "local_io/local_io.h"
+#include "wwivfsed/fsedconfig.h"
 #include <filesystem>
 #include <vector>
 #include <string>
@@ -54,22 +55,28 @@ public:
 
 class FsedApplication final {
 public:
-  explicit FsedApplication(bool local, LocalIO* local_io, wwiv::common::RemoteIO* remote_io);
+  explicit FsedApplication(std::unique_ptr<FsedConfig> config);
   ~FsedApplication();
+  int Run();
 
-  int Run(wwiv::core::CommandLine& cmdline);
+
+private:
+  // Creates a MessageEditorData by reading the message editor
+  // information files from the BBS.
+  wwiv::common::MessageEditorData CreateMessageEditorData();
+  bool LoadQuotesWWIV(const wwiv::common::MessageEditorData& data);
+  bool DoFsed();
 
   [[nodiscard]] wwiv::common::Context& context() { return context_; }
   [[nodiscard]] const wwiv::common::Context& context() const { return context_; }
+  [[nodiscard]] FsedConfig& config() const { return *config_; }
 
-private:
-  FsedContext context_;
+  const std::unique_ptr<FsedConfig> config_;
   std::unique_ptr<LocalIO> local_io_;
   std::unique_ptr<wwiv::common::RemoteIO> remote_io_;
+  FsedContext context_;
   FakeMacroContext fake_macro_context_;
-  bool local_{false};
 };
-//bool fsed(wwiv::common::Context&ctx, const std::filesystem::path& path);
 
 }
 

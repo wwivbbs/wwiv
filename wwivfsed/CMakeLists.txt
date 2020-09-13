@@ -7,7 +7,7 @@ if(UNIX)
   set(FORKPTY_LIB util)
 endif()
 
-add_executable(wwivfsed wwivfsed.cpp)
+add_executable(wwivfsed wwivfsed.cpp fsedconfig.cpp)
 target_link_libraries(wwivfsed 
 	common 
 	core

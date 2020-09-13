@@ -98,7 +98,8 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
     // disable tag lines by creating a DISABLE.TAG file
-    TextFile fileDisableTag(DISABLE_TAG, "w");
+    TextFile fileDisableTag(FilePath(tempdir, DISABLE_TAG), "w");
+    fileDisableTag.Write("");
   } else {
     File::Remove(FilePath(tempdir, DISABLE_TAG), true);
   }

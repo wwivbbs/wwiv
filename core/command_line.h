@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
 #define __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -249,6 +250,7 @@ public:
   bool no_args_allowed() const { return no_args_allowed_; }
 
   std::string program_name() const noexcept { return program_name_; }
+  std::filesystem::path program_path() const noexcept { return program_path_; }
   const std::string bindir() const noexcept { return bindir_; }
   const std::string bbsdir() const noexcept { return bbsdir_; }
   const std::string configdir() const noexcept { return configdir_; }
@@ -257,6 +259,7 @@ public:
 
 private:
   const std::string program_name_;
+  const std::filesystem::path program_path_;
   std::string bbsdir_;
   std::string bindir_;
   std::string configdir_;

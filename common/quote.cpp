@@ -46,6 +46,7 @@ namespace wwiv::common {
 
 static std::unique_ptr<std::vector<std::string>> quotes_ind;
 
+
 static string FirstLettersOfVectorAsString(const vector<string>& parts) {
   string result;
   for (const auto& part : parts) {
@@ -53,6 +54,8 @@ static string FirstLettersOfVectorAsString(const vector<string>& parts) {
   }
   return result;
 }
+
+void set_quotes_ind(std::unique_ptr<std::vector<std::string>>&& u) { quotes_ind = std::move(u); }
 
 string GetQuoteInitials(const string& orig_name) {
   if (orig_name.empty()) {
@@ -122,11 +125,10 @@ static std::string to_quote_date_line(quote_date_format_t type, bool use_24h_for
   return date_line;
 }
 
-static std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
-                                                                const std::string& to_name,
-                                                                quote_date_format_t type,
-                                                                bool use_24h_format,
-                                                                time_t tt) {
+std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
+                                                         const std::string& to_name,
+                                                         quote_date_format_t type,
+                                                         bool use_24h_format, time_t tt) {
   const msgapi::WWIVParsedMessageText pmt(raw_text);
   msgapi::parsed_message_lines_style_t style{};
   style.line_length = 72;

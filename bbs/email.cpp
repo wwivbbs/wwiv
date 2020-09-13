@@ -492,6 +492,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   data.anonymous_flag = i;
   data.aux = "email";
   data.to_name = destination;
+  data.sub_name = "WWIV E-mail";
   data.msged_flags = MSGED_FLAG_NONE;
   if (!inmsg(data)) {
     return;
