@@ -39,10 +39,12 @@ public:
 
   enum class bbs_type { wwiv, qbbs };
 
-  const std::string& help_path() const noexcept { return help_path_; }
   bbs_type bbs_type() const noexcept { return bbs_type_; }
   int socket_handle() const noexcept { return socket_handle_; }
   bool local() const noexcept { return local_; }
+  bool pause() const noexcept { return pause_; }
+  const std::filesystem::path& root() const noexcept { return root_; }
+  std::filesystem::path help_path() const;  
   std::filesystem::path file_path() const;
 
   LocalIO* CreateLocalIO();
@@ -54,6 +56,7 @@ private:
   enum bbs_type bbs_type_{bbs_type::wwiv};
   int socket_handle_{-1};
   bool local_{false};
+  bool pause_{false};
   std::filesystem::path file_path_;
 };
 

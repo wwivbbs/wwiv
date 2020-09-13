@@ -49,10 +49,12 @@ FsedConfig::FsedConfig(const CommandLine& cmdline) : root_(cmdline.program_path(
   }
 
   local_ = cmdline.barg("local");
+  pause_ = cmdline.barg("pause");
   socket_handle_ = cmdline.iarg("socket_handle");
   if (!cmdline.remaining().empty()) {
     file_path_ = cmdline.remaining().front();
   }
+
 }
 
 LocalIO* FsedConfig::CreateLocalIO() {
@@ -78,6 +80,8 @@ wwiv::common::RemoteIO* FsedConfig::CreateRemoteIO() {
   }
   return new RemoteSocketIO(socket_handle_, false);
 }
+
+std::filesystem::path FsedConfig::help_path() const { return FilePath(root_, help_path_); }
 
 std::filesystem::path FsedConfig::file_path() const {
   if (!file_path_.empty()) {

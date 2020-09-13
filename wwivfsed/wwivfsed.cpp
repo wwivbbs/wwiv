@@ -121,6 +121,10 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
     context_.sess_.hangup(true);
     throw wwiv::common::hangup_error(""); // username
   });
+
+  Dirs dirs(config_->root());
+  dirs.gfiles_directory(config_->help_path().string());
+  context_.sess_.dirs(dirs);
 }
 
 FsedApplication::~FsedApplication() {
@@ -216,8 +220,10 @@ bool FsedApplication::DoFsed() {
 
 
 int FsedApplication::Run() { 
-  local_io_->Puts("pause...");
-  local_io_->GetChar();
+  if (config_->pause()) {
+    local_io_->Puts("pause...");
+    local_io_->GetChar();
+  }
 
   if (!config_->local() && config_->socket_handle() == 0) {
     LOG(ERROR) << "Invalid Socket Handle Provided: " << config_->socket_handle();
@@ -247,6 +253,7 @@ int main(int argc, char** argv) {
   cmdline.add_argument({"socket_handle", 'H', "Socket Handle from BBS."});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.add_argument(BooleanCommandLineArgument{"local", 'L', "Run the door locally.", false});
+  cmdline.add_argument(BooleanCommandLineArgument{"pause", 'Z', "Pause to attach the debugger.", false});
   cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {
