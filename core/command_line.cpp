@@ -187,9 +187,27 @@ std::string CommandLineCommand::ArgNameForKey(char key) {
   return {};
 }
 
+static bool is_shortarg_start(char c) {
+#ifdef _WIN32
+  return (c == '/' || c == '-');
+#else
+  return (c == '-');
+#endif
+}
+
 int CommandLineCommand::Parse(int start_pos) {
   for (auto i = start_pos; i < wwiv::stl::ssize(raw_args_); i++) {
     const string& s{raw_args_[i]};
+    if (s.empty()) {
+      continue;
+    }
+    if (s == "--") {
+      // Everything after this should be postional args.
+      for (++i; i < wwiv::stl::ssize(raw_args_); i++) {
+        remaining_.emplace_back(raw_args_[i]);
+      }
+      continue;
+    }
     if (starts_with(s, "--")) {
       const auto delims = SplitString(s, "=");
       const auto key = delims[0].substr(2);
@@ -201,7 +219,7 @@ int CommandLineCommand::Parse(int start_pos) {
         throw unknown_argument_error(StrCat("Command: ", name(), "; key=", key));
       }
       HandleCommandLineArgument(key, value);
-    } else if (starts_with(s, "/") || starts_with(s, "-")) {
+    } else if (is_shortarg_start(s.front())) {
       const auto letter = static_cast<char>(std::toupper(s[1]));
       const auto key = ArgNameForKey(letter);
       if (key.empty()) {
@@ -212,7 +230,7 @@ int CommandLineCommand::Parse(int start_pos) {
       }
       const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
-    } else if (starts_with(s, ".")) {
+    } else if (s.front() == '.') {
       // Were handling dot arguments.
       if (!dot_argument_.empty()) {
         // LOG's use of command_line never defines dot arguments.

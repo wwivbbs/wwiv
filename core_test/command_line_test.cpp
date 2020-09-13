@@ -45,6 +45,28 @@ TEST_F(CommandLineTest, Basic) {
   EXPECT_EQ("baz", cmdline.arg("bar").as_string());
 }
 
+TEST_F(CommandLineTest, Remainder) {
+  CommandLine cmdline({"", "--foo=baz", "bar"}, "");
+  cmdline.add_argument({"foo", "help for foo", "asdf"});
+  cmdline.add_argument({"bar", "help for bar"});
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ("baz", cmdline.arg("foo").as_string());
+  ASSERT_EQ(1u, cmdline.remaining().size());
+  EXPECT_EQ("bar", cmdline.remaining().front());
+}
+
+TEST_F(CommandLineTest, Remainder_DoubleDash) {
+  CommandLine cmdline({"", "--foo=baz", "--", "--bar"}, "");
+  cmdline.add_argument({"foo", "help for foo", "asdf"});
+  cmdline.add_argument({"bar", "help for bar"});
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_EQ("baz", cmdline.arg("foo").as_string());
+  ASSERT_EQ(1u, cmdline.remaining().size());
+  EXPECT_EQ("--bar", cmdline.remaining().front());
+}
+
 TEST_F(CommandLineTest, Command) {
   CommandLine cmdline({"", "--foo=bar", "print", "--all", "--some=false", "myfile.txt"}, "");
   cmdline.add_argument({"foo", ' ', "", "asdf"});
@@ -78,7 +100,7 @@ TEST_F(CommandLineTest, Several_Commands) {
 }
 
 TEST_F(CommandLineTest, SlashArg) {
-  CommandLine cmdline({"foo.exe", "/n500", ".1"}, "net");
+  CommandLine cmdline({"foo.exe", "-n500", ".1"}, "net");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
   cmdline.add_argument({"net", "network number to use.", "0"});
 
@@ -87,7 +109,7 @@ TEST_F(CommandLineTest, SlashArg) {
 }
 
 TEST_F(CommandLineTest, DotArg) {
-  CommandLine cmdline({"foo.exe", "/n500", ".123"}, "net");
+  CommandLine cmdline({"foo.exe", "-n500", ".123"}, "net");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
   cmdline.add_argument({"net", "network number to use.", "0"});
 
@@ -96,10 +118,19 @@ TEST_F(CommandLineTest, DotArg) {
 }
 
 TEST_F(CommandLineTest, Help) {
-  CommandLine cmdline({"foo.exe", "/?"}, "net");
+  CommandLine cmdline({"foo.exe", "-?"}, "net");
   cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_TRUE(cmdline.arg("help").as_bool());
 }
 
+#ifdef _WIN32
+TEST_F(CommandLineTest, Help_WIN32) {
+  CommandLine cmdline({"foo.exe", "/?"}, "net");
+  cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
+
+  ASSERT_TRUE(cmdline.Parse());
+  EXPECT_TRUE(cmdline.arg("help").as_bool());
+}
+#endif
