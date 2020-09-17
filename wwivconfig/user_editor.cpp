@@ -37,9 +37,13 @@
 #include <string>
 #include <vector>
 
-static constexpr int COL1_POSITION = 17;
-static constexpr int COL2_POSITION = 50;
+static constexpr int LABEL_WIDTH = 14;
 static constexpr int COL1_LINE = 2;
+static constexpr int COL1_POSITION = COL1_LINE + LABEL_WIDTH + 1;
+static constexpr int COL2_POSITION = 50;
+static constexpr int DSL_LABEL_WIDTH = 4;
+static constexpr int DSL_LABEL = COL1_POSITION + DSL_LABEL_WIDTH + 1;
+static constexpr int DSL_POSITION = DSL_LABEL + DSL_LABEL_WIDTH + 1;
 
 using std::string;
 using std::unique_ptr;
@@ -125,7 +129,6 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
 void user_editor(const wwiv::sdk::Config& config) {
   int number_users = number_userrecs(config.datadir());
   curses_out->Cls(ACS_CKBOARD);
-  static constexpr int LABEL_WIDTH = 14;
 
   if (number_users < 1) {
     unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("User Editor", 18, 76));
@@ -144,7 +147,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       [&]() -> string { return StrCat(user.name, " #", current_usernum); });
 
   auto birthday_field = new CustomEditItem(
-      COL1_POSITION, 9, 10,
+      COL1_POSITION, 8, 10,
       [&]() -> string {
         return fmt::sprintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
       },
@@ -176,18 +179,19 @@ void user_editor(const wwiv::sdk::Config& config) {
       user_name_field,
       new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, EditLineMode::ALL),
       new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 4, &user.dsl),
-      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.street, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 6, 30, user.city, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 7, 2, user.state, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 8, 10, user.zipcode, EditLineMode::UPPER_ONLY),
+      new NumberEditItem<uint8_t>(DSL_POSITION, 3, &user.dsl),
+      new StringEditItem<char*>(COL1_POSITION, 4, 30, user.street, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.city, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 6, 2, user.state, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 7, 10, user.zipcode, EditLineMode::UPPER_ONLY),
       birthday_field,
-      new StringEditItem<char*>(COL1_POSITION, 10, 8, user.pw, EditLineMode::UPPER_ONLY),
-      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.phone, EditLineMode::UPPER_ONLY),
-      new StringEditItem<char*>(COL1_POSITION, 12, 12, user.dataphone, EditLineMode::UPPER_ONLY),
-      new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
-      new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
-      new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
+      new StringEditItem<char*>(COL1_POSITION, 9, 8, user.pw, EditLineMode::UPPER_ONLY),
+      new StringEditItem<char*>(COL1_POSITION, 10, 12, user.phone, EditLineMode::UPPER_ONLY),
+      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.dataphone, EditLineMode::UPPER_ONLY),
+      new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type),
+      new RestrictionsEditItem(COL1_POSITION, 13, &user.restrict),
+      new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum),
+      new StringEditItem<char*>(COL1_POSITION, 15, 57, user.email, EditLineMode::ALL),
       new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, EditLineMode::ALL),
   });
   items.set_navigation_extra_help_items(create_extra_help_items());
@@ -195,8 +199,8 @@ void user_editor(const wwiv::sdk::Config& config) {
   int y = 1;
   items.add_labels({new Label(COL1_LINE, y++, LABEL_WIDTH, "Name/Handle:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "Real Name:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "SL:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "DSL:"),
+                    new Label(COL1_LINE, y, LABEL_WIDTH, "SL:"),
+                    new Label(DSL_LABEL, y++, DSL_LABEL_WIDTH, "DSL:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "Address:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "City:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "State:"),
@@ -208,6 +212,7 @@ void user_editor(const wwiv::sdk::Config& config) {
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "Computer Type:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "Restrictions:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "WWIV Reg:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Email Address:"),
                     new Label(COL1_LINE, y++, LABEL_WIDTH, "Sysop Note:")});
 
   items.create_window("User Editor");
