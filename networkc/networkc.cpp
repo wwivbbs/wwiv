@@ -173,7 +173,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
     const auto status = sm.GetStatus();
 
     auto num_tries = 0;
-    bool found;
+    bool found = false;
     do {
       found = false;
       if (process_instance > 0) {

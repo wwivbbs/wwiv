@@ -454,7 +454,12 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         break;
       case 'U': {
         // User edit
-        const auto exe = FilePath(a()->bindir(), "wwivconfig");
+        auto exe = FilePath(a()->bindir(), "wwivconfig");
+#ifdef _WIN32
+        // CreateProcess is failing on Windows with the .exe extension, and since
+        // we don't use MakeAbsCmd on this, it's without .exe.
+        exe.replace_extension(".exe");
+#endif // _WIN32
         const auto cmd = StrCat(exe.string(), " --user_editor");
         exec_cmdline(cmd, INST_FLAGS_NONE);
       } break;
@@ -471,10 +476,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
         text_edit();
       } break;
-      // Print Environment
-      case 'X':
-        break;
-        // Print Yesterday's Log
+      // Print Yesterday's Log
       case 'Y': {
         Clear();
         auto status = a()->status_manager()->GetStatus();

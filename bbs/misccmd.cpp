@@ -428,7 +428,10 @@ void time_bank() {
   long nsln;
 
   bout.nl();
-  if (a()->user()->GetSl() <= a()->config()->newuser_sl()) {
+  // TODO(rushfan): We use 10 as a proxy for unvalidated.
+  // We should come up with a better way or just remove this
+  // and set it in the menu ACS.
+  if (a()->user()->GetSl() <= 10) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }
