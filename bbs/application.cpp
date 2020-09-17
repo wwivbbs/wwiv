@@ -1149,8 +1149,10 @@ const subboard_t& Application::current_sub() const {
 
 void Application::set_current_user_dir_num(int n) { 
   user_dir_num_ = static_cast<uint16_t>(n); 
+
+  const auto subnum = current_user_dir().subnum;
   // Update the value in the context.
-  sess().current_dir(current_dir());
+  sess().current_dir(dirs()[subnum != -1 ? subnum : 0]);
 }
 
 const files::directory_t& Application::current_dir() const {
