@@ -16,6 +16,7 @@ What's New in WWIV 5.6
 ! Arguments on linux must not start with '-'' and not '/', this is also
   how standard arguments work on Linux.  Windows still accepts arguments
   either like "/N" or "-N".
++ Support for Ubuntu 20.04 LTS has been added.
 
 
 What's New in WWIV 5.5 (2020)

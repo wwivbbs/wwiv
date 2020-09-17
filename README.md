@@ -5,7 +5,7 @@ WWIV is compiled with the following compilers:
   
 - MS Visual C++ 2019 Community Edition.
 - GCC 8.3 (or later) on Linux 
-  (Debian10, Centos8 (with GCC 8 via SCL) or Ubuntu)
+  (tested on Debian10, Ubuntu 20.04, Centos8 with SCL/GCC-8)
 - CMake 3.13 or newer
 
 ***
@@ -71,7 +71,7 @@ ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
 cmake | 3.13 or later
 make | for cryptlib
 ninja-build | 1.8 or later, earlier versions probably work too
-g++ | 8.3.0 or later (easiest to install via build-essential on debian)
+g++ | 8.3.0 or later (easiest to install via build-essential on debian/ubuntu)
 
 If you are on debian or ubuntu, you can use the ```/builds/jenkins/linux/install-prereqs.sh``` 
 escript to ensure that the right software is installed.  This command should be executed as root (using sudo)

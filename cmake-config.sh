@@ -27,8 +27,8 @@ fi
 if ! [ -x "$(command -v ninja)" ]; then
 	echo "** ERROR: Please install ninja"
 	echo ""
-	echo "   Debian: apt install ninja-build"
-	echo "   CentOS: yum install ninja-build"
+	echo "   Debian/Ubuntu: apt install ninja-build"
+	echo "   CentOS:        yum install ninja-build"
 	exit 1
 fi
 
