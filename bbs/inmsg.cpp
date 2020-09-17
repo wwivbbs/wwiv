@@ -362,14 +362,6 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
       }
     }
   }
-  if (a()->current_net().type == network_type_t::internet ||
-      a()->current_net().type == network_type_t::news) {
-    if (a()->usenetReferencesLine.length() > 0) {
-      const auto buf = fmt::sprintf("%c0RReferences: %s", CD, a()->usenetReferencesLine);
-      ss << buf << crlf;
-      a()->usenetReferencesLine = "";
-    }
-  }
 
   // WTF is \xAB. FidoAddr sets it, but we don't want
   // to add the RE: line when it's \xAB, so let's skip it.

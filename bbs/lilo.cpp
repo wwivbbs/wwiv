@@ -667,10 +667,6 @@ static void DisplayUserLoginInformation() {
   bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(a()->user()->GetEmailAddress())) {
     bout << a()->user()->GetEmailAddress() << wwiv::endl;
-  } else if (!a()->internetEmailName.empty()) {
-    bout << (a()->IsInternetUseRealNames() ? a()->user()->GetRealName() :
-                           a()->user()->GetName())
-                       << "<" << a()->internetFullEmailAddress << ">\r\n";
   } else {
     bout << "None.\r\n";
   }
@@ -835,7 +831,6 @@ void logon() {
   }
   a()->sess().SetUserOnline(true);
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
-  get_user_ppp_addr();
   bout.ResetColors();
   bout.cls();
 

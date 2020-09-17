@@ -371,29 +371,12 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
         break;
-      case 'F': {
-        Clear();
-        bout.bputs("|#1Enter Number: ");
-        auto x = bin.input_number_or_key_raw(1, 0, 2112, true, {'Q', '?', '/'});
-        bout << "key: " << x.key << "; num: " << x.num;
-        bout.pausescr();
-      } break;
       // GfileEdit
       case 'G':
         write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
         gfileedit();
         break;
         // Send Internet Mail
-      case 'I': {
-        Clear();
-        a_->usernum = 1;
-        a_->sess().SetUserOnline(true);
-        get_user_ppp_addr();
-        send_inet_email();
-        a_->sess().SetUserOnline(false);
-        a_->WriteCurrentUser(sysop_usernum);
-        cleanup_net();
-      } break;
       // ConfEdit
       case 'J':
         Clear();

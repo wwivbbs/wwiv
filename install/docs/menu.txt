@@ -182,9 +182,6 @@ HopSub
 InitVotes
 
 
-InternetEmail
-
-
 JumpDirConf
     Jump to another directory conference 'J'
 

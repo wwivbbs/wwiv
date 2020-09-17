@@ -493,24 +493,6 @@ seconds Application::subtract_extratimecall(duration<double> et) {
 }
 
 void Application::read_networks() {
-  internetEmailName = "";
-  internetEmailDomain = "";
-  internetPopDomain = "";
-  SetInternetUseRealNames(false);
-
-  // TODO(rushfan): Remove these and put them somewhere else.
-  // Like on a per-network config when we add proper internet
-  // support.
-  IniFile ini("net.ini", {"NETWORK"});
-  if (ini.IsOpen()) {
-    // Note FWDNAME isn't listed here.
-    internetEmailName = ini.value<string>("POPNAME");
-    // Note FWDDOM isn't listed here.
-    internetEmailDomain = ini.value<string>("DOMAIN");
-    internetPopDomain = ini.value<string>("POPDOMAIN");
-    SetInternetUseRealNames(ini.value<bool>("REALNAME"));
-  }
-
   nets_ = std::make_unique<Networks>(*config());
 }
 

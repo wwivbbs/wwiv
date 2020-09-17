@@ -17,7 +17,10 @@ What's New in WWIV 5.6
   how standard arguments work on Linux.  Windows still accepts arguments
   either like "/N" or "-N".
 + Support for Ubuntu 20.04 LTS has been added.
-
+! Removed InternetEmail menu command, it didn't work without PPP project 
+  for sending internet emails.  Also the rest of the BBS doesn't use 
+  acct.ini anymore.
+  
 
 What's New in WWIV 5.5 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

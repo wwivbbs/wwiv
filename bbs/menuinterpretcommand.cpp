@@ -844,9 +844,6 @@ Runs a WWIVbasic Script
   m.emplace("AttachFile", MenuItem(R"()", MENU_CAT_EMAIL, [](MenuItemContext&) {
       AttachFile();
     } ));
-  m.emplace("InternetEmail", MenuItem(R"()", MENU_CAT_EMAIL, [](MenuItemContext&) {
-      InternetEmail();
-    } ));
   m.emplace("UnQScan", MenuItem(R"(
   Marks messages as unread
 )", MENU_CAT_MSGS, [](MenuItemContext&) {

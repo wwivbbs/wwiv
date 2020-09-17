@@ -168,10 +168,7 @@ public:
   [[nodiscard]] int language_number() const;
 
   void set_language_number(int n);
-
-  [[nodiscard]] bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
-  void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
-
+  
   [[nodiscard]] int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
@@ -324,12 +321,6 @@ public:
   int m_nMaxNetworkNumber{0};
   int subchg{0};
 
-  std::string internetPopDomain;
-  std::string internetEmailDomain;
-  std::string internetEmailName;
-  std::string internetFullEmailAddress;
-  std::string usenetReferencesLine;
-  bool m_bInternetUseRealNames{false};
   std::string net_email_name;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;

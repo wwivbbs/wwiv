@@ -647,10 +647,6 @@ void MultiEmail() {
   slash_e();
 }
 
-void InternetEmail() {
-  send_inet_email();
-}
-
 void NewMsgScanFromHere() {
   bout.newline = false;
   nscan(a()->current_user_sub_num());

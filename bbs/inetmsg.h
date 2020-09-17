@@ -20,8 +20,6 @@
 
 #include <string>
 
-void get_user_ppp_addr();
-void send_inet_email();
 bool check_inet_addr(const std::string& inetaddr);
 void read_inet_addr(std::string& internet_address, int user_number);
 void write_inet_addr(const std::string& internet_address, int user_number);

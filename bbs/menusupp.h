@@ -75,7 +75,6 @@ void UploadPost();
 void WhoIsOnline();
 void NewMsgsAllConfs();
 void MultiEmail();
-void InternetEmail();
 void NewMsgScanFromHere();
 void ValidateScan();
 void ChatRoom();
