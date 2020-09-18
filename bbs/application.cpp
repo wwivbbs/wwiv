@@ -757,7 +757,8 @@ std::string Application::logdir() const noexcept { return logdir_; }
 int Application::verbose() const noexcept { return verbose_; }
 
 int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
-  if (perform_shutdown) {
+  // Only perform shutdown when asked, and we've loaded config.dat
+  if (perform_shutdown && a()->config()) {
     write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
     if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
