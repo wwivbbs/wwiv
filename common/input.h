@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INPUT_H__
-#define __INCLUDED_INPUT_H__
+#ifndef __INCLUDED_COMMON_INPUT_H__
+#define __INCLUDED_COMMON_INPUT_H__
 
 #include "core/strings.h"
 #include "common/iobase.h"
@@ -270,4 +270,4 @@ private:
 
 
 
-#endif // __INCLUDED_INPUT_H__
+#endif // __INCLUDED_COMMON_INPUT_H__

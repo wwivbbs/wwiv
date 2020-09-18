@@ -24,15 +24,14 @@
 #include "core/textfile.h"
 #include "common/context.h"
 #include "common/output.h"
-#include "local_io/keycodes.h"
 #include "sdk/filenames.h"
+
+using std::unique_ptr;
+using namespace wwiv::core;
 
 namespace wwiv::common {
 
 bool use_workspace;
-
-using std::unique_ptr;
-using namespace wwiv::core;
 
 void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem::path& filename,
                            bool no_edit_allowed, bool silent_mode) {
@@ -40,7 +39,7 @@ void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem
   if (!tf) {
     return;
   }
-  auto contents = tf.ReadFileIntoString();
+  const auto contents = tf.ReadFileIntoString();
   if (contents.empty()) {
     return;
   }
@@ -48,7 +47,7 @@ void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem
   TextFile input_msg(FilePath(context.session_context().dirs().temp_directory(), INPUT_MSG), "wt");
   input_msg.Write(contents);
 
-  bool ok_fsed = context.u().GetDefaultEditor() != 0;
+  const auto ok_fsed = context.u().GetDefaultEditor() != 0;
   use_workspace = (no_edit_allowed || !ok_fsed);
 
   if (!silent_mode) {
@@ -59,4 +58,4 @@ void LoadFileIntoWorkspace(wwiv::common::Context& context, const std::filesystem
   }
 }
 
-} // namespace wwiv::comon
+} // namespace wwiv::common

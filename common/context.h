@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_COMMON_CONTEXT_H__
 #define __INCLUDED_COMMON_CONTEXT_H__
 
-#include "core/file.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/user.h"
@@ -243,7 +242,7 @@ private:
   bool time_limited_{false};
   std::chrono::system_clock::time_point system_logon_time_;
   Dirs dirs_;
-  wwiv::sdk::files::directory_t current_dir_;
+  wwiv::sdk::files::directory_t current_dir_{};
   int effective_sl_{0};
   std::string current_lang_name_{"English"};
 };

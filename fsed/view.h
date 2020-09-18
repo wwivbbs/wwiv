@@ -20,18 +20,13 @@
 
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
-#include "fsed/common.h"
 #include "fsed/model.h"
-#include "fsed/line.h"
-#include <functional>
-#include <vector>
-#include <string>
+
+using namespace wwiv::common;
 
 namespace wwiv::fsed {
 
- using namespace wwiv::common;
-
-class FsedView : public editor_viewport_t {
+class FsedView final : public editor_viewport_t {
 public:
   FsedView(FullScreenView fs, wwiv::common::MessageEditorData& data, bool file);
   ~FsedView() = default;

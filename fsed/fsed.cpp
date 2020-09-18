@@ -17,8 +17,6 @@
 /**************************************************************************/
 #include "fsed/fsed.h"
 
-#include "common/bgetch.h"
-#include "common/common_events.h"
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
 #include "common/output.h"
@@ -32,15 +30,13 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
-#include "local_io/keycodes.h"
-#include "sdk/filenames.h"
-
-namespace wwiv::fsed {
 
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv::fsed {
 
 static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file, const wwiv::sdk::User* user) {
   const auto screen_width = (user != nullptr) ? user->GetScreenChars() : 80;

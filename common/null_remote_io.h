@@ -17,10 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if !defined (__INCLUDED_BBS_NULL_REMOTE_IO_H__)
-#define __INCLUDED_BBS_NULL_REMOTE_IO_H__
-
-#include <string>
+#ifndef __INCLUDED_COMMON_NULL_REMOTE_IO_H__
+#define __INCLUDED_COMMON_NULL_REMOTE_IO_H__
 
 #include "common/remote_io.h"
 
@@ -28,7 +26,7 @@
 /**
  * Base Communication Class.
  */
-class NullRemoteIO : public wwiv::common::RemoteIO {
+class NullRemoteIO final : public wwiv::common::RemoteIO {
  public:
   NullRemoteIO() : RemoteIO() {}
   virtual ~NullRemoteIO() {}
@@ -48,5 +46,5 @@ class NullRemoteIO : public wwiv::common::RemoteIO {
   unsigned int GetHandle() const override { return 0; }
 };
 
-#endif  // #if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
+#endif  // __INCLUDED_COMMON_NULL_REMOTE_IO_H__
 

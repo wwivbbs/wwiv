@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FULL_SCREEN_H__
-#define __INCLUDED_BBS_FULL_SCREEN_H__
+#ifndef __INCLUDED_COMMON_FULL_SCREEN_H__
+#define __INCLUDED_COMMON_FULL_SCREEN_H__
 
 #include "local_io/local_io.h"
 #include <string>
@@ -24,10 +24,10 @@
 namespace wwiv::common {
 class Output;
 
-class FullScreenView {
+class FullScreenView final {
 public:
   FullScreenView(wwiv::common::Output& output, int numlines, int swidth, int slength);
-  virtual ~FullScreenView();
+  ~FullScreenView();
 
   /** Displays a timeout warning in the command line area */
   void PrintTimeoutWarning(int);
@@ -35,7 +35,7 @@ public:
   void ClearCommandLine();
   /** Displays a text in the command line area */
   void PutsCommandLine(const std::string& text);
-  /** Clears the messagea area (the main body of the full screen view */
+  /** Clears the message area (the main body of the full screen view */
   void ClearMessageArea();
   /** Displays the horizontal bar between the header area and body */
   void DrawTopBar();
@@ -55,10 +55,10 @@ public:
   int bgetch();
 
   // Write through to this full screen's output.
-  wwiv::common::Output& out() { return bout_; }
+  Output& out() const { return bout_; }
 
 private:
-  wwiv::common::Output& bout_;
+  Output& bout_;
 
   int num_header_lines_{0};
   int screen_width_{0};
@@ -73,4 +73,4 @@ private:
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_BBS_FULL_SCREEN_H__
+#endif  // __INCLUDED_COMMON_FULL_SCREEN_H__

@@ -21,7 +21,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include <stdexcept>
 
 namespace wwiv::fsed {
 

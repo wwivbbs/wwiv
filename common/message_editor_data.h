@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MESSAGE_EDITOR_DATA_H__
-#define __INCLUDED_BBS_MESSAGE_EDITOR_DATA_H__
+#ifndef __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__
+#define __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__
 
 #include <cstdint>
 #include <string>
@@ -47,7 +47,7 @@ public:
   std::string title;
   std::string to_name;  // szDestination (to or sub name)
   std::string sub_name;
-  // This should be the username or realname depending on the base. It's
+  // This should be the username or real name depending on the base. It's
   // set to the default username in the constructor.
   std::string from_name;
 
@@ -66,4 +66,4 @@ public:
 
 } // namespace wwiv::common
 
-#endif // __INCLUDED_BBS_MESSAGE_EDITOR_DATA_H__
+#endif // __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__

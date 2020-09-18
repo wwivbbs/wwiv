@@ -21,25 +21,18 @@
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
 #include "common/output.h"
-#include "common/pause.h"
-#include "common/output.h"
-#include "common/quote.h"
-#include "fsed/commands.h"
-#include "fsed/common.h"
 #include "fsed/model.h"
 #include "fsed/line.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
-#include "local_io/keycodes.h"
-#include "sdk/filenames.h"
-
-namespace wwiv::fsed {
 
 using namespace wwiv::common;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv::fsed {
 
 FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
     : fs_(std::move(fs)), bout_(fs_.out()), data_(data), file_(file) {
@@ -59,7 +52,7 @@ void FsedView::ClearCommandLine() {
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
   if (previous_line != ed.curli) {
-    auto py = previous_line - top_line() + fs_.lines_start();
+    const auto py = previous_line - top_line() + fs_.lines_start();
     bout_.GotoXY(0, py);
     if (previous_line < ssize(ed)) {
       bout_.bputs(ed.line(previous_line).to_colored_text(-1));
@@ -67,7 +60,7 @@ void FsedView::draw_current_line(FsedModel& ed, int previous_line) {
     bout_.clreol();
   }
 
-  auto y = ed.curli - top_line() + fs_.lines_start(); 
+  const auto y = ed.curli - top_line() + fs_.lines_start(); 
   bout_.GotoXY(0, y);
   bout_.Color(0);
   for (const auto& c : ed.curline().cells()) {
@@ -84,10 +77,10 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
   // TODO: optimize for first line
 
   // Never go below top line.
-  auto start_line = std::max<int>(t.start.line, top_line());
+  const auto start_line = std::max<int>(t.start.line, top_line());
   auto last_color = -1;
 
-  for (int i = start_line; i <= t.end.line; i++) {
+  for (auto i = start_line; i <= t.end.line; i++) {
     auto y = i - top_line() + fs_.lines_start();
     if (y >= fs_.lines_end()) {
       break;
@@ -126,9 +119,9 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
 }
 
 void FsedView::draw_header() {
-  auto oldcuratr = bout_.curatr();
+  const auto oldcuratr = bout_.curatr();
   bout_.cls();
-  auto to = data_.to_name.empty() ? "All" : data_.to_name;
+  const auto to = data_.to_name.empty() ? "All" : data_.to_name;
   bout_ << "|#7From: |#2" << data_.from_name << wwiv::endl;
   bout_ << "|#7To:   |#2" << to << wwiv::endl;
   bout_ << "|#7Area: |#2" << data_.sub_name << wwiv::endl;
@@ -156,13 +149,13 @@ void FsedView::redraw(const FsedModel& ed) {
 }
 
 void FsedView::draw_bottom_bar(const FsedModel& ed) {
-  auto sc = bout_.curatr();
+  const auto sc = bout_.curatr();
   static auto smode = ed.mode();
   static auto sdebug = debug;
   if (sx != ed.cx || sy != ed.cy || sl != ed.curli || smode != ed.mode() || sdebug != debug) {
     const auto mode = ed.mode() == ins_ovr_mode_t::ins ? "INS" : "OVR";
     const auto cell = ed.current_cell();
-    auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
+    const auto text = (debug) ? fmt::format("X:{} Y:{} L:{} T:{} C:{} W:{} [{}]", ed.cx, ed.cy, ed.curli,
                                       top_line(), static_cast<int>(cell.ch), cell.wwiv_color, mode)
                         : fmt::format("[{}]", mode);
     fs_.DrawBottomBar(text);

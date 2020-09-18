@@ -19,7 +19,6 @@
 #define __INCLUDED_BBS_FSED_MODEL_H__
 
 #include "fsed/line.h"
-#include <deque>
 #include <functional>
 #include <vector>
 #include <string>
@@ -52,6 +51,7 @@ class FsedModel;
 
 class editor_viewport_t {
 public:
+  virtual ~editor_viewport_t() = default;
   virtual int max_view_lines() const = 0;
   virtual int max_view_columns() const = 0;
   virtual int top_line() const = 0;

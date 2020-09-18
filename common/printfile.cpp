@@ -129,7 +129,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 }
 
 bool Output::printfile(const std::string& filename, bool abortable, bool force_pause) {
-  std::vector<string> dirs{sess().dirs().language_directory(), 
+  const std::vector<string> dirs{sess().dirs().language_directory(), 
     sess().dirs().gfiles_directory()};
 
   const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), filename);

@@ -23,10 +23,8 @@
 #include "common/context.h"
 #include "common/remote_io.h"
 #include "sdk/user.h"
-#include <chrono>
 #include <functional>
 #include <set>
-#include <string>
 
 namespace wwiv::common {
 
@@ -44,7 +42,7 @@ class IOBase {
 public:
   typedef std::function<wwiv::common::Context&()> context_provider_t;
   IOBase() = default;
-  ~IOBase() = default;
+  virtual ~IOBase() = default;
 
   virtual void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
   [[nodiscard]] LocalIO* localIO() const noexcept { return local_io_; }
@@ -55,7 +53,7 @@ public:
   /** Sets the provider for the session context */
   void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
 
-  wwiv::sdk::User& user();
+  wwiv::sdk::User& user() const;
   wwiv::common::SessionContext& sess();
   wwiv::common::SessionContext& sess() const;
   wwiv::common::Context& context();

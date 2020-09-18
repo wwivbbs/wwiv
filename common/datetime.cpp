@@ -48,7 +48,7 @@ void ToggleScrollLockKey() {
 
 /* This function returns the status of scoll lock.  If scroll lock is active
  * (ie, the user has hit scroll lock + the light is lit if there is a
- * scoll lock LED), the sysop is assumed to be available.
+ * scroll lock LED), the sysop is assumed to be available.
  */
 bool sysop1() {
 #if defined(_WIN32)
@@ -92,7 +92,7 @@ system_clock::duration duration_since_midnight(system_clock::time_point now) {
 
 system_clock::time_point minutes_after_midnight(int minutes) {
   const auto tnow = time_t_now();
-  auto date = std::localtime(&tnow);
+  auto* date = std::localtime(&tnow);
   date->tm_hour = minutes / 60;
   date->tm_min = minutes % 60;
   date->tm_sec = 0;

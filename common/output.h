@@ -17,21 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_BBS_OUTPUT_H__
-#define __INCLUDED_BBS_OUTPUT_H__
+#ifndef __INCLUDED_COMMON_OUTPUT_H__
+#define __INCLUDED_COMMON_OUTPUT_H__
 
 #include "common/context.h"
 #include "common/iobase.h"
 #include "common/macro_context.h"
-#include "common/remote_io.h"
 #include "fmt/printf.h"
 #include "local_io/curatr_provider.h"
-#include "local_io/local_io.h"
+#include "sdk/wwivcolors.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
-#include "sdk/user.h"
-#include "sdk/wwivcolors.h"
-#include <chrono>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -274,4 +270,4 @@ std::basic_ostream<charT, traits>& endl(std::basic_ostream<charT, traits>& strm)
 // Extern for everyone else.
 extern wwiv::common::Output bout;
 
-#endif // __INCLUDED_BBS_OUTPUT_H__
+#endif // __INCLUDED_COMMON_OUTPUT_H__

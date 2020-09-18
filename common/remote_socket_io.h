@@ -16,11 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
-#define __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
+#ifndef __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
+#define __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
 
 #include "common/remote_io.h"
-#include "core/net.h"
 #include <atomic>
 #include <cstdint>
 #include <mutex>
@@ -91,15 +90,15 @@ class RemoteSocketIO : public wwiv::common::RemoteIO {
   std::queue<char> queue_;
   mutable std::mutex mu_;
   mutable std::mutex threads_started_mu_;
-  SOCKET socket_ = INVALID_SOCKET;
+  SOCKET socket_{INVALID_SOCKET};
   std::thread read_thread_;
   std::atomic<bool> stop_;
-  bool threads_started_ = false;
-  bool telnet_ = true;
+  bool threads_started_{false};
+  bool telnet_{true};
 };
 
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
+#endif  // __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
 

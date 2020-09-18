@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_DATETIME_H__
-#define __INCLUDED_DATETIME_H__
+#ifndef __INCLUDED_COMMON_DATETIME_H__
+#define __INCLUDED_COMMON_DATETIME_H__
 
 #include "core/datetime.h"
 #include <chrono>
@@ -52,4 +52,4 @@ void ToggleScrollLockKey();
 
 } // namespace wwiv::common 
 
-#endif // __INCLUDED_DATETIME_H__
+#endif // __INCLUDED_COMMON_DATETIME_H__

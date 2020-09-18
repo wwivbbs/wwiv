@@ -253,7 +253,7 @@ unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool 
     *p2++ = '\0';
   }
 
-  int num_sent = send(socket_, tmp_buffer.get(), nCount, 0);
+  const auto num_sent = send(socket_, tmp_buffer.get(), nCount, 0);
   if (num_sent == SOCKET_ERROR) {
     return 0;
   }
@@ -261,7 +261,7 @@ unsigned int RemoteSocketIO::write(const char* buffer, unsigned int count, bool 
 }
 
 bool RemoteSocketIO::connected() {
-  bool connected = valid_socket();
+  const auto connected = valid_socket();
   if (!connected) {
     LOG(ERROR) << "!connected(); threads_started_ = " << std::boolalpha << threads_started_;
   }
@@ -374,7 +374,7 @@ void RemoteSocketIO::InboundTelnetProc() {
       if (!socket_avail(socket_, 1)) {
         continue;
       }
-      const int num_read = recv(socket_, data.get(), size, 0);
+      const auto num_read = recv(socket_, data.get(), size, 0);
       if (num_read == SOCKET_ERROR) {
         // Got Socket error.
         closesocket(socket_);

@@ -21,7 +21,6 @@
 #include "fsed/line.h"
 #include <filesystem>
 #include <vector>
-#include <string>
 
 namespace wwiv::fsed {
 

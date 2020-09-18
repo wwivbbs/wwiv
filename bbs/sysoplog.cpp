@@ -24,7 +24,6 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
-#include <cstdarg>
 #include <cstddef>
 #include <string>
 
@@ -160,9 +159,13 @@ void sysopchar(const string& text) {
 }
 
 sysoplog::~sysoplog() {
-  if (indent_) {
-    AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", stream_.str()));
-  } else {
-    AddLineToSysopLogImpl(LOG_STRING, stream_.str());
+  try {
+    if (indent_) {
+      AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", stream_.str()));
+    } else {
+      AddLineToSysopLogImpl(LOG_STRING, stream_.str());
+    }
+  } catch (...) {
+    // NOP
   }
 }

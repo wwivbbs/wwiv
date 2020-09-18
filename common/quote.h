@@ -15,11 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_QUOTE_H__
-#define __INCLUDED_BBS_QUOTE_H__
+#ifndef __INCLUDED_COMMON_QUOTE_H__
+#define __INCLUDED_COMMON_QUOTE_H__
 
 #include "common/context.h"
-#include "sdk/vardec.h"
 #include <string>
 #include <vector>
 
@@ -48,4 +47,4 @@ std::string GetQuoteInitials(const std::string& reply_to_name);
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_BBS_QUOTE_H__
+#endif  // __INCLUDED_COMMON_QUOTE_H__

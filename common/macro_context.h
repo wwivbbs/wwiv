@@ -26,7 +26,7 @@ namespace wwiv::common {
 class MacroContext {
 public:
   MacroContext(wwiv::common::Context* context) : context_(context) {}
-  ~MacroContext() = default;
+  virtual ~MacroContext() = default;
 
   virtual std::string interpret(char c) const = 0;
   wwiv::common::Context* context() { return context_; }

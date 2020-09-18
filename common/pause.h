@@ -16,14 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PAUSE_H__
-#define __INCLUDED_PAUSE_H__
+#ifndef __INCLUDED_COMMON_PAUSE_H__
+#define __INCLUDED_COMMON_PAUSE_H__
 
 #include "core/transaction.h"
-#include "common/context.h"
 #include "common/output.h"
-#include "sdk/user.h"
-
 
 namespace wwiv::common {
 
@@ -34,4 +31,4 @@ public:
 
 }  // namespace
 
-#endif  // __INCLUDED_PAUSE_H__
+#endif  // __INCLUDED_COMMON_PAUSE_H__

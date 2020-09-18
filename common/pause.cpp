@@ -18,17 +18,15 @@
 /**************************************************************************/
 #include "common/pause.h"
 
-#include "common/bgetch.h"
-#include "common/input.h"
-#include "common/com.h"
 #include "common/common_events.h"
 #include "common/context.h"
-#include "local_io/keycodes.h"
+#include "common/input.h"
 #include "core/datetime.h"
 #include "core/eventbus.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
+#include "local_io/keycodes.h"
 #include <chrono>
 
 char str_pause[81], str_quit[81];
@@ -62,8 +60,8 @@ char Output::GetKeyForPause() {
     sleep_for(milliseconds(50));
     bus().invoke<CheckForHangupEvent>();
   }
-  int nKey = to_upper_case<int>(ch);
-  switch (nKey) {
+  const auto k = to_upper_case<int>(ch);
+  switch (k) {
   case ESC:
   case 'Q':
   case 'N':
@@ -91,10 +89,10 @@ void Output::pausescr() {
   wwiv::core::bus().invoke<PauseProcessingInstanceMessages>();
   wwiv::core::ScopeExit at_exit(
       [] { wwiv::core::bus().invoke<ResetProcessingInstanceMessages>(); });
-  char* ss = str_pause;
+  auto* const ss = str_pause;
   int i1;
-  int i2 = i1 = strlen(ss);
-  bool com_freeze = sess().incom();
+  const auto i2 = i1 = strlen(ss);
+  const auto com_freeze = sess().incom();
 
   if (!sess().incom() && sess().outcom()) {
     sess().incom(true);
@@ -104,7 +102,7 @@ void Output::pausescr() {
     ResetColors();
 
     i1 = strlen(stripcolors(ss));
-    auto i = curatr();
+    const auto i = curatr();
     SystemColor(user().color(3));
     bputs(ss);
     Left(i1);
@@ -117,8 +115,8 @@ void Output::pausescr() {
     char ch;
     do {
       while (!bin.bkbhit() && !sess().hangup()) {
-        auto tstop = time_t_now();
-        auto ttotal = difftime(tstop, tstart);
+        const auto tstop = time_t_now();
+        const auto ttotal = static_cast<time_t>(difftime(tstop, tstart));
         if (ttotal == 120) {
           if (!warned) {
             warned = 1;

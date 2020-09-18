@@ -18,7 +18,6 @@
 #include "fsed/commands.h"
 
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/quote.h"
 #include "core/stl.h"
 #include "fsed/model.h"
@@ -229,8 +228,6 @@ bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, F
     return false;
   }
   return cmd.value().Invoke(model, view, state);
-
-  return false;
 }
 
 } // namespace wwiv::fsed

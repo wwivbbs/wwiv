@@ -30,7 +30,7 @@ namespace wwiv::common {
 
 // Context stuff
 
-wwiv::sdk::User& IOBase::user() { 
+wwiv::sdk::User& IOBase::user() const { 
   DCHECK(context_provider_);
   return context_provider_().u();
 }

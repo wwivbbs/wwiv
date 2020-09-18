@@ -19,7 +19,6 @@
 #define __INCLUDED_COMMON_EXCEPTIONS_H__
 
 #include "core/strings.h"
-#include <exception>
 #include <stdexcept>
 
 namespace wwiv::common {

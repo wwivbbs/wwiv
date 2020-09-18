@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "common/full_screen.h"
 
-#include "common/bgetch.h"
 #include "common/common_events.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -26,7 +25,6 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include <iterator>
 #include <memory>
 #include <string>
 
@@ -95,7 +93,7 @@ void FullScreenView::DrawTopBar() {
 }
 
 void FullScreenView::DrawBottomBar(const std::string& text) {
-  auto y = screen_length_ - 1;
+  const auto y = screen_length_ - 1;
   bout_.GotoXY(1, y);
   const auto saved_color = bout.curatr();
   wwiv::core::ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
@@ -108,7 +106,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
     return;
   }
 
-  int x = screen_width_ - 10 - ssize(text);
+  const auto x = screen_width_ - 10 - ssize(text);
   bout_.GotoXY(x, y);
   bout_ << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text << " |16|09"
         << static_cast<unsigned char>(198);

@@ -20,7 +20,6 @@
 
 #include "core/eventbus.h"
 #include "common/common_events.h"
-#include "common/input.h"
 #include "common/output.h"
 #include "local_io/keycodes.h"
 
@@ -32,8 +31,8 @@ namespace wwiv::common {
  * returns the value of abort
  */
 bool Input::checka() {
-  bool ignored_abort = false;
-  bool ignored_next = false;
+  auto ignored_abort = false;
+  auto ignored_next = false;
   return checka(&ignored_abort, &ignored_next);
 }
 
@@ -43,7 +42,7 @@ bool Input::checka() {
  * returns the value of abort
  */
 bool Input::checka(bool* abort) {
-  bool ignored_next = false;
+  auto ignored_next = false;
   return checka(abort, &ignored_next);
 }
 
@@ -59,8 +58,8 @@ bool Input::checka(bool* abort, bool* next) {
     clearnsp();
   }
   while (bkbhit() && !*abort && !sess().hangup()) {
-    wwiv::core::bus().invoke<CheckForHangupEvent>();
-    char ch = bgetch();
+    core::bus().invoke<CheckForHangupEvent>();
+    const auto ch = bgetch();
     switch (ch) {
     case CN:
       bout.clear_lines_listed();
@@ -77,7 +76,7 @@ bool Input::checka(bool* abort, bool* next) {
     case 'p':
     case CS:
       bout.clear_lines_listed();
-      ch = getkey();
+      (void) getkey();
       break;
     }
   }

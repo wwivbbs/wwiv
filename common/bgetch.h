@@ -15,10 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_BGETCH_H__
-#define __INCLUDED_BBS_BGETCH_H__
+#ifndef __INCLUDED_COMMON_BGETCH_H__
+#define __INCLUDED_COMMON_BGETCH_H__
 
 // TODO(rushfan): Should probably get rid of bgetch.h
 #include "common/input.h"
 
-#endif  // __INCLUDED_BBS_BGETCH_H__
+#endif  // __INCLUDED_COMMON_BGETCH_H__

@@ -21,7 +21,6 @@
 #include "common/context.h"
 #include "common/message_editor_data.h"
 #include "fsed/model.h"
-#include "fsed/line.h"
 #include <filesystem>
 #include <vector>
 #include <string>

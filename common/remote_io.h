@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
-#define __INCLUDED_BBS_REMOTE_IO_H__
+#ifndef __INCLUDED_COMMON_REMOTE_IO_H__
+#define __INCLUDED_COMMON_REMOTE_IO_H__
 
 #include <string>
 
@@ -87,5 +87,5 @@ private:
 
 } // namespace wwiv::common
 
-#endif  // #if !defined (__INCLUDED_BBS_REMOTE_IO_H__)
+#endif  // __INCLUDED_COMMON_REMOTE_IO_H__
 
