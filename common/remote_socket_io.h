@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
 #define __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
 
+#include "core/net.h" // INVALID_SOCKET
 #include "common/remote_io.h"
 #include <atomic>
 #include <cstdint>
