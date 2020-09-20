@@ -202,18 +202,21 @@ void print_pending_list() {
 
     for (const auto& p : callout.callout_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
-      NetworkContact empty_contact;
       if (!r) {
-        // default it to a null entry.
-        r = &empty_contact;
+        // skip
+        continue;
       }
       const auto& con = p.second;
       if (con.options & options_hide_pend) {
         // skip hidden ones.
         continue;
       }
+      if (!r->lastcontactsent() && !r->bytes_waiting()) {
+        // Skip ones without bytes waiting that we've not contacted recently.
+        continue;
+      }
 
-      std::string atc = (allowed_to_call(con, DateTime::now())) ? "|#5Yes" : "|#3---";
+      std::string atc = allowed_to_call(con, DateTime::now()) ? "|#5Yes" : "|#3---";
 
       std::string last_contact_sent{"|#6     -    "};
       if (r->lastcontactsent()) {
@@ -229,9 +232,9 @@ void print_pending_list() {
       bout.format(
           "|#7\xB3 {:>3} |#7\xB3 |#2{:<8} |#7\xB3 |#2{:>5} |#7\xB3|#2{:>8} |#7\xB3|#2{:>8} "
           "|#7\xB3|#2{:>5} |#7\xB3|#2{:>4} |#7\xB3|#2{:>10} |#7\xB3|#7\r\n",
-          atc, a()->network_name(), r->systemnumber(), bsent, brec, bwait, r->numfails(),
+          atc, net.name, r->systemnumber(), bsent, brec, bwait, r->numfails(),
           last_contact_sent);
-      if (!a()->user()->HasPause() && ((lines++) == 20)) {
+      if (!a()->user()->HasPause() && lines++ == 20) {
         bout.pausescr();
         lines = 0;
       }
@@ -279,7 +282,7 @@ void print_pending_list() {
           "\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   bout.nl();
   a()->user()->SetStatus(ss);
-  if (!a()->sess().IsUserOnline() && bout.lines_listed()) {
+  if (bout.lines_listed()) {
     bout.pausescr();
   }
 }

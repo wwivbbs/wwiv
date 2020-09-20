@@ -132,12 +132,19 @@ Contact::~Contact() {
 }
 
 static void fixup_long(daten_t& f) {
+  if (f == 0) {
+    // Don't fixup empty dates.
+    return;
+  }
   const auto now = daten_t_now();
   if (f > now) {
     f = now;
   }
+  // We used to keep it no more than 1 month old, however that
+  // makes no sense, just clear it if we've aged out past a month.
+  // which is ~720 hours
   if (f + (SECONDS_PER_DAY * 30L) < now) {
-    f = now - (SECONDS_PER_DAY * 30L);
+    f = 0; // now - (SECONDS_PER_DAY * 30L);
   }
 }
 
