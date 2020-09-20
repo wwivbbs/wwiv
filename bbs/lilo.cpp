@@ -948,14 +948,14 @@ void logoff() {
   a()->user()->SetLastOn(g_szLastLoginDate);
 
   a()->user()->SetNumIllegalLogons(0);
-  auto seconds_used_duration = duration_cast<seconds>(
+  const auto seconds_used_duration = duration_cast<seconds>(
       std::chrono::system_clock::now() - a()->sess().system_logon_time() - a()->extratimecall());
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 
   a()->status_manager()->Run([=](WStatus& s) {
-    int active_today = s.GetMinutesActiveToday();
-    auto minutes_used_now = std::chrono::duration_cast<std::chrono::minutes>(seconds_used_duration).count();
+    const int active_today = s.GetMinutesActiveToday();
+    const auto minutes_used_now = std::chrono::duration_cast<std::chrono::minutes>(seconds_used_duration).count();
     s.SetMinutesActiveToday(active_today + minutes_used_now);
   });
 
@@ -963,17 +963,17 @@ void logoff() {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
   a()->user()->SetLastOnDateNumber(daten_t_now());
-  auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
-  auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
+  const auto used_this_session = (std::chrono::system_clock::now() - a()->sess().system_logon_time());
+  const auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 
       << "   Time on: "  << min_used.count() << " minutes.";
   {
-    unique_ptr<File> pFileEmail(OpenEmailFile(true));
+    auto pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       a()->user()->SetNumMailWaiting(0);
-      auto num_records = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
-      int r = 0;
-      int w = 0;
+      const auto num_records = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
+      auto r = 0;
+      auto w = 0;
       while (r < num_records) {
         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
@@ -994,7 +994,7 @@ void logoff() {
       if (r != w) {
         m.tosys = 0;
         m.touser = 0;
-        for (int w1 = w; w1 < r; w1++) {
+        for (auto w1 = w; w1 < r; w1++) {
           pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::Whence::begin);
           pFileEmail->Write(&m, sizeof(mailrec));
         }
@@ -1009,9 +1009,9 @@ void logoff() {
   if (received_short_message()) {
     File smwFile(FilePath(a()->config()->datadir(), SMW_DAT));
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));
-      int r = 0;
-      int w = 0;
+      const auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));
+      auto r = 0;
+      auto w = 0;
       while (r < num_records) {
         shortmsgrec sm;
         smwFile.Seek(r * sizeof(shortmsgrec), File::Whence::begin);
