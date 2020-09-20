@@ -30,12 +30,11 @@
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/status.h"
 #include "sdk/fido/fido_directories.h"
 #include "sdk/fido/fido_util.h"
-#include "sdk/filenames.h"
-#include "sdk/net/callout.h"
 #include "sdk/net/packets.h"
-#include "sdk/status.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -173,10 +172,11 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
     const auto status = sm.GetStatus();
 
     auto num_tries = 0;
-    bool found = false;
+    auto found = false;
     do {
       found = false;
       if (process_instance > 0) {
+        VLOG(1) << "Processing instance for #" << process_instance << "; net: " << net.dir;
         // We need to process pending bbs instance file, these are
         // of the form p1.###.  These will get renamed into p*.net
         rename_bbs_instance_files(net.dir, process_instance, net_cmdline.quiet());
@@ -199,8 +199,8 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
         }
 
         // Check to see if TIC files exist.
-        const bool process_tic = net.fido.process_tic;
-        const bool tic_file_exist = File::ExistsWildcard(FilePath(dirs.tic_dir(), "*.tic"));
+        const auto process_tic = net.fido.process_tic;
+        const auto tic_file_exist = File::ExistsWildcard(FilePath(dirs.tic_dir(), "*.tic"));
         if (process_tic && tic_file_exist) {
           VLOG(2) << "Trying to process TIC files";
           System(create_network_cmdline(net_cmdline, 't', ""));

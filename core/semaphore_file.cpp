@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
+
+#include "stl.h"
 #include "core/log.h"
 #include "core/os.h"
 #include <cerrno>
@@ -54,9 +56,9 @@ namespace wwiv::core {
 SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
-  VLOG(1) << "SemaphoreFile::try_acquire: '" << filepath << "'";
-  int mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
-  int pmode = S_IREAD | S_IWRITE;
+  VLOG(2) << "SemaphoreFile::try_acquire: '" << filepath << "'";
+  const auto mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
+  const auto pmode = S_IREAD | S_IWRITE;
   auto step = timeout / 10;
   if (step > std::chrono::seconds(1)) {
     step = std::chrono::seconds(1);
@@ -65,12 +67,16 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
   const auto end = start + timeout;
   while (true) {
     const auto fn = filepath.string();
-    auto fd = open(fn.c_str(), mode, pmode);
+    const auto fd = open(fn.c_str(), mode, pmode);
     if (fd >= 0) {
-      write(fd, text.c_str(), text.size());
+      const auto written = write(fd, text.c_str(), text.size());
+      if (written != wwiv::stl::ssize(text)) {
+        LOG(WARNING) << "Short write on Semaphore file: " << written << "; vs: " << text.size();
+      }
       return {filepath, fd};
     }
     if (std::chrono::steady_clock::now() > end) {
+      VLOG(1) << "FAILED: SemaphoreFile::try_acquire: '" << filepath << "'";
       throw semaphore_not_acquired(filepath);
     }
     sleep_for(step);
@@ -83,8 +89,8 @@ SemaphoreFile SemaphoreFile::acquire(const std::filesystem::path& filepath,
   return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
-SemaphoreFile::SemaphoreFile(const std::filesystem::path& filepath, int fd)
-  : path_(filepath), fd_(fd) {
+SemaphoreFile::SemaphoreFile(const std::filesystem::path& path, int fd)
+  : path_(path), fd_(fd) {
 }
 
 SemaphoreFile::~SemaphoreFile() {

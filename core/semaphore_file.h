@@ -28,7 +28,7 @@
 namespace wwiv {
 namespace core {
 
-struct semaphore_not_acquired : public std::runtime_error {
+struct semaphore_not_acquired final : public std::runtime_error {
   semaphore_not_acquired(const std::filesystem::path& filename)
     : std::runtime_error(filename.string()) {
   }
