@@ -22,7 +22,6 @@
 #include "core/version.h"
 #include "fmt/format.h"
 #include "net_core/netdat.h"
-
 #include "core/numbers.h"
 #include "sdk/net/net.h"
 
@@ -30,8 +29,25 @@ using namespace wwiv::core;
 
 namespace wwiv::net {
 
-NetDat::NetDat(std::filesystem::path gfiles, const net_networks_rec& net, wwiv::core::Clock& clock)
-  : gfiles_(std::move(gfiles)), net_(net), clock_(clock) {
+// static
+char NetDat::NetDatMsgType(netdat_msgtype_t t) {
+  switch (t) {
+  case netdat_msgtype_t::banner:
+    return '\xFE';
+  case netdat_msgtype_t::post:
+    return '+';
+  case netdat_msgtype_t::normal:
+    return '-';
+  case netdat_msgtype_t::error:
+    return '!';
+  default:
+    LOG(FATAL) << "Missing case for " << static_cast<int>(t);
+    return 0;
+  }
+}
+
+NetDat::NetDat(std::filesystem::path gfiles, const net_networks_rec& net, char net_cmd, Clock& clock)
+  : gfiles_(std::move(gfiles)), net_(net), net_cmd_(net_cmd), clock_(clock) {
   rollover();
   file_ = open("ad");
   if (file_->position() == 0) {
@@ -43,18 +59,22 @@ NetDat::NetDat(std::filesystem::path gfiles, const net_networks_rec& net, wwiv::
 }
 
 NetDat::~NetDat() {
+  WriteStats();
+  WriteLines();
   file_->Close();
 }
 
 void NetDat::WriteHeader() {
   const auto now_hms = clock_.Now().to_string("%H:%M:%S");
-  const auto header = fmt::format("\xFE {} - net{} network1 [{}] ({}) [{}]",
+  const auto header = fmt::format("\xFE {} - net{} network{} [{}] ({}) [{}]",
     now_hms,
     wwiv_network_compatible_version(),
+    net_cmd_,
     full_version(),
     wwiv_compile_datetime(), net_.name);
   file_->WriteLine("");
   WriteLine(header);
+  VLOG(2) << header;
 }
 
 void NetDat::WriteLine(const std::string& s) {
@@ -80,11 +100,13 @@ bool NetDat::WriteStats() {
   }
 
   const auto total = fmt::format("  -  Total :  {} msgs, {}k", total_files, bytes_to_k(total_bytes));
+  VLOG(2) << total;
   WriteLine(total);
 
-  if (wwiv::stl::contains(stats_, 65535)) {
+  if (stl::contains(stats_, 65535)) {
     const auto& s = stats_.at(65535);
     const auto line = fmt::format("  -   Dead :  {} msgs, {}k", s.files, bytes_to_k(s.bytes));
+    VLOG(2) << line;
     WriteLine(line);
   }
 
@@ -95,14 +117,35 @@ bool NetDat::WriteStats() {
     }
     const auto line = fmt::format("  - {:<6} :  {} msgs, {}k", strings::StrCat("@", n), s.files,
                                   bytes_to_k(s.bytes));
+    VLOG(2) << line;
     WriteLine(line);
   }
-  return false;
+  stats_.clear();
+  return true;
+}
+
+bool NetDat::WriteLines() {
+  if (lines_.empty()) {
+    return false;
+  }
+
+  WriteHeader();
+  for (const auto& l : lines_) {
+    VLOG(2) << l;
+    file_->WriteLine(l);
+  }
+  return true;
 }
 
 void NetDat::add_file_bytes(int node, int bytes) {
   ++stats_[node].files;
   stats_[node].bytes += bytes;
+}
+
+void NetDat::add_message(netdat_msgtype_t t, const std::string& msg) {
+  const auto start =
+      t == netdat_msgtype_t::banner ? "\xFE " : strings::StrCat(" ", NetDatMsgType(t), " ");
+  lines_.emplace_back(strings::StrCat(start, msg));
 }
 
 bool NetDat::empty() const {
@@ -112,10 +155,20 @@ bool NetDat::empty() const {
 std::string NetDat::ToDebugString() const {
   std::ostringstream ss;
 
-  ss << "Stats: " << std::endl;
-  for (const auto& [k, v] : stats_) {
-    ss << "k: " << k << ":  files: " << v.files << "; bytes: " << v.bytes << std::endl;
+  if (!stats_.empty()) {
+    ss << "Stats: " << std::endl;
+    for (const auto& [k, v] : stats_) {
+      ss << "k: " << k << ":  files: " << v.files << "; bytes: " << v.bytes << std::endl;
+    }
   }
+
+  if (!lines_.empty()) {
+    ss << "Lines: " << std::endl;
+    for (const auto& l : lines_) {
+      ss << l << std::endl;
+    }
+  }
+
   return ss.str();
 }
 

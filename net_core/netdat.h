@@ -21,19 +21,20 @@
 #include "core/clock.h"
 #include "core/textfile.h"
 #include <memory>
-#include <ostream>
+#include <map>
 #include <filesystem>
-#include <sstream>
+#include <vector>
 
 struct net_networks_rec;
 
 namespace wwiv::net {
 
+
 class NetworkStat final {
 public:
   NetworkStat() = default;
   ~NetworkStat() = default;
-  int k() const;
+  [[nodiscard]] int k() const;
 
   int files{0};
   int bytes{0};
@@ -46,14 +47,20 @@ public:
  */
 class NetDat final {
 public:
-  explicit NetDat(std::filesystem::path gfiles, const net_networks_rec& net, wwiv::core::Clock& clock);
+  enum class netdat_msgtype_t { banner, post, normal, error };
+  
+  static char NetDatMsgType(netdat_msgtype_t t);
+
+  explicit NetDat(std::filesystem::path gfiles, const net_networks_rec& net, char net_cmd, core::Clock& clock);
 
   ~NetDat();
 
   bool WriteStats();
+  bool WriteLines();
   void add_file_bytes(int node, int bytes);
-  bool empty() const;
-  std::string ToDebugString() const;
+  void add_message(netdat_msgtype_t t, const std::string& msg);
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] std::string ToDebugString() const;
 
 private:
   bool rollover();
@@ -64,9 +71,11 @@ private:
 
   std::filesystem::path gfiles_;
   const net_networks_rec& net_;
+  const char net_cmd_;
   core::Clock& clock_;
   std::unique_ptr<TextFile> file_;
   std::map<int, NetworkStat> stats_;
+  std::vector<std::string> lines_;
 };
 
 

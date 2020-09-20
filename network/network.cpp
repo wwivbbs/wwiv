@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     cmdline.add_argument({"speed", 'S', "Modem Speedto use (only used by legacy network0)", ""});
     cmdline.add_argument({"callout_time", 'T', "Start time of the callout (only used by legacy network0)", ""});
 
-    NetworkCommandLine net_cmdline(cmdline, '\0');
+    NetworkCommandLine net_cmdline(cmdline, '0');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(net_cmdline);
       return 1;

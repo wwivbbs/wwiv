@@ -17,18 +17,17 @@
 /**************************************************************************/
 #include "network2/post.h"
 
-#include "core/connection.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "fmt/format.h"
 #include "network2/context.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/net/packets.h"
 #include <iostream>
@@ -102,6 +101,8 @@ bool handle_inbound_post(Context& context, Packet& p) {
   if (!find_sub(context.subs, context.network_number, ppt.subtype(), sub)) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << ppt.subtype();
     LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
+    const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", ppt.subtype());
+    context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
@@ -112,6 +113,8 @@ bool handle_inbound_post(Context& context, Packet& p) {
     // like WWIV always does.
     auto created = context.api(sub.storage_type).Create(sub, -1);
     if (!created) {
+      const auto msg = fmt::format("Failed to create message area: '{}'; writing to dead.net", sub.filename);
+      context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
       LOG(INFO) << "    ! ERROR: Failed to create message area: '" << sub.filename
                 << "'; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -120,14 +123,17 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
+    const auto msg = fmt::format("Failed to open message area: '{}'; writing to dead.net", sub.filename);
+    context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
     LOG(INFO) << "    ! ERROR Unable to open message area: '" << sub.filename
               << "'; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   if (area->Exists(p.nh.daten, ppt.title(), p.nh.fromsys, p.nh.fromuser)) {
-    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << ppt.subtype()
-              << "; daten: " << p.nh.daten << "; title: " << ppt.title() << ".";
+    const auto msg = fmt::format("Discarding Duplicate Message on sub: {}; daten: {}; title: {}", ppt.subtype(),  p.nh.daten, ppt.title());
+    context.netdat().add_message(NetDat::netdat_msgtype_t::normal, msg);
+    LOG(INFO) << msg;
     // Returning true since we properly handled this by discarding it.
     return true;
   }
@@ -145,10 +151,15 @@ bool handle_inbound_post(Context& context, Packet& p) {
   MessageAreaOptions options{};
   options.send_post_to_network = false;
   if (!area->AddMessage(*msg, options)) {
-    LOG(ERROR) << "    ! ERROR Failed to add message: '" << ppt.title() << "'; writing to dead.net";
+    const auto errmsg = fmt::format("Failed to add message: '{}'; writing to dead.net", ppt.title());
+    context.netdat().add_message(NetDat::netdat_msgtype_t::error, errmsg);
+    LOG(ERROR) << "    ! ERROR " << errmsg;
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   LOG(INFO) << "    + Posted  '" << ppt.title() << "' on sub: '" << ppt.subtype() << "'.";
+    context.netdat().add_message(NetDat::netdat_msgtype_t::post, fmt::format("Posted  '{}' on sub: '{}'",
+    ppt.title(), ppt.subtype()));
+
   return true;
 }
 
@@ -180,8 +191,9 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
 
   subboard_t sub;
   if (!find_sub(context.subs, context.network_number, original_subtype, sub)) {
-    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: '" << original_subtype
-              << "'; writing to dead.net.";
+    const auto msg = fmt::format("Unable to find message of subtype: '{}'; writing to dead.net", original_subtype);
+    context.netdat().add_message(NetDat::netdat_msgtype_t::error, msg);
+    LOG(INFO) << msg;
     Packet p(template_packet.nh, {}, template_packet.text());
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }

@@ -26,22 +26,22 @@
 #include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "net_core/net_cmdline.h"
+#include "net_core/netdat.h"
 #include "network2/context.h"
 #include "network2/email.h"
 #include "network2/post.h"
 #include "network2/subs.h"
-#include "net_core/net_cmdline.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/net/networks.h"
+#include "sdk/net/packets.h"
 #include "sdk/ssm.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/net/packets.h"
 #include <cstdlib>
-#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -73,8 +73,7 @@ static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
   statusrec_t status{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
-                             File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
       if (email) {
@@ -94,9 +93,8 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 }
 
 static bool handle_ssm(Context& context, Packet& p) {
-  ScopeExit at_exit([] {
-    VLOG(1) << "==============================================================";
-  });
+  ScopeExit at_exit(
+      [] { VLOG(1) << "=============================================================="; });
   VLOG(1) << "==============================================================";
   SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(p.nh.touser, p.text())) {
@@ -122,14 +120,16 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
   // we know the name.
   const auto fn = FilePath(net.dir, info.filename);
   if (!info.overwrite && File::Exists(fn)) {
-    LOG(ERROR) << "    ! ERROR File [" << fn << "] already exists, and packet not set to overwrite; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR File [" << fn
+               << "] already exists, and packet not set to overwrite; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   File file(fn);
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite)) {
     // We couldn't create or open the file.
-    LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename << "'; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename
+               << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   file.Write(info.data);
@@ -152,10 +152,9 @@ static bool handle_sub_list(const net_networks_rec& net, Packet& p) {
   return write_net_received_file(net, p, info);
 }
 
-static bool handle_packet(
-  Context& context, Packet& p) {
-  LOG(INFO) << "Processing message with type: " << main_type_name(p.nh.main_type)
-      << "/" << p.nh.minor_type;
+static bool handle_packet(Context& context, Packet& p) {
+  LOG(INFO) << "Processing message with type: " << main_type_name(p.nh.main_type) << "/"
+            << p.nh.minor_type;
 
   switch (p.nh.main_type) {
     /*
@@ -168,7 +167,7 @@ static bool handle_packet(
     */
   case main_type_net_info: {
     if (p.nh.minor_type == 0) {
-      // Feedback to sysop from the NC.  
+      // Feedback to sysop from the NC.
       // This is sent to the #1 account as source verified email.
       email_changed = true;
       return handle_email(context, 1, p);
@@ -224,7 +223,7 @@ static bool handle_packet(
   case main_type_post:
   case main_type_pre_post:
 
-  // EPROGS.NET support 
+  // EPROGS.NET support
   case main_type_external:
   case main_type_new_external:
 
@@ -250,7 +249,7 @@ static bool handle_file(Context& context, const string& name) {
     return false;
   }
 
-  for ( ;; ) {
+  for (;;) {
     auto [packet, response] = read_packet(f, true);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
@@ -263,7 +262,6 @@ static bool handle_file(Context& context, const string& name) {
       LOG(ERROR) << "Error handing packet: type: " << packet.nh.main_type;
     }
   }
-  return true;
 }
 
 int network2_main(const NetworkCommandLine& net_cmdline) {
@@ -278,13 +276,15 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     const auto& networks = net_cmdline.networks();
     // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options{};
-    // By defaukt, delete excess messages like net37 did.
-    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_all;
+    MessageApiOptions options{};
+    // By default, delete excess messages like net37 did.
+    options.overflow_strategy = OverflowStrategy::delete_all;
 
-    auto user_manager = make_unique<UserManager>(config);
+    const auto user_manager = make_unique<UserManager>(config);
+    SystemClock clock{};
+    NetDat netdat(config.gfilesdir(), net, net_cmdline.net_cmd(), clock);
 
-    Context context(config, net, *user_manager.get(), networks.networks());
+    Context context(config, net, *user_manager, networks.networks(), netdat);
     context.network_number = net_cmdline.network_number();
     context.set_email_api(
         make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));
@@ -302,10 +302,9 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
       }
       update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
       return 0;
-    } else {
-      LOG(ERROR) << "ERROR: handle_file returned false";
-      return 1;
     }
+    LOG(ERROR) << "ERROR: handle_file returned false";
+    return 1;
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
@@ -318,15 +317,15 @@ int main(int argc, char** argv) {
   Logger::Init(argc, argv, config);
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
-  NetworkCommandLine net_cmdline(cmdline, '2');
+  const NetworkCommandLine net_cmdline(cmdline, '2');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;
   }
 
   try {
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_path(),
-                                                net_cmdline.semaphore_timeout());
+    auto semaphore =
+        SemaphoreFile::try_acquire(net_cmdline.semaphore_path(), net_cmdline.semaphore_timeout());
     return network2_main(net_cmdline);
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
