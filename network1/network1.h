@@ -22,7 +22,6 @@
 #include "net_core/net_cmdline.h"
 #include "net_core/netdat.h"
 #include "sdk/net/packets.h"
-#include <map>
 #include <string>
 
 
@@ -52,4 +51,4 @@ private:
   wwiv::net::NetDat netdat_;
 };
 
-#endif INCLUDED_NET_NETWORK1_H
+#endif // INCLUDED_NET_NETWORK1_H

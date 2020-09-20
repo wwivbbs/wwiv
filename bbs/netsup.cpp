@@ -122,7 +122,7 @@ void cleanup_net() {
     ss << " ." << nNetNumber;
     const auto networkc_cmd = ss.str();
     VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
-    ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG);
+    ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG | EFLAG_NOHUP);
     a()->status_manager()->RefreshStatusCache();
     a()->sess().SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
@@ -157,7 +157,7 @@ static void do_callout(const net_networks_rec& net, int sn) {
   }
   bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
        << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
-  ExecuteExternalProgram(cmd, EFLAG_NETPROG);
+  ExecuteExternalProgram(cmd, EFLAG_NETPROG | EFLAG_NOHUP);
   a()->status_manager()->RefreshStatusCache();
   cleanup_net();
 }
