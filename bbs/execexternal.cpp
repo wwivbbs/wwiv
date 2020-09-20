@@ -35,6 +35,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
     if (CheckForHangup()) {
+      LOG(ERROR) << "Not executing program.  User Hung Up";
       return -1;
     }
   }
