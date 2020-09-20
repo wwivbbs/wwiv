@@ -55,6 +55,7 @@ public:
   void set_text(std::string&& text);
   // Updates the lengths in the header for list and text.
   void update_header();
+  int length() const;
 
   net_header_rec nh{};
   std::vector<uint16_t> list;

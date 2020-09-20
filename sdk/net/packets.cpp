@@ -313,6 +313,10 @@ void Packet::update_header() {
   nh.list_len = static_cast<uint16_t>(list.size());
 }
 
+int Packet::length() const {
+  return nh.length;
+}
+
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
   VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
 

@@ -109,8 +109,12 @@ class Contact {
   void add_failure(int node, const wwiv::core::DateTime& time);
   void add_failure(const std::string& node, const wwiv::core::DateTime& time);
 
+  /** Removes the entry for a node */
+  void remove(int node);
+
   bool Save();
   [[nodiscard]] const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
+  [[nodiscard]] std::map<std::string, NetworkContact>& mutable_contacts() { return contacts_; }
   [[nodiscard]] std::string ToString() const;
   [[nodiscard]] std::string full_pathname() const noexcept;
   [[nodiscard]] std::filesystem::path path() const noexcept;

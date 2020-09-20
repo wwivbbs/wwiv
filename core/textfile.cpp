@@ -215,10 +215,13 @@ std::string TextFile::ReadFileIntoString() {
   return contents;
 }
 
-std::vector<std::string> TextFile::ReadFileIntoVector() {
+std::vector<std::string> TextFile::ReadFileIntoVector(int64_t max_lines) {
+  if (max_lines <= 0) {
+    max_lines = std::numeric_limits<int64_t>::max();
+  }
   std::vector<std::string> result;
   string line;
-  while (ReadLine(&line)) {
+  while (ReadLine(&line) && max_lines-- > 0) {
     result.push_back(line);
   }
   return result;

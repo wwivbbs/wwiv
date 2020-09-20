@@ -252,6 +252,13 @@ void Contact::add_failure(const std::string& n, const wwiv::core::DateTime& time
   c->AddFailure(time);
 }
 
+
+void Contact::remove(int node) {
+  const auto sn = NetworkContact::CreateFakeFtnAddress(node);
+  contacts_.erase(sn);
+}
+
+
 void Contact::add_contact(NetworkContact* c, const wwiv::core::DateTime& time) {
   c->AddContact(time);
 }

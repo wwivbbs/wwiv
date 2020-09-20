@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_NET_UTIL_H__
-#define __INCLUDED_NETWORKB_NET_UTIL_H__
+#ifndef INCLUDED_NET_CORE_NET_CMDLINE_H
+#define INCLUDED_NET_CORE_NET_CMDLINE_H
 
 #include <chrono>
 #include <memory>
@@ -28,8 +28,7 @@
 #include "sdk/net/net.h"
 #include "sdk/net/networks.h"
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline);
 
@@ -40,24 +39,24 @@ class NetworkCommandLine {
 public:
   NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd);
 
-  bool IsInitialized() const noexcept { return initialized_; }
-  const wwiv::sdk::Config& config() const noexcept { return *config_.get(); }
-  const wwiv::sdk::Networks& networks() const noexcept { return *networks_.get(); }
-  std::string network_name() const noexcept { return network_name_; }
-  int network_number() const noexcept { return network_number_; }
-  const net_networks_rec& network() const noexcept { return network_; }
-  const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
-  char net_cmd() const noexcept { return net_cmd_; }
-  std::filesystem::path semaphore_path() const noexcept;
-  std::string GetHelp() const;
+  [[nodiscard]] bool IsInitialized() const noexcept { return initialized_; }
+  [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return *config_; }
+  [[nodiscard]] const wwiv::sdk::Networks& networks() const noexcept { return *networks_; }
+  [[nodiscard]] std::string network_name() const noexcept { return network_name_; }
+  [[nodiscard]] int network_number() const noexcept { return network_number_; }
+  [[nodiscard]] const net_networks_rec& network() const noexcept { return network_; }
+  [[nodiscard]] const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
+  [[nodiscard]] char net_cmd() const noexcept { return net_cmd_; }
+  [[nodiscard]] std::filesystem::path semaphore_path() const noexcept;
+  [[nodiscard]] std::string GetHelp() const;
 
   /** Process net.ini and reparse command line applying new defaults */
-  bool LoadNetIni(char net_cmd, const std::string& bbsdir);
-  bool skip_delete() const noexcept;
-  bool skip_net() const noexcept;
-  bool quiet() const noexcept;
+  [[nodiscard]] bool LoadNetIni(char net_cmd, const std::string& bbsdir);
+  [[nodiscard]] bool skip_delete() const noexcept;
+  [[nodiscard]] bool skip_net() const noexcept;
+  [[nodiscard]] bool quiet() const noexcept;
 
-  std::chrono::duration<double> semaphore_timeout() const noexcept;
+  [[nodiscard]] std::chrono::duration<double> semaphore_timeout() const noexcept;
 
 private:
   std::unique_ptr<wwiv::sdk::Config> config_;
@@ -70,7 +69,6 @@ private:
   char net_cmd_;
 };
 
-} // namespace net
-} // namespace wwiv
+} // namespace wwiv::net
 
-#endif // __INCLUDED_NETWORKB_NET_UTIL_H__
+#endif // INCLUDED_NET_CORE_NET_CMDLINE_H
