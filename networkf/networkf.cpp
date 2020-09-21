@@ -30,6 +30,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "fmt/format.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
@@ -264,11 +265,10 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << packet.nh.main_type << "/"
                  << packet.nh.minor_type;
     } else {
-      if (is_email) {
-        LOG(INFO) << "     + Imported Email '" << msg.vh.subject << "' to '" << s1;
-      } else {
-        LOG(INFO) << "     + Imported Post '" << msg.vh.subject << "' in area '" << s1;
-      }
+      std::string itype = (is_email) ? "Email" : "Post";
+      auto l = fmt::format("Imported {} '{}' to '{}'", itype, msg.vh.subject, s1);
+      netdat_.add_message(NetDat::netdat_msgtype_t::post, l);
+      LOG(INFO) << l;
     }
   }
 
