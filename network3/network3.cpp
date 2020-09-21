@@ -31,6 +31,7 @@
 #include "core/version.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "net_core/netdat.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
@@ -312,7 +313,8 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
   bbsdata_reg_file.WriteVector(bbsdata_reg_data);
 }
 
-static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
+/** returns the number of reachable systems */
+static int write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
   {
     LOG(INFO) << "Writing bbsdata.net...";
     DataFile<net_system_list_rec> bbsdata_net_file(FilePath(dir, BBSDATA_NET),
@@ -321,11 +323,16 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     bbsdata_net_file.WriteVector(bbsdata_data);
    }
   update_timestamps(dir);
+  auto num_reachable = 0;
   {
     LOG(INFO) << "Writing bbsdata.ind...";
     vector<uint16_t> bbsdata_ind_data;
     for (const auto& n : bbsdata_data) {
-      bbsdata_ind_data.push_back((n.forsys == WWIVNET_NO_NODE) ? 0 : n.sysnum);
+      const auto is_reachable = n.forsys != WWIVNET_NO_NODE;
+      if (is_reachable) {
+        ++num_reachable;
+      }
+      bbsdata_ind_data.push_back(is_reachable ? n.sysnum : 0);
     }
     DataFile<uint16_t> bbsdata_ind_file(FilePath(dir, BBSDATA_IND), File::modeBinary |
                                         File::modeReadWrite | File::modeCreateFile);
@@ -342,6 +349,7 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
                                                                             File::modeCreateFile);
     bbsdata_rou_file.WriteVector(bbsdata_rou_data);
   }
+  return num_reachable;
 }
 
 static void update_net_ver_status_dat(const string& datadir) {
@@ -534,6 +542,8 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   VLOG(2) << "Reading bbslist.net..";
   const auto& net = net_cmdline.network();
   const auto b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
+  SystemClock clock;
+  NetDat netdat(net_cmdline.config().gfilesdir(), net_cmdline.network(), net_cmdline.net_cmd(), clock);
   if (b.empty()) {
     LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
     return 1;
@@ -544,12 +554,11 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
 
   vector<net_system_list_rec> bbsdata_data;
-  for (const auto& entry : b.node_config()) {
-    const auto& n = entry.second;
+  for (const auto& [_, n] : b.node_config()) {
     bbsdata_data.push_back(n);
   }
 
-  write_bbsdata_files(bbsdata_data, net.dir);
+  int num_systems = write_bbsdata_files(bbsdata_data, net.dir);
   write_bbsdata_reg_file(b, net.dir);
 
   VLOG(2) << "Reading callout.net...";
@@ -573,6 +582,9 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
     }
     text << "\r\nBest,\r\n\r\n" << net.name << "@" << net.sysnum << "\r\n\r\n";
     send_feedback_email(net, text.str());
+    const auto netdatmsg = fmt::format("{} Analysis for @{}: {} systems.", 
+      net.name, net.sysnum , num_systems);
+    netdat.add_message(NetDat::netdat_msgtype_t::normal, netdatmsg);
   }
   return 0;
 }

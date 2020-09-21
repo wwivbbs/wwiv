@@ -99,15 +99,15 @@ bool NetDat::WriteStats() {
     total_bytes += s.bytes;
   }
 
-  const auto total = fmt::format("  -  Total :  {} msgs, {}k", total_files, bytes_to_k(total_bytes));
+  const auto total = fmt::format(" Total :  {} msgs, {}k", total_files, bytes_to_k(total_bytes));
   VLOG(2) << total;
-  WriteLine(total);
+  add_message(netdat_msgtype_t::normal, total);
 
   if (stl::contains(stats_, 65535)) {
     const auto& s = stats_.at(65535);
-    const auto line = fmt::format("  -   Dead :  {} msgs, {}k", s.files, bytes_to_k(s.bytes));
+    const auto line = fmt::format("  Dead :  {} msgs, {}k", s.files, bytes_to_k(s.bytes));
     VLOG(2) << line;
-    WriteLine(line);
+    add_message(netdat_msgtype_t::normal, line);
   }
 
   for (const auto& [n, s] : stats_) {
@@ -115,10 +115,10 @@ bool NetDat::WriteStats() {
       // Skip dead.net
       continue;
     }
-    const auto line = fmt::format("  - {:<6} :  {} msgs, {}k", strings::StrCat("@", n), s.files,
+    const auto line = fmt::format("{:<6} :  {} msgs, {}k", strings::StrCat("@", n), s.files,
                                   bytes_to_k(s.bytes));
     VLOG(2) << line;
-    WriteLine(line);
+    add_message(netdat_msgtype_t::normal, line);
   }
   stats_.clear();
   return true;
@@ -134,6 +134,8 @@ bool NetDat::WriteLines() {
     VLOG(2) << l;
     file_->WriteLine(l);
   }
+  lines_.clear();
+
   return true;
 }
 
