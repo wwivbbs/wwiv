@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FTN_MSGDUPE_H__
-#define __INCLUDED_SDK_MSGID_H__
+#ifndef INCLUDED_SDK_FTN_MSGDUPE_H
+#define INCLUDED_SDK_FTN_MSGDUPE_H
 
 #include <string>
 #include <set>
@@ -81,4 +81,4 @@ private:
 }
 
 
-#endif  // __INCLUDED_SDK_MSGID_H__
+#endif  // INCLUDED_SDK_FTN_MSGDUPE_H
