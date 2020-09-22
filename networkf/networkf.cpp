@@ -758,14 +758,14 @@ bool NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest, const FidoA
   const FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
   std::string fido_packet_name;
   if (!create_ftn_packet(dest, route_to, p, fido_packet_name)) {
-    LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net_";
+    LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net_, p);
     return false;
   }
   LOG(INFO) << "Created packet: " << FilePath(dirs.temp_outbound_dir(), fido_packet_name);
 
   if (!create_ftn_bundle(route_to, fido_packet_name, bundlename)) {
-    LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net_";
+    LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net_, p);
     return false;
   }
@@ -938,7 +938,7 @@ bool NetworkF::export_main_type_new_post(std::set<std::string>& bundles, Packet&
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline_.config().root_directory(), net_.dir);
-  auto subscribers = ReadFidoSubcriberFile(FilePath(net_dir, StrCat("n", subtype, ".net_")));
+  auto subscribers = ReadFidoSubcriberFile(FilePath(net_dir, StrCat("n", subtype, ".net")));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }
@@ -1033,7 +1033,7 @@ bool NetworkF::Run() {
 #endif
     }
   } else if (cmd == "export") {
-    const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net_");
+    const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
     if (!File::Exists(FilePath(net_.dir, sfilename))) {
       LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
       return false;
@@ -1075,10 +1075,10 @@ bool NetworkF::Run() {
         }
       } else {
         LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
-            << "'; writing to dead.net_";
+            << "'; writing to dead.net";
         // Let's write it to dead.net_
         if (!write_wwivnet_packet(DEAD_NET, net_, p)) {
-          LOG(ERROR) << "Error writing to dead.net_";
+          LOG(ERROR) << "Error writing to dead.net";
         }
       }
     }
@@ -1099,7 +1099,7 @@ int main(int argc, char** argv) {
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
-  CommandLine cmdline(argc, argv, "net_");
+  CommandLine cmdline(argc, argv, "net");
   const NetworkCommandLine net_cmdline_(cmdline, 'f');
   try {
     ScopeExit at_exit(Logger::ExitLogger);
