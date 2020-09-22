@@ -266,7 +266,7 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
                  << packet.nh.minor_type;
     } else {
       std::string itype = (is_email) ? "Email" : "Post";
-      auto l = fmt::format("Imported {} '{}' to '{}'", itype, msg.vh.subject, s1);
+      auto l = fmt::format("Imported FTN {} '{}' to '{}'", itype, msg.vh.subject, s1);
       netdat_.add_message(NetDat::netdat_msgtype_t::post, l);
       LOG(INFO) << l;
     }
