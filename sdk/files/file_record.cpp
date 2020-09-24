@@ -214,6 +214,19 @@ bool FileRecord::set_description(const std::string& desc) {
   return true;
 }
 
+bool FileRecord::set_uploaded_by(const std::string& name) {
+  auto d = name;
+  if (d.size() > 35u) {
+    d.resize(35);
+  }
+  to_char_array(u_.upby, d);
+  return true;
+}
+
+std::string FileRecord::uploaded_by() const {
+  return u_.upby;
+}
+
 std::string FileRecord::description() const {
   return u_.description;
 }
