@@ -97,7 +97,7 @@ public:
   // Constructor/Destructor
 
   /** Constructs a file from a path. */
-  explicit File(std::filesystem::path p);
+  explicit File(std::filesystem::path full_path_name);
   /** Destructs File. Closes any open file handles. */
   File(File&& other) noexcept;
   File& operator=(File&& other) noexcept;
@@ -231,7 +231,7 @@ private:
 };
 
 /** Makes a backup of path using a custom suffix with the time and date */
-bool backup_file(const std::filesystem::path& p);
+bool backup_file(const std::filesystem::path& from);
 
 } // namespace core
 } // namespace wwiv

@@ -84,6 +84,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
 
   const DWORD creation_flags = CREATE_NEW_CONSOLE;
 
+  const auto current_dir = File::current_directory().string();
   const auto ok = CreateProcess(
     nullptr, 
     cmdstr,
@@ -92,7 +93,7 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
     TRUE,
     creation_flags,
     nullptr,
-    nullptr,
+    current_dir.c_str(),
     &si,
     &pi);
 

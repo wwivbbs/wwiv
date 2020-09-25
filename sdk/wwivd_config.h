@@ -60,6 +60,8 @@ struct wwivd_matrix_entry_t {
   std::string telnet_cmd;
   /** Command to launch this BBS over SSH */
   std::string ssh_cmd;
+  /** Working directory to use when launching the BBS */
+  std::string working_directory;
   /** Does using this BBS require ANSI? */
   bool require_ansi = false;
   /** Start node for this bbs */

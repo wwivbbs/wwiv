@@ -46,13 +46,13 @@ static const char enter_to_edit[] = "[Press Enter to Edit]";
 /** 
  * EditItem that executes a std::function<T, CursesWindow*> to 
  * edit the items. It is intended that this function will invoke
- * a new Edititems dialog or ListBox for editing.
+ * a new EditItem dialog or ListBox for editing.
  */
-template <class T> class SubDialog : public BaseEditItem {
+template <class T> class SubDialog final : public BaseEditItem {
 public:
-  SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
-    : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), t_(t), fn_(std::move(fn)) {};
-  virtual ~SubDialog() = default;
+  SubDialog(const Config& c, int x, int y, T& t, std::function<void(const Config&, T&, CursesWindow*)> fn)
+    : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), c_(c), t_(t), fn_(std::move(fn)) {}
+  ~SubDialog() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
@@ -60,7 +60,7 @@ public:
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      fn_(t_, window);
+      fn_(c_, t_, window);
       window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
       return EditlineResult::PREV;
@@ -73,11 +73,12 @@ public:
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, enter_to_edit); }
 
 private:
+  const Config& c_;
   T& t_;
-  std::function<void(T&, CursesWindow*)> fn_;
+  std::function<void(const Config&, T&, CursesWindow*)> fn_;
 };
 
-static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window) {
+static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, CursesWindow* window) {
   auto done = false;
   do {
     vector<ListBoxItem> items;
@@ -99,7 +100,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
         if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
           break;
         }
-        wwiv::stl::erase_at(b_.block_cc_countries, result.selected);
+        erase_at(b_.block_cc_countries, result.selected);
       } break;
       case 'I': {
         const auto code_str =
@@ -131,7 +132,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
 }
 
 // Base item of an editable value, this class does not use templates.
-static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) { 
+static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindow*) { 
   EditItems items{}; 
   int y = 1;
   items.add(new Label(COL1_LINE, y, "Use goodip.txt?"),
@@ -157,7 +158,7 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
 
   y++;
   items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, b, blocked_country_subdialog));
+            new SubDialog<wwivd_blocking_t>(config, COL1_POSITION, y, b, blocked_country_subdialog));
 
   y++;
   items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
@@ -174,12 +175,11 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
   items.add(new Label(COL1_LINE, y, "Max Seconds Before Blocking:"),
             new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_seconds));
 
-  y++;
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
 }
 
-static void edit_matrix_entry(wwivd_matrix_entry_t& b) { 
+static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) { 
   EditItems items{};
   char key[2] = {b.key, 0};
   {
@@ -192,6 +192,10 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
     y++;
     items.add(new Label(COL1_LINE, y, "Description:"),
         new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.description, EditLineMode::ALL));
+    y++;
+    items.add(
+        new Label(COL1_LINE, y, "Working Dir:"),
+        new StringFilePathItem(COL1_POSITION, y, 52, config.root_directory(), b.working_directory));
     y++;
     items.add(new Label(COL1_LINE, y, "Telnet Command:"),
         new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.telnet_cmd, EditLineMode::ALL));
@@ -210,7 +214,6 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
     y++;
     items.add(new Label(COL1_LINE, y, "Local Node:"),
               new NumberEditItem<int>(COL1_POSITION, y, &b.local_node));
-    y++;
   }
 
   items.relayout_items_and_labels();
@@ -219,11 +222,11 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
   b.key = key[0];
 }
 
-static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
+static void matrix_subdialog(const Config& config, wwivd_config_t& c, CursesWindow* window) {
   auto done = false;
   do {
     vector<ListBoxItem> items;
-    for (const auto& e : c_.bbses) {
+    for (const auto& e : c.bbses) {
       items.emplace_back(e.name);
     }
     ListBox list(window, "Select BBS", items);
@@ -241,7 +244,7 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
         if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
           break;
         }
-        erase_at(c_.bbses, result.selected);
+        erase_at(c.bbses, result.selected);
       } break;
       case 'I': {
         const auto name = dialog_input_string(window, "Enter BBS Name: ", 8);
@@ -253,15 +256,15 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
         e.key = name.front();
         auto pos = result.selected;
         if (pos >= 0 && pos < ssize(items)) {
-          insert_at(c_.bbses, pos, e);
+          insert_at(c.bbses, pos, e);
         } else {
-          c_.bbses.push_back(e);
+          c.bbses.push_back(e);
         }
       } break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      auto& b = c_.bbses.at(result.selected);
-      edit_matrix_entry(b);
+      auto& b = c.bbses.at(result.selected);
+      edit_matrix_entry(config, b);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
@@ -323,8 +326,8 @@ wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config) {
   return c;
 }
 
-void wwivd_ui(const wwiv::sdk::Config& config) {
-  wwivd_config_t c = LoadDaemonConfig(config);
+void wwivd_ui(const Config& config) {
+  auto c = LoadDaemonConfig(config);
 
   EditItems items{};
   int y = 1;
@@ -388,15 +391,14 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
-            new SubDialog<wwivd_config_t>(COL1_POSITION, y, c, matrix_subdialog))
+            new SubDialog<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog))
       ->set_help_text("Create/Edit/Delete Matrix BBS settings.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, c.blocking, edit_blocking))
+            new SubDialog<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking))
       ->set_help_text("IP Blocking Settings.");
-  y++;
-
+  
   items.Run("wwivd Configuration");
   if (!SaveDaemonConfig(config, c)) {
     messagebox(items.window(), "Error saving wwivd.json");

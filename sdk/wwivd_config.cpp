@@ -92,6 +92,7 @@ void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
   ar(cereal::make_nvp("ssh_cmd", a.ssh_cmd));
   ar(cereal::make_nvp("start_node", a.start_node));
   ar(cereal::make_nvp("telnet_cmd", a.telnet_cmd));
+  SERIALIZE(a, working_directory);
 }
 
 template <class Archive>

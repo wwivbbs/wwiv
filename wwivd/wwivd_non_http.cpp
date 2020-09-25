@@ -95,9 +95,9 @@ std::filesystem::path node_file(const Config& config, ConnectionType ct, int nod
   return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
-static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,
-                       int node_number, int sock, ConnectionType connection_type,
-                       const string& remote_peer) {
+static bool launch_cmd(const std::string& raw_cmd, const std::string& working_dir,
+                       const std::shared_ptr<NodeManager>& nodes, int node_number, int sock,
+                       ConnectionType connection_type, const string& remote_peer) {
   const auto pid = fmt::format("[{}] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
@@ -110,16 +110,17 @@ static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> 
   }
 
   const auto cmd = CreateCommandLine(raw_cmd, params);
+  File::set_current_directory(working_dir);
   const auto result = ExecCommandAndWait(cmd, pid, node_number, sock);
-
   nodes->ReleaseNode(node_number);
 
   return result;
 }
 
 static bool launch_node(const Config& config, const std::string& raw_cmd,
-                        std::shared_ptr<NodeManager> nodes, int node_number, int sock,
-                        ConnectionType connection_type, const string& remote_peer) {
+                        const std::string& working_dir, const std::shared_ptr<NodeManager>& nodes,
+                        int node_number, int sock, ConnectionType connection_type,
+                        const string& remote_peer) {
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -132,7 +133,7 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
 
   try {
     auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
-    return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
+    return launch_cmd(raw_cmd, working_dir, nodes, node_number, sock, connection_type, remote_peer);
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
                << "; what: " << e.what();
@@ -326,7 +327,7 @@ void ConnectionHandler::HandleBinkPConnection() {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
-      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP, result.remote_peer);
+      launch_cmd(data.c->binkp_cmd, "", nodemgr, 0, sock, ConnectionType::BINKP, result.remote_peer);
     }
 
   } catch (const std::exception& e) {
@@ -415,7 +416,9 @@ void ConnectionHandler::HandleConnection() {
     auto node = -1;
     if (nodemgr->AcquireNode(node)) {
       const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
-      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, result.remote_peer);
+      auto current_dir = File::current_directory();
+      launch_node(*data.config, cmd, bbs.working_directory, nodemgr, node, sock, connection_type, result.remote_peer);
+      File::set_current_directory(current_dir);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {
       using namespace std::chrono_literals;
