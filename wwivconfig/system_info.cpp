@@ -55,7 +55,7 @@ static const int MAX_TIME_EDIT_LEN = 5;
 class TimeEditItem final : public EditItem<uint16_t*> {
 public:
   TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 5, data) {}
-  ~TimeEditItem() = default;
+  ~TimeEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -75,9 +75,9 @@ protected:
 class Float53EditItem final : public EditItem<float*> {
 public:
   Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 5, data) {}
-  ~Float53EditItem() = default;
+  ~Float53EditItem() override = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
    
     // passing *this->data_ to String Printf is causing a bus error
@@ -116,12 +116,12 @@ void sysinfo1(wwiv::sdk::Config& config) {
     save_status(config.datadir(), statusrec);
   }
 
-  static constexpr int LABEL1_POSITION = 2;
-  static constexpr int LABEL1_WIDTH = 18;
-  static constexpr int LABEL2_WIDTH = 14;
-  static constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
-  static constexpr int LABEL2_POSITION = COL1_POSITION + 20;
-  static constexpr int COL2_POSITION = LABEL2_POSITION + LABEL2_WIDTH + 1;
+  static constexpr auto LABEL1_POSITION = 2;
+  static constexpr auto LABEL1_WIDTH = 18;
+  static constexpr auto LABEL2_WIDTH = 14;
+  static constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
+  static constexpr auto LABEL2_POSITION = COL1_POSITION + 17;
+  static constexpr auto COL2_POSITION = LABEL2_POSITION + LABEL2_WIDTH + 1;
 
   auto closed_system = cfg.closedsystem > 0;
   auto gold = static_cast<int>(cfg.newusergold);

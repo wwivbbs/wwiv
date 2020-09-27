@@ -51,7 +51,7 @@ static uint8_t JumpToSl(CursesWindow* window) {
   }
 
   ListBox list(window, "Select SL", items);
-  auto result = list.Run();
+  const auto result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return static_cast<uint8_t>(items[result.selected].data());
   }
@@ -94,7 +94,7 @@ void sec_levs(Config& config) {
                     new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Read anony posts:"),
                     new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Read anony email:"),
                     new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Limited co-sysop:"),
-                    new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Co-sysop:")});
+                    new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Co-sysop:")});
 
   items.set_navigation_extra_help_items(create_extra_help_items());
   curses_out->Cls(ACS_CKBOARD);

@@ -68,14 +68,14 @@ static void edit_editor(editorrec& e) {
 #ifndef _WIN32
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
 #else
-  // Clear the flag if it's set accidentially.
+  // Clear the flag if it's set accidentally.
   e.ansir &= ~ansir_stdio;
 #endif
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;
   items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filename));
   y += 2;
-  items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filenamecon));
+  items.add(new CommandLineItem(LABEL1_POSITION, y, 75, e.filenamecon));
 
   y = 1;
   items.add_labels({new Label(2, y++, LABEL1_WIDTH, "Description:"),
@@ -94,7 +94,7 @@ static void edit_editor(editorrec& e) {
        new Label(2, y++, "%2 = chars per line     %H = Socket Handle"),
        new Label(2, y++, "%3 = lines per page     %I = Temp directory"),
        new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed."),
-       new Label(2, y++, "See http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.")});
+       new Label(2, y, "See http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.")});
   items.Run("External Editor Configuration");
 }
 
@@ -106,7 +106,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     file.Close();
   }
 
-  bool done = false;
+  auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;

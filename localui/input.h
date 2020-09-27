@@ -612,11 +612,11 @@ public:
   void Run(const std::string& title = "");
   void Display() const;
 
-  void set_navigation_help_items(const std::vector<HelpItem> items) {
+  void set_navigation_help_items(const std::vector<HelpItem>& items) {
     navigation_help_items_ = items;
   }
-  void set_editmode_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
-  void set_navigation_extra_help_items(const std::vector<HelpItem> items) {
+  void set_editmode_help_items(const std::vector<HelpItem>& items) { editor_help_items_ = items; }
+  void set_navigation_extra_help_items(const std::vector<HelpItem>& items) {
     navigation_extra_help_items_ = items;
   }
   std::vector<BaseEditItem*>& items() { return items_; }
@@ -645,7 +645,7 @@ public:
 
   [[nodiscard]] int max_display_width() const {
     int result = 0;
-    for (const auto i : items_) {
+    for (const auto* i : items_) {
       if ((i->x() + i->maxsize()) > result) {
         result = i->x() + i->maxsize();
       }
@@ -655,12 +655,12 @@ public:
 
   [[nodiscard]] int max_display_height() {
     int result = 1;
-    for (const auto l : labels_) {
+    for (const auto* l : labels_) {
       if (l->y() > result) {
         result = l->y();
       }
     }
-    for (const auto i : items_) {
+    for (const auto* i : items_) {
       if (i->y() > result) {
         result = i->y();
       }

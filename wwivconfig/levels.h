@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LEVELS_H__
-#define __INCLUDED_LEVELS_H__
+#ifndef INCLUDED_WWIVCONFIG_LEVELS_H
+#define INCLUDED_WWIVCONFIG_LEVELS_H
 
 #include "sdk/config.h"
 
 void sec_levs(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_LEVELS_H__
+#endif // INCLUDED_WWIVCONFIG_LEVELS_H

@@ -120,7 +120,7 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   items.add(new Label(LABEL1_POSITION, y++, "%3 = filename to transfer, filename list to send for batch"));
   items.add(new Label(LABEL1_POSITION, y++, "%4 = modem speed"));
   items.add(new Label(LABEL1_POSITION, y++, "%5 = filename list to receive for batch UL"));
-  items.add(new Label(LABEL1_POSITION, y++, "NOTE: Batch protocols >MUST< correctly support DSZLOG."));
+  items.add(new Label(LABEL1_POSITION, y, "NOTE: Batch protocols >MUST< correctly support DSZLOG."));
 
   items.add_items({
       new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, EditLineMode::ALL),

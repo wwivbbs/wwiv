@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CONVERT_H__
-#define __INCLUDED_CONVERT_H__
+#ifndef INCLUDED_WWIVCONFIG_CONVERT_H
+#define INCLUDED_WWIVCONFIG_CONVERT_H
 
 #include "localui/curses_win.h"
 #include "sdk/config.h"
@@ -28,6 +28,6 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir,
 bool convert_config_to_52(UIWindow* window, const std::string& config_filename);
 bool ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                              const std::string& config_filename,
-                             const uint32_t config_revision_number);
+                             uint32_t config_revision_number);
 
-#endif // __INCLUDED_CONVERT_H__
+#endif // INCLUDED_WWIVCONFIG_CONVERT_H

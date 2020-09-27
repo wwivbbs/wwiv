@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PATHS_H__
-#define __INCLUDED_PATHS_H__
+#ifndef INCLUDED_WWIVCONFIG_PATHS_H
+#define INCLUDED_WWIVCONFIG_PATHS_H
 
 #include "sdk/config.h"
 
 void setpaths(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_PATHS_H__
+#endif // INCLUDED_WWIVCONFIG_PATHS_H

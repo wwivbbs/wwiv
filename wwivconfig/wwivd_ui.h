@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_UI_H__
-#define __INCLUDED_WWIVD_UI_H__
+#ifndef INCLUDED_WWIVCONFIG_WWIVD_UI_H
+#define INCLUDED_WWIVCONFIG_WWIVD_UI_H
 
 #include "sdk/config.h"
 #include "sdk/wwivd_config.h"
@@ -26,4 +26,4 @@ void wwivd_ui(const wwiv::sdk::Config& config);
 wwiv::sdk::wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config);
 bool SaveDaemonConfig(const wwiv::sdk::Config& config, wwiv::sdk::wwivd_config_t& c);
 
-#endif // __INCLUDED_WWIVD_UI_H__
+#endif // INCLUDED_WWIVCONFIG_WWIVD_UI_H

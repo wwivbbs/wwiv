@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NEWINIT_H__
-#define __INCLUDED_NEWINIT_H__
+#ifndef INCLUDED_WWIVCONFIG_NEWINIT_H
+#define INCLUDED_WWIVCONFIG_NEWINIT_H
 
 #include <string>
 
@@ -25,4 +25,4 @@ class UIWindow;
 
 bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files);
 
-#endif // __INCLUDED_NEWINIT_H__
+#endif // INCLUDED_WWIVCONFIG_NEWINIT_H

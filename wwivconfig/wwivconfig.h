@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INIT_H__
-#define __INCLUDED_INIT_H__
+#ifndef INCLUDED_WWIVCONFIG_WWIVCONFIG_H
+#define INCLUDED_WWIVCONFIG_WWIVCONFIG_H
 
-/*!
- * @class WInitApp  Main Application object for WWIV.
+/**
+ * Main Application object for WWIV.
  */
 class WInitApp final {
  public:

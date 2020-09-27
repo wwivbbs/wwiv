@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LANGUAGES_H__
-#define __INCLUDED_LANGUAGES_H__
+#ifndef INCLUDED_WWIVCONFIG_LANGUAGES_H
+#define INCLUDED_WWIVCONFIG_LANGUAGES_H
 
 #include "sdk/config.h"
 
 void edit_languages(const wwiv::sdk::Config&);
 
-#endif // __INCLUDED_LANGUAGES_H__
+#endif // INCLUDED_WWIVCONFIG_LANGUAGES_H

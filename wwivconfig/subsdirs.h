@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SUBSDIRS_H__
-#define __INCLUDED_SUBSDIRS_H__
+#ifndef INCLUDED_WWIVCONFIG_SUBSDIRS_H
+#define INCLUDED_WWIVCONFIG_SUBSDIRS_H
 
 #include "sdk/config.h"
 
 void up_subs_dirs(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_SUBSDIRS_H__
+#endif // INCLUDED_WWIVCONFIG_SUBSDIRS_H

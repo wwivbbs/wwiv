@@ -16,13 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_UTILITY_H__
-#define __INCLUDED_UTILITY_H__
-
-#include <string>
+#ifndef INCLUDED_WWIVCONFIG_UTILITY_H
+#define INCLUDED_WWIVCONFIG_UTILITY_H
 
 #include "sdk/config.h"
 #include "sdk/vardec.h"
+#include <string>
 
 int number_userrecs(const std::string& datadir);
 void save_status(const std::string& datadir, const statusrec_t& statusrec);

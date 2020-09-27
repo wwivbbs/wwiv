@@ -46,14 +46,13 @@ static const int COL1_POSITION = 22;
 
 void create_sysop_account(wwiv::sdk::Config& config) {
   curses_out->Cls(ACS_CKBOARD);
-  // unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
 
   std::vector<uint8_t> newuser_colors{7, 11, 14, 13, 31, 10, 12, 9, 5, 3};
   std::vector<uint8_t> newuser_bwcolors{7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
 
   IniFile ini(FilePath(config.root_directory(), "wwiv.ini"), {"WWIV"});
   if (ini.IsOpen()) {
-    for (int i = 0; i < 10; i++) {
+    for (auto i = 0; i < 10; i++) {
       {
         const auto key_name = fmt::format("{}[{}]", "NUCOLOR", i);
         auto num = ini.value<uint8_t>(key_name);
@@ -72,7 +71,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   }
   UserManager usermanager(config);
 
-  int y = 1;
+  auto y = 1;
 
   User u{};
   u.ZeroUserData();
@@ -106,7 +105,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   usermanager.writeuser(&u, 1);
 
   {
-    wwiv::sdk::Names names(config);
+    Names names(config);
     names.Load();
     names.Add(u.GetName(), 1);
     names.Save();

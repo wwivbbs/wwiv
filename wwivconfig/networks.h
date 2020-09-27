@@ -16,12 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INIT_NETWORKS_H__
-#define __INCLUDED_INIT_NETWORKS_H__
+#ifndef INCLUDED_WWIVCONFIG_NETWORKS_H
+#define INCLUDED_WWIVCONFIG_NETWORKS_H
 
 #include "sdk/config.h"
 #include <set>
 
 void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3);
 
-#endif // __INCLUDED_INIT_NETWORKS_H__
+#endif // INCLUDED_WWIVCONFIG_NETWORKS_H

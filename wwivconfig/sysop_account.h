@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INIT_SYSOP_ACCOUNT_H__
-#define __INCLUDED_INIT_SYSOP_ACCOUNT_H__
+#ifndef INCLUDED_WWIVCONFIG_SYSOP_ACCOUNT_H
+#define INCLUDED_WWIVCONFIG_SYSOP_ACCOUNT_H
 
 #include "sdk/config.h"
 
 void create_sysop_account(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_INIT_SYSOP_ACCOUNT_H__
+#endif // INCLUDED_WWIVCONFIG_SYSOP_ACCOUNT_H

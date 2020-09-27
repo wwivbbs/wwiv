@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SUBACC_H__
-#define __INCLUDED_SUBACC_H__
+#ifndef INCLUDED_WWIVCONFIG_SUBACC_H
+#define INCLUDED_WWIVCONFIG_SUBACC_H
 
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
@@ -32,4 +32,4 @@ void write_post(int mn, const postrec& pp);
 
 int GetNumMessagesInCurrentMessageArea();
 
-#endif  // __INCLUDED_SUBACC_H__
+#endif  // INCLUDED_WWIVCONFIG_SUBACC_H

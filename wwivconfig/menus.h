@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INIT_MENUS_H__
-#define __INCLUDED_INIT_MENUS_H__
+#ifndef INCLUDED_WWIVCONFIG_MENUS_H
+#define INCLUDED_WWIVCONFIG_MENUS_H
 
 #include <string>
 
 void menus(const std::string& menu_dir);
 
-#endif // __INCLUDED_INIT_MENUS_H__
+#endif // INCLUDED_WWIVCONFIG_MENUS_H

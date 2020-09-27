@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PROTOCOLS_H__
-#define __INCLUDED_PROTOCOLS_H__
+#ifndef INCLUDED_WWIVCONFIG_PROTOCOLS_H
+#define INCLUDED_WWIVCONFIG_PROTOCOLS_H
 
 #include <string>
 
 void extrn_prots(const std::string& datadir);
 
-#endif // __INCLUDED_PROTOCOLS_H__
+#endif // INCLUDED_WWIVCONFIG_PROTOCOLS_H

@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_EDITORS_H__
-#define __INCLUDED_EDITORS_H__
+#ifndef INCLUDED_WWIVCONFIG_EDITORS_H
+#define INCLUDED_WWIVCONFIG_EDITORS_H
 
 #include "sdk/config.h"
 
 void extrn_editors(const wwiv::sdk::Config&);
 
-#endif // __INCLUDED_EDITORS_H__
+#endif // INCLUDED_WWIVCONFIG_EDITORS_H

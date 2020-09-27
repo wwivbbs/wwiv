@@ -16,15 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_ARCHIVERS_H__
-#define __INCLUDED_ARCHIVERS_H__
+#ifndef INCLUDED_WWIVCONFIG_ARCHIVERS_H
+#define INCLUDED_WWIVCONFIG_ARCHIVERS_H
 
-#include <filesystem>
 #include "sdk/config.h"
+#include <filesystem>
 
 class UIWindow;
 
 bool edit_archivers(wwiv::sdk::Config&);
 bool create_arcs(UIWindow* window, const std::filesystem::path& datadir);
 
-#endif // __INCLUDED_ARCHIVERS_H__
+#endif // INCLUDED_WWIVCONFIG_ARCHIVERS_H

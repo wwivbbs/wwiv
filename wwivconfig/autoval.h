@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_AUTOVAL_H__
-#define __INCLUDED_AUTOVAL_H__
+#ifndef INCLUDED_WWIVCONFIG_AUTOVAL_H
+#define INCLUDED_WWIVCONFIG_AUTOVAL_H
 
 #include "sdk/config.h"
 
 void autoval_levs(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_AUTOVAL_H__
+#endif // INCLUDED_WWIVCONFIG_AUTOVAL_H

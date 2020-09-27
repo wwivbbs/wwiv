@@ -181,7 +181,7 @@ void up_subs_dirs(wwiv::sdk::Config& config) {
       num_subs = config.max_subs();
     }
     window->SetColor(SchemeId::PROMPT);
-    window->PutsXY(2, y++, "New max dirs: ");
+    window->PutsXY(2, y, "New max dirs: ");
     auto num_dirs = input_number<uint16_t>(window.get(), 4);
     if (!num_dirs) {
       num_dirs = config.max_dirs();
