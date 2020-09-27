@@ -66,7 +66,7 @@ protected:
     net.type = network_type_t::wwivnet;
     net.sysnum = 0;
     binkp_config_ = std::make_unique<BinkConfig>(ORIGINATING_ADDRESS, config, network_dir);
-    auto dummy_callout = std::make_unique<Callout>(net);
+    auto dummy_callout = std::make_unique<Callout>(net, 0);
     BinkP::received_transfer_file_factory_t null_factory = [](const string&, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };

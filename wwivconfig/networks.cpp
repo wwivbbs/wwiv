@@ -525,10 +525,11 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 // Base item of an editable value, this class does not use templates.
 class CalloutNetSubDialog final : public BaseEditItem {
 public:
-  CalloutNetSubDialog(std::string bbsdir, int x, int y, const std::string& title,
-                      const net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(std::move(bbsdir)), title_(title), d_(d), x_(x), y_(y){};
-  virtual ~CalloutNetSubDialog() = default;
+  CalloutNetSubDialog(const Config& config, std::string bbsdir, int x, int y,
+                      const std::string& title, const net_networks_rec& d)
+      : BaseEditItem(x, y, 1), config_(config), netdir_(std::move(bbsdir)), title_(title), d_(d),
+        x_(x), y_(y){};
+  ~CalloutNetSubDialog() = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
@@ -536,7 +537,7 @@ public:
     window->GotoXY(x_, y_);
     auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      Callout callout(d_);
+      Callout callout(d_, config_.max_backups());
       auto done = false;
       do {
         vector<ListBoxItem> items;
@@ -608,6 +609,7 @@ public:
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
+  const Config& config_;
   const std::string netdir_;
   const std::string title_;
   const net_networks_rec& d_;
@@ -650,7 +652,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
       ->set_help_text("WWIVnet node number");
     items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
-              new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", n));
+              new CalloutNetSubDialog(config, net_dir, COL1_POSITION, y, "Settings", n));
   }
 
   y = 1;

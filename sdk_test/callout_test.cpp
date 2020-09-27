@@ -114,7 +114,7 @@ TEST_F(CalloutTest, NodeConfig) {
   net_networks_rec net{};
   net.name = "Dummy Network";
   net.dir = files.DirName("network");
-  const Callout callout(net);
+  const Callout callout(net, 0);
   const auto* con = callout.net_call_out_for(1);
   ASSERT_TRUE(con != nullptr);
   EXPECT_EQ("foo", con->session_password);

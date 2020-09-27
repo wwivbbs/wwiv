@@ -121,11 +121,11 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
 BaseMessagesSubCommand::~BaseMessagesSubCommand() = default;
 
 
-class DeleteMessageCommand : public BaseMessagesSubCommand {
+class DeleteMessageCommand final : public BaseMessagesSubCommand {
 public:
   DeleteMessageCommand() : BaseMessagesSubCommand("delete", "Deletes message number specified by '--num'.") {}
 
-  virtual ~DeleteMessageCommand() = default;
+  ~DeleteMessageCommand() = default;
 
   std::string GetUsage() const override final {
     std::ostringstream ss;
@@ -286,8 +286,9 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    bool sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
-    bool db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
+    const auto max_backups = config.max_backups();
+    const auto sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")), max_backups);
+    const auto db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")), max_backups);
     return sb && db;
   }
 
@@ -390,11 +391,11 @@ static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& 
   return p.qscan;
 }
 
-class MessageAreasCommand : public BaseMessagesSubCommand {
+class MessageAreasCommand final : public BaseMessagesSubCommand {
 public:
   MessageAreasCommand() : BaseMessagesSubCommand("areas", "Lists the message areas") {}
 
-  virtual ~MessageAreasCommand() = default;
+  ~MessageAreasCommand() = default;
 
   std::string GetUsage() const override final {
     std::ostringstream ss;

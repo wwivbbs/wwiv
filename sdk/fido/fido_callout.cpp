@@ -59,7 +59,7 @@ inline void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const 
 namespace wwiv::sdk::fido {
 
 FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
-    : Callout(net), root_dir_(config.root_directory()), net_(net) {
+    : Callout(net, config.max_backups()), root_dir_(config.root_directory()), net_(net) {
 
   if (!config.IsInitialized()) {
     return;

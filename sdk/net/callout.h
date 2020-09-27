@@ -15,22 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_CALLOUT_H__
-#define __INCLUDED_SDK_CALLOUT_H__
+#ifndef INCLUDED_SDK_CALLOUT_H
+#define INCLUDED_SDK_CALLOUT_H
 
+#include "sdk/net/net.h"
 #include <initializer_list>
 #include <map>
 #include <string>
 
-#include "sdk/net/net.h"
-
-namespace wwiv {
-namespace sdk {
-
+namespace wwiv::sdk {
   
 class Callout {
  public:
-  explicit Callout(const net_networks_rec& net);
+  Callout(const net_networks_rec& net, int max_backups);
   // VisibleForTesting
   Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
@@ -47,6 +44,7 @@ class Callout {
 
  private:
   net_networks_rec net_;
+  const int max_backups_;
   std::map<uint16_t, net_call_out_rec> node_config_;
 };
 
@@ -54,7 +52,6 @@ class Callout {
 std::string WriteCalloutNetLine(const net_call_out_rec& con);
 std::string CalloutOptionsToString(uint16_t options);
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace wwiv::net
 
-#endif  // __INCLUDED_SDK_CALLOUT_H__
+#endif  // INCLUDED_SDK_CALLOUT_H

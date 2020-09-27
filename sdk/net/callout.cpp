@@ -26,7 +26,6 @@
 #include "sdk/net/networks.h"
 #include <algorithm>
 #include <iomanip>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -213,11 +212,12 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
   return true;
 }
 
-Callout::Callout(const net_networks_rec& net) : net_(net) {
+Callout::Callout(const net_networks_rec& net, int max_backups)
+    : net_(net), max_backups_(max_backups) {
   ParseCalloutFile(&node_config_, net.dir);
 }
 
-Callout::Callout(std::initializer_list<net_call_out_rec> l) : net_() {
+Callout::Callout(std::initializer_list<net_call_out_rec> l) : net_(), max_backups_(0) {
   for (const auto& r : l) {
     node_config_.emplace(r.sysnum, r);
   }

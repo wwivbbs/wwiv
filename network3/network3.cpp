@@ -562,7 +562,7 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   write_bbsdata_reg_file(b, net.dir);
 
   VLOG(2) << "Reading callout.net...";
-  const Callout callout(net);
+  const Callout callout(net, net_cmdline.config().max_backups());
   ensure_contact_net_entries(callout, net);
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);

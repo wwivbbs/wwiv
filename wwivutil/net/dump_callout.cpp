@@ -54,7 +54,7 @@ int DumpCalloutCommand::Execute() {
   for (const auto& net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net));
+    callouts.emplace(lower_case_network_name, Callout(net, config()->config()->max_backups()));
   }
 
   for (const auto& c : callouts) {

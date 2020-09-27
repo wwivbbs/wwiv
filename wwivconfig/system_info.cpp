@@ -201,7 +201,7 @@ void sysinfo1(wwiv::sdk::Config& config) {
 
   items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "Max Backups:"),
             new NumberEditItem<uint8_t>(COL2_POSITION, y, &cfg.max_backups),
-    "Max number of backup to keep for key data files (0=unlimited)");
+    "Max number of backup to keep when making new datafile backups (0=unlimited)");
 
   ++y;
 

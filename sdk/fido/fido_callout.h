@@ -15,23 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
-#define __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
+#ifndef INCLUDED_SDK_FIDO_FIDO_CALLOUT_H
+#define INCLUDED_SDK_FIDO_FIDO_CALLOUT_H
 
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/net.h"
-#include <initializer_list>
 #include <map>
-#include <memory>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
-class FidoCallout : public wwiv::sdk::Callout {
+class FidoCallout : public Callout {
 public:
   typedef int size_type;
   static const size_type npos = -1;
@@ -62,11 +58,9 @@ private:
   bool initialized_{false};
   const std::string root_dir_;
   net_networks_rec net_;
-  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_;
+  std::map<FidoAddress, fido_node_config_t> node_configs_;
 };
 
-} // namespace fido
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
+#endif // INCLUDED_SDK_FIDO_FIDO_CALLOUT_H

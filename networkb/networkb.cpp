@@ -195,7 +195,8 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     for (const auto& n : bink_config.networks().networks()) {
       const auto lower_case_network_name = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
-        bink_config.callouts()[lower_case_network_name] = std::make_unique<Callout>(n);
+        bink_config.callouts()[lower_case_network_name] =
+            std::make_unique<Callout>(n, bink_config.config().max_backups());
       } else if (n.type == network_type_t::ftn) {
         VLOG(2) << "Adding FidoCallout for " << n.name;
         bink_config.callouts()[lower_case_network_name] =

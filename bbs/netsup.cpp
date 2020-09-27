@@ -131,7 +131,7 @@ void cleanup_net() {
 }
 
 static void do_callout(const net_networks_rec& net, int sn) {
-  const Callout callout(net);
+  const Callout callout(net, a()->config()->max_backups());
   Contact contact(net, false);
   Binkp binkp(net.dir);
 
@@ -197,7 +197,7 @@ void print_pending_list() {
       continue;
     }
 
-    Callout callout(net);
+    Callout callout(net, a()->config()->max_backups());
     Contact contact(net, false);
 
     for (const auto& p : callout.callout_config()) {
@@ -435,7 +435,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   static int color, got_color = 0;
   auto now = daten_t_now();
 
-  Callout callout(net);
+  Callout callout(net, a()->config()->max_backups());
   Contact contact(net, false);
   Binkp binkp(net.dir);
 
@@ -546,7 +546,7 @@ static std::pair<int, int> ansicallout() {
   for (int nn = 0; nn < wwiv::stl::ssize(a()->nets()); nn++) {
     set_net_num(nn);
     const auto& net = a()->nets()[nn];
-    Callout callout(net);
+    Callout callout(net, a()->config()->max_backups());
     Contact contact(net, false);
 
     const auto& nodemap = callout.callout_config();
@@ -732,7 +732,7 @@ static std::pair<int, int> ansicallout() {
 static int FindNetworkNumberForNode(int sn) {
   for (auto nNetNumber = 0; nNetNumber < wwiv::stl::ssize(a()->nets()); nNetNumber++) {
     const auto net = a()->nets()[nNetNumber];
-    Callout callout(net);
+    Callout callout(net, a()->config()->max_backups());
     if (callout.net_call_out_for(sn) != nullptr) {
       return nNetNumber;
     }
@@ -756,7 +756,7 @@ void force_callout() {
   const auto& net = a()->nets()[network_number];
 
   set_net_num(network_number);
-  const Callout callout(net);
+  const Callout callout(net, a()->config()->max_backups());
 
   if (!allowed_to_call(*callout.net_call_out_for(sn.first), DateTime::now())) {
     return;

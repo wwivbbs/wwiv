@@ -85,8 +85,8 @@ std::unordered_set<std::string> CheckDirForDuplicates(sdk::files::FileArea& area
   return files;
 }
 
-std::optional<std::unordered_set<std::string>>
-RewriteExtendedDescriptions(const sdk::files::directory_t& dir, sdk::files::FileArea& area,
+static std::optional<std::unordered_set<std::string>>
+RewriteExtendedDescriptions(const wwiv::sdk::Config& config, const sdk::files::directory_t& dir, sdk::files::FileArea& area,
                             std::unordered_set<std::string> actual_files, bool dry_run) {
   VLOG(1) << "Rewriting extended descriptions for: " << dir;
   auto ext_path = area.ext_path();
@@ -99,7 +99,7 @@ RewriteExtendedDescriptions(const sdk::files::directory_t& dir, sdk::files::File
   tmp_path.replace_extension(".tmp");
 
   std::unordered_set<std::string> files_with_ext_desc;
-  if (!backup_file(ext_path)) {
+  if (!backup_file(ext_path, config.max_backups())) {
     LOG(ERROR) << "Error creating backup of Extended Description file: " << dir;
   }
 
@@ -213,18 +213,21 @@ static bool CheckAttributes(const wwiv::sdk::files::directory_t& dir, sdk::files
   return true;
 }
 
-bool CheckExtendedDirAndAttributes(const sdk::files::directory_t& dir, sdk::files::FileArea& area, bool dry_run) {
+bool CheckExtendedDirAndAttributes(const wwiv::sdk::Config& config, const sdk::files::directory_t& dir, sdk::files::FileArea& area, bool dry_run) {
   const auto actual_files = CheckDirForDuplicates(area, dry_run);
   std::unordered_set<std::string> empty_set;
-  const auto files_with_ext_desc = RewriteExtendedDescriptions(dir, area, actual_files, dry_run).value_or(empty_set);
+  const auto files_with_ext_desc =
+      RewriteExtendedDescriptions(config, dir, area, actual_files, dry_run).value_or(empty_set);
   // Reload areas since duplicates could have been removed.
   area.Close();
   area.Load();
   return CheckAttributes(dir, area, files_with_ext_desc, dry_run);
 }
 
-void checkFileAreas(const std::string& datadir, bool verbose, bool dry_run) {
-  sdk::files::Dirs dirs(datadir, 0);
+static void checkFileAreas(const wwiv::sdk::Config& config, bool verbose, bool dry_run) {
+  const auto datadir = config.datadir();
+  sdk::files::Dirs dirs(datadir, config.max_backups());
+
   if (!dirs.Load()) {
     LOG(ERROR) << "Unble to load dirs.dat";
     return;
@@ -253,7 +256,7 @@ void checkFileAreas(const std::string& datadir, bool verbose, bool dry_run) {
     if (!area->FixFileHeader()) {
       LOG(ERROR) << "Error fixing file header";
     }
-    if (!CheckExtendedDirAndAttributes(d, *area, dry_run)) {
+    if (!CheckExtendedDirAndAttributes(config, d, *area, dry_run)) {
       LOG(ERROR) <<"Failed to fix directory: " << d;
     }
   }
@@ -276,7 +279,8 @@ bool FixDirectoriesCommand::AddSubCommands() {
 int FixDirectoriesCommand::Execute() {
   cout << "Runnning FixDirectoriesCommand::Execute" << endl;
 
-  checkFileAreas(config()->config()->datadir(), verbose(), dry_run());
+  CHECK(config()->config());
+  checkFileAreas(*config()->config(), verbose(), dry_run());
   return 0;
 }
 

@@ -107,7 +107,7 @@ static void one_net_wwivnet_callout(const net_networks_rec& net, const wwivd_con
                                     int network_number) {
   VLOG(2) << "one_net_wwivnet_callout: @" << net.sysnum << "; name: " << net.name;
   Contact contact(net);
-  const Callout callout(net);
+  const Callout callout(net, 0);
   for (const auto& kv : callout.callout_config()) {
     VLOG(2) << "one_net_wwivnet_callout: node @" << kv.first;
     auto* const ncn = contact.contact_rec_for(kv.first);
