@@ -106,6 +106,7 @@ if (WWIV_INSTALL)
   install(TARGETS network2 DESTINATION .)
   install(TARGETS network3 DESTINATION .)
   install(TARGETS wwivconfig DESTINATION .)
+  install(TARGETS wwivfsed DESTINATION .)
   install(TARGETS wwivd DESTINATION .)
   install(TARGETS wwivutil DESTINATION .)
 

@@ -33,7 +33,6 @@ set WWIV_FULL_RELEASE=%WWIV_RELEASE%.%BUILD_NUMBER%
 set WWIV_RELEASE_ARCHIVE_FILE=wwiv-%WWIV_DISTRO%-%WWIV_FULL_RELEASE%.zip
 set CMAKE_BINARY_DIR=%WORKSPACE%\_build
 set WWIV_RELEASE_DIR=%CMAKE_BINARY_DIR%\release
-set WWIV_INSTALL_SRC=%WORKSPACE%\install
 
 @rem ===============================================================================
 
@@ -76,8 +75,8 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ^
     %WORKSPACE% || exit /b
 
 echo "Copy CL32.DLL so tests can use it in post-config"
-copy /y/v %WWIV_INSTALL_SRC%\platform\win32\cl32.dll %CMAKE_BINARY_DIR%
-copy /y/v %WWIV_INSTALL_SRC%\platform\win32\cl32.dll %CMAKE_BINARY_DIR%\bbs_test
+copy /y/v %WORKSPACE%\install\platform\win32\cl32.dll %CMAKE_BINARY_DIR%
+copy /y/v %WORKSPACE%\install\platform\win32\cl32.dll %CMAKE_BINARY_DIR%\bbs_test
 
 cmake --build . --config Release || exit /b
 
@@ -93,7 +92,7 @@ cd %WORKSPACE%
 copy /y/v %CMAKE_BINARY_DIR%\%WWIV_RELEASE_ARCHIVE_FILE% %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 
 echo **** SUCCESS ****
-echo ** Archive File: %WWIV_RELEASE_ARCHIVE_FILE%
+echo ** Archive File: %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 echo ** Archive contents:
 %ZIP_EXE% l %WORKSPACE%\%WWIV_RELEASE_ARCHIVE_FILE%
 endlocal
