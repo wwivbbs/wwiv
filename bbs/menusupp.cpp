@@ -594,26 +594,14 @@ void ZLog() {
 }
 
 void ViewNetDataLog() {
-  bool done = false;
-
-  while (!done && !a()->sess().hangup()) {
+  while (!a()->sess().hangup()) {
     bout.nl();
     bout << "|#9Which NETDAT log (0-2,Q)? ";
-    char ch = onek("Q012");
-    switch (ch) {
-    case 'Q':
-      done = true;
-      break;
-    case '0':
-      bout.print_local_file("netdat0.log");
-      break;
-    case '1':
-      bout.print_local_file("netdat1.log");
-      break;
-    case '2':
-      bout.print_local_file("netdat2.log");
-      break;
+    const auto netdat_num= onek("Q012");
+    if (netdat_num == 'Q') {
+      return;
     }
+    bout.print_local_file(fmt::format("netdat{}.log", netdat_num));
   }
 }
 

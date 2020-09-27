@@ -321,12 +321,12 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         if (a_->current_net().sysnum > 0 || !a_->nets().empty()) {
           io->GotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
-          ch = onek("Q012");
-          switch (ch) {
+          const auto netdat_num = onek("Q012");
+          switch (netdat_num) {
           case '0':
           case '1':
           case '2': {
-            bout.print_local_file(fmt::format("netdat{}.log", ch));
+            bout.print_local_file(fmt::format("netdat{}.log", netdat_num));
           } break;
           }
         }
