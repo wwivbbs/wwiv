@@ -223,7 +223,7 @@ char first_available_designator(ConferenceType conftype) {
 bool save_confs(ConferenceType conftype) {
   auto info = get_conf_info(conftype);
   // Backup the *.cnf file 1st before we write to it.
-  backup_file(info.file_name);
+  backup_file(info.file_name, a()->config()->max_backups());
 
   TextFile f(info.file_name, "wt");
   if (!f.IsOpen()) {

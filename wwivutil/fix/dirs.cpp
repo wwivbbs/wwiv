@@ -224,7 +224,7 @@ bool CheckExtendedDirAndAttributes(const sdk::files::directory_t& dir, sdk::file
 }
 
 void checkFileAreas(const std::string& datadir, bool verbose, bool dry_run) {
-  sdk::files::Dirs dirs(datadir);
+  sdk::files::Dirs dirs(datadir, 0);
   if (!dirs.Load()) {
     LOG(ERROR) << "Unble to load dirs.dat";
     return;

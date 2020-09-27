@@ -35,6 +35,8 @@
 // leading underscores  This makes resharper happy with fcntl.h too.
 #define _CRT_DECLARE_NONSTDC_NAMES 1
 #endif // _WIN32
+#include "findfiles.h"
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -113,12 +115,42 @@ path FilePath(const path& directory_name,
   return directory_name / file_name;
 }
 
-bool backup_file(const path& from) {
+void trim_backups(const path& from, int max_backups) {
+  path mask{from};
+  mask += ".backup.*";
+  FindFiles ff(mask, FindFiles::FindFilesType::files, FindFiles::WinNameType::long_name);
+  if (!from.has_filename()) {
+    LOG(WARNING) << "Called trim_backups on file without a filename: '" << from.string() << "'";
+    return;
+  }
+
+  const auto tot = static_cast<int>(ff.size());
+  if (tot <= max_backups) {
+    return;
+  }
+  auto num_to_remove = tot - max_backups;
+  for (const auto& f : ff) {
+    if (num_to_remove-- == 0) {
+      break;
+    }
+    path file{from};
+    VLOG(1) << "Delete backup: " << file.replace_filename(f.name);
+    File::Remove(file.replace_filename(f.name));
+  }
+}
+
+bool backup_file(const path& from, int max_backups) {
   path to{from};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
-  return copy_file(from, to, ec);
+  if (!copy_file(from, to, ec)) {
+    return false;
+  }
+  if (max_backups > 0) {
+    trim_backups(from, max_backups);
+  }
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

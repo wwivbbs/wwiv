@@ -62,7 +62,7 @@ TEST_F(DirsTest, Smoke) {
                                        File::modeTruncate);
     ASSERT_TRUE(f.WriteVectorAndTruncate(v));
   }
-  files::Dirs dirs(datadir);
+  files::Dirs dirs(datadir, 0);
   ASSERT_TRUE(dirs.LoadLegacy());
 
   EXPECT_EQ(dirs.size(), 1);

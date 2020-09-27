@@ -58,7 +58,7 @@ struct directory_t {
 
 class Dirs final {
 public:
-  explicit Dirs(std::filesystem::path datadir);
+  explicit Dirs(std::filesystem::path datadir, int max_backups);
   ~Dirs();
 
   bool LoadLegacy();
@@ -90,6 +90,7 @@ public:
 
 private:
   const std::filesystem::path datadir_;
+  const int max_backups_;
   std::vector<directory_t> dirs_;
 };
 

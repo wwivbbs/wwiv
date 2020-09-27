@@ -119,7 +119,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
   }
 
   ListBox list(window, "Select User", items);
-  ListBoxResult result = list.Run();
+  const auto result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return items[result.selected].data();
   }
@@ -127,7 +127,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
 }
 
 void user_editor(const wwiv::sdk::Config& config) {
-  int number_users = number_userrecs(config.datadir());
+  auto number_users = number_userrecs(config.datadir());
   curses_out->Cls(ACS_CKBOARD);
 
   if (number_users < 1) {

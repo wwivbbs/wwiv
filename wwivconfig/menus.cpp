@@ -336,7 +336,7 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
 
 static void select_menu(const std::string& menu_dir, const std::string& dir) {
   const auto full_dir_path = FilePath(menu_dir, dir);
-  auto menus = FindFiles(FilePath(full_dir_path, "*"), FindFilesType::files);
+  auto menus = FindFiles(FilePath(full_dir_path, "*"), FindFiles::FindFilesType::files);
   int selected = -1;
   try {
     bool done = false;
@@ -378,7 +378,7 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
 
 void menus(const std::string& menu_dir) {
   try {
-    auto dirs = FindFiles(FilePath(menu_dir, "*"), FindFilesType::directories);
+    auto dirs = FindFiles(FilePath(menu_dir, "*"), FindFiles::FindFilesType::directories);
 
     bool done = false;
     int selected = -1;

@@ -75,7 +75,7 @@ int DumpContactCommand::Execute() {
   if (barg("save")) {
     for (auto& c : contacts) {
       if (barg("backup")) {
-        backup_file(c.second.path());
+        backup_file(c.second.path(), config()->config()->max_backups());
       }
       c.second.Save();
     }

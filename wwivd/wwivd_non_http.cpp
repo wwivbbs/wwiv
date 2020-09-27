@@ -417,7 +417,9 @@ void ConnectionHandler::HandleConnection() {
     if (nodemgr->AcquireNode(node)) {
       const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
       auto current_dir = File::current_directory();
-      launch_node(*data.config, cmd, bbs.working_directory, nodemgr, node, sock, connection_type, result.remote_peer);
+      const auto root = data.config->root_directory();
+      const auto wd = bbs.working_directory.empty() ? "" : FilePath(root, bbs.working_directory).string();
+      launch_node(*data.config, cmd, wd, nodemgr, node, sock, connection_type, result.remote_peer);
       File::set_current_directory(current_dir);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {

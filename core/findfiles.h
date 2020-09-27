@@ -20,43 +20,54 @@
 #ifndef __INCLUDED_FINDFILES_H__
 #define __INCLUDED_FINDFILES_H__
 
-#include <cstring>
-#include <string>
-#include <vector>
 #include <filesystem>
+#include <set>
+#include <string>
+#include <utility>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-enum class FindFilesType { directories, files, any };
+class FileEntry {
+public:
+  FileEntry(std::string n, long s) : name(std::move(n)), size(s) {}
 
-struct FileEntry {
+  bool operator<(const FileEntry& other) const {
+    return name < other.name;
+  }
+  bool operator == (const FileEntry& other) const {
+    return name == other.name;
+  }
   const std::string name;
   long size;
+  
 };
 
 class FindFiles {
 public:
-  typedef std::vector<FileEntry>::iterator iterator;
-  typedef std::vector<FileEntry>::const_iterator const_iterator;
+  typedef std::set<FileEntry>::iterator iterator;
+  typedef std::set<FileEntry>::const_iterator const_iterator;
+  typedef std::set<FileEntry>::size_type size_type;
 
+  enum class FindFilesType { directories, files, any };
+  enum class WinNameType { short_name, long_name };
+
+  FindFiles(const std::filesystem::path& mask, FindFilesType type, WinNameType name_type);
   FindFiles(const std::filesystem::path& mask, FindFilesType type);
 
-  iterator begin() { return entries_.begin(); }
-  const_iterator begin() const { return entries_.begin(); }
-  const_iterator cbegin() const { return entries_.cbegin(); }
-  iterator end() { return entries_.end(); }
-  const_iterator end() const { return entries_.end(); }
-  const_iterator cend() const { return entries_.cend(); }
-  bool empty() const { return entries_.empty(); }
+  [[nodiscard]] iterator begin() { return entries_.begin(); }
+  [[nodiscard]] const_iterator begin() const { return entries_.begin(); }
+  [[nodiscard]] const_iterator cbegin() const { return entries_.cbegin(); }
+  [[nodiscard]] iterator end() { return entries_.end(); }
+  [[nodiscard]] const_iterator end() const { return entries_.end(); }
+  [[nodiscard]] const_iterator cend() const { return entries_.cend(); }
+  [[nodiscard]] bool empty() const { return entries_.empty(); }
+  [[nodiscard]] size_type size() const noexcept { return entries_.size(); }
 
 private:
-  std::vector<FileEntry> entries_; //we wish to iterate over this
-  //container implementation code
-
+  std::set<FileEntry> entries_;
+  
 };
 
-}
 }
 
 

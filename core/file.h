@@ -231,7 +231,7 @@ private:
 };
 
 /** Makes a backup of path using a custom suffix with the time and date */
-bool backup_file(const std::filesystem::path& from);
+bool backup_file(const std::filesystem::path& from, int max_backups = 0);
 
 } // namespace core
 } // namespace wwiv

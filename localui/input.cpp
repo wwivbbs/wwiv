@@ -18,6 +18,14 @@
 /**************************************************************************/
 #include "input.h"
 
+#include "core/file.h"
+#include "core/strings.h"
+#include "localui/curses_io.h"
+#include "localui/curses_win.h"
+#include "localui/stdio_win.h"
+#include "localui/ui_win.h"
+#include "localui/wwiv_curses.h"
+#include "local_io/keycodes.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -30,15 +38,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "local_io/keycodes.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "localui/curses_io.h"
-#include "localui/curses_win.h"
-#include "localui/stdio_win.h"
-#include "localui/ui_win.h"
-#include "localui/wwiv_curses.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -186,20 +185,29 @@ Label* EditItems::add(Label* l) {
 
 void EditItems::add_labels(std::initializer_list<Label*> labels) {
   for (auto* l : labels) {
+    DCHECK(l);
     labels_.push_back(l);
   }
 }
 
 void EditItems::add_items(std::initializer_list<BaseEditItem*> items) {
   for (auto* i : items) {
+    DCHECK(i);
     items_.push_back(i);
   }
 }
 
 BaseEditItem* EditItems::add(Label* label, BaseEditItem* item) {
+  DCHECK(label);
+  DCHECK(item);
   labels_.push_back(label);
   items_.push_back(item);
   return item;
+}
+
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help) {
+  item->set_help_text(help);
+  return add(label, item);
 }
 
 void EditItems::create_window(const std::string& title) {
@@ -231,10 +239,10 @@ EditItems::~EditItems() {
 }
 
 static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
-  const int maxx = parent->GetMaxX();
-  const int maxy = parent->GetMaxY();
-  const int startx = (maxx - width - 4) / 2;
-  const int starty = (maxy - height - 2) / 2;
+  const auto maxx = parent->GetMaxX();
+  const auto maxy = parent->GetMaxY();
+  const auto startx = (maxx - width - 4) / 2;
+  const auto starty = (maxy - height - 2) / 2;
   UIWindow* dialog;
   if (parent->IsGUI()) {
     dialog = new CursesWindow(dynamic_cast<CursesWindow*>(parent), curses_out->color_scheme(),
@@ -249,13 +257,13 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
 }
 
 bool dialog_yn(CursesWindow* window, const vector<string>& text) {
-  int maxlen = 4;
+  auto maxlen = 4;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
   unique_ptr<UIWindow> dialog(CreateDialogWindow(window, text.size(), maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
-  int curline = 1;
+  auto curline = 1;
   for (const auto& s : text) {
     dialog->PutsXY(2, curline++, s);
   }
@@ -272,12 +280,12 @@ bool dialog_yn(CursesWindow* window, const string& text) {
 static void winput_password(CursesWindow* dialog, string* output, int max_length) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
-  int curpos = 0;
+  auto curpos = 0;
   string s;
   s.resize(max_length);
   output->clear();
   for (;;) {
-    int ch = dialog->GetChar();
+    const auto ch = dialog->GetChar();
     switch (ch) {
     case 14:
     case 13: // 13 on Win32
@@ -305,7 +313,7 @@ static void winput_password(CursesWindow* dialog, string* output, int max_length
     case 27: { // escape
       output->clear();
       return;
-    };
+    }
     case 8:
     case 0x7f: // some other backspace
     case KEY_BACKSPACE:
@@ -503,7 +511,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   int pos = 0;
   bool bInsert = false;
   do {
-    int raw_ch = window->GetChar();
+    const auto raw_ch = window->GetChar();
     switch (raw_ch) {
     case KEY_F(1): // curses
       done = true;

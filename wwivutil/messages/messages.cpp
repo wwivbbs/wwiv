@@ -89,7 +89,7 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   const auto& datadir = config()->config()->datadir();
   const auto& nets = config()->networks().networks();
 
-  subs_ = std::make_unique<Subs>(datadir, nets);
+  subs_ = std::make_unique<Subs>(datadir, nets, config()->config()->max_backups());
   if (!subs_->Load()) {
     LOG(ERROR) << "Unable to open subs. ";
     return false;

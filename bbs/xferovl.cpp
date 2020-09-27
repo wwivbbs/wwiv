@@ -522,7 +522,7 @@ bool uploadall(uint16_t directory_num) {
   const auto path_mask = FilePath(dir.path, "*.*");
   const int maxf = dir.maxfiles;
 
-  FindFiles ff(path_mask, FindFilesType::files);
+  FindFiles ff(path_mask, FindFiles::FindFilesType::files);
   auto aborted = false;
   for (const auto& f : ff) {
     aborted = bin.checka();

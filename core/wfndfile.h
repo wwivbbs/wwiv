@@ -42,6 +42,7 @@ protected:
   WFindFileTypeMask type_mask_{WFindFileTypeMask::WFINDFILE_ANY};
   unsigned char file_type_{0};
   bool open_{false};
+  bool use_long_filenames_{false};
 
   void __open(const std::string& file_spec, WFindFileTypeMask type_mask) {
     filespec_ = file_spec;
@@ -72,11 +73,13 @@ public:
   bool next();
   bool close();
   virtual ~WFindFile() { close(); }
+  /** Should WFindFile use long filenames. */
+  void set_use_long_filenames(bool u) { use_long_filenames_ = u; }
 
-  std::string GetFileName() const { return filename_; }
-  long GetFileSize() const { return file_size_; }
-  bool IsDirectory() const;
-  bool IsFile() const;
+  [[nodiscard]] std::string GetFileName() const { return filename_; }
+  [[nodiscard]] long GetFileSize() const { return file_size_; }
+  [[nodiscard]] bool IsDirectory() const;
+  [[nodiscard]] bool IsFile() const;
 };
 
 

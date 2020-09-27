@@ -625,11 +625,13 @@ public:
   /** Adds a label to the list of EditItems. */
   Label* add(Label* label);
   /** Adds a list of labels */
-  void add_labels(std::initializer_list<Label*> items);
+  void add_labels(std::initializer_list<Label*> labels);
   /** Adds a list of EditItems */
   void add_items(std::initializer_list<BaseEditItem*> items);
-  /** Adds a label on the same line as item */
+  /** Adds a label and item */
   BaseEditItem* add(Label* label, BaseEditItem* item);
+  /** Adds a label and item and help text*/
+  BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help);
   void create_window(const std::string& title);
 
   /**

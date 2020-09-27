@@ -68,10 +68,10 @@ struct subboard_t {
   std::vector<subboard_network_data_t> nets;
 };
 
-class Subs {
+class Subs final {
 public:
-  Subs(std::string datadir, const std::vector<net_networks_rec>& net_networks);
-  virtual ~Subs();
+  Subs(std::string datadir, const std::vector<net_networks_rec>& net_networks, int max_backups = 0);
+  ~Subs();
 
   bool LoadLegacy();
   bool Load();
@@ -102,6 +102,7 @@ public:
 private:
   const std::string datadir_;
   const std::vector<net_networks_rec> net_networks_;
+  const int max_backups_;
   std::vector<subboard_t> subs_;
 };
 

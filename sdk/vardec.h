@@ -382,7 +382,10 @@ struct configrec {
   uint16_t max_dirs;
   // qscan pointer length in bytes
   uint16_t qscn_len;
-  uint8_t unused9[9];
+  /** Max number of backup files to make of datafiles. 0 = unlimited */
+  uint8_t max_backups;
+  /** Unused space, may be used for new values in the future. */
+  uint8_t unused9[8];
   // path for menu dir
   char menudir[81]; 
   uint8_t res[502];

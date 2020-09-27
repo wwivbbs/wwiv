@@ -26,23 +26,25 @@
 
 namespace wwiv::core {
 
-static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
+static WFindFileTypeMask FindFilesTypeToInt(FindFiles::FindFilesType type) {
   switch (type) {
-  case FindFilesType::any:
+  case FindFiles::FindFilesType::any:
     return WFindFileTypeMask::WFINDFILE_ANY;
-  case FindFilesType::directories:
+  case FindFiles::FindFilesType::directories:
     return WFindFileTypeMask::WFINDFILE_DIRS;
-  case FindFilesType::files:
+  case FindFiles::FindFilesType::files:
     return WFindFileTypeMask::WFINDFILE_FILES;
-  default:
-    LOG(FATAL) << "Invalid FindFilesType: " << static_cast<int>(type);
-    // Make Compiler happy
-    return WFindFileTypeMask::WFINDFILE_ANY;
   }
+  LOG(FATAL) << "Invalid FindFilesType: " << static_cast<int>(type);
+  // Make Compiler happy
+  return WFindFileTypeMask::WFINDFILE_ANY;
 }
 
-FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type) {
+FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type, WinNameType name_type) {
   WFindFile fnd;
+  if (name_type == WinNameType::long_name) {
+    fnd.set_use_long_filenames(true);
+  }
   if (!fnd.open(mask.string(), FindFilesTypeToInt(type))) {
     VLOG(3) << "Unable to open mask: " << mask;
     return;
@@ -63,9 +65,13 @@ FindFiles::FindFiles(const std::filesystem::path& mask, const FindFilesType type
         continue;
       }
     }
-    entries_.push_back({fn, fnd.GetFileSize()});
+    entries_.emplace(fn, fnd.GetFileSize());
   }
   while (fnd.next());
 }
+
+FindFiles::FindFiles(const std::filesystem::path& mask, FindFilesType type)
+: FindFiles(mask, type, WinNameType::short_name) {}
+
 
 }

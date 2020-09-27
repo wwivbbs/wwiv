@@ -264,7 +264,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   }
 
   {
-    wwiv::sdk::files::Dirs dirs("data/");
+    wwiv::sdk::files::Dirs dirs("data/", 0);
     {
       files::directory_t d1{};
       d1.name = "Sysop";

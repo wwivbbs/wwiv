@@ -163,7 +163,8 @@ public:
   void arc(int n, arcrec_424_t& a) { config_.arcs[n] = a; }
   // Registration Number
   [[nodiscard]] uint32_t wwiv_reg_number() const { return config_.wwiv_reg_number; }
-  void set_wwiv_reg_number(uint32_t n) { config_.wwiv_reg_number = n; }
+  // max number of backups of datafiles to keep.
+  [[nodiscard]] int max_backups() const noexcept { return config_.max_backups; }
 
 private:
   std::string to_abs_path(const char* dir);

@@ -52,7 +52,7 @@ constexpr char CD = 4;
 namespace wwiv::wwivutil::files {
 
 static std::optional<vector<sdk::files::directory_t>> ReadAreas(const std::string& datadir) {
-  sdk::files::Dirs dirs(datadir);
+  sdk::files::Dirs dirs(datadir, 0);
   if (dirs.Load()) {
     return {dirs.dirs()};
   }

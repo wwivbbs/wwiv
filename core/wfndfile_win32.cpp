@@ -32,7 +32,7 @@ bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) 
     return false;
   }
 
-  if (f->cAlternateFileName[0] == '\0') {
+  if (use_long_filenames_ || f->cAlternateFileName[0] == '\0') {
     filename_ = f->cFileName;
   } else {
     filename_ = f->cAlternateFileName;
@@ -51,7 +51,7 @@ bool WFindFile::next() {
     return false;
   }
 
-  if (f->cAlternateFileName[0] == '\0') {
+  if (use_long_filenames_ || f->cAlternateFileName[0] == '\0') {
     filename_ = f->cFileName;
   } else {
     filename_ = f->cAlternateFileName;

@@ -13,7 +13,6 @@ set(COMMON_SOURCES
   newinit.cpp
   paths.cpp
   protocols.cpp
-  regcode.cpp
   subacc.cpp 
   subsdirs.cpp 
   system_info.cpp

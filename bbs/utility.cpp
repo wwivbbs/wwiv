@@ -69,7 +69,7 @@ inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& 
 void remove_from_temp(const std::string& file_name, const std::string& directory_name,
                       bool bPrintStatus) {
   const auto filespec = StrCat(directory_name, stripfn(file_name));
-  FindFiles ff(filespec, FindFilesType::any);
+  FindFiles ff(filespec, FindFiles::FindFilesType::any);
   bout.nl();
   for (const auto& f : ff) {
     // We don't want to delete ".", "..".
@@ -191,7 +191,7 @@ std::string get_wildlist(const std::string& orig_file_mask) {
   to_char_array(file_mask, orig_file_mask);
   auto mark = 0;
 
-  FindFiles ff(file_mask, FindFilesType::any);
+  FindFiles ff(file_mask, FindFiles::FindFilesType::any);
   if (ff.empty()) {
     bout << "No files found\r\n";
     return {};

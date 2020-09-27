@@ -69,14 +69,14 @@ bool process_ftn_tic(const Config& config, const net_networks_rec& net, bool sav
     return false;
   }
   const FtnDirectories ftn_directories(config.root_directory(), net);
-  files::Dirs dirs(config.datadir());
+  files::Dirs dirs(config.datadir(), 0);
   if (!dirs.Load()) {
     LOG(ERROR) << "Unable to load directories.";
     return false;
   }
   files::FileApi api(config.datadir());
 
-  FindFiles ff(FilePath(ftn_directories.tic_dir(), "*.tic"), FindFilesType::files);
+  FindFiles ff(FilePath(ftn_directories.tic_dir(), "*.tic"), FindFiles::FindFilesType::files);
   auto first = true;
   const files::TicParser parser(ftn_directories.tic_dir());
   for (const auto& f : ff) {

@@ -286,7 +286,7 @@ bool fill_sec(int sn) {
   gfilerec *g = read_sec(sn, &n1);
   const auto path = FilePath(a()->config()->gfilesdir(), a()->gfilesec[sn].filename);
   const auto filespec = FilePath(path, "*.*");
-  FindFiles ff(filespec, FindFilesType::files);
+  FindFiles ff(filespec, FindFiles::FindFilesType::files);
   bool ok{true};
   int chd = 0;
   for (const auto& f : ff) {

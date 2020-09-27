@@ -436,7 +436,7 @@ void Application::read_nintern() {
 }
 
 bool Application::read_subs() {
-  subs_ = std::make_unique<Subs>(config_->datadir(), nets_->networks());
+  subs_ = std::make_unique<Subs>(config_->datadir(), nets_->networks(), config_->max_backups());
   return subs_->Load();
 }
 
@@ -503,7 +503,7 @@ bool Application::read_names() {
 }
 
 bool Application::read_dirs() {
-  dirs_ = std::make_unique<wwiv::sdk::files::Dirs>(config_->datadir());
+  dirs_ = std::make_unique<wwiv::sdk::files::Dirs>(config_->datadir(), config_->max_backups());
   return dirs_->Load();
 }
 

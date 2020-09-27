@@ -37,7 +37,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk {
 
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs, int);
 
 std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
@@ -69,7 +69,7 @@ TEST_F(SubXtrTest, Write) {
   s2.nets.emplace_back(xtrasubsnetrec{0, 0, 1, 1, "S2"});
   xsubs.emplace_back(s2);
 
-  write_subs_xtr(helper.data(), net_networks_, xsubs);
+  write_subs_xtr(helper.data(), net_networks_, xsubs, 0);
   TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
   auto actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4u, actual.size());

@@ -174,7 +174,7 @@ void process_inst_msgs() {
   auto oiia = setiia(std::chrono::milliseconds(0));
 
   string fndspec = fmt::sprintf("%smsg*.%3.3u", a()->config()->datadir(), a()->instance_number());
-  FindFiles ff(fndspec, FindFilesType::files);
+  FindFiles ff(fndspec, FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     if (a()->sess().hangup()) { break; }
     File file(FilePath(a()->config()->datadir(), f.name));

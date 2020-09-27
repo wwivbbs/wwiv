@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#define _DEFINE_GLOBALS_
-
 #include "wwivconfig/wwivconfig.h"
 
 #include "common/datetime.h"
@@ -51,7 +49,6 @@
 #include "wwivconfig/newinit.h"
 #include "wwivconfig/paths.h"
 #include "wwivconfig/protocols.h"
-#include "wwivconfig/regcode.h"
 #include "wwivconfig/subsdirs.h"
 #include "wwivconfig/sysop_account.h"
 #include "wwivconfig/system_info.h"
@@ -461,7 +458,6 @@ int WInitApp::main(int argc, char** argv) {
                                  {"L. Language Configuration", 'L'},
                                  {"M. Menu Editor", 'M'},
                                  {"N. Network Configuration", 'N'},
-                                 {"R. Registration Information", 'R'},
                                  {"U. User Editor", 'U'},
                                  {"X. Update Sub/Directory Maximums", 'X'},
                                  {"W. wwivd Configuration", 'W'},
@@ -518,9 +514,6 @@ int WInitApp::main(int argc, char** argv) {
       break;
     case 'M':
       menus(config.menudir());
-      break;
-    case 'R':
-      edit_registration_code(config);
       break;
     case 'U':
       user_editor(config);

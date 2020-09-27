@@ -528,14 +528,14 @@ bool exists_bundle(const std::string& dir) {
   const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {
-      FindFiles ff(FilePath(dir, StrCat("*.", e)), FindFilesType::files);
+      FindFiles ff(FilePath(dir, StrCat("*.", e)), FindFiles::FindFilesType::files);
       for (const auto& f : ff) {
         if (f.size > 0)
           return true;
       }
     }
     {
-      FindFiles ff(FilePath(dir, StrCat("*.", ToStringUpperCase(e))), FindFilesType::files);
+      FindFiles ff(FilePath(dir, StrCat("*.", ToStringUpperCase(e))), FindFiles::FindFilesType::files);
       for (const auto& f : ff) {
         if (f.size > 0)
           return true;

@@ -21,17 +21,15 @@
 #include "bbs/bbs.h"
 #include "bbs/make_abs_cmd.h"
 #include "bbs/stuffin.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/files/arc.h"
-#include <cstring>
 #include <string>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static const std::string DEFAULT_EXT = "ZIP";
+static const char DEFAULT_EXT[] = "ZIP";
 constexpr int MAX_ARCS = 15;
 
 
@@ -47,7 +45,7 @@ std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_
   if (!oa) {
     return std::nullopt;
   }
-  auto arc = oa.value();
+  const auto& arc = oa.value();
   std::string cmdline;
   switch (cmdtype) {
   case arc_command_type_t::list:

@@ -68,7 +68,7 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
   const auto pattern = fmt::sprintf("p*.%03d", instance_number);
   LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
-  FindFiles ff(FilePath(dir, pattern), FindFilesType::files);
+  FindFiles ff(FilePath(dir, pattern), FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     rename_pend(dir, f.name, 'c');
   }

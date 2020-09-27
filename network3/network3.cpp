@@ -389,7 +389,7 @@ static void rename_pending_files(const string& dir) {
     rename_pend(dir, DEAD_NET, '3');
   }
 
-  FindFiles ff(FilePath(dir, "s*.net"), FindFilesType::files);
+  FindFiles ff(FilePath(dir, "s*.net"), FindFiles::FindFilesType::files);
   for (const auto& f : ff) {
     rename_pend(dir, f.name, '3');
   }

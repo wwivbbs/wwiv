@@ -129,7 +129,7 @@ File sample.zip
   dir.area_tags.emplace_back(dt);
   dir.name = "d1";
 
-  wwiv::sdk::files::Dirs dirs(data);
+  wwiv::sdk::files::Dirs dirs(data, 0);
   dirs.set_dirs({dir});
 
   wwiv::sdk::files::TicParser p(tic_path.parent_path());
@@ -177,7 +177,7 @@ File sample.zip
   dir.area_tags.emplace_back(dt);
   dir.name = "d1";
 
-  wwiv::sdk::files::Dirs dirs(data);
+  wwiv::sdk::files::Dirs dirs(data, 0);
   dirs.set_dirs({dir});
 
   wwiv::sdk::files::TicParser p(tic_path.parent_path());

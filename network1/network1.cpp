@@ -150,7 +150,7 @@ bool Network1::handle_file(const string& name) {
 bool Network1::Run() {
   try {
     LOG(INFO) << " * Analyzing " << net_.name << " pending files...";
-    FindFiles ff(FilePath(net_.dir, "p*.net"), FindFilesType::files);
+    FindFiles ff(FilePath(net_.dir, "p*.net"), FindFiles::FindFilesType::files);
     for (const auto& f : ff) {
       LOG(INFO) << "Processing: " << net_.dir << f.name;
       if (handle_file(f.name)) {

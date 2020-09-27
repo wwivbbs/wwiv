@@ -277,7 +277,7 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
 
 bool NetworkF::import_packets(const std::string& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir << "' mask: '" << mask << "'";
-  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  FindFiles files(FilePath(dir, mask), FindFiles::FindFilesType::files);
   if (files.empty()) {
     LOG(INFO) << "No packets to import in: '" << dir << "' mask: '" << mask << "'";
   }
@@ -347,7 +347,7 @@ int NetworkF::import_bundles(const std::string& dir, const std::string& mask) {
   auto num_bundles_processed = 0;
 
   VLOG(3) << "import_bundles: mask: " << mask;
-  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  FindFiles files(FilePath(dir, mask), FindFiles::FindFilesType::files);
   for (const auto& f : files) {
     if (f.size == 0) {
       // skip zero byte files.

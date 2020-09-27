@@ -116,7 +116,7 @@ bool write_dirs(const std::filesystem::path& datadir, const vector<directoryrec_
 
 // Classes
 
-Dirs::Dirs(std::filesystem::path datadir) : datadir_(std::move(datadir)){};
+Dirs::Dirs(std::filesystem::path datadir, int max_backups) : datadir_(std::move(datadir)), max_backups_(max_backups) {};
 
 Dirs::~Dirs() = default;
 
@@ -170,7 +170,7 @@ bool Dirs::Save() {
     return false;
   }
   // Backup dirs.json
-  backup_file(FilePath(datadir_, DIRS_JSON));
+  backup_file(FilePath(datadir_, DIRS_JSON), max_backups_);
 
   // Save dirs.
   return SaveToJSON(datadir_, DIRS_JSON, dirs_);
