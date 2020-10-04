@@ -286,7 +286,7 @@ std::string SocketConnection::read_line(int max_size, duration<double> d) {
 #endif  // MSG_NOSIGNAL 
 
 int SocketConnection::send(const void* data, int size, duration<double>) {
-  const auto sent = ::send(sock_, reinterpret_cast<const char*>(data), size, MSG_NOSIGNAL);
+  const auto sent = ::send(sock_, static_cast<const char*>(data), size, MSG_NOSIGNAL);
   if (open_ && sent != size) {
     if (sent == -1) {
       throw socket_closed_error(
