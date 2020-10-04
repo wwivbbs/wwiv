@@ -412,7 +412,7 @@ bool aligned_wildcard_match(const std::string& l, const std::string& r) {
 
 std::optional<int> FileArea::SearchFile(const std::string& filemask, int start_num) {
   const auto numf = number_of_files();
-  if (numf < 1 || start_num >= numf) {
+  if (numf < 1 || start_num > numf) { // was >=
     return std::nullopt;
   }
 

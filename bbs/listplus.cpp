@@ -1408,8 +1408,8 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
   bout.cls();
 
   if (a()->batch().numbatchdl() > 0) {
-    bool done = false;
-    for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry) && !done; ++it) {
+    auto done = false;
+    for (auto it = begin(a()->batch().entry); it != end(a()->batch().entry) && !done;) {
       const auto& b = *it;
       if (b.sending()) {
         switch (mode) {
@@ -1418,6 +1418,7 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);
+            continue;
           }
           break;
         case SYSOP_RENAME:
@@ -1425,6 +1426,7 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);
+            continue;
           }
           break;
         case SYSOP_MOVE:
@@ -1432,10 +1434,12 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
             done = true;
           } else {
             it = a()->batch().delbatch(it);
+            continue;
           }
           break;
         }
       }
+      ++it;
     }
   } else {
     // Just act on the single file
