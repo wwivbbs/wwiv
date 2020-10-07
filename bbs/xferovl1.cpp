@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/xferovl1.h"
 
+#include "bbs/archivers.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -35,10 +36,8 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "bbs/xfer_common.h"
 #include "bbs/xferovl.h"
 #include "bbs/xfertmp.h"
-#include "bbs/archivers.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/numbers.h"
@@ -53,7 +52,6 @@
 #include "sdk/filenames.h"
 #include "sdk/files/diz.h"
 #include "sdk/files/files.h"
-#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -62,7 +60,6 @@
 static const int INDENTION = 24;
 
 extern int foundany;
-static const char* invalid_chars = "Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using std::string;
 using wwiv::sdk::files::FileName;
@@ -366,7 +363,7 @@ void tag_it() {
         bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
         bad = true;
       }
-      if (a()->config()->req_ratio() > 0.0001 && ratio() < a()->config()->req_ratio() &&
+      if (a()->config()->req_ratio() > 0.0001f && ratio() < a()->config()->req_ratio() &&
           !a()->user()->IsExemptRatio() && !bad) {
         bout.bprintf(
             "|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
@@ -484,7 +481,6 @@ void tag_files(bool& need_title) {
       const auto i = to_number<int>(s) - 1;
       if (!s.empty() && i >= 0 && i < ssize(a()->filelist)) {
         auto& f = a()->filelist[i];
-        const auto d = XFER_TIME(f.u.numbytes);
         bout.nl();
         int i2;
         for (i2 = 0; i2 < a()->dirs().size(); i2++) {

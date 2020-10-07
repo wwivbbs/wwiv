@@ -51,7 +51,7 @@ void nscanall();
 void searchall();
 int recno(const std::string& file_mask);
 int nrecno(const std::string& file_mask, int start_recno);
-int printfileinfo(uploadsrec* upload_record, const wwiv::sdk::files::directory_t& dir);
+int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir);
 void remlist(const std::string& file_name);
 
 #endif  // __INCLUDED_BBS_XFER_H__

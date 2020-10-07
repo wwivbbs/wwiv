@@ -41,7 +41,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -595,7 +594,7 @@ void save_lp_config() {
     File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate |
                         File::modeReadWrite)) {
-      fileConfig.Write(&lp_config, sizeof(struct listplus_config));
+      fileConfig.Write(&lp_config, sizeof(listplus_config));
       fileConfig.Close();
     }
   }
@@ -798,15 +797,15 @@ short SelectColor(int which) {
     bout << "|#5Inversed? ";
     if (yesno()) {
       if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-        nc = 0 | ((a()->user()->GetBWColor(1) & 0x07) << 4);
+        nc = (a()->user()->GetBWColor(1) & 0x07) << 4;
       } else {
         nc = a()->user()->GetBWColor(1) & 0x70;
       }
     } else {
       if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-        nc = 0 | (a()->user()->GetBWColor(1) & 0x07);
+        nc = a()->user()->GetBWColor(1) & 0x07;
       } else {
-        nc = ((a()->user()->GetBWColor(1) & 0x70) >> 4);
+        nc = (a()->user()->GetBWColor(1) & 0x70) >> 4;
       }
     }
   }
@@ -971,10 +970,10 @@ void config_file_list() {
     a()->user()->data.lp_options |= cfl_description;
   }
 
-  bool done = false;
+  auto done = false;
   while (!done && !a()->hangup_) {
     update_user_config_screen(&u, which);
-    int key = onek("Q2346789H!@#$%^&*(");
+    const int key = onek("Q2346789H!@#$%^&*(");
     switch (key) {
     case '2':
     case '3':
@@ -1460,7 +1459,7 @@ void do_batch_sysop_command(int mode, const std::string& file_name) {
 }
 
 int search_criteria(search_record* sr) {
-  int all_conf = 1;
+  auto all_conf = true;
 
   const auto useconf = ok_multiple_conf(a()->user(), a()->uconfdir);
 
@@ -1470,7 +1469,7 @@ LP_SEARCH_HELP:
   bout.cls();
   printfile(LPSEARCH_NOEXT);
 
-  bool done = false;
+  auto done = false;
   char x{0};
   while (!done) {
     bout.GotoXY(1, 15);
@@ -1482,7 +1481,7 @@ LP_SEARCH_HELP:
 
     bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
     bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
-    const std::string dir_name = stripcolors(a()->dirs()[a()->current_user_dir().subnum].name);
+    const auto dir_name = stripcolors(a()->dirs()[a()->current_user_dir().subnum].name);
     bout << "|#9C)|#2 Which Directories    :|#2 "
          << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
          << wwiv::endl;
@@ -1573,8 +1572,8 @@ LP_SEARCH_HELP:
 void view_file(const std::string& aligned_file_name) {
   bout.cls();
   dliscan();
-  bool abort = false;
-  int i = recno(aligned_file_name);
+  auto abort = false;
+  auto i = recno(aligned_file_name);
   do {
     if (i > 0) {
       auto f = a()->current_file_area()->ReadFile(i);
@@ -1594,10 +1593,10 @@ void view_file(const std::string& aligned_file_name) {
 
 int lp_try_to_download(const std::string& file_mask, int dn) {
   int rtn;
-  bool abort = false;
+  auto abort = false;
 
   dliscan1(dn);
-  int i = recno(file_mask);
+  auto i = recno(file_mask);
   if (i <= 0) {
     checka(&abort);
     return abort ? -1 : 0;

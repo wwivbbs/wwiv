@@ -36,7 +36,6 @@
 #include "local_io/keycodes.h"
 #include <algorithm>
 #include <chrono>
-#include <cmath>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -55,7 +54,7 @@ using namespace wwiv::strings;
 extern const unsigned char* translate_letters[];
 
 template <class _Ty>
-inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value);
+const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value);
 
 /**
  * Deletes files from a directory.  This is meant to be used only in the temp
@@ -114,26 +113,26 @@ void frequent_init() {
 /**
  * Gets the current users upload/download ratio.
  */
-double ratio() {
+float ratio() {
   if (a()->user()->dk() == 0) {
-    return 99.999;
+    return 99.999f;
   }
-  double r = static_cast<float>(a()->user()->uk()) /
+  const auto r = static_cast<float>(a()->user()->uk()) /
              static_cast<float>(a()->user()->dk());
 
-  return (r > 99.998) ? 99.998 : r;
+  return r > 99.998f ? 99.998f : r;
 }
 
 /**
  * Gets the current users post/call ratio.
  */
-double post_ratio() {
+float post_ratio() {
   if (a()->user()->GetNumLogons() == 0) {
-    return 99.999;
+    return 99.999f;
   }
-  double r = static_cast<float>(a()->user()->GetNumMessagesPosted()) /
-             static_cast<float>(a()->user()->GetNumLogons());
-  return (r > 99.998) ? 99.998 : r;
+  const auto r = static_cast<float>(a()->user()->GetNumMessagesPosted()) /
+                 static_cast<float>(a()->user()->GetNumLogons());
+  return r > 99.998f ? 99.998f : r;
 }
 
 long nsl() {
@@ -245,11 +244,11 @@ std::string get_wildlist(const std::string& orig_file_mask) {
       }
     }
   }
-  auto t = file_mask[mark];
+  const auto m = file_mask[mark];
   file_mask[mark] = 0;
   auto* pszPath = file_mask;
-  file_mask[mark] = t;
-  t = static_cast<char>(size(pszPath));
+  file_mask[mark] = m;
+  const auto t = static_cast<int>(size(pszPath));
   strcat(pszPath, f->name.c_str());
   int i;
   for (i = 1;; i++) {
@@ -293,7 +292,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     amount = 1;
     positions[0] = xpos;
     for (const auto& menu_item : menu_items) {
-      positions[amount] = positions[amount - 1] + menu_item.length() + 2;
+      positions[amount] = positions[amount - 1] + wwiv::stl::ssize(menu_item) + 2;
       ++amount;
     }
 
@@ -323,7 +322,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   bout.SystemColor(smc->normal_menu_item);
 
   while (!a()->hangup_) {
-    int event = bgetch_event(numlock_status_t::NOTNUMBERS);
+    const auto event = bgetch_event(numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;
       for (const string& menu_item : menu_items) {
@@ -346,48 +345,47 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         ++x;
       }
       return event;
-    } else {
-      switch (event) {
-      case COMMAND_LEFT:
-        bout.GotoXY(positions[*menu_pos], ypos);
-        bout.SystemColor(smc->normal_highlight);
-        bout.bputch(menu_items[*menu_pos][0]);
-        bout.SystemColor(smc->normal_menu_item);
-        bout.bputs(menu_items[*menu_pos].substr(1));
-        if (!*menu_pos) {
-          *menu_pos = wwiv::stl::ssize(menu_items) - 1;
-        } else {
-          --*menu_pos;
-        }
-        bout.SystemColor(smc->current_highlight);
-        bout.GotoXY(positions[*menu_pos], ypos);
-        bout.bputch(menu_items[*menu_pos][0]);
-        bout.SystemColor(smc->current_menu_item);
-        bout.bputs(menu_items[*menu_pos].substr(1));
-        bout.GotoXY(positions[*menu_pos], ypos);
-        break;
-
-      case COMMAND_RIGHT:
-        bout.GotoXY(positions[*menu_pos], ypos);
-        bout.SystemColor(smc->normal_highlight);
-        bout.bputch(menu_items[*menu_pos][0]);
-        bout.SystemColor(smc->normal_menu_item);
-        bout.bputs(menu_items[*menu_pos].substr(1));
-        if (*menu_pos == static_cast<int>(menu_items.size() - 1)) {
-          *menu_pos = 0;
-        } else {
-          ++*menu_pos;
-        }
-        bout.SystemColor(smc->current_highlight);
-        bout.GotoXY(positions[*menu_pos], ypos);
-        bout.bputch(menu_items[*menu_pos][0]);
-        bout.SystemColor(smc->current_menu_item);
-        bout.bputs(menu_items[*menu_pos].substr(1));
-        bout.GotoXY(positions[*menu_pos], ypos);
-        break;
-      default:
-        return event;
+    }
+    switch (event) {
+    case COMMAND_LEFT:
+      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.SystemColor(smc->normal_highlight);
+      bout.bputch(menu_items[*menu_pos][0]);
+      bout.SystemColor(smc->normal_menu_item);
+      bout.bputs(menu_items[*menu_pos].substr(1));
+      if (!*menu_pos) {
+        *menu_pos = wwiv::stl::ssize(menu_items) - 1;
+      } else {
+        --*menu_pos;
       }
+      bout.SystemColor(smc->current_highlight);
+      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.bputch(menu_items[*menu_pos][0]);
+      bout.SystemColor(smc->current_menu_item);
+      bout.bputs(menu_items[*menu_pos].substr(1));
+      bout.GotoXY(positions[*menu_pos], ypos);
+      break;
+
+    case COMMAND_RIGHT:
+      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.SystemColor(smc->normal_highlight);
+      bout.bputch(menu_items[*menu_pos][0]);
+      bout.SystemColor(smc->normal_menu_item);
+      bout.bputs(menu_items[*menu_pos].substr(1));
+      if (*menu_pos == static_cast<int>(menu_items.size() - 1)) {
+        *menu_pos = 0;
+      } else {
+        ++*menu_pos;
+      }
+      bout.SystemColor(smc->current_highlight);
+      bout.GotoXY(positions[*menu_pos], ypos);
+      bout.bputch(menu_items[*menu_pos][0]);
+      bout.SystemColor(smc->current_menu_item);
+      bout.bputs(menu_items[*menu_pos].substr(1));
+      bout.GotoXY(positions[*menu_pos], ypos);
+      break;
+    default:
+      return event;
     }
   }
   return 0;

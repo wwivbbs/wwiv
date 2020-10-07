@@ -385,7 +385,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
 
 static std::filesystem::path FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
-    auto nd = a()->nets()[xnp.net_num].dir;
+    const auto& nd = a()->nets()[xnp.net_num].dir;
     auto filename = FilePath(nd, StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
@@ -425,7 +425,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
 
   const auto filename = FindTagFileName();
   if (filename.empty()) {
-    // FindTagFileName returns an empty string if no tagname exists, so
+    // FindTagFileName returns an empty string if no tag name exists, so
     // just exit here since there is no tag.
     return;
   }
@@ -435,7 +435,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
     string s;
     do {
       s.clear();
-      const bool line_read = file.ReadLine(&s);
+      const auto line_read = file.ReadLine(&s);
       if (line_read && s.length() > 1 && s[s.length() - 2] == RETURN) {
         // remove last 2 characters.
         s.pop_back();
@@ -463,7 +463,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
   if (file.IsOpen()) {
     string quote_text;
     while (file.ReadLine(&quote_text)) {
-      auto slash_n = quote_text.find('\n');
+      const auto slash_n = quote_text.find('\n');
       if (slash_n != string::npos) {
         quote_text.resize(slash_n);
       }
