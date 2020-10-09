@@ -73,18 +73,6 @@ static std::optional<subboard_t> find_sub(const wwiv::sdk::Subs& subs, const str
   return std::nullopt;
 }
 
-OverflowStrategy overflow_strategy_from(const std::string& v) {
-  string flag = ToStringLowerCase(v);
-  if (flag == "one") {
-    return OverflowStrategy::delete_one;
-  } else if (flag == "all") {
-    return OverflowStrategy::delete_all;
-  } else if (flag == "none") {
-    return OverflowStrategy::delete_none;
-  }
-  return OverflowStrategy::delete_none;
-}
-
 bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   const auto& datadir = config()->config()->datadir();
   const auto& nets = config()->networks().networks();
@@ -100,7 +88,7 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   }
 
   const wwiv::sdk::msgapi::MessageApiOptions options;
-  auto x = new NullLastReadImpl();
+  auto* x = new NullLastReadImpl();
   sub_ = find_sub(*subs_, basename).value_or(default_sub(basename));
 
   apis_[sub_.storage_type] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
@@ -153,8 +141,8 @@ public:
       return 1;
     }
 
-    auto num_messages = area->number_of_messages();
-    auto message_number = arg("num").as_int();
+    const auto num_messages = area->number_of_messages();
+    const auto message_number = arg("num").as_int();
     cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
     cout << string(72, '-') << endl;
 
@@ -163,7 +151,7 @@ public:
       return 1;
     }
     
-    if (auto success = area->DeleteMessage(message_number); !success) {
+    if (const auto success = area->DeleteMessage(message_number); !success) {
       LOG(ERROR) << "Unable to delete message #" << message_number << "; Try packing this sub.";
       return 1;
     }
@@ -286,13 +274,13 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    bool sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
-    bool db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
+    const auto sb = backup_file(FilePath(config.datadir(), StrCat(name, ".sub")));
+    const auto db = backup_file(FilePath(config.msgsdir(), StrCat(name, ".dat")));
     return sb && db;
   }
 
    int Execute() override {
-    if (remaining().size() < 1) {
+    if (remaining().empty()) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp();
       return 2;
@@ -318,7 +306,7 @@ public:
       backup(*config()->config(), basename);
     }
 
-    subboard_t newsub = sub();
+    auto newsub = sub();
     newsub.filename = StrCat(basename, ".new");
     {
       unique_ptr<MessageArea> area(api().Open(sub(), -1));
@@ -362,73 +350,6 @@ public:
   }
 };
 
-// This is hacked from subacc.cpp.
-// TODO(rushfan): move this into the message sdk.
-static uint32_t WWIVReadLastRead(const std::string& datadir, const std::string& sub_filename) {
-  // open file, and create it if necessary
-  postrec p{};
-
-  if (const auto sub_fn = FilePath(datadir, StrCat(sub_filename, ".sub")); !File::Exists(sub_fn)) {
-    return 1;
-  }
-  File subFile(FilePath(datadir, StrCat(sub_filename, ".sub")));
-  if (!subFile.Open(File::modeBinary | File::modeReadOnly)) {
-    return 0;
-  }
-  // read in first rec, specifying # posts
-  // p.owneruser contains # of posts.
-  subFile.Read(&p, sizeof(postrec));
-
-  if (p.owneruser == 0) {
-    // Not sure why but iscan1 returned 1 for empty subs.
-    return 1;
-  }
-
-  // read in sub date, if don't already know it
-  subFile.Seek(p.owneruser * sizeof(postrec), File::Whence::begin);
-  subFile.Read(&p, sizeof(postrec));
-  return p.qscan;
-}
-
-class MessageAreasCommand : public BaseMessagesSubCommand {
-public:
-  MessageAreasCommand() : BaseMessagesSubCommand("areas", "Lists the message areas") {}
-
-  virtual ~MessageAreasCommand() = default;
-
-  std::string GetUsage() const override final {
-    std::ostringstream ss;
-    ss << "Usage:   areas" << endl;
-    return ss.str();
-  }
-
-  int Execute() override final {
-    wwiv::sdk::Subs subs(config()->config()->datadir(), config()->networks().networks());
-    if (!subs.Load()) {
-      LOG(ERROR) << "Unable to load subs";
-      return 2;
-    }
-
-    int num = 0;
-    cout << "#Num FileName LastRead   " << std::setw(30) << std::left << "Name"
-         << " " << std::endl;
-    cout << string(78, '=') << endl;
-    for (const auto& d : subs.subs()) {
-      auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
-      cout << "#" << std::setw(3) << std::left << num++ << " " 
-           << std::setw(8) << d.filename << " "
-           << std::setw(std::numeric_limits<uint32_t>::digits10 + 1) << lastread << " "
-           << std::setw(30) << d.name << std::endl;
-    }
-    return 0;
-  }
-
-  bool AddSubCommands() override final {
-    add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
-    return true;
-  }
-};
-
 bool MessagesCommand::AddSubCommands() {
   if (!add(make_unique<MessagesDumpCommand>())) {
     return false;
@@ -440,9 +361,6 @@ bool MessagesCommand::AddSubCommands() {
     return false;
   }
   if (!add(make_unique<PackMessageCommand>())) {
-    return false;
-  }
-  if (!add(make_unique<MessageAreasCommand>())) {
     return false;
   }
   

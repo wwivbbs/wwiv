@@ -34,6 +34,7 @@
 #include "wwivutil/net/net.h"
 #include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
+#include "wwivutil/subs/subs.h"
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -72,6 +73,7 @@ public:
       Add(std::make_unique<NetCommand>());
       Add(std::make_unique<PrintCommand>());
       Add(std::make_unique<StatusCommand>());
+      Add(std::make_unique<SubsCommand>());
       if (!cmdline_.Parse()) { return 1; }
       Config config(cmdline_.bbsdir());
       if (!config.IsInitialized()) {
