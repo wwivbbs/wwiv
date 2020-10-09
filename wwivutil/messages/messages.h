@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_MESSAGES_H__
-#define __INCLUDED_WWIVUTIL_MESSAGES_H__
+#ifndef INCLUDED_WWIVUTIL_MESSAGES_H
+#define INCLUDED_WWIVUTIL_MESSAGES_H
 
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/message_api.h"
@@ -50,14 +50,14 @@ private:
 class MessagesCommand final : public UtilCommand {
 public:
   MessagesCommand(): UtilCommand("messages", "WWIV message commands.") {}
-  ~MessagesCommand() = default;
+  virtual ~MessagesCommand() = default;
   bool AddSubCommands() override;
 };
 
 class MessagesDumpCommand final: public BaseMessagesSubCommand {
 public:
   MessagesDumpCommand();
-  ~MessagesDumpCommand() = default;
+  virtual ~MessagesDumpCommand() = default;
   [[nodiscard]] std::string GetUsage() const override;
   int Execute() override;
   bool AddSubCommands() override;
@@ -66,7 +66,7 @@ protected:
   int ExecuteImpl(sdk::msgapi::MessageArea* area, const std::string& basename, int start, int end, bool all);
 };
 
-}  // namespace wwiv::wwivutil
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_MESSAGES_H__
+#endif

@@ -15,37 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_SUBS_H__
-#define __INCLUDED_WWIVUTIL_SUBS_H__
+#ifndef INCLUDED_WWIVUTIL_SUBS_SUBS_H
+#define INCLUDED_WWIVUTIL_SUBS_SUBS_H
 
-#include "sdk/subxtr.h"
-#include "sdk/msgapi/message_api.h"
 #include "wwivutil/command.h"
-#include <memory>
 
 namespace wwiv::wwivutil {
-
-//class BaseMessagesSubCommand : public UtilCommand {
-//public:
-//  BaseMessagesSubCommand(const std::string& name, const std::string& descr)
-//      : UtilCommand(name, descr) {}
-//  virtual ~BaseMessagesSubCommand();
-//  bool CreateMessageApiMap(const std::string& basename);
-//  const std::string& basename() const noexcept { return basename_; }
-//  const wwiv::sdk::subboard_t& sub() const noexcept { return sub_; }
-//  // N.B. if this doesn't exist this message will crash.
-//  wwiv::sdk::msgapi::MessageApi& api() noexcept {
-//    return *apis_.at(sub_.storage_type).get();
-//  }
-//
-//protected:
-//  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis_;
-//  std::unique_ptr<wwiv::sdk::Subs> subs_;
-//  wwiv::sdk::subboard_t sub_;
-//
-//private:
-//  std::string basename_;
-//};
 
 class SubsCommand: public UtilCommand {
 public:
@@ -55,7 +30,7 @@ public:
 };
 
 
-}  // namespace wwiv::wwivutil
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_SUBS_H__
+#endif

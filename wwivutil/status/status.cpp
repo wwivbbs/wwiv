@@ -17,20 +17,16 @@
 /**************************************************************************/
 #include "wwivutil/status/status.h"
 
-#include <cstdio>
-#include <cstdlib>
+#include "sdk/status.h"
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "sdk/config.h"
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net/net.h"
-#include "sdk/net/networks.h"
-#include "sdk/status.h"
 
 using std::cerr;
 using std::cout;
@@ -44,12 +40,11 @@ using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 static int show_qscan(const Config& config) {
   StatusMgr mgr(config.datadir(), [](int) {});
-  auto status = mgr.GetStatus();
+  const auto status = mgr.GetStatus();
   cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
   return 0;
 }
@@ -60,7 +55,7 @@ static int set_qscan(const Config& config, uint32_t qscan) {
     s.SetQScanPointer(qscan);
   });
 
-  auto status = mgr.GetStatus();
+  const auto status = mgr.GetStatus();
   cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
   return 0;
 }
@@ -79,12 +74,12 @@ public:
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
-    auto set_or_get = ToStringLowerCase(remaining().front());
+    const auto set_or_get = ToStringLowerCase(remaining().front());
 
     if (set_or_get == "get") {
       return show_qscan(*this->config()->config());
     }
-    else if (set_or_get == "set") {
+    if (set_or_get == "set") {
       if (remaining().size() < 2) {
         std::cout << "qscan set requires a value" << endl;
         return 2;
@@ -113,5 +108,4 @@ bool StatusCommand::AddSubCommands() {
 }
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace wwivutil::wwiv

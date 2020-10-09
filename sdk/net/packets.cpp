@@ -603,7 +603,7 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_i
  */
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip,
+                              Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
@@ -635,7 +635,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     }
     // If the subtype has changed, then change the subtype in the
     // packet text.
-    const auto text = (subnet.stype == original_subtype)
+    const auto text = subnet.stype == original_subtype
                         ? template_packet.text()
                         : change_subtype_to(template_packet.text(), subnet.stype);
     if (subnet.stype != original_subtype) {

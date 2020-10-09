@@ -30,6 +30,7 @@ set(COMMAND_SOURCES
   net/send.cpp
   print/print.cpp
   status/status.cpp
+  subs/import.cpp
   subs/subs.cpp
   util.cpp
   )

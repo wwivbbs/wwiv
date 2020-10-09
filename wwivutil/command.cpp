@@ -18,18 +18,14 @@
 /**************************************************************************/
 #include "wwivutil/command.h"
 
-#include <algorithm>
-#include <iostream>
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "sdk/config.h"
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/stl.h"
-#include "sdk/config.h"
 
 using std::map;
 using std::string;
@@ -37,9 +33,7 @@ using std::vector;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace wwivutil {
-
+namespace wwiv::wwivutil {
 
 // WWIVUTIL commands
 
@@ -50,20 +44,19 @@ UtilCommand::~UtilCommand() = default;
 bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
   subcommands_.push_back(cmd);
   cmd->AddStandardArgs();
-  bool added = CommandLineCommand::add(cmd);
+  const auto added = CommandLineCommand::add(cmd);
   // We want to add the sub commands after we add this one
   cmd->AddSubCommands();
   return added;
 }
 
 bool UtilCommand::set_config(Configuration* config) { 
-  for (const auto s : subcommands_) {
+  for (const auto& s : subcommands_) {
     s->set_config(config);
   }
   config_ = config;
   return true; 
 }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace wwivutil::wwiv
 

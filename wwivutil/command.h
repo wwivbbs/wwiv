@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_COMMAND_H__
-#define __INCLUDED_WWIVUTIL_COMMAND_H__
+#ifndef INCLUDED_WWIVUTIL_COMMAND_H
+#define INCLUDED_WWIVUTIL_COMMAND_H
 
 #include <memory>
 #include <string>
@@ -25,8 +25,7 @@
 #include "sdk/config.h"
 #include "sdk/net/networks.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class Configuration {
 public:
@@ -37,9 +36,9 @@ public:
   }
   virtual ~Configuration() = default;
 
-  const wwiv::sdk::Config* config() const { return config_; }
-  bool initialized() const { return initialized_; }
-  wwiv::sdk::Networks networks() const { return networks_; }
+  [[nodiscard]] const wwiv::sdk::Config* config() const { return config_; }
+  [[nodiscard]] bool initialized() const { return initialized_; }
+  [[nodiscard]] wwiv::sdk::Networks networks() const { return networks_; }
 
 private:
   const std::string bbsdir_;
@@ -57,7 +56,7 @@ public:
   virtual bool AddSubCommands() = 0;
   bool add(std::shared_ptr<UtilCommand> cmd);
 
-  Configuration* config() const { return config_; }
+  [[nodiscard]] Configuration* config() const { return config_; }
   bool set_config(Configuration* config);
 
 private:
@@ -65,8 +64,7 @@ private:
   std::vector<std::shared_ptr<UtilCommand>> subcommands_;
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace wwivutil::wwiv
 
 
-#endif  // __INCLUDED_WWIVUTIL_COMMAND_H__
+#endif

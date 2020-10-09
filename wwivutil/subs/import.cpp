@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*             Copyright (C)2015-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,17 +14,24 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_WWIVUTIL_H__
-#define __INCLUDED_WWIVUTIL_WWIVUTIL_H__
+#include "wwivutil/subs/import.h"
+
+#include <iostream>
+#include <sstream>
+
+namespace wwiv::wwivutil {
+
+std::string SubsImportCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   import  --format=[backbone|areas.bbs] <subs filename>" << std::endl;
+  return ss.str();
+}
+
+int SubsImportCommand::Execute() {
+  std::cout << "Done!" << std::endl;
+  return 0;
+}
 
 
-namespace wwiv {
-namespace wwivutil {
-
-
-}  // namespace wwivutil
-}  // namespace wwiv
-
-#endif  // __INCLUDED_WWIVUTIL_WWIVUTIL_H__
+}

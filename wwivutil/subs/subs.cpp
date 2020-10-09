@@ -26,6 +26,7 @@
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/net/networks.h"
 #include "wwivutil/util.h"
+#include "wwivutil/subs/import.h"
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -48,6 +49,7 @@ using namespace wwiv::strings;
 constexpr char CD = 4;
 
 namespace wwiv::wwivutil {
+
 
 // This is hacked from subacc.cpp.
 // TODO(rushfan): move this into the message sdk.
@@ -117,6 +119,9 @@ public:
 };
 
 bool SubsCommand::AddSubCommands() {
+  if (!add(make_unique<SubsImportCommand>())) {
+    return false;
+  }
   if (!add(make_unique<SubsListCommand>())) {
     return false;
   }

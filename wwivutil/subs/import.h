@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*                Copyright (C)2018-2020, WWIV Software Services          */
+/*                            WWIV Version 5                              */
+/*             Copyright (C)2015-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,17 +14,25 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_WWIVUTIL_UTIL_H
-#define INCLUDED_WWIVUTIL_UTIL_H
+#ifndef INCLUDED_WWIVUTIL_SUBS_IMPORT_H
+#define INCLUDED_WWIVUTIL_SUBS_IMPORT_H
 
-#include <ostream>
+#include "wwivutil/command.h"
 
 namespace wwiv::wwivutil {
 
-void dump_char(std::ostream& out, char ch);
+class SubsImportCommand final: public UtilCommand {
+public:
+  SubsImportCommand(): UtilCommand("import", "Import wwiv subboards.") {}
+  virtual ~SubsImportCommand() = default;
+  [[nodiscard]] std::string GetUsage() const override;
+  int Execute() override;
+  bool AddSubCommands() override { return true;}
+};
 
-} // namespace wwivutil::wwiv
 
-#endif // __INCLUDED_WWIVUTIL_UTIL_H__
+}  // namespace
+
+
+#endif
