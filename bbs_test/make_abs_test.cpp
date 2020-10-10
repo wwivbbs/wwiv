@@ -20,6 +20,7 @@
 #include "bbs_test/bbs_helper.h"
 #include "bbs/make_abs_cmd.h"
 #include "core/strings.h"
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -35,10 +36,10 @@ class MakeAbsTest : public ::testing::Test {
 protected:
   void SetUp() override {
     helper.SetUp();
-    root = helper.app_->bbsdir();
+    root = helper.app_->bbspath().string();
   }
   BbsHelper helper{};
-  string root;
+  std::string root;
 };
 
 #ifdef _WIN32

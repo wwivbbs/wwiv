@@ -117,7 +117,6 @@ Application::Application(LocalIO* localIO)
 
   // Set the home directory
   bbs_dir_ = File::current_directory();
-  bbs_dir_string_ = bbs_dir_.string();
   chains = std::make_unique<Chains>();
 }
 
@@ -606,17 +605,17 @@ void Application::Cls() {
 }
 
 std::string Application::network_name() const {
-  if (nets_->empty()) {
+  if (nets_->empty() || network_num_ >= wwiv::stl::ssize(*nets_)) {
     return {};
   }
   return nets_->at(network_num_).name;
 }
 
 std::string Application::network_directory() const {
-  if (nets_->empty()) {
-    return "";
+  if (nets_->empty() || network_num_ >= wwiv::stl::ssize(*nets_)) {
+    return {};
   }
-  return std::string(nets_->at(network_num_).dir);
+  return nets_->at(network_num_).dir.string();
 }
 
 int Application::language_number() const { return m_nCurrentLanguageNumber; }
@@ -705,7 +704,6 @@ void Application::GotCaller(int ms) {
 }
 
 std::filesystem::path Application::bbspath() const noexcept { return bbs_dir_; }
-std::string Application::bbsdir() const noexcept { return bbs_dir_string_; }
 std::string Application::bindir() const noexcept { return bindir_; }
 std::string Application::configdir() const noexcept { return configdir_; }
 std::string Application::logdir() const noexcept { return logdir_; }
@@ -797,7 +795,6 @@ int Application::Run(int argc, char* argv[]) {
   bout.curatr(0x07);
   // Set the directories.
   bbs_dir_ = cmdline.bbsdir();
-  bbs_dir_string_ = bbs_dir_.string();
   bindir_ = cmdline.bindir();
   logdir_ = cmdline.logdir();
   configdir_ = cmdline.configdir();

@@ -26,7 +26,7 @@
 #include "sdk/net/networks.h"
 #include <algorithm>
 #include <iomanip>
-#include <iostream>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -189,7 +189,7 @@ std::string CalloutOptionsToString(uint16_t options) {
 }
 
 static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map,
-                             const string& network_dir) {
+                             const std::filesystem::path& network_dir) {
   const auto path = FilePath(network_dir, CALLOUT_NET);
   if (!File::Exists(path)) {
     return false;

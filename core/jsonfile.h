@@ -30,6 +30,8 @@
 #include <cereal/access.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/set.hpp>

@@ -263,7 +263,6 @@ static bool handle_file(Context& context, const string& name) {
       LOG(ERROR) << "Error handing packet: type: " << packet.nh.main_type;
     }
   }
-  return true;
 }
 
 int network2_main(const NetworkCommandLine& net_cmdline) {
@@ -278,13 +277,13 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
     const auto& networks = net_cmdline.networks();
     // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
-    wwiv::sdk::msgapi::MessageApiOptions options{};
+    MessageApiOptions options{};
     // By defaukt, delete excess messages like net37 did.
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_all;
 
-    auto user_manager = make_unique<UserManager>(config);
+    const auto user_manager = make_unique<UserManager>(config);
 
-    Context context(config, net, *user_manager.get(), networks.networks());
+    Context context(config, net, *user_manager, networks.networks());
     context.network_number = net_cmdline.network_number();
     context.set_email_api(
         make_unique<WWIVMessageApi>(options, config, networks.networks(), new NullLastReadImpl()));

@@ -15,21 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_NET_PACKETS_H__
-#define __INCLUDED_SDK_NET_PACKETS_H__
+#ifndef INCLUDED_SDK_NET_PACKETS_H
+#define INCLUDED_SDK_NET_PACKETS_H
 
 #include "core/file.h"
 #include "sdk/bbslist.h"
-#include "sdk/config.h"
-#include "sdk/net/net.h"
 #include "sdk/msgapi/message_wwiv.h"
+#include "sdk/net/net.h"
+#include <filesystem>
 #include <set>
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace net {
+namespace wwiv::sdk::net {
 
 #ifdef ERROR
 #undef ERROR
@@ -176,8 +174,8 @@ struct NetInfoFileInfo {
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
-void rename_pend(const std::string& directory, const std::string& filename, char network_app_id);
-std::string create_pend(const std::string& directory, bool local, char network_app_id);
+void rename_pend(const std::filesystem::path& directory, const std::string& filename, char network_app_id);
+std::string create_pend(const std::filesystem::path& directory, bool local, char network_app_id);
 
 std::string main_type_name(uint16_t typ);
 std::string net_info_minor_type_name(uint16_t typ);
@@ -199,11 +197,9 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_i
 enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip,
+                              Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to);
 
-} // namespace net
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_NET_PACKETS_H__
+#endif

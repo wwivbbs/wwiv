@@ -93,13 +93,12 @@ void BinkConfig::session_identifier(std::string id) {
   session_identifier_ = std::move(id);
 }
 
-std::string BinkConfig::network_dir(const std::string& network_name) const {
+std::filesystem::path BinkConfig::network_dir(const std::string& network_name) const {
   return network(network_name).dir;
 }
 
 std::string BinkConfig::receive_dir(const std::string& network_name) const {
-  const auto rdir = wwiv::core::FilePath(network_dir(network_name), session_identifier_).string();
-  const auto dir = core::File::absolute(config().root_directory(), rdir);
+  const auto dir = wwiv::core::FilePath(network_dir(network_name), session_identifier_).string();
   LOG(INFO) << "BinkConfig::receive_dir: " << dir;
   return dir;
 }

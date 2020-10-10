@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-// WWIV Network Redirector (network.exe)
 #include "binkp/binkp_config.h"
 #include "binkp/ppp_config.h"
 #include "core/command_line.h"
@@ -58,7 +57,7 @@ static void ShowHelp(NetworkCommandLine& cmdline) {
   exit(1);
 }
 
-static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const std::string exe, int argc, char** argv) {
+static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const std::string& exe, int argc, char** argv) {
   std::ostringstream os;
   os << FilePath(net_cmdline.cmdline().bindir(), exe).string();
   for (auto i = 1; i < argc; i++) {

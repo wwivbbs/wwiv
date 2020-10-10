@@ -45,7 +45,7 @@ static std::optional<std::string> get_extract_dir() {
     case 'D':
       return a()->config()->datadir();
     case 'T':
-      return a()->temp_directory();
+      return a()->temp_directory().string();
     case '?':
       print_help_file(MEXTRACT_NOEXT);
       break;

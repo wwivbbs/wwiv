@@ -25,45 +25,37 @@
 #include "core/wfndfile.h"
 #include <cerrno>
 #include <cstring>
-#include <iostream>
 #include <sstream>
 #include <string>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <system_error>
+#include <utility>
 
-// Keep all of these
 #ifdef _WIN32
+
 // This makes it clear that we want the POSIX names without
 // leading underscores  This makes resharper happy with fcntl.h too.
 #define _CRT_DECLARE_NONSTDC_NAMES 1
-#endif // _WIN32
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <system_error>
-#include <utility>
-#ifdef _WIN32
 #include "sys/utime.h"
-//#include <direct.h>
 #include <io.h>
-#include <share.h>
 
 #else
 #include <sys/file.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
 #endif // _WIN32
 
+
 #ifdef _WIN32
 #include "core/wwiv_windows.h"
 
-#if !defined(ftruncate)
-#define ftruncate chsize
-#endif // ftruncate
-#define flock(h, m)                                                                                \
-  { (h), (m); }
+int flock(int , int ) {return 0;}
 
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
-static constexpr int LOCK_NB = 4;
+//static constexpr int LOCK_NB = 4;
 static constexpr int LOCK_UN = 8;
 
 #else
@@ -83,7 +75,7 @@ namespace wwiv::core {
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
-const int File::modeDefault = (O_RDWR | O_BINARY);
+const int File::modeDefault = O_RDWR | O_BINARY;
 const int File::modeAppend = O_APPEND;
 const int File::modeBinary = O_BINARY;
 const int File::modeCreateFile = O_CREAT;
@@ -93,7 +85,6 @@ const int File::modeText = O_TEXT;
 const int File::modeWriteOnly = O_WRONLY;
 const int File::modeTruncate = O_TRUNC;
 const int File::modeExclusive = O_EXCL;
-
 const int File::modeUnknown = -1;
 const int File::shareUnknown = -1;
 
@@ -105,16 +96,20 @@ static constexpr int TRIES = 100;
 
 using namespace strings;
 
-path FilePath(const path& directory_name,
-                  const path& file_name) {
+path FilePath(const path& directory_name, const path& file_name) {
   if (directory_name.empty()) {
     return file_name;
+  }
+  if (file_name.is_absolute()) {
+    LOG(INFO) << "Passed absolute filename to FilePath";
+    // TODO(rushfan): here once we are sure this won't break things.
+    // return file_name; 
   }
   return directory_name / file_name;
 }
 
 bool backup_file(const path& from) {
-  path to{from};
+  auto to{from};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
@@ -268,7 +263,11 @@ bool File::Exists() const noexcept {
 
 void File::set_length(size_type l) {
   // TODO(rushfan): Use std::filesystem::set_size
+#ifdef _WIN32
+  _chsize(handle_, l);
+#else
   (void) ftruncate(handle_, l);
+#endif
 }
 
 // static
@@ -383,12 +382,11 @@ std::string File::FixPathSeparators(const std::string& path) {
 }
 
 // static
-string File::absolute(const std::string& base, const std::string& relative) {
-  const std::filesystem::path r{relative};
-  if (r.is_absolute()) {
+std::filesystem::path File::absolute(const std::filesystem::path& base, const std::filesystem::path& relative) {
+  if (relative.is_absolute()) {
     return relative;
   }
-  return FilePath(base, relative).string();
+  return FilePath(base, relative);
 }
 
 // static
@@ -429,13 +427,13 @@ bool File::set_last_write_time(time_t last_write_time) noexcept {
 
 std::unique_ptr<FileLock> File::lock(FileLockType lock_type) {
 #ifdef _WIN32
-  const auto h = reinterpret_cast<HANDLE>(_get_osfhandle(handle_));
-  OVERLAPPED overlapped = {0};
+  auto* h = reinterpret_cast<HANDLE>(_get_osfhandle(handle_));
+  OVERLAPPED overlapped{};
   DWORD dwLockType = 0;
   if (lock_type == FileLockType::write_lock) {
     dwLockType = LOCKFILE_EXCLUSIVE_LOCK;
   }
-  if (!LockFileEx(h, dwLockType, 0, MAXDWORD, MAXDWORD, &overlapped)) {
+  if (!::LockFileEx(h, dwLockType, 0, MAXDWORD, MAXDWORD, &overlapped)) {
     LOG(ERROR) << "Error Locking file: " << full_path_name_;
   }
 #else

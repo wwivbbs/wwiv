@@ -20,6 +20,7 @@
 
 // We want to override how we store network_type_t to store it as a string, not int.
 // This has to be in the global namespace. 
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(std::filesystem::path, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization::non_member_load_save_minimal);
@@ -27,13 +28,32 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization:
 #include "core/stl.h"
 #include "sdk/net/net.h"
 #include "sdk/uuid_cereal.h"
+#include <filesystem>
 #include <string>
 
+// ICK. See https://github.com/USCiLab/cereal/issues/562
+namespace std::filesystem {
+
+template<class Archive>
+void CEREAL_LOAD_MINIMAL_FUNCTION_NAME(
+    const Archive&, path& out, const std::string& in)
+{
+  out = in;
+}
+
+template<class Archive>
+std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(const Archive&, const path& p)
+{
+  return p.string();
+}
+
+
+}
 namespace cereal {
 
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
+#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, (n).field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
 
-template <typename T> inline
+template <typename T>
 std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   try {
     return names.at(static_cast<size_t>(t));
@@ -42,7 +62,7 @@ std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   }
 }
 
-template <typename T> inline
+template <typename T>
 T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
   try {
     for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
@@ -56,11 +76,11 @@ T from_enum_string(const std::string& v, const std::vector<std::string>& names) 
   return static_cast<T>(0);
 }
 
-template <class Archive> inline
+template <class Archive>
 std::string save_minimal(Archive const &, const network_type_t& t) {
   return to_enum_string<network_type_t>(t, {"wwivnet", "fido", "internet"});
 }
-template <class Archive> inline
+template <class Archive>
 void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
   t = from_enum_string<network_type_t>(v, {"wwivnet", "fido", "internet"});
 }
@@ -70,7 +90,7 @@ std::string save_minimal(Archive const &, const fido_bundle_status_t& t) {
   auto c = static_cast<char>(t);
   return std::string(1, c);
 }
-template <class Archive> inline
+template <class Archive>
 void load_minimal(Archive const &, fido_bundle_status_t& t, const std::string& v) {
   char c = 'f';
   if (!v.empty()) {
@@ -79,7 +99,7 @@ void load_minimal(Archive const &, fido_bundle_status_t& t, const std::string& v
   t = static_cast<fido_bundle_status_t>(c);
 }
 
-template <class Archive> inline
+template <class Archive>
 std::string save_minimal(Archive const &, const fido_packet_t& t) {
   return to_enum_string<fido_packet_t>(t, {"unset", "type2+"});
 }

@@ -47,7 +47,7 @@ bool is_bundle_file(const std::string& name);
 bool is_packet_file(const std::string& name);
 std::string control_file_name(const FidoAddress& dest, fido_bundle_status_t status);
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
-bool exists_bundle(const std::string& dir);
+bool exists_bundle(const std::filesystem::path& dir);
 
 // FTN DateTime
 std::string daten_to_fido(time_t t);

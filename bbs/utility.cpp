@@ -64,9 +64,9 @@ const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value);
  * @param directory_name  Name of the directory to delete files from
  * @param bPrintStatus    Print out locally as files are deleted
  */
-void remove_from_temp(const std::string& file_name, const std::string& directory_name,
+void remove_from_temp(const std::string& file_name, const std::filesystem::path& directory_name,
                       bool bPrintStatus) {
-  const auto filespec = StrCat(directory_name, stripfn(file_name));
+  const auto filespec = FilePath(directory_name, stripfn(file_name));
   FindFiles ff(filespec, FindFilesType::any);
   bout.nl();
   for (const auto& f : ff) {

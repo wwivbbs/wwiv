@@ -147,7 +147,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
 static bool ParseBbsListNetFile(
   std::map<uint16_t, net_system_list_rec>* node_config_map,
   std::map<uint16_t, int32_t>* reg_number_map,
-  const string network_dir,
+  const std::filesystem::path& network_dir,
   wwiv::graphs::Graph& graph,
   uint16_t net_node_number) {
   TextFile bbs_list_file(FilePath(network_dir, BBSLIST_NET), "rt");
@@ -159,12 +159,12 @@ static bool ParseBbsListNetFile(
   string line;
   while (bbs_list_file.ReadLine(&line)) {
     StringTrim(&line);
-    net_system_list_rec node_config;
+    net_system_list_rec node_config{};
     int32_t reg_number;
     if (ParseBbsListNetLine(line, &node_config, &reg_number)) {
       // Parsed a line correctly.
-      std::list<uint16_t> path = graph.shortest_path_to(node_config.sysnum);
-      float cost = graph.cost_to(node_config.sysnum);
+      auto path = graph.shortest_path_to(node_config.sysnum);
+      auto cost = graph.cost_to(node_config.sysnum);
       if (!std::isfinite(cost)) {
         if(VLOG_IS_ON(2)) {
           std::ostringstream ss; 
@@ -200,7 +200,8 @@ static bool ParseBbsListNetFile(
 }
 
 // static 
-BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir) {
+BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number,
+                                       const std::filesystem::path& network_dir) {
   BbsListNet b;
 
   VLOG(3) << "Processing " << network_dir;
@@ -211,7 +212,7 @@ BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::stri
   wwiv::graphs::Graph graph(net_node_number, std::numeric_limits<uint16_t>::max());
   for (const auto& e : connect.node_config()) {
     const auto& c = e.second;
-    uint16_t source = c.sysnum;
+    auto source = c.sysnum;
     
     auto cost_iter = c.cost.begin();
     for (auto dest_iter = c.connect.begin(); dest_iter != std::end(c.connect); dest_iter++, cost_iter++) {
@@ -224,7 +225,7 @@ BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::stri
 }
 
 // static 
-BbsListNet BbsListNet::ReadBbsDataNet(const std::string& network_dir) {
+BbsListNet BbsListNet::ReadBbsDataNet(const std::filesystem::path& network_dir) {
   BbsListNet b;
   vector<net_system_list_rec> system_list;
 
@@ -239,7 +240,7 @@ BbsListNet BbsListNet::ReadBbsDataNet(const std::string& network_dir) {
   return b;
 }
 
-BbsListNet::BbsListNet() {}
+BbsListNet::BbsListNet() = default;
 
 BbsListNet::BbsListNet(std::initializer_list<net_system_list_rec> l) {
   for (const auto& r : l) {

@@ -23,7 +23,8 @@
 #include <string>
 #include <vector>
 
-void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
+void remove_from_temp(const std::string& file_name, const std::filesystem::path& directory_name,
+                      bool bPrintStatus);
 bool sysop1();
 void ToggleScrollLockKey();
 bool okansi();

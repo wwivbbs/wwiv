@@ -19,7 +19,6 @@
 #include "bbs/external_edit_qbbs.h"
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/message_editor_data.h"
 #include "bbs/utility.h"
 #include "core/scope_exit.h"
@@ -28,7 +27,6 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_util.h"
-
 #include <string>
 
 using std::string;
@@ -101,7 +99,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
   return true;
 }
 
-static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
+static bool CreateMsgTmpFromQuotesTxt(const std::filesystem::path& tmpdir) {
   const auto qfn = FilePath(tmpdir, QUOTES_TXT);
   if (!File::Exists(qfn)) {
     return false;

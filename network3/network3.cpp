@@ -201,7 +201,7 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
   return send_local_email(net, nh, text, byname, title);
 }
 
-static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {
+static bool add_feedback_header(const std::filesystem::path& net_dir, std::ostringstream& text) {
   TextFile feedback_hdr(FilePath(net_dir, "fbackhdr.net"), "rt");
   if (!feedback_hdr.IsOpen()) {
     return true;
@@ -292,7 +292,7 @@ static bool add_feedback_general_info(
   return true;
 }
 
-void update_timestamps(const string& dir) {
+void update_timestamps(const std::filesystem::path& dir) {
   // Update timestamps on {bbslist,connect,callout}.net
   const auto t = File::last_write_time(FilePath(dir, BBSDATA_NET));
   File(FilePath(dir, BBSLIST_NET)).set_last_write_time(t);
@@ -300,7 +300,7 @@ void update_timestamps(const string& dir) {
   File(FilePath(dir, CALLOUT_NET)).set_last_write_time(t);
 }
 
-static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
+static void write_bbsdata_reg_file(const BbsListNet& b, const std::filesystem::path& dir) {
   LOG(INFO) << "Writing BBSDATA.REG...";
   vector<int32_t> bbsdata_reg_data;
   const auto& reg = b.reg_number();
@@ -312,7 +312,8 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
   bbsdata_reg_file.WriteVector(bbsdata_reg_data);
 }
 
-static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
+static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, 
+  const std::filesystem::path& dir) {
   {
     LOG(INFO) << "Writing bbsdata.net...";
     DataFile<net_system_list_rec> bbsdata_net_file(FilePath(dir, BBSDATA_NET),
@@ -375,7 +376,7 @@ static void update_filechange_status_dat(const string& datadir) {
   }
 }
 
-static void rename_pending_files(const string& dir) {
+static void rename_pending_files(const std::filesystem::path& dir) {
   const auto dead_net_file(FilePath(dir, DEAD_NET));
   if (File::Exists(dead_net_file)) {
     rename_pend(dir, DEAD_NET, '3');

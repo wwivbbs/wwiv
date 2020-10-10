@@ -41,7 +41,8 @@ namespace wwiv::sdk {
 
 const int Networks::npos;  // reserve space.
 
-Networks::Networks(const Config& config) : datadir_(config.datadir()) {
+Networks::Networks(const Config& config)
+    : root_directory_(config.root_directory()), datadir_(config.datadir()) {
   if (!config.IsInitialized()) {
     return;
   }
@@ -265,6 +266,20 @@ void Networks::EnsureNetworksHaveUUID() {
   }
 }
 
+void Networks::EnsureNetDirAbsolute() {
+   if (root_directory_.empty()) {
+     // Nothing to do if we don't know the root
+     return;
+   }
+  for (auto& n : networks_) {
+    std::filesystem::path p{n.dir};
+    if (p.is_relative()) {
+      // make absolute
+      n.dir = FilePath(root_directory_, n.dir);
+    }
+  }   
+}
+
 bool Networks::SaveToJSON() {
   JsonFile json(FilePath(datadir_, NETWORKS_JSON), "networks", networks_);
   return json.Save();
@@ -277,7 +292,7 @@ bool Networks::SaveToDat() {
     net_networks_rec_disk to{};
     to.type = static_cast<uint8_t>(from.type);
     to_char_array(to.name, from.name);
-    to_char_array(to.dir, from.dir);
+    to_char_array(to.dir, from.dir.string());
     to.sysnum = from.sysnum;
     disk.emplace_back(to);
   }

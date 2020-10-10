@@ -22,6 +22,7 @@
 #include "sdk/net/callout.h"
 #include "sdk/net/networks.h"
 #include <cstdint>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -46,8 +47,8 @@ public:
   [[nodiscard]] std::string sysop_name() const { return sysop_name_; }
   [[nodiscard]] std::string gfiles_directory() const { return gfiles_directory_; }
   [[nodiscard]] std::string callout_network_name() const { return callout_network_name_; }
-  /** Gets net.dir for the network named network_name */
-  [[nodiscard]] std::string network_dir(const std::string& network_name) const;
+  /** Gets net.dir in absolute form for the network named network_name */
+  [[nodiscard]] std::filesystem::path network_dir(const std::string& network_name) const;
   /** Get the directory to receive files into for network named network_name */
   [[nodiscard]] std::string receive_dir(const std::string& network_name) const;
 

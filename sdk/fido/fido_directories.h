@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_FIDO_DIRECTORIES_H__
-#define __INCLUDED_SDK_FIDO_FIDO_DIRECTORIES_H__
+#ifndef INCLUDED_SDK_FIDO_FIDO_DIRECTORIES_H
+#define INCLUDED_SDK_FIDO_FIDO_DIRECTORIES_H
 
 #include "sdk/fido/fido_callout.h"
 #include <filesystem>
@@ -26,34 +26,35 @@ namespace wwiv::sdk::fido {
 
 class FtnDirectories {
 public:
-  FtnDirectories(const std::string& bbsdir, const net_networks_rec& net, std::string receive_dir);
-  FtnDirectories(const std::string& bbsdir, const net_networks_rec& net);
+  FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net,
+                 const std::filesystem::path& receive_dir);
+  FtnDirectories(const std::filesystem::path& bbsdir, const net_networks_rec& net);
   virtual ~FtnDirectories();
 
-  [[nodiscard]] const std::string& net_dir() const;
-  [[nodiscard]] const std::string& inbound_dir() const;
-  [[nodiscard]] const std::string& temp_inbound_dir() const;
-  [[nodiscard]] const std::string& temp_outbound_dir() const;
-  [[nodiscard]] const std::string& outbound_dir() const;
-  [[nodiscard]] const std::string& netmail_dir() const;
-  [[nodiscard]] const std::string& bad_packets_dir() const;
-  [[nodiscard]] const std::string& receive_dir() const;
-  [[nodiscard]] const std::string& tic_dir() const;
-  [[nodiscard]] const std::string& unknown_dir() const;
+  [[nodiscard]] std::string net_dir() const;
+  [[nodiscard]] std::string inbound_dir() const;
+  [[nodiscard]] std::string temp_inbound_dir() const;
+  [[nodiscard]] std::string temp_outbound_dir() const;
+  [[nodiscard]] std::string outbound_dir() const;
+  [[nodiscard]] std::string netmail_dir() const;
+  [[nodiscard]] std::string bad_packets_dir() const;
+  [[nodiscard]] std::string receive_dir() const;
+  [[nodiscard]] std::string tic_dir() const;
+  [[nodiscard]] std::string unknown_dir() const;
 
 private:
-  const std::string bbsdir_;
+  const std::filesystem::path bbsdir_;
   const net_networks_rec net_;
-  const std::string net_dir_;
-  const std::string inbound_dir_;
-  const std::string temp_inbound_dir_;
-  const std::string temp_outbound_dir_;
-  const std::string outbound_dir_;
-  const std::string netmail_dir_;
-  const std::string bad_packets_dir_;
-  const std::string receive_dir_;
-  const std::string tic_dir_;
-  const std::string unknown_dir_;
+  const std::filesystem::path net_dir_;
+  const std::filesystem::path inbound_dir_;
+  const std::filesystem::path temp_inbound_dir_;
+  const std::filesystem::path temp_outbound_dir_;
+  const std::filesystem::path outbound_dir_;
+  const std::filesystem::path netmail_dir_;
+  const std::filesystem::path bad_packets_dir_;
+  const std::filesystem::path receive_dir_;
+  const std::filesystem::path tic_dir_;
+  const std::filesystem::path unknown_dir_;
 };
 
 }

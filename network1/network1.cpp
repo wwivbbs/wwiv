@@ -31,9 +31,7 @@
 #include "sdk/filenames.h"
 #include "sdk/net/contact.h"
 #include "sdk/net/packets.h"
-#include <cctype>
 #include <cstdlib>
-#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -139,7 +137,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
 
     VLOG(3) << "Reading bbsdata.net..";
-    BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
+    const auto b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
       LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
       LOG(ERROR) << "       Do you need to run network3?";
@@ -185,7 +183,7 @@ int main(int argc, char** argv) {
 
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
-  NetworkCommandLine net_cmdline(cmdline, '1');
+  const NetworkCommandLine net_cmdline(cmdline, '1');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline);
     return 1;

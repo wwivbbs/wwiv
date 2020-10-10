@@ -15,17 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_NODELIST_H__
-#define __INCLUDED_SDK_FIDO_NODELIST_H__
-
-#include <cstdint>
-#include <map>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#ifndef INCLUDED_SDK_FIDO_NODELIST_H
+#define INCLUDED_SDK_FIDO_NODELIST_H
 
 #include "core/stl.h"
 #include "sdk/fido/fido_address.h"
+#include <cstdint>
+#include <filesystem>
+#include <map>
+#include <string>
+#include <vector>
 
 /**
  * Classes to represent a FidoNet NodeList.
@@ -34,9 +33,7 @@
  * FTS-5001.004 defines the flags supported.
  */
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 // The 1st entry of the 8 mandatory ones is the keyword.
 enum class NodelistKeyword {
@@ -44,7 +41,7 @@ enum class NodelistKeyword {
 };
 
 /**
- * Representes one data line in the nodelist.
+ * Represents one data line in the nodelist.
  */
 class NodelistEntry {
 public:
@@ -103,13 +100,13 @@ public:
 };
 
 /**
- Representes a FidoNet NodeList as defined in FRL-1003.
+ * Represents a FidoNet NodeList as defined in FRL-1003.
  */
 class Nodelist {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
-  Nodelist(const std::string& path);
-  Nodelist(const std::vector<std::string>& lines);
+  explicit Nodelist(const std::filesystem::path& path);
+  explicit Nodelist(const std::vector<std::string>& lines);
   virtual ~Nodelist();
 
   bool initialized() const { return initialized_; }
@@ -117,29 +114,26 @@ public:
 
   const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
   bool contains(const FidoAddress& a) const { return wwiv::stl::contains(entries_, a); }
-  const std::map<FidoAddress, NodelistEntry> entries() const { return entries_; }
+  const std::map<FidoAddress, NodelistEntry>& entries() const { return entries_; }
   const std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
   const std::vector<NodelistEntry> entries(uint16_t zone) const;
-  const std::vector<uint16_t> zones() const;
-  const std::vector<uint16_t> nets(uint16_t zone) const;
-  const std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
+  std::vector<uint16_t> zones() const;
+  std::vector<uint16_t> nets(uint16_t zone) const;
+  std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
   const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
 
   static std::string FindLatestNodelist(const std::string& dir, const std::string& base);
 
 private:
-  bool Load(const std::string& path);
+  bool Load(const std::filesystem::path& path);
   bool Load(const std::vector<std::string>& lines);
 
   bool HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub );
   std::map<FidoAddress, NodelistEntry> entries_;
-  bool initialized_ = false;
+  bool initialized_{false};
 };
 
-
-}  // namespace fido
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_SDK_FIDO_NODELIST_H__
+#endif

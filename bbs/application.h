@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if !defined(__INCLUDED_BBS_APPLICATION_H__)
-#define __INCLUDED_BBS_APPLICATION_H__
+#ifndef INCLUDED_BBS_APPLICATION_H
+#define INCLUDED_BBS_APPLICATION_H
 
 #include "bbs/batch.h"
 #include "bbs/conf.h"
@@ -26,7 +26,6 @@
 #include "bbs/runnable.h"
 #include "sdk/net/networks.h"
 #include "sdk/vardec.h"
-
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -105,7 +104,7 @@ public:
   static constexpr int exitLevelQuit = 2;
 
   explicit Application(LocalIO* localIO);
-  virtual ~Application();
+  ~Application();
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
   [[nodiscard]] wwiv::bbs::SessionContext& context();
@@ -233,17 +232,16 @@ public:
   [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() const { return statusMgr.get(); }
   [[nodiscard]] wwiv::sdk::UserManager* users() const { return user_manager_.get(); }
 
-  [[nodiscard]] const std::string& temp_directory() const { return temp_directory_; }
-  [[nodiscard]] const std::string& batch_directory() const { return batch_directory_; }
+  [[nodiscard]] const std::filesystem::path& temp_directory() const { return temp_directory_; }
+  [[nodiscard]] const std::filesystem::path& batch_directory() const { return batch_directory_; }
   /**
    * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
    * leave it open for changing in the future.
    */
-  [[nodiscard]] const std::string& qwk_directory() const { return batch_directory_; }
+  [[nodiscard]] const std::filesystem::path& qwk_directory() const { return batch_directory_; }
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;
-  [[nodiscard]] std::string bbsdir() const noexcept;
   [[nodiscard]] std::string bindir() const noexcept;
   [[nodiscard]] std::string configdir() const noexcept;
   [[nodiscard]] std::string logdir() const noexcept;
@@ -368,8 +366,8 @@ public:
   std::string cur_lang_name;
   std::string chat_reason_;
   std::string net_email_name;
-  std::string temp_directory_;
-  std::string batch_directory_;
+  std::filesystem::path temp_directory_;
+  std::filesystem::path batch_directory_;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
 
@@ -466,11 +464,8 @@ private:
 
   /*!
    * The current working directory.
-   * Please note that bbs_dir_string_ must be updated along with bbs_dir_. This is so we can
-   * return a string version of it without risk of exception.
    */
   std::filesystem::path bbs_dir_;
-  std::string bbs_dir_string_;
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;

@@ -21,14 +21,14 @@
 
 #include "bbs/external_edit.h"
 #include "bbs/message_editor_data.h"
+#include <filesystem>
 #include <string>
-
 #include "sdk/vardec.h"
 
 class ExternalQBBSMessageEditor final : public ExternalMessageEditor {
 public:
   ExternalQBBSMessageEditor(const editorrec& editor, wwiv::bbs::MessageEditorData& data, int maxli,
-                            int* setanon, const std::string& temp_directory)
+                            int* setanon, const std::filesystem::path& temp_directory)
       : ExternalMessageEditor(editor, data, maxli, setanon, temp_directory) {}
   virtual ~ExternalQBBSMessageEditor();
   void CleanupControlFiles() override;

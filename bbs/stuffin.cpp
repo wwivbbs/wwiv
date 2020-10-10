@@ -98,7 +98,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << create_dropfile_filename(drop_file_t::CALLINFO_BBS);
         break;
       case 'B':
-        os << a()->batch_directory();
+        os << a()->batch_directory().string();
         break;
       case 'C':
         os << create_dropfile_filename(drop_file_t::CHAIN_TXT);
@@ -113,7 +113,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << a()->remoteIO()->GetDoorHandle();
         break;
       case 'I':
-        os << a()->temp_directory();
+        os << a()->temp_directory().string();
         break;
       case 'K':
         os << FilePath(a()->config()->gfilesdir(), COMMENT_TXT).string();

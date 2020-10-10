@@ -22,13 +22,13 @@
 #include "bbs/external_edit.h"
 #include "bbs/message_editor_data.h"
 #include <string>
-
+#include <filesystem>
 #include "sdk/vardec.h"
 
 class ExternalWWIVMessageEditor : public ExternalMessageEditor {
 public:
   ExternalWWIVMessageEditor(const editorrec& editor, wwiv::bbs::MessageEditorData& data, int maxli,
-                            int* setanon, const std::string& temp_directory)
+                            int* setanon, const std::filesystem::path& temp_directory)
       : ExternalMessageEditor(editor, data, maxli, setanon, temp_directory) {}
   virtual ~ExternalWWIVMessageEditor();
   void CleanupControlFiles() override;

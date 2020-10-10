@@ -30,12 +30,11 @@
 #include "fmt/printf.h"
 #include "net_core/net_cmdline.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/status.h"
 #include "sdk/fido/fido_directories.h"
 #include "sdk/fido/fido_util.h"
-#include "sdk/filenames.h"
-#include "sdk/net/callout.h"
 #include "sdk/net/packets.h"
-#include "sdk/status.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -66,7 +65,7 @@ static void ShowHelp(const NetworkCommandLine& cmdline) {
 }
 
 
-static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
+static void rename_bbs_instance_files(const std::filesystem::path& dir, int instance_number, bool quiet) {
   const auto pattern = fmt::sprintf("p*.%03d", instance_number);
   LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
   FindFiles ff(FilePath(dir, pattern), FindFilesType::files);
@@ -105,7 +104,7 @@ static int System(const string& cmd) {
   return system(cmd.c_str());
 }
 
-static bool checkup2(const time_t tFileTime, const string& dir, const string& filename) {
+static bool checkup2(const time_t tFileTime, const std::filesystem::path& dir, const string& filename) {
   const auto fn = FilePath(dir, filename);
   File file(fn);
 

@@ -18,17 +18,13 @@
 /**************************************************************************/
 #include "bbs/external_edit_wwiv.h"
 
-#include <string>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/message_editor_data.h"
 #include "core/scope_exit.h"
-#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-
 #include "sdk/filenames.h"
+#include <string>
 
 using std::string;
 using wwiv::core::ScopeExit;

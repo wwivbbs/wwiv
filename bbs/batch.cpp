@@ -607,7 +607,8 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
                                 uplist);
 
   if (!commandLine.empty()) {
-    make_abs_cmd(a()->bbsdir(), &commandLine);
+  auto root = a()->bbspath().string();
+    make_abs_cmd(root, &commandLine);
     a()->Cls();
     const auto user_name_number = a()->names()->UserName(a()->usernum);
     const auto message = fmt::sprintf("%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",

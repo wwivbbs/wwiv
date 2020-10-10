@@ -17,7 +17,6 @@
 /**************************************************************************/
 #include "network2/post.h"
 
-#include "core/connection.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
@@ -25,7 +24,6 @@
 #include "core/strings.h"
 #include "network2/context.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/message_api_wwiv.h"

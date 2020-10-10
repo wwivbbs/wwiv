@@ -147,10 +147,10 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 // Base item of an editable value, this class does not use templates.
 class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
-  FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
+  FidoNetworkConfigSubDialog(const std::filesystem::path& bbsdir, int x, int y, const std::string& title,
                              net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), d_(d), x_(x), y_(y){};
-  virtual ~FidoNetworkConfigSubDialog() = default;
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), d_(d), x_(x), y_(y){}
+  ~FidoNetworkConfigSubDialog() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
@@ -271,14 +271,14 @@ public:
       }
       return EditlineResult::NEXT;
     }
-    };
+    }
     return EditlineResult::NEXT;
   }
 
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
-  const std::string netdir_;
+  const std::filesystem::path netdir_;
   const std::string title_;
   net_networks_rec& d_;
   int x_{0};
@@ -384,13 +384,13 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 // Base item of an editable value, this class does not use templates.
 class FidoPacketConfigSubDialog : public BaseEditItem {
 public:
-  FidoPacketConfigSubDialog(std::string bbsdir, int x, int y, const std::string& title,
+  FidoPacketConfigSubDialog(std::filesystem::path bbsdir, int x, int y, const std::string& title,
                             const Config& config, net_networks_rec& d)
       : BaseEditItem(x, y, 1), netdir_(std::move(bbsdir)), title_(title), config_(config),
-        d_(d), x_(x), y_(y){};
-  virtual ~FidoPacketConfigSubDialog() = default;
+        d_(d), x_(x), y_(y){}
+  ~FidoPacketConfigSubDialog() override = default;
 
-  virtual EditlineResult Run(CursesWindow* window) {
+  EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
@@ -461,12 +461,12 @@ public:
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
-  const std::string netdir_;
+  const std::filesystem::path netdir_;
   const std::string title_;
   const Config& config_;
   net_networks_rec& d_;
-  int x_ = 0;
-  int y_ = 0;
+  int x_{0};
+  int y_{0};
 };
 
 static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
@@ -525,10 +525,10 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 // Base item of an editable value, this class does not use templates.
 class CalloutNetSubDialog final : public BaseEditItem {
 public:
-  CalloutNetSubDialog(std::string bbsdir, int x, int y, const std::string& title,
-                      const net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(std::move(bbsdir)), title_(title), d_(d), x_(x), y_(y){};
-  virtual ~CalloutNetSubDialog() = default;
+  CalloutNetSubDialog(std::filesystem::path bbsdir, int x, int y, const std::string& title,
+                      const net_networks_rec& d);
+
+  ~CalloutNetSubDialog() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
@@ -608,15 +608,20 @@ public:
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
 private:
-  const std::string netdir_;
+  const std::filesystem::path netdir_;
   const std::string title_;
   const net_networks_rec& d_;
   int x_{0};
   int y_{0};
 };
 
+CalloutNetSubDialog::CalloutNetSubDialog(std::filesystem::path bbsdir, int x, int y,
+                                         const std::string& title, const net_networks_rec& d)
+  : BaseEditItem(x, y, 1), netdir_(std::move(bbsdir)), title_(title), d_(d), x_(x), y_(y) {
+}
+
 static void edit_net(const Config& config, Networks& networks, int nn) {
-  static const vector<pair<network_type_t, string>> nettypes = {
+  static const vector<pair<network_type_t, string>> nettypes{
       {network_type_t::wwivnet, "WWIVnet "},
       {network_type_t::ftn, "Fido    "},
       {network_type_t::internet, "Internet"},
@@ -628,15 +633,15 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   auto& n = networks.at(nn);
   const string orig_network_name(n.name);
 
-  constexpr int LABEL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 11;
-  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
+  constexpr auto LABEL1_POSITION = 2;
+  constexpr auto LABEL_WIDTH = 11;
+  constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
   EditItems items{};
   int net_type_pos = y++;
   int node_number_pos = 0;
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
-  items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
+  items.add(new FileSystemFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
   const auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
@@ -831,7 +836,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
               dialog_input_number(window, prompt, 1, wwiv::stl::ssize(networks.networks()) + 1);
           if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {
 
-            static const vector<string> nettypes = {
+            static const vector<string> nettypes{
                 {"WWIVnet "},
                 {"Fido    "},
                 {"Internet"},

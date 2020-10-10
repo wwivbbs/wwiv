@@ -175,7 +175,9 @@ Config430::Config430(const std::filesystem::path& root_directory)
 
 Config430::~Config430() = default;
 
-std::string Config::to_abs_path(const char* dir) { return File::absolute(root_directory_.string(), dir); }
+std::string Config::to_abs_path(const char* dir) {
+  return File::absolute(root_directory_.string(), dir).string();
+}
 
 void Config430::update_paths() {
   if (!config_.scriptdir[0]) {

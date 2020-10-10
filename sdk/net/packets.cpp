@@ -407,7 +407,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   return text;
 }
 
-void rename_pend(const string& directory, const string& filename, char network_app_id) {
+void rename_pend(const std::filesystem::path& directory, const string& filename, char network_app_id) {
   const auto pend_filename(FilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
@@ -427,7 +427,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
   LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
 }
 
-std::string create_pend(const string& directory, bool local, char network_app_id) {
+std::string create_pend(const std::filesystem::path& directory, bool local, char network_app_id) {
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);

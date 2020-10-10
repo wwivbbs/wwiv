@@ -34,9 +34,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 static NodelistKeyword to_keyword(const std::string& k) {
   if (k.empty()) {
@@ -63,7 +61,7 @@ static inline bool bool_flag(const std::string& value, const std::string& flag_n
 
 static bool internet_flag(const std::string& value, const std::string& flag_name, bool& f, string& host, uint16_t& port) {
   if (!contains(value, ':')) return false;
-  vector<string> parts = SplitString(value, ":");
+  auto parts = SplitString(value, ":");
   if (parts.size() > 3) return false;
 
   if (parts.front() == flag_name) {
@@ -161,11 +159,11 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   return true;
 }
 
-Nodelist::Nodelist(const std::string& path) 
-  : entries_(), initialized_(Load(path)) {}
+Nodelist::Nodelist(const std::filesystem::path& path) 
+  : initialized_(Load(path)) {}
 
 Nodelist::Nodelist(const std::vector<std::string>& lines) 
-  : entries_(), initialized_(Load(lines)) {}
+  : initialized_(Load(lines)) {}
 
 Nodelist::~Nodelist() {}
 
@@ -221,7 +219,7 @@ bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, 
   return true;
 }
 
-bool Nodelist::Load(const std::string& path) {
+bool Nodelist::Load(const std::filesystem::path& path) {
   TextFile f(path, "rt");
   if (!f) {
     return false;
@@ -265,7 +263,7 @@ const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone) const {
   return entries;
 }
 
-const std::vector<uint16_t> Nodelist::zones() const {
+std::vector<uint16_t> Nodelist::zones() const {
   std::set<uint16_t> s;
   for (const auto& e : entries_) {
     s.emplace(e.first.zone());
@@ -277,7 +275,7 @@ const std::vector<uint16_t> Nodelist::zones() const {
   return zones;
 }
 
-const std::vector<uint16_t> Nodelist::nets(uint16_t zone) const {
+std::vector<uint16_t> Nodelist::nets(uint16_t zone) const {
   std::set<uint16_t> s;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone) {
@@ -291,7 +289,7 @@ const std::vector<uint16_t> Nodelist::nets(uint16_t zone) const {
   return nets;
 }
 
-const std::vector<uint16_t> Nodelist::nodes(uint16_t zone, uint16_t net) const {
+std::vector<uint16_t> Nodelist::nodes(uint16_t zone, uint16_t net) const {
   std::vector<uint16_t> nodes;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone && e.first.net() == net) {
@@ -310,7 +308,7 @@ const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node)
 }
 
 static int year_of(time_t t) {
-  auto dt = DateTime::from_time_t(t);
+  const auto dt = DateTime::from_time_t(t);
   return dt.year();
 }
 
@@ -319,7 +317,7 @@ int extension_number(const std::string& fn) {
     return 0;
   }
 
-  string num = fn.substr(fn.find_last_of('.') + 1);
+  const auto num = fn.substr(fn.find_last_of('.') + 1);
   return to_number<int>(num);
 }
 
@@ -350,12 +348,10 @@ std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::stri
                            year_of(File::last_write_time(fn)));
   }
 
-  auto ext = latest_extension(extension_year);
+  const auto ext = latest_extension(extension_year);
   return StrCat(base, ".", ext);
 }
 
 
-}  // namespace fido
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 

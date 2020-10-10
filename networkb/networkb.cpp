@@ -154,7 +154,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     throw e;
   }
 
-  const net_networks_rec net = bink_config.networks()[network_name];
+  const auto net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
     const auto dir = bink_config.receive_dir(network_name);
     return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));

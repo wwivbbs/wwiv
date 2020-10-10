@@ -541,7 +541,7 @@ void upload_reply_packet() {
       sleep_for(milliseconds(500));
     } else {
       bout << "Please copy the REP file to the following directory: " << wwiv::endl;
-      bout << "'" << a()->qwk_directory() << "'" << wwiv::endl;
+      bout << "'" << a()->qwk_directory().string() << "'" << wwiv::endl;
       pausescr();
     }
 
