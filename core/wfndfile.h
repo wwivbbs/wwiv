@@ -17,11 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_WFNDFILE_H__
-#define __INCLUDED_WFNDFILE_H__
+#ifndef INCLUDED_CORE_WFNDFILE_H
+#define INCLUDED_CORE_WFNDFILE_H
 
 #include <any>
-#include <memory>
+#include <filesystem>
 #include <string>
 
 /**
@@ -35,7 +35,7 @@ enum class WFindFileTypeMask {
 
 class WFindFile {
 protected:
-  std::string dir_;
+  std::filesystem::path dir_;
   std::string filename_;
   std::string filespec_;
   long file_size_{0};
@@ -83,4 +83,4 @@ public:
 };
 
 
-#endif  // __INCLUDED_WFNDFILE_H__
+#endif

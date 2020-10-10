@@ -1136,14 +1136,11 @@ void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileAr
   file_area_ = std::move(a);
 }
 
-
-
 Batch& Application::batch() { return batch_; }
 
 const subboard_t& Application::current_sub() const {
   return subs().sub(session_context_.GetCurrentReadMessageArea());
 }
-
 
 void Application::set_current_user_dir_num(int n) { 
   user_dir_num_ = static_cast<uint16_t>(n); 

@@ -19,16 +19,15 @@
 #ifndef __INCLUDED_NEW_BBSLIST_H__
 #define __INCLUDED_NEW_BBSLIST_H__
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
 #include <cereal/cereal.hpp>
 
 
-namespace wwiv {
-namespace bbslist {
+namespace wwiv::bbslist {
 
 struct BbsListAddress {
   std::string type;
@@ -44,16 +43,15 @@ struct BbsListEntry {
   std::vector<BbsListAddress> addresses;
 };
 
-bool LoadFromJSON(const std::string& dir, const std::string& filename,
+bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
                   std::vector<BbsListEntry>& entries);
 
-bool SaveToJSON(const std::string& dir, const std::string& filename, 
+bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, 
                 const std::vector<BbsListEntry>& entries);
 
 void NewBBSList();
 
-}  // bbslist
-}  // wwiv
+}  // namespace
 
 
    // TODO - move this into it's own header somewhere.

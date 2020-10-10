@@ -40,7 +40,7 @@ static std::optional<std::string> get_extract_dir() {
     const auto ch1 = onek("QGDT?");
     switch (ch1) {
     case 'G':
-      return a()->config()->gfilesdir();
+      return a()->sess().dirs().gfiles_directory();
     case 'D':
       return a()->config()->datadir();
     case 'T':

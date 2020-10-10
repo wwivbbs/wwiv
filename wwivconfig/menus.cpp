@@ -396,7 +396,7 @@ void menus(const std::string& menu_dir) {
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");
       list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-      ListBoxResult result = list.Run();
+      auto result = list.Run();
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {

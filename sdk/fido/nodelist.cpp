@@ -106,7 +106,7 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     return false;
   }
 
-  vector<string> parts = SplitString(data_line, ",");
+  auto parts = SplitString(data_line, ",");
   if (parts.size() < 6) {
     return false;
   }
@@ -164,8 +164,6 @@ Nodelist::Nodelist(const std::filesystem::path& path)
 
 Nodelist::Nodelist(const std::vector<std::string>& lines) 
   : initialized_(Load(lines)) {}
-
-Nodelist::~Nodelist() {}
 
 bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
@@ -243,7 +241,7 @@ bool Nodelist::Load(const std::vector<std::string>& lines) {
   return true;
 }
 
-const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone, uint16_t net) const {
+std::vector<NodelistEntry> Nodelist::entries(uint16_t zone, uint16_t net) const {
   std::vector<NodelistEntry> entries;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone && e.first.net() == net) {
@@ -253,7 +251,7 @@ const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone, uint16_t net) 
   return entries;
 }
 
-const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone) const {
+std::vector<NodelistEntry> Nodelist::entries(uint16_t zone) const {
   std::vector<NodelistEntry> entries;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone) {
@@ -300,8 +298,8 @@ std::vector<uint16_t> Nodelist::nodes(uint16_t zone, uint16_t net) const {
 }
 
 const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node) {
-  FidoAddress a(zone, net, node, 0, "");
-  if (!wwiv::stl::contains(entries_, a)) {
+  const FidoAddress a(zone, net, node, 0, "");
+  if (!stl::contains(entries_, a)) {
     return nullptr;
   }
   return &entries_.at(a);
@@ -322,14 +320,14 @@ int extension_number(const std::string& fn) {
 }
 
 static std::string latest_extension(const std::map<int, int>& ey) {
-  int highest_year = 0;
+  auto highest_year = 0;
   for (const auto& y : ey) {
     if (y.second > highest_year) {
       highest_year = y.second;
     }
   }
 
-  for (auto r = ey.rbegin(); r != ey.rend(); r++) {
+  for (auto r = ey.rbegin(); r != ey.rend(); ++r) {
     if ((*r).second == highest_year) {
       return fmt::sprintf("%03d", (*r).first);
     }
@@ -338,7 +336,7 @@ static std::string latest_extension(const std::map<int, int>& ey) {
 }
 
 // static
-std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::string& base) {
+std::string Nodelist::FindLatestNodelist(const std::filesystem::path& dir, const std::string& base) {
   const auto filespec = FilePath(dir, StrCat(base, ".*"));
   std::map<int, int> extension_year;
   FindFiles fnd(filespec, FindFiles::FindFilesType::files);

@@ -71,8 +71,8 @@ bool WFindFile::IsDirectory() const {
 }
 
 bool WFindFile::IsFile() const {
-  auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
-  return (f->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+  const auto* f = std::any_cast<WIN32_FIND_DATA>(&ffdata_);
+  return f->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
            ? false
            : true;
 }

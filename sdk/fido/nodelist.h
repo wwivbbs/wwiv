@@ -102,27 +102,27 @@ public:
 /**
  * Represents a FidoNet NodeList as defined in FRL-1003.
  */
-class Nodelist {
+class Nodelist final {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
   explicit Nodelist(const std::filesystem::path& path);
   explicit Nodelist(const std::vector<std::string>& lines);
-  virtual ~Nodelist();
+  ~Nodelist() = default;
 
-  bool initialized() const { return initialized_; }
+  [[nodiscard]] bool initialized() const { return initialized_; }
   explicit operator bool() const { return initialized_; }
 
-  const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
-  bool contains(const FidoAddress& a) const { return wwiv::stl::contains(entries_, a); }
-  const std::map<FidoAddress, NodelistEntry>& entries() const { return entries_; }
-  const std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
-  const std::vector<NodelistEntry> entries(uint16_t zone) const;
-  std::vector<uint16_t> zones() const;
-  std::vector<uint16_t> nets(uint16_t zone) const;
-  std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
-  const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
+  [[nodiscard]] const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
+  [[nodiscard]] bool contains(const FidoAddress& a) const { return wwiv::stl::contains(entries_, a); }
+  [[nodiscard]] const std::map<FidoAddress, NodelistEntry>& entries() const { return entries_; }
+  [[nodiscard]] std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
+  [[nodiscard]] std::vector<NodelistEntry> entries(uint16_t zone) const;
+  [[nodiscard]] std::vector<uint16_t> zones() const;
+  [[nodiscard]] std::vector<uint16_t> nets(uint16_t zone) const;
+  [[nodiscard]] std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
+  [[nodiscard]] const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
 
-  static std::string FindLatestNodelist(const std::string& dir, const std::string& base);
+  static std::string FindLatestNodelist(const std::filesystem::path& dir, const std::string& base);
 
 private:
   bool Load(const std::filesystem::path& path);

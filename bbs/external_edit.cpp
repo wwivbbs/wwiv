@@ -64,8 +64,7 @@ static bool external_edit_internal(const string& edit_filename, const std::files
     }
   }
 
-  const auto root = a()->bbspath().string();
-  make_abs_cmd(root, &editorCommand);
+  make_abs_cmd(a()->bbspath(), &editorCommand);
 
   auto strippedFileName{stripfn(edit_filename)};
   ScopeExit on_exit([=] { File::set_current_directory(a()->bbspath()); });

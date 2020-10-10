@@ -16,15 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_MAKE_ABS_CMD_H__
-#define __INCLUDED_MAKE_ABS_CMD_H__
+#ifndef INCLUDED_BBS_MAKE_ABS_CMD_H
+#define INCLUDED_BBS_MAKE_ABS_CMD_H
 
+#include <filesystem>
 #include <string>
 
 /**
  * Using the root directory, turn out into an absolute path
  * to a command.
  */
-void make_abs_cmd(const std::string& root, std::string* out);
+void make_abs_cmd(const std::filesystem::path& root, std::string* out);
 
-#endif // __INCLUDED_MAKE_ABS_CMD_H__
+#endif

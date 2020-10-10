@@ -24,6 +24,7 @@
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
 #include "sdk_test/sdk_helper.h"
 #include <string>
 #include <vector>

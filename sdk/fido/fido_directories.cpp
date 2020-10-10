@@ -23,7 +23,6 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include <string>
-#include <utility>
 #include <vector>
 
 using std::string;
@@ -55,7 +54,7 @@ FtnDirectories::FtnDirectories(const std::filesystem::path& bbsdir, const net_ne
       outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
       netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
       bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)),
-      receive_dir_(std::move(receive_dir)),
+      receive_dir_(receive_dir),
       tic_dir_(File::absolute(net_dir_, net_.fido.tic_dir)),
       unknown_dir_(File::absolute(net_dir_, net_.fido.unknown_dir)) {
   VLOG(1) << "FtnDirectories: receive_dir: " << receive_dir_;

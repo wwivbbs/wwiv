@@ -37,7 +37,6 @@
 #include "bbs/execexternal.h"
 #include "common/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/make_abs_cmd.h"
 #include "common/pause.h"
 #include "bbs/save_qscan.h"
 #include "bbs/sr.h"
@@ -778,7 +777,7 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   *sent = false;
   *abort = false;
 
-  auto protocol = -1;
+  int protocol;
   if (a()->user()->data.qwk_protocol <= 1) {
     protocol = get_protocol(xfertype::xf_down_temp);
   } else {

@@ -17,16 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_SUBXTR_H__
-#define __INCLUDED_SUBXTR_H__
+#ifndef INCLUDED_SDK_SUBXTR_H
+#define INCLUDED_SDK_SUBXTR_H
 
 #include "sdk/net/net.h"
-#include "sdk/vardec.h"
+#include <filesystem>
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 // per-network message data or subboards.
 struct subboard_network_data_t {
@@ -95,8 +94,8 @@ public:
   bool erase(int n);
   [[nodiscard]] int size() const { return subs_.size(); }
 
-  static bool LoadFromJSON(const std::string& dir, const std::string& filename, std::vector<subboard_t>& entries);
-  static bool SaveToJSON(const std::string& dir, const std::string& filename, const std::vector<subboard_t>& entries);
+  static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<subboard_t>& entries);
+  static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<subboard_t>& entries);
 
 
 private:
@@ -141,8 +140,6 @@ struct xtrasubsrec {
 #define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
 
 }
-}
 
 
-#endif // __INCLUDED_SUBXTR_H__
-
+#endif

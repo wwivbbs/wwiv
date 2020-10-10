@@ -93,7 +93,7 @@ void serialize(Archive & ar, BbsListAddress &a) {
   ar(cereal::make_nvp("address", a.address));
 }
 
-bool LoadFromJSON(const string& dir, const string& filename, 
+bool LoadFromJSON(const std::filesystem::path& dir, const string& filename, 
                   std::vector<BbsListEntry>& entries) {
   entries.clear();
 
@@ -115,7 +115,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
   return true;
 }
 
-bool SaveToJSON(const string& dir, const string& filename, 
+bool SaveToJSON(const std::filesystem::path& dir, const string& filename, 
                 const std::vector<BbsListEntry>& entries) {
   std::ostringstream ss;
   {

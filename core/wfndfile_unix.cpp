@@ -97,8 +97,8 @@ bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
   }
 
   s_typemask = type_mask_;
-  s_path = dir_;
-  nMatches = scandir(dir_.c_str(), &entries, fname_ok, alphasort);
+  s_path = dir_.string();
+  nMatches = scandir(s_path.c_str(), &entries, fname_ok, alphasort);
   if (nMatches < 0) {
     perror("scandir");
     return false;

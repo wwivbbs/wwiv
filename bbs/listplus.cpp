@@ -353,7 +353,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       auto stf = FilePath(a()->dirs()[a()->current_user_dir().subnum].path,
                           files::FileName(u->filename));
       if (lp_config.check_exist) {
-        if (!File::Exists(stf.string())) {
+        if (!File::Exists(stf)) {
           buffer = "OFFLN";
         }
       }

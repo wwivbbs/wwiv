@@ -17,10 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
+//#include "core/wwiv_windows.h"
 
 #include "bbs/make_abs_cmd.h"
 
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <direct.h>
@@ -34,7 +35,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-void make_abs_cmd(const std::string& root, std::string* out) {
+void make_abs_cmd(const std::filesystem::path& root, std::string* out) {
   
   static const vector<string> exts{
     "",
@@ -45,7 +46,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     ".cmd",
   };
 
-  auto s1 = *out;
+  auto s1{*out};
   const auto is_abs_with_drive = s1.size() > 2 && s1.at(1) == ':';
 
   std::string s2;
@@ -60,7 +61,8 @@ void make_abs_cmd(const std::string& root, std::string* out) {
       free(curdir);
     }
   } else if (s1.front() == '\\') {
-    s1 = fmt::format("{}:{}", root.front(), s1);
+    auto drive = root.string().front();
+    s1 = fmt::format("{}:{}", drive, s1);
   } else {
     s2 = s1;
     const auto wsidx = s2.find_first_of(" \t");
@@ -99,7 +101,7 @@ void make_abs_cmd(const std::string& root, std::string* out) {
     } else {
       if (File::Exists(s)) {
         std::error_code ec;
-        if (File::is_directory(root) && !std::filesystem::is_directory(FilePath(root, s), ec)) {
+        if (is_directory(root, ec) && !is_directory(FilePath(root, s), ec)) {
           *out = StrCat(FilePath(root, s).string(), s2);
         } else {
           *out = FilePath(root, StrCat(s, s2)).string();

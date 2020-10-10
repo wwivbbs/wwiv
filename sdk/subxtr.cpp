@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
-// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
@@ -32,6 +31,7 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/filenames.h"
+#include "sdk/vardec.h"
 #include <sstream>
 #include <string>
 #include <utility>
@@ -107,18 +107,20 @@ template <class Archive> void serialize(Archive& ar, subboard_t& s) {
   SERIALIZE(s, nets);
 }
 
-bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, std::vector<subboard_t>& s) {
-  s.clear();
+bool Subs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                        std::vector<subboard_t>& entries) {
+  entries.clear();
   const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", s);
+  JsonFile f(path, "subs", entries);
   return f.Load();
 }
 
 
 //static 
-bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const std::vector<subboard_t>& s) {
+bool Subs::SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                      const std::vector<subboard_t>& entries) {
   const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", s);
+  JsonFile f(path, "subs", entries);
   return f.Save();
 }
 
