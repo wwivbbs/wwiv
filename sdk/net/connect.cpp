@@ -24,7 +24,6 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 #include "sdk/net/networks.h"
-#include <algorithm>
 #include <cctype>
 #include <cfloat>
 #include <map>
@@ -42,8 +41,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 template <typename I, typename C> 
 static uint16_t PopStringToUnsignedShort(I& iter, const C& c) {
@@ -108,7 +106,8 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
     return true;
 }
 
-static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_config_map, const string network_dir) {
+static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_config_map,
+                             const std::filesystem::path& network_dir) {
   TextFile connect_file(FilePath(network_dir, CONNECT_NET), "rt");
   if (!connect_file.IsOpen()) {
     return false;
@@ -126,7 +125,7 @@ static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_conf
   return true;
 }
 
-Connect::Connect(const string& network_dir) {
+Connect::Connect(const std::filesystem::path& network_dir) {
   ParseConnectFile(&node_config_, network_dir);
 }
 
@@ -172,6 +171,5 @@ std::string Connect::ToString() const {
   return ss.str();
 }
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 

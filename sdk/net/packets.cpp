@@ -411,7 +411,7 @@ std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   return text;
 }
 
-void rename_pend(const string& directory, const string& filename, char network_app_id) {
+void rename_pend(const std::filesystem::path& directory, const string& filename, char network_app_id) {
   const auto pend_filename(FilePath(directory, filename));
   if (!File::Exists(pend_filename)) {
     LOG(INFO) << " pending file does not exist: " << pend_filename;
@@ -431,7 +431,7 @@ void rename_pend(const string& directory, const string& filename, char network_a
   LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
 }
 
-std::string create_pend(const string& directory, bool local, char network_app_id) {
+std::string create_pend(const std::filesystem::path& directory, bool local, char network_app_id) {
   const uint8_t prefix = (local) ? 0 : 1;
   for (auto i = 0; i < 1000; i++) {
     auto filename = fmt::format("p{}-{}-{}.net", prefix, network_app_id, i);
@@ -607,7 +607,7 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, char network_app_i
  */
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip,
+                              Packet& template_packet, const std::set<uint16_t>& subscribers_to_skip,
                               const subscribers_send_to_t& send_to) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
@@ -639,7 +639,7 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     }
     // If the subtype has changed, then change the subtype in the
     // packet text.
-    const auto text = (subnet.stype == original_subtype)
+    const auto text = subnet.stype == original_subtype
                         ? template_packet.text()
                         : change_subtype_to(template_packet.text(), subnet.stype);
     if (subnet.stype != original_subtype) {

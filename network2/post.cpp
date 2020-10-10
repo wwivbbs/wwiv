@@ -25,7 +25,6 @@
 #include "fmt/format.h"
 #include "network2/context.h"
 #include "net_core/net_cmdline.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/msgapi.h"

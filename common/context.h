@@ -39,17 +39,17 @@ public:
       : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
         gfiles_directory_(gfiles) {}
 
-  [[nodiscard]] const std::string& temp_directory() const noexcept { return temp_directory_; }
+  [[nodiscard]] const std::filesystem::path& temp_directory() const noexcept { return temp_directory_; }
   void temp_directory(const std::string& d) { temp_directory_ = d; }
 
-  [[nodiscard]] const std::string& batch_directory() const noexcept { return batch_directory_; }
+  [[nodiscard]] const std::filesystem::path& batch_directory() const noexcept { return batch_directory_; }
   void batch_directory(const std::string& d) { batch_directory_ = d; }
 
   /**
    * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
    * leave it open for changing in the future.
    */
-  [[nodiscard]] const std::string& qwk_directory() const noexcept { return qwk_directory_; }
+  [[nodiscard]] const std::filesystem::path& qwk_directory() const noexcept { return qwk_directory_; }
   void qwk_directory(const std::string& d) { qwk_directory_ = d; }
 
   [[nodiscard]] const std::string& gfiles_directory() const noexcept { return gfiles_directory_; }
@@ -63,9 +63,9 @@ public:
   }
 
 private:
-  std::string temp_directory_;
-  std::string batch_directory_;
-  std::string qwk_directory_;
+  std::filesystem::path temp_directory_;
+  std::filesystem::path batch_directory_;
+  std::filesystem::path qwk_directory_;
   std::string language_directory_;
   std::string gfiles_directory_;
 };

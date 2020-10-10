@@ -57,7 +57,7 @@ int NetListCommand::Execute() {
 
   auto nn = 0;
   for (const auto& net : networks.networks()) {
-    const auto s = fmt::format(".{:<2} {:<17}({})", nn++, net.name, net.dir);
+    const auto s = fmt::format(".{:<2} {:<17}({})", nn++, net.name, net.dir.string());
     cout << s << std::endl;
   }
   return 0;

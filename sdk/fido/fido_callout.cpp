@@ -18,11 +18,7 @@
 #include "sdk/fido/fido_callout.h"
 
 #include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/stl.h"
@@ -45,12 +41,12 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress,
 namespace cereal {
 
 template <class Archive>
-inline std::string save_minimal(Archive const&, const wwiv::sdk::fido::FidoAddress& a) {
+std::string save_minimal(Archive const&, const wwiv::sdk::fido::FidoAddress& a) {
   return a.as_string();
 }
 
 template <class Archive>
-inline void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const std::string& s) {
+void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const std::string& s) {
   a = wwiv::sdk::fido::FidoAddress(s);
 }
 
@@ -161,16 +157,15 @@ bool FidoCallout::erase(const FidoAddress& a) {
 
 bool FidoCallout::Load() {
   node_configs_.clear();
-  const string dir = File::absolute(root_dir_, net_.dir);
-  if (!File::Exists(FilePath(dir, FIDO_CALLOUT_JSON))) {
+  if (!File::Exists(FilePath(net_.dir, FIDO_CALLOUT_JSON))) {
     return true;
   }
-  JsonFile json(FilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
+  JsonFile json(FilePath(net_.dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
   return json.Load();
 }
 
 bool FidoCallout::Save() {
-  const string dir = File::absolute(root_dir_, net_.dir);
+  const auto dir = File::absolute(root_dir_, net_.dir);
   JsonFile json(FilePath(dir, FIDO_CALLOUT_JSON), "callout", node_configs_);
   return json.Save();
 }

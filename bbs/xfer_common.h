@@ -18,9 +18,5 @@
 #ifndef __INCLUDED_XFER_COMMON_H__
 #define __INCLUDED_XFER_COMMON_H__
 
-#define XFER_TIME(b) (a()->modem_speed_?\
-    (((double)(((b)+127)/128))*1280.0/((double)a()->modem_speed_))\
-    :0.0)
-
 
 #endif  // __INCLUDED_XFER_COMMON_H__

@@ -15,16 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_MESSAGES_H__
-#define __INCLUDED_WWIVUTIL_MESSAGES_H__
+#ifndef INCLUDED_WWIVUTIL_MESSAGES_H
+#define INCLUDED_WWIVUTIL_MESSAGES_H
 
 #include "sdk/subxtr.h"
 #include "sdk/msgapi/message_api.h"
 #include "wwivutil/command.h"
 #include <memory>
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class BaseMessagesSubCommand : public UtilCommand {
 public:
@@ -32,8 +31,8 @@ public:
       : UtilCommand(name, descr) {}
   virtual ~BaseMessagesSubCommand();
   bool CreateMessageApiMap(const std::string& basename);
-  const std::string& basename() const noexcept { return basename_; }
-  const wwiv::sdk::subboard_t& sub() const noexcept { return sub_; }
+  [[nodiscard]] const std::string& basename() const noexcept { return basename_; }
+  [[nodiscard]] const wwiv::sdk::subboard_t& sub() const noexcept { return sub_; }
   // N.B. if this doesn't exist this message will crash.
   wwiv::sdk::msgapi::MessageApi& api() noexcept {
     return *apis_.at(sub_.storage_type).get();
@@ -48,27 +47,26 @@ private:
   std::string basename_;
 };
 
-class MessagesCommand: public UtilCommand {
+class MessagesCommand final : public UtilCommand {
 public:
-  MessagesCommand(): UtilCommand("messages", "WWIV message base commands.") {}
-  virtual ~MessagesCommand() {}
-  bool AddSubCommands() override final;
+  MessagesCommand(): UtilCommand("messages", "WWIV message commands.") {}
+  virtual ~MessagesCommand() = default;
+  bool AddSubCommands() override;
 };
 
-class MessagesDumpCommand: public BaseMessagesSubCommand {
+class MessagesDumpCommand final: public BaseMessagesSubCommand {
 public:
   MessagesDumpCommand();
-  virtual ~MessagesDumpCommand() {}
-  std::string GetUsage() const override final;
-  int Execute() override final;
-  bool AddSubCommands() override final;
+  virtual ~MessagesDumpCommand() = default;
+  [[nodiscard]] std::string GetUsage() const override;
+  int Execute() override;
+  bool AddSubCommands() override;
 
 protected:
   int ExecuteImpl(sdk::msgapi::MessageArea* area, const std::string& basename, int start, int end, bool all);
 };
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_MESSAGES_H__
+#endif

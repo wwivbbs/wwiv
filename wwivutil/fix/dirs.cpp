@@ -224,10 +224,9 @@ bool CheckExtendedDirAndAttributes(const wwiv::sdk::Config& config, const sdk::f
   return CheckAttributes(dir, area, files_with_ext_desc, dry_run);
 }
 
-static void checkFileAreas(const wwiv::sdk::Config& config, bool verbose, bool dry_run) {
+static void checkFileAreas(const wwiv::sdk::Config& config, bool /* verbose */, bool dry_run) {
   const auto datadir = config.datadir();
   sdk::files::Dirs dirs(datadir, config.max_backups());
-
   if (!dirs.Load()) {
     LOG(ERROR) << "Unble to load dirs.dat";
     return;

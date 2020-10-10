@@ -20,7 +20,6 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -50,14 +49,14 @@ ParseBinkConfigLine(const string& line) {
   stringstream stream(line);
   string node_str;
   stream >> node_str;
-  std::string node = node_str.substr(1);
+  auto node = node_str.substr(1);
   string host_port_str;
   stream >> host_port_str;
-  
-  string host = host_port_str;
+
+  auto host = host_port_str;
   uint16_t port = 24554;  // default port
   if (host_port_str.find(':') != string::npos) {
-    vector<string> host_port = SplitString(host_port_str, ":");
+    auto host_port = SplitString(host_port_str, ":");
     host = host_port[0];
     port = to_number<uint16_t>(host_port[1]);
   }
@@ -69,7 +68,7 @@ ParseBinkConfigLine(const string& line) {
   return {{node, config}};
 }
 
-static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const string network_dir) {
+static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const std::filesystem::path network_dir) {
   TextFile node_config_file(FilePath(network_dir, "binkp.net"), "rt");
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
@@ -87,8 +86,8 @@ static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* no
   return true;
 }
 
-Binkp::Binkp(const std::string& network_dir) {
-  // network names will alwyas be compared lower case.
+Binkp::Binkp(const std::filesystem::path& network_dir) {
+  // network names will always be compared lower case.
 
   ParseAddressesFile(&node_config_, network_dir);
 }
@@ -96,7 +95,7 @@ Binkp::Binkp(const std::string& network_dir) {
 Binkp::~Binkp() = default;
 
 const binkp_session_config_t* Binkp::binkp_session_config_for(const std::string& node) const {
-  auto iter = node_config_.find(node);
+  const auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
   }

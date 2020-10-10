@@ -345,13 +345,12 @@ void ZStatus(int type, int value, char* msg) {
   }
 }
 
-FILE* ZOpenFile(char* file_name, u_long crc, ZModem* info) {
-  char szTempFileName[MAX_PATH];
-  sprintf(szTempFileName, "%s%s", a()->sess().dirs().temp_directory().c_str(), file_name);
+FILE* ZOpenFile(char* file_name, u_long /* crc */, ZModem* /* info */) {
+  const auto tfn = FilePath(a()->sess().dirs().temp_directory(), file_name).string();
 #if defined(_DEBUG)
-  zmodemlog("ZOpenFile filename=%s %s\r\n", file_name, szTempFileName);
+  zmodemlog("ZOpenFile filename=%s %s\r\n", file_name, tfn.c_str());
 #endif
-  return fopen(szTempFileName, "wb");
+  return fopen(tfn.c_str(), "wb");
 
   //	struct stat	buf;
   //	bool		exists;	/* file already exists */

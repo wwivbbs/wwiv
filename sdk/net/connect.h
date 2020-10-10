@@ -15,22 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_CONNECT_H__
-#define __INCLUDED_SDK_CONNECT_H__
+#ifndef INCLUDED_SDK_CONNECT_H
+#define INCLUDED_SDK_CONNECT_H
 
+#include "sdk/net/net.h"
+#include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <string>
 
-#include "sdk/net/net.h"
-
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
   
 class Connect {
  public:
-  explicit Connect(const std::string& network_dir);
+  explicit Connect(const std::filesystem::path& network_dir);
   // VisibleForTesting
   Connect(std::initializer_list<net_interconnect_rec> l);
   virtual ~Connect();
@@ -45,7 +44,6 @@ class Connect {
 
 bool ParseConnectNetLine(const std::string& line, net_interconnect_rec* config);
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_SDK_CONNECT_H__
+#endif

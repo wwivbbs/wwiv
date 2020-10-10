@@ -19,19 +19,18 @@
 #define __INCLUDED_SDK_BINKP_H__
 
 #include "sdk/net/net.h"
-#include "sdk/net/networks.h"
 #include <cstdint>
+#include <filesystem>
 #include <map>
 #include <optional>
 #include <string>
 #include <tuple>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 class Binkp {
  public:
-  Binkp(const std::string& network_dir);
+  Binkp(const std::filesystem::path& network_dir);
   virtual ~Binkp();
   const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
   const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
@@ -43,8 +42,7 @@ class Binkp {
 
 std::optional<std::tuple<std::string, binkp_session_config_t>> ParseBinkConfigLine(const std::string& line);
 
-}  // namespace sdk
-}  // namespace wwiv
+}
 
 
-#endif  // __INCLUDED_SDK_BINKP_H__
+#endif

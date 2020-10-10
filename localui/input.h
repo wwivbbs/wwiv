@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INPUT_H__
-#define __INCLUDED_INPUT_H__
+#ifndef INCLUDED_INPUT_H
+#define INCLUDED_INPUT_H
 
 #include "core/file.h"
 #include "core/stl.h"
@@ -100,7 +100,7 @@ static std::string to_restriction_string(T data, int size, const std::string& re
 // Base item of an editable value, this class does not use templates.
 class BaseEditItem {
 public:
-  BaseEditItem(int x, int y, int maxsize) : x_(x), y_(y), maxsize_(maxsize){};
+  BaseEditItem(int x, int y, int maxsize) : x_(x), y_(y), maxsize_(maxsize) {}
   virtual ~BaseEditItem() = default;
 
   virtual EditlineResult Run(CursesWindow* window) = 0;
@@ -153,8 +153,8 @@ template <typename T> class EditItem : public BaseEditItem {
 public:
   typedef std::function<std::string()> displayfn;
 
-  EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data){};
-  virtual ~EditItem() = default;
+  EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data) {}
+  ~EditItem() override = default;
 
   void set_displayfn(displayfn f) { display_ = f; }
 
@@ -217,7 +217,7 @@ template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
 public:
   StringEditItem(int x, int y, int maxsize, std::string& data,  EditLineMode mode)
       : EditItem<std::string&>(x, y, maxsize, data), edit_line_mode_(mode) {}
-  virtual ~StringEditItem() = default;
+  ~StringEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -328,7 +328,7 @@ class StringListItem final : public EditItem<std::string&> {
 public:
   StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
       : EditItem<std::string&>(x, y, maxlen_from_list(items), data), items_(items) {}
-  virtual ~StringListItem() = default;
+  ~StringListItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
@@ -394,7 +394,7 @@ public:
   BaseRestrictionsEditItem(int x, int y, const char* rs, int rs_size, uint16_t* data)
       : EditItem<uint16_t*>(x, y, rs_size, data), rs_(rs), rs_size_(rs_size) {}
 
-  virtual ~BaseRestrictionsEditItem() = default;
+  ~BaseRestrictionsEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
 
@@ -446,24 +446,24 @@ class RestrictionsEditItem final : public BaseRestrictionsEditItem {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, xrestrictstring, xrestrictstring_size, data) {}
-  virtual ~RestrictionsEditItem() = default;
+  ~RestrictionsEditItem() override = default;
 };
 
 class ArEditItem final : public BaseRestrictionsEditItem {
 public:
   ArEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
-  virtual ~ArEditItem() = default;
+  ~ArEditItem() override = default;
 };
 
 class BooleanEditItem final : public EditItem<bool*> {
 public:
   BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 6, data) {}
-  virtual ~BooleanEditItem() = default;
+  ~BooleanEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
-    static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
+    static const std::vector<std::string> boolean_strings{"No ", "Yes"};
 
     window->GotoXY(this->x_, this->y_);
     std::vector<std::string>::size_type data = *this->data_ ? 1 : 0;
@@ -478,7 +478,7 @@ public:
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
-    const auto s = boolean_strings.at(*data_ ? 1 : 0);
+    const auto& s = boolean_strings.at(*data_ ? 1 : 0);
     DefaultDisplayString(window, s);
   }
 };
@@ -511,7 +511,7 @@ public:
   FilePathItem(FilePathItem&&) = delete;
   FilePathItem& operator=(const FilePathItem&) = delete;
   FilePathItem& operator=(FilePathItem&&) = delete;
-  virtual ~FilePathItem() = default;
+  ~FilePathItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -528,7 +528,7 @@ public:
       const auto s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
         if (!wwiv::core::File::mkdirs(dir)) {
-          messagebox(window, {"Unable to create directory: ", dir});
+          messagebox(window, {"Unable to create directory: ", dir.string()});
         }
       }
     }
@@ -544,13 +544,56 @@ private:
   const std::string base_;
 };
 
+
+class FileSystemFilePathItem final : public EditItem<std::filesystem::path&> {
+public:
+  FileSystemFilePathItem(int x, int y, int maxsize, const std::filesystem::path& base, std::filesystem::path& data)
+      : EditItem<std::filesystem::path&>(x, y, maxsize, data), base_(base) {
+    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+  }
+  ~FileSystemFilePathItem() override = default;
+
+  EditlineResult Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    auto data = this->data_.string();
+    const auto return_code = editline(window, &data, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    wwiv::strings::StringTrimEnd(&data);
+    if (!data.empty()) {
+      data = wwiv::core::File::EnsureTrailingSlash(data);
+    }
+    // Update what we display in case it changed.
+    DefaultDisplay(window);
+
+    const auto dir = wwiv::core::File::absolute(this->base_, data);
+    if (!wwiv::core::File::Exists(dir)) {
+      const auto s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
+      if (dialog_yn(window, {s1, "Would you like to create it?"})) {
+        if (!wwiv::core::File::mkdirs(dir)) {
+          messagebox(window, {"Unable to create directory: ", dir.string()});
+        }
+      }
+    }
+    // Set the path in the base class
+    data_ = data;
+    return return_code;
+  }
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override {
+    DefaultDisplayString(window, data_.string());
+  }
+
+private:
+  const std::filesystem::path base_;
+};
+
 class StringFilePathItem final : public EditItem<std::string&> {
 public:
-  StringFilePathItem(int x, int y, int maxsize, const std::string& base, std::string& data)
+  StringFilePathItem(int x, int y, int maxsize, const std::filesystem::path& base, std::string& data)
       : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
-  virtual ~StringFilePathItem() = default;
+  ~StringFilePathItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -567,7 +610,7 @@ public:
       const auto s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
         if (!wwiv::core::File::mkdirs(dir)) {
-          messagebox(window, {"Unable to create directory: ", dir});
+          messagebox(window, {"Unable to create directory: ", dir.string()});
         }
       }
     }
@@ -580,13 +623,13 @@ protected:
   }
 
 private:
-  const std::string base_;
+  const std::filesystem::path base_;
 };
 
 class CommandLineItem final : public EditItem<char*> {
 public:
   CommandLineItem(int x, int y, int maxsize, char* data) : EditItem<char*>(x, y, maxsize, data) {}
-  virtual ~CommandLineItem() = default;
+  ~CommandLineItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
@@ -671,7 +714,7 @@ public:
   /** Returns the size of the longest label */
   [[nodiscard]] int max_label_width() const {
     std::string::size_type result = 0;
-    for (const auto l : labels_) {
+    for (const auto* l : labels_) {
       if (l->text().size() > result) {
         result = l->text().size();
       }
@@ -685,10 +728,10 @@ public:
    */
   void relayout_items_and_labels() {
     auto x = max_label_width();
-    for (auto l : labels_) {
+    for (auto* l : labels_) {
       l->set_width(x);
     }
-    for (auto i : items_) {
+    for (auto* i : items_) {
       i->set_x(x + 2 + 1); // 2 is a hack since that's always col1 position for label.
     }
   }
@@ -714,4 +757,4 @@ private:
   bool edit_mode_;
 };
 
-#endif // __INCLUDED_INPUT_H__
+#endif

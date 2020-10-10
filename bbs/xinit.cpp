@@ -316,7 +316,7 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
-  attach_dir_ = !attach_dir.empty() ? attach_dir : FilePath(bbsdir(), ATTACH_DIR).string();
+  attach_dir_ = !attach_dir.empty() ? attach_dir : FilePath(bbspath(), ATTACH_DIR).string();
   attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
@@ -351,11 +351,10 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&batch_directory, "%n", instance_num_string);
 
   // Set the directories (temp, batch, language)
-  const auto base_dir = bbsdir();
-  const auto temp = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
-  const auto batch = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
+  const auto temp = File::EnsureTrailingSlash(File::absolute(bbspath(), temp_directory));
+  const auto batch = File::EnsureTrailingSlash(File::absolute(bbspath(), batch_directory));
 
-  wwiv::common::Dirs d(temp, batch, batch, config()->gfilesdir());
+  Dirs d(temp, batch, batch, config()->gfilesdir());
   sess().dirs(d);
 
   // Set config for macro processing.
@@ -370,7 +369,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 }
 
 bool Application::ReadConfig() {
-  config_.reset(new Config(bbsdir()));
+  config_.reset(new Config(bbspath()));
   if (!config_->IsInitialized()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
@@ -389,7 +388,7 @@ bool Application::ReadConfig() {
   user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
 
-  IniFile ini(FilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
+  IniFile ini(FilePath(bbspath(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     return false;

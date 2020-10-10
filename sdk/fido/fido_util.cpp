@@ -524,7 +524,7 @@ bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net)
   return exists_bundle(dirs.inbound_dir());
 }
 
-bool exists_bundle(const std::string& dir) {
+bool exists_bundle(const std::filesystem::path& dir) {
   const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {

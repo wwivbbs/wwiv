@@ -52,7 +52,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
     write_inst(INST_LOC_NET, a()->net_num() + 1, INST_FLAGS_NONE);
   }
 
-  auto exec_dir = a()->bbsdir();
+  auto exec_dir = a()->bbspath();
   if (nFlags & EFLAG_TEMP_DIR) {
     exec_dir = a()->sess().dirs().temp_directory();
   } else if (nFlags & EFLAG_BATCH_DIR) {

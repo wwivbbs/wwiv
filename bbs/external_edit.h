@@ -21,13 +21,13 @@
 
 #include "common/message_editor_data.h"
 #include <string>
-
+#include <filesystem>
 #include "sdk/vardec.h"
 
 class ExternalMessageEditor {
 public:
   ExternalMessageEditor(const editorrec& editor, wwiv::common::MessageEditorData& data, int maxli, int* setanon,
-                        const std::string& temp_directory)
+                        const std::filesystem::path& temp_directory)
       : editor_(editor), data_(data), maxli_(maxli), setanon_(setanon),
         temp_directory_(temp_directory){};
   virtual ~ExternalMessageEditor() = default;
@@ -43,13 +43,13 @@ protected:
   wwiv::common::MessageEditorData& data_;
   const int maxli_;
   int* setanon_;
-  const std::string temp_directory_;
+  const std::filesystem::path temp_directory_;
 };
 bool DoExternalMessageEditor(wwiv::common::MessageEditorData& data, int maxli, int* setanon);
 
-bool external_text_edit(const std::string& edit_filename, const std::string& new_directory,
+bool external_text_edit(const std::string& edit_filename, const std::filesystem::path& new_directory,
                         int numlines, int flags);
-bool fsed_text_edit(const std::string& edit_filename, const std::string& new_directory,
+bool fsed_text_edit(const std::string& edit_filename, const std::filesystem::path& new_directory,
                     int numlines, int flags);
 
 #endif // __INCLUDED_EXTERNAL_EDIT_H__

@@ -18,8 +18,7 @@
 /**************************************************************************/
 #include "wwivutil/util.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 void dump_char(std::ostream& out, char ch) { 
   
@@ -67,5 +66,4 @@ void dump_char(std::ostream& out, char ch) {
 }
 
 
-} // namespace wwivutil 
-} // namespace wwiv
+} // namespace wwivutil::wwiv

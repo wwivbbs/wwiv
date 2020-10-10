@@ -24,6 +24,7 @@
 #include "binkp/config_exceptions.h"
 #include "sdk/filenames.h"
 #include "sdk/net/networks.h"
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -58,7 +59,7 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
   return true;
 }
 
-static bool ParseAddressesFile(std::map<int, PPPNodeConfig>* node_config_map, const string& network_dir) {
+static bool ParseAddressesFile(std::map<int, PPPNodeConfig>* node_config_map, const std::filesystem::path& network_dir) {
   TextFile node_config_file(FilePath(network_dir, ADDRESS_NET), "rt");
   if (!node_config_file.IsOpen()) {
     return false;

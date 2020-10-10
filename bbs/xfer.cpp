@@ -30,11 +30,9 @@
 #include "bbs/execexternal.h"
 #include "common/input.h"
 #include "bbs/listplus.h"
-#include "bbs/make_abs_cmd.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/xfer_common.h"
 #include "bbs/xferovl1.h"
 #include "core/numbers.h"
 #include "core/stl.h"
@@ -45,7 +43,6 @@
 #include "sdk/config.h"
 #include "sdk/files/arc.h"
 #include "sdk/files/files.h"
-#include <cmath>
 #include <string>
 #include <vector>
 
@@ -55,9 +52,6 @@ using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
-
-// How far to indent extended descriptions
-static const int INDENTION = 24;
 
 int foundany;
 daten_t this_date;
@@ -188,7 +182,7 @@ int list_arc_out(const std::string& file_name, const std::string& dir) {
 
 bool ratio_ok() {
   if (!a()->user()->IsExemptRatio()) {
-    if (a()->config()->req_ratio() > 0.0001 && ratio() < a()->config()->req_ratio()) {
+    if (a()->config()->req_ratio() > 0.0001f && ratio() < a()->config()->req_ratio()) {
       bout.cls();
       bout.nl();
       bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
@@ -197,7 +191,7 @@ bool ratio_ok() {
     }
   }
   if (!a()->user()->IsExemptPost()) {
-    if (a()->config()->post_to_call_ratio() > 0.0001 &&
+    if (a()->config()->post_to_call_ratio() > 0.0001f &&
         post_ratio() < a()->config()->post_to_call_ratio()) {
       bout.nl();
       bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n", "Your post/call ratio is",
@@ -553,12 +547,19 @@ int nrecno(const std::string& file_mask, int start_recno) {
   return !area ? -1 : area->SearchFile(file_mask, start_recno + 1).value_or(-1);
 }
 
-int printfileinfo(uploadsrec * u, const wwiv::sdk::files::directory_t& dir) {
-  const auto d = XFER_TIME(u->numbytes);
+static long xfer_time_in_seconds(long b) {
+  if (a()->modem_speed_ == 0) {
+    return 0;
+  }
+  return (b + 127) * 10 / a()->modem_speed_;
+}
+
+int printfileinfo(const uploadsrec* u, const wwiv::sdk::files::directory_t& dir) {
+  const auto d = xfer_time_in_seconds(u->numbytes);
   bout << "|#9Filename:    |#2" << FileName(u->filename) << wwiv::endl;
   bout << "|#9Description: |#2" << u->description << wwiv::endl;
   bout << "|#9File size:   |#2" << humanize(u->numbytes) << wwiv::endl;
-  bout << "|#9Apprx. time: |#2" << ctim(std::lround(d)) << wwiv::endl;
+  bout << "|#9Apprx. time: |#2" << ctim(d) << wwiv::endl;
   bout << "|#9Uploaded on: |#2" << u->date << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
     bout << "|#9File date:  |#2 " << u->actualdate << wwiv::endl;

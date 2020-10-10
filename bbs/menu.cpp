@@ -238,7 +238,7 @@ MenuInstance::MenuInstance(std::string menu_directory, std::string menu_name)
   open_ = OpenImpl();
 }
 
-MenuInstance::~MenuInstance() {}
+MenuInstance::~MenuInstance() = default;
 
 // static
 std::string MenuInstance::create_menu_filename(const std::string& path,
@@ -396,7 +396,7 @@ std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
   }
 
   if (menu_command_map_.count(command) > 0) {
-    auto range = menu_command_map_.equal_range(command);
+    const auto range = menu_command_map_.equal_range(command);
     for (auto i = range.first; i != range.second; ++i) {
       auto& m = i->second;
       if (CheckMenuItemSecurity(&m, true)) {
@@ -587,7 +587,7 @@ void MenuInstance::GenerateMenu() const {
         keystr = StrCat("[", menu.szKey, "]");
       }
       bout.Color(1);
-      const auto txt = menu.szMenuText[0] ? menu.szMenuText : menu.szExecute;
+      const auto* const txt = menu.szMenuText[0] ? menu.szMenuText : menu.szExecute;
       bout.format("{:<8} |#9{:<25}", keystr, txt);
       if (lines_displayed % 2) {
         bout.nl();

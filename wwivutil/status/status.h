@@ -15,13 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_STATUS_H__
-#define __INCLUDED_WWIVUTIL_STATUS_H__
+#ifndef INCLUDED_WWIVUTIL_STATUS_H
+#define INCLUDED_WWIVUTIL_STATUS_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 class StatusCommand: public UtilCommand {
 public:
@@ -30,9 +29,7 @@ public:
   bool AddSubCommands() override final;
 };
 
-
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace wwivutil::wwiv
 
 
-#endif  // __INCLUDED_WWIVUTIL_STATUS_H__
+#endif

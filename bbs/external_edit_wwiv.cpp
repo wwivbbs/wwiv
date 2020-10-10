@@ -18,17 +18,13 @@
 /**************************************************************************/
 #include "bbs/external_edit_wwiv.h"
 
-#include <string>
-
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "common/message_editor_data.h"
 #include "core/scope_exit.h"
-#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-
 #include "sdk/filenames.h"
+#include <string>
 
 using std::string;
 using wwiv::core::ScopeExit;
@@ -51,8 +47,8 @@ void ExternalWWIVMessageEditor::CleanupControlFiles() {
   File::Remove(FilePath(temp_directory_, EDITOR_INF), true);
 }
 
-static void ReadWWIVResultFiles(string* title, int* anon, const std::string& tempdir) {
-  auto fp = FilePath(tempdir, RESULT_ED);
+static void ReadWWIVResultFiles(string* title, int* anon, const std::filesystem::path& tempdir) {
+  const auto fp = FilePath(tempdir, RESULT_ED);
   if (File::Exists(fp)) {
     TextFile file(fp, "rt");
     string anon_string;
@@ -77,7 +73,8 @@ static void ReadWWIVResultFiles(string* title, int* anon, const std::string& tem
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name,
-                                        const string& to_name, int flags, const std::string& tempdir) {
+                                        const string& to_name, int flags,
+                                        const std::filesystem::path& tempdir) {
   TextFile f(FilePath(tempdir, EDITOR_INF), "wt");
   if (f.IsOpen()) {
     if (!to_name.empty()) {

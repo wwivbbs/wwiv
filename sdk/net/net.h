@@ -23,6 +23,7 @@
 #include "sdk/msdos_stdint.h"
 #else
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 #endif // __MSDOS__
@@ -457,11 +458,11 @@ struct net_networks_rec {
   /* network name. Up to 16 chars*/
   std::string name;
   /* directory for net data */
-  std::string dir;
+  std::filesystem::path dir;
   /* system number */
   uint16_t sysnum;
 
-  // Used by FIDOnet type nodes.
+  // Used by FTN type nodes.
   fido_network_config_t fido;
   // uuid_t to identify the network locally.
   wwiv::core::uuid_t uuid;

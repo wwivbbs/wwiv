@@ -19,7 +19,6 @@
 #include "bbs/external_edit_qbbs.h"
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "common/message_editor_data.h"
 #include "bbs/utility.h"
 #include "core/scope_exit.h"
@@ -28,7 +27,7 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_util.h"
-
+#include <filesystem>
 #include <string>
 
 using std::string;
@@ -61,7 +60,7 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  * line 6: Private flag ("YES" or "NO")
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
-                        const string& to_name, bool real_name, const std::string& temp_directory,
+                        const string& to_name, bool real_name, const std::filesystem::path& temp_directory,
                         const wwiv::sdk::User& user) {
   TextFile file(FilePath(temp_directory, MSGINF), "wd");
   if (!file.IsOpen()) {
@@ -98,7 +97,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
   return true;
 }
 
-static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
+static bool CreateMsgTmpFromQuotesTxt(const std::filesystem::path& tmpdir) {
   const auto qfn = FilePath(tmpdir, QUOTES_TXT);
   if (!File::Exists(qfn)) {
     return false;

@@ -23,11 +23,12 @@
 #include <string>
 #include <vector>
 
-void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
-bool okansi();
+void remove_from_temp(const std::string& file_name, const std::filesystem::path& directory_name,
+                      bool bPrintStatus);
+float ratio();
+float post_ratio();
 void reset_disable_conf();
-double ratio();
-double post_ratio();
+bool okansi();
 long nsl();
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname);
 std::string stripfn(const std::string& file_name);

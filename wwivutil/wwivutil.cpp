@@ -16,13 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwivutil/wwivutil.h"
-
 #include "core/command_line.h"
-#include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
-#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "wwivutil/acs/acs.h"
@@ -34,6 +30,7 @@
 #include "wwivutil/net/net.h"
 #include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
+#include "wwivutil/subs/subs.h"
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -72,6 +69,7 @@ public:
       Add(std::make_unique<NetCommand>());
       Add(std::make_unique<PrintCommand>());
       Add(std::make_unique<StatusCommand>());
+      Add(std::make_unique<SubsCommand>());
       if (!cmdline_.Parse()) { return 1; }
       Config config(cmdline_.bbsdir());
       if (!config.IsInitialized()) {
@@ -93,7 +91,7 @@ public:
 
 private:
   void Add(std::unique_ptr<UtilCommand> cmd) {
-    UtilCommand* c = cmd.get();
+    auto* c = cmd.get();
     cmdline_.add(std::move(cmd));
     c->AddStandardArgs();
     c->AddSubCommands();
@@ -101,7 +99,7 @@ private:
   }
 
   void SetConfigs() {
-    for (auto s : subcommands_) {
+    for (auto* s : subcommands_) {
       s->set_config(command_config_.get());
     }
   }

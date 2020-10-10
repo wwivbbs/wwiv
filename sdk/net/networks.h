@@ -15,17 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_NETWORKS_H__
-#define __INCLUDED_SDK_NETWORKS_H__
+#ifndef INCLUDED_SDK_NETWORKS_H
+#define INCLUDED_SDK_NETWORKS_H
 
+#include <filesystem>
 #include <initializer_list>
 #include <string>
 #include <vector>
 #include "sdk/config.h"
 #include "sdk/net/net.h"
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 class Networks final {
 public:
@@ -62,17 +62,18 @@ public:
 
 private:
   void EnsureNetworksHaveUUID();
+  void EnsureNetDirAbsolute();
   bool LoadFromJSON();
   bool LoadFromDat();
   bool SaveToJSON();
   bool SaveToDat();
 
   bool initialized_{false};
-  std::string datadir_;
+  std::filesystem::path root_directory_;
+  std::filesystem::path datadir_;
   std::vector<net_networks_rec> networks_;
 };
 
 }
-}
 
-#endif  // __INCLUDED_SDK_NETWORKS_H__
+#endif

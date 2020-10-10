@@ -19,7 +19,6 @@
 #include "bbs/external_edit.h"
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/execexternal.h"
 #include "bbs/external_edit_qbbs.h"
 #include "bbs/external_edit_wwiv.h"
@@ -45,10 +44,10 @@ using namespace wwiv::strings;
 
 /////////////////////////////////////////////////////////////////////////////
 // Actually launch the editor. This won't create any control files, etc.
-static bool external_edit_internal(const string& edit_filename, const string& working_directory,
+static bool external_edit_internal(const string& edit_filename, const std::filesystem::path& working_directory,
                                    const editorrec& editor, int numlines) {
 
-  string editorCommand = (a()->sess().incom()) ? editor.filename : editor.filenamecon;
+  string editorCommand = a()->sess().incom() ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
     bout.pausescr();
@@ -65,7 +64,8 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
     }
   }
 
-  make_abs_cmd(a()->bbsdir(), &editorCommand);
+  const auto root = a()->bbspath().string();
+  make_abs_cmd(root, &editorCommand);
 
   auto strippedFileName{stripfn(edit_filename)};
   ScopeExit on_exit([=] { File::set_current_directory(a()->bbspath()); });
@@ -91,7 +91,7 @@ static bool external_edit_internal(const string& edit_filename, const string& wo
 
 static std::unique_ptr<ExternalMessageEditor>
 CreateExternalMessageEditor(const editorrec& editor, MessageEditorData& data, int maxli,
-                            int* setanon, const std::string& temp_directory) {
+                            int* setanon, const std::filesystem::path& temp_directory) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     return std::make_unique<ExternalQBBSMessageEditor>(editor, data, maxli, setanon,
                                                        temp_directory);
@@ -121,8 +121,8 @@ bool DoExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
   return eme->Run();
 }
 
-bool external_text_edit(const string& edit_filename, const string& working_directory, int numlines,
-                        int flags) {
+bool external_text_edit(const string& edit_filename, const std::filesystem::path& working_directory,
+                        int numlines, int flags) {
   bout.nl();
   const auto editor_number = a()->user()->GetDefaultEditor() - 1;
   if (editor_number >= wwiv::stl::ssize(a()->editors) || !okansi()) {
@@ -143,7 +143,7 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
   return external_edit_internal(edit_filename, working_directory, editor, numlines);
 }
 
-bool fsed_text_edit(const std::string& edit_filename, const std::string& new_directory,
+bool fsed_text_edit(const std::string& edit_filename, const std::filesystem::path& new_directory,
   int numlines, int flags) {
   if (ok_external_fsed()) {
     return external_text_edit(edit_filename, new_directory, numlines, flags);

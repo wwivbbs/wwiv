@@ -616,9 +616,8 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Create new index if it hasnt been already
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
-      const auto filename = fmt::sprintf("%s%03d.NDX", 
-        a()->sess().dirs().qwk_directory(),
-                                         a()->current_user_sub().subnum + 1);
+      const auto filename =
+          fmt::sprintf("%s%03d.NDX", a()->sess().dirs().qwk_directory().string(), a()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
       }
@@ -1120,9 +1119,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     auto command = stuff_in(a()->arcs[archiver].arca, parem1.string(), parem2.string(), "", "", "");
     ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_ARCH_A));
 
-    qwk_file_to_send = StrCat(a()->sess().dirs().qwk_directory(), qwkname);
-    // TODO(rushfan): Should we just have a make abs path?
-    make_abs_cmd(a()->bbsdir(), &qwk_file_to_send);
+    qwk_file_to_send = FilePath(a()->sess().dirs().qwk_directory(), qwkname).string();
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

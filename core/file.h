@@ -169,7 +169,8 @@ public:
   [[nodiscard]] static std::filesystem::path current_directory();
   static bool set_current_directory(const std::filesystem::path& dir);
   [[nodiscard]] static std::string FixPathSeparators(const std::string& path);
-  [[nodiscard]] static std::string absolute(const std::string& base, const std::string& relative);
+  [[nodiscard]] static std::filesystem::path absolute(const std::filesystem::path& base,
+                                                      const std::filesystem::path& relative);
 
   [[nodiscard]] static time_t last_write_time(const std::filesystem::path& path);
 

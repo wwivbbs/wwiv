@@ -82,7 +82,8 @@ std::optional<arc_command_t> get_arc_cmd(const std::string& arc_fn, arc_command_
   }
 
   auto out = stuff_in(cmdline, arc_fn, ofn, "", "", "");
-  make_abs_cmd(a()->bbsdir(), &out);
+  const auto root = a()->bbspath().string();
+  make_abs_cmd(root, &out);
   arc_command_t c{false, out};
   return {c};
 }

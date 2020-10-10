@@ -15,34 +15,32 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_BBSLIST_H__
-#define __INCLUDED_SDK_BBSLIST_H__
+#ifndef INCLUDED_SDK_BBSLIST_H
+#define INCLUDED_SDK_BBSLIST_H
 
+#include "sdk/net/net.h"
+#include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <optional>
 #include <string>
 
-#include "sdk/net/net.h"
-
-namespace wwiv {
-namespace sdk {
-
+namespace wwiv::sdk {
   
 class BbsListNet {
  public:
-   static BbsListNet ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir);
-   static BbsListNet ReadBbsDataNet(const std::string& network_dir);
+   static BbsListNet ParseBbsListNet(uint16_t net_node_number, const std::filesystem::path& network_dir);
+   static BbsListNet ReadBbsDataNet(const std::filesystem::path& network_dir);
   // VisibleForTesting
   BbsListNet(std::initializer_list<net_system_list_rec> l);
   virtual ~BbsListNet();
-  std::optional<net_system_list_rec> node_config_for(int node) const;
+  [[nodiscard]] std::optional<net_system_list_rec> node_config_for(int node) const;
   BbsListNet& operator=(const BbsListNet& rhs) { node_config_ = rhs.node_config_; return *this; }
-  std::string ToString() const;
+  [[nodiscard]] std::string ToString() const;
 
-  bool empty() const { return node_config_.empty(); }
-  const std::map<uint16_t, net_system_list_rec>& node_config() const { return node_config_; }
-  const std::map<uint16_t, int32_t>& reg_number() const { return reg_number_; }
+  [[nodiscard]] bool empty() const { return node_config_.empty(); }
+  [[nodiscard]] const std::map<uint16_t, net_system_list_rec>& node_config() const { return node_config_; }
+  [[nodiscard]] const std::map<uint16_t, int32_t>& reg_number() const { return reg_number_; }
 
  private:
    BbsListNet();
@@ -52,7 +50,6 @@ class BbsListNet {
 
 bool ParseBbsListNetLine(const std::string& line, net_system_list_rec* config, int32_t* reg_number);
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_SDK_BBSLIST_H__
+#endif
