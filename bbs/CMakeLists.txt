@@ -1,5 +1,5 @@
 # CMake for WWIV
-include_directories(../deps/cl342)
+include_directories(../deps/cl345)
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES 
@@ -154,7 +154,7 @@ target_link_libraries(
   core 
   fsed
   sdk 
-  CL342_LIB 
+  CL345_LIB 
   ${CMAKE_THREAD_LIBS_INIT} 
   ${FORKPTY_LIB}
 )
