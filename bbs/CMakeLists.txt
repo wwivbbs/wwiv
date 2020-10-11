@@ -128,6 +128,10 @@ if(UNIX)
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     list(APPEND CMAKE_EXE_LINKER_FLAGS "-lsocket -lnsl -lkstat -lssp")
   endif()
+
+  set(PLATFORM_LIBS
+        z
+  )
 endif()
 
 if(WIN32)
@@ -136,6 +140,11 @@ if(WIN32)
 		  exec_win32.cpp 
 		  make_abs_cmd_win32.cpp 
   )
+
+  set(
+    PLATFORM_LIBS
+  )
+
   SET_MSVC_WARNING_LEVEL_4()
 endif()
 
@@ -157,6 +166,7 @@ target_link_libraries(
   CL345_LIB 
   ${CMAKE_THREAD_LIBS_INIT} 
   ${FORKPTY_LIB}
+  ${PLATFORM_LIBS}
 )
 
 add_executable(bbs ${BBS_MAIN})
