@@ -102,7 +102,7 @@ Issue Date: 20/12/2007
 	defined( _M_IX86 ) && \
 	!( defined( _WIN32_WCE ) || defined( NO_ASM ) )
   #ifndef USE_VIA_ACE_IF_PRESENT
-//	#define USE_VIA_ACE_IF_PRESENT
+	#define USE_VIA_ACE_IF_PRESENT
   #endif
 #endif /* VC++ on x86 under Win32 - pcg */
 
@@ -212,7 +212,7 @@ Issue Date: 20/12/2007
 #if defined( __GNUC__ ) && defined( __i386__ ) \
  || defined( _WIN32 ) && defined( _M_IX86 ) && !(defined( _WIN64 ) \
  || defined( _WIN32_WCE ) || defined( _MSC_VER ) && ( _MSC_VER <= 800 ))
-//#  define VIA_ACE_POSSIBLE
+#  define VIA_ACE_POSSIBLE
 #endif
 
 /* AES is supported out of the box by Windows x64 compilers, but by gcc only 
@@ -263,7 +263,7 @@ Issue Date: 20/12/2007
 	AES_REV_DKS must be set for assembler code used with a VIA ACE build
 */
 
-#if 0 && defined( VIA_ACE_POSSIBLE ) && !defined( USE_VIA_ACE_IF_PRESENT )
+#if 1 && defined( VIA_ACE_POSSIBLE ) && !defined( USE_VIA_ACE_IF_PRESENT )
 #  define USE_VIA_ACE_IF_PRESENT
 #endif
 
@@ -508,7 +508,7 @@ Issue Date: 20/12/2007
 #endif
 
 #if defined( ASSUME_VIA_ACE_PRESENT ) && !defined( USE_VIA_ACE_IF_PRESENT )
-//#  define USE_VIA_ACE_IF_PRESENT
+#  define USE_VIA_ACE_IF_PRESENT
 #endif
 
 #if defined( __APPLE__ ) && TARGET_OS_SIMULATOR

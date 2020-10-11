@@ -1222,11 +1222,6 @@ typedef enum {
 	CRYPT_SESSINFO_SSL_EAPKEY,		/* SSL/TLS EAP key */
 	CRYPT_SESSINFO_TSP_MSGIMPRINT,	/* TSP message imprint */
 
-	/* Terminal attributes */
-	CRYPT_SESSINFO_SSH_TERMINAL,	/* TERM string sent to remote */
-	CRYPT_SESSINFO_SSH_WIDTH,	/* Terminal width */
-	CRYPT_SESSINFO_SSH_HEIGHT,	/* Terminal height */
-
 	/* Used internally */
 	CRYPT_SESSINFO_LAST, CRYPT_USERINFO_FIRST = 7000,
 

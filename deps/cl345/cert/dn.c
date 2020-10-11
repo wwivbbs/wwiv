@@ -204,7 +204,7 @@ static BOOLEAN checkCountryCode( IN_BUFFER_C( 2 ) const BYTE *countryCode )
   /*W*/				   xF|									  xS,
   /*X*/	0,
   /*Y*/				xE|											 xT|xU,
-  /*Z*/	xA|									xM|							  xW|	   xZ,
+  /*Z*/	xA|									xM|							  xW,
 		0, 0	/* Catch overflows */
 		};
 	const int cc0 = countryCode[ 0 ] - 'A';

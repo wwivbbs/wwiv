@@ -13,8 +13,6 @@ fi
 # Juggle the args around to get them the way that we want them.
 
 CC=$1
-echo "$CC"
-exit
 OSNAME=$2
 shift 2
 

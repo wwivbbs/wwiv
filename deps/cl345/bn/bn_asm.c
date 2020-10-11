@@ -81,7 +81,7 @@
 
 #ifndef BN_ASM				/* pcg */
 
-#if defined(BN_LLONG) || defined(BN_UMULT_HIGH) || defined(BN_UMULT_LOHI)
+#if defined(BN_LLONG) || defined(BN_UMULT_HIGH)
 
 BN_ULONG bn_mul_add_words(BN_ULONG *rp, const BN_ULONG *ap, int num,
                           BN_ULONG w)

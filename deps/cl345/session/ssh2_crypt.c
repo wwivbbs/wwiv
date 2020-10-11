@@ -55,12 +55,12 @@ static int incCtr( INOUT_BUFFER_FIXED( blockSize ) void *ctr,
 	/* Walk along the counter incrementing each byte if required */
 	LOOP_MED( i = blockSize - 1, i >= 0, i-- )
 		{
-		if( ++ctrPtr[ i ] != 0 )
+         if (++ctrPtr[i] != 0)
 			break;
 		}
 	ENSURES( LOOP_BOUND_OK );
 	ENSURES( ctrMSB != ctrPtr[ blockSize - 1 ] );
-	ENSURES( (ctrPtr[ blockSize - 1 ] != 0 || ctrMSBnext != ctrPtr[ blockSize - 2 ]) );
+    ENSURES((ctrPtr[blockSize - 1] != 0 || ctrMSBnext != ctrPtr[blockSize - 2]));
 
 	return( CRYPT_OK );
 	}
@@ -265,7 +265,7 @@ int initECDHcontextSSH( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 	/* Load the appropriate static ECDH key parameters */
 	status = krnlSendMessage( iECDHContext, IMESSAGE_SETATTRIBUTE, 
 							  ( MESSAGE_CAST ) &eccKeySize, 
-							  CRYPT_IATTRIBUTE_KEY_ECCPARAM );
+							  CRYPT_IATTRIBUTE_KEY_DLPPARAM );
 	if( cryptStatusError( status ) )
 		{
 		krnlSendNotifier( iECDHContext, IMESSAGE_DECREFCOUNT );
@@ -388,7 +388,7 @@ static int loadCTR( INOUT SESSION_INFO *sessionInfoPtr,
 		memcpy( sshInfo->writeCTR, buffer, sessionInfoPtr->cryptBlocksize );
 	else
 		memcpy( sshInfo->readCTR, buffer, sessionInfoPtr->cryptBlocksize );
-	zeroise( buffer, CRYPT_MAX_HASHSIZE );
+    zeroise(buffer, CRYPT_MAX_HASHSIZE);
 
 	return( CRYPT_OK );
 	}

@@ -66,9 +66,7 @@ case $OSNAME in
 		echo "Need to set up ucLinux link command" ;;
 
 	*)
-		if [ "$RANLIB" = "" ] ; then
-			RANLIB = ranlib
-		fi
-		( $AR rc "$LIBNAME" "$@" && $RANLIB "$LIBNAME" )
+		$AR rcs "$LIBNAME" "$@" || \
+		( $AR rc "$LIBNAME" "$@" && ranlib "$LIBNAME" )
 
 esac

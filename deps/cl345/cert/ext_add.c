@@ -453,11 +453,9 @@ assert( ( flags & ~( ATTR_FLAG_NONE | ATTR_FLAG_IGNORED | ATTR_FLAG_BLOB | ATTR_
 	   a non-blob.  In addition it forces the caller to use the (recommended)
 	   normal attribute handling mechanism, which allows for proper type
 	   checking */
-#if 0
 	if( !( flags & ATTR_FLAG_BLOB ) && \
 		oidToAttribute( attributeType, oid, oidLength ) != NULL )
 		return( CRYPT_ERROR_PERMISSION );
-#endif
 
 	/* Find the correct place in the list to insert the new element */
 	if( DATAPTR_ISSET( listHead ) )

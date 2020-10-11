@@ -868,7 +868,7 @@ static int pamAuthenticate( INOUT SESSION_INFO *sessionInfoPtr,
 		if( !cryptStatusError( status ) )
 			{
 			status = CRYPT_OK;	/* readUint32() returns a count value */
-			if( noPrompts < 0 || noPrompts > 4 )
+			if( noPrompts <= 0 || noPrompts > 4 )
 				{
 				/* Requesting zero or more than a small number of prompts is 
 				   suspicious */
@@ -876,52 +876,49 @@ static int pamAuthenticate( INOUT SESSION_INFO *sessionInfoPtr,
 				}
 			}
 		}
-	if( noPrompts > 0 )
+	if( cryptStatusOK( status ) )
 		{
-		if( cryptStatusOK( status ) )
- 			{
-			status = readString32( &stream, promptBuffer, 
+		status = readString32( &stream, promptBuffer, 
 							   CRYPT_MAX_TEXTSIZE, &promptLength );
-			if( cryptStatusOK( status ) && promptLength <= 0 )
-				{
-				/* We must have at least some sort of prompt given that we 
-				   require num_prompts to be nonzero */
-				status = CRYPT_ERROR_BADDATA;
-				}
-			}
-		sMemDisconnect( &stream );
-		if( cryptStatusError( status ) )
+		if( cryptStatusOK( status ) && promptLength <= 0 )
 			{
-			retExt( status,
-					( status, SESSION_ERRINFO, 
-					  "Invalid PAM authentication request packet" ) );
+			/* We must have at least some sort of prompt given that we 
+			   require num_prompts to be nonzero */
+			status = CRYPT_ERROR_BADDATA;
 			}
-		REQUIRES( nameLength >= 0 && nameLength <= CRYPT_MAX_TEXTSIZE );
-		REQUIRES( promptLength >= 1 && promptLength <= CRYPT_MAX_TEXTSIZE );
+		}
+	sMemDisconnect( &stream );
+	if( cryptStatusError( status ) )
+		{
+		retExt( status,
+				( status, SESSION_ERRINFO, 
+				  "Invalid PAM authentication request packet" ) );
+		}
+	REQUIRES( nameLength >= 0 && nameLength <= CRYPT_MAX_TEXTSIZE );
+	REQUIRES( promptLength >= 1 && promptLength <= CRYPT_MAX_TEXTSIZE );
 
-		/* Make sure that we're being asked for some form of password 
-		   authentication.  This assumes that the prompt string begins with the 
-		   word "password" (which always seems to be the case), if it isn't then 
-		   it may be necessary to do a substring search */
-		if( promptLength < 8 || \
-			!strIsPrintable( promptBuffer, promptLength ) || \
-			strCompare( promptBuffer, "Password", 8 ) )
-			{
-			/* The following may produce somewhat inconsistent results in terms
-			   of what it reports because it's unclear what 'name' actually is, 
-			   on the off chance that something fills this in it could produce
-			   a less appropriate error message than the prompt, but we 
-			   opportunistically try it in case it contains something useful */
-			retExt( CRYPT_ERROR_BADDATA,
-					( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
-					  "Server requested unknown PAM authentication type '%s'", 
-					  ( nameLength > 0 ) ? \
-					  sanitiseString( nameBuffer, CRYPT_MAX_TEXTSIZE, \
-									  nameLength ) : \
-					  sanitiseString( promptBuffer, CRYPT_MAX_TEXTSIZE, \
-									  promptLength ) ) );
-			}
-	}
+	/* Make sure that we're being asked for some form of password 
+	   authentication.  This assumes that the prompt string begins with the 
+	   word "password" (which always seems to be the case), if it isn't then 
+	   it may be necessary to do a substring search */
+	if( promptLength < 8 || \
+		!strIsPrintable( promptBuffer, promptLength ) || \
+		strCompare( promptBuffer, "Password", 8 ) )
+		{
+		/* The following may produce somewhat inconsistent results in terms
+		   of what it reports because it's unclear what 'name' actually is, 
+		   on the off chance that something fills this in it could produce
+		   a less appropriate error message than the prompt, but we 
+		   opportunistically try it in case it contains something useful */
+		retExt( CRYPT_ERROR_BADDATA,
+				( CRYPT_ERROR_BADDATA, SESSION_ERRINFO, 
+				  "Server requested unknown PAM authentication type '%s'", 
+				  ( nameLength > 0 ) ? \
+				  sanitiseString( nameBuffer, CRYPT_MAX_TEXTSIZE, \
+								  nameLength ) : \
+				  sanitiseString( promptBuffer, CRYPT_MAX_TEXTSIZE, \
+								  promptLength ) ) );
+		}
 
 	REQUIRES( passwordPtr != NULL && \
 			  passwordPtr->valueLength > 0 && \

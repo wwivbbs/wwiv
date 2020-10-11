@@ -226,7 +226,7 @@
    creating things like certs containing MPEGs of themselves playing with
    their cat */
 
-#define MAX_ATTRIBUTE_SIZE		4096
+#define MAX_ATTRIBUTE_SIZE		1024
 
 /* Some objects contain internal buffers used to process data whose size can 
    be specified by the user, the following is the minimum and maximum size 
@@ -346,8 +346,7 @@
 #define MAX_TIME_VALUE			( YEARS_TO_SECONDS( 2036 - 1970 ) )
 
 #if ( defined( __clang__ ) && ( __clang_major__ > 5 ) ) || \
-	( defined( __GNUC__ ) && ( __GNUC__ > 11 ) ) || \
-	( defined( _MSC_VER ) && VC_GE_2017( _MSC_VER ) )
+	( defined( __GNUC__ ) && ( __GNUC__ > 6 ) )
   #define CURRENT_TIME_VALUE	( ( DATE_YEAR + DATE_MONTH + DATE_DAY - 30 ) * 86400 )
 #else
   #define CURRENT_TIME_VALUE	( YEARS_TO_SECONDS( 2019 - 1970 ) )

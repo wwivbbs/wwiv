@@ -3768,25 +3768,6 @@ static const ATTRIBUTE_ACL sessionACL[] = {
 		MKPERM_TSP( xWD_xWD ),
 		ROUTE( OBJECT_TYPE_SESSION ), &objectCtxHash ),
 
-	MKACL_S(	/* SSH client: Read/write */
-		CRYPT_SESSINFO_SSH_TERMINAL,
-		ST_NONE, ST_NONE, ST_SESS_SSH, 
-		0xffffffff /*MKPERM_SSH_EXT( RWD_RWD )*/,
-		ROUTE( OBJECT_TYPE_SESSION ),
-		RANGE( 1, CRYPT_MAX_TEXTSIZE ) ),
-	MKACL_N(	/* SSH client: Read/write */
-		CRYPT_SESSINFO_SSH_WIDTH,
-		ST_NONE, ST_NONE, ST_SESS_SSH, 
-		0xffffffff /*MKPERM_SSH_EXT( RWD_RWD )*/,
-		ROUTE( OBJECT_TYPE_SESSION ),
-		RANGE( 1, 800 ) ),
-	MKACL_N(	/* SSH client: Read/write */
-		CRYPT_SESSINFO_SSH_HEIGHT,
-		ST_NONE, ST_NONE, ST_SESS_SSH, 
-		0xffffffff /*MKPERM_SSH_EXT( RWD_RWD )*/,
-		ROUTE( OBJECT_TYPE_SESSION ),
-		RANGE( 1, 800 ) ),
-
 	MKACL_END(), MKACL_END()
 	};
 #endif /* USE_SESSIONS */

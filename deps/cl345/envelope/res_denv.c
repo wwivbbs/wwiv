@@ -837,18 +837,41 @@ static int initKeys( INOUT ENVELOPE_INFO *envelopeInfoPtr,
 	   the encryption and MAC contexts and keys have to be derived */
 	authEncInfo = &contentListPtr->clAuthEncInfo;
 
-	/* Recover the KDF information if it's present */
+	/* Recover the KDF information if it's present.  Early implementations
+	   erroneously omitted the PBKDF2 AlgorithmIdentifier so we allow for
+	   versions with or without this value.  Since the entries are skipped 
+	   it just means that there's two more values to skip:
+
+		KdfParams ::= [ 0 ] SEQUENCE {			-- 3.4.3 - 3.4.4.1
+			salt			OCTET STRING SIZE(0),
+			iterationCount	INTEGER (1),
+			prf				AlgorithmIdentifier
+			} 
+
+		KdfParams ::= [ 0 ] SEQUENCE {			-- Present if HMAC != SHA1
+			pbkdf2			OBJECT IDENTIFIER,
+			SEQUENCE {
+				salt		OCTET STRING SIZE(0),
+				iterationCount INTEGER (1),
+				prf			AlgorithmIdentifier	-- HMAC-SHA2, etc
+				}
+			} */
 	if( authEncInfo->kdfDataLength > 0 )
 		{
 		sMemConnect( &stream, authEncInfo->kdfData, 
 					 authEncInfo->kdfDataLength );
 		readConstructed( &stream, NULL, 0 );
-		readUniversal( &stream );
+		if( peekTag( &stream ) == BER_OBJECT_IDENTIFIER )
+			{
+			readUniversal( &stream );		/* OID */
+			readSequence( &stream, NULL );
+			}
+		readUniversal( &stream );			/* Salt */
 		status = readShortInteger( &stream, NULL );
 		if( cryptStatusOK( status ) )
 			{
-			status = readAlgoIDex( &stream, &kdfAlgo, NULL, &kdfAlgoParam, 
-								   ALGOID_CLASS_HASH );
+			status = readAlgoIDex( &stream, &kdfAlgo, NULL, 
+								   &kdfAlgoParam, ALGOID_CLASS_HASH );
 			}
 		sMemDisconnect( &stream );
 		if( cryptStatusError( status ) )

@@ -448,12 +448,6 @@ static int createSessionOpenRequest( INOUT SESSION_INFO *sessionInfoPtr,
 												CHANNEL_WRITE );
 	int packetOffset, status;
 
-	MESSAGE_DATA	term;
-	BYTE termString[ CRYPT_MAX_TEXTSIZE + 8 ];
-	int value;
-
-	term.data=termString;
-	term.length=CRYPT_MAX_TEXTSIZE;
 	assert( isWritePtr( sessionInfoPtr, sizeof( SESSION_INFO ) ) );
 	assert( isWritePtr( stream, sizeof( STREAM ) ) );
 
@@ -553,18 +547,9 @@ static int createSessionOpenRequest( INOUT SESSION_INFO *sessionInfoPtr,
 	writeUint32( stream, channelNo );
 	writeString32( stream, "pty-req", 7 );
 	sputc( stream, 0 );					/* No reply */
-	if( cryptStatusError( status = getSessionAttributeS( sessionInfoPtr, &term, CRYPT_SESSINFO_SSH_TERMINAL) ) )
-		writeString32( stream, "xterm", 5 );/* Generic */
-	else
-		writeString32( stream, term.data, term.length );/* Generic */
-	if( cryptStatusError( getSessionAttribute( sessionInfoPtr, &value, CRYPT_SESSINFO_SSH_WIDTH ) ) )
-		writeUint32( stream, 80 );
-	else
-		writeUint32( stream, value);
-	if( cryptStatusError( getSessionAttribute( sessionInfoPtr, &value, CRYPT_SESSINFO_SSH_HEIGHT ) ) )
-		writeUint32( stream, 48 );		/* 48 x 80 (24 x 80 is so 1970s) */
-	else
-		writeUint32( stream, value);
+	writeString32( stream, "xterm", 5 );/* Generic */
+	writeUint32( stream, 80 );
+	writeUint32( stream, 48 );			/* 48 x 80 (24 x 80 is so 1970s) */
 	writeUint32( stream, 0 );
 	writeUint32( stream, 0 );			/* No graphics capabilities */
 	status = writeUint32( stream, 0 );	/* No special TTY modes */

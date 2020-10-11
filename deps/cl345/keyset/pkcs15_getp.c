@@ -385,10 +385,11 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 #ifdef MAC_KEYSIZE_BUG
 	CRYPT_CONTEXT iAuthEncMacAltContext DUMMY_INIT;
 #endif /* MAC_KEYSIZE_BUG */
+	CRYPT_ALGO_TYPE kdfAlgo DUMMY_INIT;
 	MESSAGE_CREATEOBJECT_INFO createInfo;
 	MECHANISM_KDF_INFO mechanismInfo;
 	STREAM stream;
-	int status;
+	int kdfAlgoParam DUMMY_INIT, status;
 
 	assert( isWritePtr( iCryptContext, sizeof( CRYPT_CONTEXT ) ) );
 	assert( isWritePtr( iMacContext, sizeof( CRYPT_CONTEXT ) ) );
@@ -399,6 +400,54 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 
 	/* Clear return values */
 	*iCryptContext = *iMacContext = *iMacAltContext = CRYPT_ERROR;
+
+	/* Recover the KDF information if it's present.  Early implementations
+	   erroneously omitted the PBKDF2 AlgorithmIdentifier so we allow for
+	   versions with or without this value.  Since the entries are skipped 
+	   it just means that there's two more values to skip:
+
+		KdfParams ::= [ 0 ] SEQUENCE {			-- 3.4.3 - 3.4.4.1
+			salt			OCTET STRING SIZE(0),
+			iterationCount	INTEGER (1),
+			prf				AlgorithmIdentifier
+			} 
+
+		KdfParams ::= [ 0 ] SEQUENCE {			-- Present if HMAC != SHA1
+			pbkdf2			OBJECT IDENTIFIER,
+			SEQUENCE {
+				salt		OCTET STRING SIZE(0),
+				iterationCount INTEGER (1),
+				prf			AlgorithmIdentifier	-- HMAC-SHA2, etc
+				}
+			} */
+	if( queryInfo->kdfParamLength > 0 )
+		{
+		sMemConnect( &stream, 
+					 queryInfo->authEncParamData + queryInfo->kdfParamStart, 
+					 queryInfo->kdfParamLength );
+		readConstructed( &stream, NULL, 0 );
+		if( peekTag( &stream ) == BER_OBJECT_IDENTIFIER )
+			{
+			readUniversal( &stream );		/* OID */
+			readSequence( &stream, NULL );
+			}
+		readUniversal( &stream );			/* Salt */
+		status = readShortInteger( &stream, NULL );
+		if( cryptStatusOK( status ) )
+			{
+			status = readAlgoIDex( &stream, &kdfAlgo, NULL,
+								   &kdfAlgoParam, ALGOID_CLASS_HASH );
+			}
+		sMemDisconnect( &stream );
+		if( cryptStatusError( status ) )
+			return( status );
+		}
+	else
+		{
+		/* The PBKDF2 default KDF is HMAC-SHA1 */
+		kdfAlgo = CRYPT_ALGO_HMAC_SHA1;
+		kdfAlgoParam = 0;
+		}
 
 	/* Recreate the encryption and MAC contexts used for the authenticated 
 	   encryption from the algorithm parameter data that was stored 
@@ -425,15 +474,13 @@ static int initKeys( IN_HANDLE const CRYPT_CONTEXT iGenericContext,
 
 	/* Derive the encryption and MAC keys from the generic-secret key */
 	setMechanismKDFInfo( &mechanismInfo, iAuthEncCryptContext, 
-						 iGenericContext, CRYPT_ALGO_HMAC_SHA1, 
-						 "encryption", 10 );
+						 iGenericContext, kdfAlgo, "encryption", 10 );
 	status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_KDF,
 							  &mechanismInfo, MECHANISM_DERIVE_PBKDF2 );
 	if( cryptStatusOK( status ) )
 		{
 		setMechanismKDFInfo( &mechanismInfo, iAuthEncMacContext, 
-							 iGenericContext, CRYPT_ALGO_HMAC_SHA1, 
-							 "authentication", 14 );
+							 iGenericContext, kdfAlgo, "authentication", 14 );
 		status = krnlSendMessage( SYSTEM_OBJECT_HANDLE, IMESSAGE_DEV_KDF,
 								  &mechanismInfo, MECHANISM_DERIVE_PBKDF2 );
 		}

@@ -102,13 +102,11 @@ static int addUrl( INOUT SESSION_INFO *sessionInfoPtr,
 
 	/* If there's already a network socket specified then we can't set a 
 	   server name as well */
-/*
 	if( sessionInfoPtr->networkSocket != CRYPT_ERROR )
 		{
 		return( exitErrorInited( sessionInfoPtr, 
 								 CRYPT_SESSINFO_NETWORKSOCKET ) );
 		}
-*/
 
 	/* Parse the server name.  The PKI protocols all use HTTP as their 
 	   substrate so if it's not SSH or SSL/TLS we require HTTP */
@@ -641,7 +639,6 @@ int getSessionAttributeS( INOUT SESSION_INFO *sessionInfoPtr,
 			return( CRYPT_ERROR_NOTFOUND );
 			}
 
-		case CRYPT_SESSINFO_SSH_TERMINAL:
 		case CRYPT_SESSINFO_USERNAME:
 		case CRYPT_SESSINFO_PASSWORD:
 			/* If the session was resumed from cached information then the
@@ -800,13 +797,6 @@ int setSessionAttribute( INOUT SESSION_INFO *sessionInfoPtr,
 			return( status );
 			}
 
-		case CRYPT_SESSINFO_SSH_WIDTH:
-			return( addSessionInfo( sessionInfoPtr,
-									CRYPT_SESSINFO_SSH_WIDTH, value ) );
-		case CRYPT_SESSINFO_SSH_HEIGHT:
-			return( addSessionInfo( sessionInfoPtr,
-									CRYPT_SESSINFO_SSH_HEIGHT, value ) );
-
 		case CRYPT_SESSINFO_SERVER_PORT:
 			/* If there's already a network socket specified then we can't 
 			   set a port as well */
@@ -964,9 +954,6 @@ int setSessionAttributeS( INOUT SESSION_INFO *sessionInfoPtr,
 			return( addCredential( sessionInfoPtr, data, dataLength, 
 								   attribute ) );
 
-		case CRYPT_SESSINFO_SSH_TERMINAL:
-		case CRYPT_SESSINFO_SSH_WIDTH:
-		case CRYPT_SESSINFO_SSH_HEIGHT:
 		case CRYPT_SESSINFO_SERVER_FINGERPRINT_SHA1:
 			/* Remember the value */
 			return( addSessionInfoS( sessionInfoPtr, attribute, data, 
@@ -1029,7 +1016,6 @@ int deleteSessionAttribute( INOUT SESSION_INFO *sessionInfoPtr,
 			sessionInfoPtr->writeTimeout = CRYPT_ERROR;
 			return( CRYPT_OK );
 
-		case CRYPT_SESSINFO_SSH_TERMINAL:
 		case CRYPT_SESSINFO_USERNAME:
 		case CRYPT_SESSINFO_PASSWORD:
 		case CRYPT_SESSINFO_SERVER_NAME:

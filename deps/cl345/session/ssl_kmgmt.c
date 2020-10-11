@@ -448,7 +448,7 @@ int initDHcontextSSL( OUT_HANDLE_OPT CRYPT_CONTEXT *iCryptContext,
 			status = krnlSendMessage( createInfo.cryptHandle, 
 									  IMESSAGE_SETATTRIBUTE, 
 									  ( MESSAGE_CAST ) &eccParams, 
-									  CRYPT_IATTRIBUTE_KEY_ECCPARAM );
+									  CRYPT_IATTRIBUTE_KEY_DLPPARAM );
 			}
 		else
 #endif /* USE_ECDH */

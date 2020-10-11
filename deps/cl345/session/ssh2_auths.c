@@ -1058,6 +1058,13 @@ static int processUserAuth( INOUT SESSION_INFO *sessionInfoPtr,
 				return( status );
 			CFI_CHECK_UPDATE( "wrapSendPacketSSH2" );
 
+			/* Since the client is going to send us yet another copy of the 
+			   key in the next iteration, we destroy the one that we've just 
+			   read so that we can re-read it again later */
+			krnlSendNotifier( sessionInfoPtr->iKeyexAuthContext, 
+							  IMESSAGE_DESTROY );
+			sessionInfoPtr->iKeyexAuthContext = CRYPT_ERROR;
+
 			/* Inform the caller that this was yet another no-op pass and 
 			   the client can try again */
 			*userAuthInfo = USERAUTH_NOOP_2;

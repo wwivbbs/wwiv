@@ -23,7 +23,7 @@
 	 Any changes made here need to be reflected in os_spec.h */
   #if !( defined( _WIN32_WCE ) || defined( _M_X64 ) || \
 		 defined( __BORLANDC__ ) || defined( NO_ASM ) )
-	//#define USE_ASM				/* Always enabled for x86 Win32 */
+	#define USE_ASM				/* Always enabled for x86 Win32 */
   #endif /* WinCE || x86-64 || Borland compilers */
 #endif /* OpenSSL Win32 not defined */
 #include <stdlib.h>			/* For malloc() */

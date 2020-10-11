@@ -1002,15 +1002,6 @@
     <ClCompile Include="session\sess_ws.c">
       <Filter>Source Files\Sessions</Filter>
     </ClCompile>
-    <ClCompile Include="io\eap.c">
-      <Filter>Source Files\I/O</Filter>
-    </ClCompile>
-    <ClCompile Include="io\eap_rd.c">
-      <Filter>Source Files\I/O</Filter>
-    </ClCompile>
-    <ClCompile Include="io\eap_wr.c">
-      <Filter>Source Files\I/O</Filter>
-    </ClCompile>
     <ClCompile Include="session\cmp_crypt.c">
       <Filter>Source Files\Sessions - PKI</Filter>
     </ClCompile>

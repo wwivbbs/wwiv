@@ -223,7 +223,6 @@ static int setSuiteInfo( INOUT SESSION_INFO *sessionInfoPtr,
 		if( cryptStatusError( status ) )
 			return( status );
 		sessionInfoPtr->cryptBlocksize = queryInfo.blockSize;
-		CLEAR_FLAG( sessionInfoPtr->protocolFlags, SSL_PFLAG_GCM );
 		}
 
 	return( CRYPT_OK );
@@ -241,7 +240,6 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 	const CIPHERSUITE_INFO **cipherSuiteInfo;
 	const BOOLEAN isServer = isServer( sessionInfoPtr ) ? TRUE : FALSE;
 	BOOLEAN allowDH = algoAvailable( CRYPT_ALGO_DH ) ? TRUE : FALSE;
-	BOOLEAN allowECCAuth = TRUE;
 	BOOLEAN allowECC = ( algoAvailable( CRYPT_ALGO_ECDH ) && \
 						 algoAvailable( CRYPT_ALGO_ECDSA ) ) ? TRUE : FALSE;
 	BOOLEAN allowRSA = algoAvailable( CRYPT_ALGO_RSA ) ? TRUE : FALSE;
@@ -270,7 +268,7 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 			{
 			/* There's no server private key present, we're limited to PSK
 			   suites */
-			allowECC = allowRSA = allowECCAuth = FALSE;
+			allowECC = allowRSA = FALSE;
 			}
 		else
 			{
@@ -280,7 +278,7 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 			   capable */
 			if( !checkContextCapability( sessionInfoPtr->privateKey,
 										 MESSAGE_CHECK_PKC_SIGN ) )
-				allowDH = allowECC = allowECCAuth = FALSE;
+				allowDH = allowECC = FALSE;
 
 			/* To be usable for ECC or RSA the server key has to itself be 
 			   an ECC or RSA key */
@@ -288,16 +286,13 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 									  IMESSAGE_GETATTRIBUTE, &pkcAlgo,
 									  CRYPT_CTXINFO_ALGO );
 			if( cryptStatusError( status ) )
-				allowECC = allowRSA = allowECCAuth = FALSE;
+				allowECC = allowRSA = FALSE;
 			else
 				{
 				if( !isEccAlgo( pkcAlgo ) )
 					allowECC = FALSE;
 				if( pkcAlgo != CRYPT_ALGO_RSA )
-					{
 					allowRSA = FALSE;
-					allowECCAuth = FALSE;
-					}
 				}
 			}
 		}
@@ -448,12 +443,7 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 			( cipherSuiteInfoPtr->flags & CIPHERSUITE_FLAG_DH ) )
 			continue;
 		if( !allowECC && \
-			( cipherSuiteInfoPtr->flags & CIPHERSUITE_FLAG_ECC ) && \
-			( cipherSuiteInfoPtr->authAlgo != CRYPT_ALGO_RSA) )
-			continue;
-		if( !allowECCAuth && \
-			( cipherSuiteInfoPtr->flags & CIPHERSUITE_FLAG_ECC ) && \
-			( cipherSuiteInfoPtr->authAlgo == CRYPT_ALGO_RSA) )
+			( cipherSuiteInfoPtr->flags & CIPHERSUITE_FLAG_ECC ) )
 			continue;
 		if( !allowTLS12 && \
 			( cipherSuiteInfoPtr->flags & CIPHERSUITE_FLAG_TLS12 ) )
@@ -531,7 +521,7 @@ static int processCipherSuite( INOUT SESSION_INFO *sessionInfoPtr,
 	   find out that we can use it */
 	if( altSuiteIndex < cipherSuiteInfoSize )
 		{
-		REQUIRES( allowECCAuth );
+		REQUIRES( allowECC );
 
 		handshakeInfo->eccSuiteInfoPtr = cipherSuiteInfo[ altSuiteIndex ];
 		}

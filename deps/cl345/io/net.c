@@ -7,15 +7,9 @@
 
 #if defined( INC_ALL )
   #include "stream_int.h"
-  #ifdef USE_EAP
-	#include "eap.h"			/* For EAP_INFO */
-  #endif /* USE_EAP */
   #include "tcp.h"				/* For INVALID_SOCKET */
 #else
   #include "io/stream_int.h"
-  #ifdef USE_EAP
-	#include "io/eap.h"			/* For EAP_INFO */
-  #endif /* USE_EAP */
   #include "io/tcp.h"			/* For INVALID_SOCKET */
 #endif /* Compiler-specific includes */
 
@@ -408,13 +402,8 @@ static int initStream( OUT STREAM *stream,
 		INIT_FLAGS( netStream->nFlags, STREAM_NFLAG_ISSERVER );
 	else
 		INIT_FLAGS( netStream->nFlags, STREAM_NFLAG_NONE );
-#ifdef USE_EAP
-	if( protocol == STREAM_PROTOCOL_UDP || protocol == STREAM_PROTOCOL_EAP )
-		SET_FLAG( netStream->nFlags, STREAM_NFLAG_DGRAM );
-#else
 	if( protocol == STREAM_PROTOCOL_UDP )
 		SET_FLAG( netStream->nFlags, STREAM_NFLAG_DGRAM );
-#endif /* USE_EAP */
 	INIT_FLAGS( netStream->nhFlags, STREAM_NHFLAG_NONE );
 
 	/* Initialise the virtual and optional access method pointers.  These 
@@ -550,20 +539,9 @@ static int initStreamStorage( INOUT STREAM *stream,
 			memcpy( netStream->path, urlInfo->location, 
 					urlInfo->locationLen );
 			netStream->pathLen = urlInfo->locationLen;
-#ifdef USE_EAP
-			bufferStorageSize += urlInfo->locationLen;
-#endif /* USE_EAP */
 			}
 		netStream->port = urlInfo->port;
 		}
-#ifdef USE_EAP
-	if( protocol == STREAM_PROTOCOL_EAP )
-		{
-		netStream->subTypeInfo = ( char * ) netStream->storage + bufferStorageSize;
-		REQUIRES( boundsCheckZ( bufferStorageSize, sizeof( EAP_INFO ), 
-								netStream->storageSize ) );
-		}
-#endif /* USE_EAP */
 
 	return( CRYPT_OK );
 	}
@@ -787,12 +765,6 @@ static int completeConnect( INOUT STREAM *stream,
 #endif /* USE_HTTP */
 			break;
 
-#ifdef USE_EAP
-		case STREAM_PROTOCOL_EAP:
-			setStreamLayerEAP( netStreamTemplate );
-			break;
-#endif /* USE_EAP */
-
 		default:
 			retIntError_Stream( stream );
 		}
@@ -848,10 +820,6 @@ static int completeConnect( INOUT STREAM *stream,
 		}
 	if( urlInfo != NULL )
 		netStreamAllocSize += urlInfo->hostLen + urlInfo->locationLen;
-#ifdef USE_EAP
-	if( protocol == STREAM_PROTOCOL_EAP )
-		netStreamAllocSize += sizeof( EAP_INFO );
-#endif /* USE_EAP */
 	REQUIRES( netStreamAllocSize == 0 || \
 			  rangeCheck( netStreamAllocSize, 1, MAX_BUFFER_SIZE ) );
 	netStreamInfo = clAlloc( "completeConnect", sizeof( NET_STREAM_INFO ) + \
@@ -961,16 +929,9 @@ int sNetConnect( OUT STREAM *stream,
 			isReadPtrDynamic( connectInfo->name, \
 							  connectInfo->nameLength ) );
 
-#ifdef USE_EAP
-	REQUIRES( protocol == STREAM_PROTOCOL_TCP || \
-			  protocol == STREAM_PROTOCOL_UDP || \
-			  protocol == STREAM_PROTOCOL_HTTP || \
-			  protocol == STREAM_PROTOCOL_EAP );
-#else
 	REQUIRES( protocol == STREAM_PROTOCOL_TCP || \
 			  protocol == STREAM_PROTOCOL_UDP || \
 			  protocol == STREAM_PROTOCOL_HTTP );
-#endif /* USE_EAP */
 	REQUIRES( isEnumRange( connectInfo->options, NET_OPTION ) );
 	REQUIRES( connectInfo->options != NET_OPTION_HOSTNAME || \
 			  ( connectInfo->options == NET_OPTION_HOSTNAME && \

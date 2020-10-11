@@ -2114,6 +2114,7 @@ dualThreadContinue:
 				{
 				if( testType == SSL_TEST_EAPTTLS )
 					{
+#if 0
 					BYTE eapChallenge[ 64 ];
 					int eapChallengeLength;
 
@@ -2159,6 +2160,7 @@ dualThreadContinue:
 								sslInfo[ EAP_SERVER_NO ].password,
 								paramStrlen( sslInfo[ EAP_SERVER_NO ].password ),
 								fetchString + 78 );
+#endif
 #endif
 					}
 				else
@@ -2467,13 +2469,6 @@ int testSessionTLSServerSharedKey( void )
 
 	return( status );
 	}
-int testSessionTLSEAPTTLS( void )
-	{
-	/* This is required alongside testSessionTLS12EAPTTLS() because many 
-	   FreeRADIUS implementations don't understand TLS 1.2 or even TLS 1.1, 
-	   resulting in a string of "Unknown TLS version [length 00xx]" errors */
-	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_EAPTTLS, 1, CRYPT_UNUSED, FALSE ) );
-	}
 
 int testSessionTLS11( void )
 	{
@@ -2530,21 +2525,6 @@ int testSessionTLS12WebSocketsServer( void )
 
 	createMutex();
 	status = connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_WEBSOCKETS, 3, CRYPT_UNUSED, FALSE );
-	destroyMutex();
-
-	return( status );
-	}
-int testSessionTLS12EAPTTLS( void )
-	{
-	/* See the comment in testSessionTLSEAPTTLS() above */
-	return( connectSSLTLS( CRYPT_SESSION_SSL, SSL_TEST_EAPTTLS, 3, CRYPT_UNUSED, FALSE ) );
-	}
-int testSessionTLS12EAPTTLSServer( void )
-	{
-	int status;
-
-	createMutex();
-	status = connectSSLTLS( CRYPT_SESSION_SSL_SERVER, SSL_TEST_EAPTTLS, 3, CRYPT_UNUSED, FALSE );
 	destroyMutex();
 
 	return( status );

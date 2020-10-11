@@ -210,8 +210,7 @@ if [ -z "$DISABLE_AUTODETECT" ] && [ $HASDYNLOAD -gt 0 ] ; then
 	for includepath in $ODBCPATHS ; do
 		if [ -f $includepath ] ; then
 			echo "ODBC interface detected, enabling ODBC support." >&2 ;
-			#CCARGS="$CCARGS -DHAS_ODBC -I"$(dirname $includepath)"" ;
-			echo "Hah ha ha, no. fuck off." >&2 ;
+			CCARGS="$CCARGS -DHAS_ODBC -I"$(dirname $includepath)"" ;
 			break ;
 		fi
 	done
@@ -242,30 +241,28 @@ if [ -z "$DISABLE_AUTODETECT" ] && [ $HASDYNLOAD -gt 0 ] ; then
 	done
 
 	# TPM support
-	#if [ "$(uname -s)" = "Linux" ] ; then
-	#	for includepath in $TPMPATHS ; do
-	#		if [ -f $includepath ] ; then
-	#			echo "TPM interface detected, enabling TPM support." >&2 ;
-	#			CCARGS="$CCARGS -DHAS_TPM -I"$(dirname $includepath)"" ;
-	#			break ;
-	#		fi
-	#	done
-	#fi
+	for includepath in $TPMPATHS ; do
+		if [ -f $includepath ] ; then
+			echo "TPM interface detected, enabling TPM support." >&2 ;
+			CCARGS="$CCARGS -DHAS_TPM -I"$(dirname $includepath)"" ;
+			break ;
+		fi
+	done
 
 	# /dev/crypto support
-	#for includepath in $DEVCRYPTOPATHS ; do
-	#	if [ -f $includepath ] ; then
-	#		echo "/dev/crypto interface detected, enabling crypto hardware support." >&2 ;
-	#		CCARGS="$CCARGS -DHAS_DEVCRYPTO -I"$(dirname $includepath)"" ;
-	#		break ;
-	#	fi
-	#done
+	for includepath in $DEVCRYPTOPATHS ; do
+		if [ -f $includepath ] ; then
+			echo "/dev/crypto interface detected, enabling crypto hardware support." >&2 ;
+			CCARGS="$CCARGS -DHAS_DEVCRYPTO -I"$(dirname $includepath)"" ;
+			break ;
+		fi
+	done
 
 fi
-#if [ -f /usr/include/zlib.h ] ; then
-#	echo "  (Enabling use of system zlib)." >&2 ;
-#	CCARGS="$CCARGS -DHAS_ZLIB" ;
-#fi
+if [ -f /usr/include/zlib.h ] ; then
+	echo "  (Enabling use of system zlib)." >&2 ;
+	CCARGS="$CCARGS -DHAS_ZLIB" ;
+fi
 
 # If we're building a development or analysis build, enable various unsafe
 # options that are normally disabled by default
@@ -357,7 +354,7 @@ fi
 # tools/getlibs.sh also for clang 4.7 or newer.
 
 if [ $ISCLANG -gt 0 ] && [ $ISSPECIAL -eq 0 ] ; then
-	CLANG_VER="$($CC -dumpversion | sed -E 's/^([0-9]+)$/\1.0/' | sed -E 's/^([0-9]+)\.([0-9]).*$/\1\2/')" ;
+	CLANG_VER="$($CC -dumpversion | tr -d  '.' | cut -c 1-2)" ;
 	if [ $CLANG_VER -gt 42 ] ; then
 		CCARGS="$CCARGS -fsanitize=safe-stack" ;
 	fi ;
@@ -396,9 +393,10 @@ fi
 # of large-displacement jumps, so if you're tuning the code for size/speed
 # you can try -fpic to see if you get any improvement.
 
+if [ $SHARED -gt 0 ] ; then
 	case $OSNAME in
 		'Darwin')
-			CCARGS="$CCARGS -fPIC -fno-common -mmacosx-version-min=10.5" ;;
+			CCARGS="$CCARGS -fPIC -fno-common" ;;
 
 		'CYGWIN_NT-5.0'|'CYGWIN_NT-5.1'|'CYGWIN_NT-6.1')
 			;;
@@ -422,6 +420,7 @@ fi
 		*)
 			CCARGS="$CCARGS -fPIC" ;;
 	esac ;
+fi
 
 # Conversely, if we're building a static lib and the system requires it, set
 # up static lib-specific options.
@@ -509,7 +508,7 @@ fi
 # apparent version less than 10 we add a trailing zero to the string to make
 # the checks that follow work.
 
-GCC_VER="$($CC -dumpversion | sed -E 's/^([0-9]+)$/\1.0/' | sed -E 's/^([0-9]+)\.([0-9]).*$/\1\2/')"
+GCC_VER="$($CC -dumpversion | tr -d  '.' | cut -c 1-2)"
 if [ "$GCC_VER" -lt 10 ] ; then
 	GCC_VER="${GCC_VER}0" ;
 fi

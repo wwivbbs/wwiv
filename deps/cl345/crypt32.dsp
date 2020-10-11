@@ -836,18 +836,6 @@ SOURCE=.\io\dns_srv.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\io\eap.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\io\eap_rd.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\io\eap_wr.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\io\file.c
 # End Source File
 # Begin Source File

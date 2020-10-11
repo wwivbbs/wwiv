@@ -607,8 +607,8 @@ static int processSupportedCurveID( INOUT SESSION_INFO *sessionInfoPtr,
 #endif /* CONFIG_SUITEB */
 
 		/* Make sure that the curve matches the server's signing key */
-		//if( curveSize != keySize )
-		//	continue;
+		if( curveSize != keySize )
+			continue;
 
 		/* We've got a matching curve, remember it.  In theory we could exit
 		   at this point but we continue anyway to clear the remainder of 

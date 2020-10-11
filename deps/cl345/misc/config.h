@@ -8,12 +8,11 @@
 #ifndef _CONFIG_DEFINED
 
 #define _CONFIG_DEFINED
-
 #define USE_PROBLEMATIC_ALGORITHMS
 #define USE_SSH_EXTENDED
 #define USE_CERTLEVEL_STANDARD
-#define PREFER_ECC
 #define USE_SSH_CTR
+
 /****************************************************************************
 *																			*
 *						Custom Configuration Profiles						*
@@ -686,7 +685,7 @@
    64-bit systems, which by definition are going to be fairly recent */
 
 #ifndef SYSTEM_64BIT
-//  #define USE_RSA_SUITES 
+  #define USE_RSA_SUITES 
 #endif /* SYSTEM_64BIT */
 
 /* This now leads to a second problem, as of 2018 many public web servers 

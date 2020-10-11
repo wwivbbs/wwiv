@@ -308,7 +308,7 @@
   #define _OSSPEC_DEFINED
   #if !defined( __WIN32__ ) && ( defined( WIN32 ) || defined( _WIN32 ) )
 	#define __WIN32__
-  #elif !defined( __WIN64__ ) && defined( _M_X64 )
+  #elif !defined( __WIN64__ ) defined( _M_X64 )
 	#define __WIN64__
   #endif /* Win32/Win64 */
   #define _OSSPEC_DEFINED
