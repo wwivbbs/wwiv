@@ -68,6 +68,7 @@ Package | Comments
 ------- | ----------
 git | to grab the source code for compiling  
 ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
+zlib1g-dev | or zlib-dev depending on your distro
 cmake | 3.13 or later
 make | for cryptlib
 ninja-build | 1.8 or later, earlier versions probably work too
