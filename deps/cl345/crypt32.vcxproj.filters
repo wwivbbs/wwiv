@@ -1,0 +1,1191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Bignum Library">
+      <UniqueIdentifier>{13465a66-c28a-45f0-8439-427cd0bbc0e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Certificates">
+      <UniqueIdentifier>{24e2440e-9c91-42a9-add7-e0dfd5902884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Contexts">
+      <UniqueIdentifier>{ccc22b85-8080-4b85-abe9-cd405fbd7479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Crypt/Hash Algorithms">
+      <UniqueIdentifier>{f889013c-64a7-4569-b207-851f6a51bd81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Devices">
+      <UniqueIdentifier>{e929d6fa-6e4f-43ae-af0a-2c41d74820bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Encode/Decode">
+      <UniqueIdentifier>{fc76204f-7030-447f-b73c-00e336ac5daf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Envelopes">
+      <UniqueIdentifier>{369eeec8-9848-4fc2-9a34-024c86279867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\I/O">
+      <UniqueIdentifier>{7656dab1-156b-4da1-8276-95703e6c3a67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Kernel">
+      <UniqueIdentifier>{c8dec72b-b631-4914-99cc-69d25a9262a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Keysets">
+      <UniqueIdentifier>{c2c4c634-a719-449c-ae01-dddb8776dcc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Keysets - DBMS">
+      <UniqueIdentifier>{cf9cfd67-6d3a-455f-ace1-3b34d42e79a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Keysets - PKCS15">
+      <UniqueIdentifier>{39666509-4396-4286-9c3b-cfdd4fda3af6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mechanisms">
+      <UniqueIdentifier>{d5a2eb35-b4b7-4ab2-badb-c1b0827ae89f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Misc">
+      <UniqueIdentifier>{24bb79a5-5b36-4b2a-aa79-7ead83b6a19e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sessions">
+      <UniqueIdentifier>{631da61f-8f6f-42b9-b889-1e50c6bb84af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sessions - PKI">
+      <UniqueIdentifier>{c325b029-c829-48a7-8369-ad810721b159}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sessions - SSH">
+      <UniqueIdentifier>{80fbf6fe-52bf-4946-aede-f1c6d407ff37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sessions - SSL">
+      <UniqueIdentifier>{009e0c4b-be2a-4215-ab2e-38d2db4eba71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Zlib">
+      <UniqueIdentifier>{3b78ee8b-c8c5-4165-a192-f3e6ef1d1754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Certificates - Headers">
+      <UniqueIdentifier>{0a815ca7-f5ff-4bc6-91f6-7eb503141a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Devices - Headers">
+      <UniqueIdentifier>{bf6e9b4a-32e2-429f-924c-fde6bf2764e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Encode/Decode - Headers">
+      <UniqueIdentifier>{ee1a35f1-f5f9-4c36-8a59-5ad99abfd101}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\I/O - Headers">
+      <UniqueIdentifier>{304d484b-6c3b-438b-bc55-0ac26dfd8581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Kernel - Headers">
+      <UniqueIdentifier>{846545be-3645-4890-98bd-e198bea48d5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Keysets - Headers">
+      <UniqueIdentifier>{f4d9a946-dfc4-4bfa-a38e-e5f5ab0b4768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sessions - Headers">
+      <UniqueIdentifier>{90481694-686f-46ba-b5b3-e1b52bfd25d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Misc - Headers">
+      <UniqueIdentifier>{574a8302-ef28-4be2-ae36-d2bd12cef02a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="crypt\d-win32.obj">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </Object>
+    <Object Include="crypt\aescryptx86.obj">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </Object>
+    <Object Include="crypt\aescryptx64.obj">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="crypt32.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="crypt32.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="crypt32.def">
+      <Filter>Source Files\Misc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bn\ecp_smpl.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_asm.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_exp2.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_exp.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_gcd.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_mul.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\bn_recp.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\ec_lib.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\ec_mult.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="bn\ecp_mont.c">
+      <Filter>Source Files\Bignum Library</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\write_pre.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\certrev.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\certschk.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\certsign.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\certval.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\chain.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\chk_cert.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\chk_chn.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\chk_use.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_cert.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_curs.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_del.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_get.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_gets.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_set.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\dn.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\dn_rw.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_add.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_chk.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_copy.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_def.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_rd.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\ext_wr.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\imp_chk.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\imp_exp.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\read.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\trustmgr.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\write.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_3des.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_aes.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_attr.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_des.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_dh.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_dsa.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_ecdh.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_ecdsa.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_elg.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_generic.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_hsha2.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_hsha.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_idea.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_md5.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_misc.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_rc2.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_rc4.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_rsa.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_sha2.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_sha.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\key_id.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\key_wr.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\keyload.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\kg_dlp.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\kg_ecc.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\kg_prime.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\kg_rsa.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\aes_modes.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\aescrypt.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\aeskey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\aestab.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\descbc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\desecb3.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\desecb.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\desenc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\desskey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\gcm.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\gf128mul.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\icbc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\iecb.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\iskey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\md5dgst.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\rc2cbc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\rc2ecb.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\rc2skey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\rc4skey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\sha1dgst.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\sha2.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="device\dev_attr.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\hardware.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\hw_dummy.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\ms_capi.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\pkcs11.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\pkcs11_init.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\pkcs11_pkc.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\pkcs11_rd.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\pkcs11_wr.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="device\system.c">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\asn1_algid.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\asn1_chk.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\asn1_ext.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\asn1_rd.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\asn1_wr.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\base64.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\base64_id.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\misc_rw.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="enc_dec\pgp_rw.c">
+      <Filter>Source Files\Encode/Decode</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\cms_denv.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\cms_env.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\cms_envpre.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\decode.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\encode.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\env_attr.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\pgp_denv.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\pgp_env.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\res_actn.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\res_denv.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="envelope\res_env.c">
+      <Filter>Source Files\Envelopes</Filter>
+    </ClCompile>
+    <ClCompile Include="io\tcp.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\dns.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\dns_srv.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\file.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\http_parse.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\http_rd.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\http_wr.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\memory.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\net.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\net_proxy.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\net_trans.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\net_url.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\stream.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\attr_acl.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\certm_acl.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\init.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\int_msg.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\key_acl.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\mech_acl.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\msg_acl.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\obj_acc.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\objects.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\sec_mem.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\semaphore.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\sendmsg.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs12_wr.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\key_attr.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ldap.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pgp.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pgp_rd.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs12.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs12_rd.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs12_rdo.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\odbc.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ca_add.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ca_clean.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ca_issue.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ca_misc.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\ca_rev.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\dbms.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\dbx_misc.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\dbx_rd.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\dbx_wr.c">
+      <Filter>Source Files\Keysets - DBMS</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_wr.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_add.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_adpb.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_adpr.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_atrd.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_atwr.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_get.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_getp.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_rd.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pkcs15_set.c">
+      <Filter>Source Files\Keysets - PKCS15</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\keyex.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\keyex_int.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\keyex_rw.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_cwrap.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_drv.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_int.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_pkwrap.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_privk.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\mech_sig.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\obj_qry.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign_cms.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign_int.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign_pgp.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign_rw.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="mechs\sign_x509.c">
+      <Filter>Source Files\Mechanisms</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_api.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_attr.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_debug.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_env.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_err.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_mem.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_string.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\int_time.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\os_spec.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\pgp_misc.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\user.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\user_attr.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\user_cfg.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\user_rw.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="bindings\java_jni.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="random\win32.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="random\rand_x917.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="random\random.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="session\session.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\scorebrd.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\sess_attr.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\sess_iattr.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\tsp.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\certstore.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_cli.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_err.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_rd.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_rdmsg.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_svr.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_wr.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_wrmsg.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ocsp.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\pnppki.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\rtcs.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\scep.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\scep_cli.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\scep_svr.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_authc.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_auths.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_chn.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_cli.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_msg.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_msgc.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_msgs.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_rd.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_svr.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_wr.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_wr.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_cli.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_ext.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_hs.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_hsc.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_kmgmt.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_rd.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_suites.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_svr.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>Source Files\Zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptusr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptcrt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptctx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptdev.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptenv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptkey.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cryptses.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_cast.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\castecb.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\castenc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\castskey.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\selftest.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="context\key_rdpri.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\key_rdpub.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bn.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\comp_pkiu.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\aes_ni.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\pgp_wr.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bnmath.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bnpkc.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bnprime.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bnrw.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bntest.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_bnsieve.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="io\tcp_conn.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\tcp_err.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel\storage.c">
+      <Filter>Source Files\Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\dn_rws.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\dn_string.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="cert\chk_san.c">
+      <Filter>Source Files\Certificates</Filter>
+    </ClCompile>
+    <ClCompile Include="context\ctx_encr.c">
+      <Filter>Source Files\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="crypt\rc4enc.c">
+      <Filter>Source Files\Crypt/Hash Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="keyset\http_keys.c">
+      <Filter>Source Files\Keysets</Filter>
+    </ClCompile>
+    <ClCompile Include="session\sess_rd.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\sess_wr.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="io\http.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="io\tcp_rw.c">
+      <Filter>Source Files\I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="session\sess_ws.c">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="session\cmp_crypt.c">
+      <Filter>Source Files\Sessions - PKI</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssh2_crypt.c">
+      <Filter>Source Files\Sessions - SSH</Filter>
+    </ClCompile>
+    <ClCompile Include="session\ssl_crypt.c">
+      <Filter>Source Files\Sessions - SSL</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cert\trustmgr.h">
+      <Filter>Header Files\Certificates - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cert\cert.h">
+      <Filter>Header Files\Certificates - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cert\certattr.h">
+      <Filter>Header Files\Certificates - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cert\certfn.h">
+      <Filter>Header Files\Certificates - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="cert\dn.h">
+      <Filter>Header Files\Certificates - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\capabil.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\device.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\hardware.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\pkcs11.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\pkcs11_api.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\pkcs11f.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="device\pkcs11t.h">
+      <Filter>Header Files\Devices - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="enc_dec\pgp_rw.h">
+      <Filter>Header Files\Encode/Decode - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="enc_dec\asn1.h">
+      <Filter>Header Files\Encode/Decode - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="enc_dec\asn1_ext.h">
+      <Filter>Header Files\Encode/Decode - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="enc_dec\asn1_oids.h">
+      <Filter>Header Files\Encode/Decode - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="enc_dec\misc_rw.h">
+      <Filter>Header Files\Encode/Decode - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\file.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\http.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\stream.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\stream_int.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\tcp.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\acl.h">
+      <Filter>Header Files\Kernel - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\acl_perm.h">
+      <Filter>Header Files\Kernel - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\kernel.h">
+      <Filter>Header Files\Kernel - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel\thread.h">
+      <Filter>Header Files\Kernel - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keyset\pkcs15.h">
+      <Filter>Header Files\Keysets - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keyset\dbms.h">
+      <Filter>Header Files\Keysets - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keyset\keyset.h">
+      <Filter>Header Files\Keysets - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keyset\pgp_key.h">
+      <Filter>Header Files\Keysets - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="keyset\pkcs12.h">
+      <Filter>Header Files\Keysets - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\certstore.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\cmp.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\scep.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\scorebrd.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\session.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\ssh.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\ssl.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\pgp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\user.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="context\context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cryptlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="envelope\envelope.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mechs\mech.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cryptkrn.h">
+      <Filter>Header Files\Kernel - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\analyse.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\config.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\consts.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\debug.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\int_api.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\os_spec.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="misc\fault.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="random\random.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="random\random_int.h">
+      <Filter>Header Files\Misc - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="io\tcp_int.h">
+      <Filter>Header Files\I/O - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\eap.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="session\websockets.h">
+      <Filter>Header Files\Sessions - Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
