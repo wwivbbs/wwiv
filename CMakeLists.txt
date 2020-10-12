@@ -33,7 +33,7 @@ if (WWIV_BUILD_TESTS)
 endif (WWIV_BUILD_TESTS)
 
 # Cryptlib
-add_subdirectory(deps/cl342)
+add_subdirectory(deps/cl345)
 
 # FMT
 add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
