@@ -34,10 +34,9 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/printf.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/contact.h"
-#include "sdk/filenames.h"
-#include "sdk/fido/fido_address.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -432,7 +431,7 @@ BinkState BinkP::WaitConn() {
     } else if (config_->config().is_5xx_or_later()) {
       try {
         // Present single FTN address.
-        FidoAddress address(net.fido.fido_address);
+        const FidoAddress address(net.fido.fido_address);
         network_addresses = address.as_string();
       } catch (const bad_fidonet_address& e) {
         LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address << "' for network: '"
@@ -447,7 +446,7 @@ BinkState BinkP::WaitConn() {
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
-  return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
+  return BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::SendPasswd() {
@@ -455,7 +454,7 @@ BinkState BinkP::SendPasswd() {
   const auto network_name(remote_.network_name());
   VLOG(1) << "STATE: SendPasswd for network '" << network_name
           << "' for node: " << expected_remote_node_;
-  const auto callout = config_->callouts().at(network_name).get();
+  const auto* callout = config_->callouts().at(network_name).get();
   const auto password = expected_password_for(callout, expected_remote_node_);
   VLOG(1) << "       sending password packet";
   switch (auth_type_) {
@@ -468,7 +467,7 @@ BinkState BinkP::SendPasswd() {
     send_command_packet(BinkpCommands::M_PWD, password);
     break;
   }
-  return BinkState::WAIT_ADDR;
+  return BinkState::AUTH_REMOTE;
 }
 
 BinkState BinkP::WaitAddr() {
@@ -477,10 +476,10 @@ BinkState BinkP::WaitAddr() {
   for (auto i = 0; i < 10; i++) {
     process_frames(predicate, seconds(1));
     if (!remote_.address_list().empty()) {
-      return BinkState::AUTH_REMOTE;
+      break;
     }
   }
-  return BinkState::AUTH_REMOTE;
+  return side_ == BinkSide::ORIGINATING ? BinkState::SEND_PASSWORD : BinkState::AUTH_REMOTE;
 }
 
 BinkState BinkP::PasswordAck() {
@@ -793,9 +792,9 @@ bool BinkP::HandleFileRequest(const string& request_line) {
 bool BinkP::HandleFileGetRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]";
   const auto s = SplitString(request_line, " ");
-  const auto filename = s.at(0);
-  const auto length = to_number<long>(s.at(1));
-  const auto timestamp = to_number<time_t>(s.at(2));
+  const auto& filename = s.at(0);
+  //const auto length = to_number<long>(s.at(1));
+  //const auto timestamp = to_number<time_t>(s.at(2));
   long offset = 0;
   if (s.size() >= 4) {
     offset = to_number<long>(s.at(3));
@@ -804,7 +803,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
     LOG(WARNING) << "offset specified in FileGetRequest.  We don't support offset != 0";
   }
 
-  auto iter = files_to_send_.find(filename);
+  const auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
     LOG(ERROR) << "File not found: " << filename;
     return false;
