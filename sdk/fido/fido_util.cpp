@@ -550,9 +550,16 @@ bool exists_bundle(const std::filesystem::path& dir) {
  * (1 minute=1, 1 hour=100)
  * If timezone cannot be determined, no characters.
  */
-std::string tz_offset_from_utc() {
-  const auto dt = DateTime::now();
-  return dt.to_string("%z");
+std::string tz_offset_from_utc(const core::DateTime& dt) {
+  auto z = dt.to_string("%z");
+  if (z.empty()) {
+    // who knows!
+    return "0000";
+  }
+  if (z.front() == '+') {
+    return z.substr(1);
+  }
+  return z;
 }
 
 } // namespace wwiv

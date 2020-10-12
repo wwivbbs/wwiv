@@ -52,7 +52,7 @@ bool exists_bundle(const std::filesystem::path& dir);
 // FTN DateTime
 std::string daten_to_fido(time_t t);
 daten_t fido_to_daten(std::string d);
-std::string tz_offset_from_utc();
+std::string tz_offset_from_utc(const core::DateTime& dt);
 
 // FTN Addressing
 std::string to_net_node(const FidoAddress& a);

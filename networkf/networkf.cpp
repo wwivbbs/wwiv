@@ -688,7 +688,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     text << "\001CHRS: CP437 2\r";
 
     // Implement FRL-1004. [http://ftsc.org/docs/frl-1004.002]
-    text << "\001TZUTC: " << tz_offset_from_utc() << "\r";
+    text << "\001TZUTC: " << tz_offset_from_utc(clock_.Now()) << "\r";
 
     // TODO(rushfan): We should rip through the bbs_text here.
     // and add in any special kludges like ^AREPLY here.

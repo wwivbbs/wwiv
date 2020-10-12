@@ -295,11 +295,11 @@ TEST_F(FidoUtilTest, FidoToDaten) {
 TEST_F(FidoUtilTest, TzOffsetFromUTC) {
   char s[100];
   auto t = time(nullptr);
-  const auto tm = localtime(&t);
-  memset(s, 0, sizeof(s));
+  auto* tm = localtime(&t);
+  memset(s, 0, sizeof s);
   ASSERT_NE(0UL, strftime(s, sizeof(s), "%z", tm));
   const string ss(s);
-  EXPECT_EQ(ss, tz_offset_from_utc());
+  EXPECT_EQ(ss, tz_offset_from_utc(DateTime::from_tm(tm)));
 }
 
 TEST_F(FidoUtilTest, IsPacketFile) {

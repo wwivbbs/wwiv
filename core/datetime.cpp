@@ -18,14 +18,13 @@
 /**************************************************************************/
 #include "core/datetime.h"
 
+#include "core/strings.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <regex>
 #include <sstream>
 #include <string>
-
-#include "core/strings.h"
 
 using std::string;
 
@@ -180,12 +179,12 @@ DateTime parse_yyyymmdd(const std::string& date_str) {
 
   std::istringstream ss{date_str};
   ss.exceptions(std::ios::goodbit);
-  std::tm dt = {};
+  std::tm dt{};
   ss >> std::get_time(&dt, "%Y-%m-%d");
   if (ss.fail()) {
     return DateTime::now();
   }
-  dt.tm_hour = 0;
+  dt.tm_hour = 12;
   dt.tm_min = 0;
   dt.tm_sec = 0;
   return DateTime::from_tm(&dt);
@@ -241,7 +240,7 @@ std::string DateTime::to_string(const std::string& format) const {
 }
 
 std::string DateTime::to_string() const {
-  const auto t = asctime(&tm_);
+  const auto* t = asctime(&tm_);
   if (!t) {
     return {};
   }
@@ -258,7 +257,7 @@ struct tm DateTime::to_tm() const noexcept {
 }
 
 void DateTime::update_tm() noexcept {
-  const auto tm = localtime(&t_);
+  const auto* tm = localtime(&t_);
   tm_ = *tm;
 }
 

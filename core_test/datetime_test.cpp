@@ -16,11 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/datetime.h"
 #include "gtest/gtest.h"
 
+#include "core/datetime.h"
 #include "core/log.h"
-
 #include <cstdlib>
 #include <ctime>
 #include <string>
@@ -34,75 +33,75 @@ using namespace std::chrono_literals;
 using namespace wwiv::core;
 
 static std::string daten_to_mmddyyyy(daten_t n) {
-  auto dt = DateTime::from_daten(n);
+  const auto dt = DateTime::from_daten(n);
   return dt.to_string("%m/%d/%Y");
 }
 
 TEST(DateTime, Now) {
-  auto start = DateTime::now();
-  auto start_t = time(nullptr);
+  const auto start = DateTime::now();
+  const auto start_t = time(nullptr);
   EXPECT_LE(std::abs(start.to_time_t() - start_t), 1);
 }
 
 TEST(DateTime, ToDatenT) {
-  auto start = DateTime::now();
-  auto t = start.to_time_t();
-  auto d = start.to_daten_t();
+  const auto start = DateTime::now();
+  const auto t = start.to_time_t();
+  const auto d = start.to_daten_t();
   EXPECT_EQ(static_cast<time_t>(d), t);
 }
 
 TEST(DateTime, ToSystemClock) {
-  auto start = DateTime::now();
-  auto now = system_clock::now();
+  const auto start = DateTime::now();
+  const auto now = system_clock::now();
   EXPECT_LE(std::abs(start.to_time_t() - system_clock::to_time_t(now)), 1);
 }
 
 TEST(DateTime, OperatorPlus) {
-  auto start = DateTime::now();
-  auto start_t = start.to_time_t();
-  auto start_3s = start + 3s;
+  const auto start = DateTime::now();
+  const auto start_t = start.to_time_t();
+  const auto start_3s = start + 3s;
   EXPECT_EQ(start_3s.to_time_t(), start_t + 3);
 }
 
 TEST(DateTime, OperatorMinus) {
-  auto start = DateTime::now();
-  auto start_t = start.to_time_t();
-  auto start_5s = start - 5s;
+  const auto start = DateTime::now();
+  const auto start_t = start.to_time_t();
+  const auto start_5s = start - 5s;
   EXPECT_EQ(start_5s.to_time_t(), start_t - 5);
 }
 
 TEST(DateTime, OperatorPlusEquals) {
   auto start = DateTime::now();
-  auto start_t = start.to_time_t();
+  const auto start_t = start.to_time_t();
   start += 3s;
   EXPECT_EQ(start.to_time_t(), start_t + 3);
 }
 
 TEST(DateTime, OperatorMinusEquals) {
   auto start = DateTime::now();
-  auto start_t = start.to_time_t();
+  const auto start_t = start.to_time_t();
   start -= 5s;
   EXPECT_EQ(start.to_time_t(), start_t - 5);
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_good_nondst) {
-  auto dt = parse_yyyymmdd("2003-01-02");
+  const auto dt = parse_yyyymmdd("2003-01-02");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "01/02/2003");
-  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(12, dt.hour());
   EXPECT_EQ(0, dt.minute());
   EXPECT_EQ(0, dt.second());
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_good_dst) {
-  auto dt = parse_yyyymmdd("2003-06-07");
+  const auto dt = parse_yyyymmdd("2003-06-07");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "06/07/2003");
-  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(12, dt.hour());
   EXPECT_EQ(0, dt.minute());
   EXPECT_EQ(0, dt.second());
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good) {
-  auto dt = parse_yyyymmdd_with_optional_hms("2003-01-02 01:02:03");
+  const auto dt = parse_yyyymmdd_with_optional_hms("2003-01-02 01:02:03");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "01/02/2003");
   EXPECT_EQ(1, dt.hour());
   EXPECT_EQ(2, dt.minute());
@@ -110,7 +109,7 @@ TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good) {
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good_dst) {
-  auto dt = parse_yyyymmdd_with_optional_hms("2003-06-07 01:02:03");
+  const auto dt = parse_yyyymmdd_with_optional_hms("2003-06-07 01:02:03");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "06/07/2003");
   EXPECT_EQ(1, dt.hour());
   EXPECT_EQ(2, dt.minute());
@@ -118,15 +117,15 @@ TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_good_dst) {
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_with_optional_hms_without_hms) {
-  auto dt = parse_yyyymmdd_with_optional_hms("2003-04-05");
+  const auto dt = parse_yyyymmdd_with_optional_hms("2003-04-05");
   EXPECT_EQ(daten_to_mmddyyyy(dt.to_daten_t()), "04/05/2003");
-  EXPECT_EQ(0, dt.hour());
+  EXPECT_EQ(12, dt.hour());
   EXPECT_EQ(0, dt.minute());
   EXPECT_EQ(0, dt.second());
 }
 
 TEST(DateTime_Parsing, Parse_yyyymmdd_fail) {
-  auto dt = parse_yyyymmdd("2003-04-05x");
+  const auto dt = parse_yyyymmdd("2003-04-05x");
   EXPECT_NE(daten_to_mmddyyyy(dt.to_daten_t()), "04/05/2003");
 }
 
