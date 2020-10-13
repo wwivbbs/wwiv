@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MESSAGE_AREA_H__
-#define __INCLUDED_SDK_MESSAGE_AREA_H__
+#ifndef INCLUDED_SDK_MESSAGE_AREA_H
+#define INCLUDED_SDK_MESSAGE_AREA_H
 
 #include "core/wwivport.h"
 #include "sdk/msgapi/message.h"
@@ -24,16 +24,13 @@
 #include <memory>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 enum class message_anonymous_t {
   anonymous_none, anonymous_allowed, anonymous_dear_abby, anonymous_forced, anonymous_real_names_only
 };
 
 class MessageAreaHeader {
-public:
 };
 
 // Since message_api.h includes us, we must forward declare.
@@ -108,8 +105,6 @@ protected:
 };
 
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_SDK_MESSAGE_AREA_H__
+#endif

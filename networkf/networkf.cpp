@@ -318,10 +318,11 @@ bool NetworkF::import_bundle_file(const std::string& dir, const std::string& nam
   }
   
   const auto path = FilePath(dir, name);
-  const auto& arc = wwiv::sdk::files::find_arcrec(arcs, path,
-                                                  net_.fido.packet_config.compression_type);
+  const auto& arc =
+      wwiv::sdk::files::find_arcrec(arcs, path, net_.fido.packet_config.compression_type);
   if (!arc) {
-    LOG(FATAL) << "Unable to find archiver for file: " << path;
+    LOG(ERROR) << "Unable to find archiver for file: " << path;
+    return false;
   }
   // We have no parameter 2 since we're extracting everything.
   const auto unzip_cmd = arc_stuff_in(arc.value().arce, path.string(), "");

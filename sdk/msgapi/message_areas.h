@@ -20,13 +20,4 @@
 
 #include "sdk/msgapi/message_area.h"
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
-
-
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
-
 #endif  // __INCLUDED_SDK_MESSAGE_AREAS_H__

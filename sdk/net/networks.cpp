@@ -70,62 +70,51 @@ const net_networks_rec& Networks::at(const std::string& name) const {
   throw std::out_of_range(msg);
 }
 
-static net_networks_rec create_255_network() {
-  net_networks_rec net{};
-  net.sysnum = static_cast<uint16_t>(-1);
-  net.type = network_type_t::wwivnet;
-  net.name = "<deleted network #255>";
-  net.dir = "DELETED";
+static std::unique_ptr<net_networks_rec> create_255_network() {
+  auto net = std::make_unique<net_networks_rec>();
+  net->sysnum = static_cast<uint16_t>(-1);
+  net->type = network_type_t::wwivnet;
+  net->name = "<deleted network #255>";
+  net->dir = "DELETED";
   return net;
 }
 
-static net_networks_rec network_255 = create_255_network();
-
-static net_networks_rec create_empty_network() {
-  net_networks_rec net{};
-  net.sysnum = static_cast<uint16_t>(0);
-  net.type = network_type_t::wwivnet;
-  net.name = "";
-  net.dir = "NONE";
-  return net;
-}
-
-static net_networks_rec network_empty = create_empty_network();
+static auto network_255 = create_255_network();
 
 const net_networks_rec& Networks::at(size_type num) const { 
   if (networks_.empty()) {
-    return network_255;
+    return *network_255;
   }
   if (num == 255) {
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
-    return network_255;
+    return *network_255;
   }
   if (num >= ssize(networks_)) {
     DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
     LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
-    return network_255;
+    return *network_255;
   }
   return networks_.at(num);
 }
 
 net_networks_rec& Networks::at(size_type num) { 
   if (networks_.empty()) {
-    return network_255;
+    return *network_255;
   }
   if (num == 255) {
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
-    return network_255;
+    return *network_255;
   }
   if (num >= ssize(networks_)) {
     DLOG(FATAL) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
     LOG(ERROR) << "Out of bounds at Networks::at: " << num << ">= size: " << ssize(networks_);
     // A network num 255 (-1 wrapped at uint8_t boundary) means an
     // invalid network in WWIV.
-    return network_255;
+    return *network_255;
   }
   return networks_.at(num); 
 }
@@ -273,8 +262,7 @@ void Networks::EnsureNetDirAbsolute() {
      return;
    }
   for (auto& n : networks_) {
-    std::filesystem::path p{n.dir};
-    if (p.is_relative()) {
+    if (n.dir.is_relative()) {
       // make absolute
       n.dir = FilePath(root_directory_, n.dir);
     }

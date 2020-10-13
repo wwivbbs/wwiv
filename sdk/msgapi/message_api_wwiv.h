@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
-#define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+#ifndef INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H
+#define INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H
 
 #include "sdk/config.h"
 #include "sdk/msgapi/email_wwiv.h"
@@ -27,9 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 class WWIVMessageArea;
 
@@ -47,7 +45,7 @@ public:
 };
 
 class NullLastReadImpl final : public WWIVLastReadImpl {
-  uint32_t last_read(int) const override { return 0; }
+  [[nodiscard]] uint32_t last_read(int) const override { return 0; }
   void set_last_read(int, uint32_t) override {}
   void Load() override {}
   void Save() override {}
@@ -75,8 +73,6 @@ private:
   const Config config_;
 };
 
-} // namespace msgapi
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+#endif

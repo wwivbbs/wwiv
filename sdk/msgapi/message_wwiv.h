@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MESSAGE_WWIV_H__
-#define __INCLUDED_SDK_MESSAGE_WWIV_H__
+#ifndef INCLUDED_SDK_MESSAGE_WWIV_H
+#define INCLUDED_SDK_MESSAGE_WWIV_H
 
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
@@ -25,9 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 
 class WWIVMessageHeader final : public MessageHeader {
@@ -127,9 +125,7 @@ private:
   std::unique_ptr<WWIVMessageText> text_;
 };
 
-}  // namespace msgapi
-}  // namespace sdk
 }  // namespace wwiv
 
 
-#endif  // __INCLUDED_SDK_MESSAGE_WWIV_H__
+#endif

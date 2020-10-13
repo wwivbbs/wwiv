@@ -24,6 +24,8 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "fmt/format.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -121,8 +123,7 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path sub_filename,
-                                 std::filesystem::path text_filename,
-                                 int subnum)
+                                 std::filesystem::path text_filename, int subnum)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
       sub_filename_(std::move(sub_filename)), header_{} {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
@@ -170,7 +171,7 @@ int WWIVMessageArea::number_of_messages() {
     return 0;
   }
 
-  const int file_num_records = sub.number_of_records();
+  const auto file_num_records = sub.number_of_records();
   const auto wwiv_header = ReadHeader(sub);
   if (!wwiv_header->initialized()) {
     // TODO: throw exception
@@ -185,7 +186,8 @@ int WWIVMessageArea::number_of_messages() {
   return msgs;
 }
 
-std::optional<wwiv_parsed_text_fieds>  WWIVMessageArea::ParseMessageText(const postrec& header, int message_number) {
+std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const postrec& header,
+                                                                        int message_number) {
 
   // Some of the message header information ends up in the text.
   // line1: From username (i.e. rushfan #1 @5161)
@@ -288,7 +290,6 @@ unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
         make_unique<WWIVMessageText>(r.text));
   }
   return {};
-
 }
 
 unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
@@ -383,213 +384,207 @@ int WWIVMessageArea::DeleteExcess() {
     ++result;
   }
   return result;
-  }
+}
 
-  bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOptions& options) {
-    messagerec m{STORAGE_TYPE, 0xffffff};
+bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOptions& options) {
+  messagerec m{STORAGE_TYPE, 0xffffff};
 
-    const auto& header = dynamic_cast<const WWIVMessageHeader&>(message.header());
-    postrec p = header.data();
-    p.anony = 0;
-    p.msg = m;
-    p.ownersys = header.from_system();
-    p.owneruser = header.from_usernum();
+  const auto& header = dynamic_cast<const WWIVMessageHeader&>(message.header());
+  auto p = header.data();
+  p.anony = 0;
+  p.msg = m;
+  p.ownersys = header.from_system();
+  p.owneruser = header.from_usernum();
+  if (p.qscan == 0) {
+    // new message.
+    VLOG(3) << "AddMessage needs a qscan";
+    p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
     if (p.qscan == 0) {
-      // new message.
-      VLOG(3) << "AddMessage needs a qscan";
-      p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
-      if (p.qscan == 0) {
-        LOG(ERROR) << "Failed to get qscan value!";
-        return false;
-      }
+      LOG(ERROR) << "Failed to get qscan value!";
+      return false;
+    }
+  } else {
+    VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header().title()
+            << "; qscan: " << header.last_read();
+  }
+  p.daten = header.daten();
+  p.status = header.status();
+  // if (a()->user()->IsRestrictionValidate()) {
+  //  p.status |= status_unvalidated;
+  //}
+  // If we need network validation, then mark it as such.
+  // We force the issue here if it wasn't already done.
+  if (!sub_.nets.empty()) {
+    if (sub_.anony & anony_val_net && !header.pending_network()) {
+      p.status |= status_pending_net;
+      UserManager um(wwiv_api_->config());
+      SSM ssm(wwiv_api_->config(), um);
+      ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
+    } else if (options.send_post_to_network) {
+      LOG(INFO) << "** Sending the newly added message out on all of the networks.";
+      auto net = *sub_.nets.begin();
+      const auto& wm = dynamic_cast<const WWIVMessage&>(message);
+      // Create a base packet from the 1st network entry.
+      auto packet = create_packet_from_wwiv_message(wm, net.stype, {});
+      // Send the packet to everyone who needs is.
+      send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
+                               subscribers_send_to_t::all_subscribers);
     } else {
-      VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header().title()
-          << "; qscan: " << header.last_read();
+      VLOG(1) << "Not sending message to the network";
     }
-    p.daten = header.daten();
-    p.status = header.status();
-    // if (a()->user()->IsRestrictionValidate()) {
-    //  p.status |= status_unvalidated;
-    //}
-    // If we need network validation, then mark it as such.
-    // We force the issue here if it wasn't already done.
-    if (!sub_.nets.empty()) {
-      if (sub_.anony & anony_val_net && !header.pending_network()) {
-        p.status |= status_pending_net;
-        UserManager um(wwiv_api_->config());
-        SSM ssm(wwiv_api_->config(), um);
-        ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
-      } else if (options.send_post_to_network) {
-        LOG(INFO) << "** Sending the newly added message out on all of the networks.";
-        auto net = *sub_.nets.begin();
-        const auto& wm = dynamic_cast<const WWIVMessage&>(message);
-        // Create a base packet from the 1st network entry.
-        auto packet = create_packet_from_wwiv_message(wm, net.stype, {});
-        // Send the packet to everyone who needs is.
-        send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
-                                 subscribers_send_to_t::all_subscribers);
-      } else {
-        VLOG(1) << "Not sending message to the network";
-      }
-    }
-
-    auto text = StrCat(header.from(), "\r\n", daten_to_wwivnet_time(header.daten()), "\r\n",
-                       message.text().text());
-
-    // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
-    // does not, and removes it on read.
-    if (text.back() != CZ) {
-      text.push_back(CZ);
-    }
-
-    auto msg = savefile(text);
-    if (!msg) {
-      LOG(ERROR) << "Failed to save message text.";
-      return false;
-    }
-    p.msg = msg.value();
-    auto result = add_post(p);
-    if (result) {
-      DeleteExcess();
-    }
-    return result;
   }
 
-  bool WWIVMessageArea::DeleteMessage(int message_number) {
-    const auto num_messages = number_of_messages();
-    if (message_number < 1) {
-      return false;
-    }
-    if (message_number > num_messages) {
-      return false;
-    }
+  static const char crlf[] = "\r\n";
+    const auto control_d_zero = fmt::sprintf("%c0", CD);
 
-    DataFile<postrec> sub(sub_filename_,
-                          File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    if (!sub) {
-      // TODO: throw exception
-      return false;
-    }
-    postrec post{};
-    sub.Read(message_number, &post);
-    if (post.msg.storage_type != 2) {
-      // We only support type-2 on the WWIV API.
-      return false;
-    }
+  std::ostringstream ss;
+  ss << header.from() << crlf;
+  ss << daten_to_wwivnet_time(header.daten()) << crlf;
+  if (message.header().to() != "All") {
+    ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
+  }
+  ss << control_d_zero << "PID: WWIV SDK " << full_version() << crlf;
+  ss << message.text().text();
+  auto text = ss.str();
 
-    // Remove text.  Ignore the return code, try to remove the header anyway.
-    (void) remove_link(post.msg);
-
-    // Remove post record.
-    for (auto cur = message_number + 1; cur <= num_messages; cur++) {
-      postrec tmp{};
-      sub.Read(cur, &tmp);
-      sub.Write(cur - 1, &tmp);
-    }
-
-    // Update header.
-    postrec header{};
-    sub.Read(0, &header);
-    // decrement number of posts.
-    // TODO(rushfan): Should we check these?
-    --header.owneruser;
-    header.owneruser = static_cast<uint16_t>(std::max(0, num_messages - 1));
-    sub.Write(0, &header);
-
-    return true;
+  // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
+  // does not, and removes it on read.
+  if (text.back() != CZ) {
+    text.push_back(CZ);
   }
 
-  bool WWIVMessageArea::ResyncMessage(int& message_number) {
-    const auto m = ReadMessage(message_number);
-    if (!m) {
-      const auto num_messages = number_of_messages();
-      if (message_number > num_messages) {
-        message_number = num_messages;
-        return true;
-      }
-      return false;
-    }
+  auto msg = savefile(text);
+  if (!msg) {
+    LOG(ERROR) << "Failed to save message text.";
+    return false;
+  }
+  p.msg = msg.value();
+  auto result = add_post(p);
+  if (result) {
+    DeleteExcess();
+  }
+  return result;
+}
 
-    if (!HasSubChanged()) {
-      // Since we also use resynch to see if were past the last message...
-      // return true;
-    }
-
-    // remember m is destructed after this message call.
-    return ResyncMessageImpl(message_number, *m);
+bool WWIVMessageArea::DeleteMessage(int message_number) {
+  const auto num_messages = number_of_messages();
+  if (message_number < 1) {
+    return false;
+  }
+  if (message_number > num_messages) {
+    return false;
   }
 
-  bool WWIVMessageArea::HasSubChanged() const {
-    const auto last_read_header = this->header_;
-    DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
-    const auto h = ReadHeader(sub);
-    const auto current_read_header = h->raw_header();
-
-    return current_read_header.mod_count > last_read_header.mod_count;
+  DataFile<postrec> sub(sub_filename_,
+                        File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+  if (!sub) {
+    // TODO: throw exception
+    return false;
+  }
+  postrec post{};
+  sub.Read(message_number, &post);
+  if (post.msg.storage_type != 2) {
+    // We only support type-2 on the WWIV API.
+    return false;
   }
 
-  bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
-    if (!HasSubChanged()) {
-      // Since we also use resynch to see if were past the last message...
-      // return true;
-    }
+  // Remove text.  Ignore the return code, try to remove the header anyway.
+  (void)remove_link(post.msg);
 
-    // Assume it has changed.
-    return ResyncMessageImpl(message_number, raw_message);
+  // Remove post record.
+  for (auto cur = message_number + 1; cur <= num_messages; cur++) {
+    postrec tmp{};
+    sub.Read(cur, &tmp);
+    sub.Write(cur - 1, &tmp);
   }
 
-  static bool IsSamePost(const postrec& l, const postrec& r) {
-    return l.qscan == r.qscan && l.anony == r.anony && l.daten == r.daten &&
-           l.ownersys == r.ownersys && l.owneruser == r.owneruser &&
-           l.msg.stored_as == r.msg.stored_as;
-  }
+  // Update header.
+  postrec header{};
+  sub.Read(0, &header);
+  // decrement number of posts.
+  // TODO(rushfan): Should we check these?
+  --header.owneruser;
+  header.owneruser = static_cast<uint16_t>(std::max(0, num_messages - 1));
+  sub.Write(0, &header);
 
-  bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_message) {
-    auto& message = dynamic_cast<WWIVMessage&>(raw_message);
-    const auto& wwiv_header = dynamic_cast<const WWIVMessageHeader&>(message.header());
-    const auto& p = wwiv_header.data();
+  return true;
+}
 
+bool WWIVMessageArea::ResyncMessage(int& message_number) {
+  const auto m = ReadMessage(message_number);
+  if (!m) {
     const auto num_messages = number_of_messages();
     if (message_number > num_messages) {
       message_number = num_messages;
       return true;
     }
+    return false;
+  }
 
-    auto pp1 = ReadMessageHeader(message_number);
-    if (!pp1) {
-      return true;
-    }
+  if (!HasSubChanged()) {
+    // Since we also use resynch to see if were past the last message...
+    // return true;
+  }
 
-    auto pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
+  // remember m is destructed after this message call.
+  return ResyncMessageImpl(message_number, *m);
+}
 
-    if (IsSamePost(pp1_header, p)) {
-      return true;
-    }
-    if (p.qscan < pp1_header.qscan) {
-      // Search from the current message to the first.
-      const auto num_msgs = number_of_messages();
-      if (message_number > num_msgs) {
-        message_number = num_msgs + 1;
-      }
-      for (auto i = message_number - 1; i > 0; i--) {
-        pp1 = ReadMessageHeader(i);
-        pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
-        if (!pp1) {
-          continue;
-        }
-        if (p.qscan >= pp1_header.qscan || IsSamePost(p, pp1_header)) {
-          message_number = i;
-          return true;
-        }
-      }
-      message_number = 0;
-      return true;
-    }
+bool WWIVMessageArea::HasSubChanged() const {
+  const auto last_read_header = this->header_;
+  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
+  const auto h = ReadHeader(sub);
+  const auto current_read_header = h->raw_header();
 
-    // Search the full list
+  return current_read_header.mod_count > last_read_header.mod_count;
+}
+
+bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
+  if (!HasSubChanged()) {
+    // Since we also use resynch to see if were past the last message...
+    // return true;
+  }
+
+  // Assume it has changed.
+  return ResyncMessageImpl(message_number, raw_message);
+}
+
+static bool IsSamePost(const postrec& l, const postrec& r) {
+  return l.qscan == r.qscan && l.anony == r.anony && l.daten == r.daten &&
+         l.ownersys == r.ownersys && l.owneruser == r.owneruser &&
+         l.msg.stored_as == r.msg.stored_as;
+}
+
+bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_message) {
+  auto& message = dynamic_cast<WWIVMessage&>(raw_message);
+  const auto& wwiv_header = dynamic_cast<const WWIVMessageHeader&>(message.header());
+  const auto& p = wwiv_header.data();
+
+  const auto num_messages = number_of_messages();
+  if (message_number > num_messages) {
+    message_number = num_messages;
+    return true;
+  }
+
+  auto pp1 = ReadMessageHeader(message_number);
+  if (!pp1) {
+    return true;
+  }
+
+  auto pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
+
+  if (IsSamePost(pp1_header, p)) {
+    return true;
+  }
+  if (p.qscan < pp1_header.qscan) {
+    // Search from the current message to the first.
     const auto num_msgs = number_of_messages();
-    for (auto i = message_number + 1; i <= num_msgs; i++) {
+    if (message_number > num_msgs) {
+      message_number = num_msgs + 1;
+    }
+    for (auto i = message_number - 1; i > 0; i--) {
       pp1 = ReadMessageHeader(i);
+      pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
       if (!pp1) {
         continue;
       }
@@ -598,86 +593,102 @@ int WWIVMessageArea::DeleteExcess() {
         return true;
       }
     }
-    message_number = num_msgs;
+    message_number = 0;
     return true;
   }
 
-  std::unique_ptr<Message> WWIVMessageArea::CreateMessage() {
-    return make_unique<WWIVMessage>(make_unique<WWIVMessageHeader>(api_),
-                                    make_unique<WWIVMessageText>());
+  // Search the full list
+  const auto num_msgs = number_of_messages();
+  for (auto i = message_number + 1; i <= num_msgs; i++) {
+    pp1 = ReadMessageHeader(i);
+    if (!pp1) {
+      continue;
+    }
+    if (p.qscan >= pp1_header.qscan || IsSamePost(p, pp1_header)) {
+      message_number = i;
+      return true;
+    }
   }
+  message_number = num_msgs;
+  return true;
+}
 
-  bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system,
-                               uint16_t from_user) {
-    DataFile<postrec> sub(sub_filename_);
-    if (!sub) {
-      return false;
-    }
-    std::vector<postrec> headers;
-    if (!sub.ReadVector(headers)) {
-      return false;
-    }
+std::unique_ptr<Message> WWIVMessageArea::CreateMessage() {
+  return make_unique<WWIVMessage>(make_unique<WWIVMessageHeader>(api_),
+                                  make_unique<WWIVMessageText>());
+}
 
-    for (const auto& h : headers) {
-      if (h.status & status_delete) {
-        continue;
-      }
-      // Since we don't have a global message id, use the combination of
-      // date + title + from system + from user.
-      if (h.daten == d && iequals(h.title, title) && h.ownersys == from_system &&
-          h.owneruser == from_user) {
-        return true;
-      }
-    }
-
+bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system,
+                             uint16_t from_user) {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    return false;
+  }
+  std::vector<postrec> headers;
+  if (!sub.ReadVector(headers)) {
     return false;
   }
 
-  MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return *last_read_; }
-
-  message_anonymous_t WWIVMessageArea::anonymous_type() const noexcept {
-    switch (sub_.anony & 0x0f) {
-    case anony_none:
-      return message_anonymous_t::anonymous_none;
-    case anony_enable_anony:
-      return message_anonymous_t::anonymous_allowed;
-    case anony_enable_dear_abby:
-      return message_anonymous_t::anonymous_dear_abby;
-    case anony_force_anony:
-      return message_anonymous_t::anonymous_forced;
-    case anony_real_name:
-      return message_anonymous_t::anonymous_real_names_only;
-    default:
-      // WTF CHECK?
-      return message_anonymous_t::anonymous_none;
+  for (const auto& h : headers) {
+    if (h.status & status_delete) {
+      continue;
+    }
+    // Since we don't have a global message id, use the combination of
+    // date + title + from system + from user.
+    if (h.daten == d && iequals(h.title, title) && h.ownersys == from_system &&
+        h.owneruser == from_user) {
+      return true;
     }
   }
 
-  // Implementation Details
+  return false;
+}
 
-  bool WWIVMessageArea::add_post(const postrec& post) {
-    DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadWrite);
-    if (!sub) {
-      return false;
-    }
-    if (sub.number_of_records() == 0) {
-      return false;
-    }
-    auto wwiv_header = ReadHeader(sub);
-    if (!wwiv_header->initialized()) {
-      // This is an invalid header.
-      return false;
-    }
-    const uint32_t msgnum = wwiv_header->increment_active_message_count();
+MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return *last_read_; }
 
-    // add the new post
-    if (!sub.Write(msgnum, &post)) {
-      return false;
-    }
-    // No reason other than make sure we're not const.
-    ++nonce_;
-    // Write the header now.
-    return WriteHeader(sub, *wwiv_header);
+message_anonymous_t WWIVMessageArea::anonymous_type() const noexcept {
+  switch (sub_.anony & 0x0f) {
+  case anony_none:
+    return message_anonymous_t::anonymous_none;
+  case anony_enable_anony:
+    return message_anonymous_t::anonymous_allowed;
+  case anony_enable_dear_abby:
+    return message_anonymous_t::anonymous_dear_abby;
+  case anony_force_anony:
+    return message_anonymous_t::anonymous_forced;
+  case anony_real_name:
+    return message_anonymous_t::anonymous_real_names_only;
+  default:
+    // WTF CHECK?
+    return message_anonymous_t::anonymous_none;
   }
+}
 
-  } // namespace wwiv
+// Implementation Details
+
+bool WWIVMessageArea::add_post(const postrec& post) {
+  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadWrite);
+  if (!sub) {
+    return false;
+  }
+  if (sub.number_of_records() == 0) {
+    return false;
+  }
+  auto wwiv_header = ReadHeader(sub);
+  if (!wwiv_header->initialized()) {
+    // This is an invalid header.
+    return false;
+  }
+  const uint32_t msgnum = wwiv_header->increment_active_message_count();
+
+  // add the new post
+  if (!sub.Write(msgnum, &post)) {
+    return false;
+  }
+  // No reason other than make sure we're not const.
+  ++nonce_;
+  // Write the header now.
+  return WriteHeader(sub, *wwiv_header);
+}
+
+} // namespace wwiv::sdk::msgapi

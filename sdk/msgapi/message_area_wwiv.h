@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
-#define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
+#ifndef INCLUDED_SDK_MESSAGE_AREA_WWIV_H
+#define INCLUDED_SDK_MESSAGE_AREA_WWIV_H
 
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
@@ -27,9 +27,7 @@
 #include <memory>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 class WWIVMessageApi;
 
@@ -80,7 +78,7 @@ public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                   std::filesystem::path sub_filename,
                   std::filesystem::path text_filename, int subnum);
-  virtual ~WWIVMessageArea();
+  ~WWIVMessageArea() override;
 
   // Message Sub Specific Operations
   bool Close() override;
@@ -130,8 +128,6 @@ private:
   int nonce_{0};
 };
 
-} // namespace msgapi
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
+#endif

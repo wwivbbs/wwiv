@@ -15,20 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_EMAIL_WWIV_H__
-#define __INCLUDED_SDK_EMAIL_WWIV_H__
+#ifndef INCLUDED_SDK_EMAIL_WWIV_H
+#define INCLUDED_SDK_EMAIL_WWIV_H
 
 #include "core/datafile.h"
 #include "sdk/config.h"
-#include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
 #include "sdk/msgapi/type2_text.h"
 #include <cstdint>
 #include <string>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 class WWIVMessageApi;
 
@@ -70,9 +67,9 @@ public:
   bool AddMessage(const EmailData& data);
 
   /** Total number of active email messages in the system. */
-  int number_of_messages();
+  [[nodiscard]] int number_of_messages();
   /** Total number of email records in the system. This includes any deleted messages. */
-  int number_of_email_records() const;
+  [[nodiscard]] int number_of_email_records() const;
 
   /** Temporary API to read the header from an email message. */
   bool read_email_header(int email_number, mailrec& m);
@@ -94,9 +91,6 @@ private:
   static constexpr uint8_t STORAGE_TYPE = 2;
 };
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
-
-#endif  // __INCLUDED_SDK_EMAIL_WWIV_H__
+#endif

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
-#define __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
+#ifndef INCLUDED_SDK_MSGAPI_MESSAGE_API_H
+#define INCLUDED_SDK_MSGAPI_MESSAGE_API_H
 
 #include "sdk/msgapi/message_area.h"
 #include "sdk/net/net.h"
@@ -25,9 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace msgapi {
+namespace wwiv::sdk::msgapi {
 
 class MessageArea;
 
@@ -81,8 +79,6 @@ protected:
   std::vector<net_networks_rec> net_networks_;
 };
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
+#endif
