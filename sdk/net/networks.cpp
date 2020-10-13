@@ -213,7 +213,8 @@ bool Networks::LoadFromJSON() {
   if (!json.Load()) {
     return false;
   }
-   EnsureNetworksHaveUUID();
+  EnsureNetworksHaveUUID();
+  EnsureNetDirAbsolute();
   return true;
 }
 
