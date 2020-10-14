@@ -58,7 +58,7 @@ struct MessageAreaOptions {
    * will only happen if there is no FTN network for the sub, since
    * the FidoAddr kludge is added in that case instead.
    */
-  bool add_re_and_by_line{false};
+  bool add_re_and_by_line{true};
 };
 
 class MessageArea {

@@ -285,7 +285,7 @@ unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
   }
 
   if (auto o = ParseMessageText(header, message_number)) {
-    auto r = o.value();
+    auto& r = o.value();
     return make_unique<WWIVMessage>(
         make_unique<WWIVMessageHeader>(header, r.from_username, r.to, r.in_reply_to, api_),
         make_unique<WWIVMessageText>(r.text));
@@ -421,6 +421,34 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
   }
   p.daten = header.daten();
   p.status = header.status();
+
+  static const char crlf[] = "\r\n";
+  // Fix up the text first.
+  {
+    std::ostringstream ss;
+    const auto has_ftn = has_ftn_network(sub_.nets, net_networks_);
+    // Right now we'll only add the Fido Kludge and also PID if we're also
+    // responsible for sending out the message to the network.  Note that we
+    // still add these FTN kludges in all message types.
+    const auto control_d_zero = fmt::sprintf("%c0", CD);
+    auto to_name = message.header().to();
+    if (!to_name.empty() && to_name != "All" && has_ftn) {
+      // Only add this if we're sending this out to the network from the
+      // SDK, otherwise whomever is doing that should do so.
+      ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
+    }
+    auto title = message.header().title();
+    if (!title.empty() && title.front() != '"' && !has_ftn && options.add_re_and_by_line) {
+      // Don't add RE: line if we have a "^D0FidoAddr" line.
+      ss << "RE: " << title << crlf;
+    }
+    if (!to_name.empty() && !has_ftn && options.add_re_and_by_line) {
+      ss << "BY: " << to_name << crlf;
+    }
+    ss << message.text().text();
+    message.text().set_text(ss.str());
+  }
+
   // if (a()->user()->IsRestrictionValidate()) {
   //  p.status |= status_unvalidated;
   //}
@@ -446,33 +474,11 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
     }
   }
 
-  static const char crlf[] = "\r\n";
-
+  // Set the text to be in WWIV Message Base Format.
+  // FROM<CRLF>DATE<CRLF>TEXT
   std::ostringstream ss;
   ss << header.from() << crlf;
   ss << daten_to_wwivnet_time(header.daten()) << crlf;
-  if (options.send_post_to_network) {
-    const auto has_ftn = has_ftn_network(sub_.nets, net_networks_);
-    // Right now we'll only add the Fido Kludge and also PID if we're also
-    // responsible for sending out the message to the network.  Note that we
-    // still add these FTN kludges in all message types.
-    const auto control_d_zero = fmt::sprintf("%c0", CD);
-    if (message.header().to() != "All" && has_ftn) {
-      // Only add this if we're sending this out to the network from the
-      // SDK, otherwise whomever is doing that should do so.
-      ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
-    }
-    auto title = message.header().title();
-    if (!title.empty() && title.front() != '"' && !has_ftn && options.add_re_and_by_line) {
-      // Don't add RE: line if we have a "^D0FidoAddr" line.
-      ss << "RE: " << title << crlf;
-    }
-    auto to_name = message.header().to();
-    if (!to_name.empty() && !has_ftn && options.add_re_and_by_line) {
-      ss << "BY: " << to_name << crlf;
-    }
-
-  }
   ss << message.text().text();
   auto text = ss.str();
 

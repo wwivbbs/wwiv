@@ -39,7 +39,7 @@ public:
 
   [[nodiscard]] std::string title() const override { return header_.title;  }
   void set_title(const std::string&) override;
-  [[nodiscard]] std::string to() const override { return to_.empty() ? to_ : "ALL";  }
+  [[nodiscard]] std::string to() const override { return to_.empty() ? "All" : to_;  }
   void set_to(const std::string& to) override { to_ = to;   }
   [[nodiscard]] std::string from() const override { return from_; }
   void set_from(const std::string& f) override { from_ = f; }
