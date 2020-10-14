@@ -123,9 +123,10 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path sub_filename,
-                                 std::filesystem::path text_filename, int subnum)
+                                 std::filesystem::path text_filename, int subnum,
+                                 const std::vector<net_networks_rec>& net_networks)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
-      sub_filename_(std::move(sub_filename)), header_{} {
+      sub_filename_(std::move(sub_filename)), header_{}, net_networks_(net_networks) {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!subfile) {
     // TODO: throw exception
@@ -386,6 +387,17 @@ int WWIVMessageArea::DeleteExcess() {
   return result;
 }
 
+static bool has_ftn_network(const std::vector<subboard_network_data_t>& sub_nets, const std::vector<net_networks_rec>& nets) {
+  for (const auto& x : sub_nets) {
+    if (x.net_num >= 0 && x.net_num < stl::ssize(nets)) {
+      if (nets.at(x.net_num).type == network_type_t::ftn) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOptions& options) {
   messagerec m{STORAGE_TYPE, 0xffffff};
 
@@ -435,15 +447,32 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
   }
 
   static const char crlf[] = "\r\n";
-    const auto control_d_zero = fmt::sprintf("%c0", CD);
 
   std::ostringstream ss;
   ss << header.from() << crlf;
   ss << daten_to_wwivnet_time(header.daten()) << crlf;
-  if (message.header().to() != "All") {
-    ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
+  if (options.send_post_to_network) {
+    const auto has_ftn = has_ftn_network(sub_.nets, net_networks_);
+    // Right now we'll only add the Fido Kludge and also PID if we're also
+    // responsible for sending out the message to the network.  Note that we
+    // still add these FTN kludges in all message types.
+    const auto control_d_zero = fmt::sprintf("%c0", CD);
+    if (message.header().to() != "All" && has_ftn) {
+      // Only add this if we're sending this out to the network from the
+      // SDK, otherwise whomever is doing that should do so.
+      ss << control_d_zero << "FidoAddr: " << message.header().to() << crlf;    
+    }
+    auto title = message.header().title();
+    if (!title.empty() && title.front() != '"' && !has_ftn && options.add_re_and_by_line) {
+      // Don't add RE: line if we have a "^D0FidoAddr" line.
+      ss << "RE: " << title << crlf;
+    }
+    auto to_name = message.header().to();
+    if (!to_name.empty() && !has_ftn && options.add_re_and_by_line) {
+      ss << "BY: " << to_name << crlf;
+    }
+
   }
-  ss << control_d_zero << "PID: WWIV SDK " << full_version() << crlf;
   ss << message.text().text();
   auto text = ss.str();
 

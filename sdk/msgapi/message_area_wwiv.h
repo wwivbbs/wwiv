@@ -75,9 +75,10 @@ struct wwiv_parsed_text_fieds {
 
 class WWIVMessageArea final : public MessageArea, private Type2Text {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
+  WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub, 
                   std::filesystem::path sub_filename,
-                  std::filesystem::path text_filename, int subnum);
+                  std::filesystem::path text_filename, int subnum,
+                  const std::vector<net_networks_rec>& net_networks);
   ~WWIVMessageArea() override;
 
   // Message Sub Specific Operations
@@ -124,6 +125,7 @@ private:
   const std::filesystem::path sub_filename_;
   bool open_{false};
   subfile_header_t header_;
+  const std::vector<net_networks_rec> net_networks_;
   std::unique_ptr<MessageAreaLastRead> last_read_;
   int nonce_{0};
 };

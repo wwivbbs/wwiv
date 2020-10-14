@@ -50,7 +50,15 @@ protected:
 };
 
 struct MessageAreaOptions {
+  /** Should the post also be sent to the network automatically */
   bool send_post_to_network{false};
+
+  /**
+   * Should a RE and BY line be added automatically.  Note tht this
+   * will only happen if there is no FTN network for the sub, since
+   * the FidoAddr kludge is added in that case instead.
+   */
+  bool add_re_and_by_line{false};
 };
 
 class MessageArea {

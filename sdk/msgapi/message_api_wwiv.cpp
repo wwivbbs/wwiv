@@ -131,7 +131,7 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
     sub_fullpath = sub_fn;
     msgs_fullpath = msgs_fn;
   }
-  auto area = new WWIVMessageArea(this, sub, sub_fullpath, msgs_fullpath, subnum);
+  auto* area = new WWIVMessageArea(this, sub, sub_fullpath, msgs_fullpath, subnum, net_networks_);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);
   return area;

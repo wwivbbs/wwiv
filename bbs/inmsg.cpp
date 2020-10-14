@@ -87,7 +87,6 @@ static bool GetMessageToName(MessageEditorData& data) {
         data.to_name = to_name;
       }
       return true;
-      // WTF??? strcpy(a()->sess().irt_, "\xAB");
     }
   }
 
@@ -106,7 +105,7 @@ static void GetMessageTitle(MessageEditorData& data) {
       return;
     }
     auto irt = a()->sess().irt();
-    if (!irt.empty() && irt.front() != '\xAB') {
+    if (!irt.empty()) {
       string s1;
       auto ch = '\0';
       irt = stripcolors(StringTrim(a()->sess().irt()));
@@ -353,19 +352,20 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 
 
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name, const string& title) {
+  auto fido_addr_added{false};
   if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->nets()[xnp.net_num].type == network_type_t::ftn) {
         const auto buf = fmt::sprintf("%c0FidoAddr: %s", CD, to_name);
         ss << buf << crlf;
+        fido_addr_added = true;
         break;
       }
     }
   }
 
-  // WTF is \xAB. FidoAddr sets it, but we don't want
-  // to add the RE: line when it's \xAB, so let's skip it.
-  if (!title.empty() && title.front() != '"' && title.front() != '\xAB') {
+  if (!title.empty() && title.front() != '"' && !fido_addr_added) {
+    // Don't add RE: line if we have a "^D0FidoAddr" line.
     ss << "RE: " << title << crlf;
   }
 
