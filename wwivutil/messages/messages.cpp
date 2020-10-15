@@ -106,30 +106,28 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   return true;
 }
 
-BaseMessagesSubCommand::~BaseMessagesSubCommand() = default;
-
-
 class DeleteMessageCommand final : public BaseMessagesSubCommand {
 public:
-  DeleteMessageCommand() : BaseMessagesSubCommand("delete", "Deletes message number specified by '--num'.") {}
+  DeleteMessageCommand()
+      : BaseMessagesSubCommand("delete", "Deletes message number specified by '--num'.") {}
 
-  ~DeleteMessageCommand() = default;
+  ~DeleteMessageCommand() override = default;
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   delete --num=NN <base sub filename>" << endl;
     ss << "Example: delete --num=10 general" << endl;
     return ss.str();
   }
 
-  int Execute() override final {
+  int Execute() override {
     if (remaining().empty()) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
 
-    const string basename(remaining().front());
+    const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
       clog << "Error Creating message apis." << endl;
       return 1;
@@ -159,17 +157,17 @@ public:
     return 0;
   }
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"num", "Message Number to delete.", "-1"});
     return true;
   }
 };
 
-class PostMessageCommand : public BaseMessagesSubCommand {
+class PostMessageCommand final : public BaseMessagesSubCommand {
 public:
   PostMessageCommand() : BaseMessagesSubCommand("post", "Posts a new message.") {}
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument({"title", "message sub name to post on", ""});
     add_argument({"from", "message sub name to post on", ""});
     add_argument({"from_usernum", "message sub name to post on", ""});
@@ -183,7 +181,7 @@ public:
     return true;
   }
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>"
        << endl;
@@ -191,14 +189,14 @@ public:
     return ss.str();
   }
 
-  int Execute() override {
+  [[nodiscard]] int Execute() override {
     if (remaining().size() < 2) {
       clog << "Missing sub basename." << endl;
       cout << GetUsage() << GetHelp();
       return 2;
     }
 
-    const string basename(remaining().front());
+    const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
       clog << "Error Creating message apis." << endl;
       return 1;
@@ -216,8 +214,6 @@ public:
     auto to = arg("to").as_string();
     auto daten = DateTime::now();
     auto date_str = arg("date").as_string();
-    //#ifndef __unix__
-    // This doesn't work on GCC until GCC 5 even though it's C++11.
     if (!date_str.empty()) {
       std::istringstream ss(date_str);
       std::tm dt = {};
@@ -226,7 +222,6 @@ public:
         daten = DateTime::from_time_t(mktime(&dt));
       }
     }
-//#endif // __unix__
     auto in_reply_to = arg("in_reply_to").as_string();
     auto from_usernum = arg("from_usernum").as_int();
     if (from_usernum >= 1 && from.empty()) {
@@ -238,27 +233,29 @@ public:
     auto raw_text = text_file.ReadFileIntoString();
     auto lines = wwiv::strings::SplitString(raw_text, "\n", false);
 
-    unique_ptr<Message> msg(area->CreateMessage());
-    msg->header().set_from_system(0);
-    msg->header().set_from_usernum(static_cast<uint16_t>(from_usernum));
-    msg->header().set_title(title);
-    msg->header().set_from(from);
-    msg->header().set_to(to);
-    msg->header().set_daten(daten.to_daten_t());
-    msg->header().set_in_reply_to(in_reply_to);
+    auto msg(area->CreateMessage());
+    auto& header = msg->header();
+    header.set_from_system(0);
+    header.set_from_usernum(static_cast<uint16_t>(from_usernum));
+    header.set_title(title);
+    header.set_from(from);
+    header.set_to(to);
+    header.set_daten(daten.to_daten_t());
+    header.set_in_reply_to(in_reply_to);
     msg->text().set_text(JoinStrings(lines, "\r\n"));
 
     MessageAreaOptions area_options{};
     area_options.send_post_to_network = true;
+    area_options.add_re_and_by_line = true;
     return area->AddMessage(*msg, area_options) ? 0 : 1;
   }
 };
 
-class PackMessageCommand : public BaseMessagesSubCommand {
+class PackMessageCommand final : public BaseMessagesSubCommand {
 public:
   PackMessageCommand() : BaseMessagesSubCommand("pack", "Packs a WWIV type-2 message area.") {}
 
-  bool AddSubCommands() override final {
+  bool AddSubCommands() override {
     add_argument(BooleanCommandLineArgument{"backup", "make a backup of the subs", true});
     add_argument({"delete_overflow",
                   "Strategy for deleting excess messages when adding new ones. (none|one|all)",
@@ -266,7 +263,7 @@ public:
     return true;
   }
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   pack <base sub filename>" << endl;
     ss << "Example: post general" << endl;
@@ -287,12 +284,12 @@ public:
       return 2;
     }
 
-    const string basename(remaining().front());
+    const auto basename(remaining().front());
     if (!CreateMessageApiMap(basename)) {
       clog << "Error Creating message apis." << endl;
       return 1;
     }
-    
+
     // Ensure we can open it.
     {
       try {
@@ -339,7 +336,8 @@ public:
     if (!File::Rename(new_sub_fn, orig_sub_fn)) {
       clog << "Unable to move sub";
     }
-    const auto orig_dat_fn = FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
+    const auto orig_dat_fn =
+        FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     const auto new_dat_fn =
         FilePath(config()->config()->msgsdir(), StrCat(newsub.filename, ".dat"));
     File::Remove(orig_dat_fn);
@@ -389,15 +387,15 @@ bool MessagesDumpCommand::AddSubCommands() {
   return true;
 }
 
-int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, int start, int end, bool all) {
-
+int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, int start, int end,
+                                     bool all) {
 
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
        << endl;
   cout << string(72, '-') << endl;
   for (auto current = start; current <= last_message; current++) {
-    auto message = area->ReadMessage(current);
+    const auto message = area->ReadMessage(current);
     if (!message) {
       cout << "#" << current << "  ERROR " << endl;
       VLOG(1) << "Failed to read message number: " << current;
@@ -454,7 +452,7 @@ int MessagesDumpCommand::Execute() {
     return 2;
   }
 
-  const string basename(remaining().front());
+  const auto basename(remaining().front());
   if (!CreateMessageApiMap(basename)) {
     clog << "Error Creating message apis." << endl;
     return 1;
@@ -462,8 +460,8 @@ int MessagesDumpCommand::Execute() {
     
   auto start = iarg("start");
   auto end = iarg("end");
-  auto start_date = sarg("start_date");
-  auto end_date = sarg("end_date");
+  const auto start_date = sarg("start_date");
+  const auto end_date = sarg("end_date");
   const auto all = barg("all");
 
   unique_ptr<MessageArea> area(api().Open(sub_, -1));
@@ -478,9 +476,9 @@ int MessagesDumpCommand::Execute() {
   // on the dates.
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
   if (!start_date.empty()) {
-    auto start_dt = parse_yyyymmdd_with_optional_hms(start_date).to_daten_t();
+    const auto start_dt = parse_yyyymmdd_with_optional_hms(start_date).to_daten_t();
     for (start = 1; start <= last_message; start++) {
-      auto h = area->ReadMessageHeader(start);
+      const auto h = area->ReadMessageHeader(start);
       if (start_dt < h->daten()) {
         // We're past the start date, so use last message number.
         break;
@@ -492,7 +490,7 @@ int MessagesDumpCommand::Execute() {
     const auto end_dt = parse_yyyymmdd_with_optional_hms(end_date).to_daten_t();
     // Find the closest message to the end date, or leave it -1
     for (auto i = 1, before_end = 1; i<= last_message; i++) {
-      auto h = area->ReadMessageHeader(i);
+      const auto h = area->ReadMessageHeader(i);
       if (end_dt < h->daten()) {
         // We're past the end date, so use last message number.
         end = before_end;

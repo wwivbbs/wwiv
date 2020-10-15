@@ -34,12 +34,12 @@ enum class OverflowStrategy {
 };
 
 struct MessageApiOptions {
-  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
+  OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
 };
 
 class bad_message_area : public ::std::runtime_error {
 public:
-  bad_message_area(const ::std::string& sub_filename) : ::std::runtime_error(sub_filename) {}
+  explicit bad_message_area(const ::std::string& sub_filename) : ::std::runtime_error(sub_filename) {}
 };
 
 class MessageApi {
@@ -68,7 +68,7 @@ public:
   [[nodiscard]] MessageApiOptions options() const { return options_; }
 
   // TODO(rushfan): Here's where we add hooks to the lastread system
-  // so that messageapi's created inside the bbs will share *qsc with
+  // so that message api's created inside the bbs will share *qsc with
   // the legacy code until it's all removed.
 protected:
   const MessageApiOptions options_;

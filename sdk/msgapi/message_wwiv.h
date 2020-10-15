@@ -23,7 +23,6 @@
 #include "sdk/vardec.h"
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace wwiv::sdk::msgapi {
 

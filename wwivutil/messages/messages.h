@@ -29,19 +29,19 @@ class BaseMessagesSubCommand : public UtilCommand {
 public:
   BaseMessagesSubCommand(const std::string& name, const std::string& descr)
       : UtilCommand(name, descr) {}
-  virtual ~BaseMessagesSubCommand();
+  virtual ~BaseMessagesSubCommand() = default;
   bool CreateMessageApiMap(const std::string& basename);
   [[nodiscard]] const std::string& basename() const noexcept { return basename_; }
   [[nodiscard]] const wwiv::sdk::subboard_t& sub() const noexcept { return sub_; }
   // N.B. if this doesn't exist this message will crash.
-  wwiv::sdk::msgapi::MessageApi& api() noexcept {
+  sdk::msgapi::MessageApi& api() noexcept {
     return *apis_.at(sub_.storage_type).get();
   }
 
 protected:
-  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis_;
-  std::unique_ptr<wwiv::sdk::Subs> subs_;
-  wwiv::sdk::subboard_t sub_;
+  std::map<int, std::unique_ptr<sdk::msgapi::MessageApi>> apis_;
+  std::unique_ptr<sdk::Subs> subs_;
+  sdk::subboard_t sub_;
 
 private:
   std::string basename_;
@@ -50,14 +50,14 @@ private:
 class MessagesCommand final : public UtilCommand {
 public:
   MessagesCommand(): UtilCommand("messages", "WWIV message commands.") {}
-  virtual ~MessagesCommand() = default;
+  ~MessagesCommand() override = default;
   bool AddSubCommands() override;
 };
 
 class MessagesDumpCommand final: public BaseMessagesSubCommand {
 public:
   MessagesDumpCommand();
-  virtual ~MessagesDumpCommand() = default;
+  ~MessagesDumpCommand() override = default;
   [[nodiscard]] std::string GetUsage() const override;
   int Execute() override;
   bool AddSubCommands() override;

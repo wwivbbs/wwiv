@@ -202,7 +202,7 @@ std::optional<wwiv_parsed_text_fieds> WWIVMessageArea::ParseMessageText(const po
   if (!o) {
     return std::nullopt;
   }
-  const auto raw_text = o.value();
+  const auto& raw_text = o.value();
 
   wwiv_parsed_text_fieds r;
   // Use the 3 arg form of split string so we don't strip blank lines.

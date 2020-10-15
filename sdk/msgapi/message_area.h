@@ -27,11 +27,14 @@
 namespace wwiv::sdk::msgapi {
 
 enum class message_anonymous_t {
-  anonymous_none, anonymous_allowed, anonymous_dear_abby, anonymous_forced, anonymous_real_names_only
+  anonymous_none,
+  anonymous_allowed,
+  anonymous_dear_abby,
+  anonymous_forced,
+  anonymous_real_names_only
 };
 
-class MessageAreaHeader {
-};
+class MessageAreaHeader {};
 
 // Since message_api.h includes us, we must forward declare.
 class MessageApi;
@@ -40,8 +43,8 @@ class MessageAreaLastRead {
 public:
   explicit MessageAreaLastRead(MessageApi* api);
   virtual ~MessageAreaLastRead();
-  virtual uint32_t last_read(int user_number) = 0;
-  virtual bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
+  [[nodiscard]] virtual uint32_t last_read(int user_number) = 0;
+  [[nodiscard]] virtual bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
   virtual bool Close() = 0;
 
 protected:
@@ -70,31 +73,26 @@ public:
   virtual bool Close() = 0;
   virtual bool Lock() = 0;
   virtual bool Unlock() = 0;
-  virtual std::unique_ptr<MessageAreaHeader> ReadMessageAreaHeader() = 0;
+  [[nodiscard]] virtual std::unique_ptr<MessageAreaHeader> ReadMessageAreaHeader() = 0;
   virtual void WriteMessageAreaHeader(const MessageAreaHeader& header) = 0;
-  virtual int FindUserMessages(const std::string& user_name) = 0;
-  virtual int number_of_messages() = 0;
+  [[nodiscard]] virtual int FindUserMessages(const std::string& user_name) = 0;
+  [[nodiscard]] virtual int number_of_messages() = 0;
 
   // message specific
-  virtual std::unique_ptr<Message> ReadMessage(int message_number) = 0;
-  virtual std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) = 0;
-  virtual std::unique_ptr<MessageText> ReadMessageText(int message_number) = 0;
-  virtual bool AddMessage(const Message& message, const MessageAreaOptions& options) = 0;
-  virtual bool DeleteMessage(int message_number) = 0;
+  [[nodiscard]] virtual std::unique_ptr<Message> ReadMessage(int message_number) = 0;
+  [[nodiscard]] virtual std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) = 0;
+  [[nodiscard]] virtual std::unique_ptr<MessageText> ReadMessageText(int message_number) = 0;
+  [[nodiscard]] virtual bool AddMessage(const Message& message, const MessageAreaOptions& options) = 0;
+  [[nodiscard]] virtual bool DeleteMessage(int message_number) = 0;
   /** Updates message_number to point to the */
   virtual bool ResyncMessage(int& message_number) = 0;
   virtual bool ResyncMessage(int& message_number, Message& message) = 0;
 
   /** Creates a new empty message for this area. */
-  virtual std::unique_ptr<Message> CreateMessage() = 0;
-  virtual bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) = 0;
+  [[nodiscard]] virtual std::unique_ptr<Message> CreateMessage() = 0;
+  [[nodiscard]] virtual bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) = 0;
 
-  [[nodiscard]] int max_messages() const { 
-    if (max_messages_ == 0) {
-      return std::numeric_limits<int>::max();
-    }
-    return max_messages_; 
-  }
+  [[nodiscard]] int max_messages() const;
   void set_max_messages(int m) { max_messages_ = m; }
 
   [[nodiscard]] uint8_t storage_type() const { return storage_type_; }

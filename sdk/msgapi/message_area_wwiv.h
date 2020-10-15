@@ -56,7 +56,7 @@ class WWIVMessageAreaLastRead : public MessageAreaLastRead {
 public:
   WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number);
 
-  uint32_t last_read(int user_number) override;
+  [[nodiscard]] uint32_t last_read(int user_number) override;
   bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) override;
   bool Close() override;
 
@@ -73,7 +73,7 @@ struct wwiv_parsed_text_fieds {
   std::string text;
 };
 
-class WWIVMessageArea final : public MessageArea, private Type2Text {
+class WWIVMessageArea final : public MessageArea, Type2Text {
 public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub, 
                   std::filesystem::path sub_filename,
@@ -86,6 +86,7 @@ public:
   bool Lock() override;
   bool Unlock() override;
   std::unique_ptr<MessageAreaHeader> ReadMessageAreaHeader() override;
+  // Note: This is not implemented on wwiv.
   void WriteMessageAreaHeader(const MessageAreaHeader& header) override;
   int FindUserMessages(const std::string& user_name) override;
   int number_of_messages() override;

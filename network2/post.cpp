@@ -149,6 +149,8 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   MessageAreaOptions options{};
   options.send_post_to_network = false;
+  // these should already exist if they are needed.
+  options.add_re_and_by_line = false;
   if (!area->AddMessage(*msg, options)) {
     const auto errmsg = fmt::format("Failed to add message: '{}'; writing to dead.net", ppt.title());
     context.netdat().add_message(NetDat::netdat_msgtype_t::error, errmsg);

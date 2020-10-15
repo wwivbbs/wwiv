@@ -17,28 +17,30 @@
 /**************************************************************************/
 #include "sdk/msgapi/message_api.h"
 
-#include <string>
-
 #include "core/log.h"
+#include <string>
 
 namespace wwiv::sdk::msgapi {
 
-  MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}
+MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}
 MessageAreaLastRead::~MessageAreaLastRead() = default;
 
-
-  MessageArea::MessageArea(MessageApi* api): api_(api) {}
+MessageArea::MessageArea(MessageApi* api) : api_(api) {}
 MessageArea::~MessageArea() = default;
 
-  MessageApi::MessageApi(
-  const wwiv::sdk::msgapi::MessageApiOptions& options,
-  const std::string& root_directory,
-  const std::string& subs_directory,
-  const std::string& messages_directory,
-  const std::vector<net_networks_rec>& net_networks)
-  : options_(options), root_directory_(root_directory), 
-    subs_directory_(subs_directory), messages_directory_(messages_directory),
-    net_networks_(net_networks) {}
+int MessageArea::max_messages() const {
+  if (max_messages_ == 0) {
+    return std::numeric_limits<int>::max();
+  }
+  return max_messages_;
+}
+
+MessageApi::MessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
+                       const std::string& root_directory, const std::string& subs_directory,
+                       const std::string& messages_directory,
+                       const std::vector<net_networks_rec>& net_networks)
+    : options_(options), root_directory_(root_directory), subs_directory_(subs_directory),
+      messages_directory_(messages_directory), net_networks_(net_networks) {}
 
 MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum) {
   if (!Exist(sub)) {
@@ -51,4 +53,4 @@ MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subn
   return Open(sub, subnum);
 }
 
-} // namespace wwiv
+} // namespace wwiv::sdk::msgapi

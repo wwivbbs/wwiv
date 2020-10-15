@@ -43,8 +43,8 @@ public:
     api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
   }
 
-  unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname,
-                                    const string& title, const string& text) {
+  static unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname,
+                                           const string& title, const string& text) {
     auto msg(area.CreateMessage());
 
     auto& h = msg->header();
@@ -100,13 +100,13 @@ TEST_F(MsgApiTest, ToName) {
   {
     ASSERT_TRUE(api->Create(sub, -1));
     unique_ptr<MessageArea> area(api->Open(sub, -1));
-    auto msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
+    const auto msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     msg->header().set_to("Dude");
     EXPECT_TRUE(area->AddMessage(*msg, {}));
   }
 
   unique_ptr<MessageArea> a2(api->Open(sub, -1));
-  auto m1 = a2->ReadMessage(1);
+  const auto m1 = a2->ReadMessage(1);
   EXPECT_EQ("Dude", m1->header().to()) << "T:" << m1->text().text();
 }
 
@@ -142,7 +142,7 @@ TEST_F(MsgApiTest, Resynch) {
 
   // ResyncMessage should move this to message 1 since
   // we deleted the old 1.
-  int msgnum = 2;
+  auto msgnum = 2;
   a2->ResyncMessage(msgnum, *m2);
   EXPECT_EQ(1, msgnum);
 }
@@ -153,7 +153,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
     sub.filename = "a1";
     ASSERT_TRUE(api->Create(sub, -1));
     unique_ptr<MessageArea> area(api->Open(sub, -1));
-    unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
+    auto m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m, {}));
     m->header().set_from("From2");
     EXPECT_TRUE(area->AddMessage(*m, {}));
@@ -171,7 +171,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
 
   // ResyncMessage should move this to message 1 since
   // we deleted the old 1.
-  int msgnum = 2;
+  auto msgnum = 2;
   a2->ResyncMessage(msgnum);
   EXPECT_EQ(1, msgnum);
 }
