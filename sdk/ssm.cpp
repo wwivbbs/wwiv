@@ -17,18 +17,15 @@
 /**************************************************************************/
 #include "sdk/ssm.h"
 
-#include <exception>
-#include <stdexcept>
-#include <string>
-
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/net/net.h"
 #include "sdk/vardec.h"
+#include "sdk/net/net.h"
+#include <string>
 
 using std::endl;
 using std::string;
@@ -56,14 +53,14 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
-  string text(t);
+  auto text(t);
   nh.daten = daten_t_now();
   if (text.size() > 80) {
     text.resize(80);
   }
-  nh.length = text.size();
+  nh.length = stl::size_uint32(text);
   nh.method = 0;
-  const string packet_filename = StrCat(net.dir, "p0.net");
+  const auto packet_filename = StrCat(net.dir, "p0.net");
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);

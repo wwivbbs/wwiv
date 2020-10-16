@@ -54,7 +54,7 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (size_t sn = 0; sn < a()->subs().subs().size() && !a()->sess().hangup() && !done; sn++) {
+  for (auto sn = 0; sn < wwiv::stl::size_int(a()->subs().subs()) && !a()->sess().hangup() && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }

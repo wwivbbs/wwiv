@@ -147,7 +147,7 @@ static void SendRemoteShortMessage(int user_num, int system_num, const std::stri
   if (msg.size() > 79) {
     msg.resize(79);
   }
-  nh.length = msg.size();
+  nh.length = wwiv::stl::size_int(msg);
   nh.method = 0;
   File file(FilePath(net.dir, StrCat("p0", a()->network_extension())));
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);

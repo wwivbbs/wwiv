@@ -48,7 +48,7 @@ TEST_F(BPutsTest, SingleLetter) {
 
 TEST_F(BPutsTest, MultipleLetters) {
   const string kHelloWorld = "Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
+  EXPECT_EQ(wwiv::stl::ssize(kHelloWorld), Puts(kHelloWorld));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }
 

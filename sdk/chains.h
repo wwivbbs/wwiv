@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_CHAINS_H__
 #define __INCLUDED_SDK_CHAINS_H__
 
+#include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include <initializer_list>
@@ -63,36 +64,34 @@ struct chain_t {
 
 class Chains {
 public:
-  typedef int size_type;
+  typedef ssize_t size_type;
   static const size_type npos = -1;
   explicit Chains(const Config& config);
   // [[ VisibleForTesting ]]
   explicit Chains(std::initializer_list<chain_t> l) : chains_(l) {}
-  Chains() {}
+  Chains() = default;
   virtual ~Chains();
 
-  bool IsInitialized() const { return initialized_; }
-  const std::vector<chain_t>& chains() const { return chains_; }
-  const chain_t& at(size_type num) const { return chains_.at(num); }
+  [[nodiscard]] bool IsInitialized() const { return initialized_; }
+  [[nodiscard]] const std::vector<chain_t>& chains() const { return chains_; }
+  [[nodiscard]] const chain_t& at(size_type num) const { return chains_.at(num); }
   chain_t& at(size_type num) { return chains_.at(num); }
 
-  //chain_t& operator[](size_type num) { return at(num); }
-  //const chain_t& operator[](int num) const { return at(num); }
 
-  bool insert(int n, chain_t r);
-  bool erase(int n);
+  bool insert(size_type n, chain_t r);
+  bool erase(size_type n);
   bool Load();
   bool Save();
 
-  static uint8_t to_ansir(chain_t c);
-  static std::string exec_mode_to_string(const wwiv::sdk::chain_exec_mode_t& t);
-  static wwiv::sdk::chain_exec_mode_t exec_mode_from_string(const std::string& s);
+  [[nodiscard]] static uint8_t to_ansir(chain_t c);
+  [[nodiscard]] static std::string exec_mode_to_string(const chain_exec_mode_t& t);
+  [[nodiscard]] static chain_exec_mode_t exec_mode_from_string(const std::string& s);
 
   /**
    * Is at least one chain registered or sponsored by someone?  If so return
    * true, false otherwise.
    */
-  bool HasRegisteredChains() const;
+  [[nodiscard]] bool HasRegisteredChains() const;
 
   /** 
    * Increments usage of chain number "num" by one.

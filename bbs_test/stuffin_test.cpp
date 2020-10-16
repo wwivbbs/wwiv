@@ -60,7 +60,7 @@ TEST_F(StuffInTest, SimpleCase) {
 
 TEST_F(StuffInTest, Empty) {
   const auto actual = stuff_in("", "", "", "", "", "");
-  EXPECT_EQ(0, actual.length());
+  EXPECT_TRUE(actual.empty());
 }
 
 // Param     Description                       Example

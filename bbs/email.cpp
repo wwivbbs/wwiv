@@ -256,12 +256,12 @@ void sendout_email(EmailData& data) {
     if (data.user_number == 0 && data.from_network_number == a()->net_num()) {
       nh.main_type = main_type_email_name;
       strcpy(&b1[i], a()->net_email_name.c_str());
-      i += wwiv::stl::ssize(a()->net_email_name) + 1;
+      i += wwiv::stl::size_int(a()->net_email_name) + 1;
     }
     strcpy(&b1[i], m.title);
     i += ssize(m.title) + 1;
     memmove(&b1[i], b.c_str(), b.length());
-    nh.length = b.length() + i;
+    nh.length = wwiv::stl::size_int(b) + i;
     if (nh.length > 32760) {
       bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
@@ -611,7 +611,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   email.msg = &msg;
   email.anony = i;
   email.an = an;
-  email.from_user = a()->usernum;
+  email.set_from_user(a()->usernum);
   email.from_system = a()->current_net().sysnum;
   email.forwarded_code = 0;
 

@@ -20,16 +20,10 @@
 #include "bbs/batch.h"
 
 #include "bbs/bbs.h"
-#include "common/bgetch.h"
-#include "common/com.h"
-#include "common/datetime.h"
 #include "bbs/dsz.h"
 #include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/make_abs_cmd.h"
-#include "common/pause.h"
-#include "common/remote_io.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/srsend.h"
@@ -39,6 +33,11 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/pause.h"
+#include "common/remote_io.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -268,7 +267,7 @@ static void ProcessDSZLogFile(const std::string& path) {
     default:
       sysoplog() << fmt::format("Error transferring \"{}\"", fn);
       break;
-    };
+    }
   });
 }
 
@@ -582,7 +581,7 @@ static std::filesystem::path make_dl_batch_list() {
       bout << "Cannot download " << b.aligned_filename() << ": Not enough time" << wwiv::endl;
     }
     const auto thisk = bytes_to_k(b.len());
-    if (a()->config()->req_ratio() > 0.0001 &&
+    if (a()->config()->req_ratio() > 0.0001f &&
         ratio1(addk + thisk) < a()->config()->req_ratio() &&
         !a()->user()->IsExemptRatio()) {
       ok = false;
@@ -867,7 +866,7 @@ int32_t BatchEntry::time(int modem_speed) const {
 }
 
 int Batch::FindBatch(const std::string& file_name) {
-  for (size_t i = 0; i < entry.size(); i++) {
+  for (int i = 0; i < size_int(entry); i++) {
     if (iequals(file_name, entry[i].aligned_filename())) {
       return i;
     }

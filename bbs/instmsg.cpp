@@ -85,12 +85,12 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
 static void send_inst_str1(int m, int whichinst, const std::string& send_string) {
   inst_msg_header ih;
 
-  string tempsendstring = StrCat(send_string, "\r\n");
+  const auto tempsendstring = StrCat(send_string, "\r\n");
   ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<uint16_t>(a()->instance_number());
   ih.from_user = static_cast<uint16_t>(a()->usernum);
-  ih.msg_size = tempsendstring.size() + 1;
+  ih.msg_size = wwiv::stl::size_int(tempsendstring) + 1;
   ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = daten_t_now();
 

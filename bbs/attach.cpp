@@ -307,10 +307,10 @@ void attach_file(int mode) {
                       } else {
                         filestatusrec fsr1{};
                         fsr1.id = 1;
-                        long lNumRead = 0;
+                        File::size_type num_read = 0;
                         do {
-                          lNumRead = attachFile.Read(&fsr1, sizeof(filestatusrec));
-                        } while (lNumRead > 0 && fsr1.id != 0);
+                          num_read = attachFile.Read(&fsr1, sizeof(filestatusrec));
+                        } while (num_read > 0 && fsr1.id != 0);
 
                         if (fsr1.id == 0) {
                           attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);

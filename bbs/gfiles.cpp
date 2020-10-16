@@ -61,7 +61,7 @@ gfilerec *read_sec(int sn, int *nf) {
 
   File file(FilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
+    *nf = static_cast<int>(file.Read(pRecord, nSectionSize) / sizeof(gfilerec));
   }
   return pRecord;
 }

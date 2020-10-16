@@ -283,7 +283,7 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
     LOG(INFO) << "Can't updating routing information, already have 32k of message.";
     return false;
   }
-  nh.length += routing_information.size();
+  nh.length += stl::size_uint32(routing_information);
 
   // Need to skip over either 3 or 4 lines 1st depending on the packet type.
   const auto lines = number_of_header_lines(nh.main_type);
@@ -309,7 +309,7 @@ void Packet::set_text(std::string&& text) {
 }
 
 void Packet::update_header() {
-  nh.length = text_.size();
+  nh.length = stl::size_uint32(text_);
   nh.list_len = static_cast<uint16_t>(list.size());
 }
 
@@ -574,7 +574,7 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
   text.append("\r\n");
   text.append(m.text().text());
 
-  nh.length = text.size();
+  nh.length = stl::size_uint32(text);
 
   Packet p(nh, list, text);
   return p;
@@ -646,8 +646,8 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       // we also have to update the nh.length to reflect this change.
       // TODO(rushfan): Really need higher level interface to manipulating
       // WWIVnet packets...
-      h.length -= original_subtype.size();
-      h.length += subnet.stype.size();
+      h.length -= stl::size_uint32(original_subtype);
+      h.length += stl::size_uint32(subnet.stype);
     }
     if (current_net.type == network_type_t::ftn) {
       h.tosys = FTN_FAKE_OUTBOUND_NODE;

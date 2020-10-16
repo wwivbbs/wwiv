@@ -107,11 +107,6 @@ endif()
 message(VERBOSE "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 
-IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  message(VERBOSE "Defining _DEBUG macro for debug build")
-  ADD_DEFINITIONS(-D_DEBUG)
-ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-
 macro(SET_MSVC_WARNING_LEVEL_4) 
   if(WIN32 AND MSVC)
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -170,4 +165,11 @@ function(create_datafile_archive arc dir)
   #message(TRACE "P: ${ARC_PATH}")
   install(FILES "${ARC_PATH}" DESTINATION .)
 endfunction()
+
+IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  message(VERBOSE "Defining _DEBUG macro for debug build")
+  ADD_DEFINITIONS(-D_DEBUG)
+ENDIF()
+
+SET_MSVC_WARNING_LEVEL_4()
 

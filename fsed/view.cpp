@@ -108,8 +108,8 @@ void FsedView::handle_editor_invalidate(FsedModel& e, editor_range_t t) {
 
   // Clean up the bottom.
   // clear the current and then remaining
-  if (ssize(e) == t.end.line + 1) {
-    for (auto z = ssize(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
+  if (size_int(e) == t.end.line + 1) {
+    for (auto z = size_int(e) - top_line() + fs_.lines_start(); z < fs_.lines_end(); z++) {
       bout_.GotoXY(0, z);
       bout_.clreol();
     }

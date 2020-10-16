@@ -19,8 +19,6 @@
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
@@ -28,6 +26,7 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
+#include "common/input.h"
 #include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -47,7 +46,7 @@ using namespace wwiv::strings;
 
 void normalupload(int dn) {
   files::FileRecord f;
-  int ok = 1;
+  auto ok = 1;
 
   const auto& d = a()->dirs()[dn];
   dliscan1(d);
@@ -106,8 +105,8 @@ void normalupload(int dn) {
     }
   }
   f.set_filename(input_fn);
-  f.u().ownerusr = a()->usernum;
-  f.u().ownersys = 0;
+  f.set_ownerusr(a()->usernum);
+  f.set_ownersys(0);
   f.u().numdloads = 0;
   f.u().unused_filetype = 0;
   f.u().mask = 0;
@@ -116,7 +115,7 @@ void normalupload(int dn) {
   to_char_array(f.u().date, date());
   bout.nl();
   ok = 1;
-  bool xfer = true;
+  auto xfer = true;
   if (a()->batch().contains_file(f.filename())) {
     ok = 0;
     bout.nl();

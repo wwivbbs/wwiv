@@ -330,7 +330,7 @@ int sendFilename(ZModem* info) {
     return err;
   }
 
-  int i = strlen(info->rfilename);
+  auto i = wwiv::strings::ssize(info->rfilename);
   memcpy(ptr, info->rfilename, i + 1);
   ptr += i + 1;
   sprintf(reinterpret_cast<char*>(ptr), "%d %lo %o 0 %d %d 0", info->len, info->date, info->mode,
@@ -991,7 +991,7 @@ int YSendFilename(ZModem* info) {
   info->packetCount = 0;
   info->offset = 0;
 
-  int i = strlen(info->rfilename);
+  int i = wwiv::strings::ssize(info->rfilename);
   memcpy(ptr, info->rfilename, i + 1);
   ptr += i + 1;
   sprintf(reinterpret_cast<char*>(ptr), "%d %lo %o 0", info->len, info->date, info->mode);

@@ -559,7 +559,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
+        userFile.Seek(static_cast<File::size_type>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
         nNewUserNumber =
             static_cast<int>((userFile.length() / a()->config()->userrec_length()) - 1);
@@ -568,7 +568,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
       userFile.Read(&tu.data, a()->config()->userrec_length());
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
+        userFile.Seek(static_cast<File::size_type>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
         userFile.Write(&pUser->data, a()->config()->userrec_length());
         userFile.Close();
@@ -582,7 +582,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   }
 
   if (user_number <= a()->config()->max_users()) {
-    userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
+    userFile.Seek(static_cast<File::size_type>(user_number * a()->config()->userrec_length()),
                   File::Whence::begin);
     userFile.Write(&pUser->data, a()->config()->userrec_length());
     userFile.Close();
@@ -656,17 +656,6 @@ bool UseMinimalNewUserInfo() {
   return false;
 }
 
-static void DefaultToWWIVEditIfPossible() {
-  for (size_t nEditor = 0; nEditor < a()->editors.size(); nEditor++) {
-    // TODO(rushfan): Should we get rid of this favoring of WWIVEDIT?
-    string editor_desc(a()->editors[nEditor].description);
-    StringUpperCase(&editor_desc);
-    if (editor_desc.find("WWIVEDIT") != string::npos) {
-      a()->user()->SetDefaultEditor(nEditor + 1);
-      return;
-    }
-  }
-}
 void DoFullNewUser() {
   const auto u = a()->user();
 
@@ -725,8 +714,6 @@ void DoFullNewUser() {
     bout << "|#5Select a fullscreen editor? ";
     if (bin.yesno()) {
       select_editor();
-    } else {
-      DefaultToWWIVEditIfPossible();
     }
     bout.nl();
   }
@@ -755,7 +742,7 @@ void DoNewUserASV() {
     if (bin.yesno()) {
       bout.nl();
       bout << "|#5Please enter your BBS name and number.\r\n";
-      auto note = bin.input_text(60);
+      const auto note = bin.input_text(60);
       a()->user()->SetNote(note.c_str());
       a()->user()->SetSl(a()->asv.sl);
       a()->user()->SetDsl(a()->asv.dsl);
@@ -976,6 +963,7 @@ void newuser() {
   }
 
   input_language();
+
   if (!CanCreateNewUserAccountHere() || a()->sess().hangup()) {
     a()->Hangup();
     return;
@@ -1243,7 +1231,7 @@ void DoMinimalNewUser() {
     bout.litebar(StrCat(a()->config()->system_name(), " New User Registration"));
     bout << "|#1[A] Name (real or alias)    : ";
     if (u->GetName()[0] == '\0') {
-      bool ok = true;
+      auto ok = true;
       std::string temp_name;
       do {
         bout.SavePosition();
@@ -1448,7 +1436,7 @@ void new_mail() {
     EmailData email(data);
     email.msg = &msg;
     email.anony = 0;
-    email.user_number = a()->usernum;
+    email.set_user_number(a()->usernum);
     email.system_number = 0;
     email.an = true;
     email.from_user = 1;

@@ -103,7 +103,7 @@ void modify_sec(int n) {
     case '[':
       a()->gfilesec[n] = r;
       if (--n < 0) {
-        n = a()->gfilesec.size() - 1;
+        n = size_int(a()->gfilesec) - 1;
       }
       r = a()->gfilesec[n];
       break;

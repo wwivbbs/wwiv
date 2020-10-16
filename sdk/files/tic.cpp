@@ -58,7 +58,7 @@ bool Tic::crc_valid() const {
 
 bool Tic::size_valid() const {
   const File f(fpath());
-  const int actual_size = f.length();
+  const int actual_size = static_cast<int>(f.length());
   if (actual_size != size()) {
     LOG(INFO) << "Tic FileSize !valid. actual: " << actual_size << "; expected: " << size();
     return false;
@@ -75,7 +75,7 @@ int Tic::size() const {
     return size_;
   }
   const File f(fpath());
-  return f.length();
+  return static_cast<int>(f.length());
 }
 
 core::DateTime Tic::date() const {

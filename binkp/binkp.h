@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_BINKP_H__
-#define __INCLUDED_NETWORKB_BINKP_H__
+#ifndef INCLUDED_BINKP_BINKP_H
+#define INCLUDED_BINKP_BINKP_H
 
 #include "core/command_line.h"
 #include "core/connection.h"
@@ -32,11 +32,9 @@
 #include <memory>
 #include <string>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
   
 class BinkConfig;
-class Connection;
 class TransferFile;
 
 enum class BinkState {
@@ -158,7 +156,6 @@ std::string expected_password_for(const wwiv::sdk::Callout* callout, N node) {
   return expected_password_for(callout->net_call_out_for(node));
 }
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_NETWORKB_BINKP_H__
+#endif

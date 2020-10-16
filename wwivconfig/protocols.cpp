@@ -181,7 +181,7 @@ void extrn_prots(const std::string& datadir) {
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
     auto result = list.Run();
-    const int max_protocol_number = ssize(externs) -1 + 6;
+    const auto max_protocol_number = size_int(externs) -1 + 6;
 
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {

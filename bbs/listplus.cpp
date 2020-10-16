@@ -139,7 +139,7 @@ static void build_header() {
     header += "Age ";
   }
   if (a()->user()->data.lp_options & cfl_description) {
-    desc_pos = header.size();
+    desc_pos = size_int(header);
     header += "Description";
   }
   StringJustify(&header, 79, ' ', JustificationType::LEFT);
@@ -469,7 +469,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     bout << "  |#9Extended Description:\n\r";
   }
   const auto lines = SplitString(ss, "\n", false);
-  auto numl = std::min<int>(ssize(lines), numlist);
+  auto numl = std::min<int>(size_int(lines), numlist);
   for (auto i = 0; i < numl; i++) {
     bout.Right(std::abs(indent));
     auto l = lines.at(i);
@@ -519,7 +519,7 @@ int check_lines_needed(uploadsrec* u) {
       const auto ss = a()->current_file_area()->ReadExtendedDescriptionAsString(u->filename).
                            value_or("");
       const auto lines = SplitString(ss, "\r");
-      elines = ssize(lines);
+      elines = size_int(lines);
     }
   }
   const auto lc_lines_used = lp_configured_lines();

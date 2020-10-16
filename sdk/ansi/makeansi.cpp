@@ -39,7 +39,7 @@ std::string makeansi(int attr, int current_attr) {
     return "";
   }
 
-  int catr = current_attr;
+  auto catr = current_attr;
   std::string out;
   if ((catr & 0x88) ^ (attr & 0x88)) {
     addto(&out, 0);

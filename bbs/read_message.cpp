@@ -578,7 +578,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   fs.GotoContentAreaTop();
   const auto first = 0;
-  const auto last = std::max<int>(0, lines.size() - fs.message_height());
+  const auto last = std::max<int>(0, size_int(lines) - fs.message_height());
 
   auto start = first;
   auto dirty = true;

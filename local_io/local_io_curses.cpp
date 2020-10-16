@@ -329,7 +329,7 @@ void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
 int CursesLocalIO::GetDefaultScreenBottom() const noexcept { return window_->GetMaxY() - 1; }
 
 static int GetEditLineStringLength(const char* text) {
-  int i = strlen(text);
+  auto i = ssize(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
   }
@@ -496,7 +496,7 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
     }
   } while (!done);
 
-  int z = strlen(pszInOutText);
+  int z = ssize(pszInOutText);
   while (z >= 0 && static_cast<unsigned char>(pszInOutText[z - 1]) == 176) {
     --z;
   }

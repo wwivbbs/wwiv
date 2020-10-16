@@ -82,7 +82,7 @@ void select_editor() {
   bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
   const auto cur_editor = a()->user()->GetDefaultEditor();
   auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
-                                   ssize(a()->editors), false);
+                                   size_int(a()->editors), false);
   if (k.key == 'A') {
     a()->user()->SetDefaultEditor(0xff);
   } else if (k.key == 'Q') {
@@ -404,14 +404,12 @@ void config_qscan() {
     char ch;
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       std::string conf_list{" "};
-      bool abort = false;
+      auto abort = false;
       bout << "\r\nSelect Conference: \r\n\n";
-      size_t i = 0;
-      while (i < a()->subconfs.size() && has_userconf_to_subconf(i) && !abort) {
+      for (auto i = 0; i < size_int(a()->subconfs) && has_userconf_to_subconf(i) && !abort; i++) {
         const auto& c = a()->subconfs[a()->uconfsub[i].confnum];
         bout.bpla(fmt::format("{}) {}", c.designator, stripcolors(c.conf_name)), &abort);
         conf_list.push_back(static_cast<char>(c.designator));
-        i++;
       }
       bout.nl();
       bout << "Select [" << conf_list.substr(1) << ", <space> to quit]: ";
@@ -425,13 +423,13 @@ void config_qscan() {
       break;
     default:
       if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-        size_t i = 0;
-        while ((ch != a()->subconfs[a()->uconfsub[i].confnum].designator) &&
-               (i < a()->subconfs.size())) {
+        auto i = 0;
+        while (ch != a()->subconfs[a()->uconfsub[i].confnum].designator &&
+               i < size_int(a()->subconfs)) {
           i++;
         }
 
-        if (i >= a()->subconfs.size()) {
+        if (i >= size_int(a()->subconfs)) {
           break;
         }
 

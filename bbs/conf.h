@@ -15,26 +15,24 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_CONF_H__
-#define __INCLUDED_BBS_CONF_H__
+#ifndef INCLUDED_BBS_CONF_H
+#define INCLUDED_BBS_CONF_H
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <set>
+#include "core/stl.h"
 #include "core/transaction.h"
 #include "sdk/vardec.h"
+#include <set>
+#include <string>
+#include <vector>
 
-namespace wwiv {
-namespace bbs {
+namespace wwiv::bbs {
 
 class TempDisableConferences: public wwiv::core::Transaction {
 public:
   TempDisableConferences();
 };
 
-}  // namespace bbs
-}  // namespace wwiv
+}  // namespace
 
 typedef uint16_t subconf_t;
 
@@ -58,11 +56,11 @@ struct confrec {
   uint8_t maxsl;
   // Minimum DSL needed for access
   uint8_t mindsl;
-  // Maximum DSL allowed for acces
+  // Maximum DSL allowed for access
   uint8_t maxdsl;
   // Minimum age needed for access
   uint8_t minage;
-  // Maximum age allowed for acces
+  // Maximum age allowed for access
   uint8_t maxage;
   // Gender: 0=male, 1=female 2=all
   uint8_t sex;
@@ -89,7 +87,7 @@ struct userconfrec {
 class conf_info_t {
 public:
   conf_info_t(std::vector<confrec>& c, std::vector<userconfrec>& u)
-    : confs(c), uc(u), num_confs(c.size()) {}
+    : confs(c), uc(u), num_confs(wwiv::stl::size_int32(c)) {}
   
   std::vector<confrec>& confs;
   std::vector<userconfrec>& uc;
@@ -118,4 +116,4 @@ void read_all_conferences();
 int wordcount(const std::string& instr, const char *delimstr);
 std::string extractword(int ww, const std::string& instr, const char *delimstr);
 
-#endif  // __INCLUDED_BBS_CONF_H__
+#endif

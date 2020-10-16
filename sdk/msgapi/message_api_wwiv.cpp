@@ -150,7 +150,7 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
         return nullptr;
       }
       // Return the newly created WWIVEmail object.
-      return new WWIVEmail(config_, data, text, net_networks_.size());
+      return new WWIVEmail(config_, data, text, stl::size_int(net_networks_));
     }
 
     File datafile(data);
@@ -170,7 +170,7 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
     }
   }
 
-  return new WWIVEmail(config_, data, text, net_networks_.size());
+  return new WWIVEmail(config_, data, text, stl::size_int(net_networks_));
 }
 
 uint32_t WWIVMessageApi::last_read(int area) const {

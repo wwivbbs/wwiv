@@ -43,8 +43,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-void insert_chain(int chain_num);
-void delete_chain(int chain_num);
+void insert_chain(size_t chain_num);
+void delete_chain(size_t chain_num);
 
 static string chaindata(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
@@ -69,8 +69,8 @@ static void showchains() {
             &abort);
   bout.bpla("|#7== ----------------------------  ============================== --- ==== --",
             &abort);
-  for (size_t nChainNum = 0; nChainNum < a()->chains->chains().size() && !abort; nChainNum++) {
-    const auto s = chaindata(nChainNum);
+  for (auto chain_num = 0; chain_num < size_int(a()->chains->chains()) && !abort; chain_num++) {
+    const auto s = chaindata(chain_num);
     bout.bpla(s, &abort);
   }
 }
@@ -166,9 +166,9 @@ static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
   }
 }
 
-static void modify_chain(int chain_num) {
+static void modify_chain(ssize_t chain_num) {
   auto c = a()->chains->at(chain_num);
-  bool done = false;
+  auto done = false;
   do {
     bout.cls();
     bout.litebar(fmt::format("Editing Chain #{}", chain_num));
@@ -322,7 +322,7 @@ static void modify_chain(int chain_num) {
   a()->chains->at(chain_num) = c;
 }
 
-void insert_chain(int pos) {
+void insert_chain(size_t pos) {
   chain_t c{};
   c.description = "** NEW CHAIN **";
   c.filename = "REM";
@@ -334,7 +334,7 @@ void insert_chain(int pos) {
   modify_chain(pos);
 }
 
-void delete_chain(int chain_num) {
+void delete_chain(size_t chain_num) {
   a()->chains->erase(chain_num);
 }
 
@@ -358,7 +358,7 @@ void chainedit() {
     case 'M': {
       bout.nl();
       bout << "|#2(Q=Quit) Chain number? ";
-      auto r = bin.input_number_hotkey(0, {'Q'}, 0, ssize(a()->chains->chains()), false);
+      auto r = bin.input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains->chains()), false);
       if (r.key != 'Q' && r.num < ssize(a()->chains->chains())) {
         modify_chain(r.num);
       }
@@ -367,11 +367,11 @@ void chainedit() {
       if (a()->chains->chains().size() < a()->max_chains) {
         bout.nl();
         bout << "|#2(Q=Quit) Insert before which chain ('$' for end) : ";
-        auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
+        auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
         if (r.key == 'Q') {
           break;
         }
-        auto chain = (r.key == '$') ? ssize(a()->chains->chains()) : r.num;
+        auto chain = (r.key == '$') ? size_int(a()->chains->chains()) : r.num;
         if (chain >= 0 && chain <= ssize(a()->chains->chains())) {
           insert_chain(chain);
         }
@@ -380,7 +380,7 @@ void chainedit() {
     case 'D': {
       bout.nl();
       bout << "|#2(Q=Quit) Delete which chain? ";
-      auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, ssize(a()->chains->chains()), false);
+      auto r = bin.input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains->chains()), false);
       if (r.key == 'Q') {
         break;
       }

@@ -161,7 +161,7 @@ int WWIVEmail::number_of_email_records() const {
   if (!open_ || !mail_file_) {
     return 0;
   }
-  return mail_file_.number_of_records();
+  return static_cast<int>(mail_file_.number_of_records());
 }
 
 /** Temporary API to read the header from an email message. */
@@ -273,7 +273,7 @@ bool WWIVEmail::add_email(const mailrec& m) {
     return false;
   }
   auto recno = 0;
-  const int max_size = mail_file_.number_of_records();
+  const int max_size = static_cast<int>(mail_file_.number_of_records());
   if (max_size > 0) {
     mailrec temprec{};
     recno = max_size - 1;

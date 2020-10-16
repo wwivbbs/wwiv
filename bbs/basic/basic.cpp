@@ -76,7 +76,7 @@ int my_input(const char* prompt, char* buf, int size) {
   }
   const auto v = bin.input_text("", size);
   strcpy(buf, v.c_str());
-  return v.size();
+  return wwiv::stl::size_int(v);
 }
 
 static bool RegisterMyBasicGlobals() {

@@ -244,7 +244,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     a()->filelist.emplace_back(t);
     sprintf(s, "\r|#%d%2d|#%d%c",
             a()->batch().contains_file(u->filename) ? 6 : 0,
-            a()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
+            size_int(a()->filelist), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
     bout.bputs(s, abort, &next);
   }
   bout.Color(1);

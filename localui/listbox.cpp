@@ -40,21 +40,21 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
                  std::vector<ListBoxItem>& items, ColorScheme* scheme)
     : title_(title), items_(items), color_scheme_(scheme),
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
-  height_ = std::min<int>(items.size(), max_y);
+  height_ = std::min<int>(size_int(items), max_y);
   const auto window_height = 2 + height_ + window_top_min_ - 1;
-  auto longest_line = std::max<int>(2, title.size() + 4);
+  auto longest_line = std::max<int>(2, size_int(title) + 4);
   for (const auto& item : items) {
-    longest_line = std::max<int>(longest_line, item.text().size());
+    longest_line = std::max<int>(longest_line, size_int(item.text()));
     if (item.hotkey() > 0) {
       hotkeys_.push_back(static_cast<char>(item.hotkey()));
     }
   }
   width_ = std::min<int>(max_x, longest_line);
-  int window_width = 4 + width_;
-  int maxx = parent->GetMaxX();
-  int maxy = parent->GetMaxY();
-  int begin_x = (maxx - window_width) / 2;
-  int begin_y = (maxy - window_height) / 2;
+  const auto window_width = 4 + width_;
+  const auto maxx = parent->GetMaxX();
+  const auto maxy = parent->GetMaxY();
+  const auto begin_x = (maxx - window_width) / 2;
+  const auto begin_y = (maxy - window_height) / 2;
 
   CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
 
@@ -72,18 +72,18 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
 ListBox::ListBox(UIWindow* parent, const string& title,
                  std::vector<ListBoxItem>& items)
     : ListBox(parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
-              std::min<int>(std::max<int>(items.size(), MINIMUM_LISTBOX_HEIGHT),
+              std::min<int>(std::max<int>(size_int(items), MINIMUM_LISTBOX_HEIGHT),
                             static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
               items, curses_out->color_scheme()) {}
 
 void ListBox::DrawAllItems() {
   for (auto y = 0; y < height_; y++) {
-    auto current_item = window_top_ + y - window_top_min_;
-    string line(items_[current_item].text());
-    if (static_cast<int>(line.size()) > width_) {
+    const auto current_item = window_top_ + y - window_top_min_;
+    auto line{items_[current_item].text()};
+    if (size_int(line) > width_) {
       line = line.substr(0, width_);
     } else {
-      for (int i = line.size(); i < width_; i++) {
+      for (auto i = size_int(line); i < width_; i++) {
         line.push_back(' ');
       }
     }
@@ -94,21 +94,21 @@ void ListBox::DrawAllItems() {
     }
     line.insert(line.begin(), 1, ' ');
     line.push_back(' ');
-    window_->PutsXY(1, y + window_top_min_, line.c_str());
+    window_->PutsXY(1, y + window_top_min_, line);
   }
 }
 
 ListBoxResult ListBox::RunDialog() {
   if (selected_ < 0) {
     selected_ = 0;
-  } else if (selected_ >= ssize(items_)) {
-    selected_ = items_.size();
+  } else if (selected_ >= size_int(items_)) {
+    selected_ = size_int(items_);
   }
   // Move window top to furthest possible spot.
-  auto temp_top = std::max<int>(window_top_min_, selected_);
+  const auto temp_top = std::max<int>(window_top_min_, selected_);
   // Pull it back to the top of the window.
-  window_top_ = std::min<int>(temp_top, items_.size() - height_ + window_top_min_);
-  selected_ = std::min<int>(selected_, items_.size() - 1);
+  window_top_ = std::min<int>(temp_top, size_int(items_) - height_ + window_top_min_);
+  selected_ = std::min<int>(selected_, size_int(items_) - 1);
 
   while (true) {
     DrawAllItems();
@@ -121,7 +121,7 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = window_top_min_;
       break;
     case KEY_END:
-      window_top_ = ssize(items_) - height_ + window_top_min_;
+      window_top_ = size_int(items_) - height_ + window_top_min_;
       selected_ = window_top_ - window_top_min_;
       break;
     case KEY_PREVIOUS: // What is this key?
@@ -147,7 +147,7 @@ ListBoxResult ListBox::RunDialog() {
       int window_bottom = window_top_ + height_ - window_top_min_ - 1;
       if (selected_ < window_bottom) {
         selected_++;
-      } else if (window_top_ < static_cast<int>(items_.size()) - height_ + window_top_min_) {
+      } else if (window_top_ < size_int(items_) - height_ + window_top_min_) {
         selected_++;
         window_top_++;
       }
@@ -155,8 +155,8 @@ ListBoxResult ListBox::RunDialog() {
     case KEY_NPAGE: {
       window_top_ += height_;
       selected_ += height_;
-      window_top_ = std::min<int>(window_top_, items_.size() - height_ + window_top_min_);
-      selected_ = std::min<int>(selected_, items_.size() - 1);
+      window_top_ = std::min<int>(window_top_, size_int(items_) - height_ + window_top_min_);
+      selected_ = std::min<int>(selected_, size_int(items_) - 1);
     } break;
     case KEY_ENTER:
     case 13: {
@@ -169,7 +169,7 @@ ListBoxResult ListBox::RunDialog() {
         return ListBoxResult{ListBoxResultType::HOTKEY, selected_, hotkey};
       }
       return ListBoxResult{ListBoxResultType::SELECTION, selected_, hotkey};
-    } break;
+    }
     case 27: // ESCAPE_KEY
       return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0};
     default:

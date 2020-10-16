@@ -66,7 +66,7 @@ static void _align(char* fn) {
   }
   strcpy(name, fn);
 
-  for (int j = strlen(name); j < 8; j++) {
+  for (int j = ssize(name); j < 8; j++) {
     name[j] = ' ';
   }
   name[8] = '\0';
@@ -87,7 +87,7 @@ static void _align(char* fn) {
     }
   }
 
-  for (int i2 = strlen(ext); i2 < 3; i2++) {
+  for (int i2 = ssize(ext); i2 < 3; i2++) {
     ext[i2] = ' ';
   }
   ext[3] = '\0';
@@ -202,7 +202,23 @@ uint32_t FileRecord::numbytes() const noexcept {
 }
 
 void FileRecord::set_numbytes(int size) {
-  u_.numbytes = size;
+  u_.numbytes = static_cast<daten_t>(size);
+}
+
+uint16_t FileRecord::ownerusr() const noexcept {
+  return u_.ownerusr;
+}
+
+void FileRecord::set_ownerusr(int o) {
+  u_.ownerusr = static_cast<uint16_t>(o);
+}
+
+uint16_t FileRecord::ownersys() const noexcept {
+  return u_.ownersys;
+}
+
+void FileRecord::set_ownersys(int o) {
+  u_.ownersys = static_cast<uint16_t>(o);
 }
 
 bool FileRecord::set_description(const std::string& desc) {

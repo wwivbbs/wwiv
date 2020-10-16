@@ -174,7 +174,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
         break;
       }
       bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
-      auto r = bin.input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      const auto r = bin.input_number_hotkey(0, {'Q'}, 1, size_int(area_tags), false);
       if (r.key == 'Q') {
         break;
       }
@@ -189,7 +189,7 @@ static void edit_ftn_area_tags(std::vector<wwiv::sdk::files::dir_area_t>& area_t
         break;
       }
       bout << "(Q=Quit, 1=" << area_tags.size() << ") Enter Number? ";
-      auto r = bin.input_number_hotkey(0, {'Q'}, 1, area_tags.size(), false);
+      const auto r = bin.input_number_hotkey(0, {'Q'}, 1, size_int(area_tags), false);
       if (r.key == 'Q') {
         break;
       }

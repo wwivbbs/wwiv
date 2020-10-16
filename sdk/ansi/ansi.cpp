@@ -53,7 +53,7 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   // TODO(rushfan) assert that this starts_with(as, "\x1b["))?
   auto list = SplitString(as.substr(2), ";", false);
   std::vector<int> out;
-  const auto list_size = std::min<int>(max_args, wwiv::stl::ssize(list));
+  const auto list_size = std::min<int>(max_args, wwiv::stl::size_int(list));
   for (auto i = 0; i < wwiv::stl::ssize(defaults); i++) {
     if (i < list_size) {
       const auto& c = list.at(i);

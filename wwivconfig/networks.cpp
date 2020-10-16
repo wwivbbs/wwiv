@@ -830,7 +830,7 @@ void networks(const wwiv::sdk::Config& config, std::set<int>& need_network3) {
           const auto prompt =
               fmt::format("Insert before which (1-{}) ? ", networks.networks().size() + 1);
           const auto net_num =
-              dialog_input_number(window, prompt, 1, wwiv::stl::ssize(networks.networks()) + 1);
+              dialog_input_number(window, prompt, 1, wwiv::stl::size_int(networks.networks()) + 1);
           if (net_num > 0 && net_num <= wwiv::stl::ssize(networks.networks()) + 1) {
 
             static const vector<string> nettypes{

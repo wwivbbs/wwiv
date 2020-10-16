@@ -15,16 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
-#ifndef __INCLUDED_NETWORKB_TRANSFER_FILE_H__
-#define __INCLUDED_NETWORKB_TRANSFER_FILE_H__
+#ifndef INCLUDED_NETWORKB_TRANSFER_FILE_H
+#define INCLUDED_NETWORKB_TRANSFER_FILE_H
 
+#include "core/stl.h"
 #include <chrono>
 #include <cstdint>
 #include <string>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
   
 class TransferFile {
 public:
@@ -60,7 +59,7 @@ public:
   // for testing.
   [[nodiscard]] virtual const std::string& contents() const final { return contents_; }
 
-  [[nodiscard]] int file_size() const override final { return contents_.length(); }
+  [[nodiscard]] int file_size() const override final { return stl::size_int(contents_); }
   bool Delete() override { contents_.clear(); return true; }
   bool GetChunk(char* chunk, int start, int size) override final;
   bool WriteChunk(const char* chunk, int size) override final;
@@ -71,7 +70,6 @@ private:
 };
 
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_NETWORKB_TRANSFER_FILE_H__
+#endif

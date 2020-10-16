@@ -137,7 +137,7 @@ void line_t::assign(const std::vector<cell_t>& cells) {
     return;
   }
   cell_ = cells;
-  size_ = wwiv::stl::ssize(cells);
+  size_ = size_int(cells);
   wwiv_color_ = cells.back().wwiv_color;
 }
 
@@ -148,7 +148,7 @@ void line_t::append(const std::vector<cell_t>& cells) {
   for (const auto& c : cells) {
     cell_.emplace_back(c);
   }
-  size_ += wwiv::stl::ssize(cells);
+  size_ += size_int(cells);
   wwiv_color_ = cells.back().wwiv_color;
 }
 

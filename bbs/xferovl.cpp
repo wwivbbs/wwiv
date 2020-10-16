@@ -737,14 +737,12 @@ static void config_nscan() {
       std::string s1 = " ";
       bout.nl();
       bout << "Select Conference: \r\n\n";
-      size_t i = 0;
-      while (i < a()->dirconfs.size() && has_userconf_to_dirconf(i) && !abort) {
+      for (auto i = 0; i < wwiv::stl::size_int(a()->dirconfs) && has_userconf_to_dirconf(i) && !abort; i++) {
         const auto confnum = a()->uconfdir[i].confnum;
         const auto cn = stripcolors(a()->dirconfs[confnum].conf_name);
         const auto s2 = StrCat(a()->dirconfs[confnum].designator, ") ", cn);
         bout.bpla(s2, &abort);
         s1.push_back(static_cast<char>(a()->dirconfs[confnum].designator));
-        i++;
       }
       bout.nl();
       bout << " Select [" << s1.substr(1) << ", <space> to quit]: ";

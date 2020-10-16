@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETORKB_RECEIVE_FILE_H__
-#define __INCLUDED_NETORKB_RECEIVE_FILE_H__
+#ifndef INCLUDED_NETORKB_RECEIVE_FILE_H
+#define INCLUDED_NETORKB_RECEIVE_FILE_H
 
 #include "core/log.h"
 #include "core/strings.h"
@@ -27,8 +27,7 @@
 #include <string>
 #include <utility>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
 
 class ReceiveFile {
 public:
@@ -72,7 +71,6 @@ public:
   uint32_t crc_{0};
 };
 
-} // namespace net
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_NETORKB_RECEIVE_FILE_H__
+#endif

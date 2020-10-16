@@ -588,7 +588,7 @@ void chat1(const char* chat_line, bool two_way) {
     bout.flush();
     const auto unn = a()->names()->UserName(a()->usernum);
     const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
-    const auto x = (a()->user()->GetScreenChars() - stripcolors(s).size()) / 2;
+    const auto x = a()->user()->GetScreenChars() - wwiv::stl::size_int(stripcolors(s)) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);
     bout.bputs(s);
     bout.GotoXY(1, 1);

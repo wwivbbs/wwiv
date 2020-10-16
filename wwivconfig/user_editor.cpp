@@ -97,7 +97,7 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
+static int JumpToUser(CursesWindow* window, const std::string& datadir) {
   vector<ListBoxItem> items;
   {
     DataFile<smalrec> file(FilePath(datadir, NAMES_LST), File::modeReadOnly | File::modeBinary,
@@ -107,9 +107,9 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
       return -1;
     }
 
-    const int num_records = file.number_of_records();
-    for (int i = 0; i < num_records; i++) {
-      smalrec name;
+    const auto num_records = file.number_of_records();
+    for (auto i = 0; i < num_records; i++) {
+      smalrec name{};
       if (!file.Read(&name)) {
         messagebox(window, "Error reading smalrec");
         return -1;
@@ -136,8 +136,8 @@ void user_editor(const wwiv::sdk::Config& config) {
     return;
   }
 
-  int current_usernum = 1;
-  userrec user;
+  auto current_usernum = 1;
+  userrec user{};
   read_user(config, current_usernum, &user);
 
   auto user_name_field =

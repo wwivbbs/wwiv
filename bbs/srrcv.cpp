@@ -236,7 +236,7 @@ void xymodem_receive(const std::string& file_name, bool* received, bool use_crc)
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
       if (bln == 0 && pos == 0L) {
-        int i1 = strlen(b) + 1;
+        int i1 = ssize(b) + 1;
         int i3 = i1;
         while (b[i3] >= '0' && b[i3] <= '9' && (i3 - i1) < 15) {
           x[i3 - i1] = b[i3];

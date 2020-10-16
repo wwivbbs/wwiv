@@ -93,7 +93,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype,
   // This is an alphanumeric sub type.
   auto text = stype;
   text.push_back(0);
-  nh.length = text.size();
+  nh.length = size_uint32(text);
   send_net(&nh, {}, text, "");
 
   bout.nl();

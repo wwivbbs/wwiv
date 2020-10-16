@@ -18,10 +18,9 @@
 /**************************************************************************/
 #include "common/output.h"
 
-#include "common/com.h"
-#include "common/macro_context.h"
 #include "common/common_events.h"
 #include "common/input.h"
+#include "common/macro_context.h"
 #include "core/eventbus.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -148,11 +147,11 @@ std::string Output::MakeSystemColor(int c) {
   if (!okansi(user())) {
     return "";
   }
-  return wwiv::sdk::ansi::makeansi(c, curatr());
+  return makeansi(c, curatr());
 }
 
-std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
-  return MakeSystemColor(static_cast<uint8_t>(c));
+std::string Output::MakeSystemColor(wwiv::sdk::Color color) {
+  return MakeSystemColor(static_cast<uint8_t>(color));
 }
 
 void Output::litebar(const std::string& msg) {
@@ -255,7 +254,7 @@ int Output::bputs(const string& text) {
           bputs(MakeSystemColor(color | (curatr() & 0xf0)));
         }
         else {
-          const uint8_t bg = static_cast<uint8_t>(color) << 4;
+          const auto bg = static_cast<uint8_t>(color << 4);
           const uint8_t fg = curatr() & 0x0f;
           bputs(MakeSystemColor(bg | fg));
         }
@@ -298,7 +297,7 @@ int Output::bputs(const string& text) {
   }
 
   flush();
-  return stripcolors(text).size();
+  return ssize(stripcolors(text));
 }
 
 // This one does a newline.  Since it used to be pla. Should make

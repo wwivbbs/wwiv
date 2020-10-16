@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_REMOTE_USER_H__
-#define __INCLUDED_NETWORKB_REMOTE_USER_H__
+#ifndef INCLUDED_NETWORKB_REMOTE_USER_H
+#define INCLUDED_NETWORKB_REMOTE_USER_H
 
 #include "binkp/binkp_config.h"
 #include <cstdint>
@@ -70,4 +70,4 @@ std::string network_name_from_single_address(const std::string& address_list);
 
 }  // namespace wwiv::net
 
-#endif  // __INCLUDED_NETWORKB_REMOTE_USER_H__
+#endif

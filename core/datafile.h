@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_DATAFILE_H__
-#define __INCLUDED_CORE_DATAFILE_H__
+#ifndef INCLUDED_CORE_DATAFILE_H
+#define INCLUDED_CORE_DATAFILE_H
 
 #include "core/file.h"
 #include "core/stl.h"
@@ -24,8 +24,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 /**
  * File: Provides a high level, cross-platform common wrapper for file
@@ -41,6 +40,8 @@ namespace core {
  */
 template <typename RECORD, ssize_t SIZE = sizeof(RECORD)> class DataFile final {
 public:
+  using size_type = ssize_t;
+
   DataFile(const std::filesystem::path& full_file_name,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown)
@@ -56,7 +57,7 @@ public:
 
   [[nodiscard]] bool ok() const { return file_.IsOpen(); }
 
-  bool ReadVector(std::vector<RECORD>& records, ssize_t max_records = 0) {
+  bool ReadVector(std::vector<RECORD>& records, size_type max_records = 0) {
     auto num_to_read = number_of_records();
     if (num_to_read == 0) {
       // Reading nothing is always successful.
@@ -71,7 +72,7 @@ public:
     return Read(&records[0], num_to_read);
   }
 
-  bool Read(RECORD* record, int num_records = 1) {
+  bool Read(RECORD* record, size_type num_records = 1) {
     if (num_records == 0) {
       // Reading nothing is always successful.
       return true;
@@ -79,49 +80,49 @@ public:
     return file_.Read(record, num_records * SIZE) == static_cast<int>(num_records * SIZE);
   }
 
-  bool Read(int record_number, RECORD* record) {
+  bool Read(size_type record_number, RECORD* record) {
     if (!Seek(record_number)) {
       return false;
     }
     return Read(record);
   }
 
-  bool WriteVector(const std::vector<RECORD>& records, ssize_t max_records = 0) {
+  bool WriteVector(const std::vector<RECORD>& records, size_type max_records = 0) {
     if (records.empty()) {
       return true;
     }
-    auto num = wwiv::stl::ssize(records);
+    size_type num = stl::ssize(records);
     if (max_records != 0 && max_records < num) {
       num = max_records;
     }
     return Write(&records[0], num);
   }
 
-  bool WriteVectorAndTruncate(const std::vector<RECORD>& records, ssize_t max_records = 0) {
+  bool WriteVectorAndTruncate(const std::vector<RECORD>& records, size_type max_records = 0) {
     if (!WriteVector(records, max_records)) {
       return false;
     }
-    file_.set_length(records.size() * SIZE);
+    file_.set_length(wwiv::stl::ssize(records) * SIZE);
     return true;
   }
 
-  bool Write(const RECORD* record, int num_records = 1) {
+  bool Write(const RECORD* record, size_type num_records = 1) {
     return file_.Write(record, num_records * SIZE) == (num_records * SIZE);
   }
 
-  bool Write(int record_number, const RECORD* record) {
+  bool Write(size_type record_number, const RECORD* record) {
     if (!Seek(record_number)) {
       return false;
     }
     return Write(record);
   }
 
-  bool Seek(int record_number) {
+  bool Seek(size_type record_number) {
     return file_.Seek(record_number * SIZE, File::Whence::begin) ==
            static_cast<File::size_type>(record_number * SIZE);
   }
 
-  [[nodiscard]] int number_of_records() const noexcept {
+  [[nodiscard]] size_type number_of_records() const noexcept {
     return static_cast<int>(file_.length() / SIZE);
   }
 
@@ -132,6 +133,5 @@ private:
 };
 
 }
-}
 
-#endif  // __INCLUDED_CORE_DATAFILE_H__
+#endif

@@ -17,14 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_CORE_FILE_H__
-#define __INCLUDED_CORE_FILE_H__
+#ifndef INCLUDED_CORE_FILE_H
+#define INCLUDED_CORE_FILE_H
 
 #include "core/file_lock.h"
 #include "core/wwivport.h"
 #include <ctime>
 #include <filesystem>
-#include <iostream>
 #include <memory>
 #include <string>
 
@@ -41,8 +40,7 @@
 #endif
 #endif // _WIN32
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 
 /**
@@ -92,7 +90,7 @@ public:
 
   // Types.  This should eventually switch to a type supporting
   // Large files.   long is what off_t was.
-  using size_type = long;
+  using size_type = ssize_t;
 
   // Constructor/Destructor
 
@@ -109,22 +107,22 @@ public:
   void Close() noexcept;
   [[nodiscard]] bool IsOpen() const noexcept;
 
-  ssize_t Read(void* buf, ssize_t count);
-  ssize_t Write(const void* buf, ssize_t count);
+  size_type Read(void* buf, size_type size);
+  size_type Write(const void* buffer, size_type count);
 
-  ssize_t Write(const std::string& s) { return this->Write(s.data(), s.length()); }
+  size_type Write(const std::string& s) { return this->Write(s.data(), s.length()); }
 
-  ssize_t Writeln(const void* buffer, ssize_t count) {
+  size_type Writeln(const void* buffer, size_type count) {
     auto ret = this->Write(buffer, count);
     ret += this->Write("\r\n", 2);
     return ret;
   }
 
-  ssize_t Writeln(const std::string& s) { return this->Writeln(s.c_str(), s.length()); }
+  size_type Writeln(const std::string& s) { return this->Writeln(s.c_str(), s.length()); }
 
   [[nodiscard]] size_type length() const noexcept;
-  size_type Seek(size_type lOffset, Whence whence);
-  void set_length(size_type lNewLength);
+  size_type Seek(size_type offset, Whence whence);
+  void set_length(size_type l);
   [[nodiscard]] size_type current_position() const;
 
   [[nodiscard]] bool Exists() const noexcept;
@@ -234,7 +232,6 @@ private:
 /** Makes a backup of path using a custom suffix with the time and date */
 bool backup_file(const std::filesystem::path& from, int max_backups = 0);
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_CORE_FILE_H__
+#endif

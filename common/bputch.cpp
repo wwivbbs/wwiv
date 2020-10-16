@@ -109,13 +109,13 @@ int Output::bputch(char c, bool use_buffer) {
 void Output::rputs(const std::string& text) {
   // Rushfan fix for COM/IP weirdness
   if (sess().ok_modem_stuff()) {
-    remoteIO()->write(text.c_str(), text.size());
+    remoteIO()->write(text.c_str(), wwiv::stl::size_int(text));
   }
 }
 
 void Output::flush() {
   if (!bputch_buffer_.empty()) {
-    remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
+    remoteIO()->write(bputch_buffer_.c_str(), stl::size_int(bputch_buffer_));
     bputch_buffer_.clear();
   }
 }

@@ -350,7 +350,6 @@ void readmail(int mode) {
   filestatusrec fsr{};
   bool attach_exists = false;
   bool found = false;
-  long l1;
 
   a()->emchg_ = false;
 
@@ -414,7 +413,7 @@ void readmail(int mode) {
       if (nn <= a()->nets().size()) {
         net = a()->nets()[nn];
       } else {
-        net.sysnum = -1;
+        net.sysnum = static_cast<uint16_t>(-1);
         net.type = network_type_t::wwivnet;
         net.name = fmt::format("<deleted network #{}>", nn);
         nn = 255;
@@ -597,7 +596,7 @@ void readmail(int mode) {
       if (m.status & status_file) {
         File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
-          l1 = fileAttach.Read(&fsr, sizeof(fsr));
+          auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
@@ -1056,7 +1055,7 @@ void readmail(int mode) {
                   email.from_network_number = nn;
                   sendout_email(email);
                 } else {
-                  email.from_user = a()->usernum;
+                  email.set_from_user(a()->usernum);
                   email.from_system = a()->current_net().sysnum;
                   email.from_network_number = a()->net_num();
                   sendout_email(email);
@@ -1210,7 +1209,7 @@ void readmail(int mode) {
           tf.Close();
           bool bSent;
           bool bAbort;
-          send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, b.size());
+          send_file(fn.string(), &bSent, &bAbort, fn.string(), -1, ssize(b));
           if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog() << "Downloaded E-mail";

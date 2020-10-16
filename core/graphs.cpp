@@ -23,7 +23,7 @@ static constexpr uint16_t NO_NODE = 0;
 static constexpr float max_cost = numeric_limits<float>::infinity();
 
 Graph::Graph(uint16_t node, uint16_t max_size)
-  : node_(node), max_size_(max_size), adjacency_list_(max_size) {
+  : node_(node), adjacency_list_(max_size) {
   cost_.clear();
   cost_.resize(max_size, max_cost);
   cost_[node] = 0;

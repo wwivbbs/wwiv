@@ -150,7 +150,7 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
     nh->tosys = 0;
   }
   if (!byname.empty()) {
-    nh->length += byname.size() + 1;
+    nh->length += wwiv::stl::size_uint32(byname) + 1;
   }
   file.Write(nh, sizeof(net_header_rec));
   if (nh->list_len) {
@@ -317,7 +317,7 @@ int side_menu(int* menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
       bout.SystemColor(smc->normal_menu_item);
       bout.bputs(menu_items[*menu_pos].substr(1));
       if (!*menu_pos) {
-        *menu_pos = wwiv::stl::ssize(menu_items) - 1;
+        *menu_pos = wwiv::stl::size_int(menu_items) - 1;
       } else {
         --*menu_pos;
       }

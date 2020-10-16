@@ -882,7 +882,7 @@ void write_qwk_cfg(const qwk_config& c) {
   to_char_array(o.news, c.news);
   to_char_array(o.bye, c.bye);
   to_char_array(o.packet_name, c.packet_name);
-  o.amount_blts = c.bulletins.size();
+  o.amount_blts = size_int32(c.bulletins);
 
   write(f, &o, sizeof(qwk_config_430));
 

@@ -17,12 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_SDK_FILES_DIRS_H__
-#define __INCLUDED_SDK_FILES_DIRS_H__
+#ifndef INCLUDED_SDK_FILES_DIRS_H
+#define INCLUDED_SDK_FILES_DIRS_H
 
+#include "core/stl.h"
 #include "core/uuid.h"
 #include <filesystem>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -30,7 +30,7 @@ namespace wwiv::sdk::files {
 
 struct dir_area_t {
   std::string area_tag;
-  wwiv::core::uuid_t net_uuid;  
+  core::uuid_t net_uuid;  
 };
 
 // New (5.5+) style directory. 
@@ -81,7 +81,7 @@ public:
   [[nodiscard]] const std::vector<directory_t>& dirs() const { return dirs_; }
   bool insert(int n, directory_t r);
   bool erase(int n);
-  [[nodiscard]] int size() const { return dirs_.size(); }
+  [[nodiscard]] int size() const { return stl::size_int(dirs_); }
 
   static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries);
   static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<directory_t>& entries);
@@ -97,5 +97,5 @@ private:
 }
 
 
-#endif // __INCLUDED_SDK_FILES_DIRS_H__
+#endif
 

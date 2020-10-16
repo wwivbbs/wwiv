@@ -157,7 +157,8 @@ daten_t fido_to_daten(std::string d) {
       // Unparsable date. return now.
       return daten_t_now();
     }
-    t->tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
+    t->tm_mon = static_cast<int>(
+        std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str)));
     int year;
     stream >> year;
     year %= 100;

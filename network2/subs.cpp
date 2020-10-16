@@ -155,7 +155,7 @@ static bool send_sub_add_drop_resp(Context& context,
   // Add the text that probably came from a SA or SR  + subtype + .net file.
   text.append(response_file_text);
 
-  nh.length = text.size(); // should be subtype.size() + 2
+  nh.length = size_int(text); // should be subtype.size() + 2
   const auto pendfile = create_pend(context.net.dir, false, '2');
   const Packet packet(nh, {}, text);
   return write_wwivnet_packet(pendfile, context.net, packet);
@@ -325,7 +325,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
 
   const auto lines = create_sub_info(context);
   const auto text = JoinStrings(lines, "\r\n");
-  nh.length = text.size();
+  nh.length = size_int(text);
 
   LOG(INFO) << "Sending subs line for subs.inf:";
   LOG(INFO) << text;

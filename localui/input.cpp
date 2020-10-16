@@ -19,6 +19,7 @@
 #include "input.h"
 
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
@@ -47,6 +48,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfig& config) {
@@ -92,7 +94,7 @@ void Label::Display(CursesWindow* window) { Display(window, x_, y_); }
 void Label::Display(CursesWindow* window, int x, int y) {
   window->GotoXY(x, y);
   if (right_justify_) {
-    const auto pad = std::max<int>(0, width_ - text_.size());
+    const auto pad = std::max<int>(0, width_ - size_int(text_));
     window->Puts(std::string(pad, ' '));
   }
   window->Puts(text_);
@@ -259,9 +261,9 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
 bool dialog_yn(CursesWindow* window, const vector<string>& text) {
   auto maxlen = 4;
   for (const auto& s : text) {
-    maxlen = std::max<int>(maxlen, s.length());
+    maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, text.size(), maxlen));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text), maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   for (const auto& s : text) {
@@ -347,13 +349,13 @@ static void winput_password(CursesWindow* dialog, string* output, int max_length
 
 void input_password(CursesWindow* window, const string& prompt, const vector<string>& text,
                     string* output, int max_length) {
-  auto maxlen = wwiv::stl::ssize(prompt) + max_length;
+  auto maxlen = size_int(prompt) + max_length;
   for (const auto& s : text) {
-    maxlen = std::max<int>(maxlen, s.length());
+    maxlen = std::max<int>(maxlen, size_int(s));
   }
   CHECK(window->IsGUI()) << "input_password needs a GUI.";
   unique_ptr<CursesWindow> dialog(
-      dynamic_cast<CursesWindow*>(CreateDialogWindow(window, wwiv::stl::ssize(text) + 2, maxlen)));
+      dynamic_cast<CursesWindow*>(CreateDialogWindow(window, size_int(text) + 2, maxlen)));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
 
   auto curline = 1;
@@ -361,7 +363,7 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
     dialog->PutsXY(2, curline++, s);
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
-  dialog->PutsXY(2, wwiv::stl::ssize(text) + 2, prompt);
+  dialog->PutsXY(2, size_int(text) + 2, prompt);
   dialog->Refresh();
   winput_password(dialog.get(), output, max_length);
 }
@@ -373,11 +375,11 @@ int messagebox(UIWindow* window, const string& text) {
 
 int messagebox(UIWindow* window, const vector<string>& text) {
   const string prompt = "Press Any Key";
-  auto maxlen = wwiv::stl::ssize(prompt) + 2;
+  auto maxlen = size_int(prompt) + 2;
   for (const auto& s : text) {
-    maxlen = std::max<int>(maxlen, s.length());
+    maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, wwiv::stl::ssize(text) + 2, maxlen));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(text) + 2, maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   for (const auto& s : text) {
@@ -385,17 +387,17 @@ int messagebox(UIWindow* window, const vector<string>& text) {
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
   const auto x = (maxlen - ssize(prompt)) / 2;
-  dialog->PutsXY(x + 2, wwiv::stl::ssize(text) + 2, prompt);
+  dialog->PutsXY(x + 2, size_int(text) + 2, prompt);
   dialog->Refresh();
   return dialog->GetChar();
 }
 
 int input_select_item(UIWindow* window, const std::string& prompt, const vector<string>& items) {
-  auto maxlen = wwiv::stl::ssize(prompt) + 2;
+  auto maxlen = size_int(prompt) + 2;
   for (const auto& s : items) {
-    maxlen = std::max<int>(maxlen, s.length());
+    maxlen = std::max<int>(maxlen, size_int(s));
   }
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, wwiv::stl::ssize(items) + 2, maxlen));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, size_int(items) + 2, maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   auto curline = 1;
   int index = 0;
@@ -407,14 +409,14 @@ int input_select_item(UIWindow* window, const std::string& prompt, const vector<
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
   const auto x = (maxlen - ssize(prompt)) / 2;
-  dialog->PutsXY(x + 2, wwiv::stl::ssize(items) + 2, prompt);
+  dialog->PutsXY(x + 2, size_int(items) + 2, prompt);
   dialog->Refresh();
   return onek(window, allowed, false);
 }
 
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
                                 int max_length) {
-  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, wwiv::stl::ssize(prompt) + 4 + max_length));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, size_int(prompt) + 4 + max_length));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
@@ -432,7 +434,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   const auto num_digits = max_length_for_number(max_value);
   CHECK(window->IsGUI()) << "dialog_input_number needs a GUI.";
   unique_ptr<CursesWindow> dialog(
-      dynamic_cast<CursesWindow*>(CreateDialogWindow(window, 3, wwiv::stl::ssize(prompt) + 4 + num_digits)));
+      dynamic_cast<CursesWindow*>(CreateDialogWindow(window, 3, size_int(prompt) + 4 + num_digits)));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
@@ -473,8 +475,8 @@ int onek(UIWindow* window, const std::string& allowed, bool allow_keycodes) {
 static const int background_character = 32;
 ;
 
-static std::size_t editlinestrlen(char* text) {
-  auto i = strlen(text);
+static int editlinestrlen(char* text) {
+  auto i = ssize(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == background_character)) {
     --i;
   }
@@ -499,7 +501,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   const auto cx = window->GetcurX();
   const auto cy = window->GetcurY();
   auto rc = EditlineResult::NEXT;
-  for (int i = strlen(s); i < len; i++) {
+  for (int i = ssize(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
@@ -527,8 +529,8 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       break;
     case KEY_RIGHT:    // curses
       if (pos < len) { // right
-        int nMaxPos = editlinestrlen(s);
-        if (pos < nMaxPos) {
+        int mp = editlinestrlen(s);
+        if (pos < mp) {
           pos++;
           window->GotoXY(cx + pos, cy);
         }
@@ -663,7 +665,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
     }
   } while (!done);
 
-  int z = strlen(s);
+  int z = ssize(s);
   while (z >= 0 && static_cast<unsigned char>(s[z - 1]) == background_character) {
     --z;
   }

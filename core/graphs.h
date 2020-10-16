@@ -16,17 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_GRAPHS_OS_H__
-#define __INCLUDED_WWIV_GRAPHS_OS_H__
+#ifndef INCLUDED_WWIV_GRAPHS_OS_H
+#define INCLUDED_WWIV_GRAPHS_OS_H
 
+#include "core/stl.h"
 #include <cstdint>
 #include <list>
 #include <string>
 #include <sstream>
 #include <vector>
 
-namespace wwiv {
-namespace graphs {
+namespace wwiv::graphs {
 
 
 struct edge {
@@ -51,37 +51,35 @@ typedef std::vector<std::vector<edge>> adjacency_list_t;
 
  list<uint16_t> path = net.shortest_path_to(3);
  */
-class Graph {
+class Graph final {
 public:
   Graph(uint16_t node, uint16_t max_size);
-  virtual ~Graph();
+  ~Graph();
 
   bool add_edge(uint16_t source, uint16_t dest, float cost);
-  bool has_node(uint16_t source);
-  std::list<uint16_t> shortest_path_to(uint16_t destination);
-  float cost_to(uint16_t destination);
-  std::string DumpCosts() const;
+  [[nodiscard]] bool has_node(uint16_t source);
+  [[nodiscard]] std::list<uint16_t> shortest_path_to(uint16_t destination);
+  [[nodiscard]] float cost_to(uint16_t destination);
+  [[nodiscard]] std::string DumpCosts() const;
 
-  int num_hops_to(uint16_t destination) {
+  [[nodiscard]] int num_hops_to(uint16_t destination) {
     const auto path = shortest_path_to(destination);
     if (path.empty()) {
       return 0;
     }
-    return path.size() - 1;
+    return stl::size_int(path) - 1;
   }
 
 private:
   uint16_t node_;
-  uint16_t max_size_;
   adjacency_list_t adjacency_list_;
-  bool computed_ = false;
+  bool computed_{false};
   std::vector<float> cost_;
   std::vector<uint16_t> previous_;
 
   void Compute();
 };
 
-} // namespace graphs
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_WWIV_GRAPHS_OS_H__
+#endif

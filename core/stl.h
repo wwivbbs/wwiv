@@ -76,6 +76,13 @@ int32_t size_int32(const C& c) {
 }
 
 template <typename C>
+uint32_t size_uint32(const C& c) {
+  const auto size = c.size();
+  CHECK_LE(size, static_cast<typename C::size_type>(std::numeric_limits<uint32_t>::max()));
+  return static_cast<uint32_t>(size);
+}
+
+template <typename C>
 int16_t size_int16(C const& c) {
   const auto size = c.size();
   CHECK_LE(size, static_cast<typename C::size_type>(std::numeric_limits<int16_t>::max()));
@@ -97,6 +104,11 @@ constexpr auto ssize(const C& c)
 {
     using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
     return static_cast<R>(c.size());
+}
+
+template <typename C>
+int size_int(const C& c) {
+  return static_cast<int>(ssize(c));
 }
 
 template <typename C, typename S = std::size_t, typename R>

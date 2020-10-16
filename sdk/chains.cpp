@@ -17,16 +17,6 @@
 /**************************************************************************/
 #include "sdk/chains.h"
 
-#include <exception>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
-#include <vector>
-
-#include <cereal/access.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/set.hpp>
-
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -36,6 +26,13 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
+#include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/set.hpp>
 
 using cereal::make_nvp;
 using cereal::specialization;
@@ -61,7 +58,7 @@ namespace cereal {
   }
 
 template <typename T>
-inline std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
+std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   try {
     return names.at(static_cast<int>(t));
   } catch (std::out_of_range&) {
@@ -70,7 +67,7 @@ inline std::string to_enum_string(const T& t, const std::vector<std::string>& na
 }
 
 template <typename T>
-inline T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
+T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
   try {
     for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
       if (v == names.at(i)) {
@@ -84,20 +81,20 @@ inline T from_enum_string(const std::string& v, const std::vector<std::string>& 
 }
 
 template <class Archive>
-inline std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
+std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
   return Chains::exec_mode_to_string(t);
 }
 template <class Archive>
-inline void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
+void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
   t = Chains::exec_mode_from_string(s);
 }
 
 template <class Archive>
-inline std::string save_minimal(Archive const&, const chain_exec_dir_t& t) {
+std::string save_minimal(Archive const&, const chain_exec_dir_t& t) {
   return to_enum_string<const chain_exec_dir_t>(t, {"bbs", "temp"});
 }
 template <class Archive>
-inline void load_minimal(Archive const&, chain_exec_dir_t& t, const std::string& v) {
+void load_minimal(Archive const&, chain_exec_dir_t& t, const std::string& v) {
   t = from_enum_string<const chain_exec_dir_t>(v, {"bbs", "temp"});
 }
 
@@ -119,8 +116,7 @@ template <class Archive> void serialize(Archive& ar, chain_t& n) {
 
 } // namespace cereal
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
   using T = typename std::underlying_type<chain_exec_mode_t>::type;
@@ -131,7 +127,7 @@ chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
 
 chain_exec_mode_t operator++(chain_exec_mode_t& t, int) {
   using T = typename std::underlying_type<chain_exec_mode_t>::type;
-  auto old = t;
+  const auto old = t;
   t = (t == chain_exec_mode_t::stdio ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return old;
@@ -143,12 +139,12 @@ chain_exec_dir_t& operator++(chain_exec_dir_t& t) {
 }
 
 chain_exec_dir_t operator++(chain_exec_dir_t& t, int) {
-  auto old = t;
+  const auto old = t;
   t = (t == chain_exec_dir_t::bbs ? chain_exec_dir_t::temp : chain_exec_dir_t::bbs);
   return old;
 }
 
-const int Chains::npos; // reserve space.
+const Chains::size_type Chains::npos; // reserve space.
 
 Chains::Chains(const Config& config) : datadir_(config.datadir()) {
   if (!config.IsInitialized()) {
@@ -168,9 +164,9 @@ Chains::Chains(const Config& config) : datadir_(config.datadir()) {
 
 Chains::~Chains() = default;
 
-bool Chains::insert(int n, chain_t r) { return insert_at(chains_, n, r); }
+bool Chains::insert(size_type n, chain_t r) { return insert_at(chains_, n, r); }
 
-bool Chains::erase(int n) { return erase_at(chains_, n); }
+bool Chains::erase(size_type n) { return erase_at(chains_, n); }
 
 bool Chains::Load() {
   if (LoadFromJSON()) {
@@ -226,8 +222,7 @@ bool Chains::LoadFromDat() {
     if (i < wwiv::stl::ssize(reg)) {
       // We have a chain.reg entry
       const auto& r = reg.at(i);
-      for (int rb = 0; rb < 5; rb++) {
-        auto rbc = r.regby[rb];
+      for (auto rbc : r.regby) {
         if (rbc > 0) {
           c.regby.insert(rbc);
         }
@@ -352,5 +347,4 @@ chain_exec_mode_t Chains::exec_mode_from_string(const std::string& s) {
   return cereal::from_enum_string<chain_exec_mode_t>(s, {"none", "DOS", "FOSSIL", "STDIO"});
 }
 
-} // namespace sdk
 } // namespace wwiv

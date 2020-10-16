@@ -610,27 +610,26 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
 bool lp_compare_strings(const char *raw, const char *formula) {
   unsigned i = 0;
 
-  return lp_compare_strings_wh(raw, formula, &i, strlen(formula));
+  return lp_compare_strings_wh(raw, formula, &i, ssize(formula));
 }
 
 bool lp_compare_strings_wh(const char *raw, const  char *formula, unsigned *pos, int size) {
   bool rvalue;
-  int token;
 
-  bool lvalue = lp_get_value(raw, formula, pos) ? true : false;
-  while (*pos < (unsigned int) size) {
-    token = lp_get_token(formula, pos);
+  auto lvalue = lp_get_value(raw, formula, pos) ? true : false;
+  while (*pos < static_cast<unsigned>(size)) {
+    const auto token = lp_get_token(formula, pos);
 
     switch (token) {
     case STR_SPC:                         // Added
     case STR_AND:
       rvalue = lp_compare_strings_wh(raw, formula, pos, size);
-      lvalue = lvalue & rvalue;
+      lvalue = lvalue && rvalue;
       break;
 
     case STR_OR:
       rvalue = lp_compare_strings_wh(raw, formula, pos, size);
-      lvalue = lvalue | rvalue;
+      lvalue = lvalue || rvalue;
       break;
 
     case STR_CLOSE_PAREN:
@@ -645,7 +644,7 @@ bool lp_compare_strings_wh(const char *raw, const  char *formula, unsigned *pos,
 }
 
 int lp_get_token(const char *formula, unsigned *pos) {
-  int tpos = 0;
+  auto tpos = 0;
 
   while (formula[*pos] && isspace(formula[*pos])) {
     ++* pos;
@@ -692,7 +691,7 @@ OPERATOR_CHECK_1:
   switch (x) {
   case STR_OPEN_PAREN:
     ++*pos;
-    if (lp_compare_strings_wh(raw, formula, pos, strlen(formula))) {
+    if (lp_compare_strings_wh(raw, formula, pos, ssize(formula))) {
       return (sign) ? 1 : 0;
     } else {
       return (sign) ? 0 : 1;

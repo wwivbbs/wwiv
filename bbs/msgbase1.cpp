@@ -97,7 +97,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   nhorig.fromuser = pPostRecord->owneruser;
   nhorig.list_len = 0;
   nhorig.daten = pPostRecord->daten;
-  nhorig.length = text.size() + 1 + strlen(pPostRecord->title);
+  nhorig.length = size_int(text) + 1 + strlen(pPostRecord->title);
   nhorig.method = 0;
 
   auto message_length = text.size();

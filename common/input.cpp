@@ -213,7 +213,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
     bout << szTemp;
     bout.RestorePosition();
     bout.SavePosition();
-    pos = nLength = strlen(szTemp);
+    pos = nLength = wwiv::strings::ssize(szTemp);
   }
 
   bool done = false;

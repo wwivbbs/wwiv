@@ -258,7 +258,7 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
     }
     text.append(FidoToWWIVText(msg.vh.text));
 
-    nh.length = text.size();
+    nh.length = size_uint32(text);
     // Create file, write to local.net_ for network2 to import.
     Packet packet(nh, {}, text);
     if (!write_wwivnet_packet(LOCAL_NET, net_, packet)) {

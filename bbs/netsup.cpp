@@ -310,7 +310,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     if (*ss == '\n') {
       ss++;
     }
-    nh->length -= (ss - messageText);
+    nh->length -= static_cast<uint32_t>(ss - messageText);
     ntl = ntl - static_cast<uint16_t>(ss - messageText);
     messageText = ss;
 
@@ -394,7 +394,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
     nh->length += strlen(newname);
     if (nh->main_type == main_type_email_name || nh->main_type == main_type_new_post) {
-      nh->length += subtype_or_author.size() + 1;
+      nh->length += size_uint32(subtype_or_author) + 1;
     }
     const auto packet_filename = StrCat(to_net.dir, "p1", a()->network_extension());
     File file(packet_filename);

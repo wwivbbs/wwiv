@@ -102,7 +102,7 @@ public:
   void WriteScreenBuffer(const char *) override {}
   [[nodiscard]] int GetDefaultScreenBottom() const noexcept override { return 25; }
   void EditLine(char *, int, AllowedKeys, EditlineResult *, const char *) override {}
-  void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override {}
+  void UpdateNativeTitleBar(const std::string&, int) override {}
 
   std::string* captured_;
 };

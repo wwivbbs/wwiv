@@ -151,6 +151,9 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   int ssize(const char* s);
 
   // String length as an int
+  int ssize(const unsigned char* s);
+
+  // String length as an int
   int ssize(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */

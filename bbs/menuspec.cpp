@@ -16,14 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "bbs/menuspec.h"
+
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/chains.h"
-#include "common/com.h"
-#include "common/input.h"
-#include "common/output.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
@@ -37,11 +33,12 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "fmt/printf.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
@@ -60,7 +57,7 @@ using namespace wwiv::strings;
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */
 /*                                                                        */
-/* Functions that dont have any direct WWIV function go in here           */
+/* Functions that don't have any direct WWIV function go in here           */
 /* ie, functions to help emulate other BBS's.                             */
 /* ---------------------------------------------------------------------- */
 
@@ -197,7 +194,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 }
 
 int FindDoorNo(const char *pszDoor) {
-  for (size_t i = 0; i < a()->chains->chains().size(); i++) {
+  for (auto i = 0; i < size_int(a()->chains->chains()); i++) {
     if (iequals(a()->chains->at(i).description, pszDoor)) {
       return i;
     }

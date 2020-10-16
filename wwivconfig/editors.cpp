@@ -138,7 +138,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
             break;
           }
           auto prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
-          auto i = dialog_input_number(curses_out->window(), prompt, 1, editors.size() + 1);
+          auto i = dialog_input_number(curses_out->window(), prompt, 1, size_int(editors) + 1);
           editorrec e{};
           memset(&e, 0, sizeof(editorrec));
           // N.B. i is one based, result.selected is 0 based.

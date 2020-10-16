@@ -139,7 +139,7 @@ FileArea::FileArea(FileApi* api, std::string data_directory, const std::string& 
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool FileArea::FixFileHeader() {
-  return header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
+  return header_->FixHeader(*api_->clock(), files_.empty() ? 0 : stl::size_uint32(files_) - 1);
 }
 
 FileAreaHeader& FileArea::header() const {
@@ -159,7 +159,7 @@ bool FileArea::Load() {
     open_ = dirty_ = true;
   }
   header_ = std::make_unique<FileAreaHeader>(files_.front());
-  header_->FixHeader(*api_->clock(), files_.empty() ? 0 : files_.size() - 1);
+  header_->FixHeader(*api_->clock(), files_.empty() ? 0 : stl::size_uint32(files_) - 1);
   return open_;
 }
 
@@ -230,7 +230,7 @@ bool FileArea::AddFile(const FileRecord& f) {
   } else {
     files_.insert(std::begin(files_) + 1, f.u());
   }
-  header_->set_num_files(files_.size() - 1);
+  header_->set_num_files(stl::size_uint32(files_) - 1);
   header_->set_daten(std::max(header_->daten(), f.u().daten));
   dirty_ = true;
   return true;
@@ -284,7 +284,7 @@ bool FileArea::DeleteFile(int file_number) {
     DeleteExtendedDescription(old.filename);
   }
   dirty_ = true;
-  header_->set_num_files(files_.empty() ? 0 : files_.size() - 1);
+  header_->set_num_files(files_.empty() ? 0 : stl::size_uint32(files_) - 1);
 
   return true;
 }

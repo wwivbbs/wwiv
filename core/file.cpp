@@ -251,8 +251,8 @@ void File::Close() noexcept {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-ssize_t File::Read(void* buffer, ssize_t size) {
-  const auto ret = read(handle_, buffer, size);
+File::size_type File::Read(void* buffer, File::size_type size) {
+  const auto ret = read(handle_, buffer, static_cast<size_t>(size));
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG]: Read errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
@@ -266,8 +266,8 @@ ssize_t File::Read(void* buffer, ssize_t size) {
   return ret;
 }
 
-ssize_t File::Write(const void* buffer, ssize_t size) {
-  const auto r = write(handle_, buffer, size);
+File::size_type File::Write(const void* buffer, File::size_type size) {
+  const auto r = write(handle_, buffer, static_cast<size_t>(size));
   if (r == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
         << " size: " << size;
@@ -286,7 +286,7 @@ File::size_type File::Seek(size_type offset, Whence whence) {
       whence == File::Whence::end);
   CHECK(File::IsFileHandleValid(handle_));
 
-  return static_cast<size_type>(lseek(handle_, offset, static_cast<int>(whence)));
+  return static_cast<size_type>(lseek(handle_, static_cast<long>(offset), static_cast<int>(whence)));
 }
 
 File::size_type File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
@@ -299,7 +299,7 @@ bool File::Exists() const noexcept {
 void File::set_length(size_type l) {
   // TODO(rushfan): Use std::filesystem::set_size
 #ifdef _WIN32
-  _chsize(handle_, l);
+  (void) _chsize(handle_, static_cast<long>(l));
 #else
   (void) ftruncate(handle_, l);
 #endif
@@ -455,6 +455,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 }
 
 bool File::set_last_write_time(time_t last_write_time) noexcept {
+  // ReSharper disable once CppInitializedValueIsAlwaysRewritten
   struct utimbuf ut{};
   ut.actime = ut.modtime = last_write_time;
   return utime(full_path_name_.string().c_str(), &ut) != -1;

@@ -160,8 +160,7 @@ unsigned int RemoteSocketIO::put(unsigned char ch) {
     szBuffer[1] = ch;
   }
 
-  const auto num_sent = send(socket_, reinterpret_cast<char*>(szBuffer),
-                             strlen(reinterpret_cast<char*>(szBuffer)), 0);
+  const auto num_sent = send(socket_, reinterpret_cast<char*>(szBuffer), ssize(szBuffer), 0);
   if (num_sent == SOCKET_ERROR) {
     return 0;
   }

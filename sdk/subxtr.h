@@ -20,6 +20,7 @@
 #ifndef INCLUDED_SDK_SUBXTR_H
 #define INCLUDED_SDK_SUBXTR_H
 
+#include "core/stl.h"
 #include "sdk/net/net.h"
 #include <filesystem>
 #include <string>
@@ -92,7 +93,7 @@ public:
   [[nodiscard]] const std::vector<subboard_t>& subs() const { return subs_; }
   bool insert(int n, subboard_t r);
   bool erase(int n);
-  [[nodiscard]] int size() const { return subs_.size(); }
+  [[nodiscard]] int size() const { return wwiv::stl::size_int(subs_); }
 
   static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<subboard_t>& entries);
   static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<subboard_t>& entries);
@@ -109,7 +110,7 @@ private:
 /*
  * Info for each network the sub is on.
  *  flags - bitmask
- *  sess->network_num_ - index into networks.dat
+ *  net_num - index into networks.dat
  *  type - numeric sub type = to_number<int>(stype)
  *  host - host system of sub, or 0 if locally hosted
  *  stype - string sub type (up to 7 chars)

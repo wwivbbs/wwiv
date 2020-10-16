@@ -100,7 +100,7 @@ public:
   }
 
   [[nodiscard]] int size() const noexcept {
-    return entry.size();
+    return wwiv::stl::size_int(entry);
   }
 
   [[nodiscard]] ssize_t ssize() const noexcept {

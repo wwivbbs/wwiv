@@ -666,8 +666,8 @@ void qwk_email_text(const char* text, char* title, char* to) {
     email.user_number = un;
     email.system_number = sy;
     email.an = true;
-    email.from_user = a()->usernum;
-    email.from_system = a()->current_net().sysnum;
+    email.set_from_user(a()->usernum);
+    email.set_from_system(a()->current_net().sysnum);
     email.forwarded_code = 0;
     email.from_network_number = a()->net_num();
     sendout_email(email);

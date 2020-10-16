@@ -86,8 +86,8 @@ static bool okansi(const wwiv::sdk::User& user) { return user.HasAnsi(); }
 
 void Output::pausescr() {
   bin.clearnsp();
-  wwiv::core::bus().invoke<PauseProcessingInstanceMessages>();
-  wwiv::core::ScopeExit at_exit(
+  bus().invoke<PauseProcessingInstanceMessages>();
+  ScopeExit at_exit(
       [] { wwiv::core::bus().invoke<ResetProcessingInstanceMessages>(); });
   auto* const ss = str_pause;
   int i1;
@@ -101,7 +101,7 @@ void Output::pausescr() {
   if (okansi(user())) {
     ResetColors();
 
-    i1 = strlen(stripcolors(ss));
+    i1 = ssize(stripcolors(ss));
     const auto i = curatr();
     SystemColor(user().color(3));
     bputs(ss);

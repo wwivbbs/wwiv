@@ -85,7 +85,7 @@ bool User::CreateRandomPassword() {
 
   std::random_device rd;
   std::mt19937 e{rd()};
-  std::uniform_int_distribution<int> dist(0, wwiv::stl::ssize(chars) - 1);
+  std::uniform_int_distribution<int> dist(0, wwiv::stl::size_int(chars) - 1);
   std::string password;
   for (auto i = 0; i < 6; i++) {
     password.push_back(chars[dist(e)]);

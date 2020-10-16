@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 
 // local functions
@@ -297,7 +298,7 @@ void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
 void Win32ConsoleIO::FastPuts(const string& text) {
   // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
-  int len = text.length();
+  const auto len = wwiv::stl::size_int(text);
 
   SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
   WriteConsole(out_, text.c_str(), len, &cb, nullptr);
@@ -601,7 +602,7 @@ bool HasKeyBeenPressed(HANDLE in) {
 unsigned char GetKeyboardChar() { return static_cast<unsigned char>(_getwch()); }
 
 static int GetEditLineStringLength(const char* text) {
-  int i = strlen(text);
+  auto i = ssize(text);
   while (i >= 0 && (/*text[i-1] == 32 ||*/ static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
   }
@@ -769,7 +770,7 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
     }
   } while (!done);
 
-  int z = strlen(pszInOutText);
+  auto z = ssize(pszInOutText);
   while (z >= 0 && static_cast<unsigned char>(pszInOutText[z - 1]) == 176) {
     --z;
   }

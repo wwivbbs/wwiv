@@ -41,7 +41,7 @@ std::optional<char> peek(std::string::iterator& it, const std::string::iterator&
 static std::unordered_set<char> WS = {' ', '\r', '\n', '\t'};
 
 Lexer::Lexer(std::string source)
-    : source_(std::move(source)), tok_eof(TokenType::eof, wwiv::stl::ssize(source_)), 
+    : source_(std::move(source)), tok_eof(TokenType::eof, wwiv::stl::size_int(source_)), 
       start(std::begin(source_)), end(std::end(source_)), it_(start) { 
 
   while (it_ != end) {
@@ -259,7 +259,7 @@ const std::vector<Token>& Lexer::tokens() const { return tokens_; }
 
 void Lexer::emit(TokenType t) { 
   VLOG(1) << "Emitting TokenType: " << static_cast<int>(t);
-  const auto pos = std::distance(start, it_);
+  const auto pos = static_cast<int>(std::distance(start, it_));
   tokens_.emplace_back(t, pos);
 }
 

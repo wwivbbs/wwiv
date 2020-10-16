@@ -37,6 +37,7 @@
 #include <unistd.h>
 #endif // _WIN32
 
+#include "stl.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
@@ -195,9 +196,9 @@ template <typename TYPE, std::size_t SIZE = sizeof(TYPE)>
 static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bool throw_on_timeout,
                      std::size_t size = SIZE) {
   const auto end = system_clock::now() + d;
-  auto p = reinterpret_cast<char*>(data);
-  std::size_t total_read = 0;
-  int remaining = size;
+  auto* p = reinterpret_cast<char*>(data);
+  int total_read = 0;
+  auto remaining = static_cast<int>(size);
   while (true) {
     if (system_clock::now() > end) {
       if (throw_on_timeout) {
@@ -205,7 +206,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
       }
       return total_read;
     }
-    const int result = recv(sock, p, remaining, 0);
+    const auto result = recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
       if (WouldSocketBlock()) {
         sleep_for(SLEEP_MS);
@@ -221,7 +222,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
       return total_read;
     }
     total_read += result;
-    if (total_read < size) {
+    if (total_read < static_cast<int>(size)) {
       p += result;
       remaining -= result;
       continue;
@@ -298,7 +299,7 @@ int SocketConnection::send(const void* data, int size, duration<double>) {
 }
 
 int SocketConnection::send(const std::string& s, duration<double> d) {
-  return send(s.data(), s.size(), d);
+  return send(s.data(), stl::size_int(s), d);
 }
 
 int SocketConnection::send_line(const std::string& s, duration<double> d) {

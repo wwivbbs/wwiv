@@ -126,7 +126,8 @@ protected:
 // Label class that's used to display a label for an EditItem
 class Label final {
 public:
-  Label(int x, int y, const std::string& text) : x_(x), y_(y), width_(text.size()), text_(text) {}
+  Label(int x, int y, const std::string& text)
+      : x_(x), y_(y), width_(wwiv::stl::size_int(text)), text_(text) {}
   Label(int x, int y, int width, std::string text)
       : x_(x), y_(y), width_(width), text_(std::move(text)) {}
 
@@ -294,7 +295,7 @@ public:
     auto return_code = EditlineResult::NEXT;
     auto index = index_of(*this->data_, items_);
     const auto items = item_list(items_);
-    index = toggleitem(window, index, items, &return_code);
+    index = static_cast<int>(toggleitem(window, index, items, &return_code));
     *this->data_ = static_cast<T>(items_.at(index).first);
     DefaultDisplay(window);
     curses_out->footer()->SetDefaultFooter();
@@ -321,7 +322,7 @@ static int maxlen_from_list(const std::vector<std::string>& items) {
   for (const auto& item : items) {
     m = std::max<std::string::size_type>(m, item.size());
   }
-  return m;
+  return static_cast<int>(m);
 }
 
 class StringListItem final : public EditItem<std::string&> {
@@ -357,7 +358,7 @@ template <typename T> class FlagEditItem final : public EditItem<T*> {
 public:
   FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data)
       : EditItem<T*>(x, y, 0, data), flag_(flag) {
-    this->maxsize_ = std::max<int>(on.size(), off.size());
+    this->maxsize_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
     this->items_.push_back(off);
     this->items_.push_back(on);
   }

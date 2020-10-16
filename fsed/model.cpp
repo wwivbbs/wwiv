@@ -126,7 +126,7 @@ editor_add_result_t FsedModel::add(char c) {
     }
     return editor_add_result_t::added;
   }
-  int last_space = line.last_space_before(ssize(line));
+  const auto last_space = line.last_space_before(size_int(line));
   line.wrapped(true);
   const auto wwiv_color = line.wwiv_color();
   if (last_space != -1 && (max_line_len_ - last_space) < (max_line_len_ / 2)) {
@@ -137,7 +137,7 @@ editor_add_result_t FsedModel::add(char c) {
     line.assign(line.substr(0, wrap_position));
     ++curli;
     curline().assign(nline);
-    cx = ssize(curline());
+    cx = size_int(curline());
   } else {
     // Character wrap.
     ++curli;
@@ -167,16 +167,16 @@ cell_t FsedModel::current_cell() const {
 }
 
 bool FsedModel::cursor_up() {
-  auto previous_line = curli;
+  const auto previous_line = curli;
   if (cy > 0) {
     --cy;
     --curli;
-    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
     cx = std::min<int>(cx, right_max);
   } else if (curli > 0) {
     // scroll
     --curli;
-    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
     cx = std::min<int>(cx, right_max);
     view_->set_top_line(curli);
     invalidate_to_eof(view_->top_line());
@@ -186,10 +186,10 @@ bool FsedModel::cursor_up() {
 }
 
 bool FsedModel::cursor_down() {
-  auto previous_line = curli;
+  const auto previous_line = curli;
   if (curli < ssize(lines_) - 1) {
     ++curli;
-    const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+    const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
     cx = std::min<int>(cx, right_max);
     advance_cy(*this, *view_);
   }
@@ -206,7 +206,7 @@ bool FsedModel::cursor_left() {
 
 bool FsedModel::cursor_right() {
   // TODO: add option to cursor right to end of view
-  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
   if (cx < right_max) {
     ++cx;
   }
@@ -223,7 +223,7 @@ bool FsedModel::cursor_pgup() {
   cy = std::max<int>(cy - up, 0);
   curli = std::max<int>(curli - up, 0);
   view_->set_top_line(curli - cy);
-  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
   cx = std::min<int>(cx, right_max);
   invalidate_to_eof(view_->top_line());
   current_line_dirty(previous_line);
@@ -231,15 +231,15 @@ bool FsedModel::cursor_pgup() {
 }
 
 bool FsedModel::cursor_pgdown() {
-  auto previous_line = curli;
-  const auto dn = std::min<int>(view_->max_view_lines(), std::max<int>(0, ssize(lines_) - curli - 1));
+  const auto previous_line = curli;
+  const auto dn = std::min<int>(view_->max_view_lines(), std::max<int>(0, size_int(lines_) - curli - 1));
   if (dn == 0) {
     // nothing to do!
     return true;
   }
   curli += dn;
   cy += dn;
-  const auto right_max = std::min<int>(max_line_len(), ssize(curline()));
+  const auto right_max = std::min<int>(max_line_len(), size_int(curline()));
   cx = std::min<int>(cx, right_max);
   if (cy >= view_->max_view_lines()) {
     // will need to scroll
@@ -257,7 +257,7 @@ bool FsedModel::cursor_home() {
 }
 
 bool FsedModel::cursor_end() {
-  cx = ssize(curline());
+  cx = size_int(curline());
   return true;
 }
 
@@ -287,7 +287,7 @@ bool FsedModel::delete_to_eol() {
 
 bool FsedModel::delete_line_left() {
   auto& line = curline();
-  auto remainder = line.substr(cx);
+  const auto remainder = line.substr(cx);
   line.assign(remainder);
   cx = 0;
   line.wrapped(false);
@@ -300,11 +300,11 @@ bool FsedModel::delete_word_left() {
     return true;
   }
   auto& line = curline();
-  auto last_space = line.last_space_before(cx);
+  const auto last_space = line.last_space_before(cx);
   if (last_space == cx) {
     return true;
   }
-  auto remainder = line.substr(cx);
+  const auto remainder = line.substr(cx);
   cx = last_space;
   if (last_space == 0) {
     line.assign(remainder);
@@ -337,8 +337,8 @@ void FsedModel::toggle_ins_ovr_mode() {
 
 ins_ovr_mode_t FsedModel::mode() const noexcept { return mode_; }
 
-bool FsedModel::del() { 
-  auto r = curline().del(cx, mode_);
+bool FsedModel::del() {
+  const auto r = curline().del(cx, mode_);
   if (r == line_add_result_t::error) {
     return false;
   }
@@ -370,18 +370,18 @@ bool FsedModel::bs() {
     if (remove_line()) {
       --cy;
       --curli;
-      cx = ssize(curline());
+      cx = size_int(curline());
       invalidate_to_eof(curli);
     }
   } else if (curli > 0) {
     auto& prev = line(curli - 1);
     auto& cur = curline();
-    auto last_pos = std::max<int>(0, max_line_len() - ssize(prev) - 1);
-    const int new_cx = ssize(prev);
+    const auto last_pos = std::max<int>(0, max_line_len() - size_int(prev) - 1);
+    const auto new_cx = size_int(prev);
     if (ssize(cur) < last_pos) {
       prev.append(cur.cells());
       remove_line();
-    } else if (int space = cur.last_space_before(last_pos) > 0) {
+    } else if (const int space = cur.last_space_before(last_pos) > 0) {
       prev.append(cur.substr(0, space));
       cur.assign(cur.substr(space));
     }
@@ -435,7 +435,7 @@ void FsedModel::invalidate_to_eol() {
   editor_range_t r{};
   r.start.line = r.end.line = curli;
   r.start.x = cx;
-  r.end.x = ssize(curline());
+  r.end.x = size_int(curline());
   for (auto& c : range_callbacks_) {
     c(*this, r);
   }
@@ -446,7 +446,7 @@ void FsedModel::invalidate_to_eof() {
 }
 
 void FsedModel::invalidate_to_eof(int start_line) {
-  invalidate_range(start_line, ssize(lines_) - 1);
+  invalidate_range(start_line, size_int(lines_) - 1);
 }
 
 void FsedModel::invalidate_range(int start_line, int end_line) {

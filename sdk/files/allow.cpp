@@ -119,7 +119,7 @@ bool Allow::IsAllowed(const std::string& unaligned_filename) {
 }
 
 int Allow::size() const {
-  return wwiv::stl::ssize(allow_);
+  return wwiv::stl::size_int(allow_);
 }
 
 Allow::~Allow() {

@@ -188,13 +188,13 @@ static void modify_sub(int n) {
     case '[':
       a()->subs().set_sub(n, r);
       if (--n < 0) {
-        n = ssize(a()->subs().subs()) - 1;
+        n = size_int(a()->subs().subs()) - 1;
       }
       r = a()->subs().sub(n);
       break;
     case ']':
       a()->subs().set_sub(n, r);
-      if (++n >= ssize(a()->subs().subs())) {
+      if (++n >= size_int(a()->subs().subs())) {
         n = 0;
       }
       r = a()->subs().sub(n);
@@ -509,16 +509,16 @@ static void insert_sub(int n) {
   for (int i = 1; i <= nNumUserRecords; i++) {
     read_qscn(i, pTempQScan.get(), true);
 
-    if ((pTempQScan[0] != 999) && (pTempQScan[0] >= static_cast<uint32_t>(n))) {
-      (pTempQScan[0])++;
+    if (pTempQScan[0] != 999 && pTempQScan[0] >= static_cast<uint32_t>(n)) {
+      pTempQScan[0]++;
     }
 
-    for (int i1 = ssize(a()->subs().subs()) - 1; i1 > n; i1--) {
+    for (int i1 = size_int(a()->subs().subs()) - 1; i1 > n; i1--) {
       pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
     }
     pTempQScan_p[n] = 0;
 
-    for (i2 = ssize(a()->subs().subs()) / 32; i2 > n / 32; i2--) {
+    for (i2 = size_int(a()->subs().subs()) / 32; i2 > n / 32; i2--) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] << 1) | (pTempQScan_q[i2 - 1] >> 31);
     }
     pTempQScan_q[i2] = m1 | (m2 & (pTempQScan_q[i2] << 1)) | (m3 & pTempQScan_q[i2]);

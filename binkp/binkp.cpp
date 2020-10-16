@@ -315,7 +315,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   if (!conn_->is_open()) {
     return false;
   }
-  const auto size = 3 + data.size(); /* header + command + data + null*/
+  const auto size = 3 + size_int(data); /* header + command + data + null*/
   const unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a command this will be 2 less than our actual packet size.

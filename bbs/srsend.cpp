@@ -110,8 +110,8 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   }
   if (nb) {
     file.Seek(pos, File::Whence::begin);
-    const auto num_read = file.Read(b, nb);
-    for (int i = num_read; i < nb; i++) {
+    const int num_read = file.Read(b, nb);
+    for (auto i = num_read; i < nb; i++) {
       b[i] = '\0';
     }
   } else if (block_type == 5) {

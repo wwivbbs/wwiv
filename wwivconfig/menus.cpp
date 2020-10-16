@@ -188,7 +188,7 @@ public:
             }
           } break;
           case 'M': {
-            auto maxnum = menu_items_.size() + 1;
+            auto maxnum = size_int(menu_items_) + 1;
             auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
             auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
             if (new_pos >= 1) {

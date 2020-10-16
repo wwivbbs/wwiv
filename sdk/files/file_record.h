@@ -61,6 +61,10 @@ public:
   [[nodiscard]] const uploadsrec& u() const { return u_; }
   [[nodiscard]] uint32_t numbytes() const noexcept;
   void set_numbytes(int size);
+  [[nodiscard]] uint16_t ownerusr() const noexcept;
+  void set_ownerusr(int o);
+  [[nodiscard]] uint16_t ownersys() const noexcept;
+  void set_ownersys(int o);
   [[nodiscard]] bool has_extended_description() const noexcept;
   void set_extended_description(bool b);
 

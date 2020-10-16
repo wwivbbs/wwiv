@@ -69,7 +69,7 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::filesystem::path& filepath,
     const auto fn = filepath.string();
     const auto fd = open(fn.c_str(), mode, pmode);
     if (fd >= 0) {
-      const auto written = write(fd, text.c_str(), text.size());
+      const auto written = write(fd, text.c_str(), wwiv::stl::size_int(text));
       if (written != wwiv::stl::ssize(text)) {
         LOG(WARNING) << "Short write on Semaphore file: " << written << "; vs: " << text.size();
       }

@@ -252,7 +252,7 @@ int CommandLineCommand::Parse(int start_pos) {
       }
     }
   }
-  return raw_args_.size();
+  return wwiv::stl::size_int(raw_args_);
 }
 
 std::string CommandLineCommand::ToString() const {

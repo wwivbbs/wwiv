@@ -89,7 +89,7 @@ int FileAreaExtendedDesc::number_of_ext_descriptions() {
   if (!open_) {
     Load();
   }
-  return wwiv::stl::ssize(ext_);
+  return wwiv::stl::size_int(ext_);
 }
 
 bool FileAreaExtendedDesc::AddExtended(const FileRecord& f, const std::string& text) {

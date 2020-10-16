@@ -172,7 +172,7 @@ int WWIVMessageArea::number_of_messages() {
     return 0;
   }
 
-  const auto file_num_records = sub.number_of_records();
+  const int file_num_records = static_cast<int>(sub.number_of_records());
   const auto wwiv_header = ReadHeader(sub);
   if (!wwiv_header->initialized()) {
     // TODO: throw exception

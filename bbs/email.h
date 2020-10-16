@@ -27,8 +27,8 @@
 class EmailData {
 public:
   EmailData(const wwiv::common::MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
-  explicit EmailData() {}
-  ~EmailData() {}
+  EmailData() = default;
+  ~EmailData() = default;
 
   std::string title;
   messagerec * msg;
@@ -40,6 +40,10 @@ public:
   uint16_t from_system = 0;
   int forwarded_code = 0;
   int from_network_number = 0;
+
+  void set_from_user(int u) { from_user = static_cast<uint16_t>(u); }
+  void set_from_system(int u) { from_system = static_cast<uint16_t>(u); }
+  void set_user_number(int u) { user_number = static_cast<uint16_t>(u); }
 
   bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
 };

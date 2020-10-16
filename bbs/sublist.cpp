@@ -45,12 +45,12 @@ void old_sublist() {
 
   bool abort = false;
   int sn = 0;
-  int en = ssize(a()->subconfs) - 1;
+  int en = size_int(a()->subconfs) - 1;
   if (okconf(a()->user())) {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
-      char ch = onek("Q A");
+      const auto ch = onek("Q A");
       bout.nl();
       switch (ch) {
       case ' ':

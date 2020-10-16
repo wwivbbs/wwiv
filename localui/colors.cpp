@@ -44,7 +44,9 @@ uint32_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
 void ColorScheme::InitPairs() {
   // Create the color pairs for each of the colors defined in the color scheme.
   for (const auto& kv : scheme_) {
-    init_pair(kv.second.color_pair(), kv.second.f(), kv.second.b());
+    init_pair(static_cast<short>(kv.second.color_pair()),
+              static_cast<short>(kv.second.f()),
+              static_cast<short>(kv.second.b()));
   }
 }
 

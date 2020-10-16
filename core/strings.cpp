@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "core/strings.h"
 
+
+#include "stl.h"
 #include "core/log.h"
 #include "fmt/format.h"
 #include <algorithm>
@@ -313,11 +315,11 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
 
 int size_without_colors(const std::string& s) {
   const auto stripped = stripcolors(s);
-  return stripped.size();
+  return stl::size_int(stripped);
 }
 
 std::string trim_to_size_ignore_colors(const std::string& orig, int size) {
-  string s{orig};
+  auto s{orig};
   while (size_without_colors(s) > size) {
     s.pop_back();
   }
@@ -345,6 +347,11 @@ std::string::size_type size(const char* s) {
 
 // String length without colors as an int
 int ssize(const char* s) { return static_cast<int>(size(s)); }
+
+// String length without colors as an int
+int ssize(const unsigned char* s) {
+  return static_cast<int>(size(reinterpret_cast<const char*>(s)));
+}
 
 int ssize(const std::string& s) {
   return static_cast<int>(s.size());

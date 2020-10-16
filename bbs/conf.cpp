@@ -95,7 +95,7 @@ conf_info_t get_conf_info(ConferenceType conftype) {
 
   conf_info_t ret(a()->subconfs, a()->uconfsub);
   ret.file_name = FilePath(a()->config()->datadir(), SUBS_CNF).string();
-  ret.num_subs_or_dirs = a()->subs().subs().size();
+  ret.num_subs_or_dirs = wwiv::stl::size_int(a()->subs().subs());
   return ret;
 }
 
@@ -763,7 +763,7 @@ void conf_edit(ConferenceType conftype) {
         int ec = select_conf("Insert before which conference ('$'=at end)? ", conftype, 0);
         if (ec != -1) {
           if (ec == -2) {
-            ec = info.confs.size();
+            ec = size_int(info.confs);
           }
           insert_conf(conftype, ec);
         }
@@ -876,7 +876,7 @@ int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs)
       default:
         switch (conftype) {
         case ConferenceType::CONF_SUBS:
-          for (size_t i1 = 0; i1 < a()->subconfs.size(); i1++) {
+          for (auto i1 = 0; i1 < size_int(a()->subconfs); i1++) {
             if (mmk[0] == a()->subconfs[i1].designator) {
               ok = true;
               i = i1;
@@ -885,7 +885,7 @@ int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs)
           }
           break;
         case ConferenceType::CONF_DIRS:
-          for (size_t i1 = 0; i1 < a()->dirconfs.size(); i1++) {
+          for (auto i1 = 0; i1 < size_int(a()->dirconfs); i1++) {
             if (mmk[0] == a()->dirconfs[i1].designator) {
               ok = true;
               i = i1;
