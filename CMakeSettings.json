@@ -2,7 +2,7 @@
   "configurations": [
     {
       "name": "x86-Debug",
-      "generator": "Visual Studio 16 2019",
+      "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",

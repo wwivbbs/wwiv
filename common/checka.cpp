@@ -55,6 +55,7 @@ bool Input::checka(bool* abort) {
 bool Input::checka(bool* abort, bool* next) {
   if (nsp() == -1) {
     *abort = true;
+    bout.clear_lines_listed();
     clearnsp();
   }
   while (bkbhit() && !*abort && !sess().hangup()) {
