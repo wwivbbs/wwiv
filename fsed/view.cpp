@@ -17,9 +17,9 @@
 /**************************************************************************/
 #include "fsed/view.h"
 
-#include "common/bgetch.h"
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
+#include "common/input.h"
 #include "common/output.h"
 #include "fsed/model.h"
 #include "fsed/line.h"

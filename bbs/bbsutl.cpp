@@ -21,8 +21,6 @@
 #include "bbs/bbs.h"
 #include "bbs/interpret.h"
 #include "bbs/utility.h"
-#include "common/bgetch.h"
-#include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/pause.h"
@@ -78,9 +76,9 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     return false;
   }
 
-  auto cm = a()->sess().chatting();
+  const auto cm = a()->sess().chatting();
 
-  auto begx = bout.wherex();
+  const auto begx = bout.wherex();
   if (rollover[0] != 0) {
     char* ss = rollover_buffer;
     for (int i = 0; rollover[i]; i++) {
@@ -108,8 +106,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     rollover[0] = '\0';
   }
   string::size_type cp = 0;
-  bool done = false;
-  unsigned char ch = '\0';
+  auto done = false;
+  unsigned char ch;
   do {
     ch = bin.getkey();
     if (two_color) {
@@ -119,7 +117,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         ch = RETURN;
     }
     if (ch >= SPACE) {
-      if ((bout.wherex() < (a()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
+      if (bout.wherex() < (a()->user()->GetScreenChars() - 1) && cp < nMaxLen) {
         buffer[cp++] = ch;
         bout.bputch(ch);
         if (bout.wherex() == (a()->user()->GetScreenChars() - 1)) {
@@ -227,7 +225,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         if ((cp + charsNeeded) < nMaxLen
             && (bout.wherex() + charsNeeded) < a()->user()->GetScreenChars()) {
           charsNeeded = 5 - ((bout.wherex() + 1) % 5);
-          for (int j = 0; j < charsNeeded; j++) {
+          for (auto j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;
             bout.bputch(SPACE);
           }
@@ -243,13 +241,13 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
   }
 
   if (ch != RETURN) {
-    string::size_type lastwordstart = cp - 1;
+    auto lastwordstart = cp - 1;
     while (lastwordstart > 0 && buffer[lastwordstart] != SPACE && buffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
     if (lastwordstart > static_cast<string::size_type>(bout.wherex() / 2)
         && lastwordstart != (cp - 1)) {
-      string::size_type lastwordlen = cp - lastwordstart - 1;
+      const auto lastwordlen = cp - lastwordstart - 1;
       for (string::size_type j = 0; j < lastwordlen; j++) {
         bout.bputch(BACKSPACE);
       }
@@ -292,7 +290,7 @@ bool cs() {
 
 
 /**
- * Checks for limitied Co-SysOp status
+ * Checks for limited Co-SysOp status
  * <em>Note: Limited co sysop status may be for this message area only.</em>
  *
  * @return true if current user has limited co-sysop access (or better)
@@ -312,7 +310,7 @@ bool lcs() {
 }
 
 
-// Returns 1 if sysop is "chattable", else returns 0. Takes into account
+// Returns 1 if sysop is "chatable", else returns 0. Takes into account
 // current user's chat restriction (if any) and sysop high and low times,
 // if any, as well as status of scroll-lock key.
 bool sysop2() {
@@ -337,7 +335,7 @@ bool sysop2() {
 
 // Returns 1 if ANSI detected, or if local user, else returns 0. Uses the
 // cursor position interrogation ANSI sequence for remote detection.
-// If the user is asked and choosed NO, then -1 is returned.
+// If the user is asked and choose NO, then -1 is returned.
 int check_ansi() {
   if (!a()->sess().incom()) {
     return 1;
@@ -366,7 +364,8 @@ int check_ansi() {
         }
       }
       return 1;
-    } else if (ch == 'N') {
+    }
+    if (ch == 'N') {
       return -1;
     }
   }
@@ -413,7 +412,7 @@ bool set_language(int n) {
     return true;
   }
 
-  int old_curlang = a()->language_number();
+  const auto old_curlang = a()->language_number();
 
   if (!set_language_1(n)) {
     if (old_curlang >= 0) {
@@ -431,7 +430,7 @@ std::string YesNoString(bool bYesNo) {
 }
 
 void *BbsAllocA(size_t size) {
-  void* p = calloc(size + 1, 1);
+  auto* p = calloc(size + 1, 1);
   CHECK_NOTNULL(p);
   return p;
 }

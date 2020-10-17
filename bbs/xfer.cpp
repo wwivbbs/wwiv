@@ -21,19 +21,17 @@
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/bgetch.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "common/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/listplus.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xferovl1.h"
+#include "common/datetime.h"
+#include "common/input.h"
 #include "core/numbers.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -485,11 +483,9 @@ void searchall() {
   int color = 3;
   for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->sess().hangup()
        && a()->udir[i].subnum != -1; i++) {
-    int nDirNum = a()->udir[i].subnum;
-    bool bIsDirMarked = false;
-    if (a()->sess().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
-      bIsDirMarked = true;
-    }
+    const int nDirNum = a()->udir[i].subnum;
+    // ReSharper disable once CppInitializedValueIsAlwaysRewritten
+    bool bIsDirMarked =  a()->sess().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32));
     bIsDirMarked = true;
     // remove bIsDirMarked=true to search only marked directories
     if (bIsDirMarked) {

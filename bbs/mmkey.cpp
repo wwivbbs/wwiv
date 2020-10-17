@@ -20,7 +20,6 @@
 
 #include "bbsovl3.h"
 #include "bbs/bbs.h"
-#include "common/bgetch.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "core/log.h"
@@ -55,9 +54,9 @@ static char mmkey_getch() {
 }
 
 static int max_sub_key(std::vector<usersubrec>& container) {
-  int key = 0;
+  auto key = 0;
   for (const auto& r : container) {
-    int current_key = to_number<int>(r.keys);
+    const auto current_key = to_number<int>(r.keys);
     if (current_key == 0) {
       return key;
     }
@@ -141,7 +140,7 @@ std::string mmkey(MMKeyAreaType dl, bool bListOption) {
   std::set<char> xx{};
   switch (dl) {
   case MMKeyAreaType::subs: {
-    int max_key = max_sub_key(a()->usub);
+    const auto max_key = max_sub_key(a()->usub);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i + '0');
     }
@@ -150,7 +149,7 @@ std::string mmkey(MMKeyAreaType dl, bool bListOption) {
     }
   } break;
   case MMKeyAreaType::dirs: {
-    int max_key = max_sub_key(a()->udir);
+    const auto max_key = max_sub_key(a()->udir);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i);
     }

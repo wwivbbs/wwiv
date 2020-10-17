@@ -17,15 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbs.h"
-#include "common/bgetch.h"
-#include "common/input.h"
-#include "common/com.h"
 #include "bbs/crc.h"
-#include "common/datetime.h"
-#include "common/remote_io.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/remote_io.h"
 #include "core/numbers.h"
 #include "core/strings.h"
 #include "fmt/printf.h"

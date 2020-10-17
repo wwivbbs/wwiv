@@ -193,11 +193,11 @@ public:
   void rputch(char ch, bool use_buffer = false);
   void rputs(const std::string& text);
   bool RestoreCurrentLine(const SavedLine& line);
-  SavedLine SaveCurrentLine();
+  SavedLine SaveCurrentLine() const;
   void dump();
   void clear_lines_listed() { lines_listed_ = 0; }
   [[nodiscard]] int lines_listed() const noexcept { return lines_listed_; }
-  int wherex();
+  int wherex() const;
   void RedrawCurrentLine();
 
   // ANSI helpers.

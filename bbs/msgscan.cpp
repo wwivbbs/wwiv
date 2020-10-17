@@ -39,13 +39,11 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "common/bgetch.h"
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/full_screen.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"
 #include "core/scope_exit.h"
@@ -55,14 +53,13 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
-#include "sdk/msgapi/message.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/msgapi/message.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 #include <algorithm>
-#include <iomanip>
 #include <memory>
 #include <string>
 #include <vector>
@@ -84,9 +81,8 @@ static string GetScanReadPrompts(int msg_num) {
   if (a()->sess().forcescansub()) {
     if (msg_num < a()->GetNumMessagesInCurrentMessageArea()) {
       return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
-    } else {
-      return "|#1Press |#7[|#2ENTER|#7]|#1 to continue...";
     }
+    return "|#1Press |#7[|#2ENTER|#7]|#1 to continue...";
   }
 
   string local_network_name = "Local";
@@ -275,18 +271,18 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
   }
   bout.nl();
   bout << "|#1Backwards or Forwards? ";
-  char ch = onek("QBF+-");
+  const auto ch = onek("QBF+-");
   if (ch == 'Q') {
     return;
   }
-  bool fnd = false;
-  int tmp_msgnum = msgno;
+  auto fnd = false;
+  auto tmp_msgnum = msgno;
   bout.nl();
   bout << "|#1Searching -> |#2";
 
   // Store search direction and limit
-  const bool search_forward = (ch != '-' && ch != 'B');
-  const int msgnum_limit = search_forward ? a()->GetNumMessagesInCurrentMessageArea() : 1;
+  const auto search_forward = ch != '-' && ch != 'B';
+  const auto msgnum_limit = search_forward ? a()->GetNumMessagesInCurrentMessageArea() : 1;
 
   while (tmp_msgnum != msgnum_limit && !fnd) {
     if (search_forward) {
@@ -299,7 +295,7 @@ static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
     }
     if (!(tmp_msgnum % 5)) {
       bout.bprintf("%5.5d", tmp_msgnum);
-      for (int i1 = 0; i1 < 5; i1++) {
+      for (auto i1 = 0; i1 < 5; i1++) {
         bout << "\b";
       }
       if (!(tmp_msgnum % 100)) {

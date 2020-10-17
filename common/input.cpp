@@ -18,8 +18,6 @@
 /**************************************************************************/
 #include "common/input.h"
 
-#include "common/bgetch.h"
-#include "common/com.h"
 #include "common/common_events.h"
 #include "common/output.h"
 #include "core/eventbus.h"
@@ -597,7 +595,6 @@ std::string Input::input_password_minimal(int max_length) {
       bout.nl();
       last_input_char = ch;
       return pw;
-      break;
     case CW: // Ctrl-W
       while (!pw.empty() && pw.back() != SPACE) {
         pw.pop_back();

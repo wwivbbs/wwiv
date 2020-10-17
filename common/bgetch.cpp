@@ -16,8 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "common/bgetch.h"
-
 #include "common/common_events.h"
 #include "common/context.h"
 #include "common/input.h"
@@ -42,7 +40,7 @@ static void lastchar_pressed() { time_lastchar_pressed = steady_clock::now(); }
 static bool so(const wwiv::common::SessionContext& sess) { return (sess.effective_sl() == 255); }
 
 void Output::RedrawCurrentLine() {
-  SavedLine line = bout.SaveCurrentLine();
+  const auto line = bout.SaveCurrentLine();
   nl();
   RestoreCurrentLine(line);
 }
@@ -62,7 +60,7 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
   return true;
 }
 
-SavedLine Output::SaveCurrentLine() { return {current_line_, curatr()}; }
+SavedLine Output::SaveCurrentLine() const { return {current_line_, curatr()}; }
 
 void Output::dump() {
   if (sess().ok_modem_stuff()) {
@@ -70,8 +68,8 @@ void Output::dump() {
   }
 }
 
-int Output::wherex() {
-  int x = localIO()->WhereX();
+int Output::wherex() const {
+  const auto x = localIO()->WhereX();
   if (x != x_) {
     VLOG(1) << "x: " << x << " != x_: " << x_;
   }
@@ -91,10 +89,10 @@ std::chrono::duration<double> Input::key_timeout() const {
  */
 char Input::getkey(bool allow_extended_input) {
   resetnsp();
-  bool beepyet = false;
+  auto beepyet = false;
   lastchar_pressed();
 
-  auto tv = key_timeout();
+  const auto tv = key_timeout();
   auto tv1 = tv - minutes(1);
   if (tv1 < seconds(10)) {
     tv1 = seconds(10);
@@ -102,8 +100,7 @@ char Input::getkey(bool allow_extended_input) {
 
   // Since were waiting for a key, reset the # of lines we've displayed since a pause.
   bout.clear_lines_listed();
-  char ch = 0;
-  do {
+  while (!sess().hangup()) {
     bus().invoke<CheckForHangupEvent>();
     while (!bkbhit() && !sess().hangup()) {
       // Try to make hangups happen faster.
@@ -126,9 +123,12 @@ char Input::getkey(bool allow_extended_input) {
         bus().invoke<HangupEvent>();
       }
     }
-    ch = bgetch(allow_extended_input);
-  } while (!ch);
-  return ch;
+    if (const auto ch = bgetch(allow_extended_input)) {
+      return ch;
+    }
+  }
+  DLOG(FATAL) << "getkey: Should not happen";
+  return 0;
 }
 
 void Output::reset() {
@@ -154,7 +154,7 @@ static void HandleControlKey(char* ch, const SessionContext& context, wwiv::sdk:
     case CF: // CTRL-F
       if (context.okmacro() && !bin.charbufferpointer_) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
-        const auto macroNum = MACRO_KEY_TABLE[(int)c];
+        const auto macroNum = MACRO_KEY_TABLE[static_cast<int>(c)];
         to_char_array(bin.charbuffer, user.GetMacro(macroNum));
         c = bin.charbuffer[0];
         if (c) {
@@ -205,7 +205,7 @@ char Input::bgetch(bool allow_extended_input) {
       charbufferpointer_ = 0;
       charbuffer[0] = 0;
     } else {
-      if ((charbuffer[charbufferpointer_]) == CC) {
+      if (charbuffer[charbufferpointer_] == CC) {
         charbuffer[charbufferpointer_] = CP;
       }
       return charbuffer[charbufferpointer_++];
@@ -248,11 +248,9 @@ char Input::bgetchraw() {
 
 bool Input::bkbhitraw() {
   if (sess().ok_modem_stuff()) {
-    return (remoteIO()->incoming() || localIO()->KeyPressed());
-  } else if (localIO()->KeyPressed()) {
-    return true;
+    return remoteIO()->incoming() || localIO()->KeyPressed();
   }
-  return false;
+  return localIO()->KeyPressed();
 }
 
 bool Input::bkbhit() {
@@ -329,9 +327,8 @@ int Input::bgetch_handle_escape(int key) {
           key = static_cast<int>(getkey(true));
         }
         return get_command_for_ansi_key(key);
-      } else {
-        return GET_OUT;
       }
+      return GET_OUT;
     }
   } while (difftime(esc_time2, esc_time1) < 1);
 
@@ -356,7 +353,7 @@ int Input::bgetch_handle_key_translation(int key, numlock_status_t numlock_mode)
     return localIO()->GetChar() + 256;
   }
   if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-    auto ret = get_numpad_command(key);
+    const auto ret = get_numpad_command(key);
     if (ret)
       return ret;
   }
@@ -376,8 +373,8 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
 
 
   auto beepyet{false};
-  auto tv = key_timeout();
-  auto tv1 = tv - std::chrono::minutes(1);
+  const auto tv = key_timeout();
+  const auto tv1 = tv - std::chrono::minutes(1);
   bool once = true;
 
   while (true) {
@@ -417,11 +414,10 @@ int Input::bgetch_event(numlock_status_t numlock_mode, std::chrono::duration<dou
     }
     if (bkbhitraw()) {
       const auto key = static_cast<int>(getkey(true));
-      return (key == ESC) ? bgetch_handle_escape(key)
+      return key == ESC ? bgetch_handle_escape(key)
                : bgetch_handle_key_translation(key, numlock_mode);
     }
   }
-  return 0; // must have hung up
 }
 
 

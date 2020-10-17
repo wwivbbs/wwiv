@@ -17,31 +17,25 @@
 /**************************************************************************/
 #include "wwivfsed/wwivfsed.h"
 
-#include "common/bgetch.h"
 #include "common/common_events.h"
 #include "common/exceptions.h"
-#include "common/full_screen.h"
+#include "common/input.h"
 #include "common/message_editor_data.h"
-#include "common/null_remote_io.h"
 #include "common/output.h"
 #include "common/quote.h"
 #include "common/remote_io.h"
 #include "core/command_line.h"
 #include "core/eventbus.h"
-#include "fsed/commands.h"
-#include "fsed/common.h"
-#include "fsed/fsed.h"
-#include "fsed/model.h"
-#include "fsed/line.h"
-#include "fsed/view.h"
 #include "core/log.h"
-#include "core/stl.h"
 #include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "fmt/format.h"
-#include "local_io/keycodes.h"
+#include "fsed/common.h"
+#include "fsed/fsed.h"
+#include "fsed/model.h"
 #include "local_io/local_io.h"
 #include "sdk/filenames.h"
 #include "wwivfsed/fsedconfig.h"
@@ -244,19 +238,17 @@ int FsedApplication::Run() {
     LOG(ERROR) << "Invalid Socket Handle Provided: " << config_->socket_handle();
   }
 
-  auto remote_opened = remote_io_->open(); 
-  if (!remote_opened) {
+  if (!remote_io_->open()) {
     // Remote side disconnected.
     LOG(ERROR) << "Remote side disconnected.";
     return 1;
   }
 
-  bool ok = DoFsed();
-  return ok ? 0 : 1;
+  return DoFsed() ? 0 : 1;
 }
 
 
-} // namespace wwiv::wwivfsed
+} // namespace
 
 int main(int argc, char** argv) {
   LoggerConfig logger_config(LogDirFromConfig);
