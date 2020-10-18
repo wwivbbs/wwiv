@@ -16,15 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/inifile.h"
+#include "log.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "core/textfile.h"
 #include <initializer_list>
 #include <map>
 #include <string>
 #include <utility>
-
-#include "core/inifile.h"
-#include "core/strings.h"
-#include "core/file.h"
-#include "core/textfile.h"
 
 using namespace wwiv::strings;
 using std::map;
@@ -47,6 +47,7 @@ bool StringToBoolean(const char* p) {
   const auto ch = to_upper_case<char>(*p);
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
+
 } // namespace {}
 
 static bool ParseIniFile(const std::filesystem::path& filename, std::map<string, string>& data) {
@@ -99,9 +100,9 @@ IniFile::IniFile(std::filesystem::path filename,
   open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::IniFile(const std::filesystem::path& filename,
+IniFile::IniFile(const std::filesystem::path& path,
                  const std::initializer_list<const std::string> sections)
-  : path_(filename) {
+  : path_(path) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {
@@ -115,6 +116,7 @@ IniFile::~IniFile() {
 }
 
 /* Close is now a NOP */
+// ReSharper disable once CppMemberFunctionMayBeStatic
 void IniFile::Close() noexcept {
 }
 
@@ -131,34 +133,43 @@ const char* IniFile::GetValue(const string& raw_key, const char* default_value) 
 
 std::string IniFile::
 GetStringValue(const std::string& key, const std::string& default_value) const {
-  const auto s = GetValue(key);
-  return (s != nullptr) ? s : default_value;
+  const auto* s = GetValue(key);
+  return s != nullptr ? s : default_value;
 }
 
 bool IniFile::GetBooleanValue(const string& key, bool default_value) const {
-  const auto s = GetValue(key);
-  return (s != nullptr) ? StringToBoolean(s) : default_value;
+  const auto* s = GetValue(key);
+  return s != nullptr ? StringToBoolean(s) : default_value;
 }
 
 long IniFile::GetNumericValueT(const string& key, long default_value) const {
-  const auto s = GetValue(key);
-  return (s != nullptr) ? wwiv::strings::to_number<long>(s) : default_value;
+  const auto* s = GetValue(key);
+  return s != nullptr ? wwiv::strings::to_number<long>(s) : default_value;
+}
+
+std::string IniFile::full_pathname() const noexcept {
+  try {
+    return path_.string();
+  } catch (const std::exception& e) {
+    DLOG(FATAL) << "IniFile::full_pathname() threw exception: " << e.what();
+  } catch (...) {
+    DLOG(FATAL) << "IniFile::full_pathname() threw exception";
+  }
+  return {};
 }
 
 [[nodiscard]] std::vector<int> IniFile::GetIntList(const std::string& key) const {
-  const std::string s = GetStringValue(key, "");
-  std::vector<int> out;
+  const auto s = GetStringValue(key, "");
   if (s.empty()) {
-    return out;
+    return {};
   }
   auto list = SplitString(s, ",");
-  for (const auto i : list) {
+  std::vector<int> out;
+  for (const auto& i : list) {
     out.push_back(wwiv::strings::to_number<long>(i));
   }
   return out;
 } 
-
-
 
 
 template <>

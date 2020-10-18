@@ -110,36 +110,6 @@ std::filesystem::path NetworkCommandLine::semaphore_path() const noexcept {
   return FilePath(network_.dir, StrCat(network_cmd_name(net_cmd_), ".bsy"));
 }
 
-static void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
-  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    const auto f = ini.value<std::string>(key, cmdline.sarg(key));
-    cmdline.SetNewDefault(key, f);
-  }
-}
-
-static void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
-  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    const auto f = ini.value<bool>(key, cmdline.barg(key));
-    cmdline.SetNewDefault(key, f ? "Y" : "N");
-  }
-}
-
-static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
-  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    const auto f = ini.value<int>(key, cmdline.iarg(key));
-    cmdline.SetNewDefault(key, std::to_string(f));
-  }
-}
-
-static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
-                             const std::function<void(int)>& f) {
-  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
-    const auto v = ini.value<int>(key, cmdline.iarg(key));
-    cmdline.SetNewDefault(key, std::to_string(v));
-    f(v);
-  }
-}
-
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool NetworkCommandLine::LoadNetIni(char net_cmd, const std::string& bbsdir) {
   const auto net_tag = network_cmd_name(net_cmd);

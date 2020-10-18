@@ -47,8 +47,8 @@ public:
   std::filesystem::path help_path() const;  
   std::filesystem::path file_path() const;
 
-  LocalIO* CreateLocalIO();
-  wwiv::common::RemoteIO* CreateRemoteIO();
+  LocalIO* CreateLocalIO() const;
+  wwiv::common::RemoteIO* CreateRemoteIO() const;
 
 private:
   const std::filesystem::path root_;

@@ -20,7 +20,6 @@
 #include "core/command_line.h"
 #include "core/inifile.h"
 #include "core/log.h"
-#include "core/version.h"
 #include "common/null_remote_io.h"
 #include "common/remote_socket_io.h"
 #include "local_io/null_local_io.h"
@@ -69,7 +68,7 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
 
 }
 
-LocalIO* FsedConfig::CreateLocalIO() {
+LocalIO* FsedConfig::CreateLocalIO() const {
   if (local_ && !isatty(fileno(stdin))) {
     LOG(ERROR) << "WTF - No isatty?";
   }
@@ -86,7 +85,7 @@ LocalIO* FsedConfig::CreateLocalIO() {
   return new NullLocalIO();
 }
 
-wwiv::common::RemoteIO* FsedConfig::CreateRemoteIO() {
+RemoteIO* FsedConfig::CreateRemoteIO() const {
   if (local_) {
     return new NullRemoteIO();
   }
@@ -100,10 +99,9 @@ std::filesystem::path FsedConfig::file_path() const {
     return file_path_;
   }
 
-  return (bbs_type() == FsedConfig::bbs_type::wwiv) ? "input.msg" : "msgtmp";
+  return bbs_type() == FsedConfig::bbs_type::wwiv ? "input.msg" : "msgtmp";
 }
 
 
 }
 
-// { IniFile ini("net.ini", {"NETWORK"}); }

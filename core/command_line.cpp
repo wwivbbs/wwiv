@@ -23,6 +23,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/command_line.h"
@@ -47,12 +48,13 @@ using namespace wwiv::os;
 
 namespace wwiv::core {
 
-CommandLineArgument::CommandLineArgument(const std::string& name, char key,
-                                         const std::string& help_text,
-                                         const std::string& default_value,
-                                         const std::string& environment_variable)
-  : name(name), key(static_cast<char>(std::toupper(key))), help_text_(help_text),
-    default_value_(default_value), environment_variable_(environment_variable) {
+CommandLineArgument::CommandLineArgument(std::string name, char key,
+                                         std::string help_text,
+                                         std::string default_value,
+                                         std::string environment_variable)
+  : name_(std::move(name)), key_(static_cast<char>(std::toupper(key))), help_text_(
+        std::move(help_text)),
+    default_value_(std::move(default_value)), environment_variable_(std::move(environment_variable)) {
 }
 
 std::string CommandLineArgument::help_text() const { return help_text_; }
@@ -62,16 +64,15 @@ std::string CommandLineArgument::default_value() const {
   return env.empty() ? default_value_ : env;
 }
 
-CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
-  : name_(name), help_text_(help_text) {
+CommandLineCommand::CommandLineCommand(std::string name, std::string help_text)
+  : name_(std::move(name)), help_text_(std::move(help_text)) {
 }
 
 static std::string CreateProgramName(const std::string& arg) {
-  std::filesystem::path p{arg};
+  const std::filesystem::path p{arg};
   return p.filename().string();
 }
 
-// TODO(rushfan): Make the static command for the root commandline here and pass it as the invoker.
 CommandLine::CommandLine(const std::vector<std::string>& args, const std::string& dot_argument)
   : CommandLineCommand("", ""), 
     program_name_(CreateProgramName(args[0])),
@@ -82,7 +83,7 @@ CommandLine::CommandLine(const std::vector<std::string>& args, const std::string
 
 static std::vector<std::string> make_args(int argc, char** argv) {
   std::vector<std::string> v;
-  for (int i = 0; i < argc; i++) {
+  for (auto i = 0; i < argc; i++) {
     v.emplace_back(argv[i]);
   }
   return v;
@@ -128,8 +129,8 @@ int CommandLine::Execute() { return CommandLineCommand::Execute(); }
 bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   // Add cmd to the list of allowable arguments, and also set
   // a default empty value.
-  args_allowed_.emplace(cmd.name, cmd);
-  args_.emplace(cmd.name, CommandLineValue(cmd.default_value(), true));
+  args_allowed_.emplace(cmd.name_, cmd);
+  args_.emplace(cmd.name_, CommandLineValue(cmd.default_value(), true));
   return true;
 }
 
@@ -144,7 +145,7 @@ bool CommandLineCommand::HandleCommandLineArgument(const std::string& key,
 
 bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const std::string& value,
                                                 bool default_value) {
-  args_.erase(key); // emplace doesn't seem to replace.
+  args_.erase(key); // "emplace" doesn't replace, so erase it first.
   if (!contains(args_allowed_, key)) {
     VLOG(1) << "No arg: " << key << " to use for dot argument.";
     return false;
@@ -180,7 +181,7 @@ bool CommandLineCommand::AddStandardArgs() {
 
 std::string CommandLineCommand::ArgNameForKey(char key) {
   for (const auto& a : args_allowed_) {
-    if (key == a.second.key) {
+    if (key == a.second.key_) {
       return a.first;
     }
   }
@@ -202,7 +203,7 @@ int CommandLineCommand::Parse(int start_pos) {
       continue;
     }
     if (s == "--") {
-      // Everything after this should be postional args.
+      // Everything after this should be positional args.
       for (++i; i < wwiv::stl::ssize(raw_args_); i++) {
         remaining_.emplace_back(raw_args_[i]);
       }
@@ -240,7 +241,7 @@ int CommandLineCommand::Parse(int start_pos) {
       }
     } else {
       if (contains(commands_allowed_, s)) {
-        // If s is a subcommand, parse it, incrementing our pointer.
+        // If s is a sub-command, parse it, incrementing our pointer.
         command_ = commands_allowed_.at(s).get();
         i = command_->Parse(++i);
       } else {
@@ -312,14 +313,14 @@ std::string CommandLineCommand::GetHelp() const {
   ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
     const auto& c = a.second;
-    if (c.key != 0) {
-      ss << "-" << c.key << " ";
+    if (c.key_ != 0) {
+      ss << "-" << c.key_ << " ";
     } else {
       ss << "   ";
     }
-    string text = c.name;
+    string text = c.name_;
     if (!c.is_boolean) {
-      text = StrCat(c.name, "=value");
+      text = StrCat(c.name_, "=value");
     }
     ss << "--" << left << setw(25) << text << " " << c.help_text() << endl;
   }
@@ -374,4 +375,35 @@ unknown_argument_error::unknown_argument_error(const std::string& message)
   : std::runtime_error(StrCat("unknown_argument_error: ", message)) {
 }
 
-} // namespace wwiv
+
+void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    const auto f = ini.value<std::string>(key, cmdline.sarg(key));
+    cmdline.SetNewDefault(key, f);
+  }
+}
+
+void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    const auto f = ini.value<bool>(key, cmdline.barg(key));
+    cmdline.SetNewDefault(key, f ? "Y" : "N");
+  }
+}
+
+void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    const auto f = ini.value<int>(key, cmdline.iarg(key));
+    cmdline.SetNewDefault(key, std::to_string(f));
+  }
+}
+
+void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
+                             const std::function<void(int)>& f) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    const auto v = ini.value<int>(key, cmdline.iarg(key));
+    cmdline.SetNewDefault(key, std::to_string(v));
+    f(v);
+  }
+}
+
+} // namespace

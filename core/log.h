@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_LOG_H__
-#define __INCLUDED_CORE_LOG_H__
+#ifndef INCLUDED_CORE_LOG_H
+#define INCLUDED_CORE_LOG_H
 
 #include <functional>
 #include <memory>
@@ -44,11 +44,11 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 
 #define CHECK(x) LOG_IF(!(x), FATAL)
-#define CHECK_LE(x, y) LOG_IF(!(x <= y), FATAL)
-#define CHECK_EQ(x, y) LOG_IF(!(x == y), FATAL)
-#define CHECK_NE(x, y) LOG_IF(!(x != y), FATAL)
-#define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
-#define CHECK_GT(x, y) LOG_IF(!(x > y), FATAL)
+#define CHECK_LE(x, y) LOG_IF(!((x) <= (y)), FATAL)
+#define CHECK_EQ(x, y) LOG_IF(!((x) == (y)), FATAL)
+#define CHECK_NE(x, y) LOG_IF(!((x) != (y)), FATAL)
+#define CHECK_GE(x, y) LOG_IF(!((x) >= (y)), FATAL)
+#define CHECK_GT(x, y) LOG_IF(!((x) > (y)), FATAL)
 #ifdef WWIV_CORE_LOG_DEBUG
 #define DCHECK(x) LOG_IF(!(x), FATAL)
 
@@ -81,8 +81,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
 #define VLOG_IS_ON(level) wwiv::core::Logger::vlog_is_on(level)
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 struct enum_hash {
   template <typename T>
@@ -98,8 +97,7 @@ class Appender {
 public:
   virtual ~Appender() = default;
 
-  Appender() {
-  };
+  Appender() = default;
   virtual bool append(const std::string& message) = 0;
 };
 
@@ -112,7 +110,7 @@ typedef std::function<std::string(std::string)> logdir_fn;
 class LoggerConfig {
 public:
   LoggerConfig();
-  LoggerConfig(logdir_fn f);
+  explicit LoggerConfig(logdir_fn f);
   LoggerConfig(logdir_fn l, timestamp_fn t);
   void add_appender(LoggerLevel level, const std::shared_ptr<Appender>& appender);
   void reset();
@@ -133,8 +131,7 @@ class NullLogger {
 public:
   NullLogger() noexcept = default;
 
-  void operator&(std::ostream&) noexcept {
-  }
+  void operator&(std::ostream&) const noexcept {}
 
   template <class T> NullLogger& operator<<(const T&) noexcept { return *this; }
   NullLogger& operator<<(ENDL_TYPE*) noexcept { return *this; }
@@ -163,7 +160,7 @@ public:
     : Logger(LoggerLevel::info, 0) {
   }
 
-  Logger(LoggerLevel level) noexcept
+  explicit Logger(LoggerLevel level) noexcept
     : Logger(level, 0) {
   }
 
@@ -208,7 +205,6 @@ private:
   std::ostringstream ss_;
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_CORE_LOG_H__
+#endif

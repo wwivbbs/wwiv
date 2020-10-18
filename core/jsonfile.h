@@ -16,29 +16,31 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_JSONFILE_H__
-#define __INCLUDED_JSONFILE_H__
+#ifndef INCLUDED_JSONFILE_H
+#define INCLUDED_JSONFILE_H
 
-#include <string>
-#include <sstream>
-
-#include <filesystem>
 #include "core/log.h"
 #include "core/textfile.h"
+#include <filesystem>
+#include <sstream>
+#include <string>
+#include <utility>
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/access.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/cereal.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/archives/json.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/map.hpp>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/set.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cereal/types/vector.hpp>
 
-#include <utility>
 
 namespace wwiv::core {
 

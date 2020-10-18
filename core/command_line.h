@@ -16,9 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
-#define __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
+#ifndef INCLUDED_WWIV_CORE_COMMAND_LINE_H
+#define INCLUDED_WWIV_CORE_COMMAND_LINE_H
 
+#include "core/inifile.h"
+#include <functional>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -27,10 +29,10 @@
 #include <vector>
 
 /**
- * ComandLine support.
+ * CommandLine support.
  *
  * 1) Create a tree of allowed values.
- * 2) Parse the actua commandline, reporting any errors.
+ * 2) Parse the actual commandline, reporting any errors.
  * 3) Get the values as needed.
  *
  * 1) Example:
@@ -53,8 +55,7 @@
  * const string bazname = cmd->arg("bazname").as_string();
  */
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 struct unknown_argument_error : public std::runtime_error {
   unknown_argument_error(const std::string& message);
@@ -95,8 +96,8 @@ private:
 
 class CommandLineArgument {
 public:
-  CommandLineArgument(const std::string& name, char key, const std::string& help_text,
-                      const std::string& default_value, const std::string& environment_variable);
+  CommandLineArgument(std::string name, char key, std::string help_text,
+                      std::string default_value, std::string environment_variable);
 
   CommandLineArgument(const std::string& name, char key, const std::string& help_text,
                       const std::string& default_value)
@@ -123,8 +124,8 @@ public:
 
   [[nodiscard]] std::string help_text() const;
   [[nodiscard]] std::string default_value() const;
-  const std::string name;
-  const char key = 0;
+  const std::string name_;
+  const char key_{0};
   const std::string help_text_;
   const std::string default_value_;
   const std::string environment_variable_;
@@ -163,7 +164,7 @@ public:
 /** Generic command implementation for using the CommandLine support in core */
 class CommandLineCommand : public Command {
 public:
-  CommandLineCommand(const std::string& name, const std::string& help_text);
+  CommandLineCommand(std::string name, std::string help_text);
   bool add_argument(const CommandLineArgument& cmd);
 
   virtual bool add(std::shared_ptr<CommandLineCommand> cmd) {
@@ -231,7 +232,7 @@ private:
 /**
  * Class to parse command line arguments and populate the commands.
  */
-class CommandLine : public CommandLineCommand {
+class CommandLine final : public CommandLineCommand {
 public:
   /**
    * Common constructor.  Note that the dot_argument specifie the
@@ -241,21 +242,21 @@ public:
    */
   CommandLine(const std::vector<std::string>& args, const std::string& dot_argument);
   CommandLine(int argc, char** argv, const std::string& dot_argument);
-  virtual bool Parse();
+  bool Parse();
   int Execute() override final;
   bool AddStandardArgs() override;
-  std::string GetHelp() const override final;
+  [[nodiscard]] std::string GetHelp() const override final;
 
   void set_no_args_allowed(bool no_args_allowed) { no_args_allowed_ = no_args_allowed; }
-  bool no_args_allowed() const { return no_args_allowed_; }
+  [[nodiscard]] bool no_args_allowed() const { return no_args_allowed_; }
 
-  std::string program_name() const noexcept { return program_name_; }
-  std::filesystem::path program_path() const noexcept { return program_path_; }
-  const std::string bindir() const noexcept { return bindir_; }
-  const std::string bbsdir() const noexcept { return bbsdir_; }
-  const std::string configdir() const noexcept { return configdir_; }
-  const std::string logdir() const noexcept { return logdir_; }
-  int verbose() const noexcept { return verbose_; }
+  [[nodiscard]] std::string program_name() const noexcept { return program_name_; }
+  [[nodiscard]] std::filesystem::path program_path() const noexcept { return program_path_; }
+  [[nodiscard]] std::string bindir() const noexcept { return bindir_; }
+  [[nodiscard]] std::string bbsdir() const noexcept { return bbsdir_; }
+  [[nodiscard]] std::string configdir() const noexcept { return configdir_; }
+  [[nodiscard]] std::string logdir() const noexcept { return logdir_; }
+  [[nodiscard]] int verbose() const noexcept { return verbose_; }
 
 private:
   const std::string program_name_;
@@ -270,6 +271,14 @@ private:
   bool ParseImpl();
 };
 
-} // namespace core
-} // namespace wwiv
-#endif // __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
+// Utility methods for setting defaults from INI files/
+
+void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
+                      const std::function<void(int)>& f);
+
+} // namespace
+
+#endif

@@ -16,10 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_IP_ADDRESS_H__
-#define __INCLUDED_WWIV_CORE_IP_ADDRESS_H__
+#ifndef INCLUDED_WWIV_CORE_IP_ADDRESS_H
+#define INCLUDED_WWIV_CORE_IP_ADDRESS_H
 
-#include <array>
 #include <cstring>
 #include <optional>
 #include <random>

@@ -18,23 +18,18 @@
 /**************************************************************************/
 #include "core/os.h"
 
+#include "core/strings.h"
+#include "core/file.h"
 #include <chrono>
 #include <cstdlib>
 #include <cstdint>
 #include <limits>
 #include <sstream>
 
-#ifdef _WIN32
-
+// Windows headers
 #include <Windows.h>
 #include <DbgHelp.h>
-
-#endif  // _WIN32
-
 #include <process.h>
-
-#include "core/strings.h"
-#include "core/file.h"
 
 #pragma comment (lib, "DbgHelp.lib")
 
@@ -80,14 +75,16 @@ std::string environment_variable(const std::string& variable_name) {
 }
 
 string stacktrace() {
-  const auto process = GetCurrentProcess();
+  // ReSharper disable once CppUseAuto
+  // ReSharper disable once CppLocalVariableMayBeConst
+  HANDLE process = GetCurrentProcess();
   if (process == nullptr) {
     return "";
   }
   SymInitialize(process, nullptr, TRUE);
   void* stack[100];
-  uint16_t frames = CaptureStackBackTrace(0, 100, stack, nullptr);
-  auto symbol = static_cast<SYMBOL_INFO *>(calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1));
+  const auto frames = CaptureStackBackTrace(0, 100, stack, nullptr);
+  auto* symbol = static_cast<SYMBOL_INFO *>(calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1));
   if (symbol == nullptr) {
     return "";
   }
@@ -96,7 +93,7 @@ string stacktrace() {
 
   stringstream out;
   // start at one to skip this current frame.
-  for (decltype(frames) i = 1; i < frames; i++) {
+  for (auto i = 1; i < frames; i++) {
     if (SymFromAddr(process, reinterpret_cast<DWORD64>(stack[i]), nullptr, symbol)) {
       out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
     }

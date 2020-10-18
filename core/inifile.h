@@ -16,18 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_INIFILE_H__
-#define __INCLUDED_INIFILE_H__
+#ifndef INCLUDED_INIFILE_H
+#define INCLUDED_INIFILE_H
 
+#include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <string>
 #include <vector>
 
-#include <filesystem>
-
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 struct ini_flags_type {
   const std::string strnum;
@@ -38,7 +36,7 @@ struct ini_flags_type {
 class IniFile final {
 public:
   IniFile(std::filesystem::path filename, std::initializer_list<const char*> sections);
-  IniFile(const std::filesystem::path& filename,
+  IniFile(const std::filesystem::path& path,
           std::initializer_list<const std::string> sections);
   // Constructor/Destructor
   ~IniFile();
@@ -57,7 +55,7 @@ public:
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
-  [[nodiscard]] std::string full_pathname() const noexcept { return path_.string(); }
+  [[nodiscard]] std::string full_pathname() const noexcept;
   [[nodiscard]] std::filesystem::path path() const noexcept { return path_; }
 
 template <typename T>
@@ -86,12 +84,12 @@ template <typename T>
  */
 [[nodiscard]] std::vector<int> GetIntList(const std::string& key) const;
 
+// This class should not be assignable via '=' so remove the implicit operator=
+// and Copy constructor.
+IniFile(const IniFile& other) = delete;
+IniFile& operator=(const IniFile& other) = delete;
 
 private:
-  // This class should not be assignable via '=' so remove the implicit operator=
-  // and Copy constructor.
-  IniFile(const IniFile& other) = delete;
-  IniFile& operator=(const IniFile& other) = delete;
   const char* GetValue(const std::string& key, const char* default_value = nullptr) const;
 
   [[nodiscard]] std::string GetStringValue(const std::string& key, const std::string& default_value) const;
@@ -118,7 +116,6 @@ template <>
 [[nodiscard]] bool IniFile::value<bool>(const std::string& key) const;
 
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_INIFILE_H__
+#endif
