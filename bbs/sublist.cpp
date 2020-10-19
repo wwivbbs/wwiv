@@ -177,7 +177,7 @@ void SubList() {
   auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
 
   if (okconf(a()->user())) {
-    if (a()->uconfsub[1].confnum != -1) {
+    if (a()->uconfsub.size() > 1 && a()->uconfsub[1].confnum != -1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
       ch = onek("Q A");
