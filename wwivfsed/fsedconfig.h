@@ -18,17 +18,10 @@
 #ifndef __INCLUDED_WWIVFSED_FSEDCONFIG_H__
 #define __INCLUDED_WWIVFSED_FSEDCONFIG_H__
 
-#include "common/context.h"
-#include "common/macro_context.h"
-#include "common/message_editor_data.h"
 #include "common/remote_io.h"
 #include "core/command_line.h"
-#include "fsed/line.h"
-#include "fsed/model.h"
 #include "local_io/local_io.h"
 #include <filesystem>
-#include <string>
-#include <vector>
 
 namespace wwiv::wwivfsed {
 
@@ -39,21 +32,21 @@ public:
 
   enum class bbs_type { wwiv, qbbs };
 
-  bbs_type bbs_type() const noexcept { return bbs_type_; }
-  int socket_handle() const noexcept { return socket_handle_; }
-  bool local() const noexcept { return local_; }
-  bool pause() const noexcept { return pause_; }
-  const std::filesystem::path& root() const noexcept { return root_; }
-  std::filesystem::path help_path() const;  
-  std::filesystem::path file_path() const;
+  [[nodiscard]] bbs_type bbs_type() const noexcept { return bbs_type_; }
+  [[nodiscard]] int socket_handle() const noexcept { return socket_handle_; }
+  [[nodiscard]] bool local() const noexcept { return local_; }
+  [[nodiscard]] bool pause() const noexcept { return pause_; }
+  [[nodiscard]] const std::filesystem::path& root() const noexcept { return root_; }
+  [[nodiscard]] std::filesystem::path help_path() const;  
+  [[nodiscard]] std::filesystem::path file_path() const;
 
-  LocalIO* CreateLocalIO() const;
-  wwiv::common::RemoteIO* CreateRemoteIO() const;
+  [[nodiscard]] LocalIO* CreateLocalIO() const;
+  [[nodiscard]] wwiv::common::RemoteIO* CreateRemoteIO() const;
 
 private:
   const std::filesystem::path root_;
   std::filesystem::path help_path_;
-  enum bbs_type bbs_type_{bbs_type::wwiv};
+  enum class bbs_type bbs_type_{bbs_type::wwiv};
   int socket_handle_{-1};
   bool local_{false};
   bool pause_{false};

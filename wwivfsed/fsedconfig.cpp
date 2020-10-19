@@ -22,23 +22,24 @@
 #include "core/log.h"
 #include "common/null_remote_io.h"
 #include "common/remote_socket_io.h"
+#include "core/strings.h"
 #include "local_io/null_local_io.h"
 // isatty
 #ifdef _WIN32
 #include "local_io/local_io_win32.h"
 #include <io.h>
 #else
+// Needed on Linux to init curses with the title/
+#include "core/version.h"
 #include "local_io/local_io_curses.h"
 #include "localui/curses_io.h"
 #include <unistd.h>
 #endif
+
 using namespace wwiv::common;
 using namespace wwiv::core;
-using namespace wwiv::strings;
-using namespace wwiv::sdk;
 
 namespace wwiv::wwivfsed {
-
 
 FsedConfig::FsedConfig(const CommandLine& cmdline) 
   : root_(cmdline.program_path().parent_path()), help_path_(FilePath(root_, "gfiles")) {
@@ -47,7 +48,7 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
   if (ini.IsOpen()) {
     VLOG(1) << "Using wwivfsed.ini: '" << path.string() << "'";
     auto bt = ini.value<std::string>("bbs_type", "wwiv");
-    bbs_type_ = iequals(bt, "wwiv") ? FsedConfig::bbs_type::wwiv : FsedConfig::bbs_type::qbbs;
+    bbs_type_ = strings::iequals(bt, "wwiv") ? FsedConfig::bbs_type::wwiv : FsedConfig::bbs_type::qbbs;
     std::filesystem::path p = ini.value<std::string>("help_path", "gfiles");
     if (p.is_absolute()) {
       help_path_ = p;

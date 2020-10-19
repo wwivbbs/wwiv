@@ -63,7 +63,7 @@ public:
   virtual void set_deleted(bool b) = 0;
 
   [[nodiscard]] virtual bool pending_network() const = 0;
-  [[nodiscard]] virtual void set_pending_network(bool b) = 0;
+  virtual void set_pending_network(bool b) = 0;
   [[nodiscard]] virtual bool source_verified() const = 0;
   [[nodiscard]] virtual bool net_network_post() const = 0;
 
