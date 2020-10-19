@@ -23,6 +23,7 @@
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "sdk/cereal_utils.h"
 #include <cassert>
 #include <string>
 
@@ -41,23 +42,14 @@ struct script_data_t {
 };
 
 
-#define SERIALIZE(field)                                                                           \
-  {                                                                                                \
-    try {                                                                                          \
-      ar(cereal::make_nvp(#field, field));                                                         \
-    } catch (const cereal::Exception&) {                                                           \
-      ar.setNextName(nullptr);                                                                     \
-    }                                                                                              \
-  }
-
 template <class Archive> void serialize(Archive& ar, script_data_t& t) {
-  SERIALIZE(t.type);
+  SERIALIZE(t, type);
   if (t.type == script_data_type_t::INT) {
-    SERIALIZE(t.i);
+    SERIALIZE(t, i);
   } else if (t.type == script_data_type_t::REAL) {
-    SERIALIZE(t.r);
+    SERIALIZE(t, r);
   } else if (t.type == script_data_type_t::STRING) {
-    SERIALIZE(t.s);
+    SERIALIZE(t, s);
   }
 }
 
@@ -110,7 +102,7 @@ static script_data_t to_script_data(const mb_value_t& v) {
   case MB_DT_ITERATOR:
   case MB_DT_CLASS:
   case MB_DT_ROUTINE:
-  default:;
+  default:
     LOG(ERROR) << "Unable to convert type (unknown) for basic type: " << v.type;
     return {};
   }

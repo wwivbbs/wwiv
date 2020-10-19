@@ -25,7 +25,7 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_m
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization::non_member_load_save_minimal);
 
-#include "core/stl.h"
+#include "sdk/cereal_utils.h"
 #include "sdk/net/net.h"
 #include "sdk/uuid_cereal.h"
 #include <filesystem>
@@ -51,31 +51,6 @@ std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(const Archive&, const path& p)
 }
 namespace cereal {
 
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, (n).field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
-
-template <typename T>
-std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
-  try {
-    return names.at(static_cast<size_t>(t));
-  } catch (std::out_of_range&) {
-    return names.at(0);
-  }
-}
-
-template <typename T>
-T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
-  try {
-    for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
-      if (v == names.at(i)) {
-        return static_cast<T>(i);
-      }
-    }
-  } catch (std::out_of_range&) {
-    // NOP
-  }
-  return static_cast<T>(0);
-}
-
 template <class Archive>
 std::string save_minimal(Archive const &, const network_type_t& t) {
   return to_enum_string<network_type_t>(t, {"wwivnet", "fido", "internet"});
@@ -87,12 +62,12 @@ void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
 
 template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_bundle_status_t& t) {
-  auto c = static_cast<char>(t);
+  const auto c = static_cast<char>(t);
   return std::string(1, c);
 }
 template <class Archive>
 void load_minimal(Archive const &, fido_bundle_status_t& t, const std::string& v) {
-  char c = 'f';
+  auto c = 'f';
   if (!v.empty()) {
     c = v.front();
   }

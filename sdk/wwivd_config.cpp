@@ -18,21 +18,14 @@
 /**************************************************************************/
 #include "sdk/wwivd_config.h"
 
-#include <cctype>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <string>
-#include <vector>
-
 #include <cereal/cereal.hpp>
 #include <cereal/access.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/archives/json.hpp>
-
 #include "core/file.h"
 #include "core/jsonfile.h"
+#include "sdk/cereal_utils.h"
 #include "sdk/config.h"
 
 using std::map;
@@ -42,15 +35,6 @@ using namespace wwiv::core;
 #ifdef DELETE
 #undef DELETE
 #endif  // DELETE
-
-#define SERIALIZE(n, field)                                                                        \
-  {                                                                                                \
-    try {                                                                                          \
-      ar(cereal::make_nvp(#field, n.field));                                                       \
-    } catch (const cereal::Exception&) {                                                           \
-      ar.setNextName(nullptr);                                                                     \
-    }                                                                                              \
-  }
 
 namespace wwiv::sdk {
 

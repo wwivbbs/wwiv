@@ -23,10 +23,10 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/cereal_utils.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -48,37 +48,6 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_dir_t, specialization::non_member_
 
 namespace cereal {
 
-#define SERIALIZE(n, field)                                                                        \
-  {                                                                                                \
-    try {                                                                                          \
-      ar(cereal::make_nvp(#field, n.field));                                                       \
-    } catch (const cereal::Exception&) {                                                           \
-      ar.setNextName(nullptr);                                                                     \
-    }                                                                                              \
-  }
-
-template <typename T>
-std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
-  try {
-    return names.at(static_cast<int>(t));
-  } catch (std::out_of_range&) {
-    return names.at(0);
-  }
-}
-
-template <typename T>
-T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
-  try {
-    for (auto i = 0; i < wwiv::stl::ssize(names); i++) {
-      if (v == names.at(i)) {
-        return static_cast<T>(i);
-      }
-    }
-  } catch (std::out_of_range&) {
-    // NOP
-  }
-  return static_cast<T>(0);
-}
 
 template <class Archive>
 std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {

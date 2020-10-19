@@ -29,6 +29,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "sdk/cereal_utils.h"
 #include "sdk/filenames.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/uuid_cereal.h"
@@ -45,8 +46,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
-
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }  // NOLINT(cppcoreguidelines-macro-usage)
 
 template <class Archive>
 void serialize (Archive& ar, dir_area_t& d) {

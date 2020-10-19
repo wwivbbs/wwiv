@@ -30,6 +30,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
+#include "sdk/cereal_utils.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include <sstream>
@@ -55,14 +56,6 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
 std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
 
-#define SERIALIZE(n, field)                                                                        \
-  {                                                                                                \
-    try {                                                                                          \
-      ar(cereal::make_nvp(#field, n.field));                                                       \
-    } catch (const cereal::Exception&) {                                                           \
-      ar.setNextName(nullptr);                                                                     \
-    }                                                                                              \
-  } // NOLINT(cppcoreguidelines-macro-usage)
 
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
@@ -126,7 +119,7 @@ bool Subs::SaveToJSON(const std::filesystem::path& dir, const std::string& filen
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (auto i = 0; i < wwiv::stl::ssize(net_networks); i++) {
-    if (iequals(net_networks[i].name, name.c_str())) {
+    if (iequals(net_networks[i].name, name)) {
       return i;
     }
   }

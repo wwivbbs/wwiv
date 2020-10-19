@@ -26,6 +26,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 /**
@@ -71,8 +72,8 @@ public:
     : CommandLineValue(s, false) {
   }
 
-  CommandLineValue(const std::string& s, bool default_value) noexcept
-    : value_(s), default_(default_value) {
+  CommandLineValue(std::string value, bool default_value) noexcept
+    : value_(std::move(value)), default_(default_value) {
   }
 
   [[nodiscard]] std::string as_string() const noexcept { return value_; }
@@ -85,9 +86,9 @@ public:
     }
   }
 
-  bool as_bool() const noexcept { return value_ == "true"; }
+  [[nodiscard]] bool as_bool() const noexcept { return value_ == "true"; }
 
-  bool is_default() const noexcept { return default_; }
+  [[nodiscard]] bool is_default() const noexcept { return default_; }
 
 private:
   const std::string value_;
@@ -154,6 +155,8 @@ public:
 };
 
 class Command {
+protected:
+  Command() = default;
 public:
   virtual ~Command() = default;
   virtual int Execute() = 0;
@@ -165,6 +168,7 @@ public:
 class CommandLineCommand : public Command {
 public:
   CommandLineCommand(std::string name, std::string help_text);
+  ~CommandLineCommand() override = default;
   bool add_argument(const CommandLineArgument& cmd);
 
   virtual bool add(std::shared_ptr<CommandLineCommand> cmd) {
@@ -184,8 +188,8 @@ public:
   [[nodiscard]] CommandLineValue arg(const std::string& name) const;
   [[nodiscard]] bool contains_arg(const std::string& name) const noexcept;
   [[nodiscard]] std::string sarg(const std::string& name) const { return arg(name).as_string(); }
-  [[nodiscard]] int iarg(const std::string name) const { return arg(name).as_int(); }
-  [[nodiscard]] bool barg(const std::string name) const { return arg(name).as_bool(); }
+  [[nodiscard]] int iarg(const std::string& name) const { return arg(name).as_int(); }
+  [[nodiscard]] bool barg(const std::string& name) const { return arg(name).as_bool(); }
   [[nodiscard]] bool help_requested() const { return barg("help"); }
   [[nodiscard]] const CommandLineCommand* command() const { return command_; }
   [[nodiscard]] std::vector<std::string> remaining() const { return remaining_; }
@@ -235,17 +239,20 @@ private:
 class CommandLine final : public CommandLineCommand {
 public:
   /**
-   * Common constructor.  Note that the dot_argument specifie the
+   * Common constructor.  Note that the dot_argument specific the
    * command line to replace . with (i.e. "network" means that .0
    * will be replaced by --network=0.  An empty dot_argument means
    * that no replacement will happen.
    */
   CommandLine(const std::vector<std::string>& args, const std::string& dot_argument);
   CommandLine(int argc, char** argv, const std::string& dot_argument);
+  ~CommandLine() override = default;
+  CommandLine() = delete;
+  CommandLine(const CommandLine&) = delete;
   bool Parse();
-  int Execute() override final;
+  int Execute() override;
   bool AddStandardArgs() override;
-  [[nodiscard]] std::string GetHelp() const override final;
+  [[nodiscard]] std::string GetHelp() const override;
 
   void set_no_args_allowed(bool no_args_allowed) { no_args_allowed_ = no_args_allowed; }
   [[nodiscard]] bool no_args_allowed() const { return no_args_allowed_; }
@@ -271,11 +278,32 @@ private:
   bool ParseImpl();
 };
 
-// Utility methods for setting defaults from INI files/
+// Utility methods for setting defaults from INI files.
 
+/**
+ * Sets a default value for the command line parameter for to be the value
+ * of an INI file key of the same name and type.
+ */
 void SetNewStringDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+
+/**
+ * Sets a default value for the command line parameter for to be the value
+ * of an INI file key of the same name and type.
+ */
 void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+
+/**
+ * Sets a default value for the command line parameter for to be the value
+ * of an INI file key of the same name and type.
+ */
 void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key);
+
+/**
+ * Sets a default value for the command line parameter for to be the value
+ * of an INI file key of the same name and type.
+ *
+ * Also invokes function f with the default value pass to it as a parameter.
+ */
 void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key,
                       const std::function<void(int)>& f);
 

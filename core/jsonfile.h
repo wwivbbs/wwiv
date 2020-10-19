@@ -103,6 +103,10 @@ private:
   T& t_;
 };
 
+// C++17 Deduction Guide for JsonFile
+template <typename X, typename Y, typename Z> JsonFile(X, Y, Z&) -> JsonFile<Z>;
+
+
 }
 
 #endif
