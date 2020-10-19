@@ -11,15 +11,36 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.6
 ~~~~~~~~~~~~~~~~~~~~~~
++ Remove WSL stanzas, that makes MSVC 16.6 and newer unhappy (#1268)
 * Update instance.dat when a node exits. 
-+ Start of WWIVfsed. WWIV's internal FSED as an external.
++ Implemented WWIVfsed. WWIV's internal FSED as an external.
 ! Arguments on linux must not start with '-'' and not '/', this is also
   how standard arguments work on Linux.  Windows still accepts arguments
-  either like "/N" or "-N".
-+ Support for Ubuntu 20.04 LTS has been added.
+  either like "/N" or "-N". (#1273)
+* Don't throw an exception when no dirs are visible. (#1276)
++ Support for Ubuntu 20.04 LTS has been added. (#1264)
++ dd email address to useredit in wwivconfig. (#1258)
 ! Removed InternetEmail menu command, it didn't work without PPP project 
   for sending internet emails.  Also the rest of the BBS doesn't use 
   acct.ini anymore.
+* Fix crash with subs list and only 1 conference.
++ Fix TO handling in the SDK. Setting the TO name will now either
+  add FidoAddr for FTN subs, or BY: lines into the message text.
++ Added MessageOptions::add_re_and_by_line to add the RE: and BY: lines to 
+  the message like WWIV does when you reply to a post since 4.22. (#1285)
+* BinkP: Wait to send password until we have the remote address. (#1289)
+* Updated to CryptLib v3.4.5 with SSH fixes (#1288)
+* Don't use default "%z" for tzutc klduge (Fixes TZUTC bug with positive TZ)
+! Move wwivutil messages list to wwivutil subs areas.
+* Fix crash when deleting a tagged file. (#1282)
+* fixed , not working from WFC
++ Add wwivfsed to the wwiv archive. (#1275)
++ Implement a max_backups setting in the bbs. (#1278)
++ add netdat support to network stack
++ Set Uploaded By: to WWIV TIC Processor (#1279)
++ Add setting in wwivd for working directory for launch the bbs (#1269)
+* Don't check for hangup on the network programs, user isn't online
+* Improve pending list.
   
 
 What's New in WWIV 5.5 (2020)

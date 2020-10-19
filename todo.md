@@ -3,17 +3,6 @@
 ***
 
 
-## FSED Externalize
-* create code to read drop file
-* create code to read qbbs/wwiv style editor file.
-* rename u() user() in context.
-
-## Build Cleanup.
-* add some cmake install targets
-  cmake .. -DCMAKE_INSTALL_PREFIX=<location>
-  cmake --build . --target install
-
-
 # Install
 curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json
 ?pretty=true > jenkins.json
@@ -33,9 +22,6 @@ jq ".number" jenkins.json
   we can move dupes to a badmessage area as FidoStoredMessage (.msg)
 * Update BBS list for network to use FTN nodelist.
 
-
-## Ini Files and Configuration
-***
 
 ## Container work
 ***
@@ -68,8 +54,6 @@ jq ".number" jenkins.json
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
 
-## path work
-receive_file
 
 
 ## core::File Improvements
@@ -92,9 +76,6 @@ receive_file
 * TopScreen doesn't work with CursesIO
 * stop using localIO()->WhereX to determine remote position
 
-## Net52
-***
-
 ## Message Areas
 ***
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
@@ -116,12 +97,6 @@ receive_file
 * Add overload of AddFile, UpdateFile and handles external descirptions too, i.e.
   add a 3rd parameter for the external description.  Or put it into the FileRecord
   class.
-
-## Parser
-***
-
-## Open Questions
-***
 
 ## Closed Questions
 ***
