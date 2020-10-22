@@ -15,34 +15,33 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_VALUE_H__
-#define __INCLUDED_SDK_ACS_VALUE_H__
+#ifndef INCLUDED_SDK_ACS_VALUE_H
+#define INCLUDED_SDK_ACS_VALUE_H
 
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/user.h"
 #include <any>
 #include <iostream>
-#include <map>
 #include <memory>
-#include <optional>
-#include <set>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace wwiv::sdk::acs {
 
 class Ar {
 public:
-  Ar(int ar);
-  Ar(const char ar);
-  Ar(const std::string ar);
+  explicit Ar(int ar);
+  // Don't be explicit so that we can let the equality operators
+  // work easily below.
+  // ReSharper disable once CppNonExplicitConvertingConstructor
+  Ar(char ar);
+  // ReSharper disable once CppNonExplicitConvertingConstructor
+  Ar(const std::string& ar);
+  // ReSharper disable once CppNonExplicitConvertingConstructor
   Ar(const char* ar) : Ar(std::string(ar)) {}
 
-  bool eq(const Ar& that) const;
-  std::string as_string() const;
-  int as_integer() const;
+  [[nodiscard]] bool eq(const Ar& that) const;
+  [[nodiscard]] std::string as_string() const;
+  [[nodiscard]] int as_integer() const;
 
   uint16_t ar_;
 };
@@ -57,27 +56,32 @@ enum class ValueType { unknown, number, string, boolean, ar };
 class Value {
 public:
   Value() : value_type(ValueType::unknown) {}
-  Value(bool v) : value_type(ValueType::boolean), value(std::make_any<bool>(v)) {}
-  Value(int v) : value_type(ValueType::number), value(std::make_any<int>(v)) {}
-  Value(std::string v) : value_type(ValueType::string), value(std::make_any<std::string>(v)) {}
-  Value(const char* v) : Value(std::string(v)) {}
-  Value(Ar a) : value_type(ValueType::ar), value(std::make_any<Ar>(a)) {}
+  explicit Value(bool v) : value_type(ValueType::boolean), value_(std::make_any<bool>(v)) {}
+  explicit Value(int v) : value_type(ValueType::number), value_(std::make_any<int>(v)) {}
+  explicit Value(const std::string& v) : value_type(ValueType::string), value_(std::make_any<std::string>(v)) {}
+  explicit Value(const char* v) : Value(std::string(v)) {}
+  explicit Value(Ar a) : value_type(ValueType::ar), value_(std::make_any<Ar>(a)) {}
 
-  int as_number();
-  std::string as_string();
-  bool as_boolean();
-  Ar as_ar();
+  [[nodiscard]] int as_number();
+  [[nodiscard]] std::string as_string();
+  [[nodiscard]] bool as_boolean();
+  [[nodiscard]] Ar as_ar();
 
-  bool is_boolean() const { return value_type == ValueType::boolean; }
+  [[nodiscard]] bool is_boolean() const { return value_type == ValueType::boolean; }
 
-  static Value eval(Value l, wwiv::core::parser::Operator op, Value r);
+  [[nodiscard]] static Value eval(Value l, wwiv::core::parser::Operator op, Value r);
 
+  friend bool operator==(const Ar& lhs, const Ar& rhs);
+  friend bool operator!=(const Ar& lhs, const Ar& rhs);
+  friend std::ostream& operator<<(std::ostream& os, const Value& a);
+
+private: 
   ValueType value_type;
-  std::any value;
+  std::any value_;
 };
 
 std::ostream& operator<<(std::ostream& os, const Value& a);
 
 }
 
-#endif // __INCLUDED_SDK_ACS_EVAL_H__
+#endif

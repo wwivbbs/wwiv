@@ -17,15 +17,7 @@
 /**************************************************************************/
 #include "sdk/acs/value.h"
 
-
-#include "core/log.h"
 #include "core/strings.h"
-#include "fmt/printf.h"
-#include "sdk/user.h"
-#include <optional>
-#include <string>
-#include <utility>
-#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::core::parser;

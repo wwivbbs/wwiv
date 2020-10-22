@@ -15,10 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_ERROR_H__
-#define __INCLUDED_SDK_ACS_EVAL_ERROR_H__
+#ifndef INCLUDED_SDK_ACS_EVAL_ERROR_H
+#define INCLUDED_SDK_ACS_EVAL_ERROR_H
 
-#include <exception>
 #include <stdexcept>
 #include <string>
 
@@ -26,11 +25,9 @@ namespace wwiv::sdk::acs {
 
 /** An error evaluating the expression */
 struct eval_error : public std::runtime_error {
-  eval_error(const std::string& m) : ::std::runtime_error(m) {}
+  eval_error(const std::string& m) : runtime_error(m) {}
 };
-
-
 
 }
 
-#endif // __INCLUDED_SDK_ACS_EVAL_H__
+#endif

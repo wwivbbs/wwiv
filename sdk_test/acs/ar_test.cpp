@@ -19,12 +19,9 @@
 #include "gtest/gtest.h"
 
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/user.h"
-#include "sdk/acs/eval.h"
 #include "sdk/acs/uservalueprovider.h"
 #include <string>
-#include <iostream>
 
 using std::string;
 using namespace wwiv::core;
@@ -33,27 +30,26 @@ using namespace wwiv::sdk::acs;
 
 class ArTest : public ::testing::Test {
 public:
-  ArTest() {}
+  ArTest() = default;
 
 };
 
-TEST_F(ArTest, Eq) { 
-  Ar a('A');
-  Ar abcd("ABCD");
+TEST_F(ArTest, Eq) {
+  const Ar a('A');
+  const Ar abcd("ABCD");
   EXPECT_EQ(abcd, a);
   EXPECT_EQ(a, abcd);
 }
 
 TEST_F(ArTest, Ne) {
-  Ar a('A');
-  Ar cde("CDE");
+  const Ar a('A');
+  const Ar cde("CDE");
   EXPECT_NE(cde, a);
   EXPECT_NE(a, cde);
 }
 
 TEST_F(ArTest, Eq_Conversion) {
-  Ar a('A');
-  Ar abcd("ABCD");
+  const Ar abcd("ABCD");
 
   EXPECT_EQ(abcd, 'A');
   EXPECT_EQ(abcd, "A");
@@ -62,8 +58,7 @@ TEST_F(ArTest, Eq_Conversion) {
 }
 
 TEST_F(ArTest, Ne_Conversion) {
-  Ar a('A');
-  Ar cde("CDE");
+  const Ar cde("CDE");
   EXPECT_NE(cde, 'A');
   EXPECT_NE(cde, "A");
   EXPECT_NE('A', cde);
@@ -71,7 +66,7 @@ TEST_F(ArTest, Ne_Conversion) {
 }
 
 TEST_F(ArTest, Eq_Empty) {
-  Ar e(0);
+  const Ar e(0);
   EXPECT_EQ(e, "A");
   EXPECT_EQ("A", e);
 }

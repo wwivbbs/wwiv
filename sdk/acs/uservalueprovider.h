@@ -15,14 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_USERVALUEPROVIDER_H__
-#define __INCLUDED_SDK_ACS_USERVALUEPROVIDER_H__
+#ifndef INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
+#define INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
 
 #include "sdk/user.h"
 #include "sdk/acs/value.h"
 #include "sdk/acs/valueprovider.h"
-#include <any>
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -31,19 +29,19 @@ namespace wwiv::sdk::acs {
 /**
  * ValueProvider for "user" record attributes.
  */
-class UserValueProvider : public ValueProvider {
+class UserValueProvider final : public ValueProvider {
 public:
   /** 
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  UserValueProvider(wwiv::sdk::User* user) : ValueProvider("user"), user_(user) {}
-  std::optional<Value> value(const std::string& name) override;
+  explicit UserValueProvider(User* user) : ValueProvider("user"), user_(user) {}
+  [[nodiscard]] std::optional<Value> value(const std::string& name) override;
 
 private:
-  wwiv::sdk::User* user_;
+  User* user_;
 };
 
 }
 
-#endif // __INCLUDED_SDK_ACS_EVAL_H__
+#endif

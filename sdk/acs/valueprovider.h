@@ -15,13 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_VALUEPROIVDER_H__
-#define __INCLUDED_SDK_ACS_VALUEPROIVDER_H__
+#ifndef INCLUDED_SDK_ACS_VALUEPROIVDER_H
+#define INCLUDED_SDK_ACS_VALUEPROIVDER_H
 
 #include "sdk/acs/value.h"
-#include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace wwiv::sdk::acs {
 
@@ -29,14 +29,14 @@ namespace wwiv::sdk::acs {
 /** Provides a value for an identifier of the form "object.attribute" */
 class ValueProvider {
 public:
-  ValueProvider(const std::string& prefix) : prefix_(prefix) {}
+  explicit ValueProvider(std::string prefix) : prefix_(std::move(prefix)) {}
   virtual ~ValueProvider() = default;
 
   /** 
    * Optionally gets the attribute for this object.  name should just be
    * the 'attribute' and not the full object.attribute name. *
    */
-  virtual std::optional<Value> value(const std::string& name) = 0;
+  [[nodiscard]] virtual std::optional<Value> value(const std::string& name) = 0;
 
 private:
   const std::string prefix_;
@@ -44,4 +44,4 @@ private:
 
 }
 
-#endif // __INCLUDED_SDK_ACS_EVAL_H__
+#endif

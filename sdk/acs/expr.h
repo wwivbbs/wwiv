@@ -15,21 +15,18 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EXPR_H__
-#define __INCLUDED_SDK_ACS_EXPR_H__
+#ifndef INCLUDED_SDK_ACS_EXPR_H
+#define INCLUDED_SDK_ACS_EXPR_H
 
-#include <memory>
-#include <optional>
 #include <string>
 
 namespace wwiv::sdk::acs {
 
-
 /** Provides a value for an identifier of the form "object.attribute" */
-class AcsExpr {
+class AcsExpr final {
 public:
   AcsExpr() = default;
-  virtual ~AcsExpr() = default;
+  ~AcsExpr() = default;
 
   AcsExpr& min_age(int min_age) {
     min_age_ = min_age;
@@ -87,4 +84,4 @@ private:
 
 }
 
-#endif // __INCLUDED_SDK_ACS_EVAL_H__
+#endif

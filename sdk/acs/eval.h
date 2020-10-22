@@ -15,19 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ACS_EVAL_H__
-#define __INCLUDED_SDK_ACS_EVAL_H__
+#ifndef INCLUDED_SDK_ACS_EVAL_H
+#define INCLUDED_SDK_ACS_EVAL_H
 
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "sdk/acs/value.h"
 #include "sdk/acs/valueprovider.h"
-#include <any>
-#include <iostream>
-#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace wwiv::sdk::acs {
@@ -35,34 +32,34 @@ namespace wwiv::sdk::acs {
 /** 
  * Evaluation engine for evaluating expressions provides.
  */
-class Eval : public wwiv::core::parser::AstVisitor {
+class Eval final : public core::parser::AstVisitor {
 public:
   explicit Eval(std::string expression);
   virtual ~Eval() = default;
 
   bool eval();
   bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
-  std::optional<Value> to_value(wwiv::core::parser::Factor* n);
+  std::optional<Value> to_value(core::parser::Factor* n);
 
   /** 
-   * Gets the error text that occured when failing to evaluate the expresson, 
+   * Gets the error text that occurred when failing to evaluate the expression, 
    * or empty string if none exists.
    */
-  const std::string error_text() const noexcept { return error_text_; }
-  bool error() const noexcept { return !error_text_.empty(); }
+  [[nodiscard]] std::string error_text() const noexcept { return error_text_; }
+  [[nodiscard]] bool error() const noexcept { return !error_text_.empty(); }
   
   ///////////////////////////////////////////////////////////////////////////
   // Debug support:  This writes out debug_info lines as the statement is 
   // evaluated. Used to explain how the statement was evaluated.
-  const std::vector<std::string>& debug_info() const { return debug_info_; }
+  [[nodiscard]] const std::vector<std::string>& debug_info() const { return debug_info_; }
 
   ///////////////////////////////////////////////////////////////////////////
   // Visitor implementation
   //
 
-  virtual void visit(wwiv::core::parser::AstNode*) override {}
-  virtual void visit(wwiv::core::parser::Expression* n) override;
-  virtual void visit(wwiv::core::parser::Factor* n) override;
+  void visit(core::parser::AstNode*) override {}
+  void visit(core::parser::Expression* n) override;
+  void visit(core::parser::Factor* n) override;
 
 private:
   std::string expression_;
@@ -74,4 +71,4 @@ private:
 
 } 
 
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+#endif

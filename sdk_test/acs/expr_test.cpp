@@ -18,23 +18,25 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/log.h"
 #include "core/parser/ast.h"
-#include "core/parser/lexer.h"
 #include "core/strings.h"
 #include "sdk/acs/expr.h"
-#include <iostream>
 #include <string>
 
 using std::string;
 using namespace wwiv::core;
-using namespace wwiv::core::parser;
+using namespace parser;
 using namespace wwiv::sdk::acs;
 
-class AcsExprTest : public ::testing::Test {
+class AcsExprTest : public testing::Test {
 public:
   AcsExpr ae;
 };
+
+TEST_F(AcsExprTest, MultipleLines) {
+  ae.max_age(18);
+  EXPECT_EQ(ae.get(), "user.age <= 18");
+}
 
 TEST_F(AcsExprTest, Age_Min) { EXPECT_EQ(ae.min_age(18).get(), "user.age >= 18"); }
 TEST_F(AcsExprTest, Age_Max) { EXPECT_EQ(ae.max_age(21).get(), "user.age <= 21"); }
@@ -62,5 +64,5 @@ TEST_F(AcsExprTest, RegNum) { EXPECT_EQ(ae.regnum().get(), "user.regnum == 'true
 
 TEST_F(AcsExprTest, MultipleConditions) {
   EXPECT_EQ(ae.min_dsl(18).max_dsl(21).dar('A').regnum().get(),
-    "user.dar == 'A' && user.dsl >= 18 && user.dsl <= 21 && user.regnum == 'true'");
+            "user.dar == 'A' && user.dsl >= 18 && user.dsl <= 21 && user.regnum == 'true'");
 }
