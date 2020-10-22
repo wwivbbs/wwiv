@@ -24,10 +24,8 @@
 #include "core/textfile.h"
 #include "sdk/fido/fido_address.h"
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 using std::set;
 using std::string;

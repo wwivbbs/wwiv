@@ -23,7 +23,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"

@@ -19,20 +19,20 @@
 #include "bbs/subreq.h"
 
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
-#include "common/input.h"
 #include "bbs/mmkey.h"
-#include "common/pause.h"
 #include "bbs/utility.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
-#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
+#include "sdk/net/subscribers.h"
 #include <string>
 
 using std::string;
@@ -137,7 +137,7 @@ static int find_hostfor(const net_networks_rec& net, const std::string& type, sh
       if (s[0] <= ' ') {
         continue;
       }
-      char* ss = strtok(s, " \r\n\t");
+      auto* ss = strtok(s, " \r\n\t");
       if (!ss) {
         continue;
       }
@@ -275,12 +275,12 @@ void sub_xtr_add(int n, int nn) {
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (int ii = 0; ii < wwiv::stl::ssize(a()->nets()); ii++) {
+    for (auto ii = 0; ii < wwiv::stl::ssize(a()->nets()); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
       } else {
-        int odci = (ii + 1) / 10;
+        auto odci = (ii + 1) / 10;
         odc.insert(static_cast<char>(odci + '0'));
       }
       bout << "(" << ii + 1 << ") " << a()->nets()[ii].name << wwiv::endl;
@@ -332,7 +332,7 @@ void sub_xtr_add(int n, int nn) {
   }
 
   if (is_hosting) {
-    string file_name = StrCat(net.dir, "n", xnp.stype, ".net");
+    auto file_name = StrCat(net.dir, "n", xnp.stype, ".net");
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -374,7 +374,7 @@ void sub_xtr_add(int n, int nn) {
               display_sub_categories(net);
               continue;
             }
-          }
+          } 
         }
       }
     }
@@ -391,7 +391,7 @@ void sub_xtr_add(int n, int nn) {
       bout << "|#2Which FTN system (address) is the host? ";
       const auto host = bin.input_text(20);
       try {
-        wwiv::sdk::fido::FidoAddress a(host);
+        fido::FidoAddress a(host);
         addresses.insert(a);
         if (!WriteFidoSubcriberFile(sub_file_name, addresses)) {
           bout << "ERROR: Unable to add host to subscriber file";
@@ -403,7 +403,7 @@ void sub_xtr_add(int n, int nn) {
     } while (!done && !a()->sess().hangup());
 
   } else {
-    int ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);
+    auto ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);
 
     if (!ok) {
       bout.nl();
@@ -438,7 +438,7 @@ void sub_xtr_add(int n, int nn) {
         } else {
           bout.nl();
           bout << "|#5Attempt automated add request? ";
-          bool bTryAutoAddReq = bin.yesno();
+          auto bTryAutoAddReq = bin.yesno();
           if (bTryAutoAddReq) {
             sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
           } else {

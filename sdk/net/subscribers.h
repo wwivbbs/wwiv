@@ -15,28 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_SUBSCRIBERS_H__
-#define __INCLUDED_SDK_SUBSCRIBERS_H__
+#ifndef INCLUDED_SDK_SUBSCRIBERS_H
+#define INCLUDED_SDK_SUBSCRIBERS_H
 
-#include <set>
-#include <string>
-
-#include <filesystem>
 #include "sdk/fido/fido_address.h"
+#include <filesystem>
+#include <set>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
-std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename);
-bool ReadSubcriberFile(const std::filesystem::path& filename,
-                       std::set<uint16_t>& subscribers);
-bool WriteSubcriberFile(const std::filesystem::path& path,
-                        const std::set<uint16_t>& subscribers);
+std::set<fido::FidoAddress> ReadFidoSubcriberFile(const std::filesystem::path& filename);
+bool ReadSubcriberFile(const std::filesystem::path& filename, std::set<uint16_t>& subscribers);
+bool WriteSubcriberFile(const std::filesystem::path& path, const std::set<uint16_t>& subscribers);
 bool WriteFidoSubcriberFile(const std::filesystem::path& path,
                             const std::set<fido::FidoAddress>& subscribers);
 
+} // namespace wwiv::sdk
 
-}  // namespace sdk
-}  // namespace wwiv
-
-#endif  // __INCLUDED_SDK_SUBSCRIBERS_H__
+#endif

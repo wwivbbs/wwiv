@@ -25,7 +25,7 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_m
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization::non_member_load_save_minimal);
 
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include "sdk/net/net.h"
 #include "sdk/uuid_cereal.h"
 #include <filesystem>

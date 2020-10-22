@@ -19,8 +19,10 @@
 #ifndef INCLUDED_JSONFILE_H
 #define INCLUDED_JSONFILE_H
 
+#include "core/cereal_utils.h"
 #include "core/log.h"
 #include "core/textfile.h"
+#include "fmt/format.h"
 #include <filesystem>
 #include <sstream>
 #include <string>
@@ -44,11 +46,18 @@
 
 namespace wwiv::core {
 
+struct json_version_error : public std::runtime_error {
+  json_version_error(const std::string& filename, int min_ver, int actual_ver)
+      : std::runtime_error(fmt::format("Invalid version for file '{}', expected: {}, actual: {}",
+                                       filename, min_ver, actual_ver)) {}
+};
+
+
 template <typename T>
 class JsonFile final {
 public:
-  JsonFile(std::filesystem::path file_name, std::string key, T& t)
-    : file_name_(std::move(file_name)), key_(std::move(key)), t_(t) {
+  JsonFile(std::filesystem::path file_name, std::string key, T& t, int version = 0)
+    : file_name_(std::move(file_name)), key_(std::move(key)), t_(t), version_(version) {
   }
   JsonFile(const JsonFile&) = delete;
   JsonFile(JsonFile&&) = delete;
@@ -70,6 +79,10 @@ public:
       std::stringstream ss(text);
       cereal::JSONInputArchive ar(ss);
       ar(cereal::make_nvp(key_, t_));
+      SERIALIZE(*this, loaded_version_);
+      if (version_ > 0 && loaded_version_ < version_) {
+        throw json_version_error(file_name_.string(), version_, loaded_version_);
+      }
       return true;
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
@@ -82,6 +95,9 @@ public:
     try {
       cereal::JSONOutputArchive ar(ss);
       ar(cereal::make_nvp(key_, t_));
+      if (version_ != 0) {
+        SERIALIZE(*this, version_);
+      }
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;
@@ -101,11 +117,12 @@ private:
   const std::filesystem::path file_name_;
   const std::string key_;
   T& t_;
+  int version_;
+  int loaded_version_{0};
 };
 
 // C++17 Deduction Guide for JsonFile
-template <typename X, typename Y, typename Z> JsonFile(X, Y, Z&) -> JsonFile<Z>;
-
+template <typename X, typename Y, typename Z> JsonFile(X, Y, Z&, int) -> JsonFile<Z>;
 
 }
 

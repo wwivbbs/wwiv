@@ -30,7 +30,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include <sstream>

@@ -29,7 +29,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include "sdk/filenames.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/uuid_cereal.h"

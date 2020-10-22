@@ -23,7 +23,7 @@
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include <cassert>
 #include <string>
 

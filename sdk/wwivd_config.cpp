@@ -25,7 +25,7 @@
 #include <cereal/access.hpp>
 #include "core/file.h"
 #include "core/jsonfile.h"
-#include "sdk/cereal_utils.h"
+#include "core/cereal_utils.h"
 #include "sdk/config.h"
 
 using std::map;
