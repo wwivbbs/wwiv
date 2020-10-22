@@ -113,6 +113,8 @@ public:
     return file.Write(ss.str());
   }
 
+  [[nodiscard]] int loaded_version() const noexcept { return loaded_version_; }
+
 private:
   const std::filesystem::path file_name_;
   const std::string key_;
