@@ -17,17 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 #include "sdk/chains.h"
+
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "bbs/dropfile.h"
 #include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "common/input.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
@@ -48,7 +49,7 @@ using namespace wwiv::strings;
 static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) {
   User user{};
   const auto r = c.regby;
-  const bool is_regged = r.empty() ? false : a()->users()->readuser(&user, *r.begin());
+  const auto is_regged = r.empty() ? false : a()->users()->readuser(&user, *r.begin());
   const std::string regname = (is_regged) ? user.GetName() : "Available";
   if (ansi) {
     bout.bpla(
@@ -90,8 +91,8 @@ static void show_chain(const chain_t& c, bool ansi, int chain_num, bool& abort) 
 static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.cls();
   bout.nl();
-  bool abort = false;
-  bool next = false;
+  auto abort = false;
+  auto next = false;
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && a()->chains->HasRegisteredChains()) {
     bout.bpla(fmt::sprintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
@@ -101,7 +102,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     } else {
       bout.bpla(fmt::sprintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
-    for (int i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
+    for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       const auto& c = a()->chains->at(map[i]);
       show_chain(c, okansi(), i+1, abort);
     }
@@ -113,7 +114,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-    for (int i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
+    for (auto i = 0; i < *mapp && !abort && !a()->sess().hangup(); i++) {
       bout.bputs(fmt::sprintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains->at(map[i]).description), &abort, &next);
       i++;
       if (!abort && !a()->sess().hangup()) {
@@ -133,18 +134,17 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
 // Executes a "chain", index number chain_num.
 void run_chain(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
-  int inst = inst_ok(INST_LOC_CHAINS, chain_num + 1);
+  auto inst = inst_ok(INST_LOC_CHAINS, chain_num + 1);
   if (inst != 0) {
-    const string message =
+    const auto message =
         fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
     if (!c.multi_user) {
       bout << message << "Try again later.\r\n";
       return;
-    } else {
-      bout << message << "Care to join in? ";
-      if (!bin.yesno()) {
-        return;
-      }
+    }
+    bout << message << "Care to join in? ";
+    if (!bin.yesno()) {
+      return;
     }
   }
   write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(chain_num + 1), INST_FLAGS_NONE);
@@ -171,10 +171,10 @@ void do_chains() {
   std::map<int, int> map;
 
   a()->tleft(true);
-  int mapp{0};
+  auto mapp{0};
   std::set<char> odc;
-  const auto chains = a()->chains->chains();
-  for (size_t i = 0; i < chains.size(); i++) {
+  const auto& chains = a()->chains->chains();
+  for (auto i = 0; i < wwiv::stl::ssize(chains); i++) {
     auto c = chains[i];
     if (c.ansi && !okansi()) {
       continue;
@@ -182,18 +182,8 @@ void do_chains() {
     if (c.local_only && a()->sess().using_modem()) {
       continue;
     }
-    if (c.sl > a()->sess().effective_sl()) {
+    if (!wwiv::bbs::check_acs(c.acs)) {
       continue;
-    }
-    if (c.ar && !a()->user()->HasArFlag(c.ar)) {
-      continue;
-    }
-    if (a()->sess().effective_sl() < 255) {
-      if (c.maxage > 0 && c.maxage < 255) {
-        if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
-          continue;
-        }
-      }
     }
     map[mapp++] = i;
     if (mapp < 100) {
@@ -207,8 +197,8 @@ void do_chains() {
     return;
   }
 
-  bool done  = false;
-  int start  = 0;
+  auto done  = false;
+  auto start  = 0;
   string ss;
   do {
     show_chains(&mapp, map);
@@ -221,7 +211,7 @@ void do_chains() {
     } else {
       ss = bin.input_upper(3);
     }
-    int chain_num = to_number<int>(ss);
+    const auto chain_num = to_number<int>(ss);
     if (chain_num > 0 && chain_num <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[chain_num - 1]);

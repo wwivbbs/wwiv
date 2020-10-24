@@ -17,24 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/finduser.h"
+#include "bbs/utility.h"
+#include "common/com.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "bbs/utility.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
 #include "sdk/chains.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include "arword.h"
 
 using std::string;
 using namespace wwiv::bbs;
@@ -43,32 +42,19 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-void insert_chain(size_t chain_num);
 void delete_chain(size_t chain_num);
 
 static string chaindata(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
-  char chAr = SPACE;
-
-  if (c.ar != 0) {
-    for (auto i = 0; i < 16; i++) {
-      if ((1 << i) & c.ar) {
-        chAr = static_cast<char>('A' + i);
-      }
-    }
-  }
-  const auto ansi_req = c.ansi ? 'Y' : 'N';
-  return fmt::sprintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c", chain_num,
-                      stripcolors(c.description), c.filename, c.sl, ansi_req, chAr);
+  return fmt::sprintf("|#2%2d |#1%-32.32s  |#2%-35.35s |#9%-3d    %1c", chain_num,
+                      stripcolors(c.description), c.filename);
 }
 
 static void showchains() {
   bout.cls();
-  bool abort = false;
-  bout.bpla("|#2NN Description                   Path Name                      SL  ANSI AR",
-            &abort);
-  bout.bpla("|#7== ----------------------------  ============================== --- ==== --",
-            &abort);
+  auto abort = false;
+  bout.bpla("|#2NN Description                     Path Name", &abort);
+  bout.bpla("|#7== ------------------------------  =================================== ", &abort);
   for (auto chain_num = 0; chain_num < size_int(a()->chains->chains()) && !abort; chain_num++) {
     const auto s = chaindata(chain_num);
     bout.bpla(s, &abort);
@@ -117,7 +103,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
       auto first = *r.begin();
       a()->users()->readuser(&regUser, *it++);
       bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
-      for (; it != std::end(r); it++) {
+      for (; it != std::end(r); ++it) {
         const auto rbc = *it;
         if (rbc != 0) {
           if (a()->users()->readuser(&regUser, rbc)) {
@@ -175,8 +161,7 @@ static void modify_chain(ssize_t chain_num) {
 
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
-    bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
-    bout << "|#9D) AR           : |#2" << word_to_arstr(c.ar, "None.") << wwiv::endl;
+    bout << "|#9C) ACS          : |#2" << c.acs << wwiv::endl;
     bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
     bout << "|#9F) Exec Mode:     |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
     bout << "|#9I) Launch From  : |#2"
@@ -206,11 +191,6 @@ static void modify_chain(ssize_t chain_num) {
         bout << "|#9L) Registered by: |#2AVAILABLE" << wwiv::endl;
       }
       bout << "|#9M) Usage        : |#2" << c.usage << wwiv::endl;
-      if (c.maxage == 0 && c.minage == 0) {
-        c.maxage = 255;
-      }
-      bout << "|#9N) Age limit    : |#2" << static_cast<int>(c.minage) << " - "
-           << static_cast<int>(c.maxage) << wwiv::endl;
       bout.nl();
       bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
       ch = onek("QABCDEFGHIJKLMN[]", true); // removed i
@@ -253,18 +233,8 @@ static void modify_chain(ssize_t chain_num) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#7New SL? ";
-      c.sl = bin.input_number(c.sl);
-    } break;
-    case 'D': {
-      bout.nl();
-      bout << "|#7New AR (<SPC>=None) ? ";
-      auto ch2 = onek(" ABCDEFGHIJKLMNOP");
-      if (ch2 == SPACE) {
-        c.ar = 0;
-      } else {
-        c.ar = static_cast<uint16_t>(1 << (ch2 - 'A'));
-      }
+      bout << "|#7New ACS? \r\n:";
+      c.acs = input_acs(c.acs, 78);
     } break;
     case 'E':
       c.ansi = !c.ansi;
@@ -304,32 +274,17 @@ static void modify_chain(ssize_t chain_num) {
       bout << "|#5Times Run : ";
       c.usage = bin.input_number(c.usage);
     } break;
-    case 'N':
-      bout.nl();
-      bout << "|#5New minimum age? ";
-      c.minage = bin.input_number(c.minage);
-      if (c.minage > 0) {
-        bout << "|#5New maximum age? ";
-        auto maxage = bin.input_number(c.maxage);
-        if (maxage < c.minage) {
-          break;
-        }
-        c.maxage = maxage;
-      }
-      break;
     }
   } while (!done && !a()->sess().hangup());
   a()->chains->at(chain_num) = c;
 }
 
-void insert_chain(size_t pos) {
+static void insert_chain(size_t pos) {
   chain_t c{};
   c.description = "** NEW CHAIN **";
   c.filename = "REM";
-  c.sl = 10;
-  c.ar = 0;
+  c.acs = "user.sl >= 10";
   c.exec_mode = chain_exec_mode_t::none;
-  c.maxage = 255;
   a()->chains->insert(pos, c);
   modify_chain(pos);
 }
@@ -343,11 +298,11 @@ void chainedit() {
     return;
   }
   showchains();
-  bool done = false;
+  auto done = false;
   do {
     bout.nl();
     bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
-    char ch = onek("QDIM?");
+    const auto ch = onek("QDIM?");
     switch (ch) {
     case '?':
       showchains();
@@ -371,7 +326,7 @@ void chainedit() {
         if (r.key == 'Q') {
           break;
         }
-        auto chain = (r.key == '$') ? size_int(a()->chains->chains()) : r.num;
+        const auto chain = (r.key == '$') ? size_int(a()->chains->chains()) : r.num;
         if (chain >= 0 && chain <= ssize(a()->chains->chains())) {
           insert_chain(chain);
         }

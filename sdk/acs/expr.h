@@ -90,7 +90,7 @@ public:
   /** 
    * Gets the ACS expression for the given constraints.
    */
-  std::string get();
+  [[nodiscard]] std::string get();
 
 private:
   int min_age_{0};

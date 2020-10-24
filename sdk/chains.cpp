@@ -23,16 +23,13 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/cereal_utils.h"
+#include "sdk/acs/expr.h"
+#include "sdk/chains_cereal.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include <string>
 #include <type_traits>
 #include <vector>
-#include <cereal/access.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/set.hpp>
 
 using cereal::make_nvp;
 using cereal::specialization;
@@ -41,49 +38,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-// We want to override how we store some enums as a string, not int.
-// This has to be in the global namespace.
-CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_mode_t, specialization::non_member_load_save_minimal);
-CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_dir_t, specialization::non_member_load_save_minimal);
-
-namespace cereal {
-
-
-template <class Archive>
-std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
-  return Chains::exec_mode_to_string(t);
-}
-template <class Archive>
-void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
-  t = Chains::exec_mode_from_string(s);
-}
-
-template <class Archive>
-std::string save_minimal(Archive const&, const chain_exec_dir_t& t) {
-  return to_enum_string<const chain_exec_dir_t>(t, {"bbs", "temp"});
-}
-template <class Archive>
-void load_minimal(Archive const&, chain_exec_dir_t& t, const std::string& v) {
-  t = from_enum_string<const chain_exec_dir_t>(v, {"bbs", "temp"});
-}
-
-template <class Archive> void serialize(Archive& ar, chain_t& n) {
-  SERIALIZE(n, filename);
-  SERIALIZE(n, description);
-  SERIALIZE(n, exec_mode);
-  SERIALIZE(n, dir);
-  SERIALIZE(n, ansi);
-  SERIALIZE(n, local_only);
-  SERIALIZE(n, multi_user);
-  SERIALIZE(n, sl);
-  SERIALIZE(n, ar);
-  SERIALIZE(n, regby);
-  SERIALIZE(n, usage);
-  SERIALIZE(n, minage);
-  SERIALIZE(n, maxage);
-}
-
-} // namespace cereal
 
 namespace wwiv::sdk {
 
@@ -146,7 +100,7 @@ bool Chains::Load() {
 
 bool Chains::LoadFromJSON() {
   chains_.clear();
-  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_, 1);
   return json.Load();
 }
 
@@ -185,8 +139,6 @@ bool Chains::LoadFromDat() {
     c.ansi = (o.ansir & ansir_ansi);
     c.local_only = (o.ansir & ansir_local_only);
     c.multi_user = (o.ansir & ansir_multi_user);
-    c.sl = o.sl;
-    c.ar = o.ar;
 
     if (i < wwiv::stl::ssize(reg)) {
       // We have a chain.reg entry
@@ -196,9 +148,12 @@ bool Chains::LoadFromDat() {
           c.regby.insert(rbc);
         }
       }
+      acs::AcsExpr ae;
+      c.acs = ae.min_sl(o.sl).ar_int(o.ar).min_age(r.minage).max_age(r.maxage).get();
       c.usage = r.usage;
-      c.minage = r.minage;
-      c.maxage = r.maxage;
+    } else {
+      acs::AcsExpr ae;
+      c.acs = ae.min_sl(o.sl).ar_int(o.ar).get();
     }
 
     chains_.emplace_back(c);
@@ -214,7 +169,7 @@ bool Chains::Save() {
 }
 
 bool Chains::SaveToJSON() {
-  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_);
+  JsonFile json(FilePath(datadir_, CHAINS_JSON), "chains", chains_, 1);
   return json.Save();
 }
 
@@ -226,12 +181,12 @@ bool Chains::SaveToDat() {
     chainregrec r{};
     to_char_array(c.filename, from.filename);
     to_char_array(c.description, from.description);
-    c.sl = from.sl;
-    c.ansir = Chains::to_ansir(from);
-    c.ar = from.ar;
+    c.ansir = to_ansir(from);
+    //c.sl = from.sl;
+    //c.ar = from.ar;
+    //r.minage = from.minage;
+    //r.maxage = from.maxage;
     r.usage = from.usage;
-    r.minage = from.minage;
-    r.maxage = from.maxage;
     int regbycount = 0;
     for (const auto& rbc : from.regby) {
       if (regbycount > 4) {
@@ -304,16 +259,6 @@ uint8_t Chains::to_ansir(chain_t c) {
     r |= ansir_multi_user;
   }
   return r;
-}
-
-// static
-std::string Chains::exec_mode_to_string(const chain_exec_mode_t& t) {
-  return cereal::to_enum_string<chain_exec_mode_t>(t, {"none", "DOS", "FOSSIL", "STDIO"});
-}
-
-// static
-chain_exec_mode_t Chains::exec_mode_from_string(const std::string& s) {
-  return cereal::from_enum_string<chain_exec_mode_t>(s, {"none", "DOS", "FOSSIL", "STDIO"});
 }
 
 } // namespace wwiv

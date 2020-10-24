@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/menuspec.h"
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/chains.h"
 #include "bbs/conf.h"
@@ -223,20 +224,8 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if (c.local_only && a()->sess().using_modem()) {
     return false;
   }
-  if (c.sl > a()->sess().effective_sl()) {
+  if (!wwiv::bbs::check_acs(c.acs)) {
     return false;
-  }
-  if (c.ar && !a()->user()->HasArFlag(c.ar)) {
-    return false;
-  }
-  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && a()->chains->HasRegisteredChains()
-      && a()->sess().effective_sl() < 255) {
-    if (c.maxage) {
-      if (c.minage > a()->user()->age() || c.maxage < a()->user()->age()) {
-        return false;
-      }
-    }
   }
   // passed all the checks, return true
   return true;

@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "sdk/acs/expr.h"
+
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include <string>
-#include <utility>
 #include <vector>
 
 using namespace wwiv::core;

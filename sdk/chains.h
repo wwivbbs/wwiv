@@ -15,21 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_CHAINS_H__
-#define __INCLUDED_SDK_CHAINS_H__
+#ifndef INCLUDED_SDK_CHAINS_H
+#define INCLUDED_SDK_CHAINS_H
 
 #include "core/wwivport.h"
 #include "sdk/config.h"
-#include "sdk/vardec.h"
 #include <initializer_list>
-#include <memory>
 #include <set>
 #include <string>
-#include <tuple>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 enum class chain_exec_mode_t : uint8_t { none = 0, dos, fossil, stdio };
 enum class chain_exec_dir_t : uint8_t { bbs = 0, temp };
@@ -39,30 +35,50 @@ chain_exec_mode_t operator++(chain_exec_mode_t&, int);
 chain_exec_dir_t& operator++(chain_exec_dir_t&);
 chain_exec_dir_t operator++(chain_exec_dir_t&, int);
 
-// DATA FOR OTHER PROGRAMS AVAILABLE
-struct chain_t {
+// DATA FOR OTHER PROGRAMS AVAILABLE (5.5 format)
+struct chain_55_t {
   std::string filename;
   std::string description;
-  chain_exec_mode_t exec_mode;
-  chain_exec_dir_t dir;
-  bool ansi;
-  bool local_only;
-  bool multi_user;
+  chain_exec_mode_t exec_mode{chain_exec_mode_t::none};
+  chain_exec_dir_t dir{chain_exec_dir_t::bbs};
+  bool ansi{false};
+  bool local_only{false};
+  bool multi_user{false};
 
-  uint8_t sl;
+  uint8_t sl{0};
   // AR restriction
-  uint16_t ar;
+  uint16_t ar{0};
   // who registered
   std::set<int16_t> regby;
   // number of runs
-  uint16_t usage;
+  uint16_t usage{0};
   // minimum age necessary
-  uint8_t minage;
+  uint8_t minage{0};
   // maximum age allowed
-  uint8_t maxage;
+  uint8_t maxage{0};
 };
 
-class Chains {
+// 5.6 format chain record.
+struct chain_t {
+  // command to execute
+  std::string filename;
+  // description of the chain
+  std::string description;
+  // ACS expression for accessing chain.
+  std::string acs;
+  chain_exec_mode_t exec_mode{chain_exec_mode_t::none};
+  chain_exec_dir_t dir{chain_exec_dir_t::bbs};
+  bool ansi{false};
+  bool local_only{false};
+  bool multi_user{false};
+
+  // who registered
+  std::set<int16_t> regby;
+  // number of runs
+  uint16_t usage{0};
+};
+
+class Chains final {
 public:
   typedef ssize_t size_type;
   static const size_type npos = -1;
@@ -70,13 +86,12 @@ public:
   // [[ VisibleForTesting ]]
   explicit Chains(std::initializer_list<chain_t> l) : chains_(l) {}
   Chains() = default;
-  virtual ~Chains();
+  ~Chains();
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   [[nodiscard]] const std::vector<chain_t>& chains() const { return chains_; }
   [[nodiscard]] const chain_t& at(size_type num) const { return chains_.at(num); }
-  chain_t& at(size_type num) { return chains_.at(num); }
-
+  [[nodiscard]] chain_t& at(size_type num) { return chains_.at(num); }
 
   bool insert(size_type n, chain_t r);
   bool erase(size_type n);
@@ -84,8 +99,6 @@ public:
   bool Save();
 
   [[nodiscard]] static uint8_t to_ansir(chain_t c);
-  [[nodiscard]] static std::string exec_mode_to_string(const chain_exec_mode_t& t);
-  [[nodiscard]] static chain_exec_mode_t exec_mode_from_string(const std::string& s);
 
   /**
    * Is at least one chain registered or sponsored by someone?  If so return
@@ -109,7 +122,6 @@ private:
   std::vector<chain_t> chains_;
 };
 
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_CHAINS_H__
+#endif

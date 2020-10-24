@@ -19,13 +19,16 @@
 #define INCLUDED_SDK_CEREAL_UTILS_H
 
 // ReSharper disable CppUnusedIncludeDirective
-#include <cereal/access.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/set.hpp>
+#include "core/stl.h"
 #include <stdexcept>
 #include <vector>
+#include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/set.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
 
-#include "core/stl.h"
 
 namespace cereal {
 

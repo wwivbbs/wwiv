@@ -27,6 +27,8 @@
 #include "local_io/wconstants.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/chains_cereal.h"
 #include "sdk/filenames.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/subs_cereal.h"
@@ -36,8 +38,10 @@
 #include "sdk/wwivcolors.h"
 #include "sdk/acs/expr.h"
 #include "sdk/files/dirs.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/files/dirs_cereal.h"
 #include "wwivconfig/archivers.h"
+#include "wwivconfig/convert_jsonfile.h"
 #include <cstring>
 #include <filesystem>
 
@@ -276,23 +280,20 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   return true;
 }
 
-static bool Subs_LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
-                              std::vector<subboard_52_t>& entries) {
-  entries.clear();
-  const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", entries, 0);
-  if (f.Load()) {
-    return f.loaded_version() == 0;
-  }
-  return false;
+template <>
+directory_t ConvertJsonFile<directory_55_t, directory_t>::ConvertType(const directory_55_t& od) {
+  directory_t d{};
+  d.area_tags = od.area_tags;
+  acs::AcsExpr ae;
+  d.acs = ae.min_dsl(od.dsl).min_age(od.age).dar_int(od.dar).get();
+  d.filename = od.filename;
+  d.mask = od.mask;
+  d.maxfiles = od.maxfiles;
+  d.name = od.name;
+  d.path = od.path;
+  return d;
 }
 
-static bool Subs_SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
-                      const std::vector<subboard_t>& entries) {
-  const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", entries, 1);
-  return f.Save();
-}
 
 static bool Dirs_LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
                               std::vector<directory_55_t>& entries) {
@@ -312,61 +313,86 @@ static bool Dirs_SaveToJSON(const std::filesystem::path& dir, const std::string&
   return f.Save();
 }
 
+static bool convert_to_v2_dirs(const std::string& datadir) {
+  std::vector<directory_55_t> odirs;
+  std::vector<directory_t> ndirs;
+  if (!Dirs_LoadFromJSON(datadir, DIRS_JSON, odirs)) {
+    return true;
+  }
+  std::vector<subboard_t> e;
+  for (const auto& od : odirs) {
+    directory_t d{};
+    d.area_tags = od.area_tags;
+    acs::AcsExpr ae;
+    d.acs = ae.min_dsl(od.dsl).min_age(od.age).dar_int(od.dar).get();
+    d.filename = od.filename;
+    d.mask = od.mask;
+    d.maxfiles = od.maxfiles;
+    d.name = od.name;
+    d.path = od.path;
+    ndirs.emplace_back(d);
+  }
+  File::Copy(FilePath(datadir, DIRS_JSON), FilePath(datadir, "dirs.pre-v2.json"));
+  return Dirs_SaveToJSON(datadir, DIRS_JSON, ndirs);
+}
+
+static bool Subs_LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                              std::vector<subboard_52_t>& entries) {
+  entries.clear();
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", entries, 0);
+  if (f.Load()) {
+    return f.loaded_version() == 0;
+  }
+  return false;
+}
+
+static bool Subs_SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                      const std::vector<subboard_t>& entries) {
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", entries, 1);
+  return f.Save();
+}
+
+static bool convert_to_v2_subs(const std::string& datadir) {
+  std::vector<subboard_52_t> osubs;
+  std::vector<subboard_t> nsubs;
+  if (!Subs_LoadFromJSON(datadir, SUBS_JSON, osubs)) {
+    return true;
+  }
+  std::vector<subboard_t> e;
+  for (const auto& os : osubs) {
+    subboard_t s{};
+    s.nets = os.nets;
+    {
+      acs::AcsExpr ae;
+      s.read_acs = ae.ar_int(os.ar).min_sl(os.readsl).min_age(os.age).get();
+    }
+    {
+      acs::AcsExpr ae;
+      s.post_acs = ae.min_sl(os.postsl).get();
+    }
+    s.anony = os.anony;
+    s.desc = os.desc;
+    s.filename = os.filename;
+    s.key = os.key;
+    s.maxmsgs = os.maxmsgs;
+    s.name = os.name;
+    s.storage_type = os.storage_type;
+    nsubs.emplace_back(s);
+  }
+  File::Copy(FilePath(datadir, SUBS_JSON), FilePath(datadir, "subs.pre-v2.json"));
+  return Subs_SaveToJSON(datadir, SUBS_JSON, nsubs);
+}
+
+
 static bool convert_to_v2(UIWindow* window, const std::string& datadir,
                           const std::string& config_filename) {
   ShowBanner(window, "Updating to 5.2.2+ format...");
 
-  {
-    std::vector<subboard_52_t> osubs;
-    std::vector<subboard_t> nsubs;
-    if (Subs_LoadFromJSON(datadir, SUBS_JSON, osubs)) {
-      std::vector<subboard_t> e;
-      for (const auto& os : osubs) {
-        subboard_t s{};
-        s.nets = os.nets;
-        {
-          acs::AcsExpr ae;
-          s.read_acs = ae.ar_int(os.ar).min_sl(os.readsl).min_age(os.age).get();
-        }
-        {
-          acs::AcsExpr ae;
-          s.post_acs = ae.min_sl(os.postsl).get();
-        }
-        s.anony = os.anony;
-        s.desc = os.desc;
-        s.filename = os.filename;
-        s.key = os.key;
-        s.maxmsgs = os.maxmsgs;
-        s.name = os.name;
-        s.storage_type = os.storage_type;
-        nsubs.emplace_back(s);
-      }
-      File::Copy(FilePath(datadir, SUBS_JSON), 
-              FilePath(datadir, "subs.pre-v2.json"));
-      Subs_SaveToJSON(datadir, SUBS_JSON, nsubs);
-    }
-  }
-  {
-    std::vector<directory_55_t> odirs;
-    std::vector<directory_t> ndirs;
-    if (Dirs_LoadFromJSON(datadir, DIRS_JSON, odirs)) {
-      std::vector<subboard_t> e;
-      for (const auto& od : odirs) {
-        directory_t d{};
-        d.area_tags = od.area_tags;
-        acs::AcsExpr ae;
-        d.acs = ae.min_dsl(od.dsl).min_age(od.age).dar_int(od.dar).get();
-        d.filename = od.filename;
-        d.mask = od.mask;
-        d.maxfiles = od.maxfiles;
-        d.name = od.name;
-        d.path = od.path;
-        ndirs.emplace_back(d);
-      }
-      File::Copy(FilePath(datadir, DIRS_JSON), FilePath(datadir, "dirs.pre-v2.json"));
-      Dirs_SaveToJSON(datadir, DIRS_JSON, ndirs);
-    }
-  }
+  convert_to_v2_subs(datadir);
+  convert_to_v2_dirs(datadir);
+  convert_to_v2_chains(datadir);
 
   // Mark config.dat as upgraded.
   return update_config_revision_number(config_filename, 2);
@@ -401,7 +427,7 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir, con
   auto menus_dir = File::EnsureTrailingSlash("menus");
   to_char_array(syscfg53.menudir, FilePath(syscfg53.gfilesdir, menus_dir).string());
 
-  arcrec arc[MAX_ARCS];
+  arcrec arc[MAX_ARCS]{};
   for (int i = 0; i < MAX_ARCS; i++) {
     if (syscfg53.arcs[i].extension[0] && i < 4) {
       to_char_array(arc[i].name, syscfg53.arcs[i].extension);
