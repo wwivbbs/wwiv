@@ -23,6 +23,7 @@
 #include "common/input.h"
 #include "core/stl.h"
 #include "sdk/acs/eval.h"
+#include "sdk/acs/eval_error.h"
 #include "sdk/acs/uservalueprovider.h"
 #include <memory>
 #include <string>
@@ -53,11 +54,30 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
   return result;
 }
 
+bool validate_acs(const std::string& expression, acs_debug_t debug) {
+  Eval eval(expression);
+
+  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), a()->sess().effective_sl()));
+
+  try {
+    eval.eval_throws();
+    return true;
+  } catch (const eval_error& e) {
+    for (const auto& l : eval.debug_info()) {
+      if (debug == acs_debug_t::local) {
+        LOG(INFO) << l;
+      } else if (debug == acs_debug_t::remote) {
+        bout << l << wwiv::endl;
+      }
+    }
+  }
+  return false;
+}
 
 std::string input_acs(const std::string& orig_text, int max_length) {
   const auto s = bin.input_text(orig_text, max_length);
 
-  if (!check_acs(s, acs_debug_t::remote)) {
+  if (!validate_acs(s, acs_debug_t::remote)) {
     bout.pausescr();
     return orig_text;
   }

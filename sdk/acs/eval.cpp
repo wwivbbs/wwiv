@@ -108,9 +108,8 @@ void Eval::visit(Factor* n) {
   }
 }
 
-bool Eval::eval() {
+bool Eval::eval_throws() {
   VLOG(1) << "Eval:eval: " << expression_;
-  debug_info_.emplace_back(fmt::format("Evaluating Expression: '{}'", expression_));
 
   Lexer l(expression_);
   if (!l.ok()) {
@@ -120,11 +119,7 @@ bool Eval::eval() {
         error_token += to_string(t);
       }
     }
-    error_text_ =
-        fmt::format("Failed to lex expression: '{}'; \r\nError {}: ", expression_, error_token);
-    VLOG(1) << error_text_;
-    debug_info_.emplace_back(error_text_);
-    return false;
+    throw eval_error(fmt::format("Failed to lex expression: '{}'; \r\nError {}: ", expression_, error_token));
   }
 
   Ast ast{};
@@ -133,26 +128,26 @@ bool Eval::eval() {
   }
   auto* root = ast.root();
   if (!root) {
-    error_text_ = fmt::format("Failed to parse expression: '{}'.", expression_);
-    VLOG(1) << error_text_;
-    debug_info_.emplace_back(error_text_);
-    return false;
+    throw eval_error(fmt::format("Failed to parse expression: '{}'.", expression_));
   }
   VLOG(1) << "Root: " << root->ToString();
 
-  try {
-    root->accept(this);
+  root->accept(this);
 
-    if (auto* expr = dynamic_cast<Expression*>(root)) {
-      auto it = values_.find(expr->id());
-      if (it == std::end(values_)) {
-        error_text_ = fmt::format("Unable to find expression id: '{}'.", expr->id());
-        VLOG(1) << error_text_;
-        debug_info_.emplace_back(error_text_);
-        return false;
-      }
-      return it->second.as_boolean();
+  if (auto* expr = dynamic_cast<Expression*>(root)) {
+    auto it = values_.find(expr->id());
+    if (it == std::end(values_)) {
+      throw eval_error(fmt::format("Unable to find expression id: '{}'.", expr->id()));
     }
+    return it->second.as_boolean();
+  }
+  throw eval_error(fmt::format("Failed to parse expression: '{}'.", expression_));
+}
+
+bool Eval::eval() {
+
+  try {
+    return eval_throws();
   } catch (const eval_error& error) {
     error_text_ = error.what();
     VLOG(1) << "Eval Error: " << error_text_;

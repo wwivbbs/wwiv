@@ -29,6 +29,8 @@
 
 namespace wwiv::sdk::acs {
 
+enum class debug_message_t { trace, parse };
+
 /** 
  * Evaluation engine for evaluating expressions provides.
  */
@@ -37,6 +39,7 @@ public:
   explicit Eval(std::string expression);
   virtual ~Eval() = default;
 
+  bool eval_throws();
   bool eval();
   bool add(const std::string& prefix, std::unique_ptr<ValueProvider>&& p);
   std::optional<Value> to_value(core::parser::Factor* n);
