@@ -39,7 +39,7 @@ public:
   bool Convert() {
     if (const auto ov = Load()) {
       std::vector<NEWT> nv;
-      for (const auto&o : o.value()) {
+      for (const auto&o : ov.value()) {
         nv.emplace_back(ConvertType(o));
       }
       return Save(nv);
@@ -63,7 +63,7 @@ public:
     return { old };
   }
 
-  bool Save(const std::vector<OLDT>& e) {
+  bool Save(const std::vector<NEWT>& e) {
     const auto path = wwiv::core::FilePath(dir_, file_name_);
     const auto saved_path =
         wwiv::core::FilePath(dir_, wwiv::strings::StrCat(file_name_, "v", old_version_));
@@ -78,10 +78,6 @@ public:
   int old_version_;
   int new_version_;
 };
-
-template <typename OLDT, typename NEWT>
-bool ConvertJsonFile<OLDT, NEWT>::Convert() {
-}
 
 
 #endif // INCLUDED_WWIVCONFIG_CONVERT_H

@@ -46,15 +46,15 @@ void delete_chain(size_t chain_num);
 
 static string chaindata(int chain_num) {
   const auto& c = a()->chains->at(chain_num);
-  return fmt::sprintf("|#2%2d |#1%-32.32s  |#2%-35.35s |#9%-3d    %1c", chain_num,
+  return fmt::sprintf("|#2%2d |#1%-32.32s  |#5%-35.35s", chain_num,
                       stripcolors(c.description), c.filename);
 }
 
 static void showchains() {
   bout.cls();
   auto abort = false;
-  bout.bpla("|#2NN Description                     Path Name", &abort);
-  bout.bpla("|#7== ------------------------------  =================================== ", &abort);
+  bout.bpla("|#2NN Description                       Path Name", &abort);
+  bout.bpla("|#7== --------------------------------  =================================== ", &abort);
   for (auto chain_num = 0; chain_num < size_int(a()->chains->chains()) && !abort; chain_num++) {
     const auto s = chaindata(chain_num);
     bout.bpla(s, &abort);
@@ -85,7 +85,7 @@ void ShowChainCommandLineHelp() {
 }
 
 static std::string YesNoStringList(bool b, const std::string& yes, const std::string& no) {
-  return (b) ? yes : no;
+  return b ? yes : no;
 }
 
 static void modify_chain_sponsors(int chain_num, chain_t& c) {
