@@ -193,7 +193,7 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
 enum class ShouldContinue { CONTINUE, EXIT };
 
 static ShouldContinue
-read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
+read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   configrec cfg{};
 
@@ -226,8 +226,12 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
     }
     file.Close();
   }
-  ensure_latest_5x_config(window, config.datadir(), config.config_filename(),
-                          cfg.header.header.config_revision_number);
+  const auto state = ensure_latest_5x_config(window, config.datadir(), config.config_filename(),
+                                             cfg.header.header.config_revision_number);
+  if (state == config_upgrade_state_t::upgraded) {
+    config.Load();
+  }
+
   ensure_offsets_are_updated(window, config);
   return ShouldContinue::CONTINUE;
 }
@@ -322,7 +326,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
   return true;
 }
 
-int WInitApp::main(int argc, char** argv) {
+int WInitApp::main(int argc, char** argv) const {
   setlocale(LC_ALL, "");
 
   CommandLine cmdline(argc, argv, "net");

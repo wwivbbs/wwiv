@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/readmail.h"
 
+
+#include "acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
@@ -827,7 +829,8 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            if (a()->sess().effective_sl() < a()->subs().sub(a()->usub[i].subnum).postsl) {
+            const auto& sub = a()->subs().sub(a()->usub[i].subnum);
+            if (!wwiv::bbs::check_acs(sub.post_acs)) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }
@@ -837,7 +840,7 @@ void readmail(int mode) {
             if (!o) {
               break;
             }
-            auto b = o.value();
+            const auto& b = o.value();
 
             postrec p{};
             strcpy(p.title, m.title);

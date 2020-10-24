@@ -252,8 +252,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     subboard_t r{};
     r.name = "General";
     r.filename = "GENERAL";
-    r.readsl = 10;
-    r.postsl = 20;
+    r.read_acs = "user.sl >= 10";
+    r.post_acs = "user.sl >= 20";
     r.maxmsgs = 50;
     r.storage_type = 2;
 
@@ -271,7 +271,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       d1.filename = "SYSOP";
       d1.path = File::EnsureTrailingSlash(FilePath("dloads", "sysop").string());
       File::mkdir(d1.path);
-      d1.dsl = 100;
+      d1.acs = "user.dsl >= 100";
       d1.maxfiles = 50;
 
       dirs.insert(0, d1);
@@ -282,9 +282,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       d1.filename = "misc";
       d1.path = File::EnsureTrailingSlash(FilePath("dloads", "misc").string());
       File::mkdir(d1.path);
-      d1.dsl = 10;
-      d1.age = 0;
-      d1.dar = 0;
+      d1.acs = "user.dsl >= 10";
       d1.maxfiles = 50;
       d1.mask = 0;
       dirs.insert(1, d1);

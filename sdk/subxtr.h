@@ -21,9 +21,12 @@
 #define INCLUDED_SDK_SUBXTR_H
 
 #include "core/stl.h"
+#include "fido/fido_address.h"
 #include "sdk/net/net.h"
 #include <filesystem>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace wwiv::sdk {
@@ -35,10 +38,38 @@ struct subboard_network_data_t {
   int16_t net_num = 0;
   int16_t host = 0;
   int16_t category = 0;
+  std::set<fido::FidoAddress> ftn_uplinks;
 };
 
-// New (5.2+) style subboard. 
+// New (5.6+) style sub-board. 
 struct subboard_t {
+  // sub name
+  std::string name;
+  // long description - for subs.lst
+  std::string desc;
+
+  // board database filename
+  std::string filename;
+  // special key
+  char key{0};
+
+  // sl required to read
+  std::string read_acs;
+  // sl required to post
+  std::string post_acs;
+  // anonymous board?
+  uint8_t anony{0};
+
+  // max # of msgs
+  uint16_t maxmsgs{0};
+  // how it is stored (type, 1 or 2)
+  uint8_t storage_type{0};
+  // per-network data type for networked subs.
+  std::vector<subboard_network_data_t> nets;
+};
+
+// 5.2 style sub-board. 
+struct subboard_52_t {
   // sub name
   std::string name;
   // long description - for subs.lst
@@ -89,7 +120,7 @@ public:
 
   [[nodiscard]] bool exists(const std::string& filename) const;
 
-  void set_sub(int n, subboard_t s) { subs_[n] = s; }
+  void set_sub(int n, subboard_t s) { subs_[n] = std::move(s); }
   [[nodiscard]] const std::vector<subboard_t>& subs() const { return subs_; }
   bool insert(int n, subboard_t r);
   bool erase(int n);
@@ -116,10 +147,10 @@ private:
  *  stype - string sub type (up to 7 chars)
  */
 struct xtrasubsnetrec {
-  long flags;
-  int16_t net_num;
-  int16_t host;
-  int16_t category;
+  long flags{0};
+  int16_t net_num{-1};
+  int16_t host{-1};
+  int16_t category{-1};
   std::string stype_str;
 };
 
@@ -132,8 +163,8 @@ struct xtrasubsnetrec {
  *  nets - vector of network info for sub
  */
 struct xtrasubsrec {
-  long unused_xtra_flags;
-  char desc[61];
+  long unused_xtra_flags{0};
+  char desc[61]{};
   std::vector<xtrasubsnetrec> nets;
 };
 

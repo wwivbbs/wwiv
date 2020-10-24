@@ -22,12 +22,13 @@
 #include "localui/curses_win.h"
 #include "sdk/config.h"
 
+enum class config_upgrade_state_t { already_latest, upgraded };
 bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config&);
 void convert_config_424_to_430(UIWindow* window, const std::string& datadir,
                                const std::string& config_filename);
-bool convert_config_to_52(UIWindow* window, const std::string& config_filename);
-bool ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
-                             const std::string& config_filename,
-                             uint32_t config_revision_number);
+config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string& config_filename);
+config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
+                                               const std::string& config_filename,
+                                               uint32_t config_revision_number);
 
 #endif // INCLUDED_WWIVCONFIG_CONVERT_H

@@ -31,7 +31,8 @@ namespace wwiv::sdk {
 
 static const int CONFIG_DAT_SIZE_424 = 5660;
 
-Config::Config(const configrec& config) : initialized_(true), config_430_(std::make_unique<Config430>(config)), config_(config) {
+Config::Config(const configrec& config)
+    : initialized_(true), config_430_(std::make_unique<Config430>(config)), config_(config) {
   update_paths();
 }
 
@@ -128,14 +129,10 @@ Config430::Config430(const Config& config) : Config430(config.root_directory()) 
 
 Config430::Config430(const configrec& config) { set_config(&config, true); }
 
-bool Config430::IsReadable() {
-  DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
-                                 File::modeReadOnly | File::modeBinary);
-  if (!configFile) {
-    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
-    return false;
-  }
-  return true;
+bool Config430::IsReadable() const {
+  const DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
+                                       File::modeReadOnly | File::modeBinary);
+  return configFile ? true : false;
 }
 
 Config430::Config430(const std::filesystem::path& root_directory)
@@ -143,7 +140,6 @@ Config430::Config430(const std::filesystem::path& root_directory)
   DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;
   }
   initialized_ = configFile.Read(&config_);
@@ -156,17 +152,6 @@ Config430::Config430(const std::filesystem::path& root_directory)
     config_revision_number_ = 0;
     VLOG(1) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
   } else {
-    // We're in a 4.3x, 5.x format.
-    if (IsEquals("WWIV", config_.header.header.signature)) {
-      // WWIV 5.2 style header.
-      const auto& h = config_.header.header;
-      versioned_config_dat_ = true;
-      config_revision_number_ = h.config_revision_number;
-      written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
-    }
-  }
-
-  if (initialized_) {
     // We've initialized something.
     // Update absolute paths.
     update_paths();
@@ -183,6 +168,15 @@ void Config430::update_paths() {
   if (!config_.scriptdir[0]) {
     strcpy(config_.scriptdir, config_.datadir);
   }
+
+  if (IsEquals("WWIV", config_.header.header.signature)) {
+    // WWIV 5.2 style header.
+    const auto& h = config_.header.header;
+    versioned_config_dat_ = true;
+    config_revision_number_ = h.config_revision_number;
+    written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
+  }
+
 }
 
 void Config430::set_config(const configrec* config, bool need_to_update_paths) {
@@ -200,7 +194,6 @@ bool Config430::Load() {
   DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
                                  File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    //LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
   }
   if (!configFile.Read(&config_)) {

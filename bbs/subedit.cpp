@@ -18,25 +18,26 @@
 /**************************************************************************/
 #include "bbs/subedit.h"
 
-#include "bbs/arword.h"
+
+#include "acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "common/input.h"
 #include "bbs/subreq.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/input.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "sdk/status.h"
-#include "sdk/net/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
+#include "sdk/net/subscribers.h"
 #include <string>
 #include <vector>
 
@@ -54,21 +55,18 @@ static string boarddata(size_t n, const subboard_t& r) {
   if (!r.nets.empty()) {
     stype = r.nets[0].stype;
   }
-  auto ar = word_to_arstr(r.ar, "");
-  return fmt::sprintf("|#2%4d |#9%1s  |#1%-37.37s |#2%-8s |#9%-3d %-3d %-2d %-5d %7s", n, ar,
-                      stripcolors(r.name), r.filename, r.readsl, r.postsl, r.age, r.maxmsgs, stype);
+  return fmt::sprintf("|#2%4d |#1%-37.37s |#2%-8s |#9%-5d |#5%-12s", n, stripcolors(r.name), r.filename,
+                      r.maxmsgs, stype);
 }
 
 static void showsubs() {
   bout.cls();
-  bool abort = false;
+  auto abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
-  string substring = bin.input(20, true);
-  bout.bpla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE",
-            &abort);
-  bout.bpla("|#7==== == ------------------------------------- ======== --- === -- ===== -------",
-            &abort);
-  int subnum = 0;
+  const auto substring = bin.input(20, true);
+  bout.bpla("|#2NN   Name                                  FN       MSGS  SUBTYPE", &abort);
+  bout.bpla("|#7==== ------------------------------------- ======== ===== ------------", &abort);
+  auto subnum = 0;
   for (const auto& r : a()->subs().subs()) {
     const auto subdata = StrCat(r.name, " ", r.filename);
     if (ifind_first(subdata, substring)) {
@@ -149,19 +147,16 @@ static string subname_using(const string& filename) {
 }
 static void modify_sub(int n) {
   auto r = a()->subs().sub(n);
-  bool done = false;
+  auto done = false;
   do {
     bout.cls();
     bout.litebar(StrCat("Editing Message Sub #", n));
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;
-    bout << "|#9D) Read SL    : |#2" << static_cast<int>(r.readsl) << wwiv::endl;
-    bout << "|#9E) Post SL    : |#2" << static_cast<int>(r.postsl) << wwiv::endl;
+    bout << "|#9D) Read ACS   : |#2" << r.read_acs << wwiv::endl;
+    bout << "|#9E) Post ACS   : |#2" << r.post_acs << wwiv::endl;
     bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
-    bout << "|#9G) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
-    bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-    bout << "|#9I) AR         : |#2" << word_to_arstr(r.ar, "None.") << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
@@ -250,18 +245,18 @@ static void modify_sub(int n) {
     case 'C': {
       bout.nl();
       bout << "|#2New Key (space = none) ? ";
-      char ch2 = onek("@%^&()_=\\|;:'\",` ");
+      auto ch2 = onek("@%^&()_=\\|;:'\",` ");
       r.key = (ch2 == SPACE) ? 0 : ch2;
     } break;
     case 'D': {
       bout.nl();
-      bout << "|#2New Read SL? ";
-      r.readsl = bin.input_number(r.readsl);
+      bout << "|#2New Read ACS? \r\n:";
+      r.read_acs = wwiv::bbs::input_acs(r.read_acs, 78);
     } break;
     case 'E': {
       bout.nl();
-      bout << "|#2New Post SL? ";
-      r.postsl = bin.input_number(r.postsl);
+      bout << "|#2New Post ACS? \r\n:";
+      r.post_acs = wwiv::bbs::input_acs(r.post_acs, 78);
     } break;
     case 'F': {
       string allowed("NYDFR");
@@ -271,7 +266,7 @@ static void modify_sub(int n) {
       const char N = YesNoString(false)[0];
       allowed.push_back(Y);
       allowed.push_back(N);
-      char ch2 = onek(allowed.c_str(), true);
+      char ch2 = onek(allowed, true);
       if (ch2 == N) {
         ch2 = 0;
       } else if (ch2 == Y) {
@@ -293,26 +288,6 @@ static void modify_sub(int n) {
       case 'R':
         r.anony |= anony_real_name;
         break;
-      }
-    } break;
-    case 'G': {
-      bout.nl();
-      bout << "|#2New Min Age? ";
-      r.age = bin.input_number(r.age);
-    } break;
-    case 'H': {
-      bout.nl();
-      bout << "|#2New Max Msgs? ";
-      r.maxmsgs = bin.input_number(r.maxmsgs);
-    } break;
-    case 'I': {
-      bout.nl();
-      bout << "|#2Enter New AR (<SPC>=None) : ";
-      char ch2 = onek("ABCDEFGHIJKLMNOP ", true);
-      if (ch2 == SPACE) {
-        r.ar = 0;
-      } else {
-        r.ar = 1 << (ch2 - 'A');
       }
     } break;
     case 'J': {
@@ -484,12 +459,10 @@ static void insert_sub(int n) {
   r.name = "** New WWIV Message Sub **";
   r.filename = "NONAME";
   r.key = 0;
-  r.readsl = 10;
-  r.postsl = 20;
+  r.read_acs = "user.sl >= 10";
+  r.post_acs = "user.sl >= 20";
   r.anony = 0;
-  r.age = 0;
   r.maxmsgs = 50;
-  r.ar = 0;
   r.storage_type = 2;
 
   // Insert new item.
@@ -674,14 +647,14 @@ void boardedit() {
             if (!in_conference(subnum, &(a()->subconfs[i2]))) {
               iconv = static_cast<subconf_t>(subnum);
               addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[i2], &iconv);
-              subnum = static_cast<int>(iconv);
+              subnum = iconv;
             }
           }
         } else {
           if (!in_conference(subnum, &a()->subconfs[0])) {
             iconv = static_cast<subconf_t>(subnum);
             addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[0], &iconv);
-            subnum = static_cast<int>(iconv);
+            subnum = iconv;
           }
         }
       }

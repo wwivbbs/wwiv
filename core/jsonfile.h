@@ -24,6 +24,7 @@
 #include "core/textfile.h"
 #include "fmt/format.h"
 #include <filesystem>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -46,9 +47,13 @@
 
 namespace wwiv::core {
 
+std::optional<std::string> read_json_file(const std::filesystem::path& p);
+int json_file_version(const std::filesystem::path& p);
+
 struct json_version_error : public std::runtime_error {
   json_version_error(const std::string& filename, int min_ver, int actual_ver)
-      : std::runtime_error(fmt::format("Invalid version for file '{}', expected: {}, actual: {}",
+      : std::runtime_error(fmt::format("Invalid version for file '{}', expected: {}, actual: {}. "
+                                       "Please run WWIVCONFIG to update it.",
                                        filename, min_ver, actual_ver)) {}
 };
 
@@ -68,22 +73,17 @@ public:
 
   bool Load() {
     try {
-      TextFile file(file_name_, "r");
-      if (!file.IsOpen()) {
-        return false;
+      if (const auto o = read_json_file(file_name_)) {
+        std::stringstream ss(o.value());
+        cereal::JSONInputArchive ar(ss);
+        SERIALIZE_NVP("version", loaded_version_);
+        if (version_ > 0 && loaded_version_ < version_) {
+          throw json_version_error(file_name_.string(), version_, loaded_version_);
+        }
+        ar(cereal::make_nvp(key_, t_));
+        return true;
       }
-      const auto text = file.ReadFileIntoString();
-      if (text.empty()) {
-        return false;
-      }
-      std::stringstream ss(text);
-      cereal::JSONInputArchive ar(ss);
-      ar(cereal::make_nvp(key_, t_));
-      SERIALIZE(*this, loaded_version_);
-      if (version_ > 0 && loaded_version_ < version_) {
-        throw json_version_error(file_name_.string(), version_, loaded_version_);
-      }
-      return true;
+      return false;
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;
@@ -94,10 +94,10 @@ public:
     std::ostringstream ss;
     try {
       cereal::JSONOutputArchive ar(ss);
-      ar(cereal::make_nvp(key_, t_));
       if (version_ != 0) {
-        SERIALIZE(*this, version_);
+        SERIALIZE_NVP("version", version_);
       }
+      ar(cereal::make_nvp(key_, t_));
     } catch (const cereal::RapidJSONException& e) {
       LOG(ERROR) << "Caught cereal::RapidJSONException: " << e.what();
       return false;
@@ -105,8 +105,6 @@ public:
 
     TextFile file(file_name_, "w");
     if (!file.IsOpen()) {
-      // rapidjson will assert if the file does not exist, so we need to 
-      // verify that the file exists first.
       return false;
     }
 

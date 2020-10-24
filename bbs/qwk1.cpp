@@ -29,6 +29,7 @@
 #include <unistd.h>
 #endif
 
+#include "acs.h"
 #include "bbs/application.h"
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
@@ -762,7 +763,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     ss = a()->effective_slrec();
 
     int xa = 0;
-    // User is restricked from posting
+    // User is restricted from posting
     if ((restrict_post & a()->user()->data.restrict) || (a()->user()->data.posttoday >= ss.posts)) {
       bout.nl();
       bout.bputs("Too many messages posted today.");
@@ -773,7 +774,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     }
 
     // User doesn't have enough sl to post on sub
-    if (a()->sess().effective_sl() < a()->current_sub().postsl) {
+    if (!wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();

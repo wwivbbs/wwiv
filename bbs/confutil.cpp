@@ -18,15 +18,15 @@
 /**************************************************************************/
 #include "bbs/confutil.h"
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/conf.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"
 
+using namespace wwiv::bbs;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 
@@ -86,16 +86,11 @@ static bool access_conf(User * u, int sl, const confrec * c) {
   return true;
 }
 
-static bool access_sub(User& u, int sl, const subboard_t& s) {
-  if (sl < s.readsl) {
+static bool access_sub(User& u, const subboard_t& s) {
+  if (!check_acs(s.read_acs)) {
     return false;
   }
-  if (u.age() < s.age) {
-    return false;
-  }
-  if (s.ar != 0 && !u.HasArFlag(s.ar)) {
-    return false;
-  }
+
   if ((s.anony & anony_ansi_only) && !u.HasAnsi()) {
     return false;
   }
@@ -104,21 +99,19 @@ static bool access_sub(User& u, int sl, const subboard_t& s) {
 }
 
 static bool access_dir(User& u, int sl, wwiv::sdk::files::directory_t& d) {
-  if (u.GetDsl() < d.dsl) {
+  if (!check_acs(d.acs)) {
     return false;
   }
-  if (u.age() < d.age) {
-    return false;
-  }
-  if (d.dar && !u.HasDarFlag(d.dar)) {
-    return false;
-  }
+
   if ((d.mask & mask_offline) && u.GetDsl() < 100) {
     return false;
   }
+
   if ((d.mask & mask_wwivreg) && !u.GetWWIVRegNumber()) {
     return false;
   }
+
+  // Note: this is different than access_sub.
   if (sl == 0) {
     return false;
   }
@@ -217,8 +210,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     for (const auto sub : c->subs) {
       switch (type) {
       case ConferenceType::CONF_SUBS:
-        if (access_sub(*a()->user(), a()->sess().effective_sl(),
-                       a()->subs().sub(sub))) {
+        if (access_sub(*a()->user(), a()->subs().sub(sub))) {
           addusub(ss1, ns, sub, a()->subs().sub(sub).key);
         }
         break;
@@ -239,7 +231,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
       for (const auto& conf : a()->subconfs) {
         if (access_conf(a()->user(), a()->sess().effective_sl(), &conf)) {
           for (const auto sub : conf.subs) {
-            if (access_sub(*a()->user(), a()->sess().effective_sl(), a()->subs().sub(sub))) {
+            if (access_sub(*a()->user(), a()->subs().sub(sub))) {
               addusub(ss1, ns, sub, a()->subs().sub(sub).key);
             }
           }

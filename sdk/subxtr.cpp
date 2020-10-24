@@ -18,6 +18,9 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
+#include "acs/expr.h"
+
+
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
@@ -30,8 +33,9 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
-#include "core/cereal_utils.h"
 #include "sdk/filenames.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/subs_cereal.h"
 #include "sdk/vardec.h"
 #include <sstream>
 #include <string>
@@ -57,54 +61,11 @@ std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
 bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
 
 
-template <class Archive>
-void serialize(Archive & ar, subboard_network_data_t& s) {
-  try {
-    ar(make_nvp("stype", s.stype));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-  ar(make_nvp("flags", s.flags));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("net_num", s.net_num));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("host", s.host));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("category", s.category));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-}
-
-template <class Archive> void serialize(Archive& ar, subboard_t& s) { 
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, key);
-  SERIALIZE(s, readsl);
-  SERIALIZE(s, postsl);
-  SERIALIZE(s, anony);
-  SERIALIZE(s, age);
-  SERIALIZE(s, maxmsgs);
-  SERIALIZE(s, ar);
-  SERIALIZE(s, storage_type);
-  SERIALIZE(s, nets);
-}
-
 bool Subs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
                         std::vector<subboard_t>& entries) {
   entries.clear();
   const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", entries);
+  JsonFile f(path, "subs", entries, 1);
   return f.Load();
 }
 
@@ -113,7 +74,7 @@ bool Subs::LoadFromJSON(const std::filesystem::path& dir, const std::string& fil
 bool Subs::SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
                       const std::vector<subboard_t>& entries) {
   const auto path = FilePath(dir, filename);
-  JsonFile f(path, "subs", entries);
+  JsonFile f(path, "subs", entries, 1);
   return f.Save();
 }
 
@@ -295,12 +256,23 @@ bool Subs::LoadLegacy() {
     sub.desc = oldx.desc;
     sub.filename = olds.filename;
     sub.key = olds.key;
-    sub.readsl = olds.readsl;
-    sub.postsl = olds.postsl;
+    {
+      acs::AcsExpr ae;
+      ae.min_sl(olds.readsl);
+      if (olds.age > 0 && olds.age < 255) {
+        ae.min_age(olds.age);
+      }
+      if (olds.ar != 0) {
+        ae.ar_int(olds.ar);
+      }
+      sub.read_acs = ae.get();
+    }
+    if (olds.postsl) {
+      acs::AcsExpr ae;
+      sub.post_acs = ae.min_sl(olds.postsl).get();
+    }
     sub.anony = olds.anony;
-    sub.age = olds.age;
     sub.maxmsgs = olds.maxmsgs;
-    sub.ar = olds.ar;
     sub.storage_type = static_cast<uint8_t>(olds.storage_type);
     for (const auto& n : oldx.nets) {
       subboard_network_data_t netdata = {};
@@ -327,12 +299,15 @@ bool Subs::Save() {
     to_char_array(lx.desc, s.desc);
     to_char_array(ls.filename, s.filename);
     ls.key = s.key;
+    ls.anony = s.anony;
+    ls.maxmsgs = s.maxmsgs;
+    /*
+     * TODO(rushfan): See if we can pull this out of the expression.
     ls.readsl = s.readsl;
     ls.postsl = s.postsl;
-    ls.anony = s.anony;
     ls.age = s.age;
-    ls.maxmsgs = s.maxmsgs;
     ls.ar = s.ar;
+     */
     ls.storage_type = s.storage_type;
     ls.unused_legacy_type = 0;
     for (const auto& n : s.nets) {

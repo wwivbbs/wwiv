@@ -33,8 +33,8 @@ struct dir_area_t {
   core::uuid_t net_uuid;  
 };
 
-// New (5.5+) style directory. 
-struct directory_t {
+// 5.5 style directory. 
+struct directory_55_t {
   // directory name
   std::string name;
   // direct database filename
@@ -47,6 +47,24 @@ struct directory_t {
   uint8_t age;
   // DAR for directory
   uint16_t dar;
+  // max files for directory
+  uint16_t maxfiles;
+  // file type mask
+  uint16_t mask;
+  // AREA TAGs (used for FTN File Echos)
+  std::vector<dir_area_t> area_tags;
+};
+
+// 5.6+ style directory. 
+struct directory_t {
+  // directory name
+  std::string name;
+  // direct database filename
+  std::string filename;
+  // directory path
+  std::string path;
+  // ACS for accessing this area.
+  std::string acs;
   // max files for directory
   uint16_t maxfiles;
   // file type mask

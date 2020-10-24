@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 namespace wwiv::sdk::acs {
 
 static std::tuple<std::string, std::string> split_obj_name(const std::string& name) {
-  auto last = name.rfind('.');
+  const auto last = name.rfind('.');
   if (last == std::string::npos) {
     return std::make_tuple("", name);
   }
@@ -46,7 +46,6 @@ std::optional<Value> Eval::to_value(Factor* n) {
   switch (n->factor_type()) {
   case FactorType::int_value:
     return Value(n->int_value());
-    break;
   case FactorType::string_val:
     return Value(n->value());
   case FactorType::variable: {
@@ -58,7 +57,7 @@ std::optional<Value> Eval::to_value(Factor* n) {
       }
     }
     throw eval_error(fmt::format("No object named '{}' exists.", n->value()));
-  } break;
+  }
   }
   throw eval_error(fmt::format("Error finding factor for object: '{}'.", to_string(*n)));
 }
@@ -144,7 +143,7 @@ bool Eval::eval() {
   try {
     root->accept(this);
 
-    if (auto expr = dynamic_cast<Expression*>(root)) {
+    if (auto* expr = dynamic_cast<Expression*>(root)) {
       auto it = values_.find(expr->id());
       if (it == std::end(values_)) {
         error_text_ = fmt::format("Unable to find expression id: '{}'.", expr->id());

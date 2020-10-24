@@ -15,6 +15,7 @@ set(COMMON_SOURCES
   http_server.cpp
   inifile.cpp
   ip_address.cpp
+  jsonfile.cpp
   log.cpp
   md5.cpp
   net.cpp
@@ -57,6 +58,8 @@ configure_file(version_internal.h.in version_internal.h @ONLY)
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
 target_link_libraries(core fmt::fmt-header-only)
 target_include_directories(core PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(core PUBLIC ../deps/cereal/include)
+
 if (UNIX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using regular Clang or AppleClang

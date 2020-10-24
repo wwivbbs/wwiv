@@ -47,6 +47,7 @@ TEST_F(AcsExprTest, Age_Min_Max) {
 TEST_F(AcsExprTest, Ar) { EXPECT_EQ(ae.ar('C').get(), "user.ar == 'C'"); }
 TEST_F(AcsExprTest, Ar_Bad) { EXPECT_EQ(ae.ar('Z').get(), ""); }
 TEST_F(AcsExprTest, SL_Min) { EXPECT_EQ(ae.min_sl(18).get(), "user.sl >= 18"); }
+TEST_F(AcsExprTest, SL_Min_255) { EXPECT_EQ(ae.min_sl(255).get(), "user.sl >= 255"); }
 TEST_F(AcsExprTest, SL_Max) { EXPECT_EQ(ae.max_sl(21).get(), "user.sl <= 21"); }
 TEST_F(AcsExprTest, SL_Min_Max) {
   EXPECT_EQ(ae.min_sl(18).max_sl(21).get(), "user.sl >= 18 && user.sl <= 21");
@@ -59,6 +60,8 @@ TEST_F(AcsExprTest, DSL_Max) { EXPECT_EQ(ae.max_dsl(21).get(), "user.dsl <= 21")
 TEST_F(AcsExprTest, DSL_Min_Max) {
   EXPECT_EQ(ae.min_dsl(18).max_dsl(21).get(), "user.dsl >= 18 && user.dsl <= 21");
 }
+
+TEST_F(AcsExprTest, DSL_Min_255) { EXPECT_EQ(ae.min_dsl(255).get(), "user.dsl >= 255"); }
 
 TEST_F(AcsExprTest, RegNum) { EXPECT_EQ(ae.regnum().get(), "user.regnum == 'true'"); }
 

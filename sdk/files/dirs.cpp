@@ -31,9 +31,9 @@
 #include "fmt/printf.h"
 #include "core/cereal_utils.h"
 #include "sdk/filenames.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/uuid_cereal.h"
 #include "sdk/vardec.h"
+#include "sdk/acs/expr.h"
+#include "sdk/files/dirs_cereal.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,25 +47,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::files {
 
-template <class Archive>
-void serialize (Archive& ar, dir_area_t& d) {
-  SERIALIZE(d, area_tag);
-  SERIALIZE(d, net_uuid);
-}
-
-template <class Archive>
-void serialize(Archive & ar, directory_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, dsl);
-  SERIALIZE(s, age);
-  SERIALIZE(s, dar);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-}
-
 std::ostream& operator<<(std::ostream& os, const sdk::files::directory_t& d) {
   os << d.name << " (" << d.filename << ")";
   return os;
@@ -73,13 +54,13 @@ std::ostream& operator<<(std::ostream& os, const sdk::files::directory_t& d) {
 
 bool Dirs::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<directory_t>& entries) {
   entries.clear();
-  JsonFile f(FilePath(dir, filename), "dirs", entries);
+  JsonFile f(FilePath(dir, filename), "dirs", entries, 1);
   return f.Load();
 }
 
 //static 
 bool Dirs::SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<directory_t>& entries) {
-  JsonFile f(FilePath(dir, filename), "dirs", entries);
+  JsonFile f(FilePath(dir, filename), "dirs", entries, 1);
   return f.Save();
 }
 
@@ -137,10 +118,8 @@ bool Dirs::LoadLegacy() {
     dir.name = olds.name;
     dir.filename = olds.filename;
     dir.path = olds.path;
-    dir.dsl = olds.dsl;
-    dir.age = olds.age;
-    dir.dar = olds.dar;
-    dir.age = olds.age;
+    acs::AcsExpr ae;
+    dir.acs = ae.min_dsl(olds.dsl).min_age(olds.age).dar_int(olds.dar).get();
     dir.maxfiles = olds.maxfiles;
     dir.mask = olds.mask;
     dirs_.emplace_back(std::move(dir));
@@ -156,9 +135,9 @@ bool Dirs::Save() {
     to_char_array(ls.name, s.name);
     to_char_array(ls.filename, s.filename);
     to_char_array(ls.path, s.path);
-    ls.dsl = s.dsl;
-    ls.age = s.age;
-    ls.dar = s.dar;
+    //ls.dsl = s.dsl;
+    //ls.age = s.age;
+    //ls.dar = s.dar;
     ls.maxfiles = s.maxfiles;
     ls.mask = s.mask;
     dirs.emplace_back(ls);

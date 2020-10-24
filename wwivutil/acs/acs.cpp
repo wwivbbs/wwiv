@@ -66,7 +66,7 @@ int AcsCommand::Execute() {
   }
 
   Eval eval(expr);
-  eval.add("user", std::make_unique<UserValueProvider>(&user));
+  eval.add("user", std::make_unique<UserValueProvider>(&user, user.GetSl()));
 
   bool result = eval.eval();
   std::cout << "Evaluate: '" << expr << "' ";

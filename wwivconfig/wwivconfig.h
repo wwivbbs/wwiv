@@ -27,7 +27,7 @@ class WInitApp final {
   WInitApp();
   ~WInitApp();
 
-  int main(int argc, char* argv[]);
+  int main(int argc, char* argv[]) const;
 };
 
 

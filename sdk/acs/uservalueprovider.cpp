@@ -17,18 +17,15 @@
 /**************************************************************************/
 #include "sdk/acs/uservalueprovider.h"
 
-#include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/acs/eval_error.h"
 #include "sdk/user.h"
 #include <optional>
 #include <string>
-#include <utility>
-#include <vector>
 
 using namespace wwiv::core;
-using namespace wwiv::core::parser;
+using namespace parser;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
@@ -42,15 +39,20 @@ template <typename T> static std::optional<Value> val(T&& v) {
 std::optional<Value> UserValueProvider::value(const std::string& name) {
   if (iequals(name, "sl")) {
     return val(user_->GetSl());
-  } else if (iequals(name, "dsl")) {
+  }
+  if (iequals(name, "dsl")) {
     return val(user_->GetDsl());
-  } else if (iequals(name, "age")) {
+  }
+  if (iequals(name, "age")) {
     return val(user_->age());
-  } else if (iequals(name, "ar")) {
+  }
+  if (iequals(name, "ar")) {
     return val(Ar(user_->GetAr()));
-  } else if (iequals(name, "dar")) {
+  }
+  if (iequals(name, "dar")) {
     return val(Ar(user_->GetDar()));
-  } else if (iequals(name, "name")) {
+  }
+  if (iequals(name, "name")) {
     return val(user_->GetName());
   }
   throw eval_error(fmt::format("No user attribute named 'user.{}' exists.", name));

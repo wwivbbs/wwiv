@@ -18,14 +18,14 @@
 #ifndef INCLUDED_SDK_CEREAL_UTILS_H
 #define INCLUDED_SDK_CEREAL_UTILS_H
 
-#include "core/stl.h"
-
 // ReSharper disable CppUnusedIncludeDirective
-#include "cereal/access.hpp"
-#include "cereal/cereal.hpp"
-#include "cereal/types/set.hpp"
+#include <cereal/access.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/set.hpp>
 #include <stdexcept>
 #include <vector>
+
+#include "core/stl.h"
 
 namespace cereal {
 
@@ -37,6 +37,16 @@ namespace cereal {
       ar.setNextName(nullptr);                                                                     \
     }                                                                                              \
   } while (false)
+
+#define SERIALIZE_NVP(name, field)                                                                        \
+  do {                                                                                             \
+    try {                                                                                          \
+      ar(cereal::make_nvp(name, field));                                                     \
+    } catch (const cereal::Exception&) {                                                           \
+      ar.setNextName(nullptr);                                                                     \
+    }                                                                                              \
+  } while (false)
+
 
 template <typename T>
 std::string to_enum_string(const T& t, const std::vector<std::string>& names) {

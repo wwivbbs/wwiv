@@ -207,6 +207,9 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
 }
 
 bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
+  if (stack.size() < 3) {
+    throw parse_error(fmt::format("Can't reduce stack with < 3 elements."));
+  }
   auto right_ast = std::move(stack.top());
   stack.pop();
   auto op_ast = std::move(stack.top());
@@ -216,7 +219,7 @@ bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   
   // Set op
   Operator op{Operator::UNKNOWN};
-  if (auto oper = dynamic_cast<OperatorNode*>(op_ast.get())) {
+  if (auto* oper = dynamic_cast<OperatorNode*>(op_ast.get())) {
     op = oper->oper;
   } else {
     throw parse_error(fmt::format("Expected BINOP at: {}", to_string(*op_ast.get())));
@@ -224,19 +227,19 @@ bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   // Set left
   std::unique_ptr<Expression> left;
   if (left_ast->ast_type() == AstType::FACTOR) {
-    auto factor = dynamic_cast<Factor*>(left_ast.release());
+    auto* factor = dynamic_cast<Factor*>(left_ast.release());
     left = std::unique_ptr<Factor>(factor);
   } else if (left_ast->ast_type() == AstType::EXPR) {
-    auto factor = dynamic_cast<Expression*>(left_ast.release());
+    auto* factor = dynamic_cast<Expression*>(left_ast.release());
     left = std::unique_ptr<Expression>(factor);
   }
   std::unique_ptr<Expression> right;
   // Set right
   if (right_ast->ast_type() == AstType::FACTOR) {
-    auto factor = dynamic_cast<Factor*>(right_ast.release());
+    auto* factor = dynamic_cast<Factor*>(right_ast.release());
     right = std::unique_ptr<Factor>(factor);
   } else if (right_ast->ast_type() == AstType::EXPR) {
-    auto factor = dynamic_cast<Expression*>(right_ast.release());
+    auto* factor = dynamic_cast<Expression*>(right_ast.release());
     right = std::unique_ptr<Expression>(factor);
   }
   stack.push(std::make_unique<Expression>(std::move(left), op, std::move(right)));

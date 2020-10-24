@@ -21,15 +21,22 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/jsonfile.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "local_io/wconstants.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
 #include "sdk/filenames.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/subs_cereal.h"
+#include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
+#include "sdk/acs/expr.h"
+#include "sdk/files/dirs.h"
+#include "sdk/files/dirs_cereal.h"
 #include "wwivconfig/archivers.h"
 #include <cstring>
 #include <filesystem>
@@ -38,6 +45,7 @@ using std::string;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::files;
 using namespace wwiv::strings;
 
 struct user_config {
@@ -102,10 +110,10 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   return true;
 }
 
-bool convert_config_to_52(UIWindow* window, const std::string& config_filename) {
+config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string& config_filename) {
   File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
-    return false;
+    return config_upgrade_state_t::already_latest;
   }
 
   ShowBanner(window, "Converting config.dat to 4.3/5.x format...");
@@ -129,7 +137,7 @@ bool convert_config_to_52(UIWindow* window, const std::string& config_filename) 
   file.Seek(0, File::Whence::begin);
   file.Write(&syscfg53, sizeof(configrec));
   file.Close();
-  return true;
+  return config_upgrade_state_t::upgraded;
 }
 
 static bool update_config_revision_number(const std::string& config_filename,
@@ -268,27 +276,116 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   return true;
 }
 
+static bool Subs_LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                              std::vector<subboard_52_t>& entries) {
+  entries.clear();
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", entries, 0);
+  if (f.Load()) {
+    return f.loaded_version() == 0;
+  }
+  return false;
+}
+
+static bool Subs_SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                      const std::vector<subboard_t>& entries) {
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "subs", entries, 1);
+  return f.Save();
+}
+
+static bool Dirs_LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                              std::vector<directory_55_t>& entries) {
+  entries.clear();
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "dirs", entries, 0);
+  if (f.Load()) {
+    return f.loaded_version() == 0;
+  }
+  return false;
+}
+
+static bool Dirs_SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                      const std::vector<directory_t>& entries) {
+  const auto path = FilePath(dir, filename);
+  JsonFile f(path, "dirs", entries, 1);
+  return f.Save();
+}
+
 static bool convert_to_v2(UIWindow* window, const std::string& datadir,
                           const std::string& config_filename) {
   ShowBanner(window, "Updating to 5.2.2+ format...");
-  LOG(INFO) << datadir;
+
+  {
+    std::vector<subboard_52_t> osubs;
+    std::vector<subboard_t> nsubs;
+    if (Subs_LoadFromJSON(datadir, SUBS_JSON, osubs)) {
+      std::vector<subboard_t> e;
+      for (const auto& os : osubs) {
+        subboard_t s{};
+        s.nets = os.nets;
+        {
+          acs::AcsExpr ae;
+          s.read_acs = ae.ar_int(os.ar).min_sl(os.readsl).min_age(os.age).get();
+        }
+        {
+          acs::AcsExpr ae;
+          s.post_acs = ae.min_sl(os.postsl).get();
+        }
+        s.anony = os.anony;
+        s.desc = os.desc;
+        s.filename = os.filename;
+        s.key = os.key;
+        s.maxmsgs = os.maxmsgs;
+        s.name = os.name;
+        s.storage_type = os.storage_type;
+        nsubs.emplace_back(s);
+      }
+      File::Copy(FilePath(datadir, SUBS_JSON), 
+              FilePath(datadir, "subs.pre-v2.json"));
+      Subs_SaveToJSON(datadir, SUBS_JSON, nsubs);
+    }
+  }
+  {
+    std::vector<directory_55_t> odirs;
+    std::vector<directory_t> ndirs;
+    if (Dirs_LoadFromJSON(datadir, DIRS_JSON, odirs)) {
+      std::vector<subboard_t> e;
+      for (const auto& od : odirs) {
+        directory_t d{};
+        d.area_tags = od.area_tags;
+        acs::AcsExpr ae;
+        d.acs = ae.min_dsl(od.dsl).min_age(od.age).dar_int(od.dar).get();
+        d.filename = od.filename;
+        d.mask = od.mask;
+        d.maxfiles = od.maxfiles;
+        d.name = od.name;
+        d.path = od.path;
+        ndirs.emplace_back(d);
+      }
+      File::Copy(FilePath(datadir, DIRS_JSON), FilePath(datadir, "dirs.pre-v2.json"));
+      Dirs_SaveToJSON(datadir, DIRS_JSON, ndirs);
+    }
+  }
+
   // Mark config.dat as upgraded.
-  update_config_revision_number(config_filename, 2);
-  return true;
+  return update_config_revision_number(config_filename, 2);
 }
 
-bool ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
+config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                              const std::string& config_filename,
                              const uint32_t config_revision_number) {
-
+  if (config_revision_number >= 2) {
+    return config_upgrade_state_t::already_latest;
+  }
   // add others
   if (config_revision_number < 1) {
-    return convert_to_v1(window, datadir, config_filename);
+    convert_to_v1(window, datadir, config_filename);
   }
-  //if (config_revision_number < 2) {
-  //  return convert_to_v2(window, datadir, config_filename);
-  //}
-  return true;
+  if (config_revision_number < 2) {
+    convert_to_v2(window, datadir, config_filename);
+  }
+  return config_upgrade_state_t::upgraded;
 }
 
 void convert_config_424_to_430(UIWindow* window, const std::string& datadir, const std::string& config_filename) {

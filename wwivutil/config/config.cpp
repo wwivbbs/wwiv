@@ -17,15 +17,12 @@
 /**************************************************************************/
 #include "wwivutil/config/config.h"
 
+#include "sdk/config.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/net/net.h"
-#include "sdk/net/networks.h"
-#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -45,8 +42,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
 static int show_version(const Config& config) {
   cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat()
@@ -68,7 +64,7 @@ bool save_config(configrec& c) {
 
 static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revision) {
   if (!config.versioned_config_dat()) {
-    cout << "Can only set the wwiv_ersion and config revision on a 5.1 or higher versioned "
+    cout << "Can only set the wwiv_version and config revision on a 5.1 or higher versioned "
             "config.dat"
          << std::endl;
     return false;
@@ -99,7 +95,8 @@ static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revisi
 class ConfigVersionCommand : public UtilCommand {
 public:
   ConfigVersionCommand() : UtilCommand("version", "Sets or Gets the config version") {}
-  std::string GetUsage() const override final {
+
+  [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
     ss << "  get : Gets the config.dat version information." << std::endl;
@@ -139,5 +136,4 @@ bool ConfigCommand::AddSubCommands() {
   return true;
 }
 
-} // namespace wwivutil
-} // namespace wwiv
+} // namespace

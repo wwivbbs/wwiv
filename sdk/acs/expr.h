@@ -48,6 +48,18 @@ public:
     ar_ = ar;
     return *this;
   }
+
+  AcsExpr& ar_int(int ar) {
+    if (ar == 0) {
+      for (auto i = 0; i < 16; i++) {
+        if ((1 << i) & ar) {
+          ar_ = static_cast<char>('A' + i);
+        }
+      }
+    }
+    return *this;
+  }
+
   AcsExpr& min_dsl(int min_dsl) {
     min_dsl_ = min_dsl;
     return *this;
@@ -58,6 +70,16 @@ public:
   }
   AcsExpr& dar(char dar) {
     dar_ = dar;
+    return *this;
+  }
+  AcsExpr& dar_int(int ar) {
+    if (ar == 0) {
+      for (auto i = 0; i < 16; i++) {
+        if ((1 << i) & ar) {
+         dar_ = static_cast<char>('A' + i);
+        }
+      }
+    }
     return *this;
   }
   AcsExpr& regnum() {

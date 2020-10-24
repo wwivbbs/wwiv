@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/misccmd.h"
 
+
+#include "acs.h"
 #include "bbs/bbs.h"
 #include "common/com.h"
 #include "bbs/confutil.h"
@@ -327,27 +329,11 @@ void list_users(int mode) {
     if (user.IsUserDeleted()) {
       ok = false;
     }
-    if (mode == LIST_USERS_MESSAGE_AREA) {
-      if (user.GetSl() < s.readsl) {
+    if (mode == LIST_USERS_MESSAGE_AREA && !wwiv::bbs::check_acs(s.read_acs)) {
         ok = false;
-      }
-      if (user.age() < s.age) {
-        ok = false;
-      }
-      if (s.ar != 0 && !user.HasArFlag(s.ar)) {
-        ok = false;
-      }
     }
-    if (mode == LIST_USERS_FILE_AREA) {
-      if (user.GetDsl() < d.dsl) {
-        ok = false;
-      }
-      if (user.age() < d.age) {
-        ok = false;
-      }
-      if (d.dar != 0 && !user.HasDarFlag(d.dar)) {
-        ok = false;
-      }
+    if (mode == LIST_USERS_FILE_AREA && !wwiv::bbs::check_acs(d.acs)) {
+      ok = false;
     }
     if (szFindText[0] != '\0') {
       char s5[ 41 ];
@@ -360,7 +346,6 @@ void list_users(int mode) {
     }
     if (ok) {
       found = true;
-      //bout.backline();
       bout.clreol();
       if (user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300) {
         user.SetLastBaudRate(33600);

@@ -18,15 +18,13 @@
 /**************************************************************************/
 #include "bbs/msgbase1.h"
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "common/datetime.h"
 #include "bbs/inmsg.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/message_editor_data.h"
 #include "bbs/message_file.h"
 #include "bbs/msgscan.h"
 #include "bbs/netsup.h"
@@ -35,19 +33,21 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/input.h"
+#include "common/message_editor_data.h"
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "sdk/fido/fido_address.h"
-#include "sdk/msgapi/parsed_message.h"
-#include "sdk/net/ftn_msgdupe.h"
-#include "sdk/net/subscribers.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/fido/fido_address.h"
+#include "sdk/msgapi/parsed_message.h"
+#include "sdk/net/ftn_msgdupe.h"
+#include "sdk/net/subscribers.h"
 #include <memory>
 #include <string>
 
@@ -75,7 +75,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   }
 
   int netnum;
-  const int orig_netnum = a()->net_num();
+  const auto orig_netnum = a()->net_num();
   if (pPostRecord->status & status_post_new_net) {
     netnum = pPostRecord->network.network_msg.net_number;
   } else if (!sub.nets.empty()) {
@@ -84,12 +84,12 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     netnum = a()->net_num();
   }
 
-  int nn1 = netnum;
+  const auto nn1 = netnum;
   if (pPostRecord->ownersys == 0) {
     netnum = -1;
   }
 
-  auto text = o.value();
+  const auto& text = o.value();
   net_header_rec nhorig = {};
   nhorig.tosys = 0;
   nhorig.touser = 0;
@@ -184,7 +184,7 @@ void post(const PostData& post_data) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
-  if (a()->sess().effective_sl() < a()->current_sub().postsl) {
+  if (!check_acs(a()->current_sub().post_acs)) {
     bout << "\r\nYou can't post here.\r\n\n";
     return;
   }

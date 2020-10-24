@@ -40,7 +40,7 @@ std::string AcsExpr::get() {
   if (ar_ >= 'A' && ar_ <= 'P') {
     expr.emplace_back(fmt::format("user.ar == '{}'", ar_));
   }
-  if (min_sl_ > 0 && min_sl_ != 255) {
+  if (min_sl_ > 0) {
     expr.emplace_back(fmt::format("user.sl >= {}", min_sl_));
   }
   if (max_sl_ > 0 && max_sl_ != 255) {
@@ -50,7 +50,7 @@ std::string AcsExpr::get() {
   if (dar_ >= 'A' && dar_ <= 'P') {
     expr.emplace_back(fmt::format("user.dar == '{}'", dar_));
   }
-  if (min_dsl_ > 0 && min_dsl_ != 255) {
+  if (min_dsl_ > 0) {
     expr.emplace_back(fmt::format("user.dsl >= {}", min_dsl_));
   }
   if (max_dsl_ > 0 && max_dsl_ != 255) {

@@ -20,10 +20,10 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
+#include "common/input.h"
 #include "core/stl.h"
 #include "sdk/acs/eval.h"
 #include "sdk/acs/uservalueprovider.h"
-#include <iterator>
 #include <memory>
 #include <string>
 
@@ -38,19 +38,30 @@ namespace wwiv::bbs {
 bool check_acs(const std::string& expression, acs_debug_t debug) {
   Eval eval(expression);
 
-  eval.add("user", std::make_unique<UserValueProvider>(a()->user()));
+  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), a()->sess().effective_sl()));
 
-  bool result = eval.eval();
+  const auto result = eval.eval();
 
   for (const auto& l : eval.debug_info()) {
     if (debug == acs_debug_t::local) {
       LOG(INFO) << l;
     } else if (debug == acs_debug_t::remote) {
-      bout << l;
+      bout << l << wwiv::endl;
     }
   }
 
   return result;
+}
+
+
+std::string input_acs(const std::string& orig_text, int max_length) {
+  const auto s = bin.input_text(orig_text, max_length);
+
+  if (!check_acs(s, acs_debug_t::remote)) {
+    bout.pausescr();
+    return orig_text;
+  }
+  return s;
 }
 
 }

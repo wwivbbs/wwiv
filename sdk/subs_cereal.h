@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*                   Copyright (C)2020, WWIV Software Services            */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,20 +14,55 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_ACS_H__
-#define __INCLUDED_BBS_ACS_H__
 
-#include <string>
+#ifndef INCLUDED_SDK_SUBS_CEREAL_H
+#define INCLUDED_SDK_SUBS_CEREAL_H
 
-namespace wwiv::bbs {
+#include "core/cereal_utils.h"
+#include "sdk/subxtr.h"
 
-enum class acs_debug_t { local, remote, none };
+namespace wwiv::sdk {
 
-bool check_acs(const std::string& expression, acs_debug_t debug = acs_debug_t::none);
-std::string input_acs(const std::string& orig_text, int max_length);
+
+template <class Archive>
+void serialize(Archive & ar, subboard_network_data_t& s) {
+  SERIALIZE(s, stype);
+  SERIALIZE(s, flags);
+  SERIALIZE(s, net_num);
+  SERIALIZE(s, host);
+  SERIALIZE(s, category);
+}
+
+template <class Archive> void serialize(Archive& ar, subboard_t& s) { 
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, key);
+  SERIALIZE(s, read_acs);
+  SERIALIZE(s, post_acs);
+  SERIALIZE(s, anony);
+  SERIALIZE(s, maxmsgs);
+  SERIALIZE(s, storage_type);
+  SERIALIZE(s, nets);
+}
+
+template <class Archive> void serialize(Archive& ar, subboard_52_t& s) { 
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, key);
+  SERIALIZE(s, readsl);
+  SERIALIZE(s, postsl);
+  SERIALIZE(s, anony);
+  SERIALIZE(s, age);
+  SERIALIZE(s, maxmsgs);
+  SERIALIZE(s, ar);
+  SERIALIZE(s, storage_type);
+  SERIALIZE(s, nets);
+}
 
 
 }
 
-#endif  // __INCLUDED_BBS_FULL_SCREEN_H__
+
+#endif

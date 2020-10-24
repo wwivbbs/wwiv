@@ -16,10 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "arword.h"
 
-#include <string>
-
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -33,10 +31,9 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
-#include "sdk/files/dirs.h"
-#include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/dirs.h"
+#include <string>
 
 using std::string;
 using wwiv::common::InputMode;
@@ -59,19 +56,9 @@ static std::string tail(const std::string& s, int len) {
 }
 
 static std::string dirdata(int n) {
-  char x = 0;
   const auto& r = a()->dirs()[n];
-  if (r.dar == 0) {
-    x = 32;
-  } else {
-    for (auto i = 0; i < 16; i++) {
-      if ((1 << i) & r.dar) {
-        x = static_cast<char>('A' + i);
-      }
-    }
-  }
-  return fmt::sprintf("|#2%4d |#9%1c   |#1%-29.29s |#2%-8s |#9%-3d %-3d %-3d %s", n, x,
-                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, tail(r.path, 19));
+  return fmt::sprintf("|#2%4d |#1%-29.29s |#2%-8s %-3d %s", n, stripcolors(r.name), r.filename,
+                      r.maxfiles, tail(r.path, 26));
 }
 
 static void showdirs() {
@@ -79,18 +66,14 @@ static void showdirs() {
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
   const auto pattern = bin.input_text(20);
   bool abort = false;
-  bout.bpla("|#2##   DAR Area Description              FileName DSL AGE FIL PATH", &abort);
-  bout.bpla("|#7==== --- ============================= -------- === --- === -------------------", &abort);
-  for (auto i = 0; i < a()->dirs().size() && !abort; i++) {
+  bout.bpla("|#2##   Area Description              FileName  Num PATH", &abort);
+  bout.bpla("|#7==== ============================= --------  === ------------------------------", &abort);
+  for (auto i = 0; i < wwiv::stl::ssize(a()->dirs()) && !abort; i++) {
     auto text = StrCat(a()->dirs()[i].name, " ", a()->dirs()[i].filename);
     if (ifind_first(text, pattern)) {
       bout.bpla(dirdata(i), &abort);
     }
   }
-}
-
-static string GetAttributeString(const wwiv::sdk::files::directory_t& r) {
-  return word_to_arstr(r.dar, "None.");
 }
 
 std::optional<net_networks_rec> select_network() {
@@ -223,10 +206,8 @@ void modify_dir(int n) {
     bout << "|#9A) Name         : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Path         : |#2" << r.path << wwiv::endl;
-    bout << "|#9D) DSL          : |#2" << static_cast<int>(r.dsl) << wwiv::endl;
-    bout << "|#9E) Min. Age     : |#2" << static_cast<int>(r.age) << wwiv::endl;
+    bout << "|#9D) ACS          : |#2" << r.acs << wwiv::endl;
     bout << "|#9F) Max Files    : |#2" << r.maxfiles << wwiv::endl;
-    bout << "|#9G) DAR          : |#2" << GetAttributeString(r)  << wwiv::endl;
     bout << "|#9H) Require PD   : |#2" << YesNoString((r.mask & mask_PD) ? true : false) << wwiv::endl;
     bout << "|#9J) Uploads      : |#2" << ((r.mask & mask_no_uploads) ? "Disallowed" : "Allowed") << wwiv::endl;
     bout << "|#9K) Arch. only   : |#2" << YesNoString((r.mask & mask_archive) ? true : false) << wwiv::endl;
@@ -307,14 +288,8 @@ void modify_dir(int n) {
     } break;
     case 'D': {
       bout.nl();
-      bout << "|#2New DSL? ";
-      r.dsl = bin.input_number(r.dsl);
-    }
-    break;
-    case 'E': {
-      bout.nl();
-      bout << "|#2New Min Age? ";
-      r.age = bin.input_number(r.age);
+      bout << "|#2New ACS? \r\n:";
+      r.acs = wwiv::bbs::input_acs(r.acs, 77);
     }
     break;
     case 'F':
@@ -322,17 +297,6 @@ void modify_dir(int n) {
       bout.nl();
       bout << "|#2New max files? ";
       r.maxfiles = bin.input_number(r.maxfiles);
-    } break;
-    case 'G':
-    {
-      bout.nl();
-      bout << "|#2New DAR (<SPC>=None) ? ";
-      char ch2 = onek("ABCDEFGHIJKLMNOP ");
-      if (ch2 == SPACE) {
-        r.dar = 0;
-      } else {
-        r.dar = 1 << (ch2 - 'A');
-      }
     } break;
     case 'H':
       r.mask ^= mask_PD;
@@ -435,10 +399,8 @@ void insert_dir(int n) {
   r.name = "** NEW DIR **";
   r.filename = "noname";
   r.path = a()->config()->dloadsdir();
-  r.dsl = 10;
-  r.age = 0;
+  r.acs = "user.sl >= 10";
   r.maxfiles = 50;
-  r.dar = 0;
   r.mask = 0;
 
   a()->dirs().insert(n, r);

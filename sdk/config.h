@@ -46,7 +46,7 @@ public:
   [[nodiscard]] uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
   [[nodiscard]] uint32_t config_revision_number() const { return config_revision_number_; }
 
-  bool IsReadable();
+  bool IsReadable() const;
 
 private:
   void update_paths();

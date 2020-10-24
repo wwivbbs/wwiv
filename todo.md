@@ -2,6 +2,9 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
+# ACS
+* See if we can pull the sl, ar, age from the expression to populate the 
+  legacy subs.
 
 # Install
 curl https://build.wwivbbs.org/jenkins/job/wwiv/lastStableBuild/label=linux-debian10/api/json

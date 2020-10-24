@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                            WWIV Version 5                              */
-/*                Copyright (C)2020, WWIV Software Services               */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,36 +14,52 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
-#define INCLUDED_SDK_ACS_USERVALUEPROVIDER_H
 
-#include "sdk/user.h"
-#include "sdk/acs/value.h"
-#include "sdk/acs/valueprovider.h"
-#include <optional>
-#include <string>
+#ifndef INCLUDED_SDK_FILES_DIRS_CEREAL_H
+#define INCLUDED_SDK_FILES_DIRS_CEREAL_H
 
-namespace wwiv::sdk::acs {
+#include "core/cereal_utils.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/uuid_cereal.h"
+#include "sdk/files/dirs.h"
 
-/**
- * ValueProvider for "user" record attributes.
- */
-class UserValueProvider final : public ValueProvider {
-public:
-  /** 
-   * Constructs a new ValueProvider.  'user' must remain valid for 
-   * the duration of this instance lifetime.
-   */
-  explicit UserValueProvider(User* user, int effective_sl)
-  : ValueProvider("user"), user_(user), effective_sl_(effective_sl) {}
-  [[nodiscard]] std::optional<Value> value(const std::string& name) override;
+namespace wwiv::sdk::files {
 
-private:
-  User* user_;
-  int effective_sl_;
-};
+
+template <class Archive>
+void serialize (Archive& ar, dir_area_t& d) {
+  SERIALIZE(d, area_tag);
+  SERIALIZE(d, net_uuid);
+}
+
+template <class Archive>
+void serialize(Archive & ar, directory_55_t& s) {
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, path);
+  SERIALIZE(s, dsl);
+  SERIALIZE(s, age);
+  SERIALIZE(s, dar);
+  SERIALIZE(s, maxfiles);
+  SERIALIZE(s, mask);
+  SERIALIZE(s, area_tags);
+}
+
+template <class Archive>
+void serialize(Archive & ar, directory_t& s) {
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, path);
+  SERIALIZE(s, acs);
+  SERIALIZE(s, maxfiles);
+  SERIALIZE(s, mask);
+  SERIALIZE(s, area_tags);
+}
+
 
 }
+
 
 #endif
