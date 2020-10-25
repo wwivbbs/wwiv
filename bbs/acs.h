@@ -18,6 +18,8 @@
 #ifndef __INCLUDED_BBS_ACS_H__
 #define __INCLUDED_BBS_ACS_H__
 
+#include "common/input.h"
+#include "common/output.h"
 #include <string>
 
 namespace wwiv::bbs {
@@ -26,7 +28,8 @@ enum class acs_debug_t { local, remote, none };
 
 bool check_acs(const std::string& expression, acs_debug_t debug = acs_debug_t::none);
 bool validate_acs(const std::string& expression, acs_debug_t debug = acs_debug_t::none);
-std::string input_acs(const std::string& orig_text, int max_length);
+std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
+                      const std::string& orig_text, int max_length);
 
 
 }

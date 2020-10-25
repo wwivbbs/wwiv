@@ -179,7 +179,7 @@ static void modify_chain(ssize_t chain_num) {
         const auto first = *it;
         a()->users()->readuser(&regUser, *it++);
         bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
-        for (; it != std::end(r); it++) {
+        for (; it != std::end(r); ++it) {
           const auto rbc = *it;
           if (rbc != 0) {
             if (a()->users()->readuser(&regUser, rbc)) {
@@ -234,7 +234,7 @@ static void modify_chain(ssize_t chain_num) {
     case 'C': {
       bout.nl();
       bout << "|#7New ACS? \r\n:";
-      c.acs = input_acs(c.acs, 78);
+      c.acs = input_acs(bin, bout, c.acs, 78);
     } break;
     case 'E':
       c.ansi = !c.ansi;

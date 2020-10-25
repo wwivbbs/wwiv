@@ -251,12 +251,12 @@ static void modify_sub(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New Read ACS? \r\n:";
-      r.read_acs = wwiv::bbs::input_acs(r.read_acs, 78);
+      r.read_acs = wwiv::bbs::input_acs(bin, bout, r.read_acs, 78);
     } break;
     case 'E': {
       bout.nl();
       bout << "|#2New Post ACS? \r\n:";
-      r.post_acs = wwiv::bbs::input_acs(r.post_acs, 78);
+      r.post_acs = wwiv::bbs::input_acs(bin, bout, r.post_acs, 78);
     } break;
     case 'F': {
       string allowed("NYDFR");

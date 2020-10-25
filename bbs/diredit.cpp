@@ -289,7 +289,7 @@ void modify_dir(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New ACS? \r\n:";
-      r.acs = wwiv::bbs::input_acs(r.acs, 77);
+      r.acs = wwiv::bbs::input_acs(bin, bout, r.acs, 77);
     }
     break;
     case 'F':

@@ -63,6 +63,11 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
     eval.eval_throws();
     return true;
   } catch (const eval_error& e) {
+      if (debug == acs_debug_t::local) {
+        LOG(INFO) << e.what();
+      } else if (debug == acs_debug_t::remote) {
+        bout << e.what() << wwiv::endl;
+      }
     for (const auto& l : eval.debug_info()) {
       if (debug == acs_debug_t::local) {
         LOG(INFO) << l;
@@ -74,11 +79,12 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
   return false;
 }
 
-std::string input_acs(const std::string& orig_text, int max_length) {
-  const auto s = bin.input_text(orig_text, max_length);
+std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
+                      const std::string& orig_text, int max_length) {
+  const auto s = in.input_text(orig_text, max_length);
 
   if (!validate_acs(s, acs_debug_t::remote)) {
-    bout.pausescr();
+    out.pausescr();
     return orig_text;
   }
   return s;
