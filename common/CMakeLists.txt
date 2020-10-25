@@ -12,6 +12,7 @@ set(COMMON_SOURCES
  datetime.cpp
  full_screen.cpp
  input.cpp
+ input_range.cpp
  iobase.cpp
  message_editor_data.cpp
  output.cpp
