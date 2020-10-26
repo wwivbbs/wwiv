@@ -18,10 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "core/fake_clock.h"
+#include "sdk/user.h"
 #include <cstring>
 #include <type_traits>
-
-#include "sdk/user.h"
 
 using std::cout;
 using std::endl;
@@ -36,10 +36,10 @@ TEST(UserTest, IsStandardLayout) {
 }
 
 TEST(UserTest, CanCopyToUser) {
-  userrec u;
+  userrec u{};
   strcpy(reinterpret_cast<char*>(u.name), "Test User");
 
-  User user;
+  User user{};
   memcpy(&user, &u, sizeof(userrec));
 
   EXPECT_STREQ(reinterpret_cast<char*>(u.name), user.GetName());
@@ -50,4 +50,16 @@ TEST(UserTest, Birthday) {
   u.birthday_mdy(2, 15, 1980);
 
   EXPECT_EQ("02/15/80", u.birthday_mmddyy());
+}
+
+TEST(UserTest, YearsOld) {
+  tm t{};
+  t.tm_mon = 9;
+  t.tm_mday = 25;
+  t.tm_year = 120;
+  const auto now = wwiv::core::DateTime::from_tm(&t);
+  wwiv::core::FakeClock clock(now);
+  User u{};
+  u.birthday_mdy(10, 24, 1970);
+  EXPECT_EQ(50, years_old(&u, clock));
 }

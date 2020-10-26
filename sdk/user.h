@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_WUSER_H__
-#define __INCLUDED_WUSER_H__
+#ifndef INCLUDED_SDK_USER_H
+#define INCLUDED_SDK_USER_H
 
 #include "core/datetime.h"
 #include "core/ip_address.h"
@@ -108,12 +108,10 @@ class User {
   //
   // Data
   //
- public:
-  struct userrec data;
+  struct userrec data{};
 
- public:
   //
-  // Constructors and Destructors
+  // Constructor and Destructor
   //
   User();
   ~User();
@@ -143,7 +141,6 @@ class User {
     data.inact &= ~nFlag;
   }
   [[nodiscard]] bool IsUserDeleted() const {
-    /* printf( "DEBUG: User %s is deleted!\r\n", data.name );  */
     return (data.inact & User::userDeleted) != 0;
   }
   [[nodiscard]] bool IsUserInactive() const {
@@ -442,7 +439,7 @@ class User {
   }
   [[nodiscard]] char GetGender() const {
     if (data.sex == 'N') {
-      // N means unknowN.  NEWUSER sets it to N to prompt the
+      // N means unknown.  NEWUSER sets it to N to prompt the
       // user again.
       return 'N';
     }
@@ -914,7 +911,7 @@ void ResetTodayUserStats(User* u);
 int AddCallToday(User* u);
 
 /** Returns the age in years for user 'u' */
-int years_old(const User* u);
+int years_old(const User* u, core::Clock& clock);
 
 }  // namespace wwiv::sdk
 

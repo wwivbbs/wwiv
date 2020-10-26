@@ -47,6 +47,12 @@
 #include "bbs/trashcan.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/output.h"
+#include "common/workspace.h"
+#include "core/clock.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/stl.h"
@@ -1273,9 +1279,10 @@ void DoMinimalNewUser() {
           d = to_number<int>(StrCat(s[3], s[4]));
           y = to_number<int>(StrCat(s[6], s[7], s[8], s[9]));
           ok = true;
+          SystemClock clock{};
           if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
               ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
-              (years_old(m, d, y) < 5) || (d > 31) || ((m == 0) || (y == 0) || (d == 0))) {
+              (years_old(m, d, y, clock) < 5) || (d > 31) || ((m == 0) || (y == 0) || (d == 0))) {
             ok = false;
           }
           if (m > 12) {

@@ -18,9 +18,10 @@
 /**************************************************************************/
 #include "core/datetime.h"
 #include "gtest/gtest.h"
-
 #include "core/log.h"
-
+#include "core/datetime.h"
+#include "core/fake_clock.h"
+#include "sdk/user.h"
 #include <cstdlib>
 #include <ctime>
 #include <string>
@@ -169,3 +170,34 @@ TEST(DateTime, Comparisons) {
   EXPECT_TRUE(t2 >= t1);
   EXPECT_TRUE(t1 >= t1a);
 }
+
+TEST(DateTime, YearsOld_AfterBirthday) {
+  tm t{};
+  t.tm_mon = 9;
+  t.tm_mday = 25;
+  t.tm_year = 120;
+  const auto now = DateTime::from_tm(&t);
+  FakeClock clock(now);
+  EXPECT_EQ(50, years_old(10, 24, 1970, clock));
+}
+
+TEST(DateTime, YearsOld_OnBirthday) {
+  tm t{};
+  t.tm_mon = 9;
+  t.tm_mday = 25;
+  t.tm_year = 120;
+  const auto now = DateTime::from_tm(&t);
+  FakeClock clock(now);
+  EXPECT_EQ(50, years_old(10, 25, 1970, clock));
+}
+
+TEST(DateTime, YearsOld_BeforeBirthday) {
+  tm t{};
+  t.tm_mon = 9;
+  t.tm_mday = 25;
+  t.tm_year = 120;
+  const auto now = DateTime::from_tm(&t);
+  FakeClock clock(now);
+  EXPECT_EQ(49, years_old(10, 26, 1970, clock));
+}
+

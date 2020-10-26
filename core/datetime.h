@@ -16,17 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_DATETIME_H__
-#define __INCLUDED_CORE_DATETIME_H__
+#ifndef INCLUDED_CORE_DATETIME_H
+#define INCLUDED_CORE_DATETIME_H
 
 #include <chrono>
 #include <ctime>
 #include <string>
-
 #include "core/wwivport.h"
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 time_t time_t_now();
 
@@ -41,8 +39,10 @@ std::string daten_to_wwivnet_time(daten_t t);
 std::string time_t_to_wwivnet_time(time_t t);
 daten_t time_t_to_daten(time_t t);
 
-/** Returns the age of a person borh on month m, day d in year y */
-int years_old(int m, int d, int y);
+class Clock;
+
+/** Returns the age of a person both on month m, day d in year y */
+int years_old(int m, int d, int y, wwiv::core::Clock& clock);
 
 
 /**
@@ -160,7 +160,6 @@ private:
 DateTime parse_yyyymmdd(const std::string& date_str);
 DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str);
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_CORE_DATETIME_H__
+#endif

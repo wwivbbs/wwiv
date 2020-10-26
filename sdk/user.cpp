@@ -18,20 +18,16 @@
 /**************************************************************************/
 #include "sdk/user.h"
 
+#include "core/clock.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/wwivcolors.h"
 #include <chrono>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <memory>
 #include <random>
 
 using namespace std::chrono;
@@ -169,8 +165,8 @@ seconds User::subtract_extratime(duration<double> extra) {
   return seconds(static_cast<int64_t>(data.extratime));
 }
 
-std::chrono::duration<double> User::extra_time() const noexcept{
-  auto extratime_seconds = static_cast<int64_t>(data.extratime);
+duration<double> User::extra_time() const noexcept{
+  const auto extratime_seconds = static_cast<int64_t>(data.extratime);
   return seconds(extratime_seconds);
 }
 
@@ -185,12 +181,12 @@ seconds User::add_timeon_today(duration<double> d) {
 }
 
 seconds User::timeon() const {
-  auto secs_used = static_cast<int64_t>(data.timeon);
+  const auto secs_used = static_cast<int64_t>(data.timeon);
   return seconds(secs_used);
 }
 
 seconds User::timeontoday() const {
-  auto secs_used = static_cast<int64_t>(data.timeontoday);
+  const auto secs_used = static_cast<int64_t>(data.timeontoday);
   return seconds(secs_used);
 }
 
@@ -199,7 +195,8 @@ uint8_t User::age() const {
     // If the birthday is unset, then the age is also unset.
     return 0;
   }
-  return static_cast<uint8_t>(years_old(this));
+  SystemClock clock{};
+  return static_cast<uint8_t>(years_old(this, clock));
 }
 
 [[nodiscard]] DateTime User::birthday_dt() const { 
@@ -212,8 +209,8 @@ uint8_t User::age() const {
   return DateTime::from_tm(&tm);
 }
 
-[[nodiscard]] std::string User::birthday_mmddyy() const { 
-  std::string s = fmt::format("{:02}/{:02}/{:02}", data.month, data.day, data.year);
+[[nodiscard]] std::string User::birthday_mmddyy() const {
+  const auto s = fmt::format("{:02}/{:02}/{:02}", data.month, data.day, data.year);
   return s;
 }
 
@@ -241,8 +238,9 @@ void User::birthday_mdy(int m, int d, int y) {
   }
 }
 
-int years_old(const User* u) {
-  return wwiv::core::years_old(u->data.month, u->data.day, u->data.year);
+int years_old(const User* u, Clock& clock) {
+  return core::years_old(u->birthday_month(), u->birthday_mday(), 
+                         u->birthday_year(), clock);
 }
 
 } // namespace wwiv::sdk
