@@ -16,13 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_CLOCK_H__
-#define __INCLUDED_CORE_CLOCK_H__
+#ifndef INCLUDED_CORE_CLOCK_H
+#define INCLUDED_CORE_CLOCK_H
 
 #include "core/datetime.h"
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 class Clock {
 public:
@@ -42,7 +41,6 @@ public:
   [[nodiscard]] DateTime Now() const noexcept override;
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_CORE_CLOCK_H__
+#endif

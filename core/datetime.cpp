@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "core/datetime.h"
 
+
+#include "core/clock.h"
 #include "core/strings.h"
 #include <chrono>
 #include <ctime>
@@ -139,32 +141,31 @@ std::string to_string(duration<double> dd) {
 };
 
 
-int years_old(int m, int d, int y) {
-  auto t = time_t_now();
-  auto* const tm = localtime(&t);
-  y = y - 1900;
+int years_old(int m, int d, int y, Clock& clock) {
+  const auto t = clock.Now();
+  const auto tm_now = t.to_tm();
+  y -= 1900;
   --m; // Reduce by one because tm_mon is 0-11, not 1-12
 
   // Find the range of impossible dates (ie, pTm can't be
   // less than the input date)
-  if (tm->tm_year < y) {
+  if (tm_now.tm_year < y) {
     return 0;
   }
-  if (tm->tm_year == y) {
-    if (tm->tm_mon < m) {
+  if (tm_now.tm_year == y) {
+    if (tm_now.tm_mon < m) {
       return 0;
     }
-    if (tm->tm_mon == m) {
-      if (tm->tm_mday < d) {
+    if (tm_now.tm_mon == m) {
+      if (tm_now.tm_mday < d) {
         return 0;
       }
     }
   }
 
-  auto age = tm->tm_year - y;
-  if (tm->tm_mon < m) {
-    --age;
-  } else if (tm->tm_mon == m && tm->tm_mday < d) {
+  auto age = tm_now.tm_year - y;
+  // ReSharper disable once CppRedundantParentheses
+  if (tm_now.tm_mon < m || (tm_now.tm_mon == m && tm_now.tm_mday < d)) {
     --age;
   }
   return age;
