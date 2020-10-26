@@ -662,9 +662,10 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     FtnMessageDupe dupe(net_cmdline_.config());
     auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(raw_text);
     auto needs_msgid = false;
-    if (msgid.empty() && !is_email) {
+    if (msgid.empty()) {
       // Create a new MSGID if the BBS didn't put one in there already.
-      // Also only do this for conference mail messages, not for emails.
+      // We'll do this for emails too since Mystic needs this for a proper
+      // reply to address. Otherwise we'd just do it for conference mail.
       msgid = dupe.CreateMessageID(from_address);
       needs_msgid = true;
     }
