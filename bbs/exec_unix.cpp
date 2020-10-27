@@ -48,14 +48,20 @@ static const char SHELL[] = "/bin/bash";
 static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
   if (FD_ISSET(sock, &rfd)) {
     char input{};
-    read(sock, &input, 1);
+    if (read(sock, &input, 1) == 0) { 
+      return -1;
+    }
     if (static_cast<uint8_t>(input) == 0xff) {
       // IAC, skip over them so we ignore them for now
       // This was causing the do suppress GA (255, 253, 3)
       // to get interpreted as a SIGINT by dosemu on startup.
       LOG(INFO) << "IAC";
-      read(sock, &input, 1);
-      read(sock, &input, 1);
+      if (read(sock, &input, 1) == 0) { 
+        return -1;
+      }
+      if (read(sock, &input, 1) == 0) { 
+        return -1;
+      }
       return 0;
     }
     if (input == 3) {
@@ -185,9 +191,12 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
     if (pty_fd != -1) {
       // Only do this in STDIO mode.
       if (binary) {
-	ReadWriteBinary(sock, pty_fd, rfd);
+	      ReadWriteBinary(sock, pty_fd, rfd);
       } else {
-	ReadWriteNonBinary(sock, pty_fd, rfd);
+        if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
+          close(pty_fd);
+          break;
+        }
       }
     }
   }
