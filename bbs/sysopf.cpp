@@ -744,12 +744,12 @@ void chuser() {
     return;
   }
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->sess().qsc, false);
+  write_qscn(a()->sess().user_num(), a()->sess().qsc, false);
   a()->ReadCurrentUser(user_number);
   read_qscn(user_number, a()->sess().qsc, false);
-  a()->usernum = static_cast<uint16_t>(user_number);
+  a()->sess().user_num(static_cast<uint16_t>(user_number));
   a()->sess().effective_sl(255);
-  sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
+  sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->sess().user_num()));
   changedsl();
   a()->UpdateTopScreen();
 }

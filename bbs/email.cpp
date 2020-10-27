@@ -485,7 +485,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   write_inst(INST_LOC_EMAIL, (system_number == 0) ? user_number : 0, INST_FLAGS_NONE);
 
   msg.storage_type = EMAIL_STORAGE;
-  MessageEditorData data(a()->names()->UserName(a()->usernum));
+  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   data.title = title;
   data.need_title = true;
   data.fsed_flags = (bAllowFSED) ? FsedFlags::FSED : FsedFlags::NOFSED;
@@ -611,7 +611,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   email.msg = &msg;
   email.anony = i;
   email.an = an;
-  email.set_from_user(a()->usernum);
+  email.set_from_user(a()->sess().user_num());
   email.from_system = a()->current_net().sysnum;
   email.forwarded_code = 0;
 

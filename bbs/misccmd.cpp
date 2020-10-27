@@ -80,7 +80,7 @@ void kill_old_email() {
   do {
     pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
-    while ((m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0) && cur < max && cur >= 0) {
+    while ((m.fromsys != 0 || m.fromuser != a()->sess().user_num() || m.touser == 0) && cur < max && cur >= 0) {
       if (forward) {
         --cur;
       } else {
@@ -91,7 +91,7 @@ void kill_old_email() {
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
-    if (m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0 || cur >= max || cur < 0) {
+    if (m.fromsys != 0 || m.fromuser != a()->sess().user_num() || m.touser == 0 || cur >= max || cur < 0) {
       done = true;
     } else {
       pFileEmail->Close();
@@ -104,7 +104,7 @@ void kill_old_email() {
 
         if (m.tosys == 0) {
           a()->users()->readuser(&user, m.touser);
-          string tempName = a()->names()->UserName(a()->usernum);
+          string tempName = a()->names()->UserName(a()->sess().user_num());
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((a()->effective_slrec().ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
@@ -237,7 +237,7 @@ void list_users(int mode) {
     return;
   }
 
-  auto snum = a()->usernum;
+  auto snum = a()->sess().user_num();
 
   bout.nl();
   bout << "|#5Sort by user number? ";
@@ -268,14 +268,14 @@ void list_users(int mode) {
   int numscn  = 0;
   int color   = 3;
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->sess().qsc, false);
+  write_qscn(a()->sess().user_num(), a()->sess().qsc, false);
   a()->status_manager()->RefreshStatusCache();
 
   File userList(FilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !a()->sess().hangup(); i++) {
-    a()->usernum = 0;
+    a()->sess().user_num(0);
     if (ncnm > 5) {
       count++;
       bout.Color(color);
@@ -402,7 +402,7 @@ void list_users(int mode) {
   }
   a()->ReadCurrentUser(snum);
   read_qscn(snum, a()->sess().qsc, false);
-  a()->usernum = snum;
+  a()->sess().user_num(snum);
   changedsl();
 }
 

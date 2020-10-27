@@ -44,7 +44,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   // get ready to run it
   if (a()->sess().IsUserOnline()) {
     a()->WriteCurrentUser();
-    write_qscn(a()->usernum, a()->sess().qsc, false);
+    write_qscn(a()->sess().user_num(), a()->sess().qsc, false);
   }
 
   // extra processing for net programs
@@ -78,7 +78,7 @@ static int ExecuteExternalProgramNoScript(const std::string& commandLine, int nF
   // Reread the user record.
   if (a()->sess().IsUserOnline()) {
     a()->ReadCurrentUser();
-    read_qscn(a()->usernum, a()->sess().qsc, false, true);
+    read_qscn(a()->sess().user_num(), a()->sess().qsc, false, true);
     a()->UpdateTopScreen();
   }
 

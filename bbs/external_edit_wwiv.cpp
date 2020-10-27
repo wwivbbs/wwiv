@@ -85,7 +85,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
     }
     f.WriteLine(title);
     f.WriteLine(sub_name);
-    f.WriteLine(a()->usernum);
+    f.WriteLine(a()->sess().user_num());
     f.WriteLine(a()->user()->GetName());
     f.WriteLine(a()->user()->GetRealName());
     f.WriteLine(a()->user()->GetSl());

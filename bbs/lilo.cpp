@@ -241,16 +241,16 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   const string logline = StrCat("### ILLEGAL LOGON for ",
-    a()->names()->UserName(a()->usernum));
+    a()->names()->UserName(a()->sess().user_num()));
   sysoplog(false) << "";
   sysoplog(false) << logline;
   sysoplog(false) << "";
-  a()->usernum = 0;
+  a()->sess().user_num(0);
 }
 
 static void LeaveBadPasswordFeedback(int ans) {
   ScopeExit at_exit([] {
-    a()->usernum = 0;
+    a()->sess().user_num(0);
   });
   
   if (ans > 0) {
@@ -270,7 +270,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     return;
   }
   bout.nl();
-  a()->usernum = 1;
+  a()->sess().user_num(1);
   a()->user()->set_name(tempName.c_str());
   a()->user()->SetMacro(0, "");
   a()->user()->SetMacro(1, "");
@@ -294,7 +294,7 @@ static void LeaveBadPasswordFeedback(int ans) {
 }
 
 static void CheckCallRestrictions() {
-  if (a()->usernum > 0 && a()->user()->IsRestrictionLogon() &&
+  if (a()->sess().user_num() > 0 && a()->user()->IsRestrictionLogon() &&
       date() == a()->user()->GetLastOn() &&
       a()->user()->GetTimesOnToday() > 0) {
     bout.nl();
@@ -342,7 +342,7 @@ void getuser() {
   //bout.set_logon_key_timeout();
 
   // Let's set this to 0 here since we don't have a user yet.
-  a()->usernum = 0;
+  a()->sess().user_num(0);
   a()->sess().set_current_user_sub_conf_num(0);
   a()->sess().set_current_user_dir_conf_num(0);
   a()->sess().effective_sl(a()->config()->newuser_sl());
@@ -369,17 +369,17 @@ void getuser() {
       remote_password = ToStringUpperCase(a()->remoteIO()->remote_info().password);
       first_time = false;
     }
-    auto usernum = ShowLoginAndGetUserNumber(remote_username);
+    const auto usernum = ShowLoginAndGetUserNumber(remote_username);
     if (usernum > 0) {
-      a()->usernum = static_cast<uint16_t>(usernum);
+      a()->sess().user_num(static_cast<uint16_t>(usernum));
       a()->ReadCurrentUser();
-      read_qscn(a()->usernum, a()->sess().qsc, false);
+      read_qscn(a()->sess().user_num(), a()->sess().qsc, false);
       if (!set_language(a()->user()->GetLanguage())) {
         a()->user()->SetLanguage(0);
         set_language(0);
       }
       int nInstanceNumber;
-      if (a()->user()->GetSl() < 255 && user_online(a()->usernum, &nInstanceNumber)) {
+      if (a()->user()->GetSl() < 255 && user_online(a()->sess().user_num(), &nInstanceNumber)) {
         bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
         continue;
       }
@@ -412,7 +412,7 @@ void getuser() {
     } else if (usernum == 0) {
       bout.nl();
       bout << "|#6Unknown user.\r\n";
-      a()->usernum = static_cast<uint16_t>(usernum);
+      a()->sess().user_num(static_cast<uint16_t>(usernum));
     } else if (usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
       play_sdf(NEWUSER_NOEXT, false);
@@ -495,7 +495,7 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
     (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
-    const string username_num = a()->names()->UserName(a()->usernum);
+    const string username_num = a()->names()->UserName(a()->sess().user_num());
     const string t = times();
     const string f = fulldate();
     log_line = fmt::sprintf(
@@ -510,7 +510,7 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
       a()->GetCurrentSpeed(),
       a()->user()->GetTimesOnToday());
   } else {
-    const string username_num = a()->names()->UserName(a()->usernum);
+    const string username_num = a()->names()->UserName(a()->sess().user_num());
     const string t = times();
     const string f = fulldate();
     log_line = fmt::sprintf("|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
@@ -560,7 +560,7 @@ static void UpdateLastOnFile() {
 
   auto status = a()->status_manager()->GetStatus();
   {
-    const string username_num = a()->names()->UserName(a()->usernum);
+    const string username_num = a()->names()->UserName(a()->sess().user_num());
     string t = times();
     string f = fulldate();
     const string sysop_log_line = fmt::sprintf("%ld: %s %s %s   %s - %d (%u)",
@@ -662,7 +662,7 @@ static std::string to_string(const net_networks_rec& n) {
 static void DisplayUserLoginInformation() {
   bout.nl();
 
-  const string username_num = a()->names()->UserName(a()->usernum);
+  const string username_num = a()->names()->UserName(a()->sess().user_num());
   bout << "|#9Name/Handle|#0....... |#2" << username_num << wwiv::endl;
   bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(a()->user()->GetEmailAddress())) {
@@ -748,7 +748,7 @@ static void DisplayUserLoginInformation() {
     }
   } else if (a()->user()->GetForwardSystemNumber() != 0) {
     string internet_addr;
-    read_inet_addr(internet_addr, a()->usernum);
+    read_inet_addr(internet_addr, a()->sess().user_num());
     bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
   }
   if (a()->sess().IsTimeOnlineLimited()) {
@@ -759,7 +759,7 @@ static void DisplayUserLoginInformation() {
 static void LoginCheckForNewMail() {
   bout << "|#9Scanning for new mail... ";
   if (a()->user()->GetNumMailWaiting() > 0) {
-    int nNumNewMessages = check_new_mail(a()->usernum);
+    int nNumNewMessages = check_new_mail(a()->sess().user_num());
     if (nNumNewMessages) {
       bout << "|#9You have |#2" << nNumNewMessages 
            << "|#9 new message(s).\r\n\r\n"
@@ -825,7 +825,7 @@ static void UpdateLastAddress() {
 }
 
 void logon() {
-  if (a()->usernum < 1) {
+  if (a()->sess().user_num() < 1) {
     a()->Hangup();
     return;
   }
@@ -859,7 +859,7 @@ void logon() {
 
   a()->UpdateTopScreen();
   a()->read_subs();
-  rsm(a()->usernum, a()->user(), true);
+  rsm(a()->sess().user_num(), a()->user(), true);
 
   LoginCheckForNewMail();
 
@@ -922,7 +922,7 @@ void logoff() {
     play_sdf(LOGOFF_NOEXT, false);
   }
 
-  if (a()->usernum > 0) {
+  if (a()->sess().user_num() > 0) {
     if ((a()->sess().incom() || sysop1()) && a()->user()->GetSl() < 255) {
       broadcast(fmt::format("{} Just logged off!", a()->user()->GetName()));
     }
@@ -932,7 +932,7 @@ void logoff() {
   // Don't need hangup here, but *do* want to ensure that a()->sess().hangup() is true.
   a()->sess().hangup(true);
   VLOG(1) << "Setting a()->sess().hangup()=true in logoff";
-  if (a()->usernum < 1) {
+  if (a()->sess().user_num() < 1) {
     return;
   }
 
@@ -978,7 +978,7 @@ void logoff() {
         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
-          if (m.tosys == 0 && m.touser == a()->usernum) {
+          if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
             if (a()->user()->GetNumMailWaiting() != 255) {
               a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() + 1);
             }
@@ -1017,7 +1017,7 @@ void logoff() {
         smwFile.Seek(r * sizeof(shortmsgrec), File::Whence::begin);
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
-          if (sm.tosys == 0 && sm.touser == a()->usernum) {
+          if (sm.tosys == 0 && sm.touser == a()->sess().user_num()) {
             a()->user()->SetStatusFlag(User::SMW);
           }
           if (r != w) {
@@ -1033,6 +1033,6 @@ void logoff() {
     }
   }
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, a()->sess().qsc, false);
+  write_qscn(a()->sess().user_num(), a()->sess().qsc, false);
 }
 

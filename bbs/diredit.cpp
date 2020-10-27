@@ -517,7 +517,7 @@ void dlboardedit() {
         if (i2 < i1) {
           i1++;
         }
-        write_qscn(a()->usernum, a()->sess().qsc, true);
+        write_qscn(a()->sess().user_num(), a()->sess().qsc, true);
         bout << "|#1Moving dir now...Please wait...";
         insert_dir(i2);
         swap_dirs(i1, i2);

@@ -42,7 +42,6 @@
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
-#include "common/com.h"
 #include "core/eventbus.h"
 #include "common/datetime.h"
 #include "common/exceptions.h"
@@ -51,7 +50,6 @@
 #include "common/output.h"
 #include "common/remote_io.h"
 #include "common/workspace.h"
-#include "common/common_events.h"
 #include "core/command_line.h"
 #include "core/os.h"
 #include "core/strings-ng.h"
@@ -112,13 +110,13 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Implementation of Context for the Application
-class ApplicationContext : public wwiv::common::Context {
+class ApplicationContext : public Context {
 public:
-  ApplicationContext(Application* app) : app_(app) {}
-  virtual ~ApplicationContext() = default;
-  wwiv::sdk::User& u() override { return *app_->user(); }
-  wwiv::common::SessionContext& session_context() override { return app_->sess(); }
-  bool mci_enabled() const override { return bout.mci_enabled(); }
+  explicit ApplicationContext(Application* app) : app_(app) {}
+  ~ApplicationContext() override = default;
+  [[nodiscard]] User& u() override { return *app_->user(); }
+  [[nodiscard]] SessionContext& session_context() override { return app_->sess(); }
+  [[nodiscard]] bool mci_enabled() const override { return bout.mci_enabled(); }
 
 private:
   Application* app_;
@@ -130,15 +128,15 @@ Application::Application(LocalIO* localIO)
       session_context_(localIO), context_(std::make_unique<ApplicationContext>(this)),
       bbs_macro_context_(context_.get()) {
   ::bout.SetLocalIO(localIO);
-  bout.set_context_provider([this]() -> wwiv::common::Context& { return *this->context_.get(); });
+  bout.set_context_provider([this]() -> Context& { return *this->context_; });
   bout.set_macro_context_provider(
-      [this]() -> wwiv::common::MacroContext& { return bbs_macro_context_; });
+      [this]() -> MacroContext& { return bbs_macro_context_; });
 
   ::bin.SetLocalIO(localIO);
-  bin.set_context_provider([this]() -> wwiv::common::Context& { return *this->context_.get(); });
+  bin.set_context_provider([this]() -> Context& { return *this->context_; });
 
   session_context_.SetCurrentReadMessageArea(-1);
-  thisuser_ = std::make_unique<wwiv::sdk::User>();
+  thisuser_ = std::make_unique<User>();
 
   tzset();
 
@@ -165,12 +163,12 @@ Application::~Application() {
   curses_out = nullptr;
 }
 
-wwiv::common::SessionContext& Application::sess() { return session_context_; }
-const wwiv::common::SessionContext& Application::sess() const { return session_context_; }
+SessionContext& Application::sess() { return session_context_; }
+const SessionContext& Application::sess() const { return session_context_; }
 
-wwiv::common::Context& Application::context() { return *context_.get(); }
+Context& Application::context() { return *context_; }
 
-const wwiv::common::Context & Application::context() const { return *context_.get(); }
+const Context& Application::context() const { return *context_; }
 
 LocalIO* Application::localIO() const { return local_io_.get(); }
 
@@ -227,8 +225,8 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
 }
 
 bool Application::ReadCurrentUser() { 
-  DCHECK_GE(usernum, 1);
-  return ReadCurrentUser(usernum);
+  DCHECK_GE(sess().user_num(), 1);
+  return ReadCurrentUser(sess().user_num());
 }
 
 bool Application::ReadCurrentUser(int user_number) {
@@ -252,12 +250,12 @@ const slrec& Application::effective_slrec() const {
 }
 
 bool Application::WriteCurrentUser() {
-  DCHECK_GE(usernum, 1);
-  return WriteCurrentUser(usernum); 
+  DCHECK_GE(sess().user_num(), 1);
+  return WriteCurrentUser(sess().user_num()); 
 }
 
 bool Application::WriteCurrentUser(int user_number) {
-  DCHECK_GE(usernum, 1) << "Trying to call WriteCurrentUser with user_number 0";
+  DCHECK_GE(sess().user_num(), 1) << "Trying to call WriteCurrentUser with user_number 0";
 
   if (user_number != last_read_user_number_) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
@@ -269,7 +267,7 @@ bool Application::WriteCurrentUser(int user_number) {
 void Application::tleft(bool check_for_timeout) {
   const auto nsln = nsl();
 
-  // Check for tineout 1st.
+  // Check for timeout 1st.
   if (check_for_timeout && sess().IsUserOnline()) {
     if (nsln == 0) {
       bout << "\r\nTime expired.\r\n\n";
@@ -422,11 +420,11 @@ void Application::handle_sysop_key(uint8_t key) {
         if (sess().chatting() == wwiv::common::chatting_t::none) {
           chat1("", false);
         } else {
-          sess().chatting(wwiv::common::chatting_t::none);
+          sess().chatting(chatting_t::none);
         }
         break;
       case HOME: /* HOME */
-        if (sess().chatting() == wwiv::common::chatting_t::one_way) {
+        if (sess().chatting() == chatting_t::one_way) {
           toggle_chat_file();
         }
         break;
@@ -485,7 +483,7 @@ void Application::UpdateTopScreen() {
 #ifdef _WIN32
   if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
-    const auto username_num = names()->UserName(usernum);
+    const auto username_num = names()->UserName(sess().user_num());
     const auto title = fmt::sprintf("WWIV Node %d (User: %s)", instance_number(), username_num);
     ::SetConsoleTitle(title.c_str());
   }
@@ -541,7 +539,7 @@ void Application::UpdateTopScreen() {
             status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
             status->GetNumLocalPosts()));
 
-    const auto username_num = names()->UserName(usernum);
+    const auto username_num = names()->UserName(sess().user_num());
     localIO()->PutsXY(0, 2,
                       fmt::sprintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                                    username_num, status->GetMinutesActiveToday(),
@@ -589,7 +587,7 @@ void Application::UpdateTopScreen() {
       lo = fmt::sprintf("Today:%2d", user()->GetTimesOnToday());
     }
 
-    const auto username_num = names()->UserName(usernum);
+    const auto username_num = names()->UserName(sess().user_num());
     auto line =
         fmt::sprintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num,
                      user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->uk(),
@@ -682,7 +680,7 @@ get_caller_t Application::GetCaller() {
   wwiv::bbs::WFC wfc(this);
   remoteIO()->remote_info().clear();
   frequent_init();
-  usernum = 0;
+  sess().user_num(0);
   // Since hang_it_up sets hangup_ = true, let's ensure we're always
   // not in this state when we enter the WFC.
   sess().hangup(false);
@@ -696,7 +694,7 @@ get_caller_t Application::GetCaller() {
   ReadCurrentUser(1);
   read_qscn(1, sess().qsc, false);
   // N.B. This used to be 1.
-  usernum = 0;
+  sess().user_num(0);
 
   reset_effective_sl();
   if (user()->IsUserDeleted()) {
@@ -730,7 +728,7 @@ void Application::GotCaller(int ms) {
   ReadCurrentUser(1);
   read_qscn(1, sess().qsc, false);
   reset_effective_sl();
-  usernum = 1;
+  sess().user_num(1);
   if (user()->IsUserDeleted()) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
@@ -925,7 +923,7 @@ int Application::Run(int argc, char* argv[]) {
   }
   CreateComm(hSockOrComm, type);
   if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty())) {
-    return Application::exitLevelNotOK;
+    return exitLevelNotOK;
   }
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
 
@@ -962,7 +960,7 @@ int Application::Run(int argc, char* argv[]) {
     ReadCurrentUser(1);
     reset_effective_sl();
 
-    usernum = 0;
+    sess().user_num(0);
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
     sess().hangup(false);
@@ -992,7 +990,7 @@ int Application::Run(int argc, char* argv[]) {
     ReadCurrentUser(1);
     reset_effective_sl();
 
-    usernum = 0;
+    sess().user_num(0);
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
     sess().hangup(false);
@@ -1006,13 +1004,13 @@ int Application::Run(int argc, char* argv[]) {
 #endif // 0
   do {
     if (this_usernum_from_commandline) {
-      usernum = this_usernum_from_commandline;
+      sess().user_num(this_usernum_from_commandline);
       ReadCurrentUser();
       if (!user()->IsUserDeleted()) {
         GotCaller(ui);
-        usernum = this_usernum_from_commandline;
+        sess().user_num(this_usernum_from_commandline);
         ReadCurrentUser();
-        read_qscn(usernum, sess().qsc, false);
+        read_qscn(sess().user_num(), sess().qsc, false);
         reset_effective_sl();
         changedsl();
         sess().okmacro(true);
@@ -1054,7 +1052,7 @@ int Application::Run(int argc, char* argv[]) {
       logon();
       setiia(seconds(5));
       set_net_num(0);
-      while (!sess().hangup() && usernum > 0) {
+      while (!sess().hangup() && sess().user_num() > 0) {
         CheckForHangup();
         filelist.clear();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);

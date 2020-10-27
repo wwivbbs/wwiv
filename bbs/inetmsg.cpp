@@ -59,7 +59,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     return ;
   }
 
-  if (user_number == a()->usernum && check_inet_addr(a()->user()->GetEmailAddress())) {
+  if (user_number == a()->sess().user_num() && check_inet_addr(a()->user()->GetEmailAddress())) {
     internet_address = a()->user()->GetEmailAddress();
   } else {
     const auto fn = FilePath(a()->config()->datadir(), INETADDR_DAT);

@@ -120,7 +120,7 @@ int extern_prot(int num, const std::filesystem::path& path, bool bSending) {
   if (!command.empty()) {
     a()->ClearTopScreenProtection();
     ScopeExit at_exit([]{ a()->UpdateTopScreen(); });
-    const string unn = a()->names()->UserName(a()->usernum);
+    const string unn = a()->names()->UserName(a()->sess().user_num());
     sprintf(s2, "%s is currently online at %u bps", unn.c_str(), a()->modem_speed_);
     a()->localIO()->Puts(s2);
     a()->localIO()->Puts("\r\n\r\n");

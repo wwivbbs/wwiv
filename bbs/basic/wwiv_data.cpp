@@ -37,8 +37,8 @@ enum class script_data_type_t { STRING, INT, REAL };
 struct script_data_t {
   script_data_type_t type;
   ::std::string s;
-  int i;
-  float r;
+  int i{};
+  float r{};
 };
 
 
@@ -102,23 +102,34 @@ static script_data_t to_script_data(const mb_value_t& v) {
   case MB_DT_ITERATOR:
   case MB_DT_CLASS:
   case MB_DT_ROUTINE:
-  default:
     LOG(ERROR) << "Unable to convert type (unknown) for basic type: " << v.type;
     return {};
   }
+  LOG(ERROR) << "Unable to convert type (unknown) for basic type: " << v.type;
+  return {};
 }
 
-static bool SaveData(const std::string& datadir, const std::string& basename,
-                     const std::vector<script_data_t>& data) {
-  const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
+enum class wwiv_data_scope_t { global, user };
+
+static bool SaveData(const wwiv_script_userdata_t* ud,
+                     wwiv_data_scope_t scope, const std::vector<script_data_t>& data) {
+  const auto& datadir = ud->datadir;
+  const auto& basename = ud->module;
+  const auto usernum = ud->ctx->session_context().user_num();
+  const auto base = scope == wwiv_data_scope_t::global ? basename : fmt::format("{}.user.{}", basename, usernum);
+  const auto path = FilePath(datadir, StrCat(base, ".script.json"));
   JsonFile json(path, "data", data);
   return json.Save();
 }
 
-static std::vector<script_data_t> LoadData(const std::string& datadir,
-                                           const std::string& basename) {
+static std::vector<script_data_t> LoadData(const wwiv_script_userdata_t* ud,
+                                           wwiv_data_scope_t scope) {
   std::vector<script_data_t> data;
-  const auto path = FilePath(datadir, StrCat(basename, ".script.json"));
+  const auto& datadir = ud->datadir;
+  const auto& basename = ud->module;
+  const auto usernum = ud->ctx->session_context().user_num();
+  const auto base = scope == wwiv_data_scope_t::global ? basename : fmt::format("{}.user.{}", basename, usernum);
+  const auto path = FilePath(datadir, StrCat(base, ".script.json"));
   JsonFile json(path, "data", data);
   json.Load();
   return data;
@@ -138,10 +149,12 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
   mb_register_func(bas, "SAVE", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_assert(bas && l);
     mb_check(mb_attempt_open_bracket(bas, l));
-    char* scope = nullptr;
+    char* scope_str = nullptr;
+    auto scope{wwiv_data_scope_t::global};
     if (mb_has_arg(bas, l)) {
       // Scope: GLOBAL OR USER
-      mb_check(mb_pop_string(bas, l, &scope));
+      mb_check(mb_pop_string(bas, l, &scope_str));
+      scope = iequals("USER", scope_str) ? wwiv_data_scope_t::user : wwiv_data_scope_t::global;
     }
     if (mb_has_arg(bas, l)) {
       mb_value_t arg;
@@ -166,7 +179,7 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
       }
       const auto* d = get_wwiv_script_userdata(bas);
 
-      if (!SaveData(d->datadir, d->module, data)) {
+      if (!SaveData(d, scope, data)) {
         script_out() << "#6Error saving data.\r\n";
       }
     }
@@ -178,10 +191,12 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
   mb_register_func(bas, "LOAD", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_assert(bas && l);
     mb_check(mb_attempt_open_bracket(bas, l));
-    char* scope = nullptr;
+    char* scope_str = nullptr;
+    auto scope{wwiv_data_scope_t::global};
     if (mb_has_arg(bas, l)) {
       // Scope: GLOBAL OR USER
-      mb_check(mb_pop_string(bas, l, &scope));
+      mb_check(mb_pop_string(bas, l, &scope_str));
+      scope = iequals("USER", scope_str) ? wwiv_data_scope_t::user : wwiv_data_scope_t::global;
     }
     if (mb_has_arg(bas, l)) {
       mb_value_t arg;
@@ -197,7 +212,7 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
 
       auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
-      auto data = LoadData(sd->datadir, sd->module);
+      auto data = LoadData(sd, scope);
       for (const auto& d : data) {
         const auto val = to_mb_value(d);
         mb_value_t idx;
@@ -208,7 +223,7 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
         }
       }
 
-      if (!SaveData(sd->datadir, sd->module, data)) {
+      if (!SaveData(sd, scope, data)) {
         script_out() << "#6Error loading data.\r\n";
       }
     }
@@ -218,7 +233,5 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
 
   return mb_end_module(bas) == MB_FUNC_OK;
 }
-
-
 
 }

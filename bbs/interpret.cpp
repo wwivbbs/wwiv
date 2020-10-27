@@ -61,7 +61,7 @@ std::string BbsMacroContext::interpret(char ch) const {
       return to_string(static_cast<int>(nsl() / 60));
       break;
     case '#':                               // User's number
-      return to_string(a()->usernum);
+      return to_string(a()->sess().user_num());
     case '$':                               // File points (UNUSED)
       return "0"; //to_string(u().GetFilePoints());
     case '*':                               // User reg num

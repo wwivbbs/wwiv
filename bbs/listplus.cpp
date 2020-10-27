@@ -952,7 +952,7 @@ void config_file_list() {
   to_char_array(u.filename, "WWIV55.ZIP");
   to_char_array(u.description, "This is a sample description!");
   to_char_array(u.date, date());
-  const string username_num = a()->names()->UserName(a()->usernum);
+  const string username_num = a()->names()->UserName(a()->sess().user_num());
   to_char_array(u.upby, username_num);
   u.numdloads = 50;
   u.numbytes = 655535L;
@@ -1214,7 +1214,7 @@ static int remove_filename(const std::string& file_name, int dn) {
   int ret = 1;
   while (!a()->sess().hangup() && i > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(i);
-    if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->usernum) {
+    if (dcs() || f.u().ownersys == 0 && f.u().ownerusr == a()->sess().user_num()) {
       bout.nl();
       printfileinfo(&f.u(), dir);
       bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";

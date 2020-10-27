@@ -65,7 +65,7 @@ void multimail(int *pnUserNumber, int numu) {
   }
   bout.nl();
 
-  MessageEditorData data(a()->names()->UserName(a()->usernum));
+  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   data.need_title = true;
   if (a()->effective_slrec().ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;
@@ -151,7 +151,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   m.anony = static_cast<unsigned char>(data.anonymous_flag);
   m.fromsys = 0;
-  m.fromuser = static_cast<uint16_t>(a()->usernum);
+  m.fromuser = static_cast<uint16_t>(a()->sess().user_num());
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;

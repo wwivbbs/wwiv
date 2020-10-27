@@ -78,7 +78,7 @@ using namespace wwiv::strings;
 // Implementation
 static bool same_email(tmpmailrec& tm, const mailrec& m) {
   if (tm.fromsys != m.fromsys || tm.fromuser != m.fromuser || m.tosys != 0 ||
-      m.touser != a()->usernum || tm.daten != m.daten || tm.index == -1 ||
+      m.touser != a()->sess().user_num() || tm.daten != m.daten || tm.index == -1 ||
       memcmp(&tm.msg, &m.msg, sizeof(messagerec)) != 0) {
     return false;
   }
@@ -152,7 +152,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m,
       pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&m1, sizeof(mailrec));
 
-      if (m1.tosys == 0 && m1.touser == a()->usernum) {
+      if (m1.tosys == 0 && m1.touser == a()->sess().user_num()) {
         for (int i1 = mp; i1 < mw; i1++) {
           if (same_email(mloc[i1], m1)) {
             mloc[i1].index = static_cast<int16_t>(i);
@@ -370,7 +370,7 @@ void readmail(int mode) {
     for (i = 0; i < mfl && mw < MAXMAIL; i++) {
       pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&m, sizeof(mailrec));
-      if (m.tosys == 0 && m.touser == a()->usernum) {
+      if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
         tmpmailrec r = {};
         r.index = static_cast<int16_t>(i);
         r.fromsys = m.fromsys;
@@ -737,7 +737,7 @@ void readmail(int mode) {
                         static_cast<long>(a()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
               const string userandnet =
-                  a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+                  a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
               string msg;
               if (m.fromsys != 0) {
                 msg = StrCat(a()->network_name(), ": ", userandnet);
@@ -847,7 +847,7 @@ void readmail(int mode) {
             p.anony = m.anony;
             p.ownersys = m.fromsys;
             a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
-            p.owneruser = static_cast<uint16_t>(a()->usernum);
+            p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
             p.msg = m.msg;
             p.daten = m.daten;
             p.status = 0;
@@ -903,9 +903,9 @@ void readmail(int mode) {
         }
         if (m.fromsys != 0) {
           message = StrCat(a()->network_name(), ": ",
-                           a()->names()->UserName(a()->usernum, a()->current_net().sysnum));
+                           a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum));
         } else {
-          message = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+          message = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
         }
 
         if (m.anony & anony_receiver) {
@@ -969,7 +969,7 @@ void readmail(int mode) {
           if (ForwardMessage(&un, &sn)) {
             bout << "Mail forwarded.\r\n";
           }
-          if (un == a()->usernum && sn == 0 && !cs()) {
+          if (un == a()->sess().user_num() && sn == 0 && !cs()) {
             bout << "Can't forward to yourself.\r\n";
             un = 0;
           }
@@ -1026,7 +1026,7 @@ void readmail(int mode) {
 
                 i = a()->net_num();
                 const auto fwd_user_name =
-                    a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+                    a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
                 auto s = fmt::sprintf("\r\nForwarded to %s from %s.", fwd_email_name, fwd_user_name);
 
                 set_net_num(nn);
@@ -1058,7 +1058,7 @@ void readmail(int mode) {
                   email.from_network_number = nn;
                   sendout_email(email);
                 } else {
-                  email.set_from_user(a()->usernum);
+                  email.set_from_user(a()->sess().user_num());
                   email.from_system = a()->current_net().sysnum;
                   email.from_network_number = a()->net_num();
                   sendout_email(email);
@@ -1119,7 +1119,7 @@ void readmail(int mode) {
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
             string message;
-            const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+            const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
             if (m.fromsys != 0) {
               message = a()->network_name();
               message += ": ";

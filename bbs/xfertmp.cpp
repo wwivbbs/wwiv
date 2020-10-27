@@ -180,7 +180,7 @@ void removefile() {
   auto abort = false;
   while (!a()->sess().hangup() && record_num > 0 && !abort) {
     auto f = a()->current_file_area()->ReadFile(record_num);
-    if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->usernum)) {
+    if (dcs() || (f.u().ownersys == 0 && f.u().ownerusr == a()->sess().user_num())) {
       const auto& dir = a()->dirs()[a()->current_user_dir().subnum];
       bout.nl();
       if (a()->batch().contains_file(f.filename())) {

@@ -29,7 +29,6 @@
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
-#include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
@@ -38,14 +37,12 @@
 #include "bbs/subedit.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/wqscn.h"
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/workspace.h"
 #include "core/file.h"
 #include "core/log.h"
@@ -62,7 +59,6 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include <cctype>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -244,8 +240,8 @@ WFC::WFC(Application* a) : a_(a) {
 WFC::~WFC() = default;
 
 std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
-  unsigned char ch = 0;
-  LocalIO* io = a_->localIO();
+  unsigned char ch;
+  auto io = a_->localIO();
 
   const auto last_date_status = a()->status_manager()->GetStatus();
   for (;;) {
@@ -293,7 +289,8 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         auto [ll, unx] = LocalLogon();
         if (ll == local_logon_t::fast) {
           return std::make_tuple(wfc_events_t::login_fast, unx);
-        } else if (ll == local_logon_t::prompt) {
+        }
+        if (ll == local_logon_t::prompt) {
           return std::make_tuple(wfc_events_t::login, -1);
         }
         break;
@@ -301,7 +298,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Show WFC Menu
       case '?': {
         string helpFileName = SWFC_NOEXT;
-        char chHelp = ESC;
+        char chHelp;
         do {
           io->Cls();
           bout.nl();
@@ -328,6 +325,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
           case '2': {
             bout.print_local_file(fmt::format("netdat{}.log", netdat_num));
           } break;
+          default: ;
           }
         }
         break;
@@ -365,7 +363,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         // Send Email
       case 'E':
         Clear();
-        a_->usernum = 1;
+        a_->sess().user_num(1);
         bout.bputs("|#1Send Email:");
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
@@ -385,7 +383,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
         // SendMailFile
       case 'K': {
         Clear();
-        a_->usernum = 1;
+        a_->sess().user_num(1);
         bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
         auto buffer = bin.input_path(50);
         LoadFileIntoWorkspace(a()->context(), buffer, false);
@@ -396,13 +394,13 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Print Log Daily logs
       case 'L': {
         Clear();
-        auto status = a()->status_manager()->GetStatus();
+        const auto status = a()->status_manager()->GetStatus();
         bout.print_local_file(status->GetLogFileName(0));
       } break;
       // Read User Mail
       case 'M': {
         Clear();
-        a_->usernum = sysop_usernum;
+        a_->sess().user_num(sysop_usernum);
         readmail(0);
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
@@ -479,7 +477,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       // Print Yesterday's Log
       case 'Y': {
         Clear();
-        auto status = a()->status_manager()->GetStatus();
+        const auto status = a()->status_manager()->GetStatus();
         bout.print_local_file(status->GetLogFileName(1));
       } break;
       // Print Activity (Z) Log
@@ -494,7 +492,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
       a_->ReadCurrentUser(sysop_usernum);
       read_qscn(1, a()->sess().qsc, false);
       a_->reset_effective_sl();
-      a_->usernum = sysop_usernum;
+      a_->sess().user_num(sysop_usernum);
 
       catsl();
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
@@ -511,7 +509,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   auto d = steady_clock::now();
   // TODO(rushfan): use wwiv::os::wait_for
   while (!a_->localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
-    wwiv::os::sleep_for(10ms);
+    sleep_for(10ms);
   }
 
   if (!a_->localIO()->KeyPressed()) {
@@ -519,7 +517,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
-  int unx = -1;
+  auto unx = -1;
   const auto ch = to_upper_case<char>(a_->localIO()->GetChar());
   switch (ch) {
   case 'Y': {
@@ -564,11 +562,11 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     return std::make_tuple(local_logon_t::exit, -1);
   }
 
-  a_->usernum = unx;
+  a_->sess().user_num(unx);
   auto saved_at_wfc = a_->at_wfc();
   a_->set_at_wfc(false);
   a_->ReadCurrentUser();
-  read_qscn(a_->usernum, a()->sess().qsc, false);
+  read_qscn(a_->sess().user_num(), a()->sess().qsc, false);
   a_->set_at_wfc(saved_at_wfc);
   bout.bputch(ch);
   a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_CONTEXT_H__
-#define __INCLUDED_COMMON_CONTEXT_H__
+#ifndef INCLUDED_COMMON_CONTEXT_H
+#define INCLUDED_COMMON_CONTEXT_H
 
 #include "core/wwivport.h"
 #include "sdk/config.h"
@@ -26,6 +26,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <utility>
 
 class LocalIO;
 
@@ -35,9 +36,9 @@ class Dirs {
 public:
   explicit Dirs(const std::filesystem::path& bbsdir);
   Dirs(const std::string& temp, const std::string& batch, const std::string& qwk,
-       const std::string& gfiles)
+       std::string gfiles)
       : temp_directory_(temp), batch_directory_(batch), qwk_directory_(qwk),
-        gfiles_directory_(gfiles) {}
+        gfiles_directory_(std::move(gfiles)) {}
 
   [[nodiscard]] const std::filesystem::path& temp_directory() const noexcept { return temp_directory_; }
   void temp_directory(const std::string& d) { temp_directory_ = d; }
@@ -72,16 +73,17 @@ private:
 
 enum class chatting_t { none, one_way, two_way };
 
-class SessionContext {
+class SessionContext final {
 public:
   explicit SessionContext(LocalIO* io);
-  virtual ~SessionContext() = default;
+  ~SessionContext() = default;
 
   /**
    * Initializes an empty context, called after Config.dat
    * has been read and processed.
    */
   void InitalizeContext(const wwiv::sdk::Config& config);
+
   /**
    * Clears the qscan pointers.
    */
@@ -95,45 +97,45 @@ public:
   /** Resets the local IO pointer */
   void reset_local_io(LocalIO* io);
 
-  bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
+  [[nodiscard]] bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
   void ok_modem_stuff(bool o) { ok_modem_stuff_ = o; }
 
-  bool incom() const noexcept { return incom_; }
+  [[nodiscard]] bool incom() const noexcept { return incom_; }
   void incom(bool i) { incom_ = i; }
-  bool outcom() const noexcept { return outcom_; }
+  [[nodiscard]] bool outcom() const noexcept { return outcom_; }
   void outcom(bool o) { outcom_ = o; }
 
-  bool okmacro() const noexcept { return okmacro_; }
+  [[nodiscard]] bool okmacro() const noexcept { return okmacro_; }
   void okmacro(bool o) { okmacro_ = o; }
 
-  bool forcescansub() const noexcept { return forcescansub_; }
+  [[nodiscard]] bool forcescansub() const noexcept { return forcescansub_; }
   void forcescansub(bool g) { forcescansub_ = g; }
-  bool guest_user() const noexcept { return guest_user_; }
+  [[nodiscard]] bool guest_user() const noexcept { return guest_user_; }
   void guest_user(bool g) { guest_user_ = g; }
 
-  daten_t nscandate() const noexcept { return nscandate_; }
+  [[nodiscard]] daten_t nscandate() const noexcept { return nscandate_; }
   void nscandate(daten_t d) { nscandate_ = d; }
 
-  bool disable_conf() const noexcept { return disable_conf_; }
+  [[nodiscard]] bool disable_conf() const noexcept { return disable_conf_; }
   void disable_conf(bool b) { disable_conf_ = b; }
-  bool disable_pause() const noexcept { return disable_pause_; }
+  [[nodiscard]] bool disable_pause() const noexcept { return disable_pause_; }
   void disable_pause(bool b) { disable_pause_ = b; }
-  bool scanned_files() const noexcept { return scanned_files_; }
+  [[nodiscard]] bool scanned_files() const noexcept { return scanned_files_; }
   void scanned_files(bool b) { scanned_files_ = b; }
-  bool made_find_str() const noexcept { return made_find_str_; }
+  [[nodiscard]] bool made_find_str() const noexcept { return made_find_str_; }
   void made_find_str(bool b) { made_find_str_ = b; }
   
   // qsc is the qscan pointer. The 1st 4 bytes are the sysop sub number.
   uint32_t* qsc{nullptr};
   // A bitfield controlling if the directory should be included in the new scan.
   uint32_t* qsc_n{nullptr};
-  // A bitfield contorlling if the sub should be included in the new scan.
+  // A bitfield controlling if the sub should be included in the new scan.
   uint32_t* qsc_q{nullptr};
   // Array of 32-bit unsigned integers for the qscan pointer value
   // aka high message read pointer) for each sub.
   uint32_t* qsc_p{nullptr};
 
-  std::string irt() const { return std::string(irt_); }
+  [[nodiscard]] std::string irt() const { return std::string(irt_); }
   void irt(const std::string& irt);
   void clear_irt() { irt_[0] = '\0'; }
 
@@ -197,7 +199,7 @@ public:
 
   [[nodiscard]] const Dirs& dirs() const noexcept { return dirs_; }
   [[nodiscard]] Dirs& dirs() { return dirs_; }
-  void dirs(Dirs d) { dirs_ = d; }
+  void dirs(Dirs d) { dirs_ = std::move(d); }
 
   [[nodiscard]] const wwiv::sdk::files::directory_t& current_dir() const { return current_dir_; }
   void current_dir(const wwiv::sdk::files::directory_t& dir) { current_dir_ = dir; }
@@ -207,6 +209,9 @@ public:
 
   void current_language(const std::string& l) { current_lang_name_ = l; }
   [[nodiscard]] std::string current_language() const noexcept { return current_lang_name_; }
+
+  void user_num(int usernum) { user_num_ = usernum; }
+  [[nodiscard]] int user_num() const noexcept { return user_num_; };
 
   // TODO(rushfan): Move this to private later
   char irt_[81];
@@ -242,17 +247,18 @@ private:
   bool time_limited_{false};
   std::chrono::system_clock::time_point system_logon_time_;
   Dirs dirs_;
-  wwiv::sdk::files::directory_t current_dir_{};
+  sdk::files::directory_t current_dir_{};
   int effective_sl_{0};
   std::string current_lang_name_{"English"};
+  int user_num_{-1};
 };
 
 class Context {
 public:
   virtual ~Context() = default;
-  virtual wwiv::sdk::User& u() = 0;
-  virtual wwiv::common::SessionContext& session_context() = 0;
-  virtual bool mci_enabled() const = 0;
+  [[nodiscard]] virtual sdk::User& u() = 0;
+  [[nodiscard]] virtual SessionContext& session_context() = 0;
+  [[nodiscard]] virtual bool mci_enabled() const = 0;
 };
 
 } // namespace wwiv::common
