@@ -53,8 +53,13 @@ TEST_F(AcsExprTest, SL_Min_Max) {
   EXPECT_EQ(ae.min_sl(18).max_sl(21).get(), "user.sl >= 18 && user.sl <= 21");
 }
 
+TEST_F(AcsExprTest, Ar_Int) { EXPECT_EQ(ae.ar_int(1).get(), "user.ar == 'A'"); }
+
 TEST_F(AcsExprTest, Dar) { EXPECT_EQ(ae.dar('C').get(), "user.dar == 'C'"); }
 TEST_F(AcsExprTest, Dar_Bad) { EXPECT_EQ(ae.dar('Z').get(), ""); }
+TEST_F(AcsExprTest, Dar_Int) { EXPECT_EQ(ae.dar_int(4).get(), "user.dar == 'C'"); }
+
+
 TEST_F(AcsExprTest, DSL_Min) { EXPECT_EQ(ae.min_dsl(18).get(), "user.dsl >= 18"); }
 TEST_F(AcsExprTest, DSL_Max) { EXPECT_EQ(ae.max_dsl(21).get(), "user.dsl <= 21"); }
 TEST_F(AcsExprTest, DSL_Min_Max) {

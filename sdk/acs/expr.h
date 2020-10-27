@@ -50,7 +50,7 @@ public:
   }
 
   AcsExpr& ar_int(int ar) {
-    if (ar == 0) {
+    if (ar != 0) {
       for (auto i = 0; i < 16; i++) {
         if ((1 << i) & ar) {
           ar_ = static_cast<char>('A' + i);
@@ -73,7 +73,7 @@ public:
     return *this;
   }
   AcsExpr& dar_int(int ar) {
-    if (ar == 0) {
+    if (ar != 0) {
       for (auto i = 0; i < 16; i++) {
         if ((1 << i) & ar) {
          dar_ = static_cast<char>('A' + i);
