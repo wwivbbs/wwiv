@@ -147,6 +147,15 @@ What's New in WWIV 5.5 (2020)
 + Enable full screen editor for sysop and users with ansi by default. (#1252)
 + Bundle netfoss with the install (#1253)
 * Removed unused spawnopts for NETWORK and TIMED as they were not used
+* Fix age display in newuser login.
+* Always add MSGID, even on netmails (#1295)
+* Fix crash with subs list and only 1 conference. (#1292)
+* Fix crash when deleting a tagged file (#1282)
+* Don't check for hangup on the network programs, user isn't online
+* Remove WSL stanzas, that makes MSVC 16.6 and newer unhappy (#1268)
+* Fix install.sh script for unix. (#1261, #1262)
+* Fix formatting for non-full screen reader (#1250)
+
 
 What's New in WWIV 5.5 (2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
