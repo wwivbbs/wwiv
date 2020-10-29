@@ -43,6 +43,10 @@
 #include <sstream>
 #include <string>
 
+#ifndef _WIN32
+#include <signal.h>
+#endif // _WIN32
+
 using std::cout;
 using std::endl;
 using std::map;
@@ -164,6 +168,10 @@ static bool need_network3(const net_networks_rec& net, int network_version) {
 }
 
 int networkc_main(const NetworkCommandLine& net_cmdline) {
+  // Set this to the default handling, since when wwivd invokes
+  // this (and wwivd ignores SIGCHLD).
+  signal(SIGCHLD, SIG_DFL);
+
   try {
     const auto process_instance = net_cmdline.cmdline().iarg("process_instance");
     const auto& net = net_cmdline.network();

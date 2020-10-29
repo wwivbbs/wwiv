@@ -54,6 +54,10 @@
 #include <string>
 #include <vector>
 
+#ifndef _WIN32
+#include <signal.h>
+#endif // _WIN32
+
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::os;
@@ -1096,7 +1100,14 @@ bool NetworkF::Run() {
 
 using namespace wwiv::net::networkf;
 
-int main(int argc, char** argv) { 
+int main(int argc, char** argv) {
+
+#ifndef _WIN32
+  // Set this to the default handling, since when wwivd invokes
+  // this (and wwivd ignores SIGCHLD).
+  signal(SIGCHLD, SIG_DFL);
+#endif // !_WIN32
+
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
