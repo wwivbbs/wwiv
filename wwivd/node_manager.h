@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_NODE_MANAGER_H__
-#define __INCLUDED_WWIVD_NODE_MANAGER_H__
+#ifndef INCLUDED_WWIVD_NODE_MANAGER_H
+#define INCLUDED_WWIVD_NODE_MANAGER_H
 
 #include <map>
 #include <mutex>
@@ -24,8 +24,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
 
@@ -37,40 +36,38 @@ enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
 std::string to_string(ConnectionType t);
 
 struct NodeStatus {
-public:
   ConnectionType type = ConnectionType::UNKNOWN;
   int node = 0;
   std::string description;
   bool connected = false;
 };
 
-class NodeManager {
+class NodeManager final {
 public:
   NodeManager(const std::string& name, ConnectionType type, int start, int end);
-  virtual ~NodeManager();
+  ~NodeManager();
 
-  static std::string status_string(const NodeStatus& n);
+  [[nodiscard]] static std::string status_string(const NodeStatus& n);
 
-  std::vector<std::string> status_lines() const;
+  [[nodiscard]] std::vector<std::string> status_lines() const;
 
-  NodeStatus& status_for_unlocked(int node);
+  [[nodiscard]] NodeStatus& status_for_unlocked(int node);
 
-  NodeStatus status_for_copy(int node);
+  [[nodiscard]] NodeStatus status_for_copy(int node);
 
   void set_node(int node, ConnectionType type, const std::string& description);
 
   void clear_node(int node);
 
-  int nodes_used() const;
+  [[nodiscard]] int nodes_used() const;
 
   bool AcquireNode(int& node);
 
   bool ReleaseNode(int node);
 
-
-  int total_nodes() const { return end_ - start_ + 1; }
-  int start_node() const { return start_; }
-  int end_node() const { return end_; }
+  [[nodiscard]] int total_nodes() const { return end_ - start_ + 1; }
+  [[nodiscard]] int start_node() const { return start_; }
+  [[nodiscard]] int end_node() const { return end_; }
 
 private:
   const std::string name_;
@@ -85,7 +82,7 @@ private:
 
 class ConcurrentConnections {
 public:
-  ConcurrentConnections(int max_num);
+  explicit ConcurrentConnections(int max_num);
   virtual ~ConcurrentConnections();
   bool aquire(const std::string& peer);
   bool release(const std::string& peer);
@@ -96,7 +93,6 @@ private:
   std::unordered_map<std::string, int> map_;
 };
 
-}  // namespace wwivd
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVD_NODE_MANAGER_H__
+#endif

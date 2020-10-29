@@ -140,7 +140,7 @@ void qwk_remove_email() {
   for (unsigned long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == a()->usernum)) {
+    if ((m.tosys == 0) && (m.touser == a()->sess().user_num())) {
       mloc[mw].index = static_cast<int16_t>(i);
       mloc[mw].fromsys = m.fromsys;
       mloc[mw].fromuser = m.fromuser;
@@ -188,7 +188,7 @@ void qwk_gather_email(qwk_junk* qwk_info) {
   for (int i = 0; i < mfl && mw < MAXMAIL; i++) {
     f->Seek(static_cast<File::size_type>(i) * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == a()->usernum)) {
+    if ((m.tosys == 0) && (m.touser == a()->sess().user_num())) {
       tmpmailrec r{};
       r.index = static_cast<int16_t>(i);
       r.fromsys = m.fromsys;
@@ -651,7 +651,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
     messagerec msg{};
     msg.storage_type = EMAIL_STORAGE;
 
-    const auto name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+    const auto name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
     qwk_inmsg(text, &msg, "email", name.c_str(), DateTime::now());
 
     if (msg.stored_as == 0xffffffff) {
@@ -667,7 +667,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
     email.user_number = un;
     email.system_number = sy;
     email.an = true;
-    email.set_from_user(a()->usernum);
+    email.set_from_user(a()->sess().user_num());
     email.set_from_system(a()->current_net().sysnum);
     email.forwarded_code = 0;
     email.from_network_number = a()->net_num();
@@ -835,7 +835,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     strcpy(user_name, a()->user()->GetRealName());
     properize(user_name);
   } else {
-    const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+    const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
     strcpy(user_name, name.c_str());
   }
 
@@ -869,7 +869,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
     p.anony = an;
     p.msg = m;
     p.ownersys = 0;
-    p.owneruser = static_cast<uint16_t>(a()->usernum);
+    p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
     {
       a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
     }

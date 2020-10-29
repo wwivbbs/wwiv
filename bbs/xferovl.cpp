@@ -300,7 +300,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
   const auto temp_filename = aligns(file_name);
   files::FileRecord f{};
   f.set_filename(temp_filename);
-  f.u().ownerusr = static_cast<uint16_t>(a()->usernum);
+  f.u().ownerusr = static_cast<uint16_t>(a()->sess().user_num());
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &f.u())) {
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
@@ -319,7 +319,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     const auto fs = fileUpload.length();
     f.set_numbytes(fs);
     fileUpload.Close();
-    to_char_array(f.u().upby, a()->names()->UserName(a()->usernum));
+    to_char_array(f.u().upby, a()->names()->UserName(a()->sess().user_num()));
     f.set_date(DateTime::now());
 
     auto t = DateTime::from_time_t(File::last_write_time(full_path));

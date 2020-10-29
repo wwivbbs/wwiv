@@ -342,7 +342,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   }
   string tmpbuf;
   const auto& h = msg->header();
-  if (h.local() && h.from_usernum() == a()->usernum) {
+  if (h.local() && h.from_usernum() == a()->sess().user_num()) {
     tmpbuf = fmt::sprintf("|09[|11%d|09]", msgnum);
   } else if (!h.local()) {
     tmpbuf = fmt::sprintf("|09<|11%d|09>", msgnum);

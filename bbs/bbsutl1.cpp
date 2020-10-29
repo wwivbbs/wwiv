@@ -47,7 +47,7 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 /**
- * Finds a()->usernum and system number from emailAddress, sets network number as
+ * Finds a()->sess().user_num() and system number from emailAddress, sets network number as
  * appropriate.
  * @param emailAddress The text of the email address.
  * @param un OUT The User Number

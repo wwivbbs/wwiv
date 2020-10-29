@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_WWIV_WWIVD_H__
-#define __INCLUDED_WWIV_WWIV_WWIVD_H__
+#ifndef INCLUDED_WWIV_WWIV_WWIVD_H
+#define INCLUDED_WWIV_WWIV_WWIVD_H
 
 #include <string>
 #include <core/net.h>
@@ -35,4 +35,4 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  */
 bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock);
 
-#endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__
+#endif

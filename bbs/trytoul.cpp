@@ -179,8 +179,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
   wwiv::sdk::files::FileRecord f;
   f.set_filename(aligned_file_name);
-  f.u().ownerusr = static_cast<uint16_t>(a()->usernum);
-  const auto unn = a()->names()->UserName(a()->usernum);
+  f.u().ownerusr = static_cast<uint16_t>(a()->sess().user_num());
+  const auto unn = a()->names()->UserName(a()->sess().user_num());
   to_char_array(f.u().upby, unn);
   f.set_date(DateTime::now());
 

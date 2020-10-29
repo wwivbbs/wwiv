@@ -189,7 +189,7 @@ void post(const PostData& post_data) {
     return;
   }
 
-  MessageEditorData data(a()->names()->UserName(a()->usernum));
+  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
   data.anonymous_flag = a()->subs().sub(a()->sess().GetCurrentReadMessageArea()).anony & 0x0f;
@@ -256,7 +256,7 @@ void post(const PostData& post_data) {
   p.anony = static_cast<unsigned char>(data.anonymous_flag);
   p.msg = m;
   p.ownersys = 0;
-  p.owneruser = static_cast<uint16_t>(a()->usernum);
+  p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
   a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
   p.daten = daten_t_now();
   p.status = 0;
@@ -512,7 +512,7 @@ void remove_post() {
   bool any = false, abort = false;
   bout << "\r\n\nPosts by you on " << a()->current_sub().name << "\r\n\n";
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
-    if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
+    if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->sess().user_num()) {
       any = true;
       bout.bpla(fmt::sprintf("%u: %60.60s", j, get_post(j)->title), &abort);
     }
@@ -527,9 +527,9 @@ void remove_post() {
   auto postnum = bin.input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
-    if (get_post(postnum)->ownersys == 0 && get_post(postnum)->owneruser == a()->usernum ||
+    if (get_post(postnum)->ownersys == 0 && get_post(postnum)->owneruser == a()->sess().user_num() ||
         lcs()) {
-      if (get_post(postnum)->owneruser == a()->usernum && get_post(postnum)->ownersys == 0) {
+      if (get_post(postnum)->owneruser == a()->sess().user_num() && get_post(postnum)->ownersys == 0) {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {

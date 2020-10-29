@@ -867,7 +867,7 @@ static void add_phone_number(int usernum, const char* phone) {
 void WriteNewUserInfoToSysopLog() {
   const auto u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->GetName(), a()->usernum, u->GetRealName());
+  sysoplog() << fmt::sprintf("-> %s #%ld (%s)", u->GetName(), a()->sess().user_num(), u->GetRealName());
   if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
     sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode() << "  ("
@@ -885,10 +885,10 @@ void WriteNewUserInfoToSysopLog() {
   sysoplog() << "********";
 
   if (u->GetVoicePhoneNumber()[0]) {
-    add_phone_number(a()->usernum, u->GetVoicePhoneNumber());
+    add_phone_number(a()->sess().user_num(), u->GetVoicePhoneNumber());
   }
   if (u->GetDataPhoneNumber()[0]) {
-    add_phone_number(a()->usernum, u->GetDataPhoneNumber());
+    add_phone_number(a()->sess().user_num(), u->GetDataPhoneNumber());
   }
 }
 
@@ -896,7 +896,7 @@ void VerifyNewUserPassword() {
   bool ok = false;
   do {
     bout.nl(2);
-    bout << "|#9Your User Number: |#2" << a()->usernum << wwiv::endl;
+    bout << "|#9Your User Number: |#2" << a()->sess().user_num() << wwiv::endl;
     bout << "|#9Your Password:    |#2" << a()->user()->GetPassword() << wwiv::endl;
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
@@ -927,7 +927,7 @@ void SendNewUserFeedbackIfRequired() {
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
       bout.printfile(NOFBACK_NOEXT);
-      a()->users()->delete_user(a()->usernum);
+      a()->users()->delete_user(a()->sess().user_num());
       a()->Hangup();
       return;
     }
@@ -1030,7 +1030,7 @@ void newuser() {
     a()->Hangup();
     return;
   } else if (usernum == 1) {
-    a()->usernum = static_cast<uint16_t>(usernum);
+    a()->sess().user_num(static_cast<uint16_t>(usernum));
 
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
@@ -1040,10 +1040,10 @@ void newuser() {
     user->SetDsl(255);
     user->SetRestriction(0);
   }
-  a()->usernum = static_cast<uint16_t>(usernum);
+  a()->sess().user_num(static_cast<uint16_t>(usernum));
 
   WriteNewUserInfoToSysopLog();
-  ssm(1) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;
+  ssm(1) << "You have a new user: " << a()->user()->GetName() << " #" << a()->sess().user_num();
 
   LOG(INFO) << "New User Created: '" << a()->user()->GetName() << "' "
             << "IP Address: " << a()->remoteIO()->remote_info().address;
@@ -1175,7 +1175,7 @@ static int find_phone_number(const char* phone) {
 
 bool check_dupes(const char* pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
-  if (user_number && user_number != a()->usernum) {
+  if (user_number && user_number != a()->sess().user_num()) {
     string s = fmt::format("    {} entered phone # {}", a()->user()->GetName(), pszPhoneNumber);
     sysoplog(false) << s;
     ssm(1) << s;
@@ -1420,13 +1420,13 @@ void new_mail() {
   LoadFileIntoWorkspace(a()->context(), file, true, true);
   use_workspace = true;
 
-  MessageEditorData data(a()->names()->UserName(a()->usernum));
+  MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   data.title = StrCat("Welcome to ", a()->config()->system_name(), "!");
   data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = FsedFlags::NOFSED;
-  data.to_name = a()->names()->UserName(a()->usernum);
+  data.to_name = a()->names()->UserName(a()->sess().user_num());
   data.msged_flags = MSGED_FLAG_NONE;
   data.silent_mode = true;
   messagerec msg;
@@ -1437,7 +1437,7 @@ void new_mail() {
     EmailData email(data);
     email.msg = &msg;
     email.anony = 0;
-    email.set_user_number(a()->usernum);
+    email.set_user_number(a()->sess().user_num());
     email.system_number = 0;
     email.an = true;
     email.from_user = 1;

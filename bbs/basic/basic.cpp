@@ -15,36 +15,30 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include  "bbs/basic/basic.h"
+#include "bbs/basic/basic.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "common/input.h"
-#include "bbs/interpret.h"
 #include "bbs/basic/util.h"
 #include "bbs/basic/wwiv.h"
 #include "bbs/basic/wwiv_data.h"
 #include "bbs/basic/wwiv_io.h"
+#include "common/input.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
 #include "sdk/config.h"
-#include <cassert>
 #include <cstdarg>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
 
-#include <cereal/cereal.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/archives/json.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/types/vector.hpp>
 
 using std::string;
 using std::vector;
@@ -109,7 +103,7 @@ static std::optional<std::string> ReadBasicFile(const std::filesystem::path& pat
 
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   const auto* d = get_wwiv_script_userdata(bas);
-  auto path = FilePath(d->script_dir, script_name);
+  const auto path = FilePath(d->script_dir, script_name);
   auto o = ReadBasicFile(path, script_name);
   if (!o) {
     return false;
@@ -188,7 +182,7 @@ Basic::Basic(wwiv::common::Input& i, wwiv::common::Output& o, const wwiv::sdk::C
 }
 
 static std::string ScriptBaseName(const std::string& script_name) {
- const auto basename = ToStringLowerCase(script_name);
+  auto basename = ToStringLowerCase(script_name);
   if (ends_with(basename, ".bas")) {
     return basename.substr(0, basename.find_last_of('.'));
   }

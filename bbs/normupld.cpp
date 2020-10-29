@@ -105,12 +105,12 @@ void normalupload(int dn) {
     }
   }
   f.set_filename(input_fn);
-  f.set_ownerusr(a()->usernum);
+  f.set_ownerusr(a()->sess().user_num());
   f.set_ownersys(0);
   f.u().numdloads = 0;
   f.u().unused_filetype = 0;
   f.u().mask = 0;
-  const auto unn = a()->names()->UserName(a()->usernum);
+  const auto unn = a()->names()->UserName(a()->sess().user_num());
   to_char_array(f.u().upby, unn);
   to_char_array(f.u().date, date());
   bout.nl();

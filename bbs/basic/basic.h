@@ -15,11 +15,11 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_BASIC_H__
-#define __INCLUDED_BBS_BASIC_H__
+#ifndef INCLUDED_BBS_BASIC_H
+#define INCLUDED_BBS_BASIC_H
 
-#include <string>
 #include "bbs/basic/util.h"
+#include <string>
 
 namespace wwiv::common {
 class Input;
@@ -59,4 +59,4 @@ bool RunBasicScript(const std::string& script_name);
 
 } // namespace wwiv::bbs
 
-#endif // __INCLUDED_BBS_BASIC_H__
+#endif

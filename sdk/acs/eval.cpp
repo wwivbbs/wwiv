@@ -152,7 +152,6 @@ bool Eval::eval() {
     error_text_ = error.what();
     VLOG(1) << "Eval Error: " << error_text_;
     debug_info_.emplace_back(error_text_);
-    return false;
   }
   return false;
 }

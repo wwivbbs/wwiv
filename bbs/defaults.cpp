@@ -105,7 +105,7 @@ static string GetMailBoxStatus() {
               a()->nets().at(a()->user()->GetForwardNetNumber()).name);
     } else {
       string fwd_username;
-      read_inet_addr(fwd_username, a()->usernum);
+      read_inet_addr(fwd_username, a()->sess().user_num());
       return StrCat("Forwarded to Internet ", fwd_username);
     }
   }
@@ -666,7 +666,7 @@ static void modify_mailbox() {
         auto entered_address = bin.input_text(a()->user()->GetEmailAddress(), 75);
         if (check_inet_addr(entered_address)) {
           a()->user()->SetEmailAddress(entered_address.c_str());
-          write_inet_addr(entered_address, a()->usernum);
+          write_inet_addr(entered_address, a()->sess().user_num());
           a()->user()->SetForwardNetNumber(network_number);
           a()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
@@ -688,7 +688,7 @@ static void modify_mailbox() {
       a()->user()->ClearMailboxForward();
       bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
     }
-  } else if (a()->user()->GetForwardUserNumber() == a()->usernum) {
+  } else if (a()->user()->GetForwardUserNumber() == a()->sess().user_num()) {
     bout << "\r\nCan't forward to yourself.\r\n\n";
     a()->user()->SetForwardUserNumber(0);
   }
@@ -799,7 +799,7 @@ void defaults(bool& need_menu_reload) {
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress)) {
           a()->user()->SetEmailAddress(internetAddress.c_str());
-          write_inet_addr(internetAddress, a()->usernum);
+          write_inet_addr(internetAddress, a()->sess().user_num());
         } else {
           bout << "\r\n|#6Invalid address format.\r\n\n";
           bout.pausescr();

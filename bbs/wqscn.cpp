@@ -47,7 +47,7 @@ void close_qscn() {
 
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead) {
   if (!bForceRead) {
-    if ((a()->sess().IsUserOnline() && user_number == a()->usernum) ||
+    if ((a()->sess().IsUserOnline() && user_number == a()->sess().user_num()) ||
         (a()->at_wfc() && user_number == 1)) {
       if (qscn != a()->sess().qsc) {
         for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {
@@ -82,7 +82,7 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
     return;
   }
 
-  if ((a()->sess().IsUserOnline() && (user_number == a()->usernum)) ||
+  if ((a()->sess().IsUserOnline() && (user_number == a()->sess().user_num())) ||
       (a()->at_wfc() && user_number == 1)) {
     if (a()->sess().qsc != qscn) {
       for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {

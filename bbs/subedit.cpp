@@ -611,7 +611,7 @@ void boardedit() {
         if (subnum2 < subnum1) {
           subnum1++;
         }
-        write_qscn(a()->usernum, a()->sess().qsc, true);
+        write_qscn(a()->sess().user_num(), a()->sess().qsc, true);
         bout << "|#1Moving sub now...Please wait...";
         insert_sub(subnum2);
         swap_subs(subnum1, subnum2);

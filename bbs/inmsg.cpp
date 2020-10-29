@@ -494,7 +494,7 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << a()->names()->UserName(a()->usernum) << wwiv::endl;
+    bout << "1. " << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";
@@ -626,7 +626,7 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.silent_mode) {
     b << a()->config()->sysop_name() << " #1" << crlf;
   } else {
-    b << a()->names()->UserName(a()->usernum, a()->current_net().sysnum) << crlf;
+    b << a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum) << crlf;
   }
 
   // Add date to message body

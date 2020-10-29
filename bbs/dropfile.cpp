@@ -217,7 +217,7 @@ void CreatePCBoardSysDropFile() {
     } else {
       snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
     }
-    pcb.usernum = static_cast<int16_t>(a()->usernum);
+    pcb.usernum = static_cast<int16_t>(a()->sess().user_num());
     char szName[255];
     sprintf(szName, "%-25.25s", a()->user()->GetName());
     char* pszFirstName = strtok(szName, " \t");
@@ -289,7 +289,7 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine(GetMinutesRemainingForDropFile());
     file.WriteLine(a()->user()->HasAnsi() ? "COLOR" : "MONO");
     file.WriteLine("X");
-    file.WriteLine(a()->usernum);
+    file.WriteLine(a()->sess().user_num());
     file.WriteLine(start_minute);
     file.WriteLine(t.substr(0, 5));
     file.WriteLine("0");
@@ -355,7 +355,7 @@ void CreateDoor32SysDropFile() {
     string cspeed = std::to_string(a()->modem_speed_);
     file.WriteLine(cspeed);
     file.WriteLine(StrCat("WWIV ", short_version()));
-    file.WriteLine(a()->usernum);
+    file.WriteLine(a()->sess().user_num());
     file.WriteLine(a()->user()->GetRealName());
     file.WriteLine(a()->user()->GetName());
     file.WriteLine(a()->user()->GetSl());
@@ -401,7 +401,7 @@ void CreateDoorSysDropFile() {
             "1,2,3",                     // conferences
             a()->current_user_sub_num(), // current 'conference'
             "12/31/99",                  // expiration date
-            a()->usernum,
+            a()->sess().user_num(),
             'Y', // default protocol
             a()->user()->GetFilesUploaded(), a()->user()->GetFilesDownloaded(),
             0,  // kb dl today
@@ -493,7 +493,7 @@ string create_chain_file() {
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {
     file.Write(fmt::sprintf(
-        "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->usernum, a()->user()->GetName(),
+        "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->sess().user_num(), a()->user()->GetName(),
         a()->user()->GetRealName(), a()->user()->GetCallsign(), a()->user()->age(),
         a()->user()->GetGender(), a()->user()->gold(), a()->user()->GetLastOn(),
         a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl()));

@@ -79,7 +79,7 @@ void YourInfo() {
   bout.cls();
   bout.litebar("Your User Information");
   bout.nl();
-  bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->usernum) << wwiv::endl;
+  bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->sess().user_num()) << wwiv::endl;
   bout << "|#9Phone number   : |#2" << a()->user()->GetVoicePhoneNumber() << wwiv::endl;
   if (a()->user()->GetNumMailWaiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
@@ -216,7 +216,7 @@ void edit_confs() {
  * Sends Feedback to the SysOp.  If  bNewUserFeedback is true then this is
  * newuser feedback, otherwise it is "normal" feedback.
  * The user can choose to email anyone listed.
- * Users with a()->usernum < 10 who have sysop privs will be listed, so
+ * Users with a()->sess().user_num() < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
  */
 void feedback(bool bNewUserFeedback) {

@@ -149,7 +149,7 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
           a()->users()->readuser(&ur, f.u().ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < f.u().daten) {
-              const auto username_num = a()->names()->UserName(a()->usernum);
+              const auto username_num = a()->names()->UserName(a()->sess().user_num());
               ssm(f.u().ownerusr) << username_num << " downloaded '" << f.aligned_filename() << "' on " << date();
             }
           }

@@ -70,7 +70,7 @@ void attach_file(int mode) {
     mailrec m{};
     pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
-    while ((m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0) &&
+    while ((m.fromsys != 0 || m.fromuser != a()->sess().user_num() || m.touser == 0) &&
            cur < max && cur >= 0) {
       if (bDirectionForward) {
         --cur;
@@ -82,7 +82,8 @@ void attach_file(int mode) {
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
-    if (m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0 || cur >= max || cur < 0) {
+    if (m.fromsys != 0 || m.fromuser != a()->sess().user_num() || m.touser == 0 || cur >= max ||
+        cur < 0) {
       done = true;
     } else {
       bool done1 = false;

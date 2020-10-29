@@ -38,14 +38,14 @@ void set_script_out(Output* o) {
   script_out_ = o; 
 }
 
-static wwiv::common::Input* script_in_{nullptr};
+static Input* script_in_{nullptr};
 
-wwiv::common::Input& script_in() {
+Input& script_in() {
   CHECK_NOTNULL(script_in_);
   return *script_in_;
 }
 
-void set_script_in(wwiv::common::Input* o) { 
+void set_script_in(Input* o) { 
   script_in_ = o;
 }
 

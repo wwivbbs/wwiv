@@ -111,11 +111,11 @@ static void write_automessage() {
   if (bin.yesno()) {
     a()->status_manager()->Run([bAnonStatus](WStatus& s) {
       s.SetAutoMessageAnonymous(bAnonStatus);
-      s.SetAutoMessageAuthorUserNumber(a()->usernum);
+      s.SetAutoMessageAuthorUserNumber(a()->sess().user_num());
     });
 
     TextFile file(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "wt");
-    const string authorName = a()->names()->UserName(a()->usernum);
+    const string authorName = a()->names()->UserName(a()->sess().user_num());
     file.WriteLine(authorName);
     sysoplog() << "Changed Auto-message";
     for (const auto& line : lines) {

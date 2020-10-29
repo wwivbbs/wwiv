@@ -203,7 +203,7 @@ static void two_way_chat(std::string* rollover, int max_length, bool crend, cons
         for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
-        const auto unn = a()->names()->UserName(a()->usernum);
+        const auto unn = a()->names()->UserName(a()->sess().user_num());
         sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name.c_str(), unn.c_str());
         const auto chars_to_move = (a()->user()->GetScreenChars() - ssize(stripcolors(temp1))) / 2;
         if (chars_to_move) {
@@ -586,7 +586,7 @@ void chat1(const char* chat_line, bool two_way) {
       bout.bputch('\xCD', true);
     }
     bout.flush();
-    const auto unn = a()->names()->UserName(a()->usernum);
+    const auto unn = a()->names()->UserName(a()->sess().user_num());
     const auto s = fmt::format("|#4 {} chatting with {} ", sysop_name, unn);
     const auto x = a()->user()->GetScreenChars() - wwiv::stl::size_int(stripcolors(s)) / 2;
     bout.GotoXY(std::max<int>(x, 0), 12);

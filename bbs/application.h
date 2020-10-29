@@ -109,7 +109,7 @@ public:
   static constexpr int exitLevelQuit = 2;
 
   explicit Application(LocalIO* localIO);
-  ~Application();
+  ~Application() override;
 
   [[nodiscard]] wwiv::sdk::User* user() const { return thisuser_.get(); }
   [[nodiscard]] wwiv::common::Context& context();
@@ -259,6 +259,9 @@ public:
   [[nodiscard]] wwiv::sdk::files::FileArea* current_file_area() const;
   void set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileArea> a);
 
+  int usernum() const noexcept { return sess().user_num(); }
+  void usernum(int u) { sess().user_num(u); }
+
   // Public subsystems
   [[nodiscard]] Batch& batch();
   [[nodiscard]] wwiv::sdk::Subs& subs();
@@ -331,8 +334,6 @@ public:
   std::filesystem::path batch_directory_;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
-
-  int usernum{0};
 
   asv_rec asv{};
 

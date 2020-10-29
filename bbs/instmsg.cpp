@@ -89,7 +89,7 @@ static void send_inst_str1(int m, int whichinst, const std::string& send_string)
   ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<uint16_t>(a()->instance_number());
-  ih.from_user = static_cast<uint16_t>(a()->usernum);
+  ih.from_user = static_cast<uint16_t>(a()->sess().user_num());
   ih.msg_size = wwiv::stl::size_int(tempsendstring) + 1;
   ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = daten_t_now();
@@ -268,7 +268,7 @@ int num_instances() {
 
 
 /*
- * Returns 1 if a()->usernum user_number is online, and returns instance user is on in
+ * Returns 1 if a()->sess().user_num() user_number is online, and returns instance user is on in
  * wi, else returns 0.
  */
 bool user_online(int user_number, int *wi) {
@@ -373,10 +373,10 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
   } else {
     if (a()->sess().IsUserOnline()) {
-      if (ti.user != a()->usernum) {
+      if (ti.user != a()->sess().user_num()) {
         re_write = true;
-        if (a()->usernum > 0 && a()->usernum <= a()->config()->max_users()) {
-          ti.user = static_cast<int16_t>(a()->usernum);
+        if (a()->sess().user_num() > 0 && a()->sess().user_num() <= a()->config()->max_users()) {
+          ti.user = static_cast<int16_t>(a()->sess().user_num());
         }
       }
     }

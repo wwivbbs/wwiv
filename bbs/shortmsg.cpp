@@ -138,7 +138,7 @@ static void SendRemoteShortMessage(int user_num, int system_num, const std::stri
   nh.tosys = static_cast<uint16_t>(system_num);
   nh.touser = static_cast<uint16_t>(user_num);
   nh.fromsys = net.sysnum;
-  nh.fromuser = static_cast<uint16_t>(a()->usernum);
+  nh.fromuser = static_cast<uint16_t>(a()->sess().user_num());
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
