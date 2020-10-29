@@ -15,24 +15,16 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_NETS_H__
-#define __INCLUDED_WWIVD_NETS_H__
+#ifndef INCLUDED_WWIVD_NETS_H
+#define INCLUDED_WWIVD_NETS_H
 
-#include <ctime>
 #include "sdk/config.h"
 #include "sdk/wwivd_config.h"
-#include <memory>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
-void do_wwivd_callouts(const wwiv::sdk::Config& config, const wwiv::sdk::wwivd_config_t& c);
+void do_wwivd_callouts(const sdk::Config& config, const sdk::wwivd_config_t& c);
 
-} // namespace wwivd
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_WWIVD_NETS_H__
+#endif

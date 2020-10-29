@@ -15,17 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_WWIVD_HTTP_H__
-#define __INCLUDED_WWIVD_WWIVD_HTTP_H__
+#ifndef INCLUDED_WWIVD_WWIVD_HTTP_H
+#define INCLUDED_WWIVD_WWIVD_HTTP_H
 
 #include "wwivd/connection_data.h"
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 void HandleHttpConnection(ConnectionData data, wwiv::core::accepted_socket_t r);
 
-}  // namespace wwivd
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_WWIVD_WWIVD_HTTP_H__
+#endif

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_IPS_H__
-#define __INCLUDED_WWIVD_IPS_H__
+#ifndef INCLUDED_WWIVD_IPS_H
+#define INCLUDED_WWIVD_IPS_H
 
 #include "sdk/wwivd_config.h"
 #include <ctime>
@@ -27,24 +27,23 @@
 #include <unordered_set>
 #include <vector>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 class GoodIp {
 public:
-  GoodIp(const std::filesystem::path& fn);
-  GoodIp(const std::vector<std::string>& lines);
-  bool IsAlwaysAllowed(const std::string& ip);
+  explicit GoodIp(const std::filesystem::path& fn);
+  explicit GoodIp(const std::vector<std::string>& lines);
+  [[nodiscard]] bool IsAlwaysAllowed(const std::string& ip);
 
 private:
-  bool LoadLines(const std::vector<std::string>& ips);
+  [[nodiscard]] bool LoadLines(const std::vector<std::string>& ips);
   std::unordered_set<std::string> ips_;
 };
 
 class BadIp {
 public:
-  BadIp(const std::filesystem::path& fn);
-  bool IsBlocked(const std::string& ip);
+  explicit BadIp(const std::filesystem::path& fn);
+  [[nodiscard]] bool IsBlocked(const std::string& ip);
   bool Block(const std::string& ip);
 
 private:
@@ -52,19 +51,18 @@ private:
   std::unordered_set<std::string> ips_;
 };
 
-class AutoBlocker {
+class AutoBlocker final {
 public:
   AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_blocking_t& b);
-  virtual ~AutoBlocker();
+  ~AutoBlocker();
   bool Connection(const std::string& ip);
 
 private:
   std::shared_ptr<BadIp> bip_;
-  wwiv::sdk::wwivd_blocking_t b_;
+  sdk::wwivd_blocking_t b_;
   std::unordered_map<std::string, std::set<time_t>> sessions_;
 };
 
-} // namespace wwivd
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_WWIVD_IPS_H__
+#endif

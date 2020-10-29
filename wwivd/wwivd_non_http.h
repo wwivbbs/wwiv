@@ -15,23 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
-#define __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
+#ifndef INCLUDED_WWIVD_WWIVD_NON_HTTP_H
+#define INCLUDED_WWIVD_WWIVD_NON_HTTP_H
 
-#include <map>
-#include <memory>
-#include <unordered_set>
-#include <vector>
-
-#include <filesystem>
 #include "core/socket_connection.h"
 #include "sdk/wwivd_config.h"
-
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <vector>
 
-namespace wwiv {
-namespace wwivd {
+namespace wwiv::wwivd {
 
 std::string to_string(const wwiv::sdk::wwivd_matrix_entry_t& e);
 std::string to_string(const std::vector<wwiv::sdk::wwivd_matrix_entry_t>& elements);
@@ -68,7 +64,6 @@ private:
 void HandleConnection(std::unique_ptr<ConnectionHandler> h);
 void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h);
 
-} // namespace wwivd
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
+#endif
