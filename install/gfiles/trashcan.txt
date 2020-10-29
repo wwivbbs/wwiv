@@ -10,6 +10,7 @@ ankur
 app
 applmgr
 arbab
+areafix
 backup
 billing
 bin
@@ -46,6 +47,7 @@ mysql
 mythtv
 nagiosuser
 netapp
+network
 nsroot
 openfiler
 openvpn
@@ -94,5 +96,8 @@ vnc
 webadm
 webadmin
 webmaster
+wwiv
+wwivlink
+wwivnet
 xerox
 zabbix
