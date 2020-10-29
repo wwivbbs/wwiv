@@ -168,9 +168,11 @@ static bool need_network3(const net_networks_rec& net, int network_version) {
 }
 
 int networkc_main(const NetworkCommandLine& net_cmdline) {
+#ifndef _WIN32
   // Set this to the default handling, since when wwivd invokes
   // this (and wwivd ignores SIGCHLD).
   signal(SIGCHLD, SIG_DFL);
+#endif // !_WIN32
 
   try {
     const auto process_instance = net_cmdline.cmdline().iarg("process_instance");

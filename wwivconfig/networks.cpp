@@ -197,14 +197,16 @@ public:
 
       dy_start_ = y;
       const vector<pair<fido_mailer_t, string>> mailerlist = {
-          {fido_mailer_t::flo, "BSO (FLO)"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
+          {fido_mailer_t::flo, "BSO (FLO) [Recommended]"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type))
+          ->set_help_text("Select BSO if using WWIV's Native BinkP.");
 
       const vector<pair<fido_transport_t, string>> transportlist = {
           {fido_transport_t::directory, "Directory"},
-          {fido_transport_t::binkp, "WWIV BinkP (N/A)"}};
-      items.add(
-          new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
+          {fido_transport_t::binkp, "WWIV BinkP"}};
+      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist,
+                                                    &n->transport))
+          ->set_help_text("This isn't currently used, but you likely want WWIV BinkP");
 
       const vector<pair<fido_packet_t, string>> packetlist = {
           {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};

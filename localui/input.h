@@ -550,7 +550,7 @@ class FileSystemFilePathItem final : public EditItem<std::filesystem::path&> {
 public:
   FileSystemFilePathItem(int x, int y, int maxsize, const std::filesystem::path& base, std::filesystem::path& data)
       : EditItem<std::filesystem::path&>(x, y, maxsize, data), base_(base) {
-    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
   }
   ~FileSystemFilePathItem() override = default;
 
