@@ -18,26 +18,22 @@
 /**************************************************************************/
 #include "sdk/usermanager.h"
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
-#include <memory>
-#include <vector>
-
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/phone_numbers.h"
 #include "sdk/ssm.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include <cstdlib>
+#include <memory>
+#include <vector>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -65,41 +61,39 @@ UserManager::UserManager(const wwiv::sdk::Config& config)
   }
 }
 
-UserManager::~UserManager() { }
+UserManager::~UserManager() = default;
 
 int  UserManager::num_user_records() const {
   File userList(FilePath(data_directory_, USER_LST));
   if (userList.Open(File::modeReadOnly | File::modeBinary)) {
-    auto nSize = userList.length();
-    auto nNumRecords = static_cast<int>(nSize / userrec_length_) - 1;
-    return nNumRecords;
+    return static_cast<int>(userList.length() / userrec_length_) - 1;
   }
   return 0;
 }
 
-bool UserManager::readuser_nocache(User *pUser, int user_number) {
+bool UserManager::readuser_nocache(User *pUser, int user_number) const {
   File userList(FilePath(data_directory_, USER_LST));
   if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
     return false;
   }
-  auto nSize = userList.length();
-  int nNumUserRecords = static_cast<int>(nSize / userrec_length_) - 1;
+  const auto nSize = userList.length();
+  const auto num_user_records = static_cast<int>(nSize / userrec_length_) - 1;
 
-  if (user_number > nNumUserRecords) {
+  if (user_number > num_user_records) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
     return false;
   }
-  long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
+  const auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
   userList.Seek(pos, File::Whence::begin);
   userList.Read(&pUser->data, userrec_length_);
   pUser->FixUp();
   return true;
 }
 
-bool UserManager::readuser(User *pUser, int user_number) {
+bool UserManager::readuser(User *pUser, int user_number) const {
   return this->readuser_nocache(pUser, user_number);
 }
 

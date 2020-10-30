@@ -15,46 +15,50 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_NAMES_H__
-#define __INCLUDED_SDK_NAMES_H__
+#ifndef INCLUDED_SDK_NAMES_H
+#define INCLUDED_SDK_NAMES_H
 
 #include <string>
 #include <vector>
-
 #include "sdk/config.h"
+#include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
-
-class Names {
+class Names final {
 public:
   explicit Names(const wwiv::sdk::Config& config);
-  virtual ~Names();
+  ~Names();
 
-  std::string UserName(uint32_t user_number) const;
-  std::string UserName(uint32_t user_number, uint32_t system_number) const;
-  bool Add(const std::string name, uint32_t user_number);
+  [[nodiscard]] std::string UserName(uint32_t user_number) const;
+  [[nodiscard]] std::string UserName(uint32_t user_number, uint32_t system_number) const;
+  bool Add(const std::string& name, uint32_t user_number);
   bool Remove(uint32_t user_number);
   bool Load();
   bool Save();
-  int FindUser(const std::string& username);
+  bool Rebuild(const UserManager& um);
+  [[nodiscard]] int FindUser(const std::string& search_string);
 
-  const std::vector<smalrec>& names_vector() const { return names_;  }
-  int size() const { return static_cast<int>(names_.size()); }
+  [[nodiscard]] const std::vector<smalrec>& names_vector() const { return names_;  }
+  [[nodiscard]] int size() const { return static_cast<int>(names_.size()); }
   void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
-  bool save_on_exit() const { return save_on_exit_;  }
+  [[nodiscard]] bool save_on_exit() const { return save_on_exit_;  }
 
 private:
+  /*
+   * Adds a new entry to the end vs. in the right spot.  This method
+   * should only be used when adding many items, as Save will sort.
+   */
+  bool AddUnsorted(const std::string& name, uint32_t user_number);
+
   const std::string data_directory_;
-  bool loaded_ = false;
-  bool save_on_exit_ = false;
+  bool loaded_{false};
+  bool save_on_exit_{false};
   std::vector<smalrec> names_;
 };
 
 
 }
-}
 
-#endif  // __INCLUDED_SDK_NAMES_H__
+#endif

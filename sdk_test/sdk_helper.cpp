@@ -86,6 +86,11 @@ SdkHelper::SdkHelper()
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 
+    // Set some more defaults various tests need
+    c.maxusers = 100;
+    c.max_dirs = 64;
+    c.max_subs = 64;
+
     File cfile(FilePath(root_, CONFIG_DAT));
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");

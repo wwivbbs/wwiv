@@ -29,6 +29,7 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
@@ -129,6 +130,7 @@ static int JumpToUser(CursesWindow* window, const std::string& datadir) {
 void user_editor(const wwiv::sdk::Config& config) {
   auto number_users = number_userrecs(config.datadir());
   curses_out->Cls(ACS_CKBOARD);
+  auto need_names_list_rebuilt{false};
 
   if (number_users < 1) {
     unique_ptr<CursesWindow> window(curses_out->CreateBoxedWindow("User Editor", 18, 76));
@@ -231,6 +233,7 @@ void user_editor(const wwiv::sdk::Config& config) {
         items.Run();
         if (dialog_yn(items.window(), "Save User?")) {
           write_user(config, current_usernum, &user);
+          need_names_list_rebuilt = true;
         }
       }
       items.window()->Refresh();
@@ -249,6 +252,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       if (!um.delete_user(current_usernum)) {
         messagebox(items.window(), "Error trying to restore user.");
       }
+      need_names_list_rebuilt = true;
     } break;
     case 'J': {
       auto user_number = JumpToUser(items.window(), config.datadir());
@@ -266,9 +270,20 @@ void user_editor(const wwiv::sdk::Config& config) {
       if (!um.restore_user(current_usernum)) {
         messagebox(items.window(), "Error trying to restore user.");
       }
+      need_names_list_rebuilt = true;
     } break;
-    case 'Q':
+    case 'Q': {
+      if (need_names_list_rebuilt) {
+        // If we made changes here, let's be safe and rebuild
+        // the names.lst file.
+        wwiv::sdk::UserManager um(config);
+        wwiv::sdk::Names names(config);
+        names.set_save_on_exit(false);
+        names.Rebuild(um);
+        names.Save();
+      }      
       return;
+    }
     case ']':
       if (++current_usernum > number_users) {
         current_usernum = 1;
@@ -298,4 +313,5 @@ void user_editor(const wwiv::sdk::Config& config) {
     read_user(config, current_usernum, &user);
     show_user(&items, &user);
   }
+
 }

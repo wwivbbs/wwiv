@@ -49,11 +49,11 @@ static smalrec smalrec_for(uint32_t user_number, const std::vector<smalrec>& nam
 }
 
 std::string Names::UserName(uint32_t user_number) const {
-  auto sr = smalrec_for(user_number, names_);
+  const auto sr = smalrec_for(user_number, names_);
   if (sr.number == 0) {
     return "";
   }
-  const auto name = properize(string(reinterpret_cast<char*>(sr.name)));
+  const auto name = properize(string(reinterpret_cast<const char*>(sr.name)));
   return fmt::format("{} #{}", name, user_number);
 }
 
@@ -65,7 +65,7 @@ std::string Names::UserName(uint32_t user_number, uint32_t system_number) const 
   return fmt::format("{} @{}", base, system_number);
 }
 
-bool Names::Add(const std::string name, uint32_t user_number) {
+bool Names::Add(const std::string& name, uint32_t user_number) {
   const auto upper_case_name = ToStringUpperCase(name);
   auto it = names_.begin();
   for (; it != names_.end()
@@ -73,9 +73,18 @@ bool Names::Add(const std::string name, uint32_t user_number) {
          ++it) {
   }
   smalrec sr{};
-  strcpy((char*)sr.name, upper_case_name.c_str());
+  strcpy(reinterpret_cast<char*>(sr.name), upper_case_name.c_str());
   sr.number = static_cast<uint16_t>(user_number);
   names_.insert(it, sr);
+  return true;
+}
+
+bool Names::AddUnsorted(const std::string& name, uint32_t user_number) {
+  const auto upper_case_name = ToStringUpperCase(name);
+  smalrec sr{};
+  strcpy(reinterpret_cast<char*>(sr.name), upper_case_name.c_str());
+  sr.number = static_cast<uint16_t>(user_number);
+  names_.emplace_back(sr);
   return true;
 }
 
@@ -110,14 +119,15 @@ bool Names::Load() {
 
 bool Names::Save() {
   DataFile<smalrec> file(FilePath(data_directory_, NAMES_LST),
-                         File::modeReadWrite | File::modeBinary | File::modeTruncate);
+                         File::modeReadWrite | File::modeBinary | File::modeTruncate |
+                             File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Error saving NAMES.LST";
     return false;
   }
 
   std::sort(names_.begin(), names_.end(), [](const smalrec& a, const smalrec& b) -> bool {
-    int equal = strcmp((char*)a.name, (char*)b.name);
+    const auto equal = strcmp((char*)a.name, (char*)b.name);
     // Sort by user number if names match.
     if (equal == 0) {
       return a.number < b.number;
@@ -128,6 +138,24 @@ bool Names::Save() {
 
   return file.WriteVector(names_);
 }
+
+bool Names::Rebuild(const UserManager& um) {
+  const auto num_user_records = um.num_user_records();
+  if (num_user_records < 1) {
+    return false;
+  }
+
+  names_.clear();
+  for (auto i = 1; i <= num_user_records; i++) {
+    User user;
+    um.readuser(&user, i);
+    if (!user.IsUserDeleted() && !user.IsUserInactive()) {
+      AddUnsorted(user.GetName(), i);
+    }
+  }
+  return true;
+}
+
 
 int Names::FindUser(const std::string& search_string) {
   for (const auto& n : names_) {

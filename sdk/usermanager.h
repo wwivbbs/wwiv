@@ -17,18 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_USER_MANAGER_H__
-#define __INCLUDED_USER_MANAGER_H__
+#ifndef INCLUDED_USER_MANAGER_H
+#define INCLUDED_USER_MANAGER_H
 
-#include <sstream>
-#include <cstring>
-#include <string>
 #include "sdk/config.h"
 #include "sdk/user.h"
-#include "sdk/vardec.h"
+#include <string>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 /**
  * WWIV User Manager.
@@ -38,11 +34,11 @@ namespace sdk {
 class UserManager {
  public:
    UserManager() = delete;
-   UserManager(const wwiv::sdk::Config& config);
+   explicit UserManager(const wwiv::sdk::Config& config);
    virtual ~UserManager();
-   int num_user_records() const;
-   bool readuser_nocache(User *pUser, int user_number);
-   bool readuser(User *pUser, int user_number);
+   [[nodiscard]] int num_user_records() const;
+   bool readuser_nocache(User *pUser, int user_number) const;
+   bool readuser(User *pUser, int user_number) const;
    bool writeuser_nocache(User *pUser, int user_number);
    bool writeuser(User *pUser, int user_number);
 
@@ -53,23 +49,23 @@ class UserManager {
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
    * Global guest_user variable is true.
    */
-  void set_user_writes_allowed(bool bUserWritesAllowed) {
-    allow_writes_ = bUserWritesAllowed;
+  void set_user_writes_allowed(bool a) {
+    allow_writes_ = a;
   }
-  bool user_writes_allowed() {
+
+   [[nodiscard]] bool user_writes_allowed() const {
     return allow_writes_;
   }
 
 private:
 
-  const wwiv::sdk::Config config_;
+  const Config config_;
   const std::string data_directory_;
   int userrec_length_;
   int max_number_users_;
   bool allow_writes_{false};
 };
 
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
-#endif // __INCLUDED_PLATFORM_WUSER_H__
+#endif

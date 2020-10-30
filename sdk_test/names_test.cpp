@@ -109,3 +109,29 @@ TEST_F(NamesTest, SaveOnExit) {
   names_->set_save_on_exit(true);
   ASSERT_TRUE(names_->save_on_exit());
 }
+
+TEST(NamesRebuildTest, Rebuild) {
+  SdkHelper helper;
+  Config config(helper.root());
+
+  UserManager um(config);
+  User u1{};
+  User::CreateNewUserRecord(&u1, 50, 20, 0, 0.1234f, 
+  { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
+  u1.set_name("FOO");
+  um.writeuser(&u1, 1);
+  User u2{};
+  User::CreateNewUserRecord(&u2, 50, 20, 0, 0.1234f, 
+  { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
+  u2.set_name("BAR");
+  um.writeuser(&u2, 2);
+
+  Names names(config);
+  names.Rebuild(um);
+  ASSERT_TRUE(names.Save());
+
+  auto v = names.names_vector();
+  ASSERT_EQ(2u, v.size());
+  EXPECT_STREQ("BAR", (char*) v.at(0).name);
+  EXPECT_STREQ("FOO", (char*) v.at(1).name);
+}
