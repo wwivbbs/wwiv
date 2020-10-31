@@ -85,14 +85,14 @@ public:
 
   virtual ~SubsListCommand() = default;
 
-  std::string GetUsage() const override final {
+  [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   areas" << endl;
     return ss.str();
   }
 
   int Execute() override final {
-    wwiv::sdk::Subs subs(config()->config()->datadir(), config()->networks().networks());
+    Subs subs(config()->config()->datadir(), config()->networks().networks());
     if (!subs.Load()) {
       LOG(ERROR) << "Unable to load subs";
       return 2;
@@ -103,7 +103,7 @@ public:
          << " " << std::endl;
     cout << string(78, '=') << endl;
     for (const auto& d : subs.subs()) {
-      auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
+      const auto lastread = WWIVReadLastRead(config()->config()->datadir(), d.filename);
       cout << "#" << std::setw(3) << std::left << num++ << " " 
            << std::setw(8) << d.filename << " "
            << std::setw(std::numeric_limits<uint32_t>::digits10 + 1) << lastread << " "

@@ -182,8 +182,8 @@ public:
   virtual bool AddStandardArgs();
 
   [[nodiscard]] bool subcommand_selected() const { return command_ != nullptr; }
-  [[nodiscard]] std::string name() const { return name_; }
-  [[nodiscard]] std::string help_text() const { return help_text_; }
+  [[nodiscard]] const std::string& name() const { return name_; }
+  [[nodiscard]] const std::string& help_text() const { return help_text_; }
 
   [[nodiscard]] CommandLineValue arg(const std::string& name) const;
   [[nodiscard]] bool contains_arg(const std::string& name) const noexcept;
@@ -192,7 +192,7 @@ public:
   [[nodiscard]] bool barg(const std::string& name) const { return arg(name).as_bool(); }
   [[nodiscard]] bool help_requested() const { return barg("help"); }
   [[nodiscard]] const CommandLineCommand* command() const { return command_; }
-  [[nodiscard]] std::vector<std::string> remaining() const { return remaining_; }
+  [[nodiscard]] const std::vector<std::string>& remaining() const { return remaining_; }
   [[nodiscard]] std::string ToString() const;
   int Execute() override;
   [[nodiscard]] std::string GetHelp() const override;

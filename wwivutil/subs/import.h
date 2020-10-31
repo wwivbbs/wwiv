@@ -24,11 +24,11 @@ namespace wwiv::wwivutil {
 
 class SubsImportCommand final: public UtilCommand {
 public:
-  SubsImportCommand(): UtilCommand("import", "Import wwiv subboards.") {}
-  virtual ~SubsImportCommand() = default;
+  SubsImportCommand() : UtilCommand("import", "Import wwiv subboards.") {}
+  ~SubsImportCommand() override = default;
   [[nodiscard]] std::string GetUsage() const override;
   int Execute() override;
-  bool AddSubCommands() override { return true;}
+  bool AddSubCommands() override;
 };
 
 

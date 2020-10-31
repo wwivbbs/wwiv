@@ -123,6 +123,7 @@ public:
   void set_sub(int n, subboard_t s) { subs_[n] = std::move(s); }
   [[nodiscard]] const std::vector<subboard_t>& subs() const { return subs_; }
   bool insert(int n, subboard_t r);
+  bool add(subboard_t r);
   bool erase(int n);
   [[nodiscard]] int size() const { return wwiv::stl::size_int(subs_); }
 

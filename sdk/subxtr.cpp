@@ -344,6 +344,11 @@ bool Subs::insert(int n, subboard_t r) {
   return insert_at(subs_, n, r);
 }
 
+bool Subs::add(subboard_t r) {
+  subs_.emplace_back(r);
+  return true;
+}
+
 bool Subs::erase(int n) {
   return erase_at(subs_, n);
 }
