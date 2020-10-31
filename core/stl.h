@@ -16,18 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_STL_H__
-#define __INCLUDED_WWIV_CORE_STL_H__
+#ifndef INCLUDED_WWIV_CORE_STL_H
+#define INCLUDED_WWIV_CORE_STL_H
 
 #include "core/log.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include <algorithm>
 #include <iterator>
 #include <map>
 #include <string>
 
-namespace wwiv {
-namespace stl {
+namespace wwiv::stl {
 
 template <typename C>
 bool contains(C const& container, typename C::const_reference key) {
@@ -144,8 +144,32 @@ struct enum_hash {
   operator ()(T const value) const { return static_cast<std::size_t>(value); }
 };
 
-} // namespace stl
-} // namespace wwiv
+// Specialization for std::map
+template <typename K, typename V, typename C, class A=std::allocator<C>>
+V at(std::map<K, V, C, A> const& container, K const& pos) {
+  try {
+    return container.at(pos);
+  } catch (const std::out_of_range&) {
+    LOG(ERROR) << "Caught std::out_of_range on pos: " << pos;
+    LOG(ERROR) << wwiv::os::stacktrace();
+    DLOG(FATAL) << "Terminating in debug build.";
+    throw;
+  }
+}
+
+template <typename C, class Allocator=std::allocator<C>>
+typename C::const_reference at(C const& container, typename C::size_type pos) {
+  try {
+    return container.at(pos);
+  } catch (const std::out_of_range&) {
+    LOG(ERROR) << "Caught std::out_of_range on pos: " << pos;
+    LOG(ERROR) << wwiv::os::stacktrace();
+    DLOG(FATAL) << "Terminating in debug build.";
+    throw;
+  }
+}
+
+} // namespace
 
 
-#endif  // __INCLUDED_WWIV_CORE_STL_H__
+#endif

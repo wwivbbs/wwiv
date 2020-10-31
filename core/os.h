@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_OS_H__
-#define __INCLUDED_WWIV_CORE_OS_H__
+#ifndef INCLUDED_WWIV_CORE_OS_H
+#define INCLUDED_WWIV_CORE_OS_H
 
 #include "core/wwivport.h"
 #include <chrono>
@@ -25,8 +25,7 @@
 #include <functional>
 #include <string>
 
-namespace wwiv {
-namespace os {
+namespace wwiv::os {
 
 // Sleeps for a duration of time d, or until predicate returns true.
 // returns the value of predicate.
@@ -56,7 +55,6 @@ std::string stacktrace();
 // Gets the PID
 pid_t get_pid();
 
-} // namespace os
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_WWIV_CORE_OS_H__
+#endif

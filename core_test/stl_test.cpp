@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/stl.h"
-
+#include <deque>
 #include <map>
 #include <string>
 #include <vector>
@@ -30,7 +30,7 @@ using std::vector;
 using namespace wwiv::stl;
 
 TEST(StlTest, Contains_VectorInts) {
-  vector<int> ints = { 1, 2, 3 };
+  const vector<int> ints = { 1, 2, 3 };
 
   EXPECT_TRUE(contains(ints, 1));
   EXPECT_FALSE(contains(ints, 0));
@@ -38,7 +38,7 @@ TEST(StlTest, Contains_VectorInts) {
 }
 
 TEST(StlTest, Contains_VectorStrings) {
-  vector<string> strings = { "one", "two", "three" };
+  const vector<string> strings = { "one", "two", "three" };
 
   EXPECT_TRUE(contains(strings, "one"));
   EXPECT_FALSE(contains(strings, ""));
@@ -46,61 +46,61 @@ TEST(StlTest, Contains_VectorStrings) {
 }
 
 TEST(StlTest, Contains_MapStringInts) {
-  map<string, int> ints = { { "one", 1}, {"two", 2}, {"three", 3} };
+  const map<string, int> ints = { { "one", 1}, {"two", 2}, {"three", 3} };
 
   EXPECT_TRUE(contains(ints, "one"));
   EXPECT_FALSE(contains(ints, "zero"));
 }
 
 TEST(StlTest, Contains_MapStringStrings) {
-  map<string, string> strings = { { "one", "1" }, { "two", "2" }, { "three", "3" } };
+  const map<string, string> strings = { { "one", "1" }, { "two", "2" }, { "three", "3" } };
 
   EXPECT_TRUE(contains(strings, "one"));
   EXPECT_FALSE(contains(strings, "zero"));
 }
 
 TEST(StlTest, Contains_MapIntInts) {
-  map<int, int> ints = { { 0, 1}, {1, 2}, {2, 3} };
+  const map<int, int> ints = { { 0, 1}, {1, 2}, {2, 3} };
 
   EXPECT_TRUE(contains(ints, 1));
   EXPECT_FALSE(contains(ints, 3));
 }
 
 TEST(StlTest, Contains_MapConstStringStrings) {
-  map<const string, string> strings = {{"one", "1"},{"two", "2"},{"three", "3"}};
+  const map<const string, string> strings = {{"one", "1"},{"two", "2"},{"three", "3"}};
 
   EXPECT_TRUE(contains(strings, "one"));
   EXPECT_FALSE(contains(strings, "zero"));
 }
 
 TEST(StlTest, SizeAsInt) {
-  vector<int> v = {1, 2, 3};
-  auto vs = ssize(v);
+  const vector<int> v = {1, 2, 3};
+  const auto vs = ssize(v);
   EXPECT_EQ(3, vs);
 }
 
 TEST(StlTest, SizeAsInt32) {
-  vector<int> v = {1, 2, 3};
-  auto vs = size_int32(v);
+  const vector<int> v = {1, 2, 3};
+  const auto vs = size_int32(v);
   EXPECT_EQ(3, vs);
 }
 
 TEST(StlTest, SizeAsInt16) {
-  vector<int> v = {1, 2, 3};
-  auto vs = size_int16(v);
+  const vector<int> v = {1, 2, 3};
+  const auto vs = size_int16(v);
   EXPECT_EQ(3, vs);
 }
 
 TEST(StlTest, SizeAsInt8) {
-  vector<int> v = {1, 2, 3};
-  auto vs = size_int8(v);
+  const vector<int> v = {1, 2, 3};
+  const auto vs = size_int8(v);
   EXPECT_EQ(3, vs);
 }
 
 TEST(StlTest, InsertAt) {
   struct Foo { int a; };
   vector<Foo> v = {Foo{1}};
-  vector<Foo>::size_type pos = 0;
+  const vector<Foo>::size_type pos = 0;
   insert_at(v, pos, Foo{0});
   EXPECT_EQ(0, v[0].a);
   EXPECT_EQ(1, v[1].a);
@@ -109,9 +109,34 @@ TEST(StlTest, InsertAt) {
 TEST(StlTest, EraseAt) {
   struct Foo { int a; };
   vector<Foo> v = {Foo{0}, Foo{1}, Foo{2}};
-  vector<Foo>::size_type pos = 1;
+  const vector<Foo>::size_type pos = 1;
   erase_at(v, pos);
   EXPECT_EQ(0, v[0].a);
   EXPECT_EQ(2, v[1].a);
 }
 
+
+TEST(StlTest, At_Vector_Smoke) {
+  // ReSharper disable once CppLocalVariableMayBeConst
+  /**NOCONST */ std::vector<int> v{ 1, 2, 3 };
+
+  EXPECT_EQ(1, at(v, 0));
+}
+
+TEST(StlTest, At_Vector_Smoke_Const) {
+  const std::vector<int> v{ 1, 2, 3 };
+
+  EXPECT_EQ(1, at(v, 0));
+}
+
+TEST(StlTest, At_Dequeue_Smoke_Const) {
+  const std::deque<int> v{ 1, 2, 3 };
+
+  EXPECT_EQ(1, at(v, 0));
+}
+
+TEST(StlTest, At_Map_Smoke_Const) {
+  const std::map<int, char> v{ {1,'a'}, {2,'b'}, {3,'c'} };
+
+  EXPECT_EQ('a', at(v, 1));
+}
