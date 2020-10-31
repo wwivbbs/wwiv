@@ -157,6 +157,7 @@ static void modify_sub(int n) {
     bout << "|#9D) Read ACS   : |#2" << r.read_acs << wwiv::endl;
     bout << "|#9E) Post ACS   : |#2" << r.post_acs << wwiv::endl;
     bout << "|#9F) Anony      : |#2" << GetAnon(r) << wwiv::endl;
+    bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
     bout << "|#9J) Net info   : |#2";
     DisplayNetInfo(n);
 
@@ -290,7 +291,12 @@ static void modify_sub(int n) {
         break;
       }
     } break;
-    case 'J': {
+    case 'H': {
+      bout.nl();
+      bout << "|#2New Max Msgs? ";
+      r.maxmsgs = bin.input_number(r.maxmsgs);
+    } break;
+      case 'J': {
       const auto num_nets = wwiv::stl::ssize(a()->nets());
       if (!num_nets) {
         break;
