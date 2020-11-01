@@ -23,6 +23,10 @@
 #include <core/net.h>
 #include "sdk/config.h"
 
+namespace wwiv::sdk {
+class wwivd_config_t;
+}
+
 void BeforeStartServer();
 void signal_handler(int mysignal);
 void SwitchToNonRootUser(const std::string& wwiv_user);
@@ -33,6 +37,7 @@ void SwitchToNonRootUser(const std::string& wwiv_user);
  * since this is the child socket.
  * pid and node_number is just used for logging.
  */
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock);
+bool ExecCommandAndWait(const wwiv::sdk::wwivd_config_t& wc, const std::string& cmd,
+                        const std::string& pid, int node_number, SOCKET sock);
 
 #endif

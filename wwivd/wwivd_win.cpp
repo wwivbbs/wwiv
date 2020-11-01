@@ -23,7 +23,7 @@
 #include "core/os.h"
 #include "core/socket_connection.h"
 #include "core/strings.h"
-#include "sdk/config.h"
+#include "sdk/wwivd_config.h"
 #include <atomic>
 #include <iostream>
 #include <csignal>
@@ -58,7 +58,7 @@ void signal_handler(int mysignal) {
   } break;
   default: {
     std::cerr << "Unknown signal: " << mysignal << std::endl;
-  };
+  }
   }
 }
 
@@ -73,12 +73,22 @@ void BeforeStartServer() {
 void SwitchToNonRootUser(const std::string&) {
 }
 
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock) {
+bool ExecCommandAndWait(const wwivd_config_t& wc, const std::string& cmd, const std::string& pid,
+                        int node_number, SOCKET sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
-  STARTUPINFO si = { sizeof(STARTUPINFO) };
-  PROCESS_INFORMATION pi = {};
+  STARTUPINFO si{};
+  si.cb = sizeof(STARTUPINFO);
+
+  if (wc.launch_minimized) {
+    // dwFlags says to look at wShowWindow, and wShowWindow
+    // says to minimize
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_MINIMIZE;
+  }
+
+  PROCESS_INFORMATION pi{};
   char cmdstr[4000];
   to_char_array(cmdstr, cmd);
 

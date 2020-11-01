@@ -16,15 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_WWIVD_CONFIG_H__
-#define __INCLUDED_SDK_WWIVD_CONFIG_H__
+#ifndef INCLUDED_SDK_WWIVD_CONFIG_H
+#define INCLUDED_SDK_WWIVD_CONFIG_H
 
 #include "sdk/config.h"
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 struct wwivd_blocking_t {
   bool mailer_mode = false;
@@ -83,7 +82,7 @@ public:
   bool do_beginday_event{true};
   std::string beginday_cmd;
 
-  int http_port = -1;
+  int http_port{-1};
   std::string http_address;
 
   /** Blocking configuration */
@@ -99,17 +98,18 @@ public:
 #else
     2323;
 #endif
-  int ssh_port = -1;
+  int ssh_port{-1};
   /** Filename (under WWIV/GFILES) to display before showing the shuttle logon menu */
   std::string matrix_filename;
   /** Vector of BBS'es to display in the matrix logon. */
   std::vector<wwivd_matrix_entry_t> bbses;
+  /** Should the network and bbs connections be launched minimized */
+  bool launch_minimized{false};
 
   bool Load(const Config& config);
   bool Save(const Config& config);
 };
 
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_WWIVD_CONFIG_H__
+#endif

@@ -55,7 +55,7 @@ static bool LoadLinesIntoSet(std::unordered_set<string>& s, const std::vector<st
   return true;
 }
 
-GoodIp::GoodIp(const std::vector<std::string>& lines) { LoadLines(lines); }
+GoodIp::GoodIp(const std::vector<std::string>& lines) { (void)LoadLines(lines); }
 
 bool GoodIp::LoadLines(const std::vector<std::string>& lines) {
   return LoadLinesIntoSet(ips_, lines);
@@ -65,7 +65,7 @@ GoodIp::GoodIp(const std::filesystem::path& fn) {
   TextFile f(fn, "r");
   if (f) {
     const auto lines = f.ReadFileIntoVector();
-    LoadLines(lines);
+    (void)LoadLines(lines);
   }
 }
 

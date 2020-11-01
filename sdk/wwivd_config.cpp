@@ -81,20 +81,18 @@ void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
 
 template <class Archive>
 void serialize(Archive & ar, wwivd_config_t &a) {
-  ar(cereal::make_nvp("telnet_port", a.telnet_port));
-  ar(cereal::make_nvp("ssh_port", a.ssh_port));
-  ar(cereal::make_nvp("binkp_port", a.binkp_port));
-
-  ar(cereal::make_nvp("binkp_cmd", a.binkp_cmd));
+  SERIALIZE(a, telnet_port);
+  SERIALIZE(a, ssh_port);
+  SERIALIZE(a, binkp_port);
+  SERIALIZE(a, binkp_cmd);
   SERIALIZE(a, do_network_callouts);
   SERIALIZE(a, network_callout_cmd);
   SERIALIZE(a, do_beginday_event);
   SERIALIZE(a, beginday_cmd);
-
-  ar(cereal::make_nvp("http_address", a.http_address));
-  ar(cereal::make_nvp("http_port", a.http_port));
-
-  ar(cereal::make_nvp("bbses", a.bbses));
+  SERIALIZE(a, http_address);
+  SERIALIZE(a, http_port);
+  SERIALIZE(a, bbses);
+  SERIALIZE(a, launch_minimized);
   SERIALIZE(a, blocking);
 }
 

@@ -342,14 +342,14 @@ void wwivd_ui(const Config& config) {
       ->set_help_text("SSH Server Port Number (or -1 to disable).");
   y++;
   items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "HTTP Port:"),
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Port:"),
            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))
-      ->set_help_text("HTTP Server Port Number (or -1 to disable).");
+      ->set_help_text("Used for BBS node status [/status] (or -1 to disable).");
   y++;
   items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "HTTP Address:"),
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Address:"),
           new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, EditLineMode::ALL))
-      ->set_help_text("Network address to listen on for the HTTP Server.");
+      ->set_help_text("Network address for the BBS node status HTTP Server.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BinkP Port:"),
@@ -357,9 +357,9 @@ void wwivd_ui(const Config& config) {
       ->set_help_text("BINKP Server Port Number (or -1 to disable).");
   y++;
   items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, EditLineMode::ALL))
-      ->set_help_text("Command to execute for an inbound network request.");
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Launch Minimized:"),
+           new BooleanEditItem(COL1_POSITION, y, &c.launch_minimized))
+      ->set_help_text("Should wwivd launch bbs and network commands minimized (WIN32 Only)");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
@@ -382,6 +382,11 @@ void wwivd_ui(const Config& config) {
            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd,
                                             EditLineMode::ALL))
       ->set_help_text("Command to execute to perform a network callout.");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, EditLineMode::ALL))
+      ->set_help_text("Command to execute for an inbound network request.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
