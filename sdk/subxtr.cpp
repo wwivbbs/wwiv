@@ -249,7 +249,7 @@ bool Subs::LoadLegacy() {
 
   subs_.clear();
   for (decltype(old_subs)::size_type i = 0; i < old_subs.size(); i++) {
-    const auto& olds = old_subs.at(i);
+    const auto& olds = at(old_subs, i);
     auto& oldx = xsubs[i];
     subboard_t sub{};
     sub.name = olds.name;

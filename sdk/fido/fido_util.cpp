@@ -84,7 +84,7 @@ std::string dow_extension(int dow_num, int bundle_number) {
   // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
 
   static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
-  auto ext = dow.at(dow_num);
+  auto ext = at(dow, dow_num);
   auto c = static_cast<char>('0' + bundle_number);
   if (bundle_number > 9) {
     c = static_cast<char>('a' + bundle_number - 10);
@@ -168,9 +168,9 @@ daten_t fido_to_daten(std::string d) {
     string hms;
     stream >> hms;
     auto parts = SplitString(hms, ":");
-    t->tm_hour = to_number<int>(parts.at(0)) - 1;
-    t->tm_min = to_number<int>(parts.at(1));
-    t->tm_sec = to_number<int>(parts.at(2));
+    t->tm_hour = to_number<int>(at(parts, 0)) - 1;
+    t->tm_min = to_number<int>(at(parts, 1));
+    t->tm_sec = to_number<int>(at(parts, 2));
 
     auto result = mktime(t);
     if (result < 0) {
@@ -308,7 +308,7 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
     }
     if (line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
-      const auto code = line.at(1);
+      const auto code = at(line, 1);
       if (code < '0' || code > '9') {
         // Bogus control-D line, let's skip.
         VLOG(1) << "Invalid control-D line: '" << line << "'";
@@ -467,8 +467,8 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
       VLOG(2) << "Malformed route: " << route;
       return RouteMatch::no;
     }
-    const auto zone = to_number<uint16_t>(parts.at(0));
-    const auto net = to_number<uint16_t>(parts.at(1));
+    const auto zone = to_number<uint16_t>(at(parts, 0));
+    const auto net = to_number<uint16_t>(at(parts, 1));
     if (a.zone() == zone && a.net() == net) {
       return positive;
     }

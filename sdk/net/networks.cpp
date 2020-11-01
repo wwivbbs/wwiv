@@ -97,8 +97,9 @@ const net_networks_rec& Networks::at(size_type num) const {
     // invalid network in WWIV.
     return *network_255;
   }
-  return networks_.at(num);
+  return stl::at(networks_, num);
 }
+
 
 net_networks_rec& Networks::at(size_type num) { 
   if (networks_.empty()) {
@@ -116,7 +117,7 @@ net_networks_rec& Networks::at(size_type num) {
     // invalid network in WWIV.
     return *network_255;
   }
-  return networks_.at(num); 
+  return stl::at(networks_, num); 
 }
 
 net_networks_rec& Networks::at(const std::string& name) {

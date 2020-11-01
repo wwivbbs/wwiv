@@ -48,7 +48,7 @@ bool WWIVMessageHeader::local() const {
     // no network system
     return true;
   }
-  const int local_net = api_->network().at(net_num).sysnum;
+  const int local_net = stl::at(api_->network(), net_num).sysnum;
   return local_net == header_.ownersys;
 }
 

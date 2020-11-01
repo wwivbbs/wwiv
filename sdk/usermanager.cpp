@@ -31,7 +31,6 @@
 #include "sdk/user.h"
 #include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api_wwiv.h"
-#include <cstdlib>
 #include <memory>
 #include <vector>
 
@@ -151,11 +150,11 @@ static bool delete_votes(const std::string datadir, User& user) {
   }
   std::vector<votingrec> votes;
   voteFile.ReadVector(votes);
-  auto num_vote_records = voteFile.number_of_records();
+  const auto num_vote_records = voteFile.number_of_records();
   for (auto cur_vote = 0; cur_vote < 20; cur_vote++) {
     if (user.GetVote(cur_vote)) {
       if (cur_vote <= num_vote_records) {
-        auto &v = votes.at(cur_vote);
+        auto &v = wwiv::stl::at(votes, cur_vote);
         v.responses[user.GetVote(cur_vote) - 1].numresponses--;
       }
       user.SetVote(cur_vote, 0);

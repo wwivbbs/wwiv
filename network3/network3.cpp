@@ -305,8 +305,8 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const std::filesystem::p
   LOG(INFO) << "Writing BBSDATA.REG...";
   vector<int32_t> bbsdata_reg_data;
   const auto& reg = b.reg_number();
-  for (const auto& entry : b.node_config()) {
-    bbsdata_reg_data.push_back(reg.at(entry.first));
+  for (const auto& [node, _] : b.node_config()) {
+    bbsdata_reg_data.push_back(at(reg, node));
   }
   DataFile<int32_t> bbsdata_reg_file(FilePath(dir, BBSDATA_REG),
                                      File::modeBinary | File::modeReadWrite | File::modeCreateFile);
@@ -397,9 +397,9 @@ static void rename_pending_files(const std::filesystem::path& dir) {
 
 static void ensure_contact_net_entries(const Callout& callout, const net_networks_rec& net) {
   Contact contact(net, true);
-  for (const auto& entry : callout.callout_config()) {
+  for (const auto& [node, _] : callout.callout_config()) {
     // Ensure we have a contact entry for each node in callout.net
-    contact.ensure_rec_for(entry.first);
+    contact.ensure_rec_for(node);
   }
 }
 

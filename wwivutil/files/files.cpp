@@ -139,7 +139,7 @@ public:
       return 1;
     }
     sdk::files::FileApi api(config()->config()->datadir());
-    const auto& dir = dirs.at(area_num);
+    const auto& dir = at(dirs, area_num);
     auto area = api.Open(dir);
     if (!area) {
       LOG(ERROR) << "Unable to open area: #" << area_num << "; filename: " << dir.filename;
@@ -212,7 +212,7 @@ public:
       return 1;
     }
 
-    const auto& dir = dirs.at(area_num);
+    const auto& dir = at(dirs, area_num);
     sdk::files::FileApi api(config()->config()->datadir());
     auto area = api.Open(dir);
     if (!area) {

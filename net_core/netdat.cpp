@@ -40,10 +40,9 @@ char NetDat::NetDatMsgType(netdat_msgtype_t t) {
     return '-';
   case netdat_msgtype_t::error:
     return '!';
-  default:
-    LOG(FATAL) << "Missing case for " << static_cast<int>(t);
-    return 0;
   }
+  LOG(FATAL) << "Missing case for " << static_cast<int>(t);
+  return 0;
 }
 
 NetDat::NetDat(std::filesystem::path gfiles, const net_networks_rec& net, char net_cmd, Clock& clock)
@@ -179,10 +178,10 @@ bool NetDat::rollover() {
 
   auto r = open("rd");
   auto lines = r->ReadFileIntoVector(2);
-  if (lines.size() != 2 || lines.at(1).size() < 9) {
+  if (lines.size() != 2 || stl::at(lines, 1).size() < 9) {
     return false;
   }
-  const auto& l = lines.at(1);
+  const auto& l = stl::at(lines, 1);
   // We have a proper line.
   const auto ddate = l.substr(1);
   const auto ndate = clock_.Now().to_string("%m/%d/%y");

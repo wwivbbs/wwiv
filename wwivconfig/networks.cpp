@@ -441,9 +441,9 @@ public:
           } break;
           }
         } else if (result.type == ListBoxResultType::SELECTION) {
-          const string address_string = items.at(result.selected).text();
+          const auto address_string = wwiv::stl::at(items, result.selected).text();
           FidoAddress address(address_string);
-          fido_node_config_t c = callout.fido_node_config_for(address);
+          auto c = callout.fido_node_config_for(address);
           edit_fido_node_config(address, c);
           callout.insert(address, c);
         } else if (result.type == ListBoxResultType::NO_SELECTION) {
@@ -629,7 +629,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   Subs subs(config.datadir(), networks.networks());
   const auto subs_loaded = subs.Load();
 
-  auto& n = networks.at(nn);
+  auto& n = wwiv::stl::at(networks, nn);
   const string orig_network_name(n.name);
 
   constexpr auto LABEL1_POSITION = 2;

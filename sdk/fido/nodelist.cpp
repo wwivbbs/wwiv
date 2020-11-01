@@ -71,7 +71,7 @@ static bool internet_flag(const std::string& value, const std::string& flag_name
     }
     if (parts.size() == 3) {
       // flag:host:port
-      host = parts.at(1);
+      host = at(parts, 1);
     }
     return true;
   }

@@ -66,12 +66,12 @@ int SubReqCommand::Execute() {
     return 2;
   }
 
-  const auto net = config()->networks().at(arg("net").as_int());
+  const auto net = stl::at(config()->networks(),arg("net").as_int());
   const auto packet_filename = create_pend(net.dir, false, 'r');
-  const auto add_drop = upcase(r.at(0).front());
+  const auto add_drop = upcase(stl::at(r, 0).front());
 
   net_header_rec nh = {};
-  auto host = to_number<uint16_t>(r.at(2));
+  auto host = to_number<uint16_t>(stl::at(r, 2));
   nh.tosys = static_cast<uint16_t>(host);
   nh.touser = 1;
   nh.fromsys = net.sysnum;
@@ -83,7 +83,7 @@ int SubReqCommand::Execute() {
   nh.daten = daten_t_now();
   nh.method = 0;
   // This is an alphanumeric sub type.
-  const auto& subtype = r.at(1);
+  const auto& subtype = stl::at(r, 1);
   nh.length = subtype.size() + 1;
   auto text = ToStringUpperCase(subtype);
   text.push_back('\0');

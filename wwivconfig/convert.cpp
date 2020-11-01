@@ -251,11 +251,11 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
 
   // merge in data from user_config
   for (auto i = 0; i < wwiv::stl::ssize(users); i++) {
-    auto& u = users.at(i);
+    auto& u = wwiv::stl::at(users, i);
     if (i >= wwiv::stl::ssize(second_config)) {
       continue;
     }
-    const auto& c = second_config.at(i);
+    const auto& c = wwiv::stl::at(second_config, i);
     u.hot_keys = c.hot_keys;
     u.lp_options = c.lp_options;
     memcpy(u.lp_colors, c.lp_colors, sizeof(u.lp_colors));

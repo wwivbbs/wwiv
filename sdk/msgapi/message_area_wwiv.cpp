@@ -390,7 +390,7 @@ int WWIVMessageArea::DeleteExcess() {
 static bool has_ftn_network(const std::vector<subboard_network_data_t>& sub_nets, const std::vector<net_networks_rec>& nets) {
   for (const auto& x : sub_nets) {
     if (x.net_num >= 0 && x.net_num < stl::ssize(nets)) {
-      if (nets.at(x.net_num).type == network_type_t::ftn) {
+      if (at(nets, x.net_num).type == network_type_t::ftn) {
         return true;
       }
     }

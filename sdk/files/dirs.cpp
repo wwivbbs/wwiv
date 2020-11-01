@@ -113,7 +113,7 @@ bool Dirs::LoadLegacy() {
 
   dirs_.clear();
   for (auto i = 0; i < wwiv::stl::ssize(old_dirs); i++) {
-    const auto& olds = old_dirs.at(i);
+    const auto& olds = stl::at(old_dirs, i);
     directory_t dir{};
     dir.name = olds.name;
     dir.filename = olds.filename;

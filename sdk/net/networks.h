@@ -30,6 +30,8 @@ namespace wwiv::sdk {
 class Networks final {
 public:
   typedef int size_type;
+  typedef net_networks_rec& reference;
+  typedef const net_networks_rec& const_reference;
   static const size_type npos = -1;
   explicit Networks(const Config& config);
   // [[ VisibleForTesting ]]

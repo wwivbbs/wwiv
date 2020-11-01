@@ -66,9 +66,9 @@ struct directory_t {
   // ACS for accessing this area.
   std::string acs;
   // max files for directory
-  uint16_t maxfiles;
+  uint16_t maxfiles{500};
   // file type mask
-  uint16_t mask;
+  uint16_t mask{};
   // AREA TAGs (used for FTN File Echos)
   std::vector<dir_area_t> area_tags;
   friend std::ostream& operator<<(std::ostream& os, const directory_t& f);
@@ -76,6 +76,8 @@ struct directory_t {
 
 class Dirs final {
 public:
+  typedef directory_t& reference;
+  typedef const directory_t& const_reference;
   explicit Dirs(std::filesystem::path datadir, int max_backups);
   ~Dirs();
 

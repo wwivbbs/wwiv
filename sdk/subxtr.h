@@ -108,7 +108,7 @@ public:
   bool Load();
   bool Save();
 
-  [[nodiscard]] const subboard_t& sub(std::size_t n) const { return subs_.at(n); }
+  [[nodiscard]] const subboard_t& sub(std::size_t n) const { return wwiv::stl::at(subs_, n); }
   [[nodiscard]] const subboard_t& sub(const std::string& filename) const;
   subboard_t& sub(std::size_t n) { return subs_[n]; }
   subboard_t& sub(const std::string& filename);

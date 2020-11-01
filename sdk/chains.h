@@ -81,6 +81,8 @@ struct chain_t {
 class Chains final {
 public:
   typedef ssize_t size_type;
+  typedef chain_t& reference;
+  typedef const chain_t& const_reference;
   static const size_type npos = -1;
   explicit Chains(const Config& config);
   // [[ VisibleForTesting ]]

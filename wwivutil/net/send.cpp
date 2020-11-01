@@ -95,12 +95,12 @@ int SubSendCommand::Execute() {
   }
 
   const auto net_num = arg("net").as_int();
-  auto net = networks.at(net_num);
-  auto subtype = r.at(0);
-  auto host = to_number<uint16_t>(r.at(1));
-  int num = 10;
+  const auto net = stl::at(networks, net_num);
+  const auto subtype = stl::at(r, 0);
+  const auto host = to_number<uint16_t>(stl::at(r, 1));
+  auto num = 10;
   if (r.size() > 2) {
-    num = to_number<int>(r.at(2));
+    num = to_number<int>(stl::at(r, 2));
   }
   
   Subs subs(config()->config()->datadir(), networks.networks());
@@ -138,7 +138,7 @@ int SubSendCommand::Execute() {
     }
   }
 
-  const wwiv::sdk::msgapi::MessageApiOptions options{};
+  const MessageApiOptions options{};
   auto* x = new NullLastReadImpl();
   auto api = std::make_unique<WWIVMessageApi>(options, *config()->config(),
                                               config()->networks().networks(), x);

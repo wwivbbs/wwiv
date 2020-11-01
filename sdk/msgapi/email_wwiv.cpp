@@ -258,7 +258,7 @@ bool WWIVEmail::DeleteAllMailToOrFrom(int user_number) {
     return false;
   }
   for (auto i = 0; i < ssize(headers); i++) {
-    const auto& m = headers.at(i);
+    const auto& m = at(headers, i);
     if ((m.tosys == 0 && m.touser == user_number) || (m.fromsys == 0 && m.fromuser == user_number)) {
       DeleteMessage(i);
     }

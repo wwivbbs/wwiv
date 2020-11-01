@@ -212,8 +212,9 @@ bool FileArea::Sort(FileAreaSortType type) {
     return false;
   }
 
-  static const auto compare_funcs = CreateSortFunctions();
-  const auto f = compare_funcs.at(type);
+  const auto compare_funcs = CreateSortFunctions();
+  // stl::at didn't work
+  const auto& f = compare_funcs.at(type);
   std::sort(std::begin(files_) + 1, std::end(files_), f);
   dirty_ = true;
   return true;
@@ -221,7 +222,7 @@ bool FileArea::Sort(FileAreaSortType type) {
 
 // File specific
 FileRecord FileArea::ReadFile(int num) {
-  return FileRecord(files_.at(num));
+  return FileRecord(wwiv::stl::at(files_, num));
 }
 
 bool FileArea::AddFile(const FileRecord& f) {
@@ -275,8 +276,8 @@ bool FileArea::DeleteFile(const FileRecord& f, int file_number) {
 }
 
 bool FileArea::DeleteFile(int file_number) {
-  const auto old = files_.at(file_number);
-  if (!wwiv::stl::erase_at(files_, file_number)) {
+  const auto old = stl::at(files_, file_number);
+  if (!stl::erase_at(files_, file_number)) {
     return false;
   }
   // Attempt to delete the extended descriptions if they existed.
@@ -388,8 +389,8 @@ std::optional<int> FileArea::FindFile(const FileName& f) {
 }
 
 std::optional<int> FileArea::FindFile(const std::string& file_name) {
-  for (auto i = 0; i < wwiv::stl::ssize(files_); i++) {
-    const auto& c = files_.at(i);
+  for (auto i = 0; i < stl::ssize(files_); i++) {
+    const auto& c = stl::at(files_, i);
     if (file_name == c.filename) {
       return {i};
     }
@@ -416,8 +417,8 @@ std::optional<int> FileArea::SearchFile(const std::string& filemask, int start_n
     return std::nullopt;
   }
 
-  for (auto i = start_num; i < wwiv::stl::ssize(files_); i++) {
-    const auto& c = files_.at(i);
+  for (auto i = start_num; i < stl::ssize(files_); i++) {
+    const auto& c = stl::at(files_, i);
     if (aligned_wildcard_match(filemask, c.filename)) {
       return {i};
     }
@@ -458,7 +459,7 @@ std::filesystem::path FileArea::ext_path() {
 }
 
 bool FileArea::ValidateFileNum(const FileRecord& f, int num) {
-  const auto& o = files_.at(num);
+  const auto& o = stl::at(files_, num);
   if (f.aligned_filename() != o.filename) {
     LOG(ERROR) << "Mismatched File call for " << f.aligned_filename() << " vs: " << o.filename
                << " at pos: " << num;

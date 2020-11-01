@@ -68,13 +68,13 @@ FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
   initialized_ = true;
 }
 
-FidoCallout::~FidoCallout() {}
+FidoCallout::~FidoCallout() = default;
 
 fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) const {
   if (!contains(node_configs_, a)) {
     return {};
   }
-  return node_configs_.at(a).packet_config;
+  return at(node_configs_, a).packet_config;
 }
 
 const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
@@ -92,7 +92,6 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
 
   try {
     const auto node_config = fido_node_config_for(FidoAddress(node));
-    nc = {};
     nc.session_password = node_config.binkp_config.password;
     return &nc;
   } catch (const std::exception&) {
@@ -109,13 +108,13 @@ fido_node_config_t FidoCallout::fido_node_config_for(const FidoAddress& address)
   }
 
   if (contains(node_configs_, a)) {
-    return node_configs_.at(a);
+    return at(node_configs_, a);
   }
   return {};
 }
 
 fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) const {
-  FidoAddress a = address;
+  auto a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
     VLOG(2) << "FidoCallout::packet_config_for: Trying address without zone";
@@ -123,10 +122,10 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) 
   }
 
   // base config
-  fido_packet_config_t config = net_.fido.packet_config;
+  auto config = net_.fido.packet_config;
   if (contains(node_configs_, a)) {
     // handle overrides
-    const fido_packet_config_t n = node_configs_.at(a).packet_config;
+    const auto n = at(node_configs_, a).packet_config;
     if (!n.areafix_password.empty())
       config.areafix_password = n.areafix_password;
     if (!n.compression_type.empty())

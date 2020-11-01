@@ -20,6 +20,7 @@
 #include "sdk/status.h"
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include <iomanip>
@@ -84,7 +85,7 @@ public:
         std::cout << "qscan set requires a value" << endl;
         return 2;
       }
-      const auto s = remaining().at(1);
+      const auto s = stl::at(remaining(), 1);
       const auto v = to_number<uint32_t>(s);
       if (v <= 0) {
         std::cout << "invalid value: '" << s << "' (" << v << ")" << endl;

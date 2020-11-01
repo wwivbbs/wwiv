@@ -73,17 +73,17 @@ std::string PrintCommand::GetUsage() const {
      } break;
      // grab first
      case pipe_state_t::pipe: {
-       auto pipe_size = wwiv::stl::ssize(curpipe);
+       const auto pipe_size = stl::ssize(curpipe);
        if (std::isdigit(c) && pipe_size == 2) {
          curpipe.push_back(c);
          std::string ansitext;
          if (curpipe[1] == '#') {
-           int color = colors.at(curpipe[2] - '0');
-           ansitext = wwiv::sdk::ansi::makeansi(color, curatr);
+           const auto color = stl::at(colors, curpipe[2] - '0');
+           ansitext = makeansi(color, curatr);
            curatr = color;
          } else {
-           int color = to_number<int>(curpipe.substr(1));
-           ansitext = wwiv::sdk::ansi::makeansi(color, curatr);
+           const auto color = to_number<int>(curpipe.substr(1));
+           ansitext = makeansi(color, curatr);
            curatr = color;
          }
          out.append(ansitext);
@@ -116,7 +116,7 @@ int PrintCommand::Execute() {
     s = PipeCodesToAnsi(s);
   }
 
-  bool need_pause = false;
+  auto need_pause = false;
   if (!barg("ansi")) {
     std::cout << s << std::endl;
   } else {

@@ -169,6 +169,19 @@ typename C::const_reference at(C const& container, typename C::size_type pos) {
   }
 }
 
+template <typename C, class Allocator=std::allocator<C>>
+typename C::reference at(C& container, typename C::size_type pos) {
+  try {
+    return container.at(pos);
+  } catch (const std::out_of_range&) {
+    LOG(ERROR) << "Caught std::out_of_range on pos: " << pos;
+    LOG(ERROR) << wwiv::os::stacktrace();
+    DLOG(FATAL) << "Terminating in debug build.";
+    throw;
+  }
+}
+
+
 } // namespace
 
 
