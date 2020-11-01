@@ -146,7 +146,7 @@ struct enum_hash {
 
 // Specialization for std::map
 template <typename K, typename V, typename C, class A=std::allocator<C>>
-V at(std::map<K, V, C, A> const& container, K const& pos) {
+V at(std::map<K, V, C, A> const& container, typename std::decay<K>::type pos) {
   try {
     return container.at(pos);
   } catch (const std::out_of_range&) {

@@ -143,6 +143,7 @@ bool CommandLineCommand::HandleCommandLineArgument(const std::string& key,
   return SetCommandLineArgument(key, value, false);
 }
 
+
 bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const std::string& value,
                                                 bool default_value) {
   args_.erase(key); // "emplace" doesn't replace, so erase it first.
@@ -150,7 +151,7 @@ bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const st
     VLOG(1) << "No arg: " << key << " to use for dot argument.";
     return false;
   }
-  if (args_allowed_.at(key).is_boolean) {
+  if (at(args_allowed_, key).is_boolean) {
     if (value == "N" || value == "0" || value == "n" || iequals(value, "false")) {
       args_.emplace(key, CommandLineValue("false", default_value));
     } else {
@@ -171,7 +172,7 @@ CommandLineValue CommandLineCommand::arg(const std::string& name) const {
     VLOG(1) << "Unknown argument name: " << name << endl;
     return CommandLineValue("", true);
   }
-  return args_.at(name);
+  return at(args_, name);
 }
 
 bool CommandLineCommand::AddStandardArgs() {
@@ -242,7 +243,7 @@ int CommandLineCommand::Parse(int start_pos) {
     } else {
       if (contains(commands_allowed_, s)) {
         // If s is a sub-command, parse it, incrementing our pointer.
-        command_ = commands_allowed_.at(s).get();
+        command_ = at(commands_allowed_, s).get();
         i = command_->Parse(++i);
       } else {
         // Add all residue to list of remaining args.
