@@ -325,11 +325,18 @@ bool Subs::Save() {
   std::vector<xtrasubsrec> xsubs;
 
   for (const auto& s : subs_) {
-    subboardrec_422_t ls = {};
-    xtrasubsrec lx = {};
-    to_char_array(ls.name, s.name);
-    to_char_array(lx.desc, s.desc);
-    to_char_array(ls.filename, s.filename);
+    // Only copy over what data fits in the old format.
+    subboardrec_422_t ls{};
+    xtrasubsrec lx{};
+    if (s.name.size() < sizeof ls.name) {
+      to_char_array(ls.name, s.name);
+    }
+    if (s.desc.size() < sizeof lx.desc) {
+      to_char_array(lx.desc, s.desc);
+    }
+    if (s.filename.size() < sizeof ls.filename) {
+      to_char_array(ls.filename, s.filename);
+    }
     ls.key = s.key;
     ls.readsl = s.readsl;
     ls.postsl = s.postsl;

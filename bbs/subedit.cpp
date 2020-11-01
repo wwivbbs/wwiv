@@ -333,8 +333,9 @@ static void modify_sub(int n) {
         if (a()->subs().sub(n).name == "** New WWIV Message Sub **") {
           a()->subs().sub(n).name = a()->subs().sub(n).desc;
         }
-        if (a()->subs().sub(n).filename == "NONAME") {
-          a()->subs().sub(n).filename = a()->subs().sub(n).nets[0].stype;
+        const auto stype = a()->subs().sub(n).nets[0].stype;
+        if (a()->subs().sub(n).filename == "NONAME" && stype.size() <= 8) {
+          a()->subs().sub(n).filename = stype;
         }
       } else if (ch2 == 'D' || ch2 == 'M') {
         bout.nl();
