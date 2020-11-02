@@ -66,7 +66,7 @@ static bool display_sub_categories(const net_networks_rec& net) {
   }
   bout.nl();
   bout << "Available sub categories are:\r\n";
-  bool abort = false;
+  auto abort = false;
   string s;
   while (!abort && ff.ReadLine(&s)) {
     StringTrim(&s);
@@ -249,12 +249,7 @@ void sub_xtr_del(int n, int nn, int f) {
   }
 }
 
-void sub_xtr_add(int n, int nn) {
-  unsigned short i;
-  short opt;
-  char szDescription[100], s[100], onx[20], ch;
-  int onxi, gc;
-
+bool sub_xtr_add(int n, int nn) {
   // nn may be -1
   while (nn >= ssize(a()->subs().sub(n).nets)) {
     a()->subs().sub(n).nets.push_back({});
@@ -266,14 +261,15 @@ void sub_xtr_add(int n, int nn) {
   const auto num_nets = wwiv::stl::ssize(a()->nets());
   if (num_nets == 0) {
     LOG(ERROR) << "Called sub_xtr_add when no networks defined.";
-    return;
+    return false;
   }
 
   if (num_nets > 1) {
     std::set<char> odc;
+    char onx[20];
     onx[0] = 'Q';
     onx[1] = 0;
-    onxi = 1;
+    auto onxi = 1;
     bout.nl();
     for (auto ii = 0; ii < wwiv::stl::ssize(a()->nets()); ii++) {
       if (ii < 9) {
@@ -288,24 +284,22 @@ void sub_xtr_add(int n, int nn) {
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
     if (wwiv::stl::ssize(a()->nets()) < 9) {
-      ch = onek(onx);
+      auto ch = onek(onx);
       if (ch == 'Q') {
-        network_number = -1;
-      } else {
-        network_number = ch - '1';
+        return false;
       }
+      network_number = ch - '1';
     } else {
-      string mmk = mmkey(odc);
+      auto mmk = mmkey(odc);
       if (mmk == "Q") {
-        network_number = -1;
-      } else {
-        network_number = to_number<int>(mmk) - 1;
+        return false;
       }
+      network_number = to_number<int>(mmk) - 1;
     }
     if (network_number >= 0 && network_number < wwiv::stl::ssize(a()->nets())) {
       set_net_num(network_number);
     } else {
-      return;
+      return false;
     }
   }
   xnp.net_num = static_cast<int16_t>(network_number);
@@ -321,7 +315,7 @@ void sub_xtr_add(int n, int nn) {
   }
   xnp.stype = bin.input(stype_len, true);
   if (xnp.stype.empty()) {
-    return;
+    return false;
   }
 
   bool is_hosting = false;
@@ -347,15 +341,15 @@ void sub_xtr_add(int n, int nn) {
     if (bin.noyes()) {
       xnp.flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories(net)) {
-        gc = 0;
+        auto gc = 0;
         while (!gc) {
           bout.nl();
           bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
-          bin.input(s, 3);
-          i = to_number<uint16_t>(s);
-          if (i || IsEquals(s, "0")) {
+          auto s = bin.input(3);
+          auto i = to_number<uint16_t>(s);
+          if (i || s == "0") {
             TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
-            while (ff.ReadLine(s, 100)) {
+            while (ff.ReadLine(&s)) {
               int i1 = to_number<uint16_t>(s);
               if (i1 == i) {
                 gc = 1;
@@ -364,13 +358,13 @@ void sub_xtr_add(int n, int nn) {
               }
             }
             file.Close();
-            if (IsEquals(s, "0")) {
+            if (s == "0") {
               gc = 1;
             } else if (!xnp.category) {
               bout << "Illegal/invalid category.\r\n\n";
             }
           } else {
-            if (strlen(s) == 1 && s[0] == '?') {
+            if (s.size() == 1 && s.front() == '?') {
               display_sub_categories(net);
               continue;
             }
@@ -383,7 +377,7 @@ void sub_xtr_add(int n, int nn) {
     xnp.host = FTN_FAKE_OUTBOUND_NODE;
     const auto sub_file_name = FilePath(net.dir, StrCat("n", xnp.stype, ".net"));
 
-    auto addresses = wwiv::sdk::ReadFidoSubcriberFile(sub_file_name);
+    auto addresses = ReadFidoSubcriberFile(sub_file_name);
     bool done = false;
     do {
       a()->CheckForHangup();
@@ -403,17 +397,19 @@ void sub_xtr_add(int n, int nn) {
     } while (!done && !a()->sess().hangup());
 
   } else {
-    auto ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);
+    char description[100];
+    short opt;
+    auto ok = find_hostfor(net, xnp.stype, &(xnp.host), description, &opt);
 
     if (!ok) {
       bout.nl();
       bout << "|#2Which system (number) is the host? ";
-      bin.input(szDescription, 6);
-      xnp.host = to_number<uint16_t>(szDescription);
-      szDescription[0] = '\0';
+      bin.input(description, 6);
+      xnp.host = to_number<uint16_t>(description);
+      description[0] = '\0';
     }
     if (!a()->subs().sub(n).desc[0]) {
-      a()->subs().sub(n).desc = szDescription;
+      a()->subs().sub(n).desc = description;
     }
 
     if (xnp.host == net.sysnum) {
@@ -458,4 +454,5 @@ void sub_xtr_add(int n, int nn) {
   } else {
     a()->subs().sub(n).nets[nn] = xnp;
   }
+  return true;
 }

@@ -98,13 +98,19 @@ static string GetAnon(const subboard_t& r) {
   }
 }
 
+static const std::vector<std::string> nettypes{
+    {"WWIVnet  "},
+    {"FTN      "},
+    {"Internet "},
+    {"Newsgroup"}};
+
 static void DisplayNetInfo(size_t nSubNum) {
   if (a()->subs().sub(nSubNum).nets.empty()) {
     bout << "|#2Not networked.\r\n";
     return;
   }
 
-  bout << "\r\n|#9      Network      Type                 Host    Scrb   Flags\r\n";
+  bout << "\r\n|#9      Network      Host         Type                  Scrb   Flags\r\n";
   int i = 0;
   const auto& nets = a()->subs().sub(nSubNum).nets;
   for (const auto& sn : nets) {
@@ -115,21 +121,24 @@ static void DisplayNetInfo(size_t nSubNum) {
       continue;
     }
     const auto& net = a()->nets()[sn.net_num];
+    bout.bprintf("   |#9|#1%c|#9) |#2", static_cast<char>('a' + i));
     if (sn.host == 0) {
       std::string host = "<HERE>";
-      const auto dir = net.dir;
-      const auto net_file_name = fmt::format("n{}.net", dir, sn.stype);
+      const auto net_file_name = fmt::format("n{}.net", net.dir, sn.stype);
       std::set<uint16_t> subscribers;
-      ReadSubcriberFile(FilePath(dir, net_file_name), subscribers);
+      ReadSubcriberFile(FilePath(net.dir, net_file_name), subscribers);
       auto num = ssize(subscribers);
-      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n", i + 'a',
-                           net.name, sn.stype, host, num,
+      bout.bprintf("%-12.12s %-12.12s %-20.20s  %-4d  %s%s\r\n",
+                           net.name, host, sn.stype, num,
                            (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
+    } else if (net.type == network_type_t::ftn) {
+      const auto host = sn.ftn_uplinks.empty() ? "[-none-]" : sn.ftn_uplinks.begin()->as_string();
+      bout.bprintf("%-12.12s %-12.12s %s\r\n", net.name, host, sn.stype);
     } else {
       auto host = fmt::format("{} ", sn.host);
-      bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n", i + 'a', net.name,
-                           sn.stype, host, (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
+      bout.bprintf("%-12.12s %-12.12s %-20.20s  %s%s\r\n", net.name,
+                           host, sn.stype, (sn.flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                            (sn.flags & XTRA_NET_AUTO_INFO) ? auto_info_text : "");
     }
     ++i;
@@ -145,6 +154,7 @@ static string subname_using(const string& filename) {
   }
   return "";
 }
+
 static void modify_sub(int n) {
   auto r = a()->subs().sub(n);
   auto done = false;
@@ -247,7 +257,7 @@ static void modify_sub(int n) {
       bout.nl();
       bout << "|#2New Key (space = none) ? ";
       auto ch2 = onek("@%^&()_=\\|;:'\",` ");
-      r.key = (ch2 == SPACE) ? 0 : ch2;
+      r.key = (ch2 == SPACE) ? '\0' : ch2;
     } break;
     case 'D': {
       bout.nl();
@@ -310,7 +320,9 @@ static void modify_sub(int n) {
       }
 
       if (ch2 == 'A') {
-        sub_xtr_add(n, -1);
+        if (!sub_xtr_add(n, -1)) {
+          continue;
+        }
         if (a()->subs().sub(n).name == "** New WWIV Message Sub **") {
           a()->subs().sub(n).name = a()->subs().sub(n).desc;
         }
@@ -339,7 +351,9 @@ static void modify_sub(int n) {
               sub_xtr_del(n, i, 1);
             } else {
               sub_xtr_del(n, i, 0);
-              sub_xtr_add(n, i);
+              if (!sub_xtr_add(n, i)) {
+                continue;
+              }
             }
           }
         }
@@ -397,8 +411,8 @@ static void modify_sub(int n) {
 }
 
 static void swap_subs(int sub1, int sub2) {
-  subconf_t sub1conv = static_cast<subconf_t>(sub1);
-  subconf_t sub2conv = static_cast<subconf_t>(sub2);
+  auto sub1conv = static_cast<subconf_t>(sub1);
+  auto sub2conv = static_cast<subconf_t>(sub2);
 
   if (sub1 < 0 || sub1 >= ssize(a()->subs().subs()) || sub2 < 0 ||
       sub2 >= ssize(a()->subs().subs())) {
@@ -408,10 +422,10 @@ static void swap_subs(int sub1, int sub2) {
   update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
-  int nNumUserRecords = a()->users()->num_user_records();
+  const auto num_user_records = a()->users()->num_user_records();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
-  for (int i = 1; i <= nNumUserRecords; i++) {
+  for (int i = 1; i <= num_user_records; i++) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
     uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -475,7 +489,7 @@ static void insert_sub(int n) {
   // Insert new item.
   a()->subs().insert(n, r);
 
-  const auto nNumUserRecords = a()->users()->num_user_records();
+  const auto num_user_records = a()->users()->num_user_records();
 
   auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -486,7 +500,7 @@ static void insert_sub(int n) {
   uint32_t m2 = 0xffffffff << ((n % 32) + 1);
   uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
-  for (int i = 1; i <= nNumUserRecords; i++) {
+  for (auto i = 1; i <= num_user_records; i++) {
     read_qscn(i, pTempQScan.get(), true);
 
     if (pTempQScan[0] != 999 && pTempQScan[0] >= static_cast<uint32_t>(n)) {
@@ -528,7 +542,7 @@ static void delete_sub(int n) {
     sub_xtr_del(n, 0, 1);
   }
   a()->subs().erase(n);
-  int nNumUserRecords = a()->users()->num_user_records();
+  const int num_user_records = a()->users()->num_user_records();
 
   auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len() + 1);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -538,7 +552,7 @@ static void delete_sub(int n) {
   uint32_t m2 = 0xffffffff << (n % 32);
   uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
-  for (int i = 1; i <= nNumUserRecords; i++) {
+  for (int i = 1; i <= num_user_records; i++) {
     read_qscn(i, pTempQScan.get(), true);
 
     if (pTempQScan[0] != 999) {
@@ -572,14 +586,14 @@ static void delete_sub(int n) {
 }
 
 void boardedit() {
-  bool confchg = false;
+  auto confchg = false;
   subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
   }
   showsubs();
-  bool done = false;
+  auto done = false;
   a()->status_manager()->RefreshStatusCache();
   do {
     bout.nl();
@@ -604,13 +618,13 @@ void boardedit() {
       if (a()->subs().subs().size() < a()->config()->max_subs()) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        int subnum1 = bin.input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
+        auto subnum1 = bin.input_number(-1, 0, ssize(a()->subs().subs()) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        const int subnum2 = bin.input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
+        const auto subnum2 = bin.input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
         if (subnum2 <= 0) {
           break;
         }
@@ -642,7 +656,7 @@ void boardedit() {
       } else {
         subnum = to_number<uint16_t>(s);
       }
-      if (!s.empty() && subnum >= 0 && subnum <= ssize(a()->subs().subs())) {
+      if (!s.empty() && subnum <= ssize(a()->subs().subs())) {
         insert_sub(subnum);
         modify_sub(subnum);
         confchg = true;
@@ -669,7 +683,7 @@ void boardedit() {
     case 'D': {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      const int subnum = bin.input_number(-1, 1, ssize(a()->subs().subs()) - 1, false);
+      const int subnum = bin.input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
         bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";

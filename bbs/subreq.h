@@ -15,10 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_SUBREQ_H__
-#define __INCLUDED_BBS_SUBREQ_H__
+#ifndef INCLUDED_BBS_SUBREQ_H
+#define INCLUDED_BBS_SUBREQ_H
 
 void sub_xtr_del(int n, int nn, int f);
-void sub_xtr_add(int n, int nn);
+/**
+ * Adds a new sub network reference to the network n
+ * Returns true on success, false if aborted.
+ */
+bool sub_xtr_add(int n, int nn);
 
-#endif // __INCLUDED_BBS_SUBREQ_H__
+#endif
