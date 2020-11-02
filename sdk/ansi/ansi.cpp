@@ -87,7 +87,7 @@ bool Ansi::write_in_sequence(char c) {
     }
     ansi_sequence_.push_back(c);
     return true;
-  };
+  }
   case '[': {
     if (ansi_sequence_.size() != 1) {
       return ansi_sequence_error(c);

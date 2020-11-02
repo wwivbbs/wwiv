@@ -20,15 +20,14 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "bbs/confutil.h"
+#include "bbs/utility.h"
+#include "common/datetime.h"
 #include "common/macro_context.h"
 #include "common/pause.h"
-#include "common/datetime.h"
-#include "fmt/printf.h"
-#include "core/strings.h"
 #include "core/datetime.h"
+#include "core/strings.h"
+#include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"
@@ -52,14 +51,13 @@ std::string BbsMacroContext::interpret(char ch) const {
     switch (ch) {
     case '@':                               // Dir name
       return context_->session_context().current_dir().name;
-    case '~':                               // Total mails/feedbacks sent
+    case '~':                               // Total mails/feed backs sent
       return to_string(context_->u().GetNumEmailSent() + context_->u().GetNumFeedbackSent() +
                        context_->u().GetNumNetEmailSent());
     case '/':                               // Today's date
       return fulldate();
     case '%':                               // Time left today
       return to_string(static_cast<int>(nsl() / 60));
-      break;
     case '#':                               // User's number
       return to_string(a()->sess().user_num());
     case '$':                               // File points (UNUSED)
@@ -127,7 +125,7 @@ std::string BbsMacroContext::interpret(char ch) const {
       }
       const auto cn = userconf_to_dirconf(x);
       return a()->dirconfs[cn].conf_name;
-    } break;
+    }
     case 'K':                               // Kb uploaded
       return to_string(context_->u().uk());
     case 'k':                               // Kb downloaded
@@ -205,24 +203,24 @@ bool BbsMacroFilter::write(char c) {
       chain_->write(ch);
     }
     return true;
-  } else if (in_pipe_) {
+  }
+  if (in_pipe_) {
     if (c == '@') {
       in_macro_ = true;
       in_pipe_ = false;
       return true;
-    } else {
-      in_macro_ = false;
-      in_pipe_ = false;
-      chain_->write('|');
-      return chain_->write(c);
     }
-  } else if (c == '|') {
+    in_macro_ = false;
+    in_pipe_ = false;
+    chain_->write('|');
+    return chain_->write(c);
+  }
+  if (c == '|') {
     in_pipe_ = true;
     in_macro_ = false;
     return true;
-  } else {
-    return chain_->write(c);
   }
+  return chain_->write(c);
 }
 
 bool BbsMacroFilter::attr(uint8_t a) { 

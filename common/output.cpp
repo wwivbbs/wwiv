@@ -247,29 +247,28 @@ int Output::bputs(const string& text) {
     // pipe codes.
     if (*it == '|') {
       ++it;
-      if (it == fin) { bputch('|', true);  break; }
+      if (it == fin) {
+        bputch('|', true);
+        break;
+      }
       if (std::isdigit(*it)) {
         const auto color = pipecode_int(it, fin, 2);
         if (color < 16) {
           bputs(MakeSystemColor(color | (curatr() & 0xf0)));
-        }
-        else {
+        } else {
           const auto bg = static_cast<uint8_t>(color << 4);
           const uint8_t fg = curatr() & 0x0f;
           bputs(MakeSystemColor(bg | fg));
         }
-      }
-      else if (*it == '@') {
+      } else if (*it == '@') {
         ++it;
         auto s = ctx.interpret(*it++);
         bout.bputs(s);
-      }
-      else if (*it == '#') {
+      } else if (*it == '#') {
         ++it;
-        const int color = pipecode_int(it, fin, 1);
+        const auto color = pipecode_int(it, fin, 1);
         bputs(MakeColor(color));
-      }
-      else {
+      } else {
         bputch('|', true);
       }
     }
@@ -313,7 +312,7 @@ int Output::bpla(const std::string& text, bool *abort) {
 
 // This one doesn't do a newline. (used to be osan)
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
-  wwiv::core::bus().invoke<CheckForHangupEvent>();
+  core::bus().invoke<CheckForHangupEvent>();
   bin.checka(abort, next);
   auto ret = 0;
   if (!bin.checka(abort, next)) {

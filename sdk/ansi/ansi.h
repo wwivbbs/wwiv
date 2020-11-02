@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_ANSI_H__
-#define __INCLUDED_SDK_ANSI_H__
+#ifndef INCLUDED_SDK_ANSI_H
+#define INCLUDED_SDK_ANSI_H
 
 #include "sdk/ansi/vscreen.h"
 #include <cstdint>
@@ -24,9 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace ansi {
+namespace wwiv::sdk::ansi {
 
 enum class AnsiMode { in_sequence, not_in_sequence };
 
@@ -46,9 +44,10 @@ public:
 class Ansi final : public AnsiFilter {
 public:
   Ansi(VScreen* b, AnsiCallbacks callbacks, uint8_t default_attr);
-  virtual ~Ansi() = default;
+  ~Ansi() override = default;
 
   bool write(char c) override;
+
   bool write(const std::string& s) {
     auto result = true;
     for (const auto c : s) {
@@ -58,8 +57,11 @@ public:
     }
     return result;
   }
+
   bool attr(uint8_t a) override;
+
   bool reset();
+
   [[nodiscard]] AnsiMode state() const noexcept { return state_; }
 
 private:
@@ -96,8 +98,6 @@ private:
   const std::vector<uint8_t> colors_;
 };
 
-} // namespace ansi
-} // namespace sdk
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SDK_ANSI_H__
+#endif

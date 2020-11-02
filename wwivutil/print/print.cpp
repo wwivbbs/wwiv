@@ -59,9 +59,9 @@ std::string PrintCommand::GetUsage() const {
    out.reserve(static_cast<int>(wwiv::stl::ssize(s) * 1.1));
    auto state = pipe_state_t::text;
    std::string curpipe;
-   int curatr = 0x07;
-   for (auto it = std::begin(s); it != std::end(s); it++) {
-     char c = *it;
+   auto curatr = 0x07;
+   for (auto it = std::begin(s); it != std::end(s); ++it) {
+     const auto c = *it;
      switch (state) {
      case pipe_state_t::text: {
        if (c == '|') {

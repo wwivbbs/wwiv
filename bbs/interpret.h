@@ -15,40 +15,38 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_INTERPRET_H__
-#define __INCLUDED_BBS_INTERPRET_H__
+#ifndef INCLUDED_BBS_INTERPRET_H
+#define INCLUDED_BBS_INTERPRET_H
 
 #include "common/context.h"
 #include "common/macro_context.h"
 #include "sdk/ansi/ansi.h"
-#include "sdk/files/dirs.h"
-#include "sdk/user.h"
 #include <string>
 
-class BbsMacroContext : public wwiv::common::MacroContext {
+class BbsMacroContext final : public wwiv::common::MacroContext {
 public:
-  BbsMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
-  ~BbsMacroContext() = default;
+  explicit BbsMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
+  ~BbsMacroContext() override = default;
 
-  std::string interpret(char c) const override;
+  [[nodiscard]] std::string interpret(char c) const override;
   void set_config(wwiv::sdk::Config* config) { config_ = config; }
 
 private:
   wwiv::sdk::Config* config_{nullptr};
 };
 
-class BbsMacroFilter : public wwiv::sdk::ansi::AnsiFilter {
+class BbsMacroFilter final : public wwiv::sdk::ansi::AnsiFilter {
 public:
-  BbsMacroFilter(wwiv::sdk::ansi::AnsiFilter* chain, const wwiv::common::MacroContext* ctx)
-      : chain_(chain), ctx_(ctx){};
+  BbsMacroFilter(AnsiFilter* chain, const wwiv::common::MacroContext* ctx)
+      : chain_(chain), ctx_(ctx) {}
   bool write(char c) override;
   bool attr(uint8_t a) override;
 
 private:
-  wwiv::sdk::ansi::AnsiFilter* chain_;
+  AnsiFilter* chain_;
   const wwiv::common::MacroContext* ctx_;
   bool in_pipe_{false};
   bool in_macro_{false};
 };
 
-#endif // __INCLUDED_BBS_INTERPRET_H__
+#endif
