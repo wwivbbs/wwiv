@@ -863,11 +863,6 @@ void beginday(bool displayStatus) {
   status->NewDay();
 
   if (displayStatus) {
-    bout << "  |#7* |#1Cleaning up log files...\r\n";
-  }
-  File::Remove(FilePath(a()->config()->gfilesdir(), status->GetLogFileName(2)));
-
-  if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
   File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
@@ -899,14 +894,14 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
   }
-  int nus = a()->config()->max_users() - status->GetNumUsers();
+  const int nus = a()->config()->max_users() - status->GetNumUsers();
 
   a()->status_manager()->CommitTransaction(std::move(status));
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  auto fk = File::freespace_for_path(a()->config()->datadir());
+  const auto fk = File::freespace_for_path(a()->config()->datadir());
 
   if (fk < 512) {
     ssm(1) << "Only " << fk << "k free in data directory.";
@@ -927,9 +922,7 @@ void beginday(bool displayStatus) {
     bout << "|#7* |#1Done!\r\n";
   }
 
-  sysoplog(false);
   sysoplog(false) << "* Ran Daily Maintenance...";
-  sysoplog(false);
   LOG(INFO) << "Completed executing beginday";
 }
 
