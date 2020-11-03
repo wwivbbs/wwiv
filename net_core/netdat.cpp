@@ -21,6 +21,7 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "fmt/format.h"
+#include "fmt/printf.h"
 #include "net_core/netdat.h"
 #include "core/numbers.h"
 #include "sdk/net/net.h"
@@ -45,22 +46,31 @@ char NetDat::NetDatMsgType(netdat_msgtype_t t) {
   return 0;
 }
 
-NetDat::NetDat(std::filesystem::path gfiles, const net_networks_rec& net, char net_cmd, Clock& clock)
-  : gfiles_(std::move(gfiles)), net_(net), net_cmd_(net_cmd), clock_(clock) {
+NetDat::NetDat(std::filesystem::path gfiles, std::filesystem::path logs,
+               const net_networks_rec& net, char net_cmd, Clock& clock)
+    : gfiles_(std::move(gfiles)), logs_(std::move(logs)), net_(net), net_cmd_(net_cmd),
+      clock_(clock) {
   rollover();
-  file_ = open("ad");
+  file_ = open("ad", 0);
   if (file_->position() == 0) {
     // Write Header.
     const auto ndate = clock_.Now().to_string("%m/%d/%y");
-    const auto header = fmt::format("\r\n={}\r\n", ndate);
-    file_->Write(header);
+    file_->WriteLine("");
+    const auto header = fmt::format("={}", ndate);
+    file_->WriteLine(header);
   }
 }
 
 NetDat::~NetDat() {
-  WriteStats();
-  WriteLines();
-  file_->Close();
+  try {
+    WriteStats();
+    WriteLines();
+    file_->Close();
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Caught Exception " << e.what();
+  } catch (...) {
+    LOG(ERROR) << "Caught Unknown Exception ";
+  }
 }
 
 void NetDat::WriteHeader() {
@@ -173,28 +183,46 @@ std::string NetDat::ToDebugString() const {
   return ss.str();
 }
 
-
-bool NetDat::rollover() {
-
-  auto r = open("rd");
+std::optional<std::string> NetDat::netdat_date_mmddyy(int num) const {
+  auto r = open("rd", num);
+  if (!r || !r->IsOpen()) {
+    return std::nullopt;
+  }
   auto lines = r->ReadFileIntoVector(2);
   if (lines.size() != 2 || stl::at(lines, 1).size() < 9) {
-    return false;
+    return std::nullopt;
   }
   const auto& l = stl::at(lines, 1);
   // We have a proper line.
-  const auto ddate = l.substr(1);
-  const auto ndate = clock_.Now().to_string("%m/%d/%y");
-  if (ddate == ndate) {
-    return false;
-  }
+  return l.substr(1);
+}
 
-  // Finally, we need to rollover.
-  r->Close();
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+bool NetDat::rollover() {
+  if (const auto ddate = netdat_date_mmddyy(0)) {
+    const auto ndate = clock_.Now().to_string("%m/%d/%y");
+    if (ddate.value() == ndate) {
+      return false;
+    }
+  }
 
   const auto n0 = FilePath(gfiles_, "netdat0.log");
   const auto n1 = FilePath(gfiles_, "netdat1.log");
   const auto n2 = FilePath(gfiles_, "netdat2.log");
+
+  if (const auto ropt = netdat_date_mmddyy(2)) {
+    const auto& r = ropt.value();
+    if (r.size() == 8) {
+      const auto m = r.substr(0, 2);
+      const auto d = r.substr(3, 2);
+      const auto y = r.substr(6, 2);
+      // This will work through 2100
+      auto log = fmt::format("netdat-20{}{}{}", y, m, d);
+      const auto nz = FilePath(logs_, log);
+      File::Move(n2, nz);
+    }
+  }
   File::Remove(n2);
   File::Move(n1, n2);
   File::Move(n0, n1);
@@ -202,8 +230,9 @@ bool NetDat::rollover() {
   return true;
 }
 
-std::unique_ptr<TextFile> NetDat::open(const std::string& mode) const {
- return std::make_unique<TextFile>(FilePath(gfiles_, "netdat0.log"), mode);
+std::unique_ptr<TextFile> NetDat::open(const std::string& mode, int num) const {
+  return std::make_unique<TextFile>(FilePath(gfiles_, 
+    fmt::format("netdat{}.log", num)), mode);
 
 }
 }

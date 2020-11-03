@@ -23,6 +23,7 @@
 #include <memory>
 #include <map>
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 struct net_networks_rec;
@@ -51,7 +52,8 @@ public:
   
   static char NetDatMsgType(netdat_msgtype_t t);
 
-  explicit NetDat(std::filesystem::path gfiles, const net_networks_rec& net, char net_cmd, core::Clock& clock);
+  NetDat(std::filesystem::path gfiles, std::filesystem::path logs, const net_networks_rec& net,
+         char net_cmd, core::Clock& clock);
 
   ~NetDat();
 
@@ -61,15 +63,17 @@ public:
   void add_message(netdat_msgtype_t t, const std::string& msg);
   [[nodiscard]] bool empty() const;
   [[nodiscard]] std::string ToDebugString() const;
+  // Gets the filedate as "MM/DD/YY" from netdat{num}
+  [[nodiscard]] std::optional<std::string> netdat_date_mmddyy(int num) const;
 
 private:
   bool rollover();
   void WriteHeader();
   void WriteLine(const std::string& s);
-  [[nodiscard]] std::unique_ptr<TextFile> open(const std::string& mode) const;
-
+  [[nodiscard]] std::unique_ptr<TextFile> open(const std::string& mode, int num) const;
 
   std::filesystem::path gfiles_;
+  std::filesystem::path logs_;
   const net_networks_rec& net_;
   const char net_cmd_;
   core::Clock& clock_;

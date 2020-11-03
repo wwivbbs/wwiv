@@ -145,8 +145,8 @@ NetworkF::NetworkF(const wwiv::net::NetworkCommandLine& net_cmdline,
                    const wwiv::sdk::BbsListNet& bbslist, wwiv::core::Clock& clock)
     : net_cmdline_(net_cmdline), bbslist_(bbslist), clock_(clock), net_(net_cmdline_.network()),
       fido_callout_(net_cmdline_.config(), net_),
-      netdat_(net_cmdline_.config().gfilesdir(), net_, net_cmdline_.net_cmd(), clock_) {
-}
+      netdat_(net_cmdline_.config().gfilesdir(), net_cmdline_.config().logdir(), net_,
+              net_cmdline_.net_cmd(), clock_) {}
 
 
 NetworkF::~NetworkF() = default;

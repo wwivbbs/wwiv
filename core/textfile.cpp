@@ -135,9 +135,15 @@ bool TextFile::Close() noexcept {
   return true;
 }
 
-ssize_t TextFile::WriteChar(char ch) noexcept { return fputc(ch, file_); }
+// ReSharper disable once CppMemberFunctionMayBeConst
+ssize_t TextFile::WriteChar(char ch) noexcept {
+  DCHECK(file_);
+  return fputc(ch, file_);
+}
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 ssize_t TextFile::Write(const std::string& text) noexcept {
+  DCHECK(file_);
   return static_cast<ssize_t>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
 }
 
@@ -187,7 +193,14 @@ bool TextFile::ReadLine(string* out) noexcept {
   return true;
 }
 
-const std::filesystem::path& TextFile::path() const noexcept { return file_name_; }
+File::size_type TextFile::position() const noexcept {
+  DCHECK(file_);
+  return ftell(file_);
+}
+
+const std::filesystem::path& TextFile::path() const noexcept {
+  return file_name_;
+}
 
 std::string TextFile::full_pathname() const { return file_name_.string(); }
 

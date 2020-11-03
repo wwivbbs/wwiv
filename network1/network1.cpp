@@ -70,7 +70,9 @@ int NetworkStat::k() const {
 Network1::Network1(const NetworkCommandLine& cmdline, const BbsListNet& bbslist,
                    wwiv::core::Clock& clock)
     : net_cmdline_(cmdline), bbslist_(bbslist), clock_(clock), net_(net_cmdline_.network()),
-      netdat_(net_cmdline_.config().gfilesdir(), net_, net_cmdline_.net_cmd(), clock_) {}
+      netdat_(net_cmdline_.config().gfilesdir(),
+        net_cmdline_.config().logdir(), 
+        net_, net_cmdline_.net_cmd(), clock_) {}
 
 
 /**

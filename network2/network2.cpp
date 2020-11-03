@@ -282,7 +282,7 @@ int network2_main(const NetworkCommandLine& net_cmdline) {
 
     const auto user_manager = make_unique<UserManager>(config);
     SystemClock clock{};
-    NetDat netdat(config.gfilesdir(), net, net_cmdline.net_cmd(), clock);
+    NetDat netdat(config.gfilesdir(), config.logdir(), net, net_cmdline.net_cmd(), clock);
 
     Context context(config, net, *user_manager, networks.networks(), netdat);
     context.network_number = net_cmdline.network_number();

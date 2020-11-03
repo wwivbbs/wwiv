@@ -543,7 +543,8 @@ static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   const auto& net = net_cmdline.network();
   const auto b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
   SystemClock clock;
-  NetDat netdat(net_cmdline.config().gfilesdir(), net_cmdline.network(), net_cmdline.net_cmd(), clock);
+  NetDat netdat(net_cmdline.config().gfilesdir(), net_cmdline.config().logdir(),
+                net_cmdline.network(), net_cmdline.net_cmd(), clock);
   if (b.empty()) {
     LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
     return 1;

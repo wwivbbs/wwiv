@@ -124,7 +124,7 @@ public:
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
   [[nodiscard]] bool ReadLine(std::string* out) noexcept;
-  [[nodiscard]] wwiv::core::File::size_type position() const noexcept { return ftell(file_); }
+  [[nodiscard]] wwiv::core::File::size_type position() const noexcept;
   [[nodiscard]] const std::filesystem::path& path() const noexcept;
   [[nodiscard]] std::string full_pathname() const;
   [[nodiscard]] FILE* GetFILE() const noexcept { return file_; }

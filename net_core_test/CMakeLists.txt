@@ -4,6 +4,7 @@ enable_testing()
 include_directories(${GTEST_INCLUDE_DIRS})
 
 set(test_sources
+  netdat_test.cpp
   net_cmdline_test.cpp
   net_core_test_main.cpp
 )
