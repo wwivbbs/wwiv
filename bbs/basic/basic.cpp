@@ -37,9 +37,6 @@
 #include <string>
 #include <vector>
 
-// ReSharper disable once CppUnusedIncludeDirective
-// ReSharper disable once CppUnusedIncludeDirective
-
 using std::string;
 using std::vector;
 using namespace wwiv::core;
@@ -68,9 +65,9 @@ int my_input(const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
     script_out().bputs(prompt);
   }
-  const auto v = bin.input_text("", size);
+  const auto v = script_in().input_text("", size);
   strcpy(buf, v.c_str());
-  return wwiv::stl::size_int(v);
+  return stl::size_int(v);
 }
 
 static bool RegisterMyBasicGlobals() {
@@ -198,8 +195,8 @@ mb_interpreter_t* Basic::SetupBasicInterpreter() {
   // mb_debug_set_stepped_handler(bas, _on_step-ped);
   mb_set_error_handler(bas, _on_error);
 
-  mb_set_import_handler(bas, [](struct mb_interpreter_t* bas, const char* p) -> int {
-    return (LoadBasicFile(bas, p)) ? MB_FUNC_OK : MB_FUNC_ERR;
+  mb_set_import_handler(bas, [](struct mb_interpreter_t* b, const char* p) -> int {
+    return LoadBasicFile(b, p) ? MB_FUNC_OK : MB_FUNC_ERR;
   });
 
   mb_set_printer(bas, my_print);
@@ -219,6 +216,8 @@ bool Basic::RegisterDefaultNamespaces() {
 bool Basic::RunScript(const std::string& module, const std::string& text) {
 
   script_userdata_.module = module;
+  script_userdata_.in = &bin_;
+  script_userdata_.out = &bout_;
   mb_set_userdata(bas_, &script_userdata_);
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
@@ -243,7 +242,7 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
 bool Basic::RunScript(const std::string& script_name) {
   const auto path = FilePath(config_.scriptdir(), script_name);
   if (!File::Exists(path)) {
-    script_out() << "|#6Unable to locate script: " << script_name;
+    bout_ << "|#6Unable to locate script: " << script_name;
     return false;
   }
 

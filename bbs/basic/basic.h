@@ -23,8 +23,8 @@
 
 namespace wwiv::common {
 class Input;
-}
 class Output;
+}
 
 namespace wwiv::sdk {
 class Config;
@@ -35,21 +35,21 @@ namespace wwiv::bbs::basic {
 
 class Basic {
 public:
-  Basic(wwiv::common::Input& i, wwiv::common::Output& o, const wwiv::sdk::Config& config,
-        wwiv::common::Context* ctx);
+  Basic(common::Input& i, common::Output& o, const sdk::Config& config,
+        common::Context* ctx);
 
   bool RunScript(const std::string& script_name);
   bool RunScript(const std::string& module, const std::string& text);
-  mb_interpreter_t* bas() const noexcept { return bas_; }
+  [[nodiscard]] mb_interpreter_t* bas() const noexcept { return bas_; }
 
 private:
   bool RegisterDefaultNamespaces();
   static mb_interpreter_t* SetupBasicInterpreter();
 
-  wwiv::common::Input& bin_;
-  wwiv::common::Output& bout_;
-  const wwiv::sdk::Config& config_;
-  const wwiv::common::Context* ctx_;
+  common::Input& bin_;
+  common::Output& bout_;
+  const sdk::Config& config_;
+  const common::Context* ctx_;
   wwiv_script_userdata_t script_userdata_;
 
   mb_interpreter_t* bas_;

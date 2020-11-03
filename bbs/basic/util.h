@@ -28,17 +28,19 @@ struct mb_interpreter_t;
 namespace wwiv::bbs::basic {
 
 char* BasicStrDup(const std::string& s);
-void set_script_out(wwiv::common::Output* o);
-void set_script_in(wwiv::common::Input* o);
+void set_script_out(common::Output* o);
+void set_script_in(common::Input* o);
 
-wwiv::common::Input& script_in();
-wwiv::common::Output& script_out();
+common::Input& script_in();
+common::Output& script_out();
 
 struct wwiv_script_userdata_t {
   std::string datadir;
   std::string script_dir;
   std::string module;
-  wwiv::common::Context* ctx;
+  common::Context* ctx;
+  common::Input* in;
+  common::Output* out;
 };
 
 /**

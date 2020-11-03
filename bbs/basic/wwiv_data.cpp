@@ -135,18 +135,20 @@ static std::vector<script_data_t> LoadData(const wwiv_script_userdata_t* ud,
   return data;
 }
 
-bool RegisterNamespaceData(mb_interpreter_t* bas) {
-  mb_begin_module(bas, "WWIV.DATA");
+bool RegisterNamespaceData(mb_interpreter_t* basi) {
+  mb_begin_module(basi, "WWIV.DATA");
 
-  mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* d = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    script_out() << "wwiv.data\r\n";
+    *d->out << "wwiv.data\r\n";
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.data")));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "SAVE", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "SAVE", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* d = get_wwiv_script_userdata(bas);
     mb_assert(bas && l);
     mb_check(mb_attempt_open_bracket(bas, l));
     char* scope_str = nullptr;
@@ -162,12 +164,12 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        script_out() << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        *d->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
         return MB_FUNC_WARNING;
       }
       int count = 0;
       mb_check(mb_count_coll(bas, l, arg, &count));
-      // script_out() << " with size: " << count;
+      // *d->out << " with size: " << count;
       std::vector<script_data_t> data;
       for (auto i = 0; i < count; i++) {
         mb_value_t idx;
@@ -177,10 +179,9 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
           data.emplace_back(to_script_data(val));
         }
       }
-      const auto* d = get_wwiv_script_userdata(bas);
 
       if (!SaveData(d, scope, data)) {
-        script_out() << "#6Error saving data.\r\n";
+        *d->out << "#6Error saving data.\r\n";
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
@@ -188,7 +189,8 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
   });
 
   // l = LOAD("GLOBAL|USER")
-  mb_register_func(bas, "LOAD", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "LOAD", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_assert(bas && l);
     mb_check(mb_attempt_open_bracket(bas, l));
     char* scope_str = nullptr;
@@ -204,11 +206,9 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        script_out() << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        *sd->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
         return MB_FUNC_WARNING;
       }
-
-      const auto* sd = get_wwiv_script_userdata(bas);
 
       auto current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
@@ -219,19 +219,19 @@ bool RegisterNamespaceData(mb_interpreter_t* bas) {
         mb_make_int(idx, current_count++);
         const auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
-          script_out() << "[oops] ";
+          sd->out->bputs("[oops] ");
         }
       }
 
       if (!SaveData(sd, scope, data)) {
-        script_out() << "#6Error loading data.\r\n";
+        sd->out->bputs("#6Error loading data.\r\n");
       }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  return mb_end_module(bas) == MB_FUNC_OK;
+  return mb_end_module(basi) == MB_FUNC_OK;
 }
 
 }

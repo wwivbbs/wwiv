@@ -22,7 +22,7 @@ struct mb_interpreter_t;
 
 namespace wwiv::bbs::basic {
 
-bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas);
+bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi);
 
 }
 

@@ -17,70 +17,65 @@
 /**************************************************************************/
 #include  "bbs/basic/wwiv_io.h"
 
-#include "common/com.h"
-#include "common/input.h"
-#include "bbs/interpret.h"
-#include "bbs/menu.h"
-#include "common/output.h"
-#include "common/pause.h"
 #include "bbs/basic/util.h"
-#include "core/file.h"
-#include "core/jsonfile.h"
-#include "core/log.h"
-#include "core/strings.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "deps/my_basic/core/my_basic.h"
-#include <cassert>
 #include <string>
 
 namespace wwiv::bbs::basic {
 
 
-bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
-  mb_begin_module(bas, "WWIV.IO");
+bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
+  mb_begin_module(basi, "WWIV.IO");
 
-  mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    script_out() << "wwiv.io\r\n";
+    *sd->out << "wwiv.io\r\n";
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.io")));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "PUTS", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "PUTS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      script_out().bputs(arg);
+      sd->out->bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "PL", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "PL", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      script_out().bputs(arg);
-      script_out().nl();
+      sd->out->bputs(arg);
+      sd->out->nl();
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     if (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      script_out().printfile(arg);
+      sd->out->printfile(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     auto arg = 0;
     if (mb_has_arg(bas, l)) {
@@ -94,7 +89,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto ch = script_in().getkey();
@@ -103,30 +98,33 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
-    script_out().cls();
+    sd->out->cls();
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "NL", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "NL", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     int num_lines = 1;
     if (mb_has_arg(bas, l)) {
       mb_check(mb_pop_int(bas, l, &num_lines));
     }
-    script_out().nl(num_lines);
+    sd->out->nl(num_lines);
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "YN", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "YN", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      script_out().bputs(arg);
+      sd->out->bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto ret = bin.yesno();
@@ -135,12 +133,13 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "NY", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "NY", [](struct mb_interpreter_t* bas, void** l) -> int {
+    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
-      script_out().bputs(arg);
+      sd->out->bputs(arg);
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto ret = bin.noyes();
@@ -149,14 +148,14 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "PAUSE", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "PAUSE", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     bout.pausescr();
     return MB_FUNC_OK;
   });
 
-  return mb_end_module(bas) == MB_FUNC_OK;
+  return mb_end_module(basi) == MB_FUNC_OK;
 }
 
 }
