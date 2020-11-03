@@ -16,7 +16,7 @@ option(WWIV_INSTALL "Create install packages for both zip files and binaries." O
 #
 # Build variables to come from Jenkins, environment, etc.
 
-set(WWIV_RELEASE "5.5.1" CACHE STRING "WWIV Release Major Version to 3 digits")
+set(WWIV_RELEASE "5.5.2" CACHE STRING "WWIV Release Major Version to 3 digits")
 set(WWIV_BUILD_NUMBER "development" CACHE STRING "WWIV Build Number")
 set(WWIV_FULL_RELEASE "${WWIV_RELEASE}.${WWIV_BUILD_NUMBER}" CACHE INTERNAL "WWIV Release Version, 4 digits with build number as 4th")
 set(WWIV_ARCH "x86" CACHE STRING "x86 or x64")
@@ -35,7 +35,7 @@ set(CPACK_PACKAGE_VENDOR "WWIV Software Services")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "WWIV Computer bulletin board system (BBS)")
 set(CPACK_PACKAGE_VERSION_MAJOR "5")
 set(CPACK_PACKAGE_VERSION_MINOR "5")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION_PATCH "2")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
