@@ -21,6 +21,7 @@ What's New in WWIV 5.5.1 (2020)
 * Fix install.sh script for unix. (#1261, #1262)
 * Fix formatting for non-full screen reader (#1250)
 * Fix Disconnect on linux while in STDIO door does not exit (#1293)
+* Don't allow filenames >8chars to save to 4.22 format. (#1306)
 
 
 What's New in WWIV 5.5.0 (2020)
