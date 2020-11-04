@@ -36,21 +36,14 @@ class Context {
 
 public:
   Context(const sdk::Config& c, const net_networks_rec& n, sdk::UserManager& u,
-          const std::vector<net_networks_rec>& ns, NetDat& netdat)
-      : config(c), net(n), user_manager(u), subs(c.datadir(), ns), networks_(ns), netdat_(netdat) {
-    subs_initialized = subs.Load();
-  }
+          const std::vector<net_networks_rec>& ns, NetDat& netdat);
 
-  void set_api(int type, std::unique_ptr<sdk::msgapi::MessageApi>&& a) {
-    msgapis_[type] = std::move(a);
-  }
+  void set_api(int type, std::unique_ptr<sdk::msgapi::MessageApi>&& a);
 
-  void set_email_api(std::unique_ptr<sdk::msgapi::WWIVMessageApi>&& a) { 
-    email_api_ = std::move(a);
-  }
+  void set_email_api(std::unique_ptr<sdk::msgapi::WWIVMessageApi>&& a);
 
-  [[nodiscard]] sdk::msgapi::MessageApi& api(int type) { return *msgapis_.at(type); }
-  [[nodiscard]] sdk::msgapi::WWIVMessageApi& email_api() const { return *email_api_; }
+  [[nodiscard]] sdk::msgapi::MessageApi& api(int type);
+  [[nodiscard]] sdk::msgapi::WWIVMessageApi& email_api() const;
 
   [[nodiscard]] const std::vector<net_networks_rec>& networks() const noexcept { return networks_; }
   [[nodiscard]] NetDat& netdat() const { return netdat_; }

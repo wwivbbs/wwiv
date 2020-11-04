@@ -2,6 +2,7 @@
 
 set(NETWORK_MAIN 
 	network2.cpp
+	context.cpp
 	email.cpp
 	post.cpp
 	subs.cpp

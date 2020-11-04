@@ -146,16 +146,34 @@ struct enum_hash {
 
 // Specialization for std::map
 template <typename K, typename V, typename C, class A=std::allocator<C>>
-V at(std::map<K, V, C, A> const& container, typename std::decay<K>::type pos) {
-  try {
-    return container.at(pos);
-  } catch (const std::out_of_range&) {
-    LOG(ERROR) << "Caught std::out_of_range on pos: " << pos;
-    LOG(ERROR) << wwiv::os::stacktrace();
-    DLOG(FATAL) << "Terminating in debug build.";
-    throw;
+auto at(std::map<K, V, C, A> const& map, typename std::decay<K>::type key) ->
+const V& {
+  
+  const auto pos = map.find(key);
+  if (pos != std::end(map)) {
+    return pos->second;
   }
+  LOG(ERROR) << "Caught std::out_of_range on pos: " << key;
+  LOG(ERROR) << wwiv::os::stacktrace();
+  DLOG(FATAL) << "Terminating in debug build.";
+  throw std::out_of_range("Out of range on key");
 }
+
+// Specialization for std::map
+template <typename K, typename V, typename C, class A=std::allocator<C>>
+auto at(std::map<K, V, C, A> & map, typename std::decay<K>::type key) ->
+V& {
+  
+  auto pos = map.find(key);
+  if (pos != std::end(map)) {
+    return pos->second;
+  }
+  LOG(ERROR) << "Caught std::out_of_range on pos: " << key;
+  LOG(ERROR) << wwiv::os::stacktrace();
+  DLOG(FATAL) << "Terminating in debug build.";
+  throw std::out_of_range("Out of range on key");
+}
+
 
 template <typename C, class Allocator=std::allocator<C>>
 typename C::const_reference at(C const& container, typename C::size_type pos) {

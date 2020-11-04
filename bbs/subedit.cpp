@@ -306,7 +306,7 @@ static void modify_sub(int n) {
       bout << "|#2New Max Msgs? ";
       r.maxmsgs = bin.input_number(r.maxmsgs);
     } break;
-      case 'J': {
+    case 'J': {
       const auto num_nets = wwiv::stl::ssize(a()->nets());
       if (!num_nets) {
         break;
@@ -362,11 +362,9 @@ static void modify_sub(int n) {
     } break;
     case 'K': {
       bout.nl();
-      bout << "|#2New Storage Type ( 2 ) ? ";
-      auto new_type = bin.input_number<uint8_t>(r.storage_type, 2, 2);
-      if (new_type == 2) {
-        r.storage_type = new_type;
-      }
+      //bout << "|#2New Storage Type ( 2 ) ? ";
+      //auto new_type = bin.input_number<uint8_t>(r.storage_type, 2, 2);
+      r.storage_type = 2;
     } break;
     case 'L':
       bout.nl();

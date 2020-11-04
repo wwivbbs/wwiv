@@ -104,6 +104,7 @@ int SubsImportCommand::Execute() {
   prototype.post_acs = ini.value<std::string>("post_acs", "user.sl >= 20");
   prototype.read_acs = ini.value<std::string>("read_acs", "user.sl >= 10");
   prototype.maxmsgs = ini.value<uint16_t>("maxmsgs", 5000);
+  prototype.storage_type = ini.value<uint8_t>("storage_type", 2);
 
   sdk::subboard_network_data_t net{};
   auto net_num = ini.value<int16_t>("net_num", 0);
