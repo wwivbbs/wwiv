@@ -49,6 +49,13 @@ struct wwiv_script_userdata_t {
  */
 wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas);
 
+/**
+ * Attempts to open and close the brackets () for an empty
+ * function, returning MB_FUNC_OK on success and an error
+ * code on failure
+ */
+int mb_empty_function(struct mb_interpreter_t* s, void** l);
+
 }
 
 #endif

@@ -63,5 +63,11 @@ wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas) {
   return static_cast<wwiv_script_userdata_t*>(x);
 }
 
+int mb_empty_function(mb_interpreter_t* s, void** l) {
+  mb_check(mb_attempt_open_bracket(s, l));
+  mb_check(mb_attempt_close_bracket(s, l));
+  return MB_FUNC_OK;
+}
+
 
 }

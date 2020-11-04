@@ -44,10 +44,6 @@ using namespace wwiv::strings;
 
 namespace wwiv::bbs::basic {
 
-namespace {
-  std::mutex g_script_mutex;
-}
-
 int my_print(const char* fmt, ...) {
   char buf[1024];
 
@@ -205,6 +201,7 @@ mb_interpreter_t* Basic::SetupBasicInterpreter() {
   return bas;  
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool Basic::RegisterDefaultNamespaces() {
   RegisterNamespaceWWIV(bas_);
   RegisterNamespaceWWIVIO(bas_);
@@ -225,7 +222,8 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     return false;
   }
 
-  std::lock_guard<std::mutex> guard(g_script_mutex);
+  static std::mutex script_mutex;
+  std::lock_guard<std::mutex> guard(script_mutex);
   set_script_out(&bout_);
   set_script_in(&bin_);
   const auto ret = mb_run(bas_, false);

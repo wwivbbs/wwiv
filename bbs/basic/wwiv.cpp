@@ -23,32 +23,29 @@
 #include "bbs/acs.h"
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
-
 #include <string>
 
 namespace wwiv::bbs::basic {
 
 static int _version(struct mb_interpreter_t* bas, void** l) {
-  mb_check(mb_attempt_open_bracket(bas, l));
-  mb_check(mb_attempt_close_bracket(bas, l));
+  mb_check(mb_empty_function(bas, l));
   mb_push_string(bas, l, BasicStrDup(wwiv::core::short_version()));
   return MB_FUNC_OK;
 }
 
-bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
-  mb_begin_module(bas, "WWIV");
-  mb_register_func(bas, "VERSION", _version);
+bool RegisterNamespaceWWIV(mb_interpreter_t* basi) {
+  mb_begin_module(basi, "WWIV");
+  mb_register_func(basi, "VERSION", _version);
 
-  mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     const auto* sd = get_wwiv_script_userdata(bas);
-    mb_check(mb_attempt_open_bracket(bas, l));
-    mb_check(mb_attempt_close_bracket(bas, l));
+    mb_check(mb_empty_function(bas, l));
     sd->out->bputs("wwiv\r\n");
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv")));
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "COMMAND", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "COMMAND", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     char* arg = nullptr;
     if (mb_has_arg(bas, l)) {
@@ -56,12 +53,12 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg) {
-      wwiv::menus::InterpretCommand(nullptr, arg);
+      menus::InterpretCommand(nullptr, arg);
     }
     return MB_FUNC_OK;
   });
 
-  mb_register_func(bas, "EVAL", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "EVAL", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     char* arg = nullptr;
     if (mb_has_arg(bas, l)) {
@@ -69,7 +66,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg) {
-      auto ret = wwiv::bbs::check_acs(arg);
+      const auto ret = check_acs(arg);
       mb_push_int(bas, l, ret ? 1 : 0);
     } else {
       mb_push_int(bas, l, 0);
@@ -78,7 +75,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
   });
 
   // Crappy, awful API way to get data out of WWIVs' macros.
-  mb_register_func(bas, "INTERPRET", [](struct mb_interpreter_t* bas, void** l) -> int {
+  mb_register_func(basi, "INTERPRET", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     if (!mb_has_arg(bas, l)) {
       return MB_FUNC_ERR;
@@ -94,7 +91,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     return MB_FUNC_OK;
   });
 
-  return mb_end_module(bas) == MB_FUNC_OK;
+  return mb_end_module(basi) == MB_FUNC_OK;
 }
 
 

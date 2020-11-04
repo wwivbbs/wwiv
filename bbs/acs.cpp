@@ -81,7 +81,7 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
 
 std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
                       const std::string& orig_text, int max_length) {
-  const auto s = in.input_text(orig_text, max_length);
+  auto s = in.input_text(orig_text, max_length);
 
   if (!validate_acs(s, acs_debug_t::remote)) {
     out.pausescr();

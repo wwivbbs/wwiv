@@ -31,8 +31,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
 
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     const auto* sd = get_wwiv_script_userdata(bas);
-    mb_check(mb_attempt_open_bracket(bas, l));
-    mb_check(mb_attempt_close_bracket(bas, l));
+    mb_check(mb_empty_function(bas, l));
     *sd->out << "wwiv.io\r\n";
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.io")));
     return MB_FUNC_OK;
@@ -51,8 +50,8 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
   });
 
   mb_register_func(basi, "PL", [](struct mb_interpreter_t* bas, void** l) -> int {
-    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
+    const auto* sd = get_wwiv_script_userdata(bas);
     while (mb_has_arg(bas, l)) {
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
@@ -90,19 +89,18 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
   });
 
   mb_register_func(basi, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    mb_check(mb_attempt_close_bracket(bas, l));
-    const auto ch = script_in().getkey();
+    mb_check(mb_empty_function(bas, l));
+    const auto* sd = get_wwiv_script_userdata(bas);
+    const auto ch = sd->in->getkey();
     char s[2] = {ch, 0};
     mb_push_string(bas, l, BasicStrDup(s));
     return MB_FUNC_OK;
   });
 
   mb_register_func(basi, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_empty_function(bas, l));
     const auto* sd = get_wwiv_script_userdata(bas);
-    mb_check(mb_attempt_open_bracket(bas, l));
     sd->out->cls();
-    mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
@@ -113,8 +111,8 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
     if (mb_has_arg(bas, l)) {
       mb_check(mb_pop_int(bas, l, &num_lines));
     }
-    sd->out->nl(num_lines);
     mb_check(mb_attempt_close_bracket(bas, l));
+    sd->out->nl(num_lines);
     return MB_FUNC_OK;
   });
 
@@ -149,8 +147,7 @@ bool RegisterNamespaceWWIVIO(mb_interpreter_t* basi) {
   });
 
   mb_register_func(basi, "PAUSE", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    mb_check(mb_attempt_close_bracket(bas, l));
+    mb_check(mb_empty_function(bas, l));
     bout.pausescr();
     return MB_FUNC_OK;
   });
