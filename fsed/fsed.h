@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_FSED_H__
-#define __INCLUDED_BBS_FSED_FSED_H__
+#ifndef INCLUDED_FSED_FSED_H
+#define INCLUDED_FSED_FSED_H
 
 #include "common/context.h"
 #include "common/message_editor_data.h"
@@ -28,11 +28,9 @@
 namespace wwiv::fsed {
 
 bool fsed(wwiv::common::Context&ctx, const std::filesystem::path& path);
-bool fsed(wwiv::common::Context& ctx, FsedModel& ed, wwiv::common::MessageEditorData& data,
-          bool file);
-bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
-          wwiv::common::MessageEditorData& data,
-          bool file);
+bool fsed(common::Context& ctx, FsedModel& ed, common::MessageEditorData& data, bool file);
+bool fsed(common::Context& ctx, std::vector<std::string>& lin, int maxli,
+          common::MessageEditorData& data, bool file);
 
 }
 

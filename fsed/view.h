@@ -15,25 +15,23 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_VIEW_H__
-#define __INCLUDED_BBS_FSED_VIEW_H__
+#ifndef INCLUDED_FSED_VIEW_H
+#define INCLUDED_FSED_VIEW_H
 
 #include "common/full_screen.h"
 #include "common/message_editor_data.h"
 #include "fsed/model.h"
 
-using namespace wwiv::common;
-
 namespace wwiv::fsed {
 
 class FsedView final : public editor_viewport_t {
 public:
-  FsedView(FullScreenView fs, wwiv::common::MessageEditorData& data, bool file);
-  ~FsedView() = default;
+  FsedView(common::FullScreenView fs, common::MessageEditorData& data, bool file);
+  ~FsedView() override = default;
 
-  FullScreenView& fs();
-  int max_view_lines() const override { return max_view_lines_; }
-  int max_view_columns() const override { return max_view_columns_; }
+  common::FullScreenView& fs();
+  [[nodiscard]] int max_view_lines() const override { return max_view_lines_; }
+  [[nodiscard]] int max_view_columns() const override { return max_view_columns_; }
   // Draws the current line without colors, and redraws the previous
   // line with colors.
   void draw_current_line(FsedModel& e, int previous_line);
@@ -44,26 +42,25 @@ public:
   void redraw();
   void redraw(const FsedModel& ed);
   void draw_bottom_bar(const FsedModel& ed);
-  int bgetch(FsedModel& ed);
+  [[nodiscard]] int bgetch(FsedModel& ed);
   void bputch(int color, char ch);
   void cls();
   void Color(int c);
-  int top_line() const override { return top_line_; }
+  [[nodiscard]] int top_line() const override { return top_line_; }
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const FsedModel& ed) override;
   void ClearCommandLine();
 
-public:
   // Top editor line number visible in the viewport.
   int top_line_{0};
   bool debug{false};
 
 private:
-  FullScreenView fs_;
-  wwiv::common::Output& bout_;
+  common::FullScreenView fs_;
+  common::Output& bout_;
   int max_view_lines_;
   int max_view_columns_;
-  wwiv::common::MessageEditorData& data_;
+  common::MessageEditorData& data_;
   bool file_{false};
   //  Saved positions for the bottom bar caching.
   int sx{-1};

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_MODEL_H__
-#define __INCLUDED_BBS_FSED_MODEL_H__
+#ifndef INCLUDED_FSED_MODEL_H
+#define INCLUDED_FSED_MODEL_H
 
 #include "fsed/line.h"
 #include <functional>
@@ -52,9 +52,9 @@ class FsedModel;
 class editor_viewport_t {
 public:
   virtual ~editor_viewport_t() = default;
-  virtual int max_view_lines() const = 0;
-  virtual int max_view_columns() const = 0;
-  virtual int top_line() const = 0;
+  [[nodiscard]] virtual int max_view_lines() const = 0;
+  [[nodiscard]] virtual int max_view_columns() const = 0;
+  [[nodiscard]] virtual int top_line() const = 0;
   virtual void set_top_line(int l) = 0;
   virtual void gotoxy(const FsedModel& ed) = 0;
 };
@@ -63,7 +63,7 @@ class FsedModel {
 
 public:
   
-  // Constructor and Destructors
+  // Constructor and Destructor
 
   explicit FsedModel(int max_lines) : maxli_(max_lines) {}
   FsedModel() : FsedModel(255) {}
@@ -77,10 +77,10 @@ public:
   // gets the current line
   line_t& curline() const;
   // Gets the line at a position n or throws.
-  line_t& line(int n) const;
+  [[nodiscard]] line_t& line(int n) const;
   bool set_lines(std::vector<line_t>&& n);
   // return the number of lines.
-  std::size_t size() const { return lines_.size(); }
+  [[nodiscard]] std::size_t size() const { return lines_.size(); }
   // Adds a new line to the end of the list of lines.
   void emplace_back(line_t&& n);
   // inserts a new line after curli.
@@ -108,7 +108,7 @@ public:
   // line onto the previous line
   bool bs_nowrap();
   // backspace over existing character.  Wraps the current line onto
-  // the previousline.
+  // the previous line.
   bool bs();
   // handles the enter key
   bool enter();
@@ -148,7 +148,7 @@ public:
   int maxli() const noexcept { return maxli_; }
 
   //
-  // Listeners, Callbacks and invalidations
+  // Listeners, Callbacks and invalidation
   //
   typedef std::function<void(FsedModel&, editor_range_t)> editor_range_invalidated_fn;
   typedef std::function<void(FsedModel&, int)> editor_current_line_redraw_fn;
@@ -166,7 +166,7 @@ public:
 
   // cursor X position
   int cx{0};
-  // cursor Y positon
+  // cursor Y position
   int cy{0};
   // Current line number
   int curli{0};
@@ -177,7 +177,7 @@ private:
   // Lines of text.  mark mutable so we can add the current line
   // into the array and stay logically const.
   mutable std::vector<line_t> lines_;
-  // Insert or Overrite mode
+  // Insert or Overwrite mode
   ins_ovr_mode_t mode_{ins_ovr_mode_t::ins};
   // Max number of lines allowed.
   int max_line_len_{79};

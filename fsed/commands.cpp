@@ -25,10 +25,11 @@
 #include "local_io/keycodes.h"
 #include "sdk/filenames.h"
 #include <map>
+#include <utility>
 
 namespace wwiv::fsed {
 
-std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() { 
+std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   std::map<int, fsed_command_id> map;
   map.emplace(COMMAND_UP, fsed_command_id::cursor_up);
   map.emplace(COMMAND_DOWN, fsed_command_id::cursor_down);
@@ -55,11 +56,10 @@ std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   return map;
 }
 
+FsedCommand::FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn)
+    : id_(id), name_(std::move(name)), fn_(std::move(fn)) {}
 
-FsedCommand::FsedCommand(fsed_command_id id, std::string name, fsed_command_fn fn) 
-: id_(id), name_(std::move(name)), fn_(fn) {}
-
-bool FsedCommand::Invoke(FsedModel& model, FsedView& view, FsedState& state) const { 
+bool FsedCommand::Invoke(FsedModel& model, FsedView& view, FsedState& state) const {
   return fn_(model, view, state);
 }
 
@@ -82,13 +82,13 @@ std::optional<FsedCommand> FsedCommands::get(const std::string& id) {
   return std::nullopt;
 }
 
-bool FsedCommands::add(FsedCommand cmd) { 
-  by_id_[cmd.id()] = cmd;
-  by_name_[cmd.name()] = cmd;
-  return true; 
+bool FsedCommands::add(const FsedCommand& cmd) {
+  by_id_.emplace(cmd.id(), cmd);
+  by_name_.emplace(cmd.name(), cmd);
+  return true;
 }
 
-static void show_fsed_menu(wwiv::common::Context& ctx, FsedModel& ed, FsedView& view, bool& done,
+static void show_fsed_menu(common::Context& ctx, FsedModel& ed, FsedView& view, bool& done,
                            bool& save) {
   view.fs().PutsCommandLine(
       "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
@@ -116,7 +116,7 @@ static void show_fsed_menu(wwiv::common::Context& ctx, FsedModel& ed, FsedView& 
       ed.insert_lines(quoted_lines);
     }
     // Even if we don't insert quotes, we still need to
-    // redrawthe frame
+    // redraw the frame
     view.redraw(ed);
     ed.invalidate_to_eof(0);
   } break;
@@ -176,7 +176,7 @@ bool FsedCommands::AddAll() {
                     ed.bs();
                     view.bputch(ed.curline().wwiv_color(), ed.current_cell().ch);
                     return true;
-  }));
+                  }));
   add(FsedCommand(fsed_command_id::toggle_insovr, "toggle_insovr",
                   [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
                     ed.toggle_ins_ovr_mode();
@@ -185,16 +185,18 @@ bool FsedCommands::AddAll() {
                   }));
   add(FsedCommand(fsed_command_id::input_wwiv_color, "input_wwiv_color",
                   [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
-                    auto cc = view.bgetch(ed);
+                    const auto cc = view.bgetch(ed);
                     if (cc >= '0' && cc <= '9') {
                       ed.curline().set_wwiv_color(cc - '0');
                     }
                     ed.current_line_dirty(ed.curli);
                     return true;
                   }));
-  add(FsedCommand(fsed_command_id::delete_word_left, "delete_word_left",
+  add(FsedCommand(
+      fsed_command_id::delete_word_left, "delete_word_left",
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_word_left(); }));
-  add(FsedCommand(fsed_command_id::delete_line_left, "delete_line_left",
+  add(FsedCommand(
+      fsed_command_id::delete_line_left, "delete_line_left",
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line_left(); }));
   add(FsedCommand(fsed_command_id::menu, "menu",
                   [&](FsedModel& ed, FsedView& view, FsedState& state) -> bool {
@@ -214,7 +216,7 @@ std::optional<fsed_command_id> FsedCommands::get_command_id(int key) {
   return {key_it->second};
 }
 
-bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, FsedState& state) { 
+bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, FsedState& state) {
 
   auto cmd_id = get_command_id(key);
   if (!cmd_id) {
@@ -230,4 +232,4 @@ bool FsedCommands::TryInterpretChar(int key, FsedModel& model, FsedView& view, F
   return cmd.value().Invoke(model, view, state);
 }
 
-} // namespace wwiv::fsed
+} // namespace

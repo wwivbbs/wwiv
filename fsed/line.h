@@ -15,10 +15,9 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_FSED_LINE_H__
-#define __INCLUDED_BBS_FSED_LINE_H__
+#ifndef INCLUDED_FSED_LINE_H
+#define INCLUDED_FSED_LINE_H
 
-#include <filesystem>
 #include <vector>
 #include <string>
 
@@ -40,38 +39,37 @@ class line_t {
 public:
   line_t() : line_t(false, "") {}
   line_t(bool wrapped, std::string text);
-  line_t(std::string text) : line_t(false, text) {}
+  explicit line_t(std::string text) : line_t(false, std::move(text)) {}
 
   line_add_result_t add(int x, char c, ins_ovr_mode_t mode);
   line_add_result_t del(int x, ins_ovr_mode_t mode);
   line_add_result_t bs(int x, ins_ovr_mode_t mode);
   void push_back(char c);
 
-  bool wrapped() const noexcept { return wrapped_; }
+  [[nodiscard]] bool wrapped() const noexcept { return wrapped_; }
   void wrapped(bool b) { wrapped_ = b; }
 
-  std::size_t size() const;
+  [[nodiscard]] std::size_t size() const;
 
   // Specialized stuff
   int last_space_before(int maxlen);
   void set_wwiv_color(int c);
-  int wwiv_color() const noexcept;
+  [[nodiscard]] int wwiv_color() const noexcept;
 
   // operators
   line_t& operator=(const line_t& o);
 
   void assign(const std::vector<cell_t>& cells);
   void append(const std::vector<cell_t>& cells);
-  const std::vector<cell_t>& cells() const { return cell_; }
+  [[nodiscard]] const std::vector<cell_t>& cells() const { return cell_; }
   std::vector<cell_t> substr(int start, int end);
   std::vector<cell_t> substr(int start);
   // Gets a line of text that can be displayed using bputs
-  std::string to_colored_text(int default_last_color) const;
+  [[nodiscard]] std::string to_colored_text(int default_last_color) const;
 
 private:
   bool wrapped_{false};
   std::vector<cell_t> cell_;
-
   int size_{0};
   int wwiv_color_{0};
 };
