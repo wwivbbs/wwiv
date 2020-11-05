@@ -100,6 +100,7 @@ set(COMMON_SOURCES
  basic/util.cpp
  basic/wwiv.cpp
  basic/wwiv_data.cpp
+ basic/wwiv_file.cpp
  basic/wwiv_io.cpp
  ../deps/my_basic/core/my_basic.c
 )

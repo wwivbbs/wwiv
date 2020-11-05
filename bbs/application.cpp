@@ -42,6 +42,7 @@
 #include "bbs/utility.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
+#include "bbs/basic/basic.h"
 #include "core/eventbus.h"
 #include "common/datetime.h"
 #include "common/exceptions.h"
@@ -802,6 +803,7 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.add_argument({"menu_commands", 'o', "Displays the menu commands available then exits.", ""});
   cmdline.add_argument({"ok_exit", 'q', "Normal exit level", "0"});
   cmdline.add_argument({"remaining_min", 'r', "Specify max # minutes until event", "0"});
+  cmdline.add_argument({"run_basic", 's', "Executes a WWIVbasic script", ""});
   cmdline.add_argument({"user_num", 'u', "Pass usernumber <user#> online", "0"});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
@@ -917,12 +919,14 @@ int Application::Run(int argc, char* argv[]) {
 
   const auto sysop_cmd = cmdline.sarg("sysop_cmd");
   const auto fsed = cmdline.sarg("fsed");
-  if (!sysop_cmd.empty() || !fsed.empty()) {
+  const auto run_basic = cmdline.sarg("run_basic");
+  const auto mini_cmd = !sysop_cmd.empty() || !fsed.empty() || !run_basic.empty();
+  if (mini_cmd) {
     // HACK for now, pass arg into InitializeBBS
     user_already_on_ = true;
   }
   CreateComm(hSockOrComm, type);
-  if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty())) {
+  if (!InitializeBBS(!user_already_on_ && sysop_cmd.empty() && fsed.empty() && run_basic.empty())) {
     return exitLevelNotOK;
   }
   localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
@@ -953,17 +957,20 @@ int Application::Run(int argc, char* argv[]) {
     }
     return oklevel_;
   }
-  if (!sysop_cmd.empty()) {
-    LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
+  if (mini_cmd) {
     remoteIO()->remote_info().clear();
     frequent_init();
     ReadCurrentUser(1);
     reset_effective_sl();
-
+    // not sure if this is right
     sess().user_num(0);
     // Since hang_it_up sets hangup_ = true, let's ensure we're always
     // not in this state when we enter the WFC.
     sess().hangup(false);
+  }
+  if (!sysop_cmd.empty()) {
+    LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
+
     set_at_wfc(true);
     const auto cmd = static_cast<char>(std::toupper(sysop_cmd.front()));
     switch (cmd) {
@@ -985,16 +992,19 @@ int Application::Run(int argc, char* argv[]) {
   // Runs the FSED on a file
   if (!fsed.empty()) {
     LOG(INFO) << "Executing FSED on : " << fsed;
-    remoteIO()->remote_info().clear();
-    frequent_init();
-    ReadCurrentUser(1);
-    reset_effective_sl();
 
-    sess().user_num(0);
-    // Since hang_it_up sets hangup_ = true, let's ensure we're always
-    // not in this state when we enter the WFC.
-    sess().hangup(false);
     wwiv::fsed::fsed(a()->context(), fsed);
+    return oklevel_;
+  }
+  if (!run_basic.empty()) {
+    const auto eff_user = std::max<int>(this_usernum_from_commandline, 1);
+    ReadCurrentUser(eff_user);
+    reset_effective_sl();
+    sess().user_num(eff_user);
+    if (!wwiv::bbs::basic::RunBasicScript(run_basic)) {
+      LOG(ERROR) << "Error running WWIVbasic script: '" << run_basic;
+      return errorlevel_;
+    }
     return oklevel_;
   }
 

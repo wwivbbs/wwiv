@@ -22,6 +22,7 @@
 #include "bbs/basic/util.h"
 #include "bbs/basic/wwiv.h"
 #include "bbs/basic/wwiv_data.h"
+#include "bbs/basic/wwiv_file.h"
 #include "bbs/basic/wwiv_io.h"
 #include "common/input.h"
 #include "core/file.h"
@@ -206,6 +207,7 @@ bool Basic::RegisterDefaultNamespaces() {
   RegisterNamespaceWWIV(bas_);
   RegisterNamespaceWWIVIO(bas_);
   RegisterNamespaceData(bas_);
+  RegisterNamespaceWWIVFILE(bas_);
 
   return true;
 }
