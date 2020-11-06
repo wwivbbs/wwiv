@@ -102,6 +102,7 @@ set(COMMON_SOURCES
  basic/wwiv_data.cpp
  basic/wwiv_file.cpp
  basic/wwiv_io.cpp
+ basic/wwiv_time.cpp
  ../deps/my_basic/core/my_basic.c
 )
 

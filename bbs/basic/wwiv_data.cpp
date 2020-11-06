@@ -36,11 +36,10 @@ enum class script_data_type_t { STRING, INT, REAL };
 
 struct script_data_t {
   script_data_type_t type;
-  ::std::string s;
+  std::string s;
   int i{};
   float r{};
 };
-
 
 template <class Archive> void serialize(Archive& ar, script_data_t& t) {
   SERIALIZE(t, type);
@@ -54,22 +53,16 @@ template <class Archive> void serialize(Archive& ar, script_data_t& t) {
 }
 
 static mb_value_t to_mb_value(const script_data_t& f) {
-  mb_value_t t{};
   switch (f.type) {
   case script_data_type_t::INT:
-    t.type = MB_DT_INT;
-    t.value.integer = f.i;
-    return t;
+    return wwiv_mb_make_int(f.i);
   case script_data_type_t::REAL:
-    t.type = MB_DT_REAL;
-    t.value.float_point = f.r;
-    return t;
+    return wwiv_mb_make_real(f.r);
   case script_data_type_t::STRING:
-    t.type = MB_DT_STRING;
-    t.value.string = BasicStrDup(f.s);
-    return t;
+    return wwiv_mb_make_string(f.s);
   }
-  return t;
+  DLOG(FATAL) << "Should not happen";
+  return {};
 }
 
 static script_data_t to_script_data(const mb_value_t& v) {
@@ -206,7 +199,7 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       mb_check(mb_pop_value(bas, l, &arg));
       // arg should be coll.
       if (arg.type != MB_DT_LIST) {
-        *sd->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+        *sd->out << "|#6Error: Only loading a LIST is currently supported. (not DICT)\r\n";
         return MB_FUNC_WARNING;
       }
 
@@ -215,17 +208,16 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
       auto data = LoadData(sd, scope);
       for (const auto& d : data) {
         const auto val = to_mb_value(d);
-        mb_value_t idx;
-        mb_make_int(idx, current_count++);
+        const auto idx = wwiv_mb_make_int(current_count++);
         const auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
           sd->out->bputs("[oops] ");
         }
       }
 
-      if (!SaveData(sd, scope, data)) {
-        sd->out->bputs("#6Error loading data.\r\n");
-      }
+      //if (!SaveData(sd, scope, data)) {
+      //  sd->out->bputs("#6Error loading data.\r\n");
+      //}
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;

@@ -32,30 +32,13 @@ static file_location_t to_file_location_t(const std::string& s) {
   return file_location_t::GFILES;
 }
 
-bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
-  // usertype
-    mb_register_func(basi, "LOC", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    void* ud_raw;
-    mb_check(mb_pop_usertype(bas, l, &ud_raw));
-    const auto handle = *static_cast<int*>(ud_raw);
-    char* loc_raw = nullptr;
-    mb_check(mb_pop_string(bas, l, &loc_raw));
-    const auto loc = wwiv::strings::ToStringUpperCase(loc_raw);
-    mb_check(mb_attempt_close_bracket(bas, l));
-    const auto* sd = get_wwiv_script_userdata(bas);
-    sd->out->format("Setting LOC '{}' on handle '{}'", loc, handle);
-    // TODO(rushfan): Get Handle and set location.
-    return MB_FUNC_OK;
-  });
-
-  
-  mb_begin_module(basi, "WWIV.file");
+bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {  
+  mb_begin_module(basi, "WWIV.FILE");
 
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_empty_function(bas, l));
-    *sd->out << "wwiv.FILE\r\n";
+    *sd->out << "WWIV.FILE\r\n";
     mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.file")));
     return MB_FUNC_OK;
   });
@@ -70,7 +53,6 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     }
     std::string loc{arg};
     mb_check(mb_attempt_close_bracket(bas, l));
-    // We could also just do mb_push_usertype(bas, l, filehandle);
     mb_value_t val;
     val.type = MB_DT_USERTYPE;
     const auto loc_enum = to_file_location_t(loc);
@@ -97,9 +79,11 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     char* arg_name;
     mb_check(mb_pop_string(bas, l, &arg_name));
     const auto gfdir = sd->ctx->session_context().dirs().gfiles_directory();
-    auto path = core::FilePath(gfdir, arg_name);
+    const std::filesystem::path file_part{arg_name};
+    const auto filename = file_part.filename();
+    const auto path = core::FilePath(gfdir, filename);
 
-    char* arg_mode;
+    char* arg_mode{nullptr};
     mb_check(mb_pop_string(bas, l, &arg_mode));
     std::string mode = strings::iequals("W", arg_mode) ? "wt" : "rt";
 
@@ -123,13 +107,73 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     }
     const auto handle = arg.value.integer;
 
-    auto& f = wwiv::stl::at(sd->files, handle);
+    auto& f = stl::at(sd->files, handle);
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto s = f.file->ReadFileIntoString();
     mb_check(mb_push_string(bas, l, BasicStrDup(s)));
 
     return MB_FUNC_OK;
   });
+
+  // Read lines of a file into collection.
+  mb_register_func(basi, "READLINES", [](struct mb_interpreter_t* bas, void** l) -> int {
+    auto* sd = get_wwiv_script_userdata(bas);
+    mb_check(mb_attempt_open_bracket(bas, l));
+
+    mb_value_t arg_handle;
+    mb_make_nil(arg_handle);
+    mb_check(mb_pop_value(bas, l, &arg_handle));
+    if (arg_handle.type != MB_DT_USERTYPE) {
+      return MB_FUNC_ERR;
+    }
+    const auto handle = arg_handle.value.integer;
+    auto& f = stl::at(sd->files, handle);
+    auto lines = f.file->ReadFileIntoVector();
+
+    mb_value_t arg;
+    mb_make_nil(arg);
+    mb_check(mb_pop_value(bas, l, &arg));
+    // arg should be coll.
+    if (arg.type != MB_DT_LIST) {
+      *sd->out << "|#6Error: Only saving a LIST is currently supported. (not DICT)\r\n";
+      return MB_FUNC_WARNING;
+    }
+
+    auto current_count = 0;
+    mb_check(mb_count_coll(bas, l, arg, &current_count));
+    for (const auto& line : lines) {
+      const auto val = wwiv_mb_make_string(line);
+      const auto idx = wwiv_mb_make_int(current_count++);
+      const auto ret = mb_set_coll(bas, l, arg, idx, val);
+      if (ret != MB_FUNC_OK) {
+        sd->out->bputs("[oops] ");
+      }
+    }
+
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
+
+  mb_register_func(basi, "LAST_MODIFIED", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+
+    mb_value_t arg_handle;
+    mb_make_nil(arg_handle);
+    mb_check(mb_pop_value(bas, l, &arg_handle));
+    if (arg_handle.type != MB_DT_USERTYPE) {
+      return MB_FUNC_ERR;
+    }
+
+    auto* sd = get_wwiv_script_userdata(bas);
+    const auto handle = arg_handle.value.integer;
+    auto& f = stl::at(sd->files, handle);
+    const auto t = static_cast<int>(core::File::last_write_time(f.file->full_pathname()));
+    
+    mb_check(mb_attempt_close_bracket(bas, l));
+    mb_push_int(bas, l, t);
+    return MB_FUNC_OK;
+  });
+
   return mb_end_module(basi) == MB_FUNC_OK;
 }
 

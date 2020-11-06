@@ -69,5 +69,23 @@ int mb_empty_function(mb_interpreter_t* s, void** l) {
   return MB_FUNC_OK;
 }
 
+mb_value_t wwiv_mb_make_string(const std::string& s) {
+  mb_value_t t;
+  mb_make_string(t, BasicStrDup(s));
+  return t;
+}
+
+mb_value_t wwiv_mb_make_int(int i) {
+  mb_value_t t;
+  mb_make_int(t, i);
+  return t;
+}
+
+mb_value_t wwiv_mb_make_real(float f) {
+  mb_value_t t;
+  mb_make_real(t, f);
+  return t;
+}
+
 
 }

@@ -22,6 +22,8 @@
 #include "common/input.h"
 #include "common/output.h"
 #include "core/textfile.h"
+#include "deps/my_basic/core/my_basic.h"
+
 #include <memory>
 #include <string>
 
@@ -67,6 +69,17 @@ wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas);
  * code on failure
  */
 int mb_empty_function(struct mb_interpreter_t* s, void** l);
+
+/**
+ * Creates a mb_value_t from string s
+ *
+ * equivalent to:
+ * mb_value_t v;
+ * mb_make_string(v, BasicStrDup(s));
+ */
+mb_value_t wwiv_mb_make_string(const std::string& s);
+mb_value_t wwiv_mb_make_int(int i);
+mb_value_t wwiv_mb_make_real(float f);
 
 }
 
