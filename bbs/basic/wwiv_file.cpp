@@ -33,14 +33,11 @@ static file_location_t to_file_location_t(const std::string& s) {
 }
 
 bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {  
-  mb_begin_module(basi, "WWIV.FILE");
+  mb_begin_module(basi, "WWIV.IO.FILE");
 
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
-    const auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_empty_function(bas, l));
-    *sd->out << "WWIV.FILE\r\n";
-    mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.file")));
-    return MB_FUNC_OK;
+    return mb_push_string(bas, l, BasicStrDup("wwiv.io.file"));
   });
 
   mb_register_func(basi, "OPEN_OPTIONS", [](struct mb_interpreter_t* bas, void** l) -> int {
@@ -52,15 +49,15 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
       return MB_FUNC_ERR;
     }
     std::string loc{arg};
-    mb_check(mb_attempt_close_bracket(bas, l));
     mb_value_t val;
     val.type = MB_DT_USERTYPE;
     const auto loc_enum = to_file_location_t(loc);
     val.value.integer = static_cast<int>(loc_enum);
+
+    mb_check(mb_attempt_close_bracket(bas, l));
     // N.B. We don't use bytes since it's easier to use integer for
     // an integer key.
-    mb_push_value(bas, l, val);
-    return MB_FUNC_OK;
+    return mb_push_value(bas, l, val);
   });
  
   mb_register_func(basi, "OPEN", [](struct mb_interpreter_t* bas, void** l) -> int {
@@ -90,9 +87,7 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
     sd->files[handle].file = std::make_unique<TextFile>(path, mode);
 
     mb_check(mb_attempt_close_bracket(bas, l));
-    mb_check(mb_push_usertype(bas, l, reinterpret_cast<void*>(handle)));
-
-    return MB_FUNC_OK;
+    return mb_push_usertype(bas, l, reinterpret_cast<void*>(handle));
   });
 
   mb_register_func(basi, "READINTOSTRING", [](struct mb_interpreter_t* bas, void** l) -> int {

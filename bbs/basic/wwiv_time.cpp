@@ -31,9 +31,7 @@ bool RegisterNamespaceWWIVTIME(mb_interpreter_t* basi) {
 
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_empty_function(bas, l));
-    const auto* sd = get_wwiv_script_userdata(bas);
-    *sd->out << "WWIV.TIME\r\n";
-    return mb_push_string(bas, l, BasicStrDup("wwiv.file"));
+    return mb_push_string(bas, l, BasicStrDup("wwiv.time"));
   });
 
   mb_register_func(basi, "FORMAT", [](struct mb_interpreter_t* bas, void** l) -> int {

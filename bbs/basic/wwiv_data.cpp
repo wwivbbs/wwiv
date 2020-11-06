@@ -132,12 +132,8 @@ bool RegisterNamespaceData(mb_interpreter_t* basi) {
   mb_begin_module(basi, "WWIV.DATA");
 
   mb_register_func(basi, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
-    const auto* d = get_wwiv_script_userdata(bas);
-    mb_check(mb_attempt_open_bracket(bas, l));
-    mb_check(mb_attempt_close_bracket(bas, l));
-    *d->out << "wwiv.data\r\n";
-    mb_check(mb_push_string(bas, l, BasicStrDup("wwiv.data")));
-    return MB_FUNC_OK;
+    mb_check(mb_empty_function(bas, l));
+    return mb_push_string(bas, l, BasicStrDup("wwiv.data"));
   });
 
   mb_register_func(basi, "SAVE", [](struct mb_interpreter_t* bas, void** l) -> int {
