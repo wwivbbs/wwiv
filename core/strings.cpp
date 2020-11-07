@@ -123,7 +123,7 @@ void SplitString(const string& original_string, const string& delims, vector<str
 
 void SplitString(const string& original_string, const string& delims, bool skip_empty,
                  vector<string>* out) {
-  string s(original_string);
+  auto s(original_string);
   for (auto found = s.find_first_of(delims); found != string::npos;
        s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found > 0) {
@@ -150,13 +150,11 @@ bool ends_with(const std::string& input, const std::string& match) {
 
 /**
  * Returns a string justified and padded with "bg".
+ *
  * @param s The text to justify
  * @param length the length of the text
  * @param bg the character to use as the background
- * @param just_type one of the following:
- *      LEFT
- *      RIGHT
- * @return the justified text.
+ * @param just_type one of the following: LEFT, RIGHT
  */
 void StringJustify(string* s, int length, char bg, JustificationType just_type) {
   if (ssize(*s) > length) {
@@ -184,8 +182,8 @@ void StringJustify(string* s, int length, char bg, JustificationType just_type) 
 
 /**
  * Removes spaces from the beginning and the end of the string s.
+ *
  * @param str the string from which to remove spaces
- * @return str with spaces removed.
  */
 void StringTrim(char* str) {
   string s(str);
@@ -195,11 +193,11 @@ void StringTrim(char* str) {
 
 /**
 * Removes spaces from the beginning and the end of the string s.
+*
 * @param s the string from which to remove spaces
-* @return s with spaces removed.
 */
 void StringTrim(string* s) {
-  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  auto pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 
   pos = s->find_last_not_of(DELIMS_WHITE);
@@ -208,8 +206,8 @@ void StringTrim(string* s) {
 
 /**
 * Removes CF and LF from the beginning and the end of the string s.
+*
 * @param s the string from which to remove spaces
-* @return s with spaces removed.
 */
 void StringTrimCRLF(string* s) {
   auto pos = s->find_first_not_of(DELIMS_CRLF);
@@ -222,12 +220,13 @@ void StringTrimCRLF(string* s) {
 /**
 * Removes spaces from the beginning and the end of the string s and
 * returns it as a new string
+*
 * @param orig the string from which to remove spaces
 * @return orig with spaces removed.
 */
 string StringTrim(const string& orig) {
-  string s(orig);
-  string::size_type pos = s.find_first_not_of(DELIMS_WHITE);
+  auto s(orig);
+  auto pos = s.find_first_not_of(DELIMS_WHITE);
   s.erase(0, pos);
 
   pos = s.find_last_not_of(DELIMS_WHITE);
@@ -375,7 +374,17 @@ static bool IsColorCode(char c) {
   if (!c) {
     return false;
   }
-  return (c == '#' || isdigit(c));
+  return c == '#' || isdigit(c);
+}
+
+bool wwiv::strings::contains(const std::string& haystack, const std::string_view& needle) noexcept {
+  try {
+    return haystack.find(needle) != std::string::npos;
+  } catch (...) {
+    DLOG(FATAL) << "Caught exeption in wwiv::strings::contains: '"
+                <<  haystack << "' : '" << needle << "'";
+    return false;
+  }
 }
 
 char* stripcolors(const char* str) {
@@ -461,6 +470,7 @@ unsigned char upcase(unsigned char ch) {
  * @return The lowercase version of the character
  */
 unsigned char locase(unsigned char ch) {
+  // ReSharper disable once CppCStyleCast
   auto* ss = (unsigned char*)strchr((const char*)translate_letters[1], ch);
   if (ss) {
     ch = translate_letters[0][ss - translate_letters[1]];
@@ -526,15 +536,6 @@ char* strcasestr(const char* haystack, const char* needle) {
 char *strupr(char *s) {
   for (int i = 0; s[i] != 0; i++) {
     s[i] = wwiv::strings::to_upper_case<char>(s[i]);
-  }
-
-  return s;
-}
-
-/** Converts string to lowercase */
-char *strlwr(char *s) {
-  for (int i = 0; s[i] != 0; i++) {
-    s[i] = wwiv::strings::to_lower_case(s[i]);
   }
 
   return s;

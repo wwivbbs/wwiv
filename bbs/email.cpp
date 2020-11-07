@@ -727,27 +727,28 @@ void delmail(File& f, size_t loc) {
   f.Write(&m, sizeof(mailrec));
 }
 
-std::string fixup_user_entered_email(const std::string& s) {
-  if (s.empty()) {
+std::string fixup_user_entered_email(const std::string& user_input) {
+  if (user_input.empty()) {
     return{};
   }
-  auto user_input{s};
   const auto at_pos = user_input.find('@');
   if (at_pos != std::string::npos && at_pos < user_input.size() - 1 &&
       isalpha(user_input.at(at_pos + 1))) {
-    if (user_input.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) != std::string::npos) {
-      StringLowerCase(&user_input);
-      user_input += INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS;
+    if (!contains(user_input, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS)) {
+      return StrCat(ToStringLowerCase(user_input), " ", INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS);
     }
-  } else if (user_input.find('(') != std::string::npos && user_input.find(')') != std::string::npos) {
+    return user_input;
+  }
+
+  const auto first = user_input.find_last_of('(');
+  const auto last = user_input.find_last_of(')');
+  if (first != std::string::npos && last != std::string::npos) {
     // This is where we'd check for (NNNN) and add in the @NNN for the FTN networks.
-    const auto first = user_input.find_last_of('(');
-    const auto last = user_input.find_last_of(')');
     if (last > first) {
       const auto inner = user_input.substr(first + 1, last - first - 1);
-      if (inner.find('/') != std::string::npos) {
+      if (wwiv::stl::contains(inner, '/') && !contains(user_input, FTN_FAKE_OUTBOUND_ADDRESS)) {
         // At least need a FTN address.
-        user_input += StrCat(" ", FTN_FAKE_OUTBOUND_ADDRESS);
+        return StrCat(user_input, " ", FTN_FAKE_OUTBOUND_ADDRESS);
         //bout << "\r\n|#9Sending to FTN Address: |#2" << inner << wwiv::endl;
       }
     }

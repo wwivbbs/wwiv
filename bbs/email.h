@@ -58,6 +58,6 @@ void email(const std::string& title, uint16_t user_number, uint16_t system_numbe
 void imail(const std::string& title, uint16_t user_number, uint16_t system_number);
 void delmail(wwiv::core::File& pFile, size_t loc);
 
-[[nodiscard]] std::string fixup_user_entered_email(const std::string& s);
+[[nodiscard]] std::string fixup_user_entered_email(const std::string& user_input);
 
-#endif  // __INCLUDED_BBS_MSGBASE_H__
+#endif

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_STRINGS_H__
-#define __INCLUDED_STRINGS_H__
+#ifndef INCLUDED_CORE_STRINGS_H
+#define INCLUDED_CORE_STRINGS_H
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include <cstring> // strncpy
@@ -34,8 +34,7 @@
 #undef StrCat
 #endif // StrCat
 
-namespace wwiv {
-namespace strings {
+namespace wwiv::strings {
 
 enum class JustificationType { LEFT, RIGHT };
 
@@ -86,80 +85,80 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   }
 
   // Comparisons
-  bool IsEquals(const char* str1, const char* str2);
-  bool iequals(const char* str1, const char* str2);
-  bool iequals(const std::string& s1, const std::string& s2);
-  int StringCompareIgnoreCase(const char* str1, const char* str2);
-  int StringCompare(const char* str1, const char* str2);
+  [[nodiscard]] bool IsEquals(const char* str1, const char* str2);
+  [[nodiscard]] bool iequals(const char* str1, const char* str2);
+  [[nodiscard]] bool iequals(const std::string& s1, const std::string& s2);
+  [[nodiscard]] int StringCompareIgnoreCase(const char* str1, const char* str2);
+  [[nodiscard]] int StringCompare(const char* str1, const char* str2);
 
   const std::string& StringReplace(std::string* orig, const std::string& old_string,
                                    const std::string& new_string);
   std::vector<std::string> SplitString(const std::string& original_string,
                                        const std::string& delims);
-  std::vector<std::string> SplitString(const std::string& original_string,
+  [[nodiscard]] std::vector<std::string> SplitString(const std::string& original_string,
                                        const std::string& delims, bool skip_empty);
   void SplitString(const std::string& original_string, const std::string& delims,
                    std::vector<std::string>* out);
   void SplitString(const std::string& original_string, const std::string& delims, bool skip_empty,
                    std::vector<std::string>* out);
 
-  bool starts_with(const std::string& input, const std::string& match);
-  bool ends_with(const std::string& input, const std::string& match);
+  [[nodiscard]] bool starts_with(const std::string& input, const std::string& match);
+  [[nodiscard]] bool ends_with(const std::string& input, const std::string& match);
 
   void StringJustify(std::string* s, int length, char bg,
                      JustificationType just_type);
   void StringTrim(char* str);
   void StringTrim(std::string* s);
-  std::string StringTrim(const std::string& orig);
+  [[nodiscard]] std::string StringTrim(const std::string& orig);
 
   void StringTrimCRLF(std::string* s);
   void StringTrimEnd(std::string* s);
   void StringTrimEnd(char* str);
   void StringTrimBegin(std::string* s);
   void StringUpperCase(std::string* s);
-  std::string ToStringUpperCase(const std::string& s);
+  [[nodiscard]] std::string ToStringUpperCase(const std::string& s);
   void StringLowerCase(std::string* s);
-  std::string ToStringLowerCase(const std::string& s);
+  [[nodiscard]] std::string ToStringLowerCase(const std::string& s);
 
-// Strips the string from the first occurence of ch
+// Strips the string from the first occurrence of ch
   // Doesn't seem to be used anywhere. Maybe it should be removed.
   char* StringRemoveChar(const char* str, char ch);
 
   /**
    * Joints the strings in lines, using end_of_line in between each line.
    */
-  std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
+  [[nodiscard]] std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
 
   // String length without colors
-  int size_without_colors(const std::string& s);
+  [[nodiscard]] int size_without_colors(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
-  std::string trim_to_size_ignore_colors(const std::string& orig, int size);
+  [[nodiscard]] std::string trim_to_size_ignore_colors(const std::string& orig, int size);
 
   /**
    * Returns orig padded to size, excluding color codes.
    */
-  std::string pad_to_ignore_colors(const std::string& orig, int size);
+  [[nodiscard]] std::string pad_to_ignore_colors(const std::string& orig, int size);
 
   // String length
-  std::string::size_type size(const std::string& s);
+  [[nodiscard]] std::string::size_type size(const std::string& s);
 
   // String length
-  std::string::size_type size(const char* s);
+  [[nodiscard]] std::string::size_type size(const char* s);
 
   // String length as an int
-  int ssize(const char* s);
+  [[nodiscard]] int ssize(const char* s);
 
   // String length as an int
-  int ssize(const unsigned char* s);
+  [[nodiscard]] int ssize(const unsigned char* s);
 
   // String length as an int
-  int ssize(const std::string& s);
+  [[nodiscard]] int ssize(const std::string& s);
 
   /** returns a copy of orig trimmed to size, excluding colors. */
   std::string trim_to_size(const std::string& orig, int size);
 
-  /** Typesafe version of toupper */
+  /** Type-safe version of toupper */
   template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
   T to_upper_case(const T a) { return static_cast<T>(::toupper(a)); }
 
@@ -204,23 +203,30 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
                               s, b);
   }
 
-  } // namespace strings
+  /**
+   * Return true if haystack contains needed as a substring.
+   *
+   * Like boost::contains.
+   * See http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html
+   * for proposal to add as std::string::contains.
+   */
+  bool contains(const std::string& haystack, const std::string_view& needle) noexcept;
 
   } // namespace wwiv
 
   // Function Prototypes
-  char* stripcolors(const char* pszOrig);
-  std::string stripcolors(const std::string& orig);
-  unsigned char upcase(unsigned char ch);
-  unsigned char locase(unsigned char ch);
+  [[nodiscard]] char* stripcolors(const char* pszOrig);
+  [[nodiscard]] std::string stripcolors(const std::string& orig);
+  [[nodiscard]] unsigned char upcase(unsigned char ch);
+  [[nodiscard]] unsigned char locase(unsigned char ch);
 
   void properize(char* text);
-  std::string properize(const std::string& text);
+  [[nodiscard]] std::string properize(const std::string& text);
 
   extern const char* DELIMS_WHITE;
 
   /** returns true if needle is found in haystack ,ignoring case */
-  bool ifind_first(const std::string& haystack, const std::string& needle);
+  [[nodiscard]] bool ifind_first(const std::string& haystack, const std::string& needle);
 
 #ifdef _WIN32
 
@@ -231,7 +237,6 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
 
 #else // _WIN32
   char* strupr(char* s);
-  char* strlwr(char* s);
   char* strrev(char* s);
 
 #endif // _WIN32
