@@ -37,14 +37,15 @@ using namespace wwiv::strings;
 
 namespace wwiv::common {
 
-FullScreenView::FullScreenView(Output& output, int numlines, int swidth, int slength)
-    : bout_(output), num_header_lines_(numlines), screen_width_(swidth), screen_length_(slength) {
+FullScreenView::FullScreenView(Output& output, Input& input, int numlines, int swidth, int slength)
+    : bout_(output), bin_(input), num_header_lines_(numlines), screen_width_(swidth),
+      screen_length_(slength) {
   message_height_ = screen_length_ - num_header_lines_ - 2 - 1;
   lines_start_ = num_header_lines_ + 2;
   lines_end_ = lines_start_ + message_height_;
   command_line_ = screen_length_;
   
-  //Save the topdata.
+  // Save the topdata.
   saved_topdata = output.localIO()->topdata();
   if (output.localIO()->topdata() != LocalIO::topdata_t::none) {
     output.localIO()->topdata(LocalIO::topdata_t::none);
@@ -96,7 +97,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   const auto y = screen_length_ - 1;
   bout_.GotoXY(1, y);
   const auto saved_color = bout.curatr();
-  wwiv::core::ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
+  ScopeExit at_ext([=] { bout.SystemColor(saved_color); });
 
   bout_ << "|09" << static_cast<unsigned char>(198)
         << string(screen_width_ - 2, static_cast<unsigned char>(205))

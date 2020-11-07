@@ -41,7 +41,55 @@ What's New in WWIV 5.6
 + Add setting in wwivd for working directory for launch the bbs (#1269)
 * Don't check for hangup on the network programs, user isn't online
 * Improve pending list.
+* new WWIVbasic packages:
+** wwiv.io.file
+** wwiv.time
+! Fix netdat.log formatting and don't delete old ones, just move them
+  to the logs directory.
++ Add new option for wwivd to launch network and bbs minimized
+* Don't allow filenames >8chars to save to 4.22 format.
++ Initial rough cut of backbone.na importer.
+  Here's how it works:
+  * Create import.ini file with default values for the subs
+    that will be created from importing them from a
+    BACKBONE.NA file.
+  * Run "wwivutil subs import" to do the import.
+
+  Example Command Line:
+  wwivutil subs import --defaults=import.ini FSXNET.NA
+
+  Example import.ini
+  ```
+  [backbone]
+  post_acs = user.sl >= 20
+  read_acs = user.sl >= 10
+  maxmsgs = 5000
+  net_num = 2
+  uplink = 21:2/100
+  ```
+* Rebuild names.lst on useredit changes.
+* Reset the SIGCHLD signal handler on networkc and networkf.(#1297)
++ Support USER data in addition to GLOBAL in wwivbasic. (#1296)
+* Fix Disconnect on linux while in STDIO door does not exit (#1293)
+* Always add MSGID, even on netmails (#1295)
+* Fix age display in newuser login.
++ Update subs and dirs to use ACS
+* Fix crash with subs list and only 1 conference. (#1292)
+
+
   
+What's New in WWIV 5.5.1 (2020)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Fix age display in newuser login.
+* Always add MSGID, even on netmails (#1295)
+* Fix crash with subs list and only 1 conference. (#1292)
+* Fix crash when deleting a tagged file (#1282)
+* Don't check for hangup on the network programs, user isn't online
+* Remove WSL stanzas, that makes MSVC 16.6 and newer unhappy (#1268)
+* Fix install.sh script for unix. (#1261, #1262)
+* Fix formatting for non-full screen reader (#1250)
+* Fix Disconnect on linux while in STDIO door does not exit (#1293)
+* Don't allow filenames >8chars to save to 4.22 format. (#1306)
 
 What's New in WWIV 5.5 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

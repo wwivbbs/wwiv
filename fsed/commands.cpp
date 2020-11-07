@@ -49,6 +49,7 @@ std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   map.emplace(ESC, fsed_command_id::menu);
   map.emplace(CI, fsed_command_id::toggle_insovr);
   map.emplace(RETURN, fsed_command_id::key_return);
+  map.emplace(SOFTRETURN, fsed_command_id::ignore);
   map.emplace(CP, fsed_command_id::input_wwiv_color);
   map.emplace(CW, fsed_command_id::delete_word_left);
   map.emplace(CX, fsed_command_id::delete_line_left);
@@ -184,10 +185,12 @@ bool FsedCommands::AddAll() {
                     return true;
                   }));
   add(FsedCommand(fsed_command_id::input_wwiv_color, "input_wwiv_color",
-                  [](FsedModel& ed, FsedView& view, FsedState&) -> bool {
+                  [&](FsedModel& ed, FsedView& view, FsedState&) -> bool {
                     const auto cc = view.bgetch(ed);
                     if (cc >= '0' && cc <= '9') {
                       ed.curline().set_wwiv_color(cc - '0');
+                    } else if (cc == CA || cc == CD || cc == CF) {
+                      view.macro(ctx_, cc);
                     }
                     ed.current_line_dirty(ed.curli);
                     return true;
@@ -204,6 +207,9 @@ bool FsedCommands::AddAll() {
                     return true;
                   }));
 
+  add(FsedCommand(
+      fsed_command_id::ignore, "ignore",
+      [](FsedModel&, FsedView&, FsedState&) -> bool { return true; }));
   return false;
 }
 

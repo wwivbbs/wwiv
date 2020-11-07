@@ -15,18 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_FULL_SCREEN_H__
-#define __INCLUDED_COMMON_FULL_SCREEN_H__
+#ifndef INCLUDED_COMMON_FULL_SCREEN_H
+#define INCLUDED_COMMON_FULL_SCREEN_H
 
 #include "local_io/local_io.h"
 #include <string>
 
 namespace wwiv::common {
+class Input;
 class Output;
 
 class FullScreenView final {
 public:
-  FullScreenView(wwiv::common::Output& output, int numlines, int swidth, int slength);
+  FullScreenView(Output& output, Input& input, int numlines, int swidth, int slength);
   ~FullScreenView();
 
   /** Displays a timeout warning in the command line area */
@@ -44,20 +45,23 @@ public:
   /** Places the cursor at the top of the body */
   void GotoContentAreaTop();
 
-  int message_height() const noexcept { return message_height_; }
-  int lines_start() const noexcept { return lines_start_; }
-  int lines_end() const noexcept { return lines_end_; }
-  int num_header_lines() const noexcept { return num_header_lines_; }
-  int screen_width() const noexcept { return screen_width_; }
+  [[nodiscard]] int message_height() const noexcept { return message_height_; }
+  [[nodiscard]] int lines_start() const noexcept { return lines_start_; }
+  [[nodiscard]] int lines_end() const noexcept { return lines_end_; }
+  [[nodiscard]] int num_header_lines() const noexcept { return num_header_lines_; }
+  [[nodiscard]] int screen_width() const noexcept { return screen_width_; }
 
   // Runs bgetch_event with error message and warning displayed
   // on the status line.
   int bgetch();
 
+  // Read through to this full screen's input.
+  [[nodiscard]] Input& in() const { return bin_; }
   // Write through to this full screen's output.
-  Output& out() const { return bout_; }
+  [[nodiscard]] Output& out() const { return bout_; }
 
 private:
+  Input& bin_;
   Output& bout_;
 
   int num_header_lines_{0};

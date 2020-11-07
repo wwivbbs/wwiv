@@ -333,7 +333,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
                 a()->current_sub().name, a()->GetNumMessagesInCurrentMessageArea()));
   bout.format("|14      Num {:<42} From\r\n", "Title");
   bout.clear_lines_listed();
-  return FullScreenView(bout, num_header_lines, screen_width, screen_length);
+  return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
 static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg, const int msgnum) {
@@ -417,18 +417,18 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
 
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
                                int start, int selected) {
-  for (int i = 0; i < fs.message_height(); i++) {
+  for (auto i = 0; i < fs.message_height(); i++) {
     if (i >= ssize(lines)) {
       break;
     }
-    bool is_selected = i == (selected - start);
+    const auto is_selected = i == selected - start;
     display_title_new(lines, fs, i, is_selected);
   }
 }
 
 static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
-  auto api = a()->msgapi();
+  auto* api = a()->msgapi();
   unique_ptr<MessageArea> area(
       api->Open(a()->current_sub(), a()->sess().GetCurrentReadMessageArea()));
   if (!area) {

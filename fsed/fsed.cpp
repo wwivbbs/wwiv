@@ -18,6 +18,7 @@
 #include "fsed/fsed.h"
 
 #include "common/full_screen.h"
+#include "common/input.h"
 #include "common/message_editor_data.h"
 #include "common/output.h"
 #include "core/eventbus.h"
@@ -42,7 +43,7 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
   const auto screen_width = (user != nullptr) ? user->GetScreenChars() : 80;
   const auto screen_length = (user != nullptr) ? user->GetScreenLines() - 1 : 24;
   const auto num_header_lines = 4;
-  auto fs = FullScreenView(bout, num_header_lines, screen_width, screen_length);
+  auto fs = FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
   auto view = std::make_shared<FsedView>(fs, data, file);
   view->redraw();
   return view;

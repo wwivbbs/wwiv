@@ -25,14 +25,14 @@ namespace wwiv::common {
 
 class MacroContext {
 public:
-  MacroContext(wwiv::common::Context* context) : context_(context) {}
+  explicit MacroContext(Context* context) : context_(context) {}
   virtual ~MacroContext() = default;
 
   virtual std::string interpret(char c) const = 0;
-  wwiv::common::Context* context() { return context_; }
+  Context* context() { return context_; }
 
 protected:
-  wwiv::common::Context* context_{nullptr};
+  Context* context_{nullptr};
 };
 
 } // namespace wwiv::common

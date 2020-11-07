@@ -26,7 +26,6 @@
 #include "common/com.h"
 #include "bbs/email.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "common/quote.h"
 #include "common/input.h"
 #include "common/output.h"

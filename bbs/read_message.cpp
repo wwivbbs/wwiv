@@ -418,7 +418,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     }
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
-      const int maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
+      const auto maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
       if (ssize(loc) > maxlen) {
         loc = loc.substr(0, maxlen);
       }
@@ -465,7 +465,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   const auto screen_length = a()->user()->GetScreenLines() - 1;
 
   bout.SystemColor(oldcuratr);
-  return FullScreenView(bout, num_header_lines, screen_width, screen_length);
+  return FullScreenView(bout, bin, num_header_lines, screen_width, screen_length);
 }
 
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text, bool controlcodes) {

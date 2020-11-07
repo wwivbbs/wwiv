@@ -19,11 +19,9 @@
 #ifndef __INCLUDED_COMMON_INPUT_H__
 #define __INCLUDED_COMMON_INPUT_H__
 
-#include "core/strings.h"
 #include "common/iobase.h"
 #include "common/context.h"
 #include "common/remote_io.h"
-#include "sdk/user.h"
 #include <chrono>
 #include <functional>
 #include <set>

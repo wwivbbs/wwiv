@@ -30,11 +30,11 @@ using namespace wwiv::strings;
 enum class add_cell_state_t { text, heart_color };
 
 line_t::line_t(bool wrapped, std::string text) : wrapped_(wrapped) {
-  add_cell_state_t state = add_cell_state_t::text;
+  auto state = add_cell_state_t::text;
   for (const auto c : text) {
     if (state == add_cell_state_t::heart_color) {
       state = add_cell_state_t::text;
-      auto color = static_cast<int>(c - '0');
+      const auto color = static_cast<int>(c - '0');
       if (color >= 0 && color <= 9) {
         wwiv_color_ = color;
       }
@@ -61,27 +61,27 @@ line_add_result_t line_t::add(int x, char c, ins_ovr_mode_t mode) {
   if (x == size_) {
     push_back(c);
     return line_add_result_t::no_redraw;
-  } else if (mode == ins_ovr_mode_t::ins) {
+  }
+  if (mode == ins_ovr_mode_t::ins) {
     wwiv::stl::insert_at(cell_, x, cell_t{wwiv_color_, c});
     ++size_;
     return line_add_result_t::needs_redraw;
-  } else {
-    cell_[x] = cell_t{wwiv_color_, c};
-    return line_add_result_t::no_redraw;
   }
+  cell_[x] = cell_t{wwiv_color_, c};
+  return line_add_result_t::no_redraw;
 }
 
 line_add_result_t line_t::del(int x, ins_ovr_mode_t) {
   if (x < 0) {
     return line_add_result_t::error;
   }
-  auto result = (x == size_) ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
+  const auto result = x == size_ ? line_add_result_t::no_redraw : line_add_result_t::needs_redraw;
   if (!wwiv::stl::erase_at(cell_, x)) {
     return line_add_result_t ::error;
   }
   --size_;
 
-  auto new_x = x - 1;
+  const auto new_x = x - 1;
   if (new_x >= 0 && new_x < size_) {
     // adopt new color
     wwiv_color_ = cell_.at(new_x).wwiv_color;

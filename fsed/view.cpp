@@ -27,6 +27,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/format.h"
+#include "local_io/keycodes.h"
 
 using namespace wwiv::common;
 using namespace wwiv::stl;
@@ -34,8 +35,8 @@ using namespace wwiv::strings;
 
 namespace wwiv::fsed {
 
-FsedView::FsedView(FullScreenView fs, MessageEditorData& data, bool file)
-    : fs_(std::move(fs)), bout_(fs_.out()), data_(data), file_(file) {
+FsedView::FsedView(const FullScreenView& fs, MessageEditorData& data, bool file)
+    : fs_(fs), bout_(fs_.out()), bin_(fs_.in()), data_(data), file_(file) {
   max_view_lines_ = std::min<int>(20, fs.message_height() - 1);
   max_view_columns_ = std::min<int>(fs.screen_width(), 79);
 }
@@ -48,6 +49,21 @@ void FsedView::gotoxy(const FsedModel& ed) {
 
 void FsedView::ClearCommandLine() { 
     fs_.PutsCommandLine("|#9(|#2ESC|#9=Menu/Help) ");
+}
+
+void FsedView::macro(Context& ctx, int cc) {
+  if (!ctx.session_context().okmacro() || bin.charbufferpointer_) {
+    return;
+  }
+  std::map<int, int> macro_nums{{CD, 0}, {CF, 1}, {CA, 2}};
+  const auto macro_num = macro_nums.at(cc);
+  const auto m = ctx.u().GetMacro(macro_num);
+  if (m.empty()) {
+    return;
+  }
+  strcpy(&bin.charbuffer[1], m.c_str());
+  bin.charbufferpointer_ = 1;
+
 }
 
 void FsedView::draw_current_line(FsedModel& ed, int previous_line) { 
@@ -170,6 +186,20 @@ void FsedView::draw_bottom_bar(const FsedModel& ed) {
 }
 
 int FsedView::bgetch(FsedModel& ed) {
+  // bgetch_event doesn't process macros by design, but
+  // we want them in the FSED
+  if (bin_.charbufferpointer_) {
+    if (!bin_.charbuffer[bin_.charbufferpointer_]) {
+      bin_.charbufferpointer_ = 0;
+      bin_.charbuffer[0] = 0;
+    } else {
+      if (bin_.charbuffer[bin_.charbufferpointer_] == CC) {
+        bin_.charbuffer[bin_.charbufferpointer_] = CP;
+      }
+      return bin_.charbuffer[bin_.charbufferpointer_++];
+    }
+  }
+
   return bin.bgetch_event(Input::numlock_status_t::NUMBERS, std::chrono::seconds(1),
                       [&](Input::bgetch_timeout_status_t status, int s) {
                         if (status == Input::bgetch_timeout_status_t::WARNING) {

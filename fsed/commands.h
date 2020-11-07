@@ -50,6 +50,7 @@ enum class fsed_command_id {
   toggle_insovr,
   view_redraw,
   input_wwiv_color,
+  ignore,
   none,
 };
 

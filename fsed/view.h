@@ -22,11 +22,17 @@
 #include "common/message_editor_data.h"
 #include "fsed/model.h"
 
+namespace wwiv {
+namespace common {
+class Context;
+}
+}
+
 namespace wwiv::fsed {
 
 class FsedView final : public editor_viewport_t {
 public:
-  FsedView(common::FullScreenView fs, common::MessageEditorData& data, bool file);
+  FsedView(const common::FullScreenView& fs, common::MessageEditorData& data, bool file);
   ~FsedView() override = default;
 
   common::FullScreenView& fs();
@@ -50,6 +56,7 @@ public:
   void set_top_line(int l) override { top_line_ = l; }
   void gotoxy(const FsedModel& ed) override;
   void ClearCommandLine();
+  void macro(wwiv::common::Context& ctx, int cc);
 
   // Top editor line number visible in the viewport.
   int top_line_{0};
@@ -58,6 +65,7 @@ public:
 private:
   common::FullScreenView fs_;
   common::Output& bout_;
+  common::Input& bin_;
   int max_view_lines_;
   int max_view_columns_;
   common::MessageEditorData& data_;
