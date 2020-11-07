@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NET_H__
-#define __INCLUDED_NET_H__
+#ifndef INCLUDED_NET_H
+#define INCLUDED_NET_H
 
 #ifdef __MSDOS__
 #include "sdk/msdos_stdint.h"
@@ -470,4 +470,4 @@ struct net_networks_rec {
 
 #endif // __MSDOS__
 
-#endif // __INCLUDED_NET_H__
+#endif

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVFSED_FSEDCONFIG_H__
-#define __INCLUDED_WWIVFSED_FSEDCONFIG_H__
+#ifndef INCLUDED_WWIVFSED_FSEDCONFIG_H
+#define INCLUDED_WWIVFSED_FSEDCONFIG_H
 
 #include "common/remote_io.h"
 #include "core/command_line.h"

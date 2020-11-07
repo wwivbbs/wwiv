@@ -164,16 +164,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     case '1': {
       bout.nl();
       bout << "|#9Enter user name or number:\r\n:";
-      char un_nn[81];
-      bin.input(un_nn, 75, true);
-      auto at_pos = strcspn(un_nn, "@");
-      if (at_pos != strlen(un_nn) && isalpha(un_nn[at_pos + 1])) {
-        if (strstr(un_nn, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
-          strlwr(un_nn);
-          strcat(un_nn, " ");
-          strcat(un_nn, "@32767 ");
-        }
-      }
+      auto un_nn = fixup_user_entered_email(bin.input(75, true));
       auto [un, sy] = parse_email_info(un_nn);
       if (un || sy) {
         email("", un, sy, false, 0);

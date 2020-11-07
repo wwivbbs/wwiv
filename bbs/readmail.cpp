@@ -18,13 +18,11 @@
 /**************************************************************************/
 #include "bbs/readmail.h"
 
-
-#include "acs.h"
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bbsutl2.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
@@ -48,7 +46,6 @@
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/quote.h"
 #include "common/workspace.h"
 #include "core/stl.h"
@@ -57,9 +54,9 @@
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
-#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -326,19 +323,6 @@ void delete_attachment(unsigned long daten, int forceit) {
   }
 }
 
-static std::string fixup_user_entered_email(const std::string& s) {
-  auto user_input = s;
-  const auto at_pos = user_input.find('@');
-  if (at_pos != std::string::npos && at_pos < user_input.size() - 1 &&
-      isalpha(user_input.at(at_pos + 1))) {
-    if (user_input.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) != std::string::npos) {
-      StringLowerCase(&user_input);
-      user_input += INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS;
-    }
-  }
-  return user_input;
-}
-
 void readmail(int mode) {
   int i, i1, i2, curmail = 0, delme;
   uint8_t nn = 0;
@@ -350,8 +334,8 @@ void readmail(int mode) {
   int num_mail, num_mail1;
   net_system_list_rec* csne;
   filestatusrec fsr{};
-  bool attach_exists = false;
-  bool found = false;
+  auto attach_exists = false;
+  auto found = false;
 
   a()->emchg_ = false;
 
@@ -359,7 +343,7 @@ void readmail(int mode) {
   std::vector<tmpmailrec> mloc;
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
   auto sl = a()->effective_slrec();
-  int mw = 0;
+  auto mw = 0;
   {
     auto pFileEmail(OpenEmailFile(false));
     if (!pFileEmail->IsOpen()) {

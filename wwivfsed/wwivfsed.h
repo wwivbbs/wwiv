@@ -15,42 +15,39 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVFSED_WWIVFSED_H__
-#define __INCLUDED_WWIVFSED_WWIVFSED_H__
+#ifndef INCLUDED_WWIVFSED_WWIVFSED_H
+#define INCLUDED_WWIVFSED_WWIVFSED_H
 
 #include "common/context.h"
 #include "common/macro_context.h"
 #include "common/message_editor_data.h"
 #include "common/remote_io.h"
 #include "core/command_line.h"
-#include "fsed/model.h"
-#include "fsed/line.h"
 #include "local_io/local_io.h"
 #include "wwivfsed/fsedconfig.h"
 #include <filesystem>
-#include <vector>
 #include <string>
 
 namespace wwiv::wwivfsed {
 
-class FakeMacroContext : public wwiv::common::MacroContext {
+class FakeMacroContext final : public wwiv::common::MacroContext {
 public:
-  FakeMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
-  ~FakeMacroContext() = default;
+  explicit FakeMacroContext(common::Context* context) : MacroContext(context) {}
+  ~FakeMacroContext() override = default;
 
-  std::string interpret(char) const override { return ""; }
+  [[nodiscard]] std::string interpret(char) const override { return ""; }
 };
 
-class FsedContext final : public wwiv::common::Context {
+class FsedContext final : public common::Context {
 public:
   explicit FsedContext(LocalIO* local_io) : sess_(local_io) {}
-  ~FsedContext() = default;
-  wwiv::sdk::User& u() override { return user_; }
-  wwiv::common::SessionContext& session_context() override { return sess_; }
-  bool mci_enabled() const override { return false; };
+  ~FsedContext() override = default;
+  [[nodiscard]] sdk::User& u() override { return user_; }
+  [[nodiscard]] common::SessionContext& session_context() override { return sess_; }
+  [[nodiscard]] bool mci_enabled() const override { return false; };
 
-  wwiv::sdk::User user_;
-  wwiv::common::SessionContext sess_;
+  sdk::User user_;
+  common::SessionContext sess_;
 };
 
 class FsedApplication final {
@@ -63,18 +60,18 @@ public:
 private:
   // Creates a MessageEditorData by reading the message editor
   // information files from the BBS.
-  wwiv::common::MessageEditorData CreateMessageEditorData();
+  common::MessageEditorData CreateMessageEditorData();
   bool LoadQuotesWWIV(const wwiv::common::MessageEditorData& data);
   bool LoadQuotesQBBS(const wwiv::common::MessageEditorData& data);
   bool DoFsed();
 
-  [[nodiscard]] wwiv::common::Context& context() { return context_; }
+  [[nodiscard]] common::Context& context() { return context_; }
   [[nodiscard]] const wwiv::common::Context& context() const { return context_; }
   [[nodiscard]] FsedConfig& config() const { return *config_; }
 
   const std::unique_ptr<FsedConfig> config_;
   std::unique_ptr<LocalIO> local_io_;
-  std::unique_ptr<wwiv::common::RemoteIO> remote_io_;
+  std::unique_ptr<common::RemoteIO> remote_io_;
   FsedContext context_;
   FakeMacroContext fake_macro_context_;
 };

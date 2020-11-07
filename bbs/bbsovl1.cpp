@@ -21,21 +21,21 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/conf.h"
-#include "common/datetime.h"
 #include "bbs/email.h"
 #include "bbs/external_edit.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/message_editor_data.h"
-#include "common/pause.h"
-#include "common/quote.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "common/workspace.h"
 #include "bbs/xfer.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/message_editor_data.h"
+#include "common/pause.h"
+#include "common/quote.h"
+#include "common/workspace.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
@@ -156,26 +156,7 @@ void send_email() {
   a()->sess().clear_irt();
 
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  auto username = bin.input_text(75);
-  const auto atpos = username.find_first_of('@');
-  if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
-    if (username.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == string::npos) {
-      StringLowerCase(&username);
-      username += StrCat(" ", INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS);
-    }
-  } else if (username.find('(') != std::string::npos && username.find(')') != std::string::npos) {
-    // This is where we'd check for (NNNN) and add in the @NNN for the FTN networks.
-    const auto first = username.find_last_of('(');
-    const auto last = username.find_last_of(')');
-    if (last > first) {
-      const auto inner = username.substr(first + 1, last - first - 1);
-      if (inner.find('/') != std::string::npos) {
-        // At least need a FTN address.
-        username += StrCat(" ", FTN_FAKE_OUTBOUND_ADDRESS);
-        bout << "\r\n|#9Sending to FTN Address: |#2" << inner << wwiv::endl;
-      }
-    }
-  }
+  const auto username = fixup_user_entered_email(bin.input_text(75));
 
   auto [user_number, system_number] = parse_email_info(username);
   clear_quotes(a()->sess());

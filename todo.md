@@ -15,6 +15,9 @@ jq ".number" jenkins.json
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark. 
+* Use fixup_user_entered_email in email address fixing up.
+  also create one to fixup ftn address (add @32765)
+  and use this consistently (i.e. in '1' from msgscan)
 
 ## FTN
 ***
