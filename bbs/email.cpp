@@ -43,6 +43,10 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/fido/fido_util.h"
+#include "sdk/fido/nodelist.h"
+
+
 #include <chrono>
 #include <memory>
 #include <string>
@@ -431,8 +435,10 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   if (!ok_to_mail(user_number, system_number, forceit)) {
     return;
   }
+  std::string destination_bbs_name;
   if (system_number) {
     csne = next_system(system_number);
+    destination_bbs_name = csne->name;
   }
   bool an = true;
   if (a()->effective_slrec().ability & ability_read_email_anony) {
@@ -450,18 +456,41 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       destination = ">UNKNOWN<";
     }
   } else {
-    if (a()->current_net().type == network_type_t::internet
-      || a()->current_net().type == network_type_t::ftn) {
-      // Internet and 
+    if (a()->current_net().type == network_type_t::internet) {
       destination = a()->net_email_name;
+    } else if (a()->current_net().type == network_type_t::ftn) {
+      destination = a()->net_email_name;
+      try {
+        auto addr = fido::get_address_from_single_line(destination);
+        if (addr.zone() == -1) {
+          bout << "Bad FTN Address: " << destination;
+          return;
+        }
+        const auto& net = a()->current_net();
+        auto nl_path = fido::Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
+        fido::Nodelist nl(FilePath(net.dir, nl_path));
+        if (nl.initialized()) {
+          if (nl.contains(addr)) {
+            const auto& e = nl.entry(addr);
+            destination_bbs_name = e.name_;
+          } else {
+            bout << "Address " << addr << "does not existing in the nodelist." << wwiv::endl;
+          }
+        } else {
+          bout << "Unable to validate FTN address against nodelist." << wwiv::endl;
+        }
+      } catch (const fido::bad_fidonet_address& e) {
+        bout << "Bad FTN Address: " << destination << "; error: " << e.what();
+        return;
+      }
     } else {
       std::string netname = (wwiv::stl::ssize(a()->nets()) > 1) ? a()->network_name() : "";
       destination =
           username_system_net_as_string(user_number, a()->net_email_name, system_number, netname);
     }
   }
-  bout << "|#9E-mailing |#2" << destination;
-  bout.nl();
+  bout.format("|#9E-mailing:      |#2{} |#9(|#1{}|#9)", a()->current_net().name); 
+  bout.nl(2);
   uint8_t i = (a()->effective_slrec().ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
@@ -473,12 +502,12 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   if (i == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
     i = 0;
   }
-  if (system_number != 0 && system_number != INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
+  bout << "|#9Name of system: |#2" << destination_bbs_name << wwiv::endl;
+  if (system_number != 0 && a()->current_net().type == network_type_t::wwivnet) {
     i = 0;
     anony = 0;
     bout.nl();
     CHECK_NOTNULL(csne);
-    bout << "|#9Name of system: |#2" << csne->name << wwiv::endl;
     bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
     bout.nl();
   }

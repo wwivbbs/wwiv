@@ -464,8 +464,7 @@ void readmail(int mode) {
         const auto current_s = ss.str();
         if (size_without_colors(current_s) > a()->mail_who_field_len) {
           // resize ss to trim it since it's larger than mail_who_field_len
-          trim_to_size_ignore_colors(current_s, a()->mail_who_field_len);
-          ss.str(current_s);
+          ss.str(trim_to_size_ignore_colors(current_s, a()->mail_who_field_len));
         }
         const auto siz = a()->mail_who_field_len + 1 - size_without_colors(current_s);
         ss << std::string(std::max(0, siz), ' ');

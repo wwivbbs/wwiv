@@ -47,11 +47,11 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 /**
- * Finds a()->sess().user_num() and system number from emailAddress, sets network number as
- * appropriate.
- * @param emailAddress The text of the email address.
- * @param un OUT The User Number
- * @param sy OUT The System Number
+ * Finds user_num and system number from emailAddress and sets the
+ * network number as appropriate.
+ *
+ * @param email_address The text of the email address.
+ * @return tuple of {un User Number, System Number}
  */
 std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address) {
   char *ss1, onx[20];
@@ -64,7 +64,7 @@ std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address
   uint16_t un = 0;
   uint16_t sy = 0;
   a()->net_email_name.clear();
-  char* ss = strrchr(szEmailAddress, '@');
+  auto* ss = strrchr(szEmailAddress, '@');
   if (ss == nullptr) {
     user_number = finduser1(szEmailAddress);
     if (user_number > 0) {
@@ -150,6 +150,8 @@ std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address
         sy = un = 0;
       }
     } else if (sy && wwiv::stl::ssize(a()->nets()) > 1) {
+      bout << "|#5Select Network\r\n\n";
+
       onx[0] = 'Q';
       onx[1] = '\0';
       auto onxi = 1;
@@ -158,7 +160,7 @@ std::tuple<uint16_t, uint16_t> parse_email_info(const std::string& email_address
       ss = static_cast<char*>(calloc(wwiv::stl::ssize(a()->nets()) + 1, 1));
       CHECK_NOTNULL(ss);
       int xx = -1;
-      for (int i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
+      for (auto i = 0; i < wwiv::stl::ssize(a()->nets()); i++) {
         set_net_num(i);
         if (a()->current_net().sysnum == sy) {
           xx = i;

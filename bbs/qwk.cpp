@@ -1166,8 +1166,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     bout.Color(2);
     bout << "Move to what dir? ";
     bout.mpl(60);
-    auto new_dir = bin.input(60);
-    StringTrim(new_dir);
+    auto new_dir = StringTrim(bin.input_path(60));
     if (new_dir.empty()) {
       continue;
     }

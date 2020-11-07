@@ -95,7 +95,7 @@ public:
   bool vmodem_ = false;
   uint16_t vmodem_port_ = 0;
   std::string vmodem_hostname_;
-  // The rest are ignoded
+  // The rest are ignored
   // IP, IFC, IFT, IVM, IN04
 };
 

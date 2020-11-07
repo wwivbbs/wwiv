@@ -15,21 +15,20 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_FIDO_ADDRESS_H__
-#define __INCLUDED_SDK_FIDO_FIDO_ADDRESS_H__
+#ifndef INCLUDED_SDK_FIDO_FIDO_ADDRESS_H
+#define INCLUDED_SDK_FIDO_FIDO_ADDRESS_H
 
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
 
 /**
- Representes a FidoNet Address [FRL-1002] as a class.
+ Represents a FidoNet Address [FRL-1002] as a class.
  
+ \verbatim
  (from http://ftsc.org/docs/frl-1002.001)
 
  Fidonet addressing uses the following format:
@@ -73,6 +72,7 @@ namespace fido {
  The limits on each various part of the address are a result of
  fts-0005 (zone, net, node, point), fsc-0045 (domain) and Policy 4
  (-1 node address for node application).
+ \endverbatim
  */
 class FidoAddress {
 public:
@@ -108,15 +108,13 @@ private:
 
 const static FidoAddress EMPTY_FIDO_ADDRESS = FidoAddress(-1, -1, -1, -1, "");
 
-class bad_fidonet_address: public ::std::runtime_error {
+class bad_fidonet_address final : public std::runtime_error {
 public:
-  bad_fidonet_address(const ::std::string& message): ::std::runtime_error(message) {}
+  explicit bad_fidonet_address(const std::string& message): runtime_error(message) {}
 };
 
 
-}  // namespace fido
-}  // namespace sdk
-}  // namespace wwiv
+}  // namespace
 
 namespace std {
 template <>
@@ -135,4 +133,4 @@ struct hash<wwiv::sdk::fido::FidoAddress> {
 };
 }  // namespace std
 
-#endif  // __INCLUDED_SDK_FIDO_FIDO_ADDRESS_H__
+#endif

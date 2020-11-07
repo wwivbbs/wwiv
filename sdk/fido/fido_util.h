@@ -72,7 +72,7 @@ std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_inc
 
 /**
  * Gets the FidoAddress from a single line of text of the form:
- * "Name (zone:node/net)"
+ * "Name (zone:node/net) or '* Origin: Foo BBS (zone:node/net)'"
  */
 FidoAddress get_address_from_single_line(const std::string& line);
 
