@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/inifile.h"
-#include "log.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include <initializer_list>
@@ -34,23 +34,28 @@ namespace wwiv::core {
 
 namespace {
 /**
-* Reads a specified value from INI file data (contained in *inidata). The
-* name of the value to read is contained in *value_name. If such a name
-* does not exist in this INI file subsection, then *val is nullptr, else *val
-* will be set to the string value of that value name. If *val has been set
-* to something, then this function returns 1, else it returns 0.
-*/
+ * Reads a specified value from INI file data. The
+ * name of the value to read is contained in *value_name. If such a name
+ * does not exist in this INI file subsection, then *val is nullptr, else *val
+ * will be set to the string value of that value name. If *val has been set
+ * to something, then this function returns 1, else it returns 0.
+ */
 bool StringToBoolean(const char* p) {
   if (!p) {
     return false;
   }
   const auto ch = to_upper_case<char>(*p);
-  return (ch == 'Y' || ch == 'T' || ch == '1');
+  return ch == 'Y' || ch == 'T' || ch == '1';
 }
 
 } // namespace {}
 
 static bool ParseIniFile(const std::filesystem::path& filename, std::map<string, string>& data) {
+  if (!File::Exists(filename)) {
+    // No need to try to open a file that does not exist.
+    return false;
+  }
+
   data.clear();
   TextFile file(filename, "rt");
   if (!file.IsOpen()) {
@@ -100,9 +105,9 @@ IniFile::IniFile(std::filesystem::path filename,
   open_ = ParseIniFile(path_, data_);
 }
 
-IniFile::IniFile(const std::filesystem::path& path,
+IniFile::IniFile(std::filesystem::path path,
                  const std::initializer_list<const std::string> sections)
-  : path_(path) {
+  : path_(std::move(path)) {
   // Can't use initializer_list to go from const string -> vector<string>
   // and can't use vector<const string>
   for (const auto& s : sections) {

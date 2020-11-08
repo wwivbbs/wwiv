@@ -36,7 +36,7 @@ struct ini_flags_type {
 class IniFile final {
 public:
   IniFile(std::filesystem::path filename, std::initializer_list<const char*> sections);
-  IniFile(const std::filesystem::path& path,
+  IniFile(std::filesystem::path path,
           std::initializer_list<const std::string> sections);
   // Constructor/Destructor
   ~IniFile();

@@ -17,20 +17,19 @@
 /**************************************************************************/
 #include "net_core/net_cmdline.h"
 
-#include <iomanip>
-#include <string>
-#include <ostream>
-
 #include "core/command_line.h"
 #include "core/datetime.h"
-#include "core/inifile.h"
 #include "core/file.h"
-#include <filesystem>
+#include "core/inifile.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "sdk/net/packets.h"
+#include <filesystem>
+#include <iomanip>
+#include <ostream>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
