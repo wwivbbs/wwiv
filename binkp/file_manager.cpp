@@ -147,6 +147,7 @@ static void rename_wwivnet_pend(const string& receive_directory, const std::stri
   LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void FileManager::rename_wwivnet_pending_files() {
   VLOG(1) << "STATE: rename_wwivnet_pending_files";
   for (const auto& file : received_files()) {
@@ -188,7 +189,7 @@ void FileManager::rename_ftn_pending_files() {
     const auto rpath = FilePath(rdir, file);
     const auto upath = FilePath(dirs_.unknown_dir(), file);
     if (!File::Exists(rpath)) {
-      VLOG(1) << "rfile does not exist: " << rpath;
+      VLOG(1) << "[pass 1] rfile does not exist: " << rpath;
       continue;
     }
     if (is_bundle_file(file) || is_packet_file(file)) {
@@ -220,17 +221,13 @@ void FileManager::rename_ftn_pending_files() {
     }
   }
   // pass 2: anything remaining move to unknown dir.
+  // note that things missing were already processed.
   for (const auto& file : received_files()) {
     const auto rpath = FilePath(rdir, file);
-    if (!File::Exists(rpath)) {
-      VLOG(1) << "rfile does not exist: " << rpath;
-      continue;
-    }
     if (File::Exists(rpath)) {
       const auto upath = FilePath(dirs_.unknown_dir(), file);
       File::Move(rpath, upath);
     }
-
   }
 }
 
