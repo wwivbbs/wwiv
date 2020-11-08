@@ -4,7 +4,6 @@ include_directories(../deps/cereal/include)
 include(GoogleTest)
 
 set(test_sources
-  basic_test.cpp
   bbs_helper.cpp
   bputs_test.cpp
   bputch_test.cpp
@@ -24,6 +23,8 @@ set(test_sources
   utility_test.cpp
   wutil_test.cpp
   xfer_test.cpp
+  basic/basic_test.cpp
+  basic/util_test.cpp
   fsed/fsed_model_test.cpp
 )
 

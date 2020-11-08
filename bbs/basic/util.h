@@ -21,7 +21,6 @@
 #include "common/context.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "core/log.h"
 #include "core/textfile.h"
 #include "deps/my_basic/core/my_basic.h"
 
@@ -56,8 +55,8 @@ struct wwiv_exec_options_t {
 
 class BasicScriptState {
 public:
-  BasicScriptState(const std::string& datadir, const std::string& script_dir, common::Context* ctx,
-                   common::Input* in, common::Output* out);
+  BasicScriptState(std::string d, std::string s, common::Context* c, common::Input* i,
+                   common::Output* o);
   std::string datadir;
   std::string script_dir;
   common::Context* ctx;
@@ -70,8 +69,8 @@ public:
   int emplace_exec_options(chain_type_t, file_location_t, dropfile_type_t);
   std::map<int, wwiv_file_handle_t> files;
   std::map<int, wwiv_exec_options_t> exec_options;
-private:
 
+private:
   int handle_{0};
 };
 

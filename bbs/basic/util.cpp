@@ -22,6 +22,7 @@
 #include "core/log.h"
 #include "deps/my_basic/core/my_basic.h"
 #include <string>
+#include <utility>
 
 namespace wwiv::bbs::basic {
 
@@ -34,9 +35,9 @@ Output& script_out() {
   return *script_out_; 
 }
 
-BasicScriptState::BasicScriptState(const std::string& d, const std::string& s, Context* c, Input* i,
+BasicScriptState::BasicScriptState(std::string d, std::string s, Context* c, Input* i,
                                    Output* o)
-    : datadir(d), script_dir(s), ctx(c), in(i), out(o), module("none") {}
+    : datadir(std::move(d)), script_dir(std::move(s)), ctx(c), in(i), out(o), module("none") {}
 
 void set_script_out(Output* o) { 
   script_out_ = o; 
@@ -58,7 +59,7 @@ char* BasicStrDup(std::string_view s) {
 }
 
 int BasicScriptState::emplace_exec_options(chain_type_t c, file_location_t f, dropfile_type_t d) {
-  wwiv_exec_options_t o{};
+  wwiv_exec_options_t o;
   o.type = c;
   o.loc = f;
   o.dropfile = d;
@@ -165,7 +166,7 @@ int wwiv_mb_push_handle(mb_interpreter_t* bas, void** l, int h) {
 }
 
 int wwiv_mb_push_string(mb_interpreter_t* bas, void** l, std::string_view s) {
-  auto v = wwiv_mb_make_string(s);
+  const auto v = wwiv_mb_make_string(s);
   return mb_push_value(bas, l, v);
 }
 
