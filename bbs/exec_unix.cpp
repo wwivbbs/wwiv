@@ -65,7 +65,7 @@ static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
       return 0;
     }
     if (input == 3) {
-      LOG(INFO) << "control-c from user, skipping.";
+      VLOG(1) << "control-c from user, skipping.";
       return 0;
     }
     VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
@@ -89,16 +89,16 @@ static int ReadWriteNonBinary(int sock, int pty_fd, fd_set& rfd) {
 
 static constexpr int READ_SIZE = 1024;
 static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
-  LOG(INFO) << "ReadWriteBinary Loop: << sock: " << sock
+  VLOG(1) << "ReadWriteBinary Loop: << sock: " << sock
 	    << "; pty_fd: " << pty_fd;
   if (FD_ISSET(sock, &rfd)) {
     char input[READ_SIZE + 10];
     const int num_read = read(sock, &input, READ_SIZE);
     if (num_read > 0) {
       const auto w = write(pty_fd, &input, num_read);
-      LOG(INFO) << "wrote[pty_fd]: " << num_read << ";w:" << w;
+      VLOG(1) << "wrote[pty_fd]: " << num_read << ";w:" << w;
     } else {
-      LOG(ERROR) << "num_read[sock] <= 0; " << num_read;
+      VLOG(1) << "num_read[sock] <= 0; " << num_read;
     }
   }
   if (FD_ISSET(pty_fd, &rfd)) {
@@ -106,9 +106,9 @@ static int ReadWriteBinary(int sock, int pty_fd, fd_set& rfd) {
     const int num_read = read(pty_fd, &input, READ_SIZE);
     if (num_read > 0) {
       const auto w = write(sock, &input, num_read);
-      LOG(INFO) << "wrote[sock]: " << num_read << ";w:" << w;
+      VLOG(1) << "wrote[sock]: " << num_read << ";w:" << w;
     } else {
-      LOG(ERROR) << "num_read[pty_fd] <= 0; " << num_read;
+      VLOG(1) << "num_read[pty_fd] <= 0; " << num_read;
     }
   }
   return 0;
@@ -118,11 +118,11 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   if (cmd.empty()) {
     return 1;
   }
-  LOG(INFO) << "Exec: '" << cmd << "' errno: " << errno;
+  VLOG(1) << "Exec: '" << cmd << "' errno: " << errno;
 
   int pid = -1;
   int pty_fd = -1;
-  bool binary = (flags & EFLAG_BINARY);
+  const bool binary = (flags & EFLAG_BINARY);
   if (binary) {
     LOG(INFO) << "Binary mode.";
   }
@@ -157,7 +157,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   }
 
   // In the parent now.
-  LOG(INFO) << "In parent, pid " << pid << "; errno: " << errno;
+  VLOG(1) << "In parent, pid " << pid << "; errno: " << errno;
   for (;;) {
     fd_set rfd;
     FD_ZERO(&rfd);
@@ -175,12 +175,13 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
     pid_t wp = waitpid(pid, &status_code, WNOHANG);
     if (wp == -1 || wp > 0) {
       // -1 means error and >0 is the pid
-      LOG(INFO) << "waitpid returned: " << wp << "; errno: " << errno;
+      VLOG(2) << "waitpid returned: " << wp << "; errno: " << errno;
       if (WIFEXITED(status_code)) {
-        LOG(INFO) << "child exited with code: " << WEXITSTATUS(status_code);
+        VLOG(1) << "child exited with code: " << WEXITSTATUS(status_code);
         break;
-      } else if (WIFSIGNALED(status_code)) {
-        LOG(INFO) << "child caught signal: " << WTERMSIG(status_code);
+      }
+      if (WIFSIGNALED(status_code)) {
+        VLOG(1) << "child caught signal: " << WTERMSIG(status_code);
       } else {
         LOG(INFO) << "Raw status_code: " << status_code;
       }
@@ -191,7 +192,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
     if (pty_fd != -1) {
       // Only do this in STDIO mode.
       if (binary) {
-	      ReadWriteBinary(sock, pty_fd, rfd);
+        ReadWriteBinary(sock, pty_fd, rfd);
       } else {
         if (ReadWriteNonBinary(sock, pty_fd, rfd) == -1) {
           close(pty_fd);
@@ -202,7 +203,7 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
   }
   // Wait for child to exit.
   for (;;) {
-    LOG(INFO) << "about to call waitpid at the end";
+    VLOG(1) << "about to call waitpid at the end";
     // In the parent, wait for the child to terminate.
     int status_code = 1;
     if (waitpid(pid, &status_code, 0) == -1) {
@@ -226,7 +227,7 @@ int exec_cmdline(const std::string& cmdline, int flags) {
   }
 
   if (a()->sess().ok_modem_stuff()) {
-    LOG(INFO) << "Temporarily pausing comm for spawn";
+    VLOG(2) << "Temporarily pausing comm for spawn";
     a()->remoteIO()->close(true);
   }
 
