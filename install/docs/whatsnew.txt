@@ -75,7 +75,7 @@ What's New in WWIV 5.6
 * Fix age display in newuser login.
 + Update subs and dirs to use ACS
 * Fix crash with subs list and only 1 conference. (#1292)
-
+* Validate FTN Address against nodelist when sending emails (#1232)
 
   
 What's New in WWIV 5.5.1 (2020)
