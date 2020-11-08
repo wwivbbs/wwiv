@@ -73,7 +73,7 @@ public:
 
   bool Load() {
     try {
-      if (File::Exists(file_name_)) {
+      if (!File::Exists(file_name_)) {
         VLOG(3) << "JSON File does not exist: " << file_name_.string();
         return false;
       }
