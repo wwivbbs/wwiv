@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_HELPER_H__
-#define __INCLUDED_BBS_HELPER_H__
+#ifndef INCLUDED_BBS_HELPER_H
+#define INCLUDED_BBS_HELPER_H
 
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
@@ -39,13 +39,13 @@ class BbsHelper {
 public:
     virtual void SetUp();
     virtual void TearDown();
-    wwiv::sdk::User* user() const { return user_; }
-    TestIO* io() const { return io_.get(); }
+    [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
+    [[nodiscard]] TestIO* io() const { return io_.get(); }
 
     // Accessors for various directories
     FileHelper& files() { return files_; }
-    const std::string& data() const { return dir_data_; }
-    const std::string& gfiles() const { return dir_gfiles_; }
+    [[nodiscard]] const std::string& data() const { return dir_data_; }
+    [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
 
 public:
     FileHelper files_;
@@ -58,6 +58,7 @@ public:
     std::unique_ptr<Application> app_;
     std::unique_ptr<TestIO> io_;
     wwiv::sdk::User* user_;
+    wwiv::sdk::Config* config_;
 };
 
 class TestIO {
@@ -66,8 +67,8 @@ public:
   void Clear() { captured_.clear(); rcaptured_.clear(); }
   std::string captured();
   std::string rcaptured();
-  LocalIO* local_io() const { return local_io_; }
-  wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
+  [[nodiscard]] LocalIO* local_io() const { return local_io_; }
+  [[nodiscard]] wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
 private:
   LocalIO* local_io_;
   wwiv::common::RemoteIO* remote_io_;
@@ -77,7 +78,7 @@ private:
 
 class TestLocalIO : public LocalIO {
 public:
-  TestLocalIO(std::string* captured);
+  explicit TestLocalIO(std::string* captured);
   void Putch(unsigned char ch) override;
   void GotoXY(int, int) override {}
   [[nodiscard]] int WhereX() const noexcept override { return 0; }
@@ -109,8 +110,8 @@ public:
 
 class TestRemoteIO : public wwiv::common::RemoteIO {
 public:
-  TestRemoteIO(std::string* captured);
-  virtual ~TestRemoteIO() = default;
+  explicit TestRemoteIO(std::string* captured);
+  ~TestRemoteIO() override = default;
 
   bool open() override { return true; }
   void close(bool) override {}
@@ -128,4 +129,4 @@ private:
   std::string* captured_;
 };
 
-#endif // __INCLUDED_BBS_HELPER_H__
+#endif

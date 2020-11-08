@@ -24,6 +24,7 @@
 #include "bbs/basic/wwiv_data.h"
 #include "bbs/basic/wwiv_file.h"
 #include "bbs/basic/wwiv_io.h"
+#include "bbs/basic/wwiv_os.h"
 #include "bbs/basic/wwiv_time.h"
 #include "common/input.h"
 #include "core/file.h"
@@ -208,9 +209,9 @@ bool Basic::RegisterDefaultNamespaces() {
   if (config_.script_package_file_enabled()) {
     RegisterNamespaceWWIVFILE(bas_);
   }
-  //if (config_.script_package_os_enabled()) {
-  //  RegisterNamespaceWWIVOS(bas_);
-  //}
+  if (config_.script_package_os_enabled()) {
+    RegisterNamespaceWWIVOS(bas_);
+  }
   RegisterNamespaceWWIVTIME(bas_);
 
   return true;
