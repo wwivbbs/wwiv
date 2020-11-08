@@ -25,13 +25,6 @@
 
 namespace wwiv::bbs::basic {
 
-static file_location_t to_file_location_t(const std::string& s) {
-  if (strings::iequals(s, "MENUS")) {
-    return file_location_t::MENUS;
-  }
-  return file_location_t::GFILES;
-}
-
 bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {  
   mb_begin_module(basi, "WWIV.IO.FILE");
 
@@ -42,67 +35,55 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
 
   mb_register_func(basi, "OPEN_OPTIONS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
-    char* arg{nullptr};
-    mb_check(mb_pop_string(bas, l, &arg));
-    if (!arg) {
-      LOG(WARNING) << "OPEN_OPTIONS: Expected Location";
+
+    auto loc = wwiv_mb_pop_string(bas, l);
+    MB_FUNC_ERR_IF_ABSENT_MSG(loc, "OPEN_OPTIONS: Expected Location");
+    const auto loc_enum = to_file_location_t(loc.value());
+    if (loc_enum != file_location_t::GFILES && loc_enum != file_location_t::MENUS) {
+      LOG(ERROR) << "Invalid location specified: " << loc.value();
       return MB_FUNC_ERR;
     }
-    std::string loc{arg};
-    mb_value_t val;
-    val.type = MB_DT_USERTYPE;
-    const auto loc_enum = to_file_location_t(loc);
-    val.value.integer = static_cast<int>(loc_enum);
-
     mb_check(mb_attempt_close_bracket(bas, l));
+
     // N.B. We don't use bytes since it's easier to use integer for
     // an integer key.
-    return mb_push_value(bas, l, val);
+    return wwiv_mb_push_handle(bas, l, static_cast<int>(loc_enum));
   });
  
   mb_register_func(basi, "OPEN", [](struct mb_interpreter_t* bas, void** l) -> int {
-    auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
+    auto arg = wwiv_mb_pop_usertype(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(arg);
+    auto loc = static_cast<file_location_t>(arg.value().value.integer);
 
-    mb_value_t arg;
-    mb_make_nil(arg);
-    mb_check(mb_pop_value(bas, l, &arg));
-    if (arg.type != MB_DT_USERTYPE) {
-      return MB_FUNC_ERR;
-    }
-    const auto handle = ++sd->max_file;
-    sd->files[handle].loc = static_cast<file_location_t>(arg.value.integer);
+    auto arg_name = wwiv_mb_pop_string(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(arg_name);
 
-    char* arg_name;
-    mb_check(mb_pop_string(bas, l, &arg_name));
+    auto* sd = get_wwiv_script_userdata(bas);
     const auto gfdir = sd->ctx->session_context().dirs().gfiles_directory();
-    const std::filesystem::path file_part{arg_name};
+    const std::filesystem::path file_part{arg_name.value()};
     const auto filename = file_part.filename();
     const auto path = core::FilePath(gfdir, filename);
 
-    char* arg_mode{nullptr};
-    mb_check(mb_pop_string(bas, l, &arg_mode));
-    std::string mode = strings::iequals("W", arg_mode) ? "wt" : "rt";
+    auto arg_mode = wwiv_mb_pop_string(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(arg_name);
+    std::string mode = strings::iequals("W", arg_mode.value()) ? "wt" : "rt";
 
+    const auto handle = sd->allocate_handle();
+    sd->files[handle].loc = loc;
     sd->files[handle].file = std::make_unique<TextFile>(path, mode);
-
     mb_check(mb_attempt_close_bracket(bas, l));
-    return mb_push_usertype(bas, l, reinterpret_cast<void*>(handle));
+    return wwiv_mb_push_handle(bas, l, static_cast<int>(handle));
   });
 
   mb_register_func(basi, "READINTOSTRING", [](struct mb_interpreter_t* bas, void** l) -> int {
     auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
 
-    mb_value_t arg;
-    mb_make_nil(arg);
-    mb_check(mb_pop_value(bas, l, &arg));
-    if (arg.type != MB_DT_USERTYPE) {
-      return MB_FUNC_ERR;
-    }
-    const auto handle = arg.value.integer;
+    const auto handle = wwiv_mb_pop_handle(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(handle);
 
-    auto& f = stl::at(sd->files, handle);
+    auto& f = stl::at(sd->files, handle.value());
     mb_check(mb_attempt_close_bracket(bas, l));
     const auto s = f.file->ReadFileIntoString();
     mb_check(mb_push_string(bas, l, BasicStrDup(s)));
@@ -112,17 +93,12 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
 
   // Read lines of a file into collection.
   mb_register_func(basi, "READLINES", [](struct mb_interpreter_t* bas, void** l) -> int {
-    auto* sd = get_wwiv_script_userdata(bas);
     mb_check(mb_attempt_open_bracket(bas, l));
 
-    mb_value_t arg_handle;
-    mb_make_nil(arg_handle);
-    mb_check(mb_pop_value(bas, l, &arg_handle));
-    if (arg_handle.type != MB_DT_USERTYPE) {
-      return MB_FUNC_ERR;
-    }
-    const auto handle = arg_handle.value.integer;
-    auto& f = stl::at(sd->files, handle);
+    const auto handle = wwiv_mb_pop_handle(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(handle);
+    auto* sd = get_wwiv_script_userdata(bas);
+    auto& f = stl::at(sd->files, handle.value());
     auto lines = f.file->ReadFileIntoVector();
 
     mb_value_t arg;
@@ -152,16 +128,11 @@ bool RegisterNamespaceWWIVFILE(mb_interpreter_t* basi) {
   mb_register_func(basi, "LAST_MODIFIED", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
 
-    mb_value_t arg_handle;
-    mb_make_nil(arg_handle);
-    mb_check(mb_pop_value(bas, l, &arg_handle));
-    if (arg_handle.type != MB_DT_USERTYPE) {
-      return MB_FUNC_ERR;
-    }
+    const auto handle = wwiv_mb_pop_handle(bas, l);
+    MB_FUNC_ERR_IF_ABSENT(handle);
 
     auto* sd = get_wwiv_script_userdata(bas);
-    const auto handle = arg_handle.value.integer;
-    auto& f = stl::at(sd->files, handle);
+    auto& f = stl::at(sd->files, handle.value());
     const auto t = static_cast<int>(core::File::last_write_time(f.file->full_pathname()));
     
     mb_check(mb_attempt_close_bracket(bas, l));

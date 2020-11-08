@@ -104,7 +104,7 @@ static script_data_t to_script_data(const mb_value_t& v) {
 
 enum class wwiv_data_scope_t { global, user };
 
-static bool SaveData(const wwiv_script_userdata_t* ud,
+static bool SaveData(const BasicScriptState* ud,
                      wwiv_data_scope_t scope, const std::vector<script_data_t>& data) {
   const auto& datadir = ud->datadir;
   const auto& basename = ud->module;
@@ -115,7 +115,7 @@ static bool SaveData(const wwiv_script_userdata_t* ud,
   return json.Save();
 }
 
-static std::vector<script_data_t> LoadData(const wwiv_script_userdata_t* ud,
+static std::vector<script_data_t> LoadData(const BasicScriptState* ud,
                                            wwiv_data_scope_t scope) {
   std::vector<script_data_t> data;
   const auto& datadir = ud->datadir;

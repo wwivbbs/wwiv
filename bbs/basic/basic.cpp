@@ -51,7 +51,7 @@ int my_print(const char* fmt, ...) {
 
   va_list argptr;
   va_start(argptr, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, argptr);
+  vsnprintf(buf, sizeof(buf), fmt, argptr);  // NOLINT(clang-diagnostic-format-nonliteral)
   va_end(argptr);
 
   script_out().bputs(buf);
@@ -156,17 +156,14 @@ static int _on_stepped(struct mb_interpreter_t* s, void** l, const char* f, int 
   return MB_FUNC_OK;
 }
 
-Basic::Basic(wwiv::common::Input& i, wwiv::common::Output& o, const wwiv::sdk::Config& config,
-             wwiv::common::Context* ctx)
+Basic::Basic(common::Input& i, common::Output& o, const sdk::Config& config, common::Context* ctx)
     : bin_(i), bout_(o), config_(config), ctx_(ctx) {
 
   // Creates the script user-data passed to the interpreter.  This data can be used
   // by the implementation of custom functions.  Values derived from the script name
   // must be set in RunScript.
-  script_userdata_.datadir = config_.datadir();
-  script_userdata_.script_dir = config_.scriptdir();
-  script_userdata_.ctx = ctx;
-  script_userdata_.module = "none";
+  script_userdata_ = std::make_unique<BasicScriptState>(
+    config_.datadir(), config_.scriptdir(), ctx, &bin_, &bout_);
 
   [[maybe_unused]] static auto once = RegisterMyBasicGlobals();
 
@@ -225,10 +222,8 @@ bool Basic::RunScript(const std::string& module, const std::string& text) {
     bout_ << "WWIVbasic scripting is not enabled on this system.";
     return false;
   }
-  script_userdata_.module = module;
-  script_userdata_.in = &bin_;
-  script_userdata_.out = &bout_;
-  mb_set_userdata(bas_, &script_userdata_);
+  script_userdata_->module = module;
+  mb_set_userdata(bas_, script_userdata_.get());
 
   if (mb_load_string(bas_, text.c_str(), true) != MB_FUNC_OK) {
     LOG(ERROR) << "Unable to load text: '" << text << "'";

@@ -34,6 +34,10 @@ Output& script_out() {
   return *script_out_; 
 }
 
+BasicScriptState::BasicScriptState(const std::string& d, const std::string& s, Context* c, Input* i,
+                                   Output* o)
+    : datadir(d), script_dir(s), ctx(c), in(i), out(o), module("none") {}
+
 void set_script_out(Output* o) { 
   script_out_ = o; 
 }
@@ -49,18 +53,29 @@ void set_script_in(Input* o) {
   script_in_ = o;
 }
 
-char* BasicStrDup(const std::string& s) { 
-  return mb_memdup(s.c_str(), s.size() + 1);
+char* BasicStrDup(std::string_view s) { 
+  return mb_memdup(s.data(), s.size() + 1);
 }
 
-wwiv_script_userdata_t* get_wwiv_script_userdata(struct mb_interpreter_t* bas) {
+int BasicScriptState::emplace_exec_options(chain_type_t c, file_location_t f, dropfile_type_t d) {
+  wwiv_exec_options_t o{};
+  o.type = c;
+  o.loc = f;
+  o.dropfile = d;
+
+  const auto handle = allocate_handle();
+  exec_options.emplace(handle, o);
+  return handle;
+}
+
+BasicScriptState* get_wwiv_script_userdata(struct mb_interpreter_t* bas) {
   void* x{};
   const auto result = mb_get_userdata(bas, &x);
   if (result != MB_FUNC_OK) {
     LOG(ERROR) << "Error getting the script userdata";
     return nullptr;
   }
-  return static_cast<wwiv_script_userdata_t*>(x);
+  return static_cast<BasicScriptState*>(x);
 }
 
 int mb_empty_function(mb_interpreter_t* s, void** l) {
@@ -69,7 +84,7 @@ int mb_empty_function(mb_interpreter_t* s, void** l) {
   return MB_FUNC_OK;
 }
 
-mb_value_t wwiv_mb_make_string(const std::string& s) {
+mb_value_t wwiv_mb_make_string(const std::string_view s) {
   mb_value_t t;
   mb_make_string(t, BasicStrDup(s));
   return t;
@@ -87,5 +102,104 @@ mb_value_t wwiv_mb_make_real(float f) {
   return t;
 }
 
+std::optional<mb_value_t> wwiv_mb_pop_value(mb_interpreter_t* bas, void** l) {
+  mb_value_t arg;
+  mb_make_nil(arg);
+  if (mb_pop_value(bas, l, &arg) != MB_FUNC_OK) {
+    return std::nullopt;
+  }
+  return {arg};
+}
+
+std::optional<mb_value_t> wwiv_mb_pop_usertype(mb_interpreter_t* bas, void** l) {
+  mb_value_t arg;
+  mb_make_nil(arg);
+  if (mb_pop_value(bas, l, &arg) != MB_FUNC_OK) {
+    return std::nullopt;
+  }
+  if (arg.type != MB_DT_USERTYPE) {
+    return std::nullopt;
+  }
+
+  return {arg};
+}
+
+std::optional<std::string> wwiv_mb_pop_string(mb_interpreter_t* bas, void** l) {
+  auto o = wwiv_mb_pop_value(bas, l);
+  if (!o) {
+    return std::nullopt;
+  }
+  if (o.value().type != MB_DT_STRING) {
+    return std::nullopt;
+  }
+  return { o.value().value.string };
+}
+
+std::optional<int> wwiv_mb_pop_int(mb_interpreter_t* bas, void** l) {
+  auto o = wwiv_mb_pop_value(bas, l);
+  if (!o) {
+    return std::nullopt;
+  }
+  if (o.value().type != MB_DT_INT) {
+    return std::nullopt;
+  }
+  return { o.value().value.integer };
+}
+
+std::optional<int> wwiv_mb_pop_handle(mb_interpreter_t* bas, void** l) {
+  mb_value_t arg;
+  mb_make_nil(arg);
+  const auto ret = mb_pop_value(bas, l, &arg);
+  if (ret != MB_FUNC_OK || arg.type != MB_DT_USERTYPE) {
+    return std::nullopt;
+  }
+  return { arg.value.integer };
+}
+
+int wwiv_mb_push_handle(mb_interpreter_t* bas, void** l, int h) {
+  mb_value_t val;
+  val.type = MB_DT_USERTYPE;
+  val.value.integer = h;
+
+  return mb_push_value(bas, l, val);
+}
+
+int wwiv_mb_push_string(mb_interpreter_t* bas, void** l, std::string_view s) {
+  auto v = wwiv_mb_make_string(s);
+  return mb_push_value(bas, l, v);
+}
+
+file_location_t to_file_location_t(const std::string& s) {
+  if (strings::iequals(s, "MENUS")) {
+    return file_location_t::MENUS;
+  }
+  if (strings::iequals(s, "GFILES")) {
+    return file_location_t::GFILES;
+  }
+  if (strings::iequals(s, "TEMP")) {
+    return file_location_t::TEMP;
+  }
+  if (strings::iequals(s, "BBS")) {
+    return file_location_t::BBS;
+  }
+  return file_location_t::GFILES;
+}
+
+dropfile_type_t to_dropfile_type_t(const std::string& s) {
+  if (strings::iequals(s, "DOOR.SYS")) {
+    return dropfile_type_t::DOOR_SYS;
+  }
+  return dropfile_type_t::CHAIN_TXT;
+}
+
+chain_type_t to_chain_type_t(const std::string& s) {
+  if (strings::iequals(s, "FOSSIL")) {
+    return chain_type_t::FOSSIL;
+  }
+  if (strings::iequals(s, "STDIO")) {
+    return chain_type_t::STDIO;
+  }
+  return chain_type_t::DOOR32;
+}
 
 }
