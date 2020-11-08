@@ -16,23 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_MENU_H__
-#define __INCLUDED_MENU_H__
-
-#include <cstdint>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
+#ifndef INCLUDED_MENU_H
+#define INCLUDED_MENU_H
 
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/textfile.h"
 #include "sdk/menu.h"
+#include <map>
+#include <string>
+#include <vector>
 
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 class MenuInstance {
 public:
@@ -42,7 +37,7 @@ public:
   static std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
   void RunMenu();
-  std::vector<MenuRec> LoadMenuRecord(const std::string& command);
+  std::vector<menu_rec_430_t> LoadMenuRecord(const std::string& command);
   void GenerateMenu() const;
 
   std::string menu_directory() { return menu_directory_; }
@@ -52,7 +47,7 @@ public:
 
   std::string prompt;
   std::vector<std::string> insertion_order_;
-  MenuHeader header{};   /* Holds the header info for current menu set in memory */
+  menu_header_430_t header{};   /* Holds the header info for current menu set in memory */
 private:
   const std::string menu_directory_;
   const std::string menu_name_;
@@ -67,7 +62,7 @@ private:
   void PrintMenuPrompt() const;
   std::string GetCommand() const;
 
-  std::multimap<std::string, MenuRec> menu_command_map_;
+  std::multimap<std::string, menu_rec_430_t> menu_command_map_;
 };
 
 class MenuDescriptions {
@@ -101,7 +96,6 @@ void TurnMCIOn();
 void InterpretCommand(MenuInstance* menudata, const std::string& script);
 void PrintMenuCommands(const std::string& arg);
 
-}  // namespace menus
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_MENU_H__
+#endif

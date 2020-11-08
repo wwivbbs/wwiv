@@ -49,7 +49,7 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static void edit_menu_item(MenuRec& m) {
+static void edit_menu_item(menu_rec_430_t& m) {
   constexpr int LABEL_WIDTH = 12;
   constexpr int PADDING = 2;
   constexpr int COL1_LINE = PADDING;
@@ -133,7 +133,7 @@ static void edit_menu_item(MenuRec& m) {
 
 class MenuItemsSubDialog : public BaseEditItem {
 public:
-  MenuItemsSubDialog(vector<MenuRec>& menu_items, int x, int y, const std::string& title)
+  MenuItemsSubDialog(vector<menu_rec_430_t>& menu_items, int x, int y, const std::string& title)
     : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {};
   virtual ~MenuItemsSubDialog() = default;
 
@@ -183,7 +183,7 @@ public:
               menu_items_.push_back({});
             }
             else {
-              MenuRec mr{};
+              menu_rec_430_t mr{};
               wwiv::stl::insert_at(menu_items_, num, mr);
             }
           } break;
@@ -213,16 +213,16 @@ public:
   }
 
 private:
-  vector<MenuRec>& menu_items_;
+  vector<menu_rec_430_t>& menu_items_;
   const std::string title_;
   int x_ = 0;
   int y_ = 0;
 };
 
 static void edit_menu(const std::filesystem::path& menu_dir, const std::string& menu_name) {
-  vector<MenuRec> menu_items;
+  vector<menu_rec_430_t> menu_items;
   {
-    DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name));
+    DataFile<menu_rec_430_t> menu_file(FilePath(menu_dir, menu_name));
     if (menu_file) {
       menu_file.ReadVector(menu_items);
     }
@@ -251,8 +251,8 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
   };
 
   auto item0 = menu_items.at(0);
-  MenuHeader h{};
-  memcpy(&h, &item0, sizeof(MenuRec));
+  menu_header_430_t h{};
+  memcpy(&h, &item0, sizeof(menu_rec_430_t));
   if (!IsEquals(h.szSig, "WWIV430")) {
     to_char_array(h.szSig, "WWIV430\x1a");
   }
@@ -321,11 +321,11 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
 
   items.Run(title);
 
-  MenuRec r{};
-  memcpy(&r, &h, sizeof(MenuHeader));
+  menu_rec_430_t r{};
+  memcpy(&r, &h, sizeof(menu_header_430_t));
   menu_items[0] = r;
 
-  DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name),
+  DataFile<menu_rec_430_t> menu_file(FilePath(menu_dir, menu_name),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                               File::modeTruncate, File::shareDenyReadWrite);
   if (menu_file) {

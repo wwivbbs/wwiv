@@ -83,7 +83,7 @@ static void StartMenus() {
   }
 }
 
-static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
+static bool CheckMenuSecurity(const menu_header_430_t* pHeader, bool bCheckPassword) {
   if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->sess().effective_sl() < pHeader->nMinSL) ||
       (a()->user()->GetDsl() < pHeader->nMinDSL)) {
     return false;
@@ -107,7 +107,7 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
     }
   }
 
-  // If any restrictions match, then they arn't allowed
+  // If any restrictions match, then they aren't allowed
   for (short int x = 0; x < 16; x++) {
     if (pHeader->uRestrict & (1 << x)) {
       if (a()->user()->HasRestrictionFlag(1 << x)) {
@@ -128,7 +128,7 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
   return true;
 }
 
-static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
+static bool CheckMenuItemSecurity(const menu_rec_430_t* pMenu, bool bCheckPassword) {
   // if deleted, return as failed
   if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->sess().effective_sl() < pMenu->nMinSL) ||
       (a()->sess().effective_sl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
@@ -180,7 +180,7 @@ static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
 }
 
 static void LogUserFunction(const MenuInstance* menu_data, const string& command,
-                            const MenuRec* pMenu /* Nullable */) {
+                            const menu_rec_430_t* pMenu /* Nullable */) {
   if (pMenu == nullptr) {
     sysopchar(command);
     return;
@@ -255,12 +255,12 @@ std::string MenuInstance::create_menu_filename(const string& extension) const {
 
 bool MenuInstance::CreateMenuMap(File& menu_file) {
   insertion_order_.clear();
-  auto nAmount = menu_file.length() / sizeof(MenuRec);
+  auto nAmount = menu_file.length() / sizeof(menu_rec_430_t);
 
   for (size_t nRec = 1; nRec < nAmount; nRec++) {
-    MenuRec menu{};
-    menu_file.Seek(nRec * sizeof(MenuRec), File::Whence::begin);
-    menu_file.Read(&menu, sizeof(MenuRec));
+    menu_rec_430_t menu{};
+    menu_file.Seek(nRec * sizeof(menu_rec_430_t), File::Whence::begin);
+    menu_file.Read(&menu, sizeof(menu_rec_430_t));
 
     string key = menu.szKey;
     menu_command_map_.insert(std::make_pair(key, menu));
@@ -282,7 +282,7 @@ bool MenuInstance::OpenImpl() {
 
   // Read the header (control) record into memory
   menu_file.Seek(0L, File::Whence::begin);
-  menu_file.Read(&header, sizeof(MenuHeader));
+  menu_file.Read(&header, sizeof(menu_header_430_t));
 
   // Version numbers can be checked here.
   if (!CreateMenuMap(menu_file)) {
@@ -376,18 +376,18 @@ static std::map<int, std::string> ListMenuDirs() {
   return result;
 }
 
-std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
-  std::vector<MenuRec> result;
+std::vector<menu_rec_430_t> MenuInstance::LoadMenuRecord(const std::string& command) {
+  std::vector<menu_rec_430_t> result;
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
   if (IsNumber(command)) {
     if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
-      MenuRec r{};
+      menu_rec_430_t r{};
       auto exec = fmt::format("SetSubNumber {}", to_number<int>(command));
       to_char_array(r.szExecute, exec);
       result.emplace_back(r);
       return result;
     } else if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
-      MenuRec r{};
+      menu_rec_430_t r{};
       auto exec = fmt::format("SetDirNumber {}", to_number<int>(command));
       to_char_array(r.szExecute, exec);
       result.emplace_back(r);
@@ -577,7 +577,7 @@ void MenuInstance::GenerateMenu() const {
     if (menu_command_map_.count(key) == 0) {
       continue;
     }
-    const MenuRec& menu = menu_command_map_.find(key)->second;
+    const menu_rec_430_t& menu = menu_command_map_.find(key)->second;
     if (CheckMenuItemSecurity(&menu, false) && menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
       string keystr;

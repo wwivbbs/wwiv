@@ -50,7 +50,7 @@ constexpr int MENU_MAX_KEYS = 10;
 
 #pragma pack(push, 1)
 
-struct MenuHeader {
+struct menu_header_430_t {
   char szSig[10];      /* Menu Signature WWIV431\x1a */
   char unused[54];
 
@@ -71,7 +71,7 @@ struct MenuHeader {
            nItemSelectedColor, nItemSelectedHLColor;
 
   char   szMenuTitle[21];
-  char   misc2[60];
+  char   unused_misc2[60];
   char   szPassWord[21];     /* required for entry of menu */
   uint16_t nMinSL, nMinDSL;    /* required for entry of menu */
   uint16_t uAR, uDAR;          /* required for entry of menu */
@@ -83,10 +83,10 @@ struct MenuHeader {
   char unused_padding[109];
 };
 
-struct MenuRec {
+struct menu_rec_430_t {
   uint8_t nFlags;   /* AFLAG_????? */
 
-  char szKey[MENU_MAX_KEYS + 1]; /* Keystrock to execute menu item   */
+  char szKey[MENU_MAX_KEYS + 1]; /* Keystroke to execute menu item   */
   char szExecute[101];           /* Command to execute               */
   char szMenuText[41];           /* Menu description                 */
   char unused_szPDText[41];      /* Pulldown menu text               */
@@ -112,7 +112,7 @@ struct MenuRec {
 
 #pragma pack(pop)
 
-static_assert(sizeof(MenuRec) == sizeof(MenuHeader), "sizeof(MenuRec) == sizeof(MenuHeader)");
+static_assert(sizeof(menu_rec_430_t) == sizeof(menu_header_430_t), "sizeof(menu_rec_430_t) == sizeof(menu_header_430_t)");
 
 
 #endif  // __INCLUDED_SDK_MENU_H__

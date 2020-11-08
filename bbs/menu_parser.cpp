@@ -18,15 +18,10 @@
 /**************************************************************************/
 #include "bbs/menu_parser.h"
 
-#include <cstdint>
-#include <cctype>
-#include <memory>
-
 #include "bbs/menu.h"
+#include <cctype>
 
-
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 static const char *MenuSkipSpaces(const char *pszSrc) {
   while (isspace(pszSrc[0]) && pszSrc[0] != '\0') {
@@ -97,14 +92,14 @@ static const char *MenuDoParenCheck(const char *pszSrc, int bMore, const char *p
 // szSrc    = Line to parse
 // szCmd    = Returns the command to be executed
 // szParam1 = 1st parameter - if it exists
-// szParam2 = 2cd paramater - if it exists
+// szParam2 = 2cd parameter - if it exists
 //
 // return value is where to continue parsing this line
 //
-// szSrc to be interpreted can be formated like this
+// szSrc to be interpreted can be formatted like this
 // either  cmd param1 param2
 // or     cmd(param1, param2)
-//   multiple lines are seperated with the ~ key
+//   multiple lines are separated with the ~ key
 //   enclose multi word text in quotes
 //
 const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2) {
@@ -161,5 +156,4 @@ const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, cha
 }
 
 
-}  // namespace menus
-}  // namespace wwiv
+} // namespace wwiv

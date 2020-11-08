@@ -15,16 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MENU_PARSER_H__
-#define __INCLUDED_BBS_MENU_PARSER_H__
+#ifndef INCLUDED_BBS_MENU_PARSER_H
+#define INCLUDED_BBS_MENU_PARSER_H
 
-namespace wwiv {
-namespace menus {
+namespace wwiv::menus {
 
 const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 
-}  // namespace menus
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_BBS_MENU_PARSER_H__
+#endif
