@@ -29,16 +29,6 @@ using std::cout;
 using std::endl;
 using std::string;
 
-/*
-class UtilityTest : public ::testing::Test {
-protected:
-  void SetUp() override {
-      helper.SetUp();
-    }
-    BbsHelper helper{};
-};
-*/
-
 TEST(UtilityTest, StripFnSmoke) {
   EXPECT_EQ("", stripfn(""));
   EXPECT_EQ("", stripfn("/"));

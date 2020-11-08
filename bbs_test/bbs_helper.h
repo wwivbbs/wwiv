@@ -37,28 +37,28 @@ class TestIO;
  */
 class BbsHelper {
 public:
-    virtual void SetUp();
-    virtual void TearDown();
-    [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
-    [[nodiscard]] TestIO* io() const { return io_.get(); }
+  virtual ~BbsHelper() = default;
+  virtual void SetUp();
+  virtual void TearDown();
+  [[nodiscard]] wwiv::sdk::User* user() const { return user_; }
+  [[nodiscard]] TestIO* io() const { return io_.get(); }
 
-    // Accessors for various directories
-    FileHelper& files() { return files_; }
-    [[nodiscard]] const std::string& data() const { return dir_data_; }
-    [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
+  // Accessors for various directories
+  FileHelper& files() { return files_; }
+  [[nodiscard]] const std::string& data() const { return dir_data_; }
+  [[nodiscard]] const std::string& gfiles() const { return dir_gfiles_; }
 
-public:
-    FileHelper files_;
-    std::string dir_data_;
-    std::string dir_gfiles_;
-    std::string dir_en_gfiles_;
-    std::string dir_menus_;
-    std::string dir_dloads_;
-    std::string dir_msgs_;
-    std::unique_ptr<Application> app_;
-    std::unique_ptr<TestIO> io_;
-    wwiv::sdk::User* user_;
-    wwiv::sdk::Config* config_;
+  FileHelper files_;
+  std::string dir_data_;
+  std::string dir_gfiles_;
+  std::string dir_en_gfiles_;
+  std::string dir_menus_;
+  std::string dir_dloads_;
+  std::string dir_msgs_;
+  std::unique_ptr<Application> app_;
+  std::unique_ptr<TestIO> io_;
+  wwiv::sdk::User* user_;
+  wwiv::sdk::Config* config_;
 };
 
 class TestIO {
@@ -69,6 +69,7 @@ public:
   std::string rcaptured();
   [[nodiscard]] LocalIO* local_io() const { return local_io_; }
   [[nodiscard]] wwiv::common::RemoteIO* remote_io() const { return remote_io_; }
+
 private:
   LocalIO* local_io_;
   wwiv::common::RemoteIO* remote_io_;
@@ -108,7 +109,7 @@ public:
   std::string* captured_;
 };
 
-class TestRemoteIO : public wwiv::common::RemoteIO {
+class TestRemoteIO final : public wwiv::common::RemoteIO {
 public:
   explicit TestRemoteIO(std::string* captured);
   ~TestRemoteIO() override = default;

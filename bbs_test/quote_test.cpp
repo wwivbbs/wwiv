@@ -18,15 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
-#include "common/quote.h"
 #include "bbs_test/bbs_helper.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
+#include "common/quote.h"
+#include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;

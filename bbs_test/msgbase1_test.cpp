@@ -18,14 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/inmsg.h"
 #include "bbs/msgbase1.h"
 #include "bbs_test/bbs_helper.h"
 #include "common/message_editor_data.h"
-#include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "local_io/keycodes.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;

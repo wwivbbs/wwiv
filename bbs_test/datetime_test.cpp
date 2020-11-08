@@ -18,14 +18,12 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "common/datetime.h"
 #include <chrono>
 #include <ctime>
-#include "common/datetime.h"
 
 using namespace std::chrono;
 using namespace wwiv::common;
-
-static const time_t t20140704 = 1404460800; // 1404457200;
 
 TEST(DateTime, isleap) {
   ASSERT_TRUE(isleap(2000));

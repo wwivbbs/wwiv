@@ -40,7 +40,7 @@ static string FindAddressByType(const BbsListEntry& entry, const std::string& ty
       return a.address;
     }
   }
-  return{};
+  return {};
 }
 
 class NewBbsListTest : public testing::Test {

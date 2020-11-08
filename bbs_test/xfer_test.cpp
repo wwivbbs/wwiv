@@ -18,29 +18,27 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include "bbs/xfer.h"
 #include <string>
 
 using std::cout;
 using std::endl;
 using std::string;
 
-// TODO(rushfan): Make xfer.h
-bool okfn(const string& fileName);
-
 TEST(XferTest, Okfn) {
-    EXPECT_TRUE( !okfn("") );
-    EXPECT_TRUE( okfn("foo") );
-    EXPECT_TRUE( okfn("foo.bar") );
-    EXPECT_TRUE( !okfn("/foo") );
-    EXPECT_TRUE( !okfn("<foo") );
-    EXPECT_TRUE( !okfn(">foo") );
-    EXPECT_TRUE( !okfn("`foo") );
-    EXPECT_TRUE( !okfn("-foo") );
-    EXPECT_TRUE( !okfn(" foo") );
-    EXPECT_TRUE( !okfn("@foo") );
-    EXPECT_TRUE( !okfn(".foo") );
-    EXPECT_TRUE( !okfn("COM1") );
-    EXPECT_TRUE( !okfn("PRN") );
-    EXPECT_TRUE( !okfn("KBD$") );
-    EXPECT_TRUE( okfn("COM1A") );
+  EXPECT_TRUE(!okfn(""));
+  EXPECT_TRUE(okfn("foo"));
+  EXPECT_TRUE(okfn("foo.bar"));
+  EXPECT_TRUE(!okfn("/foo"));
+  EXPECT_TRUE(!okfn("<foo"));
+  EXPECT_TRUE(!okfn(">foo"));
+  EXPECT_TRUE(!okfn("`foo"));
+  EXPECT_TRUE(!okfn("-foo"));
+  EXPECT_TRUE(!okfn(" foo"));
+  EXPECT_TRUE(!okfn("@foo"));
+  EXPECT_TRUE(!okfn(".foo"));
+  EXPECT_TRUE(!okfn("COM1"));
+  EXPECT_TRUE(!okfn("PRN"));
+  EXPECT_TRUE(!okfn("KBD$"));
+  EXPECT_TRUE(okfn("COM1A"));
 }

@@ -38,8 +38,8 @@ class PrintFileTest : public ::testing::Test {
 protected:
   void SetUp() override { 
     helper.SetUp(); 
-    auto lang = FilePath(helper.files().TempDir(), "en/gfiles");
-    auto gfiles = FilePath(helper.files().TempDir(), "gfiles");
+    const auto lang = FilePath(helper.files().TempDir(), "en/gfiles");
+    const auto gfiles = FilePath(helper.files().TempDir(), "gfiles");
     dirs.push_back(lang.string());
     dirs.push_back(gfiles.string());
   }
@@ -47,7 +47,8 @@ protected:
   std::filesystem::path CreateTempFile(const std::string& name) {
     return helper.files().CreateTempFile(name, "1");
   }
-  std::filesystem::path CreateFullPathToPrint(const std::string& basename){
+
+  std::filesystem::path CreateFullPathToPrint(const std::string& basename) const {
     return wwiv::common::CreateFullPathToPrint(dirs, *helper.user(), basename);
   }
 

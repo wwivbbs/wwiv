@@ -16,30 +16,22 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs_helper.h"
-#include <sstream>
+#include "gtest/gtest.h"
 
+#include "bbs_test/bbs_helper.h"
+#include "bbs/application.h"
+#include "bbs/bbs.h"
+#include "core/file.h"
+#include "sdk/config.h"
+#include "sdk/user.h"
 #include <algorithm>
-#include <iostream>
-#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "bbs/bbs.h"
-
-#include "bbs/application.h"
-#include "core/wwivport.h"
-#include "core/file.h"
-#include "sdk/config.h"
-#include "sdk/user.h"
-
-#include "gtest/gtest.h"
-
 using std::begin;
 using std::end;
 using std::move;
-using std::string;
 using std::make_unique;
 using std::unique_ptr;
 using std::replace;
@@ -48,7 +40,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 
 void BbsHelper::SetUp() {
-  auto temp = files_.TempDir();
+  const auto& temp = files_.TempDir();
   // We want the "BBS Home" to be our temp dir.
   chdir(temp.string().c_str());
 
@@ -100,27 +92,26 @@ void BbsHelper::SetUp() {
   a()->sess().ok_modem_stuff(true);
 }
 
-void BbsHelper::TearDown() {
-}
+void BbsHelper::TearDown() {}
 
 TestIO::TestIO() {
   local_io_ = new TestLocalIO(&this->captured_);
   remote_io_ = new TestRemoteIO(&this->rcaptured_);
 }
 
-string TestIO::captured() {
-  string captured(captured_);
+std::string TestIO::captured() {
+  auto captured(captured_);
   captured_.clear();
   return captured;
 }
 
-string TestIO::rcaptured() {
-  string captured(rcaptured_);
+std::string TestIO::rcaptured() {
+  auto captured(rcaptured_);
   rcaptured_.clear();
   return captured;
 }
 
-TestLocalIO::TestLocalIO(string* captured) : LocalIO(), captured_(captured) {}
+TestLocalIO::TestLocalIO(std::string* captured) : LocalIO(), captured_(captured) {}
 
 void TestLocalIO::Putch(unsigned char ch) {
   captured_->push_back(ch);
@@ -134,7 +125,7 @@ unsigned int TestRemoteIO::put(unsigned char ch) {
 }
 
 unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool) {
-  captured_->append(string(buffer, count));
+  captured_->append(std::string(buffer, count));
   return count;
 }
 

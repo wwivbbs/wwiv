@@ -32,7 +32,7 @@ class BPutsTest : public ::testing::Test {
 protected:
   void SetUp() override { helper.SetUp(); }
 
-  virtual int Puts(const string& s) {
+  virtual int Puts(const std::string& s) {
     const auto size = bout.bputs(s);
     std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
     return size;

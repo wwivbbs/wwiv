@@ -18,15 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "bbs/bbs.h"
-#include "common/pause.h"
 #include "bbs_test/bbs_helper.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
+#include "common/pause.h"
+#include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -37,11 +33,9 @@ using wwiv::sdk::User;
 
 class PauseTest : public ::testing::Test {
 protected:
-    virtual void SetUp() {
-        helper.SetUp();
-    }
+  void SetUp() override { helper.SetUp(); }
 
-    BbsHelper helper;
+  BbsHelper helper{};
 };
 
 TEST_F(PauseTest, Smoke) {

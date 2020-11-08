@@ -21,7 +21,6 @@
 #include "bbs/email.h"
 
 
-
 TEST(EmailTest, Smoke) {
   EXPECT_EQ("1", fixup_user_entered_email("1"));
   EXPECT_EQ("1@1", fixup_user_entered_email("1@1"));

@@ -33,34 +33,33 @@ using namespace wwiv::strings;
 class TrashcanTest : public testing::Test {
 protected:
   void SetUp() override {
-      helper.SetUp();
-      const string text = "all\n*end\nstart*\n*sub*\n";
-      helper.files().CreateTempFile(StrCat("gfiles/", TRASHCAN_TXT), text);
-    }
+    helper.SetUp();
+    const string text = "all\n*end\nstart*\n*sub*\n";
+    helper.files().CreateTempFile(StrCat("gfiles/", TRASHCAN_TXT), text);
+  }
 
 public:
-    BbsHelper helper;
+  BbsHelper helper;
 };
 
 TEST_F(TrashcanTest, SimpleCase) {
-    Trashcan t(*a()->config());
-    EXPECT_TRUE(t.IsTrashName("all"));
-    EXPECT_FALSE(t.IsTrashName("al"));
-    EXPECT_FALSE(t.IsTrashName("a"));
+  Trashcan t(*a()->config());
+  EXPECT_TRUE(t.IsTrashName("all"));
+  EXPECT_FALSE(t.IsTrashName("al"));
+  EXPECT_FALSE(t.IsTrashName("a"));
 
-    EXPECT_TRUE(t.IsTrashName("end"));
-    EXPECT_TRUE(t.IsTrashName("send"));
-    EXPECT_FALSE(t.IsTrashName("ends"));
+  EXPECT_TRUE(t.IsTrashName("end"));
+  EXPECT_TRUE(t.IsTrashName("send"));
+  EXPECT_FALSE(t.IsTrashName("ends"));
 
-    EXPECT_TRUE(t.IsTrashName("start"));
-    EXPECT_TRUE(t.IsTrashName("starting"));
-    EXPECT_FALSE(t.IsTrashName("sstart"));
+  EXPECT_TRUE(t.IsTrashName("start"));
+  EXPECT_TRUE(t.IsTrashName("starting"));
+  EXPECT_FALSE(t.IsTrashName("sstart"));
 
-    EXPECT_TRUE(t.IsTrashName("sub"));
-    EXPECT_TRUE(t.IsTrashName("ssub"));
-    EXPECT_TRUE(t.IsTrashName("subs"));
+  EXPECT_TRUE(t.IsTrashName("sub"));
+  EXPECT_TRUE(t.IsTrashName("ssub"));
+  EXPECT_TRUE(t.IsTrashName("subs"));
 
-    EXPECT_FALSE(t.IsTrashName("dude"));
-    EXPECT_FALSE(t.IsTrashName("a"));
+  EXPECT_FALSE(t.IsTrashName("dude"));
+  EXPECT_FALSE(t.IsTrashName("a"));
 }
-
