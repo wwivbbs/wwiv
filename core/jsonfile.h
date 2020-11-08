@@ -73,6 +73,10 @@ public:
 
   bool Load() {
     try {
+      if (File::Exists(file_name_)) {
+        VLOG(3) << "JSON File does not exist: " << file_name_.string();
+        return false;
+      }
       if (const auto o = read_json_file(file_name_)) {
         std::stringstream ss(o.value());
         cereal::JSONInputArchive ar(ss);
