@@ -489,8 +489,11 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           username_system_net_as_string(user_number, a()->net_email_name, system_number, netname);
     }
   }
-  bout.format("|#9E-mailing:      |#2{} |#9(|#1{}|#9)", a()->current_net().name); 
-  bout.nl(2);
+  bout << "|#9E-mailing:      |#2" << destination;
+  if (system_number != 0) {
+    bout.format(" |#9(|#1{}|#9)", a()->current_net().name); 
+  }
+  bout.nl();
   uint8_t i = (a()->effective_slrec().ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
@@ -502,14 +505,16 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   if (i == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
     i = 0;
   }
-  bout << "|#9Name of system: |#2" << destination_bbs_name << wwiv::endl;
-  if (system_number != 0 && a()->current_net().type == network_type_t::wwivnet) {
+  if (system_number != 0) {
     i = 0;
     anony = 0;
-    bout.nl();
-    CHECK_NOTNULL(csne);
-    bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
-    bout.nl();
+    bout << "|#9Name of system: |#2" << destination_bbs_name << wwiv::endl;
+    if (a()->current_net().type == network_type_t::wwivnet) {
+      bout.nl();
+      CHECK_NOTNULL(csne);
+      bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
+      bout.nl();
+    }
   }
   write_inst(INST_LOC_EMAIL, (system_number == 0) ? user_number : 0, INST_FLAGS_NONE);
 
