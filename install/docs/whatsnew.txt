@@ -76,7 +76,9 @@ What's New in WWIV 5.6
 + Update subs and dirs to use ACS
 * Fix crash with subs list and only 1 conference. (#1292)
 * Validate FTN Address against nodelist when sending emails (#1232)
-
+! Some WWIVbasic packages may be selectively enabled and disabled,
+  by default wwiv.io.file and wwiv.os will be disabled. Please use
+  wwivconfig (menu item R for Scripting Config) to enable these.
   
 What's New in WWIV 5.5.1 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

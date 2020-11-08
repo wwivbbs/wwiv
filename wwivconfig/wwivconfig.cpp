@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "wwivconfig/wwivconfig.h"
 
+
 #include "common/datetime.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
@@ -26,7 +27,6 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivport.h"
 #include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
@@ -49,13 +49,14 @@
 #include "wwivconfig/newinit.h"
 #include "wwivconfig/paths.h"
 #include "wwivconfig/protocols.h"
+#include "wwivconfig/script_ui.h"
 #include "wwivconfig/subsdirs.h"
 #include "wwivconfig/sysop_account.h"
 #include "wwivconfig/system_info.h"
 #include "wwivconfig/user_editor.h"
 #include "wwivconfig/wwivd_ui.h"
-#include <cstdlib>
 #include <clocale>
+#include <cstdlib>
 #include <memory>
 
 using std::string;
@@ -142,9 +143,9 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsd
   return true;
 }
 
-WInitApp::WInitApp() = default;
+WWIVConfigApplication::WWIVConfigApplication() = default;
 
-WInitApp::~WInitApp() {
+WWIVConfigApplication::~WWIVConfigApplication() {
   // Don't leak the localIO (also fix the color when the app exits)
   delete curses_out;
   curses_out = nullptr;
@@ -155,7 +156,7 @@ int main(int argc, char* argv[]) {
     LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
 
-    std::unique_ptr<WInitApp> app(new WInitApp());
+    const auto app = std::make_unique<WWIVConfigApplication>();
     return app->main(argc, argv);
   } catch (const std::exception& e) {
     LOG(INFO) << "Fatal exception launching wwivconfig: " << e.what();
@@ -171,7 +172,7 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   {
     UserManager usermanager(config);
     auto num_users = usermanager.num_user_records();
-    for (int n = 1; n <= num_users; n++) {
+    for (auto n = 1; n <= num_users; n++) {
       User u{};
       usermanager.readuser(&u, n);
       if (!IsUserDeleted(u)) {
@@ -213,7 +214,7 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Conf
   file.Close();
 
   // Check for 5.2 config
-  static const std::string expected_sig = "WWIV";
+  const std::string expected_sig = "WWIV";
   if (expected_sig != cfg.header.header.signature) {
     // We don't have a 5.2 header, let's convert.
     if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2+ format?")) {
@@ -326,7 +327,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
   return true;
 }
 
-int WInitApp::main(int argc, char** argv) const {
+int WWIVConfigApplication::main(int argc, char** argv) const {
   setlocale(LC_ALL, "");
 
   CommandLine cmdline(argc, argv, "net");
@@ -465,6 +466,7 @@ int WInitApp::main(int argc, char** argv) const {
                                  {"U. User Editor", 'U'},
                                  {"X. Update Sub/Directory Maximums", 'X'},
                                  {"W. wwivd Configuration", 'W'},
+                                 {"R. Scripting Configuration", 'R'},
                                  {"Q. Quit", 'Q'}};
 
     auto selected_hotkey = -1;
@@ -524,6 +526,9 @@ int WInitApp::main(int argc, char** argv) const {
       break;
     case 'W':
       wwivd_ui(config);
+      break;
+    case 'R':
+      script_ui(config);
       break;
     case 'X':
       up_subs_dirs(config);

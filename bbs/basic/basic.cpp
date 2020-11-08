@@ -208,7 +208,12 @@ bool Basic::RegisterDefaultNamespaces() {
   RegisterNamespaceWWIV(bas_);
   RegisterNamespaceWWIVIO(bas_);
   RegisterNamespaceData(bas_);
-  RegisterNamespaceWWIVFILE(bas_);
+  if (config_.script_package_file_enabled()) {
+    RegisterNamespaceWWIVFILE(bas_);
+  }
+  //if (config_.script_package_os_enabled()) {
+  //  RegisterNamespaceWWIVOS(bas_);
+  //}
   RegisterNamespaceWWIVTIME(bas_);
 
   return true;
@@ -216,6 +221,10 @@ bool Basic::RegisterDefaultNamespaces() {
 
 bool Basic::RunScript(const std::string& module, const std::string& text) {
 
+  if (!config_.scripting_enabled()) {
+    bout_ << "WWIVbasic scripting is not enabled on this system.";
+    return false;
+  }
   script_userdata_.module = module;
   script_userdata_.in = &bin_;
   script_userdata_.out = &bout_;

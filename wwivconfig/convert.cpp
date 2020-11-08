@@ -166,6 +166,11 @@ static bool update_config_revision_number(const std::string& config_filename,
   memset(syscfg53.unused8, 0, sizeof(syscfg53.unused8));
   memset(syscfg53.unused9, 0, sizeof(syscfg53.unused9));
 
+  syscfg53.unused_systemnumber = 0;
+  syscfg53.unused_executetime = 0;
+  syscfg53.unused_ramdrive = 0;
+  syscfg53.unused_systemnumber = 0;
+
   // Update config_revision_number to the specified version
   syscfg53.header.header.config_revision_number = config_revision_number;
 

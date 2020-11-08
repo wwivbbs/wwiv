@@ -22,10 +22,10 @@
 /**
  * Main Application object for WWIV.
  */
-class WInitApp final {
+class WWIVConfigApplication final {
  public:
-  WInitApp();
-  ~WInitApp();
+  WWIVConfigApplication();
+  ~WWIVConfigApplication();
 
   int main(int argc, char* argv[]) const;
 };

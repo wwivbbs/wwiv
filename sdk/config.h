@@ -165,6 +165,13 @@ public:
   [[nodiscard]] uint32_t wwiv_reg_number() const { return config_.wwiv_reg_number; }
   // max number of backups of datafiles to keep.
   [[nodiscard]] int max_backups() const noexcept { return config_.max_backups; }
+  /** Is WWIVBasic scripting enabled */
+  [[nodiscard]] bool scripting_enabled() const noexcept;
+  /** Is WWIVBasic package wwiv.io.file enabled */
+  [[nodiscard]] bool script_package_file_enabled() const noexcept;
+  /** Is WWIVBasic package wwiv.os enabled */
+  [[nodiscard]] bool script_package_os_enabled() const noexcept;
+
 
 private:
   std::string to_abs_path(const char* dir);

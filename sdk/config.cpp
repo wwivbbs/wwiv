@@ -160,6 +160,18 @@ Config430::Config430(const std::filesystem::path& root_directory)
 
 Config430::~Config430() = default;
 
+bool Config::scripting_enabled() const noexcept {
+  return !(config_.script_flags & script_flag_disable_script);
+}
+
+bool Config::script_package_file_enabled() const noexcept {
+  return config_.script_flags & script_flag_enable_file;
+}
+
+bool Config::script_package_os_enabled() const noexcept {
+  return config_.script_flags & script_flag_enable_os;
+}
+
 std::string Config::to_abs_path(const char* dir) {
   return File::absolute(root_directory_.string(), dir).string();
 }

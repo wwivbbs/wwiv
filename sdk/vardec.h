@@ -270,6 +270,10 @@ struct configrec_header_t {
   uint8_t unused[5];
 };
 
+constexpr uint16_t script_flag_disable_script = 0x0001;
+constexpr uint16_t script_flag_enable_file    = 0x0002;
+constexpr uint16_t script_flag_enable_os      = 0x0004;
+
 // STATIC SYSTEM INFORMATION
 struct configrec {
   union {
@@ -384,8 +388,10 @@ struct configrec {
   uint16_t qscn_len;
   /** Max number of backup files to make of datafiles. 0 = unlimited */
   uint8_t max_backups;
+  /** Flags that control the execution of scripts */
+  uint16_t script_flags;
   /** Unused space, may be used for new values in the future. */
-  uint8_t unused9[8];
+  uint8_t unused9[6];
   // path for menu dir
   char menudir[81]; 
   uint8_t res[502];
