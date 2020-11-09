@@ -58,7 +58,15 @@ std::string AcsExpr::get() {
   }
 
   if (regnum_) {
-    expr.emplace_back("user.regnum == 'true'");
+    expr.emplace_back("user.regnum == true");
+  }
+
+  if (sysop_) {
+    expr.emplace_back("user.sysop == true");
+  }
+
+  if (cosysop_) {
+    expr.emplace_back("user.cosysop == true");
   }
 
   bool first{true};

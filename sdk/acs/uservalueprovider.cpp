@@ -55,6 +55,15 @@ std::optional<Value> UserValueProvider::value(const std::string& name) {
   if (iequals(name, "name")) {
     return val(user_->GetName());
   }
+  if (iequals(name, "regnum")) {
+    return val(user_->GetWWIVRegNumber() != 0);
+  }
+  if (iequals(name, "sysop")) {
+    return val(user_->GetSl() == 255);
+  }
+  if (iequals(name, "cosysop")) {
+    return val((sl_.ability & ability_cosysop) != 0);
+  }
   throw eval_error(fmt::format("No user attribute named 'user.{}' exists.", name));
 }
 

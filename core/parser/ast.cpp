@@ -207,6 +207,7 @@ static std::unique_ptr<BinaryOperatorNode> createBinaryOperator(const Token& tok
 }
 
 bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
+  VLOG(2) << "Ast::reduce. Stack Size: " << stack.size();
   if (stack.size() < 3) {
     throw parse_error(fmt::format("Can't reduce stack with < 3 elements."));
   }
@@ -249,7 +250,7 @@ bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
 std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
                                               const std::vector<Token>::iterator& end) {
   std::stack<std::unique_ptr<AstNode>> stack;
-  for (; it != end; it++) {
+  for (; it != end; ++it) {
     switch (it->type) { 
     case TokenType::rparen: {
       // If we have a right parens, we are no longer in an expression.
@@ -364,7 +365,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
 
 /** 
  * True if we need to reduce the stack.  We only allow logical_operations to trigger
- * reduce if we are betwen expressions (this happens at partse, not at parseExpression
+ * reduce if we are between expressions (this happens at parse, not at parseExpression
  */
 bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool allow_logical) {
   if (stack.empty()) {

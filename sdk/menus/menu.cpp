@@ -132,7 +132,9 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
   h.title = oh.szMenuTitle;
   {
     acs::AcsExpr ae;
-    h.acs = ae.min_dsl(oh.nMinDSL).dar_int(oh.uDAR).min_sl(oh.nMinSL).ar_int(oh.uAR).get();
+    ae.min_dsl(oh.nMinDSL).dar_int(oh.uDAR).min_sl(oh.nMinSL).ar_int(oh.uAR);
+    ae.sysop(oh.nSysop).cosysop(oh.nCoSysop);
+    h.acs = ae.get();
   }
   h.password = oh.szPassWord;
 
@@ -149,6 +151,7 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
       // TODO(rushfan): Add support for co-sysop, sysop, restrict into ACS.
       acs::AcsExpr ae;
       ae.min_sl(o.nMinSL).max_sl(o.iMaxSL).min_dsl(o.nMinDSL).max_dsl(o.iMaxDSL).ar_int(o.uAR).dar_int(o.uDAR);
+      ae.sysop(o.nSysop).cosysop(o.nCoSysop);
       i.acs = ae.get();
     }
 

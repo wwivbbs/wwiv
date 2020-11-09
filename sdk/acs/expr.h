@@ -82,8 +82,19 @@ public:
     }
     return *this;
   }
-  AcsExpr& regnum() {
-    regnum_ = true;
+
+  AcsExpr& regnum(bool b) {
+    regnum_ = b;
+    return *this;
+  }
+
+  AcsExpr& sysop(bool b) {
+    sysop_ = b;
+    return *this;
+  }
+
+  AcsExpr& cosysop(bool b) {
+    cosysop_ = b;
     return *this;
   }
 
@@ -102,6 +113,8 @@ private:
   int min_dsl_{0};
   int max_dsl_{255};
   bool regnum_{false};
+  bool sysop_{false};
+  bool cosysop_{false};
 };
 
 }

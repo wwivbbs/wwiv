@@ -115,15 +115,15 @@ TEST_F(AstTest, Expr_Parens) {
   auto* root = ast.root();
   VLOG(1) << root->ToString();
 
-  auto expr = dynamic_cast<Expression*>(root);
+  auto* expr = dynamic_cast<Expression*>(root);
   CHECK_NOTNULL(expr);
   EXPECT_TRUE(HasOp(expr, Operator::logical_or)) << root->ToString();
   ASSERT_NE(nullptr, expr);
 
-  auto left = dynamic_cast<Expression*>(expr->left());
+  auto* left = dynamic_cast<Expression*>(expr->left());
   VLOG(1) << "Left: " << left->ToString();
   EXPECT_TRUE(HasExpression(left, "user.sl", Operator::gt, "200"));
-  auto right = dynamic_cast<Expression*>(expr->right());
+  auto* right = dynamic_cast<Expression*>(expr->right());
   VLOG(1) << "Right: " << right->ToString();
   EXPECT_TRUE(HasExpression(right, "user.ar", Operator::eq, "A"));
 }

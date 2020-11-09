@@ -39,7 +39,9 @@ namespace wwiv::bbs {
 bool check_acs(const std::string& expression, acs_debug_t debug) {
   Eval eval(expression);
 
-  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), a()->sess().effective_sl()));
+  auto esl = a()->sess().effective_sl();
+  auto eslrec = a()->effective_slrec();
+  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), esl, eslrec));
 
   const auto result = eval.eval();
 
@@ -57,7 +59,9 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
 bool validate_acs(const std::string& expression, acs_debug_t debug) {
   Eval eval(expression);
 
-  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), a()->sess().effective_sl()));
+  auto esl = a()->sess().effective_sl();
+  auto eslrec = a()->effective_slrec();
+  eval.add("user", std::make_unique<UserValueProvider>(a()->user(), esl, eslrec));
 
   try {
     eval.eval_throws();

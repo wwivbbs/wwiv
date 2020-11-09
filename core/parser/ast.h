@@ -71,14 +71,14 @@ public:
   //Expression() : AstNode(AstType::EXPR), id_(++expression_id) {}
   Expression(std::unique_ptr<Expression>&& left, Operator op, std::unique_ptr<Expression>&& right);
 
-  Expression* left() const { return left_.get(); }
-  Expression* right() const { return right_.get(); }
-  Operator op() const noexcept { return op_; }
-  int id() const noexcept { return id_; }
-  virtual std::string ToString() const override;
-  virtual std::string ToString(bool include_children) const;
-  virtual std::string ToString(bool include_children, int indent) const;
-  virtual void accept(AstVisitor* visitor) override;
+  [[nodiscard]] Expression* left() const { return left_.get(); }
+  [[nodiscard]] Expression* right() const { return right_.get(); }
+  [[nodiscard]] Operator op() const noexcept { return op_; }
+  [[nodiscard]] int id() const noexcept { return id_; }
+  [[nodiscard]] std::string ToString() const override;
+  [[nodiscard]] virtual std::string ToString(bool include_children) const;
+  [[nodiscard]] virtual std::string ToString(bool include_children, int indent) const;
+  void accept(AstVisitor* visitor) override;
 
   // Used when constructing these.
   // TODO(rushfan): Move into constructor and construct these fully.

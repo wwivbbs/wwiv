@@ -68,9 +68,9 @@ TEST_F(AcsExprTest, DSL_Min_Max) {
 
 TEST_F(AcsExprTest, DSL_Min_255) { EXPECT_EQ(ae.min_dsl(255).get(), "user.dsl >= 255"); }
 
-TEST_F(AcsExprTest, RegNum) { EXPECT_EQ(ae.regnum().get(), "user.regnum == 'true'"); }
+TEST_F(AcsExprTest, RegNum) { EXPECT_EQ(ae.regnum(true).get(), "user.regnum == true"); }
 
 TEST_F(AcsExprTest, MultipleConditions) {
-  EXPECT_EQ(ae.min_dsl(18).max_dsl(21).dar('A').regnum().get(),
-            "user.dar == 'A' && user.dsl >= 18 && user.dsl <= 21 && user.regnum == 'true'");
+  EXPECT_EQ(ae.min_dsl(18).max_dsl(21).dar('A').regnum(true).get(),
+            "user.dar == 'A' && user.dsl >= 18 && user.dsl <= 21 && user.regnum == true");
 }

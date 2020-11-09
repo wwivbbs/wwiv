@@ -35,15 +35,16 @@ using namespace wwiv::sdk::acs;
 
 class AcsTest : public ::testing::Test {
 public:
-  AcsTest() {}
+  AcsTest() = default;
 
   void createEval(const std::string& expr) { 
     eval = std::make_unique<Eval>(expr);
-    eval->add("user", std::make_unique<UserValueProvider>(&user_, user_.GetSl()));
+    eval->add("user", std::make_unique<UserValueProvider>(&user_, user_.GetSl(), sl_));
 
   }
   std::unique_ptr<Eval> eval;
-  wwiv::sdk::User user_;
+  wwiv::sdk::User user_{};
+  slrec sl_{};
 };
 
 TEST_F(AcsTest, SL_GT_Pass) {
@@ -127,4 +128,56 @@ TEST_F(AcsTest, BadExpression) {
   createEval("foo == ~ foo");
   EXPECT_FALSE(eval->eval());
   LOG(INFO) << wwiv::strings::JoinStrings(eval->debug_info(), "\r\n");
+}
+
+TEST_F(AcsTest, Sysop_Pass) {
+  user_.SetSl(255);
+  createEval("user.sysop == \"true\"");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Sysop_Pass_Literal) {
+  user_.SetSl(255);
+  createEval("user.sysop == true");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Sysop_Fail) {
+  user_.SetSl(200);
+  createEval("user.sysop == true");
+  EXPECT_FALSE(eval->eval());
+}
+
+TEST_F(AcsTest, Sysop_Pass_Negated) {
+  user_.SetSl(200);
+  createEval("user.sysop == false");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Regnum_Pass) {
+  user_.SetSl(12);
+  user_.SetWWIVRegNumber(12345);
+  createEval("user.regnum == true");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, Regnum_Fail) {
+  user_.SetSl(12);
+  user_.SetWWIVRegNumber(0);
+  createEval("user.regnum == true");
+  EXPECT_FALSE(eval->eval());
+}
+
+TEST_F(AcsTest, CoSysop_Pass) {
+  user_.SetSl(200);
+  sl_.ability |= ability_cosysop;
+  createEval("user.cosysop == true");
+  EXPECT_TRUE(eval->eval());
+}
+
+TEST_F(AcsTest, CoSysop_Fail) {
+  user_.SetSl(200);
+  sl_.ability &= ~ability_cosysop;
+  createEval("user.cosysop == true");
+  EXPECT_FALSE(eval->eval());
 }

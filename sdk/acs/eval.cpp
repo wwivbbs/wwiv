@@ -62,7 +62,29 @@ std::optional<Value> Eval::to_value(Factor* n) {
   throw eval_error(fmt::format("Error finding factor for object: '{}'.", to_string(*n)));
 }
 
-Eval::Eval(std::string expression) : expression_(std::move(expression)) {}
+/** Shorthand to create an optional Value */
+template <typename T> static std::optional<Value> val(T&& v) {
+  return std::make_optional<Value>(std::forward<T>(v));
+}
+
+class DefaultValueProvider : public ValueProvider {
+public:
+  DefaultValueProvider() : ValueProvider("") {}
+  [[nodiscard]] std::optional<Value> value(const std::string& name) override {
+    if (name == "true") {
+      return val(true);
+    }
+    if (name == "false") {
+      return val(false);
+    }
+    return std::nullopt;
+  }
+  
+};
+
+Eval::Eval(std::string expression) : expression_(std::move(expression)) {
+  add("", std::make_unique<DefaultValueProvider>());  
+}
 
 
 void Eval::visit(Expression* n) { 
