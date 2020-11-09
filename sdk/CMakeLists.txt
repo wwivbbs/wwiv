@@ -38,6 +38,7 @@ set(COMMON_SOURCES
   files/files.cpp
   files/files_ext.cpp
   files/tic.cpp
+  menus/menu.cpp
   msgapi/email_wwiv.cpp
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp

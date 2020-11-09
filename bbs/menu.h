@@ -22,7 +22,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/textfile.h"
-#include "sdk/menu.h"
+#include "sdk/menus/menu.h"
 #include <map>
 #include <string>
 #include <vector>

@@ -16,10 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_MENU_H__
-#define __INCLUDED_SDK_MENU_H__
+#ifndef INCLUDED_SDK_MENUS_MENU_H
+#define INCLUDED_SDK_MENUS_MENU_H
 
 #include <cstdint>
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <vector>
 
 #define MENU
 constexpr uint16_t MENU_VERSION = 0x0100;
@@ -61,8 +65,8 @@ struct menu_header_430_t {
   uint8_t   nums;     /* What does a number do?  Set sub#, Dir#, nothing? */
   uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
 
-  uint8_t   nForceHelp;   /* force, dont force, on entrance only              */
-  uint8_t   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
+  uint8_t   nForceHelp;   /* force, don't force, on entrance only              */
+  uint8_t   nAllowedMenu; /* Can pull down, regular or both menus be used?     */
 
   uint8_t  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
            nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
@@ -89,7 +93,7 @@ struct menu_rec_430_t {
   char szKey[MENU_MAX_KEYS + 1]; /* Keystroke to execute menu item   */
   char szExecute[101];           /* Command to execute               */
   char szMenuText[41];           /* Menu description                 */
-  char unused_szPDText[41];      /* Pulldown menu text               */
+  char unused_szPDText[41];      /* Pull down menu text               */
 
   char szHelp[81];               /* Help for this item               */
   char szSysopLog[51];           /* Msg to put in the log            */
@@ -105,14 +109,110 @@ struct menu_rec_430_t {
   char szPassWord[21];
 
   uint16_t nHide;            /* Hide text from PD/Regular/both or no menus */
-  uint16_t unused_nPDFlags;  /* special characteristis for pulldowns       */
+  uint16_t unused_nPDFlags;  /* special characteristics for pull downs       */
 
   char unused_data[92];
 };
 
 #pragma pack(pop)
 
+namespace wwiv::sdk::menus {
+
+class Menu430 {
+public:
+  Menu430(std::filesystem::path menu_dir, std::string menu_set,
+          std::string menu_name);
+  [[nodiscard]] bool Load();
+  [[nodiscard]] bool initialized() const noexcept { return initialized_; }
+
+  menu_header_430_t header{};
+  std::vector<menu_rec_430_t> recs;
+
+  
+  const std::filesystem::path menu_dir_;
+  const std::string menu_set_;
+  const std::string menu_name_;
+  bool initialized_{false};
+};
+
 static_assert(sizeof(menu_rec_430_t) == sizeof(menu_header_430_t), "sizeof(menu_rec_430_t) == sizeof(menu_header_430_t)");
 
+struct menu_action_56_t {
+  // MenuCommand to execute
+  std::string cmd;
+  // Data to pass to menu command
+  std::string data;
+  // ACS needed to execute this menu action
+  std::string acs;
+};
 
-#endif  // __INCLUDED_SDK_MENU_H__
+struct menu_item_56_t {
+  // KEY of the item (such as 'C' or "CHAINEDIT")
+  std::string item_key;
+  // Text for the item (i.e. "Chain Edit")
+  std::string item_text;
+  // Help text to display in help screen
+  std::string help_text;
+  // What to log to sysops log when this menu item is invoked
+  std::string log_text;
+  // What to set for the instance message when this menu item is invoked.
+  std::string instance_message;
+  // ACS needed to invoke this command
+  std::string acs;
+  // password needed to invoke this menu item
+  std::string password;
+  // All of the actions to run when invoking this menu item
+  std::vector<menu_action_56_t> actions;
+};
+
+struct menu_56_t {
+   /* What does a number do?  Set sub#, Set dir#, nothing? */
+  int num_action;
+   /* Types of logging, Key, None, command, desc */
+  int logging_action;
+  /* force, display always, display on entrance only */
+  int help_type;
+
+  // Colors
+  int color_title;
+  int color_item_text;
+  int color_item_key;
+  int color_item_braces;
+
+  // Title of this menu
+  std::string title;
+  // ACS needed to execute this menu
+  std::string acs;
+  // password needed to execute this menu
+  std::string password;
+
+  // Actions to invoke when entering this menu
+  std::vector<menu_action_56_t> enter_actions;
+  // Actions to invoke when exiting this menu
+  std::vector<menu_action_56_t> exit_actions;
+  // Menu items
+  std::vector<menu_item_56_t> items;
+};
+
+class Menu56 {
+public:
+  Menu56(std::filesystem::path menu_dir, std::string menu_set,
+          std::string menu_name);
+  [[nodiscard]] bool Load();
+  [[nodiscard]] bool Save();
+  [[nodiscard]] bool initialized() const noexcept { return initialized_; }
+  void set_initialized(bool i) { initialized_ = i; }
+
+  menu_56_t menu{};
+
+  private:
+  const std::filesystem::path menu_dir_;
+  const std::string menu_set_;
+  const std::string menu_name_;
+  bool initialized_{false};
+};
+
+std::optional<Menu56> Create56MenuFrom43(const Menu430& menu430);
+
+} 
+#endif

@@ -30,7 +30,7 @@
 #include "localui/listbox.h"
 #include "localui/curses_win.h"
 #include "sdk/fido/fido_callout.h"
-#include "sdk/menu.h"
+#include "sdk/menus/menu.h"
 #include <cstring>
 #include <filesystem>
 #include <iomanip>

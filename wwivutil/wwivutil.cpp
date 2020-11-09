@@ -27,6 +27,7 @@
 #include "wwivutil/files/files.h"
 #include "wwivutil/fix/fix.h"
 #include "wwivutil/messages/messages.h"
+#include "wwivutil/menus/menus.h"
 #include "wwivutil/net/net.h"
 #include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
@@ -66,6 +67,7 @@ public:
       Add(std::make_unique<wwiv::wwivutil::files::FilesCommand>());
       Add(std::make_unique<FixCommand>());
       Add(std::make_unique<MessagesCommand>());
+      Add(std::make_unique<MenusCommand>());
       Add(std::make_unique<NetCommand>());
       Add(std::make_unique<PrintCommand>());
       Add(std::make_unique<StatusCommand>());

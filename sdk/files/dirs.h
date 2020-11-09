@@ -24,6 +24,7 @@
 #include "core/uuid.h"
 #include <filesystem>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace wwiv::sdk::files {
@@ -97,7 +98,7 @@ public:
 
   [[nodiscard]] bool exists(const std::string& filename) const;
 
-  void set_dir(int n, directory_t s) { dirs_[n] = s; }
+  void set_dir(int n, directory_t s) { dirs_[n] = std::move(s); }
   [[nodiscard]] const std::vector<directory_t>& dirs() const { return dirs_; }
   bool insert(int n, directory_t r);
   bool erase(int n);
