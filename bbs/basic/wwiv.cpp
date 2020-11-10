@@ -19,7 +19,7 @@
 
 #include "bbs/basic/util.h"
 #include "bbs/interpret.h"
-#include "bbs/oldmenu.h"
+#include "bbs/menus/menucommands.h"
 #include "bbs/acs.h"
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"
@@ -47,14 +47,20 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* basi) {
 
   mb_register_func(basi, "COMMAND", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
-    char* arg = nullptr;
+    auto cmd = wwiv_mb_pop_string(bas, l);
+    if (!cmd) {
+      // command missing
+      return MB_FUNC_ERR;
+    }
+    std::string data;
     if (mb_has_arg(bas, l)) {
-      mb_check(mb_pop_string(bas, l, &arg));
+      if (const auto o =  wwiv_mb_pop_string(bas, l)) {
+        data = o.value();
+      }
     }
     mb_check(mb_attempt_close_bracket(bas, l));
-    if (arg) {
-      menus::InterpretCommand(nullptr, arg);
-    }
+
+    menus::InterpretCommand(nullptr, cmd.value(), data);
     return MB_FUNC_OK;
   });
 

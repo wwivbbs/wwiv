@@ -827,7 +827,7 @@ int Application::Run(int argc, char* argv[]) {
   }
   const auto menu_commands = cmdline.arg("menu_commands");
   if (!menu_commands.is_default()) {
-    wwiv::menus::PrintMenuCommands(menu_commands.as_string());
+    wwiv::bbs::menus::PrintMenuCommands(menu_commands.as_string());
     return 0;
   }
 

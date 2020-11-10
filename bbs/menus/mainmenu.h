@@ -49,8 +49,9 @@ public:
   [[nodiscard]] bool initalized() const { return menu_.initialized(); }
   // Gets the command string from the user for this menu.
   [[nodiscard]] std::string GetCommandFromUser() const;
-  [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t> GetMenuItemForCommand(const std::string& cmd);
+  [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t> GetMenuItemForCommand(const std::string& cmd) const;
   void DisplayMenu() const;
+  void GenerateMenu() const;
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
   std::tuple<menu_command_action_t, std::string> ExecuteAction(const sdk::menus::menu_action_56_t& value);
   std::tuple<menu_run_result_t, std::string> Run();
@@ -82,12 +83,10 @@ private:
 // Functions used by menuedit and menu
 void MenuSysopLog(const std::string& pszMsg);
 
-// In menuinterpretcommand.cpp
 /**
  * Executes a menu command ```script``` using the menudata for the context of
  * the MENU, or nullptr if not invoked from an actual menu.
  */
-void InterpretCommand(MenuInstance* menudata, const std::string& script);
 void PrintMenuCommands(const std::string& arg);
 
 }  // namespace

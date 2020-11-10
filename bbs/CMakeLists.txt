@@ -49,7 +49,6 @@ set(COMMON_SOURCES
  lpfunc.cpp
  oldmenu.cpp
  menuinterpretcommand.cpp
- menu_parser.cpp
  menuspec.cpp
  menusupp.cpp
  misccmd.cpp

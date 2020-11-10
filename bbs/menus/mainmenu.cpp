@@ -77,6 +77,9 @@ void MainMenu::Run() {
     case menu_run_result_t::change_menu_set:
       stack_.clear();
       return;
+    case menu_run_result_t::none:
+      // Do nothing.
+      break;
     }
   }
 }
@@ -91,14 +94,29 @@ MenuInstance::MenuInstance(const std::filesystem::path& menu_path, const std::st
     : menu_set_(menu_set), menu_name_(menu_name), menu_(menu_path, menu_set, menu_name) {
 
   menu_set_path_ = FilePath(menu_path, menu_set_);
+  prompt_ = "|09Command? ";
+
   // Load Prompt;
-  
+  const auto prompt_filename = wwiv::strings::StrCat(menu_name, ".pro");
+  const auto prompt_path = FilePath(menu_set_path_, prompt_filename);
+
+  TextFile prompt_file(prompt_path, "rb");
+  if (prompt_file.IsOpen()) {
+    const auto tmp = prompt_file.ReadFileIntoString();
+    const auto end = tmp.find(".end.");
+    if (end != std::string::npos) {
+      prompt_ = tmp.substr(0, end);
+    } else {
+      prompt_ = tmp;
+    }
+  }
+
 }
 
 void MenuInstance::DisplayMenu() const {
   const auto path = common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
   if (!bout.printfile_path(path, true, false)) {
-    //GenerateMenu();
+    GenerateMenu();
   }
 }
 
@@ -132,7 +150,7 @@ static bool IsNumber(const std::string& command) {
 }
 
 std::optional<sdk::menus::menu_item_56_t>
-MenuInstance::GetMenuItemForCommand(const std::string& cmd) {
+MenuInstance::GetMenuItemForCommand(const std::string& cmd) const {
   const auto nums = menu().num_action;
   if (IsNumber(cmd) && nums != MENU_NUMFLAG_NOTHING) {
     if (nums == MENU_NUMFLAG_SUBNUMBER) {
@@ -182,7 +200,10 @@ std::tuple<menu_run_result_t, std::string> MenuInstance::Run() {
 
   // We have a good menu.
   for (;;) {
-    DisplayMenu();
+    if (!a()->user()->IsExpert()) {
+      DisplayMenu();
+    }
+    bout << prompt_;
     // Do actions on enter.
 
     auto cmd = GetCommandFromUser();
@@ -199,13 +220,37 @@ std::tuple<menu_run_result_t, std::string> MenuInstance::Run() {
           return std::make_tuple(menu_run_result_t::return_from_menu, "");
         }
       }
-      bout.nl(2);
-      bout.pausescr();
     }
-    // check context if we need to return, clear, or push
-    //return std::make_tuple(menu_run_result_t::return_from_menu, "");
   }
 
+}
+
+void MenuInstance::GenerateMenu() const {
+  bout.Color(0);
+  bout.nl();
+
+  auto lines_displayed = 0;
+  const auto nums = menu().num_action;
+  if (nums != MENU_NUMFLAG_NOTHING) {
+    bout.format("|#1{:<8} |#1{:<25}  ", "[#]", "Change Sub/Dir #");
+    ++lines_displayed;
+  }
+  for (const auto& mi : menu().items) {
+    if (mi.item_key.empty()) {
+      continue;
+    }
+    if (!check_acs(mi.acs)) {
+      continue;
+    }
+    const auto key = mi.item_key.size() == 1
+        ? fmt::format("|#9[|#2{}|#9]", mi.item_key) : fmt::format("|#2//{}", mi.item_key);
+    bout.format("{:<8} |#1{:<25}  ", key, mi.item_text);
+    if (lines_displayed % 2) {
+      bout.nl();
+    }
+    ++lines_displayed;
+  }
+  bout.nl(2);
 }
 
 }
