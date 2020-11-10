@@ -37,6 +37,10 @@ using namespace wwiv::strings;
 namespace wwiv::bbs {
 
 bool check_acs(const std::string& expression, acs_debug_t debug) {
+  if (StringTrim(expression).empty()) {
+    // Empty expression is always allowed.
+    return true;
+  }
   Eval eval(expression);
 
   auto esl = a()->sess().effective_sl();

@@ -174,6 +174,14 @@ int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFree
   return abort ? -1 : 1;
 }
 
+int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle) {
+  auto v = SplitString(dir_and_fname, " ", true);
+  if (v.size() != 2) {
+    return -1;
+  }
+  return MenuDownload(v.at(0), aligns(v.at(1)), bFreeDL, bTitle);
+}
+
 /**
  * Run a Door (chain)
  *

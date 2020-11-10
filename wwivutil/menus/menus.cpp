@@ -116,7 +116,7 @@ public:
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   convert --menu_set=<menu set> <menu name>" << endl;
-    ss << "Example: convert --menu_set=wwiv main.mnu" << endl;
+    ss << "Example: convert --menu_set=wwiv main" << endl;
     return ss.str();
   }
 
@@ -136,7 +136,7 @@ public:
     const auto& menu_name = remaining().front();
     menus::Menu430 m4(config()->config()->menudir(), menu_set, menu_name);
     if (!m4.initialized()) {
-      std::cout << "Unable to parse menu." << std::endl;
+      std::cout << "Unable to 4.3 parse menu." << std::endl;
       return 1;
     }
 

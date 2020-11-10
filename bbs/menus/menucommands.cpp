@@ -16,14 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/basic/basic.h"
+#include "bbs/menus/menucommands.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
-#include "bbs/bbsutl.h"
 #include "bbs/hop.h"
-#include "bbs/oldmenu.h"
-#include "bbs/menu_parser.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/misccmd.h"
@@ -31,8 +28,9 @@
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
-#include "bbs/xfer.h"
 #include "bbs/xferovl1.h"
+#include "bbs/basic/basic.h"
+#include "bbs/menus/mainmenu.h"
 #include "common/output.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -51,7 +49,7 @@ using wwiv::core::IniFile;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv::menus {
+namespace wwiv::bbs::menus {
 
 // Categories
 static const std::string MENU_CAT_MSGS = "Message";
@@ -70,83 +68,37 @@ static const std::string MENU_CAT_SYS = "System";
 static const std::string MENU_CAT_CONF = "Conference";
 static const std::string MENU_CAT_USER = "User";
 
-struct MenuItemContext {
-  MenuItemContext(MenuInstance* m, std::string p1, std::string p2)
-      : pMenuData(m), param1(std::move(p1)), param2(std::move(p2)) {}
-  // May be null if not invoked from an actual menu.
-  MenuInstance* pMenuData;
-  string param1;
-  string param2;
-  bool finished{false};
-  bool need_reload{false};
-};
 
-struct MenuItem {
-  MenuItem(std::string desc, std::string category, std::function<void(MenuItemContext&)> f)
-      : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
-  MenuItem(std::string desc, std::function<void(MenuItemContext&)> f)
-      : description_(std::move(desc)), f_(std::move(f)) {}
-
-  explicit MenuItem(std::function<void(MenuItemContext&)> f) : description_(""), f_(std::move(f)) {}
-
-  std::string description_;
-  std::string category_;
-  std::function<void(MenuItemContext&)> f_;
-  // Set at the end of CreateMenuMap.
-  std::string cmd_;
-};
-
-map<string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
-
-void InterpretCommand(MenuInstance* menudata, const std::string& script) {
+std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const std::string& cmd, const std::string& data) {
+  if (cmd.empty()) {
+    return std::nullopt;
+  }
   static auto functions = CreateCommandMap();
 
-  if (script.empty()) {
-    return;
-  }
-
-  char temp_script[255];
-  to_char_array(temp_script, script);
-
-  const char* p = temp_script;
-  while (p) {
-    char scmd[31], param1[51], param2[51];
-    p = MenuParseLine(p, scmd, param1, param2);
-
-    if (scmd[0] == 0) {
-      break;
+  if (contains(functions, cmd)) {
+    MenuItemContext context(menudata, data);
+    functions.at(cmd).f_(context);
+    if (menudata) {
+      menudata->reload = context.need_reload;
+      menudata->finished = (context.finished || context.need_reload);
     }
-
-    string cmd(scmd);
-    if (contains(functions, cmd)) {
-      MenuItemContext context(menudata, param1, param2);
-      functions.at(cmd).f_(context);
-      if (menudata) {
-        menudata->reload = context.need_reload;
-        menudata->finished = (context.finished || context.need_reload);
-      }
-    }
+    return {context};
   }
+  return std::nullopt;
 }
 
-map<string, MenuItem, ci_less> CreateCommandMap() {
+map<string, wwiv::bbs::menus::MenuItem, ci_less> CreateCommandMap() {
   map<string, MenuItem, ci_less> m;
   m.emplace("MENU", MenuItem(R"(<menu>
   Loads up and starts running a new menu set, where <menu> equals the name of
   the menu to load.
 )",
                              MENU_CAT_MENU, [](MenuItemContext& context) {
-                               if (context.pMenuData) {
-                                 MenuInstance new_menu(context.pMenuData->menu_directory(),
-                                                       context.param1);
-                                 new_menu.RunMenu();
-                               }
+                                 context.menu_action = menu_command_action_t::push_menu;
+                                 context.new_menu_name = context.param1;
                              }));
   m.emplace("ReturnFromMenu", MenuItem(R"()", MENU_CAT_MENU, [](MenuItemContext& context) {
-              if (context.pMenuData) {
-                InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
-                context.finished = true;
-              }
+              context.menu_action = menu_command_action_t::return_from_menu;
             }));
   m.emplace("DLFreeFile", MenuItem(R"(
 <dirfname> <filename>
@@ -156,8 +108,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
   the transfer editor.  filename is the name of the file being downloaded.
 )",
                                    MENU_CAT_FILE, [](MenuItemContext& context) {
-                                     const auto s = aligns(context.param2);
-                                     MenuDownload(context.param1, s, true, true);
+                                     MenuDownload(context.param1, true, true);
                                    }));
   m.emplace("DLFile", MenuItem(R"(
 <dirfname> <filename>
@@ -168,8 +119,7 @@ map<string, MenuItem, ci_less> CreateCommandMap() {
   the transfer editor.  filename is the name of the file being downloaded.
 )",
                                MENU_CAT_FILE, [](MenuItemContext& context) {
-                                 const auto s = aligns(context.param2);
-                                 MenuDownload(context.param1, s, false, true);
+                                 MenuDownload(context.param1, false, true);
                                }));
   m.emplace("RunDoor", MenuItem(R"(<door name>
 
@@ -768,11 +718,11 @@ Runs a WWIVbasic Script
   m.emplace("TurnMCIOn", MenuItem(R"(
   Enable MCI codes
 )",
-                                  MENU_CAT_SYS, [](MenuItemContext&) { TurnMCIOn(); }));
+                                  MENU_CAT_SYS, [](MenuItemContext&) { bout.enable_mci(); }));
   m.emplace("TurnMCIOff", MenuItem(R"(
   Disable MCI codes
 )",
-                                   MENU_CAT_SYS, [](MenuItemContext&) { TurnMCIOff(); }));
+                                   MENU_CAT_SYS, [](MenuItemContext&) { bout.disable_mci(); }));
   //  m.emplace("", MenuItem(R"()", "", [](MenuItemContext& context) {
   //    } ));
 

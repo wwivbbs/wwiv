@@ -27,7 +27,7 @@
 #include "bbs/connect1.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"

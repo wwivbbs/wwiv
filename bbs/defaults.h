@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 
 void select_editor();
 std::string DescribeColorCode(int nColorCode);

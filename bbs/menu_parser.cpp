@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "bbs/menu_parser.h"
 
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 #include <cctype>
 
 namespace wwiv::menus {

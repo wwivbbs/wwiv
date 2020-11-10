@@ -116,11 +116,16 @@ bool Menu56::Save() {
 }
 
 std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
+  const auto dir = FilePath(m4.menu_dir_, m4.menu_set_);
+  const auto name = StrCat(m4.menu_name_, ".mnu.json");
+  const auto path = FilePath(dir, name);
+  if (backup_file(path, 3)) {
+    File::Remove(path);
+  }
   Menu56 m5(m4.menu_dir_, m4.menu_set_, m4.menu_name_);
 
   auto& h = m5.menu;
   const auto& oh = m4.header;
-  h.num_action = oh.nums;
   h.logging_action = oh.nLogging;
   h.help_type = oh.nForceHelp;
 
@@ -166,6 +171,9 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
     }
     h.items.emplace_back(i);
   }
+
+  h.num_action = oh.nums;
+
 
   m5.set_initialized(true);
   return {m5};

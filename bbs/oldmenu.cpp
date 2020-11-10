@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -24,11 +24,9 @@
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/sysoplog.h"
-#include "bbs/utility.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -56,9 +54,9 @@ static std::filesystem::path GetMenuDirectory(const string menu_path) {
   return FilePath(GetMenuDirectory(), menu_path);
 }
 
-static bool ValidateMenuSet(const std::string& menu_dir) {
+static bool ValidateMenuSet(const std::string& menu_set) {
   // ensure the entry point exists
-  return File::Exists(FilePath(GetMenuDirectory(menu_dir), "main.mnu"));
+  return File::Exists(FilePath(GetMenuDirectory(menu_set), "main.mnu.json"));
 }
 
 static bool CheckMenuPassword(const string& original_password) {

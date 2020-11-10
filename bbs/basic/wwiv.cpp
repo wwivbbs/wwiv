@@ -19,7 +19,7 @@
 
 #include "bbs/basic/util.h"
 #include "bbs/interpret.h"
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 #include "bbs/acs.h"
 #include "core/version.h"
 #include "deps/my_basic/core/my_basic.h"

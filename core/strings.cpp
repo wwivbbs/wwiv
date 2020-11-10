@@ -225,6 +225,9 @@ void StringTrimCRLF(string* s) {
 * @return orig with spaces removed.
 */
 string StringTrim(const string& orig) {
+  if (orig.empty()) {
+    return {};
+  }
   auto s(orig);
   auto pos = s.find_first_not_of(DELIMS_WHITE);
   s.erase(0, pos);

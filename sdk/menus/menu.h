@@ -34,7 +34,6 @@ constexpr uint8_t MENU_FLAG_MAINMENU = 0x02;
 constexpr uint8_t MENU_NUMFLAG_NOTHING = 0;
 constexpr uint8_t MENU_NUMFLAG_SUBNUMBER = 1;
 constexpr uint8_t MENU_NUMFLAG_DIRNUMBER = 2;
-constexpr uint8_t MENU_NUMFLAG_LAST = 3;
 
 constexpr uint8_t MENU_LOGTYPE_KEY = 0;
 constexpr uint8_t MENU_LOGTYPE_NONE = 1;
@@ -45,7 +44,6 @@ constexpr uint8_t MENU_LOGTYPE_LAST = 4;
 constexpr uint8_t MENU_HELP_DONTFORCE = 0;
 constexpr uint8_t MENU_HELP_FORCE = 1;
 constexpr uint8_t MENU_HELP_ONENTRANCE = 2;
-constexpr uint8_t MENU_HELP_LAST = 3;
 
 constexpr uint16_t MENU_HIDE_REGULAR = 2;
 constexpr uint16_t MENU_HIDE_BOTH = 3;

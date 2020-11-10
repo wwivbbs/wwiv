@@ -47,7 +47,7 @@ set(COMMON_SOURCES
  lilo.cpp
  listplus.cpp
  lpfunc.cpp
- menu.cpp
+ oldmenu.cpp
  menuinterpretcommand.cpp
  menu_parser.cpp
  menuspec.cpp
@@ -105,6 +105,8 @@ set(COMMON_SOURCES
  basic/wwiv_os.cpp
  basic/wwiv_time.cpp
  ../deps/my_basic/core/my_basic.c
+ menus/mainmenu.cpp
+ menus/menucommands.cpp
 )
 
 set(BBS_MAIN bbs_main.cpp)

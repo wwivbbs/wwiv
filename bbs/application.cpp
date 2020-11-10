@@ -30,7 +30,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/interpret.h"
 #include "bbs/lilo.h"
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 #include "bbs/netsup.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
@@ -67,6 +67,7 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
+#include "bbs/menus/mainmenu.h"
 #include "sdk/chains.h"
 #include "sdk/files/files.h"
 #include "sdk/msgapi/message_api_wwiv.h"
@@ -1067,7 +1068,7 @@ int Application::Run(int argc, char* argv[]) {
         filelist.clear();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
         try {
-          wwiv::menus::mainmenu();
+          wwiv::bbs::menus::mainmenu();
         } catch (const std::logic_error& le) {
           std::cerr << "Caught std::logic_error: " << le.what() << "\r\n";
           sysoplog() << le.what();

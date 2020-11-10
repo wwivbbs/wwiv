@@ -22,6 +22,7 @@
 
 int MenuDownload(const std::string& pszDirFName, const std::string& pszFName, bool bFreeDL,
                  bool bTitle);
+int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle);
 bool MenuRunDoorName(const char *pszDoor, bool bFree);
 bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
 int  FindDoorNo(const char *pszDoor);

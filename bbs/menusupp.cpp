@@ -43,7 +43,7 @@
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
 #include "bbs/listplus.h"
-#include "bbs/menu.h"
+#include "bbs/oldmenu.h"
 #include "bbs/misccmd.h"
 #include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
