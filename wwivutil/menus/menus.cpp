@@ -69,8 +69,9 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override final {
     std::ostringstream ss;
-    ss << "Usage:   dump --menu_set=<menu set> <menu name>" << endl;
-    ss << "Example: dump --menu_set=wwiv main.mnu" << endl;
+    ss << "Usage:   dump --menu_set=[menu set] <menu name>" << endl;
+    ss << "Example: dump --menu_set=wwiv main.mnu" << endl << endl;
+    ss << "         Note that menu_set defaults to 'wwiv'" << endl;
     return ss.str();
   }
 
@@ -102,7 +103,7 @@ public:
 
   bool AddSubCommands() override final {
     add_argument(BooleanCommandLineArgument("full", "Display full info about every command.", false));
-    add_argument({"menu_set", "The menuset to use", ""});
+    add_argument({"menu_set", "The menuset to use", "wwiv"});
     return true;
   }
 };
@@ -117,6 +118,7 @@ public:
     std::ostringstream ss;
     ss << "Usage:   convert --menu_set=<menu set> <menu name>" << endl;
     ss << "Example: convert --menu_set=wwiv main" << endl;
+    ss << "         Note that menu_set defaults to 'wwiv'" << endl;
     return ss.str();
   }
 
@@ -142,7 +144,7 @@ public:
 
     if (auto om5 = Create56MenuFrom43(m4)) {
       auto& m5 = om5.value();
-      DisplayMenu(m5);
+      //DisplayMenu(m5);
       return m5.Save() ? 0 : 1;
     }
     std::cout << "Failed to create 5.6 style menu from 4.3x style menu.";
@@ -150,7 +152,7 @@ public:
   }
 
   bool AddSubCommands() override final {
-    add_argument({"menu_set", "The menuset to use", ""});
+    add_argument({"menu_set", "The menuset to use", "wwiv"});
     return true;
   }
 };

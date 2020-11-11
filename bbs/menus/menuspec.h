@@ -14,5 +14,29 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef INCLUDED_BBS_MENUS_MENUSPEC_H
+#define INCLUDED_BBS_MENUS_MENUSPEC_H
+
+#include <string>
+
+namespace wwiv::bbs::menus {
+
+int MenuDownload(const std::string& pszDirFName, const std::string& pszFName, bool bFreeDL,
+                 bool bTitle);
+int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle);
+bool MenuRunDoorName(const char *pszDoor, bool bFree);
+bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
+int  FindDoorNo(const char *pszDoor);
+bool ValidateDoorAccess(int nDoorNumber);
+void ChangeSubNumber();
+void ChangeDirNumber();
+void SetMsgConf(int iConf);
+void SetDirConf(int iConf);
+void EnableConf();
+void DisableConf();
+void SetNewScanMsg();
+
+}
+
+#endif

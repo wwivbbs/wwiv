@@ -27,7 +27,6 @@
 #include "bbs/connect1.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
-#include "bbs/oldmenu.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
@@ -42,6 +41,7 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
+#include "menus/config_menus.h"
 #include "sdk/filenames.h"
 #include "sdk/files/dirs.h"
 #include "sdk/names.h"
@@ -813,7 +813,7 @@ void defaults(bool& need_menu_reload) {
     }
     break;
     case 'K':
-      wwiv::menus::ConfigUserMenuSet();
+      wwiv::bbs::menus::ConfigUserMenuSet();
       need_menu_reload = true;
       break;
     case 'L':

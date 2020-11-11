@@ -14,25 +14,37 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MENUSPEC_H__
-#define __INCLUDED_BBS_MENUSPEC_H__
+#ifndef INCLUDED_BBS_MENUS_CONFIG_MENUS_H
+#define INCLUDED_BBS_MENUS_CONFIG_MENUS_H
 
+#include "core/stl.h"
+#include "core/textfile.h"
+#include <map>
 #include <string>
 
-int MenuDownload(const std::string& pszDirFName, const std::string& pszFName, bool bFreeDL,
-                 bool bTitle);
-int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle);
-bool MenuRunDoorName(const char *pszDoor, bool bFree);
-bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
-int  FindDoorNo(const char *pszDoor);
-bool ValidateDoorAccess(int nDoorNumber);
-void ChangeSubNumber();
-void ChangeDirNumber();
-void SetMsgConf(int iConf);
-void SetDirConf(int iConf);
-void EnableConf();
-void DisableConf();
-void SetNewScanMsg();
+namespace wwiv::bbs::menus {
 
-#endif  // __INCLUDED_BBS_MENUSPEC_H__
+
+class MenuDescriptions {
+public:
+  explicit MenuDescriptions(const std::filesystem::path& menupath);
+  ~MenuDescriptions();
+  [[nodiscard]] std::string description(const std::string& name) const;
+  bool set_description(const std::string& name, const std::string& description);
+
+private:
+  const std::filesystem::path menupath_;
+  std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
+};
+
+// Functions used b bbs.cpp and defaults.cpp
+void ConfigUserMenuSet();
+
+// Functions used by menu-edit and menu
+void MenuSysopLog(const std::string& pszMsg);
+
+}  // namespace
+
+#endif

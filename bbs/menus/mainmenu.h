@@ -20,10 +20,6 @@
 #define INCLUDED_MENUS_MAINMENU_H
 
 #include "menucommands.h"
-#include "bbs/oldmenu.h"
-#include "core/file.h"
-#include "core/stl.h"
-#include "core/textfile.h"
 #include "sdk/menus/menu.h"
 #include <filesystem>
 #include <map>
@@ -54,6 +50,7 @@ public:
   void GenerateMenu() const;
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
   std::tuple<menu_command_action_t, std::string> ExecuteAction(const sdk::menus::menu_action_56_t& value);
+  std::tuple<menu_command_action_t, std::string> ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions);
   std::tuple<menu_run_result_t, std::string> Run();
 
   bool finished{false};
@@ -70,7 +67,7 @@ private:
 
 class MainMenu {
 public:
-  MainMenu(const sdk::Config& config);
+  explicit MainMenu(const sdk::Config& config);
   void Run();
 
   std::string menu_set_;
@@ -80,14 +77,6 @@ private:
   std::vector<MenuInstance> stack_;
 };
 
-// Functions used by menuedit and menu
-void MenuSysopLog(const std::string& pszMsg);
-
-/**
- * Executes a menu command ```script``` using the menudata for the context of
- * the MENU, or nullptr if not invoked from an actual menu.
- */
-void PrintMenuCommands(const std::string& arg);
 
 }  // namespace
 

@@ -25,8 +25,41 @@
 #include "sdk/uuid_cereal.h"
 #include "sdk/menus/menu.h"
 
-namespace wwiv::sdk::menus {
+namespace cereal {
+using namespace wwiv::sdk::menus;
 
+template <class Archive>
+std::string save_minimal(Archive const&, const menu_numflag_t& t) {
+  return to_enum_string<menu_numflag_t>(t, {"none", "subs", "dirs"});
+}
+template <class Archive>
+void load_minimal(Archive const&, menu_numflag_t& t, const std::string& s) {
+  t = from_enum_string<menu_numflag_t>(s, {"none", "subs", "dirs"});
+}
+
+
+template <class Archive>
+std::string save_minimal(Archive const&, const menu_help_display_t& t) {
+  return to_enum_string<menu_help_display_t>(t, {"always", "never", "on_entrance"});
+}
+template <class Archive>
+void load_minimal(Archive const&, menu_help_display_t& t, const std::string& s) {
+  t = from_enum_string<menu_help_display_t>(s, {"always", "never", "on_entrance"});
+}
+
+
+template <class Archive>
+std::string save_minimal(Archive const&, const menu_logtype_t& t) {
+  return to_enum_string<menu_logtype_t>(t, {"key", "command", "description", "none"});
+}
+template <class Archive>
+void load_minimal(Archive const&, menu_logtype_t& t, const std::string& s) {
+  t = from_enum_string<menu_logtype_t>(s, {"key", "command", "description", "none"});
+}
+
+}
+
+namespace wwiv::sdk::menus {
 
 template <class Archive>
 void serialize (Archive& ar, menu_action_56_t& d) {

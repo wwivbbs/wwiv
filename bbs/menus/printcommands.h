@@ -16,34 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_MENU_H
-#define INCLUDED_MENU_H
+#ifndef INCLUDED_MENUS_PRINTCOMMANDS_H
+#define INCLUDED_MENUS_PRINTCOMMANDS_H
 
-#include "core/stl.h"
-#include "core/textfile.h"
-#include <map>
+#include <filesystem>
 #include <string>
 
-namespace wwiv::menus {
+namespace wwiv::bbs::menus {
 
-
-class MenuDescriptions {
-public:
-  MenuDescriptions(const std::filesystem::path& menupath);
-  ~MenuDescriptions();
-  std::string description(const std::string& name) const;
-  bool set_description(const std::string& name, const std::string& description);
-
-private:
-  const std::filesystem::path menupath_;
-  std::map<std::string, std::string, wwiv::stl::ci_less> descriptions_;
-};
-
-// Functions used b bbs.cpp and defaults.cpp
-void ConfigUserMenuSet();
-
-// Functions used by menuedit and menu
-void MenuSysopLog(const std::string& pszMsg);
+/**
+ * Writes the menu commands to standard out.
+ *
+ */
+void PrintMenuCommands(const std::string& arg);
 
 }  // namespace
 

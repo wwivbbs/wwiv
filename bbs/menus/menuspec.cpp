@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/menuspec.h"
+#include "bbs/menus/menuspec.h"
 
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
@@ -25,7 +25,7 @@
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/instmsg.h"
-#include "bbs/menusupp.h"
+#include "bbs/menus/menusupp.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
@@ -48,9 +48,10 @@
 #include "sdk/files/files.h"
 #include <string>
 
+namespace wwiv::bbs::menus {
+
 using std::string;
 using namespace wwiv::core;
-using namespace wwiv::menus;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -61,6 +62,14 @@ using namespace wwiv::strings;
 /* Functions that don't have any direct WWIV function go in here           */
 /* ie, functions to help emulate other BBS's.                             */
 /* ---------------------------------------------------------------------- */
+
+// ToDO(rushfan): Move this to some place like menu_utils.cpp/h
+static void MenuSysopLog(const string& msg) {
+  const string log_message = StrCat("*MENU* : ", msg);
+  sysoplog() << log_message;
+  bout << log_message << wwiv::endl;
+}
+
 
 static int FindDN(const std::string& dl_fn) {
   for (auto i = 0; i < a()->dirs().size(); i++) {
@@ -307,4 +316,6 @@ void DisableConf() {
 void SetNewScanMsg() {
   sysoplog() << "Select Subs";
   config_qscan();
+}
+
 }

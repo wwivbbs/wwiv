@@ -59,13 +59,11 @@ struct MenuItem {
 
 std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
 
-// In menuinterpretcommand.cpp
 /**
- * Executes a menu command ```script``` using the menudata for the context of
+ * Executes a menu command ```script``` using the menu data for the context of
  * the MENU, or nullptr if not invoked from an actual menu.
  */
 std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const std::string& cmd, const std::string& data);
-void PrintMenuCommands(const std::string& arg);
 
 }  // namespace
 

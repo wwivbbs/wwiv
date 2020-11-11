@@ -15,8 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_MENUSUPP_H__
-#define __INCLUDED_MENUSUPP_H__
+#ifndef INCLUDED_BBS_MENUS_MENUSUPP_H
+#define INCLUDED_BBS_MENUS_MENUSUPP_H
+
+namespace wwiv::bbs::menus {
 
 void UnQScan();
 void DirList();
@@ -120,4 +122,7 @@ void LogOffCmd();
 void SetSubNumber(const char *pszSubKeys);
 void SetDirNumber(const char *pszDirectoryKeys);
 
-#endif // __INCLUDED_MENUSUPP_H__
+
+}
+
+#endif

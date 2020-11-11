@@ -27,43 +27,42 @@
 #include <unistd.h>
 #endif
 
+#include "read_message.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
-#include "common/pause.h"
 #include "bbs/save_qscan.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/pause.h"
+#include "core/clock.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/wwivport.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
-#include "sdk/ansi/makeansi.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/qscan.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include "sdk/ansi/makeansi.h"
 #include <memory>
 #include <string>
-
-
-#include "core/clock.h"
-#include "read_message.h"
-#include "sdk/qscan.h"
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 

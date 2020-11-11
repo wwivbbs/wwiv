@@ -16,11 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/menusupp.h"
+#include "bbs/menus/menusupp.h"
 
 #include "bbs/attach.h"
 #include "bbs/automsg.h"
-#include "bbs/basic/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -40,10 +39,8 @@
 #include "bbs/finduser.h"
 #include "bbs/gfileedit.h"
 #include "bbs/gfiles.h"
-#include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
 #include "bbs/listplus.h"
-#include "bbs/oldmenu.h"
 #include "bbs/misccmd.h"
 #include "bbs/msgbase1.h"
 #include "bbs/multinst.h"
@@ -64,11 +61,11 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
+#include "bbs/basic/basic.h"
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "common/printfile.h"
 #include "common/quote.h"
 #include "common/workspace.h"
 #include "core/os.h"
@@ -79,10 +76,10 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
-#include "sdk/files/dirs.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/dirs.h"
 #include <memory>
 #include <string>
 
@@ -90,10 +87,11 @@ using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
-using namespace wwiv::menus;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
+
+namespace wwiv::bbs::menus {
 
 void UnQScan() {
   bout.nl();
@@ -1007,4 +1005,7 @@ void LogOffCmd() {
   const auto cmd = stuff_in(a()->logoff_cmd, create_chain_file(), "", "", "", "");
   ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGOFF));
   bout.nl(2);
+}
+
+
 }

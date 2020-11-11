@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/oldmenu.h"
+#include "bbs/menus/config_menus.h"
 
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
@@ -31,9 +31,10 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
-#include "menus/mainmenu.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/menus/menu.h"
+
 #include <memory>
 #include <string>
 
@@ -44,7 +45,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv::menus {
+namespace wwiv::bbs::menus {
 
 static std::filesystem::path GetMenuDirectory() {
   return FilePath(a()->sess().dirs().language_directory(), "menus");
@@ -59,44 +60,10 @@ static bool ValidateMenuSet(const std::string& menu_set) {
   return File::Exists(FilePath(GetMenuDirectory(menu_set), "main.mnu.json"));
 }
 
-static bool CheckMenuPassword(const string& original_password) {
-  const string expected_password =
-      (original_password == "*SYSTEM") ? a()->config()->system_password() : original_password;
-  bout.nl();
-  const auto actual_password = bin.input_password("|#2SY: ", 20);
-  return actual_password == expected_password;
-}
-
-
-static void LogUserFunction(int logging, const string& command,
-                            const menu_rec_430_t* pMenu /* Nullable */) {
-  if (pMenu == nullptr) {
-    sysopchar(command);
-    return;
-  }
-
-  switch (logging) {
-  case MENU_LOGTYPE_KEY:
-    sysopchar(command);
-    break;
-  case MENU_LOGTYPE_COMMAND:
-    sysoplog() << pMenu->szExecute;
-    break;
-  case MENU_LOGTYPE_DESC:
-    sysoplog() << (pMenu->szMenuText[0] ? pMenu->szMenuText : pMenu->szExecute);
-    break;
-  case MENU_LOGTYPE_NONE:
-  default:
-    break;
-  }
-}
-
-
-
 static std::map<int, std::string> ListMenuDirs() {
   std::map<int, std::string> result;
   const auto menu_directory = GetMenuDirectory();
-  wwiv::menus::MenuDescriptions descriptions(menu_directory);
+  MenuDescriptions descriptions(menu_directory);
 
   bout.nl();
   bout << "|#1Available Menus Sets" << wwiv::endl

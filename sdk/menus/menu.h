@@ -25,9 +25,6 @@
 #include <string>
 #include <vector>
 
-#define MENU
-constexpr uint16_t MENU_VERSION = 0x0100;
-
 constexpr uint8_t MENU_FLAG_DELETED = 0x01;
 constexpr uint8_t MENU_FLAG_MAINMENU = 0x02;
 
@@ -44,9 +41,6 @@ constexpr uint8_t MENU_LOGTYPE_LAST = 4;
 constexpr uint8_t MENU_HELP_DONTFORCE = 0;
 constexpr uint8_t MENU_HELP_FORCE = 1;
 constexpr uint8_t MENU_HELP_ONENTRANCE = 2;
-
-constexpr uint16_t MENU_HIDE_REGULAR = 2;
-constexpr uint16_t MENU_HIDE_BOTH = 3;
 
 constexpr int MENU_MAX_KEYS = 10;
 
@@ -126,7 +120,6 @@ public:
   menu_header_430_t header{};
   std::vector<menu_rec_430_t> recs;
 
-  
   const std::filesystem::path menu_dir_;
   const std::string menu_set_;
   const std::string menu_name_;
@@ -134,6 +127,15 @@ public:
 };
 
 static_assert(sizeof(menu_rec_430_t) == sizeof(menu_header_430_t), "sizeof(menu_rec_430_t) == sizeof(menu_header_430_t)");
+
+// What does a number key do in this menu.
+enum class menu_numflag_t { none, subs, dirs };
+
+// What to log for this command.
+enum class menu_logtype_t { key, command, description, none };
+
+// When is the menu displayed.
+enum class menu_help_display_t { always, never, on_entrance };
 
 struct menu_action_56_t {
   // MenuCommand to execute
@@ -165,11 +167,11 @@ struct menu_item_56_t {
 
 struct menu_56_t {
    /* What does a number do?  Set sub#, Set dir#, nothing? */
-  int num_action;
+  menu_numflag_t num_action;
    /* Types of logging, Key, None, command, desc */
-  int logging_action;
+  menu_logtype_t logging_action;
   /* force, display always, display on entrance only */
-  int help_type;
+  menu_help_display_t help_type;
 
   // Colors
   int color_title;
@@ -210,7 +212,17 @@ public:
   bool initialized_{false};
 };
 
-std::optional<Menu56> Create56MenuFrom43(const Menu430& menu430);
+std::optional<Menu56> Create56MenuFrom43(const Menu430& m4);
+
+// What does a number key do in this menu.
+menu_numflag_t to_menu_numflag_t(int n);
+
+// What to log for this command.
+menu_logtype_t to_menu_logtype(int n);
+
+// Converts help int to menu_help_display_t
+menu_help_display_t to_menu_help_display(int n);
+
 
 } 
 #endif

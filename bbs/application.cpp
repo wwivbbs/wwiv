@@ -30,7 +30,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/interpret.h"
 #include "bbs/lilo.h"
-#include "bbs/oldmenu.h"
 #include "bbs/netsup.h"
 #include "bbs/shortmsg.h"
 #include "bbs/ssh.h"
@@ -43,7 +42,8 @@
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/basic/basic.h"
-#include "core/eventbus.h"
+#include "bbs/menus/mainmenu.h"
+#include "bbs/menus/printcommands.h"
 #include "common/datetime.h"
 #include "common/exceptions.h"
 #include "common/input.h"
@@ -52,6 +52,7 @@
 #include "common/remote_io.h"
 #include "common/workspace.h"
 #include "core/command_line.h"
+#include "core/eventbus.h"
 #include "core/os.h"
 #include "core/strings-ng.h"
 #include "core/strings.h"
@@ -67,15 +68,14 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
-#include "bbs/menus/mainmenu.h"
 #include "sdk/chains.h"
-#include "sdk/files/files.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/files.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -88,9 +88,9 @@
 #include <crtdbg.h>
 // Needed for isatty
 // ReSharper disable once CppUnusedIncludeDirective
-#include <io.h>
 #include "common/remote_socket_io.h"
 #include "local_io/local_io_win32.h"
+#include <io.h>
 #else
 // ReSharper disable once CppUnusedIncludeDirective
 #include <unistd.h>

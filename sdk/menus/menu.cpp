@@ -126,8 +126,9 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
 
   auto& h = m5.menu;
   const auto& oh = m4.header;
-  h.logging_action = oh.nLogging;
-  h.help_type = oh.nForceHelp;
+  h.logging_action = to_menu_logtype(oh.nLogging);
+  h.num_action = to_menu_numflag_t(oh.nums);
+  h.help_type = to_menu_help_display(oh.nForceHelp);
 
   h.color_title = oh.nTitleColor;
   h.color_item_key = oh.nItemTextHLColor;
@@ -172,11 +173,46 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
     h.items.emplace_back(i);
   }
 
-  h.num_action = oh.nums;
-
-
   m5.set_initialized(true);
   return {m5};
 }
+
+// What does a number key do in this menu.
+menu_numflag_t to_menu_numflag_t(int n) {
+  switch (n) {
+  case MENU_NUMFLAG_NOTHING:
+    return menu_numflag_t::none;
+  case MENU_NUMFLAG_DIRNUMBER:
+    return menu_numflag_t::dirs;
+  case MENU_NUMFLAG_SUBNUMBER:
+    return menu_numflag_t::subs;
+  }
+  return menu_numflag_t::none;
+}
+
+// What to log for this command.
+menu_logtype_t to_menu_logtype(int n) {
+  switch (n) { case MENU_LOGTYPE_NONE:
+    return menu_logtype_t::none;
+  case MENU_LOGTYPE_COMMAND:
+    return menu_logtype_t::command;
+  case MENU_LOGTYPE_DESC:
+    return menu_logtype_t::description;
+  case MENU_LOGTYPE_KEY:
+    return menu_logtype_t::key;
+  }
+  return menu_logtype_t::none;
+}
+
+menu_help_display_t to_menu_help_display(int n) {
+  if (n == MENU_HELP_DONTFORCE) {
+    return menu_help_display_t::never;
+  }
+  if (n == MENU_HELP_ONENTRANCE) {
+    return menu_help_display_t::on_entrance;
+  }
+  return menu_help_display_t::always;
+}
+
 
 }

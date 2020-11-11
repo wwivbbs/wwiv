@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "bbs/automsg.h"
-#include "bbs/basic/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -32,7 +31,6 @@
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
-#include "bbs/menusupp.h"
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
 #include "bbs/readmail.h"
@@ -42,11 +40,11 @@
 #include "bbs/trashcan.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
-#include "common/com.h"
+#include "bbs/basic/basic.h"
+#include "bbs/menus/menusupp.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
-#include "common/pause.h"
 #include "common/remote_io.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -80,8 +78,6 @@ using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
-
-#define SECS_PER_DAY 86400L
 
 static char g_szLastLoginDate[9];
 
@@ -881,7 +877,7 @@ void logon() {
   if (a()->IsNewScanAtLogin()) {
     bout << "\r\n|#5Scan All Message Areas For New Messages? ";
     if (bin.yesno()) {
-      NewMsgsAllConfs();
+      wwiv::bbs::menus::NewMsgsAllConfs();
     }
   }
 

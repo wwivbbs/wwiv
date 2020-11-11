@@ -21,8 +21,8 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/hop.h"
-#include "bbs/menuspec.h"
-#include "bbs/menusupp.h"
+#include "bbs/menus/menuspec.h"
+#include "bbs/menus/menusupp.h"
 #include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
 #include "bbs/sublist.h"
@@ -30,6 +30,7 @@
 #include "bbs/sysopf.h"
 #include "bbs/xferovl1.h"
 #include "bbs/basic/basic.h"
+#include "bbs/menus/config_menus.h"
 #include "bbs/menus/mainmenu.h"
 #include "common/output.h"
 #include "core/stl.h"
@@ -52,7 +53,7 @@ using namespace wwiv::stl;
 namespace wwiv::bbs::menus {
 
 // Categories
-static const std::string MENU_CAT_MSGS = "Message";
+static constexpr char* MENU_CAT_MSGS = "Message";
 static const std::string MENU_CAT_EMAIL = "EMail";
 static const std::string MENU_CAT_FILE = "File";
 static const std::string MENU_CAT_BBSLIST = "BBSList";
@@ -73,7 +74,7 @@ std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const st
   if (cmd.empty()) {
     return std::nullopt;
   }
-  static auto functions = CreateCommandMap();
+  static auto functions = CreateCommandMap();  // NOLINT(clang-diagnostic-exit-time-destructors)
 
   if (contains(functions, cmd)) {
     MenuItemContext context(menudata, data);
@@ -231,7 +232,7 @@ Runs a WWIVbasic Script
   they want to use, etc...
 )",
                                           MENU_CAT_USER, [](MenuItemContext& context) {
-                                            wwiv::menus::ConfigUserMenuSet();
+                                            wwiv::bbs::menus::ConfigUserMenuSet();
                                             context.need_reload = true;
                                           }));
   m.emplace("DisplayHelp", MenuItem(R"( <filename>
@@ -731,72 +732,6 @@ Runs a WWIVbasic Script
     i.second.cmd_ = i.first;
   }
   return m;
-}
-
-void emit_menu(const std::string& cmd, const std::string& cat, const std::string& desc,
-               bool markdown, bool group_by_cat) {
-  const auto lines = SplitString(desc, "\n");
-  const auto c = group_by_cat || cat.empty() ? "" : StrCat(" [", cat, "]");
-  if (markdown) {
-    std::cout << "### ";
-  }
-  std::cout << cmd << c << std::endl;
-  for (const auto& d : lines) {
-    std::cout << "    " << StringTrim(d) << std::endl;
-  }
-  std::cout << std::endl << std::endl;
-}
-
-void emit_category_name(const std::string& cat, bool output_markdown) {
-  if (cat.empty()) {
-    return;
-  }
-
-  if (output_markdown) {
-    std::cout << "## ";
-  }
-  std::cout << "Category: " << StringTrim(cat) << std::endl;
-  std::cout << "***" << std::endl;
-  std::cout << std::endl;
-}
-
-void PrintMenuCommands(const std::string& arg) {
-  const auto category_group = arg.find('c') != std::string::npos;
-  const auto output_markdown = arg.find('m') != std::string::npos;
-
-  if (output_markdown) {
-    std::cout << R"(
-# WWIV Menu Commands
-***
-
-Here is the list of all WWIV Menu Commands available in the Menu Editor broken
-out by category.
-
-)";
-  }
-
-  auto raw_commands = CreateCommandMap();
-  auto& commands = raw_commands;
-  if (category_group) {
-    std::map<std::string, std::vector<MenuItem>> cat_commands;
-    for (const auto& c : raw_commands) {
-      cat_commands[c.second.category_].emplace_back(c.second);
-    }
-
-    for (const auto& c : cat_commands) {
-      emit_category_name(c.first, output_markdown);
-      for (const auto& m : c.second) {
-        emit_menu(m.cmd_, "", m.description_, output_markdown, true);
-      }
-    }
-    return;
-  }
-  for (const auto& c : commands) {
-    const auto cmd = c.first;
-    const auto cat = c.second.category_;
-    const auto desc = c.second.description_;
-    emit_menu(cmd, cat, desc, output_markdown, false);
-  }
 }
 
 }
