@@ -39,18 +39,21 @@
 #include "sdk/acs/expr.h"
 #include "sdk/files/dirs.h"
 // ReSharper disable once CppUnusedIncludeDirective
+#include "core/findfiles.h"
 #include "sdk/files/dirs_cereal.h"
+#include "sdk/menus/menu.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/convert_jsonfile.h"
 #include <cstring>
 #include <filesystem>
 
+using namespace wwiv::core;
+using namespace wwiv::sdk::files;
+using namespace wwiv::sdk::menus;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 using std::string;
 using std::vector;
-using namespace wwiv::core;
-using namespace wwiv::sdk;
-using namespace wwiv::sdk::files;
-using namespace wwiv::strings;
 
 struct user_config {
   char name[31]; // verify against a user
@@ -340,7 +343,7 @@ chain_t ConvertJsonFile<chain_55_t, chain_t>::ConvertType(const chain_55_t& oc) 
 
 static bool convert_to_v2(UIWindow* window, const std::string& datadir,
                           const std::string& config_filename) {
-  ShowBanner(window, "Updating to 5.2.2+ format...");
+  ShowBanner(window, "Updating to 5.2+ v2 format...");
 
   ConvertJsonFile<subboard_52_t, subboard_t> cs(datadir, SUBS_JSON, "subs", 0, 1);
   cs.Convert();
@@ -355,10 +358,69 @@ static bool convert_to_v2(UIWindow* window, const std::string& datadir,
   return update_config_revision_number(config_filename, 2);
 }
 
+static bool convert_menu(const std::string& menu_dir, const std::string& menu_set,
+                         const std::string& menu_name) {
+
+  const auto dir = FilePath(menu_dir, menu_set);
+  const auto fname = StrCat(menu_name, ".mnu.json");
+  const auto path = FilePath(dir, fname);
+  if (File::Exists(path)) {
+    LOG(INFO) << "Menu already exists in 5.6+ format: " << path.string();
+    return true;
+  }
+
+  const Menu430 m4(menu_dir, menu_set, menu_name);
+  if (m4.initialized()) {
+    if (auto om5 = Create56MenuFrom43(m4)) {
+      auto& m5 = om5.value();
+      if (m5.Save()) {
+        LOG(INFO) << "Converted menu: " << menu_set << File::pathSeparatorChar << menu_name
+                  << std::endl;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+static bool convert_to_v3(UIWindow* window, const std::string& config_filename) {
+  ShowBanner(window, "Updating to 5.2+ v3 format...");
+  LOG(INFO) << "Updating to 5.2+ v3 format...";
+  std::filesystem::path config_path{config_filename};
+
+  const Config config(config_path.parent_path().string());
+  if (!config.IsInitialized()) {
+    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
+    return false;
+  }
+
+  auto dirs = FindFiles(FilePath(config.menudir(), "*"), FindFiles::FindFilesType::directories);
+
+  for (const auto& d : dirs) {
+    const auto& menu_set = d.name;
+    const auto path = FilePath(config.menudir(), menu_set);
+    auto menus = FindFiles(FilePath(path, "*"), FindFiles::FindFilesType::files, FindFiles::WinNameType::long_name);
+    for (const auto& m : menus) {
+      auto lm = ToStringLowerCase(m.name);
+      if (ends_with(lm, ".mnu")) {
+        const auto name = m.name.substr(0, m.name.size() - 4 ); 
+        if (!convert_menu(config.menudir(), menu_set, name)) {
+          LOG(ERROR) << "Unable to convert 4.3 menu:" << menu_set << File::pathSeparatorChar
+                     << name << std::endl;
+        }
+      }
+    }
+  }
+
+  // Mark config.dat as upgraded.
+  return update_config_revision_number(config_filename, 3);
+}
+
+
 config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                              const std::string& config_filename,
                              const uint32_t config_revision_number) {
-  if (config_revision_number >= 2) {
+  if (config_revision_number >= 3) {
     return config_upgrade_state_t::already_latest;
   }
   // add others
@@ -366,7 +428,12 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
     convert_to_v1(window, datadir, config_filename);
   }
   if (config_revision_number < 2) {
+    // Versioned subs, chains, and dirs
     convert_to_v2(window, datadir, config_filename);
+  }
+  if (config_revision_number < 3) {
+    // menus in JSON format.
+    convert_to_v3(window, config_filename);
   }
   return config_upgrade_state_t::upgraded;
 }

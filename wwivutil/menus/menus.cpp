@@ -144,7 +144,6 @@ public:
 
     if (auto om5 = Create56MenuFrom43(m4)) {
       auto& m5 = om5.value();
-      //DisplayMenu(m5);
       return m5.Save() ? 0 : 1;
     }
     std::cout << "Failed to create 5.6 style menu from 4.3x style menu.";

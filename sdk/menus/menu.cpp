@@ -105,7 +105,6 @@ bool Menu56::Load() {
   const auto name = StrCat(menu_name_, ".mnu.json");
   JsonFile f(FilePath(dir, name), "menu", menu, 1);
   return f.Load();
-
 }
 
 bool Menu56::Save() {
@@ -143,6 +142,12 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
     h.acs = ae.get();
   }
   h.password = oh.szPassWord;
+  if (oh.szScript[0]) {
+    h.enter_actions.emplace_back(CreateActionFrom43Execute(oh.szScript));
+  }
+  if (oh.szExitScript[0]) {
+    h.exit_actions.emplace_back(CreateActionFrom43Execute(oh.szScript));
+  }
 
   // Add the items now.
   for (const auto& o : m4.recs) {
@@ -154,9 +159,14 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
     i.instance_message = o.szInstanceMessage;
 
     {
-      // TODO(rushfan): Add support for co-sysop, sysop, restrict into ACS.
+      // TODO(rushfan): restrict into ACS.
       acs::AcsExpr ae;
-      ae.min_sl(o.nMinSL).max_sl(o.iMaxSL).min_dsl(o.nMinDSL).max_dsl(o.iMaxDSL).ar_int(o.uAR).dar_int(o.uDAR);
+      ae.min_sl(o.nMinSL)
+          .max_sl(o.iMaxSL)
+          .min_dsl(o.nMinDSL)
+          .max_dsl(o.iMaxDSL)
+          .ar_int(o.uAR)
+          .dar_int(o.uDAR);
       ae.sysop(o.nSysop).cosysop(o.nCoSysop);
       i.acs = ae.get();
     }
@@ -164,12 +174,6 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
     i.password = o.szPassWord;
     i.actions.emplace_back(CreateActionFrom43Execute(o.szExecute));
 
-    if (oh.szScript[0]) {
-      h.enter_actions.emplace_back(CreateActionFrom43Execute(oh.szScript));
-    }
-    if (oh.szExitScript[0]) {
-      h.exit_actions.emplace_back(CreateActionFrom43Execute(oh.szScript));
-    }
     h.items.emplace_back(i);
   }
 
@@ -192,7 +196,8 @@ menu_numflag_t to_menu_numflag_t(int n) {
 
 // What to log for this command.
 menu_logtype_t to_menu_logtype(int n) {
-  switch (n) { case MENU_LOGTYPE_NONE:
+  switch (n) {
+  case MENU_LOGTYPE_NONE:
     return menu_logtype_t::none;
   case MENU_LOGTYPE_COMMAND:
     return menu_logtype_t::command;
@@ -214,5 +219,4 @@ menu_help_display_t to_menu_help_display(int n) {
   return menu_help_display_t::always;
 }
 
-
-}
+} // namespace wwiv::sdk::menus
