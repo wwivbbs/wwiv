@@ -48,33 +48,21 @@ static const char enter_to_edit[] = "[Press Enter to Edit]";
  * edit the items. It is intended that this function will invoke
  * a new EditItem dialog or ListBox for editing.
  */
-template <class T> class SubDialog final : public BaseEditItem {
+template <class T> class SubDialogFunction final : public SubDialog<T> {
 public:
-  SubDialog(const Config& c, int x, int y, T& t, std::function<void(const Config&, T&, CursesWindow*)> fn)
-    : BaseEditItem(x, y,  static_cast<int>(strlen(enter_to_edit) + 4)), c_(c), t_(t), fn_(std::move(fn)) {}
-  ~SubDialog() override = default;
+  SubDialogFunction(const Config& c, int x, int y, T& t, std::function<void(const Config&, T&, CursesWindow*)> fn)
+    : SubDialog(c, x, y, t), fn_(std::move(fn)) {}
+  ~SubDialogFunction() override = default;
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
-    window->GotoXY(x_, y_);
-    const auto ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      fn_(c_, t_, window);
-      window->RedrawWin();
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return EditlineResult::PREV;
-    } else {
-      return EditlineResult::NEXT;
-    }
-    return EditlineResult::NEXT;
+  void RunSubDialog(CursesWindow* window, T& t) override {
+      fn_(config(), t, window);
   }
 
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, enter_to_edit); }
+  std::string menu_label() const override {
+    return enter_to_edit;
+  }
 
 private:
-  const Config& c_;
-  T& t_;
   std::function<void(const Config&, T&, CursesWindow*)> fn_;
 };
 
@@ -158,7 +146,7 @@ static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindo
 
   y++;
   items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
-            new SubDialog<wwivd_blocking_t>(config, COL1_POSITION, y, b, blocked_country_subdialog));
+            new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, b, blocked_country_subdialog));
 
   y++;
   items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
@@ -396,12 +384,12 @@ void wwivd_ui(const Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
-            new SubDialog<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog))
+            new SubDialogFunction<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog))
       ->set_help_text("Create/Edit/Delete Matrix BBS settings.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
-            new SubDialog<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking))
+            new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking))
       ->set_help_text("IP Blocking Settings.");
   
   items.Run("wwivd Configuration");

@@ -19,12 +19,16 @@
 #ifndef INCLUDED_INPUT_H
 #define INCLUDED_INPUT_H
 
+#include "curses.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
+#include "local_io/keycodes.h"
+#include "sdk/config.h"
 #include <functional>
 #include <limits>
 #include <stdexcept>
@@ -757,5 +761,47 @@ private:
   std::unique_ptr<CursesWindow> window_;
   bool edit_mode_;
 };
+
+/** 
+ * EditItem that executes a std::function<T, CursesWindow*> to 
+ * edit the items. It is intended that this function will invoke
+ * a new EditItem dialog or ListBox for editing.
+ */
+template <class T> class SubDialog : public BaseEditItem {
+public:
+  SubDialog(const wwiv::sdk::Config& c, int x, int y, T& t)
+      : BaseEditItem(x, y, 25), c_(c), t_(t) {}
+  ~SubDialog() override = default;
+
+  virtual void RunSubDialog(CursesWindow* window, T& t) = 0;
+
+  EditlineResult Run(CursesWindow* window) override {
+    wwiv::core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    window->GotoXY(x_, y_);
+    const auto ch = window->GetChar();
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      RunSubDialog(window, t_);
+      window->RedrawWin();
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    } else {
+      return EditlineResult::NEXT;
+    }
+    return EditlineResult::NEXT;
+  }
+
+  void Display(CursesWindow* window) const override {
+    window->PutsXY(x_, y_, menu_label());
+  }
+
+protected:
+  [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
+
+  const wwiv::sdk::Config& c_;
+  T& t_;
+};
+
 
 #endif
