@@ -76,11 +76,11 @@ bool Menu430::Load() {
 menu_action_56_t CreateActionFrom43Execute(const std::string& exec) {
   menu_action_56_t a{};
   if (!contains(exec, ' ')) {
-    a.cmd = exec;
+    a.cmd = ToStringLowerCase(exec);
     return a;
   }
   const auto space = exec.find(' ');
-  a.cmd = exec.substr(0, space);
+  a.cmd = ToStringLowerCase(exec.substr(0, space));
   auto data = StringTrim(exec.substr(space + 1));
   if (data.size() > 2) {
     if (data.back() == ')') {

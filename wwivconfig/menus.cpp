@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "wwivconfig/menus.h"
 
-#include "core/datafile.h"
+#include "curses.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -26,14 +26,13 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "localui/curses_win.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "localui/curses_win.h"
+#include "local_io/keycodes.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
-#include <cstring>
 #include <filesystem>
-#include <iomanip>
 #include <memory>
 #include <string>
 #include <utility>
@@ -42,112 +41,203 @@
 using std::pair;
 using std::string;
 using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static void edit_menu_item(menu_rec_430_t& m) {
-  constexpr int LABEL_WIDTH = 12;
-  constexpr int PADDING = 2;
-  constexpr int COL1_LINE = PADDING;
-  constexpr int COL2_LINE = COL1_LINE + LABEL_WIDTH;
-  constexpr int COL3_LINE = COL2_LINE + PADDING + 16 + 6;
-  constexpr int COL4_LINE = COL3_LINE + LABEL_WIDTH;
-
-  static const vector<pair<uint8_t, string>> numbers_action = {
-    { MENU_NUMFLAG_NOTHING, "Nothing" },
-    { MENU_NUMFLAG_SUBNUMBER, "Set Sub Number" },
-    { MENU_NUMFLAG_DIRNUMBER, "Set Dir Number" }
+  static const std::vector<pair<wwiv::sdk::menus::menu_numflag_t, std::string>> numbers_action = {
+    { menus::menu_numflag_t::none, "Nothing" },
+    { menus::menu_numflag_t::subs, "Set Sub Number" },
+    { menus::menu_numflag_t::dirs, "Set Dir Number" }
   };
 
-  static const vector<pair<uint8_t, string>> logging_action = {
-    { MENU_LOGTYPE_NONE, "Nothing" },
-    { MENU_LOGTYPE_COMMAND, "Command" },
-    { MENU_LOGTYPE_KEY, "Key" },
-    { MENU_LOGTYPE_DESC, "Description" }
+  static const std::vector<pair<menus::menu_logtype_t, std::string>> logging_action = {
+    { menus::menu_logtype_t::none, "Nothing" },
+    { menus::menu_logtype_t::command, "Command" },
+    { menus::menu_logtype_t::key, "Key" },
+    { menus::menu_logtype_t::description, "Description"}
   };
-  static const vector<pair<uint8_t, string>> help_action = {
-    { MENU_HELP_DONTFORCE, "Never" },
-    { MENU_HELP_FORCE, "Always" },
-    { MENU_HELP_ONENTRANCE, "At Entrance" }
+  static const std::vector<pair<menus::menu_help_display_t, std::string>> help_action = {
+    { menus::menu_help_display_t::never, "Never" },
+    { menus::menu_help_display_t::always, "Always" },
+    { menus::menu_help_display_t::on_entrance, "On Entrance" }
   };
+
+static void edit_menu_action(menus::menu_action_56_t& a) {
+  constexpr auto LABEL_WIDTH = 6;
+  constexpr auto PADDING = 2;
+  constexpr auto COL1_LINE = PADDING;
+  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH;
 
   EditItems items{};
-  int y = 1;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Key:"),
-            new StringEditItem<char*>(COL2_LINE, y, 10, m.szKey, EditLineMode::UPPER_ONLY));
+  auto y = 1;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Cmd:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 40, a.cmd, EditLineMode::LOWER));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Command:"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szExecute, EditLineMode::ALL));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Data:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 70, a.data, EditLineMode::ALL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 70, a.acs, EditLineMode::ALL));
+
+  items.Run("Edit Action");
+}
+
+class ActionSubDialog final : public BaseEditItem {
+public:
+  ActionSubDialog(std::vector<menus::menu_action_56_t>& actions, int x, int y, std::string title)
+    : BaseEditItem(x, y, 1), actions_(actions), title_(std::move(title)) {}
+  ~ActionSubDialog() override = default;
+
+  void RunSubDialog(CursesWindow* window) {
+    auto done = false;
+    auto selected = -1;
+    do {
+      std::vector<ListBoxItem> items;
+      for (auto i = 0; i < wwiv::stl::ssize(actions_); i++) {
+        const auto& m = actions_.at(i);
+        auto s = fmt::format("{}:{}", m.cmd, m.data);
+        items.emplace_back(s, 0, i);
+      }
+      ListBox list(window, title_, items);
+
+      list.set_additional_hotkeys("DIM");
+      list.set_help_items({ 
+        { "Esc", "Exit" },{ "Enter", "Edit" },
+        { "D", "Delete" },{ "I", "Insert" },
+        { "M", "Move" }
+      });
+      list.set_selected(selected);
+      const auto result = list.Run();
+      selected = list.selected();
+
+      if (result.type == ListBoxResultType::SELECTION) {
+        edit_menu_action(actions_[items[result.selected].data()]);
+      }
+      else if (result.type == ListBoxResultType::NO_SELECTION) {
+        done = true;
+      }
+      else if (result.type == ListBoxResultType::HOTKEY) {
+        const auto key = static_cast<char>(result.hotkey);
+        const auto num = result.selected > 0 ? items[result.selected].data() : 0;
+        switch (key) {
+        case 'D': {
+          const auto& item = actions_[items[result.selected].data()];
+          if (dialog_yn(window, StrCat("Do you want to delete #", num, " [", item.cmd, "]"))) {
+            erase_at(actions_, num);
+          }
+        } break;
+        case 'I': {
+          if (num <= 0 || num >= ssize(items)) {
+            actions_.push_back({});
+          }
+          else {
+            menus::menu_action_56_t mr{};
+            insert_at(actions_, num, mr);
+          }
+        } break;
+        case 'M': {
+          auto maxnum = size_int(actions_) + 1;
+          auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
+          auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
+          if (new_pos >= 1) {
+            auto saved = actions_.at(num);
+            if (erase_at(actions_, num)) {
+              insert_at(actions_, new_pos, saved);
+            }
+          }
+        } break;
+        }
+      }
+    } while (!done);
+  }
+
+  EditlineResult Run(CursesWindow* window) override {
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    window->GotoXY(x_, y_);
+    const auto ch = window->GetChar();
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      try {
+        RunSubDialog(window);
+      }
+      catch (const std::exception& e) {
+        LOG(ERROR) << e.what();
+      }
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    }
+    return EditlineResult::NEXT;
+  }
+
+
+  void Display(CursesWindow* window) const override {
+    window->PutsXY(x_, y_, fmt::format("[Edit] {} actions.", actions_.size()));
+  }
+
+private:
+  std::vector<menus::menu_action_56_t>& actions_;
+  const std::string title_;
+};
+
+static void edit_menu_item(menus::menu_item_56_t& m) {
+  constexpr auto LABEL_WIDTH = 12;
+  constexpr auto PADDING = 2;
+  constexpr auto COL1_LINE = PADDING;
+  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH;
+
+  EditItems items{};
+  auto y = 1;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Key:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 10, m.item_key, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Text:"),
-            new StringEditItem<char*>(COL2_LINE, y, 40, m.szMenuText, EditLineMode::ALL));
+            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.item_text, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Help Text:"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szHelp, EditLineMode::ALL));
+            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.help_text, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Log:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, m.szSysopLog, EditLineMode::ALL));
+            new StringEditItem<std::string&>(COL2_LINE, y, 50, m.log_text, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Instance :"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szInstanceMessage, EditLineMode::ALL));
+            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.instance_message, EditLineMode::ALL));
   y++;
-  const auto col2y = y;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min SL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.nMinSL));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.acs, EditLineMode::ALL));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Max SL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.iMaxSL));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 20, m.password, EditLineMode::UPPER_ONLY));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min DSL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.nMinDSL));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Max DSL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.iMaxDSL));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "AR:"),
-            new ArEditItem(COL2_LINE, y, &m.uAR));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "DAR:"),
-            new ArEditItem(COL2_LINE, y, &m.uDAR));
-  y++;
-  
-  y = col2y;
-  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Restr:"),
-            new RestrictionsEditItem(COL4_LINE, y, &m.uRestrict));
-  y++;
-  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Sysop?"),
-            new BooleanEditItem(COL4_LINE, y, &m.nSysop));
-  y++;
-  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "CoSysop?"),
-            new BooleanEditItem(COL4_LINE, y, &m.nCoSysop));
-  y++;
-  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Password:"),
-            new StringEditItem<char*>(COL4_LINE, y, 20, m.szPassWord, EditLineMode::UPPER_ONLY));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Actions:"),
+            new ActionSubDialog(m.actions, COL2_LINE, y, "[Edit Actions]"));
 
-  items.Run(StrCat("Menu: ", m.szKey));
+
+  items.Run(StrCat("Menu: ", m.item_key));
 }
 
 class MenuItemsSubDialog : public BaseEditItem {
 public:
-  MenuItemsSubDialog(vector<menu_rec_430_t>& menu_items, int x, int y, const std::string& title)
-    : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {};
-  virtual ~MenuItemsSubDialog() = default;
+  MenuItemsSubDialog(std::vector<menus::menu_item_56_t>& menu_items, int x, int y, const std::string& title)
+    : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {}
+  ~MenuItemsSubDialog() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     try {
-      bool done = false;
-      int selected = -1;
+      auto done = false;
+      auto selected = -1;
       do {
-        vector<ListBoxItem> items;
+        std::vector<ListBoxItem> items;
         for (auto i = 1; i < wwiv::stl::ssize(menu_items_); i++) {
           const auto& m = menu_items_.at(i);
-          auto key = fmt::format("({})", m.szKey);
-          const auto s = fmt::format("#{} {:<12} '{}' [{}]", i, key, m.szMenuText, m.szExecute);
+          auto key = fmt::format("({})", m.item_key);
+          auto s = fmt::format("#{} {:<12} '{}'", i, key, m.item_text);
+          if (!m.actions.empty()) {
+            s += fmt::format(" [{}]", m.actions.front().cmd);
+          }
           items.emplace_back(s, 0, i);
         }
         ListBox list(window, title_, items);
@@ -174,8 +264,8 @@ public:
           switch (key) {
           case 'D': {
             const auto& item = menu_items_[items[result.selected].data()];
-            if (dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.szKey, "]"))) {
-              wwiv::stl::erase_at(menu_items_, num);
+            if (dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.item_key, "]"))) {
+              erase_at(menu_items_, num);
             }
           } break;
           case 'I': {
@@ -183,8 +273,8 @@ public:
               menu_items_.push_back({});
             }
             else {
-              menu_rec_430_t mr{};
-              wwiv::stl::insert_at(menu_items_, num, mr);
+              menus::menu_item_56_t mr{};
+              insert_at(menu_items_, num, mr);
             }
           } break;
           case 'M': {
@@ -193,8 +283,8 @@ public:
             auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
             if (new_pos >= 1) {
               auto saved = menu_items_.at(num);
-              if (wwiv::stl::erase_at(menu_items_, num)) {
-                wwiv::stl::insert_at(menu_items_, new_pos, saved);
+              if (erase_at(menu_items_, num)) {
+                insert_at(menu_items_, new_pos, saved);
               }
             }
           } break;
@@ -213,160 +303,113 @@ public:
   }
 
 private:
-  vector<menu_rec_430_t>& menu_items_;
+  std::vector<menus::menu_item_56_t>& menu_items_;
   const std::string title_;
-  int x_ = 0;
-  int y_ = 0;
+  int x_{0};
+  int y_{0};
 };
 
-static void edit_menu(const std::filesystem::path& menu_dir, const std::string& menu_name) {
-  vector<menu_rec_430_t> menu_items;
-  {
-    DataFile<menu_rec_430_t> menu_file(FilePath(menu_dir, menu_name));
-    if (menu_file) {
-      menu_file.ReadVector(menu_items);
-    }
-  }
-  if (menu_items.empty()) {
-    // Need to create a default menu header.
-    menu_items.push_back({});
+static void edit_menu(const std::filesystem::path& menu_dir, const std::string& menu_set, const std::string& menu_name) {
+  menus::Menu56 m(menu_dir, menu_set, menu_name);
+  if (!m.initialized()) {
+    m.set_initialized(true);
+    m.menu.title = "New WWIV Menu";
+    m.menu.color_item_braces = 9;
+    m.menu.color_item_key = 2;
+    m.menu.color_item_text = 1;
+    m.menu.color_title = 5;
   }
 
-  static const vector<pair<uint8_t, string>> numbers_action = {
-    { MENU_NUMFLAG_NOTHING, "Nothing" },
-    { MENU_NUMFLAG_SUBNUMBER, "Set Sub Number" },
-    { MENU_NUMFLAG_DIRNUMBER, "Set Dir Number" }
-  };
 
-  static const vector<pair<uint8_t, string>> logging_action = {
-    { MENU_LOGTYPE_NONE, "Nothing" },
-    { MENU_LOGTYPE_COMMAND, "Command" },
-    { MENU_LOGTYPE_KEY, "Key" },
-    { MENU_LOGTYPE_DESC, "Description"}
-  };
-  static const vector<pair<uint8_t, string>> help_action = {
-    { MENU_HELP_DONTFORCE, "Never" },
-    { MENU_HELP_FORCE, "Always" },
-    { MENU_HELP_ONENTRANCE, "At Entrance" }
-  };
-
-  auto item0 = menu_items.at(0);
-  menu_header_430_t h{};
-  memcpy(&h, &item0, sizeof(menu_rec_430_t));
-  if (!IsEquals(h.szSig, "WWIV430")) {
-    to_char_array(h.szSig, "WWIV430\x1a");
-  }
-  if (h.nVersion < 256) {
-    h.nVersion = 256;
-  }
-
-  constexpr int COL1_LINE = 2;
-  constexpr int LABEL1_WIDTH = 20;
-  constexpr int COL2_LINE = COL1_LINE + LABEL1_WIDTH + 1;
+  constexpr auto COL1_LINE = 2;
+  constexpr auto LABEL_WIDTH = 14;
+  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH + 1;
 
   EditItems items{};
   const string title = StrCat("Menu: ", menu_name);
   int y = 1;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Menu Description:"),
-            new StringEditItem<char*>(COL2_LINE, y, 20, h.szMenuTitle, EditLineMode::ALL));
+  auto& h = m.menu;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Description:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 55, h.title, EditLineMode::ALL));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Deleted:"),
-            new FlagEditItem<uint8_t>(COL2_LINE, y, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Number Keys:"),
+            new ToggleEditItem<menus::menu_numflag_t>(COL2_LINE, y, numbers_action, &h.num_action));
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL1_WIDTH, "Main Menu:"),
-            new FlagEditItem<uint8_t>(COL2_LINE, y, MENU_FLAG_MAINMENU, "Yes", "No", &h.nFlags));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Logging Type:"),
+            new ToggleEditItem<menus::menu_logtype_t>(COL2_LINE, y, logging_action, &h.logging_action));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "What do Numbers do:"),
-            new ToggleEditItem<uint8_t>(COL2_LINE, y, numbers_action, &h.nums));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Display Help:"),
+            new ToggleEditItem<menus::menu_help_display_t>(COL2_LINE, y, help_action, &h.help_type));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Logging Type:"),
-            new ToggleEditItem<uint8_t>(COL2_LINE, y, logging_action, &h.nLogging));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Enter Actions:"),
+            new ActionSubDialog(h.enter_actions, COL2_LINE, y, "[Edit Actions]"));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Force help to be on:"),
-            new ToggleEditItem<uint8_t>(COL2_LINE, y, help_action, &h.nForceHelp));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Exit Actions:"),
+            new ActionSubDialog(h.exit_actions, COL2_LINE, y, "[Edit Actions]"));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Enter Script:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, h.szScript, EditLineMode::ALL));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 55, h.acs, EditLineMode::ALL));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Exit Script:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, h.szExitScript, EditLineMode::ALL));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
+            new StringEditItem<std::string&>(COL2_LINE, y, 20, h.password, EditLineMode::UPPER_ONLY));
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Minimum SL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &h.nMinSL));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Minimum DSL:"),
-            new NumberEditItem<uint16_t>(COL2_LINE, y, &h.nMinDSL));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "AR:"),
-            new ArEditItem(COL2_LINE, y, &h.uAR));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "DAR:"),
-            new ArEditItem(COL2_LINE, y, &h.uDAR));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Restrictions:"),
-            new RestrictionsEditItem(COL2_LINE, y, &h.uRestrict));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Sysop?"),
-            new BooleanEditItem(COL2_LINE, y, &h.nSysop));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "CoSysop?"),
-            new BooleanEditItem(COL2_LINE, y, &h.nCoSysop));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Password:"),
-            new StringEditItem<char*>(COL2_LINE, y, 20, h.szPassWord, EditLineMode::UPPER_ONLY));
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Edit Menu Commands:"),
-            new MenuItemsSubDialog(menu_items, COL2_LINE, y, "[Edit Menu Items]"));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Items:"),
+            new MenuItemsSubDialog(h.items, COL2_LINE, y, "[Edit Menu Items]"));
 
   items.Run(title);
 
-  menu_rec_430_t r{};
-  memcpy(&r, &h, sizeof(menu_header_430_t));
-  menu_items[0] = r;
-
-  DataFile<menu_rec_430_t> menu_file(FilePath(menu_dir, menu_name),
-                              File::modeReadWrite | File::modeBinary | File::modeCreateFile |
-                              File::modeTruncate, File::shareDenyReadWrite);
-  if (menu_file) {
-    menu_file.WriteVector(menu_items);
+  if (!m.Save()) {
+    messagebox(curses_out->window(), "Error saving menu");
   }
-
 }
 
 static void select_menu(const std::string& menu_dir, const std::string& dir) {
   const auto full_dir_path = FilePath(menu_dir, dir);
-  auto menus = FindFiles(FilePath(full_dir_path, "*"), FindFiles::FindFilesType::files);
-  int selected = -1;
+  auto selected = -1;
   try {
-    bool done = false;
+    auto done{false};
     do {
-      vector<ListBoxItem> items;
+      auto menus = FindFiles(FilePath(full_dir_path, "*"), FindFiles::FindFilesType::files, FindFiles::WinNameType::long_name);
+      std::vector<ListBoxItem> items;
       for (const auto& m : menus) {
         auto lm = ToStringLowerCase(m.name);
-        if (!ends_with(lm, ".mnu")) {
+        if (!ends_with(lm, ".mnu.json")) {
           continue;
         }
-        items.emplace_back(m.name);
+        const auto name = m.name.substr(0, m.name.size() - 9 ); 
+        items.emplace_back(name);
       }
-      CursesWindow* window = curses_out->window();
+      auto* window = curses_out->window();
       auto title = StrCat("Select Menu from [", dir, "]");
       ListBox list(window, title, items);
       list.set_selected(selected);
       list.set_additional_hotkeys("DI");
       list.set_help_items({ { "Esc", "Exit" },{ "Enter", "Edit" },{ "D", "Delete" },{ "I", "Insert" } });
-      ListBoxResult result = list.Run();
+      auto result = list.Run();
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& menu_name = items[result.selected].text();
-        edit_menu(full_dir_path, menu_name);
+        edit_menu(menu_dir, dir, menu_name);
       }
       else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       }
       else if (result.type == ListBoxResultType::HOTKEY) {
-        messagebox(window, StrCat("HotKey: ", static_cast<char>(result.hotkey)));
+        if (result.hotkey == 'I') {
+          auto menu_name = dialog_input_string(window, "Enter Menu Name: ", 8);
+          if (!menu_name.empty()) {
+            edit_menu(menu_dir, dir, menu_name);
+          }
+        } else if (result.hotkey == 'D') {
+          const auto& menu_name = items[result.selected].text();
+          if (dialog_yn(window, StrCat("Do you want to delete menu: ", menu_name))) {
+            const auto fn = StrCat(menu_name, ".mnu.json");
+            const auto ofn = StrCat(fn, ".deleted");
+            File::Move(FilePath(full_dir_path, fn), 
+                       FilePath(full_dir_path, ofn));
+          }
+        }
       }
     } while (!done);
   }
@@ -378,25 +421,25 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
 
 void menus(const std::string& menu_dir) {
   try {
-    auto dirs = FindFiles(FilePath(menu_dir, "*"), FindFiles::FindFilesType::directories);
 
     bool done = false;
     int selected = -1;
     do {
-      vector<ListBoxItem> items;
+      auto dirs = FindFiles(FilePath(menu_dir, "*"), FindFiles::FindFilesType::directories);
+      std::vector<ListBoxItem> items;
       for (const auto& d : dirs) {
         if (starts_with(d.name, ".")) {
           continue;
         }
         items.emplace_back(d.name);
       }
-      CursesWindow* window = curses_out->window();
+      auto* window = curses_out->window();
       ListBox list(window, "Select Menu Set", items);
       list.set_selected(selected);
       list.selection_returns_hotkey(true);
-      list.set_additional_hotkeys("DI");
-      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-      auto result = list.Run();
+      list.set_additional_hotkeys("I");
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"I", "Insert"} });
+      const auto result = list.Run();
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
@@ -405,33 +448,13 @@ void menus(const std::string& menu_dir) {
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
-        /*        case 'D':
         switch (result.hotkey) {
-          if (networks.networks().size() > 1) {
-            const string prompt = fmt::format("Delete '{}'", networks.at(result.selected).name);
-            bool yn = dialog_yn(window, prompt);
-            if (yn) {
-              yn = dialog_yn(window, "Are you REALLY sure? ");
-              if (yn) {
-                del_net(config, networks, result.selected);
-              }
-            }
-          } else {
-            messagebox(window, "You must leave at least one network.");
-          }
-          break;
         case 'I':
-          const auto prompt = fmt::format("Insert before which (1-{}) ? ", networks.networks().size() + 1);
-          const auto net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
-          if (net_num > 0 && net_num <= networks.networks().size() + 1) {
-            if (dialog_yn(window, "Are you sure? ")) {
-              insert_net(config, networks, net_num - 1);
-            }
-          }
+          const auto sel_dir = dialog_input_string(window, "Enter Menu Set Name: ", 8);
+          File::mkdirs(FilePath(menu_dir, sel_dir));
           break;
         }
-        */
-        }
+      }
     } while (!done);
   } catch (const std::exception& e) {
     LOG(ERROR) << e.what();

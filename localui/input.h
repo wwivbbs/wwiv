@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
+enum class EditLineMode { NUM_ONLY, UPPER_ONLY, LOWER, ALL, SET };
 
 #ifndef EDITLINE_FILENAME_CASE
 #ifdef __unix__

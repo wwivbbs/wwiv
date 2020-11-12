@@ -132,9 +132,10 @@ void EditItems::Run(const std::string& title) {
   const auto size = static_cast<int>(items_.size());
   Display();
   for (;;) {
-    const auto* item = items_[cp];
+    auto* item = items_[cp];
     curses_out->footer()->ShowContextHelp(item->help_text());
-    const auto i1 = items_[cp]->Run(window_.get());
+    const auto i1 = item->Run(window_.get());
+    item->Display(window_.get());
     curses_out->footer()->SetDefaultFooter();
     if (i1 == EditlineResult::PREV) {
       if (--cp < 0) {
@@ -583,7 +584,9 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       if (raw_ch > 31) {
         auto ch = static_cast<char>(raw_ch & 0xff);
         if (status == EditLineMode::UPPER_ONLY) {
-          ch = to_upper_case<char>(ch);
+          ch = to_upper_case_char(ch);
+        } else if (status == EditLineMode::LOWER) {
+          ch = to_lower_case_char(ch);
         }
         if (status == EditLineMode::SET) {
           ch = to_upper_case<char>(ch);
@@ -609,7 +612,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
         // ReSharper disable CppRedundantParentheses
         if (pos < len &&
             (status == EditLineMode::ALL || status == EditLineMode::UPPER_ONLY ||
-             status == EditLineMode::SET ||
+             status == EditLineMode::SET || status == EditLineMode::LOWER ||
              (status == EditLineMode::NUM_ONLY &&
              ((ch >= '0' && ch <= '9') || ch == ' ' || (pos == 0 && ch == '-'))))) {
           if (bInsert) {
