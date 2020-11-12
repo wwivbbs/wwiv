@@ -124,7 +124,10 @@ public:
         const auto num = result.selected > 0 ? items[result.selected].data() : 0;
         switch (key) {
         case 'D': {
-          const auto& item = actions_[items[result.selected].data()];
+          if (actions_.empty()) {
+            break;
+          }
+          const auto& item = actions_[num];
           if (dialog_yn(window, StrCat("Do you want to delete #", num, " [", item.cmd, "]"))) {
             erase_at(actions_, num);
           }

@@ -1,0 +1,159 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "none",
+        "logging_action": "key",
+        "help_type": "on_entrance",
+        "color_title": 0,
+        "color_item_key": 0,
+        "color_item_text": 0,
+        "color_item_braces": 0,
+        "title": "Visting Sysops",
+        "acs": "",
+        "password": "",
+        "enter_actions": [
+            {
+                "cmd": "miniconf",
+                "data": "VISSYS",
+                "acs": ""
+            }
+        ],
+        "exit_actions": [
+            {
+                "cmd": "miniconf",
+                "data": "VISSYS",
+                "acs": ""
+            }
+        ],
+        "items": [
+            {
+                "item_key": "R",
+                "item_text": "Read Messages",
+                "help_text": "",
+                "log_text": "R",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "readmessages",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit back to Main",
+                "help_text": "",
+                "log_text": "Q",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "returnfrommenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Help",
+                "help_text": "",
+                "log_text": "?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "displayhelp",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "X",
+                "item_text": "Toggle Expert",
+                "help_text": "",
+                "log_text": "X",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "toggleexpert",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "L",
+                "item_text": "List Files",
+                "help_text": "",
+                "log_text": "L",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "dirlist~selectdir~listfiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "N",
+                "item_text": "List New Files",
+                "help_text": "",
+                "log_text": "N",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newfilescan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "1",
+                "item_text": "Download Asylum.ZIP",
+                "help_text": "Download ASYLUM.ZIP - Free download",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "dlfreefile",
+                        "data": "ASYLUMMO ASYLUM.ZIP",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "F",
+                "item_text": "Feedback to the Sysop",
+                "help_text": "Leave the sysop a note",
+                "log_text": "F",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "feedback",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}

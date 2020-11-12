@@ -1,0 +1,1603 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "subs",
+        "logging_action": "key",
+        "help_type": "never",
+        "color_title": 1,
+        "color_item_key": 12,
+        "color_item_text": 9,
+        "color_item_braces": 15,
+        "title": "WWIV Main Menu",
+        "acs": "",
+        "password": "",
+        "enter_actions": [],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": "AE",
+                "item_text": "",
+                "help_text": "Run AllowEdit",
+                "log_text": "AE",
+                "instance_message": "",
+                "acs": "user.sl >= 100 && user.dsl >= 100 && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "allowedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RI",
+                "item_text": "",
+                "help_text": "Read current WWIV.INI values into memory",
+                "log_text": "RI",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "readini",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "IE",
+                "item_text": "InstanceEdit",
+                "help_text": "Enter the instance editor",
+                "log_text": "IE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "instanceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "JE",
+                "item_text": "",
+                "help_text": "Edit the XFER/MSG conferences",
+                "log_text": "JE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "conferenceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "BE",
+                "item_text": "",
+                "help_text": "Edit the sub boards",
+                "log_text": "BE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "subedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CE",
+                "item_text": "",
+                "help_text": "Edit the setups to run external programs",
+                "log_text": "CE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "chainedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CHAT",
+                "item_text": "",
+                "help_text": "Toggle the ability for users to call the sysop to chat",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "toggleavailable",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CU",
+                "item_text": "",
+                "help_text": "Change into a different user",
+                "log_text": "-* Changed Users",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "changeuser",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CLOUT",
+                "item_text": "",
+                "help_text": "Force a network callout on another node",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "callout",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "DE",
+                "item_text": "",
+                "help_text": "Edit the transfers directories",
+                "log_text": "DE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "diredit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "AEDIT",
+                "item_text": "",
+                "help_text": "Edit the automessage",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "aedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "TEDIT",
+                "item_text": "TextEdit",
+                "help_text": "Edit a text file",
+                "log_text": "TEDIT",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "textedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "GE",
+                "item_text": "",
+                "help_text": "Edit the bulletin area",
+                "log_text": "GE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "bulletinedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "LOAD",
+                "item_text": "",
+                "help_text": "Load Text File Into Editor",
+                "log_text": "LOAD",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "loadtext",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "MAILR",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "-* Read All Mail",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "readallmail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RELOAD",
+                "item_text": "ReloadMenus",
+                "help_text": "Reload Current Menu Set",
+                "log_text": "RELOAD",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "reloadmenus",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RESETF",
+                "item_text": "",
+                "help_text": "Reset User List Files",
+                "log_text": "-* Reset Files",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "resetuserindex",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RESETQSCAN",
+                "item_text": "",
+                "help_text": "Set ALL Messages to UNread",
+                "log_text": "RESETQSCAN",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "resetqscan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "STAT",
+                "item_text": "",
+                "help_text": "Memory Status",
+                "log_text": "STAT",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "memstat",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "PACK",
+                "item_text": "",
+                "help_text": "Pack Message Bases",
+                "log_text": "PACK",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "packmsgs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "IVOTES",
+                "item_text": "VoteEdit",
+                "help_text": "Initialize Votes",
+                "log_text": "IVOTES",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "voteedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "LOG",
+                "item_text": "",
+                "help_text": "View Today's Log",
+                "log_text": "LOG",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "log",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "NLOG",
+                "item_text": "",
+                "help_text": "View NetLog",
+                "log_text": "NLOG",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "netlog",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "PENDING",
+                "item_text": "Pending NetData",
+                "help_text": "Display Pending Network Data",
+                "log_text": "PENDING",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "pending",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "STATUS",
+                "item_text": "",
+                "help_text": "Display Current System Status",
+                "log_text": "STATUS",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "status",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UEDIT",
+                "item_text": "",
+                "help_text": "Run User Editor",
+                "log_text": "UEDIT",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "useredit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UE",
+                "item_text": "",
+                "help_text": "Run User Editor",
+                "log_text": "UE",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "useredit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "VOTEPRINT",
+                "item_text": "",
+                "help_text": "View Voting Data",
+                "log_text": "VOTEPRINT",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "voteprint",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "YLOG",
+                "item_text": "",
+                "help_text": "View Yesterday's Log",
+                "log_text": "YLOG",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "ylog",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "ZLOG",
+                "item_text": "",
+                "help_text": "View Activity Log",
+                "log_text": "ZLOG",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "zlog",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UPLOAD",
+                "item_text": "Upload Post",
+                "help_text": "Upload Text File to Post in next Email or Message",
+                "log_text": "UPLOAD",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "uploadpost",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "QWK",
+                "item_text": "QWK Mail",
+                "help_text": "Run WWIVmail",
+                "log_text": "QWK",
+                "instance_message": "QWK Mail Processing",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "packers",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CLS",
+                "item_text": "Clear Screen",
+                "help_text": "Clear Screen",
+                "log_text": "CLS",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "cls",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "NET",
+                "item_text": "Net Listings",
+                "help_text": "View Network Listings",
+                "log_text": "NET",
+                "instance_message": "Net Listing",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "netlisting",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "WHO",
+                "item_text": "Who's On?",
+                "help_text": "Display Users on other Instances",
+                "log_text": "WHO",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "who",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "QSCAN",
+                "item_text": "Clear Qscan",
+                "help_text": "Set all Messages to READ",
+                "log_text": "QSCAN",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "clearqscan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "VER",
+                "item_text": "WWIV Version",
+                "help_text": "Display WWIV Version Info",
+                "log_text": "//VER",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "wwivver",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/A",
+                "item_text": "All New Msgs",
+                "help_text": "NewScan All Conferences",
+                "log_text": "/A",
+                "instance_message": "NewScan",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newmsgsallconfs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/E",
+                "item_text": "Multi Email",
+                "help_text": "Multi-Mail Menu",
+                "log_text": "/E",
+                "instance_message": "MultiEmail",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "multiemail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/N",
+                "item_text": "NewScan From Here",
+                "help_text": "NewScan Messages from Current Sub",
+                "log_text": "/N",
+                "instance_message": "NewScan",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newmsgscanfromhere",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/O",
+                "item_text": "Fast LogOff",
+                "help_text": "LogOff Fast",
+                "log_text": "/O",
+                "instance_message": "Logging Off",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "fastgoodbye",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/?",
+                "item_text": "Sysop Slash Menu",
+                "help_text": "Display Sysop Slash Commands List",
+                "log_text": "/?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "printfile",
+                        "data": "smain.msg",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/V",
+                "item_text": "",
+                "help_text": "Validate Pending Posts",
+                "log_text": "/V",
+                "instance_message": "",
+                "acs": "user.sysop == true && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "validateposts",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/C",
+                "item_text": "Chat Room",
+                "help_text": "Enter WWIV ChatRoom",
+                "log_text": "/C",
+                "instance_message": "ChatRoom",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "chatroom",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/Z",
+                "item_text": "DownLoad Posts",
+                "help_text": "DownLoad Posts in ASCII Format",
+                "log_text": "/Z",
+                "instance_message": "Downloading Posts",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downloadposts",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "+",
+                "item_text": "Up One Sub (+, ], >)",
+                "help_text": "Up One Sub",
+                "log_text": "+",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "upsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": ">",
+                "item_text": "",
+                "help_text": "",
+                "log_text": ">",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "upsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "]",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "]",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "upsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "-",
+                "item_text": "Down One Sub (-, [, <)",
+                "help_text": "Down One Sub",
+                "log_text": "-",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "<",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "<",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "[",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "[",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "}",
+                "item_text": "Up One Conference",
+                "help_text": "Up One Conference",
+                "log_text": "}",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "upsubconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "{",
+                "item_text": "Down One Conference",
+                "help_text": "Down One Conference",
+                "log_text": "{",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downsubconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "!",
+                "item_text": "",
+                "help_text": "Validate User",
+                "log_text": "!",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "validateuser",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": ".",
+                "item_text": "Doors",
+                "help_text": "Chains Menu",
+                "log_text": ".",
+                "instance_message": "Doors",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "doors",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "$",
+                "item_text": "Time Bank",
+                "help_text": "Enter Time Bank",
+                "log_text": "$",
+                "instance_message": "Time Bank",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "timebank",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "A",
+                "item_text": "AutoMessage",
+                "help_text": "Display AutoMessage",
+                "log_text": "A",
+                "instance_message": "AutoMessage",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "automessage",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "B",
+                "item_text": "BBS List",
+                "help_text": "Display BBS List",
+                "log_text": "B",
+                "instance_message": "BBS List",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "bbslist",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "C",
+                "item_text": "Request Chat",
+                "help_text": "Request CHat w/Sysop",
+                "log_text": "C",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "requestchat",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "D",
+                "item_text": "Defaults",
+                "help_text": "Set User Defaults",
+                "log_text": "D",
+                "instance_message": "Defaults",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "defaults",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "E",
+                "item_text": "Email",
+                "help_text": "Send Email",
+                "log_text": "E",
+                "instance_message": "Email",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "sendemail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "F",
+                "item_text": "FeedBack",
+                "help_text": "Send FeedBack to Sysop",
+                "log_text": "F",
+                "instance_message": "FeedBack",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "feedback",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "G",
+                "item_text": "Gfiles",
+                "help_text": "Display Gfiles",
+                "log_text": "G",
+                "instance_message": "Gfiles",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "bulletins",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "H",
+                "item_text": "Hop Subs",
+                "help_text": "Hop to Sub",
+                "log_text": "H",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "hopsub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "I",
+                "item_text": "System Info",
+                "help_text": "Display System Info",
+                "log_text": "I",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "systeminfo",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "J",
+                "item_text": "Jump Confs",
+                "help_text": "Jump to another Confernce",
+                "log_text": "J",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "jumpsubconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "K",
+                "item_text": "Kill Email",
+                "help_text": "Delete Email you Sent",
+                "log_text": "K",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "killemail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "L",
+                "item_text": "Last Few Callers",
+                "help_text": "Display Last Few Callers",
+                "log_text": "L",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "lastcallers",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "M",
+                "item_text": "Read Email",
+                "help_text": "Read your Email",
+                "log_text": "M",
+                "instance_message": "Reading Email",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "reademail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "N",
+                "item_text": "NewScan Messages",
+                "help_text": "NewScan Messages in Current Conference",
+                "log_text": "N",
+                "instance_message": "NewScanning Messages",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newmessagescan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "O",
+                "item_text": "Normal LogOff",
+                "help_text": "Normal LogOff",
+                "log_text": "O",
+                "instance_message": "Logging Off",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "goodbye",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "P",
+                "item_text": "Post Message",
+                "help_text": "Post Message in Current Sub",
+                "log_text": "P",
+                "instance_message": "Posting Message",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "postmessage",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "QuickScan Current Sub",
+                "help_text": "Quick NewScan of Current Sub",
+                "log_text": "Q",
+                "instance_message": "NewScanning Messages",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newmsgscancursub",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "R",
+                "item_text": "Remove Post",
+                "help_text": "Remove Message you Posted",
+                "log_text": "R",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "removepost",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "S",
+                "item_text": "Scan Titles",
+                "help_text": "Scan Titles in Current Sub",
+                "log_text": "S",
+                "instance_message": "Scanning Messages",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "titlescan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "T",
+                "item_text": "Transfer Section",
+                "help_text": "Go To Transfer Section",
+                "log_text": "T",
+                "instance_message": "Transfer Section",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "menu",
+                        "data": "xfer",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "U",
+                "item_text": "List Users",
+                "help_text": "List Users w/access to Current Sub",
+                "log_text": "U",
+                "instance_message": "User List",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "listusers",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "~",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "~",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "listusers",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "V",
+                "item_text": "Vote",
+                "help_text": "Enter Voting Booth",
+                "log_text": "V",
+                "instance_message": "Voting",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "vote",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "X",
+                "item_text": "Toggle Expert",
+                "help_text": "Toggle Expert Mode",
+                "log_text": "X",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "toggleexpert",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Y",
+                "item_text": "Your Info",
+                "help_text": "Display Your Info",
+                "log_text": "Y",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "yourinfo",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Z",
+                "item_text": "Zippy NewScan",
+                "help_text": "NewScan Message Base Only",
+                "log_text": "Z",
+                "instance_message": "NewScanning",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "expressscan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "*",
+                "item_text": "Sub List",
+                "help_text": "List Available Subs",
+                "log_text": "*",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "sublist",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RETURN",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "RETURN",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "returnfrommenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CM",
+                "item_text": "Configure Menus",
+                "help_text": "Allow you to change menus, menu type, and hotkey",
+                "log_text": "CM",
+                "instance_message": "Configuring Menus",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "configusermenuset",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Display Help",
+                "help_text": "Display Current Menu",
+                "log_text": "?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "displayhelp",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "EVENTEDIT",
+                "item_text": "",
+                "help_text": "Event Editor",
+                "log_text": "EVENTEDIT",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "eventedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "EE",
+                "item_text": "",
+                "help_text": "Event Editor",
+                "log_text": "EE",
+                "instance_message": "",
+                "acs": "user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "eventedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "APPLY",
+                "item_text": "Guest Apply",
+                "help_text": "Allows GUEST to Apply for an Account",
+                "log_text": "APPLY",
+                "instance_message": "New User Logon",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "guestapply",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/I",
+                "item_text": "Internet Email",
+                "help_text": "Send Internet Email",
+                "log_text": "/I",
+                "instance_message": "Sending Internet Email",
+                "acs": "user.sl >= 255",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "internetemail",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UNQSCAN",
+                "item_text": "UnQScan",
+                "help_text": "Mark all Messages as UNread",
+                "log_text": "UNQSCAN",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "unqscan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "ATTACH",
+                "item_text": "Attach File",
+                "help_text": "Attach File to Email",
+                "log_text": "ATTACH",
+                "instance_message": "Email",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "attachfile",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "VISIT",
+                "item_text": "Visiting Sysops",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sl >= 60 && user.dsl >= 60",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "menu",
+                        "data": "vissys",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "W",
+                "item_text": "Slash Menu",
+                "help_text": "Slash Menu",
+                "log_text": "W",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "printfile",
+                        "data": "mbslash.msg",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "SYSOP",
+                "item_text": "Sysop Menu",
+                "help_text": "Display Sysop Menu",
+                "log_text": "SYSOP",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "menu",
+                        "data": "sysop",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": ",",
+                "item_text": "ViewNetDataLog",
+                "help_text": "View Net Data Log Files",
+                "log_text": ",",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "viewnetdatalog",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "COLORS",
+                "item_text": "ColorConfig",
+                "help_text": "Configure Colors",
+                "log_text": "COLORS",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "colorconfig",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CONFEDIT",
+                "item_text": "ConferenceEdit",
+                "help_text": "Edit Conferences",
+                "log_text": "CONFEDIT",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "conferenceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "EDIT",
+                "item_text": "Edit",
+                "help_text": "Edit ANY Text File",
+                "log_text": "EDIT",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.dsl >= 255",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "edit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}

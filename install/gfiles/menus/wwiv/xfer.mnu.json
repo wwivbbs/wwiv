@@ -1,0 +1,963 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "dirs",
+        "logging_action": "key",
+        "help_type": "never",
+        "color_title": 0,
+        "color_item_key": 0,
+        "color_item_text": 0,
+        "color_item_braces": 0,
+        "title": "Transfer Menu",
+        "acs": "",
+        "password": "",
+        "enter_actions": [],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": ">",
+                "item_text": "Up One Dir (+, ], >)",
+                "help_text": "Up One Directory",
+                "log_text": ">",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "updir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit to Main Menu",
+                "help_text": "",
+                "log_text": "Q",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "returnfrommenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "<",
+                "item_text": "Down One Dir (-, [, <)",
+                "help_text": "Down One Directory",
+                "log_text": "<",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downdir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "-",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "-",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downdir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "[",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "[",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downdir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "+",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "+",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "updir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "]",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "]",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "updir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "*",
+                "item_text": "List Dirs",
+                "help_text": "List Directories",
+                "log_text": "*",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "dirlist",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "H",
+                "item_text": "Hop to New Dir",
+                "help_text": "Enter partial directory name to hop to",
+                "log_text": "H",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "hopdir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "}",
+                "item_text": "Up One Conference",
+                "help_text": "Up One Conference",
+                "log_text": "}",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "updirconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "{",
+                "item_text": "Down One Conference",
+                "help_text": "Down One Conference",
+                "log_text": "{",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downdirconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "J",
+                "item_text": "Select Conference",
+                "help_text": "Manually Select Conference",
+                "log_text": "J",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "jumpdirconf",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CHANGEDIR",
+                "item_text": "Change Dir",
+                "help_text": "Change Directory Select",
+                "log_text": "CHANGEDIR",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "dirlist",
+                        "data": "~ SelectDir",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/S",
+                "item_text": "Download File List",
+                "help_text": "Download ASCII File Listing",
+                "log_text": "/S",
+                "instance_message": "Downloading File List",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "downloadfilelist",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "F",
+                "item_text": "Search Files by Description",
+                "help_text": "Search Files by Description",
+                "log_text": "F",
+                "instance_message": "File Search",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "finddescription",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "L",
+                "item_text": "List Files",
+                "help_text": "Display Available Files in Current Dir",
+                "log_text": "L",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "listfiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "N",
+                "item_text": "New File Scan",
+                "help_text": "Scan for New Files",
+                "log_text": "N",
+                "instance_message": "Scanning Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newfilescan",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/A",
+                "item_text": "New Files (All Confs)",
+                "help_text": "List new files in all conferences",
+                "log_text": "/A",
+                "instance_message": "Scanning Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "newfilesallconfs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "S",
+                "item_text": "Search by FileName",
+                "help_text": "Seach for files by wildcard filenames",
+                "log_text": "S",
+                "instance_message": "Scanning Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "searchallfiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "B",
+                "item_text": "Batch Commands",
+                "help_text": "Batch Menu",
+                "log_text": "B",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "batchmenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "D",
+                "item_text": "Download Files",
+                "help_text": "Download Files",
+                "log_text": "D",
+                "instance_message": "Downloading Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "download",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "U",
+                "item_text": "Upload Files",
+                "help_text": "You send the BBS a file",
+                "log_text": "U",
+                "instance_message": "Uploading Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "upload",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Z",
+                "item_text": "Upload to Sysop",
+                "help_text": "Upload a file that no one but the sysop can see",
+                "log_text": "Z",
+                "instance_message": "Uploading Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "uploadtosysop",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "K",
+                "item_text": "Configure File List",
+                "help_text": "Config your listplus menus to show what you want",
+                "log_text": "K",
+                "instance_message": "Configuring File List",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "configfilelist",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "~",
+                "item_text": "List Users",
+                "help_text": "Lists users with access to the dir you are currently in",
+                "log_text": "~",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "listusersdl",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "P",
+                "item_text": "Set 'New Files' Date",
+                "help_text": "Sets the date the computer will use to determin new files",
+                "log_text": "P",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "setnewfilescandate",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Y",
+                "item_text": "Your DL Info",
+                "help_text": "Display Your Download Info",
+                "log_text": "Y",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "yourinfodl",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "A",
+                "item_text": "Archive Commands",
+                "help_text": "Enters the temporary archive menu",
+                "log_text": "A",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "archivemenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "E",
+                "item_text": "Extract Commands",
+                "help_text": "Extracts a file to the archive menu",
+                "log_text": "E",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "tempextract",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "V",
+                "item_text": "View Archive",
+                "help_text": "View an archived file",
+                "log_text": "V",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "viewarchive",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "T",
+                "item_text": "Xfer Defaults",
+                "help_text": "Set the defaults for the XFER section",
+                "log_text": "T",
+                "instance_message": "Xfer Defaults",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "xferdefaults",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "M",
+                "item_text": "Move Files",
+                "help_text": "",
+                "log_text": "M",
+                "instance_message": "",
+                "acs": "user.dsl >= 100 && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "movefiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": ".",
+                "item_text": "Print DSZ.LOG",
+                "help_text": "Displays Current DSZ.LOG File",
+                "log_text": ".",
+                "instance_message": "",
+                "acs": "user.dsl >= 100 && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "printdszlog",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "R",
+                "item_text": "Remove Files",
+                "help_text": "Remove Files from Database",
+                "log_text": "R",
+                "instance_message": "",
+                "acs": "user.dsl >= 100 && user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "removefiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "X",
+                "item_text": "Toggle Expert",
+                "help_text": "Turn novice menus on and off",
+                "log_text": "X",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "toggleexpert",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Help",
+                "help_text": "Display Menu",
+                "log_text": "?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "displayhelp",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/O",
+                "item_text": "Fast LogOff",
+                "help_text": "Logoff without showing logoff ansi or other good stuff",
+                "log_text": "/O",
+                "instance_message": "Logging Off",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "fastgoodbye",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "O",
+                "item_text": "Normal LogOff",
+                "help_text": "Normal termination from the BBS",
+                "log_text": "O",
+                "instance_message": "Logging Off",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "goodbye",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UPLOAD",
+                "item_text": "UL Files Current Dir",
+                "help_text": "Upload Local File in Current Dir",
+                "log_text": "//UPLOAD",
+                "instance_message": "Uploading ",
+                "acs": "user.sl >= 200 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "uploadcurdir",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UPLOADALL",
+                "item_text": "UL All Dirs",
+                "help_text": "Upload Local Files in ALL Dirs",
+                "log_text": "//UPLOADALL",
+                "instance_message": "Uploading",
+                "acs": "user.sl >= 255 && user.sysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "uploadalldirs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/T",
+                "item_text": "Test Archive",
+                "help_text": "Tests integrity of any archive",
+                "log_text": "/T",
+                "instance_message": "Testing Archive",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "testarc",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/V",
+                "item_text": "Virus Test",
+                "help_text": "Tests any file for Viruses",
+                "log_text": "/V",
+                "instance_message": "Virus Scanning Files",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "checkforvirus",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/D",
+                "item_text": "Delete BBS Ads",
+                "help_text": "Deletes BBS Ads from archive",
+                "log_text": "/D",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "deleteads",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/K",
+                "item_text": "Comment Archive",
+                "help_text": "Adds COMMENT.TXT to archive",
+                "log_text": "/K",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "addcomment",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "/?",
+                "item_text": "Slash Commands",
+                "help_text": "Display Extended Command Menu",
+                "log_text": "/?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "printfile",
+                        "data": "strans.msg",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "W",
+                "item_text": "Slash Menu",
+                "help_text": "Slash Menu",
+                "log_text": "W",
+                "instance_message": "Display Extended Command Menu",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "printfile",
+                        "data": "tslash.msg",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "DE",
+                "item_text": "DirEdit",
+                "help_text": "Dir Editor",
+                "log_text": "DE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "diredit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "JE",
+                "item_text": "Conf Edit",
+                "help_text": "Edit SUBS/XFER Conferences",
+                "log_text": "JE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "conferenceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "SYSOP",
+                "item_text": "Sysop Menu",
+                "help_text": "Sysop Functions",
+                "log_text": "SYSOP",
+                "instance_message": "",
+                "acs": "user.sl >= 255 && user.dsl >= 255",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "menu",
+                        "data": "sysop",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "CONFEDIT",
+                "item_text": "Conf Edit",
+                "help_text": "Edit SUBS/XFER Conferences",
+                "log_text": "CONFEDIT",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "conferenceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "SORT",
+                "item_text": "Sort Dirs",
+                "help_text": "Sort Xfer Dirs",
+                "log_text": "SORT",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "sortdirs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RSORT",
+                "item_text": "RSort Dirs",
+                "help_text": "Sort Xfer Dirs In Reverse Order",
+                "log_text": "RSORT",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "reversesortdirs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "READIDZ",
+                "item_text": "ReadIDZ",
+                "help_text": "Read in File_id.diz as description",
+                "log_text": "READIDZ",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "readidz",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "MOVE",
+                "item_text": "MoveFiles",
+                "help_text": "Move File(s) to other areas",
+                "log_text": "MOVE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "movefiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "AE",
+                "item_text": "AllowEdit",
+                "help_text": "Run AllowEdit",
+                "log_text": "AE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "allowedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "UPLOADFILE",
+                "item_text": "UploadFilesBBS",
+                "help_text": "Upload from FILES.BBS",
+                "log_text": "UPLOADFILE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "uploadfilesbbs",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "REN",
+                "item_text": "RenameFiles",
+                "help_text": "Change File Info",
+                "log_text": "REN",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "renamefiles",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "RN",
+                "item_text": "RemoveNotThere",
+                "help_text": "Remove N/A Files From List",
+                "log_text": "RN",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "removenotthere",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "C",
+                "item_text": "RequestChat",
+                "help_text": "Call SysOp to Chat",
+                "log_text": "C",
+                "instance_message": "Requesting Chat",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "requestchat",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}

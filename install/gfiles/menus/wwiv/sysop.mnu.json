@@ -1,0 +1,243 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "none",
+        "logging_action": "command",
+        "help_type": "never",
+        "color_title": 0,
+        "color_item_key": 0,
+        "color_item_text": 0,
+        "color_item_braces": 0,
+        "title": "",
+        "acs": "user.sysop == true",
+        "password": "",
+        "enter_actions": [],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": "A",
+                "item_text": "Allow Editor",
+                "help_text": "",
+                "log_text": "AE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "allowedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "B",
+                "item_text": "Sub Editor",
+                "help_text": "",
+                "log_text": "BE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "subedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "C",
+                "item_text": "Chain Editor",
+                "help_text": "",
+                "log_text": "CE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "chainedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "D",
+                "item_text": "Dir Editor",
+                "help_text": "",
+                "log_text": "DE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "diredit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "E",
+                "item_text": "Events Editor",
+                "help_text": "",
+                "log_text": "EE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "eventedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "G",
+                "item_text": "Bulletin Editor",
+                "help_text": "",
+                "log_text": "GE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "bulletinedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "I",
+                "item_text": "Instance Editor",
+                "help_text": "",
+                "log_text": "IE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "instanceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "J",
+                "item_text": "Conference Editor",
+                "help_text": "",
+                "log_text": "JE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "conferenceedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "M",
+                "item_text": "Menu Editor",
+                "help_text": "",
+                "log_text": "EM",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "editmenuset",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "T",
+                "item_text": "Text Editor",
+                "help_text": "",
+                "log_text": "TE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "textedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "V",
+                "item_text": "Voting Editor",
+                "help_text": "",
+                "log_text": "VE",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "voteedit",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "K",
+                "item_text": "Print Votes",
+                "help_text": "",
+                "log_text": "VP",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "voteprint",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit",
+                "help_text": "",
+                "log_text": "Q",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "returnfrommenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Display Help",
+                "help_text": "",
+                "log_text": "?",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "displayhelp",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
