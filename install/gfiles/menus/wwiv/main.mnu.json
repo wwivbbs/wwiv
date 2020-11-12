@@ -1540,7 +1540,7 @@
                 "help_text": "View Net Data Log Files",
                 "log_text": ",",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.cosysop == true",
                 "password": "",
                 "actions": [
                     {
