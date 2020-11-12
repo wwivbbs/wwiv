@@ -58,7 +58,7 @@ std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int node,
 
   std::ostringstream ss;
   const auto dt = DateTime::from_time_t(time);
-  ss << dt.to_string("%m/%d/%y %H:%M%S") << " ";
+  ss << dt.to_string("%m/%d/%y %H:%M:%S") << " ";
   if (side == NetworkSide::FROM) {
     ss << "Fr ";
   } else {
