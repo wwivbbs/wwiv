@@ -38,8 +38,7 @@ static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
 ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
                  std::vector<ListBoxItem>& items, ColorScheme* scheme)
-    : title_(title), items_(items), color_scheme_(scheme),
-      window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
+    : title_(title), items_(items), color_scheme_(scheme), window_top_min_(1), parent_(parent) {
   height_ = std::min<int>(size_int(items), max_y);
   const auto window_height = 2 + height_ + window_top_min_ - 1;
   auto longest_line = std::max<int>(2, size_int(title) + 4);
@@ -51,14 +50,14 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
   }
   width_ = std::min<int>(max_x, longest_line);
   const auto window_width = 4 + width_;
-  const auto maxx = parent->GetMaxX();
-  const auto maxy = parent->GetMaxY();
+  const auto maxx = curses_out->window()->GetMaxX();
+  const auto maxy = curses_out->window()->GetMaxY();
   const auto begin_x = (maxx - window_width) / 2;
   const auto begin_y = (maxy - window_height) / 2;
 
-  CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
+  CHECK(curses_out->window()->IsGUI()) << "ListBox needs a GUI.";
 
-  window_.reset(new CursesWindow(dynamic_cast<CursesWindow*>(parent), curses_out->color_scheme(),
+  window_.reset(new CursesWindow(curses_out->window(), curses_out->color_scheme(),
                                  window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
@@ -71,9 +70,11 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
 
 ListBox::ListBox(UIWindow* parent, const string& title,
                  std::vector<ListBoxItem>& items)
-    : ListBox(parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
-              std::min<int>(std::max<int>(size_int(items), MINIMUM_LISTBOX_HEIGHT),
-                            static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
+    : ListBox(parent, title,
+              static_cast<int>(floor(curses_out->window()->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
+              std::min<int>(
+                  std::max<int>(size_int(items), MINIMUM_LISTBOX_HEIGHT),
+                  static_cast<int>(floor(curses_out->window()->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
               items, curses_out->color_scheme()) {}
 
 void ListBox::DrawAllItems() {

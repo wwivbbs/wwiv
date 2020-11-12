@@ -243,7 +243,7 @@ public:
           }
           items.emplace_back(s, 0, i);
         }
-        ListBox list(window, title_, items);
+        ListBox list(curses_out->window(), title_, items);
 
         list.set_additional_hotkeys("DIM");
         list.set_help_items({ 
@@ -253,6 +253,7 @@ public:
         });
         list.set_selected(selected);
         auto result = list.Run();
+        window->RedrawWin();
         selected = list.selected();
 
         if (result.type == ListBoxResultType::SELECTION) {

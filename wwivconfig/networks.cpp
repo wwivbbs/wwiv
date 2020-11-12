@@ -396,9 +396,9 @@ public:
     ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
     curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
-    int ch = window->GetChar();
+    auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      wwiv::sdk::fido::FidoCallout callout(config_, d_);
+      FidoCallout callout(config_, d_);
       if (!callout.IsInitialized()) {
         messagebox(window, "Unable to initialize fido_callout.json.");
         return EditlineResult::NEXT;
@@ -453,11 +453,11 @@ public:
       callout.Save();
 
       return EditlineResult::NEXT;
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return EditlineResult::PREV;
-    } else {
-      return EditlineResult::NEXT;
     }
+    if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    }
+    return EditlineResult::NEXT;
   }
 
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }

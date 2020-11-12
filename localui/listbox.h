@@ -16,12 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_LISTBOX_H__
-#define __INCLUDED_LOCALUI_LISTBOX_H__
+#ifndef INCLUDED_LOCALUI_LISTBOX_H
+#define INCLUDED_LOCALUI_LISTBOX_H
 
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -35,13 +34,13 @@ class ColorScheme;
 
 class ListBoxItem {
 public:
-  ListBoxItem(const std::string& text, int hotkey = 0, int data = 0)
-      : text_(text), hotkey_(hotkey), data_(data) {}
+  ListBoxItem(std::string text, int hotkey = 0, int data = 0)
+      : text_(std::move(text)), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() = default;
 
-  const std::string& text() const noexcept { return text_; }
-  int hotkey() const noexcept { return hotkey_; }
-  int data() const noexcept { return data_; }
+  [[nodiscard]] const std::string& text() const noexcept { return text_; }
+  [[nodiscard]] int hotkey() const noexcept { return hotkey_; }
+  [[nodiscard]] int data() const noexcept { return data_; }
 
  private:
   std::string text_;
@@ -67,13 +66,14 @@ public:
   // Execute the listbox returning the index of the selected item.
   ListBoxResult Run() {
     this->DisplayFooter();
-    ListBoxResult result = RunDialog();
+    const auto result = RunDialog();
     curses_out->footer()->SetDefaultFooter();
+    parent_->RedrawWin();
     return result;
   }
 
   // Returns the index of the selected item.
-  int selected() const noexcept { return selected_; }
+  [[nodiscard]] int selected() const noexcept { return selected_; }
   void set_selected(int s) noexcept { selected_ = s; }
 
   // List of additionally allowed hotkeys.
@@ -83,7 +83,7 @@ public:
     selection_returns_hotkey_ = selection_returns_hotkey;
   }
   // Sets the extra help items.
-  void set_help_items(const std::vector<HelpItem> items) { help_items_ = items; }
+  void set_help_items(const std::vector<HelpItem>& items) { help_items_ = items; }
 
 private:
   ListBox(UIWindow* parent, const std::string& title, int max_x, int max_y,
@@ -104,6 +104,7 @@ private:
   const int window_top_min_;
   std::string hotkeys_;
   bool selection_returns_hotkey_{false};
+  UIWindow* parent_{nullptr};
 };
 
-#endif // __INCLUDED_PLATFORM_LISTBOX_H__
+#endif
