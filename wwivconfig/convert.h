@@ -31,4 +31,4 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
                                                const std::string& config_filename,
                                                uint32_t config_revision_number);
 
-#endif // INCLUDED_WWIVCONFIG_CONVERT_H
+#endif

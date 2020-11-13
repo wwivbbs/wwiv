@@ -28,7 +28,6 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
 #include <cstdint>
 #include <cstring>
 #include <memory>

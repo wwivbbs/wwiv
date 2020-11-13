@@ -22,7 +22,6 @@
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "wwivconfig/convert.h"
-
 #include <filesystem>
 #include <string>
 #include <optional>

@@ -145,146 +145,129 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 }
 
 // Base item of an editable value, this class does not use templates.
-class FidoNetworkConfigSubDialog : public BaseEditItem {
+class FidoNetworkConfigSubDialog : public SubDialog<net_networks_rec> {
 public:
-  FidoNetworkConfigSubDialog(const std::filesystem::path& bbsdir, int x, int y, const std::string& title,
+  FidoNetworkConfigSubDialog(const Config& config,
+                             std::filesystem::path bbsdir, int x, int y,
                              net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), d_(d), x_(x), y_(y){}
+      : SubDialog(config, x, y, d), netdir_(std::move(bbsdir)) {}
   ~FidoNetworkConfigSubDialog() override = default;
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+  void RunSubDialog(CursesWindow* window) override {
     EditItems items{};
-    switch (d_.type) {
-    case network_type_t::wwivnet:
-    case network_type_t::internet:
-    case network_type_t::news:
-      return EditlineResult::NEXT;
-    case network_type_t::ftn: {
-      constexpr int LABEL_WIDTH = 14;
-      constexpr int SHORT_FIELD_WIDTH = 25;
-      constexpr int LBL1_POSITION = 2;
-      constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
-      constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
-      constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
-      constexpr int MAX_STRING_LEN = 56;
-      auto* n = &d_.fido;
-      auto y = 1;
-
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
-                                                 n->fido_address, EditLineMode::ALL));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
-                                                 n->nodelist_base, EditLineMode::ALL));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_,
-                                       n->temp_outbound_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->outbound_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->tic_dir));
-      items.add(
-          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->unknown_dir));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line,
-                                                 EditLineMode::ALL));
-
-      dy_start_ = y;
-      const vector<pair<fido_mailer_t, string>> mailerlist = {
-          {fido_mailer_t::flo, "BSO (FLO) [Recommended]"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type))
-          ->set_help_text("Select BSO if using WWIV's Native BinkP.");
-
-      const vector<pair<fido_transport_t, string>> transportlist = {
-          {fido_transport_t::directory, "Directory"},
-          {fido_transport_t::binkp, "WWIV BinkP"}};
-      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist,
-                                                    &n->transport))
-          ->set_help_text("This isn't currently used, but you likely want WWIV BinkP");
-
-      const vector<pair<fido_packet_t, string>> packetlist = {
-          {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist,
-                                                  &n->packet_config.packet_type));
-
-      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
-                                   n->packet_config.compression_type));
-      items.add(new StringEditItem<std::string&>(
-          COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
-      items.add(new StringEditItem<std::string&>(
-          COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
-
-      // dy_start
-      int dy = dy_start_;
-      items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
-      items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
-
-      // from http://ftsc.org/docs/old/fts-5005.001
-      const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-          {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
-          {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
-          {fido_bundle_status_t::hold, "Hold"},
-      };
-      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
-                                                         &n->packet_config.netmail_status));
-      items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic));
-
-      window->GotoXY(x_, y_);
-      const int ch = window->GetChar();
-      if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-        y = 1;
-        items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Nodelist Base:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Inbound Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp In Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp Out Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Outbound Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "NetMail Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BadPacket Dir:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "TIC Dir      :"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Unknown Dir  :"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Origin Line:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Mailer:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:")});
-
-        // dy = y where we start to double up.
-        dy = dy_start_;
-        items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
-                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
-                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:"),
-                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :")
-        });
-        items.Run(title_);
-        window->RedrawWin();
-        return EditlineResult::NEXT;
-      }
-      if (ch == KEY_UP || ch == KEY_BTAB) {
-        return EditlineResult::PREV;
-      }
-      return EditlineResult::NEXT;
+    if (t_.type != network_type_t::ftn) {
+      return;
     }
-    }
-    return EditlineResult::NEXT;
+    constexpr int LABEL_WIDTH = 14;
+    constexpr int SHORT_FIELD_WIDTH = 25;
+    constexpr int LBL1_POSITION = 2;
+    constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
+    constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
+    constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
+    constexpr int MAX_STRING_LEN = 56;
+    auto* n = &t_.fido;
+    auto y = 1;
+
+    items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
+                                               n->fido_address, EditLineMode::ALL));
+    items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
+                                               n->nodelist_base, EditLineMode::ALL));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
+    items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_,
+                                     n->temp_outbound_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->outbound_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->tic_dir));
+    items.add(
+        new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->unknown_dir));
+    items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line,
+                                               EditLineMode::ALL));
+
+    dy_start_ = y;
+    const vector<pair<fido_mailer_t, string>> mailerlist = {
+        {fido_mailer_t::flo, "BSO (FLO) [Recommended]"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
+    items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type))
+        ->set_help_text("Select BSO if using WWIV's Native BinkP.");
+
+    const vector<pair<fido_transport_t, string>> transportlist = {
+        {fido_transport_t::directory, "Directory"},
+        {fido_transport_t::binkp, "WWIV BinkP"}};
+    items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist,
+                                                  &n->transport))
+        ->set_help_text("This isn't currently used, but you likely want WWIV BinkP");
+
+    const vector<pair<fido_packet_t, string>> packetlist = {
+        {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
+    items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist,
+                                                &n->packet_config.packet_type));
+
+    items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
+                                 n->packet_config.compression_type));
+    items.add(new StringEditItem<std::string&>(
+        COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
+    items.add(new StringEditItem<std::string&>(
+        COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
+
+    // dy_start
+    int dy = dy_start_;
+    items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
+    items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
+
+    // from http://ftsc.org/docs/old/fts-5005.001
+    const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
+        {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
+        {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
+        {fido_bundle_status_t::hold, "Hold"},
+    };
+    items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
+                                                       &n->packet_config.netmail_status));
+    items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic));
+
+    window->GotoXY(x_, y_);
+    y = 1;
+    items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Nodelist Base:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Inbound Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp In Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp Out Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Outbound Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "NetMail Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BadPacket Dir:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "TIC Dir      :"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Unknown Dir  :"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Origin Line:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Mailer:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:")});
+
+    // dy = y where we start to double up.
+    dy = dy_start_;
+    items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:"),
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :")
+    });
+    items.Run(menu_label());
+    window->RedrawWin();
   }
 
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  [[nodiscard]] std::string menu_label() const override {
+    return "[Enter to Edit]";
+  }
 
 private:
   const std::filesystem::path netdir_;
-  const std::string title_;
-  net_networks_rec& d_;
-  int x_{0};
-  int y_{0};
   int dy_start_{0};
 };
 
@@ -384,80 +367,72 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 }
 
 // Base item of an editable value, this class does not use templates.
-class FidoPacketConfigSubDialog : public BaseEditItem {
+class FidoPacketConfigSubDialog : public SubDialog<net_networks_rec> {
 public:
-  FidoPacketConfigSubDialog(std::filesystem::path bbsdir, int x, int y, const std::string& title,
-                            const Config& config, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(std::move(bbsdir)), title_(title), config_(config),
-        d_(d), x_(x), y_(y){}
+  FidoPacketConfigSubDialog(const Config& config, std::filesystem::path bbsdir, int x, int y,
+                            net_networks_rec& t)
+      : SubDialog(config, x, y, t), netdir_(std::move(bbsdir)) {}
   ~FidoPacketConfigSubDialog() override = default;
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+  void RunSubDialog(CursesWindow* window) override {
     window->GotoXY(x_, y_);
-    auto ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      FidoCallout callout(config_, d_);
-      if (!callout.IsInitialized()) {
-        messagebox(window, "Unable to initialize fido_callout.json.");
-        return EditlineResult::NEXT;
+    FidoCallout callout(config(), t_);
+    if (!callout.IsInitialized()) {
+      messagebox(window, "Unable to initialize fido_callout.json.");
+      return;
+    }
+    auto done = false;
+    do {
+      vector<ListBoxItem> items;
+      for (const auto& e : callout.node_configs_map()) {
+        items.emplace_back(e.first.as_string());
       }
-      bool done = false;
-      do {
-        vector<ListBoxItem> items;
-        for (const auto& e : callout.node_configs_map()) {
-          items.emplace_back(e.first.as_string());
-        }
-        ListBox list(window, "Select Address", items);
+      ListBox list(window, "Select Address", items);
 
-        list.selection_returns_hotkey(true);
-        list.set_additional_hotkeys("DI");
-        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-        ListBoxResult result = list.Run();
-        if (result.type == ListBoxResultType::HOTKEY) {
-          switch (result.hotkey) {
-          case 'D': {
-            if (items.empty()) {
-              break;
-            }
-            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
-              break;
-            }
-            FidoAddress a(items[result.selected].text());
-            callout.erase(a);
-          } break;
-          case 'I': {
-            const string prompt = "Enter Address (Z:N/O) : ";
-            const string address_string = dialog_input_string(window, prompt, 20);
-            if (address_string.empty()) {
-              break;
-            }
-            FidoAddress address(address_string);
-            fido_node_config_t config{};
-            config.binkp_config.port = 24554;
-            edit_fido_node_config(address, config);
-            callout.insert(address, config);
-          } break;
+      list.selection_returns_hotkey(true);
+      list.set_additional_hotkeys("DI");
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
+      auto result = list.Run();
+      if (result.type == ListBoxResultType::HOTKEY) {
+        switch (result.hotkey) {
+        case 'D': {
+          if (items.empty()) {
+            break;
           }
-        } else if (result.type == ListBoxResultType::SELECTION) {
-          const auto address_string = wwiv::stl::at(items, result.selected).text();
+          if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+            break;
+          }
+          FidoAddress a(items[result.selected].text());
+          callout.erase(a);
+        } break;
+        case 'I': {
+          const string prompt = "Enter Address (Z:N/O) : ";
+          const string address_string = dialog_input_string(window, prompt, 20);
+          if (address_string.empty()) {
+            break;
+          }
           FidoAddress address(address_string);
-          auto c = callout.fido_node_config_for(address);
-          edit_fido_node_config(address, c);
-          callout.insert(address, c);
-        } else if (result.type == ListBoxResultType::NO_SELECTION) {
-          done = true;
+          fido_node_config_t config{};
+          config.binkp_config.port = 24554;
+          edit_fido_node_config(address, config);
+          callout.insert(address, config);
+        } break;
         }
-      } while (!done);
-      callout.Save();
+      } else if (result.type == ListBoxResultType::SELECTION) {
+        const auto address_string = wwiv::stl::at(items, result.selected).text();
+        FidoAddress address(address_string);
+        auto c = callout.fido_node_config_for(address);
+        edit_fido_node_config(address, c);
+        callout.insert(address, c);
+      } else if (result.type == ListBoxResultType::NO_SELECTION) {
+        done = true;
+      }
+    } while (!done);
+    callout.Save();
+  }
 
-      return EditlineResult::NEXT;
-    }
-    if (ch == KEY_UP || ch == KEY_BTAB) {
-      return EditlineResult::PREV;
-    }
-    return EditlineResult::NEXT;
+  [[nodiscard]] std::string menu_label() const override {
+    return "[Enter to Edit]";    
   }
 
   void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
@@ -465,10 +440,6 @@ public:
 private:
   const std::filesystem::path netdir_;
   const std::string title_;
-  const Config& config_;
-  net_networks_rec& d_;
-  int x_{0};
-  int y_{0};
 };
 
 static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
@@ -525,98 +496,82 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 }
 
 // Base item of an editable value, this class does not use templates.
-class CalloutNetSubDialog final : public BaseEditItem {
+class CalloutNetSubDialog final : public SubDialog<net_networks_rec> {
 public:
   CalloutNetSubDialog(const Config& config, std::filesystem::path bbsdir, int x, int y,
-                      const std::string& title, const net_networks_rec& d)
-      : BaseEditItem(x, y, 1), config_(config), netdir_(std::move(bbsdir)), title_(title), d_(d),
-        x_(x), y_(y) {}
+                      net_networks_rec& d)
+      : SubDialog(config, x, y, d), netdir_(std::move(bbsdir)) {}
   ~CalloutNetSubDialog() override = default;
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
-    window->GotoXY(x_, y_);
-    auto ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      Callout callout(d_, config_.max_backups());
-      auto done = false;
-      do {
-        vector<ListBoxItem> items;
-        for (const auto& e : callout.callout_config()) {
-          items.emplace_back(StrCat("@", e.first));
-        }
-        ListBox list(window, "Select Address", items);
+  void RunSubDialog(CursesWindow* window) override {
+    Callout callout(t_, config().max_backups());
+    auto done = false;
+    do {
+      vector<ListBoxItem> items;
+      for (const auto& e : callout.callout_config()) {
+        items.emplace_back(StrCat("@", e.first));
+      }
+      ListBox list(window, "Select Address", items);
 
-        list.selection_returns_hotkey(true);
-        list.set_additional_hotkeys("DI");
-        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-        auto result = list.Run();
-        if (result.type == ListBoxResultType::HOTKEY) {
-          switch (result.hotkey) {
-          case 'D': {
-            if (items.empty()) {
-              break;
-            }
-            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
-              break;
-            }
-            const auto node_with_at = items[result.selected].text();
-            if (node_with_at.size() > 1) {
-              const auto node = to_number<uint16_t>(node_with_at.substr(1));
-              callout.erase(node);
-            }
-          } break;
-          case 'I': {
-            const string prompt = "Enter Address (Node number only) : @";
-            const auto address_string = dialog_input_string(window, prompt, 20);
-            if (address_string.empty()) {
-              break;
-            }
-            auto node_number = to_number<uint16_t>(address_string);
-            if (0 == node_number) {
-              break;
-            }
-            net_call_out_rec config{};
-            config.sysnum = node_number;
-            edit_wwivnet_node_config(d_, config);
-            callout.insert(node_number, config);
-          } break;
+      list.selection_returns_hotkey(true);
+      list.set_additional_hotkeys("DI");
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
+      auto result = list.Run();
+      if (result.type == ListBoxResultType::HOTKEY) {
+        switch (result.hotkey) {
+        case 'D': {
+          if (items.empty()) {
+            break;
           }
-        } else if (result.type == ListBoxResultType::SELECTION) {
+          if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+            break;
+          }
           const auto node_with_at = items[result.selected].text();
           if (node_with_at.size() > 1) {
             const auto node = to_number<uint16_t>(node_with_at.substr(1));
-            const auto* c1 = callout.net_call_out_for(node);
-            if (c1 != nullptr) {
-              auto c = *c1;
-              edit_wwivnet_node_config(d_, c);
-              callout.insert(node, c);
-            }
+            callout.erase(node);
           }
-        } else if (result.type == ListBoxResultType::NO_SELECTION) {
-          done = true;
+        } break;
+        case 'I': {
+          const string prompt = "Enter Address (Node number only) : @";
+          const auto address_string = dialog_input_string(window, prompt, 20);
+          if (address_string.empty()) {
+            break;
+          }
+          auto node_number = to_number<uint16_t>(address_string);
+          if (0 == node_number) {
+            break;
+          }
+          net_call_out_rec config{};
+          config.sysnum = node_number;
+          edit_wwivnet_node_config(t_, config);
+          callout.insert(node_number, config);
+        } break;
         }
-      } while (!done);
-      callout.Save();
-
-      return EditlineResult::NEXT;
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return EditlineResult::PREV;
-    } else {
-      return EditlineResult::NEXT;
-    }
+      } else if (result.type == ListBoxResultType::SELECTION) {
+        const auto node_with_at = items[result.selected].text();
+        if (node_with_at.size() > 1) {
+          const auto node = to_number<uint16_t>(node_with_at.substr(1));
+          const auto* c1 = callout.net_call_out_for(node);
+          if (c1 != nullptr) {
+            auto c = *c1;
+            edit_wwivnet_node_config(t_, c);
+            callout.insert(node, c);
+          }
+        }
+      } else if (result.type == ListBoxResultType::NO_SELECTION) {
+        done = true;
+      }
+    } while (!done);
+    callout.Save();
   }
 
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  [[nodiscard]] std::string menu_label() const override {
+    return"[Enter to Edit]";
+  }
 
 private:
-  const Config& config_;
   const std::filesystem::path netdir_;
-  const std::string title_;
-  const net_networks_rec& d_;
-  int x_{0};
-  int y_{0};
 };
 
 static void edit_net(const Config& config, Networks& networks, int nn) {
@@ -630,15 +585,15 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   const auto subs_loaded = subs.Load();
 
   auto& n = wwiv::stl::at(networks, nn);
-  const string orig_network_name(n.name);
+  const auto orig_network_name(n.name);
 
   constexpr auto LABEL1_POSITION = 2;
   constexpr auto LABEL_WIDTH = 11;
   constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
-  int y = 1;
+  auto y = 1;
   EditItems items{};
-  int net_type_pos = y++;
-  int node_number_pos = 0;
+  auto net_type_pos = y++;
+  auto node_number_pos = 0;
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
   items.add(new FileSystemFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
@@ -647,14 +602,14 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     // skip over the node number
     node_number_pos = y++;
     items.add(
-        new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", n));
+        new FidoNetworkConfigSubDialog(config, net_dir, COL1_POSITION, y++, n));
     items.add(
-        new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", config, n));
+        new FidoPacketConfigSubDialog(config, net_dir, COL1_POSITION, y++, n));
   } else if (n.type == network_type_t::wwivnet) {
     items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
       ->set_help_text("WWIVnet node number");
     items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
-              new CalloutNetSubDialog(config, net_dir, COL1_POSITION, y, "Settings", n));
+              new CalloutNetSubDialog(config, net_dir, COL1_POSITION, y, n));
   }
 
   y = 1;

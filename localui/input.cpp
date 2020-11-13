@@ -40,7 +40,7 @@
 #include <string>
 #include <vector>
 
-#ifdef INSERT // defined in wconstants.h
+#ifdef INSERT // defined in constants.h
 #undef INSERT
 #endif // INSERT
 
@@ -91,6 +91,7 @@ static char _GetKeyWithNavigation(CursesWindow* window, const NavigationKeyConfi
 
 void Label::Display(CursesWindow* window) { Display(window, x_, y_); }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void Label::Display(CursesWindow* window, int x, int y) {
   window->GotoXY(x, y);
   if (right_justify_) {
@@ -445,7 +446,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
     return min_value;
   }
   try {
-    auto v = std::stoi(s);
+    const auto v = std::stoi(s);
     if (v < min_value) {
       return min_value;
     }
@@ -493,7 +494,7 @@ EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode s
   return rc;
 }
 
-/* editline edits a string, doing I/O to the screen only. */
+/* Edits a string, doing I/O to the screen only. */
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
                          const char* ss) {
   uint32_t old_attr;
@@ -530,7 +531,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       break;
     case KEY_RIGHT:    // curses
       if (pos < len) { // right
-        int mp = editlinestrlen(s);
+        const auto mp = editlinestrlen(s);
         if (pos < mp) {
           pos++;
           window->GotoXY(cx + pos, cy);
@@ -688,7 +689,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
                                                std::vector<std::string>::size_type value,
                                                const std::vector<std::string>& strings,
                                                EditlineResult* rc) {
-  if (value < 0 || value >= strings.size()) {
+  if (value >= strings.size()) {
     value = 0;
   }
 

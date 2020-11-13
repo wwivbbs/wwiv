@@ -19,8 +19,8 @@
 #ifndef INCLUDED_WWIVCONFIG_MENUS_H
 #define INCLUDED_WWIVCONFIG_MENUS_H
 
-#include <string>
+#include "sdk/config.h"
 
-void menus(const std::string& menu_dir);
+void menus(const wwiv::sdk::Config& config);
 
-#endif // INCLUDED_WWIVCONFIG_MENUS_H
+#endif

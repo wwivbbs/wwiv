@@ -28,7 +28,6 @@
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -47,9 +46,9 @@ static void edit_editor(editorrec& e) {
 
   const std::vector<std::pair<uint8_t, string>> bbs_types = {{bbs_type_wwiv, "WWIV"},
                                                              {bbs_type_quickbbs, "QuickBBS"}};
-  constexpr int LABEL1_POSITION = 2;
-  constexpr int LABEL1_WIDTH = 29;
-  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
+  constexpr auto LABEL1_POSITION = 2;
+  constexpr auto LABEL1_WIDTH = 29;
+  constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
   if (!(e.ansir & ansir_ansi)) {
     e.ansir |= ansir_emulate_fossil;
@@ -58,7 +57,7 @@ static void edit_editor(editorrec& e) {
     e.ansir |= ansir_temp_dir;
   }
 
-  int y = 1;
+  auto y = 1;
   EditItems items{};
   items.add(
       new StringEditItem<char*>(COL1_POSITION, y++, 35, e.description, EditLineMode::ALL));
@@ -113,13 +112,13 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     for (size_t i = 0; i < editors.size(); i++) {
       items.emplace_back(fmt::format("{}. {}", i + 1, editors[i].description));
     }
-    auto window = curses_out->window();
+    auto* window = curses_out->window();
     ListBox list(window, "Select Editor", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-    ListBoxResult result = list.Run();
+    auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
         case 'D': {

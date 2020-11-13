@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "wwivconfig/menus.h"
 
-#include "curses.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
@@ -29,7 +28,6 @@
 #include "localui/curses_win.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "local_io/keycodes.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
 #include <filesystem>
@@ -85,23 +83,23 @@ static void edit_menu_action(menus::menu_action_56_t& a) {
   items.Run("Edit Action");
 }
 
-class ActionSubDialog final : public BaseEditItem {
+class ActionSubDialog final : public SubDialog<std::vector<menus::menu_action_56_t>> {
 public:
-  ActionSubDialog(std::vector<menus::menu_action_56_t>& actions, int x, int y, std::string title)
-    : BaseEditItem(x, y, 1), actions_(actions), title_(std::move(title)) {}
+  ActionSubDialog(const Config& config, int x, int y, std::vector<menus::menu_action_56_t>& actions)
+    : SubDialog(config, x, y, actions) {}
   ~ActionSubDialog() override = default;
 
-  void RunSubDialog(CursesWindow* window) {
+  void RunSubDialog(CursesWindow* window) override {
     auto done = false;
     auto selected = -1;
     do {
       std::vector<ListBoxItem> items;
-      for (auto i = 0; i < wwiv::stl::ssize(actions_); i++) {
-        const auto& m = actions_.at(i);
+      for (auto i = 0; i < wwiv::stl::ssize(t_); i++) {
+        const auto& m = t_.at(i);
         auto s = fmt::format("{}:{}", m.cmd, m.data);
         items.emplace_back(s, 0, i);
       }
-      ListBox list(window, title_, items);
+      ListBox list(window, "[Edit Actions]", items);
 
       list.set_additional_hotkeys("DIM");
       list.set_help_items({ 
@@ -114,7 +112,7 @@ public:
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
-        edit_menu_action(actions_[items[result.selected].data()]);
+        edit_menu_action(t_[items[result.selected].data()]);
       }
       else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
@@ -124,31 +122,31 @@ public:
         const auto num = result.selected > 0 ? items[result.selected].data() : 0;
         switch (key) {
         case 'D': {
-          if (actions_.empty()) {
+          if (t_.empty()) {
             break;
           }
-          const auto& item = actions_[num];
+          const auto& item = t_[num];
           if (dialog_yn(window, StrCat("Do you want to delete #", num, " [", item.cmd, "]"))) {
-            erase_at(actions_, num);
+            erase_at(t_, num);
           }
         } break;
         case 'I': {
           if (num <= 0 || num >= ssize(items)) {
-            actions_.push_back({});
+            t_.push_back({});
           }
           else {
             menus::menu_action_56_t mr{};
-            insert_at(actions_, num, mr);
+            insert_at(t_, num, mr);
           }
         } break;
         case 'M': {
-          auto maxnum = size_int(actions_) + 1;
+          auto maxnum = size_int(t_) + 1;
           auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
           auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
           if (new_pos >= 1) {
-            auto saved = actions_.at(num);
-            if (erase_at(actions_, num)) {
-              insert_at(actions_, new_pos, saved);
+            auto saved = t_.at(num);
+            if (erase_at(t_, num)) {
+              insert_at(t_, new_pos, saved);
             }
           }
         } break;
@@ -157,35 +155,13 @@ public:
     } while (!done);
   }
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
-    curses_out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
-    window->GotoXY(x_, y_);
-    const auto ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      try {
-        RunSubDialog(window);
-      }
-      catch (const std::exception& e) {
-        LOG(ERROR) << e.what();
-      }
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return EditlineResult::PREV;
-    }
-    return EditlineResult::NEXT;
+  [[nodiscard]] std::string menu_label() const override {
+    return fmt::format("[Edit] {} actions.", t_.size());
   }
 
-
-  void Display(CursesWindow* window) const override {
-    window->PutsXY(x_, y_, fmt::format("[Edit] {} actions.", actions_.size()));
-  }
-
-private:
-  std::vector<menus::menu_action_56_t>& actions_;
-  const std::string title_;
 };
 
-static void edit_menu_item(menus::menu_item_56_t& m) {
+static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
   constexpr auto LABEL_WIDTH = 12;
   constexpr auto PADDING = 2;
   constexpr auto COL1_LINE = PADDING;
@@ -215,27 +191,27 @@ static void edit_menu_item(menus::menu_item_56_t& m) {
             new StringEditItem<std::string&>(COL2_LINE, y, 20, m.password, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Actions:"),
-            new ActionSubDialog(m.actions, COL2_LINE, y, "[Edit Actions]"));
+            new ActionSubDialog(config, COL2_LINE, y, m.actions));
 
 
   items.Run(StrCat("Menu: ", m.item_key));
 }
 
-class MenuItemsSubDialog : public BaseEditItem {
+class MenuItemsSubDialog : public SubDialog<std::vector<menus::menu_item_56_t>> {
 public:
-  MenuItemsSubDialog(std::vector<menus::menu_item_56_t>& menu_items, int x, int y, const std::string& title)
-    : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {}
+  MenuItemsSubDialog(const wwiv::sdk::Config& config,
+    int x, int y, std::vector<menus::menu_item_56_t>& menu_items)
+      : SubDialog(config, x, y, menu_items) {}
   ~MenuItemsSubDialog() override = default;
 
-  EditlineResult Run(CursesWindow* window) override {
-    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+  void RunSubDialog(CursesWindow* window) override {
     try {
       auto done = false;
       auto selected = -1;
       do {
         std::vector<ListBoxItem> items;
-        for (auto i = 1; i < wwiv::stl::ssize(menu_items_); i++) {
-          const auto& m = menu_items_.at(i);
+        for (auto i = 1; i < wwiv::stl::ssize(t_); i++) {
+          const auto& m = t_.at(i);
           auto key = fmt::format("({})", m.item_key);
           auto s = fmt::format("#{} {:<12} '{}'", i, key, m.item_text);
           if (!m.actions.empty()) {
@@ -243,7 +219,7 @@ public:
           }
           items.emplace_back(s, 0, i);
         }
-        ListBox list(curses_out->window(), title_, items);
+        ListBox list(curses_out->window(), "[Edit Menu Items]", items);
 
         list.set_additional_hotkeys("DIM");
         list.set_help_items({ 
@@ -257,7 +233,7 @@ public:
         selected = list.selected();
 
         if (result.type == ListBoxResultType::SELECTION) {
-          edit_menu_item(menu_items_[items[result.selected].data()]);
+          edit_menu_item(config(), t_[items[result.selected].data()]);
         }
         else if (result.type == ListBoxResultType::NO_SELECTION) {
           done = true;
@@ -267,28 +243,28 @@ public:
           const auto num = result.selected > 0 ? items[result.selected].data() : 0;
           switch (key) {
           case 'D': {
-            const auto& item = menu_items_[items[result.selected].data()];
+            const auto& item = t_[items[result.selected].data()];
             if (dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.item_key, "]"))) {
-              erase_at(menu_items_, num);
+              erase_at(t_, num);
             }
           } break;
           case 'I': {
             if (num <= 0 || num >= ssize(items)) {
-              menu_items_.push_back({});
+              t_.push_back({});
             }
             else {
               menus::menu_item_56_t mr{};
-              insert_at(menu_items_, num, mr);
+              insert_at(t_, num, mr);
             }
           } break;
           case 'M': {
-            auto maxnum = size_int(menu_items_) + 1;
+            auto maxnum = size_int(t_) + 1;
             auto prompt = fmt::format("Move to before which (1-{}) : ", maxnum);
             auto new_pos = dialog_input_number(window, prompt, 1, maxnum);
             if (new_pos >= 1) {
-              auto saved = menu_items_.at(num);
-              if (erase_at(menu_items_, num)) {
-                insert_at(menu_items_, new_pos, saved);
+              auto &saved = t_.at(num);
+              if (erase_at(t_, num)) {
+                insert_at(t_, new_pos, saved);
               }
             }
           } break;
@@ -299,21 +275,15 @@ public:
     catch (const std::exception& e) {
       LOG(ERROR) << e.what();
     }
-    return EditlineResult::NEXT;
   }
 
   void Display(CursesWindow* window) const override {
     window->PutsXY(x_, y_, "[Enter to Edit]");
   }
 
-private:
-  std::vector<menus::menu_item_56_t>& menu_items_;
-  const std::string title_;
-  int x_{0};
-  int y_{0};
 };
 
-static void edit_menu(const std::filesystem::path& menu_dir, const std::string& menu_set, const std::string& menu_name) {
+static void edit_menu(const Config& config, const std::filesystem::path& menu_dir, const std::string& menu_set, const std::string& menu_name) {
   menus::Menu56 m(menu_dir, menu_set, menu_name);
   if (!m.initialized()) {
     m.set_initialized(true);
@@ -346,10 +316,10 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
             new ToggleEditItem<menus::menu_help_display_t>(COL2_LINE, y, help_action, &h.help_type));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Enter Actions:"),
-            new ActionSubDialog(h.enter_actions, COL2_LINE, y, "[Edit Actions]"));
+            new ActionSubDialog(config, COL2_LINE, y, h.enter_actions));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Exit Actions:"),
-            new ActionSubDialog(h.exit_actions, COL2_LINE, y, "[Edit Actions]"));
+            new ActionSubDialog(config, COL2_LINE, y, h.enter_actions));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
             new StringEditItem<std::string&>(COL2_LINE, y, 55, h.acs, EditLineMode::ALL));
@@ -358,7 +328,7 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
             new StringEditItem<std::string&>(COL2_LINE, y, 20, h.password, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Items:"),
-            new MenuItemsSubDialog(h.items, COL2_LINE, y, "[Edit Menu Items]"));
+            new MenuItemsSubDialog(config, COL2_LINE, y, h.items));
 
   items.Run(title);
 
@@ -367,7 +337,7 @@ static void edit_menu(const std::filesystem::path& menu_dir, const std::string& 
   }
 }
 
-static void select_menu(const std::string& menu_dir, const std::string& dir) {
+static void select_menu(const wwiv::sdk::Config& config, const std::string& menu_dir, const std::string& dir) {
   const auto full_dir_path = FilePath(menu_dir, dir);
   auto selected = -1;
   try {
@@ -394,7 +364,7 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& menu_name = items[result.selected].text();
-        edit_menu(menu_dir, dir, menu_name);
+        edit_menu(config, menu_dir, dir, menu_name);
       }
       else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
@@ -403,7 +373,7 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
         if (result.hotkey == 'I') {
           auto menu_name = dialog_input_string(window, "Enter Menu Name: ", 8);
           if (!menu_name.empty()) {
-            edit_menu(menu_dir, dir, menu_name);
+            edit_menu(config, menu_dir, dir, menu_name);
           }
         } else if (result.hotkey == 'D') {
           const auto& menu_name = items[result.selected].text();
@@ -423,9 +393,9 @@ static void select_menu(const std::string& menu_dir, const std::string& dir) {
 
 }
 
-void menus(const std::string& menu_dir) {
+void menus(const wwiv::sdk::Config& config) {
   try {
-
+    const auto menu_dir = config.menudir();
     bool done = false;
     int selected = -1;
     do {
@@ -448,7 +418,7 @@ void menus(const std::string& menu_dir) {
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& sel_dir = items[result.selected].text();
-        select_menu(menu_dir, sel_dir);
+        select_menu(config, menu_dir, sel_dir);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {

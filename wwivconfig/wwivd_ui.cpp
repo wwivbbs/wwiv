@@ -18,12 +18,9 @@
 /**************************************************************************/
 #include "wwivconfig/wwivd_ui.h"
 
-#include "core/scope_exit.h"
 #include "core/strings.h"
-#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "localui/wwiv_curses.h"
 #include "sdk/wwivd_config.h"
 #include <memory>
 #include <string>
@@ -54,11 +51,11 @@ public:
     : SubDialog(c, x, y, t), fn_(std::move(fn)) {}
   ~SubDialogFunction() override = default;
 
-  void RunSubDialog(CursesWindow* window, T& t) override {
-      fn_(config(), t, window);
+  void RunSubDialog(CursesWindow* window) override {
+      fn_(config(), t_, window);
   }
 
-  std::string menu_label() const override {
+  [[nodiscard]] std::string menu_label() const override {
     return enter_to_edit;
   }
 

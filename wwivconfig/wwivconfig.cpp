@@ -387,7 +387,7 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
     if (!menu_dir_arg.empty()) {
       menu_dir = menu_dir_arg;
     }
-    menus(menu_dir);
+    menus(config);
     return 0;
   }
   if (cmdline.barg("user_editor")) {
@@ -519,7 +519,7 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
       networks(config, need_network3);
       break;
     case 'M':
-      menus(config.menudir());
+      menus(config);
       break;
     case 'U':
       user_editor(config);
