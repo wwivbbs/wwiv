@@ -218,7 +218,7 @@ bool NetDat::rollover() {
       const auto d = r.substr(3, 2);
       const auto y = r.substr(6, 2);
       // This will work through 2100
-      auto log = fmt::format("netdat-20{}{}{}", y, m, d);
+      auto log = fmt::format("netdat-20{}{}{}.log", y, m, d);
       const auto nz = FilePath(logs_, log);
       File::Move(n2, nz);
     }

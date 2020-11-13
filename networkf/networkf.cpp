@@ -269,9 +269,11 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << packet.nh.main_type << "/"
                  << packet.nh.minor_type;
     } else {
-      std::string itype = (is_email) ? "Email" : "Post";
-      auto l = fmt::format("Imported FTN {} '{}' to '{}'", itype, msg.vh.subject, s1);
-      netdat_.add_message(NetDat::netdat_msgtype_t::post, l);
+      std::string itype = is_email ? "Email" : "Post";
+      const auto l = fmt::format("Imported FTN {} '{}' to '{}'", itype, msg.vh.subject, s1);
+      // We also get this in network2, so we don't need to write to
+      // netdat.log here.
+      // netdat_.add_message(NetDat::netdat_msgtype_t::post, l);
       LOG(INFO) << l;
     }
   }
@@ -891,6 +893,7 @@ bool NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
   return false;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool NetworkF::CreateNetmailAttach(const FidoAddress& dest,
                                    const std::string& bundlename,
                                    const fido_packet_config_t& packet_config) {
@@ -979,7 +982,7 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
   }
 
   // todo - actually we need a new way of making the ftn packet that works
-  // right with netmail
+  // right with net mail
   const auto packet_config = fido_callout_.packet_config_for(dest);
   const FidoAddress route_to = find_route_to(dest, fido_callout_, packet_config);
   if (create_ftn_packet_and_bundle(dest, route_to, p, bundlename)) {
