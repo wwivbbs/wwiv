@@ -48,11 +48,11 @@ static const char enter_to_edit[] = "[Press Enter to Edit]";
 template <class T> class SubDialogFunction final : public SubDialog<T> {
 public:
   SubDialogFunction(const Config& c, int x, int y, T& t, std::function<void(const Config&, T&, CursesWindow*)> fn)
-    : SubDialog(c, x, y, t), fn_(std::move(fn)) {}
+    : SubDialog<T>(c, x, y, t), c_(c), t__(t), fn_(std::move(fn)) {}
   ~SubDialogFunction() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
-      fn_(config(), t_, window);
+      fn_(c_, t__, window);
   }
 
   [[nodiscard]] std::string menu_label() const override {
@@ -60,6 +60,9 @@ public:
   }
 
 private:
+  // For some reason GCC couldn't find config() or t_ from SubDialog.
+  const Config& c_;
+  T& t__;
   std::function<void(const Config&, T&, CursesWindow*)> fn_;
 };
 
