@@ -66,6 +66,9 @@ Type2MessageData read_type2_message(
 
 enum class ReadMessageOption {
   NONE,
+  // Directly use the message number in ReadMessageResult as the next message
+  GOTO_MESSAGE,
+  // Opens the Jump to Message Dialog
   JUMP_TO_MSG,
   NEXT_MSG,
   PREV_MSG,
@@ -82,10 +85,12 @@ struct ReadMessageResult {
   std::string data;
   int lines_start = 0;
   int lines_end = 20;
+  // only used with GOTO_MSG
+  int msgnum{0};
 };
 
-ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next);
+ReadMessageResult display_type2_message(int& msgnum, Type2MessageData& msg, bool* next);
 
-ReadMessageResult read_post(int n, bool *next, int *val);
+ReadMessageResult read_post(int& msgnum, bool *next, int *val);
 
 #endif  // __INCLUDED_BBS_READ_MESSAGE_H__

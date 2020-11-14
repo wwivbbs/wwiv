@@ -388,7 +388,6 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
 
 void qscan(uint16_t start_subnum, bool& nextsub) {
   const int sub_number = a()->usub[start_subnum].subnum;
-  a()->sess().made_find_str(false);
 
   if (a()->sess().hangup() || sub_number < 0) {
     return;

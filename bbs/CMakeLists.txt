@@ -49,6 +49,7 @@ set(COMMON_SOURCES
  lpfunc.cpp
  misccmd.cpp
  message_file.cpp
+ message_find.cpp
  mmkey.cpp
  msgbase1.cpp
  msgscan.cpp

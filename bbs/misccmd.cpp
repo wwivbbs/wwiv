@@ -208,7 +208,8 @@ void kill_old_email() {
           msg.title = m.title;
           msg.message_area = "Personal E-Mail";
           bool next = false;
-          display_type2_message(msg, &next);
+          int fake_msgno = -1;
+          display_type2_message(fake_msgno, msg, &next);
         }
         break;
         }

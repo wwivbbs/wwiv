@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/read_message.h"
 
+
+#include "message_find.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -25,6 +27,7 @@
 #include "bbs/message_file.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
+#include "common/com.h"
 #include "common/full_screen.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -557,7 +560,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
   }
 }
 
-static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
+static ReadMessageResult display_type2_message_new(int& msgno, Type2MessageData& msg, char an, bool* next) {
   // Reset the color before displaying a message.
   bout.SystemColor(7);
   bout.clear_ansi_movement_occurred();
@@ -681,6 +684,12 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           result.option = ReadMessageOption::NEXT_MSG;
         } else if (key == '[') {
           result.option = ReadMessageOption::PREV_MSG;
+        } else if (key == 'F' && msgno != -1) {
+          const auto r = wwiv::bbs::FindNextMessageFS(fs,msgno);
+          if (r.found) {
+            msgno = r.msgnum;
+          }
+          result.option = ReadMessageOption::READ_MESSAGE;
         } else if (key == 'J') {
           result.option = ReadMessageOption::JUMP_TO_MSG;
         } else if (key == 'T') {
@@ -733,7 +742,7 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
   bout.disable_mci();
 }
 
-ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
+ReadMessageResult display_type2_message(int& msgno, Type2MessageData& msg, bool* next) {
   const auto fsreader_enabled =
       a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
   const auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
@@ -741,7 +750,7 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
     // N.B.: We don't use the full screen reader for email yet since
     // It does not work.  Need to figure out how to rearrange email
     // reading so it does work.
-    return display_type2_message_new(msg, static_cast<char>(msg.message_anony), next);
+    return display_type2_message_new(msgno, msg, static_cast<char>(msg.message_anony), next);
   }
 
   display_type2_message_old_impl(msg, next);
@@ -776,7 +785,7 @@ static void update_qscan(uint32_t qscan) {
 #endif // UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 }
 
-ReadMessageResult read_post(int n, bool* next, int* val) {
+ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
   if (a()->user()->IsUseClearScreen()) {
     bout.cls();
   } else {
@@ -785,7 +794,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
   const bool abort = false;
   *next = false;
 
-  auto p = *get_post(n);
+  auto p = *get_post(msgnum);
   const auto read_it =
       (lcs() || (a()->effective_slrec().ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
@@ -796,7 +805,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     m.flags.insert(MessageFlags::FORCED);
   }
 
-  m.message_number = n;
+  m.message_number = msgnum;
   m.total_messages = a()->GetNumMessagesInCurrentMessageArea();
   m.message_area = cs.name;
 
@@ -838,7 +847,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     if (p.status & status_post_new_net) {
       set_net_num(network_number_from(&p));
     }
-    result = display_type2_message(m, next);
+    result = display_type2_message(msgnum, m, next);
 
     if (saved_net_num != a()->net_num()) {
       set_net_num(saved_net_num);

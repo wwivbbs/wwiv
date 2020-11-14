@@ -19,6 +19,7 @@
 #include "bbs/msgscan.h"
 
 
+#include "message_find.h"
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
@@ -231,86 +232,11 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
 }
 
 static void HandleScanReadFind(int& msgno, MsgScanOption& scan_option) {
-  char* pFindStr = nullptr;
-  if (!a()->sess().made_find_str()) {
-    pFindStr = strupr(stripcolors(get_post(msgno)->title));
-    if (strlen(pFindStr) >= 20) {
-      pFindStr[20] = '\0';
-    }
-    to_char_array(s_szFindString, pFindStr);
-    a()->sess().made_find_str(true);
-  } else {
-    pFindStr = &s_szFindString[0];
-  }
-  while (strncmp(pFindStr, "RE:", 3) == 0 || *pFindStr == ' ') {
-    if (*pFindStr == ' ') {
-      pFindStr++;
-    } else {
-      pFindStr += 3;
-    }
-  }
-  if (strlen(pFindStr) >= 20) {
-    pFindStr[20] = 0;
-  }
-  to_char_array(s_szFindString, pFindStr);
-  bout.nl();
-  bout << "|#7Find what? (CR=\"" << pFindStr << "\")|#1";
-  char szFindString[81];
-  bin.input(szFindString, 20);
-  if (!*szFindString) {
-    to_char_array(szFindString, pFindStr);
-  } else {
-    to_char_array(s_szFindString, szFindString);
-  }
-  bout.nl();
-  bout << "|#1Backwards or Forwards? ";
-  const auto ch = onek("QBF+-");
-  if (ch == 'Q') {
-    return;
-  }
-  auto fnd = false;
-  auto tmp_msgnum = msgno;
-  bout.nl();
-  bout << "|#1Searching -> |#2";
-
-  // Store search direction and limit
-  const auto search_forward = ch != '-' && ch != 'B';
-  const auto msgnum_limit = search_forward ? a()->GetNumMessagesInCurrentMessageArea() : 1;
-
-  while (tmp_msgnum != msgnum_limit && !fnd) {
-    if (search_forward) {
-      tmp_msgnum++;
-    } else {
-      tmp_msgnum--;
-    }
-    if (bin.checka()) {
-      break;
-    }
-    if (!(tmp_msgnum % 5)) {
-      bout.bprintf("%5.5d", tmp_msgnum);
-      for (auto i1 = 0; i1 < 5; i1++) {
-        bout << "\b";
-      }
-      if (!(tmp_msgnum % 100)) {
-        a()->tleft(true);
-        a()->CheckForHangup();
-      }
-    }
-    if (auto o = readfile(&(get_post(tmp_msgnum)->msg), a()->current_sub().filename)) {
-      auto b = o.value();
-      StringUpperCase(&b);
-      fnd = (strstr(strupr(stripcolors(get_post(tmp_msgnum)->title)), szFindString) ||
-             strstr(b.c_str(), szFindString))
-                ? true
-                : false;
-    }
-  }
-  if (fnd) {
-    bout << "Found!\r\n";
-    msgno = tmp_msgnum;
+  const auto r = wwiv::bbs::FindNextMessage(msgno);
+  if (r.found) {
+    msgno = r.msgnum;
     scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
   } else {
-    bout << "|#6Not found!\r\n";
     scan_option = MsgScanOption::SCAN_OPTION_READ_PROMPT;
   }
 }
@@ -566,6 +492,22 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
       if ((key & 0xff) == key) {
         key = toupper(key & 0xff);
         switch (key) {
+        case 'F': {
+          fs.ClearCommandLine();
+
+          const auto r = wwiv::bbs::FindNextMessageFS(fs, msgnum);
+          if (r.found) {
+            msgnum = r.msgnum;
+            scan_option_type = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
+          } else {
+            scan_option_type = MsgScanOption::SCAN_OPTION_READ_PROMPT;
+          }
+
+          fs.ClearCommandLine();
+          ReadMessageResult result;
+          result.option = ReadMessageOption::READ_MESSAGE;
+          return result;
+        } break;
         case 'J': {
           fs.ClearCommandLine();
           bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
@@ -954,7 +896,7 @@ static void HandleToggleUnAnonymous(int msg_num) {
 static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& nextsub,
                                  bool& title_scan, bool& done, bool& quit, int& val) {
   bin.resetnsp();
-  string read_prompt = GetScanReadPrompts(msgnum);
+  const auto read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
   char szUserInput[81];
   bout << read_prompt;
@@ -973,7 +915,7 @@ static void HandleScanReadPrompt(int& msgnum, MsgScanOption& scan_option, bool& 
     title_scan = false;
     scan_option = MsgScanOption::SCAN_OPTION_READ_PROMPT;
   }
-  int nUserInput = to_number<int>(szUserInput);
+  auto nUserInput = to_number<int>(szUserInput);
   if (szUserInput[0] == '\0') {
     nUserInput = msgnum + 1;
     if (nUserInput >= a()->GetNumMessagesInCurrentMessageArea() + 1) {
