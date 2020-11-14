@@ -77,7 +77,7 @@ bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
           MessageEditorData& data, bool file) {
   FsedModel ed(maxli);
   for (auto l : lin) {
-    bool wrapped = !l.empty() && l.back() == '\x1';
+    const auto wrapped = !l.empty() && l.back() == '\x1';
     ed.emplace_back(line_t{ wrapped, l });
   }
   if (!fsed(ctx, ed, data, file)) {
@@ -88,7 +88,7 @@ bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
   return true;
 }
 
-bool fsed(wwiv::common::Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
+bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
   auto view = create_frame(data, file, &ctx.u());
   ed.set_view(view);
   auto& fs = view->fs();
@@ -108,7 +108,7 @@ bool fsed(wwiv::common::Context& ctx, FsedModel& ed, MessageEditorData& data, bo
   fs.GotoContentAreaTop();
   FsedState state{};
 
-  FsedCommands commands(ctx);
+  FsedCommands commands(ctx, data);
   // Add the menu command since that needs the state variables
   // from here.
 
@@ -129,7 +129,9 @@ bool fsed(wwiv::common::Context& ctx, FsedModel& ed, MessageEditorData& data, bo
     }
   }
 
+  fs.ClearCommandLine();
+  fs.PutsCommandLine("");
   return state.save;
 }
 
-} // namespace wwiv::fsed
+} // namespace

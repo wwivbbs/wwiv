@@ -17,6 +17,8 @@
 /**************************************************************************/
 #include "fsed/commands.h"
 
+
+#include "common/input.h"
 #include "common/output.h"
 #include "common/quote.h"
 #include "core/stl.h"
@@ -28,6 +30,10 @@
 #include <utility>
 
 namespace wwiv::fsed {
+
+using namespace wwiv::common;
+using namespace wwiv::stl;
+
 
 std::map<int, fsed_command_id> CreateDefaultEditModeKeyMap() {
   std::map<int, fsed_command_id> map;
@@ -64,20 +70,20 @@ bool FsedCommand::Invoke(FsedModel& model, FsedView& view, FsedState& state) con
   return fn_(model, view, state);
 }
 
-FsedCommands::FsedCommands(wwiv::common::Context& ctx) : ctx_(ctx) {
+FsedCommands::FsedCommands(Context& ctx, MessageEditorData& data) : ctx_(ctx), data_(data) {
   AddAll();
   edit_keymap_ = CreateDefaultEditModeKeyMap();
 }
 
 std::optional<FsedCommand> FsedCommands::get(fsed_command_id id) {
-  if (wwiv::stl::contains(by_id_, id)) {
+  if (contains(by_id_, id)) {
     return by_id_.at(id);
   }
   return std::nullopt;
 }
 
 std::optional<FsedCommand> FsedCommands::get(const std::string& id) {
-  if (wwiv::stl::contains(by_name_, id)) {
+  if (contains(by_name_, id)) {
     return by_name_.at(id);
   }
   return std::nullopt;
@@ -89,15 +95,17 @@ bool FsedCommands::add(const FsedCommand& cmd) {
   return true;
 }
 
-static void show_fsed_menu(common::Context& ctx, FsedModel& ed, FsedView& view, bool& done,
-                           bool& save) {
+static void show_fsed_menu(Context& ctx, FsedModel& ed, FsedView& view, MessageEditorData& data,
+                           bool& done, bool& save) {
   view.fs().PutsCommandLine(
       "|#9(|#2ESC|#9=Return, |#2A|#9=Abort, |#2Q|#9=Quote, |#2S|#9=Save, |#2D|#9=Debug, "
-      "|#2?|#9=Help): ");
+      "|#2T|#9=Title, |#2?|#9=Help): ");
   const auto cmd = std::toupper(view.fs().bgetch() & 0xff);
   view.ClearCommandLine();
   switch (cmd) {
   case 'S':
+    view.ClearCommandLine();
+    view.fs().PutsCommandLine("");
     done = save = true;
     break;
   case 'A':
@@ -120,6 +128,13 @@ static void show_fsed_menu(common::Context& ctx, FsedModel& ed, FsedView& view, 
     // redraw the frame
     view.redraw(ed);
     ed.invalidate_to_eof(0);
+  } break;
+  case 'T': {
+    view.ClearCommandLine();
+    view.fs().PutsCommandLine("Title: ");
+    data.title = view.fs().in().input_text(data.title, 72);
+    view.ClearCommandLine();
+    view.redraw(ed);
   } break;
   case '?': {
     view.ClearCommandLine();
@@ -203,7 +218,7 @@ bool FsedCommands::AddAll() {
       [](FsedModel& ed, FsedView&, FsedState&) -> bool { return ed.delete_line_left(); }));
   add(FsedCommand(fsed_command_id::menu, "menu",
                   [&](FsedModel& ed, FsedView& view, FsedState& state) -> bool {
-                    show_fsed_menu(ctx_, ed, view, state.done, state.save);
+                    show_fsed_menu(ctx_, ed, view, data_, state.done, state.save);
                     return true;
                   }));
 

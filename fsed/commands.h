@@ -24,6 +24,10 @@
 #include <optional>
 #include <string>
 
+namespace wwiv::common {
+class MessageEditorData;
+}
+
 namespace wwiv::fsed {
 
 class FsedModel;
@@ -75,7 +79,7 @@ private:
 class FsedCommands {
 public:
   FsedCommands() = delete;
-  explicit FsedCommands(common::Context& ctx);
+  FsedCommands(common::Context& ctx, common::MessageEditorData& data);
   std::optional<FsedCommand> get(fsed_command_id id);
   std::optional<FsedCommand> get(const std::string& id);
   bool add(const FsedCommand& cmd);
@@ -90,7 +94,8 @@ public:
 private:
   bool AddAll();
 
-  common::Context& ctx_; 
+  common::Context& ctx_;
+  common::MessageEditorData& data_;
   std::map<fsed_command_id, FsedCommand> by_id_;
   std::map<std::string, FsedCommand> by_name_;
   std::map<int, fsed_command_id> edit_keymap_;

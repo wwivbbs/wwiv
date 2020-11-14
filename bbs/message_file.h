@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MESSAGE_FILE_H__
-#define __INCLUDED_BBS_MESSAGE_FILE_H__
+#ifndef INCLUDED_BBS_MESSAGE_FILE_H
+#define INCLUDED_BBS_MESSAGE_FILE_H
 
 #include "sdk/vardec.h"
 #include <cstdint>

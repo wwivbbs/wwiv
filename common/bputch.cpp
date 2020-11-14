@@ -60,7 +60,7 @@ int Output::bputch(char c, bool use_buffer) {
   } else {
     displayed = 1;
     // Pass through to SDK ansi interpreter.
-    auto last_state = ansi_->state();
+    const auto last_state = ansi_->state();
     ansi_->write(c);
 
     if (ansi_->state() == wwiv::sdk::ansi::AnsiMode::not_in_sequence &&
@@ -68,7 +68,7 @@ int Output::bputch(char c, bool use_buffer) {
       // Only add to the current line if we're not in an ansi sequence.
       // Otherwise we get gibberish ansi strings that will be displayed
       // raw to the user.
-      current_line_.push_back({c, static_cast<uint8_t>(curatr())});
+      current_line_.emplace_back(c, static_cast<uint8_t>(curatr()));
     }
 
     const auto screen_width = user().GetScreenChars();
@@ -84,7 +84,9 @@ int Output::bputch(char c, bool use_buffer) {
     if (x_ >= static_cast<int>(screen_width)) {
       x_ %= screen_width;
     }
-
+    if (c == '\r') {
+      x_ = 0;
+    }
     if (c == SOFTRETURN) {
       current_line_.clear();
       x_ = 0;

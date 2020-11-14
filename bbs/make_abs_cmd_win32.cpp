@@ -16,18 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-//#include "core/wwiv_windows.h"
-
 #include "bbs/make_abs_cmd.h"
 
+#include "core/file.h"
+#include "core/strings.h"
+#include "fmt/format.h"
+#include <direct.h>
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <direct.h>
-#include "core/strings.h"
-#include "core/file.h"
-#include "fmt/format.h"
 
 using std::string;
 using std::vector;

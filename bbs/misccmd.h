@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MISCCMD_H__
-#define __INCLUDED_BBS_MISCCMD_H__
+#ifndef INCLUDED_BBS_MISCCMD_H
+#define INCLUDED_BBS_MISCCMD_H
 
 #include <string>
 #include "sdk/net/net.h"
@@ -28,4 +28,4 @@ int getnetnum(const std::string& network_name);
 int getnetnum_by_type(network_type_t type);
 void Packers();
 
-#endif  // __INCLUDED_BBS_MISCCMD_H__
+#endif

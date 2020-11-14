@@ -15,13 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_READ_MESSAGE_H__
-#define __INCLUDED_BBS_READ_MESSAGE_H__
-
-#include <string>
-#include <set>
+#ifndef INCLUDED_BBS_READ_MESSAGE_H
+#define INCLUDED_BBS_READ_MESSAGE_H
 
 #include "sdk/vardec.h"
+#include <set>
+#include <string>
 
 enum class MessageFlags {
   NOT_VALIDATED,
@@ -53,7 +52,7 @@ struct Type2MessageData {
 
   // mailrec.anony flag.
   uint8_t message_anony{0};
-  // Any special flags from the subboad. So far only anony.no_fulscreen
+  // Any special flags from the subboard. So far only anony.no_fulscreen
   uint8_t subboard_flags{0};
   bool use_msg_command_handler{true};
   bool email{false};
@@ -89,4 +88,4 @@ ReadMessageResult display_type2_message(int& msgnum, Type2MessageData& msg, bool
 
 ReadMessageResult read_post(int& msgnum, bool *next, int *val);
 
-#endif  // __INCLUDED_BBS_READ_MESSAGE_H__
+#endif

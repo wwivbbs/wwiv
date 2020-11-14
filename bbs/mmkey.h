@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MMKEY_H__
-#define __INCLUDED_BBS_MMKEY_H__
+#ifndef INCLUDED_BBS_MMKEY_H
+#define INCLUDED_BBS_MMKEY_H
 
 #include <string>
 #include <set>
@@ -31,4 +31,4 @@ std::string mmkey(std::set<char>& x);
 std::string mmkey(MMKeyAreaType dl, bool bListOption = false);
 
 
-#endif  // __INCLUDED_BBS_MMKEY_H__
+#endif

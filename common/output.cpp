@@ -63,12 +63,16 @@ void Output::SetLocalIO(LocalIO* local_io) {
 
 
 void Output::Color(int wwivcolor) {
+  const auto saved_x{x_};
   bputs(MakeColor(wwivcolor));
+  x_ = saved_x;
 }
 
 void Output::ResetColors() {
+  const auto saved_x{x_};
   // ANSI Clear Attributes String
   bputs("\x1b[0m");
+  x_ = saved_x;
 }
 
 void Output::GotoXY(int x, int y) {
@@ -77,9 +81,11 @@ void Output::GotoXY(int x, int y) {
     y = std::min<int>(y, sess().num_screen_lines());
     bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
+  x_ = x;
 }
 
 void Output::Left(int num) {
+  const auto saved_x = x_;
   if (num == 0) {
     return;
   }
@@ -90,9 +96,11 @@ void Output::Left(int num) {
   }
   ss << "D";
   bputs(ss.str());
+  x_ = std::max<int>(0, saved_x - num);
 }
 
 void Output::Right(int num) {
+  const auto saved_x{x_};
   if (num == 0) {
     return;
   }
@@ -103,6 +111,8 @@ void Output::Right(int num) {
   }
   ss << "C";
   bputs(ss.str());
+  x_ = std::max<int>(0, saved_x + num);
+
 }
 
 void Output::SavePosition() {
@@ -118,10 +128,17 @@ void Output::nl(int nNumLines) {
     bputs("\r\n");
     wwiv::core::bus().invoke(ProcessInstanceMessages{});
   }
+  x_ = 1;
 }
 
 void Output::bs() {
-  bputs("\b \b");
+  if (okansi(user())) {
+    Left(1);
+    bputch(' ');
+    Left(1);
+  } else {
+    bputs("\b \b");
+  }
 }
 
 
@@ -190,9 +207,11 @@ void Output::cls() {
  * Clears the current line to the end.
  */
 void Output::clreol() {
+  const auto saved_x{x_};
   if (okansi(user())) {
     bputs("\x1b[K");
   }
+  x_ = saved_x;
 }
 
 void Output::clear_whole_line() {

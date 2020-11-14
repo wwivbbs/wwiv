@@ -549,7 +549,7 @@ bool inmsg(MessageEditorData& data) {
     }
   }
 
-  wwiv::core::ScopeExit at_exit([=]() {
+  ScopeExit at_exit([=]() {
     setiia(oiia);
     // Might not need to do this anymore since quoting
     // isn't so convoluted.
@@ -586,7 +586,7 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
     if (ok_internal_fsed()) {
       if (File::Exists(exted_filename)) {
-        // We have autoquote or a file loaded into the workspace.
+        // We have auto-quote or a file loaded into the workspace.
         TextFile editor_file(exted_filename, "r");
         lin = editor_file.ReadFileIntoVector();
       }
