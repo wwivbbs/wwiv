@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_CURSES_H__
-#define __INCLUDED_LOCALUI_CURSES_H__
+#ifndef INCLUDED_LOCALUI_CURSES_H
+#define INCLUDED_LOCALUI_CURSES_H
 
 #ifdef MOUSE_MOVED
 #undef MOUSE_MOVED
@@ -28,4 +28,5 @@
 #else
 #include <curses.h>
 #endif
-#endif  // __INCLUDED_LOCALUI_CURSES_H__
+
+#endif

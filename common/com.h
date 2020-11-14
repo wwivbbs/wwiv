@@ -15,12 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_COM_H__
-#define __INCLUDED_COMMON_COM_H__
+#ifndef INCLUDED_COMMON_COM_H
+#define INCLUDED_COMMON_COM_H
 
 #include <string>
 
 char onek(const std::string& allowable, bool auto_mpl = false);
 char onek_ncr(const std::string& allowable);
 
-#endif  // __INCLUDED_COMMON_COM_H__
+#endif

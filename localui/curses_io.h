@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_CURSES_IO_H__
-#define __INCLUDED_LOCALUI_CURSES_IO_H__
+#ifndef INCLUDED_LOCALUI_CURSES_IO_H
+#define INCLUDED_LOCALUI_CURSES_IO_H
 
-#include "curses_win.h"
-#include "colors.h"
+#include "localui/curses_win.h"
+#include "localui/colors.h"
 #include <memory>
 #include <vector>
 
@@ -55,7 +55,7 @@ public:
 class CursesIO final {
  public:
   // Constructor/Destructor
-  CursesIO(const std::string& title);
+  explicit CursesIO(const std::string& title);
   CursesIO(const CursesIO& copy) = delete;
   ~CursesIO();
 
@@ -65,11 +65,11 @@ class CursesIO final {
   [[nodiscard]] CursesWindow* header() const { return header_.get(); }
   void SetIndicatorMode(IndicatorMode mode);
 
-  CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
+  [[nodiscard]] CursesWindow* CreateBoxedWindow(const std::string& title, int nlines, int ncols);
 
   [[nodiscard]] ColorScheme* color_scheme() const { return color_scheme_.get(); }
   static void Init(const std::string& title);
-  static CursesIO* Get();
+  [[nodiscard]] static CursesIO* Get();
   [[nodiscard]] int GetMaxX() const;
   [[nodiscard]] int GetMaxY() const;
 
@@ -85,4 +85,4 @@ class CursesIO final {
 
 extern CursesIO* curses_out;
 
-#endif // __INCLUDED_PLATFORM_CURSES_IO_H__
+#endif

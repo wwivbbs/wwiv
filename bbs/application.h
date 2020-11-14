@@ -456,4 +456,4 @@ private:
   BbsMacroContext bbs_macro_context_;
 };
 
-#endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)
+#endif

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_ACS_H__
-#define __INCLUDED_BBS_ACS_H__
+#ifndef INCLUDED_BBS_ACS_H
+#define INCLUDED_BBS_ACS_H
 
 #include "common/input.h"
 #include "common/output.h"
@@ -34,4 +34,4 @@ std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
 
 }
 
-#endif  // __INCLUDED_BBS_FULL_SCREEN_H__
+#endif

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_STDIO_WIN_H__
-#define __INCLUDED_LOCALUI_STDIO_WIN_H__
+#ifndef INCLUDED_LOCALUI_STDIO_WIN_H
+#define INCLUDED_LOCALUI_STDIO_WIN_H
 
 #include "localui/colors.h"
 #include "localui/ui_win.h"
@@ -36,7 +36,7 @@ public:
   StdioWindow() = delete;
   StdioWindow(UIWindow&&) = delete;
 
-  virtual ~StdioWindow() = default;
+  ~StdioWindow() override = default;
 
   void GotoXY(int, int) override {}
 
@@ -53,4 +53,4 @@ public:
   [[nodiscard]] bool IsGUI() const override { return false; }
 };
 
-#endif // __INCLUDED_LOCALUI_STDIO_WIN_H__
+#endif

@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
-#define __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
+#ifndef INCLUDED_BINKP_TEST_FAKE_CONNECTION_H
+#define INCLUDED_BINKP_TEST_FAKE_CONNECTION_H
 
 #include "core/connection.h"
 #include <chrono>
@@ -75,4 +75,4 @@ private:
   bool open_{};
 };
 
-#endif  // __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
+#endif

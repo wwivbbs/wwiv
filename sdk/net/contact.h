@@ -15,23 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_CONTACT_H__
-#define __INCLUDED_SDK_CONTACT_H__
+#ifndef INCLUDED_SDK_CONTACT_H
+#define INCLUDED_SDK_CONTACT_H
 
 #include "core/datetime.h"
-#include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/net/net.h"
-#include <ctime>
 #include <filesystem>
 #include <initializer_list>
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 struct network_contact_record {
   std::string address;
@@ -132,7 +128,6 @@ class Contact {
 };
 
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_SDK_CONTACT_H__
+#endif

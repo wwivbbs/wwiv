@@ -19,14 +19,13 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
 
+#include "localui/curses_io.h"
+#include "core/strings.h"
+#include "localui/wwiv_curses.h"
 #include <algorithm>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
-#include "core/strings.h"
-#include "localui/wwiv_curses.h"
-#include "localui/curses_io.h"
 
 using std::unique_ptr;
 using std::string;
@@ -110,8 +109,8 @@ CursesIO::CursesIO(const string& title)
   start_color();
   color_scheme_.reset(new ColorScheme());
 
-  int stdscr_maxx = getmaxx(stdscr);
-  int stdscr_maxy = getmaxy(stdscr);
+  const auto stdscr_maxx = getmaxx(stdscr);
+  const auto stdscr_maxy = getmaxy(stdscr);
 
   if (stdscr_maxx < 80) {
     endwin();

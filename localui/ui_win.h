@@ -16,10 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_UI_WIN_H__
-#define __INCLUDED_LOCALUI_UI_WIN_H__
+#ifndef INCLUDED_LOCALUI_UI_WIN_H
+#define INCLUDED_LOCALUI_UI_WIN_H
 
-#include "colors.h"
+#include "localui/colors.h"
 #include <string>
 
 // Generic implementation of screen display routines for wwivconfig.
@@ -38,19 +38,19 @@ public:
   virtual int TouchWin() { return 0; }
   virtual int Refresh() { return 0; }
   virtual int Move(int, int) { return 0; }
-  virtual int GetcurX() const { return 0; }
-  virtual int GetcurY() const { return 0; }
+  [[nodiscard]] virtual int GetcurX() const { return 0; }
+  [[nodiscard]] virtual int GetcurY() const { return 0; }
   virtual int Clear() { return 0; }
   virtual int Erase() { return 0; }
   virtual int AttrSet(uint32_t) { return 0; }
   virtual int Keypad(bool) { return 0; }
-  virtual int GetMaxX() const { return 0; }
-  virtual int GetMaxY() const { return 0; }
+  [[nodiscard]] virtual int GetMaxX() const { return 0; }
+  [[nodiscard]] virtual int GetMaxY() const { return 0; }
   virtual int ClrtoEol() { return 0; }
   virtual int AttrGet(uint32_t*, short*) const { return 0; }
   virtual int Box(uint32_t, uint32_t) { return 0; }
 
-  virtual int GetChar() const = 0;
+  [[nodiscard]] virtual int GetChar() const = 0;
   virtual void GotoXY(int x, int y) = 0;
   virtual void Putch(uint32_t ch) = 0;
   virtual void Puts(const std::string& text) = 0;
@@ -59,10 +59,10 @@ public:
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */
-  virtual bool IsGUI() const { return false; }
+  [[nodiscard]] virtual bool IsGUI() const { return false; }
 
-  virtual UIWindow* parent() const { return parent_; }
-  SchemeId current_scheme_id() const { return current_scheme_id_; }
+  [[nodiscard]] virtual UIWindow* parent() const { return parent_; }
+  [[nodiscard]] SchemeId current_scheme_id() const { return current_scheme_id_; }
 
 protected:
   void set_current_scheme_id(SchemeId id) { current_scheme_id_ = id; }
@@ -73,4 +73,4 @@ private:
   SchemeId current_scheme_id_{SchemeId::UNKNOWN};
 };
 
-#endif // __INCLUDED_LOCALUI_UI_WIN_H__
+#endif

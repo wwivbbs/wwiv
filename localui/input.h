@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 // ReSharper disable CppClangTidyBugproneMacroParentheses
-#ifndef INCLUDED_INPUT_H
-#define INCLUDED_INPUT_H
+#ifndef INCLUDED_LOCALUI_INPUT_H
+#define INCLUDED_LOCALUI_INPUT_H
 
 #include "core/file.h"
 #include "core/scope_exit.h"

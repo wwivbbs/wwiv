@@ -27,20 +27,24 @@ jq ".number" jenkins.json
 * Add ability to convert between a FidoPackedMessage and FidoStoredMessage.  Then 
   we can move dupes to a badmessage area as FidoStoredMessage (.msg)
 * Update BBS list for network to use FTN nodelist.
+* Doesn't seem that wwivd checks for crash status on callout since
+  wwiv::sdk::callout never has the right file sizes for FTN, so it doesn't
+  know if anything is waiting.
 
 
 ## Container work
 ***
-* Add WWIV_CONFIG_DIR to point to where the config.json file lives (default to config.dat's data)
+* Add WWIV_CONFIG_DIR to point to where the config.json file lives
+  (default to config.dat's data)
 * Create default directory structure for in containers
 * move all binaries to bin, see what breaks
 
 
 ## Infrastructure Cleanup
 ***
-* Try to remove a()->current_net() and a()->net_num(), pass in the net as much as possible.
+* Try to remove a()->current_net() and a()->net_num(), pass in the net 
+  as much as possible.
 * make container that holds net_networks_rec *and* the current network number
-
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
 * stop using strncpy, strcpy.
@@ -73,9 +77,6 @@ jq ".number" jenkins.json
   - This needs a context class to hold current session state
     that is now spit across Application class and other
     global variables.
-* make a common ACS system (like TG, vs. having separate 
-  SL DSL AR fields everywhere for menus)
-* cleanup menu system. It's awful.
 
 ## Linux Work
 ***

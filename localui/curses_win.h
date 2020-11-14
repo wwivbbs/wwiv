@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_CURSES_WIN_H__
-#define __INCLUDED_PLATFORM_CURSES_WIN_H__
+#ifndef INCLUDED_LOCALUI_CURSES_WIN_H
+#define INCLUDED_LOCALUI_CURSES_WIN_H
 
 #include "localui/colors.h"
 #include "localui/ui_win.h"
@@ -31,7 +31,7 @@ public:
   CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                int begin_y = -1, int begin_x = -1);
   CursesWindow(const CursesWindow& copy) = delete;
-  ~CursesWindow();
+  ~CursesWindow() override;
 
   void SetTitle(const std::string& title) override;
 
@@ -71,4 +71,4 @@ private:
   ColorScheme* color_scheme_;
 };
 
-#endif // __INCLUDED_PLATFORM_CURSES_WIN_H__
+#endif

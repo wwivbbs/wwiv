@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCALUI_COLORS_H__
-#define __INCLUDED_LOCALUI_COLORS_H__
+#ifndef INCLUDED_LOCALUI_COLORS_H
+#define INCLUDED_LOCALUI_COLORS_H
 
 #include <map>
 #include <memory>
@@ -62,11 +62,12 @@ class ColorScheme {
  public:
   ColorScheme();
   virtual ~ColorScheme() = default;
-  virtual uint32_t GetAttributesForScheme(SchemeId id) const;
+  [[nodiscard]] virtual uint32_t GetAttributesForScheme(SchemeId id) const;
   ColorScheme& operator=(const ColorScheme&) = delete;
   virtual void InitPairs();
 private:
   static std::map<SchemeId, SchemeDescription> LoadColorSchemes();
   const std::map<SchemeId, SchemeDescription> scheme_;
 };
-#endif // __INCLUDED_PLATFORM_COLORS_H__
+
+#endif
