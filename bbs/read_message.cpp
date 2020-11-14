@@ -27,7 +27,6 @@
 #include "bbs/message_file.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
-#include "common/com.h"
 #include "common/full_screen.h"
 #include "common/input.h"
 #include "common/output.h"

@@ -19,10 +19,8 @@
 #ifndef INCLUDED_BBS_MESSAGE_FIND_H
 #define INCLUDED_BBS_MESSAGE_FIND_H
 
-namespace wwiv {
-namespace common {
+namespace wwiv::common {
 class FullScreenView;
-}
 }
 
 enum class MsgScanOption;
@@ -36,8 +34,22 @@ struct find_message_result_t {
   int msgnum{-1};
 };
 
+/**
+ * Searches for the next message in the current area using last direction and
+ * search string.
+ */
 find_message_result_t FindNextMessageAgain(int msgno);
+
+/**
+ * Searches for the next message in the current area using prompting for the
+ * direction and search string.
+ */
 find_message_result_t FindNextMessage(int msgno);
+
+/**
+ * Searches for the next message in the current area using prompting for the
+ * direction and search string using the FullScreenView's Command Area.
+ */
 find_message_result_t FindNextMessageFS(common::FullScreenView& fs, int msgno);
 
 }

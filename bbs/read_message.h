@@ -66,14 +66,10 @@ Type2MessageData read_type2_message(
 
 enum class ReadMessageOption {
   NONE,
-  // Directly use the message number in ReadMessageResult as the next message
-  GOTO_MESSAGE,
   // Opens the Jump to Message Dialog
   JUMP_TO_MSG,
   NEXT_MSG,
   PREV_MSG,
-  NEXT_SUB,
-  PREV_SUB,
   LIST_TITLES,
   COMMAND,
   READ_MESSAGE

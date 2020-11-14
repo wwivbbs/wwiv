@@ -78,8 +78,6 @@ using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static char s_szFindString[21];
-
 static string GetScanReadPrompts(int msg_num) {
   if (a()->sess().forcescansub()) {
     if (msg_num < a()->GetNumMessagesInCurrentMessageArea()) {
@@ -487,7 +485,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
       msgnum = selected;
       fs.ClearCommandLine();
       return result;
-    } break;
+    }
     default: {
       if ((key & 0xff) == key) {
         key = toupper(key & 0xff);
@@ -507,7 +505,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
           ReadMessageResult result;
           result.option = ReadMessageOption::READ_MESSAGE;
           return result;
-        } break;
+        }
         case 'J': {
           fs.ClearCommandLine();
           bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
@@ -517,14 +515,14 @@ static ReadMessageResult HandleListTitlesFullScreen(int& msgnum, MsgScanOption& 
           result.option = ReadMessageOption::READ_MESSAGE;
           fs.ClearCommandLine();
           return result;
-        } break;
+        }
         case 'Q': {
           ReadMessageResult result;
           result.option = ReadMessageOption::COMMAND;
           result.command = 'Q';
           fs.ClearCommandLine();
           return result;
-        } break;
+        }
         case '?': {
           need_redraw = true;
           fs.ClearMessageArea();
@@ -1197,7 +1195,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       }
       done = query_post();
       if (!done) {
-        // back to list title.s
+        // back to list title.
         scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;
       }
     }
@@ -1216,9 +1214,9 @@ void scan(int msg_num, MsgScanOption scan_option, bool& nextsub, bool title_scan
   }
 
   const auto& cs = a()->current_sub();
-  auto fsreader_enabled =
+  const auto fsreader_enabled =
       a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
-  bool skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen) != 0;
+  const bool skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen) != 0;
   if (fsreader_enabled && !skip_fs_reader_per_sub) {
     scan_new(msg_num, scan_option, nextsub, title_scan);
     return;
