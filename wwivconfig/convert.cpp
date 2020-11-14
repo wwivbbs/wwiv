@@ -69,11 +69,16 @@ struct user_config {
   char junk[119]; // AMENU took 11 bytes from here
 };
 
+void write_and_log(UIWindow* window, const std::string& m) {
+  LOG(INFO) << m;
+  window->Puts(StrCat(m, "\n"));
+}
+
 static void ShowBanner(UIWindow* window, const std::string& m) {
   // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
   curses_out->window()->Bkgd(' ');
   window->SetColor(SchemeId::INFO);
-  window->Puts(StrCat(m, "\n"));
+  write_and_log(window, m);
   window->SetColor(SchemeId::NORMAL);
 }
 
@@ -149,6 +154,7 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string&
 
 static bool update_config_revision_number(const std::string& config_filename,
                                           const uint32_t config_revision_number) {
+  VLOG(1) << "update_config_revision_number: " << config_revision_number;
   File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
@@ -199,12 +205,14 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                               File::shareDenyReadWrite);
   if (!usersFile) {
+    LOG(ERROR) << "Unable to open user.lst.";
     messagebox(window, "Unable to open user.lst.");
     return false;
   }
 
   vector<userrec> users;
   if (!usersFile.ReadVector(users)) {
+    LOG(ERROR) << "Unable to read user.lst.";
     messagebox(window, "Unable to read user.lst.");
     return false;
   }
@@ -249,11 +257,13 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   DataFile<user_config> configUsrFile(config_usr_filename, File::modeReadOnly | File::modeBinary,
                                       File::shareDenyWrite);
   if (!configUsrFile) {
+    LOG(ERROR) << "No config.usr file to upgrade.";
     return false;
   }
 
   vector<user_config> second_config;
   if (!configUsrFile.ReadVector(second_config)) {
+    LOG(ERROR) << "Unable to read config.usr file to upgrade.";
     return false;
   }
 
@@ -272,6 +282,7 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   // Save where we are.
   usersFile.Seek(0);
   if (!usersFile.WriteVector(users)) {
+    LOG(ERROR) << "Unable to write user.lst.";
     messagebox(window, "Unable to write user.lst.");
     return false;
   }
@@ -284,6 +295,7 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   const auto user_dat_fn = FilePath(datadir, "user.dat");
   File::Remove(user_dat_fn);
 
+  LOG(INFO) << "Converted to config version v1";
   messagebox(window, "Converted to config version v1");
   return true;
 }
@@ -345,12 +357,15 @@ static bool convert_to_v2(UIWindow* window, const std::string& datadir,
                           const std::string& config_filename) {
   ShowBanner(window, "Updating to 5.2+ v2 format...");
 
+  VLOG(1) << "Upgrading subs.json";
   ConvertJsonFile<subboard_52_t, subboard_t> cs(datadir, SUBS_JSON, "subs", 0, 1);
   cs.Convert();
 
+  VLOG(1) << "Upgrading dirs.json";
   ConvertJsonFile<directory_55_t, directory_t> cd(datadir, DIRS_JSON, "dirs", 0, 1);
   cd.Convert();
 
+  VLOG(1) << "Upgrading chains.json";
   ConvertJsonFile<chain_55_t, chain_t> cc(datadir, CHAINS_JSON, "chains", 0, 1);
   cc.Convert();
 
@@ -385,8 +400,7 @@ static bool convert_menu(const std::string& menu_dir, const std::string& menu_se
 
 static bool convert_to_v3(UIWindow* window, const std::string& config_filename) {
   ShowBanner(window, "Updating to 5.2+ v3 format...");
-  LOG(INFO) << "Updating to 5.2+ v3 format...";
-  std::filesystem::path config_path{config_filename};
+  const std::filesystem::path config_path{config_filename};
 
   const Config config(config_path.parent_path().string());
   if (!config.IsInitialized()) {
@@ -420,21 +434,27 @@ static bool convert_to_v3(UIWindow* window, const std::string& config_filename) 
 config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                              const std::string& config_filename,
                              const uint32_t config_revision_number) {
+  VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
   if (config_revision_number >= 3) {
+    VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
     return config_upgrade_state_t::already_latest;
   }
   // add others
   if (config_revision_number < 1) {
+    VLOG(1) << "ensure_latest_5x_config: converting to v1";
     convert_to_v1(window, datadir, config_filename);
   }
   if (config_revision_number < 2) {
     // Versioned subs, chains, and dirs
+    VLOG(1) << "ensure_latest_5x_config: converting to v2";
     convert_to_v2(window, datadir, config_filename);
   }
   if (config_revision_number < 3) {
     // menus in JSON format.
+    VLOG(1) << "ensure_latest_5x_config: converting to v3";
     convert_to_v3(window, config_filename);
   }
+  VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
 }
 
@@ -444,7 +464,7 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir, con
     return;
   }
   window->SetColor(SchemeId::INFO);
-  window->Puts("Converting config.dat to 4.3/5.x format...\n");
+  write_and_log(window, "Converting config.dat to 4.3/5.x format...\n");
   window->SetColor(SchemeId::NORMAL);
   configrec syscfg53{};
   file.Read(&syscfg53, sizeof(configrec));
@@ -473,10 +493,10 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir, con
 
   File archiver(FilePath(datadir, ARCHIVER_DAT));
   if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
-    window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
-    window->Puts("Creating new file....\n");
+    write_and_log(window, "Couldn't open 'ARCHIVER_DAT' for writing.\n");
+    write_and_log(window, "Creating new file....\n");
     create_arcs(window, datadir);
-    window->Puts("\n");
+    window->Puts( "\n");
     if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");
       return;

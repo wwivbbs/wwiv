@@ -56,15 +56,32 @@ static uint16_t str_to_arword(const std::string& arstr) {
   return rar;
 }
 
-Ar::Ar(int ar) : ar_(static_cast<uint16_t>(ar)) {}
+Ar::Ar(int ar, bool user_side) : ar_(static_cast<uint16_t>(ar)), user_side_(user_side) {}
 
 Ar::Ar(char ar) : ar_(static_cast<uint16_t>(1 << (ar - 'A'))) {}
 
+Ar::Ar(const std::string& ar, bool user_side) : ar_(str_to_arword(ar)), user_side_(user_side) {}
+
 Ar::Ar(const std::string& ar) : ar_(str_to_arword(ar)) {}
 
+
 bool Ar::eq(const Ar& that) const {
+  if (user_side_ && that.user_side_) {
+    DLOG(FATAL) << "Can not have user side ar on both sides.";
+    LOG(ERROR) << "Can not have user side ar on both sides.";
+    return false;
+  }
+  if (user_side_) {
+    return that.ar_ == 0 || ar_ & that.ar_;
+  }
+  if (that.user_side_) {
+    return that.eq(*this);
+  }
+  DLOG(FATAL) << "Ar::eq called with no user side.";
+  LOG(ERROR) << "Ar::eq called with no user side.";
+  // Neither is a user side, so return exact match.
   // Always return true if either side allows everything.
-  return ar_ == 0 || that.ar_ == 0 || (ar_ & that.ar_);
+  return ar_ & that.ar_;
 }
 
 std::string Ar::as_string() const { return fmt::format("Ar({})", word_to_arstr(ar_));  }
@@ -245,7 +262,9 @@ Ar Value::as_ar() {
     return std::any_cast<Ar>(value_);
   case ValueType::boolean:
   case ValueType::number:
-    return Ar(0);
+    // This is not a user value since it didn't come from
+    // the UserProvider.
+    return Ar(0, false);
   case ValueType::string:
     return Ar(std::any_cast<std::string>(value_));
   case ValueType::unknown:

@@ -36,37 +36,44 @@ public:
 
 TEST_F(ArTest, Eq) {
   const Ar a('A');
-  const Ar abcd("ABCD");
-  EXPECT_EQ(abcd, a);
-  EXPECT_EQ(a, abcd);
+  const Ar user_abcd("ABCD", true);
+  EXPECT_EQ(user_abcd, a);
+  EXPECT_EQ(a, user_abcd);
 }
 
 TEST_F(ArTest, Ne) {
   const Ar a('A');
-  const Ar cde("CDE");
-  EXPECT_NE(cde, a);
-  EXPECT_NE(a, cde);
+  const Ar user_cde("CDE", true);
+  EXPECT_NE(user_cde, a);
+  EXPECT_NE(a, user_cde);
 }
 
 TEST_F(ArTest, Eq_Conversion) {
-  const Ar abcd("ABCD");
+  const Ar user_abcd("ABCD", true);
 
-  EXPECT_EQ(abcd, 'A');
-  EXPECT_EQ(abcd, "A");
-  EXPECT_EQ("A", abcd);
-  EXPECT_EQ("A", abcd);
+  EXPECT_EQ(user_abcd, 'A');
+  EXPECT_EQ(user_abcd, "A");
+  EXPECT_EQ("A", user_abcd);
+  EXPECT_EQ("A", user_abcd);
 }
 
 TEST_F(ArTest, Ne_Conversion) {
-  const Ar cde("CDE");
-  EXPECT_NE(cde, 'A');
-  EXPECT_NE(cde, "A");
-  EXPECT_NE('A', cde);
-  EXPECT_NE("A", cde);
+  const Ar user_cde("CDE", true);
+  EXPECT_NE(user_cde, 'A');
+  EXPECT_NE(user_cde, "A");
+  EXPECT_NE('A', user_cde);
+  EXPECT_NE("A", user_cde);
 }
 
-TEST_F(ArTest, Eq_Empty) {
-  const Ar e(0);
-  EXPECT_EQ(e, "A");
-  EXPECT_EQ("A", e);
+TEST_F(ArTest, Eq_Userside_Empty) {
+  const Ar e(0, true);
+  EXPECT_NE(e, "A");
+  EXPECT_NE("A", e);
 }
+
+TEST_F(ArTest, Eq_OtherSide_Empty) {
+  const Ar user("ABC", true);
+  EXPECT_EQ(user, Ar(0, false));
+  EXPECT_EQ(Ar(0, false), user);
+}
+

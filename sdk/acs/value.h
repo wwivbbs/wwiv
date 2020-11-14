@@ -29,11 +29,16 @@ namespace wwiv::sdk::acs {
 
 class Ar {
 public:
-  explicit Ar(int ar);
+  // AR set of multiple AR values.  If user_side is true then
+  // This AR set represents the set of AR values possessed
+  // and the other side represents the AR values required.
+  Ar(int ar, bool user_side);
   // Don't be explicit so that we can let the equality operators
   // work easily below.
   // ReSharper disable once CppNonExplicitConvertingConstructor
   Ar(char ar);
+  // ReSharper disable once CppNonExplicitConvertingConstructor
+  Ar(const std::string& ar, bool user_side);
   // ReSharper disable once CppNonExplicitConvertingConstructor
   Ar(const std::string& ar);
   // ReSharper disable once CppNonExplicitConvertingConstructor
@@ -44,6 +49,7 @@ public:
   [[nodiscard]] int as_integer() const;
 
   uint16_t ar_;
+  bool user_side_{false};
 };
 
 inline bool operator==(const Ar& lhs, const Ar& rhs) { return lhs.eq(rhs); }

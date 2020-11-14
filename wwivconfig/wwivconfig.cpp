@@ -155,6 +155,7 @@ int main(int argc, char* argv[]) {
   try {
     LoggerConfig config(LogDirFromConfig);
     Logger::Init(argc, argv, config);
+    ScopeExit at_exit(Logger::ExitLogger);
 
     const auto app = std::make_unique<WWIVConfigApplication>();
     return app->main(argc, argv);
