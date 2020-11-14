@@ -79,7 +79,32 @@ What's New in WWIV 5.6
 ! Some WWIVbasic packages may be selectively enabled and disabled,
   by default wwiv.io.file and wwiv.os will be disabled. Please use
   wwivconfig (menu item R for Scripting Config) to enable these.
-  
++ For those writing unit tests for WWIVbasic, added macros 
+  BASIC_ASSERT_EQUALS and BASIC_ASSERT_NE on the C++ side and
+  ASSERT.NE in WWIVbasic
++ Added the WWIV.OS package (not enabled by default in WWIVconfig)
++ Initial start of WWIV 5.6 style menus.  These are JSON vs. binary
+  on disk, and support multiple actions to be invoked per menu
+  command, also on entry and exit.
++ ACS Improvements:
+  * Added user.sysop, user.cosysop meta values.
+  * Implemented previously documented user.regnum
+  * Added variables true, false with values as you expect.
+* Require cosysop for netdatlog (#1291)
+* Fix net.log date format. (#1307)
+* Introduce a SubDialog class to use for all SubDialogs in wwivconfig.
+  * This allows fixing the inconsistent key handling that exists
+      with pressing escape after exiting the dialog.
+  * This allows fixing the inconsistent experience where some dialogs
+    auto-open when cursoring over them (unexpectedly), while others
+    properly wait for an ENTER keypress.
+* Fixed A couple of quirks with netdat.log
++ Implement "(F)ind text" in the full screen message reader
++ update fs msg reader help text to include (F)ind
+
+
+
+
 What's New in WWIV 5.5.1 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Fix age display in newuser login.

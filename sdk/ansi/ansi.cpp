@@ -38,7 +38,6 @@ Ansi::Ansi(VScreen* b, AnsiCallbacks callbacks, uint8_t default_attr)
     : b_(b), callbacks_(std::move(callbacks)), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
-  // wwiv::os::sleep_for(std::chrono::milliseconds(10));
   if (state_ == AnsiMode::not_in_sequence && c == 27) {
     state_ = AnsiMode::in_sequence;
     return write_in_sequence(c);

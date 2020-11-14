@@ -484,6 +484,8 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
         *anony = 0;
       }
     } else {
+      bout.Left(80);
+      bout.clreol();
       bout << "|#5Anonymous? ";
       if (bin.yesno()) {
         *anony = anony_sender;
