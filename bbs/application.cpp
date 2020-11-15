@@ -712,15 +712,10 @@ void Application::GotCaller(int ms) {
   }
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
-  if (ms) {
-    sess().incom(true);
-    sess().outcom(true);
-    sess().using_modem(true);
-  } else {
-    sess().using_modem(false);
-    sess().incom(false);
-    sess().outcom(false);
-  }
+  const auto remote_conneted = modem_speed_ != 0;
+  sess().incom(remote_conneted);
+  sess().outcom(remote_conneted);
+  sess().using_modem(remote_conneted);
 }
 
 std::filesystem::path Application::bbspath() const noexcept { return bbs_dir_; }
