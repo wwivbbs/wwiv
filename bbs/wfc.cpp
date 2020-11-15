@@ -235,16 +235,46 @@ WFC::WFC(Application* a) : a_(a) {
     inst_num = 1;
   }
   Clear();
+
+  a_->remoteIO()->remote_info().clear();
+  a_->frequent_init();
+  a_->sess().user_num(0);
+  // Since hang_it_up sets hangup_ = true, let's ensure we're always
+  // not in this state when we enter the WFC.
+  a_->sess().hangup(false);
+  a_->set_at_wfc(false);
+  write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+  // We'll read the sysop record for defaults, but let's set
+  // usernum to 0 here since we don't want to botch up the
+  // sysop's record if things go wrong.
+  // TODO(rushfan): Let's make record 0 the logon defaults
+  // and stop using the sysop record.
+  a_->ReadCurrentUser(1);
+  read_qscn(1, a_->sess().qsc, false);
+  // N.B. This used to be 1.
+  a_->sess().user_num(0);
+
+  a_->reset_effective_sl();
+  if (a_->user()->IsUserDeleted()) {
+    a_->user()->SetScreenChars(80);
+    a_->user()->SetScreenLines(25);
+  }
+  a_->sess().num_screen_lines(a_->localIO()->GetDefaultScreenBottom() + 1);
 }
 
-WFC::~WFC() = default;
+WFC::~WFC() {
+  a_->set_at_wfc(false);
+  
+};
 
 std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
-  unsigned char ch;
-  auto io = a_->localIO();
+  auto* io = a_->localIO();
 
   const auto last_date_status = a()->status_manager()->GetStatus();
   for (;;) {
+    sleep_for(milliseconds(100));
+    yield();
+
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     a_->set_net_num(0);
     a_->set_at_wfc(true);
@@ -255,6 +285,7 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
           a_->instance_number() == a_->GetBeginDayNodeNumber()) {
         beginday(true);
         Clear();
+        continue;
       }
     }
 
@@ -262,244 +293,239 @@ std::tuple<wfc_events_t, int> WFC::doWFCEvents() {
     // try to check for packets to send every minute.
     DrawScreen();
     bin.okskey(false);
-    if (io->KeyPressed()) {
-      a_->set_at_wfc(false);
-      a_->ReadCurrentUser(sysop_usernum);
-      read_qscn(1, a()->sess().qsc, false);
-      a_->set_at_wfc(true);
-      ch = to_upper_case<char>(io->GetChar());
-      if (ch == 0) {
-        ch = io->GetChar();
-        a_->handle_sysop_key(ch);
-        ch = 0;
-      }
-    } else {
-      ch = 0;
+    if (!io->KeyPressed()) {
+      // extra sleep.
       sleep_for(milliseconds(100));
       yield();
+      continue;
     }
-    if (ch) {
-      a_->set_at_wfc(true);
-      bin.okskey(true);
-      bin.resetnsp();
-      io->SetCursor(LocalIO::cursorNormal);
-      switch (ch) {
-        // Local Logon
-      case SPACE: {
-        auto [ll, unx] = LocalLogon();
-        if (ll == local_logon_t::fast) {
-          return std::make_tuple(wfc_events_t::login_fast, unx);
-        }
-        if (ll == local_logon_t::prompt) {
-          return std::make_tuple(wfc_events_t::login, -1);
-        }
-        break;
+    a_->set_at_wfc(false);
+    a_->ReadCurrentUser(sysop_usernum);
+    read_qscn(1, a()->sess().qsc, false);
+    a_->set_at_wfc(true);
+    auto ch = to_upper_case<char>(io->GetChar());
+    if (ch == 0) {
+      ch = io->GetChar();
+      a_->handle_sysop_key(ch);
+      continue;
+    }
+
+    a_->set_at_wfc(true);
+    bin.okskey(true);
+    bin.resetnsp();
+    io->SetCursor(LocalIO::cursorNormal);
+    switch (ch) {
+      // Local Logon
+    case SPACE: {
+      auto [ll, unx] = LocalLogon();
+      if (ll == local_logon_t::fast) {
+        return std::make_tuple(wfc_events_t::login_fast, unx);
       }
-      // Show WFC Menu
-      case '?': {
-        string helpFileName = SWFC_NOEXT;
-        char chHelp;
-        do {
-          io->Cls();
-          bout.nl();
-          bout.print_help_file(helpFileName);
-          chHelp = bin.getkey();
-          helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
-        } while (chHelp != SPACE && chHelp != ESC);
-      } break;
-      // Force Network Callout
-      case '/':
-        if (a_->current_net().sysnum) {
-          force_callout();
-        }
-        break;
-      case ',':
-        // Print NetLogs
-        if (a_->current_net().sysnum > 0 || !a_->nets().empty()) {
-          io->GotoXY(2, 23);
-          bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
-          const auto netdat_num = onek("Q012");
-          switch (netdat_num) {
-          case '0':
-          case '1':
-          case '2': {
-            bout.print_local_file(fmt::format("netdat{}.log", netdat_num));
-          } break;
-          default: ;
-          }
-        }
-        break;
-        // Net List
-      case '`':
-        if (a_->current_net().sysnum) {
-          print_net_listing(true);
-        }
-        break;
-        // [ESC] Quit the BBS
-      case ESC:
-        io->GotoXY(2, 23);
-        bout << "|#7Exit the BBS? ";
-        if (bin.yesno()) {
-          return std::make_tuple(wfc_events_t::exit, -1);
-        }
+      if (ll == local_logon_t::prompt) {
+        return std::make_tuple(wfc_events_t::login, -1);
+      }
+      break;
+    }
+    // Show WFC Menu
+    case '?': {
+      string helpFileName = SWFC_NOEXT;
+      char chHelp;
+      do {
         io->Cls();
-        break;
-        // BoardEdit
-      case 'B':
-        write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
-        boardedit();
-        cleanup_net();
-        break;
-        // ChainEdit
-      case 'C':
-        write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
-        chainedit();
-        break;
-        // DirEdit
-      case 'D':
-        write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
-        dlboardedit();
-        break;
-        // Send Email
-      case 'E':
-        Clear();
-        a_->sess().user_num(1);
-        bout.bputs("|#1Send Email:");
-        send_email();
-        a_->WriteCurrentUser(sysop_usernum);
-        cleanup_net();
-        break;
-      // GfileEdit
-      case 'G':
-        write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
-        gfileedit();
-        break;
-        // Send Internet Mail
-      // ConfEdit
-      case 'J':
-        Clear();
-        edit_confs();
-        break;
-        // SendMailFile
-      case 'K': {
-        Clear();
-        a_->sess().user_num(1);
-        bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-        auto buffer = bin.input_path(50);
-        LoadFileIntoWorkspace(a()->context(), buffer, false);
-        send_email();
-        a_->WriteCurrentUser(sysop_usernum);
-        cleanup_net();
-      } break;
-      // Print Log Daily logs
-      case 'L': {
-        Clear();
-        const auto status = a()->status_manager()->GetStatus();
-        bout.print_local_file(status->GetLogFileName(0));
-      } break;
-      // Read User Mail
-      case 'M': {
-        Clear();
-        a_->sess().user_num(sysop_usernum);
-        readmail(0);
-        a_->WriteCurrentUser(sysop_usernum);
-        cleanup_net();
-      } break;
-      // Print Net Log
-      case 'N': {
-        Clear();
-        bout.print_local_file("net.log");
-      } break;
-      // EditTextFile
-      case 'O': {
-        Clear();
-        write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-        bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
-        const auto current_dir_slash = File::EnsureTrailingSlash(File::current_directory());
-        auto net_filename = bin.input_path(current_dir_slash, 50);
-        if (!net_filename.empty()) {
-          fsed_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
-        }
-      } break;
-      // Print Network Pending list
-      case 'P': {
-        Clear();
-        print_pending_list();
-      } break;
-      // Quit BBS
-      case 'Q':
-        io->GotoXY(2, 23);
-        return std::make_tuple(wfc_events_t::exit, -1);
-        // Read All Mail
-      case 'R':
-        Clear();
-        write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
-        mailr();
-        break;
-        // Print Current Status
-      case 'S':
-        prstatus();
-        bin.getkey();
-        break;
-      case 'T':
-        if (a()->terminal_command.empty()) {
-          bout << "Terminal Command not specified. " << wwiv::endl
-               << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
-          bin.getkey();
-          break;
-        }
-        exec_cmdline(a()->terminal_command, INST_FLAGS_NONE);
-        break;
-      case 'U': {
-        // User edit
-        auto exe = FilePath(a()->bindir(), "wwivconfig");
-#ifdef _WIN32
-        // CreateProcess is failing on Windows with the .exe extension, and since
-        // we don't use MakeAbsCmd on this, it's without .exe.
-        exe.replace_extension(".exe");
-#endif // _WIN32
-        const auto cmd = StrCat(exe.string(), " --user_editor");
-        exec_cmdline(cmd, INST_FLAGS_NONE);
-      } break;
-      case 'V': {
-        // InitVotes
-        Clear();
-        write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
-        ivotes();
-      } break;
-      // Edit Gfile
-      case 'W': {
-        Clear();
-        write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-        bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
-        text_edit();
-      } break;
-      // Print Yesterday's Log
-      case 'Y': {
-        Clear();
-        const auto status = a()->status_manager()->GetStatus();
-        bout.print_local_file(status->GetLogFileName(1));
-      } break;
-      // Print Activity (Z) Log
-      case 'Z': {
-        zlog();
         bout.nl();
-        bin.getkey();
-      } break;
+        bout.print_help_file(helpFileName);
+        chHelp = bin.getkey();
+        helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
+      } while (chHelp != SPACE && chHelp != ESC);
+    } break;
+    // Force Network Callout
+    case '/':
+      if (a_->current_net().sysnum) {
+        force_callout();
       }
+      break;
+    case ',':
+      // Print NetLogs
+      if (a_->current_net().sysnum > 0 || !a_->nets().empty()) {
+        io->GotoXY(2, 23);
+        bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
+        const auto netdat_num = onek("Q012");
+        switch (netdat_num) {
+        case '0':
+        case '1':
+        case '2': {
+          bout.print_local_file(fmt::format("netdat{}.log", netdat_num));
+        } break;
+        default:;
+        }
+      }
+      break;
+      // Net List
+    case '`':
+      if (a_->current_net().sysnum) {
+        print_net_listing(true);
+      }
+      break;
+      // [ESC] Quit the BBS
+    case ESC:
+      io->GotoXY(2, 23);
+      bout << "|#7Exit the BBS? ";
+      if (bin.yesno()) {
+        return std::make_tuple(wfc_events_t::exit, -1);
+      }
+      io->Cls();
+      break;
+      // BoardEdit
+    case 'B':
+      write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
+      boardedit();
+      cleanup_net();
+      break;
+      // ChainEdit
+    case 'C':
+      write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
+      chainedit();
+      break;
+      // DirEdit
+    case 'D':
+      write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
+      dlboardedit();
+      break;
+      // Send Email
+    case 'E':
       Clear();
-      a_->frequent_init();
-      a_->ReadCurrentUser(sysop_usernum);
-      read_qscn(1, a()->sess().qsc, false);
-      a_->reset_effective_sl();
+      a_->sess().user_num(1);
+      bout.bputs("|#1Send Email:");
+      send_email();
+      a_->WriteCurrentUser(sysop_usernum);
+      cleanup_net();
+      break;
+    // GfileEdit
+    case 'G':
+      write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
+      gfileedit();
+      break;
+    // ConfEdit
+    case 'J':
+      Clear();
+      edit_confs();
+      break;
+      // SendMailFile
+    case 'K': {
+      Clear();
+      a_->sess().user_num(1);
+      bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
+      auto buffer = bin.input_path(50);
+      LoadFileIntoWorkspace(a()->context(), buffer, false);
+      send_email();
+      a_->WriteCurrentUser(sysop_usernum);
+      cleanup_net();
+    } break;
+    // Print Log Daily logs
+    case 'L': {
+      Clear();
+      const auto status = a()->status_manager()->GetStatus();
+      bout.print_local_file(status->GetLogFileName(0));
+    } break;
+    // Read User Mail
+    case 'M': {
+      Clear();
       a_->sess().user_num(sysop_usernum);
-
-      catsl();
-      write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+      readmail(0);
+      a_->WriteCurrentUser(sysop_usernum);
+      cleanup_net();
+    } break;
+    // Print Net Log
+    case 'N': {
+      Clear();
+      bout.print_local_file("net.log");
+    } break;
+    // EditTextFile
+    case 'O': {
+      Clear();
+      write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
+      bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
+      const auto current_dir_slash = File::EnsureTrailingSlash(File::current_directory());
+      auto net_filename = bin.input_path(current_dir_slash, 50);
+      if (!net_filename.empty()) {
+        fsed_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
+      }
+    } break;
+    // Print Network Pending list
+    case 'P': {
+      Clear();
+      print_pending_list();
+    } break;
+    // Quit BBS
+    case 'Q':
+      io->GotoXY(2, 23);
+      return std::make_tuple(wfc_events_t::exit, -1);
+      // Read All Mail
+    case 'R':
+      Clear();
+      write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
+      mailr();
+      break;
+      // Print Current Status
+    case 'S':
+      prstatus();
+      bin.getkey();
+      break;
+    case 'T':
+      if (a()->terminal_command.empty()) {
+        bout << "Terminal Command not specified. " << wwiv::endl
+             << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
+        bin.getkey();
+        break;
+      }
+      exec_cmdline(a()->terminal_command, INST_FLAGS_NONE);
+      break;
+    case 'U': {
+      // User edit
+      auto exe = FilePath(a()->bindir(), "wwivconfig");
+#ifdef _WIN32
+      // CreateProcess is failing on Windows with the .exe extension, and since
+      // we don't use MakeAbsCmd on this, it's without .exe.
+      exe.replace_extension(".exe");
+#endif // _WIN32
+      const auto cmd = StrCat(exe.string(), " --user_editor");
+      exec_cmdline(cmd, INST_FLAGS_NONE);
+    } break;
+    case 'V': {
+      // InitVotes
+      Clear();
+      write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
+      ivotes();
+    } break;
+    // Edit Gfile
+    case 'W': {
+      Clear();
+      write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
+      bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
+      text_edit();
+    } break;
+    // Print Yesterday's Log
+    case 'Y': {
+      Clear();
+      const auto status = a()->status_manager()->GetStatus();
+      bout.print_local_file(status->GetLogFileName(1));
+    } break;
+    // Print Activity (Z) Log
+    case 'Z': {
+      zlog();
+      bout.nl();
+      bin.getkey();
+    } break;
     }
+    Clear();
+    a_->frequent_init();
+    a_->ReadCurrentUser(sysop_usernum);
+    read_qscn(1, a()->sess().qsc, false);
+    a_->reset_effective_sl();
+    a_->sess().user_num(sysop_usernum);
 
-    sleep_for(milliseconds(100));
-    yield();
+    catsl();
+    write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   }
 }
 
@@ -531,7 +557,7 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
     a_->localIO()->GetChar();
     return std::make_tuple(local_logon_t::exit, -1);
   }
-  case 'F':  // 'F' for Fast
+  case 'F': // 'F' for Fast
   case '1':
     unx = 1;
     break;
@@ -580,4 +606,4 @@ std::tuple<local_logon_t, int> WFC::LocalLogon() {
   return std::make_tuple(local_logon_t::fast, unx);
 }
 
-} // namespace wwiv
+} // namespace wwiv::bbs

@@ -680,31 +680,6 @@ void Application::set_language_number(int n) {
 
 get_caller_t Application::GetCaller() {
   wwiv::bbs::WFC wfc(this);
-  remoteIO()->remote_info().clear();
-  frequent_init();
-  sess().user_num(0);
-  // Since hang_it_up sets hangup_ = true, let's ensure we're always
-  // not in this state when we enter the WFC.
-  sess().hangup(false);
-  set_at_wfc(false);
-  write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
-  // We'll read the sysop record for defaults, but let's set
-  // usernum to 0 here since we don't want to botch up the
-  // sysop's record if things go wrong.
-  // TODO(rushfan): Let's make record 0 the logon defaults
-  // and stop using the sysop record.
-  ReadCurrentUser(1);
-  read_qscn(1, sess().qsc, false);
-  // N.B. This used to be 1.
-  sess().user_num(0);
-
-  reset_effective_sl();
-  if (user()->IsUserDeleted()) {
-    user()->SetScreenChars(80);
-    user()->SetScreenLines(25);
-  }
-  sess().num_screen_lines(localIO()->GetDefaultScreenBottom() + 1);
-
   const auto [lokb, unx] = wfc.doWFCEvents();
 
   if (lokb == wwiv::bbs::wfc_events_t::exit) {
@@ -717,9 +692,9 @@ get_caller_t Application::GetCaller() {
   bin.okskey(true);
   Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
-  set_at_wfc(false);
 
-  return (lokb == wwiv::bbs::wfc_events_t::login_fast) ? get_caller_t::fast_login: get_caller_t::normal_login;
+  return lokb == wwiv::bbs::wfc_events_t::login_fast ? get_caller_t::fast_login
+                                                     : get_caller_t::normal_login;
 }
 
 void Application::GotCaller(int ms) {
@@ -779,7 +754,7 @@ int Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 int Application::Run(int argc, char* argv[]) {
-  int ui = 0;
+  int bps = 0;
   auto ooneuser = false;
   auto type = CommunicationType::NONE;
 
@@ -793,7 +768,7 @@ int Application::Run(int argc, char* argv[]) {
   cmdline.set_no_args_allowed(true);
   cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
   cmdline.add_argument({"fsed", 'f', "Opens file in the FSED", ""});
-  cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "115200"});
+  cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "38400"});
   cmdline.add_argument({"sysop_cmd", 'c', "Executes a sysop command (b/c/d)", ""});
   cmdline.add_argument(
       BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
@@ -866,8 +841,10 @@ int Application::Run(int argc, char* argv[]) {
       return errorlevel_;
     }
     if (xarg == 'T' || xarg == 'S') {
-      ui = cmdline.iarg("bps");
-      SetCurrentSpeed(std::to_string(ui));
+      // Setting a max of 57600 for the BPS value, by default we use 38400
+      // as the default value.
+      bps = std::min<int>(cmdline.iarg("bps"), 57600);
+      SetCurrentSpeed(std::to_string(bps));
       // Set it false until we call LiLo
       user_already_on_ = true;
       ooneuser = true;
@@ -1018,7 +995,7 @@ int Application::Run(int argc, char* argv[]) {
       sess().user_num(this_usernum_from_commandline);
       ReadCurrentUser();
       if (!user()->IsUserDeleted()) {
-        GotCaller(ui);
+        GotCaller(bps);
         sess().user_num(this_usernum_from_commandline);
         ReadCurrentUser();
         read_qscn(sess().user_num(), sess().qsc, false);
@@ -1037,7 +1014,7 @@ int Application::Run(int argc, char* argv[]) {
       auto gt = get_caller_t::normal_login;
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
-          GotCaller(ui);
+          GotCaller(bps);
         } else {
           gt = GetCaller();
           if (gt == get_caller_t::exit) {

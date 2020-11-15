@@ -378,7 +378,7 @@ public:
   // Figure out a better way
   bool emchg_{false};
   bool no_hangup_{false};
-  int modem_speed_{0};
+  int modem_speed_{38400};
 
 protected:
   /*!
