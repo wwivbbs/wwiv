@@ -174,33 +174,36 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::enable_if_t<std::is_convertible_v<T, char>, char>
   to_lower_case_char(const T a) { return static_cast<T>(::tolower(a)); }
 
-  template <typename T, typename R>
-  static T StringToT(std::function<R(const std::string&, int)> f, const std::string& s, int b) {
-    try {
-      R ret = f(s, b);
-      if (ret > std::numeric_limits<T>::max()) {
-        return std::numeric_limits<T>::max();
-      }
-      if (ret < std::numeric_limits<T>::min()) {
-        return std::numeric_limits<T>::min();
-      }
-      return static_cast<T>(ret);
-    } catch (const std::logic_error&) {
-      // Handle invalid_argument and out_of_range.
-      return 0;
-    }
-  }
-
   template <typename T, typename std::enable_if<std::is_unsigned<T>::value, T>::type* = nullptr>
   T to_number(const std::string& s, int b = 10) {
-    return StringToT<T, unsigned long>(
-        [](const std::string& s, int b) { return std::stoul(s, nullptr, b); }, s, b);
+    char* end;
+    auto result = strtoul(s.c_str(), &end, b);
+    if (errno == ERANGE) {
+      return 0;
+    }
+    if (result > std::numeric_limits<T>::max()) {
+      return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::min()) {
+      return std::numeric_limits<T>::min();
+    }
+    return static_cast<T>(result);
   }
 
   template <typename T, typename std::enable_if<std::is_signed<T>::value, T>::type* = nullptr>
   T to_number(const std::string& s, int b = 10) {
-    return StringToT<T, long>([](const std::string& s, int b) { return std::stol(s, nullptr, b); },
-                              s, b);
+    char* end;
+    auto result = strtol(s.c_str(), &end, b);
+    if (errno == ERANGE) {
+      return 0;
+    }
+    if (result > std::numeric_limits<T>::max()) {
+      return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::min()) {
+      return std::numeric_limits<T>::min();
+    }
+    return static_cast<T>(result);
   }
 
   /**
