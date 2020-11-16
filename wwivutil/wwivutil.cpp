@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "wwivutil/acs/acs.h"
+#include "wwivutil/conf/conf.h"
 #include "wwivutil/config/config.h"
 #include "wwivutil/fido/fido.h"
 #include "wwivutil/files/files.h"
@@ -61,10 +62,11 @@ public:
   int Main() {
     ScopeExit at_exit(Logger::ExitLogger);
     try {
-      Add(std::make_unique<wwiv::wwivutil::acs::AcsCommand>());
+      Add(std::make_unique<acs::AcsCommand>());
+      Add(std::make_unique<ConfCommand>());
       Add(std::make_unique<ConfigCommand>());
-      Add(std::make_unique<wwiv::wwivutil::fido::FidoCommand>());
-      Add(std::make_unique<wwiv::wwivutil::files::FilesCommand>());
+      Add(std::make_unique<fido::FidoCommand>());
+      Add(std::make_unique<files::FilesCommand>());
       Add(std::make_unique<FixCommand>());
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<MenusCommand>());

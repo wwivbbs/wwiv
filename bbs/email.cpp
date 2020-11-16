@@ -58,7 +58,6 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::chrono::seconds;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;

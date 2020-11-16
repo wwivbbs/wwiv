@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                            WWIV Version 5                              */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,37 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_CONFUTIL_H
-#define INCLUDED_BBS_CONFUTIL_H
+#ifndef INCLUDED_WWIVUTIL_CONF_CONF_H
+#define INCLUDED_WWIVUTIL_CONF_CONF_H
 
-#include "bbs/conf.h"
-#include "sdk/user.h"
-#include <vector>
+#include "wwivutil/command.h"
 
-void setuconf(wwiv::sdk::ConferenceType type, int num, int old_subnum);
-void changedsl();
+namespace wwiv::wwivutil {
 
-/*
- * Checks status of given userrec to see if conferencing is turned on.
- */
-bool okconf(wwiv::sdk::User* pUser);
+class ConfCommand final : public UtilCommand {
+public:
+  ConfCommand(): UtilCommand("conf", "WWIV conference system commands.") {}
+  ~ConfCommand() override = default;
+  bool AddSubCommands() override;
+};
 
-/*
- * Checks status of given userrec to see if conferencing is turned on 
- * *and* that multiple conferences are defined.
- */
-bool ok_multiple_conf(wwiv::sdk::User* pUser, const std::vector<wwiv::sdk::userconfrec>& uc);
 
-/** Returns the real conference number for user conference at position uc */
-int16_t userconf_to_subconf(int uc);
-
-/** Returns the real conference number for user conference at position uc */
-int16_t userconf_to_dirconf(int uc);
-
-/** Returns true if a user conference exists at position uc */
-bool has_userconf_to_subconf(int uc);
-
-/** Returns true if a user conference exists at position uc */
-bool has_userconf_to_dirconf(int uc);
+}
 
 #endif

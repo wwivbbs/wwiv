@@ -17,19 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
+#include "bbs/mmkey.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
-#include "bbs/mmkey.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/files/files.h"
 
+using namespace wwiv::sdk;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -67,7 +67,7 @@ void dirlist(int mode) {
           if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
             auto conf_name = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
             s = fmt::sprintf(" [ Conference %c ] [ %s ] ",
-                             a()->dirconfs[a()->uconfdir[i].confnum].designator, conf_name);
+                             a()->dirconfs[a()->uconfdir[i].confnum].key, conf_name);
           } else {
             s = fmt::sprintf(" [ %s File Areas ] ", a()->config()->system_name());
           }

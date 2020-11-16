@@ -26,7 +26,6 @@
 #include "sdk/fido/fido_address.h"
 
 using std::string;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

@@ -22,9 +22,10 @@
 
 #include "core/cereal_utils.h"
 #include "sdk/subxtr.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/conf/conf_set_cereal.h"
 
 namespace wwiv::sdk {
-
 
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
@@ -45,6 +46,7 @@ template <class Archive> void serialize(Archive& ar, subboard_t& s) {
   SERIALIZE(s, maxmsgs);
   SERIALIZE(s, storage_type);
   SERIALIZE(s, nets);
+  SERIALIZE(s, conf);
 }
 
 template <class Archive> void serialize(Archive& ar, subboard_52_t& s) { 

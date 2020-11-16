@@ -39,6 +39,7 @@ using std::string;
 using wwiv::common::InputMode;
 using wwiv::core::DataFile;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

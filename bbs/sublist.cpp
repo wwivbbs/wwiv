@@ -20,13 +20,12 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
-#include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/mmkey.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
+#include "common/com.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -36,6 +35,7 @@
 #include <string>
 
 using std::max;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -74,7 +74,7 @@ void old_sublist() {
       setuconf(ConferenceType::CONF_SUBS, i, -1);
       auto cn = stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name);
       auto s = fmt::sprintf("|#1%s %c|#0:|#2 %s", "Conference",
-        a()->subconfs[a()->uconfsub[i].confnum].designator,
+        a()->subconfs[a()->uconfsub[i].confnum].key,
         cn.c_str());
       bout.bpla(s, &abort);
     }
@@ -216,7 +216,7 @@ void SubList() {
           std::string s;
           if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
             s = fmt::sprintf("Conference %c: %s",
-                             a()->subconfs[a()->uconfsub[i].confnum].designator,
+                             a()->subconfs[a()->uconfsub[i].confnum].key,
                              stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name));
           } else {
             s = fmt::format("{} Message Areas", a()->config()->system_name());

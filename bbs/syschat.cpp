@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "bbs/syschat.h"
 
-#include "bbs/batch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -41,7 +40,6 @@
 
 using std::string;
 using std::chrono::duration_cast;
-using namespace wwiv::bbs;
 using namespace std::chrono;
 using namespace wwiv::common;
 using namespace wwiv::core;

@@ -24,6 +24,7 @@
 #include "fmt/format.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include <algorithm>
 #include <string>

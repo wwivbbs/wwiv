@@ -18,13 +18,13 @@
 #ifndef INCLUDED_SDK_NAMES_H
 #define INCLUDED_SDK_NAMES_H
 
+#include "sdk/config.h"
+#include "sdk/vardec.h"
 #include <string>
 #include <vector>
-#include "sdk/config.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
 
 namespace wwiv::sdk {
+class UserManager;
 
 class Names final {
 public:

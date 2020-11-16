@@ -20,6 +20,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "sdk/arword.h"
 #include "sdk/user.h"
 #include "sdk/acs/eval_error.h"
 #include <string>
@@ -29,32 +30,6 @@ using namespace parser;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
-
-// TODO(rushfan): Move this to sdk, this is from bbs/arword.cpp
-static std::string word_to_arstr(int ar) {
-  if (!ar) {
-    return {};
-  }
-  std::string arstr;
-  for (auto i = 0; i < 16; i++) {
-    if ((1 << i) & ar) {
-      arstr.push_back(static_cast<char>('A' + i));
-    }
-  }
-  return arstr;
-}
-
-static uint16_t str_to_arword(const std::string& arstr) {
-  uint16_t rar = 0;
-  const auto s = ToStringUpperCase(arstr);
-
-  for (auto i = 0; i < 16; i++) {
-    if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {
-      rar |= (1 << i);
-    }
-  }
-  return rar;
-}
 
 Ar::Ar(int ar, bool user_side) : ar_(static_cast<uint16_t>(ar)), user_side_(user_side) {}
 
@@ -84,7 +59,7 @@ bool Ar::eq(const Ar& that) const {
   return ar_ & that.ar_;
 }
 
-std::string Ar::as_string() const { return fmt::format("Ar({})", word_to_arstr(ar_));  }
+std::string Ar::as_string() const { return fmt::format("Ar({})", word_to_arstr(ar_, ""));  }
 
 int Ar::as_integer() const { return ar_; }
 

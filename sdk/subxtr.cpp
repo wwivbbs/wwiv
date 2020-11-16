@@ -37,6 +37,8 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/subs_cereal.h"
 #include "sdk/vardec.h"
+#include "sdk/conf/conf_set.h"
+#include "sdk/conf/conf_set_cereal.h"
 #include <sstream>
 #include <string>
 #include <utility>

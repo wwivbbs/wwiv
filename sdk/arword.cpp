@@ -16,53 +16,46 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "sdk/arword.h"
 
-#ifndef INCLUDED_SDK_FILES_DIRS_CEREAL_H
-#define INCLUDED_SDK_FILES_DIRS_CEREAL_H
+#include <string>
+#include "core/strings.h"
 
-#include "core/cereal_utils.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/uuid_cereal.h"
-#include "sdk/files/dirs.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/conf/conf_set_cereal.h"
-
-namespace wwiv::sdk::files {
+using std::string;
+using namespace wwiv::strings;
 
 
-template <class Archive>
-void serialize (Archive& ar, dir_area_t& d) {
-  SERIALIZE(d, area_tag);
-  SERIALIZE(d, net_uuid);
+/*
+ * Returns bitmapped word representing an AR or DAR string.
+ */
+uint16_t str_to_arword(const std::string& arstr) {
+  uint16_t rar = 0;
+  auto s = ToStringUpperCase(arstr);
+
+  for (int i = 0; i < 16; i++) {
+    if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {
+      rar |= (1 << i);
+    }
+  }
+  return rar;
 }
 
-template <class Archive>
-void serialize(Archive & ar, directory_55_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, dsl);
-  SERIALIZE(s, age);
-  SERIALIZE(s, dar);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
+/*
+ * Converts an int to a string representing those ARs (DARs).
+ * or '-' on an empty string.
+ */
+std::string word_to_arstr(int ar, const std::string& empty_ar_str) {
+
+  if (!ar) {
+    return empty_ar_str;
+  }
+
+  std::string arstr;
+  for (int i = 0; i < 16; i++) {
+    if ((1 << i) & ar) {
+      arstr.push_back(static_cast<char>('A' + i));
+    }
+  }
+  return (arstr.empty()) ? empty_ar_str : arstr;
 }
 
-template <class Archive>
-void serialize(Archive & ar, directory_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, acs);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-  SERIALIZE(s, conf);
-}
-
-
-}
-
-
-#endif

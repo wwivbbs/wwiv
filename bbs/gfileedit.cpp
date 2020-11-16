@@ -18,16 +18,14 @@
 /**************************************************************************/
 #include "bbs/gfileedit.h"
 
-
-#include "arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
+#include "bbs/gfiles.h"
+#include "bbs/xfer.h"
 #include "common/com.h"
 #include "common/datetime.h"
-#include "bbs/gfiles.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "bbs/xfer.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -35,6 +33,7 @@
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
+#include "sdk/arword.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"

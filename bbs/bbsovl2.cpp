@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/bbsovl2.h"
-#include "bbs/arword.h"
+#include "sdk/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/confutil.h"
 #include "bbs/utility.h"

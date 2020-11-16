@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,55 +14,36 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef INCLUDED_SDK_KEY_H
+#define INCLUDED_SDK_KEY_H
 
-#ifndef INCLUDED_SDK_FILES_DIRS_CEREAL_H
-#define INCLUDED_SDK_FILES_DIRS_CEREAL_H
+namespace wwiv::sdk {
 
-#include "core/cereal_utils.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/uuid_cereal.h"
-#include "sdk/files/dirs.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/conf/conf_set_cereal.h"
+class key_t final {
+public:
+  key_t() = default;
+  explicit key_t(char key) : key_(key) {}
 
-namespace wwiv::sdk::files {
+  void key(char k) noexcept { key_ = k; }
+  [[nodiscard]] char key() const noexcept { return key_; }
 
+  char key_;
+};
 
-template <class Archive>
-void serialize (Archive& ar, dir_area_t& d) {
-  SERIALIZE(d, area_tag);
-  SERIALIZE(d, net_uuid);
-}
+inline bool operator< (const key_t &c, const key_t & c2) { return c.key_ < c2.key_; }
+inline bool operator< (const char &c, const key_t & c2) { return c < c2.key_; }
+inline bool operator< (const key_t &c, const char & c2) { return c.key_ < c2; }
+inline bool operator== (const key_t &c, const key_t & c2) { return c.key_ == c2.key_; }
+inline bool operator== (const char &c, const key_t & c2) { return c == c2.key_; }
+inline bool operator== (const key_t &c, const char & c2) { return c.key_ == c2; }
 
-template <class Archive>
-void serialize(Archive & ar, directory_55_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, dsl);
-  SERIALIZE(s, age);
-  SERIALIZE(s, dar);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-}
-
-template <class Archive>
-void serialize(Archive & ar, directory_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, acs);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-  SERIALIZE(s, conf);
+inline std::ostream& operator<<(std::ostream& os, const key_t& c) {
+  os << c.key();
+  return os;
 }
 
 
 }
-
 
 #endif

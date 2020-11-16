@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,51 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#ifndef INCLUDED_SDK_FILES_DIRS_CEREAL_H
-#define INCLUDED_SDK_FILES_DIRS_CEREAL_H
+#ifndef INCLUDED_SDK_CONF_CEREAL_H
+#define INCLUDED_SDK_CONF_CEREAL_H
 
 #include "core/cereal_utils.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/uuid_cereal.h"
-#include "sdk/files/dirs.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/conf/conf_set_cereal.h"
+#include "sdk/key_cereal.h"
+#include "sdk/conf/conf.h"
 
-namespace wwiv::sdk::files {
+namespace wwiv::sdk {
 
-
-template <class Archive>
-void serialize (Archive& ar, dir_area_t& d) {
-  SERIALIZE(d, area_tag);
-  SERIALIZE(d, net_uuid);
-}
-
-template <class Archive>
-void serialize(Archive & ar, directory_55_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, dsl);
-  SERIALIZE(s, age);
-  SERIALIZE(s, dar);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-}
-
-template <class Archive>
-void serialize(Archive & ar, directory_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
+template <class Archive> void serialize(Archive& ar, conference_t& s) { 
+  SERIALIZE(s, key);
+  SERIALIZE(s, conf_name);
   SERIALIZE(s, acs);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-  SERIALIZE(s, conf);
 }
 
+template <class Archive> void serialize(Archive& ar, conference_file_t& s) { 
+  SERIALIZE(s, subs);
+  SERIALIZE(s, dirs);
+}
 
 }
 

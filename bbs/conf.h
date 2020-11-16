@@ -20,98 +20,45 @@
 
 #include "core/stl.h"
 #include "core/transaction.h"
-#include "sdk/vardec.h"
-#include <set>
+#include "sdk/conf/conf.h"
 #include <string>
-#include <vector>
 
 namespace wwiv::bbs {
-
-class TempDisableConferences: public wwiv::core::Transaction {
+class TempDisableConferences: public core::Transaction {
 public:
   TempDisableConferences();
 };
 
 }  // namespace
 
-typedef uint16_t subconf_t;
-
-static constexpr int CONF_UPDATE_INSERT = 1;
-static constexpr int CONF_UPDATE_DELETE = 2;
-static constexpr int CONF_UPDATE_SWAP = 3;
-
-enum class ConferenceType { CONF_SUBS, CONF_DIRS };
-
-/** 
- * Note: This isn't used on disk 
- */
-struct confrec {
-  // A to Z?
-  uint8_t designator;
-  // Name of conference                                          
-  std::string conf_name;
-  // Minimum SL needed for access
-  uint8_t minsl;
-  // Maximum SL allowed for access
-  uint8_t maxsl;
-  // Minimum DSL needed for access
-  uint8_t mindsl;
-  // Maximum DSL allowed for access
-  uint8_t maxdsl;
-  // Minimum age needed for access
-  uint8_t minage;
-  // Maximum age allowed for access
-  uint8_t maxage;
-  // Gender: 0=male, 1=female 2=all
-  uint8_t sex;
-  // Bit-mapped stuff
-  uint16_t status;
-  // Minimum bps rate for access
-  uint16_t minbps;
-  // ARs necessary for access
-  uint16_t ar;
-  // DARs necessary for access
-  uint16_t dar;
-  // Num "subs" in this conference
-  uint16_t num;
-  // max num subs allocated in 'subs'
-  uint16_t maxnum;
-  // "Sub" numbers in the conference
-  std::set<subconf_t> subs;
-};
-
-struct userconfrec {
-  int16_t confnum;
-};
-
 class conf_info_t {
 public:
-  conf_info_t(std::vector<confrec>& c, std::vector<userconfrec>& u)
-    : confs(c), uc(u), num_confs(wwiv::stl::size_int32(c)) {}
-  
-  std::vector<confrec>& confs;
-  std::vector<userconfrec>& uc;
+  conf_info_t(std::vector<wwiv::sdk::confrec_430_t>& c, std::vector<wwiv::sdk::userconfrec>& u)
+      : confs(c), uc(u), num_confs(wwiv::stl::size_int32(c)) {}
+
+  std::vector<wwiv::sdk::confrec_430_t>& confs;
+  std::vector<wwiv::sdk::userconfrec>& uc;
   int num_confs;
   std::string file_name;
   int num_subs_or_dirs = 0;
 };
 
-bool in_conference(subconf_t subnum, confrec* c);
+bool in_conference(wwiv::sdk::subconf_t subnum, wwiv::sdk::confrec_430_t* c);
 
 void tmp_disable_conf(bool disable);
 void reset_disable_conf();
-conf_info_t get_conf_info(ConferenceType conftype);
+conf_info_t get_conf_info(wwiv::sdk::ConferenceType conftype);
 
-void jump_conf(ConferenceType conftype);
-void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action);
-char first_available_designator(ConferenceType conftype);
-bool save_confs(ConferenceType conftype);
-void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
-void conf_edit(ConferenceType conftype);
-void list_confs(ConferenceType conftype, int ssc);
-int  select_conf(const char *prompt_text, ConferenceType conftype, int listconfs);
+void jump_conf(wwiv::sdk::ConferenceType conftype);
+void update_conf(wwiv::sdk::ConferenceType conftype, wwiv::sdk::subconf_t * sub1, wwiv::sdk::subconf_t * sub2, int action);
+char first_available_designator(wwiv::sdk::ConferenceType conftype);
+bool save_confs(wwiv::sdk::ConferenceType conftype);
+void addsubconf(wwiv::sdk::ConferenceType conftype, wwiv::sdk::confrec_430_t * c, wwiv::sdk::subconf_t * which);
+void conf_edit(wwiv::sdk::ConferenceType conftype);
+void list_confs(wwiv::sdk::ConferenceType conftype, int ssc);
+int  select_conf(const char *prompt_text, wwiv::sdk::ConferenceType conftype, int listconfs);
 
-void read_in_conferences(ConferenceType conftype);
+void read_in_conferences(wwiv::sdk::ConferenceType conftype);
 void read_all_conferences();
 int wordcount(const std::string& instr, const char *delimstr);
 std::string extractword(int ww, const std::string& instr, const char *delimstr);

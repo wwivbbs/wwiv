@@ -6,7 +6,6 @@ set(COMMON_SOURCES
  acs.cpp
  application.cpp
  archivers.cpp
- arword.cpp
  asv.cpp
  attach.cpp
  automsg.cpp

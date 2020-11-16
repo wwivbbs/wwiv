@@ -34,9 +34,9 @@ using namespace wwiv::stl;
  * Does user u have access to the conference
  * @return bool
  */
-static bool access_conf(User * u, int sl, const confrec * c) {
+static bool access_conf(User * u, int sl, const confrec_430_t * c) {
   CHECK(u != nullptr) << "access_conf called with null user";
-  CHECK(c != nullptr) << "access_conf called with null confrec";
+  CHECK(c != nullptr) << "access_conf called with null confrec_430_t";
 
   if (c->num < 1) {
     return false;
@@ -153,7 +153,7 @@ static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
 // used to return 0 on success, 1 on failure
 static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which, int old_subnum) {
   int osub;
-  confrec *c;
+  confrec_430_t *c;
 
   size_t ns = 0;
   switch (type) {
@@ -373,14 +373,14 @@ void changedsl() {
   }
 }
 
-bool okconf(wwiv::sdk::User* user) {
+bool okconf(User* user) {
   if (a()->sess().disable_conf()) {
     return false;
   }
-  return user->HasStatusFlag(wwiv::sdk::User::conference);
+  return user->HasStatusFlag(User::conference);
 }
 
-bool ok_multiple_conf(wwiv::sdk::User* user, const std::vector<userconfrec>& uc) {
+bool ok_multiple_conf(User* user, const std::vector<userconfrec>& uc) {
   if (!okconf(user)) {
     return false;
   }

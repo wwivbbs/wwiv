@@ -24,6 +24,8 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 #include "sdk_test/sdk_helper.h"
 #include <memory>
 #include <string>

@@ -1,6 +1,7 @@
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
+  arword.cpp
   bbslist.cpp
   chains.cpp
   config.cpp
@@ -23,6 +24,7 @@ set(COMMON_SOURCES
   ansi/makeansi.cpp
   ansi/localio_screen.cpp
   ansi/vscreen.cpp
+  conf/conf.cpp
   fido/fido_address.cpp
   fido/fido_callout.cpp
   fido/fido_directories.cpp

@@ -23,6 +23,7 @@
 #include "core/stl.h"
 #include "fido/fido_address.h"
 #include "sdk/net/net.h"
+#include "sdk/conf/conf_set.h"
 #include <filesystem>
 #include <set>
 #include <string>
@@ -66,6 +67,8 @@ struct subboard_t {
   uint8_t storage_type{0};
   // per-network data type for networked subs.
   std::vector<subboard_network_data_t> nets;
+  // Conference keys.
+  conf_set_t conf;
 };
 
 // 5.2 style sub-board. 
@@ -108,7 +111,7 @@ public:
   bool Load();
   bool Save();
 
-  [[nodiscard]] const subboard_t& sub(std::size_t n) const { return wwiv::stl::at(subs_, n); }
+  [[nodiscard]] const subboard_t& sub(std::size_t n) const { return stl::at(subs_, n); }
   [[nodiscard]] const subboard_t& sub(const std::string& filename) const;
   subboard_t& sub(std::size_t n) { return subs_[n]; }
   subboard_t& sub(const std::string& filename);
@@ -125,7 +128,7 @@ public:
   bool insert(int n, subboard_t r);
   bool add(subboard_t r);
   bool erase(int n);
-  [[nodiscard]] int size() const { return wwiv::stl::size_int(subs_); }
+  [[nodiscard]] int size() const { return stl::size_int(subs_); }
 
   static bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<subboard_t>& entries);
   static bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<subboard_t>& entries);

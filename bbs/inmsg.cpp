@@ -51,7 +51,6 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::common::InputMode;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::sdk;

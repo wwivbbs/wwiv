@@ -289,7 +289,7 @@ static void SetConf(ConferenceType t, int d) {
   auto info = get_conf_info(t);
 
   for (auto i = 0; i < ssize(info.uc) && info.uc[i].confnum != -1; i++) {
-    if (d == info.confs[info.uc[i].confnum].designator) {
+    if (d == info.confs[info.uc[i].confnum].key) {
       setuconf(t, i, -1);
       break;
     }

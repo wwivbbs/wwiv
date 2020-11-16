@@ -739,9 +739,9 @@ static void config_nscan() {
       for (auto i = 0; i < wwiv::stl::size_int(a()->dirconfs) && has_userconf_to_dirconf(i) && !abort; i++) {
         const auto confnum = a()->uconfdir[i].confnum;
         const auto cn = stripcolors(a()->dirconfs[confnum].conf_name);
-        const auto s2 = StrCat(a()->dirconfs[confnum].designator, ") ", cn);
+        const auto s2 = StrCat(a()->dirconfs[confnum].key, ") ", cn);
         bout.bpla(s2, &abort);
-        s1.push_back(static_cast<char>(a()->dirconfs[confnum].designator));
+        s1.push_back(static_cast<char>(a()->dirconfs[confnum].key));
       }
       bout.nl();
       bout << " Select [" << s1.substr(1) << ", <space> to quit]: ";
@@ -756,7 +756,7 @@ static void config_nscan() {
     default:
       if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
         size_t i = 0;
-        while (ch != a()->dirconfs[a()->uconfdir[i].confnum].designator &&
+        while (ch != a()->dirconfs[a()->uconfdir[i].confnum].key &&
                i < a()->dirconfs.size()) {
           i++;
         }

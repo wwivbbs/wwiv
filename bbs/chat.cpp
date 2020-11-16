@@ -19,10 +19,9 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
-#include "common/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
+#include "common/input.h"
 #include "common/pause.h"
 #include "core/inifile.h"
 #include "core/strings.h"
@@ -34,7 +33,6 @@
 #include <string>
 
 using std::string;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
@@ -164,7 +162,7 @@ static void get_colors(char* color_string, const IniFile* pIniFile) {
 
 void chat_room() {
   char szColorString[15];
-  bool bShowPrompt = false;
+  bool bShowPrompt;
 
   g_nNumActions = -1;
   g_nChatOpSecLvl = 256;

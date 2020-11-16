@@ -17,17 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "bbs/bbsovl3.h"
-#include "common/com.h"
-#include "bbs/confutil.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
+#include "bbs/confutil.h"
 #include "bbs/utility.h"
+#include "common/com.h"
 #include "common/input.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"
 
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 void HopSub() {

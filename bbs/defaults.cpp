@@ -408,8 +408,8 @@ void config_qscan() {
       bout << "\r\nSelect Conference: \r\n\n";
       for (auto i = 0; i < size_int(a()->subconfs) && has_userconf_to_subconf(i) && !abort; i++) {
         const auto& c = a()->subconfs[a()->uconfsub[i].confnum];
-        bout.bpla(fmt::format("{}) {}", c.designator, stripcolors(c.conf_name)), &abort);
-        conf_list.push_back(static_cast<char>(c.designator));
+        bout.bpla(fmt::format("{}) {}", c.key, stripcolors(c.conf_name)), &abort);
+        conf_list.push_back(static_cast<char>(c.key));
       }
       bout.nl();
       bout << "Select [" << conf_list.substr(1) << ", <space> to quit]: ";
@@ -424,7 +424,7 @@ void config_qscan() {
     default:
       if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
         auto i = 0;
-        while (ch != a()->subconfs[a()->uconfsub[i].confnum].designator &&
+        while (ch != a()->subconfs[a()->uconfsub[i].confnum].key &&
                i < size_int(a()->subconfs)) {
           i++;
         }

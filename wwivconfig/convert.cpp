@@ -39,6 +39,8 @@
 #include "sdk/acs/expr.h"
 #include "sdk/files/dirs.h"
 // ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/arword.h"
+#include "bbs/conf.h"
 #include "core/findfiles.h"
 #include "sdk/files/dirs_cereal.h"
 #include "sdk/menus/menu.h"
@@ -151,6 +153,7 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string&
   file.Close();
   return config_upgrade_state_t::upgraded;
 }
+
 
 static bool update_config_revision_number(const std::string& config_filename,
                                           const uint32_t config_revision_number) {

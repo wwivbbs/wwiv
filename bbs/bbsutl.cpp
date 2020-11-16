@@ -35,7 +35,6 @@
 using std::string;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::strings;
 using namespace wwiv::stl;

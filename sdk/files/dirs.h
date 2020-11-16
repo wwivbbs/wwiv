@@ -22,7 +22,9 @@
 
 #include "core/stl.h"
 #include "core/uuid.h"
+#include "sdk/conf/conf_set.h"
 #include <filesystem>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -72,6 +74,9 @@ struct directory_t {
   uint16_t mask{};
   // AREA TAGs (used for FTN File Echos)
   std::vector<dir_area_t> area_tags;
+  // Conference keys.
+  conf_set_t conf;
+
   friend std::ostream& operator<<(std::ostream& os, const directory_t& f);
 };
 
@@ -86,7 +91,7 @@ public:
   bool Load();
   bool Save();
 
-  [[nodiscard]] const directory_t& dir(std::size_t n) const { return dirs_.at(n); }
+  [[nodiscard]] const directory_t& dir(std::size_t n) const { return stl::at(dirs_, n); }
   [[nodiscard]] const directory_t& dir(const std::string& filename) const;
   directory_t& dir(std::size_t n) { return dirs_[n]; }
   directory_t& dir(const std::string& filename);

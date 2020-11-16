@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,48 +14,31 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "bbs/arword.h"
+#ifndef INCLUDED_SDK_CONF_CONF_SET_H
+#define INCLUDED_SDK_CONF_CONF_SET_H
 
-#include <string>
-#include "core/strings.h"
+#include <set>
 
-using std::string;
-using namespace wwiv::strings;
+namespace wwiv::sdk {
 
+class conf_set_t final {
+public:
+  conf_set_t() = default;
+  ~conf_set_t() = default;
 
-/*
- * Returns bitmapped word representing an AR or DAR string.
- */
-uint16_t str_to_arword(const std::string& arstr) {
-  uint16_t rar = 0;
-  auto s = ToStringUpperCase(arstr);
-
-  for (int i = 0; i < 16; i++) {
-    if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {
-      rar |= (1 << i);
+  void insert(char k) { data_.insert(k); }
+  void erase(char k) { data_.erase(k); }
+  void toggle(char k) {
+    if (data_.find(k) != std::end(data_)) {
+      erase(k);
+    } else {
+      insert(k);
     }
   }
-  return rar;
+
+  std::set<char> data_;
+};
 }
 
-/*
- * Converts an int to a string representing those ARs (DARs).
- * or '-' on an empty string.
- */
-std::string word_to_arstr(int ar, const std::string& empty_ar_str) {
-
-  if (!ar) {
-    return empty_ar_str;
-  }
-
-  std::string arstr;
-  for (int i = 0; i < 16; i++) {
-    if ((1 << i) & ar) {
-      arstr.push_back(static_cast<char>('A' + i));
-    }
-  }
-  return (arstr.empty()) ? empty_ar_str : arstr;
-}
-
+#endif

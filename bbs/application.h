@@ -20,13 +20,13 @@
 #define INCLUDED_BBS_APPLICATION_H
 
 #include "bbs/batch.h"
-#include "bbs/conf.h"
 #include "bbs/interpret.h"
+#include "bbs/runnable.h"
 #include "common/context.h"
 #include "common/output.h"
-#include "bbs/runnable.h"
-#include "sdk/net/networks.h"
 #include "sdk/vardec.h"
+#include "sdk/conf/conf.h"
+#include "sdk/net/networks.h"
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -360,11 +360,11 @@ public:
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
   std::vector<tagrec_t> filelist;
-  std::vector<confrec> subconfs;
-  std::vector<confrec> dirconfs;
+  std::vector<wwiv::sdk::confrec_430_t> subconfs;
+  std::vector<wwiv::sdk::confrec_430_t> dirconfs;
 
-  std::vector<userconfrec> uconfsub;
-  std::vector<userconfrec> uconfdir;
+  std::vector<wwiv::sdk::userconfrec> uconfsub;
+  std::vector<wwiv::sdk::userconfrec> uconfdir;
 
   std::string beginday_cmd;     // beginday event
   std::string logon_cmd;        // logon event

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,53 +16,30 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef INCLUDED_SDK_KEY_CEREAL_H
+#define INCLUDED_SDK_KEY_CEREAL_H
 
-#ifndef INCLUDED_SDK_FILES_DIRS_CEREAL_H
-#define INCLUDED_SDK_FILES_DIRS_CEREAL_H
-
+// ReSharper disable once CppUnusedIncludeDirective
 #include "core/cereal_utils.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/uuid_cereal.h"
-#include "sdk/files/dirs.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/conf/conf_set_cereal.h"
+#include "sdk/key.h"
 
-namespace wwiv::sdk::files {
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::key_t, specialization::non_member_load_save_minimal);
 
+namespace cereal {
 
 template <class Archive>
-void serialize (Archive& ar, dir_area_t& d) {
-  SERIALIZE(d, area_tag);
-  SERIALIZE(d, net_uuid);
-}
-
-template <class Archive>
-void serialize(Archive & ar, directory_55_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, dsl);
-  SERIALIZE(s, age);
-  SERIALIZE(s, dar);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
+std::string save_minimal(Archive const&, const wwiv::sdk::key_t& t) {
+  if (t.key_ == 0) {
+    return {};
+  }
+  return wwiv::strings::StrCat(t.key_);
 }
 
 template <class Archive>
-void serialize(Archive & ar, directory_t& s) {
-  SERIALIZE(s, name);
-  SERIALIZE(s, filename);
-  SERIALIZE(s, path);
-  SERIALIZE(s, acs);
-  SERIALIZE(s, maxfiles);
-  SERIALIZE(s, mask);
-  SERIALIZE(s, area_tags);
-  SERIALIZE(s, conf);
+void load_minimal(Archive const&, wwiv::sdk::key_t& t, const std::string& s) {
+  t.key(s.empty() ? 0 : s.front());
 }
 
-
 }
-
 
 #endif
