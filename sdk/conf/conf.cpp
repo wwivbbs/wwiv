@@ -82,7 +82,7 @@ bool save_confs_430(const Config& config, std::vector<confrec_430_t> confs,
   return true;
 }
 
-Conference::Conference(const std::set<conference_t>& confs) {
+Conference::Conference(ConferenceType type, const std::set<conference_t>& confs) : type_(type) {
   for (const auto& c : confs) {
     confs_.try_emplace(c.key.key(), c);
   }
@@ -92,8 +92,23 @@ const conference_t& Conference::conf(char key) const {
   return at(confs_, key);
 }
 
+std::optional<conference_t> Conference::try_conf(char key) const {
+  if (!contains(confs_, key)) {
+    return std::nullopt;
+  }
+  return {at(confs_, key)};
+}
+
 conference_t& Conference::conf(char key) {
   return at(confs_, key);
+}
+
+conference_t& Conference::front() {
+  if (confs_.empty()) {
+    DLOG(FATAL) << "Conference::front() called on empty conference";
+  }
+  auto it = std::begin(confs_);
+  return it->second;
 }
 
 bool Conference::exists(char key) const {
@@ -123,8 +138,8 @@ Conferences::Conferences(const std::string& datadir, Subs& subs, files::Dirs& di
     LoadFromFile(o.value());
   } else {
     std::set<conference_t> empty_set;
-    subs_conf_ = std::make_unique<Conference>(empty_set);
-    dirs_conf_ = std::make_unique<Conference>(empty_set);
+    subs_conf_ = std::make_unique<Conference>(ConferenceType::CONF_SUBS, empty_set);
+    dirs_conf_ = std::make_unique<Conference>(ConferenceType::CONF_DIRS, empty_set);
   }
 }
 
@@ -139,8 +154,8 @@ std::optional<conference_file_t> Conferences::Load() const {
 }
 
 bool Conferences::LoadFromFile(const conference_file_t& f) {
-  subs_conf_ = std::make_unique<Conference>(f.subs);
-  dirs_conf_ = std::make_unique<Conference>(f.dirs);
+  subs_conf_ = std::make_unique<Conference>(ConferenceType::CONF_SUBS, f.subs);
+  dirs_conf_ = std::make_unique<Conference>(ConferenceType::CONF_DIRS, f.dirs);
   return true;
 }
 

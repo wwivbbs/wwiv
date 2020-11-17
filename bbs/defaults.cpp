@@ -406,10 +406,9 @@ void config_qscan() {
       std::string conf_list{" "};
       auto abort = false;
       bout << "\r\nSelect Conference: \r\n\n";
-      for (auto i = 0; i < size_int(a()->subconfs) && has_userconf_to_subconf(i) && !abort; i++) {
-        const auto& c = a()->subconfs[a()->uconfsub[i].confnum];
-        bout.bpla(fmt::format("{}) {}", c.key, stripcolors(c.conf_name)), &abort);
-        conf_list.push_back(static_cast<char>(c.key));
+      for (const auto& c : a()->uconfsub) {
+        bout.bpla(fmt::format("{}) {}", c.key.key(), stripcolors(c.conf_name)), &abort);
+        conf_list.push_back(c.key.key());
       }
       bout.nl();
       bout << "Select [" << conf_list.substr(1) << ", <space> to quit]: ";
@@ -423,17 +422,12 @@ void config_qscan() {
       break;
     default:
       if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-        auto i = 0;
-        while (ch != a()->subconfs[a()->uconfsub[i].confnum].key &&
-               i < size_int(a()->subconfs)) {
-          i++;
-        }
-
-        if (i >= size_int(a()->subconfs)) {
+        auto& conf = a()->all_confs().subs_conf();
+        const auto o = conf.try_conf(ch);
+        if (!o) {
           break;
         }
-
-        setuconf(ConferenceType::CONF_SUBS, i, -1);
+        setuconf(conf, o.value().key.key(), -1);
       }
       l_config_qscan();
       done = false;
@@ -863,13 +857,14 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   bout.clear_lines_listed();
 
   if (bUseConf) {
-    string s;
+    string name;
     if (type == 0) {
-      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->sess().current_user_sub_conf_num()].confnum].conf_name, 26);
+      name = a()->uconfsub[a()->sess().current_user_sub_conf_num()].conf_name;
     }
     else {
-      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum].conf_name, 26);
+      name = a()->uconfdir[a()->sess().current_user_dir_conf_num()].conf_name;
     }
+    const auto s = trim_to_size_ignore_colors(name, 26);
     bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                  type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
   } else {
@@ -880,7 +875,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   bout << string(79, '\xC4');
   bout.nl();
 
-  int max_lines = GetMaxLinesToShowForScanPlus();
+  const int max_lines = GetMaxLinesToShowForScanPlus();
 
   if (type == 0) {
     for (size_t this_sub = first; (this_sub < a()->subs().subs().size()) && (a()->usub[this_sub].subnum != -1) &&
@@ -1195,23 +1190,19 @@ void config_scan_plus(int type) {
         case 6:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if (a()->sess().current_user_sub_conf_num() > 0) {
-                a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() - 1);
+              auto confnum = a()->sess().current_user_sub_conf_num();
+              if (confnum > 0) {
+                a()->sess().set_current_user_sub_conf_num(confnum - 1);
               } else {
-                while ((a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0) &&
-                       (a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1)) {
-                  a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
-                }
+                a()->sess().set_current_user_sub_conf_num(size_int(a()->uconfsub)-1);
               }
               setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
             } else {
-              if (a()->sess().current_user_dir_conf_num() > 0) {
-                a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() - 1);
+              auto confnum = a()->sess().current_user_dir_conf_num();
+              if (confnum > 0) {
+                a()->sess().set_current_user_dir_conf_num(confnum - 1);
               } else {
-                while (a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0 &&
-                       a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
-                  a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
-                }
+                a()->sess().set_current_user_dir_conf_num(size_int(a()->uconfdir)-1);
               }
               setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
             }
@@ -1223,9 +1214,9 @@ void config_scan_plus(int type) {
         case 7:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if ((a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1)
-                  && (a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0)) {
-                a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
+              int confnum = a()->sess().current_user_sub_conf_num();
+              if (confnum < size_int(a()->uconfsub) - 1) {
+                a()->sess().set_current_user_sub_conf_num(confnum + 1);
               } else {
                 a()->sess().set_current_user_sub_conf_num(0);
               }
@@ -1233,9 +1224,9 @@ void config_scan_plus(int type) {
             }
 
             else {
-              if ((a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1)
-                  && (a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0)) {
-                a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
+              int confnum = a()->sess().current_user_dir_conf_num();
+              if (confnum < size_int(a()->uconfdir) - 1) {
+                a()->sess().set_current_user_dir_conf_num(confnum + 1);
               } else {
                 a()->sess().set_current_user_dir_conf_num(0);
               }

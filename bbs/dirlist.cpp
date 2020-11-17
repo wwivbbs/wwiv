@@ -55,9 +55,12 @@ void dirlist(int mode) {
     int p = 1;
     int i = sn;
 
-    while (i <= en && has_userconf_to_dirconf(i) && !abort) {
+    while (i <= en && !abort) {
       auto i1 = 0;
-      while (i1 < a()->dirs().size() && a()->udir[i1].subnum != -1 && !abort) {
+      while (i1 < wwiv::stl::size_int(a()->udir) && !abort) {
+        auto& udir = wwiv::stl::at(a()->udir, i1);
+        auto& dir = a()->dirs().dir(udir.subnum);
+        auto& conf = wwiv::stl::at(a()->uconfdir, i);
         std::string s;
         size_t firstp = 0;
         if (p && mode == 0) {
@@ -65,9 +68,8 @@ void dirlist(int mode) {
           firstp = i1;
           bout.cls();
           if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
-            auto conf_name = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
-            s = fmt::sprintf(" [ Conference %c ] [ %s ] ",
-                             a()->dirconfs[a()->uconfdir[i].confnum].key, conf_name);
+            auto conf_name = stripcolors(conf.conf_name);
+            s = fmt::sprintf(" [ Conference %c ] [ %s ] ", conf.key.key(), conf_name);
           } else {
             s = fmt::sprintf(" [ %s File Areas ] ", a()->config()->system_name());
           }
@@ -77,8 +79,7 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
         }
         ++nd;
-        int directory_number = a()->udir[i1].subnum;
-        const auto& dir = a()->dirs()[directory_number];
+        const auto directory_number = udir.subnum;
         if (directory_number == 0) {
           is = true;
         }

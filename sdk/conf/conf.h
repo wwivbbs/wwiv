@@ -20,11 +20,11 @@
 
 #include "sdk/key.h"
 #include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 #include "sdk/files/dirs.h"
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -97,17 +97,15 @@ struct conference_file_t {
   std::set<conference_t> dirs;
 };
 
-struct userconfrec {
-  int16_t confnum;
-};
-
 class Conference final {
 public:
-  explicit Conference(const std::set<conference_t>& confs);
+  Conference(ConferenceType type, const std::set<conference_t>& confs);
   ~Conference() = default;
 
   [[nodiscard]] const conference_t& conf(char key) const;
+  [[nodiscard]] std::optional<conference_t> try_conf(char key) const;
   conference_t& conf(char key);
+  conference_t& front();
   [[nodiscard]] bool exists(char key) const;
 
   [[nodiscard]] std::set<conference_t> confs() const;
@@ -115,7 +113,10 @@ public:
   bool erase(char key);
   [[nodiscard]] int size() const { return stl::size_int(confs_); }
 
+  [[nodiscard]] ConferenceType type() const noexcept { return type_; }
+
 private:
+  const ConferenceType type_;
   std::map<char, conference_t> confs_;
 };
 
@@ -126,7 +127,7 @@ public:
 
   [[nodiscard]] std::optional<conference_file_t> Load() const;
   bool LoadFromFile(const conference_file_t&);
-  [[nodiscard]] bool Save();
+  bool Save();
 
   [[nodiscard]] Conference& subs_conf() const { return *subs_conf_; }
   [[nodiscard]] Conference& dirs_conf() const { return *dirs_conf_; }

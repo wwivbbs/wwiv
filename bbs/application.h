@@ -25,7 +25,6 @@
 #include "common/context.h"
 #include "common/output.h"
 #include "sdk/vardec.h"
-#include "sdk/conf/conf.h"
 #include "sdk/net/networks.h"
 #include <chrono>
 #include <filesystem>
@@ -67,7 +66,9 @@ namespace core {
 class IniFile;
 }
 namespace sdk {
+struct conference_t;
 class Config;
+class Conferences;
 class Chains;
 class Names;
 class StatusMgr;
@@ -266,6 +267,9 @@ public:
   [[nodiscard]] Batch& batch();
   [[nodiscard]] wwiv::sdk::Subs& subs();
   [[nodiscard]] const wwiv::sdk::Subs& subs() const;
+  [[nodiscard]] wwiv::sdk::Conferences& all_confs();
+  [[nodiscard]] const wwiv::sdk::Conferences& all_confs() const;
+
 
   [[nodiscard]] wwiv::sdk::files::Dirs& dirs();
   [[nodiscard]] const wwiv::sdk::files::Dirs& dirs() const;
@@ -357,14 +361,16 @@ public:
   std::vector<languagerec> languages;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
+  // The current set of subs visible to the user in the current conference.
+  // TODO(rusfan): Move into conf
   std::vector<usersubrec> usub;
+  // The current set of dirs visible to the user in the current conference.
   std::vector<usersubrec> udir;
   std::vector<tagrec_t> filelist;
-  std::vector<wwiv::sdk::confrec_430_t> subconfs;
-  std::vector<wwiv::sdk::confrec_430_t> dirconfs;
+  std::unique_ptr<wwiv::sdk::Conferences> all_confs_;
 
-  std::vector<wwiv::sdk::userconfrec> uconfsub;
-  std::vector<wwiv::sdk::userconfrec> uconfdir;
+  std::vector<wwiv::sdk::conference_t> uconfsub;
+  std::vector<wwiv::sdk::conference_t> uconfdir;
 
   std::string beginday_cmd;     // beginday event
   std::string logon_cmd;        // logon event

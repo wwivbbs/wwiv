@@ -30,11 +30,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 void HopSub() {
-  bool abort = false;
-  int nc = 0;
-  while (has_userconf_to_subconf(nc)) {
-    nc++;
-  }
+  auto abort = false;
+  const auto nc = wwiv::stl::size_int(a()->uconfsub);
 
   if (okansi()) {
     bout.clear_whole_line();
@@ -45,7 +42,7 @@ void HopSub() {
   if (okansi()) {
     bout.newline = false;
   }
-  auto partial = ToStringUpperCase(bin.input_text(40));
+  const auto partial = ToStringUpperCase(bin.input_text(40));
   if (partial.empty()) {
     return;
   }
@@ -53,11 +50,11 @@ void HopSub() {
     bout.nl();
   }
 
-  int c = 0;
-  int oc = a()->sess().current_user_sub_conf_num();
-  int os = a()->current_user_sub().subnum;
+  auto c = 0;
+  const int oc = a()->sess().current_user_sub_conf_num();
+  const int os = a()->current_user_sub().subnum;
 
-  while ((c < nc) && !abort) {
+  while (c < nc && !abort) {
     if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
@@ -73,12 +70,13 @@ void HopSub() {
           bout.nl();
         }
         bout << "|#5Do you mean \"" << a()->subs().sub(a()->usub[i].subnum).name << "\" (Y/N/Q)? ";
-        char ch = onek_ncr("QYN\r");
+        const auto ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
           a()->set_current_user_sub_num(i);
           break;
-        } else if (ch == 'Q') {
+        }
+        if (ch == 'Q') {
           abort = true;
           if (okconf(a()->user())) {
             setuconf(ConferenceType::CONF_SUBS, oc, os);
@@ -102,10 +100,7 @@ void HopSub() {
 void HopDir() {
   bool abort = false;
 
-  int nc = 0;
-  while (has_userconf_to_dirconf(nc)) {
-    nc++;
-  }
+  const auto nc = wwiv::stl::size_int(a()->uconfdir);
 
   if (okansi()) {
     bout.clear_whole_line();
@@ -116,7 +111,7 @@ void HopDir() {
   if (okansi()) {
     bout.newline = false;
   }
-  auto partial = ToStringUpperCase(bin.input_text(20));
+  const auto partial = ToStringUpperCase(bin.input_text(20));
   if (partial.empty()) {
     return;
   }
@@ -124,32 +119,31 @@ void HopDir() {
     bout.nl();
   }
 
-  int c = 0;
-  auto oc = a()->sess().current_user_dir_conf_num();
-  auto os = a()->current_user_dir().subnum;
+  auto c = 0;
+  const auto oc = a()->sess().current_user_dir_conf_num();
+  const auto os = a()->current_user_dir().subnum;
 
   while (c < nc && !abort) {
     if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
-    uint16_t i = 0;
-    while ((i < a()->dirs().size()) && (a()->udir[i].subnum != -1) && (!abort)) {
-      auto subname = ToStringUpperCase(a()->dirs()[a()->udir[i].subnum].name);
+    for (const auto& udir : a()->udir) {
+      auto& dir = a()->dirs().dir(udir.subnum);
+      auto subname = ToStringUpperCase(dir.name);
       if (subname.find(partial) != std::string::npos) {
         if (okansi()) {
           bout.clear_whole_line();
         } else {
           bout.nl();
         }
-        bout << "|#5Do you mean \""
-             << a()->dirs()[a()->udir[i].subnum].name
-             << "\" (Y/N/Q)? ";
-        char ch = onek_ncr("QYN\r");
+        bout.format("|#5Do you mean \"{}\" (Y/N/Q)? ", dir.name);
+        const auto ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          a()->set_current_user_dir_num(i);
+          a()->set_current_user_dir_num(udir.subnum);
           break;
-        } else if (ch == 'Q') {
+        }
+        if (ch == 'Q') {
           abort = true;
           if (okconf(a()->user())) {
             setuconf(ConferenceType::CONF_DIRS, oc, os);
@@ -157,7 +151,6 @@ void HopDir() {
           break;
         }
       }
-      ++i;
     }
     c++;
     if (!okconf(a()->user())) {

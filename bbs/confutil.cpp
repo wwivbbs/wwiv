@@ -21,7 +21,6 @@
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/conf.h"
-#include "core/log.h"
 #include "core/stl.h"
 #include "sdk/subxtr.h"
 #include "sdk/files/dirs.h"
@@ -29,62 +28,6 @@
 using namespace wwiv::bbs;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
-
-/**
- * Does user u have access to the conference
- * @return bool
- */
-static bool access_conf(User * u, int sl, const confrec_430_t * c) {
-  CHECK(u != nullptr) << "access_conf called with null user";
-  CHECK(c != nullptr) << "access_conf called with null confrec_430_t";
-
-  if (c->num < 1) {
-    return false;
-  }
-  switch (c->sex) {
-  case 0:
-    if (u->GetGender() != 'M') {
-      return false;
-    }
-    break;
-  case 1:
-    if (u->GetGender() != 'F') {
-      return false;
-    }
-    break;
-  }
-  if (sl < c->minsl || (c->maxsl != 0 && sl > c->maxsl)) {
-    return false;
-  }
-  const auto dsl = u->GetDsl();
-  if (dsl < c->mindsl || (c->maxdsl != 0 && dsl > c->maxdsl)) {
-    return false;
-  }
-  const auto age = u->age();
-  if (age < c->minage || (c->maxage != 0 && age > c->maxage)) {
-    return false;
-  }
-  if (a()->sess().incom() && a()->modem_speed_ < c->minbps) {
-    return false;
-  }
-  if (c->ar && !u->HasArFlag(c->ar)) {
-    return false;
-  }
-  if (c->dar && !u->HasDarFlag(c->dar)) {
-    return false;
-  }
-  if ((c->status & conf_status_ansi) && !u->HasAnsi()) {
-    return false;
-  }
-  if ((c->status & conf_status_wwivreg) && u->GetWWIVRegNumber() < 1) {
-    return false;
-  }
-  if ((c->status & conf_status_offline) && sl < 100) {
-    return false;
-  }
-
-  return true;
-}
 
 static bool access_sub(User& u, const subboard_t& s) {
   if (!check_acs(s.read_acs)) {
@@ -98,278 +41,183 @@ static bool access_sub(User& u, const subboard_t& s) {
   return true;
 }
 
-static bool access_dir(User& u, int sl, wwiv::sdk::files::directory_t& d) {
-  if (!check_acs(d.acs)) {
-    return false;
-  }
-
-  if ((d.mask & mask_offline) && u.GetDsl() < 100) {
-    return false;
-  }
-
-  if ((d.mask & mask_wwivreg) && !u.GetWWIVRegNumber()) {
-    return false;
-  }
-
-  // Note: this is different than access_sub.
-  if (sl == 0) {
-    return false;
-  }
-
-  return true;
-}
-
-static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
-  int last_num = 0, last;
-  for (last = 0; last < ns; last++) {
-    if (ss1[last].subnum == -1) {
-      break;
-    }
-    if (ss1[last].subnum == sub) {
+static void addusub(std::vector<usersubrec>& us, int sub, char key = 0) {
+  for (auto& u : us) {
+    if (u.subnum == sub) {
+      // we already have this sub.
       return;
     }
-    if (ss1[last].keys.empty()) {
-      last_num = last + 1;
-    }
   }
-
-  if (last == ns) {
-    return;
-  }
-
+  usersubrec c{};
+  c.subnum = static_cast<int16_t>(sub);
   if (key) {
-    ss1[last].subnum = static_cast<int16_t>(sub);
-    ss1[last].keys = key;
-  } else {
-    for (int i = last; i > last_num; i--) {
-      ss1[i] = ss1[ i - 1 ];
-    }
-    ss1[last_num].subnum = static_cast<int16_t>(sub);
-    ss1[last_num].keys.clear();
+    c.keys = key;
   }
+  us.emplace_back(c);
 }
 
-// returns true on success, false on failure
-// used to return 0 on success, 1 on failure
-static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which, int old_subnum) {
-  int osub;
-  confrec_430_t *c;
-
-  size_t ns = 0;
-  switch (type) {
-  case ConferenceType::CONF_SUBS:
-    ns = a()->subs().subs().size();
-    if (old_subnum == -1) {
-      osub = a()->current_user_sub().subnum;
-    } else {
-      osub = old_subnum;
+// Populates uc with the user visible subs for the current conference.
+static bool create_usersubs(Conference& conf, std::vector<usersubrec>& uc, 
+                            char conf_key, int old_subnum) {
+  if (auto o = conf.try_conf(conf_key)) {
+    auto new_conf_subnum = -1;
+    // We found the conference.
+    const auto& c = o.value();
+    if (!check_acs(c.acs)) {
+      return false;
     }
-    if (which == -1) {
-      c = nullptr;
+
+    uc.clear();
+    const auto& subs = a()->subs().subs();
+    for (auto subnum = 0; subnum < size_int(subs); subnum++) {
+      const auto& s = at(subs, subnum);
+      if (!s.conf.contains(conf_key)) {
+        continue;
+      }
+      // This sub is in our current conference.
+      if (!access_sub(*a()->user(), s)) {
+        continue;
+      }
+      addusub(uc, subnum, s.key);
+    }
+
+    auto num_key = 1;
+    for (auto i = 0; i < size_int(uc); i++) {
+      auto& u = at(uc, i);
+      if (u.keys.empty()) {
+        u.keys = std::to_string(num_key++);
+      }
+      if (u.subnum == old_subnum) {
+        // We have a new subnum position within this conference.
+        new_conf_subnum = i;
+      }
+    }
+
+    if (conf.type() == ConferenceType::CONF_SUBS) {
+      a()->set_current_user_sub_num(new_conf_subnum != -1 ? new_conf_subnum : 0);
     } else {
-      if (which < 0 || which >= ssize(a()->subconfs)) {
+      a()->set_current_user_dir_num(new_conf_subnum != -1 ? new_conf_subnum : 0);
+    }
+    return true;
+  }
+  return false;
+}
+
+bool access_at_least_one_conf(Conference& conf, const conf_set_t& e) {
+  for (auto c : e.data_) {
+    if (auto o = conf.try_conf(c)) {
+      if (!check_acs(o.value().acs)) {
         return false;
       }
-      c = &(a()->subconfs[which]);
-      if (!access_conf(a()->user(), a()->sess().effective_sl(), c)) {
-        return false;
-      }
-    }
-    break;
-  case ConferenceType::CONF_DIRS:
-    ns = a()->dirs().size();
-    if (old_subnum == -1) {
-      osub = a()->current_user_dir().subnum;
     } else {
-      osub = old_subnum;
+      return false;
     }
-    if (which == -1) {
-      c = nullptr;
-    } else {
-      if (which < 0 || which >= ssize(a()->dirconfs)) {
-        return false;
-      }
-      c = &(a()->dirconfs[which]);
-      if (!access_conf(a()->user(), a()->sess().effective_sl(), c)) {
-        return false;
-      }
-    }
-    break;
-  default:
-    return false;
-  }
-
-  usersubrec s1 = {};
-  s1.subnum = -1;
-
-  for (size_t i = 0; i < ns; i++) {
-    ss1[i] = s1;
-  }
-
-  if (c) {
-    for (const auto sub : c->subs) {
-      switch (type) {
-      case ConferenceType::CONF_SUBS:
-        if (access_sub(*a()->user(), a()->subs().sub(sub))) {
-          addusub(ss1, ns, sub, a()->subs().sub(sub).key);
-        }
-        break;
-      case ConferenceType::CONF_DIRS:
-        if (access_dir(*a()->user(), a()->sess().effective_sl(),
-                       a()->dirs()[sub])) {
-          addusub(ss1, ns, sub, 0);
-        }
-        break;
-      default:
-        LOG(FATAL) << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-        break;
-      }
-    }
-  } else {
-    switch (type) {
-    case ConferenceType::CONF_SUBS:
-      for (const auto& conf : a()->subconfs) {
-        if (access_conf(a()->user(), a()->sess().effective_sl(), &conf)) {
-          for (const auto sub : conf.subs) {
-            if (access_sub(*a()->user(), a()->subs().sub(sub))) {
-              addusub(ss1, ns, sub, a()->subs().sub(sub).key);
-            }
-          }
-        }
-      }
-      break;
-    case ConferenceType::CONF_DIRS:
-      for (const auto& conf : a()->dirconfs) {
-        if (access_conf(a()->user(), a()->sess().effective_sl(), &conf)) {
-          for (const auto& sub : conf.subs) {
-            if (access_dir(*a()->user(), a()->sess().effective_sl(),
-                           a()->dirs()[sub])) {
-              addusub(ss1, ns, sub, 0);
-            }
-          }
-        }
-      }
-      break;
-    default:
-      LOG(FATAL) << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-      break;
-
-    }
-  }
-
-  uint16_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
-
-  for (size_t i = 0; i < ns && ss1[i].keys.empty() && ss1[i].subnum != -1; i++) {
-    ss1[i].keys = std::to_string(i1++);
-  }
-
-  for (i1 = 0; (i1 < ns) && (ss1[i1].subnum != -1); i1++) {
-    if (ss1[i1].subnum == osub) {
-      break;
-    }
-  }
-  if (i1 >= ns || ss1[i1].subnum == -1) {
-    i1 = 0;
-  }
-
-  switch (type) {
-  case ConferenceType::CONF_SUBS:
-    a()->set_current_user_sub_num(i1);
-    break;
-  case ConferenceType::CONF_DIRS:
-    a()->set_current_user_dir_num(i1);
-    break;
   }
   return true;
 }
 
-void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
-  switch (nConferenceType) {
-  case ConferenceType::CONF_SUBS:
-    if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_subconf(num)) {
-      a()->sess().set_current_user_sub_conf_num(num);
-      setconf(nConferenceType, a()->usub, userconf_to_subconf(a()->sess().current_user_sub_conf_num()), nOldSubNumber);
-    } else {
-      setconf(nConferenceType, a()->usub, -1, nOldSubNumber);
+// Populates uc with the user visible subs for the current conference.
+bool clear_usersubs(Conference& conf, std::vector<usersubrec>& uc, int old_subnum) {
+  auto new_conf_subnum = -1;
+  uc.clear();
+  // iterate through each sub and make sure we have access to at least
+  // one conference for this sub.
+  const auto& subs = a()->subs().subs();
+  for (auto subnum = 0; subnum < size_int(subs); subnum++) {
+    const auto& s = at(subs, subnum);
+    if (!access_at_least_one_conf(conf, s.conf)) {
+      continue;
     }
-    break;
-  case ConferenceType::CONF_DIRS:
-    if (num >= 0 && num < MAX_CONFERENCES && has_userconf_to_dirconf(num)) {
-      a()->sess().set_current_user_dir_conf_num(num);
-      setconf(nConferenceType, a()->udir, a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum, nOldSubNumber);
-    } else {
-      setconf(nConferenceType, a()->udir, -1, nOldSubNumber);
+    // This sub is in our current conference.
+    if (!access_sub(*a()->user(), s)) {
+      continue;
     }
-    break;
-  default:
-    LOG(FATAL) << "[utility.cpp] setuconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-    break;
+    addusub(uc, subnum, s.key);
   }
+  // TODO from here on down can probably be extracted and shared
+  // with create_usersubs
+  auto num_key = 1;
+  for (auto i = 0; i < size_int(uc); i++) {
+    auto& u = at(uc, i);
+    if (u.keys.empty()) {
+      u.keys = std::to_string(num_key++);
+    }
+    if (u.subnum == old_subnum) {
+      // We have a new subnum position within this conference.
+      new_conf_subnum = i;
+    }
+  }
+
+  if (conf.type() == ConferenceType::CONF_SUBS) {
+    a()->set_current_user_sub_num(new_conf_subnum != -1 ? new_conf_subnum : 0);
+  } else {
+    a()->set_current_user_dir_num(new_conf_subnum != -1 ? new_conf_subnum : 0);
+  }
+  return true;
+}
+
+void setuconf(Conference& conf, char key, int old_subnum) {
+  auto& usd = conf.type() == ConferenceType::CONF_SUBS ? a()->usub : a()->udir;
+  if (conf.exists(key)) {
+    create_usersubs(conf, usd, key, old_subnum);
+  } else {
+    clear_usersubs(conf, usd, old_subnum);
+  }
+}
+
+void setuconf(ConferenceType conf_type, int num, int old_subnum) {
+  if (conf_type == ConferenceType::CONF_DIRS) {
+    auto& conf = a()->all_confs().dirs_conf();
+    const auto key = at(a()->uconfdir, num).key.key();
+    setuconf(conf, key, old_subnum);
+  }
+  auto& conf = a()->all_confs().subs_conf();
+  const auto key = at(a()->uconfsub, num).key.key();
+  setuconf(conf, key, old_subnum);
 }
 
 void changedsl() {
-  int ocurconfsub = userconf_to_subconf(a()->sess().current_user_sub_conf_num());
-  int ocurconfdir = userconf_to_subconf(a()->sess().current_user_dir_conf_num());
-  a()->UpdateTopScreen();
+  const auto subconfkey = at(a()->uconfsub, a()->sess().current_user_sub_conf_num()).key.key();
+  const auto dirconfkey = at(a()->uconfdir, a()->sess().current_user_dir_conf_num()).key.key();
 
+  a()->UpdateTopScreen();
   a()->uconfsub.clear();
   a()->uconfdir.clear();
 
-  int i = 0;
-  for (const auto& c : a()->subconfs) {
-    if (access_conf(a()->user(), a()->sess().effective_sl(), &c)) {
-      userconfrec c1{};
-      c1.confnum = static_cast<int16_t>(i);
-      a()->uconfsub.emplace_back(c1);
+  for (const auto& c : a()->all_confs().subs_conf().confs()) {
+    if (check_acs(c.acs)) {
+      a()->uconfsub.emplace_back(c);
     }
-    ++i;
   }
 
-  i = 0;
-  for (const auto& c : a()->dirconfs) {
-    if (access_conf(a()->user(), a()->sess().effective_sl(), &c)) {
-      userconfrec c1{};
-      c1.confnum = static_cast<int16_t>(i);
-      a()->uconfdir.emplace_back(c1);
+  for (const auto& c : a()->all_confs().dirs_conf().confs()) {
+    if (check_acs(c.acs)) {
+      a()->uconfdir.emplace_back(c);
     }
-    ++i;
   }
 
   // Move to first message area in new conference
-  for (a()->sess().set_current_user_sub_conf_num(0);
-       (a()->sess().current_user_sub_conf_num() < MAX_CONFERENCES) &&
-       has_userconf_to_subconf(a()->sess().current_user_sub_conf_num());
-       a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1)) {
-    if (userconf_to_subconf(a()->sess().current_user_sub_conf_num()) == ocurconfsub) {
+  a()->sess().set_current_user_sub_conf_num(0);
+  for (auto i = 0; i < size_int(a()->uconfsub); i++) {
+    if (at(a()->uconfsub, i).key.key() == subconfkey) {
+      a()->sess().set_current_user_sub_conf_num(i);
       break;
     }
   }
-
-  if (a()->sess().current_user_sub_conf_num() >= MAX_CONFERENCES ||
-      has_userconf_to_subconf(a()->sess().current_user_sub_conf_num())) {
-    a()->sess().set_current_user_sub_conf_num(0);
-  }
-
-  for (a()->sess().set_current_user_dir_conf_num(0);
-       (a()->sess().current_user_dir_conf_num() < MAX_CONFERENCES)
-       && has_userconf_to_dirconf(a()->sess().current_user_dir_conf_num());
-       a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1)) {
-    if (a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum == ocurconfdir) {
+  a()->sess().set_current_user_dir_conf_num(0);
+  for (auto i = 0; i < size_int(a()->uconfdir); i++) {
+    if (at(a()->uconfdir, i).key.key() == subconfkey) {
+      a()->sess().set_current_user_dir_conf_num(i);
       break;
     }
-  }
-
-  if (a()->sess().current_user_dir_conf_num() >= MAX_CONFERENCES ||
-      !has_userconf_to_dirconf(a()->sess().current_user_dir_conf_num())) {
-    a()->sess().set_current_user_dir_conf_num(0);
   }
 
   if (okconf(a()->user())) {
-    setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
-    setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
+    setuconf(a()->all_confs().subs_conf(), subconfkey, -1);
+    setuconf(a()->all_confs().dirs_conf(), dirconfkey, -1);
   } else {
-    setconf(ConferenceType::CONF_SUBS, a()->usub, -1, -1);
-    setconf(ConferenceType::CONF_DIRS, a()->udir, -1, -1);
+    clear_usersubs(a()->all_confs().subs_conf(), a()->usub, -1);
+    clear_usersubs(a()->all_confs().dirs_conf(), a()->udir, -1);
   }
 }
 
@@ -380,26 +228,10 @@ bool okconf(User* user) {
   return user->HasStatusFlag(User::conference);
 }
 
-bool ok_multiple_conf(User* user, const std::vector<userconfrec>& uc) {
+bool ok_multiple_conf(User* user, const std::vector<wwiv::sdk::conference_t>& uc) {
   if (!okconf(user)) {
     return false;
   }
-  return uc.size() > 1 && uc.at(1).confnum != -1;
+  return uc.size() > 1;
 }
 
-int16_t userconf_to_subconf(int uc) { 
-  if (uc >= ssize(a()->uconfsub)) {
-    return -1;
-  }
-  return a()->uconfsub[uc].confnum; 
-}
-
-int16_t userconf_to_dirconf(int uc) {
-  if (uc >= ssize(a()->uconfdir)) {
-    return -1;
-  }
-  return a()->uconfdir[uc].confnum;
-}
-
-bool has_userconf_to_subconf(int uc) { return userconf_to_subconf(uc) != -1; }
-bool has_userconf_to_dirconf(int uc) { return userconf_to_dirconf(uc) != -1; }

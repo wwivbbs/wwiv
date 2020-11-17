@@ -61,7 +61,6 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-#include "bbs/basic/basic.h"
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
@@ -124,49 +123,36 @@ void DirList() {
 }
 
 void UpSubConf() {
-  if (okconf(a()->user())) {
-    if ((a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1)
-        && (a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0)) {
-      a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
-    } else {
-      a()->sess().set_current_user_sub_conf_num(0);
-    }
-    setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
+  if (!okconf(a()->user())) {
+    return;
   }
+  const auto cn = a()->sess().current_user_sub_conf_num();
+  const auto ncn = cn < size_int(a()->uconfsub) - 1 ? cn + 1 : 0;
+  a()->sess().set_current_user_sub_conf_num(ncn);
+  setuconf(ConferenceType::CONF_SUBS, ncn, -1);
 }
 
 void DownSubConf() {
-  if (okconf(a()->user())) {
-    if (a()->sess().current_user_sub_conf_num() > 0) {
-      a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() - 1);
-    } else {
-      while (a()->uconfsub[a()->sess().current_user_sub_conf_num() + 1].confnum >= 0 &&
-             a()->sess().current_user_sub_conf_num() < a()->subconfs.size() - 1) {
-        a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1);
-      }
-    }
-    setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
+  if (!okconf(a()->user())) {
+    return;
   }
+  const auto cn = a()->sess().current_user_sub_conf_num();
+  const auto ncn = cn > 0 ? cn - 1 : size_int(a()->uconfsub) - 1;
+  a()->sess().set_current_user_sub_conf_num(ncn);
+  setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
 }
 
 void DownSub() {
-  if (a()->current_user_sub_num() > 0) {
-    a()->set_current_user_sub_num(a()->current_user_sub_num() - 1);
-  } else {
-    while (a()->usub[a()->current_user_sub_num() + 1].subnum >= 0 &&
-           a()->current_user_sub_num() < a()->subs().subs().size() - 1) {
-      a()->set_current_user_sub_num(a()->current_user_sub_num() + 1);
-    }
-  }
+  const auto cn = a()->current_user_sub_num();
+  const auto ncn = cn > 0 ? cn - 1 : size_int(a()->usub) - 1;
+  a()->set_current_user_sub_num(ncn);
 }
 
 void UpSub() {
-  if (a()->current_user_sub_num() < a()->subs().subs().size() - 1 &&
-      a()->usub[a()->current_user_sub_num() + 1].subnum >= 0) {
-    a()->set_current_user_sub_num(a()->current_user_sub_num() + 1);
-  } else {
-    a()->set_current_user_sub_num(0);
-  }
+  const auto cn = a()->current_user_sub_num();
+  const auto last = size_int(a()->usub) - 1;
+  const auto ncn = cn < last ? cn + 1 : 0;
+  a()->set_current_user_sub_num(ncn);
 }
 
 void ValidateUser() {
@@ -799,48 +785,42 @@ void UploadFilesBBS() {
 }
 
 void UpDirConf() {
-  if (okconf(a()->user())) {
-    if (a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1
-        && a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0) {
-      a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
-    } else {
-      a()->sess().set_current_user_dir_conf_num(0);
-    }
-    setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
+  if (!okconf(a()->user())) {
+    return;
   }
+  const auto cn = a()->sess().current_user_dir_conf_num();
+  const auto last = size_int(a()->uconfdir) - 1;
+  a()->sess().set_current_user_dir_conf_num( (cn < last) ? cn + 1 : 0);
+  setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
 }
 
 void UpDir() {
-  if (a()->current_user_dir_num() < a()->dirs().size() - 1
-      && a()->udir[a()->current_user_dir_num() + 1].subnum >= 0) {
-    a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
+  const auto cd = a()->current_user_dir_num();
+  const auto last = a()->dirs().size() - 1;
+  if (cd < last) {
+    a()->set_current_user_dir_num(cd + 1);
   } else {
     a()->set_current_user_dir_num(0);
   }
 }
 
 void DownDirConf() {
-  if (okconf(a()->user())) {
-    if (a()->sess().current_user_dir_conf_num() > 0) {
-      a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num());
-    } else {
-      while (a()->uconfdir[a()->sess().current_user_dir_conf_num() + 1].confnum >= 0 &&
-             a()->sess().current_user_dir_conf_num() < a()->dirconfs.size() - 1) {
-        a()->sess().set_current_user_dir_conf_num(a()->sess().current_user_dir_conf_num() + 1);
-      }
-    }
-    setuconf(ConferenceType::CONF_DIRS, a()->sess().current_user_dir_conf_num(), -1);
+  if (!okconf(a()->user())) {
+    return;
   }
+  const auto cn = a()->sess().current_user_dir_conf_num();
+  const auto ncn = cn > 0 ? cn - 1 : size_int(a()->uconfdir) - 1;
+  a()->sess().set_current_user_dir_conf_num(ncn);
+  setuconf(ConferenceType::CONF_DIRS, ncn, -1);
 }
 
 void DownDir() {
-  if (a()->current_user_dir_num() > 0) {
-    a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
+  const auto cd = a()->current_user_dir_num();
+  const auto last = size_int(a()->udir) - 1;
+  if (cd > 0) {
+    a()->set_current_user_dir_num(cd - 1);
   } else {
-    while (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0 &&
-           a()->current_user_dir_num() < a()->dirs().size() - 1) {
-      a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
-    }
+    a()->set_current_user_dir_num(last);
   }
 }
 

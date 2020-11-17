@@ -882,24 +882,15 @@ void logon() {
   }
 
   // Handle case of first conf with no subs avail
-  if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
-    for (a()->sess().set_current_user_sub_conf_num(0); 
-         (a()->sess().current_user_sub_conf_num() < ssize(a()->subconfs))
-         && (a()->uconfsub[a()->sess().current_user_sub_conf_num()].confnum != -1);
-         a()->sess().set_current_user_sub_conf_num(a()->sess().current_user_sub_conf_num() + 1)) {
-      setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
-      if (a()->usub[0].subnum != -1) {
-        break;
-      }
-    }
-    if (a()->usub[0].subnum == -1) {
-      a()->sess().set_current_user_sub_conf_num(0);
-      setuconf(ConferenceType::CONF_SUBS, a()->sess().current_user_sub_conf_num(), -1);
+  if (a()->usub.empty() && okconf(a()->user())) {
+    for (auto confnum = 0; confnum < size_int(a()->uconfsub) && a()->usub.empty(); confnum++) {
+      setuconf(ConferenceType::CONF_SUBS, confnum, -1);
+      a()->sess().set_current_user_sub_conf_num(confnum);
     }
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
-    bool nextsub = false;
+    auto nextsub = false;
     if (a()->user()->GetSl() < 255) {
       a()->sess().forcescansub(true);
       qscan(a()->GetForcedReadSubNumber(), nextsub);

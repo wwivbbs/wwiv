@@ -199,7 +199,6 @@ static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
     {INI_STR_USE_SIMPLE_ASV, OP_FLAGS_SIMPLE_ASV},
     {INI_STR_POSTTIME_COMPENS, OP_FLAGS_POSTTIME_COMPENSATE},
-    {INI_STR_SHOW_HIER, OP_FLAGS_SHOW_HIER},
     {INI_STR_IDZ_DESC, OP_FLAGS_IDZ_DESC},
     {INI_STR_SETLDATE, OP_FLAGS_SETLDATE},
     {INI_STR_READ_CD_IDZ, OP_FLAGS_READ_CD_IDZ},
@@ -697,11 +696,14 @@ bool Application::InitializeBBS(bool cleanup_network) {
 
   frequent_init();
   VLOG(1) << "Reading Conferences.";
-  read_all_conferences();
+  all_confs_ = std::make_unique<Conferences>(
+    config()->datadir(), *subs_, *dirs_, config()->max_backups());
+  if (!all_confs_->Load()) {
+    LOG(ERROR) << "Error Loading Conferences";
+  }
 
   TempDisablePause disable_pause(bout);
   const auto t = session_context_.dirs().temp_directory();
-  const auto t2 = sess().dirs().temp_directory();
   remove_from_temp("*.*", sess().dirs().temp_directory(), false);
   remove_from_temp("*.*", sess().dirs().batch_directory(), false);
   remove_from_temp("*.*", sess().dirs().qwk_directory(), false);

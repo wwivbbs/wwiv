@@ -285,11 +285,11 @@ void ChangeDirNumber() {
 }
 
 
-static void SetConf(ConferenceType t, int d) {
+static void SetConf(ConferenceType t, char key) {
   auto info = get_conf_info(t);
 
-  for (auto i = 0; i < ssize(info.uc) && info.uc[i].confnum != -1; i++) {
-    if (d == info.confs[info.uc[i].confnum].key) {
+  for (auto i = 0; i < size_int(info.uc); i++) {
+    if (key == info.uc[i].key.key()) {
       setuconf(t, i, -1);
       break;
     }
@@ -297,11 +297,11 @@ static void SetConf(ConferenceType t, int d) {
 }
 
 // have a little conference ability...
-void SetMsgConf(int conf_designator) {
+void SetMsgConf(char conf_designator) {
   SetConf(ConferenceType::CONF_SUBS, conf_designator);
 }
 
-void SetDirConf(int conf_designator) {
+void SetDirConf(char conf_designator) {
   SetConf(ConferenceType::CONF_DIRS, conf_designator);
 }
 

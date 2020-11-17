@@ -44,8 +44,8 @@ void old_sublist() {
   int os = a()->current_user_sub().subnum;
 
   bool abort = false;
-  int sn = 0;
-  int en = size_int(a()->subconfs) - 1;
+  auto sn = std::begin(a()->uconfsub);
+  auto en = std::end(a()->uconfsub);
   if (okconf(a()->user())) {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
       bout.nl();
@@ -54,8 +54,8 @@ void old_sublist() {
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->sess().current_user_sub_conf_num();
-        en = a()->sess().current_user_sub_conf_num();
+        std::advance(sn, a()->sess().current_user_sub_conf_num());
+        en = sn;
         break;
       case 'Q':
         return;
@@ -68,14 +68,14 @@ void old_sublist() {
   bout.nl();
   bout.bpla("|#9Sub-Conferences Available: ", &abort);
   bout.nl();
-  int i = sn;
-  while (i <= en && has_userconf_to_subconf(i) && !abort) {
+  auto iter = sn;
+  auto count = 0;
+  while (iter != en && !abort) {
     if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-      setuconf(ConferenceType::CONF_SUBS, i, -1);
-      auto cn = stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name);
-      auto s = fmt::sprintf("|#1%s %c|#0:|#2 %s", "Conference",
-        a()->subconfs[a()->uconfsub[i].confnum].key,
-        cn.c_str());
+      const auto pos = std::distance(std::begin(a()->uconfsub), iter);
+      setuconf(ConferenceType::CONF_SUBS, pos, -1);
+      const auto s =
+          fmt::format("|#1Conference {}|#0:|#2 {}", iter->key, stripcolors(iter->conf_name));
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;
@@ -109,15 +109,16 @@ void old_sublist() {
       os1 << stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
       bout.bpla(os1.str(), &abort);
       i1++;
+      ++count;
     }
-    i++;
+    ++iter;
     bout.nl();
     if (!okconf(a()->user())) {
       break;
     }
   }
 
-  if (i == 0) {
+  if (!count) {
     bout.bpla("|#6None.", &abort);
     bout.nl();
   }
@@ -173,19 +174,20 @@ void SubList() {
 
   int oc = a()->sess().current_user_sub_conf_num();
   int old_sub = a()->current_user_sub().subnum;
-  int sn = 0;  // current sub number
-  auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
+  auto sn = std::begin(a()->uconfsub);  // current sub number
+  auto en = std::end(a()->uconfsub);
 
   if (okconf(a()->user())) {
-    if (a()->uconfsub.size() > 1 && a()->uconfsub[1].confnum != -1) {
+    if (a()->uconfsub.size() > 1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
       ch = onek("Q A");
       bout.nl();
       switch (ch) {
       case ' ':
-        sn = a()->sess().current_user_sub_conf_num();
-        en = a()->sess().current_user_sub_conf_num();
+        sn = std::begin(a()->uconfsub);
+        std::advance(sn, a()->sess().current_user_sub_conf_num());
+        en = sn;
         break;
       case 'Q':
         return;
@@ -199,12 +201,13 @@ void SubList() {
   bool done = false;
   do {
     p = 1;
-    size_t i = sn;
+    auto iter = sn;
     size_t i1 = 0;
-    while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
+    while (iter != en && !abort) {
       int ns = 0;
       if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-        setuconf(ConferenceType::CONF_SUBS, i, -1);
+        auto pos = std::distance(std::begin(a()->uconfsub), iter);
+        setuconf(ConferenceType::CONF_SUBS, pos, -1);
         i1 = 0;
       }
       size_t firstp = 0;
@@ -215,9 +218,7 @@ void SubList() {
           bout.cls();
           std::string s;
           if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
-            s = fmt::sprintf("Conference %c: %s",
-                             a()->subconfs[a()->uconfsub[i].confnum].key,
-                             stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name));
+            s = fmt::format("Conference {}: {}", iter->key.key(), stripcolors(iter->conf_name));
           } else {
             s = fmt::format("{} Message Areas", a()->config()->system_name());
           }
@@ -240,7 +241,7 @@ void SubList() {
               wc = 6;
               net_name = "Gated";
             } else {
-              const std::string nn = a()->nets()[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name;
+              const auto nn = a()->nets()[a()->subs().sub(a()->usub[i1].subnum).nets[0].net_num].name;
               net_name = stripcolors(nn);
               wc = a()->net_num() % 8;
             }
@@ -306,7 +307,7 @@ void SubList() {
         }
       }
       if (ns) {
-        i++;
+        ++iter;
       }
 
       if (!abort) {
@@ -321,11 +322,12 @@ void SubList() {
         } else {
           bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
-        const std::string ss = mmkey(MMKeyAreaType::subs, true);
+        const auto ss = mmkey(MMKeyAreaType::subs, true);
 
         if (ss == "?") {
           p = 1;
-          ns = i = i1 = 0;
+          ns = i1 = 0;
+          iter = std::begin(a()->uconfsub);
         }
 
         if (ss == " " || ss == "Q" || ss == "\r") {
@@ -339,8 +341,12 @@ void SubList() {
           if (okconf(a()->user())) {
             jump_conf(ConferenceType::CONF_SUBS);
           }
-          sn = en = oc = a()->sess().current_user_sub_conf_num();
-          ns = i = 0;
+          oc = a()->sess().current_user_sub_conf_num();
+          sn = std::begin(a()->uconfsub);
+          std::advance(sn, a()->sess().current_user_sub_conf_num());
+          en = sn;
+          iter = sn;
+          ns = 0;
         }
         if (isdigit(ss.front())) {
           for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
@@ -359,10 +365,10 @@ void SubList() {
         done = true;
       }
     }
-    if (i == 0) {
-      bout.bpla("None.", &abort);
-      bout.nl();
-    }
+    //if (i == 0) {
+    //  bout.bpla("None.", &abort);
+    //  bout.nl();
+    //}
   } while (!a()->sess().hangup() && !done);
 
   if (okconf(a()->user())) {

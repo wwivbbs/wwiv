@@ -1485,8 +1485,8 @@ LP_SEARCH_HELP:
     bout << "|#9C)|#2 Which Directories    :|#2 "
          << (sr->alldirs == THIS_DIR ? dir_name : sr->alldirs == ALL_DIRS ? "All dirs" : "Dirs in NSCAN")
          << wwiv::endl;
-    const auto conf_name = stripcolors(
-        a()->dirconfs[a()->uconfdir[a()->sess().current_user_dir_conf_num()].confnum].conf_name);
+    const auto conf_name =
+        stripcolors(a()->uconfdir[a()->sess().current_user_dir_conf_num()].conf_name);
     bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : conf_name) <<
         wwiv::endl;
     bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") <<

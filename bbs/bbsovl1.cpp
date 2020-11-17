@@ -181,10 +181,10 @@ void edit_confs() {
     const auto ch = onek("Q12", true);
     switch (ch) {
     case '1':
-      conf_edit(ConferenceType::CONF_SUBS);
+      conf_edit(a()->all_confs().subs_conf());
       break;
     case '2':
-      conf_edit(ConferenceType::CONF_DIRS);
+      conf_edit(a()->all_confs().dirs_conf());
       break;
     case 'Q':
       return;

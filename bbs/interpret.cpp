@@ -34,7 +34,6 @@
 
 using std::string;
 using std::to_string;
-using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -99,7 +98,7 @@ std::string BbsMacroContext::interpret(char ch) const {
       return to_string(context_->u().GetNumFeedbackSent());
     case 'f':                               // First time user called
       return context_->u().GetFirstOn();
-    case 'G':                               // MessaGes read
+    case 'G':                               // Messages read
       return to_string(context_->u().GetNumMessagesRead());
     case 'g':                               // Gold
       return to_string(context_->u().gold());
@@ -109,22 +108,17 @@ std::string BbsMacroContext::interpret(char ch) const {
       return to_string(context_->u().GetNumIllegalLogons());
     case 'J': {                             // Message conference
       const int x = context_->session_context().current_user_sub_conf_num();
-      if (!has_userconf_to_subconf(x)) {
+      if (x < 0 || x >= wwiv::stl::ssize(a()->uconfsub)) {
         return {};
       }
-      const int cnum = userconf_to_subconf(x);
-      if (cnum < 0 || cnum >= wwiv::stl::ssize(a()->uconfsub)) {
-        return {};
-      }
-      return a()->subconfs[cnum].conf_name;
+      return wwiv::stl::at(a()->uconfsub, x).conf_name;
     }
     case 'j': { // Transfer conference
       const int x = a()->sess().current_user_dir_conf_num();
-      if (!has_userconf_to_dirconf(x)) {
+      if (x < 0 || x >= wwiv::stl::ssize(a()->uconfdir)) {
         return {};
       }
-      const auto cn = userconf_to_dirconf(x);
-      return a()->dirconfs[cn].conf_name;
+      return wwiv::stl::at(a()->uconfdir, x).conf_name;
     }
     case 'K':                               // Kb uploaded
       return to_string(context_->u().uk());

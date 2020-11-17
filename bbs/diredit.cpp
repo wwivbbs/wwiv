@@ -343,18 +343,9 @@ void modify_dir(int n) {
 
 
 void swap_dirs(int dir1, int dir2) {
-  auto dir1conv = static_cast<subconf_t>(dir1);
-  auto dir2conv = static_cast<subconf_t>(dir2);
-
   if (dir1 < 0 || dir1 >= a()->dirs().size() || dir2 < 0 || dir2 >= a()->dirs().size()) {
     return;
   }
-
-  update_conf(ConferenceType::CONF_DIRS, &dir1conv, &dir2conv, CONF_UPDATE_SWAP);
-
-  dir1 = static_cast<int>(dir1conv);
-  dir2 = static_cast<int>(dir2conv);
-
   const int num_user_records = a()->users()->num_user_records();
 
   auto* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
@@ -390,13 +381,8 @@ void insert_dir(int n) {
   if (n < 0 || n > a()->dirs().size()) {
     return;
   }
-  auto nconv = static_cast<subconf_t>(n);
 
-  update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
-
-  n = static_cast<int>(nconv);
-
-  wwiv::sdk::files::directory_t r{};
+  files::directory_t r{};
   r.name = "** NEW DIR **";
   r.filename = "noname";
   r.path = a()->config()->dloadsdir();
@@ -432,15 +418,9 @@ void insert_dir(int n) {
 }
 
 void delete_dir(int n) {
-  auto nconv{static_cast<subconf_t>(n)};
-
   if (n < 0 || n >= a()->dirs().size()) {
     return;
   }
-
-  update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
-
-  n = static_cast<int>(nconv);
   a()->dirs().erase(n);
 
   const auto num_users = a()->users()->num_user_records();
@@ -469,7 +449,6 @@ void delete_dir(int n) {
 }
 
 void dlboardedit() {
-  int i2, confchg = 0;
   char s[81];
 
   if (!ValidateSysopPassword()) {
@@ -510,7 +489,7 @@ void dlboardedit() {
         bout.nl();
         bout << "|#2And put before dir number? ";
         bin.input(s, 4);
-        i2 = to_number<int>(s);
+        int i2 = to_number<int>(s);
         if (!s[0] || i2 < 0 || i2 % 32 == 0 || i2 > a()->dirs().size() || i1 == i2) {
           break;
         }
@@ -523,7 +502,6 @@ void dlboardedit() {
         insert_dir(i2);
         swap_dirs(i1, i2);
         delete_dir(i1);
-        confchg = 1;
         showdirs();
       } else {
         bout << "\r\n|#6You must increase the number of dirs in wwivconfig first.\r\n";
@@ -538,21 +516,6 @@ void dlboardedit() {
         if (s[0] != 0 && i >= 0 && i <= a()->dirs().size()) {
           insert_dir(i);
           modify_dir(i);
-          confchg = 1;
-          if (a()->dirconfs.size() > 1) {
-            bout.nl();
-            list_confs(ConferenceType::CONF_DIRS, 0);
-            i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);
-            if (i2 >= 0) {
-              if (!in_conference(i, &a()->dirconfs[i2])) {
-                addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[i2], &i);
-              }
-            }
-          } else {
-            if (!in_conference(i, &a()->dirconfs[0])) {
-              addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[0], &i);
-            }
-          }
         }
       }
     } break;
@@ -568,7 +531,6 @@ void dlboardedit() {
         if (bin.yesno()) {
           std::string fn = a()->dirs()[i].filename;
           delete_dir(i);
-          confchg = 1;
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (bin.yesno()) {
@@ -581,9 +543,6 @@ void dlboardedit() {
     }
   } while (!done && !a()->sess().hangup());
   a()->dirs().Save();
-  if (confchg) {
-    save_confs(ConferenceType::CONF_DIRS);
-  }
   if (!a()->at_wfc()) {
     changedsl();
   }

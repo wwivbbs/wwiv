@@ -409,17 +409,11 @@ static void modify_sub(int n) {
 }
 
 static void swap_subs(int sub1, int sub2) {
-  auto sub1conv = static_cast<subconf_t>(sub1);
-  auto sub2conv = static_cast<subconf_t>(sub2);
-
   if (sub1 < 0 || sub1 >= ssize(a()->subs().subs()) || sub2 < 0 ||
       sub2 >= ssize(a()->subs().subs())) {
     return;
   }
 
-  update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
-  sub1 = static_cast<int>(sub1conv);
-  sub2 = static_cast<int>(sub2conv);
   const auto num_user_records = a()->users()->num_user_records();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
@@ -462,17 +456,10 @@ static void swap_subs(int sub1, int sub2) {
 
 static void insert_sub(int n) {
   int i2;
-  const auto nconv = static_cast<subconf_t>(n);
-
   if (n < 0 || n > ssize(a()->subs().subs())) {
     return;
   }
 
-  // Don't insert the sub into all conferences. Not sure why wwiv used
-  // to do this here.
-  // update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
-
-  n = static_cast<int>(nconv);
 
   subboard_t r = {};
   r.name = "** New WWIV Message Sub **";
@@ -526,16 +513,9 @@ static void insert_sub(int n) {
 }
 
 static void delete_sub(int n) {
-  auto nconv = static_cast<subconf_t>(n);
-
   if (n < 0 || n >= ssize(a()->subs().subs())) {
     return;
   }
-
-  update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_DELETE);
-
-  n = static_cast<int>(nconv);
-
   while (ssize(a()->subs().subs()) > n && !a()->subs().sub(n).nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
@@ -584,7 +564,6 @@ static void delete_sub(int n) {
 }
 
 void boardedit() {
-  auto confchg = false;
   subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
@@ -635,7 +614,6 @@ void boardedit() {
         insert_sub(subnum2);
         swap_subs(subnum1, subnum2);
         delete_sub(subnum1);
-        confchg = true;
         showsubs();
       } else {
         bout << "\r\nYou must increase the number of subs in wwivconfig first.\r\n";
@@ -657,24 +635,14 @@ void boardedit() {
       if (!s.empty() && subnum <= ssize(a()->subs().subs())) {
         insert_sub(subnum);
         modify_sub(subnum);
-        confchg = true;
-        if (a()->subconfs.size() > 1) {
+        const auto confs_size = a()->all_confs().subs_conf().size();
+        if (confs_size > 1) {
           bout.nl();
-          list_confs(ConferenceType::CONF_SUBS, 0);
-          int i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);
-          if (i2 >= 0) {
-            if (!in_conference(subnum, &(a()->subconfs[i2]))) {
-              iconv = static_cast<subconf_t>(subnum);
-              addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[i2], &iconv);
-              subnum = iconv;
-            }
+          if (auto o = select_conf("Put in which conference? ", a()->all_confs().subs_conf(), true)) {
+            a()->subs().sub(subnum).conf.insert(o.value());
           }
-        } else {
-          if (!in_conference(subnum, &a()->subconfs[0])) {
-            iconv = static_cast<subconf_t>(subnum);
-            addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[0], &iconv);
-            subnum = iconv;
-          }
+        } else if (confs_size == 1) {
+          a()->subs().sub(subnum).conf.insert(a()->all_confs().subs_conf().front().key.key());
         }
       }
     } break;
@@ -688,7 +656,6 @@ void boardedit() {
         if (bin.yesno()) {
           auto fn = a()->subs().sub(subnum).filename;
           delete_sub(subnum);
-          confchg = true;
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (bin.yesno()) {
@@ -705,7 +672,4 @@ void boardedit() {
     changedsl();
   }
   a()->subchg = 1;
-  if (confchg) {
-    save_confs(ConferenceType::CONF_SUBS);
-  }
 }

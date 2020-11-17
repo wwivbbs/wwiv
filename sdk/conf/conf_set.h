@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SDK_CONF_CONF_SET_H
 #define INCLUDED_SDK_CONF_CONF_SET_H
 
+#include "core/stl.h"
 #include <set>
 
 namespace wwiv::sdk {
@@ -36,6 +37,7 @@ public:
       insert(k);
     }
   }
+  bool contains(char k) const  { return stl::contains(data_, k); }
 
   std::set<char> data_;
 };

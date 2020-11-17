@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/conf.h"
 
+
+#include "acs.h"
 #include "sdk/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
@@ -71,15 +73,17 @@ void tmp_disable_conf(bool disable) {
       oss = a()->current_user_sub().subnum;
       ocd = a()->sess().current_user_dir_conf_num();
       osd = a()->current_user_dir().subnum;
-      setuconf(ConferenceType::CONF_SUBS, -1, oss);
-      setuconf(ConferenceType::CONF_DIRS, -1, osd);
+      clear_usersubs(a()->all_confs().subs_conf(), a()->usub, oss);
+      clear_usersubs(a()->all_confs().dirs_conf(), a()->udir, oss);
     }
   } else if (disable_conf_cnt) {
     disable_conf_cnt--;
     if (disable_conf_cnt == 0 && a()->sess().disable_conf()) {
       a()->sess().disable_conf(false);
-      setuconf(ConferenceType::CONF_SUBS, ocs, oss);
-      setuconf(ConferenceType::CONF_DIRS, ocd, osd);
+      auto key = at(a()->uconfsub, ocs).key.key();
+      setuconf(a()->all_confs().subs_conf(), key, oss);
+      key = at(a()->uconfdir, ocd).key.key();
+      setuconf(a()->all_confs().dirs_conf(), key, osd);
     }
   }
 }
@@ -88,26 +92,44 @@ void reset_disable_conf() { disable_conf_cnt = 0; }
 
 conf_info_t get_conf_info(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_DIRS) {
-    conf_info_t ret(a()->dirconfs, a()->uconfdir);
+    conf_info_t ret(a()->all_confs().dirs_conf(), a()->uconfdir);
     ret.file_name = FilePath(a()->config()->datadir(), DIRS_CNF).string();
     ret.num_subs_or_dirs = a()->dirs().size();
     return ret;
   }
 
-  conf_info_t ret(a()->subconfs, a()->uconfsub);
+  conf_info_t ret(a()->all_confs().subs_conf(), a()->uconfsub);
   ret.file_name = FilePath(a()->config()->datadir(), SUBS_CNF).string();
   ret.num_subs_or_dirs = wwiv::stl::size_int(a()->subs().subs());
   return ret;
 }
 
-static std::filesystem::path get_conf_filename(ConferenceType conftype) {
-  if (conftype == ConferenceType::CONF_SUBS) {
-    return FilePath(a()->config()->datadir(), SUBS_CNF);
-  } else if (conftype == ConferenceType::CONF_DIRS) {
-    return FilePath(a()->config()->datadir(), DIRS_CNF);
+/**
+ * Select a free (unused) conf key
+ */
+ static std::optional<char> select_free_conf_key(Conference& conf, bool listconfs) {
+  if (listconfs) {
+    bout.nl();
+    list_confs(conf, false);
   }
-  return {};
+  std::set<char> current;
+  for (const auto& cp : conf.confs()) {
+    current.insert(cp.key.key());
+  }
+  std::string allowed(" \r\n");
+  for (auto c = 'A'; c <= 'Z'; c++) {
+    if (!contains(current, c)) {
+      allowed.push_back(c);
+    }
+  }
+  bout.format("|#9Select a free conference key (|#1{}|#9): ", allowed);
+  const auto key = onek(allowed, true);
+  if (key == ' ' || key == '\r' || key == '\n') {
+    return std::nullopt;
+  }
+  return { key };
 }
+
 
 /*
  * Presents user with selection of conferences, gets selection, and changes
@@ -115,25 +137,25 @@ static std::filesystem::path get_conf_filename(ConferenceType conftype) {
  */
 void jump_conf(ConferenceType conftype) {
   bout.litebar(StrCat(a()->config()->system_name(), " Conference Selection"));
-  conf_info_t info = get_conf_info(conftype);
+  auto info = get_conf_info(conftype);
   string allowable = " ";
   bout.nl();
   for (const auto& uc : info.uc) {
-    if (uc.confnum == -1 || bin.checka())
+    if (bin.checka())
       break;
-    const auto ac = static_cast<char>(info.confs[uc.confnum].key);
-    bout << "|#2" << ac << "|#7)|#1 " << stripcolors(info.confs[uc.confnum].conf_name) << "\r\n";
+    const auto ac = uc.key.key();
+    bout << "|#2" << ac << "|#7)|#1 " << stripcolors(uc.conf_name) << "\r\n";
     allowable.push_back(ac);
   }
 
   bout.nl();
   bout << "|#2Select [" << allowable.substr(1) << ", <space> to quit]: ";
-  char ch = onek(allowable);
+  const auto ch = onek(allowable);
   if (ch == ' ') {
     return;
   }
-  for (size_t i = 0; i < info.uc.size() && info.uc[i].confnum != -1; i++) {
-    if (ch == info.confs[info.uc[i].confnum].key) {
+  for (size_t i = 0; i < info.uc.size(); i++) {
+    if (ch == info.uc[i].key) {
       setuconf(conftype, i, -1);
       break;
     }
@@ -156,101 +178,23 @@ bool in_conference(subconf_t subnum, confrec_430_t* c) {
 }
 
 /*
- * Removes, inserts, or swaps subs/dirs in all conferences of a specified
- * type.
- */
-void update_conf(ConferenceType conftype, subconf_t* sub1, subconf_t* sub2, int action) {
-  auto info = get_conf_info(conftype);
-
-  switch (action) {
-  case CONF_UPDATE_INSERT:
-    if (!sub1) {
-      return;
-    }
-    for (auto& c : info.confs) {
-      c.subs.insert(*sub1);
-    }
-    save_confs(conftype);
-    break;
-  case CONF_UPDATE_DELETE:
-    if (!sub1) {
-      return;
-    }
-    for (auto& c : info.confs) {
-      c.subs.erase(*sub1);
-    }
-    save_confs(conftype);
-    break;
-  case CONF_UPDATE_SWAP:
-    if (!sub1 || !sub2) {
-      return;
-    }
-    for (auto& c : info.confs) {
-      bool has1 = in_conference(*sub1, &c);
-      bool has2 = in_conference(*sub2, &c);
-      if (has1) {
-        c.subs.erase(*sub1);
-        c.subs.insert(*sub2);
-      }
-      if (has2) {
-        c.subs.erase(*sub2);
-        c.subs.insert(*sub1);
-      }
-    }
-    save_confs(conftype);
-    break;
-  }
-}
-
-/*
  * Returns first available conference key, of a specified conference
  * type.
  */
-char first_available_key(ConferenceType conftype) {
-  auto info = get_conf_info(conftype);
-  if (info.confs.size() == MAX_CONFERENCES) {
+char first_available_key(const Conference& conf) {
+  if (conf.size() == MAX_CONFERENCES) {
     return 0;
   }
-  if (info.confs.empty()) {
+  if (conf.confs().empty()) {
     return 'A';
   }
-  const auto last = info.confs.back();
-  return last.key + 1;
+  auto cv = conf.confs();
+  const auto last = std::end(cv);
+  return static_cast<char>(last->key.key() + 1);
 }
 
-/*
- * Saves conferences of a specified conference-type.
- */
-bool save_confs(ConferenceType conftype) {
-  auto info = get_conf_info(conftype);
-  // Backup the *.cnf file 1st before we write to it.
-  backup_file(info.file_name, a()->config()->max_backups());
 
-  TextFile f(info.file_name, "wt");
-  if (!f.IsOpen()) {
-    bout.nl();
-    bout << "|#6Couldn't write to conference file: " << info.file_name << wwiv::endl;
-    return false;
-  }
-
-  f.Write(fmt::sprintf("%s\n\n",
-                       "/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */"));
-  for (const auto& cp : info.confs) {
-    const auto s =
-        fmt::sprintf("~%c %s\n!%d %d %d %d %d %d %d %u %d %s %s\n@", cp.key, cp.conf_name,
-                     cp.status, cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl, cp.minage, cp.maxage,
-                     cp.minbps, cp.sex, word_to_arstr(cp.ar, "-"), word_to_arstr(cp.dar, "-"));
-    f.Write(s);
-    for (const auto sub : cp.subs) {
-      f.Write(StrCat(sub, " "));
-    }
-    f.Write(fmt::sprintf("\n\n"));
-  }
-  f.Close();
-  return true;
-}
-
-static std::string create_conf_str(std::set<char> chars) {
+static std::string create_conf_str(std::set<char>& chars) {
   std::string s;
   for (const auto& c : chars) {
     s.push_back(c);
@@ -258,9 +202,10 @@ static std::string create_conf_str(std::set<char> chars) {
   return s;
 }
 
-/*
+/* 
  * Lists subs/dirs/whatever allocated to a specific conference.
- */
+ *
+ * TODO(rushfan): PORT THIS
 static void showsubconfs(ConferenceType conftype, confrec_430_t* c) {
   if (!c) {
     return;
@@ -268,7 +213,7 @@ static void showsubconfs(ConferenceType conftype, confrec_430_t* c) {
 
   auto info = get_conf_info(conftype);
 
-  bool abort = false;
+  auto abort = false;
   bout.bpla("|#2NN  Name                                    ConfList", &abort);
   bout.bpla("|#7--- ======================================= ==========================", &abort);
 
@@ -296,6 +241,7 @@ static void showsubconfs(ConferenceType conftype, confrec_430_t* c) {
     }
   }
 }
+*/
 
 /*
  * Takes a string like "100-150,201,333" and returns pointer to list of
@@ -360,166 +306,46 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
   return true;
 }
 
-/*
- * Function to add one subconf (sub/dir/whatever) to a conference.
- */
-void addsubconf(ConferenceType conftype, confrec_430_t* c, subconf_t* which) {
-  std::vector<subconf_t> intlist;
-
-  if (!c) {
-    return;
-  }
-
-  auto info = get_conf_info(conftype);
-
-  if (info.num_subs_or_dirs < 1) {
-    return;
-  }
-
-  if (c->num >= 1023) {
-    bout << "Maximum number of subconfs already in that conference.\r\n";
-    return;
-  }
-  if (which == nullptr) {
-    bout.nl();
-    bout << "|#2Add: ";
-    string text = bin.input(60, true);
-    if (text.empty()) {
-      return;
-    }
-    str_to_numrange(text.c_str(), intlist);
-  } else {
-    intlist.clear();
-    intlist.push_back(*which);
-  }
-
-  // add the subconfs now
-  for (auto cn : intlist) {
-    if (cn >= info.num_subs_or_dirs) {
-      break;
-    }
-    if (!in_conference(cn, c)) {
-      c->subs.insert(cn);
-      c->num = static_cast<subconf_t>(c->subs.size());
-    }
-  }
-}
-
-/*
- * Function to delete one subconf (sub/dir/whatever) from a conference.
- */
-static void delsubconf(confrec_430_t* c, subconf_t* which) {
-  if (!c || c->subs.empty()) {
-    return;
-  }
-
-  std::vector<subconf_t> intlist;
-  if (which == nullptr) {
-    bout.nl();
-    bout << "|#2Remove: ";
-    string text = bin.input(60, true);
-    if (text.empty()) {
-      return;
-    }
-    str_to_numrange(text.c_str(), intlist);
-  } else {
-    intlist.push_back(*which);
-  }
-
-  for (auto cn : intlist) {
-    if (in_conference(cn, c)) {
-      c->subs.erase(cn);
-      c->num = static_cast<subconf_t>(c->subs.size());
-    }
-  }
-}
-
-static std::string GetGenderAllowed(int nGender) {
-  switch (nGender) {
-  case 0:
-    return "Male";
-  case 1:
-    return "Female";
-  case 2:
-  default:
-    return "Anyone";
-  }
-}
 
 /*
  * Function for editing the data for one conference.
  */
-static void modify_conf(ConferenceType conftype, int which) {
+static void modify_conf(Conference& conf, char key) {
   bool changed = false;
-  bool ok = false;
   bool done = false;
 
-  int n = which;
-
-  auto info = get_conf_info(conftype);
+  if (!conf.exists(key)) {
+    return;
+  }
 
   do {
-    confrec_430_t& c = info.confs[n];
+    auto& c = conf.conf(key);
     bout.cls();
 
-    bout << "|#9A) Designator           : |#2" << c.key << wwiv::endl;
-    bout << "|#9B) Conf Name            : |#2" << c.conf_name << wwiv::endl;
-    bout << "|#9C) Min SL               : |#2" << static_cast<int>(c.minsl) << wwiv::endl;
-    bout << "|#9D) Max SL               : |#2" << static_cast<int>(c.maxsl) << wwiv::endl;
-    bout << "|#9E) Min DSL              : |#2" << static_cast<int>(c.mindsl) << wwiv::endl;
-    bout << "|#9F) Max DSL              : |#2" << static_cast<int>(c.maxdsl) << wwiv::endl;
-    bout << "|#9G) Min Age              : |#2" << static_cast<int>(c.minage) << wwiv::endl;
-    bout << "|#9H) Max Age              : |#2" << static_cast<int>(c.maxage) << wwiv::endl;
-    bout << "|#9I) ARs Required         : |#2" << word_to_arstr(c.ar, "None.") << wwiv::endl;
-    bout << "|#9J) DARs Required        : |#2" << word_to_arstr(c.dar, "None.") << wwiv::endl;
-    bout << "|#9K) Min BPS Required     : |#2" << c.minbps << wwiv::endl;
-    bout << "|#9L) Gender Allowed       : |#2" << GetGenderAllowed(c.sex) << wwiv::endl;
-    bout << "|#9M) Ansi Required        : |#2"
-         << YesNoString((c.status & conf_status_ansi) ? true : false) << wwiv::endl;
-    bout << "|#9N) WWIV RegNum Required : |#2"
-         << YesNoString((c.status & conf_status_wwivreg) ? true : false) << wwiv::endl;
-    bout << "|#9O) Available            : |#2"
-         << YesNoString((c.status & conf_status_offline) ? true : false) << wwiv::endl;
-    bout << "|#9S) Edit SubConferences\r\n";
+    bout << "|#9A) Designator : |#2" << c.key.key() << wwiv::endl;
+    bout << "|#9B) Conf Name  : |#2" << c.conf_name << wwiv::endl;
+    bout << "|#9C) ACS        : |#2" << c.conf_name << wwiv::endl;
     bout << "|#9Q) Quit ConfEdit\r\n";
     bout.nl();
 
     bout << "|#7(|#2Q|#7=|#1Quit|#7) ConfEdit [|#1A|#7-|#1O|#7,|#1S|#7,|#1[|#7,|#1]|#7] : ";
-    char ch = onek("QSABCDEFGHIJKLMNO[]", true);
+    char ch = onek("QABC", true);
 
     switch (ch) {
-    case '[': {
-      n--;
-      if (n < 1) {
-        n = std::max<int>(0, info.confs.size() - 1);
-      }
-    } break;
-    case ']':
-      n++;
-      if (n >= ssize(info.confs)) {
-        n = 0;
-      }
-      break;
     case 'A': {
       bout.nl();
       bout << "|#2New Designator: ";
-      char ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-      ok = true;
-      for (int i = 0; i < ssize(info.confs); i++) {
-        if (i == n) {
-          continue;
-        }
-        if (ok && (info.confs[i].key == ch1)) {
-          ok = false;
-        }
+      const auto ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      if (ch1 == c.key.key()) {
+        break;
       }
-      if (!ok) {
+      if (conf.exists(ch1)) {
         bout.nl();
         bout << "|#6That key already in use!\r\n";
         bout.pausescr();
         break;
       }
-      c.key = ch1;
+      c.key.key(ch1);
       changed = true;
     } break;
     case 'B': {
@@ -533,144 +359,10 @@ static void modify_conf(ConferenceType conftype, int which) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#2Min SL: ";
-      c.minsl = bin.input_number(c.minsl);
+      bout << "|#2ACSL: ";
+      c.acs = wwiv::bbs::input_acs(bin, bout, c.acs, 60);
       changed = true;
     } break;
-    case 'D':
-      bout.nl();
-      bout << "|#2Max SL: ";
-      c.maxsl = bin.input_number(c.maxsl);
-      changed = true;
-      break;
-    case 'E':
-      bout.nl();
-      bout << "|#2Min DSL: ";
-      c.mindsl = bin.input_number(c.mindsl);
-      changed = true;
-      break;
-    case 'F':
-      bout.nl();
-      bout << "|#2Max DSL";
-      c.maxdsl = bin.input_number(c.maxdsl);
-      changed = true;
-      break;
-    case 'G':
-      bout.nl();
-      bout << "|#2Min Age: ";
-      c.minage = bin.input_number<uint8_t>(c.minage, 0, 255, true);
-      changed = true;
-      break;
-    case 'H':
-      bout.nl();
-      bout << "|#2Max Age: ";
-      c.maxage = bin.input_number(c.maxage);
-      changed = true;
-      break;
-    case 'I': {
-      bout.nl();
-      bout << "|#2Toggle which AR requirement? ";
-      char ch1 = onek("\rABCDEFGHIJKLMNOP ");
-      switch (ch1) {
-      case ' ':
-      case '\r':
-        break;
-      default:
-        c.ar ^= (1 << (ch1 - 'A'));
-        changed = true;
-        break;
-      }
-    } break;
-    case 'J': {
-      bout.nl();
-      bout << "|#2Toggle which DAR requirement? ";
-      char ch1 = onek("\rABCDEFGHIJKLMNOP ");
-      switch (ch1) {
-      case ' ':
-      case '\r':
-        break;
-      default:
-        c.dar ^= (1 << (ch1 - 'A'));
-        changed = true;
-        break;
-      }
-    } break;
-    case 'K':
-      bout.nl();
-      bout << "|#2Min BPS Rate: ";
-      c.minbps = bin.input_number(c.minbps);
-      changed = true;
-      break;
-    case 'L': {
-      bout.nl();
-      changed = true;
-      bout << "|#5(Q=Quit) Gender Allowed: (M)ale, (F)emale, (A)ll: ";
-      char ch1 = onek("MFAQ");
-      switch (ch1) {
-      case 'M':
-        c.sex = 0;
-        break;
-      case 'F':
-        c.sex = 1;
-        break;
-      case 'A':
-        c.sex = 2;
-        break;
-      case 'Q':
-        break;
-      }
-    } break;
-    case 'M':
-      bout.nl();
-      changed = true;
-      c.status ^= conf_status_ansi;
-      break;
-    case 'N':
-      bout.nl();
-      changed = true;
-      c.status ^= conf_status_wwivreg;
-      break;
-    case 'O':
-      bout.nl();
-      changed = true;
-      c.status ^= conf_status_offline;
-      break;
-    case 'S':
-      ok = false;
-      do {
-        bout.nl();
-        bout << "|#2A)dd, R)emove, C)lear, F)ill, Q)uit, S)tatus: ";
-        char ch1 = onek("QARCFS");
-        switch (ch1) {
-        case 'A':
-          addsubconf(conftype, &c, nullptr);
-          changed = true;
-          break;
-        case 'R':
-          delsubconf(&c, nullptr);
-          changed = true;
-          break;
-        case 'C':
-          c.subs.clear();
-          changed = true;
-          break;
-        case 'F':
-          for (subconf_t i = 0; i < info.num_subs_or_dirs; i++) {
-            c.subs.insert(i);
-            c.num = static_cast<subconf_t>(c.subs.size());
-            changed = true;
-          }
-          break;
-        case 'Q':
-          ok = true;
-          break;
-        case 'S':
-          bout.nl();
-          showsubconfs(conftype, &c);
-          break;
-        }
-      } while (!ok);
-      break;
     case 'Q':
       done = true;
       break;
@@ -678,102 +370,72 @@ static void modify_conf(ConferenceType conftype, int which) {
   } while (!done && !a()->sess().hangup());
 
   if (changed) {
-    save_confs(conftype);
+    a()->all_confs().Save();
   }
 }
 
 /*
  * Function for inserting one conference.
  */
-static void insert_conf(ConferenceType conftype, int n) {
+static void insert_conf(Conference& conf, char key) {
 
-  auto info = get_conf_info(conftype);
-  confrec_430_t c{};
-
-  c.key = first_available_key(conftype);
-
-  if (c.key == 0) {
-    return;
-  }
-
+  conference_t c{};
+  c.key.key(key);
   c.conf_name = StrCat("Conference ", c.key);
-  c.minsl = 0;
-  c.maxsl = 255;
-  c.mindsl = 0;
-  c.maxdsl = 255;
-  c.minage = 0;
-  c.maxage = 255;
-  c.status = 0;
-  c.minbps = 0;
-  c.sex = 2;
-  c.ar = 0;
-  c.dar = 0;
-  c.num = 0;
+  c.acs = "";
 
-  if (!insert_at(info.confs, n, c)) {
-    LOG(ERROR) << "Error inserting conference.";
-  }
-
-  if (!save_confs(conftype)) {
+  conf.add(c);
+      ;
+  if (!a()->all_confs().Save()) {
     LOG(ERROR) << "Unable to save conferences.";
   }
 
-  read_in_conferences(conftype);
-  modify_conf(conftype, n);
+  modify_conf(conf, key);
 }
 
 /**
  * Function for deleting one conference.
  */
-static void delete_conf(ConferenceType conftype, int n) {
-  auto info = get_conf_info(conftype);
-  erase_at(info.confs, n);
-  save_confs(conftype);
-  read_in_conferences(conftype);
+static void delete_conf(Conference& conf, char key) {
+  conf.erase(key);
+  a()->all_confs().Save();
 }
 
 /**
  * Function for editing conferences.
  */
-void conf_edit(ConferenceType conftype) {
+void conf_edit(Conference& conf) {
   bool done = false;
 
   bout.cls();
-  list_confs(conftype, 1);
+  list_confs(conf, true);
 
   do {
-    auto info = get_conf_info(conftype);
     bout.nl();
     bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2? |#7 : ";
     auto ch = onek("QIDM?", true);
     switch (ch) {
     case 'D':
-      if (info.confs.size() == 1) {
+      if (conf.size() == 1) {
         bout << "\r\n|#6Cannot delete all conferences!\r\n";
       } else {
-        int ec = select_conf("Delete which conference? ", conftype, 0);
-        if (ec >= 0) {
-          delete_conf(conftype, ec);
+        if (auto ec = select_conf("Delete which conference? ", conf, false)) {
+          delete_conf(conf, ec.value());
         }
       }
       break;
     case 'I':
-      if (info.confs.size() == MAX_CONFERENCES) {
+      if (conf.size() == MAX_CONFERENCES) {
         bout << "\r\n|#6Cannot insert any more conferences!\r\n";
       } else {
-        int ec = select_conf("Insert before which conference ('$'=at end)? ", conftype, 0);
-        if (ec != -1) {
-          if (ec == -2) {
-            ec = size_int(info.confs);
-          }
-          insert_conf(conftype, ec);
+        if (auto ec = select_free_conf_key(conf, false)){
+          insert_conf(conf, ec.value());
         }
       }
       break;
     case 'M': {
-      int ec = select_conf("Modify which conference? ", conftype, 0);
-      if (ec >= 0) {
-        modify_conf(conftype, ec);
+      if (auto ec = select_conf("Modify which conference? ", conf, false)) {
+        modify_conf(conf, ec.value());
       }
     } break;
     case 'Q':
@@ -781,7 +443,7 @@ void conf_edit(ConferenceType conftype) {
       break;
     case '?':
       bout.cls();
-      list_confs(conftype, 1);
+      list_confs(conf, true);
       break;
     }
   } while (!done && !a()->sess().hangup());
@@ -791,14 +453,18 @@ void conf_edit(ConferenceType conftype) {
 }
 
 /*
- * Lists conferences of a specified type. If OP_FLAGS_SHOW_HIER is set,
- * then the subs (dirs, whatever) in each conference are also shown.
+ * Lists conferences of a specified type.
  */
-void list_confs(ConferenceType conftype, int ssc) {
-  auto ret = get_conf_info(conftype);
+void list_confs(ConferenceType conftype, bool list_subs) {
+  if (conftype == ConferenceType::CONF_SUBS) {
+    return list_confs(a()->all_confs().subs_conf(), list_subs);
+  }
+  return list_confs(a()->all_confs().dirs_conf(), list_subs);
+}
 
-  bool abort = false;
-  bout.bpla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W",
+void list_confs(Conference& conf, bool list_subs) {
+  auto abort = false;
+  bout.bpla("|#2  Des Name                    ACS",
             &abort);
   bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD "
             "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
@@ -806,167 +472,66 @@ void list_confs(ConferenceType conftype, int ssc) {
             "\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD",
             &abort);
 
-  for (const auto& cp : ret.confs) {
+  for (const auto& cp : conf.confs()) {
     if (abort) {
       break;
     }
-    const auto ar = word_to_arstr(cp.ar, "-");
-    const auto dar = word_to_arstr(cp.dar, "-");
-    auto l1 =
-        fmt::sprintf("%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ", '\xCC',
-                     cp.key, cp.conf_name, cp.minsl, cp.maxsl, cp.mindsl, cp.maxdsl,
-                     cp.minage, cp.maxage, cp.minbps, ar);
-    auto l2 = fmt::sprintf("%-3.3s %c %1.1s %1.1s", dar,
-                                 (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',
-                                 YesNoString((cp.status & conf_status_ansi) ? true : false),
-                                 YesNoString((cp.status & conf_status_wwivreg) ? true : false));
+    const auto l = fmt::sprintf("\xCC\xCD|#2 %c |#1 %-23.23s |#5%s", cp.key.key(), cp.conf_name, cp.acs);
     bout.Color(7);
-    bout.bpla(StrCat(l1, l2), &abort);
-    if (a()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
-      if (cp.num > 0 && ssc) {
-        for (const auto sub : cp.subs) {
-          if (sub < ret.num_subs_or_dirs) {
-            bout.Color(7);
-            l1 = fmt::sprintf("%c  %c\xC4\xC4\xC4 |#9", ' ', '\xC3');
-            switch (conftype) {
-            case ConferenceType::CONF_SUBS:
-              l2 =
-                  fmt::sprintf("%s%-3d : %s", "Sub #", sub, stripcolors(a()->subs().sub(sub).name));
-              break;
-            case ConferenceType::CONF_DIRS:
-              l2 = fmt::sprintf("%s%-3d : %s", "Dir #", sub, stripcolors(a()->dirs()[sub].name));
-              break;
-            }
-            bout.bpla(StrCat(l1, l2), &abort);
-          }
-        }
+    bout.bpla(l, &abort);
+    if (!list_subs) {
+      continue;
+    }
+    auto subnum = 0;
+    for (const auto& sub : a()->subs().subs()) {
+      if (sub.conf.contains(cp.key.key())) {
+        const auto ll = fmt::format("   \xC3\xC4\xC4\xC4 |#9Sub #{:<3} : {}", subnum, sub.name);
+        bout.Color(7);
+        bout.bpla(ll, &abort);
       }
+      ++subnum;
     }
   }
   bout.nl();
 }
+
 
 /*
  * Allows user to select a conference. Returns the conference selected
  * (0-based), or -1 if the user aborted. Error message is printed for
  * invalid conference selections.
  */
-int select_conf(const char* prompt_text, ConferenceType conftype, int listconfs) {
-  int i = 0, sl = 0;
-  bool ok = false;
-  
-  do {
-    if (listconfs || sl) {
-      bout.nl();
-      list_confs(conftype, 0);
-      sl = 0;
-    }
-    if (prompt_text && prompt_text[0]) {
+std::optional<char> select_conf(const std::string& prompt_text, Conference& conf, bool listconfs) {
+  if (listconfs) {
+    bout.nl();
+    list_confs(conf, false);
+  }
+  std::string allowed(" \r\n");
+  for (const auto& cp : conf.confs()) {
+    allowed.push_back(cp.key.key());
+  }
+  while (!a()->sess().hangup()) {
+    if (!prompt_text.empty()) {
       bout.nl();
       bout << "|#1" << prompt_text;
     }
-    auto mmk = mmkey(MMKeyAreaType::subs);
-    if (mmk.empty()) {
-      i = -1;
-      ok = true;
-    } else {
-      switch (mmk.front()) {
-      case '?':
-        sl = 1;
-        break;
-      default:
-        switch (conftype) {
-        case ConferenceType::CONF_SUBS:
-          for (auto i1 = 0; i1 < size_int(a()->subconfs); i1++) {
-            if (mmk[0] == a()->subconfs[i1].key) {
-              ok = true;
-              i = i1;
-              break;
-            }
-          }
-          break;
-        case ConferenceType::CONF_DIRS:
-          for (auto i1 = 0; i1 < size_int(a()->dirconfs); i1++) {
-            if (mmk[0] == a()->dirconfs[i1].key) {
-              ok = true;
-              i = i1;
-              break;
-            }
-          }
-          break;
-        }
-        if (mmk[0] == '$') {
-          i = -2;
-          ok = true;
-        }
-        break;
-      }
-      if (!ok && !sl) {
-        bout << "\r\n|#6Invalid conference key!\r\n";
-      }
+    auto key = onek(allowed, true);
+    if (key == ' ' || key == '\r' || key == '\n') {
+      return std::nullopt;
     }
-  } while (!ok && !a()->sess().hangup());
-  return i;
-}
-
-/*
- * Creates a default conference file. Should only be called if no conference
- * file for that conference type already exists.
- */
-static bool create_conf_file(ConferenceType conftype) {
-  auto info = get_conf_info(conftype);
-  TextFile f(info.file_name, "wt");
-  if (!f.IsOpen()) {
-    return false;
-  }
-
-  f.WriteLine("/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */");
-  f.WriteLine("");
-  f.WriteLine("~A General");
-  f.WriteLine("!0 0 255 0 255 0 255 0 2 - -");
-  std::ostringstream ss;
-  ss << "@";
-  for (int i = 0; i < info.num_subs_or_dirs; i++) {
-    ss << i << " ";
-  }
-  f.WriteLine(ss.str());
-  f.WriteLine("");
-  f.Close();
-  return true;
-}
-
-
-/*
- * Reads in a conference type. Creates default conference file if it is
- * necessary. If conferences cannot be read, then BBS aborts.
- */
-void read_in_conferences(ConferenceType conftype) {
-  const auto fn = get_conf_filename(conftype);
-  if (!File::Exists(fn)) {
-    if (!create_conf_file(conftype)) {
-      LOG(FATAL) << "Problem creating conferences.";
+    if (key == '?') {
+      bout.nl();
+      list_confs(conf, false);
+      continue;
     }
+    if (conf.exists(key)) {
+      return {key};
+    }
+    bout << "\r\n|#6Invalid conference key!\r\n";
   }
-
-  switch (conftype) {
-  case ConferenceType::CONF_SUBS: {
-    a()->subconfs = read_conferences_430(fn);
-  } break;
-  case ConferenceType::CONF_DIRS: {
-    a()->dirconfs = read_conferences_430(fn);
-  } break;
-  }
+  return std::nullopt;
 }
 
-/*
- * Reads all conferences into memory. Creates default conference files if
- * none exist. If called when conferences already in memory, then memory
- * for "old" conference data is deallocated first.
- */
-void read_all_conferences() {
-  read_in_conferences(ConferenceType::CONF_SUBS);
-  read_in_conferences(ConferenceType::CONF_DIRS);
-}
 
 /*
  * Returns number of "words" in a specified string, using a specified set

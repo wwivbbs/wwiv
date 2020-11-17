@@ -24,7 +24,6 @@ sizeof (chainregrec) = 64
 sizeof (newexternalrec) = 512
 sizeof (editorrec) = 366
 sizeof (usersubrec) = 7
-sizeof (userconfrec) = 2
 sizeof (batchrec) = 24
 sizeof (ext_desc_type) = 15
 sizeof (gfiledirrec) = 56

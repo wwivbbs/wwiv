@@ -1139,6 +1139,14 @@ Subs& Application::subs() { return *subs_; }
 
 const Subs& Application::subs() const { return *subs_; }
 
+Conferences& Application::all_confs() {
+  return *all_confs_;
+}
+
+const Conferences& Application::all_confs() const {
+  return *all_confs_;
+}
+
 files::Dirs& Application::dirs() {
   return *dirs_;
 }

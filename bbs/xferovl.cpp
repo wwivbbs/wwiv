@@ -736,12 +736,11 @@ static void config_nscan() {
       std::string s1 = " ";
       bout.nl();
       bout << "Select Conference: \r\n\n";
-      for (auto i = 0; i < wwiv::stl::size_int(a()->dirconfs) && has_userconf_to_dirconf(i) && !abort; i++) {
-        const auto confnum = a()->uconfdir[i].confnum;
-        const auto cn = stripcolors(a()->dirconfs[confnum].conf_name);
-        const auto s2 = StrCat(a()->dirconfs[confnum].key, ") ", cn);
+      for (auto i = 0; i < wwiv::stl::size_int(a()->uconfdir) && !abort; i++) {
+        const auto& conf = a()->uconfdir[i];
+        const auto s2 = fmt::format("{}) {}", conf.key.key(), stripcolors(conf.conf_name));
         bout.bpla(s2, &abort);
-        s1.push_back(static_cast<char>(a()->dirconfs[confnum].key));
+        s1.push_back(conf.key.key());
       }
       bout.nl();
       bout << " Select [" << s1.substr(1) << ", <space> to quit]: ";
@@ -755,16 +754,11 @@ static void config_nscan() {
       break;
     default:
       if (ok_multiple_conf(a()->user(), a()->uconfdir)) {
-        size_t i = 0;
-        while (ch != a()->dirconfs[a()->uconfdir[i].confnum].key &&
-               i < a()->dirconfs.size()) {
-          i++;
-        }
-        if (i >= a()->dirconfs.size()) {
+        const auto o = a()->all_confs().dirs_conf().try_conf(ch);
+        if (!o) {
           break;
         }
-
-        setuconf(ConferenceType::CONF_DIRS, i, -1);
+        setuconf(a()->all_confs().dirs_conf(), o.value().key.key(), -1);
       }
       l_config_nscan();
       bool done = false;

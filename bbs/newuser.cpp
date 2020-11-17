@@ -60,14 +60,12 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
-#include <algorithm>
 #include <chrono>
 #include <string>
 
 using std::string;
 using std::chrono::milliseconds;
 using wwiv::common::InputMode;
-using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::os;
