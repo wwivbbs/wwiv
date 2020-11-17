@@ -807,7 +807,7 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < ssize(a()->subs().subs())) && (a()->usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; i1 < ssize(a()->usub); i1++) {
             if (ss1 == a()->usub[i1].keys) {
               i = i1;
             }

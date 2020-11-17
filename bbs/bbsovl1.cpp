@@ -174,7 +174,9 @@ void edit_confs() {
   }
 
   while (!a()->sess().hangup()) {
-    bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
+    bout.cls();
+    bout.litebar("Conference Editor");
+    bout << "|#5Edit Which Conferences:\r\n\n";
     bout << "|#21|#9)|#1 Subs\r\n";
     bout << "|#22|#9)|#1 Dirs\r\n";
     bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";

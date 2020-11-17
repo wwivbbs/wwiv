@@ -37,7 +37,22 @@ public:
       insert(k);
     }
   }
-  bool contains(char k) const  { return stl::contains(data_, k); }
+  [[nodiscard]] bool contains(char k) const  { return stl::contains(data_, k); }
+  [[nodiscard]] std::string to_string() const {
+    std::string out;
+    out.reserve(data_.size());
+    for (const auto c : data_) {
+      out.push_back(c);
+    }
+    return out;
+  }
+
+  void from_string(const std::string& s) {
+    data_.clear();
+    for (const auto c : s) {
+      data_.insert(c);
+    }
+  }
 
   std::set<char> data_;
 };

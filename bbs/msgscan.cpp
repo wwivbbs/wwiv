@@ -627,7 +627,7 @@ void HandleMessageMove(int& msg_num) {
       return;
     }
     bool ok = false;
-    for (auto i1 = 0; i1 < ssize(a()->subs().subs()) && a()->usub[i1].subnum != -1 && !ok; i1++) {
+    for (auto i1 = 0; i1 < ssize(a()->usub) && !ok; i1++) {
       if (ss1 == a()->usub[i1].keys) {
         nTempSubNum = i1;
         bout.nl();

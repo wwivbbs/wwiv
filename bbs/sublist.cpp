@@ -79,7 +79,7 @@ void old_sublist() {
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;
-    while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
+    while (i1 < a()->usub.size() && !abort) {
       std::ostringstream os1;
       os1 << fmt::sprintf("  |#5%4.4s|#2", a()->usub[i1].keys);
       if (a()->sess().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
@@ -145,8 +145,8 @@ int get_new_posts_count(int subnum) {
   if (num == 0) {
     return 0;
   }
-  const int midpoint = num / 2;
-  int msgIndex = num;
+  const auto midpoint = num / 2;
+  auto msgIndex = num;
   int64_t last_qscan = 0;
   while(msgIndex > midpoint) {
     const auto cur = get_post(msgIndex)->qscan;
@@ -187,7 +187,7 @@ void SubList() {
       case ' ':
         sn = std::begin(a()->uconfsub);
         std::advance(sn, a()->sess().current_user_sub_conf_num());
-        en = sn;
+        en = sn + 1;
         break;
       case 'Q':
         return;
@@ -197,21 +197,20 @@ void SubList() {
     oc = -1;
   }
 
-  bool abort = false;
-  bool done = false;
+  auto abort = false;
+  auto done = false;
   do {
     p = 1;
-    auto iter = sn;
-    size_t i1 = 0;
-    while (iter != en && !abort) {
-      int ns = 0;
+    auto i1 = 0;
+    for(auto iter = sn;  iter != en && !abort; ++iter) {
+      auto ns = 0;
       if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
         auto pos = std::distance(std::begin(a()->uconfsub), iter);
         setuconf(ConferenceType::CONF_SUBS, pos, -1);
         i1 = 0;
       }
       size_t firstp = 0;
-      while (i1 < a()->subs().subs().size() && a()->usub[i1].subnum != -1 && !abort) {
+      while (i1 < size_int(a()->usub) && !abort) {
         if (p) {
           p = 0;
           firstp = i1;
@@ -257,20 +256,12 @@ void SubList() {
           net_info = "|#7>|#1LOCAL|#7<  ";
         }
         const auto num_new_posts = get_new_posts_count(a()->usub[i1].subnum);
-        std::string sdf;
-        if (a()->current_user_sub().subnum == a()->usub[i1].subnum) {
-          sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 "
-                             "|#9%5d |#9\xB3 |#%c%5u |#9",
-                             i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
-                             a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
-                             num_new_posts);
-        } else {
-          sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 "
-                             "|#9%5d |#9\xB3 |#%c%5u |#9",
-                             i1 + 1, yns, net_info, a()->subs().sub(a()->usub[i1].subnum).name,
-                             a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
-                             num_new_posts);
-        }
+        const auto subname_color = (a()->current_user_sub().subnum == a()->usub[i1].subnum) ? "|#4" : "|#1";
+        const auto sdf = fmt::sprintf(" |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 %s%-36.36s |#9\xB3 "
+                           "|#9%5d |#9\xB3 |#%c%5u |#9",
+                           i1 + 1, yns, net_info, subname_color, a()->subs().sub(a()->usub[i1].subnum).name,
+                           a()->GetNumMessagesInCurrentMessageArea(), num_new_posts ? '6' : '3',
+                           num_new_posts);
         bout.bputs(sdf, &abort, &next);
         bout.nl();
         auto lastp = i1++;
@@ -279,9 +270,9 @@ void SubList() {
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
-          const std::string ss = mmkey(MMKeyAreaType::subs, true);
+          const auto ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
-            for (auto i2 = 0; i2 < ssize(a()->subs().subs()); i2++) {
+            for (auto i2 = 0; i2 < ssize(a()->usub); i2++) {
               if (ss == a()->usub[i2].keys) {
                 a()->set_current_user_sub_num(i2);
                 old_sub = a()->current_user_sub().subnum;
@@ -306,9 +297,9 @@ void SubList() {
           }
         }
       }
-      if (ns) {
-        ++iter;
-      }
+      //if (ns) {
+      //  ++iter;
+      //}
 
       if (!abort) {
         p = 1;
@@ -344,12 +335,12 @@ void SubList() {
           oc = a()->sess().current_user_sub_conf_num();
           sn = std::begin(a()->uconfsub);
           std::advance(sn, a()->sess().current_user_sub_conf_num());
-          en = sn;
+          en = sn + 1;
           iter = sn;
           ns = 0;
         }
         if (isdigit(ss.front())) {
-          for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
+          for (uint16_t i2 = 0; i2 < a()->usub.size(); i2++) {
             if (ss == a()->usub[i2].keys) {
               a()->set_current_user_sub_num(i2);
               old_sub = a()->current_user_sub().subnum;

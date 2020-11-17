@@ -93,18 +93,19 @@ static void CleanUserInfo() {
   if (a()->user()->GetLastDirNum() > a()->config()->max_dirs()) {
     a()->user()->SetLastDirNum(0);
   }
-  if (a()->usub[a()->user()->GetLastSubNum()].subnum != -1) {
-    a()->set_current_user_sub_num(a()->user()->GetLastSubNum());
+  const auto last_subnum = a()->user()->GetLastSubNum();
+  if (last_subnum < size_int(a()->usub)) {
+    a()->set_current_user_sub_num(last_subnum);
   }
-  if (a()->udir[a()->user()->GetLastDirNum()].subnum != -1) {
-    a()->set_current_user_dir_num(a()->user()->GetLastDirNum());
+  const auto last_dirnum = a()->user()->GetLastDirNum();
+  if (last_subnum < size_int(a()->udir)) {
+    a()->set_current_user_dir_num(last_dirnum);
   }
-
 }
 
 bool IsPhoneNumberUSAFormat(User *pUser) {
-  string country = pUser->GetCountry();
-  return (country == "USA" || country == "CAN" || country == "MEX");
+  const string country = pUser->GetCountry();
+  return country == "USA" || country == "CAN" || country == "MEX";
 }
 
 static int GetAnsiStatusAndShowWelcomeScreen() {

@@ -122,13 +122,14 @@ int listfiles_plus_function(int type) {
   if (!prep_search_rec(&search_rec, type)) {
     return 0;
   }
-  int max_lines = calc_max_lines();
 
-  bool all_done = false;
-  for (uint16_t this_dir = 0; this_dir < a()->dirs().size() && (!a()->sess().hangup()) && (a()->udir[this_dir].subnum != -1)
-       && !all_done; this_dir++) {
+  auto max_lines = calc_max_lines();
+  auto all_done = false;
+
+  for (uint16_t this_dir = 0; this_dir < a()->udir.size() && !a()->sess().hangup() && !all_done;
+       this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
-    bool scan_dir = false;
+    auto scan_dir = false;
     bin.checka(&all_done);
 
     if (search_rec.alldirs == THIS_DIR) {

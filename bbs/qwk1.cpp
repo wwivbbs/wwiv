@@ -729,7 +729,7 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
       }
     }
 
-    if (sub >= ssize(a()->subs().subs()) || sub < 0) {
+    if (sub >= ssize(a()->usub) || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 

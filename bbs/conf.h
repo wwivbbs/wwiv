@@ -50,7 +50,7 @@ void reset_disable_conf();
 conf_info_t get_conf_info(wwiv::sdk::ConferenceType conftype);
 
 void jump_conf(wwiv::sdk::ConferenceType conftype);
-void conf_edit(wwiv::sdk::Conference& conftype);
+void conf_edit(wwiv::sdk::Conference& conf);
 void list_confs(wwiv::sdk::ConferenceType conftype, bool list_subs);
 void list_confs(wwiv::sdk::Conference& conf, bool list_subs = true);
 std::optional<char> select_conf(const std::string& prompt_text, wwiv::sdk::Conference& conf, bool listconfs);

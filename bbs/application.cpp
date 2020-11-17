@@ -1119,16 +1119,40 @@ void Application::set_current_file_area(std::unique_ptr<wwiv::sdk::files::FileAr
 
 Batch& Application::batch() { return batch_; }
 
+static usersubrec empty_user_sub{"", -1};
+
+const usersubrec& Application::current_user_sub() const {
+  const auto n = current_user_sub_num();
+  if (n >= usub.size()) {
+    return empty_user_sub;
+  }
+  return usub[n];
+}
+
+const usersubrec& Application::current_user_dir() const {
+  const auto n = current_user_dir_num();
+  if (n >= udir.size()) {
+    return empty_user_sub;
+  }
+  return udir[n];
+}
+
 const subboard_t& Application::current_sub() const {
   return subs().sub(session_context_.GetCurrentReadMessageArea());
 }
 
 void Application::set_current_user_dir_num(int n) { 
-  user_dir_num_ = static_cast<uint16_t>(n); 
+  user_dir_num_ = static_cast<uint16_t>(n);
+  if (user_dir_num_ < 0 || user_dir_num_ > wwiv::stl::size_int(udir)) {
+    user_dir_num_ = 0;
+  }
 
-  const auto subnum = current_user_dir().subnum;
+  auto subnum = current_user_dir().subnum;
+  if (subnum < 0 || subnum  > dirs().size()) {
+    subnum = 0;
+  }
   // Update the value in the context.
-  sess().current_dir(dirs()[subnum != -1 ? subnum : 0]);
+  sess().current_dir(dirs()[subnum]);
 }
 
 const files::directory_t& Application::current_dir() const {

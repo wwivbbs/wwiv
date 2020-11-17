@@ -123,6 +123,14 @@ std::set<conference_t> Conference::confs() const {
   return r;
 }
 
+std::string Conference::keys_string() const {
+  std::string out;
+  for (const auto& [k, _] : confs_) {
+    out.push_back(k);
+  }
+  return out;
+}
+
 bool Conference::add(conference_t r) {
   auto [_, happened] = confs_.try_emplace(r.key.key(), r);
   return happened;

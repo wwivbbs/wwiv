@@ -182,6 +182,7 @@ static void modify_sub(int n) {
          << ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None.") << wwiv::endl;
     bout << "|#9P) Disable FS:  |#2" << YesNoString((r.anony & anony_no_fullscreen) ? true : false)
          << wwiv::endl;
+    bout << "|#9Q) Conferences: |#2" << r.conf.to_string() << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) "
             ": ";
@@ -416,8 +417,8 @@ static void swap_subs(int sub1, int sub2) {
 
   const auto num_user_records = a()->users()->num_user_records();
 
-  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
-  for (int i = 1; i <= num_user_records; i++) {
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
+  for (auto i = 1; i <= num_user_records; i++) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
     uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -564,8 +565,6 @@ static void delete_sub(int n) {
 }
 
 void boardedit() {
-  subconf_t iconv;
-
   if (!ValidateSysopPassword()) {
     return;
   }

@@ -59,8 +59,7 @@ void HopSub() {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
     uint16_t i = 0;
-    while ((i < a()->subs().subs().size())
-            && (a()->usub[i].subnum != -1) && !abort) {
+    while (i < a()->usub.size() && !abort) {
       auto subname = ToStringUpperCase(a()->subs().sub(a()->usub[i].subnum).name);
       if (subname.find(partial) != std::string::npos) {
         if (okansi()) {

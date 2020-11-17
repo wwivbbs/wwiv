@@ -114,7 +114,7 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_in
   const auto max_size = a()->subs().subs().size();
   const qscan_bitset qb(a()->sess().qsc_q, max_size);
   std::vector<std::pair<int, std::string>> subs_list;
-  for (size_t cur = 0; a()->usub[cur].subnum != -1 && cur < max_size; cur++) {
+  for (auto cur = 0; cur < size_int(a()->usub); cur++) {
     const auto subnum = a()->usub[cur].subnum;
     if (qb.test(subnum)) {
       // QWK support says this should be truncated to 10 or 13 characters however QWKE allows for
@@ -222,8 +222,8 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (uint16_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->sess().hangup()) && !qwk_info.abort && msgs_ok; i++) {
-    msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
+  for (uint16_t i = 0; i < a()->usub.size() && !a()->sess().hangup() && !qwk_info.abort && msgs_ok; i++) {
+    msgs_ok = max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true;
     if (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
@@ -961,7 +961,7 @@ void qwk_nscan() {
     return;
   }
 
-  for (i = 0; (i < num_dirs) && (!abort) && (a()->udir[i].subnum != -1); i++) {
+  for (i = 0; i < num_dirs && !abort; i++) {
     bin.checka(&abort);
     count++;
 

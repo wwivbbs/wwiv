@@ -98,7 +98,7 @@ void move_file() {
       while (!a()->sess().hangup() && ss[0] == '?');
       d1 = -1;
       if (!ss.empty()) {
-        for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
+        for (auto i1 = 0; i1 < wwiv::stl::size_int(a()->udir); i1++) {
           if (ss == a()->udir[i1].keys) {
             d1 = i1;
           }
@@ -179,9 +179,7 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (auto i = 0;
-       i < a()->dirs().size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed();
-       i++) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !a()->localIO()->KeyPressed(); i++) {
     bout << "\r\n|#1Sorting " << a()->dirs()[a()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
@@ -566,7 +564,7 @@ void relist() {
         }
         tcd = f.directory;
         auto tcdi = -1;
-        for (auto i1 = 0; i1 < a()->dirs().size(); i1++) {
+        for (auto i1 = 0; i1 < wwiv::stl::size_int(a()->udir); i1++) {
           if (a()->udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
@@ -706,8 +704,7 @@ static void l_config_nscan() {
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 && !abort;
-       i++) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !abort; i++) {
     const int i1 = a()->udir[i].subnum;
     std::string s{"  "};
     if (a()->sess().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
@@ -767,7 +764,7 @@ static void config_nscan() {
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         auto s = mmkey(MMKeyAreaType::dirs);
         if (s[0]) {
-          for (auto i = 0; i < a()->dirs().size(); i++) {
+          for (auto i = 0; i < wwiv::stl::size_int(a()->udir); i++) {
             const int i1 = a()->udir[i].subnum;
             if (s == a()->udir[i].keys) {
               a()->sess().qsc_n[i1 / 32] ^= 1L << (i1 % 32);
@@ -884,8 +881,7 @@ void finddescription() {
   auto color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (auto i = 0; i < a()->dirs().size() && !abort && !a()->sess().hangup() && (a()->udir[i].subnum != -1);
-       i++) {
+  for (auto i = 0; i < wwiv::stl::size_int(a()->udir) && !abort && !a()->sess().hangup(); i++) {
     const auto ii1 = a()->udir[i].subnum;
     int pts;
     auto need_title = true;

@@ -377,14 +377,13 @@ static void change_colors() {
 void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
-  for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
-    bout.bpla(fmt::sprintf("%c %s. %s",
-                           (a()->sess().qsc_q[a()->usub[i].subnum / 32] &
-                            (1L << (a()->usub[i].subnum % 32)))
-                               ? '*'
-                               : ' ',
-                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name),
-              &abort);
+  for (size_t i = 0; i < a()->usub.size() && !abort; i++) {
+    const auto ch =
+        (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) ? '*'
+                                                                                           : ' ';
+    bout.bpla(
+        fmt::format("{} {}. {}", ch, a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name),
+        &abort);
   }
   bout.nl(2);
 }
@@ -436,7 +435,7 @@ void config_qscan() {
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
         string s = mmkey(MMKeyAreaType::subs);
         if (!s.empty()) {
-          for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
+          for (size_t i = 0; i < a()->usub.size(); i++) {
             if (s == a()->usub[i].keys) {
               a()->sess().qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
             }
@@ -875,11 +874,11 @@ static void list_config_scan_plus(int first, int *amount, int type) {
   bout << string(79, '\xC4');
   bout.nl();
 
-  const int max_lines = GetMaxLinesToShowForScanPlus();
+  const auto max_lines = GetMaxLinesToShowForScanPlus();
 
   if (type == 0) {
-    for (size_t this_sub = first; (this_sub < a()->subs().subs().size()) && (a()->usub[this_sub].subnum != -1) &&
-         *amount < max_lines * 2; this_sub++) {
+    for (size_t this_sub = first; this_sub < a()->usub.size() && *amount < max_lines * 2;
+         this_sub++) {
       bout.clear_lines_listed();
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#9%s",
               (a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
@@ -897,10 +896,10 @@ static void list_config_scan_plus(int first, int *amount, int type) {
       ++*amount;
     }
   } else {
-    for (auto this_dir = first; this_dir < a()->dirs().size() && a()->udir[this_dir].subnum != -1 &&
-         *amount < max_lines * 2; this_dir++) {
+    for (auto this_dir = first; this_dir < wwiv::stl::size_int(a()->udir) && *amount < max_lines * 2;
+         this_dir++) {
       bout.clear_lines_listed();
-      int alias_dir = a()->udir[this_dir].subnum;
+      const int alias_dir = a()->udir[this_dir].subnum;
       auto s = fmt::sprintf("|#7[|#1%c|#7] |#2%s",
                             a()->sess().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
                                                                                             : ' ',
@@ -921,7 +920,7 @@ static void list_config_scan_plus(int first, int *amount, int type) {
 }
 
 static void drawscan(int filepos, long tagged) {
-  int max_lines = GetMaxLinesToShowForScanPlus();
+  const auto max_lines = GetMaxLinesToShowForScanPlus();
   if (filepos >= max_lines) {
     bout.GotoXY(40, 3 + filepos - max_lines);
   } else {
@@ -940,7 +939,7 @@ static void drawscan(int filepos, long tagged) {
 }
 
 static void undrawscan(int filepos, long tagged) {
-  int max_lines = GetMaxLinesToShowForScanPlus();
+  const auto max_lines = GetMaxLinesToShowForScanPlus();
 
   if (filepos >= max_lines) {
     bout.GotoXY(40, 3 + filepos - max_lines);
@@ -956,7 +955,7 @@ static long is_inscan(int dir) {
     sysdir = true;
   }
 
-  for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+  for (auto this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
     const auto key = std::to_string(sysdir ? dir : dir + 1);
     if (key == a()->udir[this_dir].keys) {
       const auto ad = a()->udir[this_dir].subnum;
@@ -979,19 +978,19 @@ void config_scan_plus(int type) {
   vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 
   if (type == 0) {
-    menu_items.push_back("Read New");
+    menu_items.emplace_back("Read New");
   } else {
-    menu_items.push_back("List");
+    menu_items.emplace_back("List");
   }
 
   if (useconf) {
-    menu_items.push_back("{ Conf");
-    menu_items.push_back("} Conf");
-    menu_items.push_back("Quit");
-    menu_items.push_back("?");
+    menu_items.emplace_back("{ Conf");
+    menu_items.emplace_back("} Conf");
+    menu_items.emplace_back("Quit");
+    menu_items.emplace_back("?");
   } else {
-    menu_items.push_back("Quit");
-    menu_items.push_back("?");
+    menu_items.emplace_back("Quit");
+    menu_items.emplace_back("?");
   }
   bool done = false;
   while (!done && !a()->sess().hangup()) {
@@ -1069,7 +1068,7 @@ void config_scan_plus(int type) {
         }
         else {
           auto sysdir = a()->udir[0].keys == "0";
-          for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+          for (auto this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
             const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
@@ -1089,11 +1088,11 @@ void config_scan_plus(int type) {
         case 0:
           top += amount;
           if (type == 0) {
-            if (top >= ssize(a()->subs().subs())) {
+            if (top >= ssize(a()->usub)) {
               top = 0;
             }
           } else {
-            if (top >= a()->dirs().size()) {
+            if (top >= size_int(a()->udir)) {
               top = 0;
             }
           }
@@ -1117,7 +1116,7 @@ void config_scan_plus(int type) {
                 (1L << (a()->usub[top + pos].subnum % 32));
           } else {
             bool sysdir = a()->udir[0].keys == "0";
-            for (int this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+            for (int this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
               const auto s = fmt::format("{}", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
@@ -1132,7 +1131,7 @@ void config_scan_plus(int type) {
           break;
         case 3:
           if (type == 0) {
-            for (size_t this_sub = 0; this_sub < a()->subs().subs().size(); this_sub++) {
+            for (size_t this_sub = 0; this_sub < a()->usub.size(); this_sub++) {
               if (a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] &
                   (1L << (a()->usub[this_sub].subnum % 32))) {
                 a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] ^=
@@ -1140,7 +1139,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+            for (auto this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
               if (a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] &
                   (1L << (a()->udir[this_dir].subnum % 32))) {
                 a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] ^=
@@ -1154,7 +1153,7 @@ void config_scan_plus(int type) {
           break;
         case 4:
           if (type == 0) {
-            for (auto this_sub = 0; this_sub < ssize(a()->subs().subs()); this_sub++) {
+            for (auto this_sub = 0; this_sub < ssize(a()->usub); this_sub++) {
               if (!(a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] &
                     (1L << (a()->usub[this_sub].subnum % 32)))) {
                 a()->sess().qsc_q[a()->usub[this_sub].subnum / 32] ^=
@@ -1162,7 +1161,7 @@ void config_scan_plus(int type) {
               }
             }
           } else {
-            for (auto this_dir = 0; this_dir < a()->dirs().size(); this_dir++) {
+            for (auto this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
               if (!(a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] &
                     (1L << (a()->udir[this_dir].subnum % 32)))) {
                 a()->sess().qsc_n[a()->udir[this_dir].subnum / 32] ^=

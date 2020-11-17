@@ -27,6 +27,7 @@
 #include "bbs/mmkey.h"
 #include "common/com.h"
 #include "common/input.h"
+#include "common/input_range.h"
 #include "common/pause.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -154,10 +155,18 @@ void jump_conf(ConferenceType conftype) {
   if (ch == ' ') {
     return;
   }
-  for (size_t i = 0; i < info.uc.size(); i++) {
-    if (ch == info.uc[i].key) {
-      setuconf(conftype, i, -1);
-      break;
+  auto& conf = conftype == ConferenceType::CONF_SUBS ? a()->all_confs().subs_conf() : a()->all_confs().dirs_conf();
+  auto& uc = conftype == ConferenceType::CONF_SUBS ? a()->uconfsub : a()->uconfdir;
+  if (const auto o = conf.try_conf(ch)) {
+    setuconf(conf, o.value().key.key(), -1);
+    for (int i=0; i < size_int(uc); i++) {
+      if (ch == at(uc, i).key.key()) {
+        if (conftype == ConferenceType::CONF_SUBS) {
+          a()->sess().set_current_user_sub_conf_num(i);
+        } else {
+          a()->sess().set_current_user_dir_conf_num(i);
+        }
+      }
     }
   }
 }
@@ -193,117 +202,97 @@ char first_available_key(const Conference& conf) {
   return static_cast<char>(last->key.key() + 1);
 }
 
-
-static std::string create_conf_str(std::set<char>& chars) {
-  std::string s;
-  for (const auto& c : chars) {
-    s.push_back(c);
-  }
-  return s;
-}
-
-/* 
- * Lists subs/dirs/whatever allocated to a specific conference.
- *
- * TODO(rushfan): PORT THIS
-static void showsubconfs(ConferenceType conftype, confrec_430_t* c) {
-  if (!c) {
-    return;
-  }
-
-  auto info = get_conf_info(conftype);
-
+static int display_conf_subs(Conference& conf) {
   auto abort = false;
+  bout.cls();
   bout.bpla("|#2NN  Name                                    ConfList", &abort);
   bout.bpla("|#7--- ======================================= ==========================", &abort);
 
-  for (subconf_t i = 0; i < info.num_subs_or_dirs && !abort; i++) {
-    // build conf list string
-    std::set<char> confs;
-    for (int i1 = 0; i1 < info.num_confs; i1++) {
-      if (in_conference(i, &info.confs[i1])) {
-        confs.insert(info.confs[i1].key);
-      }
-    }
-    auto confstr = create_conf_str(confs);
-
-    switch (conftype) {
-    case ConferenceType::CONF_SUBS: {
-      const auto s = fmt::sprintf("|#2%3d |#9%-39.39s |#1%s", i,
-                                  stripcolors(a()->subs().sub(i).name), confstr);
+  int count = 0;
+  switch (conf.type()) {
+  case ConferenceType::CONF_SUBS: {
+    count = size_int(a()->subs().subs());
+    for (auto i = 0; i < count; i++) {
+      const auto& sub = a()->subs().sub(i);
+      const auto s =
+          fmt::sprintf("|#2%3d |#1%-39.39s |#5%s", i, stripcolors(sub.name), sub.conf.to_string());
       bout.bpla(s, &abort);
-    } break;
-    case ConferenceType::CONF_DIRS: {
-      const auto s = fmt::sprintf("|#2%3d |#9%-39.39s |#1%s", i,
-                                  stripcolors(a()->dirs()[i].name), confstr);
-      bout.bpla(s, &abort);
-    } break;
     }
+  } break;
+  case ConferenceType::CONF_DIRS: {
+    count = size_int(a()->dirs().dirs());
+    for (auto i = 0; i < count; i++) {
+      const auto& dir = a()->dirs().dir(i);
+      const auto s =
+          fmt::sprintf("|#2%3d |#1%-39.39s |#5%s", i, stripcolors(dir.name), dir.conf.to_string());
+      bout.bpla(s, &abort);
+    }
+  } break;
   }
+  return count;
 }
-*/
 
-/*
- * Takes a string like "100-150,201,333" and returns pointer to list of
- * numbers. Number of numbers in the list is returned in numinlist.
- */
-static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& list) {
-  subconf_t intarray[1024];
-
-  // init vars
-  memset(intarray, 0, sizeof(intarray));
-  list.clear();
-
-  // check for bin.input( string
-  if (!pszNumbersText) {
-    return false;
+static conf_set_t& get_conf_set(Conference& conf, int num) {
+  if (conf.type() == ConferenceType::CONF_DIRS) {
+    return a()->dirs().dir(num).conf;
   }
+  return a()->subs().sub(num).conf;
+}
 
-  // get num "words" in bin.input( string
-  auto num_words = wordcount(pszNumbersText, ",");
-
-  for (auto word = 1; word <= num_words; word++) {
-    a()->CheckForHangup();
-    if (a()->sess().hangup()) {
-      return false;
-    }
-
-    const auto temp = extractword(word, pszNumbersText, ",");
-    auto range_count = wordcount(temp, " -\t\r\n");
-    switch (range_count) {
-    case 0:
+static void edit_conf_subs(Conference& conf) {
+  auto done{false};
+  bool changed{false};
+  while (!a()->sess().hangup() && !done) {
+    const auto count = display_conf_subs(conf);
+    bout.nl();
+    bout << "|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences: ";
+    const auto cmd = onek_ncr("CSTQ");
+    if (cmd == 'Q') {
+      done = true;
       break;
-    case 1: {
-      // This means there is no number in the range, it's just ,###,###
-      auto num = to_number<int>(extractword(1, temp, " -\t\r\n"));
-      if (num < 1024 && num >= 0) {
-        intarray[num] = 1;
+    }
+    bout.Left(80);
+    bout.clreol();
+    bout << "|#9Enter conference key: ";
+    const auto key = onek_ncr(StrCat("\r\n", conf.keys_string()));
+    if (key == 0 || key == '\r' || key == '\n') {
+      continue;
+    }
+
+    bout.Left(80);
+    bout.clreol();
+    bout << "|#9Enter range (i.e. 1-10, 5, etc): ";
+    std::set<int> range;
+    for (auto i=0; i <count; i++) {
+      range.insert(i);
+    }
+    if (auto o = input_range(bin, 40, range)) {
+      const auto& r = o.value();
+      for (const auto n : r) {
+        auto& cs = get_conf_set(conf, n);
+        changed = true;
+        switch (cmd) {
+        case 'S':
+          cs.insert(key);
+          break;
+        case 'C':
+          cs.erase(key);
+          break;
+        case 'T':
+          cs.toggle(key);
+          break;
+        }
       }
-    } break;
-    default: {
-      // We're dealing with a range here, so it should be "XXX-YYY"
-      // convert the left and right strings to numbers
-      auto low_number = to_number<int>(extractword(1, temp, " -\t\r\n,"));
-      auto high_number = to_number<int>(extractword(2, temp, " -\t\r\n,"));
-      // Switch them around if they were reversed
-      if (low_number > high_number) {
-        std::swap(low_number, high_number);
-      }
-      for (auto i = std::max<int>(low_number, 0); i <= std::min<int>(high_number, 1023); i++) {
-        intarray[i] = 1;
-      }
-    } break;
     }
   }
 
-  // allocate memory for list
-  list.clear();
-  for (subconf_t loop = 0; loop < 1024; loop++) {
-    if (intarray[loop]) {
-      list.push_back(loop);
+  if (changed) {
+    if (conf.type() == ConferenceType::CONF_DIRS) {
+      a()->dirs().Save();      
+    } else if (conf.type() == ConferenceType::CONF_SUBS) {
+      a()->subs().Save();
     }
   }
-  return true;
 }
 
 
@@ -311,8 +300,8 @@ static bool str_to_numrange(const char* pszNumbersText, std::vector<subconf_t>& 
  * Function for editing the data for one conference.
  */
 static void modify_conf(Conference& conf, char key) {
-  bool changed = false;
-  bool done = false;
+  auto changed = false;
+  auto done = false;
 
   if (!conf.exists(key)) {
     return;
@@ -321,22 +310,22 @@ static void modify_conf(Conference& conf, char key) {
   do {
     auto& c = conf.conf(key);
     bout.cls();
+    bout.litebar("Edit Conference");
 
-    bout << "|#9A) Designator : |#2" << c.key.key() << wwiv::endl;
-    bout << "|#9B) Conf Name  : |#2" << c.conf_name << wwiv::endl;
-    bout << "|#9C) ACS        : |#2" << c.conf_name << wwiv::endl;
-    bout << "|#9Q) Quit ConfEdit\r\n";
+    bout << "|#9A) Key  : |#2" << c.key.key() << wwiv::endl;
+    bout << "|#9B) Name : |#2" << c.conf_name << wwiv::endl;
+    bout << "|#9C) ACS  : |#2" << c.acs << wwiv::endl;
     bout.nl();
 
-    bout << "|#7(|#2Q|#7=|#1Quit|#7) ConfEdit [|#1A|#7-|#1O|#7,|#1S|#7,|#1[|#7,|#1]|#7] : ";
-    char ch = onek("QABC", true);
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Conference Edit [|#1A|#7-|#1C|#7] : ";
+    const auto ch = onek("QABC", true);
 
     switch (ch) {
     case 'A': {
       bout.nl();
-      bout << "|#2New Designator: ";
-      const auto ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-      if (ch1 == c.key.key()) {
+      bout << "|#2New Key: ";
+      const auto ch1 = onek("\rABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      if (ch1 == c.key.key() || ch1 == '\r') {
         break;
       }
       if (conf.exists(ch1)) {
@@ -359,7 +348,7 @@ static void modify_conf(Conference& conf, char key) {
     } break;
     case 'C': {
       bout.nl();
-      bout << "|#2ACSL: ";
+      bout << "|#2New ACS: ";
       c.acs = wwiv::bbs::input_acs(bin, bout, c.acs, 60);
       changed = true;
     } break;
@@ -407,13 +396,12 @@ static void delete_conf(Conference& conf, char key) {
 void conf_edit(Conference& conf) {
   bool done = false;
 
-  bout.cls();
-  list_confs(conf, true);
-
   do {
+    bout.cls();
+    list_confs(conf, false);
     bout.nl();
-    bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2? |#7 : ";
-    auto ch = onek("QIDM?", true);
+    bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2S|#7)|#1ubs Configuration|#2? |#7 : ";
+    const auto ch = onek("QIDMS?", true);
     switch (ch) {
     case 'D':
       if (conf.size() == 1) {
@@ -438,12 +426,15 @@ void conf_edit(Conference& conf) {
         modify_conf(conf, ec.value());
       }
     } break;
+    case 'S':
+      edit_conf_subs(conf);
+      break;
     case 'Q':
       done = true;
       break;
     case '?':
       bout.cls();
-      list_confs(conf, true);
+      list_confs(conf, false);
       break;
     }
   } while (!done && !a()->sess().hangup());
@@ -464,20 +455,15 @@ void list_confs(ConferenceType conftype, bool list_subs) {
 
 void list_confs(Conference& conf, bool list_subs) {
   auto abort = false;
-  bout.bpla("|#2  Des Name                    ACS",
-            &abort);
-  bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD "
-            "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-            "\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD "
-            "\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD",
+  bout.bpla("|#2Key Name                    ACS", &abort);
+  bout.bpla("|#7--- ======================= -------------------------------------------------",
             &abort);
 
   for (const auto& cp : conf.confs()) {
     if (abort) {
       break;
     }
-    const auto l = fmt::sprintf("\xCC\xCD|#2 %c |#1 %-23.23s |#5%s", cp.key.key(), cp.conf_name, cp.acs);
-    bout.Color(7);
+    const auto l = fmt::sprintf("|#2 %c |#1 %-23.23s |#5%s", cp.key.key(), cp.conf_name, cp.acs);
     bout.bpla(l, &abort);
     if (!list_subs) {
       continue;
@@ -494,7 +480,6 @@ void list_confs(Conference& conf, bool list_subs) {
   }
   bout.nl();
 }
-
 
 /*
  * Allows user to select a conference. Returns the conference selected
@@ -542,7 +527,7 @@ int wordcount(const string& instr, const char* delimstr) {
   int i = 0;
 
   to_char_array(szTempBuffer, instr);
-  for (char* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
+  for (auto* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
     i++;
   }
   return i;

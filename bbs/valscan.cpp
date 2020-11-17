@@ -54,15 +54,15 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (auto sn = 0; sn < wwiv::stl::size_int(a()->subs().subs()) && !a()->sess().hangup() && !done; sn++) {
-    if (!iscan(sn)) {
+  for (auto usubn = 0; usubn < wwiv::stl::size_int(a()->usub) && !a()->sess().hangup() && !done; usubn++) {
+    if (!iscan(usubn)) {
       continue;
     }
     if (a()->sess().GetCurrentReadMessageArea() < 0) {
       return;
     }
 
-    uint32_t sq = a()->sess().qsc_p[sn];
+    uint32_t sq = a()->sess().qsc_p[usubn];
 
     // Must be sub with validation "on"
     if (a()->current_sub().nets.empty()
@@ -163,7 +163,7 @@ void valscan() {
         }
       }
     }
-    a()->sess().qsc_p[sn] = sq;
+    a()->sess().qsc_p[usubn] = sq;
   }
 
   if (ac) {

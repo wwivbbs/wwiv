@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <optional>
 #include <string>
 
 namespace wwiv::stl {
@@ -187,6 +188,10 @@ typename C::const_reference at(C const& container, typename C::size_type pos) {
   }
 }
 
+/**
+ * like Container::at except will log a stack trace on failure before
+ * logging an exception.
+ */
 template <typename C, class Allocator=std::allocator<C>>
 typename C::reference at(C& container, typename C::size_type pos) {
   try {
@@ -196,6 +201,19 @@ typename C::reference at(C& container, typename C::size_type pos) {
     LOG(ERROR) << wwiv::os::stacktrace();
     DLOG(FATAL) << "Terminating in debug build.";
     throw;
+  }
+}
+
+/**
+ * like Container::at except returns an optional of the value type the
+ * container returns.
+ */
+template <typename C, class Allocator=std::allocator<C>>
+std::optional<typename C::value_type> optional_at(C& container, typename C::size_type pos) {
+  try {
+    return container.at(pos);
+  } catch (const std::out_of_range&) {
+    return std::nullopt;
   }
 }
 

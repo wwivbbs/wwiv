@@ -1318,7 +1318,7 @@ static int move_filename(const std::string& file_name, int dn) {
 
         nDestDirNum = -1;
         if (ss[0]) {
-          for (auto i1 = 0; i1 < a()->dirs().size() && (a()->udir[i1].subnum != -1); i1++) {
+          for (auto i1 = 0; i1 < a()->dirs().size(); i1++) {
             if (ss == a()->udir[i1].keys) {
               nDestDirNum = i1;
             }
@@ -1657,7 +1657,7 @@ void download_plus(const std::string& file_name) {
     auto color = 3;
     foundany = 0;
     bout << "\r|#2Searching ";
-    while (dn < a()->dirs().size() && a()->udir[dn].subnum != -1) {
+    while (dn < a()->dirs().size()) {
       count++;
       bout.Color(color);
       bout << ".";

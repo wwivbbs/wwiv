@@ -97,7 +97,7 @@ void move_file_t() {
         while (!a()->sess().hangup() && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
-          for (auto i1 = 0; i1 < a()->dirs().size() && a()->udir[i1].subnum != -1; i1++) {
+          for (auto i1 = 0; i1 < size_int(a()->udir); i1++) {
             if (dirnum == a()->udir[i1].keys) {
               d1 = i1;
             }

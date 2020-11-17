@@ -256,7 +256,7 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   const auto s = mmkey(MMKeyAreaType::subs);
-  for (auto i = 0; i < ssize(a()->subs().subs()) && a()->usub[i].subnum != -1; i++) {
+  for (auto i = 0; i < size_int(a()->usub); i++) {
     if (s == a()->usub[i].keys) {
       a()->set_current_user_sub_num(i);
     }

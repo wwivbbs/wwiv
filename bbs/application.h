@@ -185,8 +185,8 @@ public:
   [[nodiscard]] uint16_t current_user_sub_num() const { return user_sub_num_; }
   void set_current_user_sub_num(int n) { user_sub_num_ = static_cast<uint16_t>(n); }
 
-  [[nodiscard]] const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
-  [[nodiscard]] const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
+  [[nodiscard]] const usersubrec& current_user_sub() const;
+  [[nodiscard]] const usersubrec& current_user_dir() const;
 
   // This is set by iscan1 (for the most part) and is the sub number the user is
   // currently scanning/reading.  Note. this is the subnumber from subboards

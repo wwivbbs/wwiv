@@ -262,8 +262,7 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause(bout);
   a()->ClearTopScreenProtection();
-  for (auto i = 0;
-       i < a()->dirs().size() && a()->udir[i].subnum != -1 && !a()->localIO()->KeyPressed(); i++) {
+  for (auto i = 0; i < a()->dirs().size() && !a()->localIO()->KeyPressed(); i++) {
     count += read_idz(false, i);
   }
   tmp_disable_conf(false);
@@ -483,12 +482,12 @@ void tag_files(bool& need_title) {
         auto& f = a()->filelist[i];
         bout.nl();
         int i2;
-        for (i2 = 0; i2 < a()->dirs().size(); i2++) {
+        for (i2 = 0; i2 < size_int(a()->udir); i2++) {
           if (a()->udir[i2].subnum == f.directory) {
             break;
           }
         }
-        std::string keys = i2 < a()->dirs().size() ? a()->udir[i2].keys : "??";
+        std::string keys = i2 < size_int(a()->udir) ? a()->udir[i2].keys : "??";
         const auto& dir = a()->dirs()[f.directory];
         bout.format("|#1Directory  : |#2#{}, {}\r\n", keys, dir.name);
         printfileinfo(&f.u, dir);
@@ -729,7 +728,7 @@ void download() {
             bout << s1;
             foundany = 0;
             int dn = 0;
-            while (dn < a()->dirs().size() && a()->udir[dn].subnum != -1) {
+            while (dn < size_int(a()->udir)) {
               count++;
               bout.Color(color);
               if (count == NUM_DOTS) {
@@ -962,8 +961,7 @@ void removenotthere() {
   bout.nl();
   bout << "|#5Remove N/A files in all directories? ";
   if (bin.yesno()) {
-    for (auto i = 0; i < a()->dirs().size() && a()->udir[i].subnum != -1 &&
-                     !a()->localIO()->KeyPressed(); i++) {
+    for (auto i = 0; i < size_int(a()->udir) && !a()->localIO()->KeyPressed(); i++) {
       bout.nl();
       bout << "|#1Removing N/A|#0 in " << a()->dirs()[a()->udir[i].subnum].name;
       bout.nl(2);

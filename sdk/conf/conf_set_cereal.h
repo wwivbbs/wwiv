@@ -29,20 +29,12 @@ namespace cereal {
 
 template <class Archive>
 std::string save_minimal(Archive const&, const wwiv::sdk::conf_set_t& t) {
-  std::string out;
-  out.reserve(t.data_.size());
-  for (const auto c : t.data_) {
-    out.push_back(c);
-  }
-  return out;
+  return t.to_string();
 }
 
 template <class Archive>
 void load_minimal(Archive const&, wwiv::sdk::conf_set_t& t, const std::string& s) {
-  t.data_.clear();
-  for (const auto c : s) {
-    t.data_.insert(c);
-  }
+  t.from_string(s);
 }
 
 }

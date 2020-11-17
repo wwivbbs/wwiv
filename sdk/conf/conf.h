@@ -109,6 +109,7 @@ public:
   [[nodiscard]] bool exists(char key) const;
 
   [[nodiscard]] std::set<conference_t> confs() const;
+  [[nodiscard]] std::string keys_string() const;
   bool add(conference_t r);
   bool erase(char key);
   [[nodiscard]] int size() const { return stl::size_int(confs_); }

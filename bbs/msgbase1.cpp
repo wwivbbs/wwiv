@@ -446,8 +446,8 @@ void nscan(uint16_t start_subnum) {
   bool nextsub = true;
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (auto i = start_subnum;
-       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !a()->sess().hangup(); i++) {
+  for (auto i = start_subnum; i < a()->usub.size() && nextsub && !a()->sess().hangup();
+       i++) {
     if (a()->sess().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qscan(i, nextsub);
     }

@@ -68,17 +68,32 @@ static bool create_usersubs(Conference& conf, std::vector<usersubrec>& uc,
     }
 
     uc.clear();
-    const auto& subs = a()->subs().subs();
-    for (auto subnum = 0; subnum < size_int(subs); subnum++) {
-      const auto& s = at(subs, subnum);
-      if (!s.conf.contains(conf_key)) {
-        continue;
+    if (conf.type() == ConferenceType::CONF_SUBS) {
+      const auto& subs = a()->subs().subs();
+      for (auto subnum = 0; subnum < size_int(subs); subnum++) {
+        const auto& s = at(subs, subnum);
+        if (!s.conf.contains(conf_key)) {
+          continue;
+        }
+        // This sub is in our current conference.
+        if (!check_acs(s.read_acs)) {
+          continue;
+        }
+        addusub(uc, subnum, s.key);
       }
-      // This sub is in our current conference.
-      if (!access_sub(*a()->user(), s)) {
-        continue;
+    } else {
+      const auto& dirs = a()->dirs().dirs();
+      for (auto subnum = 0; subnum < size_int(dirs); subnum++) {
+        const auto& s = at(dirs, subnum);
+        if (!s.conf.contains(conf_key)) {
+          continue;
+        }
+        // This sub is in our current conference.
+        if (!check_acs(s.acs)) {
+          continue;
+        }
+        addusub(uc, subnum);
       }
-      addusub(uc, subnum, s.key);
     }
 
     auto num_key = 1;
@@ -122,17 +137,32 @@ bool clear_usersubs(Conference& conf, std::vector<usersubrec>& uc, int old_subnu
   uc.clear();
   // iterate through each sub and make sure we have access to at least
   // one conference for this sub.
-  const auto& subs = a()->subs().subs();
-  for (auto subnum = 0; subnum < size_int(subs); subnum++) {
-    const auto& s = at(subs, subnum);
-    if (!access_at_least_one_conf(conf, s.conf)) {
-      continue;
+  if (conf.type() == ConferenceType::CONF_SUBS) {
+    const auto& subs = a()->subs().subs();
+    for (auto subnum = 0; subnum < size_int(subs); subnum++) {
+      const auto& s = at(subs, subnum);
+      if (!access_at_least_one_conf(conf, s.conf)) {
+        continue;
+      }
+      // This sub is in our current conference.
+      if (!access_sub(*a()->user(), s)) {
+        continue;
+      }
+      addusub(uc, subnum, s.key);
     }
-    // This sub is in our current conference.
-    if (!access_sub(*a()->user(), s)) {
-      continue;
+  } else {
+    const auto& dirs = a()->dirs().dirs();
+    for (auto subnum = 0; subnum < size_int(dirs); subnum++) {
+      const auto& s = at(dirs, subnum);
+      if (!access_at_least_one_conf(conf, s.conf)) {
+        continue;
+      }
+      // This sub is in our current conference.
+      if (!check_acs(s.acs)) {
+        continue;
+      }
+      addusub(uc, subnum);
     }
-    addusub(uc, subnum, s.key);
   }
   // TODO from here on down can probably be extracted and shared
   // with create_usersubs
@@ -177,8 +207,8 @@ void setuconf(ConferenceType conf_type, int num, int old_subnum) {
 }
 
 void changedsl() {
-  const auto subconfkey = at(a()->uconfsub, a()->sess().current_user_sub_conf_num()).key.key();
-  const auto dirconfkey = at(a()->uconfdir, a()->sess().current_user_dir_conf_num()).key.key();
+  const auto subconfkey = optional_at(a()->uconfsub, a()->sess().current_user_sub_conf_num());
+  const auto dirconfkey = optional_at(a()->uconfdir, a()->sess().current_user_dir_conf_num());
 
   a()->UpdateTopScreen();
   a()->uconfsub.clear();
@@ -198,23 +228,29 @@ void changedsl() {
 
   // Move to first message area in new conference
   a()->sess().set_current_user_sub_conf_num(0);
-  for (auto i = 0; i < size_int(a()->uconfsub); i++) {
-    if (at(a()->uconfsub, i).key.key() == subconfkey) {
-      a()->sess().set_current_user_sub_conf_num(i);
-      break;
+  if (subconfkey) {
+    for (auto i = 0; i < size_int(a()->uconfsub); i++) {
+      if (at(a()->uconfsub, i).key.key() == subconfkey.value().key.key()) {
+        a()->sess().set_current_user_sub_conf_num(i);
+        break;
+      }
     }
   }
-  a()->sess().set_current_user_dir_conf_num(0);
-  for (auto i = 0; i < size_int(a()->uconfdir); i++) {
-    if (at(a()->uconfdir, i).key.key() == subconfkey) {
-      a()->sess().set_current_user_dir_conf_num(i);
-      break;
+  if (dirconfkey) {
+    a()->sess().set_current_user_dir_conf_num(0);
+    for (auto i = 0; i < size_int(a()->uconfdir); i++) {
+      if (at(a()->uconfdir, i).key.key() == dirconfkey.value().key.key()) {
+        a()->sess().set_current_user_dir_conf_num(i);
+        break;
+      }
     }
   }
 
   if (okconf(a()->user())) {
-    setuconf(a()->all_confs().subs_conf(), subconfkey, -1);
-    setuconf(a()->all_confs().dirs_conf(), dirconfkey, -1);
+    auto s = at(a()->uconfsub, a()->sess().current_user_sub_conf_num());
+    setuconf(a()->all_confs().subs_conf(), s.key.key(), -1);
+    auto d = at(a()->uconfdir, a()->sess().current_user_dir_conf_num());
+    setuconf(a()->all_confs().dirs_conf(), d.key.key(), -1);
   } else {
     clear_usersubs(a()->all_confs().subs_conf(), a()->usub, -1);
     clear_usersubs(a()->all_confs().dirs_conf(), a()->udir, -1);

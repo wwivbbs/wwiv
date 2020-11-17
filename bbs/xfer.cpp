@@ -428,7 +428,7 @@ void nscanall() {
   int count = 0;
   int color = 3;
   bout << "\r|#2Searching ";
-  for (uint16_t i = 0; i < a()->dirs().size() && !abort && a()->udir[i].subnum != -1; i++) {
+  for (uint16_t i = 0; i < size_int(a()->udir) && !abort; i++) {
     count++;
     bout.Color(color);
     bout << ".";
@@ -481,8 +481,7 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (uint16_t i = 0; i < a()->dirs().size() && !abort && !a()->sess().hangup()
-       && a()->udir[i].subnum != -1; i++) {
+  for (auto i = 0; i < size_int(a()->udir) && !abort && !a()->sess().hangup(); i++) {
     const int nDirNum = a()->udir[i].subnum;
     // ReSharper disable once CppInitializedValueIsAlwaysRewritten
     bool bIsDirMarked =  a()->sess().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32));

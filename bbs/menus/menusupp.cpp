@@ -354,13 +354,13 @@ void GoodBye() {
 void WWIV_PostMessage() {
   a()->sess().clear_irt();
   clear_quotes(a()->sess());
-  if (a()->usub[0].subnum != -1) {
+  if (!a()->usub.empty()) {
     post(PostData());
   }
 }
 
 void ScanSub() {
-  if (a()->usub[0].subnum != -1) {
+  if (!a()->usub.empty()) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     bool nextsub = false;
     qscan(a()->current_user_sub_num(), nextsub);
@@ -368,14 +368,14 @@ void ScanSub() {
 }
 
 void RemovePost() {
-  if (a()->usub[0].subnum != -1) {
+  if (!a()->usub.empty()) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     remove_post();
   }
 }
 
 void TitleScan() {
-  if (a()->usub[0].subnum != -1) {
+  if (!a()->usub.empty()) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     ScanMessageTitles();
   }
@@ -710,10 +710,12 @@ void RemoveNotThere() {
 
 void UploadAllDirs() {
   bout.nl(2);
-  bool ok = true;
-  for (uint16_t nDirNum = 0; nDirNum < a()->dirs().size() && a()->udir[nDirNum].subnum >= 0 && ok && !a()->sess().hangup(); nDirNum++) {
-    bout << "|#9Now uploading files for: |#2" << a()->dirs()[a()->udir[nDirNum].subnum].name << wwiv::endl;
-    ok = uploadall(nDirNum);
+  auto ok = true;
+  for (auto dn = 0;
+       dn < size_int(a()->udir) && a()->udir[dn].subnum >= 0 && ok && !a()->sess().hangup(); dn++) {
+    bout << "|#9Now uploading files for: |#2" << a()->dirs()[a()->udir[dn].subnum].name
+         << wwiv::endl;
+    ok = uploadall(dn);
   }
 }
 
@@ -961,7 +963,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (uint16_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
+  for (uint16_t i = 0; i < a()->usub.size(); i++) {
     if (a()->usub[i].keys == pszSubKeys) {
       a()->set_current_user_sub_num(i);
     }
@@ -969,7 +971,7 @@ void SetSubNumber(const char *pszSubKeys) {
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (auto i = 0; i < ssize(a()->dirs()); i++) {
+  for (auto i = 0; i < ssize(a()->udir); i++) {
     if (a()->udir[i].keys == pszDirectoryKeys) {
       a()->set_current_user_dir_num(i);
     }
