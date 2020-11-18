@@ -44,6 +44,7 @@
 #include "core/findfiles.h"
 #include "sdk/files/dirs_cereal.h"
 #include "sdk/menus/menu.h"
+#include "sdk/net/networks.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/convert_jsonfile.h"
 #include <cstring>
@@ -433,12 +434,59 @@ static bool convert_to_v3(UIWindow* window, const std::string& config_filename) 
   return update_config_revision_number(config_filename, 3);
 }
 
+static bool convert_to_v4(UIWindow* window, const std::string& datadir,
+                          const std::string& config_filename) {
+  ShowBanner(window, "Updating to 5.2+ v4 format...");
+  const std::filesystem::path config_path{config_filename};
+  const Config config(config_path.parent_path().string());
+  if (!config.IsInitialized()) {
+    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
+    return false;
+  }
+
+  Networks networks(config);
+  if (!networks.IsInitialized()) {
+    LOG(ERROR) << "Unable to load networks (needed to load subs)";
+    return false;
+  }
+
+  Subs subs(datadir, networks.networks());
+  Dirs dirs(datadir, 0);
+  if (!subs.Load()) {
+    std::cout << "Unable to load subs.json. Aborting." << std::endl;
+    return false;
+  }
+  if (!dirs.Load()) {
+    std::cout << "Unable to load subs.json. Aborting." << std::endl;
+    return false;
+  }
+  Conferences confs(datadir, subs, dirs, 0);
+
+  const auto f = UpgradeConferences(config, subs, dirs);
+  if (!confs.LoadFromFile(f)) {
+    std::cout << "Failed to upgrade conferences";
+  }
+
+  // Save confs to new version.
+  if (confs.Save()) {
+    if (!subs.Save()) {
+      LOG(ERROR) << "Saved new conference, but failed to save subs";
+    }
+    if (!dirs.Save()) {
+      LOG(ERROR) << "Saved new conference, but failed to save dirs";
+    }
+  }
+
+  // Mark config.dat as upgraded.
+  return update_config_revision_number(config_filename, 4);
+}
+
 
 config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
                              const std::string& config_filename,
                              const uint32_t config_revision_number) {
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
-  if (config_revision_number >= 3) {
+  if (config_revision_number >= 4) {
     VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
     return config_upgrade_state_t::already_latest;
   }
@@ -456,6 +504,11 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
     // menus in JSON format.
     VLOG(1) << "ensure_latest_5x_config: converting to v3";
     convert_to_v3(window, config_filename);
+  }
+  if (config_revision_number < 4) {
+    // menus in JSON format.
+    VLOG(1) << "ensure_latest_5x_config: converting to v4";
+    convert_to_v4(window, datadir, config_filename);
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
