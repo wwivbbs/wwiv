@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "common/printfile.h"
 
+
+#include "bbs/bbs.h"
 #include "common/input.h"
 #include "common/pause.h"
 #include "core/file.h"
@@ -27,6 +29,8 @@
 #include "core/textfile.h"
 #include "local_io/keycodes.h"
 #include "sdk/config.h"
+#include "core/scope_exit.h"
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -35,16 +39,18 @@ namespace wwiv::common {
 
 using std::string;
 using std::unique_ptr;
+using namespace std::chrono;
+using namespace std::chrono_literals;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, 
-  const wwiv::sdk::User& user,
-  const string& basename) {
+std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, const User& user,
+                                            const string& basename) {
   for (const auto& base : dirs) {
     auto file{FilePath(base, basename)};
     if (basename.find('.') != string::npos) {
@@ -91,28 +97,44 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs,
  *
  * @return true if the file exists and is not zero length
  */
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool Output::printfile_path(const std::filesystem::path& file_path, bool abortable, bool force_pause) {
+  ScopeExit at_exit([this]() { sess().set_file_bps(0); });
   if (!File::Exists(file_path)) {
     // No need to print a file that does not exist.
     return false;
   }
   std::error_code ec;
-  if (!std::filesystem::is_regular_file(file_path, ec)) {
+  if (!is_regular_file(file_path, ec)) {
     // Not a file, no need to print a file that is not a file.
     return false;
   }
 
   TextFile tf(file_path, "rb");
   const auto v = tf.ReadFileIntoVector();
+
+  const auto start_time = system_clock::now();
+  auto num_written = 0;
   for (const auto& s : v) {
-    bout.bputs(s);
+    // BPS will be either the file BPS or system bps or 0
+    // use BPS in the loops since eventually MCI codes will be able
+    // to change the BPS on the fly.
+    const auto cps = sess().bps() / 10;
+    num_written += bout.bputs(s);
+    if (sess().bps() > 0) {
+      while (std::chrono::duration_cast<milliseconds>(system_clock::now() - start_time).count() < (num_written * 1000 / cps)) {
+        bout.flush();
+        os::sleep_for(milliseconds(100));
+      }
+    }
     bout.nl();
     const auto has_ansi = contains(s, ESC);
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
-    if (has_ansi && !force_pause)
+    if (has_ansi && !force_pause) {
       bout.clear_lines_listed();
+    }
     if (contains(s, CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
@@ -125,6 +147,12 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
     }
   }
   bout.flush();
+
+  if (sess().bps() > 0) {
+    const auto elapsed_ms = duration_cast<milliseconds>(system_clock::now() - start_time);
+    const auto actual_cps = num_written * 1000 / (elapsed_ms.count() + 1);
+    VLOG(1) << "Record CPS for file: " << file_path.string() << "; CPS: " << actual_cps;
+  }
   return !v.empty();
 }
 
@@ -150,8 +178,7 @@ bool Output::print_help_file(const std::string& filename) {
 }
 
 /**
- * Displays a file locally, using LIST util if so defined in WWIV.INI,
- * otherwise uses normal TTY output.
+ * Displays a file locally.
  */
 void Output::print_local_file(const string& filename) {
   printfile(filename);
@@ -162,20 +189,19 @@ void Output::print_local_file(const string& filename) {
 bool Output::printfile_random(const std::string& base_fn) {
   const auto& dir = sess().dirs().language_directory();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
-  if (File::Exists(dot_zero)) {
-    auto screens = 0;
-    for (auto i = 0; i < 1000; i++) {
-      const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
-      if (File::Exists(dot_n)) {
-        screens++;
-      } else {
-        break;
-      }
-    }
-    printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
-    return true;
+  if (!File::Exists(dot_zero)) {
+    return false;
   }
-  return false;
+  auto screens = 0;
+  for (auto i = 0; i < 1000; i++) {
+    const auto dot_n = FilePath(dir, StrCat(base_fn, ".", i));
+    if (File::Exists(dot_n)) {
+      ++screens;
+    } else {
+      break;
+    }
+  }
+  return printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
 }
 
 } // namespace wwiv::common

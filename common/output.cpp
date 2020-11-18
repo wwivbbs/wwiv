@@ -61,10 +61,9 @@ void Output::SetLocalIO(LocalIO* local_io) {
   localIO()->set_curatr_provider(this);
 }
 
-
-void Output::Color(int wwivcolor) {
+void Output::Color(int wwiv_color) {
   const auto saved_x{x_};
-  bputs(MakeColor(wwivcolor));
+  bputs(MakeColor(wwiv_color));
   x_ = saved_x;
 }
 
@@ -160,14 +159,14 @@ std::string Output::MakeColor(int wwiv_color) {
   return MakeSystemColor(c);
 }
 
-std::string Output::MakeSystemColor(int c) {
+std::string Output::MakeSystemColor(int c) const {
   if (!okansi(user())) {
     return "";
   }
   return makeansi(c, curatr());
 }
 
-std::string Output::MakeSystemColor(wwiv::sdk::Color color) {
+std::string Output::MakeSystemColor(sdk::Color color) const {
   return MakeSystemColor(static_cast<uint8_t>(color));
 }
 

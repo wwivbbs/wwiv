@@ -89,4 +89,9 @@ seconds SessionContext::duration_used_this_session() const {
   return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
+int SessionContext::bps() const noexcept {
+  const auto f = file_bps();
+  return f > 0 ? f : system_bps();
+}
+
 }

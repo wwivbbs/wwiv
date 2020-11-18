@@ -211,6 +211,38 @@ public:
   void user_num(int usernum) { user_num_ = usernum; }
   [[nodiscard]] int user_num() const noexcept { return user_num_; };
 
+  /**
+   * Sets the effective BPS to use for the system.  This ay be overridden by
+   * on a per file basis.
+   */
+  void set_system_bps(int bps) { system_bps_ = bps; }
+
+  /**
+   * The effective BPS to use for the system.  This ay be overridden by on a
+   * per file basis.
+   */
+  [[nodiscard]] int system_bps() const noexcept { return system_bps_; }
+
+  /**
+   * Sets the effective BPS to use for the current file.  This will be reset
+   * after the file is complete.
+   */
+  void set_file_bps(int bps) { file_bps_ = bps; }
+
+  /**
+   * The effective BPS to use for the current file.  This will be reset
+   * after the file is complete.
+   */
+  [[nodiscard]] int file_bps() const noexcept { return file_bps_; }
+
+  /**
+   * The effective BPS to use to display files.
+   *
+   * If the current file sets an explicit BPS then we'll use that, otherwise
+   * we'll use the system BPS.
+   */
+  [[nodiscard]] int bps() const noexcept;
+
   // TODO(rushfan): Move this to private later
   char irt_[81];
 
@@ -248,6 +280,9 @@ private:
   int effective_sl_{0};
   std::string current_lang_name_{"English"};
   int user_num_{-1};
+
+  int file_bps_{0};
+  int system_bps_{0};
 };
 
 class Context {

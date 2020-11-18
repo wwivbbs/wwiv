@@ -329,6 +329,10 @@ void Application::ReadINIFile(IniFile& ini) {
   bin.set_logon_key_timeout(seconds(std::max<int>(10, ini.value<int>("LOGON_KEY_TIMEOUT", 30))));
   bin.set_default_key_timeout(seconds(std::max<int>(30, ini.value<int>("USER_KEY_TIMEOUT", 180))));
   bin.set_sysop_key_timeout(seconds(std::max<int>(30, ini.value<int>("SYSOP_KEY_TIMEOUT", 600))));
+
+  // Set the system wide BPS.
+  const auto system_bps = ini.value<int>("SYSTEM_BPS", 0);
+  sess().set_system_bps(system_bps);
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {

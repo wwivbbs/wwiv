@@ -16,21 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SCOPE_EXIT_H__
-#define __INCLUDED_SCOPE_EXIT_H__
+#ifndef INCLUDED_SCOPE_EXIT_H
+#define INCLUDED_SCOPE_EXIT_H
 
 #include <functional>
+#include <utility>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 class ScopeExit final {
 public:
-  ScopeExit() noexcept {
-  }
+  ScopeExit() noexcept = default;
 
   explicit ScopeExit(std::function<void()> fn)
-    : fn_(fn) {
+    : fn_(std::move(fn)) {
   }
 
   ~ScopeExit() { if (fn_) { fn_(); } }
@@ -43,7 +42,6 @@ private:
   std::function<void()> fn_;
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_SCOPE_EXIT_H__
+#endif

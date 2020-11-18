@@ -16,9 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#ifndef __INCLUDED_COMMON_OUTPUT_H__
-#define __INCLUDED_COMMON_OUTPUT_H__
+#ifndef INCLUDED_COMMON_OUTPUT_H
+#define INCLUDED_COMMON_OUTPUT_H
 
 #include "common/context.h"
 #include "common/iobase.h"
@@ -58,14 +57,15 @@ public:
  *
  * These may be modified after being set, so RAII does not work.
  */
-class Output final : public wwiv::local_io::curatr_provider, public IOBase {
+class Output final : public local_io::curatr_provider, public IOBase {
 public:
-  typedef std::function<wwiv::common::MacroContext&()> macro_context_provider_t;
+  typedef std::function<MacroContext&()> macro_context_provider_t;
   Output();
-  ~Output();
+  ~Output() override;
 
   void SetLocalIO(LocalIO* local_io) override;
   /** Sets the provider for the session context */
+  // ReSharper disable once CppMemberFunctionMayBeConst
   void set_macro_context_provider(macro_context_provider_t c) { macro_context_provider_ = std::move(c); }
 
   void Color(int wwiv_color);
@@ -83,8 +83,8 @@ public:
   void SystemColor(int c);
   void SystemColor(wwiv::sdk::Color color);
   [[nodiscard]] std::string MakeColor(int wwiv_color);
-  [[nodiscard]] std::string MakeSystemColor(int c);
-  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color);
+  [[nodiscard]] std::string MakeSystemColor(int c) const;
+  [[nodiscard]] std::string MakeSystemColor(wwiv::sdk::Color color) const;
 
   /** Displays msg in a lightbar header. */
   void litebar(const std::string& msg);
@@ -231,14 +231,12 @@ public:
   bool print_help_file(const std::string& filename);
   bool printfile_random(const std::string& base_fn);
 
-public:
   int lines_listed_{0};
   bool newline{true};
 
 private:
   char GetKeyForPause();
 
-private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   int x_{0};
@@ -249,8 +247,8 @@ private:
   bool ansi_movement_occurred_{false};
   uint8_t curatr_{7};
   bool mci_enabled_{true};
-  std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
-  std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
+  std::unique_ptr<sdk::ansi::LocalIOScreen> screen_;
+  std::unique_ptr<sdk::ansi::Ansi> ansi_;
   mutable macro_context_provider_t macro_context_provider_;
 };
 
@@ -270,4 +268,4 @@ std::basic_ostream<charT, traits>& endl(std::basic_ostream<charT, traits>& strm)
 // Extern for everyone else.
 extern wwiv::common::Output bout;
 
-#endif // __INCLUDED_COMMON_OUTPUT_H__
+#endif
