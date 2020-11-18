@@ -139,9 +139,12 @@ TEST_F(SubXtrTest, Read) {
 
 TEST_F(SubXtrTest, JsonSmoke) {
   const string json = R"(
-  { "subs": [
-    { "name": "n1", "storage_type": 2 }
-  ] }
+  {
+    "version": 1,
+    "subs": [
+      { "name": "n1", "storage_type": 2 }
+    ]
+  }
  )";
   this->CreateTempFile("subs.json", json);
 

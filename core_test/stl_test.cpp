@@ -144,5 +144,5 @@ TEST(StlTest, At_Map_Smoke_Const) {
 TEST(StlTest, At_Map_Death) {
   const std::map<int, char> v{ {1,'a'}, {2,'b'}, {3,'c'} };
 
-  EXPECT_DEATH_IF_SUPPORTED(at(v, 20), ".*Terminating in debug build.");
+  EXPECT_DEATH_IF_SUPPORTED(at(v, 20), ".*");
 }

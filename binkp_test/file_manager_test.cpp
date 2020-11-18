@@ -56,7 +56,7 @@ public:
     u = fm->dirs().unknown_dir();
   }
 
-  bool CreateTic(const std::filesystem::path& dir, const std::string filename) {
+  [[nodiscard]] bool CreateTic(const std::filesystem::path& dir, const std::string& filename) {
     // Create TIC file
     std::filesystem::path fn{filename};
     const auto tic_name = fn.replace_extension(".tic");

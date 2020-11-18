@@ -75,8 +75,9 @@ TEST_F(DirsTest, Smoke) {
     ASSERT_TRUE(f.IsOpen());
     auto s = f.ReadFileIntoVector();
     EXPECT_EQ("{", s.at(0));
-    EXPECT_EQ("    \"dirs\": [", s.at(1));
-    EXPECT_NE(s.at(3).find("Sysop Dir"), std::string::npos);
+    EXPECT_EQ("    \"version\": 1,", s.at(1));
+    EXPECT_EQ("    \"dirs\": [", s.at(2));
+    EXPECT_NE(s.at(4).find("Sysop Dir"), std::string::npos);
   }
   {
     TextFile f(FilePath(datadir, DIRS_JSON), "rt");
