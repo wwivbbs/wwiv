@@ -152,7 +152,7 @@ void jump_conf(ConferenceType conftype) {
   auto& uc = conftype == ConferenceType::CONF_SUBS ? a()->uconfsub : a()->uconfdir;
   if (const auto o = conf.try_conf(ch)) {
     setuconf(conf, o.value().key.key(), -1);
-    for (int i=0; i < size_int(uc); i++) {
+    for (auto i=0; i < size_int(uc); i++) {
       if (ch == at(uc, i).key.key()) {
         if (conftype == ConferenceType::CONF_SUBS) {
           a()->sess().set_current_user_sub_conf_num(i);
@@ -164,44 +164,13 @@ void jump_conf(ConferenceType conftype) {
   }
 }
 
-/*
- * Returns true if subnum is allocated to conference c, 0 otherwise.
- */
-bool in_conference(subconf_t subnum, confrec_430_t* c) {
-  if (!c) {
-    return false;
-  }
-  for (const auto& s : c->subs) {
-    if (s == subnum) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/*
- * Returns first available conference key, of a specified conference
- * type.
- */
-char first_available_key(const Conference& conf) {
-  if (conf.size() == MAX_CONFERENCES) {
-    return 0;
-  }
-  if (conf.confs().empty()) {
-    return 'A';
-  }
-  auto cv = conf.confs();
-  const auto last = std::end(cv);
-  return static_cast<char>(last->key.key() + 1);
-}
-
 static int display_conf_subs(Conference& conf) {
   auto abort = false;
   bout.cls();
   bout.bpla("|#2NN  Name                                    ConfList", &abort);
   bout.bpla("|#7--- ======================================= ==========================", &abort);
 
-  int count = 0;
+  auto count = 0;
   switch (conf.type()) {
   case ConferenceType::CONF_SUBS: {
     count = size_int(a()->subs().subs());
@@ -233,7 +202,7 @@ static conf_set_t& get_conf_set(Conference& conf, int num) {
 }
 
 void edit_conf_subs(Conference& conf) {
-  bool changed{false};
+  auto changed{false};
   while (!a()->sess().hangup()) {
     const auto count = display_conf_subs(conf);
     bout.nl();
@@ -385,7 +354,7 @@ static void delete_conf(Conference& conf, char key) {
  * Function for editing conferences.
  */
 void conf_edit(Conference& conf) {
-  bool done = false;
+  auto done = false;
 
   do {
     bout.cls();

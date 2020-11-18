@@ -18,8 +18,10 @@
 #include "wwivutil/print/print.h"
 
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -35,7 +37,8 @@
 using std::cout;
 using std::endl;
 using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::core;
+using namespace std::chrono_literals;
+using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::ansi;
 using namespace wwiv::strings;
@@ -122,6 +125,7 @@ int PrintCommand::Execute() {
   } else {
     std::unique_ptr<LocalIO> io;
     const auto io_type = sarg("io");
+    const auto bps = iarg("bps");
 #ifdef _WIN32
     if (io_type == "win32") {
       io = std::make_unique<Win32ConsoleIO>();
@@ -142,12 +146,23 @@ int PrintCommand::Execute() {
     HeartCodeFilter heart(&ansi, {7, 11, 14, 5, 31, 2, 12, 9, 6, 3});
 
     screen.clear();
+    auto count = 0;
+    const auto allowed_per_100ms = bps / 100;
+
+    auto start = core::DateTime::now();
     for (const auto c : s) {
+      if (allowed_per_100ms > 0 && (++count % allowed_per_100ms == 0)) {
+        sleep_for(100ms);
+      }
       heart.write(c);
     }
+    auto end = core::DateTime::now();
+
     if (need_pause) {
       io->GetChar();
     }
+    VLOG(1) << "Wrote: " << count << " chars.";
+    VLOG(1) << "CPS = " << count / (end.to_time_t() - start.to_time_t());
   }
   return 0;
 }
@@ -160,6 +175,7 @@ bool PrintCommand::AddSubCommands() {
 #else
                 "curses"});
 #endif
+  add_argument({"bps", "What BPS to emulate", "14400"});
   return true;
 }
 

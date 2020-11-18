@@ -42,8 +42,6 @@ public:
   int num_subs_or_dirs = 0;
 };
 
-bool in_conference(wwiv::sdk::subconf_t subnum, wwiv::sdk::confrec_430_t* c);
-
 void tmp_disable_conf(bool disable);
 void reset_disable_conf();
 conf_info_t get_conf_info(wwiv::sdk::ConferenceType conftype);
@@ -52,7 +50,8 @@ void jump_conf(wwiv::sdk::ConferenceType conftype);
 void conf_edit(wwiv::sdk::Conference& conf);
 void list_confs(wwiv::sdk::ConferenceType conftype, bool list_subs);
 void list_confs(wwiv::sdk::Conference& conf, bool list_subs = true);
-std::optional<char> select_conf(const std::string& prompt_text, wwiv::sdk::Conference& conf, bool listconfs);
+std::optional<char> select_conf(const std::string& prompt_text, wwiv::sdk::Conference& conf,
+                                bool listconfs);
 
 /**
  * Select the conferences to which dirs and subs belong.
