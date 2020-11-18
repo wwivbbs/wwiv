@@ -19,7 +19,7 @@
 #include "bbs/subedit.h"
 
 
-#include "acs.h"
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
@@ -55,8 +55,8 @@ static string boarddata(size_t n, const subboard_t& r) {
   if (!r.nets.empty()) {
     stype = r.nets[0].stype;
   }
-  return fmt::sprintf("|#2%4d |#1%-37.37s |#2%-8s |#9%-5d |#5%-12s", n, stripcolors(r.name), r.filename,
-                      r.maxmsgs, stype);
+  return fmt::sprintf("|#2%4d |#1%-37.37s |#2%-8s |#9%-5d |#5%-12s |#1%s", n, stripcolors(r.name), r.filename,
+                      r.maxmsgs, stype, r.conf.to_string());
 }
 
 static void showsubs() {
@@ -64,8 +64,9 @@ static void showsubs() {
   auto abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
   const auto substring = bin.input(20, true);
-  bout.bpla("|#2NN   Name                                  FN       MSGS  SUBTYPE", &abort);
-  bout.bpla("|#7==== ------------------------------------- ======== ===== ------------", &abort);
+  bout.cls();
+  bout.bpla("|#2NN   Name                                  FN       MSGS  SUBTYPE      CONF", &abort);
+  bout.bpla("|#7==== ------------------------------------- ======== ===== ------------ -------", &abort);
   auto subnum = 0;
   for (const auto& r : a()->subs().subs()) {
     const auto subdata = StrCat(r.name, " ", r.filename);
@@ -182,7 +183,7 @@ static void modify_sub(int n) {
          << ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None.") << wwiv::endl;
     bout << "|#9P) Disable FS:  |#2" << YesNoString((r.anony & anony_no_fullscreen) ? true : false)
          << wwiv::endl;
-    bout << "|#9Q) Conferences: |#2" << r.conf.to_string() << wwiv::endl;
+    bout << "|#9   Conferences: |#2" << r.conf.to_string() << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) "
             ": ";
@@ -223,7 +224,7 @@ static void modify_sub(int n) {
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();
-        string sub_name_using_file = subname_using(new_fn);
+        auto sub_name_using_file = subname_using(new_fn);
         bout << "|#6" << new_fn << " already in use for '" << sub_name_using_file << "'"
              << wwiv::endl
              << wwiv::endl
@@ -232,7 +233,7 @@ static void modify_sub(int n) {
           break;
         }
       }
-      string old_subname(r.filename);
+      auto old_subname(r.filename);
       r.filename = new_fn;
 
       if (r.storage_type != 2) {
@@ -274,8 +275,8 @@ static void modify_sub(int n) {
       string allowed("NYDFR");
       bout.nl();
       bout << "|#2New Anony (Y,N,D,F,R) ? ";
-      const char Y = YesNoString(true)[0];
-      const char N = YesNoString(false)[0];
+      const auto Y = YesNoString(true)[0];
+      const auto N = YesNoString(false)[0];
       allowed.push_back(Y);
       allowed.push_back(N);
       char ch2 = onek(allowed, true);
@@ -440,7 +441,7 @@ static void swap_subs(int sub1, int sub2) {
       pTempQScan_q[sub1 / 32] ^= (1L << (sub1 % 32));
       pTempQScan_q[sub2 / 32] ^= (1L << (sub2 % 32));
     }
-    uint32_t tl = pTempQScan_p[sub1];
+    const auto tl = pTempQScan_p[sub1];
     pTempQScan_p[sub1] = pTempQScan_p[sub2];
     pTempQScan_p[sub2] = tl;
 
@@ -477,14 +478,14 @@ static void insert_sub(int n) {
 
   const auto num_user_records = a()->users()->num_user_records();
 
-  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
-  uint32_t* pTempQScan_n = &pTempQScan.get()[1];
-  uint32_t* pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
-  uint32_t* pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
+  const auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
+  const auto pTempQScan_n = &pTempQScan.get()[1];
+  const auto pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
+  const auto pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
 
-  uint32_t m1 = 1L << (n % 32);
-  uint32_t m2 = 0xffffffff << ((n % 32) + 1);
-  uint32_t m3 = 0xffffffff >> (32 - (n % 32));
+  const uint32_t m1 = 1L << (n % 32);
+  const uint32_t m2 = 0xffffffff << ((n % 32) + 1);
+  const uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
   for (auto i = 1; i <= num_user_records; i++) {
     read_qscn(i, pTempQScan.get(), true);
@@ -493,7 +494,7 @@ static void insert_sub(int n) {
       pTempQScan[0]++;
     }
 
-    for (int i1 = size_int(a()->subs().subs()) - 1; i1 > n; i1--) {
+    for (auto i1 = size_int(a()->subs().subs()) - 1; i1 > n; i1--) {
       pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
     }
     pTempQScan_p[n] = 0;
@@ -521,15 +522,15 @@ static void delete_sub(int n) {
     sub_xtr_del(n, 0, 1);
   }
   a()->subs().erase(n);
-  const int num_user_records = a()->users()->num_user_records();
+  const auto num_user_records = a()->users()->num_user_records();
 
-  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len() + 1);
-  uint32_t* pTempQScan_n = &pTempQScan.get()[1];
-  uint32_t* pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
-  uint32_t* pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
+  const auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len() + 1);
+  auto pTempQScan_n = &pTempQScan.get()[1];
+  auto pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
+  unsigned* pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
 
-  uint32_t m2 = 0xffffffff << (n % 32);
-  uint32_t m3 = 0xffffffff >> (32 - (n % 32));
+  auto m2 = 0xffffffff << (n % 32);
+  auto m3 = 0xffffffff >> (32 - (n % 32));
 
   for (int i = 1; i <= num_user_records; i++) {
     read_qscn(i, pTempQScan.get(), true);
@@ -541,14 +542,14 @@ static void delete_sub(int n) {
         pTempQScan[0]--;
       }
     }
-    for (int i1 = n; i1 < ssize(a()->subs().subs()); i1++) {
+    for (auto i1 = n; i1 < ssize(a()->subs().subs()); i1++) {
       pTempQScan_p[i1] = pTempQScan_p[i1 + 1];
     }
 
     pTempQScan_q[n / 32] = (pTempQScan_q[n / 32] & m3) | ((pTempQScan_q[n / 32] >> 1) & m2) |
                            (pTempQScan_q[(n / 32) + 1] << 31);
 
-    for (int i2 = (n / 32) + 1; i2 <= (ssize(a()->subs().subs()) / 32); i2++) {
+    for (auto i2 = (n / 32) + 1; i2 <= ssize(a()->subs().subs()) / 32; i2++) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] >> 1) | (pTempQScan_q[i2 + 1] << 31);
     }
 
@@ -573,11 +574,14 @@ void boardedit() {
   a()->status_manager()->RefreshStatusCache();
   do {
     bout.nl();
-    bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
-    const char ch = onek("QSDIM?");
+    bout << "|#9(|#2Q|#9)uit (|#2D|#9)elete, (|#2I|#9)nsert, (|#2M|#9)odify, (|#2S|#9)wapSubs, (|#2C|#9)onferences : ";
+    const auto ch = onek("QSDIMC?");
     switch (ch) {
     case '?':
       showsubs();
+      break;
+    case 'C':
+      edit_conf_subs(a()->all_confs().subs_conf());
       break;
     case 'Q':
       done = true;

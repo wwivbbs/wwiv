@@ -20,7 +20,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/finduser.h"
 #include "bbs/mmkey.h"
@@ -45,6 +44,46 @@ using std::chrono::milliseconds;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
+
+static const size_t MAX_CONF_LINE = 4096;
+
+
+/*
+ * Returns number of "words" in a specified string, using a specified set
+ * of characters as delimiters.
+ */
+static int wordcount(const string& instr, const char* delimstr) {
+  char szTempBuffer[MAX_CONF_LINE];
+  auto i = 0;
+
+  to_char_array(szTempBuffer, instr);
+  for (auto* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
+    i++;
+  }
+  return i;
+}
+
+/*
+ * Returns pointer to string representing the nth "word" of a string, using
+ * a specified set of characters as delimiters.
+ */
+static std::string extractword(int ww, const string& instr, const char* delimstr) {
+  char szTempBuffer[MAX_CONF_LINE];
+  auto i = 0;
+
+  if (!ww) {
+    return {};
+  }
+
+  to_char_array(szTempBuffer, instr);
+  for (auto* s = strtok(szTempBuffer, delimstr); s && i++ < ww; s = strtok(nullptr, delimstr)) {
+    if (i == ww) {
+      return string(s);
+    }
+  }
+  return {};
+}
+
 
 /**
  * Finds user_num and system number from emailAddress and sets the

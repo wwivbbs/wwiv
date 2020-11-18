@@ -18,7 +18,6 @@
 #ifndef INCLUDED_BBS_CONF_H
 #define INCLUDED_BBS_CONF_H
 
-#include "core/stl.h"
 #include "core/transaction.h"
 #include "sdk/conf/conf.h"
 #include <string>
@@ -55,7 +54,9 @@ void list_confs(wwiv::sdk::ConferenceType conftype, bool list_subs);
 void list_confs(wwiv::sdk::Conference& conf, bool list_subs = true);
 std::optional<char> select_conf(const std::string& prompt_text, wwiv::sdk::Conference& conf, bool listconfs);
 
-int wordcount(const std::string& instr, const char *delimstr);
-std::string extractword(int ww, const std::string& instr, const char *delimstr);
+/**
+ * Select the conferences to which dirs and subs belong.
+ */
+void edit_conf_subs(wwiv::sdk::Conference& conf);
 
 #endif

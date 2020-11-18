@@ -545,15 +545,15 @@ void Application::read_gfile() {
 }
 
 static void PrintTime(const wwiv::common::SessionContext& context) {
-  SavedLine line = bout.SaveCurrentLine();
+  const auto line = bout.SaveCurrentLine();
 
   bout.Color(0);
   bout.nl(2);
-  auto dt = DateTime::now();
+  const auto dt = DateTime::now();
   bout << "|#2" << dt.to_string() << wwiv::endl;
   if (context.IsUserOnline()) {
-    auto time_on = std::chrono::system_clock::now() - context.system_logon_time();
-    auto seconds_on =
+    const auto time_on = std::chrono::system_clock::now() - context.system_logon_time();
+    const auto seconds_on =
         static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
     bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
@@ -676,10 +676,6 @@ bool Application::InitializeBBS(bool cleanup_network) {
   // SET BBS environment variable.
   set_environment_variable("BBS", full_version());
   sess().InitalizeContext(*config());
-
-  VLOG(1) << "Allocating Memory for Message/File Areas.";
-  usub.resize(config()->max_subs());
-  udir.resize(config()->max_dirs());
 
   network_extension_ = ".net";
   const auto wwiv_instance = environment_variable("WWIV_INSTANCE");

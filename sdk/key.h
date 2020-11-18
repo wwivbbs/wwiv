@@ -18,6 +18,8 @@
 #ifndef INCLUDED_SDK_KEY_H
 #define INCLUDED_SDK_KEY_H
 
+#include <iostream>
+
 namespace wwiv::sdk {
 
 class key_t final {

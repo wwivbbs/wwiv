@@ -18,11 +18,8 @@
 /**************************************************************************/
 #include "bbs/conf.h"
 
-
-#include "acs.h"
-#include "sdk/arword.h"
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/confutil.h"
 #include "bbs/mmkey.h"
 #include "common/com.h"
@@ -36,9 +33,8 @@
 #include "fmt/printf.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/files/dirs.h"
 #include "sdk/subxtr.h"
-#include <algorithm>
+#include "sdk/files/dirs.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -50,9 +46,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static int disable_conf_cnt = 0;
-
-/* Max line length in conference files */
-static const size_t MAX_CONF_LINE = 4096;
 
 namespace wwiv::bbs {
 
@@ -239,16 +232,14 @@ static conf_set_t& get_conf_set(Conference& conf, int num) {
   return a()->subs().sub(num).conf;
 }
 
-static void edit_conf_subs(Conference& conf) {
-  auto done{false};
+void edit_conf_subs(Conference& conf) {
   bool changed{false};
-  while (!a()->sess().hangup() && !done) {
+  while (!a()->sess().hangup()) {
     const auto count = display_conf_subs(conf);
     bout.nl();
     bout << "|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences: ";
     const auto cmd = onek_ncr("CSTQ");
     if (cmd == 'Q') {
-      done = true;
       break;
     }
     bout.Left(80);
@@ -271,7 +262,7 @@ static void edit_conf_subs(Conference& conf) {
       for (const auto n : r) {
         auto& cs = get_conf_set(conf, n);
         changed = true;
-        switch (cmd) {
+        switch (cmd) {  // NOLINT(hicpp-multiway-paths-covered)
         case 'S':
           cs.insert(key);
           break;
@@ -320,7 +311,7 @@ static void modify_conf(Conference& conf, char key) {
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Conference Edit [|#1A|#7-|#1C|#7] : ";
     const auto ch = onek("QABC", true);
 
-    switch (ch) {
+    switch (ch) { // NOLINT(hicpp-multiway-paths-covered)
     case 'A': {
       bout.nl();
       bout << "|#2New Key: ";
@@ -374,7 +365,7 @@ static void insert_conf(Conference& conf, char key) {
   c.acs = "";
 
   conf.add(c);
-      ;
+
   if (!a()->all_confs().Save()) {
     LOG(ERROR) << "Unable to save conferences.";
   }
@@ -402,7 +393,7 @@ void conf_edit(Conference& conf) {
     bout.nl();
     bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2S|#7)|#1ubs Configuration|#2? |#7 : ";
     const auto ch = onek("QIDMS?", true);
-    switch (ch) {
+    switch (ch) { // NOLINT(hicpp-multiway-paths-covered)
     case 'D':
       if (conf.size() == 1) {
         bout << "\r\n|#6Cannot delete all conferences!\r\n";
@@ -515,41 +506,4 @@ std::optional<char> select_conf(const std::string& prompt_text, Conference& conf
     bout << "\r\n|#6Invalid conference key!\r\n";
   }
   return std::nullopt;
-}
-
-
-/*
- * Returns number of "words" in a specified string, using a specified set
- * of characters as delimiters.
- */
-int wordcount(const string& instr, const char* delimstr) {
-  char szTempBuffer[MAX_CONF_LINE];
-  int i = 0;
-
-  to_char_array(szTempBuffer, instr);
-  for (auto* s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
-    i++;
-  }
-  return i;
-}
-
-/*
- * Returns pointer to string representing the nth "word" of a string, using
- * a specified set of characters as delimiters.
- */
-std::string extractword(int ww, const string& instr, const char* delimstr) {
-  char szTempBuffer[MAX_CONF_LINE];
-  int i = 0;
-
-  if (!ww) {
-    return {};
-  }
-
-  to_char_array(szTempBuffer, instr);
-  for (auto s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
-    if (i == ww) {
-      return string(s);
-    }
-  }
-  return {};
 }
