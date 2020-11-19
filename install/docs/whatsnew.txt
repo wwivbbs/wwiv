@@ -101,6 +101,15 @@ What's New in WWIV 5.6
 * Fixed A couple of quirks with netdat.log
 + Implement "(F)ind text" in the full screen message reader
 + update fs msg reader help text to include (F)ind
++ Add SYSTEM_BPS to wwiv.ini to emulate a BPS for displaying files.
++ Add --bps option to wwivutil print
+  This emulates a bps rate when displaying the file.
+* Fixed numerous issues in the conference system.
+  conference list is now stored in data/conference.json
+  conference bindings is stored with subs and dirs.
+* UI for editing conference binding has been improved and is now also 
+  available from subedit and diredit.
+* Fix Ar checking when one side is empty. (#1310)
 
 
 
