@@ -44,7 +44,7 @@ protected:
 
 TEST_F(BbsMacroContextTest, Move_Up2) {
   std::string s1 = "[2A";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
@@ -53,7 +53,7 @@ TEST_F(BbsMacroContextTest, Move_Up2) {
 
 TEST_F(BbsMacroContextTest, Move_Up) {
   std::string s1 = "[A";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
@@ -62,7 +62,7 @@ TEST_F(BbsMacroContextTest, Move_Up) {
 
 TEST_F(BbsMacroContextTest, Move_Down) {
   std::string s1 = "[2B";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.up, 0);
@@ -71,7 +71,7 @@ TEST_F(BbsMacroContextTest, Move_Down) {
 
 TEST_F(BbsMacroContextTest, Move_Left) {
   std::string s1 = "[2D";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
@@ -80,7 +80,7 @@ TEST_F(BbsMacroContextTest, Move_Left) {
 
 TEST_F(BbsMacroContextTest, Move_Right) {
   std::string s1 = "[2C";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
@@ -89,7 +89,7 @@ TEST_F(BbsMacroContextTest, Move_Right) {
 
 TEST_F(BbsMacroContextTest, Move_XY) {
   std::string s1 = "[10;20H";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
 
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
@@ -99,7 +99,7 @@ TEST_F(BbsMacroContextTest, Move_XY) {
 
 TEST_F(BbsMacroContextTest, Expr_Ending) {
   std::string s1 = "{hello}";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "{hello}");
@@ -107,20 +107,20 @@ TEST_F(BbsMacroContextTest, Expr_Ending) {
 
 TEST_F(BbsMacroContextTest, Expr_WithAdditional) {
   std::string s1 = "{hello}Hello";
-  auto it = std::begin(s1);
+  auto it = std::cbegin(s1);
   const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "{hello}");
-  EXPECT_EQ("Hello", std::string(it, std::end(s1)));
+  EXPECT_EQ("Hello", std::string(it, std::cend(s1)));
 }
 
 TEST_F(BbsMacroContextTest, JustText) {
   std::string s1 = "hello";
-  auto it = std::begin(s1);
-  const auto end = std::end(s1);
+  auto it = std::cbegin(s1);
+  const auto end = std::cend(s1);
   const auto i = bc->interpret(it, end);
   EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "h");
   EXPECT_EQ('e', *it);
-  EXPECT_EQ(it, std::begin(s1) + 1);
+  EXPECT_EQ(it, std::cbegin(s1) + 1);
 }
