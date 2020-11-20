@@ -151,7 +151,7 @@ void Output::RestorePosition() {
 void Output::nl(int nNumLines) {
   for (auto i = 0; i < nNumLines; i++) {
     bputs("\r\n");
-    wwiv::core::bus().invoke(ProcessInstanceMessages{});
+    core::bus().invoke(ProcessInstanceMessages{});
   }
   x_ = 1;
 }
@@ -201,14 +201,14 @@ void Output::litebar(const std::string& msg) {
     bputs(fmt::sprintf("|17|15 %-78s|#0\r\n\n", msg));
   }
   else {
-    bout << "|#5" << msg << "|#0\r\n\n";
+    format("|#5{}|#0\r\n\n");
   }
 }
 
 void Output::backline() {
   Color(0);
   bputch(SPACE);
-  for (int i = wherex() + 1; i >= 0; i--) {
+  for (auto i = wherex() + 1; i >= 0; i--) {
     this->bs();
   }
 }
@@ -231,10 +231,14 @@ void Output::cls() {
 /**
  * Clears the current line to the end.
  */
-void Output::clreol() {
+void Output::clreol(int ct) {
   const auto saved_x{x_};
   if (okansi(user())) {
-    bputs("\x1b[K");
+    if (ct == 0) {
+      bputs("\x1b[K");
+    } else {
+      format("\x1b[{}K", ct);
+    }
   }
   x_ = saved_x;
 }
@@ -279,11 +283,17 @@ void Output::do_movement(const Interpreted& r) {
     Up(r.up);
   } else if (r.down) {
     Down(r.down);
-  } else if (r.x != -1 && r.y != -1) {
+  }
+  if (r.x != -1 && r.y != -1) {
     GotoXY(r.x, r.y);
-  } else if (r.clreol) {
+  }
+  if (r.clreol) {
     clreol();
-  } else if (r.cls) {
+  }
+  if (r.clrbol) {
+    clreol();
+  }
+  if (r.cls) {
     cls();
   }
 }

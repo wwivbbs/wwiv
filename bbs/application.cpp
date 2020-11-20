@@ -27,6 +27,7 @@
 #include "bbs/confutil.h"
 #include "bbs/diredit.h"
 #include "bbs/execexternal.h"
+#include "bbs/pipe_expr.h"
 #include "bbs/instmsg.h"
 #include "bbs/interpret.h"
 #include "bbs/lilo.h"
@@ -128,7 +129,7 @@ private:
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK),
       session_context_(localIO), context_(std::make_unique<ApplicationContext>(this)),
-      bbs_macro_context_(context_.get()) {
+      bbs_macro_context_(context_.get(), wwiv::bbs::evaluate_pipe_expression) {
   ::bout.SetLocalIO(localIO);
   bout.set_context_provider([this]() -> Context& { return *this->context_; });
   bout.set_macro_context_provider(

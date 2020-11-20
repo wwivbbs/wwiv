@@ -58,6 +58,7 @@ set(COMMON_SOURCES
  newuser.cpp
  new_bbslist.cpp
  normupld.cpp
+ pipe_expr.cpp
  save_qscan.cpp
  qwk.cpp
  qwk1.cpp

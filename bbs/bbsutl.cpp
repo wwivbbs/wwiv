@@ -139,16 +139,6 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
           if (buffer[cp - 2] == CC) {
             cp -= 2;
             bout.Color(0);
-          } else if (buffer[cp - 2] == CO) {
-            BbsMacroContext ctx(&a()->context());
-            const auto interpreted = ctx.interpret_macro_char(buffer[cp - 1]);
-            for (auto i = interpreted.size(); i > 0; i--) {
-              bout.bs();
-            }
-            cp -= 2;
-            if (buffer[cp - 1] == CO) {
-              cp--;
-            }
           } else {
             if (buffer[cp - 1] == BACKSPACE) {
               cp--;

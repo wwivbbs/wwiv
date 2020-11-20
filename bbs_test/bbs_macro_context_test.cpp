@@ -28,89 +28,97 @@ using std::cout;
 using std::endl;
 using std::string;
 
+// test helper that just returns the expression as a string
+std::string _(std::string s) { return s; }
+
 class BbsMacroContextTest : public ::testing::Test {
 protected:
-  void SetUp() override { helper.SetUp(); }
+  void SetUp() override {
+    helper.SetUp();
+    bc = std::make_unique<BbsMacroContext>(&a()->context(), _);
+  }
 
   BbsHelper helper{};
+  std::unique_ptr<BbsMacroContext> bc;
 };
 
-TEST_F(BbsMacroContextTest, Move_Up) {
-  const BbsMacroContext bc(&a()->context());
+TEST_F(BbsMacroContextTest, Move_Up2) {
   std::string s1 = "[2A";
   auto it = std::begin(s1);
 
-  const auto i = bc.interpret(it, std::end(s1));
+  const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.up, 2);
 }
 
+TEST_F(BbsMacroContextTest, Move_Up) {
+  std::string s1 = "[A";
+  auto it = std::begin(s1);
+
+  const auto i = bc->interpret(it, std::end(s1));
+  EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
+  EXPECT_EQ(i.up, 1);
+}
+
 TEST_F(BbsMacroContextTest, Move_Down) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "[2B";
   auto it = std::begin(s1);
-  const auto i = bc.interpret(it, std::end(s1));
+  const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.up, 0);
   EXPECT_EQ(i.down, 2);
 }
 
 TEST_F(BbsMacroContextTest, Move_Left) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "[2D";
   auto it = std::begin(s1);
 
-  const auto i = bc.interpret(it, std::end(s1));
+  const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.left, 2);
 }
 
 TEST_F(BbsMacroContextTest, Move_Right) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "[2C";
   auto it = std::begin(s1);
 
-  const auto i = bc.interpret(it, std::end(s1));
+  const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.right, 2);
 }
 
 TEST_F(BbsMacroContextTest, Move_XY) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "[10;20H";
   auto it = std::begin(s1);
 
-  const auto i = bc.interpret(it, std::end(s1));
+  const auto i = bc->interpret(it, std::end(s1));
   EXPECT_EQ(i.cmd, interpreted_cmd_t::movement);
   EXPECT_EQ(i.x, 9);
   EXPECT_EQ(i.y, 19);
 }
 
 TEST_F(BbsMacroContextTest, Expr_Ending) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "{hello}";
   auto it = std::begin(s1);
-  const auto i = bc.interpret(it, std::end(s1));
-  EXPECT_EQ(i.cmd, interpreted_cmd_t::expression);
+  const auto i = bc->interpret(it, std::end(s1));
+  EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "{hello}");
 }
 
 TEST_F(BbsMacroContextTest, Expr_WithAdditional) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "{hello}Hello";
   auto it = std::begin(s1);
-  const auto i = bc.interpret(it, std::end(s1));
-  EXPECT_EQ(i.cmd, interpreted_cmd_t::expression);
+  const auto i = bc->interpret(it, std::end(s1));
+  EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "{hello}");
   EXPECT_EQ("Hello", std::string(it, std::end(s1)));
 }
 
 TEST_F(BbsMacroContextTest, JustText) {
-  const BbsMacroContext bc(&a()->context());
   std::string s1 = "hello";
   auto it = std::begin(s1);
   const auto end = std::end(s1);
-  const auto i = bc.interpret(it, end);
+  const auto i = bc->interpret(it, end);
   EXPECT_EQ(i.cmd, interpreted_cmd_t::text);
   EXPECT_EQ(i.text, "h");
   EXPECT_EQ('e', *it);

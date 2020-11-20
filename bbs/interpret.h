@@ -25,7 +25,9 @@
 
 class BbsMacroContext final : public wwiv::common::MacroContext {
 public:
-  explicit BbsMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
+  typedef std::function<std::string(std::string)> eval_expr_fn;
+
+  explicit BbsMacroContext(wwiv::common::Context* context, eval_expr_fn f) : MacroContext(context), eval_fn_(f) {}
   ~BbsMacroContext() override = default;
 
   // Interprets only a macro code.
@@ -33,11 +35,14 @@ public:
   // Interprets a macro, movement or command.
   // Expects the leading '@', '{', or '[' to be present.
   [[nodiscard]] wwiv::common::Interpreted interpret_string(const std::string&) const override;
-  
+
+  [[nodiscard]] wwiv::common::Interpreted evaluate_expression(const std::string&) const override;
+
   void set_config(wwiv::sdk::Config* config) { config_ = config; }
 
 private:
   wwiv::sdk::Config* config_{nullptr};
+  eval_expr_fn eval_fn_;
 };
 
 enum class pipe_type_t { none, pipe, macro, movement, expr };

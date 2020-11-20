@@ -39,7 +39,7 @@ struct Interpreted {
   interpreted_cmd_t cmd{interpreted_cmd_t::text};
   bool cls{false};
   bool clreol{false};
-  bool clsbof{false};
+  bool clrbol{false};
 };
 
 /**
@@ -55,6 +55,9 @@ public:
   // Interprets a macro, movement or command.
   // Expects the leading '@', '{', or '[' to be present.
   [[nodiscard]] virtual Interpreted interpret_string(const std::string&) const = 0;
+  // Executes a Macro's expression.  This is likely to be done only by
+  // the BBS.
+  [[nodiscard]] virtual Interpreted evaluate_expression(const std::string&) const = 0;
   // Interprets a macro, movement or command.
   // Expects the leading '@', '{', or '[' to be present.
   [[nodiscard]] virtual Interpreted interpret(std::string::const_iterator& it,

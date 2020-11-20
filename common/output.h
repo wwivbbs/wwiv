@@ -98,7 +98,7 @@ public:
    * Clears from the cursor to the end of the line using ANSI sequences.  If the user
    * does not have ansi, this this function does nothing.
    */
-  void clreol();
+  void clreol(int ct = 0);
 
   /**
    * Moves the cursor to the beginning of the line and clears the whole like.

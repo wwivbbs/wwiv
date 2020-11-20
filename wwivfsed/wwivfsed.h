@@ -39,6 +39,9 @@ public:
   [[nodiscard]] common::Interpreted interpret_string(const std::string&) const override {
     return {};
   }
+  [[nodiscard]] common::Interpreted evaluate_expression(const std::string&) const override {
+    return {};
+  }
   
 };
 

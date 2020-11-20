@@ -62,7 +62,7 @@ Interpreted MacroContext::interpret(std::string::const_iterator& it,
       const auto ch = *it++;
       text.push_back(ch);
       if (ch == '}') {
-        return Interpreted(text, interpreted_cmd_t::expression);
+        return evaluate_expression(text);
       }
     }
     return text;

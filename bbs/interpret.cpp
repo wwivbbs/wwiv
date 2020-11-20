@@ -207,10 +207,10 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
       wwiv::common::Interpreted res;
       res.cmd = wwiv::common::interpreted_cmd_t::movement;
       switch (type) {
-        case 'A': res.up = data.empty() ? 0 : to_number<int>(data); break;
-        case 'B': res.down = data.empty() ? 0 : to_number<int>(data); break;
-        case 'C': res.right = data.empty() ? 0 : to_number<int>(data); break;
-        case 'D': res.left = data.empty() ? 0 : to_number<int>(data); break;
+        case 'A': res.up = data.empty() ? 1 : to_number<int>(data); break;
+        case 'B': res.down = data.empty() ? 1 : to_number<int>(data); break;
+        case 'C': res.right = data.empty() ? 1 : to_number<int>(data); break;
+        case 'D': res.left = data.empty() ? 1 : to_number<int>(data); break;
         case 'H': {
           const auto semi = data.find(';');
           if (data.empty() || semi == std::string::npos) {
@@ -227,7 +227,15 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
           return res;
         }
         case 'K': {
-          res.clreol = true;
+          const auto ct = data.empty() ? 0 : to_number<int>(data);
+          if (ct == 0) {
+            res.clreol = true;
+          } else if (ct == 1) {
+            res.clrbol = true;
+          } else if (ct == 2) {
+            res.clreol = true;
+            res.clrbol = true;
+          }
           return res;
         }
         default:
@@ -237,6 +245,12 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
     }
   }
   return {};
+}
+
+wwiv::common::Interpreted BbsMacroContext::evaluate_expression(const std::string& expr) const {
+  wwiv::common::Interpreted r{};
+  r.text = eval_fn_(expr);
+  return r;
 }
 
 bool BbsMacroFilter::write(char c) {
