@@ -141,7 +141,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
             bout.Color(0);
           } else if (buffer[cp - 2] == CO) {
             BbsMacroContext ctx(&a()->context());
-            const auto interpreted = ctx.interpret(buffer[cp - 1]);
+            const auto interpreted = ctx.interpret_macro_char(buffer[cp - 1]);
             for (auto i = interpreted.size(); i > 0; i--) {
               bout.bs();
             }

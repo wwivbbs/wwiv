@@ -83,6 +83,32 @@ void Output::GotoXY(int x, int y) {
   x_ = x;
 }
 
+void Output::Up(int num) {
+  if (num == 0) {
+    return;
+  }
+  std::ostringstream ss;
+  ss << "\x1b[";
+  if (num > 1) {
+    ss << num;
+  }
+  ss << "A";
+  bputs(ss.str());
+}
+
+void Output::Down(int num) {
+  if (num == 0) {
+    return;
+  }
+  std::ostringstream ss;
+  ss << "\x1b[";
+  if (num > 1) {
+    ss << num;
+  }
+  ss << "B";
+  bputs(ss.str());
+}
+
 void Output::Left(int num) {
   const auto saved_x = x_;
   if (num == 0) {
@@ -244,6 +270,24 @@ int Output::PutsXYA(int x, int y, int color, const std::string& text) {
   return bputs(text);
 }
 
+void Output::do_movement(const Interpreted& r) {
+  if (r.left) {
+    Left(r.left);
+  } else if (r.right) {
+    Right(r.right);
+  } else if (r.up) {
+    Up(r.up);
+  } else if (r.down) {
+    Down(r.down);
+  } else if (r.x != -1 && r.y != -1) {
+    GotoXY(r.x, r.y);
+  } else if (r.clreol) {
+    clreol();
+  } else if (r.cls) {
+    cls();
+  }
+}
+
 template <typename T>
 static int pipecode_int(T& it, const T end, int num_chars) {
   std::string s;
@@ -278,10 +322,13 @@ int Output::bputs(const string& text) {
           const uint8_t fg = curatr() & 0x0f;
           bputs(MakeSystemColor(bg | fg));
         }
-      } else if (*it == '@') {
-        ++it;
-        auto s = ctx.interpret(*it++);
-        bout.bputs(s);
+      } else if (*it == '@' || *it == '{' || *it == '[') {
+        auto r = ctx.interpret(it, fin);
+        if (r.cmd == interpreted_cmd_t::text) {
+          bout.bputs(r.text);
+        } else if (r.cmd == interpreted_cmd_t::movement) {
+          do_movement(r);
+        }
       } else if (*it == '#') {
         ++it;
         const auto color = pipecode_int(it, fin, 1);
@@ -303,7 +350,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CO, true);  break; }
       ++it;
       if (it == fin) { bputch(CO, true);  break; }
-      auto s = ctx.interpret(*it++);
+      auto s = ctx.interpret_macro_char(*it++);
       bout.bputs(s);
     } else if (it == fin) { 
       break; 

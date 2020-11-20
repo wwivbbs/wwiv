@@ -2,6 +2,10 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
+# MCI|PIPE
+* Add tests for BbsMacroFilter (also make sure it works now)
+* Use BbsMacroFilter in wwivutil print.
+
 # ACS
 * See if we can pull the sl, ar, age from the expression to populate the 
   legacy subs.

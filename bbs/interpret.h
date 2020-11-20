@@ -28,13 +28,19 @@ public:
   explicit BbsMacroContext(wwiv::common::Context* context) : MacroContext(context) {}
   ~BbsMacroContext() override = default;
 
-  [[nodiscard]] std::string interpret(char c) const override;
+  // Interprets only a macro code.
+  [[nodiscard]] std::string interpret_macro_char(char c) const override;
+  // Interprets a macro, movement or command.
+  // Expects the leading '@', '{', or '[' to be present.
+  [[nodiscard]] wwiv::common::Interpreted interpret_string(const std::string&) const override;
+  
   void set_config(wwiv::sdk::Config* config) { config_ = config; }
 
 private:
   wwiv::sdk::Config* config_{nullptr};
 };
 
+enum class pipe_type_t { none, pipe, macro, movement, expr };
 class BbsMacroFilter final : public wwiv::sdk::ansi::AnsiFilter {
 public:
   BbsMacroFilter(AnsiFilter* chain, const wwiv::common::MacroContext* ctx)
@@ -45,8 +51,7 @@ public:
 private:
   AnsiFilter* chain_;
   const wwiv::common::MacroContext* ctx_;
-  bool in_pipe_{false};
-  bool in_macro_{false};
+  pipe_type_t pipe_{pipe_type_t::none};
 };
 
 #endif

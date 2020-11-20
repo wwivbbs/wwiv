@@ -30,12 +30,16 @@
 
 namespace wwiv::wwivfsed {
 
-class FakeMacroContext final : public wwiv::common::MacroContext {
+class FakeMacroContext final : public common::MacroContext {
 public:
   explicit FakeMacroContext(common::Context* context) : MacroContext(context) {}
   ~FakeMacroContext() override = default;
 
-  [[nodiscard]] std::string interpret(char) const override { return ""; }
+  [[nodiscard]] std::string interpret_macro_char(char) const override { return ""; }  
+  [[nodiscard]] common::Interpreted interpret_string(const std::string&) const override {
+    return {};
+  }
+  
 };
 
 class FsedContext final : public common::Context {

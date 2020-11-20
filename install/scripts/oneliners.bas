@@ -62,9 +62,9 @@ def EnterOneLiner()
   If an Then
     name = "Anonymous"
   Else
-    namepart = wwiv.interpret("N")
-    number = wwiv.interpret("#")
-    name = namepart + " #" + number
+namepart = wwiv.interpret("N")
+number = wwiv.interpret("#")
+name = namepart + " #" + number
   EndIf
   Return pipecode + name + " - " + s
 Enddef

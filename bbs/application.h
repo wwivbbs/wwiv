@@ -316,7 +316,7 @@ public:
 
   bool newscan_at_login_{false};
   bool internal_zmodem_{true};
-  bool internal_fsed_;
+  bool internal_fsed_{true};
   bool exec_log_syncfoss_{true};
   int m_nNumMessagesReadThisLogon{0};
   int m_nCurrentLanguageNumber{0};

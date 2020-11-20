@@ -6,6 +6,7 @@ include(GoogleTest)
 
 set(test_sources
   bbs_helper.cpp
+  bbs_macro_context_test.cpp
   bputs_test.cpp
   bputch_test.cpp
   datetime_test.cpp

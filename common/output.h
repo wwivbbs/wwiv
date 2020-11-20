@@ -71,6 +71,8 @@ public:
   void Color(int wwiv_color);
   void ResetColors();
   void GotoXY(int x, int y);
+  void Up(int num);
+  void Down(int num);
   void Left(int num);
   void Right(int num);
   void SavePosition();
@@ -142,6 +144,11 @@ public:
    * Returns the number of characters displayed.
    */
   int PutsXYA(int x, int y, int color, const std::string& text);
+
+  /**
+   *
+   */
+  void do_movement(const Interpreted& interpreted);
 
   /**
    * This function outputs a string of characters to the screen (and remotely

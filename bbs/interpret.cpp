@@ -39,7 +39,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
-std::string BbsMacroContext::interpret(char ch) const {
+std::string BbsMacroContext::interpret_macro_char(char ch) const {
   if (!context_) {
     return "";
   }
@@ -185,33 +185,88 @@ std::string BbsMacroContext::interpret(char ch) const {
     }
       
   } catch (const std::exception& e) {
-    LOG(ERROR) << "Caught exception in interpret(ch): '" << ch << "' :" << e.what();
+    LOG(ERROR) << "Caught exception in interpret_macro_char(ch): '" << ch << "' :" << e.what();
   }
   return {}; 
 }
 
+wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s) const {
+  if (s.length() < 2) {
+    // We need at least 2 chars to be useful.
+    return s;
+  }
+  const auto code = s.front();
+  auto data = s.substr(1);
+  switch (code) {
+    case '@':
+      return interpret_macro_char(data.front());
+    case '[': {
+      // movement
+      const auto type = data.back();
+      data.pop_back();
+      wwiv::common::Interpreted res;
+      res.cmd = wwiv::common::interpreted_cmd_t::movement;
+      switch (type) {
+        case 'A': res.up = data.empty() ? 0 : to_number<int>(data); break;
+        case 'B': res.down = data.empty() ? 0 : to_number<int>(data); break;
+        case 'C': res.right = data.empty() ? 0 : to_number<int>(data); break;
+        case 'D': res.left = data.empty() ? 0 : to_number<int>(data); break;
+        case 'H': {
+          const auto semi = data.find(';');
+          if (data.empty() || semi == std::string::npos) {
+            return s;
+          }
+          const auto x = to_number<int>(data.substr(0, semi))-1;
+          res.x = std::max<int>(0, x);
+          const auto y = to_number<int>(data.substr(semi + 1)) - 1;
+          res.y = std::max<int>(0,y);
+          return res;
+        }
+        case 'J': {
+          res.cls = true;
+          return res;
+        }
+        case 'K': {
+          res.clreol = true;
+          return res;
+        }
+        default:
+          return s;
+      }
+      return res;
+    }
+  }
+  return {};
+}
+
 bool BbsMacroFilter::write(char c) {
-  if (in_macro_) {
-    auto s = ctx_->interpret(c);
+  if (pipe_ == pipe_type_t::macro) {
+    auto s = ctx_->interpret_macro_char(c);
     for (const auto ch : s) {
       chain_->write(ch);
     }
     return true;
   }
-  if (in_pipe_) {
+  // todo - handle expr and movement
+  if (pipe_ == pipe_type_t::pipe) {
     if (c == '@') {
-      in_macro_ = true;
-      in_pipe_ = false;
+      pipe_ = pipe_type_t::macro;
       return true;
     }
-    in_macro_ = false;
-    in_pipe_ = false;
+    if (c == '{') {
+      pipe_ = pipe_type_t::expr;
+      return true;
+    }
+    if (c == '[') {
+      pipe_ = pipe_type_t::movement;
+      return true;
+    }
+    pipe_ = pipe_type_t::none;
     chain_->write('|');
     return chain_->write(c);
   }
   if (c == '|') {
-    in_pipe_ = true;
-    in_macro_ = false;
+    pipe_ = pipe_type_t::pipe;
     return true;
   }
   return chain_->write(c);

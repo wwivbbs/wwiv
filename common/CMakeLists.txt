@@ -14,6 +14,7 @@ set(COMMON_SOURCES
  input.cpp
  input_range.cpp
  iobase.cpp
+ macro_context.cpp
  message_editor_data.cpp
  output.cpp
  pause.cpp
