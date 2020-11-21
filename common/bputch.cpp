@@ -53,8 +53,8 @@ int Output::bputch(char c, bool use_buffer) {
     displayed = 1;
   }
   if (c == TAB) {
-    int screen_pos = wherex();
-    for (int i = screen_pos; i < (((screen_pos / 8) + 1) * 8); i++) {
+    const auto screen_pos = wherex();
+    for (auto i = screen_pos; i < (((screen_pos / 8) + 1) * 8); i++) {
       displayed += bputch(SPACE);
     }
   } else {

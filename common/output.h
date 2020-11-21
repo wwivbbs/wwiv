@@ -232,7 +232,7 @@ public:
 
   // PrintFile and friends
   void print_local_file(const std::string& filename);
-  bool printfile(const std::string& filename, bool abortable = true, bool force_pause = true);
+  bool printfile(const std::string& data, bool abortable = true, bool force_pause = true);
   bool printfile_path(const std::filesystem::path& file_path, bool abortable = true,
                       bool force_pause = true);
   bool print_help_file(const std::string& filename);

@@ -16,10 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_MENUS_MENUCOMMANDS_H
-#define INCLUDED_MENUS_MENUCOMMANDS_H
+#ifndef INCLUDED_BBS_MENUS_MENU_CONTEXT_H
+#define INCLUDED_BBS_MENUS_MENU_CONTEXT_H
 
-#include "bbs/menus/menu_context.h"
 #include "core/stl.h"
 #include <filesystem>
 #include <map>
@@ -29,28 +28,17 @@
 namespace wwiv::bbs::menus {
 class Menu;
 
-struct MenuItem {
-  MenuItem(std::string desc, std::string category, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
-  MenuItem(std::string desc, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), f_(std::move(f)) {}
+enum class menu_command_action_t { none, push_menu, return_from_menu };
 
-  explicit MenuItem(std::function<void(MenuContext&)> f) : description_(""), f_(std::move(f)) {}
-
-  std::string description_;
-  std::string category_;
-  std::function<void(MenuContext&)> f_;
-  // Set at the end of CreateMenuMap.
-  std::string cmd_;
+struct MenuContext {
+  MenuContext(Menu* m, std::string d)
+      : cur_menu(m), data(std::move(d)) {}
+  // May be null if not invoked from an actual menu.
+  Menu* cur_menu;
+  std::string data;
+  menu_command_action_t menu_action{menu_command_action_t::none};
+  bool need_reload{false};
 };
-
-std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
-
-/**
- * Executes a menu command ```script``` using the menu data for the context of
- * the MENU, or nullptr if not invoked from an actual menu.
- */
-std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd, const std::string& data);
 
 }  // namespace
 

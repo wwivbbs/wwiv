@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_PAUSE_H__
-#define __INCLUDED_COMMON_PAUSE_H__
+#ifndef INCLUDED_COMMON_PAUSE_H
+#define INCLUDED_COMMON_PAUSE_H
 
 #include "core/transaction.h"
 #include "common/output.h"
@@ -26,9 +26,9 @@ namespace wwiv::common {
 
 class TempDisablePause : public wwiv::core::Transaction {
 public:
-  TempDisablePause(Output& out);
+  explicit TempDisablePause(Output& out);
 };
 
 }  // namespace
 
-#endif  // __INCLUDED_COMMON_PAUSE_H__
+#endif

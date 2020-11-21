@@ -191,14 +191,52 @@ int MenuDownload(const std::string& dir_and_fname, bool bFreeDL, bool bTitle) {
   return MenuDownload(v.at(0), aligns(v.at(1)), bFreeDL, bTitle);
 }
 
+static int FindDoorNo(const std::string& name) {
+  for (auto i = 0; i < size_int(a()->chains->chains()); i++) {
+    if (iequals(a()->chains->at(i).description, name)) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+static bool ValidateDoorAccess(int door_number) {
+  const auto& c = a()->chains->at(door_number);
+  if (c.ansi && !okansi()) {
+    return false;
+  }
+  if (c.local_only && a()->sess().using_modem()) {
+    return false;
+  }
+  if (!check_acs(c.acs)) {
+    return false;
+  }
+  // Check multi-instance doors.
+  auto inst = inst_ok(INST_LOC_CHAINS, door_number + 1);
+  if (inst != 0) {
+    const auto inuse_msg = fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
+    if (!(c.multi_user)) {
+      bout << inuse_msg << " Try again later.\r\n";
+      return false;
+    }
+    bout << inuse_msg << " Care to join in? ";
+    if (!bin.yesno()) {
+      return false;
+    }
+  }
+  // passed all the checks, return true
+  return true;
+}
+
 /**
  * Run a Door (chain)
  *
  * pszDoor = Door description to run
  * bFree  = If true, security on door will not back checked
  */
-bool MenuRunDoorName(const char *pszDoor, bool bFree) {
-  const auto door_number = FindDoorNo(pszDoor);
+bool MenuRunDoorName(const std::string& name, bool bFree) {
+  const auto door_number = FindDoorNo(name);
   return door_number >= 0 ? MenuRunDoorNumber(door_number, bFree) : false;
 }
 
@@ -210,44 +248,6 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
   run_chain(nDoorNumber);
   return true;
 }
-
-int FindDoorNo(const char *pszDoor) {
-  for (auto i = 0; i < size_int(a()->chains->chains()); i++) {
-    if (iequals(a()->chains->at(i).description, pszDoor)) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-bool ValidateDoorAccess(int nDoorNumber) {
-  auto inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
-  const auto& c = a()->chains->at(nDoorNumber);
-  if (inst != 0) {
-    const auto inuse_msg = fmt::format("|#2Chain {} is in use on instance {}.  ", c.description, inst);
-    if (!(c.multi_user)) {
-      bout << inuse_msg << " Try again later.\r\n";
-      return false;
-    }
-    bout << inuse_msg << " Care to join in? ";
-    if (!(bin.yesno())) {
-      return false;
-    }
-  }
-  if (c.ansi && !okansi()) {
-    return false;
-  }
-  if (c.local_only && a()->sess().using_modem()) {
-    return false;
-  }
-  if (!wwiv::bbs::check_acs(c.acs)) {
-    return false;
-  }
-  // passed all the checks, return true
-  return true;
-}
-
 
 /* ----------------------- */
 /* End of run door section */

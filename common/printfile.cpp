@@ -21,6 +21,7 @@
 
 #include "bbs/bbs.h"
 #include "common/input.h"
+#include "common/menu_data_util.h"
 #include "common/pause.h"
 #include "core/file.h"
 #include "core/os.h"
@@ -119,14 +120,15 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
     // BPS will be either the file BPS or system bps or 0
     // use BPS in the loops since eventually MCI codes will be able
     // to change the BPS on the fly.
-    const auto cps = sess().bps() / 10;
+    //const auto cps = sess().bps() / 10;
+    //num_written += bout.bputs(s);
+    //if (sess().bps() > 0) {
+    //  while (std::chrono::duration_cast<milliseconds>(system_clock::now() - start_time).count() < (num_written * 1000 / cps)) {
+    //    bout.flush();
+    //    os::sleep_for(milliseconds(100));
+    //  }
+    //}
     num_written += bout.bputs(s);
-    if (sess().bps() > 0) {
-      while (std::chrono::duration_cast<milliseconds>(system_clock::now() - start_time).count() < (num_written * 1000 / cps)) {
-        bout.flush();
-        os::sleep_for(milliseconds(100));
-      }
-    }
     bout.nl();
     const auto has_ansi = contains(s, ESC);
     // If this is an ANSI file, then don't pause
@@ -156,12 +158,45 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
   return !v.empty();
 }
 
-bool Output::printfile(const std::string& filename, bool abortable, bool force_pause) {
+bool Output::printfile(const std::string& data, bool abortable, bool force_pause) {
+  menu_data_and_options_t t(data);
+  auto pause_at_end{false};
+  auto pause_at_start{false};
+  const auto saved_disable_pause = sess().disable_pause();
+  if (!t.opts_empty()) {
+    for (const auto& [key, value] : t.opts()) {
+      if (key == "pause") {
+        if (value == "on") {
+          sess().disable_pause(false);
+        } else if (value == "off") {
+          sess().disable_pause(true);
+        } else if (value == "start") {
+          pause_at_start = true;
+        } else if (value == "end") {
+          pause_at_end = true;
+        }
+      } else if (key == "bps") {
+        const auto bps = to_number<int>(value);
+        sess().set_file_bps(bps);
+      }
+    }
+  }
+
   const std::vector<string> dirs{sess().dirs().language_directory(), 
     sess().dirs().gfiles_directory()};
 
-  const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), filename);
-  return printfile_path(full_path_name, abortable, force_pause);
+  const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), t.data());
+  if (pause_at_start) {
+    pausescr();
+  }
+  const auto r = printfile_path(full_path_name, abortable, force_pause);
+
+  sess().disable_pause(saved_disable_pause);
+  if (pause_at_end) {
+    pausescr();
+  }
+
+  return r;
 }
 
 /**

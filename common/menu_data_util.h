@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,42 +16,29 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_MENUS_MENUCOMMANDS_H
-#define INCLUDED_MENUS_MENUCOMMANDS_H
+#ifndef INCLUDED_COMMON_MENU_DATA_UTIL_H
+#define INCLUDED_COMMON_MENU_DATA_UTIL_H
 
-#include "bbs/menus/menu_context.h"
-#include "core/stl.h"
-#include <filesystem>
 #include <map>
-#include <optional>
+#include <set>
 #include <string>
 
-namespace wwiv::bbs::menus {
-class Menu;
+namespace wwiv::common {
 
-struct MenuItem {
-  MenuItem(std::string desc, std::string category, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
-  MenuItem(std::string desc, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), f_(std::move(f)) {}
+class menu_data_and_options_t {
+public:
+  explicit menu_data_and_options_t(const std::string& raw);
 
-  explicit MenuItem(std::function<void(MenuContext&)> f) : description_(""), f_(std::move(f)) {}
-
-  std::string description_;
-  std::string category_;
-  std::function<void(MenuContext&)> f_;
-  // Set at the end of CreateMenuMap.
-  std::string cmd_;
+  [[nodiscard]] std::set<std::string> opts(const std::string&) const;
+  [[nodiscard]] const std::string& data() const;
+  [[nodiscard]] auto size() const noexcept { return opts_.size(); }
+  [[nodiscard]] bool opts_empty() const noexcept { return opts_.empty(); }
+  [[nodiscard]] const std::multimap<std::string, std::string>& opts() { return opts_; }
+private:
+  std::string data_;
+  std::multimap<std::string, std::string> opts_;
 };
 
-std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
+}
 
-/**
- * Executes a menu command ```script``` using the menu data for the context of
- * the MENU, or nullptr if not invoked from an actual menu.
- */
-std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd, const std::string& data);
-
-}  // namespace
-
-#endif
+#endif 

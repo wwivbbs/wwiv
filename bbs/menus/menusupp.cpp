@@ -962,17 +962,17 @@ bool GuestCheck() {
   return true;
 }
 
-void SetSubNumber(const char *pszSubKeys) {
+void SetSubNumber(const MenuContext& context) {
   for (uint16_t i = 0; i < a()->usub.size(); i++) {
-    if (a()->usub[i].keys == pszSubKeys) {
+    if (a()->usub[i].keys == context.data) {
       a()->set_current_user_sub_num(i);
     }
   }
 }
 
-void SetDirNumber(const char *pszDirectoryKeys) {
+void SetDirNumber(const MenuContext& context) {
   for (auto i = 0; i < ssize(a()->udir); i++) {
-    if (a()->udir[i].keys == pszDirectoryKeys) {
+    if (a()->udir[i].keys == context.data) {
       a()->set_current_user_dir_num(i);
     }
   }

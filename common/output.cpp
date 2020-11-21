@@ -315,7 +315,20 @@ int Output::bputs(const string& text) {
 
   auto it = std::cbegin(text);
   const auto fin = std::cend(text);
+  const auto start_time = std::chrono::system_clock::now();
+  auto num_written = 0;
+  const auto cps = sess().bps() / 10;
   while (it != fin) {
+    ++num_written;
+    if (cps > 0) {
+      while (std::chrono::duration_cast<std::chrono::milliseconds>(
+                 std::chrono::system_clock::now() - start_time)
+                 .count() < (num_written * 1000 / cps)) {
+        bout.flush();
+        os::sleep_for(std::chrono::milliseconds(10));
+      }
+    }
+
     // pipe codes.
     if (*it == '|') {
       ++it;

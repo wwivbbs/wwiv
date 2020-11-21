@@ -362,7 +362,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
   return true;
 }
 
-bool maybe_upload(const std::string& file_name, uint16_t directory_num, const std::string& description) {
+bool maybe_upload(const std::string& file_name, int directory_num, const std::string& description) {
   auto abort = false;
   const auto i = recno(aligns(file_name));
 
@@ -406,7 +406,7 @@ bool maybe_upload(const std::string& file_name, uint16_t directory_num, const st
  * the number of optional words between the filename and description.
  * the optional words (size, date/time) are ignored completely.
  */
-void upload_files(const std::string& file_name, uint16_t directory_num, int type) {
+void upload_files(const std::string& file_name, int directory_num, int type) {
   char s[255], *fn1, *description = nullptr, *ext = nullptr;
   bool abort = false;
   bool ok = true;
@@ -512,7 +512,7 @@ void upload_files(const std::string& file_name, uint16_t directory_num, int type
 }
 
 // returns false on abort
-bool uploadall(uint16_t directory_num) {
+bool uploadall(int directory_num) {
   const auto& dir = a()->dirs()[a()->udir[directory_num].subnum];
   dliscan1(dir);
 

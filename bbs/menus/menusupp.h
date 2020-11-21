@@ -18,6 +18,8 @@
 #ifndef INCLUDED_BBS_MENUS_MENUSUPP_H
 #define INCLUDED_BBS_MENUS_MENUSUPP_H
 
+#include "bbs/menus/menu_context.h"
+
 namespace wwiv::bbs::menus {
 
 void UnQScan();
@@ -118,8 +120,8 @@ void GuestApply();
 void AttachFile();
 bool GuestCheck();
 void LogOffCmd();
-void SetSubNumber(const char *pszSubKeys);
-void SetDirNumber(const char *pszDirectoryKeys);
+void SetSubNumber(const MenuContext& context);
+void SetDirNumber(const MenuContext& context);
 
 
 }

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2020, WWIV Software Services             */
+/*                  Copyright (C)2020, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,42 +16,42 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_MENUS_MENUCOMMANDS_H
-#define INCLUDED_MENUS_MENUCOMMANDS_H
+#include "common/menu_data_util.h"
 
-#include "bbs/menus/menu_context.h"
-#include "core/stl.h"
-#include <filesystem>
-#include <map>
-#include <optional>
-#include <string>
+#include "core/strings.h"
 
-namespace wwiv::bbs::menus {
-class Menu;
+namespace wwiv::common {
 
-struct MenuItem {
-  MenuItem(std::string desc, std::string category, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
-  MenuItem(std::string desc, std::function<void(MenuContext&)> f)
-      : description_(std::move(desc)), f_(std::move(f)) {}
 
-  explicit MenuItem(std::function<void(MenuContext&)> f) : description_(""), f_(std::move(f)) {}
+menu_data_and_options_t::menu_data_and_options_t(const std::string& raw) {
+  const auto idx = raw.find(' ');
+  if (idx == std::string::npos) {
+    data_ = raw;
+    return;
+  }
+  data_ = raw.substr(0, idx);
+  const auto o = raw.substr(idx + 1);
+  const auto v = strings::SplitString(o, " ");
+  for (const auto& f : v) {
+    const auto fidx = f.find('=');
+    if (fidx != std::string::npos) {
+      auto key = strings::ToStringLowerCase(strings::StringTrim(f.substr(0, fidx))); 
+      auto val = strings::ToStringLowerCase(strings::StringTrim(f.substr(fidx + 1))); 
+      opts_.emplace(key, val);
+    }
+  }
+}
 
-  std::string description_;
-  std::string category_;
-  std::function<void(MenuContext&)> f_;
-  // Set at the end of CreateMenuMap.
-  std::string cmd_;
-};
+std::set<std::string> menu_data_and_options_t::opts(const std::string& key) const {
+  std::set<std::string> r;
+  for (auto [s, e] = opts_.equal_range(key); s != e; ++s) {
+    r.insert(s->second);
+  }
+  return r;
+}
 
-std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
+const std::string& menu_data_and_options_t::data() const {
+  return data_;
+}
 
-/**
- * Executes a menu command ```script``` using the menu data for the context of
- * the MENU, or nullptr if not invoked from an actual menu.
- */
-std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd, const std::string& data);
-
-}  // namespace
-
-#endif
+}

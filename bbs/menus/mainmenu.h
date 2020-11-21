@@ -62,7 +62,6 @@ public:
   ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions);
   std::tuple<menu_run_result_t, std::string> Run();
 
-  bool finished{false};
   bool reload{false}; /* true if we are going to reload the menus */
 
 private:

@@ -246,8 +246,6 @@ Menu::ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& acti
 std::tuple<menu_run_result_t, std::string> Menu::Run() {
   const auto menu_set = a()->user()->menu_set();
   if (!menu_.initialized()) {
-    // There was an error loading the menu.
-    finished = true;
     return std::make_tuple(menu_run_result_t::error, "");
   }
   if (!check_acs(menu().acs)) {
@@ -303,8 +301,9 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
         ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::return_from_menu, "");
       }
-      if (!strings::iequals(menu_set, a()->user()->menu_set())) {
-        // We changed menu sets.
+      if (reload || !strings::iequals(menu_set, a()->user()->menu_set())) {
+        // We changed menu sets.  Reload is set by Defaults when changing the
+        // menu set.
         return std::make_tuple(menu_run_result_t::change_menu_set, "");
       }
     }

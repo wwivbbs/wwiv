@@ -69,26 +69,25 @@ static const std::string MENU_CAT_SYS = "System";
 static const std::string MENU_CAT_CONF = "Conference";
 static const std::string MENU_CAT_USER = "User";
 
-std::optional<MenuContext> InterpretCommand(Menu* menudata, const std::string& cmd,
-                                                const std::string& data) {
+std::optional<MenuContext> InterpretCommand(Menu* menu, const std::string& cmd,
+                                            const std::string& data) {
   if (cmd.empty()) {
     return std::nullopt;
   }
   static auto functions = CreateCommandMap(); // NOLINT(clang-diagnostic-exit-time-destructors)
 
   if (contains(functions, cmd)) {
-    MenuContext context(menudata, data);
-    functions.at(cmd).f_(context);
-    if (menudata) {
-      menudata->reload = context.need_reload;
-      menudata->finished = (context.finished || context.need_reload);
+    MenuContext context(menu, data);
+    at(functions, cmd).f_(context);
+    if (menu) {
+      menu->reload = context.need_reload;
     }
     return {context};
   }
   return std::nullopt;
 }
 
-map<string, wwiv::bbs::menus::MenuItem, ci_less> CreateCommandMap() {
+map<string, MenuItem, ci_less> CreateCommandMap() {
   map<string, MenuItem, ci_less> m;
 
   m.emplace("MENU", MenuItem(R"(<menu>
@@ -127,7 +126,7 @@ map<string, wwiv::bbs::menus::MenuItem, ci_less> CreateCommandMap() {
   given the door in //CHEDIT
 )",
                                 MENU_CAT_CHAIN, [](MenuContext& context) {
-                                  MenuRunDoorName(context.data.c_str(), false);
+                                  MenuRunDoorName(context.data, false);
                                 }));
   m.emplace("RunDoorFree", MenuItem(R"(<door name>
 
@@ -136,7 +135,7 @@ map<string, wwiv::bbs::menus::MenuItem, ci_less> CreateCommandMap() {
   the user is allowed to run the door.
 )",
                                     MENU_CAT_CHAIN, [](MenuContext& context) {
-                                      MenuRunDoorName(context.data.c_str(), true);
+                                      MenuRunDoorName(context.data, true);
                                     }));
   m.emplace("RunDoorNumber", MenuItem(R"(<door number>
 
@@ -168,7 +167,7 @@ Runs a WWIVbasic Script
 
   Prints a file, first checking to see if you specified an absolute path,
   then the language dir, then the gfilesdir.  It will use the usual checks to
-  determin .ANS, or .MSG if not specified.
+  determine .ANS, or .MSG if not specified.
 )",
                                   MENU_CAT_SYS, [](MenuContext& context) {
                                     bout.printfile(context.data, true);
@@ -185,17 +184,13 @@ Runs a WWIVbasic Script
   Equivalent to typing in a number at the main menu, it sets the current sub
   number.
 )",
-                                     MENU_CAT_MSGS, [](MenuContext& context) {
-                                       SetSubNumber(context.data.c_str());
-                                     }));
+                                     MENU_CAT_MSGS, SetSubNumber));
   m.emplace("SetDirNumber", MenuItem(R"( <key>
 
   Equivalent to typing in a number at the xfer menu, it sets the current dir
   number.
 )",
-                                     MENU_CAT_FILE, [](MenuContext& context) {
-                                       SetDirNumber(context.data.c_str());
-                                     }));
+                                     MENU_CAT_FILE, SetDirNumber));
   m.emplace("SetMsgConf", MenuItem(R"(<key>
 
   Sets the subboards conference to key
@@ -231,7 +226,7 @@ Runs a WWIVbasic Script
   they want to use, etc...
 )",
                                           MENU_CAT_USER, [](MenuContext& context) {
-                                            wwiv::bbs::menus::ConfigUserMenuSet();
+                                            ConfigUserMenuSet();
                                             context.need_reload = true;
                                           }));
   m.emplace("DisplayHelp", MenuItem(R"( <filename>
