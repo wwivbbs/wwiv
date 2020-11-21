@@ -17,18 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "sdk/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
+#include "bbs/bbs_event_handlers.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
 #include "bbs/instmsg.h"
-#include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xinitini.h"
-#include "common/common_events.h"
 #include "common/datetime.h"
 #include "common/input.h"
 #include "common/output.h"
@@ -43,17 +41,18 @@
 #include "core/version.h"
 #include "fmt/printf.h"
 #include "local_io/wconstants.h"
+#include "sdk/arword.h"
 #include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/files/files.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/names.h"
-#include "sdk/net/networks.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/files/files.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/networks.h"
 #include <algorithm>
 #include <chrono>
 #include <memory>
@@ -138,12 +137,10 @@ static uint16_t str2spawnopt(const std::string& s) {
 
 // Takes string s and creates restrict val
 static uint16_t str2restrict(const std::string& s) {
-  char s1[81];
-
-  to_char_array(s1, ToStringUpperCase(s));
+  const auto s1 = ToStringUpperCase(s);
   uint16_t r = 0;
   for (auto i = ssize(restrict_string) - 1; i >= 0; i--) {
-    if (strchr(s1, restrict_string[i])) {
+    if (s1.find(restrict_string[i]) != std::string::npos) {
       r |= 1 << i;
     }
   }
@@ -172,26 +169,15 @@ static std::string to_array_key(const std::string& n, const std::string& index) 
   return StrCat(n, "[", index, "]");
 }
 
-template <typename A>
-void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
-                 std::function<A(const std::string&)> func, A d) {
-  const auto ss = ini.value<std::string>(StrCat(INI_STR_SIMPLE_ASV, "[", s, "]"));
-  if (!ss.empty()) {
-    f = func(ss);
-  } else {
-    f = d;
-  }
-}
-
 #define INI_GET_ASV(s, f, func, d)                                                                 \
-  {                                                                                                \
+  do {                                                                                                \
     const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                   \
     if (!ss.empty()) {                                                                             \
       (f) = func(ss);                                                                                \
     } else {                                                                                       \
       (f) = d;                                                                                       \
     }                                                                                              \
-  }
+  } while (0)
 
 static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FORCE_FBACK, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
@@ -442,7 +428,7 @@ bool Application::read_subs() {
   return subs_->Load();
 }
 
-class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
+class BBSLastReadImpl final : public msgapi::WWIVLastReadImpl {
   [[nodiscard]] uint32_t last_read(int area) const override { return a()->sess().qsc_p[area]; }
 
   void set_last_read(int area, uint32_t last_read) override {
@@ -548,23 +534,6 @@ void Application::read_gfile() {
   }
 }
 
-static void PrintTime(const wwiv::common::SessionContext& context) {
-  const auto line = bout.SaveCurrentLine();
-
-  bout.Color(0);
-  bout.nl(2);
-  const auto dt = DateTime::now();
-  bout << "|#2" << dt.to_string() << wwiv::endl;
-  if (context.IsUserOnline()) {
-    const auto time_on = std::chrono::system_clock::now() - context.system_logon_time();
-    const auto seconds_on =
-        static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
-    bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
-    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
-  }
-  bout.nl();
-  bout.RestoreCurrentLine(line);
-}
 
 bool Application::InitializeBBS(bool cleanup_network) {
   Cls();
@@ -720,36 +689,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 
-  //using namespace wwiv::common;
-  // Register Application Level Callbacks
-  bus().add_handler<ProcessInstanceMessages>([this]() {
-    if (inst_msg_waiting() && !sess().chatline()) {
-      process_inst_msgs();
-    }
-  });
-  bus().add_handler<ResetProcessingInstanceMessages>([]() { setiia(std::chrono::seconds(5)); });
-  bus().add_handler<PauseProcessingInstanceMessages>([]() { setiia(std::chrono::seconds(0)); });
-  bus().add_handler<CheckForHangupEvent>([]() { a()->CheckForHangup(); });
-  bus().add_handler<HangupEvent>([]() { a()->Hangup(); });
-  bus().add_handler<UpdateTopScreenEvent>([]() { a()->UpdateTopScreen(); });
-  bus().add_handler<UpdateTimeLeft>(
-      [](const UpdateTimeLeft& u) { a()->tleft(u.check_for_timeout); });
-  bus().add_handler<HandleSysopKey>(
-      [](const HandleSysopKey& k) { a()->handle_sysop_key(k.key); });
-  bus().add_handler<GiveupTimeslices>([]() { 
-    yield();
-    if (inst_msg_waiting() && (!a()->sess().in_chatroom() || !a()->sess().chatline())) {
-      process_inst_msgs();
-    } else {
-      sleep_for(std::chrono::milliseconds(100));
-    }
-    yield();
-  });
-  bus().add_handler<DisplayTimeLeft>([]() { PrintTime(a()->sess()); });
-  bus().add_handler<DisplayMultiInstanceStatus>([]() { multi_instance(); });
-
-  bus().add_handler<ToggleAvailable>([]() { toggle_avail(); });
-  bus().add_handler<ToggleInvisble>([]() { toggle_invis(); });
+  wwiv::bbs::bbs_callbacks();
 
   return true;
 }

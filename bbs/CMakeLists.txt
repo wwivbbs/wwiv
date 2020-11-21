@@ -11,6 +11,7 @@ set(COMMON_SOURCES
  automsg.cpp
  batch.cpp
  bbs.cpp
+ bbs_event_handlers.cpp
  bbsovl1.cpp
  bbsovl2.cpp
  bbsovl3.cpp

@@ -309,7 +309,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 }
 
 int Output::bputs(const string& text) {
-  wwiv::core::bus().invoke<CheckForHangupEvent>();
+  core::bus().invoke<CheckForHangupEvent>();
   if (text.empty() || sess().hangup()) { return 0; }
   auto& ctx = macro_context_provider_();
 

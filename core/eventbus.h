@@ -16,37 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_EVENTBUS_H__
-#define __INCLUDED_CORE_EVENTBUS_H__
+#ifndef INCLUDED_CORE_EVENTBUS_H
+#define INCLUDED_CORE_EVENTBUS_H
 
 #include "core/log.h"
 #include "core/callable/callable.hpp"
 #include <any>
 #include <functional>
-#include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 
-
 namespace wwiv::core {
-
-class Event {
-public:
-  explicit Event(std::string id) : id_(std::move(id_)) {}
-  Event(std::string id, std::string data) : id_(std::move(id_)) {}
-
-  const std::string& id() { return id_; }
-  const std::string& data() { return data_; }
-
-private:
-  const std::string id_;
-  const std::string data_;
-};
 
 class EventBus final {
 public:
   EventBus() = default;
+  EventBus(const EventBus&) = delete;
+  EventBus(EventBus&&) = delete;
+  EventBus& operator=(const EventBus&) = delete;
+  EventBus& operator=(EventBus&&) = delete;
   ~EventBus() = default;
 
   template<typename T, typename H> void add_handler(H handler) {
@@ -70,8 +59,8 @@ public:
 
   template <typename T> void invoke(const T& event_type) {
     const std::string name = typeid(T).name();
-    auto range = handlers_.equal_range(name);
-    for (auto it = range.first; it != range.second; ++it) {
+    auto [first, last] = handlers_.equal_range(name);
+    for (auto& it = first; it != last; ++it) {
       try {
         it->second(std::make_any<T>(event_type));
       } catch (const std::bad_cast& e) {
@@ -88,4 +77,4 @@ EventBus& bus();
 
 } // namespace wwiv::core
 
-#endif // __INCLUDED_CORE_EVENTBUS_H__
+#endif
