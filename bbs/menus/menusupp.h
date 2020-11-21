@@ -62,7 +62,6 @@ void ReadAllMail();
 void ReloadMenus();
 void ResetQscan();
 void MemoryStatus();
-void PackMessages();
 void InitVotes();
 void ReadLog();
 void ReadNetLog();

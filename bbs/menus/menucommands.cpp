@@ -17,10 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/menus/menucommands.h"
+#include "bbs/basic/basic.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/hop.h"
+#include "bbs/menus/config_menus.h"
+#include "bbs/menus/mainmenu.h"
 #include "bbs/menus/menuspec.h"
 #include "bbs/menus/menusupp.h"
 #include "bbs/misccmd.h"
@@ -29,9 +32,6 @@
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/xferovl1.h"
-#include "bbs/basic/basic.h"
-#include "bbs/menus/config_menus.h"
-#include "bbs/menus/mainmenu.h"
 #include "common/output.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -69,12 +69,12 @@ static const std::string MENU_CAT_SYS = "System";
 static const std::string MENU_CAT_CONF = "Conference";
 static const std::string MENU_CAT_USER = "User";
 
-
-std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const std::string& cmd, const std::string& data) {
+std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const std::string& cmd,
+                                                const std::string& data) {
   if (cmd.empty()) {
     return std::nullopt;
   }
-  static auto functions = CreateCommandMap();  // NOLINT(clang-diagnostic-exit-time-destructors)
+  static auto functions = CreateCommandMap(); // NOLINT(clang-diagnostic-exit-time-destructors)
 
   if (contains(functions, cmd)) {
     MenuItemContext context(menudata, data);
@@ -95,8 +95,8 @@ map<string, wwiv::bbs::menus::MenuItem, ci_less> CreateCommandMap() {
   the menu to load.
 )",
                              MENU_CAT_MENU, [](MenuItemContext& context) {
-                                 context.menu_action = menu_command_action_t::push_menu;
-                                 context.new_menu_name = context.param1;
+                               context.menu_action = menu_command_action_t::push_menu;
+                               context.new_menu_name = context.param1;
                              }));
   m.emplace("ReturnFromMenu", MenuItem(R"()", MENU_CAT_MENU, [](MenuItemContext& context) {
               context.menu_action = menu_command_action_t::return_from_menu;
@@ -240,11 +240,11 @@ Runs a WWIVbasic Script
   An alias for DisplayMenu. 
   This alias is deprecated, please use DisplayMenu.
 )",
-  MENU_CAT_MENU, [](MenuItemContext& context) {
-    if (context.pMenuData && a()->user()->IsExpert()) {
-      context.pMenuData->DisplayMenu();
-    }
-  }));
+                                    MENU_CAT_MENU, [](MenuItemContext& context) {
+                                      if (context.pMenuData && a()->user()->IsExpert()) {
+                                        context.pMenuData->DisplayMenu();
+                                      }
+                                    }));
   m.emplace("DisplayMenu", MenuItem(R"( <filename>
 
   Prints the 'novice menus' for the current menu set, or if one doesn't exist,
@@ -734,4 +734,4 @@ Runs a WWIVbasic Script
   return m;
 }
 
-}
+} // namespace wwiv::bbs::menus
