@@ -87,6 +87,58 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, con
   return basename;
 }
 
+class printfile_opts {
+public:
+  printfile_opts(SessionContext& sc, const std::string& raw, bool abtable, bool forcep)
+    : sess(sc), abortable(abtable), force_pause(forcep) {
+    menu_data_and_options_t t(raw);
+    data_ = t.data();
+    saved_disable_pause = sess.disable_pause();
+    if (!t.opts_empty()) {
+      for (const auto& [key, value] : t.opts()) {
+        if (key == "pause") {
+          if (value == "on") {
+            sess.disable_pause(false);
+          } else if (value == "off") {
+            sess.disable_pause(true);
+          } else if (value == "start") {
+            bout.pausescr();
+          } else if (value == "end") {
+            pause_at_end = true;
+          }
+        } else if (key == "bps") {
+          bps = to_number<int>(value);
+          sess.set_file_bps(bps);
+        }
+      }
+    }
+  }
+  ~printfile_opts() {
+    sess.disable_pause(saved_disable_pause);
+    if (pause_at_end) {
+      bout.pausescr();
+    }
+
+  }
+
+  [[nodiscard]] std::string data() const noexcept { return data_; }
+
+private:
+  std::string data_;
+  SessionContext& sess;
+
+public:
+  bool abortable{true};
+  bool force_pause{true};
+  bool pause_at_start{false};
+  bool pause_at_end{false};
+  bool saved_disable_pause{false};
+  int bps{0};
+
+
+};
+
+
 /**
  * Prints the file file_name.  Returns true if the file exists and is not
  * zero length.  Returns false if the file does not exist or is zero length
@@ -117,17 +169,6 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
   const auto start_time = system_clock::now();
   auto num_written = 0;
   for (const auto& s : v) {
-    // BPS will be either the file BPS or system bps or 0
-    // use BPS in the loops since eventually MCI codes will be able
-    // to change the BPS on the fly.
-    //const auto cps = sess().bps() / 10;
-    //num_written += bout.bputs(s);
-    //if (sess().bps() > 0) {
-    //  while (std::chrono::duration_cast<milliseconds>(system_clock::now() - start_time).count() < (num_written * 1000 / cps)) {
-    //    bout.flush();
-    //    os::sleep_for(milliseconds(100));
-    //  }
-    //}
     num_written += bout.bputs(s);
     bout.nl();
     const auto has_ansi = contains(s, ESC);
@@ -159,44 +200,13 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 }
 
 bool Output::printfile(const std::string& data, bool abortable, bool force_pause) {
-  menu_data_and_options_t t(data);
-  auto pause_at_end{false};
-  auto pause_at_start{false};
-  const auto saved_disable_pause = sess().disable_pause();
-  if (!t.opts_empty()) {
-    for (const auto& [key, value] : t.opts()) {
-      if (key == "pause") {
-        if (value == "on") {
-          sess().disable_pause(false);
-        } else if (value == "off") {
-          sess().disable_pause(true);
-        } else if (value == "start") {
-          pause_at_start = true;
-        } else if (value == "end") {
-          pause_at_end = true;
-        }
-      } else if (key == "bps") {
-        const auto bps = to_number<int>(value);
-        sess().set_file_bps(bps);
-      }
-    }
-  }
+  const printfile_opts opts(sess(), data, abortable, force_pause);
 
   const std::vector<string> dirs{sess().dirs().language_directory(), 
     sess().dirs().gfiles_directory()};
 
-  const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), t.data());
-  if (pause_at_start) {
-    pausescr();
-  }
-  const auto r = printfile_path(full_path_name, abortable, force_pause);
-
-  sess().disable_pause(saved_disable_pause);
-  if (pause_at_end) {
-    pausescr();
-  }
-
-  return r;
+  const auto full_path_name = CreateFullPathToPrint(dirs, context().u(), opts.data());
+  return printfile_path(full_path_name, abortable, force_pause);
 }
 
 /**
@@ -221,8 +231,10 @@ void Output::print_local_file(const string& filename) {
   bout.pausescr();
 }
 
-bool Output::printfile_random(const std::string& base_fn) {
+bool Output::printfile_random(const std::string& raw_base_fn) {
+  const printfile_opts opts(sess(), raw_base_fn, true, true);
   const auto& dir = sess().dirs().language_directory();
+  const auto base_fn = opts.data();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));
   if (!File::Exists(dot_zero)) {
     return false;
@@ -236,7 +248,8 @@ bool Output::printfile_random(const std::string& base_fn) {
       break;
     }
   }
-  return printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))));
+  return printfile_path(FilePath(dir, StrCat(base_fn, ".", wwiv::os::random_number(screens))),
+                        opts.abortable, opts.force_pause);
 }
 
 } // namespace wwiv::common
