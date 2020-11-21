@@ -26,33 +26,32 @@
 #include <string>
 
 namespace wwiv::bbs::menus {
-class MenuInstance;
+class Menu;
 
 enum class menu_command_action_t { none, push_menu, return_from_menu };
 
-struct MenuItemContext {
-  MenuItemContext(MenuInstance* m, std::string data)
-      : pMenuData(m), param1(std::move(data)) {}
+struct MenuContext {
+  MenuContext(Menu* m, std::string d)
+      : cur_menu(m), data(std::move(d)) {}
   // May be null if not invoked from an actual menu.
-  MenuInstance* pMenuData;
-  std::string param1;
+  Menu* cur_menu;
+  std::string data;
   menu_command_action_t menu_action{menu_command_action_t::none};
-  std::string new_menu_name;
   bool finished{false};
   bool need_reload{false};
 };
 
 struct MenuItem {
-  MenuItem(std::string desc, std::string category, std::function<void(MenuItemContext&)> f)
+  MenuItem(std::string desc, std::string category, std::function<void(MenuContext&)> f)
       : description_(std::move(desc)), category_(std::move(category)), f_(std::move(f)) {}
-  MenuItem(std::string desc, std::function<void(MenuItemContext&)> f)
+  MenuItem(std::string desc, std::function<void(MenuContext&)> f)
       : description_(std::move(desc)), f_(std::move(f)) {}
 
-  explicit MenuItem(std::function<void(MenuItemContext&)> f) : description_(""), f_(std::move(f)) {}
+  explicit MenuItem(std::function<void(MenuContext&)> f) : description_(""), f_(std::move(f)) {}
 
   std::string description_;
   std::string category_;
-  std::function<void(MenuItemContext&)> f_;
+  std::function<void(MenuContext&)> f_;
   // Set at the end of CreateMenuMap.
   std::string cmd_;
 };
@@ -63,7 +62,7 @@ std::map<std::string, MenuItem, wwiv::stl::ci_less> CreateCommandMap();
  * Executes a menu command ```script``` using the menu data for the context of
  * the MENU, or nullptr if not invoked from an actual menu.
  */
-std::optional<MenuItemContext> InterpretCommand(MenuInstance* menudata, const std::string& cmd, const std::string& data);
+std::optional<MenuContext> InterpretCommand(Menu* menudata, const std::string& cmd, const std::string& data);
 
 }  // namespace
 

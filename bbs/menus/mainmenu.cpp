@@ -72,11 +72,11 @@ MainMenu::MainMenu(const sdk::Config& config) : config_(config) {}
 
 void MainMenu::Run() {
   menu_set_ = a()->user()->menu_set();
-  auto main = std::make_unique<MenuInstance>(config_.menudir(), menu_set_, "main");
+  auto main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
   while (!main->initalized()) {
     ConfigUserMenuSet();
     // TODO(rushfan): Update menu_set_ and reload main
-    main = std::make_unique<MenuInstance>(config_.menudir(), menu_set_, "main");
+    main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
   }
   if (!check_acs(main->menu().acs)) {
     sysoplog() << "Insufficient ACS for main menu";
@@ -100,7 +100,7 @@ void MainMenu::Run() {
       stack_.pop_back();
       break;
     case menu_run_result_t::push_menu: {
-      MenuInstance m(config_.menudir(), menu_set_, s);
+      Menu m(config_.menudir(), menu_set_, s);
       if (!m.initalized()) {
         LOG(ERROR) << "Menu never loaded";
         continue;
@@ -112,7 +112,9 @@ void MainMenu::Run() {
       break;
     case menu_run_result_t::change_menu_set:
       stack_.clear();
-      return;
+      menu_set_ = a()->user()->menu_set();
+      main = std::make_unique<Menu>(config_.menudir(), menu_set_, "main");
+      break;
     case menu_run_result_t::none:
       // Do nothing.
       break;
@@ -125,7 +127,7 @@ void mainmenu() {
   m.Run();
 }
 
-MenuInstance::MenuInstance(const std::filesystem::path& menu_path, const std::string& menu_set,
+Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
                            const std::string& menu_name)
     : menu_set_(menu_set), menu_name_(menu_name), menu_(menu_path, menu_set, menu_name) {
 
@@ -149,14 +151,14 @@ MenuInstance::MenuInstance(const std::filesystem::path& menu_path, const std::st
 
 }
 
-void MenuInstance::DisplayMenu() const {
+void Menu::DisplayMenu() const {
   const auto path = common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
   if (!bout.printfile_path(path, true, false)) {
     GenerateMenu();
   }
 }
 
-std::string MenuInstance::GetCommandFromUser() const {
+std::string Menu::GetCommandFromUser() const {
   if (!a()->user()->hotkeys()) {
     return bin.input(50);
   }
@@ -186,7 +188,7 @@ static bool IsNumber(const std::string& command) {
 }
 
 std::optional<sdk::menus::menu_item_56_t>
-MenuInstance::GetMenuItemForCommand(const std::string& cmd) const {
+Menu::GetMenuItemForCommand(const std::string& cmd) const {
   const auto nums = menu().num_action;
   if (IsNumber(cmd) && nums != sdk::menus::menu_numflag_t::none) {
     if (nums == sdk::menus::menu_numflag_t::subs) {
@@ -212,7 +214,7 @@ MenuInstance::GetMenuItemForCommand(const std::string& cmd) const {
 }
 
 
-std::tuple<menu_command_action_t, std::string> MenuInstance::ExecuteAction(const sdk::menus::menu_action_56_t& a) {
+std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const sdk::menus::menu_action_56_t& a) {
   if (auto o = InterpretCommand(this, a.cmd, a.data)) {
     auto& ctx = o.value();
     if (ctx.menu_action == menu_command_action_t::return_from_menu) {
@@ -227,7 +229,7 @@ std::tuple<menu_command_action_t, std::string> MenuInstance::ExecuteAction(const
 }
 
 std::tuple<menu_command_action_t, std::string>
-MenuInstance::ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions) {
+Menu::ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions) {
   for (const auto& action : actions) {
     auto [a, d] = ExecuteAction(action);
     VLOG(1) << "Action: " << action.cmd << "; " << action.data << endl;
@@ -241,7 +243,8 @@ MenuInstance::ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_
   return std::make_tuple(menu_command_action_t::none, "");
 }
 
-std::tuple<menu_run_result_t, std::string> MenuInstance::Run() {
+std::tuple<menu_run_result_t, std::string> Menu::Run() {
+  const auto menu_set = a()->user()->menu_set();
   if (!menu_.initialized()) {
     // There was an error loading the menu.
     finished = true;
@@ -289,23 +292,27 @@ std::tuple<menu_run_result_t, std::string> MenuInstance::Run() {
       }
       VLOG(1) << "Command is: " << cmd << "; " << mi.item_key << endl;
       log_command(menu().logging_action, mi);
-      auto [a, d] = ExecuteActions(mi.actions);
-      if (a == menu_command_action_t::push_menu) {
+      auto [action, d] = ExecuteActions(mi.actions);
+      if (action == menu_command_action_t::push_menu) {
         // No push or pop allowed in exit actions
         ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::push_menu, d);
       }
-      if (a == menu_command_action_t::return_from_menu) {
+      if (action == menu_command_action_t::return_from_menu) {
         // No push or pop allowed in exit actions
         ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::return_from_menu, "");
+      }
+      if (!strings::iequals(menu_set, a()->user()->menu_set())) {
+        // We changed menu sets.
+        return std::make_tuple(menu_run_result_t::change_menu_set, "");
       }
     }
   }
 
 }
 
-void MenuInstance::GenerateMenu() const {
+void Menu::GenerateMenu() const {
   bout.Color(0);
   bout.nl();
 

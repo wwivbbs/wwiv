@@ -34,28 +34,36 @@ namespace wwiv::bbs::menus {
 // Functions used b bbs.cpp and defaults.cpp
 void mainmenu();
 
+enum class menu_run_result_t {
+  none,
+  error,
+  push_menu,
+  return_from_menu,
+  clear_stack,
+  change_menu_set
+};
 
-enum class menu_run_result_t { none, error, push_menu, return_from_menu, clear_stack, change_menu_set };
-
-class MenuInstance {
+class Menu {
 public:
-  MenuInstance(const std::filesystem::path& menu_path, const std::string& menu_set, const std::string&
-               menu_name);
-  ~MenuInstance() = default;
+  Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
+               const std::string& menu_name);
+  ~Menu() = default;
   [[nodiscard]] bool initalized() const { return menu_.initialized(); }
   // Gets the command string from the user for this menu.
   [[nodiscard]] std::string GetCommandFromUser() const;
-  [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t> GetMenuItemForCommand(const std::string& cmd) const;
+  [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t>
+  GetMenuItemForCommand(const std::string& cmd) const;
   void DisplayMenu() const;
   void GenerateMenu() const;
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
-  std::tuple<menu_command_action_t, std::string> ExecuteAction(const sdk::menus::menu_action_56_t& value);
-  std::tuple<menu_command_action_t, std::string> ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions);
+  std::tuple<menu_command_action_t, std::string>
+  ExecuteAction(const sdk::menus::menu_action_56_t& a);
+  std::tuple<menu_command_action_t, std::string>
+  ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions);
   std::tuple<menu_run_result_t, std::string> Run();
 
   bool finished{false};
-  bool reload{false};  /* true if we are going to reload the menus */
-
+  bool reload{false}; /* true if we are going to reload the menus */
 
 private:
   const std::string menu_set_;
@@ -74,10 +82,9 @@ public:
   const sdk::Config& config_;
 
 private:
-  std::vector<MenuInstance> stack_;
+  std::vector<Menu> stack_;
 };
 
-
-}  // namespace
+} // namespace wwiv::bbs::menus
 
 #endif
