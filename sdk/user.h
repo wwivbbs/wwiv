@@ -148,6 +148,13 @@ class User {
   }
 
   // USERREC.sysstatus
+  void SetStatusFlag(int nFlag, bool on) {
+    if (on) {
+      data.sysstatus |= nFlag;
+    } else {
+      data.sysstatus &= ~nFlag;
+    }
+  }
   void SetStatusFlag(int nFlag) {
     data.sysstatus |= nFlag;
   }

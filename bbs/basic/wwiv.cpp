@@ -91,7 +91,7 @@ bool RegisterNamespaceWWIV(mb_interpreter_t* basi) {
     mb_check(mb_pop_string(bas, l, &arg));
 
     auto* d = get_wwiv_script_userdata(bas);
-    const BbsMacroContext ctx(d->ctx, wwiv::bbs::evaluate_pipe_expression);
+    const BbsMacroContext ctx(d->ctx, evaluate_pipe_expression);
     const auto s = ctx.interpret_macro_char(*arg);
     mb_check(mb_attempt_close_bracket(bas, l));
     mb_push_string(bas, l, BasicStrDup(s));

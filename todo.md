@@ -6,6 +6,14 @@
 * Add tests for BbsMacroFilter (also make sure it works now)
 * Use BbsMacroFilter in wwivutil print.
 
+Expression:
+|{user.name}
+|{set pause=on}
+|{set pause=off}
+|{uppercase user.name)}
+|{pause}
+|{set lines=0}
+
 # ACS
 * See if we can pull the sl, ar, age from the expression to populate the 
   legacy subs.

@@ -89,18 +89,21 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<string>& dirs, con
 
 class printfile_opts {
 public:
-  printfile_opts(SessionContext& sc, const std::string& raw, bool abtable, bool forcep)
-    : sess(sc), abortable(abtable), force_pause(forcep) {
+  printfile_opts(SessionContext& sc, Output& out, const std::string& raw, bool abtable, bool forcep)
+    : sess(sc), out_(out), abortable(abtable), force_pause(forcep) {
     menu_data_and_options_t t(raw);
     data_ = t.data();
     saved_disable_pause = sess.disable_pause();
+    saved_user_has_pause = out.user().HasPause();
     if (!t.opts_empty()) {
       for (const auto& [key, value] : t.opts()) {
         if (key == "pause") {
           if (value == "on") {
             sess.disable_pause(false);
+            out.user().SetStatusFlag(User::pauseOnPage, true);
           } else if (value == "off") {
             sess.disable_pause(true);
+            out.user().SetStatusFlag(User::pauseOnPage, false);
           } else if (value == "start") {
             bout.pausescr();
           } else if (value == "end") {
@@ -115,10 +118,10 @@ public:
   }
   ~printfile_opts() {
     sess.disable_pause(saved_disable_pause);
+    out_.user().SetStatusFlag(User::pauseOnPage, saved_user_has_pause);
     if (pause_at_end) {
       bout.pausescr();
     }
-
   }
 
   [[nodiscard]] std::string data() const noexcept { return data_; }
@@ -126,16 +129,15 @@ public:
 private:
   std::string data_;
   SessionContext& sess;
-
+  Output& out_;
 public:
   bool abortable{true};
   bool force_pause{true};
   bool pause_at_start{false};
   bool pause_at_end{false};
   bool saved_disable_pause{false};
+  bool saved_user_has_pause{false};
   int bps{0};
-
-
 };
 
 
@@ -200,7 +202,7 @@ bool Output::printfile_path(const std::filesystem::path& file_path, bool abortab
 }
 
 bool Output::printfile(const std::string& data, bool abortable, bool force_pause) {
-  const printfile_opts opts(sess(), data, abortable, force_pause);
+  const printfile_opts opts(sess(), *this, data, abortable, force_pause);
 
   const std::vector<string> dirs{sess().dirs().language_directory(), 
     sess().dirs().gfiles_directory()};
@@ -232,7 +234,7 @@ void Output::print_local_file(const string& filename) {
 }
 
 bool Output::printfile_random(const std::string& raw_base_fn) {
-  const printfile_opts opts(sess(), raw_base_fn, true, true);
+  const printfile_opts opts(sess(), *this, raw_base_fn, true, true);
   const auto& dir = sess().dirs().language_directory();
   const auto base_fn = opts.data();
   const auto dot_zero = FilePath(dir, StrCat(base_fn, ".0"));

@@ -41,7 +41,7 @@ using namespace wwiv::strings;
 namespace wwiv::common {
 
 TempDisablePause::TempDisablePause(Output& out)
-    : wwiv::core::Transaction([&out] {
+    : Transaction([&out] {
     if (out.sess().disable_pause()) {
       out.sess().disable_pause(false);
       out.user().SetStatusFlag(User::pauseOnPage);
@@ -108,10 +108,10 @@ void Output::pausescr() {
     Left(i1);
     SystemColor(i);
 
-    auto tstart = time_t_now();
+    const auto tstart = time_t_now();
 
     clear_lines_listed();
-    int warned = 0;
+    auto warned = 0;
     char ch;
     do {
       while (!bin.bkbhit() && !sess().hangup()) {
@@ -123,7 +123,7 @@ void Output::pausescr() {
             bputch(CG);
             SystemColor(user().color(6));
             bputs(ss);
-            for (int i3 = 0; i3 < i2; i3++) {
+            for (auto i3 = 0; i3 < i2; i3++) {
               if (ss[i3] == 3 && i1 > 1) {
                 i1 -= 2;
               }
@@ -134,7 +134,7 @@ void Output::pausescr() {
         } else {
           if (ttotal > 180) {
             bputch(CG);
-            for (int i3 = 0; i3 < i1; i3++) {
+            for (auto i3 = 0; i3 < i1; i3++) {
               bputch(' ');
             }
             Left(i1);
