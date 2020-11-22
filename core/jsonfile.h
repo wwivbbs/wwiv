@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_JSONFILE_H
-#define INCLUDED_JSONFILE_H
+#ifndef INCLUDED_CORE_JSONFILE_H
+#define INCLUDED_CORE_JSONFILE_H
 
 #include "core/cereal_utils.h"
 #include "core/log.h"

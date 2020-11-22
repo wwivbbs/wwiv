@@ -15,19 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_CRC32_H__
-#define __INCLUDED_CORE_CRC32_H__
+#ifndef INCLUDED_CORE_CRC32_H
+#define INCLUDED_CORE_CRC32_H
 
 #include <filesystem>
 #include <string>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-uint32_t crc32file(const std::filesystem::path& path);
-uint32_t crc32string(const std::string& contents);
+[[nodiscard]] uint32_t crc32file(const std::filesystem::path& path);
+[[nodiscard]] uint32_t crc32string(const std::string& contents);
 
 }
-}
 
-#endif  // __INCLUDED_CORE_CRC32_H__
+#endif

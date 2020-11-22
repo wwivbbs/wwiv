@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
-#define __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
+#ifndef INCLUDED_COMMON_REMOTE_SOCKET_IO_H
+#define INCLUDED_COMMON_REMOTE_SOCKET_IO_H
 
+// ReSharper disable once CppUnusedIncludeDirective
 #include "core/net.h" // INVALID_SOCKET
 #include "common/remote_io.h"
 #include <atomic>
@@ -38,7 +39,7 @@ typedef int SOCKET;
 
 namespace wwiv::common {
 
-class RemoteSocketIO : public wwiv::common::RemoteIO {
+class RemoteSocketIO : public RemoteIO {
  public:
   static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
   static const uint8_t TELNET_OPTION_IAC = 255;
@@ -62,7 +63,6 @@ class RemoteSocketIO : public wwiv::common::RemoteIO {
   static const uint8_t TELNET_OPTION_TERMINAL_SPEED = 32;
   static const uint8_t TELNET_OPTION_LINEMODE = 34;
 
- public:
   static bool Initialize();
 
   RemoteSocketIO(unsigned int socket_handle, bool telnet);
@@ -101,5 +101,4 @@ class RemoteSocketIO : public wwiv::common::RemoteIO {
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_COMMON_REMOTE_SOCKET_IO_H__
-
+#endif

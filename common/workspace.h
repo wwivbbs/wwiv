@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_WORKSPACE_H__
-#define __INCLUDED_COMMON_WORKSPACE_H__
+#ifndef INCLUDED_COMMON_WORKSPACE_H
+#define INCLUDED_COMMON_WORKSPACE_H
 
 #include "common/context.h"
 #include <filesystem>
@@ -31,4 +31,4 @@ void LoadFileIntoWorkspace(Context& context,
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_COMMON_WORKSPACE_H__
+#endif

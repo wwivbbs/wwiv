@@ -59,7 +59,7 @@
 namespace wwiv::core {
 
 struct unknown_argument_error : public std::runtime_error {
-  unknown_argument_error(const std::string& message);
+  explicit unknown_argument_error(const std::string& message);
 };
 
 class CommandLineValue {

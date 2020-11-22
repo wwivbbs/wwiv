@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_NUMBERS_H__
-#define __INCLUDED_WWIV_CORE_NUMBERS_H__
+#ifndef INCLUDED_WWIV_CORE_NUMBERS_H
+#define INCLUDED_WWIV_CORE_NUMBERS_H
 
 #include "core/strings.h"
 #include <string>
@@ -47,4 +47,4 @@ std::string humanize(T num) {
   return wwiv::strings::StrCat(std::to_string(bytes_to_k(num)), "k");
 }
 
-#endif  // __INCLUDED_WWIV_CORE_NUMBERS_H__
+#endif

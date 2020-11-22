@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_FINDFILES_H__
-#define __INCLUDED_FINDFILES_H__
+#ifndef INCLUDED_CORE_FINDFILES_H
+#define INCLUDED_CORE_FINDFILES_H
 
 #include <filesystem>
 #include <set>
@@ -71,4 +71,4 @@ private:
 }
 
 
-#endif  // __INCLUDED_FINDFILES_H__
+#endif

@@ -30,7 +30,6 @@ struct net_networks_rec;
 
 namespace wwiv::net {
 
-
 class NetworkStat final {
 public:
   NetworkStat() = default;
@@ -82,8 +81,6 @@ private:
   std::vector<std::string> lines_;
 };
 
-
 }
 
-
-#endif // INCLUDED_NET_CORE_NETDAT_H
+#endif

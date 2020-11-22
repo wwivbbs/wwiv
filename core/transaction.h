@@ -16,25 +16,27 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_TRANSACTION_H__
-#define __INCLUDED_TRANSACTION_H__
+#ifndef INCLUDED_CORE_TRANSACTION_H
+#define INCLUDED_CORE_TRANSACTION_H
 
 #include <functional>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 class Transaction {
 public:
   Transaction(std::function<void()> commit_fn, std::function<void()> rollback_fn)
-    : commit_fn_(commit_fn), rollback_fn_(rollback_fn) {
-  }
+      : commit_fn_(commit_fn), rollback_fn_(rollback_fn) {}
 
   ~Transaction() {
     if (rollback_) {
-      if (rollback_fn_) { rollback_fn_(); }
+      if (rollback_fn_) {
+        rollback_fn_();
+      }
     } else {
-      if (commit_fn_) { commit_fn_(); }
+      if (commit_fn_) {
+        commit_fn_();
+      }
     }
   }
 
@@ -46,7 +48,6 @@ private:
   bool rollback_{false};
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace wwiv::core
 
-#endif // __INCLUDED_TRANSACTION_H__
+#endif

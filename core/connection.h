@@ -15,15 +15,14 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_CONNECTION_H__
-#define __INCLUDED_NETWORKB_CONNECTION_H__
+#ifndef INCLUDED_NETWORKB_CONNECTION_H
+#define INCLUDED_NETWORKB_CONNECTION_H
 
 #include <chrono>
 #include <cstdint>
 #include <string>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 class Connection {
 public:
@@ -37,11 +36,10 @@ public:
 
   virtual uint16_t read_uint16(std::chrono::duration<double> d) = 0;
   virtual uint8_t read_uint8(std::chrono::duration<double> d) = 0;
-  virtual bool is_open() const = 0;
+  [[nodiscard]] virtual bool is_open() const = 0;
   virtual bool close() = 0;
 };
 
-} // namespace net
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_NETWORKB_CONNECTION_H__
+#endif

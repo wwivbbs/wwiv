@@ -16,24 +16,22 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
-#define __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
+#ifndef INCLUDED_CORE_HTTP_SERVER_H
+#define INCLUDED_CORE_HTTP_SERVER_H
 
+#include "core/net.h"
+#include "core/socket_connection.h"
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "core/net.h"
-#include "core/socket_connection.h"
-
 #ifdef DELETE
 #undef DELETE
 #endif  // DELETE
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 /** List of HTTP Methods */
 enum class HttpMethod {
@@ -58,11 +56,11 @@ public:
 
   HttpResponse(const int s, std::string t)
     : status(s), text(std::move(t)) {
-  };
+  }
 
   HttpResponse(int s, std::map<std::string, std::string>& h, std::string t)
     : status(s), headers(h), text(std::move(t)) {
-  };
+  }
 
   int status;
   std::map<std::string, std::string> headers;
@@ -79,10 +77,10 @@ public:
 /**
  * Simple HTTP 1.1 Server that can handle GET requests. 
  */
-class HttpServer {
+class HttpServer final {
 public:
   explicit HttpServer(std::unique_ptr<SocketConnection> conn);
-  virtual ~HttpServer();
+  ~HttpServer();
   /** Adds a handler (handler) for method method and URL path root {root). */
   bool add(HttpMethod method, const std::string& root, HttpHandler* handler);
   /** Sends an HTTP Response and then terminates the connection. */
@@ -96,7 +94,6 @@ private:
 };
 
 
-} // namespace core
-} // namespace wwiv
+}
 
-#endif  // __INCLUDED_WWIV_CORE_HTTP_SERVER_H__
+#endif

@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_WWIVPORT_H__
-#define __INCLUDED_PLATFORM_WWIVPORT_H__
+#ifndef INCLUDED_CORE_WWIVPORT_H
+#define INCLUDED_CORE_WWIVPORT_H
 
 // WWIV's daten type is a 32-bit unsigned int. It can never be used for date
 // arithmetic since negative values don't exist.  This will allow us to
@@ -57,4 +57,4 @@ typedef int pid_t;
 #endif // __GNUC__ < 8
 #endif // __GNUC__
 
-#endif // __INCLUDED_PLATFORM_WWIVPORT_H__
+#endif

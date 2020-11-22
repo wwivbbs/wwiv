@@ -15,16 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_SOCKET_CONNECTION_H__
-#define __INCLUDED_NETWORKB_SOCKET_CONNECTION_H__
+#ifndef INCLUDED_CORE_SOCKET_CONNECTION_H
+#define INCLUDED_CORE_SOCKET_CONNECTION_H
 
+#include "core/connection.h"
+#include "core/net.h" // SOCKET
 #include <chrono>
 #include <cstdint>
 #include <memory>
 #include <string>
-
-#include "core/connection.h"
-#include "core/net.h" // SOCKET
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -32,8 +31,7 @@
 #else  // _WIN32
 #endif  // _WIN32
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 class SocketConnection;
 
@@ -61,6 +59,7 @@ public:
   std::string read_line(int max_size, std::chrono::duration<double> d);
   int send(const void* data, int size, std::chrono::duration<double> d) override;
   int send(const std::string& s, std::chrono::duration<double> d) override;
+
   /** Sends a line s and \r\n */
   int send_line(const std::string& s, std::chrono::duration<double> d);
 
@@ -77,7 +76,6 @@ private:
 };
 
 
-} // namespace net
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_NETWORKB_SOCKET_CONNECTION_H__
+#endif

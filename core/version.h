@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_VERSION_H__
-#define __INCLUDED_CORE_VERSION_H__
+#ifndef INCLUDED_CORE_VERSION_H
+#define INCLUDED_CORE_VERSION_H
 
 #include <cstdint>
 #include <string>
@@ -41,4 +41,4 @@ std::string wwiv_compile_datetime();
 
 }
 
-#endif  // __INCLUDED_CORE_VERSION_H__
+#endif

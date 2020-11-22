@@ -16,14 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__
-#define __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__
-
-#include <string>
+#ifndef INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H
+#define INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H
 
 #include "core/file.h"
-#include "local_io/keycodes.h"
 #include "local_io/local_io.h"
+#include <string>
 
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
@@ -35,11 +33,11 @@ struct coord_t {
 
 typedef void* HANDLE;
 
-class Win32ConsoleIO : public LocalIO {
+class Win32ConsoleIO final : public LocalIO {
 public:
   // Constructor/Destructor
   Win32ConsoleIO();
-  Win32ConsoleIO(const LocalIO& copy) = delete;
+  explicit Win32ConsoleIO(const LocalIO& copy) = delete;
   virtual ~Win32ConsoleIO();
 
   void GotoXY(int x, int y) override;
@@ -86,4 +84,4 @@ private:
   coord_t original_size_{};
 };
 
-#endif // __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__
+#endif

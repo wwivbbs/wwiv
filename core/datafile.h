@@ -42,9 +42,9 @@ template <typename RECORD, ssize_t SIZE = sizeof(RECORD)> class DataFile final {
 public:
   using size_type = ssize_t;
 
-  DataFile(const std::filesystem::path& full_file_name,
-           int nFileMode = File::modeDefault,
-           int nShareMode = File::shareUnknown)
+  explicit DataFile(const std::filesystem::path& full_file_name,
+                    int nFileMode = File::modeDefault,
+                    int nShareMode = File::shareUnknown)
     : file_(full_file_name) {
     file_.Open(nFileMode, nShareMode);
   }
@@ -66,7 +66,7 @@ public:
     if (max_records != 0 && max_records < num_to_read) {
       num_to_read = max_records;
     }
-    if (wwiv::stl::ssize(records) < num_to_read) {
+    if (stl::ssize(records) < num_to_read) {
       records.resize(num_to_read);
     }
     return Read(&records[0], num_to_read);

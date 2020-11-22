@@ -15,14 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__
-#define __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__
+#ifndef INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H
+#define INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H
 
 #include <cstdint>
 #include <string>
 
 namespace wwiv::common {
-
 
 constexpr int MSGED_FLAG_NONE = 0;
 constexpr int MSGED_FLAG_NO_TAGLINE = 1;
@@ -37,7 +36,7 @@ enum class FsedFlags {
 
 class MessageEditorData {
 public:
-  MessageEditorData(std::string fn);
+  explicit MessageEditorData(std::string fn);
   MessageEditorData() = delete;
   ~MessageEditorData() = default;
 
@@ -66,4 +65,4 @@ public:
 
 } // namespace wwiv::common
 
-#endif // __INCLUDED_COMMON_MESSAGE_EDITOR_DATA_H__
+#endif

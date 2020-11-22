@@ -17,19 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_CORE_SEMAPHORE_FILE_H__
-#define __INCLUDED_CORE_SEMAPHORE_FILE_H__
+#ifndef INCLUDED_CORE_SEMAPHORE_FILE_H
+#define INCLUDED_CORE_SEMAPHORE_FILE_H
 
 #include <chrono>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-struct semaphore_not_acquired final : public std::runtime_error {
-  semaphore_not_acquired(const std::filesystem::path& filename)
+struct semaphore_not_acquired final : std::runtime_error {
+  explicit semaphore_not_acquired(const std::filesystem::path& filename)
     : std::runtime_error(filename.string()) {
   }
 };
@@ -85,8 +84,7 @@ private:
   int fd_{-1};
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
 
-#endif // __INCLUDED_CORE_SEMAPHORE_FILE_H__
+#endif

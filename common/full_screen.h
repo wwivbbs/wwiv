@@ -77,4 +77,4 @@ private:
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_COMMON_FULL_SCREEN_H__
+#endif

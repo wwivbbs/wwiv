@@ -21,11 +21,8 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include <array>
 #include <iomanip>
-#include <ios>
 #include <memory>
-#include <random>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
@@ -213,13 +210,13 @@ bool Ast::reduce(std::stack<std::unique_ptr<AstNode>>& stack) {
   }
   auto right_ast = std::move(stack.top());
   stack.pop();
-  auto op_ast = std::move(stack.top());
+  const auto op_ast = std::move(stack.top());
   stack.pop();
   auto left_ast = std::move(stack.top());
   stack.pop();
   
   // Set op
-  Operator op{Operator::UNKNOWN};
+  auto op{Operator::UNKNOWN};
   if (auto* oper = dynamic_cast<OperatorNode*>(op_ast.get())) {
     op = oper->oper;
   } else {
@@ -328,7 +325,7 @@ std::unique_ptr<AstNode> Ast::parseExpression(std::vector<Token>::iterator& it,
 
 std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
                                          const std::vector<Token>::iterator& end) {
-  if ((it+1) == end) {
+  if (it+1 == end) {
     return std::make_unique<ErrorNode>(
         StrCat("Unable to parse expression starting at: ", it->lexeme));
   }
@@ -345,7 +342,7 @@ std::unique_ptr<AstNode> Ast::parseGroup(std::vector<Token>::iterator& it,
     stack.push(std::move(expr));
     if (it == end || it->type != TokenType::rparen) {
       VLOG(1) << "Missing right parens";
-      auto pos = it == end ? "end" : it->lexeme;
+      const auto pos = it == end ? "end" : it->lexeme;
       return std::make_unique<ErrorNode>(StrCat("Missing right parens at: ", pos));
     }
   }
@@ -372,7 +369,7 @@ bool Ast::need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool al
     return false;
   }
   const auto t = stack.top()->ast_type();
-  const bool nr = t == AstType::BINOP;
+  const auto nr = t == AstType::BINOP;
   if (allow_logical && t == AstType::LOGICAL_OP) {
     return true;
   }
@@ -402,7 +399,7 @@ std::unique_ptr<RootNode> Ast::parse(
 
       default: {
         // Try to reduce.
-        const bool nr = need_reduce(stack, true);
+        const auto nr = need_reduce(stack, true);
         auto expr = parseExpression(it, end);
         if (!expr) {
           return std::make_unique<RootNode>(std::make_unique<ErrorNode>(
@@ -439,7 +436,7 @@ bool Ast::parse(const Lexer& l) {
   return root_->node->ast_type() != AstType::ERROR;
 }
 
-AstNode* Ast::root() { 
+AstNode* Ast::root() const { 
   return root_->node.get();
 }
 
@@ -509,6 +506,10 @@ void Expression::accept(AstVisitor* visitor) {
     e->accept(visitor);
   }
   visitor->visit(this);
+}
+
+Variable::Variable(std::string s)
+  : Factor(FactorType::variable, -1, s) {
 }
 
 std::string RootNode::ToString() const { return fmt::format("ROOT: {}\n", node->ToString()); }

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_PRINTFILE_H__
-#define __INCLUDED_COMMON_PRINTFILE_H__
+#ifndef INCLUDED_COMMON_PRINTFILE_H
+#define INCLUDED_COMMON_PRINTFILE_H
 
 #include "common/output.h"
 #include <string>
@@ -32,4 +32,4 @@ std::filesystem::path CreateFullPathToPrint(const std::vector<std::string>& dirs
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_COMMON_PRINTFILE_H__
+#endif

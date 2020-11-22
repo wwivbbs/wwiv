@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_WWIV_CORE_STL_H
-#define INCLUDED_WWIV_CORE_STL_H
+#ifndef INCLUDED_CORE_STL_H
+#define INCLUDED_CORE_STL_H
 
 #include "core/log.h"
 #include "core/os.h"

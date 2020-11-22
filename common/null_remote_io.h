@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_COMMON_NULL_REMOTE_IO_H__
-#define __INCLUDED_COMMON_NULL_REMOTE_IO_H__
+#ifndef INCLUDED_COMMON_NULL_REMOTE_IO_H
+#define INCLUDED_COMMON_NULL_REMOTE_IO_H
 
 #include "common/remote_io.h"
 
@@ -46,5 +46,4 @@ class NullRemoteIO final : public wwiv::common::RemoteIO {
   unsigned int GetHandle() const override { return 0; }
 };
 
-#endif  // __INCLUDED_COMMON_NULL_REMOTE_IO_H__
-
+#endif

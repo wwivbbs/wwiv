@@ -18,34 +18,33 @@
 #ifndef INCLUDED_NET_CORE_NET_CMDLINE_H
 #define INCLUDED_NET_CORE_NET_CMDLINE_H
 
-#include <chrono>
-#include <memory>
-#include <string>
-
 #include "core/command_line.h"
-#include <filesystem>
 #include "sdk/config.h"
 #include "sdk/net/net.h"
 #include "sdk/net/networks.h"
+#include <chrono>
+#include <filesystem>
+#include <memory>
+#include <string>
 
 namespace wwiv::net {
 
-void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline);
+void AddStandardNetworkArgs(core::CommandLine& cmdline);
 
 /**
  * Wrapper class that augments CommandLine to specialize it for the network commands.
  */
 class NetworkCommandLine {
 public:
-  NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd);
+  NetworkCommandLine(core::CommandLine& cmdline, char net_cmd);
 
   [[nodiscard]] bool IsInitialized() const noexcept { return initialized_; }
-  [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return *config_; }
-  [[nodiscard]] const wwiv::sdk::Networks& networks() const noexcept { return *networks_; }
+  [[nodiscard]] const sdk::Config& config() const noexcept { return *config_; }
+  [[nodiscard]] const sdk::Networks& networks() const noexcept { return *networks_; }
   [[nodiscard]] std::string network_name() const noexcept { return network_name_; }
   [[nodiscard]] int network_number() const noexcept { return network_number_; }
   [[nodiscard]] const net_networks_rec& network() const noexcept { return network_; }
-  [[nodiscard]] const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
+  [[nodiscard]] const core::CommandLine& cmdline() const noexcept { return cmdline_; }
   [[nodiscard]] char net_cmd() const noexcept { return net_cmd_; }
   [[nodiscard]] std::filesystem::path semaphore_path() const noexcept;
   [[nodiscard]] std::string GetHelp() const;
@@ -59,16 +58,17 @@ public:
   [[nodiscard]] std::chrono::duration<double> semaphore_timeout() const noexcept;
 
 private:
-  std::unique_ptr<wwiv::sdk::Config> config_;
-  std::unique_ptr<wwiv::sdk::Networks> networks_;
+  std::unique_ptr<sdk::Config> config_;
+  std::unique_ptr<sdk::Networks> networks_;
   std::string network_name_;
   int network_number_{0};
   bool initialized_{true};
   net_networks_rec network_;
-  wwiv::core::CommandLine& cmdline_;
+  core::CommandLine& cmdline_;
   char net_cmd_;
 };
 
-} // namespace wwiv::net
+}
 
-#endif // INCLUDED_NET_CORE_NET_CMDLINE_H
+#endif
+

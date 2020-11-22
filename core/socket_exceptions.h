@@ -15,36 +15,34 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_SOCKET_EXCEPTIONS_H__
-#define __INCLUDED_NETWORKB_SOCKET_EXCEPTIONS_H__
+#ifndef INCLUDED_CORE_SOCKET_EXCEPTIONS_H
+#define INCLUDED_CORE_SOCKET_EXCEPTIONS_H
 
 #include <stdexcept>
 #include <string>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-struct socket_error : public std::runtime_error {
+struct socket_error : std::runtime_error {
   explicit socket_error(const std::string& message);
 };
 
-struct socket_closed_error : public socket_error {
+struct socket_closed_error : socket_error {
   explicit socket_closed_error(const std::string& message)
     : socket_error(message) {
   }
 };
 
-struct timeout_error : public socket_error {
+struct timeout_error : socket_error {
   explicit timeout_error(const std::string& message)
     : socket_error(message) {
   }
 };
 
-struct connection_error : public socket_error {
+struct connection_error : socket_error {
   connection_error(const std::string& host, int port);
 };
 
-} // namespace net
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_NETWORKB_SOCKET_EXCEPTIONS_H__
+#endif

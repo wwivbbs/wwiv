@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_NET_NETWORKF_H
-#define INCLUDED_NET_NETWORKF_H
+#ifndef INCLUDED_NETWORKF_NETWORKF_H
+#define INCLUDED_NETWORKF_NETWORKF_H
 
 #include "core/clock.h"
 #include "net_core/net_cmdline.h"
@@ -87,4 +87,4 @@ private:
 
 } // namespace wwiv::net::networkf
 
-#endif // INCLUDED_NET_NETWORKF_H
+#endif

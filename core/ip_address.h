@@ -16,12 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_WWIV_CORE_IP_ADDRESS_H
-#define INCLUDED_WWIV_CORE_IP_ADDRESS_H
+#ifndef INCLUDED_CORE_IP_ADDRESS_H
+#define INCLUDED_CORE_IP_ADDRESS_H
 
 #include <cstring>
 #include <optional>
-#include <random>
 #include <string>
 
 namespace wwiv::core {

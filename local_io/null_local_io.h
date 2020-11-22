@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_NULL_LOCAL_IO_H__
-#define __INCLUDED_BBS_NULL_LOCAL_IO_H__
+#ifndef INCLUDED_LOCAL_IO_NULL_LOCAL_IO_H
+#define INCLUDED_LOCAL_IO_NULL_LOCAL_IO_H
 #include "local_io/local_io.h"
 
 #include <string>

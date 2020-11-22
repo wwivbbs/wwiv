@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WTEXTFILE_H__
-#define __INCLUDED_WTEXTFILE_H__
+#ifndef INCLUDED_CORE_TEXTFILE_H
+#define INCLUDED_CORE_TEXTFILE_H
 
 #include "core/file.h"
 #include "core/wwivport.h"
@@ -174,4 +174,4 @@ private:
   const bool dos_mode_{false};
 };
 
-#endif // __INCLUDED_WTEXTFILE_H__
+#endif

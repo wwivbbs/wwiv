@@ -16,14 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_AST_H__
-#define __INCLUDED_WWIV_CORE_AST_H__
+#ifndef INCLUDED_WWIV_CORE_AST_H
+#define INCLUDED_WWIV_CORE_AST_H
 
 #include "core/parser/lexer.h"
 #include "core/parser/token.h"
-#include <array>
 #include <memory>
-#include <optional>
 #include <stack>
 #include <stdexcept>
 #include <string>
@@ -89,7 +87,7 @@ public:
 
 protected:
   // Constructor for subclasses of expressions to use to eval.
-  Expression(AstType t) : AstNode(t), id_(++expression_id) {}
+  explicit Expression(AstType t) : AstNode(t), id_(++expression_id) {}
 };
 
 class Factor : public Expression {
@@ -97,16 +95,21 @@ protected:
   Factor(FactorType t, int v, const std::string& s);
 
 public:
-  virtual std::string ToString() const override { return ToString(0); };
-  virtual std::string ToString(int indent) const;
-  FactorType factor_type() const noexcept { return factor_type_; }
-  std::string value() const {
+  [[nodiscard]] std::string ToString() const override { return ToString(0); };
+
+  [[nodiscard]] virtual std::string ToString(int indent) const;
+
+  [[nodiscard]] FactorType factor_type() const noexcept { return factor_type_; }
+
+  [[nodiscard]] std::string value() const {
     return factor_type_ == FactorType::int_value ? std::to_string(val) : sval;
   }
-  int int_value() const {
+
+  [[nodiscard]] int int_value() const {
     return factor_type_ == FactorType::int_value ? val : -1;
   }
-  virtual void accept(AstVisitor* visitor) override;
+
+  void accept(AstVisitor* visitor) override;
 
 private:
   FactorType factor_type_;
@@ -114,37 +117,37 @@ private:
   std::string sval;
 };
 
-class Number : public Factor {
+class Number final : public Factor {
 public:
-  Number(int v) : Factor(FactorType::int_value, v, "") {}
+  explicit Number(int v) : Factor(FactorType::int_value, v, "") {}
 };
 
-class String : public Factor {
+class String final : public Factor {
 public:
-  String(std::string s) : Factor(FactorType::string_val, -1, std::move(s)) {}
+  explicit String(std::string s) : Factor(FactorType::string_val, -1, s) {}
 };
 
-class Variable : public Factor {
+class Variable final : public Factor {
 public:
-  Variable(std::string s) : Factor(FactorType::variable, -1, std::move(s)) {}
+  explicit Variable(std::string s);
 };
 
-class RootNode : public AstNode {
+class RootNode final : public AstNode {
 public:
-  RootNode(std::unique_ptr<AstNode>&& n) : AstNode(AstType::ROOT), node(std::move(n)) {}
-  virtual std::string ToString() const override;
+  explicit RootNode(std::unique_ptr<AstNode>&& n) : AstNode(AstType::ROOT), node(std::move(n)) {}
+  [[nodiscard]] std::string ToString() const override;
 
   std::unique_ptr<AstNode> node;
 };
 
-class TautologyNode : public AstNode {
+class TautologyNode final : public AstNode {
 public:
   TautologyNode() : AstNode(AstType::TAUTOLOGY) {}
 };
 
-class ErrorNode : public AstNode {
+class ErrorNode final : public AstNode {
 public:
-  ErrorNode(const std::string& m) : AstNode(AstType::ERROR), message(m) {}
+  explicit ErrorNode(const std::string& m) : AstNode(AstType::ERROR), message(m) {}
   std::string message;
 };
 
@@ -153,28 +156,29 @@ protected:
   OperatorNode(Operator o, AstType t) : AstNode(t), oper(o) {}
 
 public:
-  virtual std::string ToString() const = 0;
+  [[nodiscard]] std::string ToString() const override = 0;
   const Operator oper;
 };
 
-class BinaryOperatorNode : public OperatorNode {
+class BinaryOperatorNode final : public OperatorNode {
 public:
-  BinaryOperatorNode(Operator o) : OperatorNode(o, AstType::BINOP) {}
-  virtual std::string ToString() const override;
+  explicit BinaryOperatorNode(Operator o) : OperatorNode(o, AstType::BINOP) {}
+  std::string ToString() const override;
 };
 
-class LogicalOperatorNode : public OperatorNode {
+class LogicalOperatorNode final : public OperatorNode {
 public:
-  LogicalOperatorNode(Operator o) : OperatorNode(o, AstType::LOGICAL_OP) {}
-  virtual std::string ToString() const override;
+  explicit LogicalOperatorNode(Operator o) : OperatorNode(o, AstType::LOGICAL_OP) {}
+  std::string ToString() const override;
 };
 
-struct parse_error : public std::runtime_error {
-  parse_error(const std::string& m);
+struct parse_error : std::runtime_error {
+  explicit parse_error(const std::string& m);
 };
 
 class AstVisitor {
 public:
+  virtual ~AstVisitor() = default;
   virtual void visit(AstNode* n) = 0;
   virtual void visit(Expression* n) = 0;
   virtual void visit(Factor* n) = 0;
@@ -185,15 +189,15 @@ public:
   Ast() = default;
   
   bool parse(const Lexer& l);
-  AstNode* root();
+  AstNode* root() const;
 
 private:
-  std::unique_ptr<AstNode> parseExpression(std::vector<Token>::iterator& begin,
-                                           const std::vector<Token>::iterator& end);
-  std::unique_ptr<AstNode> parseGroup(std::vector<Token>::iterator& begin,
-                                      const std::vector<Token>::iterator& end);
-  std::unique_ptr<RootNode> parse(std::vector<Token>::iterator& begin,
-                                  const std::vector<Token>::iterator& end);
+  [[nodiscard]] std::unique_ptr<AstNode> parseExpression(std::vector<Token>::iterator& begin,
+                                                         const std::vector<Token>::iterator& end);
+  [[nodiscard]] std::unique_ptr<AstNode> parseGroup(std::vector<Token>::iterator& begin,
+                                                    const std::vector<Token>::iterator& end);
+  [[nodiscard]] std::unique_ptr<RootNode> parse(std::vector<Token>::iterator& begin,
+                                                const std::vector<Token>::iterator& end);
   bool need_reduce(const std::stack<std::unique_ptr<AstNode>>& stack, bool allow_logical);
   bool reduce(std::stack<std::unique_ptr<AstNode>>& stack);
 

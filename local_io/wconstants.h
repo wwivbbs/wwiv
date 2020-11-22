@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WCONSTANTS_H__
-#define __INCLUDED_WCONSTANTS_H__
+#ifndef INCLUDED_LOCAL_IO_WCONSTANTS_H
+#define INCLUDED_LOCAL_IO_WCONSTANTS_H
 
 // Defines for Q/Nscan Plus
 constexpr int QSCAN = 0;
@@ -54,5 +54,4 @@ constexpr long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 constexpr long HOURS_PER_DAY = 24L;
 constexpr long SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 
-
-#endif // __INCLUDED_WCONSTANTS_H__
+#endif

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_UUID_H__
-#define __INCLUDED_WWIV_CORE_UUID_H__
+#ifndef INCLUDED_CORE_UUID_H
+#define INCLUDED_CORE_UUID_H
 
 #include <array>
 #include <optional>

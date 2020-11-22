@@ -16,18 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_FAKE_CLOCK_H__
-#define __INCLUDED_CORE_FAKE_CLOCK_H__
+#ifndef INCLUDED_CORE_FAKE_CLOCK_H
+#define INCLUDED_CORE_FAKE_CLOCK_H
 
 #include "core/clock.h"
 #include "core/datetime.h"
 
 #include <chrono>
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
-class FakeClock : public Clock {
+class FakeClock final : public Clock {
 public:
   explicit FakeClock(const DateTime& dt)
     : date_time_(dt) {
@@ -40,7 +39,6 @@ private:
   DateTime date_time_;
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif // __INCLUDED_CORE_FAKE_CLOCK_H__
+#endif

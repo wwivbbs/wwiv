@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CURATR_PROVIDER_H__
-#define __INCLUDED_CURATR_PROVIDER_H__
+#ifndef INCLUDED_LOCAL_IO_CURATR_PROVIDER_H
+#define INCLUDED_LOCAL_IO_CURATR_PROVIDER_H
 
 #include <cstdint>
 
@@ -30,6 +30,6 @@ public:
   virtual void curatr(int n) = 0;
 };
 
-} // namespace wwiv::local_io
+}
 
-#endif // __INCLUDED_CURATR_PROVIDER_H__
+#endif

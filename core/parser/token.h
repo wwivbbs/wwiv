@@ -16,12 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_TOKEN_H__
-#define __INCLUDED_WWIV_CORE_TOKEN_H__
+#ifndef INCLUDED_WWIV_CORE_TOKEN_H
+#define INCLUDED_WWIV_CORE_TOKEN_H
 
-#include <array>
-#include <optional>
-#include <random>
 #include <string>
 
 namespace wwiv::core::parser {

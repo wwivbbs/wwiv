@@ -26,39 +26,39 @@
 
 namespace wwiv::core {
 
-time_t time_t_now();
+[[nodiscard]] time_t time_t_now();
 
-daten_t daten_t_now();
+[[nodiscard]] daten_t daten_t_now();
 
 /**
  * Constructs a daten_t from a date of the format "MM/DD/YY"
  */
-daten_t date_to_daten(const std::string& datet);
+[[nodiscard]] daten_t date_to_daten(const std::string& datet);
 
-std::string daten_to_wwivnet_time(daten_t t);
-std::string time_t_to_wwivnet_time(time_t t);
-daten_t time_t_to_daten(time_t t);
+[[nodiscard]] std::string daten_to_wwivnet_time(daten_t t);
+[[nodiscard]] std::string time_t_to_wwivnet_time(time_t t);
+[[nodiscard]] daten_t time_t_to_daten(time_t t);
 
 class Clock;
 
 /** Returns the age of a person both on month m, day d in year y */
-int years_old(int m, int d, int y, wwiv::core::Clock& clock);
+[[nodiscard]] int years_old(int m, int d, int y, wwiv::core::Clock& clock);
 
 
 /**
  * Returns the current date as 'MM/DD/YY'
  */
-std::string date();
+[[nodiscard]] std::string date();
 
 /**
  * Returns the current date as 'MM/DD/YYYY'
  */
-std::string fulldate();
+[[nodiscard]] std::string fulldate();
 
 /**
  * Returns the current time as 'HH:MM:SS'
  */
-std::string times();
+[[nodiscard]] std::string times();
 
 /** Displays dd as a human readable time */
 std::string to_string(std::chrono::duration<double> dd);
@@ -157,8 +157,8 @@ private:
   int millis_;
 };
 
-DateTime parse_yyyymmdd(const std::string& date_str);
-DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str);
+[[nodiscard]] DateTime parse_yyyymmdd(const std::string& date_str);
+[[nodiscard]] DateTime parse_yyyymmdd_with_optional_hms(const std::string& date_str);
 
 } // namespace
 

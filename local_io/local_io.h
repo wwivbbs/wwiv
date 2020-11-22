@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_LOCALIO_H__
-#define __INCLUDED_PLATFORM_LOCALIO_H__
+#ifndef INCLUDED_LOCAL_IO_LOCALIO_H
+#define INCLUDED_LOCAL_IO_LOCALIO_H
 
 #include "core/file.h"
 #include "fmt/printf.h"
@@ -148,4 +148,4 @@ private:
   topdata_t topdata_{topdata_t::none};
 };
 
-#endif // __INCLUDED_PLATFORM_LOCALIO_H__
+#endif

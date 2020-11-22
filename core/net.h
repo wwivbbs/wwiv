@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_NET_H__
-#define __INCLUDED_WWIV_CORE_NET_H__
+#ifndef INCLUDED_CORE_NET_H
+#define INCLUDED_CORE_NET_H
 
 #include <atomic>
 #include <functional>
@@ -50,8 +50,7 @@ constexpr int NO_ERROR = -1;
 #define closesocket(s) ::close(s)
 #endif // _WIN32
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 bool InitializeSockets();
 
@@ -85,11 +84,11 @@ struct accepted_socket_t {
 /**
  * Handles select over a set of sockets.
  */
-class SocketSet {
+class SocketSet final {
 public:
   SocketSet();
   explicit SocketSet(int timeout_seconds);
-  virtual ~SocketSet();
+  ~SocketSet();
 
   typedef std::function<void(accepted_socket_t)> socketset_accept_fn;
 
@@ -116,7 +115,6 @@ private:
   const int timeout_seconds_;
 };
 
-} // namespace core
-} // namespace wwiv
+} // namespace
 
-#endif  // __INCLUDED_WWIV_CORE_NET_H__
+#endif

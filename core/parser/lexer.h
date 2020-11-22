@@ -16,12 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_LEXER_H__
-#define __INCLUDED_WWIV_CORE_LEXER_H__
+#ifndef INCLUDED_WWIV_CORE_LEXER_H
+#define INCLUDED_WWIV_CORE_LEXER_H
 
 #include "core/parser/token.h"
-#include <optional>
 #include <string>
+#include <vector>
 
 namespace wwiv::core::parser {
 
@@ -32,7 +32,7 @@ struct LexerState {
 
 class Lexer final {
 public:
-  Lexer(std::string source);
+  explicit Lexer(std::string source);
   void comment();
   void character();
   void string();

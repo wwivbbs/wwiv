@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_INPUT_H__
-#define __INCLUDED_COMMON_INPUT_H__
+#ifndef INCLUDED_COMMON_INPUT_H
+#define INCLUDED_COMMON_INPUT_H
 
 #include "common/iobase.h"
 #include "common/context.h"
@@ -267,5 +267,4 @@ private:
 } // namespace wwiv::common
 
 
-
-#endif // __INCLUDED_COMMON_INPUT_H__
+#endif

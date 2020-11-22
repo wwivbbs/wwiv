@@ -16,15 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_IOBASE_H__
-#define __INCLUDED_COMMON_IOBASE_H__
+#ifndef INCLUDED_COMMON_IOBASE_H
+#define INCLUDED_COMMON_IOBASE_H
 
-#include "core/strings.h"
 #include "common/context.h"
 #include "common/remote_io.h"
+#include "core/strings.h"
 #include "sdk/user.h"
 #include <functional>
-#include <set>
 
 namespace wwiv::common {
 
@@ -51,12 +50,13 @@ public:
   [[nodiscard]] RemoteIO* remoteIO() const noexcept { return comm_; }
 
   /** Sets the provider for the session context */
+  // ReSharper disable once CppMemberFunctionMayBeConst
   void set_context_provider(context_provider_t c) { context_provider_ = std::move(c); }
 
-  wwiv::sdk::User& user() const;
-  wwiv::common::SessionContext& sess();
-  wwiv::common::SessionContext& sess() const;
-  wwiv::common::Context& context();
+  sdk::User& user() const;
+  SessionContext& sess();
+  SessionContext& sess() const;
+  Context& context();
 
 protected:
   LocalIO* local_io_{nullptr};
@@ -67,4 +67,4 @@ protected:
 } // namespace wwiv::common
 
 
-#endif // __INCLUDED_COMMON_IOBASE_H__
+#endif

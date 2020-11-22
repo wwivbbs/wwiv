@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_INIFILE_H
-#define INCLUDED_INIFILE_H
+#ifndef INCLUDED_CORE_INIFILE_H
+#define INCLUDED_CORE_INIFILE_H
 
 #include <filesystem>
 #include <initializer_list>
@@ -46,12 +46,12 @@ public:
   [[nodiscard]] bool IsOpen() const noexcept { return open_; }
 
   template <typename T>
-  T value(const std::string& key, const T& default_value) const {
+  [[nodiscard]] T value(const std::string& key, const T& default_value) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
   }
 
   template <typename T>
-  T value(const std::string& key) const {
+  [[nodiscard]] T value(const std::string& key) const {
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
@@ -59,7 +59,7 @@ public:
   [[nodiscard]] std::filesystem::path path() const noexcept { return path_; }
 
 template <typename T>
-  T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) {
+  [[nodiscard]] T GetFlags(const std::vector<ini_flags_type>& flag_definitions, T flags) {
   for (const auto& fs : flag_definitions) {
     const auto key = fs.strnum;
     if (key.empty()) {

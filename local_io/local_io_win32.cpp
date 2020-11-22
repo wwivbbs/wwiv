@@ -19,17 +19,16 @@
 #include "core/wwiv_windows.h"
 
 #include "local_io/local_io_win32.h"
-
+#include "core/os.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "local_io/keycodes.h"
 #include <algorithm>
 #include <chrono>
 #include <conio.h>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "core/os.h"
-#include "core/stl.h"
-#include "core/strings.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);

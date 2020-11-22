@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
-#define __INCLUDED_LOCAL_IO_UNIX_CONSOLE_H__
+#ifndef INCLUDED_LOCAL_IO_UNIX_CONSOLE_H
+#define INCLUDED_LOCAL_IO_UNIX_CONSOLE_H
 
 #include <cstdio>
 #include <string>
@@ -28,12 +28,12 @@ class UnixConsoleIO : public LocalIO {
  public:
   // Constructor/Destructor
   UnixConsoleIO();
-  UnixConsoleIO(const LocalIO& copy) = delete	;
+  explicit UnixConsoleIO(const LocalIO& copy) = delete	;
   virtual ~UnixConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;
-  virtual int WhereX() const noexcept override;
-  virtual int WhereY() const noexcept override;
+  [[nodiscard]] int WhereX() const noexcept override;
+  [[nodiscard]] int WhereY() const noexcept override;
   virtual void LocalLf() override;
   virtual void LocalCr() override;
   virtual void LocalCls() override;

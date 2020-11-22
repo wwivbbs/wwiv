@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_QUOTE_H__
-#define __INCLUDED_COMMON_QUOTE_H__
+#ifndef INCLUDED_COMMON_QUOTE_H
+#define INCLUDED_COMMON_QUOTE_H
 
 #include "common/context.h"
 #include <string>
@@ -47,4 +47,4 @@ std::string GetQuoteInitials(const std::string& reply_to_name);
 
 } // namespace wwiv::common
 
-#endif  // __INCLUDED_COMMON_QUOTE_H__
+#endif

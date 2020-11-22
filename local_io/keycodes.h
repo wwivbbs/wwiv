@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCAL_IO_KEYCODES_H__
-#define __INCLUDED_LOCAL_IO_KEYCODES_H__
+#ifndef INCLUDED_LOCAL_IO_KEYCODES_H
+#define INCLUDED_LOCAL_IO_KEYCODES_H
 
 constexpr int SPACE = 32;
 constexpr int RETURN = 13;
@@ -253,4 +253,4 @@ constexpr int COMMAND_AX = (AX + 256);
 constexpr int COMMAND_AY = (AY + 256);
 constexpr int COMMAND_AZ = (AZ + 256);
 
-#endif // __INCLUDED_LOCAL_IO_KEYCODES_H__
+#endif

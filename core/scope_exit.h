@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_SCOPE_EXIT_H
-#define INCLUDED_SCOPE_EXIT_H
+#ifndef INCLUDED_CORE_SCOPE_EXIT_H
+#define INCLUDED_CORE_SCOPE_EXIT_H
 
 #include <functional>
 #include <utility>

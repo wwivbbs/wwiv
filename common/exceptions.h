@@ -15,21 +15,20 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_COMMON_EXCEPTIONS_H__
-#define __INCLUDED_COMMON_EXCEPTIONS_H__
+#ifndef INCLUDED_COMMON_EXCEPTIONS_H
+#define INCLUDED_COMMON_EXCEPTIONS_H
 
 #include "core/strings.h"
 #include <stdexcept>
 
 namespace wwiv::common {
 
-
 struct hangup_error : public std::runtime_error {
- hangup_error(const std::string& username)
+  explicit hangup_error(const std::string& username)
    : std::runtime_error(wwiv::strings::StrCat(username, " hung up.")) {}
 };
 
 }  // namespace wwiv::common
 
 
-#endif  // __INCLUDED_COMMON_EXCEPTIONS_H__
+#endif

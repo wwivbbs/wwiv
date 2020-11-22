@@ -19,25 +19,22 @@
 #ifndef __INCLUDED_LOCAL_IO_CURSES_H__
 #define __INCLUDED_LOCAL_IO_CURSES_H__
 
-#include <cstdint>
-#include <cstdio>
-#include <string>
-
-#include "local_io/local_io.h"
 #include "localui/colors.h"
 #include "localui/curses_win.h"
+#include "local_io/local_io.h"
+#include <string>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4100)
 #endif
 
-class CursesLocalIO : public LocalIO {
+class CursesLocalIO final : public LocalIO {
 public:
   // Constructor/Destructor
   CursesLocalIO();
   explicit CursesLocalIO(int num_lines);
-  CursesLocalIO(const LocalIO& copy) = delete;
+  explicit CursesLocalIO(const LocalIO& copy) = delete;
   virtual ~CursesLocalIO();
 
   void GotoXY(int x, int y) override;
@@ -67,14 +64,14 @@ public:
   void EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
                 const char* ss) override;
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
-  virtual void ResetColors();
+  void ResetColors();
 
   void DisableLocalIO() override;
   void ReenableLocalIO() override;
 
 private:
   void FastPuts(const std::string& text) override;
-  virtual void SetColor(int color);
+  void SetColor(int color);
   int x_{0};
   int y_{0};
 
