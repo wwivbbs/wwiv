@@ -116,7 +116,7 @@ archive_method_t zip_method(int z) {
 }
 
 template <typename Z> archive_entry_t create_archive_entry(const Z& z, const char* fn) { 
-  archive_entry_t a{};
+  archive_entry_t a;
   a.filename =  StringTrim(fn);
   a.crc32 = z.crc_32;
   a.dt = dos2time_t(z.mod_date, z.mod_time);
@@ -153,7 +153,7 @@ list_archive_zip(const std::filesystem::path& path) {
       // information, don't add it here.
       // files.emplace_back(create_archive_entry(zl, s));
       // VLOG(1) << "ZIP_LOCAL_SIG: " << s;
-      l += sizeof(zl) + zl.comp_size + zl.filename_len + zl.extra_length;
+      l += static_cast<long>(sizeof(zl)) + zl.comp_size + zl.filename_len + zl.extra_length;
     } break;
     case ZIP_CENT_START_SIG: {
       zip_central_dir zc{};
@@ -224,7 +224,7 @@ static std::optional<std::vector<archive_entry_t>> list_archive_arc(const std::f
     pos += a.len;
     ++pos;
     archive_entry_t ae{};
-    auto arc_fn = trim_to_size(a.name, 13);
+    const auto arc_fn = trim_to_size(a.name, 13);
     ae.filename = arc_fn;
     ae.crc32 = a.crc;
     ae.compress_size = a.len;
@@ -275,7 +275,7 @@ static std::optional<std::vector<archive_entry_t>> list_archive_lzh(const std::f
     if (!flag) {
       break;
     }
-    auto num_read = file.Read(&a, sizeof(lharc_header));
+    const auto num_read = file.Read(&a, sizeof(lharc_header));
     if (num_read != sizeof(lharc_header)) {
       // Early EOF
       return {files};
@@ -388,7 +388,7 @@ struct arj_header_t {
   // (5 = OS / 2, 6 = APPLE GS, 7 = ATARI ST,
   // 8 = NEXT)(9 = VAX VMS)
   uint8_t host_os;
-  // (0x01 = GARBLED_FLAG) indicates passworded file
+  // (0x01 = GARBLED_FLAG) indicates password protected file
   // (0x02 = NOT USED)
   // (0x04 = VOLUME_FLAG)  indicates continued file to next volume (file is split)
   // (0x08 = EXTFILE_FLAG) indicates file starting position field (for split files)
@@ -578,7 +578,7 @@ static std::optional<arcrec> find_arc_by_extension(const std::vector<arcrec> arc
   return std::nullopt;
 }
 
-std::optional<arcrec> find_arcrec(const std::vector<arcrec> arcs,
+std::optional<arcrec> find_arcrec(const std::vector<arcrec>& arcs,
                                   const std::filesystem::path& path) {
   const auto ext = determine_arc_extension(path);
   if (!ext) {
