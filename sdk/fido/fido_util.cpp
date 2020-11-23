@@ -282,9 +282,7 @@ string FidoToWWIVText(const string& ft, bool convert_control_codes) {
   return wt;
 }
 
-string WWIVToFidoText(const string& wt) { return WWIVToFidoText(wt, 9); }
-
-string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
+string WWIVToFidoText(const string& wt, const wwiv_to_fido_options& opts) {
   auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
@@ -329,7 +327,7 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
         // Skip all ^D0 lines other than ones we know.
         continue;
       }
-      if (code_num > max_optional_val_to_include) {
+      if (code_num > opts.max_optional_val_to_include) {
         // Skip values higher than we want.
         continue;
       }
@@ -349,9 +347,20 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
     }
 
     // Strip out WWIV color codes.
-    for (auto i = 0; i < ssize(line); i++) {
+    const auto line_size = size_int(line);
+    for (auto i = 0; i < line_size; i++) {
       if (line[i] == 0x03) {
         i++;
+        if (opts.wwiv_heart_color_codes) {
+          const auto color = at(opts.colors,line[i] - '0');
+          out << fmt::format("|{:02}", color);
+        }
+        continue;
+      }
+      if (line[i] == '|' && opts.wwiv_pipe_color_codes && (line_size - i) > 2 && line[i+1] == '#') {
+        const auto color = at(opts.colors, line[i + 2] - '0');
+        out << fmt::format("|{:02}", color);
+        i += 2;
         continue;
       }
       out << line[i];

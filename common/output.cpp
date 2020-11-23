@@ -277,11 +277,14 @@ int Output::PutsXYA(int x, int y, int color, const std::string& text) {
 void Output::do_movement(const Interpreted& r) {
   if (r.left) {
     Left(r.left);
-  } else if (r.right) {
+  }
+  if (r.right) {
     Right(r.right);
-  } else if (r.up) {
+  }
+  if (r.up) {
     Up(r.up);
-  } else if (r.down) {
+  }
+  if (r.down) {
     Down(r.down);
   }
   if (r.x != -1 && r.y != -1) {
@@ -295,6 +298,9 @@ void Output::do_movement(const Interpreted& r) {
   }
   if (r.cls) {
     cls();
+  }
+  if (r.nl) {
+    nl(r.nl);
   }
 }
 

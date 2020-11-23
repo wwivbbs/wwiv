@@ -41,6 +41,8 @@ public:
 
 protected:
   FileHelper helper_;
+  wwiv_to_fido_options opts;
+
 };
 
 TEST_F(FidoUtilTest, PacketName) {
@@ -146,67 +148,103 @@ TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
 
 TEST_F(FidoUtilTest, WWIVToFido_Basic) {
   const string wwiv = "a\r\nb\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_BlankLines) {
   const string wwiv = "a\r\n\r\n\r\nb\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r\r\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MalformedControlLine) {
   const string wwiv = "a\r\nb\r\n\004"
                 "0Foo:\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MsgId) {
   const string wwiv = "a\r\nb\r\n\004"
                 "0MSGID: 1234 5678\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r\001MSGID: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_SeenBy) {
   const string wwiv = "a\r\nb\r\n\004"
                 "0SEEN-BY: 1/1\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\rSEEN-BY: 1/1\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Reply) {
   const string wwiv = "a\r\nb\r\n\004"
                 "0REPLY: 1234 5678\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r\001REPLY: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
   const string wwiv = "a\r\n\x1a";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZs) {
   const string wwiv = "a\r\n\x1a\x1a\x1a\x1a";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlA) {
   const string wwiv = "a\r\nb\001\r\n";
-  const auto  fido = WWIVToFidoText(wwiv);
+  const auto  fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlB) {
   const string wwiv = "a\r\n\002b\r\n";
-  const auto fido = WWIVToFidoText(wwiv);
+  const auto fido = WWIVToFidoText(wwiv, opts);
   EXPECT_EQ("a\rb\r", fido);
 }
+
+TEST_F(FidoUtilTest, WWIVToFido_RemovesHeart) {
+  const string wwiv = "a\r\n\003""1b\r\n";
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\rb\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_ConvertsHeart) {
+  const string wwiv = "a\r\n\003""1b\r\n";
+  opts.wwiv_heart_color_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\r|11b\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_ConvertsHeartOnly) {
+  const string wwiv = "\003""1";
+  opts.wwiv_heart_color_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("|11\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_ConvertsUserColorPipe) {
+  const string wwiv = "a\r\n|#1b\r\n";
+  opts.wwiv_pipe_color_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\r|11b\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_DoesntWhenNotSelected_ConvertsUserColorPipe) {
+  const string wwiv = "a\r\n|#1b\r\n";
+  opts.wwiv_pipe_color_codes = false;
+  opts.wwiv_heart_color_codes = true;
+  const auto fido = WWIVToFidoText(wwiv, opts);
+  EXPECT_EQ("a\r|#1b\r", fido);
+}
+
 
 TEST_F(FidoUtilTest, MkTime) {
   auto now = time(nullptr);

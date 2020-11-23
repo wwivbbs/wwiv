@@ -49,6 +49,7 @@ private:
   bool create_ftn_bundle(const sdk::fido::FidoAddress& route_to, 
                          const std::string& fido_packet_name, std::string& out_bundle_name);
 
+  // ReSharper disable once CppMemberFunctionMayBeConst
   bool create_ftn_packet(const sdk::fido::FidoAddress& dest, const sdk::fido::FidoAddress& route_to,
                          const sdk::net::Packet& wwivnet_packet,
                          std::string& fido_packet_name);
@@ -83,6 +84,7 @@ private:
   NetDat netdat_;
 
   std::unique_ptr<sdk::FtnMessageDupe> dupe_;
+  std::vector<int> colors_{7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
 };
 
 } // namespace wwiv::net::networkf

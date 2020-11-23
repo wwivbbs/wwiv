@@ -108,7 +108,8 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
     if (iswspace(c)) {
       ++it;
       continue;
-    } else if (c == '"') {
+    }
+    if (c == '"') {
       if (auto o = parse_string(it, end)) {
         r.emplace_back(o.value());
       }
@@ -122,7 +123,7 @@ static std::vector<pipe_expr_token_t> tokenize(std::string::const_iterator& it, 
       }
     } else {
       ++it;
-    } 
+    }
   }
 
   return r;

@@ -598,10 +598,10 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 static bool CreateNewUserRecord() {
   a()->sess().ResetQScanPointers(*a()->config());
 
-  auto u = a()->user();
+  auto* u = a()->user();
   a()->reset_effective_sl();
 
-  bool ok =
+  const auto ok =
       User::CreateNewUserRecord(u, a()->config()->newuser_sl(), a()->config()->newuser_dsl(),
                                 a()->config()->newuser_restrict(), a()->config()->newuser_gold(),
                                 a()->newuser_colors, a()->newuser_bwcolors);

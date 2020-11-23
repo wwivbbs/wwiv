@@ -66,9 +66,24 @@ FidoAddress FindRouteToAddress(const FidoAddress& a, const FidoCallout& callout)
 /** Splits a message to find a specific line. This will strip blank lines. */
 std::vector<std::string> split_message(const std::string& string);
 
+/** Converts Ftn style text to WWIV style */
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = true);
-std::string WWIVToFidoText(const std::string& wt);
-std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include);
+
+struct wwiv_to_fido_options {
+  // Num of optional val lines to included (0-9)
+  int max_optional_val_to_include{9};
+  // Should heart codes be converted
+  bool wwiv_heart_color_codes{false};
+  // Should wwiv color pipe codes be made standard.
+  bool wwiv_pipe_color_codes{false};
+  // user colors to use.
+  std::vector<int> colors{7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
+};
+
+/**
+ * Converts WWIV style text to FTN style, line endings, control lines, etc
+ */
+std::string WWIVToFidoText(const std::string& wt, const wwiv_to_fido_options& opts);
 
 /**
  * Gets the FidoAddress from a single line of text of the form:

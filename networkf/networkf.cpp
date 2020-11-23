@@ -36,14 +36,14 @@
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/fido/fido_directories.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
-#include "sdk/files/arc.h"
 #include "sdk/filenames.h"
+#include "sdk/files/arc.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk/net/packets.h"
 #include "sdk/net/subscribers.h"
-#include "sdk/fido/fido_directories.h"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -96,7 +96,8 @@ static arcrec find_arc(const vector<arcrec>& arcs, const std::string& extension)
   return arcs.front();
 }
 
-static std::string arc_stuff_in(const std::string& command_line, const std::string& a1, const std::string& a2) {
+static std::string arc_stuff_in(const std::string& command_line, const std::string& a1,
+                                const std::string& a2) {
   std::ostringstream os;
   for (auto it = command_line.begin(); it != command_line.end(); it++) {
     if (*it == '%') {
@@ -140,14 +141,23 @@ static std::string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-
 NetworkF::NetworkF(const wwiv::net::NetworkCommandLine& net_cmdline,
                    const wwiv::sdk::BbsListNet& bbslist, wwiv::core::Clock& clock)
     : net_cmdline_(net_cmdline), bbslist_(bbslist), clock_(clock), net_(net_cmdline_.network()),
       fido_callout_(net_cmdline_.config(), net_),
       netdat_(net_cmdline_.config().gfilesdir(), net_cmdline_.config().logdir(), net_,
-              net_cmdline_.net_cmd(), clock_) {}
-
+              net_cmdline_.net_cmd(), clock_) {
+  const IniFile ini(FilePath(net_cmdline_.config().root_directory(), WWIV_INI), {"WWIV"});
+  if (ini.IsOpen()) {
+    // pull out new user colors
+    for (auto i = 0; i < 10; i++) {
+      const auto num = ini.value<int>(fmt::format("NUCOLOR[{}]", i));
+      if (num != 0) {
+        colors_[i] = num;
+      }
+    }
+  }
+}
 
 NetworkF::~NetworkF() = default;
 
@@ -202,7 +212,8 @@ bool NetworkF::import_packet_file(const std::string& dir, const std::string& nam
 
     if (dupe().is_dupe(msg)) {
       const auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
-      LOG(ERROR) << "Skipping duplicate FTN message: '" << msg.vh.subject << "' msgid: (" << msgid << ")";
+      LOG(ERROR) << "Skipping duplicate FTN message: '" << msg.vh.subject << "' msgid: (" << msgid
+                 << ")";
       LOG(ERROR) << "Text: " << msg.vh.text;
       // TODO(rushfan): move this or write out saved copy?
       continue;
@@ -322,7 +333,7 @@ bool NetworkF::import_bundle_file(const std::string& dir, const std::string& nam
     LOG(ERROR) << "No archivers defined!";
     return false;
   }
-  
+
   const auto path = FilePath(dir, name);
   const auto& arc =
       wwiv::sdk::files::find_arcrec(arcs, path, net_.fido.packet_config.compression_type);
@@ -402,8 +413,7 @@ static std::string rename_fido_packet(const std::string& dir, const std::string&
   return origname;
 }
 
-bool NetworkF::create_ftn_bundle(const FidoAddress& route_to,
-                                 const std::string& fido_packet_name,
+bool NetworkF::create_ftn_bundle(const FidoAddress& route_to, const std::string& fido_packet_name,
                                  std::string& out_bundle_name) {
   // were in the temp dir now.
   auto arcs = read_arcs(net_cmdline_.config().datadir());
@@ -500,7 +510,7 @@ static std::string get_control_line(const C& c, I& iter, std::set<char> stop, st
 template <typename C, typename I>
 static std::string get_fido_addr(const C& c, I& iter, std::set<char> stop, std::size_t max) {
   static const std::string kFidoAddr = "\x04"
-                                  "0FidoAddr: ";
+                                       "0FidoAddr: ";
   std::string address;
   do {
     address = get_control_line(c, iter, stop, max);
@@ -592,8 +602,7 @@ static std::string remove_fido_addr(string to_user) {
 }
 
 bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& route_to,
-                                 const Packet& wwivnet_packet,
-                                 std::string& fido_packet_name) {
+                                 const Packet& wwivnet_packet, std::string& fido_packet_name) {
 
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
 
@@ -650,12 +659,10 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
       get_message_field(raw_text, iter, {'\r', '\n'}, 80);
     }
 
-    // Clean up sender name.
-    CleanupWWIVName(sender_name);
-    auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
-
     fido_variable_length_header_t vh{};
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
+    // Clean up sender name.
+    CleanupWWIVName(sender_name);
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
@@ -701,6 +708,11 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     // TODO(rushfan): We should rip through the bbs_text here.
     // and add in any special kludges like ^AREPLY here.
     // Add the text from the message (as entered from the BBS).
+    wwiv_to_fido_options opts{};
+    opts.colors = colors_;
+    opts.wwiv_heart_color_codes = true;
+    opts.wwiv_pipe_color_codes = true;
+    auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()), opts);
     text << bbs_text;
 
     // Now we need tear + origin lines
@@ -760,8 +772,7 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
 }
 
 bool NetworkF::create_ftn_packet_and_bundle(const FidoAddress& dest, const FidoAddress& route_to,
-                                            const Packet& p,
-                                            std::string& bundlename) {
+                                            const Packet& p, std::string& bundlename) {
   LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
   const FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
   std::string fido_packet_name;
@@ -791,7 +802,8 @@ static std::string NextNetmailFilePath(const std::string& dir) {
 }
 
 static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest,
-                                       const std::string& netmail_filename, const std::string& bundle_path,
+                                       const std::string& netmail_filename,
+                                       const std::string& bundle_path,
                                        const fido_packet_config_t& packet_config) {
   File netmail(netmail_filename);
   if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive |
@@ -883,7 +895,8 @@ bool NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
       LOG(ERROR) << "Unable to open FLO file: " << flo_file;
       return false;
     }
-    const auto num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename).string()));
+    const auto num_written =
+        flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename).string()));
     return num_written > 0;
 
   } catch (const semaphore_not_acquired& e) {
@@ -894,8 +907,7 @@ bool NetworkF::CreateFloFile(const wwiv::sdk::fido::FidoAddress& dest,
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-bool NetworkF::CreateNetmailAttach(const FidoAddress& dest,
-                                   const std::string& bundlename,
+bool NetworkF::CreateNetmailAttach(const FidoAddress& dest, const std::string& bundlename,
                                    const fido_packet_config_t& packet_config) {
   const FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
   const auto netmail_filepath = NextNetmailFilePath(dirs.netmail_dir());
@@ -904,7 +916,7 @@ bool NetworkF::CreateNetmailAttach(const FidoAddress& dest,
     LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << dirs.netmail_dir() << "'";
     return false;
   }
-  const auto bundlepath =FilePath(dirs.outbound_dir(), bundlename);
+  const auto bundlepath = FilePath(dirs.outbound_dir(), bundlename);
   if (!CreateFidoNetAttachNetMail(FidoAddress(net_.fido.fido_address), dest, netmail_filepath,
                                   bundlepath.string(), packet_config)) {
     LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
@@ -914,8 +926,7 @@ bool NetworkF::CreateNetmailAttach(const FidoAddress& dest,
   return true;
 }
 
-bool NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest,
-                                            const std::string& bundlename,
+bool NetworkF::CreateNetmailAttachOrFloFile(const FidoAddress& dest, const std::string& bundlename,
                                             const fido_packet_config_t& packet_config) {
   if (net_.fido.mailer_type == fido_mailer_t::attach) {
     return CreateNetmailAttach(dest, bundlename, packet_config);
@@ -1029,15 +1040,13 @@ bool NetworkF::Run() {
   FtnDirectories dirs(net_cmdline_.config().root_directory(), net_);
   if (cmd == "import") {
     std::unique_ptr<FtnMessageDupe> dupe;
-    const std::vector<std::string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+    const std::vector<std::string> extensions{"su?", "mo?", "tu?", "we?",
+                                              "th?", "fr?", "sa?", "pkt"};
     for (const auto& ext : extensions) {
-      num_packets_processed +=
-          import_bundles(dirs.inbound_dir(),
-                         StrCat("*.", ext));
+      num_packets_processed += import_bundles(dirs.inbound_dir(), StrCat("*.", ext));
 #ifndef _WIN32
       num_packets_processed +=
-          import_bundles(dirs.inbound_dir(),
-			 StrCat("*.", ToStringUpperCase(ext)));
+          import_bundles(dirs.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
 #endif
     }
   } else if (cmd == "export") {
@@ -1083,7 +1092,7 @@ bool NetworkF::Run() {
         }
       } else {
         LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
-            << "'; writing to dead.net";
+                   << "'; writing to dead.net";
         // Let's write it to dead.net_
         if (!write_wwivnet_packet(DEAD_NET, net_, p)) {
           LOG(ERROR) << "Error writing to dead.net";
@@ -1099,7 +1108,7 @@ bool NetworkF::Run() {
   return num_packets_processed > 0;
 }
 
-} // namespace
+} // namespace wwiv::net::networkf
 
 using namespace wwiv::net::networkf;
 
@@ -1144,14 +1153,14 @@ int main(int argc, char** argv) {
       return 2;
     }
 
-    auto semaphore = SemaphoreFile::try_acquire(net_cmdline_.semaphore_path(),
-                                                net_cmdline_.semaphore_timeout());
+    auto semaphore =
+        SemaphoreFile::try_acquire(net_cmdline_.semaphore_path(), net_cmdline_.semaphore_timeout());
     SystemClock clock{};
     NetworkF nf(net_cmdline_, b, clock);
     return nf.Run() ? 0 : 2;
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << "ERROR: [network" << net_cmdline_.net_cmd()
-        << "]: Unable to Acquire Network Semaphore: " << e.what();
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [networkf]: " << e.what();
   }

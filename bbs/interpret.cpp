@@ -238,6 +238,11 @@ wwiv::common::Interpreted BbsMacroContext::interpret_string(const std::string& s
           }
           return res;
         }
+        case 'N': { // NL
+          const auto ct = data.empty() ? 1 : to_number<int>(data);
+          res.nl = ct;
+          return res;
+        }
         default:
           return s;
       }

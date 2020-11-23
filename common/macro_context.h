@@ -40,6 +40,7 @@ struct Interpreted {
   bool cls{false};
   bool clreol{false};
   bool clrbol{false};
+  int nl{0};
 };
 
 /**
