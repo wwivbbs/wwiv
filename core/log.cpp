@@ -43,7 +43,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::core {
 
-static constexpr char log_date_format[] = "%F %T";
+static constexpr char log_date_format[] = "%Y-%m-%d %H:%M:%S";
 
 static std::shared_ptr<Appender> console_appender;
 static std::shared_ptr<Appender> logfile_appender;
@@ -234,7 +234,8 @@ static std::string DefaultTimestamp() {
   const auto duration = nowc.time_since_epoch();
   const auto millis = static_cast<int>(
     std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
-  return fmt::sprintf("%s,%03d ", dt.to_string(log_date_format), millis);
+  const auto ymd_hms = dt.to_string(log_date_format);
+  return fmt::format("{},{:03} ", ymd_hms, millis);
 }
 
 

@@ -57,7 +57,7 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
 
   CHECK(curses_out->window()->IsGUI()) << "ListBox needs a GUI.";
 
-  window_.reset(new CursesWindow(curses_out->window(), curses_out->color_scheme(),
+  window_.reset(new CursesWindow(curses_out->window(), parent->color_scheme(),
                                  window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
@@ -75,7 +75,7 @@ ListBox::ListBox(UIWindow* parent, const string& title,
               std::min<int>(
                   std::max<int>(size_int(items), MINIMUM_LISTBOX_HEIGHT),
                   static_cast<int>(floor(curses_out->window()->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
-              items, curses_out->color_scheme()) {}
+              items, parent->color_scheme()) {}
 
 void ListBox::DrawAllItems() {
   for (auto y = 0; y < height_; y++) {

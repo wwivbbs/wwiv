@@ -63,6 +63,7 @@ public:
 
   [[nodiscard]] virtual UIWindow* parent() const { return parent_; }
   [[nodiscard]] SchemeId current_scheme_id() const { return current_scheme_id_; }
+  [[nodiscard]] ColorScheme* color_scheme() const { return color_scheme_; }
 
 protected:
   void set_current_scheme_id(SchemeId id) { current_scheme_id_ = id; }
