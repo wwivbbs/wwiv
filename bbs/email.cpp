@@ -473,10 +473,18 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
             const auto& e = nl.entry(addr);
             destination_bbs_name = e.name_;
           } else {
-            bout << "Address " << addr << "does not existing in the nodelist." << wwiv::endl;
+            bout.format("|#6Address '|#2{}|#6' does not existing in the nodelist.\r\n", addr);
+            bout.nl(2);
+            bout.bputs("|#5Are you sure you want to send to this address? ");
+            if (!bin.noyes()) {
+              return;
+            }
           }
         } else {
           bout << "Unable to validate FTN address against nodelist." << wwiv::endl;
+          sysoplog() << "WARNING: Unable to validate FTN address against nodelist.";
+          sysoplog() << "Nodelist base: " << net.fido.nodelist_base
+                     << " does not exist in netdir: " << net.dir;
         }
       } catch (const fido::bad_fidonet_address& e) {
         bout << "Bad FTN Address: " << destination << "; error: " << e.what();
