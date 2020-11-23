@@ -238,7 +238,7 @@ public:
 
 private:
   // Used by input_xxx
-  void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert,
+  void Input1(char* out_text, const std::string& orig_text, int max_length, bool insert,
               InputMode mode);
   // Used by input_xxx
   std::string Input1(const std::string& orig_text, int max_length, bool bInsert, InputMode mode);

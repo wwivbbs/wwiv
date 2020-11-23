@@ -282,9 +282,9 @@ File::size_type File::Write(const void* buffer, File::size_type size) {
 }
 
 File::size_type File::Seek(size_type offset, Whence whence) {
+  CHECK(File::IsFileHandleValid(handle_));
   CHECK(whence == File::Whence::begin || whence == File::Whence::current ||
       whence == File::Whence::end);
-  CHECK(File::IsFileHandleValid(handle_));
 
   return static_cast<size_type>(lseek(handle_, static_cast<long>(offset), static_cast<int>(whence)));
 }

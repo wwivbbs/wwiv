@@ -347,8 +347,10 @@ std::string::size_type size(const char* s) {
   return static_cast<std::string::size_type>(strlen(s));
 }
 
-// String length without colors as an int
+// String length without colors as an int. size_int for compatibility
+// with stl::size_int
 int ssize(const char* s) { return static_cast<int>(size(s)); }
+int size_int(const char* s) { return static_cast<int>(size(s)); }
 
 // String length without colors as an int
 int ssize(const unsigned char* s) {
@@ -360,7 +362,7 @@ int ssize(const std::string& s) {
 }
 
 std::string trim_to_size(const std::string& orig, int max_size) {
-  string s(orig);
+  auto s(orig);
   while (ssize(s) > max_size) {
     s.pop_back();
   }
@@ -391,7 +393,7 @@ bool wwiv::strings::contains(const std::string& haystack, const std::string_view
 }
 
 char* stripcolors(const char* str) {
-  CHECK(str != nullptr);
+  CHECK(str);
   static char s[255];
   const auto result = stripcolors(string(str));
   strcpy(s, result.c_str());
@@ -527,7 +529,7 @@ char* strcasestr_i(const char* haystack, const char* needle);
 
 char* strcasestr(const char* haystack, const char* needle) {
   if (strlen(needle) == 0) {
-    // unlike strstr() and wcsstr() passing an emtpy string results in NULL being returned.
+    // unlike strstr() and wcsstr() passing an empty string results in NULL being returned.
     // See http://msdn.microsoft.com/en-us/library/windows/desktop/bb773439%28v=vs.85%29.aspx
     return const_cast<char*>(haystack);
   }

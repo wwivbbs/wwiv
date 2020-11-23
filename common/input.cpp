@@ -37,7 +37,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // static global bin.
-wwiv::common::Input bin;
+Input bin;
 
 namespace wwiv::common {
 
@@ -76,7 +76,7 @@ static int max_length_for_number(int64_t n) {
 }
 
 static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
-  bool ok = (result >= minv && result <= maxv);
+  const auto ok = (result >= minv && result <= maxv);
   if (ok != last_ok) {
     bout.RestorePosition();
     bout.SavePosition();
@@ -87,7 +87,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
   return ok;
 }
 
-// TODO(rushfan): HACK - Fix this and put back language suppor
+// TODO(rushfan): HACK - Fix this and put back language support
 static std::string YesNoString(bool bYesNo) { return bYesNo ? "Yes" : "No"; }
 
 static void print_yn(bool yes) {
@@ -142,7 +142,6 @@ char Input::ynq() {
   while (!sess().hangup() && (ch = to_upper_case(bin.getkey())) != YesNoString(true)[0] &&
          ch != YesNoString(false)[0] && ch != *str_quit && ch != RETURN) {
     // NOP
-    ;
   }
   if (ch == YesNoString(true)[0]) {
     ch = 'Y';
@@ -165,18 +164,18 @@ char Input::ynq() {
 //           formatted input line
 //
 // Parameters:  *out_text   = variable to save the input to
-//              *orgiText     = line to edit.  appears in edit box
+//              *orig_text     = line to edit.  appears in edit box
 //              max_length      = max characters allowed
-//              bInsert     = insert mode false = off, true = on
+//              insert     = insert mode false = off, true = on
 //              mode      = formatting mode.
 //
 // Returns: length of string
 //==================================================================
-void Input::Input1(char* out_text, const string& orig_text, int max_length, bool bInsert,
+void Input::Input1(char* out_text, const string& orig_text, int max_length, bool insert,
                    InputMode mode) {
   char szTemp[255];
-  static const char dash = '-';
-  static const char slash = '/';
+  static const auto dash = '-';
+  static const auto slash = '/';
 
   if (!okansi(user())) {
     input1(szTemp, max_length, mode, true, false);
@@ -189,19 +188,19 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
     bus().invoke<UpdateTopScreenEvent>();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
-    bInsert = false;
+    insert = false;
   }
-  auto saved_topline = localIO()->GetTopLine();
+  const auto saved_topline = localIO()->GetTopLine();
   localIO()->SetTopLine(0);
-  int pos = 0;
-  int nLength = 0;
+  auto pos = 0;
+  auto nLength = 0;
   szTemp[0] = '\0';
 
   max_length = std::min<int>(max_length, 78);
   bout.Color(4);
 
   bout.SavePosition();
-  for (int i = 0; i < max_length; i++) {
+  for (auto i = 0; i < max_length; i++) {
     bout.bputch(input_background_char);
   }
   bout.RestorePosition();
@@ -214,13 +213,13 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
     pos = nLength = wwiv::strings::ssize(szTemp);
   }
 
-  bool done = false;
+  auto done = false;
   do {
     bout.RestorePosition();
     bout.SavePosition();
     bout.Right(pos);
 
-    int c = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
+    auto c = bin.bgetch_event(wwiv::common::Input::numlock_status_t::NUMBERS);
     last_input_char = static_cast<char>(c & 0xff);
     switch (c) {
     case CX:  // Control-X
@@ -266,7 +265,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
       break;
     case COMMAND_INSERT: // Insert
       if (mode == InputMode::UPPER) {
-        bInsert = !bInsert;
+        insert = !insert;
       }
       break;
     case COMMAND_DELETE: // Delete
@@ -325,7 +324,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
     // All others < 256
     default:
       if (c < 255 && c > 31 &&
-          ((bInsert && nLength < max_length) || (!bInsert && pos < max_length))) {
+          ((insert && nLength < max_length) || (!insert && pos < max_length))) {
         if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::CMDLINE &&
             mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
@@ -374,14 +373,14 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
         }
         if (mode == InputMode::DATE && c != slash || mode == InputMode::PHONE && c != dash ||
             mode != InputMode::DATE && mode != InputMode::PHONE && c != 0) {
-          if (!bInsert || pos == nLength) {
-            bout.bputch(static_cast<unsigned char>(c));
+          if (!insert || pos == nLength) {
+            bout.bputch(static_cast<char>(c));
             szTemp[pos++] = static_cast<char>(c);
             if (pos > nLength) {
               nLength++;
             }
           } else {
-            bout.bputch(static_cast<unsigned char>(c));
+            bout.bputch(static_cast<char>(c));
             for (auto i = nLength++; i >= pos; i--) {
               szTemp[i + 1] = szTemp[i];
             }
@@ -396,7 +395,7 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
       break;
     }
     szTemp[nLength] = '\0';
-    wwiv::core::bus().invoke<CheckForHangupEvent>();
+    bus().invoke<CheckForHangupEvent>();
   } while (!done && !sess().hangup());
   if (nLength) {
     strcpy(out_text, szTemp);
@@ -433,8 +432,8 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
     bout.mpl(max_length);
   }
 
-  int curpos = 0, in_ansi = 0;
-  bool done = false;
+  auto curpos = 0, in_ansi = 0;
+  auto done = false;
 
   while (!done && !sess().hangup()) {
     unsigned char chCurrent = bin.getkey();
@@ -467,7 +466,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::PROPER:
           chCurrent = upcase(chCurrent);
           if (curpos) {
-            bool found = valid_letters.find(out_text[curpos - 1]) != std::string::npos;
+            const auto found = valid_letters.find(out_text[curpos - 1]) != std::string::npos;
             if (found || out_text[curpos - 1] == 39) {
               if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
                 chCurrent = locase(chCurrent);
@@ -484,7 +483,7 @@ void Input::input1(char* out_text, int max_length, InputMode lc, bool crend, boo
             chCurrent = 0;
           } else if (lc != InputMode::CMDLINE) {
             // Lowercase filenames on all platforms, not just Win32.
-            // Leave commandlines alone.
+            // Leave command lines alone.
             chCurrent = to_lower_case(chCurrent);
           }
         } break;

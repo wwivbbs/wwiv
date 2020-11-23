@@ -243,8 +243,8 @@ LoggerConfig::LoggerConfig()
   : timestamp_fn_(DefaultTimestamp) {
 }
 
-LoggerConfig::LoggerConfig(logdir_fn l)
-  : LoggerConfig(std::move(l), DefaultTimestamp) {
+LoggerConfig::LoggerConfig(logdir_fn f)
+  : LoggerConfig(std::move(f), DefaultTimestamp) {
 }
 
 LoggerConfig::LoggerConfig(logdir_fn l, timestamp_fn t)

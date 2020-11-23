@@ -218,7 +218,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   } // namespace wwiv
 
   // Function Prototypes
-  [[nodiscard]] char* stripcolors(const char* pszOrig);
+  [[nodiscard]] char* stripcolors(const char* str);
   [[nodiscard]] std::string stripcolors(const std::string& orig);
   [[nodiscard]] unsigned char upcase(unsigned char ch);
   [[nodiscard]] unsigned char locase(unsigned char ch);

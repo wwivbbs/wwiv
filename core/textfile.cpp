@@ -177,24 +177,31 @@ static void StripLineEnd(char* str) noexcept {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool TextFile::ReadLine(string* out) noexcept {
-  if (file_ == nullptr) {
-    out->clear();
+  try {
+    if (file_ == nullptr) {
+      out->clear();
+      return false;
+    }
+    char s[4096];
+    auto* p = fgets(s, sizeof(s), file_);
+    if (p == nullptr) {
+      out->clear();
+      return false;
+    }
+    // Strip off trailing \r\n
+    StripLineEnd(p);
+    out->assign(p);
+    return true;
+  } catch (...) {
     return false;
   }
-  char s[4096];
-  char* p = fgets(s, sizeof(s), file_);
-  if (p == nullptr) {
-    out->clear();
-    return false;
-  }
-  // Strip off trailing \r\n
-  StripLineEnd(p);
-  out->assign(p);
-  return true;
 }
 
 File::size_type TextFile::position() const noexcept {
   DCHECK(file_);
+  if (!file_) {
+    return 0;
+  }
   return ftell(file_);
 }
 

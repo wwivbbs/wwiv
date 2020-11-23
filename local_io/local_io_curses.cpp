@@ -12,7 +12,7 @@
 /*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
 /*    software  distributed  under  the  License  is  distributed on an   */
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
-/*    either  express  or impliedf.  See  the  License for  the specific   */
+/*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
@@ -20,22 +20,21 @@
 #include "core/wwiv_windows.h"
 
 #include "local_io/local_io_curses.h"
-
-#include <algorithm>
-#include <cstdarg>
-#include <cstdio>
-#include <string>
-#ifdef __unix__
-#include <unistd.h>
-#endif
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "local_io/keycodes.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "localui/wwiv_curses.h"
+#include "local_io/keycodes.h"
+#include <algorithm>
+#include <cstdio>
+#include <string>
+
+#ifdef __unix__
+#include <unistd.h>
+#endif
 
 using std::string;
 using namespace wwiv::strings;
@@ -67,6 +66,7 @@ CursesLocalIO::~CursesLocalIO() {
   CursesLocalIO::SetCursor(LocalIO::cursorNormal);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void CursesLocalIO::SetColor(int original_color) {
   const auto bold = (original_color & 8) != 0;
   auto color = original_color;
@@ -101,7 +101,7 @@ void CursesLocalIO::Lf() {
 }
 
 void CursesLocalIO::Cr() {
-  auto y = WhereY();
+  const auto y = WhereY();
   window_->GotoXY(0, y);
 }
 
@@ -172,8 +172,8 @@ void CursesLocalIO::savescreen() {
   const auto width = window_->GetMaxX();
   const auto height = window_->GetMaxY();
 
-  for (int line = 0; line < height; line++) {
-    auto buf = new chtype[width];
+  for (auto line = 0; line < height; line++) {
+    auto* buf = new chtype[width];
     auto* w = std::any_cast<WINDOW*>(window_->window());
     mvwinchnstr(w, line, 0, buf, width);
     saved_screen.push_back(buf);
@@ -184,16 +184,11 @@ void CursesLocalIO::restorescreen() {
   const auto width = window_->GetMaxX();
   auto y = 0;
   auto* w = std::any_cast<WINDOW*>(window_->window());
-  for (auto line : saved_screen) {
+  for (auto* line : saved_screen) {
     mvwaddchnstr(w, y++, 0, line, width);
   }
   window_->Refresh();
 }
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4125 4100)
-#endif
 
 static int last_key_pressed = ERR;
 
@@ -310,14 +305,14 @@ void CursesLocalIO::ClrEol() {
 
 void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
   // TODO(rushfan): Optimize me.
-  const char* p = buffer;
+  auto* p = buffer;
   auto* w = std::any_cast<WINDOW*>(window_->window());
   scrollok(w, false);
 
   char s[2];
   s[1] = 0;
-  for (int y = 0; y < 25; y++) {
-    for (int x = 0; x < 80; x++) {
+  for (auto y = 0; y < 25; y++) {
+    for (auto x = 0; x < 80; x++) {
       s[0] = *p++;
       curatr(*p++);
       PutsXY(x, y, s);
@@ -336,23 +331,23 @@ static int GetEditLineStringLength(const char* text) {
   return i;
 }
 
-void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
-                             const char* pszAllowedSet) {
+void CursesLocalIO::EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
+                             const char* allowed_set) {
   const auto oldatr = curatr();
   const auto cx = WhereX();
   const auto cy = WhereY();
-  for (auto i = ssize(pszInOutText); i < len; i++) {
-    pszInOutText[i] = '\xb0';
+  for (auto i = ssize(s); i < len; i++) {
+    s[i] = '\xb0';
   }
-  pszInOutText[len] = '\0';
+  s[len] = '\0';
   curatr(GetEditLineColor());
-  FastPuts(pszInOutText);
+  FastPuts(s);
   GotoXY(cx, cy);
-  bool done = false;
-  int pos = 0;
-  bool insert = false;
+  auto done = false;
+  auto pos = 0;
+  auto insert = false;
   do {
-    unsigned char ch = GetChar();
+    auto ch = GetChar();
     if (ch == 0 || ch == 224) {
       ch = GetChar();
       switch (ch) {
@@ -365,11 +360,11 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
         GotoXY(cx, cy);
         break;
       case END:
-        pos = GetEditLineStringLength(pszInOutText);
+        pos = GetEditLineStringLength(s);
         GotoXY(cx + pos, cy);
         break;
       case RARROW:
-        if (pos < GetEditLineStringLength(pszInOutText)) {
+        if (pos < GetEditLineStringLength(s)) {
           pos++;
           GotoXY(cx + pos, cy);
         }
@@ -397,10 +392,10 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
       case KEY_DELETE:
         if (allowed_keys != AllowedKeys::SET) {
           for (int i = pos; i < len; i++) {
-            pszInOutText[i] = pszInOutText[i + 1];
+            s[i] = s[i + 1];
           }
-          pszInOutText[len - 1] = '\xb0';
-          PutsXY(cx, cy, pszInOutText);
+          s[len - 1] = '\xb0';
+          PutsXY(cx, cy, s);
           GotoXY(cx + pos, cy);
         }
         break;
@@ -413,21 +408,21 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
         if (allowed_keys == AllowedKeys::SET) {
           ch = to_upper_case<unsigned char>(ch);
           if (ch != SPACE) {
-            bool bLookingForSpace = true;
-            for (int i = 0; i < len; i++) {
-              if (ch == pszAllowedSet[i] && bLookingForSpace) {
+            auto bLookingForSpace = true;
+            for (auto i = 0; i < len; i++) {
+              if (ch == allowed_set[i] && bLookingForSpace) {
                 bLookingForSpace = false;
                 pos = i;
                 GotoXY(cx + pos, cy);
-                if (pszInOutText[pos] == SPACE) {
-                  ch = pszAllowedSet[pos];
+                if (s[pos] == SPACE) {
+                  ch = allowed_set[pos];
                 } else {
                   ch = SPACE;
                 }
               }
             }
             if (bLookingForSpace) {
-              ch = pszAllowedSet[pos];
+              ch = allowed_set[pos];
             }
           }
         }
@@ -438,13 +433,13 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
               (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
           if (insert) {
             for (int i = len - 1; i > pos; i--) {
-              pszInOutText[i] = pszInOutText[i - 1];
+              s[i] = s[i - 1];
             }
-            pszInOutText[pos++] = static_cast<char>(ch);
-            PutsXY(cx, cy, pszInOutText);
+            s[pos++] = static_cast<char>(ch);
+            PutsXY(cx, cy, s);
             GotoXY(cx + pos, cy);
           } else {
-            pszInOutText[pos++] = static_cast<char>(ch);
+            s[pos++] = static_cast<char>(ch);
             Putch(ch);
           }
         }
@@ -465,28 +460,28 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
           GotoXY(cx, cy);
           break;
         case CE:
-          pos = GetEditLineStringLength(pszInOutText); // len;
+          pos = GetEditLineStringLength(s); // len;
           GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
           if (pos > 0) {
             if (insert) {
               for (int i = pos - 1; i < len; i++) {
-                pszInOutText[i] = pszInOutText[i + 1];
+                s[i] = s[i + 1];
               }
-              pszInOutText[len - 1] = '\xb0';
+              s[len - 1] = '\xb0';
               pos--;
-              PutsXY(cx, cy, pszInOutText);
+              PutsXY(cx, cy, s);
               GotoXY(cx + pos, cy);
             } else {
-              const auto string_len = GetEditLineStringLength(pszInOutText);
+              const auto string_len = GetEditLineStringLength(s);
               pos--;
               if (pos == (string_len - 1)) {
-                pszInOutText[pos] = '\xb0';
+                s[pos] = '\xb0';
               } else {
-                pszInOutText[pos] = SPACE;
+                s[pos] = SPACE;
               }
-              PutsXY(cx, cy, pszInOutText);
+              PutsXY(cx, cy, s);
               GotoXY(cx + pos, cy);
             }
           }
@@ -496,14 +491,14 @@ void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_ke
     }
   } while (!done);
 
-  int z = ssize(pszInOutText);
-  while (z >= 0 && static_cast<unsigned char>(pszInOutText[z - 1]) == 176) {
+  auto z = ssize(s);
+  while (z >= 0 && static_cast<unsigned char>(s[z - 1]) == 176) {
     --z;
   }
-  pszInOutText[z] = '\0';
+  s[z] = '\0';
 
   char szFinishedString[260];
-  snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
+  snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", s);
   szFinishedString[len] = '\0';
   GotoXY(cx, cy);
   curatr(oldatr);
@@ -525,8 +520,8 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     y = GetScreenBottom() + 1 - ylen;
   }
 
-  int xx = WhereX();
-  int yy = WhereY();
+  const auto xx = WhereX();
+  const auto yy = WhereY();
 
   // we expect to be offset by GetTopLine()
   y += GetTopLine();
@@ -567,6 +562,7 @@ void CursesLocalIO::UpdateNativeTitleBar(const std::string& system_name, int ins
 #endif // _WIN32
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 void CursesLocalIO::ResetColors() { InitPairs(); }
 
 void CursesLocalIO::DisableLocalIO() { endwin(); }
@@ -576,6 +572,3 @@ void CursesLocalIO::ReenableLocalIO() {
   window_->Refresh();
 }
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // _MSC_VER

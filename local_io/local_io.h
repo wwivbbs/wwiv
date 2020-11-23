@@ -100,7 +100,7 @@ public:
   virtual bool KeyPressed() = 0;
   virtual unsigned char GetChar() = 0;
   /*
-   * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
+   * MakeLocalWindow makes a "shadowed" window with the upper-left hand corner at
    * (x,y), and the lower-right corner at (x+xlen,y+ylen).
    */
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;

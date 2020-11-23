@@ -15,6 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+// ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 #ifndef INCLUDED_CORE_LOG_H
 #define INCLUDED_CORE_LOG_H
 
@@ -24,6 +25,10 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+
+#ifdef _MSC_VER
+#include<sal.h>
+#endif
 
 typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
@@ -35,6 +40,11 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define VLOG(LEVEL) LOG_VERBOSE(LEVEL)
 
 #define LOG_IGNORED(x) wwiv::core::NullLogger()
+#ifdef _MSC_VER
+#define LOG_FATAL_IGNORED(x) __assume(x), wwiv::core::NullLogger()
+#else
+#define LOG_FATAL_IGNORED(x) wwiv::core::NullLogger()
+#endif
 #define LOG_STARTUP wwiv::core::Logger(wwiv::core::LoggerLevel::start, 0)
 #define LOG_INFO wwiv::core::Logger(wwiv::core::LoggerLevel::info, 0)
 #define LOG_WARNING wwiv::core::Logger(wwiv::core::LoggerLevel::warning, 0)
@@ -43,14 +53,16 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define LOG_VERBOSE(verbosity) wwiv::core::Logger(wwiv::core::LoggerLevel::verbose, verbosity)
 #define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 
-#define CHECK(x) LOG_IF(!(x), FATAL)
+#define CHECK(x) if (!(x)) wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0) \
+    << "Failed Precondition: at " << __FILE__ << ":" << __LINE__ << " Condition: " #x " " 
+
 #define CHECK_LE(x, y) LOG_IF(!((x) <= (y)), FATAL)
 #define CHECK_EQ(x, y) LOG_IF(!((x) == (y)), FATAL)
 #define CHECK_NE(x, y) LOG_IF(!((x) != (y)), FATAL)
 #define CHECK_GE(x, y) LOG_IF(!((x) >= (y)), FATAL)
 #define CHECK_GT(x, y) LOG_IF(!((x) > (y)), FATAL)
 #ifdef WWIV_CORE_LOG_DEBUG
-#define DCHECK(x) LOG_IF(!(x), FATAL)
+#define DCHECK(x) CHECK(x)
 
 #define DCHECK_LE(x, y) CHECK_LE(x, y)
 
@@ -65,12 +77,12 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define DLOG(LEVEL) LOG_##LEVEL
 
 #else
-#define DCHECK(x) LOG_IGNORED(x)
-#define DCHECK_LE(x, y) LOG_IGNORED(x)
-#define DCHECK_EQ(x, y) LOG_IGNORED(x)
-#define DCHECK_NE(x, y) LOG_IGNORED(x)
-#define DCHECK_GE(x, y) LOG_IGNORED(x)
-#define DCHECK_GT(x, y) LOG_IGNORED(x)
+#define DCHECK(x) LOG_FATAL_IGNORED(x)
+#define DCHECK_LE(x, y) LOG_FATAL_IGNORED(x)
+#define DCHECK_EQ(x, y) LOG_FATAL_IGNORED(x)
+#define DCHECK_NE(x, y) LOG_FATAL_IGNORED(x)
+#define DCHECK_GE(x, y) LOG_FATAL_IGNORED(x)
+#define DCHECK_GT(x, y) LOG_FATAL_IGNORED(x)
 #define DLOG(LEVEL) LOG_IGNORED(LEVEL)
 #endif
 
