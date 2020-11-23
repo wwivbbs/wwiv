@@ -710,8 +710,8 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     // Add the text from the message (as entered from the BBS).
     wwiv_to_fido_options opts{};
     opts.colors = colors_;
-    opts.wwiv_heart_color_codes = true;
-    opts.wwiv_pipe_color_codes = true;
+    opts.wwiv_heart_color_codes = net_.fido.wwiv_heart_color_codes;
+    opts.wwiv_pipe_color_codes = net_.fido.wwiv_pipe_color_codes;
     auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()), opts);
     text << bbs_text;
 

@@ -153,6 +153,9 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, origin_line);
   SERIALIZE(n, packet_config);
   SERIALIZE(n, process_tic);
+  SERIALIZE(n, wwiv_heart_color_codes);
+  SERIALIZE(n, wwiv_pipe_color_codes);
+
 }
 
 // This has to be in the cereal or default to match net_networks_rec which

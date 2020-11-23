@@ -229,7 +229,12 @@ public:
     };
     items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
                                                        &n->packet_config.netmail_status));
-    items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic));
+    items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic))
+        ->set_help_text("Process TIC files for this network.");
+    items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->wwiv_heart_color_codes))
+        ->set_help_text("Convert WWIV Heart codes into PIPE color codes.");
+    items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->wwiv_pipe_color_codes))
+        ->set_help_text("Convert WWIV user color pipe codes into standard PIPE color codes.");
 
     window->GotoXY(x_, y_);
     y = 1;
@@ -256,7 +261,9 @@ public:
     items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
                       new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
                       new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:"),
-                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :")
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :"),
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Cvt Hearts   :"),
+                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Cvt WWIV Pipe:")
     });
     items.Run(menu_label());
     window->RedrawWin();
