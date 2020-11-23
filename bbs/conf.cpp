@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "fmt/printf.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
@@ -206,16 +207,20 @@ void edit_conf_subs(Conference& conf) {
   while (!a()->sess().hangup()) {
     const auto count = display_conf_subs(conf);
     bout.nl();
-    bout << "|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences: ";
-    const auto cmd = onek_ncr("CSTQ");
+    bout << "|#9(|#2Q|#9)uit, (|#2S|#9)et, (|#2C|#9)lear, (|#2T|#9)oggle conferences, (|#2?|#9) List conferences: ";
+    const auto cmd = onek_ncr("CSTQ?");
     if (cmd == 'Q') {
       break;
+    } if (cmd == '?') {
+      list_confs(conf, false);
+      bout.pausescr();
+      continue;
     }
     bout.Left(80);
     bout.clreol();
-    bout << "|#9Enter conference key: ";
-    const auto key = onek_ncr(StrCat("\r\n", conf.keys_string()));
-    if (key == 0 || key == '\r' || key == '\n') {
+    bout << "|#9(|#2ENTER|#9=Exit) Enter conference key: ";
+    const auto key = onek_ncr(StrCat("\r\n\x1b", conf.keys_string()));
+    if (key == 0 || key == '\r' || key == '\n' || key == ESC) {
       continue;
     }
 
@@ -357,7 +362,6 @@ void conf_edit(Conference& conf) {
   auto done = false;
 
   do {
-    bout.cls();
     list_confs(conf, false);
     bout.nl();
     bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2S|#7)|#1ubs Configuration|#2? |#7 : ";
@@ -414,6 +418,7 @@ void list_confs(ConferenceType conftype, bool list_subs) {
 }
 
 void list_confs(Conference& conf, bool list_subs) {
+  bout.cls();
   auto abort = false;
   bout.bpla("|#2Key Name                    ACS", &abort);
   bout.bpla("|#7--- ======================= -------------------------------------------------",
@@ -451,7 +456,7 @@ std::optional<char> select_conf(const std::string& prompt_text, Conference& conf
     bout.nl();
     list_confs(conf, false);
   }
-  std::string allowed(" \r\n");
+  std::string allowed(" \r\n?\x1b");
   for (const auto& cp : conf.confs()) {
     allowed.push_back(cp.key.key());
   }
@@ -461,7 +466,7 @@ std::optional<char> select_conf(const std::string& prompt_text, Conference& conf
       bout << "|#1" << prompt_text;
     }
     auto key = onek(allowed, true);
-    if (key == ' ' || key == '\r' || key == '\n') {
+    if (key == ' ' || key == '\r' || key == '\n' || key == ESC) {
       return std::nullopt;
     }
     if (key == '?') {
