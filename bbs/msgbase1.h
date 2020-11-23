@@ -15,16 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MSGBASE1_H__
-#define __INCLUDED_BBS_MSGBASE1_H__
-
-#include <string>
+#ifndef INCLUDED_BBS_MSGBASE1_H
+#define INCLUDED_BBS_MSGBASE1_H
 
 #include "common/message_editor_data.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include "sdk/fido/fido_address.h"
+#include <string>
+#include <utility>
+
+namespace wwiv::sdk::fido {
+  class FidoAddress;
+}
 
 class PostReplyToData {
 public:
@@ -38,7 +41,7 @@ public:
 
 class PostData {
 public:
-  explicit PostData(const PostReplyToData& i) : reply_to(i) {}
+  explicit PostData(PostReplyToData i) : reply_to(std::move(i)) {}
   PostData() : PostData(PostReplyToData()) {}
   PostReplyToData reply_to;
 };
@@ -53,4 +56,4 @@ void nscan(uint16_t start_subnum = 0);
 void ScanMessageTitles();
 void remove_post();
 
-#endif // __INCLUDED_BBS_MSGBASE1_H__
+#endif

@@ -63,4 +63,4 @@ private:
 
 } // namespace
 
-#endif // INCLUDED_SDK_FIDO_FIDO_CALLOUT_H
+#endif

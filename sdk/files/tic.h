@@ -15,12 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FILES_TIC_H__
-#define __INCLUDED_SDK_FILES_TIC_H__
+#ifndef INCLUDED_SDK_FILES_TIC_H
+#define INCLUDED_SDK_FILES_TIC_H
 
-#include "dirs.h"
 #include "core/datetime.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/files/dirs.h"
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -87,4 +87,4 @@ std::optional<directory_t> FindFileAreaForTic(const files::Dirs& dirs, const Tic
 
 } 
 
-#endif // __INCLUDED_SDK_FILES_TIC_H__
+#endif

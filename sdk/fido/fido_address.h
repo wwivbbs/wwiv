@@ -83,9 +83,29 @@ public:
     : zone_(zone), net_(net), node_(node), point_(point), domain_(std::move(domain)) {}
   ~FidoAddress() = default;
 
-  [[nodiscard]] std::string as_string(bool include_domain = false) const;
+  /**
+   * returns the address as a string with a point address and without domain.
+   */
+  [[nodiscard]] std::string as_string() const;
+
+  /**
+   * returns the address as a string with a point address and
+   * domain if include_domain is set.
+   */
+  [[nodiscard]] std::string as_string(bool include_domain) const;
+
+  /**
+   * returns the address as a string with a point address if include_point
+   * is set and domain if include_domain is set.
+   */
+  [[nodiscard]] std::string as_string(bool include_domain, bool include_point) const;
+
+  /**
+   * returns the address as a string with a point address and without domain
+   * N.B. calls as_string() under the covers/
+   */
   friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) {
-    os << f.as_string();
+    os << f.as_string(false, true);
     return os; 
   }
   [[nodiscard]] int16_t zone() const { return zone_; }
@@ -103,7 +123,7 @@ private:
   int16_t net_ = 0;
   int16_t node_ = 0;
   int16_t point_ = 0;
-  ::std::string domain_;
+  std::string domain_;
 };
 
 const static FidoAddress EMPTY_FIDO_ADDRESS = FidoAddress(-1, -1, -1, -1, "");
@@ -119,7 +139,7 @@ public:
 namespace std {
 template <>
 struct hash<wwiv::sdk::fido::FidoAddress> {
-  size_t operator()(const wwiv::sdk::fido::FidoAddress& a) const {
+  size_t operator()(const wwiv::sdk::fido::FidoAddress& a) const noexcept {
     // See http://stackoverflow.com/a/1646913/126995
     size_t res = 17 * a.zone();
     res = res * 31 + a.net();
@@ -131,6 +151,7 @@ struct hash<wwiv::sdk::fido::FidoAddress> {
     return res;
   }
 };
+
 }  // namespace std
 
 #endif

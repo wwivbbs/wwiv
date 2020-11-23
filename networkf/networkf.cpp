@@ -688,7 +688,16 @@ bool NetworkF::create_ftn_packet(const FidoAddress& dest, const FidoAddress& rou
     std::ostringstream text;
     if (is_email) {
       text << "\001"
-           << "INTL " << dest << " " << from_address << "\r";
+           << "INTL " << dest.as_string(false, false) << " "
+           << from_address.as_string(false, false) << "\r";
+      if (from_address.point()) {
+        // FMPT (FROM POINT) just has the point address
+        text << "\001" << "FMPT " << from_address.point() << "\r";
+      }
+      if (dest.point()) {
+        // TOPT (TO POINT) just has the point address
+        text << "\001" << "TOPT " << dest.point() << "\r";
+      }
     } else {
       text << "AREA:" << subtype << "\r";
     }

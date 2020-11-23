@@ -17,23 +17,14 @@
 /**************************************************************************/
 #include "sdk/fido/fido_address.h"
 
-#include <cctype>
-#include <set>
-#include <string>
-
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/vector.hpp>
-
+#include "core/cereal_utils.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
+#include <cctype>
+#include <set>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -52,16 +43,16 @@ template <typename T, typename C, typename I> static T next_int(C& c, I& it, std
   }
   if (it != std::end(c) && contains(stop, *it)) {
     // skip over last
-    it++;
+    ++it;
   }
   return static_cast<T>(to_number<int>(s));
 }
 
 FidoAddress::FidoAddress(const std::string& address) {
-  bool has_zone = contains(address, ':');
-  bool has_net = contains(address, '/');
-  bool has_point = contains(address, '.');
-  bool has_domain = contains(address, '@');
+  const auto has_zone = contains(address, ':');
+  const auto has_net = contains(address, '/');
+  const auto has_point = contains(address, '.');
+  const auto has_domain = contains(address, '@');
 
   if (!has_net) {
     throw bad_fidonet_address(StrCat("Missing Net or Node. Unable to parse address: ", address));
@@ -70,8 +61,7 @@ FidoAddress::FidoAddress(const std::string& address) {
   if (has_zone) {
     zone_ = next_int<int16_t>(address, it, {':'});
   } else {
-    // per FSL-1002: "If 'ZZ:' is missing then assume 1 as the zone."
-    // TODO(rushfan): Not sure if this is really what we expect though...
+    // Per FSL-1002: "If 'ZZ:' is missing then assume 1 as the zone."
     zone_ = 1;
   }
   net_ = next_int<int16_t>(address, it, {'/'});
@@ -84,11 +74,19 @@ FidoAddress::FidoAddress(const std::string& address) {
   }
 }
 
-std::string FidoAddress::as_string(bool include_domain) const {
-  // start off with the minimal things we know.
-  string s = StrCat(zone_, ":", net_, "/", node_);
+std::string FidoAddress::as_string() const {
+  return as_string(false, true);
+}
 
-  if (point_ > 0) {
+std::string FidoAddress::as_string(bool include_domain) const {
+  return as_string(include_domain, true);
+}
+
+std::string FidoAddress::as_string(bool include_domain, bool include_point) const {
+  // start off with the minimal things we know.
+  auto s = StrCat(zone_, ":", net_, "/", node_);
+
+  if (include_point && point_ > 0) {
     s += StrCat(".", point_);
   }
 
@@ -100,7 +98,6 @@ std::string FidoAddress::as_string(bool include_domain) const {
 }
 
 bool FidoAddress::operator<(const FidoAddress& r) const {
-  // std::cerr << "[" << *this << "<" << r << "]";
   if (zone_ < r.zone_)
     return true;
   if (zone_ > r.zone_)
@@ -123,7 +120,6 @@ bool FidoAddress::operator<(const FidoAddress& r) const {
   if (domain_ < r.domain_)
     return true;
 
-  // std::cerr << "{F} ";
   return false;
 }
 
