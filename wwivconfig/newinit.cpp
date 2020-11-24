@@ -264,7 +264,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   }
 
   {
-    wwiv::sdk::files::Dirs dirs("data/", 0);
+    files::Dirs dirs("data/", 0);
     {
       files::directory_t d1{};
       d1.name = "Sysop";
@@ -314,8 +314,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     unzip_file(window, "data.zip", "data");
 
 #ifdef WIN32
-    // Unzip netfoss to "${WWIV_DIR}/nf"
-    unzip_file(window, "netf123r.zip", "nf");
+    // Unzip netfoss to "${WWIV_DIR}/netfoss"
+    unzip_file(window, "netf124.zip", "netfoss");
 #endif
 
     auto cwd = File::current_directory();
