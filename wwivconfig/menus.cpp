@@ -357,8 +357,8 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
       auto title = StrCat("Select Menu from [", dir, "]");
       ListBox list(window, title, items);
       list.set_selected(selected);
-      list.set_additional_hotkeys("DI");
-      list.set_help_items({ { "Esc", "Exit" },{ "Enter", "Edit" },{ "D", "Delete" },{ "I", "Insert" } });
+      list.set_additional_hotkeys("CDI");
+      list.set_help_items({ { "Esc", "Exit" },{ "Enter", "Edit" },{ "D", "Delete" },{ "I", "Insert" },{ "C", "Copy" } });
       auto result = list.Run();
       selected = list.selected();
 
@@ -373,6 +373,15 @@ static void select_menu(const wwiv::sdk::Config& config, const std::string& menu
         if (result.hotkey == 'I') {
           auto menu_name = dialog_input_string(window, "Enter Menu Name: ", 8);
           if (!menu_name.empty()) {
+            edit_menu(config, menu_dir, dir, menu_name);
+          }
+        } else  if (result.hotkey == 'C') {
+          const auto& old_menu_name = items[result.selected].text();
+          auto menu_name = dialog_input_string(window, "Enter New Menu Name: ", 8);
+          if (!menu_name.empty()) {
+            const auto old_name = FilePath(full_dir_path, StrCat(old_menu_name, ".mnu.json"));
+            const auto new_name = FilePath(full_dir_path, StrCat(menu_name, ".mnu.json"));
+            File::Copy(old_name, new_name);
             edit_menu(config, menu_dir, dir, menu_name);
           }
         } else if (result.hotkey == 'D') {
