@@ -406,6 +406,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
   si.lpTitle = title.get();
 
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+    LOG(INFO) <<"Closing remote IO";
     a()->remoteIO()->close(true);
   }
 
@@ -435,6 +436,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
 
     // If we return here, we may have to reopen the communications port.
     if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+      LOG(INFO) << "Reopening comm (on createprocess error)";
       a()->remoteIO()->open();
     }
     // Restore old binary mode.
@@ -442,7 +444,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
     return -1;
   }
 
-  if (using_sync) {
+  if (using_sync || using_netfoss) {
     // Kinda hacky but WaitForInputIdle doesn't work on console application.
     wwiv::os::sleep_for(std::chrono::milliseconds(a()->GetExecChildProcessWaitTime()));
     const auto sleep_zero_times = 5;
@@ -485,6 +487,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
 
   // reengage comm stuff
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
+    LOG(INFO) << "Reopening comm";
     a()->remoteIO()->open();
   }
 

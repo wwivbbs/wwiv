@@ -374,6 +374,8 @@ int ansir_to_flags(uint16_t ansir) {
   }
   if (ansir & ansir_netfoss) {
     flags |= EFLAG_NETFOSS;
+    // NetFoss implies temp dir too.
+    flags |= EFLAG_TEMP_DIR;
   }
   if (ansir & ansir_temp_dir) {
     flags |= EFLAG_TEMP_DIR;
