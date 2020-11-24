@@ -309,7 +309,7 @@ void Application::ReadINIFile(IniFile& ini) {
   attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
 
   // Sets up the default net fossil directory.
-  const auto netfoss_dir = ini.value<string>(INI_STR_NETFOSS_DIR);
+  const std::filesystem::path netfoss_dir = ini.value<string>(INI_STR_NETFOSS_DIR);
   netfoss_dir_ = !netfoss_dir.empty() ? netfoss_dir : FilePath(bbspath(), "netfoss");
   netfoss_dir_ = File::EnsureTrailingSlash(netfoss_dir_);
 
