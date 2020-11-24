@@ -391,8 +391,8 @@ void ConnectionHandler::HandleConnection() {
 
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.
-      LOG(ERROR) << "No BBSes defined in wwivconfig for the Matrix.";
-      conn.send_line("No BBSes defined in wwivconfig for the Matrix.  Please tell the SysOp.",
+      LOG(ERROR) << "No BBSes defined in WWIVconfig for the Matrix.";
+      conn.send_line("No BBSes defined in WWIVconfig for the Matrix.  Please tell the SysOp.",
                      std::chrono::seconds(1));
       return;
     }

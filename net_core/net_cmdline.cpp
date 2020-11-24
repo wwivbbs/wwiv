@@ -147,7 +147,7 @@ std::string NetworkCommandLine::GetHelp() const {
   std::ostringstream ss;
   ss << cmdline_.GetHelp() << std::endl
      << "   .#### " << std::setw(22) << " "
-     << "Network number (as defined in wwivconfig)" << std::endl;
+     << "Network number (as defined in WWIVconfig)" << std::endl;
   return ss.str();
 }
 

@@ -160,9 +160,9 @@ int main(int argc, char* argv[]) {
     const auto app = std::make_unique<WWIVConfigApplication>();
     return app->main(argc, argv);
   } catch (const std::exception& e) {
-    LOG(INFO) << "Fatal exception launching wwivconfig: " << e.what();
+    LOG(INFO) << "Fatal exception launching WWIVconfig: " << e.what();
   } catch (...) {
-    LOG(INFO) << "Unknown fatal exception launching wwivconfig.";
+    LOG(INFO) << "Unknown fatal exception launching WWIVconfig.";
   }
 }
 
@@ -315,7 +315,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
     case '$': {
       vector<string> lines;
       std::ostringstream ss;
-      ss << "WWIV " << full_version() << " wwivconfig compiled " << wwiv_compile_datetime();
+      ss << "WWIV " << full_version() << " WWIVconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());
       lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
@@ -537,9 +537,9 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
     case '$': {
       vector<string> lines;
       std::ostringstream ss;
-      ss << "WWIV " << full_version() << " wwivconfig compiled " << wwiv_compile_datetime();
+      ss << "WWIV " << full_version() << " WWIVconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());
-      lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
+      lines.push_back(StrCat("QScan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
     } break;
     default: ;

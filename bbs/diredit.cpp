@@ -511,7 +511,7 @@ void dlboardedit() {
         delete_dir(i1);
         showdirs();
       } else {
-        bout << "\r\n|#6You must increase the number of dirs in wwivconfig first.\r\n";
+        bout << "\r\n|#6You must increase the number of dirs in WWIVconfig first.\r\n";
       }
       break;
     case 'I': {

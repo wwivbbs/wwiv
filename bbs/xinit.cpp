@@ -365,9 +365,9 @@ bool Application::ReadConfig() {
   }
 
   if (!config_->versioned_config_dat()) {
-    std::cerr << "Please run wwivconfig to upgrade " << CONFIG_DAT
+    std::cerr << "Please run WWIVconfig to upgrade " << CONFIG_DAT
               << " to the most recent version.\r\n";
-    LOG(ERROR) << "Please run wwivconfig to upgrade " << CONFIG_DAT
+    LOG(ERROR) << "Please run WWIVconfig to upgrade " << CONFIG_DAT
                << " to the most recent version.";
     sleep_for(seconds(2));
     return false;
@@ -572,7 +572,7 @@ bool Application::InitializeBBS(bool cleanup_network) {
   const auto qs_fn = FilePath(config()->datadir(), USER_QSC);
   if (!File::Exists(qs_fn)) {
     LOG(ERROR) << "Could not open file '" << qs_fn << "'";
-    LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
+    LOG(ERROR) << "You must go into WWIVconfig and convert your userlist before running the BBS.";
     return false;
   }
 

@@ -619,7 +619,7 @@ void boardedit() {
         delete_sub(subnum1);
         showsubs();
       } else {
-        bout << "\r\nYou must increase the number of subs in wwivconfig first.\r\n";
+        bout << "\r\nYou must increase the number of subs in WWIVconfig first.\r\n";
       }
     } break;
     case 'I': {

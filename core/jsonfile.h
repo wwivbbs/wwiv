@@ -53,7 +53,7 @@ int json_file_version(const std::filesystem::path& p);
 struct json_version_error : public std::runtime_error {
   json_version_error(const std::string& filename, int min_ver, int actual_ver)
       : std::runtime_error(fmt::format("Invalid version for file '{}', expected: {}, actual: {}. "
-                                       "Please run WWIVCONFIG to update it.",
+                                       "Please run WWIVconfig to update it.",
                                        filename, min_ver, actual_ver)) {}
 };
 

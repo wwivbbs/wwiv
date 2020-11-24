@@ -5,14 +5,14 @@ WWIV 5.x Getting Started
 If you already have WWIV 4.3 or 5.x installed, Please see the instructions at
 http://docs.wwivbbs.org for upgrading from 4.x.
 
-init.exe was renamed to wwivconfig earlier in 5.x, so please delete the
+init.exe was renamed to WWIVconfig earlier in 5.x, so please delete the
 older init.exe if you have it still.
 
 The command line parameters have changed quite a bit, I suggest running
 "bbs -? | more" to see the list of changes.
 
 So far, WWIV 5.x is still fully upgradable from your existing WWIV 4.30
-and 5.x installations (Just drop it in and run wwivconfig to upgrade the 
+and 5.x installations (Just drop it in and run WWIVconfig to upgrade the 
 data files and go for the most part).
 
 Run wwivconfig.exe and then select the menu WWIVD and setup
@@ -21,7 +21,7 @@ node numbers to use for inbound telnet). Then launch wwivd to have it
 listen on a socket and ready to spawn instances of WWIV.  You do not
 need to keep any copies of WWIV running, as wwivd will spawn them as
 required and can also run the beginday event if configured so in
-wwivconfig.
+WWIVconfig.
 
 Full documentation is avalable online: http://docs.wwivbbs.org
 
