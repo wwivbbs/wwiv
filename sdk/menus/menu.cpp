@@ -219,4 +219,22 @@ menu_help_display_t to_menu_help_display(int n) {
   return menu_help_display_t::always;
 }
 
+std::vector<menu_command_help_t> LoadCommandHelpJSON(const std::string& datadir) {
+  std::vector<menu_command_help_t> cmds;
+  const auto path = FilePath(datadir, "menu_commands.json");
+  JsonFile f(path, "commands", cmds, 1);
+  if (!f.Load()) {
+    return {};
+  }
+  return cmds;
+
+}
+
+bool SaveCommandHelpJSON(const std::string& datadir, const std::vector<menu_command_help_t>& cmds) {
+  VLOG(1) << "SaveCommandHelpJSON";
+  const auto path = FilePath(datadir, "menu_commands.json");
+  JsonFile f(path, "commands", cmds, 1);
+  return f.Save();
+}
+
 } // namespace wwiv::sdk::menus

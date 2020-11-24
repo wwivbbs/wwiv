@@ -63,16 +63,60 @@ using namespace wwiv::strings;
     { menus::menu_help_display_t::on_entrance, "On Entrance" }
   };
 
-static void edit_menu_action(menus::menu_action_56_t& a) {
+class ActionPickerSubDialog final : public SubDialog<std::string> {
+public:
+  ActionPickerSubDialog(const Config& config, const std::vector<menus::menu_command_help_t>& cmds, int x, int y,
+                      int width, std::string& c)
+      : SubDialog(config, x, y, c), cmds_(cmds), width_(width) {}
+  ~ActionPickerSubDialog() override = default;
+
+  void RunSubDialog(CursesWindow* window) override {
+    do {
+      std::vector<ListBoxItem> items;
+      for (const auto& e : cmds_) {
+        const auto cat = StrCat("[", e.cat, "]");
+        auto help = e.help;
+        help.erase(std::remove(help.begin(), help.end(), 10), help.end());
+        help.erase(std::remove(help.begin(), help.end(), 13), help.end());
+        items.emplace_back(fmt::format("{:17.17} {:13.13} {:48.48}", e.cmd, cat, help));
+      }
+      ListBox list(window, "Select Command", items);
+
+      list.selection_returns_hotkey(true);
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Select"}});
+      const auto result = list.Run();
+      if (result.type == ListBoxResultType::SELECTION) {
+        const auto selected_cmd = cmds_[result.selected].cmd;
+        t_ = selected_cmd;
+        return;
+      }
+      if (result.type == ListBoxResultType::NO_SELECTION) {
+        return;
+      }
+    } while (true);
+  }
+
+  [[nodiscard]] std::string menu_label() const override {
+    return fmt::format("{:<{}}", t_, width_);
+  }
+
+private:
+  const std::vector<menus::menu_command_help_t> cmds_;
+  int width_;
+};
+
+static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
   constexpr auto LABEL_WIDTH = 6;
   constexpr auto PADDING = 2;
   constexpr auto COL1_LINE = PADDING;
   constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH;
 
+  static const auto cmds = menus::LoadCommandHelpJSON(config.datadir());
+
   EditItems items{};
   auto y = 1;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Cmd:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 40, a.cmd, EditLineMode::LOWER));
+            new ActionPickerSubDialog(config, cmds, COL2_LINE, y, 40, a.cmd));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Data:"),
             new StringEditItem<std::string&>(COL2_LINE, y, 70, a.data, EditLineMode::ALL));
@@ -80,8 +124,10 @@ static void edit_menu_action(menus::menu_action_56_t& a) {
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
             new StringEditItem<std::string&>(COL2_LINE, y, 70, a.acs, EditLineMode::ALL));
 
+  
   items.Run("Edit Action");
 }
+
 
 class ActionSubDialog final : public SubDialog<std::vector<menus::menu_action_56_t>> {
 public:
@@ -112,7 +158,7 @@ public:
       selected = list.selected();
 
       if (result.type == ListBoxResultType::SELECTION) {
-        edit_menu_action(t_[items[result.selected].data()]);
+        edit_menu_action(config(), t_[items[result.selected].data()]);
       }
       else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;

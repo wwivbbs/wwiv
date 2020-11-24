@@ -1,0 +1,680 @@
+{
+    "version": 1,
+    "commands": [
+        {
+            "cat": "AutoMessage",
+            "cmd": "AutoMessage",
+            "help": "Read the auto message"
+        },
+        {
+            "cat": "AutoMessage",
+            "cmd": "ReadAutoMessage",
+            "help": "Read the auto message"
+        },
+        {
+            "cat": "BBSList",
+            "cmd": "BBSList",
+            "help": "Read the bbslist"
+        },
+        {
+            "cat": "Chain",
+            "cmd": "Doors",
+            "help": "Enter the doors, or chains section.  Like '.'"
+        },
+        {
+            "cat": "Chain",
+            "cmd": "RunDoor",
+            "help": "<door name>\n\n  Runs a door (chain) with doorname matching, exactly, the description you have\n  given the door in //CHEDIT"
+        },
+        {
+            "cat": "Chain",
+            "cmd": "RunDoorFree",
+            "help": "<door name>\n\n  Runs a door (chain) with doorname matching, exactly, the description you have\n  given the door in //CHEDIT, but this function bypasses the check to see if\n  the user is allowed to run the door."
+        },
+        {
+            "cat": "Chain",
+            "cmd": "RunDoorNumber",
+            "help": "<door number>\n\n  Like RunDoor, but you must specify the #1 in //CHEDIT instead of the\n  description."
+        },
+        {
+            "cat": "Chain",
+            "cmd": "RunDoorNumberFree",
+            "help": "<door number>\n\n  Like RunDoorFree, but you must specify the #1 in //CHEDIT instead of the\n  description."
+        },
+        {
+            "cat": "Conference",
+            "cmd": "DisableConf",
+            "help": "Turns conferencing off"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "DownDirConf",
+            "help": "Go to the prior directory conference '{'"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "DownSubConf",
+            "help": "Decrement ({) to the next sub conference"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "EnableConf",
+            "help": "Turns conferencing on"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "JumpDirConf",
+            "help": "Jump to another directory conference 'J'"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "JumpSubConf",
+            "help": "Jump to another sub conference."
+        },
+        {
+            "cat": "Conference",
+            "cmd": "NewMsgsAllConfs",
+            "help": "Do a new message scan for all subs in all conferences '/A'"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "UpDirConf",
+            "help": "Go to the next directory conference '}'"
+        },
+        {
+            "cat": "Conference",
+            "cmd": "UpSubConf",
+            "help": "Increment ()) to the previous conference number"
+        },
+        {
+            "cat": "EMail",
+            "cmd": "AttachFile",
+            "help": ""
+        },
+        {
+            "cat": "EMail",
+            "cmd": "KillEMail",
+            "help": "Kill email that you have sent 'K'"
+        },
+        {
+            "cat": "EMail",
+            "cmd": "MultiEMail",
+            "help": "Send multi-email"
+        },
+        {
+            "cat": "EMail",
+            "cmd": "ReadAllMail",
+            "help": "Sysop command to read all mail"
+        },
+        {
+            "cat": "EMail",
+            "cmd": "ReadEMail",
+            "help": "Read your email"
+        },
+        {
+            "cat": "EMail",
+            "cmd": "SendEMail",
+            "help": "Enter and send email 'E' from the main menu"
+        },
+        {
+            "cat": "File",
+            "cmd": "AllowEdit",
+            "help": "Sysop command to enter the 'ALLOW.DAT' editor."
+        },
+        {
+            "cat": "File",
+            "cmd": "BatchMenu",
+            "help": "Enter the batch menu 'B'"
+        },
+        {
+            "cat": "File",
+            "cmd": "ConfigFileList",
+            "help": "Enter the List+ configurator so the user can set it up to look like he wants"
+        },
+        {
+            "cat": "File",
+            "cmd": "DLFile",
+            "help": "<dirfname> <filename>\n\n  This will download a file, with a check for ratios and will update the\n  kb downloaded and number of files downloaded.\n  You must specify the dirfilename, which is the name of the data file in\n  the transfer editor.  filename is the name of the file being downloaded."
+        },
+        {
+            "cat": "File",
+            "cmd": "DLFreeFile",
+            "help": "<dirfname> <filename>\n\n  This will download a file, but not check ratios or charge a download charge.\n  You must specify the dir filename, which is the name of the data file in\n  the transfer editor.  filename is the name of the file being downloaded."
+        },
+        {
+            "cat": "File",
+            "cmd": "DirList",
+            "help": "List the directory names in the xfer section"
+        },
+        {
+            "cat": "File",
+            "cmd": "DownDir",
+            "help": "Go to the prior directory number '-'"
+        },
+        {
+            "cat": "File",
+            "cmd": "Download",
+            "help": "Download a file 'D'"
+        },
+        {
+            "cat": "File",
+            "cmd": "FindDescription",
+            "help": "Search for a file by description"
+        },
+        {
+            "cat": "File",
+            "cmd": "HopDir",
+            "help": "Hop to another directory number 'H'"
+        },
+        {
+            "cat": "File",
+            "cmd": "ListFiles",
+            "help": "List the file in the current directory"
+        },
+        {
+            "cat": "File",
+            "cmd": "ListUsersDL",
+            "help": "List users with access to the current xfer sub"
+        },
+        {
+            "cat": "File",
+            "cmd": "MoveFiles",
+            "help": "Sysop command to move files"
+        },
+        {
+            "cat": "File",
+            "cmd": "NewFileScan",
+            "help": "List files that are new since your 'New Scan Date (usually last call)' 'N'"
+        },
+        {
+            "cat": "File",
+            "cmd": "NewFilesAllConfs",
+            "help": "New file scan in all directories in all conferences"
+        },
+        {
+            "cat": "File",
+            "cmd": "PrintDSZLog",
+            "help": "View the DSZ log"
+        },
+        {
+            "cat": "File",
+            "cmd": "ReadIDZ",
+            "help": "Sysop command to read the file_id.diz and add it to the extended description"
+        },
+        {
+            "cat": "File",
+            "cmd": "RemoveFiles",
+            "help": "Remove a file you uploaded"
+        },
+        {
+            "cat": "File",
+            "cmd": "RemoveNotThere",
+            "help": "SYSOP command to remove files that do not exist."
+        },
+        {
+            "cat": "File",
+            "cmd": "RenameFiles",
+            "help": "Sysop command to edit and rename files"
+        },
+        {
+            "cat": "File",
+            "cmd": "ReverseSortDirs",
+            "help": "Sort the directory by date or name, backwards."
+        },
+        {
+            "cat": "File",
+            "cmd": "SearchAllFiles",
+            "help": "Search all files???"
+        },
+        {
+            "cat": "File",
+            "cmd": "SelectDir",
+            "help": "Like SelectSub, but for the xfer section."
+        },
+        {
+            "cat": "File",
+            "cmd": "SetDirConf",
+            "help": "<key>\n\n  Sets the xfer section conference to key"
+        },
+        {
+            "cat": "File",
+            "cmd": "SetDirNumber",
+            "help": "<key>\n\n  Equivalent to typing in a number at the xfer menu, it sets the current dir\n  number."
+        },
+        {
+            "cat": "File",
+            "cmd": "SetNewFileScanDate",
+            "help": "Set the 'New Scan Date' to a new date"
+        },
+        {
+            "cat": "File",
+            "cmd": "SortDirs",
+            "help": "Sort the directory by date or name"
+        },
+        {
+            "cat": "File",
+            "cmd": "UpDir",
+            "help": "Go to the next directory number '+'"
+        },
+        {
+            "cat": "File",
+            "cmd": "Upload",
+            "help": "User upload a file"
+        },
+        {
+            "cat": "File",
+            "cmd": "UploadAllDirs",
+            "help": "Syosp command to add any files sitting in the directories, but not in\n  the file database to wwiv's file database"
+        },
+        {
+            "cat": "File",
+            "cmd": "UploadCurDir",
+            "help": "Sysop command to scan the current directory for any files that are not in\n  wwiv's file database and adds them to it."
+        },
+        {
+            "cat": "File",
+            "cmd": "UploadFilesBBS",
+            "help": "Import a files.bbs (probably a CD) into the wwiv's file database"
+        },
+        {
+            "cat": "File",
+            "cmd": "UploadToSysop",
+            "help": "Upload a file into dir#0, the sysop dir."
+        },
+        {
+            "cat": "File",
+            "cmd": "ViewArchive",
+            "help": "List an archive's contents"
+        },
+        {
+            "cat": "File",
+            "cmd": "XferDefaults",
+            "help": "Enter the xfer section defaults"
+        },
+        {
+            "cat": "GFiles",
+            "cmd": "BulletinEdit",
+            "help": "Sysop command to edit the bulletins 'gfiles'"
+        },
+        {
+            "cat": "GFiles",
+            "cmd": "Bulletins",
+            "help": "Enter the bulletins (or 'gfiles') section.  'G'"
+        },
+        {
+            "cat": "Menu",
+            "cmd": "DisplayHelp",
+            "help": "<filename>\n\n  An alias for DisplayMenu. \n  This alias is deprecated, please use DisplayMenu."
+        },
+        {
+            "cat": "Menu",
+            "cmd": "DisplayMenu",
+            "help": "<filename>\n\n  Prints the 'novice menus' for the current menu set, or if one doesn't exist,\n  it will generate one using the menu definitions."
+        },
+        {
+            "cat": "Menu",
+            "cmd": "MENU",
+            "help": "<menu>\n  Loads up and starts running a new menu set, where <menu> equals the name of\n  the menu to load."
+        },
+        {
+            "cat": "Menu",
+            "cmd": "ReturnFromMenu",
+            "help": ""
+        },
+        {
+            "cat": "Message",
+            "cmd": "ClearQScan",
+            "help": "Marks messages unread."
+        },
+        {
+            "cat": "Message",
+            "cmd": "DownSub",
+            "help": "Decrement the current sub number (-)"
+        },
+        {
+            "cat": "Message",
+            "cmd": "HopSub",
+            "help": "Hop to another sub.  'H'"
+        },
+        {
+            "cat": "Message",
+            "cmd": "ListUsers",
+            "help": "List users who have access to the current sub"
+        },
+        {
+            "cat": "Message",
+            "cmd": "NewMessageScan",
+            "help": "Do a new message scan"
+        },
+        {
+            "cat": "Message",
+            "cmd": "NewMsgScanCurSub",
+            "help": "Scan new messages in the current message sub"
+        },
+        {
+            "cat": "Message",
+            "cmd": "NewMsgScanFromHere",
+            "help": "Read new messages starting from the current sub"
+        },
+        {
+            "cat": "Message",
+            "cmd": "PostMessage",
+            "help": "Post a message in the current sub"
+        },
+        {
+            "cat": "Message",
+            "cmd": "RemovePost",
+            "help": "Remove a post"
+        },
+        {
+            "cat": "Message",
+            "cmd": "ResetQscan",
+            "help": "Set all messages to read (I think)"
+        },
+        {
+            "cat": "Message",
+            "cmd": "SelectSub",
+            "help": "This will prompt the user to enter a sub to change to.  However, it does not\n  first show the subs (like Renegade).  However, you can stack a sublist and\n  then this command to mimic the action."
+        },
+        {
+            "cat": "Message",
+            "cmd": "SetMsgConf",
+            "help": "<key>\n\n  Sets the subboards conference to key"
+        },
+        {
+            "cat": "Message",
+            "cmd": "SetNewScanMsg",
+            "help": "Enter the menu so that a user can set which subs he want to scan when doing\n  a new message scan"
+        },
+        {
+            "cat": "Message",
+            "cmd": "SetSubNumber",
+            "help": "<key>\n\n  Equivalent to typing in a number at the main menu, it sets the current sub\n  number."
+        },
+        {
+            "cat": "Message",
+            "cmd": "SubList",
+            "help": "List the subs available"
+        },
+        {
+            "cat": "Message",
+            "cmd": "TitleScan",
+            "help": "Scan the titles of the messages in the current sub"
+        },
+        {
+            "cat": "Message",
+            "cmd": "UnQScan",
+            "help": "Marks messages as unread"
+        },
+        {
+            "cat": "Message",
+            "cmd": "UpSub",
+            "help": "Increment the current sub# (+)"
+        },
+        {
+            "cat": "Message",
+            "cmd": "UploadPost",
+            "help": "Allow a user to upload a post that will be posted"
+        },
+        {
+            "cat": "Message",
+            "cmd": "ValidatePosts",
+            "help": "Sysop command to validate unvalidated posts"
+        },
+        {
+            "cat": "Net",
+            "cmd": "NetListing",
+            "help": "Show networks"
+        },
+        {
+            "cat": "Net",
+            "cmd": "NetLog",
+            "help": "Sysop command to view the network log"
+        },
+        {
+            "cat": "Net",
+            "cmd": "Pending",
+            "help": "Shows which net files are ready to be sent"
+        },
+        {
+            "cat": "QWK",
+            "cmd": "Packers",
+            "help": "Executes the QWK menu."
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ChainEdit",
+            "help": "Sysop command to edit the doors or chains"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ChangeUser",
+            "help": "Sysop command equal to //CHUSER, to change into another users"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ConferenceEdit",
+            "help": "Sysop command ot edit the conferences"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "DirEdit",
+            "help": "Sysop command to edit the directory records"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "Edit",
+            "help": "Sysop command to edit a text file"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "MemStat",
+            "help": ""
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ReloadMenus",
+            "help": "This is probably obsolete."
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "Status",
+            "help": ""
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "SubEdit",
+            "help": "Sysop command to edit the subboards"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ToggleAvailable",
+            "help": "Toggle the sysop availability for chat"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ValidateUser",
+            "help": "Validate a new users.  I think this '!'"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "ViewNetDataLog",
+            "help": "View the net data logs"
+        },
+        {
+            "cat": "SYSOP",
+            "cmd": "VoteEdit",
+            "help": "Sysop command to edit the voting both"
+        },
+        {
+            "cat": "System",
+            "cmd": "ChatRoom",
+            "help": "Go into the multiuser chat room"
+        },
+        {
+            "cat": "System",
+            "cmd": "Defaults",
+            "help": "Enter the normal 'defaults' section"
+        },
+        {
+            "cat": "System",
+            "cmd": "FastGoodBye",
+            "help": "Logoff fast '/O'"
+        },
+        {
+            "cat": "System",
+            "cmd": "Feedback",
+            "help": "Leave feedback to the syosp.  'F'"
+        },
+        {
+            "cat": "System",
+            "cmd": "Goodbye",
+            "help": "Normal logoff 'O'"
+        },
+        {
+            "cat": "System",
+            "cmd": "GuestApply",
+            "help": "Allows a guest to apply for access"
+        },
+        {
+            "cat": "System",
+            "cmd": "LastCallers",
+            "help": "View the last few callers"
+        },
+        {
+            "cat": "System",
+            "cmd": "ListAllColors",
+            "help": "Display all colors available for use."
+        },
+        {
+            "cat": "System",
+            "cmd": "LoadText",
+            "help": "Sysop command to load a text file that will be edited in the text editor"
+        },
+        {
+            "cat": "System",
+            "cmd": "LoadTextFile",
+            "help": "Looks like a duplicate to 'LoadText'"
+        },
+        {
+            "cat": "System",
+            "cmd": "Log",
+            "help": "Syosp command to view the log file"
+        },
+        {
+            "cat": "System",
+            "cmd": "Pause",
+            "help": "Pauses the screen, like 'pausescr()' in C code"
+        },
+        {
+            "cat": "System",
+            "cmd": "PrintDevices",
+            "help": "Show the 'devices'.  I have no idea why."
+        },
+        {
+            "cat": "System",
+            "cmd": "PrintFile",
+            "help": "<filename>\n\n  Prints a file, first checking to see if you specified an absolute path,\n  then the language dir, then the gfilesdir.  It will use the usual checks to\n  determine .ANS, or .MSG if not specified."
+        },
+        {
+            "cat": "System",
+            "cmd": "PrintFileNA",
+            "help": "<filename>\n\n  Just like PrintFile, but the user can not abort it with the space bar."
+        },
+        {
+            "cat": "System",
+            "cmd": "RequestChat",
+            "help": "Request chat from the sysop"
+        },
+        {
+            "cat": "System",
+            "cmd": "RunBasic",
+            "help": "<script name>\n\nRuns a WWIVbasic Script"
+        },
+        {
+            "cat": "System",
+            "cmd": "SystemInfo",
+            "help": "View the system info"
+        },
+        {
+            "cat": "System",
+            "cmd": "TextEdit",
+            "help": "Edit a text file"
+        },
+        {
+            "cat": "System",
+            "cmd": "TimeBank",
+            "help": "Enter the time bank"
+        },
+        {
+            "cat": "System",
+            "cmd": "ToggleExpert",
+            "help": "Turn 'X'pert mode on or off (toggle)"
+        },
+        {
+            "cat": "System",
+            "cmd": "TurnMCIOff",
+            "help": "Disable MCI codes"
+        },
+        {
+            "cat": "System",
+            "cmd": "TurnMCIOn",
+            "help": "Enable MCI codes"
+        },
+        {
+            "cat": "System",
+            "cmd": "WHO",
+            "help": "Show who else is online"
+        },
+        {
+            "cat": "System",
+            "cmd": "WWIVVer",
+            "help": "Get the wwiv version"
+        },
+        {
+            "cat": "System",
+            "cmd": "YLog",
+            "help": "View yesterdays log"
+        },
+        {
+            "cat": "System",
+            "cmd": "YourInfo",
+            "help": "Display the yourinfo screen"
+        },
+        {
+            "cat": "System",
+            "cmd": "YourInfoDL",
+            "help": "Prints user info for downloads"
+        },
+        {
+            "cat": "System",
+            "cmd": "ZLog",
+            "help": "View the ZLog"
+        },
+        {
+            "cat": "System",
+            "cmd": "cls",
+            "help": "Clear the screen"
+        },
+        {
+            "cat": "User",
+            "cmd": "ConfigUserMenuSet",
+            "help": "Takes the user into the user menu config so they can select which menuset\n  they want to use, etc..."
+        },
+        {
+            "cat": "Vote",
+            "cmd": "InitVotes",
+            "help": ""
+        },
+        {
+            "cat": "Vote",
+            "cmd": "Vote",
+            "help": "Enter the voting both"
+        },
+        {
+            "cat": "Vote",
+            "cmd": "VotePrint",
+            "help": "Show the voting statistics"
+        }
+    ]
+}

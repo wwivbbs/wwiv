@@ -796,11 +796,6 @@ int Application::Run(int argc, char* argv[]) {
     cout << "WWIV Bulletin Board System [" << full_version() << "]\r\n\n";
     return 0;
   }
-  const auto menu_commands = cmdline.arg("menu_commands");
-  if (!menu_commands.is_default()) {
-    wwiv::bbs::menus::PrintMenuCommands(menu_commands.as_string());
-    return 0;
-  }
 
   const auto bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
@@ -823,7 +818,6 @@ int Application::Run(int argc, char* argv[]) {
   errorlevel_ = cmdline.iarg("error_exit");
   const unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
-  //auto num_min = cmdline.iarg("remaining_min");
   sess().ok_modem_stuff(!cmdline.barg("no_modem"));
   instance_number_ = cmdline.iarg("instance");
 
@@ -942,6 +936,13 @@ int Application::Run(int argc, char* argv[]) {
     // not in this state when we enter the WFC.
     sess().hangup(false);
   }
+
+  const auto menu_commands = cmdline.arg("menu_commands");
+  if (!menu_commands.is_default()) {
+    wwiv::bbs::menus::PrintMenuCommands(menu_commands.as_string());
+    return 0;
+  }
+
   if (!sysop_cmd.empty()) {
     LOG(INFO) << "Executing Sysop Command: " << sysop_cmd;
 

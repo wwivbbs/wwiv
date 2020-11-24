@@ -20,11 +20,14 @@
 
 #include "bbs/menus/menucommands.h"
 #include "bbs/bbs.h"
+#include "sdk/menus/menu.h"
+#include "sdk/menus/menus_cereal.h"
 
 namespace wwiv::bbs::menus {
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::menus;
 
 void emit_menu(const std::string& cmd, const std::string& cat, const std::string& desc,
                bool markdown, bool group_by_cat) {
@@ -56,6 +59,33 @@ void emit_category_name(const std::string& cat, bool output_markdown) {
 void PrintMenuCommands(const std::string& arg) {
   const auto category_group = arg.find('c') != std::string::npos;
   const auto output_markdown = arg.find('m') != std::string::npos;
+  const auto output_json = arg.find('j') != std::string::npos;
+
+  auto raw_commands = CreateCommandMap();
+  auto& commands = raw_commands;
+  std::map<std::string, std::vector<MenuItem>> cat_commands;
+  for (const auto& c : raw_commands) {
+    cat_commands[c.second.category_].emplace_back(c.second);
+  }
+
+  if (output_json) {
+    std::cout << "Saving JSON help file." << std::endl;
+    std::vector<menu_command_help_t> cmds;
+    for (const auto& c : raw_commands) {
+      menu_command_help_t cmd{};
+      cmd.cat = c.second.category_;
+      cmd.cmd = c.second.cmd_;
+      cmd.help = c.second.description_;
+      StringTrim(&cmd.help);
+      cmds.emplace_back(cmd);
+    }
+    std::sort(std::begin(cmds), std::end(cmds),
+              [](const menu_command_help_t& l, const menu_command_help_t& r) -> bool {
+                return l < r;
+              });
+    SaveCommandHelpJSON(a()->config()->datadir(), cmds);
+    return;
+  }
 
   if (output_markdown) {
     std::cout << R"(
@@ -68,14 +98,7 @@ out by category.
 )";
   }
 
-  auto raw_commands = CreateCommandMap();
-  auto& commands = raw_commands;
   if (category_group) {
-    std::map<std::string, std::vector<MenuItem>> cat_commands;
-    for (const auto& c : raw_commands) {
-      cat_commands[c.second.category_].emplace_back(c.second);
-    }
-
     for (const auto& c : cat_commands) {
       emit_category_name(c.first, output_markdown);
       for (const auto& m : c.second) {

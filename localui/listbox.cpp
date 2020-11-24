@@ -33,6 +33,7 @@ using namespace wwiv::strings;
 
 static constexpr int MINIMUM_LISTBOX_HEIGHT = 10;
 static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
+static constexpr double RATIO_LISTBOX_WIDTH = 0.9;
 
 static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
@@ -71,7 +72,7 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
 ListBox::ListBox(UIWindow* parent, const string& title,
                  std::vector<ListBoxItem>& items)
     : ListBox(parent, title,
-              static_cast<int>(floor(curses_out->window()->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
+              static_cast<int>(floor(curses_out->window()->GetMaxX() * RATIO_LISTBOX_WIDTH)),
               std::min<int>(
                   std::max<int>(size_int(items), MINIMUM_LISTBOX_HEIGHT),
                   static_cast<int>(floor(curses_out->window()->GetMaxY() * RATIO_LISTBOX_HEIGHT))),

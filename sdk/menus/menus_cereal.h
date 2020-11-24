@@ -97,6 +97,13 @@ void serialize(Archive & ar, menu_56_t& s) {
   SERIALIZE(s, items);
 }
 
+template <class Archive>
+void serialize (Archive& ar, menu_command_help_t& d) {
+  SERIALIZE(d, cat);
+  SERIALIZE(d, cmd);
+  SERIALIZE(d, help);
+}
+
 
 }
 

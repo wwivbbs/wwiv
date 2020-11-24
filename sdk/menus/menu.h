@@ -223,6 +223,26 @@ menu_logtype_t to_menu_logtype(int n);
 // Converts help int to menu_help_display_t
 menu_help_display_t to_menu_help_display(int n);
 
+struct menu_command_help_t {
+  // MenuCommand category
+  std::string cat;
+  // MenuCommand name
+  std::string cmd;
+  // Help text.
+  std::string help;
+
+  bool operator<(const menu_command_help_t& other) const {
+    if (cat == other.cat) {
+      return cmd < other.cmd;
+    }
+    return cat < other.cat;
+  }
+};
+
+std::vector<menu_command_help_t> LoadCommandHelpJSON(const std::string& datadir);
+bool SaveCommandHelpJSON(const std::string& datadir, const std::vector<menu_command_help_t>& cmds);
+
+
 
 } 
 #endif

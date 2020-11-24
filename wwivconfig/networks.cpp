@@ -269,10 +269,6 @@ public:
     window->RedrawWin();
   }
 
-  [[nodiscard]] std::string menu_label() const override {
-    return "[Enter to Edit]";
-  }
-
 private:
   const std::filesystem::path netdir_;
   int dy_start_{0};
@@ -438,12 +434,6 @@ public:
     callout.Save();
   }
 
-  [[nodiscard]] std::string menu_label() const override {
-    return "[Enter to Edit]";    
-  }
-
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
-
 private:
   const std::filesystem::path netdir_;
   const std::string title_;
@@ -571,10 +561,6 @@ public:
       }
     } while (!done);
     callout.Save();
-  }
-
-  [[nodiscard]] std::string menu_label() const override {
-    return"[Enter to Edit]";
   }
 
 private:

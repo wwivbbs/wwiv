@@ -879,7 +879,7 @@ public:
 
 protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
-  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Enter to Edit]"; }
 
   const wwiv::sdk::Config& c_;
   T& t_;
