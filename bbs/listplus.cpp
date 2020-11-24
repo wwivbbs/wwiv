@@ -177,9 +177,7 @@ static void printtitle_plus_old() {
 }
 
 void printtitle_plus() {
-  if (a()->localIO()->WhereY() != 0 || a()->localIO()->WhereX() != 0) {
-    bout.cls();
-  }
+  bout.cls();
 
   if (a()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
@@ -209,9 +207,7 @@ int first_file_pos() {
 }
 
 void print_searching(search_record* search_rec) {
-  if (a()->localIO()->WhereY() != 0 || a()->localIO()->WhereX() != 0) {
-    bout.cls();
-  }
+  bout.cls();
 
   if (search_rec->search.size() > 3) {
     bout << "|#9Search keywords : |#2" << search_rec->search;
@@ -408,7 +404,7 @@ int printinfo_plus(uploadsrec* u, int filenum, int marked, int LinesLeft,
       char_printed = 0;
     }
   }
-  if (a()->localIO()->WhereX()) {
+  if (bout.wherex()) {
     if (char_printed) {
       bout.nl();
       ++numl;
@@ -481,7 +477,7 @@ int print_extended(const std::string& file_name, int numlist, int indent, Color 
     bout.nl();
   }
   bout.Color(0);
-  if (a()->localIO()->WhereX()) {
+  if (bout.wherex()) {
     bout.nl();
     ++numl;
   }

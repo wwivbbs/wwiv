@@ -6,13 +6,15 @@
 * Add tests for BbsMacroFilter (also make sure it works now)
 * Use BbsMacroFilter in wwivutil print.
 
-Expression:
+Expressions:
+  |{set pause=on}
+  |{set pause=off}
+  |{pause}
+  |{set lines=0}
+
+TODO Expression:
 |{user.name}
-|{set pause=on}
-|{set pause=off}
 |{uppercase user.name)}
-|{pause}
-|{set lines=0}
 
 # ACS
 * See if we can pull the sl, ar, age from the expression to populate the 
@@ -83,17 +85,9 @@ jq ".number" jenkins.json
 * File::lock doesn't seem to be finished
 
 
-## Feature Improvements
-***
-* Add pipe code and heart code support to wwivutil print.
-  - This needs a context class to hold current session state
-    that is now spit across Application class and other
-    global variables.
-
 ## Linux Work
 ***
 * TopScreen doesn't work with CursesIO
-* stop using localIO()->WhereX to determine remote position
 
 ## Message Areas
 ***
