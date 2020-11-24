@@ -93,7 +93,7 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
   u.SetStatusFlag(User::fullScreenReader);
 
   const auto colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
-  int i = 0;
+  auto i = 0;
   for (const auto c : colors) {
     u.SetColor(i++, c);
   }
@@ -108,12 +108,12 @@ FsedApplication::FsedApplication(std::unique_ptr<FsedConfig> config)
   });
   bus().add_handler<HangupEvent>([this]() { 
     if (context_.sess_.hangup()) {
-      // already hungup
+      // already hung-up
       return;
     }
     VLOG(1) << "Invoked Hangup()";
     context_.sess_.hangup(true);
-    throw wwiv::common::hangup_error(""); // username
+    throw hangup_error(""); // username
   });
 
   Dirs dirs(config_->root());
@@ -132,7 +132,7 @@ FsedApplication::~FsedApplication() {
 
 MessageEditorData FsedApplication::CreateMessageEditorData() {
   
-  if (config().bbs_type() == FsedConfig::bbs_type::wwiv) {
+  if (config().bbs_type() == FsedConfig::bbs_type_t::wwiv) {
     // WWIV: editor.inf
     TextFile f(FilePath(File::current_directory(), "editor.inf"), "rt");
     auto lines = f.ReadFileIntoVector();
@@ -149,7 +149,7 @@ MessageEditorData FsedApplication::CreateMessageEditorData() {
     LoadQuotesWWIV(data);
     return data;
   }
-  // QBBS: msginf
+  // QuickBBS: MSGINF
   TextFile f(FilePath(File::current_directory(), "msginf"), "rt");
   auto lines = f.ReadFileIntoVector();
   lines.resize(6);
@@ -162,6 +162,7 @@ MessageEditorData FsedApplication::CreateMessageEditorData() {
   return data;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool FsedApplication::LoadQuotesWWIV(const MessageEditorData& data) {
   TextFile f(FilePath(File::current_directory(), QUOTES_TXT), "rt");
   if (!f) {
@@ -184,6 +185,7 @@ bool FsedApplication::LoadQuotesWWIV(const MessageEditorData& data) {
   return true;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool FsedApplication::LoadQuotesQBBS(const MessageEditorData&) {
   TextFile f(FilePath(File::current_directory(), MSGTMP), "rt");
   if (!f) {
@@ -203,7 +205,7 @@ bool FsedApplication::DoFsed() {
   auto path = config_->file_path();
 
   // Create MessageEditorData and Load Quotes.
-  MessageEditorData data{CreateMessageEditorData()};
+  auto data{CreateMessageEditorData()};
 
   // Data needs to_name, from_name, sub_name, title
   FsedModel ed(1000);
@@ -284,8 +286,6 @@ int main(int argc, char** argv) {
     return app->Run();
   } catch (const std::exception& e) {
     LOG(ERROR) << "Caught top level exception: " << e.what();
-    return EXIT_FAILURE;
   }
-
-  return EXIT_SUCCESS;
+  return EXIT_FAILURE;
 }

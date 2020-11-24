@@ -48,7 +48,7 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
   if (ini.IsOpen()) {
     VLOG(1) << "Using wwivfsed.ini: '" << path.string() << "'";
     auto bt = ini.value<std::string>("bbs_type", "wwiv");
-    bbs_type_ = strings::iequals(bt, "wwiv") ? FsedConfig::bbs_type::wwiv : FsedConfig::bbs_type::qbbs;
+    bbs_type_ = strings::iequals(bt, "wwiv") ? bbs_type_t::wwiv : bbs_type_t::qbbs;
     std::filesystem::path p = ini.value<std::string>("help_path", "gfiles");
     if (p.is_absolute()) {
       help_path_ = p;
@@ -100,7 +100,7 @@ std::filesystem::path FsedConfig::file_path() const {
     return file_path_;
   }
 
-  return bbs_type() == FsedConfig::bbs_type::wwiv ? "input.msg" : "msgtmp";
+  return bbs_type() == FsedConfig::bbs_type_t::wwiv ? "input.msg" : "msgtmp";
 }
 
 
