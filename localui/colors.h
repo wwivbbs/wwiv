@@ -44,10 +44,10 @@ public:
 
   // Don't provide a user defined destructor since that will block move semantics
 
-  int color_pair() const { return static_cast<int>(scheme_); }
-  int f() const { return f_; }
-  int b() const { return b_; }
-  bool bold() const { return bold_; }
+  [[nodiscard]] int color_pair() const { return static_cast<int>(scheme_); }
+  [[nodiscard]] int f() const { return f_; }
+  [[nodiscard]] int b() const { return b_; }
+  [[nodiscard]] bool bold() const { return bold_; }
 
 private:
   SchemeId scheme_;
