@@ -371,8 +371,10 @@ void Input::Input1(char* out_text, const string& orig_text, int max_length, bool
           bout.Right(pos);
           bout << &szTemp[pos];
         }
-        if (mode == InputMode::DATE && c != slash || mode == InputMode::PHONE && c != dash ||
-            mode != InputMode::DATE && mode != InputMode::PHONE && c != 0) {
+        // ReSharper disable once CppRedundantParentheses
+        if ((mode == InputMode::DATE && c != slash) || (mode == InputMode::PHONE && c != dash) ||
+        // ReSharper disable once CppRedundantParentheses
+            (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
           if (!insert || pos == nLength) {
             bout.bputch(static_cast<char>(c));
             szTemp[pos++] = static_cast<char>(c);

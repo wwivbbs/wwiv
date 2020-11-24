@@ -38,7 +38,7 @@ using namespace wwiv::strings;
 namespace wwiv::common {
 
 FullScreenView::FullScreenView(Output& output, Input& input, int numlines, int swidth, int slength)
-    : bout_(output), bin_(input), num_header_lines_(numlines), screen_width_(swidth),
+    : bin_(input), bout_(output), num_header_lines_(numlines), screen_width_(swidth),
       screen_length_(slength) {
   message_height_ = screen_length_ - num_header_lines_ - 2 - 1;
   lines_start_ = num_header_lines_ + 2;
