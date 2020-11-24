@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
         WRITE_SIZE(uploadsrec);
         WRITE_SIZE(tagrec);
         WRITE_SIZE(zlogrec);
-        WRITE_SIZE(chainfilerec);
+        WRITE_SIZE(chainfilerec_422);
         WRITE_SIZE(chainregrec);
         WRITE_SIZE(newexternalrec);
         WRITE_SIZE(editorrec);

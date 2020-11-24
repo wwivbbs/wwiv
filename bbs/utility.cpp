@@ -364,13 +364,16 @@ const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) 
   return std::max(std::min(maxValue, value), minValue);
 }
 
-int ansir_to_flags(uint8_t ansir) {
-  int flags = 0;
+int ansir_to_flags(uint16_t ansir) {
+  auto flags = 0;
   if (!(ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
   if (ansir & ansir_emulate_fossil) {
-    flags |= EFLAG_FOSSIL;
+    flags |= EFLAG_SYNC_FOSSIL;
+  }
+  if (ansir & ansir_netfoss) {
+    flags |= EFLAG_NETFOSS;
   }
   if (ansir & ansir_temp_dir) {
     flags |= EFLAG_TEMP_DIR;

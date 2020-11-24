@@ -197,6 +197,9 @@ chain_type_t to_chain_type_t(const std::string& s) {
   if (strings::iequals(s, "FOSSIL")) {
     return chain_type_t::FOSSIL;
   }
+  if (strings::iequals(s, "NETFOSS")) {
+    return chain_type_t::NETFOSS;
+  }
   if (strings::iequals(s, "STDIO")) {
     return chain_type_t::STDIO;
   }

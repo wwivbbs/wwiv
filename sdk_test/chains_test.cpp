@@ -31,6 +31,7 @@ TEST(ChainsTest, ExecMode_Operator) {
   ASSERT_EQ(chain_exec_mode_t::dos, t++);
   ASSERT_EQ(chain_exec_mode_t::fossil, t++);
   ASSERT_EQ(chain_exec_mode_t::stdio, t++);
+  ASSERT_EQ(chain_exec_mode_t::netfoss, t++);
   ASSERT_EQ(chain_exec_mode_t::none, t++);
   ASSERT_EQ(chain_exec_mode_t::dos, t);
 }

@@ -27,7 +27,7 @@
 
 namespace wwiv::sdk {
 
-enum class chain_exec_mode_t : uint8_t { none = 0, dos, fossil, stdio };
+enum class chain_exec_mode_t : uint8_t { none = 0, dos, fossil, stdio, netfoss };
 enum class chain_exec_dir_t : uint8_t { bbs = 0, temp };
 
 chain_exec_mode_t& operator++(chain_exec_mode_t&);
@@ -100,7 +100,7 @@ public:
   bool Load();
   bool Save();
 
-  [[nodiscard]] static uint8_t to_ansir(chain_t c);
+  [[nodiscard]] static uint16_t to_ansir(const chain_t& c);
 
   /**
    * Is at least one chain registered or sponsored by someone?  If so return

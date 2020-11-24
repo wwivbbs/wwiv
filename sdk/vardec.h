@@ -696,7 +696,7 @@ struct zlogrec {
 };
 
 // DATA FOR OTHER PROGRAMS AVAILABLE
-struct chainfilerec {
+struct chainfilerec_422 {
   char filename[81],   // filename for .chn file
       description[81]; // description of it
 
@@ -743,8 +743,8 @@ struct editorrec {
   char description[81], // description of editor
       filename[81];     // how to run the editor
   uint8_t bbs_type;     // 0=WWIV, 1=QBBS
-  uint8_t ansir;        // Editor Flags (ANSI required, FOSSIL, etc)
-  uint8_t unused[2];    // TODO This was not used (config)
+  uint8_t old_ansir;        // Editor Flags (ANSI required, FOSSIL, etc)
+  uint16_t ansir;    // new wide editor flags.
 
   char filenamecon[81]; // how to run locally
 
@@ -896,6 +896,8 @@ struct usersubrec {
 #define ansir_local_only 0x20
 #define ansir_multi_user 0x40
 #define ansir_binary 0x80
+// First new wide (16-bit) ansir value
+#define ansir_netfoss 0x0100
 
 // newexternalrec.othr
 #define othr_error_correct 0x0001
@@ -979,8 +981,10 @@ constexpr uint16_t  EFLAG_COMIO = 0x0008;
 constexpr uint16_t  EFLAG_BINARY = 0x0010;
 // try running out of net dir first
 constexpr uint16_t  EFLAG_NETPROG = 0x0080;
-// Use Win32 Emulated FOSSIL
-constexpr uint16_t  EFLAG_FOSSIL = 0x0200;
+// Use Win32 Emulated FOSSIL using NetFOSS
+constexpr uint16_t  EFLAG_NETFOSS = 0x0100;
+// Use Win32 Emulated FOSSIL using SyncFOSS
+constexpr uint16_t  EFLAG_SYNC_FOSSIL = 0x0200;
 // Use STDIO based doors for Window/Linux.  This will set the stdin/stdout
 // file descriptors to the socket before spawning the chain.
 constexpr uint16_t  EFLAG_STDIO = 0x0400;
@@ -1083,7 +1087,7 @@ static_assert(sizeof(shortmsgrec) == 85, "shortmsgrec == 85");
 static_assert(sizeof(voting_response) == 83, "voting_response == 83");
 static_assert(sizeof(uploadsrec) == 144, "uploadsrec == 144");
 static_assert(sizeof(zlogrec) == 21, "zlogrec == 21");
-static_assert(sizeof(chainfilerec) == 166, "chainfilerec == 166");
+static_assert(sizeof(chainfilerec_422) == 166, "chainfilerec_422 == 166");
 static_assert(sizeof(chainregrec) == 64, "chainregrec == 64");
 static_assert(sizeof(newexternalrec) == 512, "newexternalrec == 512");
 static_assert(sizeof(editorrec) == 366, "editorrec == 366");

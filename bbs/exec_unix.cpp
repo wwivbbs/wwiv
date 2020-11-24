@@ -219,8 +219,11 @@ static int UnixSpawn(const std::string& cmd, int flags, int sock) {
 }
 
 int exec_cmdline(const std::string& cmdline, int flags) {
-  if (flags & EFLAG_FOSSIL) {
-    LOG(ERROR) << "EFLAG_FOSSIL is not supported on UNIX";
+  if (flags & EFLAG_SYNC_FOSSIL) {
+    LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
+  }
+  if (flags & EFLAG_NETFOSS) {
+    LOG(ERROR) << "EFLAG_SYNC_FOSSIL is not supported on UNIX";
   }
   if (flags & EFLAG_COMIO) {
     LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";

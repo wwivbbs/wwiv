@@ -144,7 +144,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
-  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Emulate DOS FOSSIL", "STDIO"};
+  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Emulate DOS FOSSIL", "STDIO", "Integrated NetFOSS"};
   try {
     return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {
@@ -240,16 +240,19 @@ static void modify_chain(ssize_t chain_num) {
       c.ansi = !c.ansi;
       break;
     case 'F':
-      c.exec_mode++;
+      ++c.exec_mode;
 #ifdef _WIN32
       if (c.exec_mode == chain_exec_mode_t::stdio) {
-        c.exec_mode++;
+        ++c.exec_mode;
       }
 #else
       if (c.exec_mode == chain_exec_mode_t::dos) {
         c.exec_mode++;
       }
       if (c.exec_mode == chain_exec_mode_t::fossil) {
+        c.exec_mode++;
+      }
+      if (c.exec_mode == chain_exec_mode_t::netfoss) {
         c.exec_mode++;
       }
 #endif

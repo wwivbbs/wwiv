@@ -43,7 +43,7 @@ namespace wwiv::sdk {
 
 chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
   using T = typename std::underlying_type<chain_exec_mode_t>::type;
-  t = (t == chain_exec_mode_t::stdio ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return t;
 }
@@ -51,7 +51,7 @@ chain_exec_mode_t& operator++(chain_exec_mode_t& t) {
 chain_exec_mode_t operator++(chain_exec_mode_t& t, int) {
   using T = typename std::underlying_type<chain_exec_mode_t>::type;
   const auto old = t;
-  t = (t == chain_exec_mode_t::stdio ? chain_exec_mode_t::none
+  t = (t == chain_exec_mode_t::netfoss ? chain_exec_mode_t::none
                                      : static_cast<chain_exec_mode_t>(static_cast<T>(t) + 1));
   return old;
 }
@@ -105,7 +105,7 @@ bool Chains::LoadFromJSON() {
 }
 
 bool Chains::LoadFromDat() {
-  DataFile<chainfilerec> old_chains(FilePath(datadir_, CHAINS_DAT),
+  DataFile<chainfilerec_422> old_chains(FilePath(datadir_, CHAINS_DAT),
                                     File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   DataFile<chainregrec> regfile(FilePath(datadir_, CHAINS_REG),
                                 File::modeBinary | File::modeReadOnly, File::shareDenyNone);
@@ -113,7 +113,7 @@ bool Chains::LoadFromDat() {
     return false;
   }
 
-  std::vector<chainfilerec> old;
+  std::vector<chainfilerec_422> old;
   std::vector<chainregrec> reg;
 
   if (!old_chains.ReadVector(old)) {
@@ -174,14 +174,14 @@ bool Chains::SaveToJSON() {
 }
 
 bool Chains::SaveToDat() {
-  std::vector<chainfilerec> cdisk;
+  std::vector<chainfilerec_422> cdisk;
   std::vector<chainregrec> rdisk;
   for (const auto& from : chains_) {
-    chainfilerec c{};
+    chainfilerec_422 c{};
     chainregrec r{};
     to_char_array(c.filename, from.filename);
     to_char_array(c.description, from.description);
-    c.ansir = to_ansir(from);
+    c.ansir = static_cast<uint8_t>(to_ansir(from) & 0xff);
     //c.sl = from.sl;
     //c.ar = from.ar;
     //r.minage = from.minage;
@@ -201,7 +201,7 @@ bool Chains::SaveToDat() {
   auto cwritten{false};
   auto rwritten{false};
   {
-    DataFile<chainfilerec> cfile(FilePath(datadir_, CHAINS_DAT),
+    DataFile<chainfilerec_422> cfile(FilePath(datadir_, CHAINS_DAT),
                                  File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                                      File::modeTruncate,
                                  File::shareDenyReadWrite);
@@ -234,8 +234,8 @@ bool Chains::HasRegisteredChains() const {
 void Chains::increment_chain_usage(int num) { chains_.at(num).usage++; }
 
 // static
-uint8_t Chains::to_ansir(chain_t c) {
-  uint8_t r{ansir_no_DOS};
+uint16_t Chains::to_ansir(const chain_t& c) {
+  uint16_t r{ansir_no_DOS};
 
   if (c.ansi) {
     r |= ansir_ansi;
@@ -244,6 +244,8 @@ uint8_t Chains::to_ansir(chain_t c) {
     r &= ~ansir_no_DOS;
   } else if (c.exec_mode == chain_exec_mode_t::fossil) {
     r |= ansir_emulate_fossil;
+  } else if (c.exec_mode == chain_exec_mode_t::netfoss) {
+    r |= ansir_netfoss;
   } else if (c.exec_mode == chain_exec_mode_t::stdio) {
     r |= ansir_stdio;
   } else if (c.exec_mode == chain_exec_mode_t::none) {

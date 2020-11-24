@@ -39,7 +39,7 @@ common::Input& script_in();
 common::Output& script_out();
 
 enum class file_location_t { GFILES, MENUS, TEMP, BBS };
-enum class chain_type_t { DOOR32, STDIO, FOSSIL };
+enum class chain_type_t { DOOR32, STDIO, FOSSIL, NETFOSS };
 enum class dropfile_type_t { CHAIN_TXT, DOOR_SYS };
 
 struct wwiv_file_handle_t {

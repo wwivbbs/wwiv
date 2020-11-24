@@ -40,7 +40,7 @@ bool ok_external_fsed();
 bool okfsed();
 /** True if an internal fsed is enabled and user has ansi */
 bool ok_internal_fsed();
-int ansir_to_flags(uint8_t ansir);
+int ansir_to_flags(uint16_t ansir);
 
 #endif  // __INCLUDED_UT`ILITY_H__
 

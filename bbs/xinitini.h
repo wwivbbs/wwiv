@@ -73,6 +73,7 @@ constexpr const char* INI_STR_NEWUSER_MIN = "NEWUSER_MIN";
 constexpr const char* INI_STR_ALLOW_CC_BCC = "ALLOW_CC_BCC";
 constexpr const char* INI_STR_MAIL_WHO_LEN = "MAIL_WHO_LEN";
 constexpr const char* INI_STR_ATTACH_DIR = "ATTACH_DIR";
+constexpr const char* INI_STR_NETFOSS_DIR = "NETFOSS_DIR";
 
 
 //---SYSTEM MAXIMUMS--

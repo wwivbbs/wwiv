@@ -109,7 +109,10 @@ static uint16_t str2spawnopt(const std::string& s) {
     return_val |= EFLAG_BINARY;
   }
   if (ts.find("FOSSIL") != std::string::npos) {
-    return_val |= EFLAG_FOSSIL;
+    return_val |= EFLAG_SYNC_FOSSIL;
+  }
+  if (ts.find("NETFOSS") != std::string::npos) {
+    return_val |= EFLAG_NETFOSS;
   }
   if (ts.find("NETPROG") != std::string::npos) {
     return_val |= EFLAG_NETPROG;
@@ -300,9 +303,15 @@ void Application::ReadINIFile(IniFile& ini) {
     mail_who_field_len = num;
   }
 
+  // Sets up the default attach directory.
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
-  attach_dir_ = !attach_dir.empty() ? attach_dir : FilePath(bbspath(), ATTACH_DIR).string();
+  attach_dir_ = !attach_dir.empty() ? attach_dir : FilePath(bbspath(), "attach").string();
   attach_dir_ = File::EnsureTrailingSlash(attach_dir_);
+
+  // Sets up the default net fossil directory.
+  const auto netfoss_dir = ini.value<string>(INI_STR_NETFOSS_DIR);
+  netfoss_dir_ = !netfoss_dir.empty() ? netfoss_dir : FilePath(bbspath(), "netfoss");
+  netfoss_dir_ = File::EnsureTrailingSlash(netfoss_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 

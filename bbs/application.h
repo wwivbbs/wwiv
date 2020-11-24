@@ -125,6 +125,7 @@ public:
   [[nodiscard]] LocalIO* localIO() const;
   bool reset_local_io(LocalIO* wlocal_io);
   [[nodiscard]] const std::string& GetAttachmentDirectory() const { return attach_dir_; }
+  [[nodiscard]] const std::filesystem::path& netfoss_dir() const { return netfoss_dir_; }
   [[nodiscard]] int instance_number() const { return instance_number_; }
   [[nodiscard]] const std::string& network_extension() const { return network_extension_; }
 
@@ -220,13 +221,6 @@ public:
   [[nodiscard]] wwiv::sdk::StatusMgr* status_manager() const { return statusMgr.get(); }
   [[nodiscard]] wwiv::sdk::UserManager* users() const { return user_manager_.get(); }
 
-  [[nodiscard]] const std::filesystem::path& temp_directory() const { return temp_directory_; }
-  [[nodiscard]] const std::filesystem::path& batch_directory() const { return batch_directory_; }
-  /**
-   * Used instead of QWK_DIRECTORY.  Today it is the same as batch but wanted to
-   * leave it open for changing in the future.
-   */
-  [[nodiscard]] const std::filesystem::path& qwk_directory() const { return batch_directory_; }
   [[nodiscard]] uint8_t primary_port() const { return primary_port_; }
 
   [[nodiscard]] std::filesystem::path bbspath() const noexcept;
@@ -334,8 +328,6 @@ public:
   int subchg{0};
 
   std::string net_email_name;
-  std::filesystem::path temp_directory_;
-  std::filesystem::path batch_directory_;
   uint8_t primary_port_{1};
   std::string dsz_logfile_name_;
 
@@ -438,6 +430,7 @@ private:
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
+  std::filesystem::path netfoss_dir_;
   std::unique_ptr<wwiv::sdk::User> thisuser_;
   std::unique_ptr<wwiv::common::RemoteIO> comm_;
   std::string current_speed_;

@@ -33,9 +33,11 @@ namespace wwiv::bbs::basic {
 static int chain_type_to_flags(chain_type_t c, file_location_t loc) {
   auto flags = 0;
   if (c == chain_type_t::FOSSIL) {
-    flags |= EFLAG_FOSSIL;
+    flags |= EFLAG_SYNC_FOSSIL;
   } else if (c == chain_type_t::STDIO) {
     flags |= EFLAG_STDIO;
+  } else if (c == chain_type_t::NETFOSS) {
+    flags |= EFLAG_NETFOSS;
   }
 
   if (loc != file_location_t::BBS) {

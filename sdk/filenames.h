@@ -25,7 +25,6 @@
 #define ALLOW_NET "allow.net"
 #define ALLOW_DAT "allow.dat"
 #define ATTACH_DAT "attach.dat"
-#define ATTACH_DIR "attach"
 #define ARCHIVER_DAT "archiver.dat"
 #define AUTO_MSG "auto.msg"
 #define ASV_NOEXT "asv"

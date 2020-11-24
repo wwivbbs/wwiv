@@ -954,7 +954,7 @@ void qwk_nscan() {
   bout.Color(3);
   bout.bputs("Building NEWFILES.DAT");
 
-  sprintf(s, "%s%s", a()->qwk_directory().c_str(), "NEWFILES.DAT");
+  sprintf(s, "%s%s", a()->sess().dirs().qwk_directory().c_str(), "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
     bout.bputs("Open Error");

@@ -34,7 +34,6 @@
 #include <memory>
 #include <string>
 
-using std::string;
 using std::chrono::duration_cast;
 using std::chrono::seconds;
 using namespace wwiv::common;
@@ -123,8 +122,8 @@ std::filesystem::path create_dropfile_path(drop_file_t dropfile_type) {
   }
 }
 
-string create_dropfile_filename(drop_file_t t) {
-  return create_dropfile_path(t).string();
+std::string create_dropfile_filename(drop_file_t dropfile_type) {
+  return create_dropfile_path(dropfile_type).string();
 }
 
 /**
@@ -137,7 +136,7 @@ static void GetNamePartForDropFile(bool lastName, char* name) {
       name[strlen(name) - strlen(ss)] = '\0';
     }
   } else {
-    char* ss = strrchr(name, ' ');
+    auto* ss = strrchr(name, ' ');
     sprintf(name, "%s", (ss) ? ++ss : "");
   }
 }
@@ -281,9 +280,9 @@ void CreateCallInfoBbsDropFile() {
     default:
       file.WriteLine("3");
     }
-    string t = times();
-    auto start_duration = duration_since_midnight(a()->sess().system_logon_time());
-    auto start_minute = std::chrono::duration_cast<std::chrono::minutes>(start_duration).count();
+    const auto t = times();
+    const auto start_duration = duration_since_midnight(a()->sess().system_logon_time());
+    const auto start_minute = std::chrono::duration_cast<std::chrono::minutes>(start_duration).count();
     file.WriteLine(" ");
     file.WriteLine(a()->user()->GetSl());
     file.WriteLine(GetMinutesRemainingForDropFile());
@@ -352,7 +351,7 @@ void CreateDoor32SysDropFile() {
   if (file.IsOpen()) {
     file.WriteLine(GetDoor32CommType());
     file.WriteLine(GetDoorHandle());
-    string cspeed = std::to_string(a()->modem_speed_);
+    const auto cspeed = std::to_string(a()->modem_speed_);
     file.WriteLine(cspeed);
     file.WriteLine(StrCat("WWIV ", short_version()));
     file.WriteLine(a()->sess().user_num());
@@ -395,8 +394,8 @@ void CreateDoorSysDropFile() {
             static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.Write(szLine);
-    string ansiStatus = (okansi()) ? "GR" : "NG";
-    sprintf(szLine, "%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus.c_str(),
+    const auto* const ansiStatus = okansi() ? "GR" : "NG";
+    sprintf(szLine, "%s\n%u\n%c\n%s\n%u\n%s\n%u\n%c\n%u\n%u\n%u\n%d\n", ansiStatus,
             a()->user()->GetScreenLines(), a()->user()->IsExpert() ? 'Y' : 'N',
             "1,2,3",                     // conferences
             a()->current_user_sub_num(), // current 'conference'
@@ -407,9 +406,9 @@ void CreateDoorSysDropFile() {
             0,  // kb dl today
             0); // kb dl/day max
     file.Write(szLine);
-    auto birthday_date = a()->user()->birthday_mmddyy();
-    string gfilesdir = a()->config()->gfilesdir();
-    string t = times();
+    const auto birthday_date = a()->user()->birthday_mmddyy();
+    const auto gfilesdir = a()->config()->gfilesdir();
+    const auto t = times();
     sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", 
             birthday_date.c_str(),
             a()->config()->datadir().c_str(), gfilesdir.c_str(),
@@ -442,6 +441,7 @@ static void create_drop_files() {
 }
 
 /**
+ * \verbatim 
 CHAIN.TXT Definition File by MrBill.
 -----------CHAIN.TXT-----------------------------------
 1                  User number
@@ -476,8 +476,9 @@ MrBill             System SysOp
 8N1                User parity
 2400               Com port baud rate
 7400               WWIVnet node number
+\endverbatim 
  */
-string create_chain_file() {
+std::string create_chain_file() {
   const auto cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
@@ -488,7 +489,7 @@ string create_chain_file() {
   const auto seconds_used =
       static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 
-  const auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
+  auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
   File::Remove(fileName);
   TextFile file(fileName, "wd");
   if (file.IsOpen()) {
@@ -519,4 +520,35 @@ string create_chain_file() {
   }
 
   return fileName;
+}
+
+std::string nf_path(const std::string& cmd) {
+  const auto path = FilePath(a()->netfoss_dir(), cmd);
+  return path.string();
+}
+
+std::optional<std::string> create_netfoss_bat() {
+
+  if (!File::Exists(a()->netfoss_dir())) {
+    LOG(ERROR) << "NetFoss not installed into NETFOSS_DIR: " << a()->netfoss_dir().string();
+    return std::nullopt;
+  }
+  const auto& tempdir = a()->sess().dirs().temp_directory();
+  const auto path = FilePath(tempdir, "nf.bat");
+
+  TextFile f(path, "wt");
+  if (!f.IsOpen()) {
+    return std::nullopt;
+  }
+
+  f.WriteLine("@echo off");
+  f.WriteLine(StrCat("rem WWIV Generated NF.BAT: ", DateTime::now().to_string()));
+  f.WriteLine(nf_path("ansi.com"));
+  f.WriteLine(nf_path("netfoss.com"));
+  f.WriteLine("if errorlevel 1 goto end");
+  f.WriteLine(nf_path("netcom.exe %1 %2 %3 %4 %5 %6 %7 %8 %9"));
+  f.WriteLine(nf_path("netfoss.com /u"));
+  f.WriteLine(":end");
+
+  return f.full_pathname();
 }

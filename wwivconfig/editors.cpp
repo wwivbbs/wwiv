@@ -44,50 +44,72 @@ static void edit_editor(editorrec& e) {
   constexpr uint8_t bbs_type_wwiv = 0;
   constexpr uint8_t bbs_type_quickbbs = 1;
 
+  constexpr int fossil_type_none = 0;
+  constexpr int fossil_type_netfoss = 1;
+  constexpr int fossil_type_syncfoss = 2;
+
   const std::vector<std::pair<uint8_t, string>> bbs_types = {{bbs_type_wwiv, "WWIV"},
                                                              {bbs_type_quickbbs, "QuickBBS"}};
+  const std::vector<std::pair<int, string>> fossil_types = {
+      {fossil_type_none, "No"},
+      {fossil_type_syncfoss, "SyncFoss"},
+      {fossil_type_netfoss, "NetFoss"},
+  };
   constexpr auto LABEL1_POSITION = 2;
   constexpr auto LABEL1_WIDTH = 29;
   constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
+  if (e.old_ansir != 0 && e.ansir == 0) {
+    // update to wide ansir.
+    e.ansir = e.old_ansir;
+  }
   if (!(e.ansir & ansir_ansi)) {
-    e.ansir |= ansir_emulate_fossil;
+    e.ansir |= ansir_netfoss;
     e.ansir |= ansir_no_DOS;
     e.ansir |= ansir_ansi;
     e.ansir |= ansir_temp_dir;
   }
 
+  auto fossil_type = fossil_type_none;
+  if (e.ansir & ansir_emulate_fossil) {
+    fossil_type = fossil_type_syncfoss;
+  } else if (e.ansir & ansir_netfoss) {
+    fossil_type = fossil_type_netfoss;
+  }
+
   auto y = 1;
   EditItems items{};
-  items.add(
-      new StringEditItem<char*>(COL1_POSITION, y++, 35, e.description, EditLineMode::ALL));
-  items.add(new ToggleEditItem<uint8_t>(COL1_POSITION, y++, bbs_types, &e.bbs_type));
-  items.add(
-      new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
+  items.add(new Label(2, y, LABEL1_WIDTH, "Description:"),
+            new StringEditItem<char*>(COL1_POSITION, y, 35, e.description, EditLineMode::ALL));
+  ++y;
+  items.add(new Label(2, y, LABEL1_WIDTH, "BBS Type:"),
+            new ToggleEditItem<uint8_t>(COL1_POSITION, y, bbs_types, &e.bbs_type));
 #ifndef _WIN32
-  items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
+  ++y;
+  items.add(new Label(2, y++, LABEL1_WIDTH, "Use STDIO:"),
+            new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
+  // Clear the FOSSIL flags if they are set accidentally.
+  e.ansir &= ~ansir_netfoss;
+  e.ansir &= ~ansir_emulate_fossil;
 #else
-  // Clear the flag if it's set accidentally.
+  ++y;
+  items.add(
+      new Label(2, y, LABEL1_WIDTH, "Emulate FOSSIL:"),
+      new ToggleEditItem<int>(COL1_POSITION, y, fossil_types, &fossil_type));
+  // Clear the stdio flag if it's set accidentally.
   e.ansir &= ~ansir_stdio;
 #endif
-  items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
+  ++y;
+  items.add(new Label(2, y, LABEL1_WIDTH, "Temp Directory Working Dir:"),
+            new FlagEditItem<uint16_t>(COL1_POSITION, y, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;
-  items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filename));
-  y += 2;
-  items.add(new CommandLineItem(LABEL1_POSITION, y, 75, e.filenamecon));
+  items.add(new Label(2, y, LABEL1_WIDTH, "Filename to run remotely:"),
+    new CommandLineItem(LABEL1_POSITION, y+1, 75, e.filename));
+  y += 3;
+  items.add(new Label(2, y, LABEL1_WIDTH, "Filename to run locally:"),
+    new CommandLineItem(LABEL1_POSITION, y+1, 75, e.filenamecon));
 
-  y = 1;
-  items.add_labels({new Label(2, y++, LABEL1_WIDTH, "Description:"),
-                    new Label(2, y++, LABEL1_WIDTH, "BBS Type:"),
-                    new Label(2, y++, LABEL1_WIDTH, "Emulate FOSSIL:"),
-#ifndef _WIN32
-                    new Label(2, y++, LABEL1_WIDTH, "Use STDIO:"),
-#endif
-                    new Label(2, y++, LABEL1_WIDTH, "Temp Directory Working Dir:"),
-                    new Label(2, y++, LABEL1_WIDTH, "Filename to run remotely:")});
-  y+=2;
-  items.add_labels({new Label(2, y++, LABEL1_WIDTH, "Filename to run locally:")});
-  y+=2;
+  y+=3;
   items.add_labels(
       {new Label(2, y++, "%1 = filename to edit   %N = Node Number "),
        new Label(2, y++, "%2 = chars per line     %H = Socket Handle"),
@@ -95,6 +117,24 @@ static void edit_editor(editorrec& e) {
        new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed."),
        new Label(2, y, "See http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.")});
   items.Run("External Editor Configuration");
+
+  switch (fossil_type) {
+  case fossil_type_netfoss: {
+    e.ansir |= ansir_no_DOS;
+    e.ansir |= ansir_netfoss;
+    e.ansir &= ~ansir_emulate_fossil;
+  } break;
+  case fossil_type_syncfoss: {
+    e.ansir |= ansir_no_DOS;
+    e.ansir &= ~ansir_netfoss;
+    e.ansir |= ansir_emulate_fossil;
+  } break;
+  case fossil_type_none:
+  default: {
+    e.ansir &= ~ansir_netfoss;
+    e.ansir &= ~ansir_emulate_fossil;
+  }
+  }
 }
 
 void extrn_editors(const wwiv::sdk::Config& config) {

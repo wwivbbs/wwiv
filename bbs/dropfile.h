@@ -15,9 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_DROPFILE_H__
-#define __INCLUDED_DROPFILE_H__
+#ifndef INCLUDED_BBS_DROPFILE_H
+#define INCLUDED_BBS_DROPFILE_H
 
+#include <optional>
 #include <string>
 
 enum class drop_file_t {
@@ -40,5 +41,6 @@ std::string create_dropfile_filename(drop_file_t dropfile_type);
  */
 std::string create_chain_file();
 
+std::optional<std::string> create_netfoss_bat();
 
-#endif  // __INCLUDED_DROPFILE_H__
+#endif
