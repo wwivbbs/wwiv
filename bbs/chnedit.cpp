@@ -144,7 +144,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
-  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Emulate DOS FOSSIL", "STDIO", "Integrated NetFOSS"};
+  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Integrated SyncFoss", "STDIO", "Integrated NetFOSS"};
   try {
     return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {
@@ -162,43 +162,43 @@ static void modify_chain(ssize_t chain_num) {
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
     bout << "|#9C) ACS          : |#2" << c.acs << wwiv::endl;
-    bout << "|#9E) ANSI         : |#2" << (c.ansi ? "|#6Required" : "|#1Optional") << wwiv::endl;
-    bout << "|#9F) Exec Mode:     |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
-    bout << "|#9I) Launch From  : |#2"
+    bout << "|#9D) ANSI         : |#2" << (c.ansi ? "|#2Required" : "|#5Optional") << wwiv::endl;
+    bout << "|#9E) Exec Mode:     |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
+    bout << "|#9F) Launch From  : |#2"
          << YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
                             "BBS Root Directory")
          << wwiv::endl;
-    bout << "|#9J) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
-    bout << "|#9K) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
-    char ch{};
+    bout << "|#9G) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
+    bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
+    bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
+    std::string allowed = "QABCDEFGHI[]";
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       const auto& r = c.regby;
-      User regUser;
       if (!r.empty()) {
-        auto it = r.begin();
-        const auto first = *it;
-        a()->users()->readuser(&regUser, *it++);
-        bout << "|#9L) Registered by: |#2" << a()->names()->UserName(first) << wwiv::endl;
-        for (; it != std::end(r); ++it) {
-          const auto rbc = *it;
-          if (rbc != 0) {
-            if (a()->users()->readuser(&regUser, rbc)) {
-              bout << string(18, ' ') << "|#2" << a()->names()->UserName(rbc) << wwiv::endl;
+        bout << "|#9J) Registered by: ";
+        auto need_space = false;
+        for (auto it = std::begin(r); it != std::end(r) && *it != 0; ++it) {
+          User regUser;
+          if (a()->users()->readuser(&regUser, *it)) {
+            if (!need_space) {
+              need_space = true;
+            } else {
+              bout << string(18, ' ');
             }
+            bout << "|#2" << a()->names()->UserName(*it) << wwiv::endl;
           }
         }
       } else {
-        bout << "|#9L) Registered by: |#2AVAILABLE" << wwiv::endl;
+        bout << "|#9J) Registered by: |#2AVAILABLE" << wwiv::endl;
       }
-      bout << "|#9M) Usage        : |#2" << c.usage << wwiv::endl;
       bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
-      ch = onek("QABCDEFGHIJKLMN[]", true); // removed i
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1J|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+      allowed.push_back('J');
     } else {
       bout.nl();
-      bout << "|#9Which (A-K,R,[,],Q) ? ";
-      ch = onek("QABCDEFGHIJK[]", true); // removed i
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     }
+    const auto ch = onek(allowed, true);
     switch (ch) {
     case 'Q': {
       done = true;
@@ -236,10 +236,10 @@ static void modify_chain(ssize_t chain_num) {
       bout << "|#7New ACS? \r\n:";
       c.acs = input_acs(bin, bout, c.acs, 78);
     } break;
-    case 'E':
+    case 'D':
       c.ansi = !c.ansi;
       break;
-    case 'F':
+    case 'E':
       ++c.exec_mode;
 #ifdef _WIN32
       if (c.exec_mode == chain_exec_mode_t::stdio) {
@@ -257,26 +257,26 @@ static void modify_chain(ssize_t chain_num) {
       }
 #endif
       break;
-    case 'I':
-      c.dir++;
+    case 'F':
+      ++c.dir;
       break;
-    case 'J':
+    case 'G':
       c.local_only = !c.local_only;
       break;
-    case 'K':
+    case 'H':
       c.multi_user = !c.multi_user;
       break;
-    case 'L':
+    case 'I': {
+      bout.nl();
+      bout << "|#5Times Run : ";
+      c.usage = bin.input_number(c.usage);
+    } break;
+    case 'J':
       if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         break;
       }
       modify_chain_sponsors(chain_num, c);
       break;
-    case 'M': {
-      bout.nl();
-      bout << "|#5Times Run : ";
-      c.usage = bin.input_number(c.usage);
-    } break;
     }
   } while (!done && !a()->sess().hangup());
   a()->chains->at(chain_num) = c;
