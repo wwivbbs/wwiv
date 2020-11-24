@@ -18,13 +18,11 @@
 /**************************************************************************/
 #include "bbs/execexternal.h"
 
-
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "bbs/dropfile.h"
+#include "bbs/exec.h"
 #include "bbs/instmsg.h"
 #include "bbs/wqscn.h"
-#include "bbs/exec.h"
 #include "bbs/basic/basic.h"
 #include "core/log.h"
 

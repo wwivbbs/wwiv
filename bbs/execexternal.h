@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_EXECEXTERNAL_H__
-#define __INCLUDED_BBS_EXECEXTERNAL_H__
+#ifndef INCLUDED_BBS_EXECEXTERNAL_H
+#define INCLUDED_BBS_EXECEXTERNAL_H
 
 #include <string>
 
@@ -31,4 +31,4 @@
  */
 int ExecuteExternalProgram(const std::string& command_line, int flags);
 
-#endif  // __INCLUDED_BBS_EXECEXTERNAL_H__
+#endif

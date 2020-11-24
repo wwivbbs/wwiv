@@ -176,10 +176,11 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->GetNumLocalPosts()));
     a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->GetNumEmailSentToday()));
     a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
+    const auto percent = static_cast<double>(status->GetMinutesActiveToday()) / 1440.0;
     a()->localIO()->PutsXYA(
         21, 13, 14,
-        fmt::sprintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
-                     100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
+        fmt::format("{} Mins ({:.2}%)", status->GetMinutesActiveToday(),
+                     100.0 * percent));
     a()->localIO()->PutsXYA(58, 6, 14, full_version());
 
     a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->GetNetworkVersion()));

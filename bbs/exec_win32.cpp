@@ -93,7 +93,7 @@ static bool DeleteSyncTempFile() {
   return false;
 }
 
-static bool CreateSyncTempFile(string *out, const string commandLine) {
+static bool CreateSyncTempFile(string *out, const string& commandLine) {
   out->assign(GetSyncFosTempFilePath().string());
   DeleteSyncTempFile();
 
@@ -111,7 +111,7 @@ static bool CreateSyncTempFile(string *out, const string commandLine) {
 
 bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode) {
   LogToSync("Starting DoSyncFosLoopNT()\r\n");
-  HANDLE hSyncWriteSlot = INVALID_HANDLE_VALUE;     // Mailslot for writing
+  HANDLE hSyncWriteSlot = INVALID_HANDLE_VALUE;     // Mail Slot for writing
 
   // Cleanup on all exit paths
   ScopeExit at_exit([&] {
@@ -157,7 +157,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     if (a()->remoteIO()->incoming()) {
       counter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      auto nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
+      const auto nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
 
       if (a()->IsExecLogSyncFoss()) {
         // LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
@@ -183,7 +183,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
                                     nullptr,
                                     OPEN_EXISTING,
                                     FILE_ATTRIBUTE_NORMAL,
-                                    (HANDLE) nullptr);
+                                    static_cast<HANDLE>(nullptr));
         if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
           sysoplog() << "!!! Unable to create mail slot for writing for SyncFoss External program: " << GetLastError();
           LogToSync(StrCat("!!! Unable to create mail slot for writing for SyncFoss External program: ", GetLastError()));
@@ -275,7 +275,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 
 static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HANDLE& hSyncReadSlot) {
   hSyncHangupEvent = INVALID_HANDLE_VALUE;
-  hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
+  hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mail Slot for reading
 
   // Create each syncfoss window in it's own WOW VDM.
   dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
@@ -393,7 +393,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
   } else {
     working_cmdline = user_command_line;
   }
-  LOG(INFO) << "exec_cmdline: working_commandline: " << working_cmdline;
+  VLOG(1) << "exec_cmdline: working_commandline: " << working_cmdline;
 
   DWORD dwCreationFlags = 0;
   const auto title = std::make_unique<char[]>(500);
@@ -406,11 +406,11 @@ int exec_cmdline(const string& user_command_line, int flags) {
   si.lpTitle = title.get();
 
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
-    LOG(INFO) <<"Closing remote IO";
+    VLOG(1) <<"Closing remote IO";
     a()->remoteIO()->close(true);
   }
 
-  auto hSyncHangupEvent = INVALID_HANDLE_VALUE;
+  auto hSyncHangupEvent = INVALID_HANDLE_VALUE;  // NOLINT(readability-qualified-auto)
   auto hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
     
   if (using_sync) {
@@ -436,7 +436,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
 
     // If we return here, we may have to reopen the communications port.
     if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
-      LOG(INFO) << "Reopening comm (on createprocess error)";
+      VLOG(1) << "Reopening comm (on createprocess error)";
       a()->remoteIO()->open();
     }
     // Restore old binary mode.
@@ -487,7 +487,7 @@ int exec_cmdline(const string& user_command_line, int flags) {
 
   // reengage comm stuff
   if (a()->sess().ok_modem_stuff() && !using_sync && a()->sess().using_modem()) {
-    LOG(INFO) << "Reopening comm";
+    VLOG(1) << "Reopening comm";
     a()->remoteIO()->open();
   }
 

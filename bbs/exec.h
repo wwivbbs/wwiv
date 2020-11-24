@@ -16,12 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_EXEC_H__
-#define __INCLUDED_BBS_EXEC_H__
+#ifndef INCLUDED_BBS_EXEC_H
+#define INCLUDED_BBS_EXEC_H
 
 #include <string>
 
 // Used to execute a command, called by ExecuteCommandline and the WFC
 int exec_cmdline(const std::string& user_command_line, int flags);
 
-#endif // __INCLUDED_BBS_EXEC_H__
+#endif
+

@@ -86,7 +86,7 @@ Win32ConsoleIO::Win32ConsoleIO() {
   // Have to reset this info, otherwise bad things happen.
   GetConsoleScreenBufferInfo(out_, &csbi);
   GetConsoleMode(in_, &saved_input_mode_);
-  SetConsoleMode(in_, 0);
+  SetConsoleMode(in_, 0 | ENABLE_EXTENDED_FLAGS);
 }
 
 Win32ConsoleIO::~Win32ConsoleIO() {

@@ -19,10 +19,8 @@
 #include "bbs/instmsg.h"
 
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "common/datetime.h"
 #include "common/pause.h"
-#include "bbs/utility.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
