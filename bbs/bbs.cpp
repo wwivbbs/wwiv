@@ -27,12 +27,15 @@
 #include "local_io/stdio_local_io.h"
 #include "localui/curses_io.h"
 #include "sdk/config.h"
+#include <clocale>
 #include <exception>
 #include <iostream>
 #include <string>
 
 #if !defined( _WIN32 )
 #include <unistd.h>
+#else
+#include "core/wwiv_windows.h"
 #endif // !_WIN32
 
 // Uncomment this line to use curses on Win32
@@ -59,6 +62,16 @@ using wwiv::core::LoggerConfig;
 using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
+  std::string default_locale;
+#ifdef _WIN32
+  default_locale = ".UTF-8";
+  ::SetConsoleOutputCP(65001); // CP_UTF8
+
+#endif
+  const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
+  std::cout << "Resetting Locale: " << new_locale << std::endl;
+  std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
+
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 

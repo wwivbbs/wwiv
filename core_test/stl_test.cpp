@@ -141,8 +141,8 @@ TEST(StlTest, At_Map_Smoke_Const) {
   EXPECT_EQ('a', at(v, 1));
 }
 
-TEST(StlTest, At_Map_Death) {
-  const std::map<int, char> v{ {1,'a'}, {2,'b'}, {3,'c'} };
-
-  EXPECT_DEATH_IF_SUPPORTED(at(v, 20), ".*");
-}
+//TEST(StlTest, At_Map_Death) {
+//  const std::map<int, char> v{ {1,'a'}, {2,'b'}, {3,'c'} };
+//
+//  EXPECT_DEATH_IF_SUPPORTED(at(v, 20), ".*");
+//}

@@ -21,14 +21,14 @@
 
 int main(int argc, char* argv[]) {
   try {
-    std::locale::global(std::locale(std::setlocale(LC_ALL, "")));
-    
-    std::cout << "Current Locale: " << std::locale("").name() << std::endl;
+    std::string default_locale;
 #ifdef _WIN32
-    std::setlocale(LC_ALL, ".UTF-8");
-#else
-    std::cout << "Resetting Locale: " << std::setlocale(LC_ALL, "") << std::endl;
+    default_locale = ".UTF-8";
 #endif
+    const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
+    std::cout << "Resetting Locale: " << new_locale << std::endl;
+    std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
+
     std::locale loc2;
     std::cout << "Current Locale after set: " << loc2.name() << std::endl;
     testing::InitGoogleTest(&argc, argv);

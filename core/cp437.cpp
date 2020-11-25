@@ -297,8 +297,16 @@ static wchar_t dos_to_utf8_[] =
 int cp437_to_utf8(uint8_t ch, char* out) {
   const auto unicode = dos_to_utf8_[ch];
   const auto res = wctomb(out, unicode);
+  if (res == -1) {
+    out[0] = '\0';
+    return 0;
+  }
   out[res] = '\0';
   return res;
+}
+
+wchar_t cp437_to_utf8(uint8_t ch) {
+  return dos_to_utf8_[ch];
 }
 
 std::wstring cp437_to_utf8w(const std::string& in) {

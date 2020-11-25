@@ -25,6 +25,7 @@
 namespace wwiv::core {
 
 int cp437_to_utf8(uint8_t ch, char* out);
+wchar_t cp437_to_utf8(uint8_t ch);
 std::wstring cp437_to_utf8w(const std::string& in);
 std::string cp437_to_utf8(const std::string& in);
 

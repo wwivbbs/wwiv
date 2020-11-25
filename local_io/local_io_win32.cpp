@@ -16,9 +16,10 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "local_io/local_io_win32.h"
 #include "core/wwiv_windows.h"
 
-#include "local_io/local_io_win32.h"
+#include "core/cp437.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -38,6 +39,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using std::chrono::milliseconds;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using wwiv::os::sound;
 
@@ -71,7 +73,7 @@ Win32ConsoleIO::Win32ConsoleIO() {
   GetConsoleScreenBufferInfo(out_, &csbi);
   original_size_.X = csbi.dwSize.X;
   original_size_.Y = csbi.dwSize.Y;
-  SMALL_RECT rect = csbi.srWindow;
+  auto rect = csbi.srWindow;
   COORD bufSize;
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
   bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
@@ -97,7 +99,7 @@ Win32ConsoleIO::~Win32ConsoleIO() {
 }
 
 // This, obviously, moves the cursor to the location specified, offset from
-// the protected dispaly at the top of the screen.  Note: this function
+// the protected display at the top of the screen.  Note: this function
 // is 0 based, so (0,0) is the upper left hand corner.
 void Win32ConsoleIO::GotoXY(int x, int y) {
   x = std::max<int>(x, 0);
@@ -156,7 +158,7 @@ void Win32ConsoleIO::Lf() {
     scrollRect.Left = 0;
     scrollRect.Right = 79;
     fill.Attributes = static_cast<int16_t>(curatr());
-    fill.Char.AsciiChar = ' ';
+    fill.Char.UnicodeChar = cp437_to_utf8(' ');
 
     ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
   } else {
@@ -217,7 +219,8 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
   DWORD cb;
 
   SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
-  WriteConsole(out_, &ch, 1, &cb, nullptr);
+  auto wch = cp437_to_utf8(ch);
+  WriteConsoleW(out_, &wch, 1, &cb, nullptr);
 
   if (cursor_pos_.X <= 79) {
     cursor_pos_.X++;
@@ -238,13 +241,13 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
     MoveRect.Right = 79;
 
     fill.Attributes = static_cast<int16_t>(curatr());
-    fill.Char.AsciiChar = ' ';
+    fill.Char.UnicodeChar = cp437_to_utf8(' ');
 
     dest.X = 0;
     // rushfan scrolling fix (was -1)
     dest.Y = static_cast<int16_t>(GetTopLine());
 
-    ScrollConsoleScreenBuffer(out_, &MoveRect, &MoveRect, dest, &fill);
+    ScrollConsoleScreenBufferW(out_, &MoveRect, &MoveRect, dest, &fill);
   } else {
     cursor_pos_.Y++;
   }
@@ -297,10 +300,10 @@ void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
 void Win32ConsoleIO::FastPuts(const string& text) {
   // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
-  const auto len = wwiv::stl::size_int(text);
 
   SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
-  WriteConsole(out_, text.c_str(), len, &cb, nullptr);
+  const auto s = cp437_to_utf8w(text);
+  WriteConsoleW(out_, s.c_str(), wwiv::stl::size_int(s), &cb, nullptr);
   cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
 
@@ -324,12 +327,12 @@ void Win32ConsoleIO::set_protect(int l) {
         scrnl.Bottom = static_cast<int16_t>(GetScreenBottom());
         scrnl.Right = csbi.dwSize.X;
 
-        lpFill.Char.AsciiChar = ' ';
+        lpFill.Char.UnicodeChar = cp437_to_utf8(' ');
         lpFill.Attributes = 0;
 
         coord.X = 0;
         coord.Y = static_cast<int16_t>(l);
-        ScrollConsoleScreenBuffer(out_, &scrnl, nullptr, coord, &lpFill);
+        ScrollConsoleScreenBufferW(out_, &scrnl, nullptr, coord, &lpFill);
         GotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
     } else {
@@ -377,7 +380,7 @@ void Win32ConsoleIO::restorescreen() {
     region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
     region.Right = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
-    WriteConsoleOutput(out_, saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
+    WriteConsoleOutputW(out_, saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
     free(saved_screen.scrn1);
     saved_screen.scrn1 = nullptr;
   }
@@ -413,7 +416,7 @@ unsigned char Win32ConsoleIO::GetChar() {
     extended_key_waiting_ = false;
     return GetKeyboardChar();
   }
-  unsigned char rc = GetKeyboardChar();
+  const auto rc = GetKeyboardChar();
   if (rc == 0 || rc == 0xe0) {
     extended_key_waiting_ = true;
   }
@@ -434,8 +437,8 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     y = GetScreenBottom() + 1 - ylen;
   }
 
-  int xx = WhereX();
-  int yy = WhereY();
+  const auto xx = WhereX();
+  const auto yy = WhereY();
 
   // we expect to be offset by GetTopLine()
   y += GetTopLine();
@@ -459,19 +462,19 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   size.Y = static_cast<int16_t>(ylen);
 
   // our current position within the CHAR_INFO buffer
-  int nCiPtr = 0;
+  auto nCiPtr = 0;
 
   // Loop through Y, each time looping through X adding the right character
-  for (int yloop = 0; yloop < size.Y; yloop++) {
-    for (int xloop = 0; xloop < size.X; xloop++) {
+  for (auto yloop = 0; yloop < size.Y; yloop++) {
+    for (auto xloop = 0; xloop < size.X; xloop++) {
       ci[nCiPtr].Attributes = static_cast<int16_t>(GetUserEditorColor());
       if ((yloop == 0) || (yloop == size.Y - 1)) {
-        ci[nCiPtr].Char.AsciiChar = '\xC4'; // top and bottom
+        ci[nCiPtr].Char.UnicodeChar = cp437_to_utf8('\xC4'); // top and bottom
       } else {
         if ((xloop == 0) || (xloop == size.X - 1)) {
-          ci[nCiPtr].Char.AsciiChar = '\xB3'; // right and left sides
+          ci[nCiPtr].Char.UnicodeChar = cp437_to_utf8('\xB3'); // right and left sides
         } else {
-          ci[nCiPtr].Char.AsciiChar = '\x20'; // nothing... Just filler (space)
+          ci[nCiPtr].Char.UnicodeChar = cp437_to_utf8('\x20'); // nothing... Just filler (space)
         }
       }
       nCiPtr++;
@@ -480,24 +483,24 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
 
   // sum of the lengths of the previous lines (+0) is the start of next line
 
-  ci[0].Char.AsciiChar = '\xDA';        // upper left
-  ci[xlen - 1].Char.AsciiChar = '\xBF'; // upper right
+  ci[0].Char.UnicodeChar = cp437_to_utf8('\xDA');        // upper left
+  ci[xlen - 1].Char.UnicodeChar = cp437_to_utf8('\xBF'); // upper right
 
-  ci[xlen * (ylen - 1)].Char.AsciiChar = '\xC0';            // lower left
-  ci[xlen * (ylen - 1) + xlen - 1].Char.AsciiChar = '\xD9'; // lower right
+  ci[xlen * (ylen - 1)].Char.UnicodeChar = cp437_to_utf8('\xC0');            // lower left
+  ci[xlen * (ylen - 1) + xlen - 1].Char.UnicodeChar = cp437_to_utf8('\xD9'); // lower right
 
   // Send it all to the screen with 1 WIN32 API call (Windows 95's console mode API support
   // is MUCH slower than NT/Win2k, therefore it is MUCH faster to render the buffer off
   // screen and then write it with one fell swoop.
 
-  WriteConsoleOutput(out_, ci, size, pos, &rect);
+  WriteConsoleOutputW(out_, ci, size, pos, &rect);
 
   // Draw shadow around boxed window
-  for (int i = 0; i < xlen; i++) {
+  for (auto i = 0; i < xlen; i++) {
     set_attr_xy(x + 1 + i, y + ylen, 0x08);
   }
 
-  for (int i1 = 0; i1 < ylen; i1++) {
+  for (auto i1 = 0; i1 < ylen; i1++) {
     set_attr_xy(x + xlen, y + 1 + i1, 0x08);
   }
 
@@ -543,7 +546,7 @@ void Win32ConsoleIO::WriteScreenBuffer(const char* buffer) {
   const char* p = buffer;
 
   for (int i = 0; i < 2000; i++) {
-    ci[i].Char.AsciiChar = *p++;
+    ci[i].Char.UnicodeChar = cp437_to_utf8(*p++);
     ci[i].Attributes = *p++;
   }
 
@@ -551,7 +554,7 @@ void Win32ConsoleIO::WriteScreenBuffer(const char* buffer) {
   COORD size = {80, 25};
   SMALL_RECT rect = {0, 0, 79, 24};
 
-  WriteConsoleOutput(out_, ci, size, pos, &rect);
+  WriteConsoleOutputW(out_, ci, size, pos, &rect);
 }
 
 int Win32ConsoleIO::GetDefaultScreenBottom() const noexcept {

@@ -608,7 +608,9 @@ static std::pair<int, int> ansicallout() {
       snn = -1;
       done = true;
       break;
-    case -32: // (224) I don't know MS's CRT returns this on arrow keys....
+    case -32: 
+      // Ignore warning of duplicate case
+    case 224: // (224) I don't know MS's CRT returns this on arrow keys....
     case 0:
       ch = to_upper_case_char(a()->localIO()->GetChar());
       switch (ch) {
