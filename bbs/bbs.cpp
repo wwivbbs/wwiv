@@ -69,7 +69,6 @@ int bbsmain(int argc, char *argv[]) {
 
 #endif
   const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
-  std::cout << "Resetting Locale: " << new_locale << std::endl;
   std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
 
   LoggerConfig config(LogDirFromConfig);
@@ -77,6 +76,7 @@ int bbsmain(int argc, char *argv[]) {
 
   std::unique_ptr<Application> bbs;
   try {
+    VLOG(1) << "Resetting Locale: " << new_locale;
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     bbs.reset(CreateSession(new StdioLocalIO()));
