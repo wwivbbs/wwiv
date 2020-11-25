@@ -22,6 +22,8 @@
 int main(int argc, char* argv[]) {
   try {
 #ifdef _WIN32
+  std::locale loc;
+  std::cout << "Current Locale: " << loc.name() << std::endl;
   std::setlocale(LC_ALL, ".UTF-8");
 #else
   std::setlocale(LC_ALL, "C.UTF-8");
