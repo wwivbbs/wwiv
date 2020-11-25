@@ -40,6 +40,7 @@ add_subdirectory(deps/fmt EXCLUDE_FROM_ALL)
 
 if(WIN32)
   # We only use pdcurses on Win32
+  add_definitions(-DPDC_WIDE)
   add_subdirectory(deps/pdcurses EXCLUDE_FROM_ALL)
 endif()
 

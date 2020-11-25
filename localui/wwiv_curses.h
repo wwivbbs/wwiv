@@ -25,10 +25,6 @@
 
 #if defined(__sun)
 #include <ncurses/curses.h>
-#elif _WIN32
-// Enable wide char support in PDCurses
-#define PDC_WIDE
-#include <curses.h>
 #else
 #include <curses.h>
 #endif
