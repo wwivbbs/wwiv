@@ -117,7 +117,8 @@ void CursesLocalIO::Backspace() {
 
 void CursesLocalIO::PutchRaw(unsigned char ch) {
   SetColor(curatr());
-  window_->Putch(ch);
+  const auto wch = wwiv::core::cp437_to_utf8(static_cast<uint8_t>(ch));
+  window_->PutchW(wch);
 }
 
 void CursesLocalIO::Putch(unsigned char ch) {
@@ -137,7 +138,7 @@ void CursesLocalIO::Putch(unsigned char ch) {
 }
 
 void CursesLocalIO::Puts(const string& s) {
-  for (char ch : s) {
+  for (auto ch : s) {
     Putch(ch);
   }
 }
@@ -159,7 +160,8 @@ void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
 
 void CursesLocalIO::FastPuts(const string& text) {
   SetColor(curatr());
-  window_->Puts(text);
+  const auto w = wwiv::core::cp437_to_utf8w(text);
+  window_->PutsW(w);
 }
 
 void CursesLocalIO::set_protect(int l) { SetTopLine(l); }

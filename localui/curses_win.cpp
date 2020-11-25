@@ -188,8 +188,9 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
 }
 
 void CursesWindow::PutchW(wchar_t ch) {
-  cchar_t c = ch;
-  wadd_wch(std::any_cast<WINDOW*>(window_), &c);
+  // Curses seriously has no way to display a single wchar_t!!
+  wchar_t c[2] = { ch, 0 };
+  waddwstr(std::any_cast<WINDOW*>(window_), c);
 
   Refresh();
 }
