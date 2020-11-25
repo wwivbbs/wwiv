@@ -16,26 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "core/cp437.h"
 #include "core/log.h"
 #include <clocale>
 
+using namespace wwiv::core;
+
 int main(int argc, char* argv[]) {
   try {
-    std::string default_locale;
-#ifdef _WIN32
-    default_locale = ".UTF-8";
-#endif
-    const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
-    std::cout << "Resetting Locale: " << new_locale << std::endl;
-    std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
-
-    std::locale loc2;
-    std::cout << "Current Locale after set: " << loc2.name() << std::endl;
+    set_wwiv_codepage(wwiv_codepage_t::utf8);
     testing::InitGoogleTest(&argc, argv);
-    wwiv::core::LoggerConfig logger_config{};
+    LoggerConfig logger_config{};
     logger_config.register_file_destinations = false;
     logger_config.log_startup = false;
-    wwiv::core::Logger::Init(argc, argv, logger_config);
+    Logger::Init(argc, argv, logger_config);
     return RUN_ALL_TESTS();
   } catch (const std::exception& e) {
     std::cerr << e.what();

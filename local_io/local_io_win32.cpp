@@ -173,7 +173,7 @@ void Win32ConsoleIO::Lf() {
  */
 void Win32ConsoleIO::Cr() {
   cursor_pos_.X = 0;
-  COORD c{cursor_pos_.X, cursor_pos_.Y};
+  const COORD c{cursor_pos_.X, cursor_pos_.Y};
   SetConsoleCursorPosition(out_, c);
 }
 
@@ -181,14 +181,14 @@ void Win32ConsoleIO::Cr() {
  * Clears the local logical screen
  */
 void Win32ConsoleIO::Cls() {
-  COORD coordScreen = {0, 0};
+  const COORD coordScreen = {0, 0};
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
-  DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+  const DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
   DWORD charsWriten = 0;
 
-  FillConsoleOutputCharacter(out_, (TCHAR)' ', dwConSize, coordScreen, &charsWriten);
-  FillConsoleOutputAttribute(out_, (WORD)7, dwConSize, coordScreen, &charsWriten);
+  FillConsoleOutputCharacter(out_, ' ', dwConSize, coordScreen, &charsWriten);
+  FillConsoleOutputAttribute(out_, 7, dwConSize, coordScreen, &charsWriten);
   GotoXY(0, 0);
 }
 
@@ -210,7 +210,7 @@ void Win32ConsoleIO::Backspace() {
 
 void Win32ConsoleIO::PutchRaw(unsigned char ch) {
   /* This function outputs one character to the screen, then updates the
-   * cursor position accordingly, scolling the screen if necessary.  Not that
+   * cursor position accordingly, scrolling the screen if necessary.  Not that
    * this function performs no commands such as a C/R or L/F.  If a value of
    * 8, 7, 13, 10, 12 (BACKSPACE, BEEP, C/R, L/F, TOF), or any other command-
    * type characters are passed, the appropriate corresponding "graphics"
@@ -511,17 +511,17 @@ void Win32ConsoleIO::SetCursor(int cursorStyle) {
   CONSOLE_CURSOR_INFO cursInfo;
 
   switch (cursorStyle) {
-  case LocalIO::cursorNone: {
+  case cursorNone: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = false;
     SetConsoleCursorInfo(out_, &cursInfo);
   } break;
-  case LocalIO::cursorSolid: {
+  case cursorSolid: {
     cursInfo.dwSize = 100;
     cursInfo.bVisible = true;
     SetConsoleCursorInfo(out_, &cursInfo);
   } break;
-  case LocalIO::cursorNormal:
+  case cursorNormal:
   default: {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = true;
@@ -535,23 +535,23 @@ void Win32ConsoleIO::ClrEol() {
   DWORD cb;
 
   GetConsoleScreenBufferInfo(out_, &csbi);
-  int len = csbi.dwSize.X - WhereX();
+  const auto len = csbi.dwSize.X - WhereX();
 
   FillConsoleOutputCharacter(out_, ' ', len, csbi.dwCursorPosition, &cb);
-  FillConsoleOutputAttribute(out_, (WORD)curatr(), len, csbi.dwCursorPosition, &cb);
+  FillConsoleOutputAttribute(out_, static_cast<WORD>(curatr()), len, csbi.dwCursorPosition, &cb);
 }
 
 void Win32ConsoleIO::WriteScreenBuffer(const char* buffer) {
-  CHAR_INFO ci[2000];
-  const char* p = buffer;
+  CHAR_INFO ci[2000] {};
+  const auto* p = buffer;
 
-  for (int i = 0; i < 2000; i++) {
-    ci[i].Char.UnicodeChar = cp437_to_utf8(*p++);
-    ci[i].Attributes = *p++;
+  for (auto& i : ci) {
+    i.Char.UnicodeChar = cp437_to_utf8(*p++);
+    i.Attributes = static_cast<WORD>(*p++);
   }
 
-  COORD pos = {0, 0};
-  COORD size = {80, 25};
+  const COORD pos = {0, 0};
+  const COORD size = {80, 25};
   SMALL_RECT rect = {0, 0, 79, 24};
 
   WriteConsoleOutputW(out_, ci, size, pos, &rect);
@@ -570,7 +570,7 @@ bool HasKeyBeenPressed(HANDLE in) {
     return false;
   }
 
-  unique_ptr<INPUT_RECORD[]> input(new INPUT_RECORD[num_events]);
+  const auto input = std::make_unique<INPUT_RECORD[]>(num_events);
   ZeroMemory(input.get(), sizeof(INPUT_RECORD) * num_events);
 
   DWORD actually_read;
@@ -611,24 +611,24 @@ static int GetEditLineStringLength(const char* text) {
   return i;
 }
 
-void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys,
-                              EditlineResult* returncode, const char* pszAllowedSet) {
+void Win32ConsoleIO::EditLine(char* in, int len, AllowedKeys allowed_keys,
+                              EditlineResult* returncode, const char* allowed) {
 
   const auto oldatr = curatr();
   const auto cx = WhereX();
   const auto cy = WhereY();
-  for (auto i = wwiv::strings::ssize(pszInOutText); i < len; i++) {
-    pszInOutText[i] = '\xb0'; // 176
+  for (auto i = wwiv::strings::ssize(in); i < len; i++) {
+    in[i] = '\xb0'; // 176
   }
-  pszInOutText[len] = '\0';
+  in[len] = '\0';
   curatr(GetEditLineColor());
-  FastPuts(pszInOutText);
+  FastPuts(in);
   GotoXY(cx, cy);
   auto done = false;
   auto pos = 0;
   auto insert = false;
   do {
-    unsigned char ch = GetChar();
+    auto ch = GetChar();
     if (ch == 0 || ch == 224) {
       ch = GetChar();
       switch (ch) {
@@ -641,11 +641,11 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
         GotoXY(cx, cy);
         break;
       case END:
-        pos = GetEditLineStringLength(pszInOutText);
+        pos = GetEditLineStringLength(in);
         GotoXY(cx + pos, cy);
         break;
       case RARROW:
-        if (pos < GetEditLineStringLength(pszInOutText)) {
+        if (pos < GetEditLineStringLength(in)) {
           pos++;
           GotoXY(cx + pos, cy);
         }
@@ -673,10 +673,10 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
       case KEY_DELETE:
         if (allowed_keys != AllowedKeys::SET) {
           for (int i = pos; i < len; i++) {
-            pszInOutText[i] = pszInOutText[i + 1];
+            in[i] = in[i + 1];
           }
-          pszInOutText[len - 1] = '\xb0'; // 176
-          PutsXY(cx, cy, pszInOutText);
+          in[len - 1] = '\xb0'; // 176
+          PutsXY(cx, cy, in);
           GotoXY(cx + pos, cy);
         }
         break;
@@ -689,21 +689,21 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
         if (allowed_keys == AllowedKeys::SET) {
           ch = to_upper_case<unsigned char>(ch);
           if (ch != SPACE) {
-            bool bLookingForSpace = true;
+            auto looking_for_space = true;
             for (int i = 0; i < len; i++) {
-              if (ch == pszAllowedSet[i] && bLookingForSpace) {
-                bLookingForSpace = false;
+              if (ch == allowed[i] && looking_for_space) {
+                looking_for_space = false;
                 pos = i;
                 GotoXY(cx + pos, cy);
-                if (pszInOutText[pos] == SPACE) {
-                  ch = pszAllowedSet[pos];
+                if (in[pos] == SPACE) {
+                  ch = allowed[pos];
                 } else {
                   ch = SPACE;
                 }
               }
             }
-            if (bLookingForSpace) {
-              ch = pszAllowedSet[pos];
+            if (looking_for_space) {
+              ch = allowed[pos];
             }
           }
         }
@@ -714,13 +714,13 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
              (ch >= '0' && ch <= '9' || ch == SPACE))) {
           if (insert) {
             for (auto i = len - 1; i > pos; i--) {
-              pszInOutText[i] = pszInOutText[i - 1];
+              in[i] = in[i - 1];
             }
-            pszInOutText[pos++] = ch;
-            PutsXY(cx, cy, pszInOutText);
+            in[pos++] = ch;
+            PutsXY(cx, cy, in);
             GotoXY(cx + pos, cy);
           } else {
-            pszInOutText[pos++] = ch;
+            in[pos++] = ch;
             Putch(ch);
           }
         }
@@ -741,28 +741,28 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
           GotoXY(cx, cy);
           break;
         case CE:
-          pos = GetEditLineStringLength(pszInOutText); // len;
+          pos = GetEditLineStringLength(in); // len;
           GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
           if (pos > 0) {
             if (insert) {
               for (int i = pos - 1; i < len; i++) {
-                pszInOutText[i] = pszInOutText[i + 1];
+                in[i] = in[i + 1];
               }
-              pszInOutText[len - 1] = '\xb0'; // 176
+              in[len - 1] = '\xb0'; // 176
               pos--;
-              PutsXY(cx, cy, pszInOutText);
+              PutsXY(cx, cy, in);
               GotoXY(cx + pos, cy);
             } else {
-              const auto ell = GetEditLineStringLength(pszInOutText);
+              const auto ell = GetEditLineStringLength(in);
               pos--;
               if (pos == (ell - 1)) {
-                pszInOutText[pos] = '\xb0'; // 176
+                in[pos] = '\xb0'; // 176
               } else {
-                pszInOutText[pos] = SPACE;
+                in[pos] = SPACE;
               }
-              PutsXY(cx, cy, pszInOutText);
+              PutsXY(cx, cy, in);
               GotoXY(cx + pos, cy);
             }
           }
@@ -772,14 +772,14 @@ void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_k
     }
   } while (!done);
 
-  auto z = ssize(pszInOutText);
-  while (z >= 0 && static_cast<unsigned char>(pszInOutText[z - 1]) == 176) {
+  auto z = ssize(in);
+  while (z >= 0 && static_cast<unsigned char>(in[z - 1]) == 176) {
     --z;
   }
-  pszInOutText[z] = '\0';
+  in[z] = '\0';
 
   char szFinishedString[260];
-  snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
+  snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", in);
   szFinishedString[len] = '\0';
   GotoXY(cx, cy);
   curatr(oldatr);

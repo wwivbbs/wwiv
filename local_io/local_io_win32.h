@@ -64,8 +64,8 @@ public:
   void WriteScreenBuffer(const char* buffer) override;
   int GetDefaultScreenBottom() const noexcept override;
 
-  void EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
-                const char* ss) override;
+  void EditLine(char* in, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
+                const char* allowed) override;
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
 
 private:

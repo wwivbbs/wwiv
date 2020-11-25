@@ -19,7 +19,12 @@
 #include "core/cp437.h"
 
 #include "core/stl.h"
+#include <clocale>
 #include <cstdint>
+
+#ifdef _WIN32
+#include "core/wwiv_windows.h"
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -294,6 +299,29 @@ static wchar_t dos_to_utf8_[] =
 };
 
 
+bool set_wwiv_codepage(wwiv_codepage_t cp) {
+  std::string default_locale;
+#ifdef _WIN32
+  if (cp == wwiv_codepage_t::utf8) {
+    default_locale = ".UTF-8";
+    ::SetConsoleOutputCP(65001); // CP_UTF8
+  } else {
+    // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale?view=msvc-140
+    // OCP is OEM code page, which is OEM 437, IBM 437, etc.
+    default_locale = ".OCP";
+    ::SetConsoleOutputCP(437); // CP_437
+  }
+
+#endif
+  const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
+
+  if (new_locale) {
+    std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
+    VLOG(1) << "Resetting Locale: " << new_locale;
+  }
+  return true;
+}
+
 int cp437_to_utf8(uint8_t ch, char* out) {
   const auto unicode = dos_to_utf8_[ch];
   const auto res = wctomb(out, unicode);
@@ -303,6 +331,10 @@ int cp437_to_utf8(uint8_t ch, char* out) {
   }
   out[res] = '\0';
   return res;
+}
+
+wchar_t cp437_to_utf8(char ch) {
+  return cp437_to_utf8(static_cast<uint8_t>(ch));
 }
 
 wchar_t cp437_to_utf8(uint8_t ch) {

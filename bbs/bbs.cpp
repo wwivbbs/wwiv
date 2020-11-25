@@ -18,14 +18,15 @@
 /**************************************************************************/
 #include "bbs/bbs.h"
 
-#include "common/exceptions.h"
 #include "bbs/application.h"
+#include "common/exceptions.h"
+#include "core/cp437.h"
 #include "core/log.h"
-#include "core/strings.h"
 #include "core/os.h"
+#include "core/strings.h"
+#include "localui/curses_io.h"
 #include "local_io/null_local_io.h"
 #include "local_io/stdio_local_io.h"
-#include "localui/curses_io.h"
 #include "sdk/config.h"
 #include <clocale>
 #include <exception>
@@ -34,8 +35,6 @@
 
 #if !defined( _WIN32 )
 #include <unistd.h>
-#else
-#include "core/wwiv_windows.h"
 #endif // !_WIN32
 
 // Uncomment this line to use curses on Win32
@@ -71,22 +70,8 @@ int bbsmain(int argc, char *argv[]) {
     std::cout << "pause";
     getchar();
 #endif
+    set_wwiv_codepage(wwiv::core::wwiv_codepage_t::utf8);
 
-    std::string default_locale;
-#ifdef _WIN32
-    default_locale = ".UTF-8";
-    ::SetConsoleOutputCP( 65001); // CP_UTF8
-
-#endif
-    const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
-
-    if (new_locale) {
-      std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
-      VLOG(1) << "Resetting Locale: " << new_locale;
-    } else {
-      // TODO(rushfan): Likely Win7 here. What should we do?
-      //std::locale::global(std::locale(std::setlocale(LC_ALL, "")));
-    }
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     bbs.reset(CreateSession(new StdioLocalIO()));
