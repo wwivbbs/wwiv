@@ -31,7 +31,6 @@ TEST(Cp437Test, Smoke_Char) {
 }
 
 TEST(Cp437Test, CharMultiple) {
-  std::setlocale(LC_ALL, "en_US.UTF-8");
   char s[81];
   EXPECT_EQ(3, cp437_to_utf8(0xfe, s));
   EXPECT_STREQ("\xe2\x96\xa0", s) << s;
@@ -43,7 +42,6 @@ TEST(Cp437Test, Smoke_String) {
 }
 
 TEST(Cp437Test, Block_String) {
-  std::setlocale(LC_ALL, "en_US.UTF-8");
   const auto s = cp437_to_utf8("\xdb\xdb\xdb");
   EXPECT_EQ(9u, s.length());
   EXPECT_EQ("\xE2\x96\x88\xE2\x96\x88\xE2\x96\x88", s);

@@ -17,19 +17,23 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 #include "core/log.h"
+#include <clocale>
 
 int main(int argc, char* argv[]) {
-  int result = 0;
   try {
+#ifdef _WIN32
+  std::setlocale(LC_ALL, ".UTF-8");
+#else
+  std::setlocale(LC_ALL, "C.UTF-8");
+#endif
     testing::InitGoogleTest(&argc, argv);
     wwiv::core::LoggerConfig logger_config{};
     logger_config.register_file_destinations = false;
     logger_config.log_startup = false;
     wwiv::core::Logger::Init(argc, argv, logger_config);
-    result = RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
   } catch (const std::exception& e) {
     std::cerr << e.what();
     return 1;
   }
-  return result;
 } 
