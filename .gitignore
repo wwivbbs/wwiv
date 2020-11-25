@@ -204,7 +204,10 @@ CMakeFiles
 CMakeCache.txt
 Makefile
 *.a
-deps/cl342/*.o
+deps/cl345/*.o
+deps/cl345/static-obj/
+deps/cl345/tools/endian
+	
 _build/
 _b/
 

@@ -6,6 +6,7 @@
 if(UNIX)
   # message("FindWWIVCurses: Using NCurses")
   set(CURSES_NEED_NCURSES TRUE)
+  set(CURSES_NEED_WIDE TRUE)
   find_package(Curses REQUIRED)
 elseif(WIN32)
   # message("FindWWIVCurses: Using PDCurses")

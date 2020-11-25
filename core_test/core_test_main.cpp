@@ -21,13 +21,16 @@
 
 int main(int argc, char* argv[]) {
   try {
+    std::locale::global(std::locale(std::setlocale(LC_ALL, "")));
+    
+    std::cout << "Current Locale: " << std::locale("").name() << std::endl;
 #ifdef _WIN32
-  std::locale loc;
-  std::cout << "Current Locale: " << loc.name() << std::endl;
-  std::setlocale(LC_ALL, ".UTF-8");
+    std::setlocale(LC_ALL, ".UTF-8");
 #else
-  std::setlocale(LC_ALL, "C.UTF-8");
+    std::cout << "Resetting Locale: " << std::setlocale(LC_ALL, "") << std::endl;
 #endif
+    std::locale loc2;
+    std::cout << "Current Locale after set: " << loc2.name() << std::endl;
     testing::InitGoogleTest(&argc, argv);
     wwiv::core::LoggerConfig logger_config{};
     logger_config.register_file_destinations = false;
