@@ -187,6 +187,23 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
   Refresh();
 }
 
+void CursesWindow::PutchW(wchar_t ch) {
+  cchar_t c = ch;
+  wadd_wch(std::any_cast<WINDOW*>(window_), &c);
+
+  Refresh();
+}
+
+void CursesWindow::PutsW(const std::wstring& text) {
+  waddwstr(std::any_cast<WINDOW*>(window_), text.c_str());
+  Refresh();
+}
+
+void CursesWindow::PutsXYW(int x, int y, const std::wstring& text) {
+  mvwaddwstr(std::any_cast<WINDOW*>(window_), y, x, text.c_str());
+  Refresh();
+}
+
 void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
   set_current_scheme_id(id);

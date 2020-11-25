@@ -56,6 +56,11 @@ public:
   virtual void Puts(const std::string& text) = 0;
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
 
+  // Wide character versions
+  virtual void PutchW(wchar_t ch) = 0;
+  virtual void PutsW(const std::wstring& text) = 0;
+  virtual void PutsXYW(int x, int y, const std::wstring& text) = 0;
+
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */

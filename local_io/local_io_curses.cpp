@@ -20,6 +20,7 @@
 #include "core/wwiv_windows.h"
 
 #include "local_io/local_io_curses.h"
+#include "core/cp437.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"

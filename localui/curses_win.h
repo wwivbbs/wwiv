@@ -57,6 +57,10 @@ public:
   void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
+  // Wide character versions
+  void PutchW(wchar_t ch) override;
+  void PutsW(const std::wstring& text) override;
+  void PutsXYW(int x, int y, const std::wstring& text) override;
 
   void SetColor(SchemeId id) override;
 

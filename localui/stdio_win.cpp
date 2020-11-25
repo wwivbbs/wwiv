@@ -29,3 +29,15 @@ void StdioWindow::Putch(uint32_t ch) { std::cout << ch; }
 void StdioWindow::Puts(const std::string& text) { std::cout << text; }
 
 void StdioWindow::PutsXY(int, int, const std::string& text) { Puts(text); }
+
+void StdioWindow::PutchW(wchar_t ch) {
+  std::wcout << ch;
+}
+
+void StdioWindow::PutsW(const std::wstring& text) {
+  std::wcout << text;
+}
+
+void StdioWindow::PutsXYW(int, int, const std::wstring& text) {
+  PutsW(text);
+}

@@ -47,6 +47,10 @@ public:
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
 
+  void PutchW(wchar_t ch) override;
+  void PutsW(const std::wstring& text) override;
+  void PutsXYW(int x, int y, const std::wstring& text) override;
+
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */
