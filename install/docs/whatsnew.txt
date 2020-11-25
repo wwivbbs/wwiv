@@ -110,8 +110,50 @@ What's New in WWIV 5.6
 * UI for editing conference binding has been improved and is now also 
   available from subedit and diredit.
 * Fix Ar checking when one side is empty. (#1310)
++ More work on BPS and pause control
+    * Added pause=[on|off|start|end] to printfile menu command
+    * This works with printfile_random too.
+    * Added bps=<bps> to printfile menu command
+    * Changed system_bps to impact all of the BBS, and not just
+      the file printing.
++ Experimental start of |{xxx} expression support.
+  So far here's what we have:
+  Expressions:
+    |{set pause=on}
+    |{set pause=off}
+    |{pause}
+    |{set lines=0}
+  Feedback welcome, the syntax is still in flux, trying to see what
+  works well and can grow in the future and still make sense.
++ Convert wwiv heart and user color pipe code to standard pipe code when
+  sending the message as an FTN message (#1235)
+* fix crash with wwivconfig --initialize
+* Attempt to fix netmail issues with points. (#1312)
+  * Add TOPT and FMPT kludge lines into netmail.
+  * Don't include the point number in INTL kludge lines
++ Ask if still wants to send ftn netmail when node doesn't exist. (#1232)
++ Add ability to copy menu to a new name in wwivconfig menu editor
++ Added integrated support for NetFoss. (#1257)
+  Here's how to use it:
+  * Download netfoss and unzip it to \wwiv\netfoss (assuming that \wwiv is
+    where wwiv is installed).  if you want it in some other directory you can
+    use the wwiv.ini directive NETFOSS_DIR to pick a different location.
+  * Edit a chain, adn change the exec mode to "Integrated NetFOSS"
+    example:
+    F) Exec Mode:     Integrated NetFOSS
 
-
+    That's it, you do not need to edit the commandline to specify a path to
+    the NF.BAT file, nor edit it for your environment. WWIV will create a
+    nf.bat in the node's temp directory every time it invokes a chain or
+    editor using the integrated netfoss support. WWIV will execute:
+    "nf.bat <commandline entered>"
+* Don't let mouse movement freeze console.
++ Use UTF-8 for local display (#881)
+  WWIV always outputs local text using UTF-8 now on all platforms, if you
+  had previously changed your codepage for your terminal app to IBM850
+  or IBM437 or Windows-1252 please change it back to UTF-8 which is the
+  default.  This doesn't affect what is sent over the socket to remote 
+  users, just the local display.
 
 
 What's New in WWIV 5.5.1 (2020)

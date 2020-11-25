@@ -73,15 +73,21 @@ public:
   void RunSubDialog(CursesWindow* window) override {
     do {
       std::vector<ListBoxItem> items;
+      auto selected = -1;
+      auto count = 0;
       for (const auto& e : cmds_) {
         const auto cat = StrCat("[", e.cat, "]");
         auto help = e.help;
         help.erase(std::remove(help.begin(), help.end(), 10), help.end());
         help.erase(std::remove(help.begin(), help.end(), 13), help.end());
         items.emplace_back(fmt::format("{:17.17} {:13.13} {:48.48}", e.cmd, cat, help));
+        if (iequals(e.cmd, t_)) {
+          selected = count;
+        }
+        count++;
       }
       ListBox list(window, "Select Command", items);
-
+      list.set_selected(selected);
       list.selection_returns_hotkey(true);
       list.set_help_items({{"Esc", "Exit"}, {"Enter", "Select"}});
       const auto result = list.Run();

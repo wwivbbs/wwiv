@@ -18,7 +18,6 @@
 #include "gtest/gtest.h"
 #include "core/cp437.h"
 #include "core/log.h"
-#include <clocale>
 
 using namespace wwiv::core;
 
