@@ -18,18 +18,8 @@
 /**************************************************************************/
 #include "template.h"
 
-#include <curses.h>
-#include <cstdint>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <direct.h>
-#include <io.h>
-#endif
-#include <string>
-#include <sys/stat.h>
-
-#include "ifcns.h"
-#include "input.h"
-#include "wwivconfig.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
+#include "wwivconfig/wwivconfig.h"
 #include "sdk/vardec.h"
 

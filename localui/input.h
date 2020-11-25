@@ -24,11 +24,11 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "curses.h"
 #include "fmt/format.h"
-#include "local_io/keycodes.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
+#include "localui/wwiv_curses.h"
+#include "local_io/keycodes.h"
 #include "sdk/config.h"
 #include <functional>
 #include <limits>

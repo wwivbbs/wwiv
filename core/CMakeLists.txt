@@ -2,6 +2,7 @@
 
 set(COMMON_SOURCES
   clock.cpp
+  cp437.cpp
   crc32.cpp
   command_line.cpp
   connection.cpp

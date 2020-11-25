@@ -111,8 +111,7 @@ void CursesLocalIO::Cls() {
 }
 
 void CursesLocalIO::Backspace() {
-  SetColor(curatr());
-  window_->Putch('\b');
+  PutchRaw('\b');
 }
 
 void CursesLocalIO::PutchRaw(unsigned char ch) {
