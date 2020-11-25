@@ -23,7 +23,6 @@
 #include "core/strings.h"
 #include "localui/wwiv_curses.h"
 #include <algorithm>
-#include <clocale>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -101,7 +100,6 @@ CursesIO::CursesIO(const string& title)
     GetConsoleScreenBufferInfo(hConOut, &consoleBufferInfo);
   }
 #endif  // _WIN32
-  std::setlocale(LC_ALL, "en_US.UTF-8");
 
   initscr();
   raw();
