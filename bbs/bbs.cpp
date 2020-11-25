@@ -62,21 +62,31 @@ using wwiv::core::LoggerConfig;
 using wwiv::sdk::LogDirFromConfig;
 
 int bbsmain(int argc, char *argv[]) {
-  std::string default_locale;
-#ifdef _WIN32
-  default_locale = ".UTF-8";
-  ::SetConsoleOutputCP(65001); // CP_UTF8
-
-#endif
-  const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
-  std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
-
   LoggerConfig config(LogDirFromConfig);
   Logger::Init(argc, argv, config);
 
   std::unique_ptr<Application> bbs;
   try {
-    VLOG(1) << "Resetting Locale: " << new_locale;
+#ifdef WWIV_PAUSE_AT_START
+    std::cout << "pause";
+    getchar();
+#endif
+
+    std::string default_locale;
+#ifdef _WIN32
+    default_locale = ".UTF-8";
+    ::SetConsoleOutputCP( 65001); // CP_UTF8
+
+#endif
+    const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
+
+    if (new_locale) {
+      std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
+      VLOG(1) << "Resetting Locale: " << new_locale;
+    } else {
+      // TODO(rushfan): Likely Win7 here. What should we do?
+      //std::locale::global(std::locale(std::setlocale(LC_ALL, "")));
+    }
     // Create a default session using stdio, we'll reset the LocalIO
     // later once we know what type to use.
     bbs.reset(CreateSession(new StdioLocalIO()));
