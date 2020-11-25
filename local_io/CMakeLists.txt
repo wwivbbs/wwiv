@@ -16,4 +16,4 @@ set_max_warnings()
 endif()
 
 add_library(local_io ${COMMON_SOURCES} ${PLATFORM_SOURCES})
-target_link_libraries(local_io ${CURSES_LIBRARIES} localui )
+target_link_libraries(local_io ${CURSES_LIBRARIES} localui core )
