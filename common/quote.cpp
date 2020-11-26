@@ -67,14 +67,14 @@ string GetQuoteInitials(const string& orig_name) {
   }
 
   const auto paren_start = name.find('(');
-  if (paren_start != name.npos && !isdigit(name.at(paren_start + 1))) {
+  if (paren_start != std::string::npos && !isdigit(name.at(paren_start + 1))) {
     const auto inner = name.substr(paren_start + 1);
     return GetQuoteInitials(inner);
   }
 
   const auto last = name.find_first_of("#<>()[]`");
   const auto parts =
-      last != name.npos ? SplitString(name.substr(0, last), " ") : SplitString(name, " ");
+      last != std::string::npos ? SplitString(name.substr(0, last), " ") : SplitString(name, " ");
   return FirstLettersOfVectorAsString(parts);
 }
 
@@ -148,7 +148,8 @@ std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
   const auto quote_initials = GetQuoteInitials(to_name);
   std::vector<std::string> out;
   if (type != quote_date_format_t::no_quote) {
-    out.emplace_back(to_quote_date_line(type, use_24h_format, tt, properize(strip_to_node(to_node))));
+    out.emplace_back(
+        to_quote_date_line(type, use_24h_format, tt, properize(strip_to_node(to_node))));
   }
 
   for (; it != end; ++it) {
