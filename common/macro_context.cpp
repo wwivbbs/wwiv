@@ -58,6 +58,11 @@ Interpreted MacroContext::interpret(std::string::const_iterator& it,
     return text;
   }
   case '{': { // long form expression
+    if (!context_ || !context_->mci_enabled()) {
+      res.text = "|{";
+      return res;
+    }
+
     while (it != end) {
       const auto ch = *it++;
       text.push_back(ch);

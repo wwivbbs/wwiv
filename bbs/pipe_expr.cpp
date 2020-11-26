@@ -64,7 +64,7 @@ std::optional<pipe_expr_token_t> parse_string(string::const_iterator& it, const 
 
 std::optional<pipe_expr_token_t> parse_number(string::const_iterator& it, const string::const_iterator& end) {  
   std::string s;
-  for (; isdigit(*it) && it != end; ++it) {
+  for (; it != end && isdigit(*it); ++it) {
     const auto c = *it;
     s.push_back(c);
   }

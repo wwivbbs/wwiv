@@ -354,7 +354,10 @@ int Output::bputs(const string& text) {
       } else if (*it == '@' || *it == '{' || *it == '[') {
         auto r = ctx.interpret(it, fin);
         if (r.cmd == interpreted_cmd_t::text) {
-          bout.bputs(r.text);
+          // Don't use bout here since we can loop.
+          for (const auto rich : r.text) {
+            bputch(rich, true);
+          }
         } else if (r.cmd == interpreted_cmd_t::movement) {
           do_movement(r);
         }

@@ -22,6 +22,7 @@
 #include "common/message_editor_data.h"
 #include "common/output.h"
 #include "core/eventbus.h"
+#include "core/scope_exit.h"
 #include "fsed/commands.h"
 #include "fsed/common.h"
 #include "fsed/model.h"
@@ -49,7 +50,10 @@ static std::shared_ptr<FsedView> create_frame(MessageEditorData& data, bool file
   return view;
 }
 
-bool fsed(wwiv::common::Context& ctx, const std::filesystem::path& path) {
+bool fsed(Context& ctx, const std::filesystem::path& path) {
+  const auto saved_mci_enabled = bout.mci_enabled();
+  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
+  bout.disable_mci();
   MessageEditorData data("<<NO USERNAME>>"); // anonymous username
   data.title = path.string();
   FsedModel ed(1000);
@@ -73,8 +77,12 @@ bool fsed(wwiv::common::Context& ctx, const std::filesystem::path& path) {
   return true;
 }
 
-bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
-          MessageEditorData& data, bool file) {
+bool fsed(Context& ctx, std::vector<std::string>& lin, int maxli, MessageEditorData& data,
+          bool file) {
+  const auto saved_mci_enabled = bout.mci_enabled();
+  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
+  bout.disable_mci();
+
   FsedModel ed(maxli);
   for (auto l : lin) {
     const auto wrapped = !l.empty() && l.back() == '\x1';
@@ -89,6 +97,10 @@ bool fsed(wwiv::common::Context& ctx, std::vector<std::string>& lin, int maxli,
 }
 
 bool fsed(Context& ctx, FsedModel& ed, MessageEditorData& data, bool file) {
+  const auto saved_mci_enabled = bout.mci_enabled();
+  ScopeExit at_exit([=] { bout.set_mci_enabled(saved_mci_enabled); });
+  bout.disable_mci();
+
   auto view = create_frame(data, file, &ctx.u());
   ed.set_view(view);
   auto& fs = view->fs();
