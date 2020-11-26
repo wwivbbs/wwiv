@@ -98,14 +98,14 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
                      unsigned short stat);
 
 std::optional<std::string> get_qwk_from_message(const std::string& text) {
-  auto qwk_from_start = strstr(text.c_str(), QWKFrom + 2);
+  auto* qwk_from_start = strstr(text.c_str(), QWKFrom + 2);
 
   if (qwk_from_start == nullptr) {
     return std::nullopt;
   }
 
   qwk_from_start += strlen(QWKFrom + 2); // Get past 'QWKFrom:'
-  const auto qwk_from_end = strchr(qwk_from_start, '\r');
+  const auto* qwk_from_end = strchr(qwk_from_start, '\r');
 
   if (qwk_from_end && qwk_from_end > qwk_from_start) {
     std::string temp(qwk_from_start, qwk_from_end - qwk_from_start);
@@ -120,7 +120,7 @@ std::optional<std::string> get_qwk_from_message(const std::string& text) {
 void qwk_remove_email() {
   a()->emchg_ = false;
 
-  auto mloc = (tmpmailrec*)malloc(MAXMAIL * sizeof(tmpmailrec));
+  auto* mloc = (tmpmailrec*)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
     bout.bputs("Not enough memory.");
     return;
@@ -676,7 +676,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
 }
 
 void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* name,
-               const wwiv::core::DateTime& dt) {
+               const DateTime& dt) {
   ScopeExit at_exit([=]() {
     // Might not need to do this anymore since quoting
     // isn't so convoluted.
@@ -721,7 +721,8 @@ void qwk_post_text(const char* text, char* title, int16_t sub) {
 
         if (substr[0] == 'Q') {
           return;
-        } else if (substr[0] == '?') {
+        }
+        if (substr[0] == '?') {
           SubList();
         } else {
           done5 = 1;

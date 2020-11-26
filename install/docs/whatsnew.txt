@@ -154,7 +154,7 @@ What's New in WWIV 5.6
   or IBM437 or Windows-1252 please change it back to UTF-8 which is the
   default.  This doesn't affect what is sent over the socket to remote 
   users, just the local display.
-
++ Added Option for Windows doors to use console codepage OEM437 (#1313)
 
 What's New in WWIV 5.5.1 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

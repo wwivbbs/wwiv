@@ -459,6 +459,7 @@ static constexpr int PAD_SPACE = 3000;
 
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
 // And does other conversions as specified
+// TODO(rushfan): This whole thing needs to be redone.
 static std::string make_qwk_ready(const std::string& text, const std::string& address) {
   std::string::size_type pos = 0;
 
@@ -497,7 +498,7 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
         }
       }
       ++pos;
-      if (text[pos] == '\n') {
+      if (pos < text.size() && text[pos] == '\n') {
         ++pos;
       }
     } else if (x == 4 && text[pos + 1] != '0') {
@@ -564,7 +565,12 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   // Took the annonomouse stuff out right here
   if (!qwk_info->in_email) {
-    memcpy(qwk_info->qwk_rec.to, "ALL", 3);
+    // Maybe m.to_user_name is valid here?
+    if (!m.to_user_name.empty()) {
+    strncpy(qwk_info->qwk_rec.to, m.to_user_name.c_str(), 25);
+    } else {
+      memcpy(qwk_info->qwk_rec.to, "ALL", 3);
+    }
   } else {
     auto temp = ToStringUpperCase(a()->user()->GetName());
     strncpy(qwk_info->qwk_rec.to, temp.c_str(), 25);
