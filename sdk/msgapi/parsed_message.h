@@ -49,6 +49,9 @@ struct parsed_message_lines_style_t {
   // Should the WWIV wrapping marker be added (^A) at the end of
   // a soft-wrapped line.
   bool add_wrapping_marker{true};
+  // Attempt to add quote attribution lines to wrapped text of
+  // existing quotes.
+  bool reattribute_quotes{false};
 };
 
 /**

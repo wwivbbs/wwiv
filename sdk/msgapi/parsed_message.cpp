@@ -158,6 +158,14 @@ std::string ParsedMessageText::to_string() const {
   return JoinStrings(lines_, eol_) + static_cast<char>(CZ);
 }
 
+static bool has_quote(const std::string& text) {
+  if (const auto quote_end = text.find_first_of(">)]");
+      quote_end != std::string::npos && quote_end < 10) {
+    return true;
+  }
+  return false;
+}
+
 std::vector<std::string>
 ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
   std::vector<std::string> out;
@@ -171,6 +179,11 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
       do {
         const auto size_wc = size_without_colors(l);
         if (size_wc <= style.line_length) {
+          if (style.reattribute_quotes && has_quote(l)) {
+            // If we already have quote line here and we are reattributing them,
+            // then clean up any space in front of it.
+            StringTrimBegin(&l);
+          }
           out.push_back(l);
           break;
         }
@@ -184,6 +197,22 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
         }
         auto subset_of_l = l.substr(0, pos);
         l = l.substr(pos + 1);
+        if (style.reattribute_quotes) {
+          // Here we try to re-attribute quote by looking for quote markers
+          // and adding them to the wrapped lines.
+          if (auto quote_end = subset_of_l.find_first_of(">)]");
+              quote_end != std::string::npos && quote_end < 10) {
+            ++quote_end;
+            auto possible_quote = subset_of_l.substr(0, quote_end);
+            if (const auto possible_quote_start = possible_quote.find_last_of(' ');
+                possible_quote_start != std::string::npos) {
+              possible_quote = possible_quote.substr(possible_quote_start + 1);
+            }
+            l = StrCat(possible_quote, " ", l);
+            // Remove any space from before the nonwrapped line so it matches.
+            StringTrimBegin(&subset_of_l);
+          }
+        }
         if (style.add_wrapping_marker) {
           // A ^A at the end of the line means it was soft wrapped.
           out.push_back(fmt::sprintf("%s%c", subset_of_l, 0x01));

@@ -33,7 +33,7 @@ using namespace wwiv::stl;
 using namespace wwiv::sdk::msgapi;
 
 static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-  std::string temp(s);
+  auto temp(s);
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Use SplitString(..., false) so we don't skip blank lines.
   return SplitString(temp, "\r", false);
@@ -100,7 +100,7 @@ protected:
 };
 
 TEST_F(ParsedMessageTest, AfterMsgID) {
-  const std::string kReply = ca + "REPLY";
+  const auto kReply = ca + "REPLY";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
   p.add_control_line_after("MSGID", "REPLY");
   const auto actual_string = p.to_string();
@@ -173,7 +173,8 @@ TEST(WWIVParsedMessageTest, ToString_SplitLineWithContinuations) {
 
 TEST(WWIVParsedMessageTest, ToLines_Smoke) {
   const std::string cz(1, static_cast<char>(CZ));
-  const std::string text = "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
+  const std::string text = 
+    "This is a long line and this is a long line and this is a long line and this\x1\r\n too is a long line and this too is a long line";
   const std::string expected = "This is a long line and this is a long line and this is a long line and this too is a long line and this too is a long line";
 
   WWIVParsedMessageText p(text);
@@ -185,5 +186,20 @@ TEST(WWIVParsedMessageTest, ToLines_Smoke) {
             "line and this is a long line and this\x1|"
             "too is a long line and this too is a\x1|"
             "long line|",
+            JoinStrings(lines, "|"));
+}
+
+TEST(WWIVParsedMessageTest, ToLines_ReattributeQuote) {
+  const std::string cz(1, static_cast<char>(CZ));
+  const std::string text =     "RF> This is a long line of text\r\nRF> line of the text";
+  const std::string expected = "RF> This is a long\x1|RF> line of text|RF> line of the text|";
+
+  WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 20;
+  style.reattribute_quotes = true;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(3u, lines.size());
+  EXPECT_EQ(expected,
             JoinStrings(lines, "|"));
 }

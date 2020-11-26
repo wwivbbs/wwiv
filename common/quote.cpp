@@ -134,6 +134,8 @@ std::vector<std::string> create_quoted_text_from_message(std::string& raw_text,
   style.line_length = 72;
   style.ctrl_lines = msgapi::control_lines_t::no_control_lines;
   style.add_wrapping_marker = false;
+  // experimental
+  style.reattribute_quotes = true;
 
   auto lines = pmt.to_lines(style);
   auto it = std::begin(lines);
