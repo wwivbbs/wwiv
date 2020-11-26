@@ -78,6 +78,7 @@ template <class Archive> void serialize(Archive& ar, chain_t& n) {
   SERIALIZE(n, acs);
   SERIALIZE(n, regby);
   SERIALIZE(n, usage);
+  SERIALIZE(n, local_console_cp437);
 }
 
 } // namespace cereal

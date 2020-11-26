@@ -144,7 +144,7 @@ static void modify_chain_sponsors(int chain_num, chain_t& c) {
 }
 
 static std::string chain_exec_mode_to_string(const chain_exec_mode_t& t) {
-  std::vector<string> names{"Normal", "Emulate DOS Interrupts", "Integrated SyncFoss", "STDIO", "Integrated NetFOSS"};
+  std::vector<string> names{"|#2DOOR32 (Socket)", "|#1Emulate DOS Interrupts", "|#5SyncFoss", "|#3STDIO", "|#5NetFoss"};
   try {
     return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {
@@ -163,15 +163,18 @@ static void modify_chain(ssize_t chain_num) {
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
     bout << "|#9C) ACS          : |#2" << c.acs << wwiv::endl;
     bout << "|#9D) ANSI         : |#2" << (c.ansi ? "|#2Required" : "|#5Optional") << wwiv::endl;
-    bout << "|#9E) Exec Mode:     |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
-    bout << "|#9F) Launch From  : |#2"
-         << YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
-                            "BBS Root Directory")
-         << wwiv::endl;
+    bout << "|#9E) Exec Mode    : |#2" << chain_exec_mode_to_string(c.exec_mode) << wwiv::endl;
+    const auto launch_from = YesNoStringList(c.dir == chain_exec_dir_t::temp, "Temp/Node Directory",
+                                             "BBS Root Directory");
+    if (c.exec_mode == chain_exec_mode_t::netfoss) {
+      bout << "|#9F) Launch From  : |08Temp/Node Directory" << wwiv::endl;
+    } else {
+      bout << "|#9F) Launch From  : |#2" << launch_from << wwiv::endl;
+    }
     bout << "|#9G) Local only   : |#2" << YesNoString(c.local_only) << wwiv::endl;
     bout << "|#9H) Multi user   : |#2" << YesNoString(c.multi_user) << wwiv::endl;
     bout << "|#9I) Usage        : |#2" << c.usage << wwiv::endl;
-    std::string allowed = "QABCDEFGHI[]";
+    std::string allowed = "QABCDEFGHIK[]";
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       const auto& r = c.regby;
       if (!r.empty()) {
@@ -191,12 +194,19 @@ static void modify_chain(ssize_t chain_num) {
       } else {
         bout << "|#9J) Registered by: |#2AVAILABLE" << wwiv::endl;
       }
+#ifdef _WIN32
+    if (c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil) {
+      bout << "|#9K) Local CP437  : |08Yes" << wwiv::endl;
+    } else {
+      bout << "|#9K) Local CP437  : |#2" << YesNoString(c.local_console_cp437) << wwiv::endl;
+    }
+#endif
       bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1J|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1JK|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
       allowed.push_back('J');
     } else {
       bout.nl();
-      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1I|#7,|#1K|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     }
     const auto ch = onek(allowed, true);
     switch (ch) {
@@ -258,7 +268,11 @@ static void modify_chain(ssize_t chain_num) {
 #endif
       break;
     case 'F':
-      ++c.dir;
+      if (c.exec_mode == chain_exec_mode_t::netfoss) {
+        c.dir = chain_exec_dir_t::temp;
+      } else {
+        ++c.dir;
+      }
       break;
     case 'G':
       c.local_only = !c.local_only;
@@ -277,6 +291,13 @@ static void modify_chain(ssize_t chain_num) {
       }
       modify_chain_sponsors(chain_num, c);
       break;
+    case 'K': {
+#ifdef _WIN32
+      if (!(c.exec_mode == chain_exec_mode_t::netfoss || c.exec_mode == chain_exec_mode_t::fossil)) {
+        c.local_console_cp437 = !c.local_console_cp437;
+      }
+#endif
+    } break;
     }
   } while (!done && !a()->sess().hangup());
   a()->chains->at(chain_num) = c;

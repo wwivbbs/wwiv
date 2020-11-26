@@ -71,6 +71,7 @@ struct chain_t {
   bool ansi{false};
   bool local_only{false};
   bool multi_user{false};
+  bool local_console_cp437{false};
 
   // who registered
   std::set<int16_t> regby;

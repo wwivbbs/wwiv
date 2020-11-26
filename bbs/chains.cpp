@@ -29,6 +29,8 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "common/input.h"
+#include "core/cp437.h"
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
@@ -156,8 +158,20 @@ void run_chain(int chain_num) {
 
   sysoplog() << "!Ran \"" << c.description << "\"";
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
-
-  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(Chains::to_ansir(c)));
+#ifdef _WIN32
+  ScopeExit at_exit;
+  if (c.local_console_cp437) {
+    set_wwiv_codepage(wwiv_codepage_t::cp437);
+    at_exit.swap([] { set_wwiv_codepage(wwiv_codepage_t::utf8); });
+  }
+#endif
+  // TODO(rushfan): Maybe we need Chains::to_exec_flags(chain_t)?
+  auto flags = ansir_to_flags(Chains::to_ansir(c));
+  if (c.exec_mode == chain_exec_mode_t::netfoss) {
+    // NetFoss requires launching from the temp dir.
+    flags |= EFLAG_TEMP_DIR;
+  }
+  ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   a()->UpdateTopScreen();
 }
