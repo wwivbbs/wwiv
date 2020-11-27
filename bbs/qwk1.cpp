@@ -87,7 +87,6 @@ using namespace wwiv::sdk::msgapi;
 
 void qwk_email_text(const char *text, char *title, char *to);
 void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
-void qwk_post_text(const char *text, char *title, int16_t sub);
 
 
 extern const char* QWKFrom;
@@ -397,6 +396,247 @@ static std::string make_text_file(int filenumber, int curpos, int blocks) {
   return make_text_ready(text, static_cast<int>(sizeof(qwk_record) * blocks));
 }
 
+static void qwk_post_text(const char* text, char* title, int16_t sub) {
+  messagerec m{};
+  postrec p{};
+
+  int dm, done = 0, pass = 0;
+  slrec ss{};
+  char user_name[101];
+
+  while (!done && !a()->sess().hangup()) {
+    if (pass > 0) {
+      int done5 = 0;
+      char substr[5];
+
+      while (!done5 && !a()->sess().hangup()) {
+        bout.nl();
+        bout << "Then which sub?  ?=List  Q=Don't Post :";
+        bin.input(substr, 3);
+
+        StringTrim(substr);
+
+        if (substr[0] == 'Q') {
+          return;
+        }
+        if (substr[0] == '?') {
+          SubList();
+        } else {
+          sub = a()->usub[to_number<int>(substr) - 1].subnum;
+          done5 = 1;
+        }
+      }
+    }
+
+    if (sub >= ssize(a()->usub) || sub < 0) {
+      bout.Color(5);
+      bout.bputs("Sub out of range");
+
+      ++pass;
+      continue;
+    }
+    a()->set_current_user_sub_num(static_cast<uint16_t>(sub));
+
+    // Busy files... allow to retry
+    while (!a()->sess().hangup()) {
+      if (!qwk_iscan_literal(a()->current_user_sub_num())) {
+        bout.nl();
+        bout << "MSG file is busy on another instance, try again?";
+        if (!bin.noyes()) {
+          ++pass;
+          continue;
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (a()->sess().GetCurrentReadMessageArea() < 0) {
+      bout.Color(5);
+      bout.bputs("Sub out of range");
+
+      ++pass;
+      continue;
+    }
+
+    ss = a()->effective_slrec();
+
+    int xa = 0;
+    // User is restricted from posting
+    if ((restrict_post & a()->user()->data.restrict) || (a()->user()->data.posttoday >= ss.posts)) {
+      bout.nl();
+      bout.bputs("Too many messages posted today.");
+      bout.nl();
+
+      ++pass;
+      continue;
+    }
+
+    // User doesn't have enough sl to post on sub
+    if (!wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
+      bout.nl();
+      bout.bputs("You can't post here.");
+      bout.nl();
+      ++pass;
+      continue;
+    }
+
+    m.storage_type = static_cast<uint8_t>(a()->current_sub().storage_type);
+
+    if (!a()->current_sub().nets.empty()) {
+      xa &= (anony_real_name);
+
+      if (a()->user()->data.restrict & restrict_net) {
+        bout.nl();
+        bout.bputs("You can't post on networked sub-boards.");
+        bout.nl();
+        ++pass;
+        continue;
+      }
+    }
+
+    bout.cls();
+    bout.Color(2);
+    bout << "Posting    : ";
+    bout.Color(3);
+    bout.bputs(title);
+    bout.nl();
+
+    bout.Color(2);
+    bout << "Posting on : ";
+    bout.Color(3);
+    bout.bputs(stripcolors(a()->current_sub().name));
+    bout.nl();
+
+    if (!a()->current_sub().nets.empty()) {
+      bout.Color(2);
+      bout << "Going on   : ";
+      bout.Color(3);
+      for (const auto& xnp : a()->current_sub().nets) {
+        bout << a()->nets()[xnp.net_num].name << " ";
+      }
+      bout.nl();
+    }
+
+    bout.nl();
+    bout.Color(5);
+    bout << "Correct? ";
+
+    if (bin.noyes()) {
+      done = 1;
+    } else {
+      ++pass;
+    }
+  }
+  bout.nl();
+
+  if (a()->current_sub().anony & anony_real_name) {
+    strcpy(user_name, a()->user()->GetRealName());
+    properize(user_name);
+  } else {
+    const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
+    strcpy(user_name, name.c_str());
+  }
+
+  qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
+
+  if (m.stored_as != 0xffffffff) {
+    while (!a()->sess().hangup()) {
+      int f = qwk_iscan_literal(a()->sess().GetCurrentReadMessageArea());
+
+      if (f == -1) {
+        bout.nl();
+        bout << "MSG file is busy on another instance, try again?";
+        if (!bin.noyes()) {
+          return;
+        }
+      } else {
+        break;
+      }
+    }
+
+    // Anonymous
+    uint8_t an = 0;
+    if (an) {
+      bout.Color(1);
+      bout << "Anonymous?";
+      an = bin.yesno() ? 1 : 0;
+    }
+    bout.nl();
+
+    strcpy(p.title, title);
+    p.anony = an;
+    p.msg = m;
+    p.ownersys = 0;
+    p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
+    {
+      a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
+    }
+    p.daten = daten_t_now();
+    if (a()->user()->data.restrict & restrict_validate) {
+      p.status = status_unvalidated;
+    } else {
+      p.status = 0;
+    }
+
+    open_sub(true);
+
+    if (!a()->current_sub().nets.empty() && a()->current_sub().anony & anony_val_net &&
+        (!lcs() || !a()->sess().irt().empty())) {
+      p.status |= status_pending_net;
+      dm = 1;
+
+      for (auto i = a()->GetNumMessagesInCurrentMessageArea();
+           (i >= 1) && (i > (a()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+        if (get_post(i)->status & status_pending_net) {
+          dm = 0;
+          break;
+        }
+      }
+      if (dm) {
+        ssm(1) << "Unvalidated net posts on " << a()->current_sub().name << ".";
+      }
+    }
+
+    if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
+      int i = 1;
+      dm = 0;
+      while (dm == 0 && i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->sess().hangup()) {
+        if ((get_post(i)->status & status_no_delete) == 0) {
+          dm = i;
+        }
+        ++i;
+      }
+      if (dm == 0) {
+        dm = 1;
+      }
+      delete_message(dm);
+    }
+
+    add_post(&p);
+
+    ++a()->user()->data.msgpost;
+    ++a()->user()->data.posttoday;
+
+    a()->status_manager()->Run([](WStatus& s) {
+      s.IncrementNumLocalPosts();
+      s.IncrementNumMessagesPostedToday();
+    });
+
+    close_sub();
+
+    sysoplog() << "+ '" << p.title << "' posted on '" << a()->current_sub().name;
+
+    if (!a()->current_sub().nets.empty()) {
+      ++a()->user()->data.postnet;
+      if (!(p.status & status_pending_net)) {
+        send_net_post(&p, a()->current_sub());
+      }
+    }
+  }
+}
+
+
 static void process_reply_dat(const std::string& name) {
   qwk_record qwk{};
   int curpos = 0;
@@ -698,245 +938,6 @@ void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* na
   *m1 = m;
 }
 
-void qwk_post_text(const char* text, char* title, int16_t sub) {
-  messagerec m{};
-  postrec p{};
-
-  int dm, done = 0, pass = 0;
-  slrec ss{};
-  char user_name[101];
-
-  while (!done && !a()->sess().hangup()) {
-    if (pass > 0) {
-      int done5 = 0;
-      char substr[5];
-
-      while (!done5 && !a()->sess().hangup()) {
-        bout.nl();
-        bout << "Then which sub?  ?=List  Q=Don't Post :";
-        bin.input(substr, 3);
-
-        StringTrim(substr);
-        sub = a()->usub[to_number<int>(substr) - 1].subnum;
-
-        if (substr[0] == 'Q') {
-          return;
-        }
-        if (substr[0] == '?') {
-          SubList();
-        } else {
-          done5 = 1;
-        }
-      }
-    }
-
-    if (sub >= ssize(a()->usub) || sub < 0) {
-      bout.Color(5);
-      bout.bputs("Sub out of range");
-
-      ++pass;
-      continue;
-    }
-    a()->set_current_user_sub_num(static_cast<uint16_t>(sub));
-
-    // Busy files... allow to retry
-    while (!a()->sess().hangup()) {
-      if (!qwk_iscan_literal(a()->current_user_sub_num())) {
-        bout.nl();
-        bout << "MSG file is busy on another instance, try again?";
-        if (!bin.noyes()) {
-          ++pass;
-          continue;
-        }
-      } else {
-        break;
-      }
-    }
-
-    if (a()->sess().GetCurrentReadMessageArea() < 0) {
-      bout.Color(5);
-      bout.bputs("Sub out of range");
-
-      ++pass;
-      continue;
-    }
-
-    ss = a()->effective_slrec();
-
-    int xa = 0;
-    // User is restricted from posting
-    if ((restrict_post & a()->user()->data.restrict) || (a()->user()->data.posttoday >= ss.posts)) {
-      bout.nl();
-      bout.bputs("Too many messages posted today.");
-      bout.nl();
-
-      ++pass;
-      continue;
-    }
-
-    // User doesn't have enough sl to post on sub
-    if (!wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
-      bout.nl();
-      bout.bputs("You can't post here.");
-      bout.nl();
-      ++pass;
-      continue;
-    }
-
-    m.storage_type = static_cast<uint8_t>(a()->current_sub().storage_type);
-
-    if (!a()->current_sub().nets.empty()) {
-      xa &= (anony_real_name);
-
-      if (a()->user()->data.restrict & restrict_net) {
-        bout.nl();
-        bout.bputs("You can't post on networked sub-boards.");
-        bout.nl();
-        ++pass;
-        continue;
-      }
-    }
-
-    bout.cls();
-    bout.Color(2);
-    bout << "Posting    : ";
-    bout.Color(3);
-    bout.bputs(title);
-    bout.nl();
-
-    bout.Color(2);
-    bout << "Posting on : ";
-    bout.Color(3);
-    bout.bputs(stripcolors(a()->current_sub().name));
-    bout.nl();
-
-    if (!a()->current_sub().nets.empty()) {
-      bout.Color(2);
-      bout << "Going on   : ";
-      bout.Color(3);
-      for (const auto& xnp : a()->current_sub().nets) {
-        bout << a()->nets()[xnp.net_num].name << " ";
-      }
-      bout.nl();
-    }
-
-    bout.nl();
-    bout.Color(5);
-    bout << "Correct? ";
-
-    if (bin.noyes()) {
-      done = 1;
-    } else {
-      ++pass;
-    }
-  }
-  bout.nl();
-
-  if (a()->current_sub().anony & anony_real_name) {
-    strcpy(user_name, a()->user()->GetRealName());
-    properize(user_name);
-  } else {
-    const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
-    strcpy(user_name, name.c_str());
-  }
-
-  qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
-
-  if (m.stored_as != 0xffffffff) {
-    while (!a()->sess().hangup()) {
-      int f = qwk_iscan_literal(a()->sess().GetCurrentReadMessageArea());
-
-      if (f == -1) {
-        bout.nl();
-        bout << "MSG file is busy on another instance, try again?";
-        if (!bin.noyes()) {
-          return;
-        }
-      } else {
-        break;
-      }
-    }
-
-    // Anonymous
-    uint8_t an = 0;
-    if (an) {
-      bout.Color(1);
-      bout << "Anonymous?";
-      an = bin.yesno() ? 1 : 0;
-    }
-    bout.nl();
-
-    strcpy(p.title, title);
-    p.anony = an;
-    p.msg = m;
-    p.ownersys = 0;
-    p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
-    {
-      a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
-    }
-    p.daten = daten_t_now();
-    if (a()->user()->data.restrict & restrict_validate) {
-      p.status = status_unvalidated;
-    } else {
-      p.status = 0;
-    }
-
-    open_sub(true);
-
-    if (!a()->current_sub().nets.empty() && a()->current_sub().anony & anony_val_net &&
-        (!lcs() || !a()->sess().irt().empty())) {
-      p.status |= status_pending_net;
-      dm = 1;
-
-      for (auto i = a()->GetNumMessagesInCurrentMessageArea();
-           (i >= 1) && (i > (a()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
-        if (get_post(i)->status & status_pending_net) {
-          dm = 0;
-          break;
-        }
-      }
-      if (dm) {
-        ssm(1) << "Unvalidated net posts on " << a()->current_sub().name << ".";
-      }
-    }
-
-    if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
-      int i = 1;
-      dm = 0;
-      while (dm == 0 && i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->sess().hangup()) {
-        if ((get_post(i)->status & status_no_delete) == 0) {
-          dm = i;
-        }
-        ++i;
-      }
-      if (dm == 0) {
-        dm = 1;
-      }
-      delete_message(dm);
-    }
-
-    add_post(&p);
-
-    ++a()->user()->data.msgpost;
-    ++a()->user()->data.posttoday;
-
-    a()->status_manager()->Run([](WStatus& s) {
-      s.IncrementNumLocalPosts();
-      s.IncrementNumMessagesPostedToday();
-    });
-
-    close_sub();
-
-    sysoplog() << "+ '" << p.title << "' posted on '" << a()->current_sub().name;
-
-    if (!a()->current_sub().nets.empty()) {
-      ++a()->user()->data.postnet;
-      if (!(p.status & status_pending_net)) {
-        send_net_post(&p, a()->current_sub());
-      }
-    }
-  }
-}
 
 static void modify_bulletins(qwk_config& qwk_cfg) {
   char s[101], t[101];
