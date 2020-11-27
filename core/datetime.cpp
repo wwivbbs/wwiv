@@ -62,8 +62,8 @@ daten_t date_to_daten(const std::string& datet) {
   return time_t_to_daten(mktime(pTm));
 }
 
-std::string daten_to_wwivnet_time(daten_t n) {
-  return time_t_to_wwivnet_time(static_cast<time_t>(n));
+std::string daten_to_wwivnet_time(daten_t t) {
+  return time_t_to_wwivnet_time(static_cast<time_t>(t));
 }
 
 std::string time_t_to_wwivnet_time(time_t t) {
@@ -232,6 +232,24 @@ DateTime::DateTime(time_t t) : t_(t), millis_(0) { update_tm(); }
 
 DateTime::DateTime()
   : DateTime(static_cast<time_t>(0)) {
+}
+
+DateTime::DateTime(const DateTime& other) : DateTime(other.to_time_t()) {}
+
+DateTime::DateTime(DateTime&& other) noexcept : DateTime(other.to_time_t()) {}
+
+DateTime& DateTime::operator=(const DateTime& o) {
+  t_ = o.to_time_t();
+  millis_ = 0;
+  update_tm();
+  return *this;
+}
+
+DateTime& DateTime::operator=(DateTime&& o) noexcept {
+  t_ = o.to_time_t();
+  millis_ = 0;
+  update_tm();
+  return *this;
 }
 
 std::string DateTime::to_string(const std::string& format) const {

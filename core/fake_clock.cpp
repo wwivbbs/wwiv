@@ -29,8 +29,7 @@ using std::string;
 using namespace std::chrono;
 using namespace wwiv::strings;
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 DateTime FakeClock::Now() const noexcept {
   return date_time_;
@@ -38,5 +37,4 @@ DateTime FakeClock::Now() const noexcept {
 
 void FakeClock::tick(duration<double> inc) { date_time_ += inc; }
 
-}
 }

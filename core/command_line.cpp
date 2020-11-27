@@ -17,7 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "core/command_line.h"
+#include "core/file.h"
+#include "core/os.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/version.h"
 #include <cctype>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -25,14 +32,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "core/command_line.h"
-#include "core/file.h"
-#include <filesystem>
-#include "core/os.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/version.h"
 
 using std::clog;
 using std::cout;
@@ -260,8 +259,8 @@ int CommandLineCommand::Parse(int start_pos) {
 std::string CommandLineCommand::ToString() const {
   std::ostringstream ss;
   ss << "name: " << name_ << "; args: ";
-  for (const auto& a : args_) {
-    ss << "{" << a.first << ": \"" << a.second.as_string() << "\"}";
+  for (const auto& [key, value] : args_) {
+    ss << "{" << key << ": \"" << value.as_string() << "\"}";
   }
   if (!remaining_.empty()) {
     ss << "; remaining: ";
@@ -312,14 +311,13 @@ std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
   const auto program_name = (name_.empty()) ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
-  for (const auto& a : args_allowed_) {
-    const auto& c = a.second;
+  for (const auto& [_, c] : args_allowed_) {
     if (c.key_ != 0) {
       ss << "-" << c.key_ << " ";
     } else {
       ss << "   ";
     }
-    string text = c.name_;
+    auto text = c.name_;
     if (!c.is_boolean) {
       text = StrCat(c.name_, "=value");
     }
@@ -329,7 +327,7 @@ std::string CommandLineCommand::GetHelp() const {
     ss << endl;
     ss << "commands:" << std::endl;
     for (const auto& a : commands_allowed_) {
-      const string allowed_name = a.second->name();
+      const auto allowed_name = a.second->name();
       ss << "   "
           << "  " << setw(25) << left << allowed_name << " " << a.second->help_text() << endl;
     }

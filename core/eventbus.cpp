@@ -18,15 +18,11 @@
 /**************************************************************************/
 #include "core/eventbus.h"
 
-#include <string>
-
 namespace wwiv::core {
 
 EventBus bus_;
 
 // Returns the singleton global instance.
-EventBus& bus() {
-	return bus_;
-}
+EventBus& bus() { return bus_; }
 
 } // namespace wwiv::core

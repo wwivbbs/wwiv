@@ -17,12 +17,10 @@
 /**************************************************************************/
 #include "core/connection.h"
 
-namespace wwiv {
-namespace core {
+namespace wwiv::core {
 
 Connection::Connection() noexcept = default;
 
 Connection::~Connection() = default;
 
-} // namespace net
 } // namespace wwiv

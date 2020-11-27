@@ -70,13 +70,6 @@ FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
 
 FidoCallout::~FidoCallout() = default;
 
-fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) const {
-  if (!contains(node_configs_, a)) {
-    return {};
-  }
-  return at(node_configs_, a).packet_config;
-}
-
 const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
   VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
   return net_call_out_for(fmt::format("20000:20000/{}@{}", node, net_.name));

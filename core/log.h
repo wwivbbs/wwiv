@@ -26,10 +26,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#ifdef _MSC_VER
-#include<sal.h>
-#endif
-
 typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
 #if defined(_DEBUG) || !defined(NDEBUG)
@@ -95,14 +91,6 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
 namespace wwiv::core {
 
-struct enum_hash {
-  template <typename T>
-  typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
-  operator()(T const value) const {
-    return static_cast<std::size_t>(value);
-  }
-};
-
 enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, fatal };
 
 class Appender {
@@ -113,7 +101,7 @@ public:
   virtual bool append(const std::string& message) = 0;
 };
 
-typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
+typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>>
 log_to_map_t;
 typedef std::function<std::string()> timestamp_fn;
 typedef std::function<std::string(std::string)> logdir_fn;

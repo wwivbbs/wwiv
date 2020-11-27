@@ -39,7 +39,6 @@ public:
 
   [[nodiscard]] fido_node_config_t fido_node_config_for(const FidoAddress& a) const;
   [[nodiscard]] fido_packet_config_t packet_config_for(const FidoAddress& a) const;
-  [[nodiscard]] fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 
   // wwiv::sdk::Callout implementation
   [[nodiscard]] const net_call_out_rec* net_call_out_for(int node) const override;

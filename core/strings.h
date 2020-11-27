@@ -166,7 +166,7 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
   std::enable_if_t<std::is_convertible_v<T, char>, char>
   to_upper_case_char(const T a) { return static_cast<T>(::toupper(a)); }
 
-  /** Typesafe version of toupper */
+  /** Type safe version of toupper */
   template<class T, typename = std::enable_if_t<std::is_convertible_v<T, char>, char>>
   T to_lower_case(const T a) { return static_cast<T>(::tolower(a)); }
 

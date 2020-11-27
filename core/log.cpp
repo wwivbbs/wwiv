@@ -15,13 +15,11 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-
 #include "core/log.h"
 
 #include "core/command_line.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
@@ -58,7 +56,7 @@ class ConsoleAppender : public Appender {
 
 class LogFileAppender : public Appender {
 public:
-  LogFileAppender(std::string fn)
+  explicit LogFileAppender(std::string fn)
     : filename_(std::move(fn)) {
   }
 
@@ -86,7 +84,7 @@ static std::string FormatLogLevel(LoggerLevel l, int v) noexcept {
     if (l == LoggerLevel::verbose) {
       return StrCat("VER-", v);
     }
-    static const std::unordered_map<LoggerLevel, std::string, stl::enum_hash> map = {
+    static const std::unordered_map<LoggerLevel, std::string> map = {
         {LoggerLevel::ignored, ""},
         {LoggerLevel::start, "START"},
         {LoggerLevel::debug, "DEBUG"},

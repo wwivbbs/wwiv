@@ -19,10 +19,10 @@
 #ifndef INCLUDED_CORE_DATETIME_H
 #define INCLUDED_CORE_DATETIME_H
 
+#include "core/wwivport.h"
 #include <chrono>
 #include <ctime>
 #include <string>
-#include "core/wwivport.h"
 
 namespace wwiv::core {
 
@@ -42,7 +42,7 @@ namespace wwiv::core {
 class Clock;
 
 /** Returns the age of a person both on month m, day d in year y */
-[[nodiscard]] int years_old(int m, int d, int y, wwiv::core::Clock& clock);
+[[nodiscard]] int years_old(int m, int d, int y, Clock& clock);
 
 
 /**
@@ -143,6 +143,10 @@ public:
   friend bool operator>=(const DateTime& lhs, const DateTime& rhs);
 
   DateTime();
+  DateTime(const DateTime&);
+  DateTime(DateTime&&) noexcept;
+  DateTime& operator=(const DateTime&);
+  DateTime& operator=(DateTime&&) noexcept;
   ~DateTime() = default;
 
 private:

@@ -137,14 +137,6 @@ bool erase_at(C& c, S on) {
   return true;
 }
 
-// Enum has function. This is needed for GCC < 6.0
-// GCC 6+ can use hash types w/o specifying a hash function
-// as the 3rd template type.
-struct enum_hash {
-  template <typename T> typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
-  operator ()(T const value) const { return static_cast<std::size_t>(value); }
-};
-
 // Specialization for std::map
 template <typename K, typename V, typename C, class A=std::allocator<C>>
 auto at(std::map<K, V, C, A> const& map, typename std::decay<K>::type key) ->

@@ -221,7 +221,7 @@ public:
 
 private:
   // Helper functions
-  [[nodiscard]] static bool IsFileHandleValid(int hFile) noexcept;
+  [[nodiscard]] static bool IsFileHandleValid(int handle) noexcept;
 
 private:
   int handle_{-1};
