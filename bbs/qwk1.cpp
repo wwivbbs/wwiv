@@ -396,7 +396,8 @@ static std::string make_text_file(int filenumber, int curpos, int blocks) {
   return make_text_ready(text, static_cast<int>(sizeof(qwk_record) * blocks));
 }
 
-static void qwk_post_text(const char* text, char* title, int16_t sub) {
+static void qwk_post_text(std::string text, std::string to, const std::string& title,
+                          int16_t sub) {
   messagerec m{};
   postrec p{};
 
@@ -496,22 +497,13 @@ static void qwk_post_text(const char* text, char* title, int16_t sub) {
     }
 
     bout.cls();
-    bout.Color(2);
-    bout << "Posting    : ";
-    bout.Color(3);
-    bout.bputs(title);
-    bout.nl();
-
-    bout.Color(2);
-    bout << "Posting on : ";
-    bout.Color(3);
-    bout.bputs(stripcolors(a()->current_sub().name));
-    bout.nl();
+    bout << "|#5Posting New Message.\r\n\n";
+    bout.format("|#9Title      : |#2{}\r\n", title);
+    bout.format("|#9To         : |#2{}\r\n", to.empty() ? "All" : to);
+    bout.format("|#9Area       : |#2{}\r\n", stripcolors(a()->current_sub().name));
 
     if (!a()->current_sub().nets.empty()) {
-      bout.Color(2);
-      bout << "Going on   : ";
-      bout.Color(3);
+      bout << "|#9On Networks: |#5";
       for (const auto& xnp : a()->current_sub().nets) {
         bout << a()->nets()[xnp.net_num].name << " ";
       }
@@ -519,11 +511,10 @@ static void qwk_post_text(const char* text, char* title, int16_t sub) {
     }
 
     bout.nl();
-    bout.Color(5);
-    bout << "Correct? ";
+    bout << "|#5Correct? ";
 
     if (bin.noyes()) {
-      done = 1;
+      done = true;
     } else {
       ++pass;
     }
@@ -538,11 +529,15 @@ static void qwk_post_text(const char* text, char* title, int16_t sub) {
     strcpy(user_name, name.c_str());
   }
 
-  qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
+  if (!to.empty() && !iequals(to, "ALL")) {
+    const auto buf = fmt::sprintf("%c0FidoAddr: %s\r\n", CD, to);
+    text = StrCat(buf, text);
+  }
+  qwk_inmsg(text.c_str(), &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
 
   if (m.stored_as != 0xffffffff) {
     while (!a()->sess().hangup()) {
-      int f = qwk_iscan_literal(a()->sess().GetCurrentReadMessageArea());
+      const int f = qwk_iscan_literal(a()->sess().GetCurrentReadMessageArea());
 
       if (f == -1) {
         bout.nl();
@@ -564,7 +559,7 @@ static void qwk_post_text(const char* text, char* title, int16_t sub) {
     }
     bout.nl();
 
-    strcpy(p.title, title);
+    to_char_array(p.title, title);
     p.anony = an;
     p.msg = m;
     p.ownersys = 0;
@@ -742,7 +737,7 @@ static void process_reply_dat(const std::string& name) {
         bout.bputs("Sorry, not enough disk space left.");
         bout.pausescr();
       } else {
-        qwk_post_text(text.c_str(), title, to_number<int16_t>(tosub) - 1);
+        qwk_post_text(text, to, title, to_number<int16_t>(tosub) - 1);
       }
       curpos += to_number<int>(blocks) - 1;
     }
