@@ -17,10 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include "gtest/gtest.h"
-#include "core/md5.h"
 
+#include "core/md5.h"
 #include <map>
-#include <iostream>
 #include <string>
 #include <vector>
 

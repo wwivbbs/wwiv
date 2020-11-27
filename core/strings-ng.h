@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_STRINGS_NG_H__
-#define __INCLUDED_STRINGS_NG_H__
+#ifndef INCLUDED_STRINGS_NG_H
+#define INCLUDED_STRINGS_NG_H
 #include <cctype>
 #include <type_traits>
 

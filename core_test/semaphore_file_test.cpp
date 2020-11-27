@@ -16,27 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <chrono>
-#include <string>
-
+#include "file_helper.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/semaphore_file.h"
 #include "core/strings.h"
-#include "file_helper.h"
 #include "gtest/gtest.h"
+#include <chrono>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(SemaphoreFileTest, AlreadyAcqired) {
-  FileHelper file;
-  auto tmp = file.TempDir();
+  const FileHelper file;
+  const auto tmp = file.TempDir();
   std::filesystem::path path;
   {
     // Will throw if it can't acquire.
-    auto ok =
+    const auto ok =
         SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
     path = ok.path();
@@ -56,13 +55,13 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
 }
 
 TEST(SemaphoreFileTest, Smoke) {
-  FileHelper file;
-  auto tmp = file.TempDir();
+  const FileHelper file;
+  const auto tmp = file.TempDir();
   // Will throw if it can't acquire.
-  auto ok =
+  const auto ok =
       SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
-  auto fn = ok.path();
+  const auto fn = ok.path();
   LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
 
   EXPECT_TRUE(File::Exists(fn)) << fn;

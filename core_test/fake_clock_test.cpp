@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
 #include "core/fake_clock.h"
 
+#include "gtest/gtest.h"
 #include <string>
 
 using std::map;

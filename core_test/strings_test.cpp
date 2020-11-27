@@ -91,28 +91,28 @@ TEST(StringsTest, StrCat_AlphaNumeric) {
 
 TEST(StringsTest, StringReplace_EntireString) {
   string s = "Hello";
-  string world = "World";
+  const string world = "World";
   EXPECT_EQ(world, StringReplace(&s, "Hello", "World"));
   EXPECT_EQ(world, s);
 }
 
 TEST(StringsTest, StringReplace_PartialString) {
   string s = "Hello World";
-  string expected = "World World";
+  const string expected = "World World";
   EXPECT_EQ(expected, StringReplace(&s, "Hello", "World"));
   EXPECT_EQ(expected, s);
 }
 
 TEST(StringsTest, StringReplace_NotFound) {
   string s = "Hello World";
-  string expected(s);
+  const string expected(s);
   EXPECT_EQ(expected, StringReplace(&s, "Dude", "Where's my car"));
   EXPECT_EQ(expected, s);
 }
 
 TEST(StringsTest, SplitString_Basic) {
   const string s = "Hello World";
-  vector<string> expected = {"Hello", "World"};
+  const vector<string> expected = {"Hello", "World"};
   vector<string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
@@ -120,14 +120,14 @@ TEST(StringsTest, SplitString_Basic) {
 
 TEST(StringsTest, SplitString_BasicReturned) {
   const string s = "Hello World";
-  vector<string> expected = {"Hello", "World"};
-  vector<string> actual = SplitString(s, " ");
+  const vector<string> expected = {"Hello", "World"};
+  const auto actual = SplitString(s, " ");
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_ExtraSingleDelim) {
   const string s = "Hello   World";
-  vector<string> expected = {"Hello", "World"};
+  const vector<string> expected = {"Hello", "World"};
   vector<string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
@@ -135,7 +135,7 @@ TEST(StringsTest, SplitString_ExtraSingleDelim) {
 
 TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
   const string s = "Hello   World";
-  vector<string> expected = {"Hello", "", "", "World"};
+  const vector<string> expected = {"Hello", "", "", "World"};
   vector<string> actual;
   SplitString(s, " ", false, &actual);
   EXPECT_EQ(expected, actual);
@@ -143,7 +143,7 @@ TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
 
 TEST(StringsTest, SplitString_TwoDelims) {
   const string s = "Hello\tWorld Everyone";
-  vector<string> expected = {"Hello", "World", "Everyone"};
+  const vector<string> expected = {"Hello", "World", "Everyone"};
   vector<string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
@@ -151,7 +151,7 @@ TEST(StringsTest, SplitString_TwoDelims) {
 
 TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
   const string s = "Hello\t\tWorld  \t\t  Everyone";
-  vector<string> expected = {"Hello", "World", "Everyone"};
+  const vector<string> expected = {"Hello", "World", "Everyone"};
   vector<string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);

@@ -18,12 +18,10 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
 #include "core/os.h"
 #include "core/strings.h"
+#include <iostream>
+#include <string>
 
 using std::string;
 using namespace std::chrono;
@@ -33,27 +31,27 @@ using namespace wwiv::strings;
 
 TEST(OsTest, WaitFor_PredicateTrue) {
   auto predicate = []() { return true; };
-  auto start = system_clock::now();
-  auto d = seconds(1);
-  bool is_predicate_true = wait_for(predicate, d);
+  const auto start = system_clock::now();
+  const auto d = seconds(1);
+  const auto is_predicate_true = wait_for(predicate, d);
   ASSERT_TRUE(system_clock::now() < start + d);
   EXPECT_TRUE(is_predicate_true);
 }
 
 TEST(OsTest, WaitFor_PredicateFalse) {
   auto predicate = []() { return false; };
-  auto start = system_clock::now();
-  auto d = milliseconds(100);
-  bool is_predicate_true = wait_for(predicate, d);
+  const auto start = system_clock::now();
+  const auto d = milliseconds(100);
+  const auto is_predicate_true = wait_for(predicate, d);
   ASSERT_TRUE(system_clock::now() >= start + d);
   EXPECT_FALSE(is_predicate_true);
 }
 
 TEST(OsTest, SleepFor) {
-  auto start = system_clock::now();
-  auto d = milliseconds(100);
+  const auto start = system_clock::now();
+  const auto d = milliseconds(100);
   sleep_for(d);
-  auto now = system_clock::now();
+  const auto now = system_clock::now();
   ASSERT_TRUE(now - start - d < d) << (now - start - d).count();
 }
 

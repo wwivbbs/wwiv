@@ -34,40 +34,40 @@ struct MessagePosted {
   int num;
 };
 
-TEST_F(EventBusTest, Function) { 
-  int num = 1;
+TEST_F(EventBusTest, Function) {
+  auto num = 1;
   b.add_handler<MessagePosted>([&num](MessagePosted m) { num += m.num; });
 
-  MessagePosted m{1};
+  const MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, num);
 }
 
 TEST_F(EventBusTest, Function_Zero_Args) {
-  int num = 1;
+  auto num = 1;
   b.add_handler<MessagePosted>([&num]() { num++; });
 
-  MessagePosted m{1};
+  const MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, num);
 }
 TEST_F(EventBusTest, Function_Const) {
-  int num = 1;
+  auto num = 1;
   b.add_handler<MessagePosted>([&num](const MessagePosted& m) { num += m.num; });
 
-  MessagePosted m{1};
+  const MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, num);
 }
 TEST_F(EventBusTest, Function_Any) {
-  int num = 1;
+  auto num = 1;
   b.add_handler<MessagePosted>([&num](std::any m) {
     const auto n = std::any_cast<MessagePosted>(m).num;
     std::cout << "n: " << n << std::endl;
     num += n;
   });
 
-  MessagePosted m{1};
+  const MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, num);
 }
@@ -78,7 +78,7 @@ void Method(MessagePosted m) { method_num += m.num; };
 TEST_F(EventBusTest, Method) {
   b.add_handler<MessagePosted>(Method);
 
-  MessagePosted m{1};
+  const MessagePosted m{1};
   b.invoke(m);
   EXPECT_EQ(2, method_num);
 }
@@ -91,7 +91,7 @@ TEST_F(EventBusTest, Class) {
   class Class {
   public:
     int num{1};
-    void Method(MessagePosted m) { num += m.num; };
+    void Method(MessagePosted m) { num += m.num; }
   };
 
   Class c;

@@ -96,7 +96,7 @@ TEST(DataFileTest, ReadVector) {
 
 TEST(DataFileTest, ReadVector_Empty) {
   struct T { int a; int b; };
-  FileHelper file{};
+  const FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {
@@ -196,7 +196,7 @@ TEST(DataFileTest, WriteVector) {
 
 TEST(DataFileTest, WriteVector_Empty) {
   struct T { int a; int b; };
-  FileHelper file{};
+  const FileHelper file{};
   const auto& tmp = file.TempDir();
 
   {

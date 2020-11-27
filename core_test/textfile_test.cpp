@@ -16,14 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "file_helper.h"
 #include "core/file.h"
-#include <filesystem>
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "file_helper.h"
 #include "gtest/gtest.h"
-
-#include <iostream>
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -70,7 +68,7 @@ TEST_F(TextFileTest, Append) {
   const auto filename = file->full_pathname();
   file.reset();
 
-  const string actual = helper_.ReadFile(filename);
+  const auto actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello World\nabc", actual);
 }
 

@@ -16,24 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "file_helper.h"
+#include "core_test/file_helper.h"
 
 #include "core/command_line.h"
-
-#include "gtest/gtest.h"
-
-#include <cerrno>
-#include <cstdio>
-#include <string>
-
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
-
-
-#include <filesystem>
 #include "core/strings.h"
+#include "fmt/format.h"
+#include "gtest/gtest.h"
+#include <cerrno>
+#include <cstdio>
+#include <filesystem>
+#include <string>
 
 using std::string;
 using namespace wwiv::core;
@@ -43,8 +39,8 @@ using namespace wwiv::strings;
 std::filesystem::path FileHelper::basedir_;
 
 FileHelper::FileHelper() {
-  const auto* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
-  const auto dir = StrCat(test_info->test_case_name(), "_", test_info->name());
+  const auto* const test_info = testing::UnitTest::GetInstance()->current_test_info();
+  const auto dir = fmt::format("{}_{}", test_info->test_suite_name(), test_info->name());
   tmp_ = CreateTempDir(dir);
 }
 
@@ -114,9 +110,9 @@ std::filesystem::path FileHelper::CreateTempDir(const string& base) {
   const auto temp_path = GetTestTempDir();
   // TODO(rushfan): This may be good enough for linux too.
 #ifdef _WIN32
-  auto dir = wwiv::core::FilePath(temp_path, StrCat(base, ".", time_t_now()));
+  auto dir = FilePath(temp_path, StrCat(base, ".", time_t_now()));
   std::error_code ec;
-  if (std::filesystem::create_directories(dir, ec)) {
+  if (create_directories(dir, ec)) {
     return dir;
   }
 #else
@@ -144,6 +140,7 @@ std::tuple<FILE*, std::filesystem::path> FileHelper::OpenTempFile(const string& 
   return std::make_tuple(fp, path);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 std::filesystem::path FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
   auto [file, path] = OpenTempFile(orig_name);
   assert(file);

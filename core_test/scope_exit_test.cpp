@@ -22,7 +22,7 @@
 using wwiv::core::ScopeExit;
 
 TEST(ScopeExitTest, Basic) {
-  bool committed = false;
+  auto committed = false;
   auto f = [&] { committed = true; };
   {
     ScopeExit e(f);
@@ -37,7 +37,7 @@ TEST(ScopeExitTest, Empty) {
 }
 
 TEST(ScopeExitTest, Swap) {
-  bool committed = false;
+  auto committed = false;
   auto f = [&] { committed = true; };
   {
     ScopeExit e;

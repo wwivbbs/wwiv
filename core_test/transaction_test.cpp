@@ -16,10 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
 #include "core/transaction.h"
-
-#include <iostream>
+#include "gtest/gtest.h"
 #include <string>
 
 using std::string;
