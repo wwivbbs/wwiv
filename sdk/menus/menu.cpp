@@ -114,11 +114,11 @@ bool Menu56::Save() {
   return f.Save();
 }
 
-std::optional<Menu56> Create56MenuFrom43(const Menu430& m4) {
+std::optional<Menu56> Create56MenuFrom43(const Menu430& m4, int max_backups) {
   const auto dir = FilePath(m4.menu_dir_, m4.menu_set_);
   const auto name = StrCat(m4.menu_name_, ".mnu.json");
   const auto path = FilePath(dir, name);
-  if (backup_file(path, 3)) {
+  if (backup_file(path, max_backups)) {
     File::Remove(path);
   }
   Menu56 m5(m4.menu_dir_, m4.menu_set_, m4.menu_name_);
@@ -190,8 +190,9 @@ menu_numflag_t to_menu_numflag_t(int n) {
     return menu_numflag_t::dirs;
   case MENU_NUMFLAG_SUBNUMBER:
     return menu_numflag_t::subs;
+  default:
+    return menu_numflag_t::none;
   }
-  return menu_numflag_t::none;
 }
 
 // What to log for this command.
@@ -205,8 +206,9 @@ menu_logtype_t to_menu_logtype(int n) {
     return menu_logtype_t::description;
   case MENU_LOGTYPE_KEY:
     return menu_logtype_t::key;
+  default:
+    return menu_logtype_t::none;
   }
-  return menu_logtype_t::none;
 }
 
 menu_help_display_t to_menu_help_display(int n) {

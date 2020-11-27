@@ -21,11 +21,16 @@
 
 #include "core/file.h"
 #include "core/jsonfile.h"
+#include "sdk/chains_cereal.h"
+#include "sdk/subs_cereal.h"
 #include "wwivconfig/convert.h"
 #include <filesystem>
-#include <string>
 #include <optional>
+#include <string>
 #include <vector>
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/files/dirs_cereal.h"
 
 template <typename OLDT, typename NEWT>
 class ConvertJsonFile final {

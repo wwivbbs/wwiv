@@ -17,38 +17,33 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivconfig/convert.h"
-#include "localui/wwiv_curses.h"
 
+#include "bbs/conf.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/jsonfile.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "local_io/wconstants.h"
 #include "localui/curses_io.h"
 #include "localui/input.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/chains_cereal.h"
+#include "localui/wwiv_curses.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/subs_cereal.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
 #include "sdk/acs/expr.h"
 #include "sdk/files/dirs.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "sdk/arword.h"
-#include "bbs/conf.h"
-#include "core/findfiles.h"
-#include "sdk/files/dirs_cereal.h"
 #include "sdk/menus/menu.h"
 #include "sdk/net/networks.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/convert_jsonfile.h"
 #include <cstring>
 #include <filesystem>
+#include "sdk/chains.h"
+
 
 using namespace wwiv::core;
 using namespace wwiv::sdk::files;
@@ -78,7 +73,7 @@ void write_and_log(UIWindow* window, const std::string& m) {
 }
 
 static void ShowBanner(UIWindow* window, const std::string& m) {
-  // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+  // TODO(rushfan): make a sub-window here but until this clear the altcharset background.
   curses_out->window()->Bkgd(' ');
   window->SetColor(SchemeId::INFO);
   write_and_log(window, m);
@@ -141,9 +136,9 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string&
   h.written_by_wwiv_num_version = wwiv_config_version();
   to_char_array(h.signature, "WWIV");
 
-  // Save old newuser password.
+  // Save old new  user password.
   string newuserpw = syscfg53.header.newuserpw;
-  // Update newuser password to new location.
+  // Update new user password to new location.
   to_char_array(syscfg53.newuserpw, newuserpw);
   // Set new header on config.dat.
   syscfg53.header.header = h;
@@ -305,6 +300,7 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
 }
 
 template <>
+// ReSharper disable once CppMemberFunctionMayBeStatic
 subboard_t ConvertJsonFile<subboard_52_t, subboard_t>::ConvertType(const subboard_52_t& os) {
   subboard_t s{};
   s.nets = os.nets;
@@ -327,6 +323,7 @@ subboard_t ConvertJsonFile<subboard_52_t, subboard_t>::ConvertType(const subboar
 }
 
 template <>
+// ReSharper disable once CppMemberFunctionMayBeStatic
 directory_t ConvertJsonFile<directory_55_t, directory_t>::ConvertType(const directory_55_t& od) {
   directory_t d{};
   d.area_tags = od.area_tags;
@@ -341,6 +338,7 @@ directory_t ConvertJsonFile<directory_55_t, directory_t>::ConvertType(const dire
 }
 
 template <>
+// ReSharper disable once CppMemberFunctionMayBeStatic
 chain_t ConvertJsonFile<chain_55_t, chain_t>::ConvertType(const chain_55_t& oc) {
   chain_t c{};
   acs::AcsExpr ae;
@@ -378,7 +376,7 @@ static bool convert_to_v2(UIWindow* window, const std::string& datadir,
 }
 
 static bool convert_menu(const std::string& menu_dir, const std::string& menu_set,
-                         const std::string& menu_name) {
+                         const std::string& menu_name, int max_backups) {
 
   const auto dir = FilePath(menu_dir, menu_set);
   const auto fname = StrCat(menu_name, ".mnu.json");
@@ -390,7 +388,7 @@ static bool convert_menu(const std::string& menu_dir, const std::string& menu_se
 
   const Menu430 m4(menu_dir, menu_set, menu_name);
   if (m4.initialized()) {
-    if (auto om5 = Create56MenuFrom43(m4)) {
+    if (auto om5 = Create56MenuFrom43(m4, max_backups)) {
       auto& m5 = om5.value();
       if (m5.Save()) {
         LOG(INFO) << "Converted menu: " << menu_set << File::pathSeparatorChar << menu_name
@@ -422,7 +420,7 @@ static bool convert_to_v3(UIWindow* window, const std::string& config_filename) 
       auto lm = ToStringLowerCase(m.name);
       if (ends_with(lm, ".mnu")) {
         const auto name = m.name.substr(0, m.name.size() - 4 ); 
-        if (!convert_menu(config.menudir(), menu_set, name)) {
+        if (!convert_menu(config.menudir(), menu_set, name, config.max_backups())) {
           LOG(ERROR) << "Unable to convert 4.3 menu:" << menu_set << File::pathSeparatorChar
                      << name << std::endl;
         }
@@ -467,7 +465,7 @@ static bool convert_to_v4(UIWindow* window, const std::string& datadir,
     std::cout << "Failed to upgrade conferences";
   }
 
-  // Save confs to new version.
+  // Save conferences to new version.
   if (confs.Save()) {
     if (!subs.Save()) {
       LOG(ERROR) << "Saved new conference, but failed to save subs";

@@ -212,7 +212,7 @@ public:
   bool initialized_{false};
 };
 
-std::optional<Menu56> Create56MenuFrom43(const Menu430& m4);
+std::optional<Menu56> Create56MenuFrom43(const Menu430& m4, int max_backups);
 
 // What does a number key do in this menu.
 menu_numflag_t to_menu_numflag_t(int n);

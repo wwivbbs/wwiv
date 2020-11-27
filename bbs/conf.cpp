@@ -95,7 +95,7 @@ conf_info_t get_conf_info(ConferenceType conftype) {
 
   conf_info_t ret(a()->all_confs().subs_conf(), a()->uconfsub);
   ret.file_name = FilePath(a()->config()->datadir(), SUBS_CNF).string();
-  ret.num_subs_or_dirs = wwiv::stl::size_int(a()->subs().subs());
+  ret.num_subs_or_dirs = size_int(a()->subs().subs());
   return ret;
 }
 

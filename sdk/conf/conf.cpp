@@ -56,8 +56,7 @@ static std::filesystem::path get_conf_430_path(const std::filesystem::path& data
 bool save_confs_430(const Config& config, std::vector<confrec_430_t> confs,
                     ConferenceType conftype) {
   const auto path = get_conf_430_path(config.datadir(), conftype);
-  // Backup the *.cnf file 1st before we write to it.
-  backup_file(path);
+  // No longer need to back this up since it is not source of truth anymore.
 
   TextFile f(path, "wt");
   if (!f.IsOpen()) {

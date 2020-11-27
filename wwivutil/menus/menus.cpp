@@ -142,7 +142,7 @@ public:
       return 1;
     }
 
-    if (auto om5 = Create56MenuFrom43(m4)) {
+    if (auto om5 = Create56MenuFrom43(m4, config()->config()->max_backups())) {
       auto& m5 = om5.value();
       return m5.Save() ? 0 : 1;
     }
