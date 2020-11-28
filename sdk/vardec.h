@@ -706,7 +706,7 @@ struct chainfilerec_422 {
   uint16_t ar; // AR restriction
 };
 
-struct chainregrec {
+struct chainregrec_422 {
   // who registered
   int16_t regby[5];
   // number of runs
@@ -1088,7 +1088,7 @@ static_assert(sizeof(voting_response) == 83, "voting_response == 83");
 static_assert(sizeof(uploadsrec) == 144, "uploadsrec == 144");
 static_assert(sizeof(zlogrec) == 21, "zlogrec == 21");
 static_assert(sizeof(chainfilerec_422) == 166, "chainfilerec_422 == 166");
-static_assert(sizeof(chainregrec) == 64, "chainregrec == 64");
+static_assert(sizeof(chainregrec_422) == 64, "chainregrec_422 == 64");
 static_assert(sizeof(newexternalrec) == 512, "newexternalrec == 512");
 static_assert(sizeof(editorrec) == 366, "editorrec == 366");
 static_assert(sizeof(ext_desc_type) == 15, "ext_desc_type == 15");

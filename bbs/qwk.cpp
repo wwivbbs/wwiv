@@ -78,7 +78,6 @@ using namespace wwiv::stl;
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
 
-static int qwk_percent;
 static uint16_t max_msgs;
 
 // from xfer.cpp
@@ -288,7 +287,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
   auto qscnptrx = a()->sess().qsc_p[sn];
   const auto sd = WWIVReadLastRead(sn);
 
-  if (qwk_percent || (!sd || sd > qscnptrx)) {
+  if (!sd || sd > qscnptrx) {
     const auto os = a()->current_user_sub_num();
     a()->set_current_user_sub_num(bn);
     int i;
@@ -300,25 +299,16 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
     qscnptrx = a()->sess().qsc_p[sn];
 
-    if (!qwk_percent) {
-      // Find out what message number we are on
-      for (i = a()->GetNumMessagesInCurrentMessageArea(); (i > 1) && (get_post(i - 1)->qscan > qscnptrx); i--)
-        ;
-    } else { // Get last qwk_percent of messages in sub
-      auto temp_percent = static_cast<float>(qwk_percent) / 100;
-      if (temp_percent > 1.0) {
-        temp_percent = 1.0;
-      }
-      i = a()->GetNumMessagesInCurrentMessageArea() - 
-          static_cast<int>(std::floor(temp_percent * a()->GetNumMessagesInCurrentMessageArea()));
-    }
+    // Find out what message number we are on
+    for (i = a()->GetNumMessagesInCurrentMessageArea(); (i > 1) && (get_post(i - 1)->qscan > qscnptrx); i--)
+      ;
 
     char thissub[81];
     to_char_array(thissub, a()->current_sub().name);
     thissub[60] = 0;
     const auto subinfo = fmt::sprintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
                                       bn + 1, thissub, a()->GetNumMessagesInCurrentMessageArea(),
-                                      a()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
+                                      a()->GetNumMessagesInCurrentMessageArea() - i + 1);
     bout.bputs(subinfo);
     bout.nl();
 
@@ -326,13 +316,12 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
 
     if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
         && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
-      if ((get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) ||
-          qwk_percent) {
+      if (get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
         qwk_start_read(i, qwk_info);  // read messsage
       }
     }
 
-    auto status = a()->status_manager()->GetStatus();
+    const auto status = a()->status_manager()->GetStatus();
     a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()] =
         status->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
@@ -378,12 +367,12 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
 }
 
 void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
-  postrec* p = get_post(msgnum);
+  auto* p = get_post(msgnum);
   if ((p->status & (status_unvalidated | status_delete)) && !lcs()) {
     return;
   }
 
-  int nn = a()->net_num();
+  const auto nn = a()->net_num();
   if (p->status & status_post_new_net) {
     set_net_num(p->network.network_msg.net_number);
   }
@@ -671,43 +660,31 @@ std::string qwk_system_name(const qwk_config& c) {
 }
 
 void qwk_menu() {
-  qwk_percent = 0;
   const auto qwk_cfg = read_qwk_cfg();
 
   auto done = false;
   while (!done && !a()->sess().hangup()) {
     bout.cls();
     bout.printfile("QWK");
-    if (so()) {
-      bout.bputs("|#11|#9) Sysop QWK config");
-    }
 
-    if (qwk_percent) {
-      bout.Color(3);
-      bout.nl();
-      bout.bprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
+    bout.nl();
+    std::string allowed = "QCDU?";
+    if (so()) {
+      allowed.push_back('*');
     }
     bout.nl();
-    std::string allowed = "7[3Q1DCUBS%";
     if (so()) {
-      allowed.push_back('1');
+      bout.bputs("|#7(|#1*|#7=|#2Sysop Menu|#7,|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
+    } else {
+      bout.bputs("|#7(|#1Q|#7=|#2Quit|#7) |#1C|#7, |#1D|#7, |#1U|#7: ");
     }
-    allowed.append("7] ");
-    bout << "Command? ";
-    bout.mpl(1);
-
-    allowed = "Q\r?CDUBS%";
-    if (so()) {
-      allowed.push_back('1');
-    }
-    const auto key = onek(allowed);
+    const auto key = onek(allowed, true);
 
     switch (key) {
     case '?':
       break;
 
     case 'Q':
-    case '\r':
     default:
       done = true;
       break;
@@ -730,44 +707,12 @@ void qwk_menu() {
         upload_reply_packet();
       }
     } break;
-    case 'B': {
-      sysoplog() << "Down/Up QWK/REP packet";
-
-      auto namepath =
-          FilePath(a()->sess().dirs().qwk_directory(), StrCat(qwk_system_name(qwk_cfg), ".REP"));
-      File::Remove(namepath);
-
-      build_qwk_packet();
-
-      if (File::Exists(namepath)) {
-        upload_reply_packet();
-      }
-     } break;
-
-    case 'S':
-      sysoplog() << "Select Subs";
-      config_qscan();
-      break;
-
     case 'C':
       sysoplog() << "Config Options";
       config_qwk_bw();
       break;
 
-    case '%': {
-      sysoplog() << "Set %";
-      bout.Color(2);
-      bout << "Enter percent of all messages in all QSCAN subs to pack:";
-      bout.mpl(3);
-      char temp[101];
-      bin.input(temp, 3);
-      qwk_percent = to_number<int>(temp);
-      if (qwk_percent > 100) {
-        qwk_percent = 100;
-      }
-    } break;
-
-    case '1':
+    case '*':
       if (so()) {
         sysoplog() << "Ran Sysop Config";
         qwk_sysop();

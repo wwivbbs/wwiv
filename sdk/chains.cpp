@@ -107,14 +107,14 @@ bool Chains::LoadFromJSON() {
 bool Chains::LoadFromDat() {
   DataFile<chainfilerec_422> old_chains(FilePath(datadir_, CHAINS_DAT),
                                     File::modeBinary | File::modeReadOnly, File::shareDenyNone);
-  DataFile<chainregrec> regfile(FilePath(datadir_, CHAINS_REG),
+  DataFile<chainregrec_422> regfile(FilePath(datadir_, CHAINS_REG),
                                 File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!old_chains) {
     return false;
   }
 
   std::vector<chainfilerec_422> old;
-  std::vector<chainregrec> reg;
+  std::vector<chainregrec_422> reg;
 
   if (!old_chains.ReadVector(old)) {
     return false;
@@ -175,10 +175,10 @@ bool Chains::SaveToJSON() {
 
 bool Chains::SaveToDat() {
   std::vector<chainfilerec_422> cdisk;
-  std::vector<chainregrec> rdisk;
+  std::vector<chainregrec_422> rdisk;
   for (const auto& from : chains_) {
     chainfilerec_422 c{};
-    chainregrec r{};
+    chainregrec_422 r{};
     to_char_array(c.filename, from.filename);
     to_char_array(c.description, from.description);
     c.ansir = static_cast<uint8_t>(to_ansir(from) & 0xff);
@@ -211,7 +211,7 @@ bool Chains::SaveToDat() {
     cwritten = cfile.WriteVector(cdisk);
   }
   {
-    DataFile<chainregrec> rfile(FilePath(datadir_, CHAINS_REG),
+    DataFile<chainregrec_422> rfile(FilePath(datadir_, CHAINS_REG),
                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile |
                                     File::modeTruncate,
                                 File::shareDenyReadWrite);

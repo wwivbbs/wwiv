@@ -150,7 +150,7 @@ std::string qwk_system_name(const qwk_config& c);
 void qwk_menu();
 unsigned short select_qwk_protocol(struct qwk_junk *qwk_info);
 qwk_config read_qwk_cfg();
-void write_qwk_cfg(const qwk_config& qwk_cfg);
+void write_qwk_cfg(const qwk_config& c);
 int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 void qwk_nscan();
 void finish_qwk(struct qwk_junk *qwk_info);

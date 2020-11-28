@@ -35,23 +35,22 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "common/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
-#include "common/pause.h"
-#include "common/quote.h"
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/stuffin.h"
 #include "bbs/subacc.h"
 #include "bbs/sublist.h"
 #include "bbs/sysoplog.h"
+#include "common/com.h"
+#include "common/input.h"
+#include "common/quote.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/os.h"
@@ -62,11 +61,11 @@
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
-#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -90,14 +89,13 @@ void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *nam
 
 
 extern const char* QWKFrom;
-extern int qwk_percent;
 
 // from readmail.cpp
 bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del,
                      unsigned short stat);
 
 std::optional<std::string> get_qwk_from_message(const std::string& text) {
-  auto* qwk_from_start = strstr(text.c_str(), QWKFrom + 2);
+  const auto* qwk_from_start = strstr(text.c_str(), QWKFrom + 2);
 
   if (qwk_from_start == nullptr) {
     return std::nullopt;
@@ -262,11 +260,11 @@ void qwk_gather_email(qwk_junk* qwk_info) {
 int select_qwk_archiver(struct qwk_junk* qwk_info, int ask) {
   std::string allowed = "Q\r";
 
-  bout.nl();
-  bout.bputs("Select an archiver");
+  bout.nl(2);
+  bout.bputs("|#5Select an archiver");
   bout.nl();
   if (ask) {
-    bout.bputs("0) Ask me later");
+    bout.bputs("|#20|#9) Ask each time\r\n");
   }
   auto num = 0;
   for (const auto& arc : a()->arcs) {
@@ -274,12 +272,11 @@ int select_qwk_archiver(struct qwk_junk* qwk_info, int ask) {
     ++num;
     if (!StringTrim(ext).empty() && ext != "EXT") {
       allowed.append(std::to_string(num));
-      bout.format("1{}) 3{}", num, ext);
-      bout.nl();
+      bout.format("|#2{}|#9) {}\r\n", num, ext);
     }
   }
   bout.nl();
-  bout << "Enter #  Q to Quit <CR>=1 :";
+  bout << "|#7(|#1Q=Quit|#7,|#1<CR>=1|#7) Enter # :";
 
   if (ask) {
     allowed.push_back('0');
@@ -381,7 +378,7 @@ static std::string make_text_ready(const std::string& text, long len) {
 
   // Remove trailing space character only. wwiv::strings::StringTrimEnd also removes other
   // whitespace characters like \t and \r\n
-  const auto pos = temp.find_last_not_of(" ");
+  const auto pos = temp.find_last_not_of(' ');
   temp.erase(pos + 1);
   return temp;
 }
@@ -1009,74 +1006,73 @@ void qwk_sysop() {
     return;
   }
 
-  auto qwk_cfg = read_qwk_cfg();
+  auto c = read_qwk_cfg();
 
-  bool done = false;
+  auto done = false;
   while (!done && !a()->sess().hangup()) {
-    auto sn = qwk_system_name(qwk_cfg);
     bout.cls();
-    bout.bprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
-    bout.bprintf("[2] News    file : %s\r\n", qwk_cfg.news);
-    bout.bprintf("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
-    bout.bprintf("[4] Packet name  : %s\r\n", sn);
-    bout.bprintf("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
-    bout.bprintf("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
-    bout << "Hit <Enter> or Q to save and exit: [12345<CR>] ";
+    bout.format("|#21|#9) Hello file:      |#5{}\r\n", c.hello.empty() ? "|#3<None>" : c.hello);
+    bout.format("|#22|#9) News file:       |#5{}\r\n", c.news.empty() ? "|#3<None>" : c.news);
+    bout.format("|#23|#9) Goodbye file:    |#5{}\r\n", c.bye.empty() ? "|#3<None>" : c.bye);
+    auto sn = qwk_system_name(c);
+    bout.format("|#24|#9) Packet name:     |#5{}\r\n", sn);
+    const auto max_msgs = c.max_msgs == 0 ? "(Unlimited)" : std::to_string(c.max_msgs);
+    bout.format("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
+    bout.format("|#26|#9) Modify Bulletins ({})\r\n", c.amount_blts);
+    bout.format("|#2Q|#9) Quit\r\n");
+    bout.nl();
+    bout << "|#9Selection? ";
 
     const int x = onek("Q123456\r\n");
     if (x == '1' || x == '2' || x == '3') {
       bout.nl();
-      bout.Color(1);
-      bout << "Enter new filename:";
+      bout << "|#9Enter New Filename:";
       bout.mpl(12);
     }
 
     switch (x) {
     case '1':
-      qwk_cfg.hello = bin.input(12);
+      c.hello = bin.input(12);
       break;
     case '2':
-      qwk_cfg.news = bin.input(12);
+      c.news = bin.input(12);
       break;
     case '3':
-      qwk_cfg.bye = bin.input(12);
+      c.bye = bin.input(12);
       break;
     case '4': {
-      sn = qwk_system_name(qwk_cfg);
-      write_qwk_cfg(qwk_cfg);
+      sn = qwk_system_name(c);
+      write_qwk_cfg(c);
       bout.nl();
-      bout.Color(1);
-      bout.bprintf("Current name : %s", sn);
-      bout.nl();
-      bout << "Enter new packet name: ";
-      sn = bin.input(8);
+      bout.format("|#9 Current Packet Name:  |#1{}\r\n", sn);
+      bout <<     "|#9Enter new packet name: ";
+      bout.mpl(8);
+      sn = bin.input_upper(sn, 8);
       if (!sn.empty()) {
-        qwk_cfg.packet_name = sn;
+        c.packet_name = sn;
       }
-      write_qwk_cfg(qwk_cfg);
+      write_qwk_cfg(c);
     } break;
 
     case '5': {
-      bout.Color(1);
-      bout << "Enter max messages per packet, 0=No Max: ";
+      bout << "|#9(|#10=Unlimited|#9) Enter max messages per packet: ";
       bout.mpl(5);
-      auto tmp = bin.input(5);
-      qwk_cfg.max_msgs = to_number<uint16_t>(tmp);
+      c.max_msgs = bin.input_number(c.max_msgs, 0, 65535, true);
     } break;
     case '6':
-      modify_bulletins(qwk_cfg);
+      modify_bulletins(c);
       break;
     default:
       done = true;
     }
   }
 
-  write_qwk_cfg(qwk_cfg);
+  write_qwk_cfg(c);
 }
 
 
 static string qwk_current_text(int pos) {
-  static const char* yesorno[] = {"YES", "NO"};
+  static const char* yesorno[] = {"Yes", "No"};
 
   switch (pos) {
   case 0:
@@ -1122,21 +1118,24 @@ void config_qwk_bw() {
   bool done = false;
 
   while (!done && !a()->sess().hangup()) {
-    bout << "|#1A|#9) Scan E-Mail                |#2" << qwk_current_text(0) << wwiv::endl;
-    bout << "|#1B|#9) Delete Scanned E-Mail      |#2" << qwk_current_text(1) << wwiv::endl;
-    bout << "|#1C|#9) Set N-Scan of messages     |#2" << qwk_current_text(2) << wwiv::endl;
-    bout << "|#1D|#9) Remove WWIV color codes    |#2" << qwk_current_text(3) << wwiv::endl;
-    bout << "|#1E|#9) Convert WWIV color to ANSI |#2" << qwk_current_text(4) << wwiv::endl;
-    bout << "|#1F|#9) Pack Bulletins             |#2" << qwk_current_text(5) << wwiv::endl;
-    bout << "|#1G|#9) Scan New Files             |#2" << qwk_current_text(6) << wwiv::endl;
-    bout << "|#1H|#9) Remove routing information |#2" << qwk_current_text(7) << wwiv::endl;
-    bout << "|#1I|#9) Archive to pack QWK with   |#2" << qwk_current_text(8) << wwiv::endl;
-    bout << "|#1J|#9) Default transfer protocol  |#2" << qwk_current_text(9) << wwiv::endl;
-    bout << "|#1K|#9) Max messages per pack      |#2" << qwk_current_text(10) << wwiv::endl;
+    bout.cls();
+    bout.litebar("QWK Preferences");
+    bout << "|#1A|#9) Include E-Mail:             |#2" << qwk_current_text(0) << wwiv::endl;
+    bout << "|#1B|#9) Delete Included E-Mail:     |#2" << qwk_current_text(1) << wwiv::endl;
+    bout << "|#1C|#9) Update Last Read Pointer:   |#2" << qwk_current_text(2) << wwiv::endl;
+    bout << "|#1D|#9) Remove WWIV color codes:    |#2" << qwk_current_text(3) << wwiv::endl;
+    bout << "|#1E|#9) Convert WWIV color to ANSI: |#2" << qwk_current_text(4) << wwiv::endl;
+    bout << "|#1F|#9) Include Bulletins:          |#2" << qwk_current_text(5) << wwiv::endl;
+    //bout << "|#1G|#9) Scan New Files:             |#2" << qwk_current_text(6) << wwiv::endl;
+    bout << "|#1H|#9) Remove Routing Information: |#2" << qwk_current_text(7) << wwiv::endl;
+    bout << "|#1I|#9) Default Compression Type :  |#2" << qwk_current_text(8) << wwiv::endl;
+    bout << "|#1J|#9) Default Transfer Protocol:  |#2" << qwk_current_text(9) << wwiv::endl;
+    bout << "|#1K|#9) Max Messages To Include:    |#2" << qwk_current_text(10) << wwiv::endl;
     bout << "|#1Q|#9) Done" << wwiv::endl;
     bout.nl();
-    bout << "|#9Select? ";
-    int key = onek("QABCDEFGHIJK");
+    bout.nl();
+    bout << "|#9Select: ";
+    int key = onek("QABCDEFGHIJK", true);
 
     if (key == 'Q') {
       done = true;
