@@ -32,7 +32,8 @@
 namespace wwiv::bbs::qwk {
 
 
-void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
+void qwk_inmsg(const char* text, messagerec* m1, const std::string& aux, const std::string& name,
+               const core::DateTime& dt);
 
 void upload_reply_packet();
 

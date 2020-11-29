@@ -306,8 +306,8 @@ void qwk_config_user() {
       a()->user()->data.qwk_keep_routing = !a()->user()->data.qwk_keep_routing;
       break;
     case 8: {
-      qwk_junk qj{};
-      memset(&qj, 0, sizeof(struct qwk_junk));
+      qwk_state qj{};
+      memset(&qj, 0, sizeof(qwk_state));
       bout.cls();
 
       const auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
@@ -317,8 +317,8 @@ void qwk_config_user() {
       break;
     }
     case 9: {
-      qwk_junk qj{};
-      memset(&qj, 0, sizeof(struct qwk_junk));
+      qwk_state qj{};
+      memset(&qj, 0, sizeof(qwk_state));
       bout.cls();
 
       const auto arcno = select_qwk_protocol(&qj);

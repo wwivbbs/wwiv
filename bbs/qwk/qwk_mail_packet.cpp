@@ -80,7 +80,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
   return File::Copy(src, dst);
 }
 
-bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_junk *qwk_info) {
+bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_state *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
   TextFile fp(FilePath(a()->sess().dirs().qwk_directory(), "CONTROL.DAT"), "wd");
@@ -159,7 +159,7 @@ void build_qwk_packet() {
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
   const auto filename = FilePath(a()->sess().dirs().batch_directory(), MESSAGES_DAT).string();
-  qwk_junk qwk_info{};
+  qwk_state qwk_info{};
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
@@ -172,7 +172,7 @@ void build_qwk_packet() {
   qwk_info.index = -1;
   qwk_info.cursub = -1;
 
-  qwk_info.in_email = 0;
+  qwk_info.in_email = false;
   qwk_info.personal = -1;
   qwk_info.zero = -1;
 
@@ -274,7 +274,8 @@ void build_qwk_packet() {
 
 #define qwk_iscan(x) (iscan1(a()->usub[x].subnum))
 
-void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
+void qwk_gather_sub(uint16_t bn, 
+  qwk_state *qwk_info) {
 
   const auto sn = a()->usub[bn].subnum;
 
@@ -333,7 +334,7 @@ void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info) {
   bout.Color(0);
 }
 
-void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
+void qwk_start_read(int msgnum, qwk_state *qwk_info) {
   a()->sess().clear_irt();
 
   if (a()->sess().GetCurrentReadMessageArea() < 0) {
@@ -373,7 +374,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   bout.clear_whole_line();
 }
 
-void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
+void make_pre_qwk(int msgnum, qwk_state *qwk_info) {
   auto* p = get_post(msgnum);
   if ((p->status & (status_unvalidated | status_delete)) && !lcs()) {
     return;
@@ -497,7 +498,7 @@ static void qwk_remove_null(char *memory, int size) {
   }
 }
 
-void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
+void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   if (m1->status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
       return;
@@ -668,7 +669,7 @@ static void qwk_send_file(const std::string& fn, bool *sent, bool *abort) {
 }
 
 
-void finish_qwk(struct qwk_junk *qwk_info) {
+void finish_qwk(qwk_state *qwk_info) {
   bool sent = false;
   long numbytes;
 

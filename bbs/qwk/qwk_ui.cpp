@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 namespace wwiv::bbs::qwk {
 
 
-int select_qwk_archiver(struct qwk_junk* qwk_info, int ask) {
+int select_qwk_archiver(qwk_state* qwk_info, int ask) {
   std::string allowed = "Q\r";
 
   bout.nl(2);
@@ -106,7 +106,7 @@ std::string qwk_which_protocol() {
   return prot;
 }
 
-unsigned short select_qwk_protocol(qwk_junk *qwk_info) {
+unsigned short select_qwk_protocol(qwk_state *qwk_info) {
   const auto protocol = get_protocol(xfertype::xf_down_temp);
   if (protocol == -1) {
     qwk_info->abort = true;

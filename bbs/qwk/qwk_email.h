@@ -23,7 +23,7 @@ namespace wwiv::bbs::qwk {
 
 void qwk_email_text(const char *text, char *title, char *to);
 void qwk_remove_email();
-void qwk_gather_email(struct qwk_junk *qwk_info);
+void qwk_gather_email(qwk_state *qwk_info);
 
 }
 

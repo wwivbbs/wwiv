@@ -29,12 +29,12 @@ namespace wwiv::bbs::qwk {
 
 
 void build_qwk_packet();
-void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info);
-void qwk_start_read(int msgnum, struct qwk_junk *qwk_info);
-void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info);
-void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info);
+void qwk_gather_sub(uint16_t bn, qwk_state *qwk_info);
+void qwk_start_read(int msgnum, qwk_state *qwk_info);
+void make_pre_qwk(int msgnum, qwk_state *qwk_info);
+void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info);
 void qwk_nscan();
-void finish_qwk(struct qwk_junk *qwk_info);
+void finish_qwk(qwk_state *qwk_info);
 
 }
 

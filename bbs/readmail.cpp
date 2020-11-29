@@ -197,11 +197,11 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec* m,
 // used in qwk1.cpp
 bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del,
                      unsigned short stat) {
-  if (mloc[rec].index < 0) {
+  if (at(mloc, rec).index < 0) {
     return false;
   }
 
-  unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
+  auto pFileEmail(OpenEmailFile(del || stat));
   pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
   pFileEmail->Read(&m, sizeof(mailrec));
 

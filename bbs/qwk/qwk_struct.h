@@ -20,10 +20,7 @@
 #define INCLUDED_BBS_QWK_QWK_STRUCT_H
 
 
-#include "core/wwivport.h"
 #include <cstdint>
-#include <string>
-#include <vector>
 
 
 namespace wwiv::bbs::qwk {
@@ -55,7 +52,7 @@ struct qwk_index {
   char nouse;
 };
 
-struct qwk_junk {
+struct qwk_state {
   uint16_t qwk_rec_num;
   uint16_t qwk_rec_pos;
 
@@ -68,53 +65,16 @@ struct qwk_junk {
   int personal;  // personal.ndx
   int zero;      // 000.ndx for email
 
-  struct qwk_record qwk_rec;
-  struct qwk_index qwk_ndx;
+  qwk_record qwk_rec;
+  qwk_index qwk_ndx;
 
-  bool abort;
+  bool abort{false};
 
-  char in_email;
+  bool in_email{false};
   // This should be 25 chars so we want 1 more for null.
   char email_title[25];
 };
 
-struct qwk_bulletin {
-  std::string name;
-  std::string path;
-};
-
-struct qwk_config_430 {
-  daten_t fu;
-  int32_t timesd;
-  int32_t timesu;
-  uint16_t max_msgs;
-
-  char hello[13];
-  char news[13];
-  char bye[13];
-  char packet_name[9];
-  char res[190];
-
-  int32_t amount_blts;
-  char unused_blt_res[8 * 50];
-};
-
-struct qwk_config {
-  daten_t fu;
-  long timesd;
-  long timesu;
-  uint16_t max_msgs;
-
-  std::string hello;
-  std::string news;
-  std::string bye;
-  std::string packet_name;
-
-  int amount_blts;
-  std::vector<qwk_bulletin> bulletins;
-};
-
-static_assert(sizeof(qwk_config_430) == 656u, "qwk_config should be 656 bytes");
 
 struct qwk_sub_conf {
   int import_num;

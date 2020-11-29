@@ -19,10 +19,53 @@
 #ifndef INCLUDED_BBS_QWK_QWK_CONFIG_H
 #define INCLUDED_BBS_QWK_QWK_CONFIG_H
 
+#include "core/wwivport.h"
+
 #include <string>
+#include <vector>
 
 namespace wwiv::bbs::qwk {
-struct qwk_config;
+struct qwk_bulletin {
+  std::string name;
+  std::string path;
+};
+
+struct qwk_config {
+  daten_t fu;
+  long timesd;
+  long timesu;
+  uint16_t max_msgs;
+
+  std::string hello;
+  std::string news;
+  std::string bye;
+  std::string packet_name;
+
+  int amount_blts;
+  std::vector<qwk_bulletin> bulletins;
+};
+
+#pragma pack(push, 1)
+
+struct qwk_config_430 {
+  daten_t fu;
+  int32_t timesd;
+  int32_t timesu;
+  uint16_t max_msgs;
+
+  char hello[13];
+  char news[13];
+  char bye[13];
+  char packet_name[9];
+  char res[190];
+
+  int32_t amount_blts;
+  char unused_blt_res[8 * 50];
+};
+#pragma pack(pop)
+
+
+static_assert(sizeof(qwk_config_430) == 656u, "qwk_config should be 656 bytes");
 
 std::string qwk_system_name(const qwk_config& c);
 qwk_config read_qwk_cfg();

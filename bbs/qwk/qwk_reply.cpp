@@ -140,7 +140,6 @@ static void qwk_post_text(std::string text, std::string to, const std::string& t
 
   int dm, done = 0, pass = 0;
   slrec ss{};
-  char user_name[101];
 
   while (!done && !a()->sess().hangup()) {
     if (pass > 0) {
@@ -258,19 +257,16 @@ static void qwk_post_text(std::string text, std::string to, const std::string& t
   }
   bout.nl();
 
-  if (a()->current_sub().anony & anony_real_name) {
-    strcpy(user_name, a()->user()->GetRealName());
-    properize(user_name);
-  } else {
-    const string name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
-    strcpy(user_name, name.c_str());
-  }
+  const auto user_name =
+      a()->current_sub().anony & anony_real_name
+          ? properize(a()->user()->GetRealName())
+          : a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
 
   if (!to.empty() && !iequals(to, "ALL")) {
     const auto buf = fmt::sprintf("%c0FidoAddr: %s\r\n", CD, to);
     text = StrCat(buf, text);
   }
-  qwk_inmsg(text.c_str(), &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
+  qwk_inmsg(text.c_str(), &m, a()->current_sub().filename, user_name, DateTime::now());
 
   if (m.stored_as != 0xffffffff) {
     while (!a()->sess().hangup()) {
@@ -539,7 +535,7 @@ void upload_reply_packet() {
 }
 
 
-void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* name,
+void qwk_inmsg(const char* text, messagerec* m1, const std::string& aux, const std::string& name,
                const DateTime& dt) {
   ScopeExit at_exit([=]() {
     // Might not need to do this anymore since quoting

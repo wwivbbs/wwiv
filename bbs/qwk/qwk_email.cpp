@@ -43,16 +43,10 @@ using namespace sdk::msgapi;
 void qwk_remove_email() {
   a()->emchg_ = false;
 
-  auto* mloc = (tmpmailrec*)malloc(MAXMAIL * sizeof(tmpmailrec));
-  if (!mloc) {
-    bout.bputs("Not enough memory.");
-    return;
-  }
-
+  std::vector<tmpmailrec> mloc;
   auto f(OpenEmailFile(true));
 
   if (!f->IsOpen()) {
-    free(mloc);
     return;
   }
 
@@ -63,26 +57,27 @@ void qwk_remove_email() {
   for (unsigned long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == a()->sess().user_num())) {
-      mloc[mw].index = static_cast<int16_t>(i);
-      mloc[mw].fromsys = m.fromsys;
-      mloc[mw].fromuser = m.fromuser;
-      mloc[mw].daten = m.daten;
-      mloc[mw].msg = m.msg;
+    if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
+      tmpmailrec r{};
+      r.index = static_cast<int16_t>(i);
+      r.fromsys = m.fromsys;
+      r.fromuser = m.fromuser;
+      r.daten = m.daten;
+      r.msg = m.msg;
+      mloc.emplace_back(r);
       mw++;
     }
   }
   a()->user()->data.waiting = mw;
 
-  if (mw == 0) {
-    free(mloc);
+  if (mloc.empty()) {
     return;
   }
 
-  int curmail = 0;
-  bool done = false;
+  auto curmail = 0;
+  auto done = false;
   do {
-    delmail(*f, mloc[curmail].index);
+    delmail(*f, stl::at(mloc, curmail).index);
 
     ++curmail;
     if (curmail >= mw) {
@@ -92,7 +87,7 @@ void qwk_remove_email() {
   } while (!a()->sess().hangup() && !done);
 }
 
-void qwk_gather_email(qwk_junk* qwk_info) {
+void qwk_gather_email(qwk_state* qwk_info) {
   mailrec m{};
   postrec junk{};
 
@@ -108,10 +103,10 @@ void qwk_gather_email(qwk_junk* qwk_info) {
   }
   const auto mfl = static_cast<int>(f->length() / sizeof(mailrec));
   uint8_t mw = 0;
-  for (int i = 0; i < mfl && mw < MAXMAIL; i++) {
+  for (auto i = 0; i < mfl && mw < MAXMAIL; i++) {
     f->Seek(static_cast<File::size_type>(i) * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
-    if ((m.tosys == 0) && (m.touser == a()->sess().user_num())) {
+    if (m.tosys == 0 && m.touser == a()->sess().user_num()) {
       tmpmailrec r{};
       r.index = static_cast<int16_t>(i);
       r.fromsys = m.fromsys;
@@ -135,10 +130,9 @@ void qwk_gather_email(qwk_junk* qwk_info) {
   bout.Color(7);
   bout.bputs("Gathering Email");
 
-  int curmail = 0;
-  bool done = false;
-
-  qwk_info->in_email = 1;
+  auto curmail = 0;
+  auto done = false;
+  qwk_info->in_email = true;
 
   auto filename = FilePath(a()->sess().dirs().qwk_directory(), "PERSONAL.NDX");
   qwk_info->personal = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
@@ -156,7 +150,7 @@ void qwk_gather_email(qwk_junk* qwk_info) {
     //i = (ability_read_email_anony & ss.ability) != 0;
 
     if (m.fromsys && !m.fromuser) {
-      grab_user_name(&(m.msg), "email", network_number_from(&m));
+      grab_user_name(&m.msg, "email", network_number_from(&m));
     } else {
       a()->net_email_name.clear();
     }
@@ -180,7 +174,7 @@ void qwk_gather_email(qwk_junk* qwk_info) {
 
   } while (!a()->sess().hangup() && !done);
 
-  qwk_info->in_email = 0;
+  qwk_info->in_email = false;
 }
 
 void qwk_email_text(const char* text, char* title, char* to) {
@@ -222,7 +216,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       bout.nl();
       bout.bputs("Mail Forwarded.");
       bout.nl();
-      if ((un == 0) && (sy == 0)) {
+      if (un == 0 && sy == 0) {
         bout.bputs("Forwarded to unknown user.");
         bout.pausescr();
         return;
@@ -242,7 +236,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
       set_net_num(0);
       send_to_name = a()->names()->UserName(un);
     } else {
-      const std::string netname = (wwiv::stl::ssize(a()->nets()) > 1) ? a()->network_name() : "";
+      const auto netname = wwiv::stl::ssize(a()->nets()) > 1 ? a()->network_name() : "";
       send_to_name = username_system_net_as_string(un, a()->net_email_name, sy, netname);
     }
 
@@ -271,7 +265,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
     msg.storage_type = EMAIL_STORAGE;
 
     const auto name = a()->names()->UserName(a()->sess().user_num(), a()->current_net().sysnum);
-    qwk_inmsg(text, &msg, "email", name.c_str(), DateTime::now());
+    qwk_inmsg(text, &msg, "email", name, DateTime::now());
 
     if (msg.stored_as == 0xffffffff) {
       return;
@@ -279,7 +273,7 @@ void qwk_email_text(const char* text, char* title, char* to) {
 
     bout.Color(8);
 
-    ::EmailData email;
+    EmailData email;
     email.title = title;
     email.msg = &msg;
     email.anony = 0;
