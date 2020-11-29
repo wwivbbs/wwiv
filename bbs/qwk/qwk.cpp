@@ -21,12 +21,12 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
-#include "bbs/sr.h"
-#include "bbs/sysoplog.h"
 #include "bbs/qwk/qwk_config.h"
 #include "bbs/qwk/qwk_mail_packet.h"
 #include "bbs/qwk/qwk_reply.h"
 #include "bbs/qwk/qwk_ui.h"
+#include "bbs/sr.h"
+#include "bbs/sysoplog.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "common/pause.h"
@@ -38,8 +38,8 @@
 #include <memory>
 #include <string>
 
-using std::unique_ptr;
 using std::string;
+using std::unique_ptr;
 using namespace wwiv::bbs;
 using namespace wwiv::common;
 using namespace wwiv::core;
@@ -49,17 +49,22 @@ using namespace wwiv::stl;
 
 namespace wwiv::bbs::qwk {
 
+void qwk_download() {
+  sysoplog() << "Download QWK packet";
+  build_qwk_packet();
+}
 
+void qwk_upload() {
+  sysoplog() << "Upload REP packet";
+  upload_reply_packet();
+}
 
 void qwk_menu() {
   const auto qwk_cfg = read_qwk_cfg();
 
-  auto done = false;
-  while (!done && !a()->sess().hangup()) {
+  while (!a()->sess().hangup()) {
     bout.cls();
     bout.printfile("QWK");
-
-    bout.nl();
     std::string allowed = "QCDU?";
     if (so()) {
       allowed.push_back('*');
@@ -73,47 +78,35 @@ void qwk_menu() {
     const auto key = onek(allowed, true);
 
     switch (key) {
-    case '?':
-      break;
-
-    case 'Q':
-    default:
-      done = true;
-      break;
-
-    case 'U':
-      sysoplog() << "Upload REP packet";
-      upload_reply_packet();
-      break;
-
-    case 'D': {
-      sysoplog() << "Download QWK packet";
-      build_qwk_packet();
-    } break;
     case 'C':
-      sysoplog() << "Config Options";
-      config_qwk_bw();
+      qwk_config_user();
       break;
-
+    case 'D':
+      qwk_download();
+    break;
+    case 'Q':
+      return;
+    case 'U':
+      qwk_upload();
+      break;
     case '*':
-      if (so()) {
-        sysoplog() << "Ran Sysop Config";
-        qwk_sysop();
-      }
+      qwk_config_sysop();
+      break;
+    case '?':
       break;
     }
   }
 }
 
-
 void qwk_nscan() {
 #ifdef NEVER // Not ported yet
-#define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
+#define SETREC(f, i) lseek(f, ((long)(i)) * ((long)sizeof(uploadsrec)), SEEK_SET);
   static constexpr int DOTS = 5;
   uploadsrec u;
   bool abort = false;
   int od, newfile, i, i1, i5, f, count, color = 3;
-  char s[201];;
+  char s[201];
+  ;
 
   bout.Color(3);
   bout.bputs("Building NEWFILES.DAT");
@@ -155,23 +148,23 @@ void qwk_nscan() {
       dliscan();
       if (this_date >= a()->sess().nscandate()) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
-                a()->dirs()[a()->current_user_dir().subnum].name,
-                a()->current_user_dir().keys, numf, "files");
-        write(newfile,  s, strlen(s));
+                a()->dirs()[a()->current_user_dir().subnum].name, a()->current_user_dir().keys,
+                numf, "files");
+        write(newfile, s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
         for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->sess().hangup()); i5++) {
           SETREC(f, i5);
           read(f, &u, sizeof(uploadsrec));
           if (u.daten >= a()->sess().nscandate()) {
-            sprintf(s, "%s %5ldk  %s\r\n", u.filename, (long) bytes_to_k(u.numbytes), u.description);
-            write(newfile,  s, strlen(s));
-
+            sprintf(s, "%s %5ldk  %s\r\n", u.filename, (long)bytes_to_k(u.numbytes), u.description);
+            write(newfile, s, strlen(s));
 
 #ifndef HUGE_TRAN
             if (u.mask & mask_extended) {
               int pos = 0;
-              string ext = a()->current_file_area()->ReadExtentedDescription(u.filename).value_or("");
+              string ext =
+                  a()->current_file_area()->ReadExtentedDescription(u.filename).value_or("");
 
               if (!ext.empty(0)) {
                 int spos = 21, x;
@@ -183,7 +176,6 @@ void qwk_nscan() {
                   if (x != '\r' && x != '\n' && x > 2) {
                     s[spos] = x;
                   }
-
 
                   if (x == '\n' || x == 0) {
                     s[spos] = 0;
@@ -206,19 +198,15 @@ void qwk_nscan() {
           } else if (!empty()) {
             bin.checka(&abort);
           }
-
         }
         f = close(f);
       }
       a()->set_current_user_dir_num(od);
-
     }
   }
   newfile = close(newfile);
-#endif  // NEVER
+#endif // NEVER
 }
-
-
 
 static string qwk_current_text(int pos) {
   static const char* yesorno[] = {"Yes", "No"};
@@ -263,7 +251,8 @@ static string qwk_current_text(int pos) {
   }
 }
 
-void config_qwk_bw() {
+void qwk_config_user() {
+  sysoplog() << "Config Options";
   bool done = false;
 
   while (!done && !a()->sess().hangup()) {
@@ -275,7 +264,7 @@ void config_qwk_bw() {
     bout << "|#1D|#9) Remove WWIV color codes:    |#2" << qwk_current_text(3) << wwiv::endl;
     bout << "|#1E|#9) Convert WWIV color to ANSI: |#2" << qwk_current_text(4) << wwiv::endl;
     bout << "|#1F|#9) Include Bulletins:          |#2" << qwk_current_text(5) << wwiv::endl;
-    //bout << "|#1G|#9) Scan New Files:             |#2" << qwk_current_text(6) << wwiv::endl;
+    // bout << "|#1G|#9) Scan New Files:             |#2" << qwk_current_text(6) << wwiv::endl;
     bout << "|#1H|#9) Remove Routing Information: |#2" << qwk_current_text(7) << wwiv::endl;
     bout << "|#1I|#9) Default Compression Type :  |#2" << qwk_current_text(8) << wwiv::endl;
     bout << "|#1J|#9) Default Transfer Protocol:  |#2" << qwk_current_text(9) << wwiv::endl;
@@ -349,10 +338,11 @@ void config_qwk_bw() {
   }
 }
 
-void qwk_sysop() {
+void qwk_config_sysop() {
   if (!so()) {
     return;
   }
+  sysoplog() << "Ran Sysop Config";
 
   auto c = read_qwk_cfg();
 
@@ -418,4 +408,4 @@ void qwk_sysop() {
   write_qwk_cfg(c);
 }
 
-}
+} // namespace wwiv::bbs::qwk

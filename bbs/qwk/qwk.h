@@ -26,8 +26,10 @@ namespace wwiv::bbs::qwk {
 
 // Main QWK functions
 void qwk_menu();
-void qwk_sysop();
-void config_qwk_bw();
+void qwk_download();
+void qwk_upload();
+void qwk_config_sysop();
+void qwk_config_user();
 
 }
 

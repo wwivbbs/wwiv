@@ -17,21 +17,21 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/menus/menucommands.h"
-#include "bbs/basic/basic.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/hop.h"
-#include "bbs/menus/config_menus.h"
-#include "bbs/menus/mainmenu.h"
-#include "bbs/menus/menuspec.h"
-#include "bbs/menus/menusupp.h"
-#include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
 #include "bbs/xferovl1.h"
+#include "bbs/basic/basic.h"
+#include "bbs/menus/config_menus.h"
+#include "bbs/menus/mainmenu.h"
+#include "bbs/menus/menuspec.h"
+#include "bbs/menus/menusupp.h"
+#include "bbs/qwk/qwk.h"
 #include "common/output.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -705,10 +705,41 @@ Runs a WWIVbasic Script
   Marks messages as unread
 )",
                                 MENU_CAT_MSGS, [](MenuContext&) { UnQScan(); }));
+
+  ///////////////////////////////////////////////////////////////////////////
+  /// QWK Menu Command
+  ///
+
   m.emplace("Packers", MenuItem(R"(
-  Executes the QWK menu.
+  Executes the QWK menu. (Legacy, use qwk: commands now)
 )",
-                                MENU_CAT_QWK, [](MenuContext&) { Packers(); }));
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_menu(); }));
+
+  m.emplace("qwk:menu", MenuItem(R"(
+  Executes the default QWK menu.
+)",
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_menu(); }));
+
+  m.emplace("qwk:upload", MenuItem(R"(
+  Upload a QWK Reply Packet
+)",
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_upload(); }));
+
+  m.emplace("qwk:download", MenuItem(R"(
+  Download a QWK Message Packet
+)",
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_download(); }));
+  m.emplace("qwk:config_user", MenuItem(R"(
+  Configures User Settings for QWK
+)",
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_user(); }));
+  m.emplace("qwk:config_sysop", MenuItem(R"(
+  Configures SysOp Settings for QWK
+)",
+                                MENU_CAT_QWK, [](MenuContext&) { qwk::qwk_config_sysop(); }));
+  
+  ///////////////////////////////////////////////////////////////////////////
+  /// 
   m.emplace("InitVotes", MenuItem(R"()", MENU_CAT_VOTE, [](MenuContext&) { InitVotes(); }));
   m.emplace("TurnMCIOn", MenuItem(R"(
   Enable MCI codes

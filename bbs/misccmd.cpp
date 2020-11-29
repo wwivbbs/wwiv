@@ -27,7 +27,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
-#include "bbs/qwk/qwk.h"
 #include "common/com.h"
 #include "common/datetime.h"
 #include "common/input.h"
@@ -44,9 +43,6 @@
 #include "sdk/files/dirs.h"
 #include <memory>
 #include <string>
-
-// from qwk.c
-void qwk_menu();
 
 using std::string;
 using std::unique_ptr;
@@ -507,8 +503,4 @@ int getnetnum_by_type(network_type_t type) {
     }
   }
   return -1;
-}
-
-void Packers() {
-  wwiv::bbs::qwk::qwk_menu();
 }
