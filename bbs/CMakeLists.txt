@@ -61,8 +61,6 @@ set(COMMON_SOURCES
  normupld.cpp
  pipe_expr.cpp
  save_qscan.cpp
- qwk.cpp
- qwk1.cpp
  readmail.cpp
  read_message.cpp
  shortmsg.cpp
@@ -108,6 +106,13 @@ set(COMMON_SOURCES
  menus/menuspec.cpp
  menus/menusupp.cpp
  menus/printcommands.cpp
+ qwk/qwk.cpp
+ qwk/qwk_config.cpp
+ qwk/qwk_email.cpp
+ qwk/qwk_reply.cpp
+ qwk/qwk_text.cpp
+ qwk/qwk_ui.cpp
+ qwk/qwk_util.cpp
 )
 
 set(BBS_MAIN bbs_main.cpp)

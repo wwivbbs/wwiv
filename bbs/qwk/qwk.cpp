@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/qwk.h"
+#include "bbs/qwk/qwk.h"
 
 #include <fcntl.h>
 #ifdef _WIN32
@@ -27,13 +27,17 @@
 #include <unistd.h>
 #endif
 
-#include "read_message.h"
+#include "qwk_config.h"
+#include "qwk_email.h"
+#include "qwk_reply.h"
+#include "qwk_ui.h"
+#include "qwk_util.h"
+#include "bbs/read_message.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/defaults.h"
 #include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
 #include "bbs/save_qscan.h"
@@ -75,6 +79,8 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 
+namespace wwiv::bbs::qwk {
+
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
 
@@ -82,6 +88,7 @@ static uint16_t max_msgs;
 
 // from xfer.cpp
 extern uint32_t this_date;
+
 
 static bool replacefile(const std::string& src, const std::string& dst) {
   if (dst.empty()) {
@@ -392,35 +399,6 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   }
 }
 
-static int _fieeetomsbin(float *src4, float *dest4) {
-  const auto ieee = reinterpret_cast<unsigned char*>(src4);
-  const auto msbin = reinterpret_cast<unsigned char*>(dest4);
-  unsigned char msbin_exp = 0x00;
-
-  /* See _fmsbintoieee() for details of formats   */
-  const unsigned char sign = ieee[3] & 0x80;
-  msbin_exp |= ieee[3] << 1;
-  msbin_exp |= ieee[2] >> 7;
-
-  /* An ieee exponent of 0xfe overflows in MBF    */
-  if (msbin_exp == 0xfe) {
-    return 1;
-  }
-
-  msbin_exp += 2;     /* actually, -127 + 128 + 1 */
-
-  for (auto i = 0; i < 4; i++) {
-    msbin[i] = 0;
-  }
-
-  msbin[3] = msbin_exp;
-  msbin[2] |= sign;
-  msbin[2] |= ieee[2] & 0x7f;
-  msbin[1] = ieee[1];
-  msbin[0] = ieee[0];
-
-  return 0;
-}
 
 static void insert_after_routing(std::string& text, const std::string& text2insert) {
   const auto text_to_insert_nc = StrCat(stripcolors(text2insert), "\xE3\xE3");
@@ -648,16 +626,6 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
 
 
-std::string qwk_system_name(const qwk_config& c) {
-  auto qwkname = !c.packet_name.empty() ? c.packet_name : a()->config()->system_name();
-
-  if (qwkname.length() > 8) {
-    qwkname.resize(8);
-  }
-  std::replace( qwkname.begin(), qwkname.end(), ' ', '-' );
-  std::replace( qwkname.begin(), qwkname.end(), '.', '-' );
-  return ToStringUpperCase(qwkname);
-}
 
 void qwk_menu() {
   const auto qwk_cfg = read_qwk_cfg();
@@ -760,111 +728,8 @@ static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   }
 }
 
-unsigned short select_qwk_protocol(qwk_junk *qwk_info) {
-  const auto protocol = get_protocol(xfertype::xf_down_temp);
-  if (protocol == -1) {
-    qwk_info->abort = true;
-  }
-  return static_cast<unsigned short>(protocol);
-}
 
-qwk_config read_qwk_cfg() {
-  qwk_config_430 o{};
 
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
-  int f = open(filename.c_str(), O_BINARY | O_RDONLY);
-  if (f < 0) {
-    return {};
-  }
-  read(f,  &o, sizeof(qwk_config_430));
-  int x = 0;
-
-  qwk_config c{};
-  while (x < o.amount_blts) {
-    auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
-    lseek(f, pos, SEEK_SET);
-    char b[BULL_SIZE];
-    memset(b, 0, sizeof(b));
-    read(f, &b, BULL_SIZE);
-    qwk_bulletin bltn;
-    bltn.path = b;
-    c.bulletins.emplace_back(bltn);
-    ++x;
-  }
-
-  x = 0;
-  for (auto& blt : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (ssize(c.bulletins) * BULL_SIZE) + (x * BNAME_SIZE);
-    lseek(f, pos, SEEK_SET);
-    char b[BULL_SIZE];
-    memset(b, 0, sizeof(b));
-    read(f, &b, BULL_SIZE);
-    blt.name = b;
-    ++x;
-  }
-  close(f);
-
-  c.fu = o.fu;
-  c.timesd = o.timesd;
-  c.timesu = o.timesu;
-  c.max_msgs = o.max_msgs;
-  c.hello = o.hello;
-  c.news = o.news;
-  c.bye = o.bye;
-  c.packet_name = o.packet_name;
-  c.amount_blts = o.amount_blts;
-  return c;
-}
-
-void write_qwk_cfg(const qwk_config& c) {
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
-  const auto f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  if (f < 0) {
-    return;
-  }
-
-  qwk_config_430 o{};
-  o.fu = c.fu;
-  o.timesd = c.timesd;
-  o.timesu = c.timesu;
-  o.max_msgs = c.max_msgs;
-  to_char_array(o.hello, c.hello);
-  to_char_array(o.news, c.news);
-  to_char_array(o.bye, c.bye);
-  to_char_array(o.packet_name, c.packet_name);
-  o.amount_blts = size_int32(c.bulletins);
-
-  write(f, &o, sizeof(qwk_config_430));
-
-  int x = 0;
-  for (const auto& b : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
-    lseek(f, pos, SEEK_SET);
-
-    if (!b.path.empty()) {
-      char p[BULL_SIZE+1];
-      memset(&p, 0, BULL_SIZE);
-      to_char_array(p, b.path);
-      write(f, p, BULL_SIZE);
-      ++x;
-    }
-  }
-
-  x = 0;
-  for (const auto& b : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (c.bulletins.size() * BULL_SIZE) + (x++ * BNAME_SIZE);
-    lseek(f, pos, SEEK_SET);
-
-    if (!b.name.empty()) {
-      char p[BNAME_SIZE+1];
-      memset(&p, 0, BNAME_SIZE);
-      to_char_array(p, b.name);
-      write(f, p, BNAME_SIZE);
-    }
-  }
-
-  close(f);
-}
 
 int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   bout.cls();
@@ -894,8 +759,10 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
   return 1;
 }
 
+
 void qwk_nscan() {
 #ifdef NEVER // Not ported yet
+#define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
   static constexpr int DOTS = 5;
   uploadsrec u;
   bool abort = false;
@@ -1141,4 +1008,205 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       done = true;
     }
   }
+}
+
+
+static string qwk_current_text(int pos) {
+  static const char* yesorno[] = {"Yes", "No"};
+
+  switch (pos) {
+  case 0:
+    return a()->user()->data.qwk_dont_scan_mail ? yesorno[1] : yesorno[0];
+  case 1:
+    return a()->user()->data.qwk_delete_mail ? yesorno[0] : yesorno[1];
+  case 2:
+    return a()->user()->data.qwk_dontsetnscan ? yesorno[1] : yesorno[0];
+  case 3:
+    return a()->user()->data.qwk_remove_color ? yesorno[0] : yesorno[1];
+  case 4:
+    return a()->user()->data.qwk_convert_color ? yesorno[0] : yesorno[1];
+  case 5:
+    return a()->user()->data.qwk_leave_bulletin ? yesorno[1] : yesorno[0];
+  case 6:
+    return a()->user()->data.qwk_dontscanfiles ? yesorno[1] : yesorno[0];
+  case 7:
+    return a()->user()->data.qwk_keep_routing ? yesorno[1] : yesorno[0];
+  case 8:
+    return qwk_which_zip();
+  case 9:
+    return qwk_which_protocol();
+  case 10: {
+    if (!a()->user()->data.qwk_max_msgs_per_sub && !a()->user()->data.qwk_max_msgs) {
+      return "Unlimited/Unlimited";
+    }
+    if (!a()->user()->data.qwk_max_msgs_per_sub) {
+      return fmt::format("Unlimited/{}", a()->user()->data.qwk_max_msgs);
+    }
+    if (!a()->user()->data.qwk_max_msgs) {
+      return fmt::format("{}/Unlimited", a()->user()->data.qwk_max_msgs_per_sub);
+    }
+    return fmt::format("{}/{}", a()->user()->data.qwk_max_msgs,
+                       a()->user()->data.qwk_max_msgs_per_sub);
+  }
+  case 11:
+  default:
+    return "DONE";
+  }
+}
+
+void config_qwk_bw() {
+  bool done = false;
+
+  while (!done && !a()->sess().hangup()) {
+    bout.cls();
+    bout.litebar("QWK Preferences");
+    bout << "|#1A|#9) Include E-Mail:             |#2" << qwk_current_text(0) << wwiv::endl;
+    bout << "|#1B|#9) Delete Included E-Mail:     |#2" << qwk_current_text(1) << wwiv::endl;
+    bout << "|#1C|#9) Update Last Read Pointer:   |#2" << qwk_current_text(2) << wwiv::endl;
+    bout << "|#1D|#9) Remove WWIV color codes:    |#2" << qwk_current_text(3) << wwiv::endl;
+    bout << "|#1E|#9) Convert WWIV color to ANSI: |#2" << qwk_current_text(4) << wwiv::endl;
+    bout << "|#1F|#9) Include Bulletins:          |#2" << qwk_current_text(5) << wwiv::endl;
+    //bout << "|#1G|#9) Scan New Files:             |#2" << qwk_current_text(6) << wwiv::endl;
+    bout << "|#1H|#9) Remove Routing Information: |#2" << qwk_current_text(7) << wwiv::endl;
+    bout << "|#1I|#9) Default Compression Type :  |#2" << qwk_current_text(8) << wwiv::endl;
+    bout << "|#1J|#9) Default Transfer Protocol:  |#2" << qwk_current_text(9) << wwiv::endl;
+    bout << "|#1K|#9) Max Messages To Include:    |#2" << qwk_current_text(10) << wwiv::endl;
+    bout << "|#1Q|#9) Done" << wwiv::endl;
+    bout.nl();
+    bout.nl();
+    bout << "|#9Select: ";
+    int key = onek("QABCDEFGHIJK", true);
+
+    if (key == 'Q') {
+      done = true;
+    }
+    key = key - 'A';
+
+    switch (key) {
+    case 0:
+      a()->user()->data.qwk_dont_scan_mail = !a()->user()->data.qwk_dont_scan_mail;
+      break;
+    case 1:
+      a()->user()->data.qwk_delete_mail = !a()->user()->data.qwk_delete_mail;
+      break;
+    case 2:
+      a()->user()->data.qwk_dontsetnscan = !a()->user()->data.qwk_dontsetnscan;
+      break;
+    case 3:
+      a()->user()->data.qwk_remove_color = !a()->user()->data.qwk_remove_color;
+      break;
+    case 4:
+      a()->user()->data.qwk_convert_color = !a()->user()->data.qwk_convert_color;
+      break;
+    case 5:
+      a()->user()->data.qwk_leave_bulletin = !a()->user()->data.qwk_leave_bulletin;
+      break;
+    case 6:
+      a()->user()->data.qwk_dontscanfiles = !a()->user()->data.qwk_dontscanfiles;
+      break;
+    case 7:
+      a()->user()->data.qwk_keep_routing = !a()->user()->data.qwk_keep_routing;
+      break;
+    case 8: {
+      qwk_junk qj{};
+      memset(&qj, 0, sizeof(struct qwk_junk));
+      bout.cls();
+
+      const auto arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
+      if (!qj.abort) {
+        a()->user()->data.qwk_archive = arcno;
+      }
+      break;
+    }
+    case 9: {
+      qwk_junk qj{};
+      memset(&qj, 0, sizeof(struct qwk_junk));
+      bout.cls();
+
+      const auto arcno = select_qwk_protocol(&qj);
+      if (!qj.abort) {
+        a()->user()->data.qwk_protocol = arcno;
+      }
+    } break;
+    case 10: {
+      uint16_t max_msgs, max_per_sub;
+
+      if (get_qwk_max_msgs(&max_msgs, &max_per_sub)) {
+        a()->user()->data.qwk_max_msgs = max_msgs;
+        a()->user()->data.qwk_max_msgs_per_sub = max_per_sub;
+      }
+    } break;
+    }
+  }
+}
+
+void qwk_sysop() {
+  if (!so()) {
+    return;
+  }
+
+  auto c = read_qwk_cfg();
+
+  auto done = false;
+  while (!done && !a()->sess().hangup()) {
+    bout.cls();
+    bout.format("|#21|#9) Hello file:      |#5{}\r\n", c.hello.empty() ? "|#3<None>" : c.hello);
+    bout.format("|#22|#9) News file:       |#5{}\r\n", c.news.empty() ? "|#3<None>" : c.news);
+    bout.format("|#23|#9) Goodbye file:    |#5{}\r\n", c.bye.empty() ? "|#3<None>" : c.bye);
+    auto sn = qwk_system_name(c);
+    bout.format("|#24|#9) Packet name:     |#5{}\r\n", sn);
+    const auto max_msgs = c.max_msgs == 0 ? "(Unlimited)" : std::to_string(c.max_msgs);
+    bout.format("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
+    bout.format("|#26|#9) Modify Bulletins ({})\r\n", c.amount_blts);
+    bout.format("|#2Q|#9) Quit\r\n");
+    bout.nl();
+    bout << "|#9Selection? ";
+
+    const int x = onek("Q123456\r\n");
+    if (x == '1' || x == '2' || x == '3') {
+      bout.nl();
+      bout << "|#9Enter New Filename:";
+      bout.mpl(12);
+    }
+
+    switch (x) {
+    case '1':
+      c.hello = bin.input(12);
+      break;
+    case '2':
+      c.news = bin.input(12);
+      break;
+    case '3':
+      c.bye = bin.input(12);
+      break;
+    case '4': {
+      sn = qwk_system_name(c);
+      write_qwk_cfg(c);
+      bout.nl();
+      bout.format("|#9 Current Packet Name:  |#1{}\r\n", sn);
+      bout <<     "|#9Enter new packet name: ";
+      bout.mpl(8);
+      sn = bin.input_upper(sn, 8);
+      if (!sn.empty()) {
+        c.packet_name = sn;
+      }
+      write_qwk_cfg(c);
+    } break;
+
+    case '5': {
+      bout << "|#9(|#10=Unlimited|#9) Enter max messages per packet: ";
+      bout.mpl(5);
+      c.max_msgs = bin.input_number(c.max_msgs, 0, 65535, true);
+    } break;
+    case '6':
+      modify_bulletins(c);
+      break;
+    default:
+      done = true;
+    }
+  }
+
+  write_qwk_cfg(c);
+}
+
 }

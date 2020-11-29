@@ -18,22 +18,20 @@
 /**************************************************************************/
 #include "bbs/misccmd.h"
 
-
-#include "acs.h"
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
-#include "common/com.h"
 #include "bbs/confutil.h"
-#include "common/datetime.h"
-#include "bbs/defaults.h"
 #include "bbs/email.h"
-#include "bbs/execexternal.h"
-#include "common/input.h"
 #include "bbs/msgbase1.h"
-#include "common/pause.h"
 #include "bbs/read_message.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
+#include "bbs/qwk/qwk.h"
+#include "common/com.h"
+#include "common/datetime.h"
+#include "common/input.h"
+#include "common/pause.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "local_io/keycodes.h"
@@ -44,7 +42,6 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/files/dirs.h"
-
 #include <memory>
 #include <string>
 
@@ -513,5 +510,5 @@ int getnetnum_by_type(network_type_t type) {
 }
 
 void Packers() {
-  qwk_menu();
+  wwiv::bbs::qwk::qwk_menu();
 }

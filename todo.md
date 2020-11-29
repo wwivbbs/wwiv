@@ -6,6 +6,16 @@
 # Datafile upgrades
 * Move FTN settings into node config vs. general config (packet pw, etc)
 * GFiles?
+* data/qwk.cfg
+
+# QWK
+* Make menu commands for config, sysop config, upload, download
+* add qwk config to defaults
+* move qwk code into wwiv/qwk
+* make qwk command into a real 5.6 menu
+* use File on qwk_info for things, not posix file handles.
+* make qwk.cfg into a JSON config file.
+* Show progress as packing qwk files.
 
 
 # WWIVconfig
