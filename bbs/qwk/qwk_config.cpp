@@ -16,23 +16,41 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "qwk_reply.h"
-#include "bbs/bbs.h"
-#include "bbs/qwk/qwk_struct.h"
+#include "bbs/qwk/qwk_config.h"
 
+#include "bbs/bbs.h"
+#include "bbs/qwk/qwk_reply.h"
+#include "bbs/qwk/qwk_struct.h"
+#include "core/cereal_utils.h"
 #include "core/file.h"
+#include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
-
 #include <algorithm>
-#include <fcntl.h>
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
 namespace wwiv::bbs::qwk {
+
+template <class Archive> void serialize(Archive& ar, qwk_bulletin& s) { 
+  SERIALIZE(s, name);
+  SERIALIZE(s, path);
+}
+
+template <class Archive> void serialize(Archive& ar, qwk_config& s) { 
+  SERIALIZE(s, fu);
+  SERIALIZE(s, timesd);
+  SERIALIZE(s, timesu);
+  SERIALIZE(s, max_msgs);
+  SERIALIZE(s, hello);
+  SERIALIZE(s, news);
+  SERIALIZE(s, bye);
+  SERIALIZE(s, packet_name);
+  SERIALIZE(s, bulletins);
+}
 
 std::string qwk_system_name(const qwk_config& c) {
   auto qwkname = !c.packet_name.empty() ? c.packet_name : a()->config()->system_name();
@@ -45,41 +63,42 @@ std::string qwk_system_name(const qwk_config& c) {
   return ToStringUpperCase(qwkname);
 }
 
-qwk_config read_qwk_cfg() {
+static qwk_config read_qwk_cfg_430() {
   qwk_config_430 o{};
 
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
-  int f = open(filename.c_str(), O_BINARY | O_RDONLY);
-  if (f < 0) {
+  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
+  File f(filename);
+
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     return {};
   }
-  read(f,  &o, sizeof(qwk_config_430));
-  int x = 0;
 
+  if (f.Read(&o, sizeof(qwk_config_430)) != sizeof(qwk_config_430)) {
+    LOG(ERROR) << "Read failed on: " << f;
+    return {};
+  }
+
+  auto x = 0;
   qwk_config c{};
   while (x < o.amount_blts) {
     auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
-    lseek(f, pos, SEEK_SET);
-    char b[BULL_SIZE];
-    memset(b, 0, sizeof(b));
-    read(f, &b, BULL_SIZE);
-    qwk_bulletin bltn;
-    bltn.path = b;
-    c.bulletins.emplace_back(bltn);
+    f.Seek(pos, File::Whence::begin);
+    char b[BULL_SIZE]{};
+    f.Read(&b, BULL_SIZE);
+    c.bulletins.emplace_back(qwk_bulletin{ "", b });
     ++x;
   }
 
   x = 0;
   for (auto& blt : c.bulletins) {
     const auto pos = sizeof(qwk_config_430) + (ssize(c.bulletins) * BULL_SIZE) + (x * BNAME_SIZE);
-    lseek(f, pos, SEEK_SET);
-    char b[BULL_SIZE];
-    memset(b, 0, sizeof(b));
-    read(f, &b, BULL_SIZE);
+    f.Seek(pos, File::Whence::begin);
+    char b[BULL_SIZE]{};
+    f.Read(&b, BULL_SIZE);
     blt.name = b;
     ++x;
   }
-  close(f);
+  f.Close();
 
   c.fu = o.fu;
   c.timesd = o.timesd;
@@ -93,54 +112,22 @@ qwk_config read_qwk_cfg() {
   return c;
 }
 
+qwk_config read_qwk_cfg() {
+  const auto path = FilePath(a()->config()->datadir(), "qwk.json");
+  qwk_config c{};
+  JsonFile f(path, "qwk", c, 1);
+  if (f.Load()) {
+    return c;
+  }
+  return read_qwk_cfg_430();
+}
+
 void write_qwk_cfg(const qwk_config& c) {
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG).string();
-  const auto f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  if (f < 0) {
-    return;
+  const auto path = FilePath(a()->config()->datadir(), "qwk.json");
+  JsonFile f(path, "qwk", c, 1);
+  if (!f.Save()) {
+    LOG(ERROR) << "Failed to save qwk.json";
   }
-
-  qwk_config_430 o{};
-  o.fu = c.fu;
-  o.timesd = c.timesd;
-  o.timesu = c.timesu;
-  o.max_msgs = c.max_msgs;
-  to_char_array(o.hello, c.hello);
-  to_char_array(o.news, c.news);
-  to_char_array(o.bye, c.bye);
-  to_char_array(o.packet_name, c.packet_name);
-  o.amount_blts = size_int32(c.bulletins);
-
-  write(f, &o, sizeof(qwk_config_430));
-
-  int x = 0;
-  for (const auto& b : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (x * BULL_SIZE);
-    lseek(f, pos, SEEK_SET);
-
-    if (!b.path.empty()) {
-      char p[BULL_SIZE+1];
-      memset(&p, 0, BULL_SIZE);
-      to_char_array(p, b.path);
-      write(f, p, BULL_SIZE);
-      ++x;
-    }
-  }
-
-  x = 0;
-  for (const auto& b : c.bulletins) {
-    const auto pos = sizeof(qwk_config_430) + (c.bulletins.size() * BULL_SIZE) + (x++ * BNAME_SIZE);
-    lseek(f, pos, SEEK_SET);
-
-    if (!b.name.empty()) {
-      char p[BNAME_SIZE+1];
-      memset(&p, 0, BNAME_SIZE);
-      to_char_array(p, b.name);
-      write(f, p, BNAME_SIZE);
-    }
-  }
-
-  close(f);
 }
 
 }

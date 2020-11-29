@@ -16,21 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_QWK_QWK_UI_H
-#define INCLUDED_BBS_QWK_QWK_UI_H
-#include "bbs/qwk/qwk_struct.h"
+#ifndef INCLUDED_BBS_QWK_QWK_MAIL_PACKET_H
+#define INCLUDED_BBS_QWK_QWK_MAIL_PACKET_H
 
-#include <string>
+#include "bbs/qwk/qwk_struct.h"
+#include <cstdint>
+
+
+struct postrec;
 
 namespace wwiv::bbs::qwk {
 
-std::string qwk_which_zip();
-int select_qwk_archiver(struct qwk_junk* qwk_info, int ask);
-std::string qwk_which_protocol();
-unsigned short select_qwk_protocol(struct qwk_junk *qwk_info);
-void modify_bulletins(qwk_config& qwk_cfg);
-int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 
+void build_qwk_packet();
+void qwk_gather_sub(uint16_t bn, struct qwk_junk *qwk_info);
+void qwk_start_read(int msgnum, struct qwk_junk *qwk_info);
+void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info);
+void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info);
+void qwk_nscan();
+void finish_qwk(struct qwk_junk *qwk_info);
 
 }
 

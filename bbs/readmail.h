@@ -22,6 +22,7 @@
 
 struct tmpmailrec;
 struct mailrec;
+
 void readmail(int mode);
 int check_new_mail(int user_number);
 // Also used in QWK code.

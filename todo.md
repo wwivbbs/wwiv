@@ -3,18 +3,12 @@
 ***
 
 
-# Datafile upgrades
-* Move FTN settings into node config vs. general config (packet pw, etc)
-* GFiles?
-* data/qwk.cfg
-
 # QWK
 * Make menu commands for config, sysop config, upload, download
 * add qwk config to defaults
 * move qwk code into wwiv/qwk
 * make qwk command into a real 5.6 menu
 * use File on qwk_info for things, not posix file handles.
-* make qwk.cfg into a JSON config file.
 * Show progress as packing qwk files.
 
 
@@ -26,12 +20,6 @@
 # MCI|PIPE
 * Add tests for BbsMacroFilter (also make sure it works now)
 * Use BbsMacroFilter in wwivutil print.
-
-Expressions:
-  |{set pause=on}
-  |{set pause=off}
-  |{pause}
-  |{set lines=0}
 
 TODO Expression:
 |{user.name}
@@ -59,8 +47,8 @@ jq ".number" jenkins.json
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
-* Add ability to convert between a FidoPackedMessage and FidoStoredMessage.  Then 
-  we can move dupes to a badmessage area as FidoStoredMessage (.msg)
+* Add ability to convert between a FidoPackedMessage and FidoStoredMessage.
+  Then we can move dupes to a badmessage area as FidoStoredMessage (.msg)
 * Update BBS list for network to use FTN nodelist.
 * Doesn't seem that wwivd checks for crash status on callout since
   wwiv::sdk::callout never has the right file sizes for FTN, so it doesn't
@@ -89,12 +77,14 @@ jq ".number" jenkins.json
 * Run various asan/tsan's regularly with gcc via CMake
 * start using clock more.
 * move to datetime as much as possible.
-* Stop calling input use the input_xxx routines instead.  Make Input1 just support a
-  fixed set of characters (like numbers, A-Z, high ascii too, etc).
+* Stop calling input use the input_xxx routines instead.  Make Input1 
+  just support a fixed set of characters (like numbers, A-Z, 
+  high ascii too, etc).
 * cleanup context class (doc comments, treat type-0 as email api
 * Move the userrec from User class to heap from stack.
 * simplify names in WUser
-* add to_number<T> override that takes a default value, and then change to_number<T>
+* add to_number<T> override that takes a default value, and then 
+  change to_number<T>
   to return an std::optional<T> as the return type.
 * Switch all BBS LocalIO subclasses to use curses KEY types not Win32 key code
   types for characters >0xff. (i.e. KEY_LEFT not LEFT)
@@ -128,8 +118,9 @@ jq ".number" jenkins.json
 * get rid of stripfn
 * move core logic from get_file_idz into sdk
 * make wwivutil fix use filesapi for extended descriptions.
-* Add overload of AddFile, UpdateFile and handles external descirptions too, i.e.
-  add a 3rd parameter for the external description.  Or put it into the FileRecord
+* Add overload of AddFile, UpdateFile and handles external 
+  descirptions too, i.e. add a 3rd parameter for the external
+  description.  Or put it into the FileRecord
   class.
 
 ## Closed Questions

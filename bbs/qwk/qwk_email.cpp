@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "qwk_mail_packet.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/connect1.h"
@@ -23,7 +24,6 @@
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
 #include "bbs/readmail.h"
-#include "bbs/qwk/qwk.h"
 #include "bbs/qwk/qwk_reply.h"
 #include "bbs/qwk/qwk_struct.h"
 #include "common/input.h"

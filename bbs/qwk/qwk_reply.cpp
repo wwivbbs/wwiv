@@ -502,8 +502,10 @@ void upload_reply_packet() {
   }
 
   const auto rep_name = StrCat(qwk_system_name(qwk_cfg), ".REP");
-
-  bout.format("Hit 'Y' to upload reply packet {} :", rep_name);
+  bout.litebar("Upload QWK Reply Packet");
+  bout.nl();
+  bout.format("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
+  bout.bputs("|#5Would you like to upload a QWK Reply Packet? ");
   const auto rep_path = FilePath(a()->sess().dirs().qwk_directory(), rep_name);
 
   const auto do_it = bin.yesno();
@@ -513,8 +515,8 @@ void upload_reply_packet() {
       qwk_receive_file(rep_path.string(), &rec, a()->user()->data.qwk_protocol);
       sleep_for(milliseconds(500));
     } else {
-      bout << "Please copy the REP file to the following directory: " << wwiv::endl;
-      bout << "'" << a()->sess().dirs().qwk_directory() << "'" << wwiv::endl;
+      bout << "|#5Please copy the REP file to the following directory: " << wwiv::endl;
+      bout << "|#2" << a()->sess().dirs().qwk_directory() << wwiv::endl;
       bout.pausescr();
     }
 
@@ -525,7 +527,7 @@ void upload_reply_packet() {
     } else {
       sysoplog() << "Aborted";
       bout.nl();
-      bout.format("{} not found", rep_name);
+      bout.format("|#6Reply Packet: |#2{} |#6not found.\r\n", rep_name);
       bout.nl();
     }
   }

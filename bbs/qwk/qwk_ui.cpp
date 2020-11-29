@@ -27,6 +27,10 @@
 #include "common/com.h"
 #include "common/input.h"
 #include "common/output.h"
+#include "core/strings.h"
+
+using namespace wwiv::core;
+using namespace wwiv::strings;
 
 namespace wwiv::bbs::qwk {
 
@@ -179,6 +183,34 @@ void modify_bulletins(qwk_config& qwk_cfg) {
     } break;
     }
   }
+}
+
+int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
+  bout.cls();
+  bout.nl();
+  bout.Color(2);
+  bout << "Largest packet you want, in msgs? (0=Unlimited) : ";
+  bout.mpl(5);
+
+  char temp[6];
+  bin.input(temp, 5);
+
+  if (!temp[0]) {
+    return 0;
+  }
+
+  *qwk_max_msgs = strings::to_number<uint16_t>(temp);
+
+  bout << "Most messages you want per sub? ";
+  bout.mpl(5);
+  bin.input(temp, 5);
+
+  if (!temp[0]) {
+    return 0;
+  }
+
+  *max_per_sub = strings::to_number<uint16_t>(temp);
+  return 1;
 }
 
 }
