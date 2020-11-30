@@ -37,7 +37,6 @@
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/qwk/qwk_text.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "common/pause.h"
@@ -124,10 +123,10 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_state *qwk_i
   fp.WriteLine("0");
   fp.WriteLine("E-Mail");
 
-  for (const auto& s : subs_list) {
-  // Write the subs in the format of "Sub Number\r\nSub Name\r\n"
-    fp.WriteLine(s.first);
-    fp.WriteLine(s.second);
+  for (const auto& [sub_num, sub_name] : subs_list) {
+    // Write the subs in the format of "Sub Number\r\nSub Name\r\n"
+    fp.WriteLine(sub_num);
+    fp.WriteLine(sub_name);
   }
 
   fp.WriteLine(qwk_cfg.hello);
@@ -281,8 +280,7 @@ void build_qwk_packet() {
 
 #define qwk_iscan(x) (iscan1(a()->usub[x].subnum))
 
-void qwk_gather_sub(uint16_t bn, 
-  qwk_state *qwk_info) {
+void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
 
   const auto sn = a()->usub[bn].subnum;
 
@@ -308,7 +306,7 @@ void qwk_gather_sub(uint16_t bn,
     // Find out what message number we are on
     int amount = 0;
     const auto total = a()->GetNumMessagesInCurrentMessageArea();
-    for (i = total; (i > 1) && (get_post(i - 1)->qscan > qscnptrx); i--) {
+    for (i = total; i > 1 && get_post(i - 1)->qscan > qscnptrx; i--) {
       if ((++amount % 1000) == 0) {
         bout.format("\r|#9Finding Last Read: (|#2{} |#9/ |#1{}|#9)|#0", amount, total);
       }
@@ -326,8 +324,8 @@ void qwk_gather_sub(uint16_t bn,
 
     bin.checka(&qwk_info->abort);
 
-    if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
-        && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
+    if (a()->GetNumMessagesInCurrentMessageArea() > 0
+        && i <= a()->GetNumMessagesInCurrentMessageArea() && !qwk_info->abort) {
       if (get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
         qwk_start_read(i, qwk_info);  // read messsage
       }
@@ -354,11 +352,11 @@ void qwk_start_read(int msgnum, qwk_state *qwk_info) {
     set_net_num(0);
   }
 
-  int amount = 1;
-  bool done = false;
+  auto amount = 1;
+  auto done = false;
   const auto total = a()->GetNumMessagesInCurrentMessageArea();
   do {
-    if ((msgnum > 0) && (msgnum <= a()->GetNumMessagesInCurrentMessageArea())) {
+    if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
       make_pre_qwk(msgnum, qwk_info);
     }
     ++msgnum;
@@ -495,11 +493,11 @@ static std::string make_qwk_ready(const std::string& text, const std::string& ad
 }
 
 static void qwk_remove_null(char *memory, int size) {
-  int pos = 0;
+  auto pos = 0;
 
-  while (pos < size && !a()->sess().hangup()) {
+  while (pos < size) {
     if (memory[pos] == 0) {
-      (memory)[pos] = ' ';
+      memory[pos] = ' ';
     }
     ++pos;
   }
@@ -597,7 +595,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   qwk_info->qwk_ndx.nouse = 0;
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
-    // Create new index if it hasnt been already
+    // Create new index if it hasn't been already
     if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = a()->current_user_sub_num();
       const auto filename =
@@ -667,9 +665,9 @@ static void qwk_send_file(const std::string& fn, bool *sent, bool *abort) {
 
   default: {
     const auto exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn, 1);
-    *abort = 0;
+    *abort = false;
     if (exit_code == a()->externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
-      *sent = 1;
+      *sent = true;
     }
   } break;
   }
@@ -677,10 +675,9 @@ static void qwk_send_file(const std::string& fn, bool *sent, bool *abort) {
 
 
 void finish_qwk(qwk_state *qwk_info) {
-  bool sent = false;
+  auto sent = false;
   long numbytes;
-
-  bool done = false;
+  auto done = false;
   int archiver;
 
 
