@@ -54,8 +54,15 @@
 #include "sdk/subxtr.h"
 #include "sdk/ansi/makeansi.h"
 
-
 #include <fcntl.h>
+#ifdef _WIN32
+// ReSharper disable once CppUnusedIncludeDirective
+#include <io.h> // needed for lseek, etc
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 using namespace wwiv::core;
 using namespace wwiv::stl;

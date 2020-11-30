@@ -38,6 +38,17 @@
 #include <memory>
 #include <string>
 
+#include <fcntl.h>
+#ifdef _WIN32
+// ReSharper disable once CppUnusedIncludeDirective
+#include <io.h> // needed for lseek, etc
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::bbs;

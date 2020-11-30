@@ -34,6 +34,14 @@
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include <fcntl.h>
+#ifdef _WIN32
+// ReSharper disable once CppUnusedIncludeDirective
+#include <io.h> // needed for lseek, etc
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 namespace wwiv::bbs::qwk {
 
