@@ -18,20 +18,6 @@
 /**************************************************************************/
 #include "bbs/qwk/qwk_reply.h"
 
-// ReSharper disable once CppUnusedIncludeDirective
-#include <fcntl.h>
-#ifdef _WIN32
-// ReSharper disable once CppUnusedIncludeDirective
-#include <io.h> // needed for lseek, etc
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
-#include "qwk_config.h"
-#include "qwk_email.h"
-#include "qwk_ui.h"
 #include "bbs/acs.h"
 #include "bbs/application.h"
 #include "bbs/archivers.h"
@@ -49,7 +35,10 @@
 #include "bbs/subacc.h"
 #include "bbs/sublist.h"
 #include "bbs/sysoplog.h"
+#include "bbs/qwk/qwk_config.h"
+#include "bbs/qwk/qwk_email.h"
 #include "bbs/qwk/qwk_text.h"
+#include "bbs/qwk/qwk_ui.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "core/datetime.h"
@@ -86,8 +75,6 @@ using namespace wwiv::sdk::msgapi;
 
 namespace wwiv::bbs::qwk {
 
-
-
 static void qwk_receive_file(const std::string& fn, bool* received, int prot_num) {
   if (prot_num <= 1 || prot_num == 5) {
     prot_num = get_protocol(xfertype::xf_up_temp);
@@ -123,18 +110,20 @@ static std::filesystem::path ready_reply_packet(const std::string& packet_name, 
   return FilePath(a()->sess().dirs().qwk_directory(), msg_name);
 }
 
-static std::string make_text_file(int filenumber, int curpos, int blocks) {
+static std::string make_text_file(DataFile<qwk_record>& file, int curpos, int blocks) {
   std::string text;
-  text.resize(sizeof(qwk_record) * blocks);
+  const auto qwk_text_len = sizeof(qwk_record) * blocks;
+  text.resize(qwk_text_len);
 
-  lseek(filenumber, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
-  read(filenumber, &text[0], sizeof(qwk_record) * blocks);
+  file.Seek(curpos);
+  // TODO(rushfan): DataFile should expose SIZE
+  file.file().Read(&text[0], qwk_text_len);
 
-  return make_text_ready(text, static_cast<int>(sizeof(qwk_record) * blocks));
+  return make_text_ready(text);
 }
 
 static void qwk_post_text(std::string text, const std::string& to, const std::string& title,
-                          int16_t sub) {
+                          int sub) {
   messagerec m{};
   postrec p{};
 
@@ -165,7 +154,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
       }
     }
 
-    if (sub >= ssize(a()->usub) || sub < 0) {
+    if (sub >= size_int(a()->usub) || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 
@@ -367,114 +356,97 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 static void process_reply_dat(const std::string& name) {
   qwk_record qwk{};
   int curpos = 0;
-  int done = 0;
 
-  int repfile = open(name.c_str(), O_RDONLY | O_BINARY);
-
-  if (repfile < 0) {
-    bout.nl();
-    bout.Color(3);
-    bout.bputs("Can't open packet.");
+  DataFile<qwk_record> file(name, File::modeReadOnly| File::modeBinary);
+  if (!file) {
+    bout.bputs("|#6Can't open packet.");
     bout.pausescr();
     return;
   }
-
-  lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
-  read(repfile, &qwk, sizeof(qwk_record));
-
+  file.Read(curpos++, &qwk);
   // Should check to make sure first block contains our bbs id
-  ++curpos;
 
   bout.cls();
 
-  while (!done && !a()->sess().hangup()) {
-    bool to_email = false;
-
-    lseek(repfile, static_cast<long>(curpos) * static_cast<long>(sizeof(qwk_record)), SEEK_SET);
-    ++curpos;
-
-    if (read(repfile, &qwk, sizeof(qwk_record)) < 1) {
-      done = 1;
-    } else {
-      char blocks[7];
-      char to[201];
-      char title[26];
-      char tosub[8];
-
-      strncpy(blocks, qwk.amount_blocks, 6);
-      blocks[6] = 0;
-
-      strncpy(tosub, qwk.msgnum, 7);
-      tosub[7] = 0;
-
-      strncpy(title, qwk.subject, 25);
-      title[25] = 0;
-
-      strncpy(to, qwk.to, 25);
-      to[25] = 0;
-      strupr(to);
-      StringTrim(to);
-
-      // If in sub 0 or not public, possibly route into email
-      if (to_number<int>(tosub) == 0) {
-        to_email = true;
-      } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
-        bout.cls();
-        bout.Color(1);
-        bout.bprintf("Message '2%s1' is marked 3PRIVATE", title);
-        bout.nl();
-        bout.Color(1);
-        bout.bprintf("It is addressed to 2%s", to);
-        bout.nl(2);
-        bout.Color(7);
-        bout << "Route into E-Mail?";
-        if (bin.noyes()) {
-          to_email = true;
-        }
-      }
-
-      auto text = make_text_file(repfile, curpos, to_number<int>(blocks) - 1);
-      if (text.empty()) {
-        curpos += to_number<int>(blocks) - 1;
-        continue;
-      }
-
-      if (to_email) {
-        auto to_from_msg_opt = get_qwk_from_message(text);
-        if (to_from_msg_opt.has_value()) {
-          bout.nl();
-          bout.Color(3);
-          bout.bprintf("1) %s", to);
-          bout.nl();
-          bout.Color(3);
-          bout.bprintf("2) %s", to_from_msg_opt.value());
-          bout.nl(2);
-
-          bout << "Which address is correct?";
-          bout.mpl(1);
-
-          const int x = onek("12");
-
-          if (x == '2') {
-            to_char_array(to, to_from_msg_opt.value());
-          }
-        }
-      }
-
-      if (to_email) {
-        qwk_email_text(text.c_str(), title, to);
-      } else if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
-        // Not enough disk space
-        bout.nl();
-        bout.bputs("Sorry, not enough disk space left.");
-        bout.pausescr();
-      } else {
-        qwk_post_text(text, to, title, to_number<int16_t>(tosub) - 1);
-      }
-      curpos += to_number<int>(blocks) - 1;
+  while (!a()->sess().hangup()) {
+    auto to_email = false;
+    if (!file.Read(curpos++, &qwk)) {
+      return;
     }
+    char blocks[7];
+    char to[201];
+    char title[26];
+    char tosub[8];
+
+    strncpy(blocks, qwk.amount_blocks, 6);
+    blocks[6] = 0;
+
+    strncpy(tosub, qwk.msgnum, 7);
+    tosub[7] = 0;
+
+    strncpy(title, qwk.subject, 25);
+    title[25] = 0;
+
+    strncpy(to, qwk.to, 25);
+    to[25] = 0;
+    strupr(to);
+    StringTrim(to);
+
+    // If in sub 0 or not public, possibly route into email
+    if (to_number<int>(tosub) == 0) {
+      to_email = true;
+    } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
+      bout.cls();
+      bout.format("|#9Message '|#2{}|#9' is marked |#3PRIVATE\r\n", title);
+      bout.bprintf("|#9It is addressed to |#2%s", to);
+      bout.nl(2);
+      bout << "|#5Route into E-Mail? ";
+      if (bin.noyes()) {
+        to_email = true;
+      }
+    }
+
+    const auto num_text_blocks = to_number<int>(blocks) - 1;
+    auto text = make_text_file(file, curpos, num_text_blocks);
+    if (text.empty()) {
+      curpos += num_text_blocks;
+      continue;
+    }
+
+    if (to_email) {
+      auto to_from_msg_opt = get_qwk_from_message(text);
+      if (to_from_msg_opt.has_value()) {
+        bout.nl();
+        bout.Color(3);
+        bout.bprintf("1) %s", to);
+        bout.nl();
+        bout.Color(3);
+        bout.bprintf("2) %s", to_from_msg_opt.value());
+        bout.nl(2);
+
+        bout << "Which address is correct?";
+        bout.mpl(1);
+
+        const int x = onek("12");
+
+        if (x == '2') {
+          to_char_array(to, to_from_msg_opt.value());
+        }
+      }
+    }
+
+    if (to_email) {
+      qwk_email_text(text.c_str(), title, to);
+    } else if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
+      // Not enough disk space
+      bout.nl();
+      bout.bputs("Sorry, not enough disk space left.");
+      bout.pausescr();
+    } else {
+      qwk_post_text(text, to, title, to_number<int16_t>(tosub) - 1);
+    }
+    curpos += num_text_blocks;
   }
-  close(repfile);
 }
 
 

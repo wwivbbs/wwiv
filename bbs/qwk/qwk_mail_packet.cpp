@@ -157,7 +157,7 @@ void build_qwk_packet() {
   const auto filename = FilePath(a()->sess().dirs().batch_directory(), MESSAGES_DAT);
   const auto filemode = File::modeReadWrite | File::modeBinary | File::modeCreateFile;
   qwk_state qwk_info{};
-  qwk_info.file = std::make_unique<DataFile<qwk_record>>(filename, filemode, File::permReadWrite);
+  qwk_info.file = std::make_unique<DataFile<qwk_record>>(filename, filemode);
 
   if (!qwk_info.file->ok()) {
     bout.bputs("Open error");
@@ -579,7 +579,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
       const auto filename =
           fmt::sprintf("%s%03d.NDX", a()->sess().dirs().qwk_directory().string(), a()->current_user_sub().subnum + 1);
       const auto index_filemode = File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile;
-      qwk_info->index = std::make_unique<DataFile<qwk_index>>(filename, index_filemode, File::permReadWrite);
+      qwk_info->index = std::make_unique<DataFile<qwk_index>>(filename, index_filemode);
     }
 
     qwk_info->index->Write(&qwk_info->qwk_ndx);

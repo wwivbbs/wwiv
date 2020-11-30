@@ -33,15 +33,7 @@
 #include "sdk/names.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
-#include <fcntl.h>
-#ifdef _WIN32
-// ReSharper disable once CppUnusedIncludeDirective
-#include <io.h> // needed for lseek, etc
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
+
 
 namespace wwiv::bbs::qwk {
 
@@ -145,12 +137,12 @@ void qwk_gather_email(qwk_state* qwk_info) {
 
   const auto personal_filename = FilePath(a()->sess().dirs().qwk_directory(), "PERSONAL.NDX");
   qwk_info->personal =
-      std::make_unique<DataFile<qwk_index>>(personal_filename, index_filemode, File::permReadWrite);
+      std::make_unique<DataFile<qwk_index>>(personal_filename, index_filemode);
 
 
   const auto zero_filename = FilePath(a()->sess().dirs().qwk_directory(), "000.NDX");
   qwk_info->zero = 
-      std::make_unique<DataFile<qwk_index>>(zero_filename, index_filemode, File::permReadWrite);
+      std::make_unique<DataFile<qwk_index>>(zero_filename, index_filemode);
 
   do {
     read_same_email(mloc, mw, curmail, m, 0, 0);
