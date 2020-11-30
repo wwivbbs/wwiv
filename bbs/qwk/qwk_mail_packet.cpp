@@ -53,16 +53,6 @@
 #include "sdk/subxtr.h"
 #include "sdk/ansi/makeansi.h"
 
-#include <fcntl.h>
-#ifdef _WIN32
-// ReSharper disable once CppUnusedIncludeDirective
-#include <io.h> // needed for lseek, etc
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -164,26 +154,21 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const auto filename = FilePath(a()->sess().dirs().batch_directory(), MESSAGES_DAT).string();
+  const auto filename = FilePath(a()->sess().dirs().batch_directory(), MESSAGES_DAT);
+  const auto filemode = File::modeReadWrite | File::modeBinary | File::modeCreateFile;
   qwk_state qwk_info{};
-  qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  qwk_info.file = std::make_unique<DataFile<qwk_record>>(filename, filemode, File::permReadWrite);
 
-  if (qwk_info.file < 1) {
+  if (!qwk_info.file->ok()) {
     bout.bputs("Open error");
     sysoplog() << "Couldn't open MESSAGES.DAT";
     return;
   }
 
-  // Setup index and other values
-  qwk_info.index = -1;
-  qwk_info.cursub = -1;
-
-  qwk_info.in_email = false;
-  qwk_info.personal = -1;
-  qwk_info.zero = -1;
-
   // Required header at the start of MESSAGES.DAT
-  write(qwk_info.file, "Produced by Qmail...Copyright (c) 1987 by Sparkware.  All Rights Reserved (For Compatibility with Qmail)                        ", 128);
+  qwk_record header{};
+  memcpy(&header, "Produced by Qmail...Copyright (c) 1987 by Sparkware.  All Rights Reserved (For Compatibility with Qmail)                        ", 128);
+  qwk_info.file->Write(&header);
 
   // Logical record number
   qwk_info.qwk_rec_num = 1;
@@ -242,18 +227,11 @@ void build_qwk_packet() {
     }
   }
 
-  if (qwk_info.file != -1) {
-    qwk_info.file = close(qwk_info.file);
-  }
-  if (qwk_info.index != -1) {
-    qwk_info.index = close(qwk_info.index);
-  }
-  if (qwk_info.personal != -1) {
-    qwk_info.personal = close(qwk_info.personal);
-  }
-  if (qwk_info.zero != -1) {
-    qwk_info.zero = close(qwk_info.zero);
-  }
+  qwk_info.file.reset(nullptr);
+  qwk_info.index.reset(nullptr);
+  qwk_info.personal.reset(nullptr);
+  qwk_info.zero.reset(nullptr);
+
   if (!qwk_info.abort) {
     SystemClock clock{};
     build_control_dat(qwk_cfg, &clock, &qwk_info);
@@ -581,7 +559,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
   }
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
-  if (write(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
+  if (!qwk_info->file->Write(&qwk_info->qwk_rec)) {
     qwk_info->abort = true; // Must be out of disk space
     bout.bputs("Write error");
     bout.pausescr();
@@ -596,20 +574,18 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
     // Create new index if it hasn't been already
-    if (a()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
+    if (a()->current_user_sub_num() != static_cast<uint16_t>(qwk_info->cursub) || !qwk_info->index) {
       qwk_info->cursub = a()->current_user_sub_num();
       const auto filename =
           fmt::sprintf("%s%03d.NDX", a()->sess().dirs().qwk_directory().string(), a()->current_user_sub().subnum + 1);
-      if (qwk_info->index > 0) {
-        qwk_info->index = close(qwk_info->index);
-      }
-      qwk_info->index = open(filename.c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+      const auto index_filemode = File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile;
+      qwk_info->index = std::make_unique<DataFile<qwk_index>>(filename, index_filemode, File::permReadWrite);
     }
 
-    write(qwk_info->index, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    qwk_info->index->Write(&qwk_info->qwk_ndx);
   } else { // Write to email indexes
-    write(qwk_info->zero, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
-    write(qwk_info->personal, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    qwk_info->zero->Write(&qwk_info->qwk_ndx);
+    qwk_info->personal->Write(&qwk_info->qwk_ndx);
   }
 
   // Setup next NDX position
@@ -626,7 +602,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, qwk_state *qwk_info) {
       memmove(&qwk_info->qwk_rec, ss.data() + cur + this_pos, size);
     }
     // Save this block
-    write(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
+    qwk_info->file->Write(&qwk_info->qwk_rec);
 
     this_pos += sizeof(qwk_info->qwk_rec);
     ++cur_block;

@@ -19,7 +19,8 @@
 #ifndef INCLUDED_BBS_QWK_QWK_STRUCT_H
 #define INCLUDED_BBS_QWK_QWK_STRUCT_H
 
-
+#include "core/file.h"
+#include "core/datafile.h"
 #include <cstdint>
 
 
@@ -46,7 +47,6 @@ struct qwk_record {
   char tagline;
 };
 
-
 struct qwk_index {
   float pos;
   char nouse;
@@ -57,19 +57,18 @@ struct qwk_state {
   uint16_t qwk_rec_pos;
 
   // File number for the MESSAGES.DAT file
-  int file;
+  std::unique_ptr<wwiv::core::DataFile<qwk_record>>  file;
 
   // File number for the *.NDX files
-  int index;
+  std::unique_ptr<wwiv::core::DataFile<qwk_index>> index;
   int cursub;
-  int personal;  // personal.ndx
-  int zero;      // 000.ndx for email
+  std::unique_ptr<wwiv::core::DataFile<qwk_index>> personal;  // personal.ndx
+  std::unique_ptr<wwiv::core::DataFile<qwk_index>> zero;      // 000.ndx for email
 
   qwk_record qwk_rec;
   qwk_index qwk_ndx;
 
   bool abort{false};
-
   bool in_email{false};
   // This should be 25 chars so we want 1 more for null.
   char email_title[25];

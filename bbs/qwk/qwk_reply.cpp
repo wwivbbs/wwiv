@@ -133,7 +133,7 @@ static std::string make_text_file(int filenumber, int curpos, int blocks) {
   return make_text_ready(text, static_cast<int>(sizeof(qwk_record) * blocks));
 }
 
-static void qwk_post_text(std::string text, std::string to, const std::string& title,
+static void qwk_post_text(std::string text, const std::string& to, const std::string& title,
                           int16_t sub) {
   messagerec m{};
   postrec p{};
@@ -286,8 +286,7 @@ static void qwk_post_text(std::string text, std::string to, const std::string& t
     // Anonymous
     uint8_t an = 0;
     if (an) {
-      bout.Color(1);
-      bout << "Anonymous?";
+      bout << "|#5Anonymous?";
       an = bin.yesno() ? 1 : 0;
     }
     bout.nl();

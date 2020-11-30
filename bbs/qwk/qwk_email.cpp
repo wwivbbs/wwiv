@@ -141,11 +141,16 @@ void qwk_gather_email(qwk_state* qwk_info) {
   auto curmail = 0;
   auto done = false;
   qwk_info->in_email = true;
+  const auto index_filemode = File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile;
 
-  auto filename = FilePath(a()->sess().dirs().qwk_directory(), "PERSONAL.NDX");
-  qwk_info->personal = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  filename = FilePath(a()->sess().dirs().qwk_directory(), "000.NDX");
-  qwk_info->zero = open(filename.string().c_str(), O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  const auto personal_filename = FilePath(a()->sess().dirs().qwk_directory(), "PERSONAL.NDX");
+  qwk_info->personal =
+      std::make_unique<DataFile<qwk_index>>(personal_filename, index_filemode, File::permReadWrite);
+
+
+  const auto zero_filename = FilePath(a()->sess().dirs().qwk_directory(), "000.NDX");
+  qwk_info->zero = 
+      std::make_unique<DataFile<qwk_index>>(zero_filename, index_filemode, File::permReadWrite);
 
   do {
     read_same_email(mloc, mw, curmail, m, 0, 0);
