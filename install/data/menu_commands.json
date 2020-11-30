@@ -439,7 +439,32 @@
         {
             "cat": "QWK",
             "cmd": "Packers",
-            "help": "Executes the QWK menu."
+            "help": "Executes the QWK menu. (Legacy, use qwk: commands now)"
+        },
+        {
+            "cat": "QWK",
+            "cmd": "qwk:config_sysop",
+            "help": "Configures SysOp Settings for QWK"
+        },
+        {
+            "cat": "QWK",
+            "cmd": "qwk:config_user",
+            "help": "Configures User Settings for QWK"
+        },
+        {
+            "cat": "QWK",
+            "cmd": "qwk:download",
+            "help": "Download a QWK Message Packet"
+        },
+        {
+            "cat": "QWK",
+            "cmd": "qwk:menu",
+            "help": "Executes the default QWK menu."
+        },
+        {
+            "cat": "QWK",
+            "cmd": "qwk:upload",
+            "help": "Upload a QWK Reply Packet"
         },
         {
             "cat": "SYSOP",
