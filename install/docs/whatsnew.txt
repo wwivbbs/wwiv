@@ -155,6 +155,16 @@ What's New in WWIV 5.6
   default.  This doesn't affect what is sent over the socket to remote 
   users, just the local display.
 + Added Option for Windows doors to use console codepage OEM437 (#1313)
+! QWK menu is now it's own menu.  You should update the main menu to
+  call cmd: "MENU" data: "qwk", and copy over the qwk menu and prompt
+  from the gfile.zip in the distribution.  also data/qwk.cfg can be
+  safely deleted once you see qwk.json has been created when you use
+  the sysop menu or qwk door.
+  There are several new menu commands for handling QWK, so you can 
+  embed them into other menus:
+    qwk_upload, qwk_download, qwk_user_config, and qwk_sysop_config
+* Also refreshed the default menus and prompts to use pipe macro codes
+  and wwiv color pipe codes vs. standard color codes.
 
 What's New in WWIV 5.5.1 (2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
