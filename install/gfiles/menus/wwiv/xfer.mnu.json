@@ -3,7 +3,7 @@
     "menu": {
         "num_action": "dirs",
         "logging_action": "key",
-        "help_type": "never",
+        "help_type": "always",
         "color_title": 0,
         "color_item_key": 0,
         "color_item_text": 0,
@@ -665,22 +665,6 @@
                 "actions": [
                     {
                         "cmd": "testarc",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "/V",
-                "item_text": "Virus Test",
-                "help_text": "Tests any file for Viruses",
-                "log_text": "/V",
-                "instance_message": "Virus Scanning Files",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "checkforvirus",
                         "data": "",
                         "acs": ""
                     }

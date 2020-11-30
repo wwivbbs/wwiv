@@ -3,7 +3,7 @@
     "menu": {
         "num_action": "subs",
         "logging_action": "key",
-        "help_type": "never",
+        "help_type": "on_entrance",
         "color_title": 1,
         "color_item_key": 12,
         "color_item_text": 9,
@@ -14,22 +14,6 @@
         "enter_actions": [],
         "exit_actions": [],
         "items": [
-            {
-                "item_key": "AE",
-                "item_text": "",
-                "help_text": "Run AllowEdit",
-                "log_text": "AE",
-                "instance_message": "",
-                "acs": "user.sl >= 100 && user.dsl >= 100 && user.cosysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "allowedit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
             {
                 "item_key": "RI",
                 "item_text": "",
@@ -143,22 +127,6 @@
                 ]
             },
             {
-                "item_key": "CLOUT",
-                "item_text": "",
-                "help_text": "Force a network callout on another node",
-                "log_text": "",
-                "instance_message": "",
-                "acs": "user.sl >= 255 && user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "callout",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "DE",
                 "item_text": "",
                 "help_text": "Edit the transfers directories",
@@ -169,22 +137,6 @@
                 "actions": [
                     {
                         "cmd": "diredit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "AEDIT",
-                "item_text": "",
-                "help_text": "Edit the automessage",
-                "log_text": "",
-                "instance_message": "",
-                "acs": "user.sl >= 255 && user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "aedit",
                         "data": "",
                         "acs": ""
                     }
@@ -271,22 +223,6 @@
                 ]
             },
             {
-                "item_key": "RESETF",
-                "item_text": "",
-                "help_text": "Reset User List Files",
-                "log_text": "-* Reset Files",
-                "instance_message": "",
-                "acs": "user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "resetuserindex",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "RESETQSCAN",
                 "item_text": "",
                 "help_text": "Set ALL Messages to UNread",
@@ -297,38 +233,6 @@
                 "actions": [
                     {
                         "cmd": "resetqscan",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "STAT",
-                "item_text": "",
-                "help_text": "Memory Status",
-                "log_text": "STAT",
-                "instance_message": "",
-                "acs": "user.cosysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "memstat",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "PACK",
-                "item_text": "",
-                "help_text": "Pack Message Bases",
-                "log_text": "PACK",
-                "instance_message": "",
-                "acs": "user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "packmsgs",
                         "data": "",
                         "acs": ""
                     }
@@ -388,7 +292,7 @@
                 "help_text": "Display Pending Network Data",
                 "log_text": "PENDING",
                 "instance_message": "",
-                "acs": "",
+                "acs": "user.cosysop == true",
                 "password": "",
                 "actions": [
                     {
@@ -513,15 +417,15 @@
             {
                 "item_key": "QWK",
                 "item_text": "QWK Mail",
-                "help_text": "Run WWIVmail",
+                "help_text": "QWK",
                 "log_text": "QWK",
                 "instance_message": "QWK Mail Processing",
                 "acs": "",
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "packers",
-                        "data": "",
+                        "cmd": "MENU",
+                        "data": "qwk",
                         "acs": ""
                     }
                 ]
@@ -1359,22 +1263,6 @@
                 ]
             },
             {
-                "item_key": "CM",
-                "item_text": "Configure Menus",
-                "help_text": "Allow you to change menus, menu type, and hotkey",
-                "log_text": "CM",
-                "instance_message": "Configuring Menus",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "configusermenuset",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "?",
                 "item_text": "Display Help",
                 "help_text": "Display Current Menu",
@@ -1391,38 +1279,6 @@
                 ]
             },
             {
-                "item_key": "EVENTEDIT",
-                "item_text": "",
-                "help_text": "Event Editor",
-                "log_text": "EVENTEDIT",
-                "instance_message": "",
-                "acs": "user.sl >= 255 && user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "eventedit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "EE",
-                "item_text": "",
-                "help_text": "Event Editor",
-                "log_text": "EE",
-                "instance_message": "",
-                "acs": "user.sysop == true",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "eventedit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "APPLY",
                 "item_text": "Guest Apply",
                 "help_text": "Allows GUEST to Apply for an Account",
@@ -1433,22 +1289,6 @@
                 "actions": [
                     {
                         "cmd": "guestapply",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "/I",
-                "item_text": "Internet Email",
-                "help_text": "Send Internet Email",
-                "log_text": "/I",
-                "instance_message": "Sending Internet Email",
-                "acs": "user.sl >= 255",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "internetemail",
                         "data": "",
                         "acs": ""
                     }

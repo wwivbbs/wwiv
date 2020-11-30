@@ -3,7 +3,7 @@
     "menu": {
         "num_action": "none",
         "logging_action": "command",
-        "help_type": "never",
+        "help_type": "always",
         "color_title": 0,
         "color_item_key": 0,
         "color_item_text": 0,
@@ -79,22 +79,6 @@
                 ]
             },
             {
-                "item_key": "E",
-                "item_text": "Events Editor",
-                "help_text": "",
-                "log_text": "EE",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "eventedit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
                 "item_key": "G",
                 "item_text": "Bulletin Editor",
                 "help_text": "",
@@ -137,22 +121,6 @@
                 "actions": [
                     {
                         "cmd": "conferenceedit",
-                        "data": "",
-                        "acs": ""
-                    }
-                ]
-            },
-            {
-                "item_key": "M",
-                "item_text": "Menu Editor",
-                "help_text": "",
-                "log_text": "EM",
-                "instance_message": "",
-                "acs": "",
-                "password": "",
-                "actions": [
-                    {
-                        "cmd": "editmenuset",
                         "data": "",
                         "acs": ""
                     }

@@ -1,0 +1,125 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "none",
+        "logging_action": "none",
+        "help_type": "always",
+        "color_title": 5,
+        "color_item_key": 2,
+        "color_item_text": 1,
+        "color_item_braces": 9,
+        "title": "QWK Menu",
+        "acs": "user.sl >= 10",
+        "password": "",
+        "enter_actions": [],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": "",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": []
+            },
+            {
+                "item_key": "D",
+                "item_text": "Download",
+                "help_text": "Download QWK Packet",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "qwk:download",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "U",
+                "item_text": "Upload Reply",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "qwk:upload",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "ReturnFromMenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "C",
+                "item_text": "Configure Settings",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "qwk:config_user",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "*",
+                "item_text": "Sysop Menu",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "qwk:config_sysop",
+                        "data": "",
+                        "acs": "user.sysop"
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Help",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "DisplayMenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
