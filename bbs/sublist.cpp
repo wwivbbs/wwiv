@@ -26,6 +26,7 @@
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
 #include "common/com.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
@@ -148,6 +149,8 @@ int get_new_posts_count(int subnum) {
   const auto midpoint = num / 2;
   auto msgIndex = num;
   int64_t last_qscan = 0;
+  open_sub(false);
+  wwiv::core::ScopeExit at_exit([]{ close_sub();});
   while(msgIndex > midpoint) {
     const auto cur = get_post(msgIndex)->qscan;
     if (cur <= q) {

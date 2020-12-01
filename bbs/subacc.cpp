@@ -222,13 +222,13 @@ void add_post(postrec* pp) {
   fileSub->Read(&p, sizeof(subfile_header_t));
 
   if (strncmp(p.signature, "WWIV\x1A", 5) != 0) {
-    auto saved_count = p.active_message_count;
+    const auto saved_count = p.active_message_count;
     memset(&p, 0, sizeof(subfile_header_t));
     // We don't have a modern header.
     strcpy(p.signature, "WWIV\x1A");
     p.active_message_count = saved_count;
     p.revision = 1;
-    p.wwiv_version = wwiv_config_version();;
+    p.wwiv_version = wwiv_config_version();
     p.daten_created = DateTime::now().to_daten_t();
   }
 
@@ -266,18 +266,18 @@ void delete_message(int mn) {
 
   if (fileSub) {
     if (mn > 0 && mn <= a()->GetNumMessagesInCurrentMessageArea()) {
-      char* buffer = static_cast<char*>(malloc(BUFSIZE));
+      auto* buffer = static_cast<char*>(malloc(BUFSIZE));
       if (buffer) {
-        postrec* p1 = get_post(mn);
+        const auto p1 = get_post(mn);
         remove_link(&(p1->msg), a()->current_sub().filename);
 
         auto cp = static_cast<long>(mn + 1) * sizeof(postrec);
-        auto len = static_cast<long>(a()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
+        const auto len = static_cast<long>(a()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
 
-        unsigned int nb = 0;
+        unsigned int nb;
         do {
-          long l = len - cp;
-          nb = (l < BUFSIZE) ? static_cast<int>(l) : BUFSIZE;
+          const auto l = len - cp;
+          nb = l < BUFSIZE ? static_cast<int>(l) : BUFSIZE;
           if (nb) {
             fileSub->Seek(cp, File::Whence::begin);
             fileSub->Read(buffer, nb);
@@ -288,7 +288,7 @@ void delete_message(int mn) {
         } while (nb == BUFSIZE);
 
         // update # msgs
-        postrec p;
+        postrec p{};
         fileSub->Seek(0L, File::Whence::begin);
         fileSub->Read(&p, sizeof(postrec));
         p.owneruser--;
@@ -308,7 +308,7 @@ void delete_message(int mn) {
 static bool IsSamePost(postrec* p1, postrec* p2) {
   return p1 && p2 && p1->daten == p2->daten && p1->qscan == p2->qscan &&
          p1->ownersys == p2->ownersys && p1->owneruser == p2->owneruser &&
-         wwiv::strings::IsEquals(p1->title, p2->title);
+         IsEquals(p1->title, p2->title);
 }
 
 void resynch(int* msgnum, postrec* pp) {

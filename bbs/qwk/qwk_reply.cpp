@@ -110,18 +110,6 @@ static std::filesystem::path ready_reply_packet(const std::string& packet_name, 
   return FilePath(a()->sess().dirs().qwk_directory(), msg_name);
 }
 
-static std::string make_text_file(DataFile<qwk_record>& file, int curpos, int blocks) {
-  std::string text;
-  const auto qwk_text_len = sizeof(qwk_record) * blocks;
-  text.resize(qwk_text_len);
-
-  file.Seek(curpos);
-  // TODO(rushfan): DataFile should expose SIZE
-  file.file().Read(&text[0], qwk_text_len);
-
-  return make_text_ready(text);
-}
-
 static void qwk_post_text(std::string text, const std::string& to, const std::string& title,
                           int sub) {
   messagerec m{};
@@ -132,25 +120,27 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
 
   while (!done && !a()->sess().hangup()) {
     if (pass > 0) {
-      int done5 = 0;
-      char substr[5];
+      auto done5 = false;
 
       while (!done5 && !a()->sess().hangup()) {
         bout.nl();
         bout << "Then which sub?  ?=List  Q=Don't Post :";
-        bin.input(substr, 3);
+        auto substr = bin.input(3);
 
-        StringTrim(substr);
-
-        if (substr[0] == 'Q') {
+        StringTrim(&substr);
+        if (substr.empty()) {
+          continue;
+        }
+        if (substr.front() == 'Q') {
           return;
         }
-        if (substr[0] == '?') {
+        const auto sub_num = to_number<int>(substr);
+        if (substr[0] == '?' || sub_num == 0) {
           SubList();
-        } else {
-          sub = a()->usub[to_number<int>(substr) - 1].subnum;
-          done5 = 1;
+          continue;
         }
+        sub = a()->usub[sub_num - 1].subnum;
+        done5 = true;
       }
     }
 
@@ -407,7 +397,14 @@ static void process_reply_dat(const std::string& name) {
     }
 
     const auto num_text_blocks = to_number<int>(blocks) - 1;
-    auto text = make_text_file(file, curpos, num_text_blocks);
+
+    file.Seek(curpos);
+    const auto qwk_text_len = sizeof(qwk_record) * num_text_blocks;
+    std::string raw_text;
+    raw_text.resize(qwk_text_len);
+    file.file().Read(&raw_text[0], qwk_text_len);
+
+    const auto text = make_text_ready(raw_text);
     if (text.empty()) {
       curpos += num_text_blocks;
       continue;
@@ -417,17 +414,13 @@ static void process_reply_dat(const std::string& name) {
       auto to_from_msg_opt = get_qwk_from_message(text);
       if (to_from_msg_opt.has_value()) {
         bout.nl();
-        bout.Color(3);
-        bout.bprintf("1) %s", to);
+        bout.bprintf("|#11|#9) |#2%s", to);
         bout.nl();
-        bout.Color(3);
-        bout.bprintf("2) %s", to_from_msg_opt.value());
+        bout.bprintf("|#12|#9) |#2%s", to_from_msg_opt.value());
         bout.nl(2);
 
-        bout << "Which address is correct?";
-        bout.mpl(1);
-
-        const int x = onek("12");
+        bout << "|#5Which address is correct? ";
+        const int x = onek("12", true);
 
         if (x == '2') {
           to_char_array(to, to_from_msg_opt.value());

@@ -43,6 +43,7 @@
 #include "sdk/vardec.h"
 #include "core/clock.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -283,10 +284,15 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
 
     // Find out what message number we are on
     int amount = 0;
-    const auto total = a()->GetNumMessagesInCurrentMessageArea();
-    for (i = total; i > 1 && get_post(i - 1)->qscan > qscnptrx; i--) {
-      if ((++amount % 1000) == 0) {
-        bout.format("\r|#9Finding Last Read: (|#2{} |#9/ |#1{}|#9)|#0", amount, total);
+    {
+      // Pre-open the sub to speed up access.
+      open_sub(false);
+      ScopeExit at_exit([]{ close_sub();});
+      const auto total = a()->GetNumMessagesInCurrentMessageArea();
+      for (i = total; i > 1 && get_post(i - 1)->qscan > qscnptrx; i--) {
+        if ((++amount % 1000) == 0) {
+          bout.format("\r|#9Finding Last Read: (|#2{} |#9/ |#1{}|#9)|#0", amount, total);
+        }
       }
     }
     bout.clear_whole_line();      
@@ -302,10 +308,17 @@ void qwk_gather_sub(uint16_t bn, qwk_state* qwk_info) {
 
     bin.checka(&qwk_info->abort);
 
-    if (a()->GetNumMessagesInCurrentMessageArea() > 0
-        && i <= a()->GetNumMessagesInCurrentMessageArea() && !qwk_info->abort) {
-      if (get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
-        qwk_start_read(i, qwk_info);  // read messsage
+    {
+      // Open the sub first, so that we don't open/close it repeatedly
+      // in get_post.
+      open_sub(false);
+      ScopeExit at_exit([]{ close_sub();});
+
+      if (a()->GetNumMessagesInCurrentMessageArea() > 0 &&
+          i <= a()->GetNumMessagesInCurrentMessageArea() && !qwk_info->abort) {
+        if (get_post(i)->qscan > a()->sess().qsc_p[a()->sess().GetCurrentReadMessageArea()]) {
+          qwk_start_read(i, qwk_info); // read messsage
+        }
       }
     }
 
