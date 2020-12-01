@@ -585,7 +585,7 @@
                 "actions": [
                     {
                         "cmd": "printfile",
-                        "data": "smain.msg",
+                        "data": "smain",
                         "acs": ""
                     }
                 ]
