@@ -483,13 +483,13 @@ class User {
     data.defed = static_cast<uint8_t>(n);
   }
   [[nodiscard]] int GetScreenChars() const {
-    return data.screenchars;
+    return data.screenchars == 0 ? 80 : data.screenchars;
   }
   void SetScreenChars(int n) {
     data.screenchars = static_cast<uint8_t>(n);
   }
   [[nodiscard]] int GetScreenLines() const {
-    return data.screenlines;
+    return data.screenlines == 0 ? 25 : data.screenlines;
   }
   void SetScreenLines(int n) {
     data.screenlines = static_cast<uint8_t>(n);
