@@ -34,6 +34,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "bbs/qwk/qwk.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "common/pause.h"
@@ -126,11 +127,10 @@ static string GetMailBoxStatus() {
 static void print_cur_stat() {
   bout.cls();
   bout.litebar("Your Preferences");
-  const string screen_size =
+  const auto screen_size =
       fmt::format("{} X {}", a()->user()->GetScreenChars(), a()->user()->GetScreenLines());
   const string ansi_setting =
-      (a()->user()->HasAnsi() ?
-          (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
+      a()->user()->HasAnsi() ? (a()->user()->HasColor() ? "Color" : "Monochrome") : "No ANSI";
   bout.format("|#11|#9) Screen size       : |#2{:<16} ", screen_size);
   bout << "|#12|#9) ANSI              : |#2" << ansi_setting << wwiv::endl;
   bout.format("|#13|#9) Pause on screen   : |#2{:<16} ", a()->user()->HasPause() ? "On " : "Off");
@@ -168,7 +168,7 @@ static void print_cur_stat() {
     bout<< fmt::format("|#1L|#9) Language          : |#2{:<16} ",a()->sess().current_language());
   }
   if (num_instances() > 1) {
-    bout << "|#1M|#9) Allow user msgs   : |#2" << YesNoString(!a()->user()->IsIgnoreNodeMessages());
+    bout.format("|#1M|#9) Allow user msgs   : |#2{:<16} |#1N|#9) Configure QWK", YesNoString(!a()->user()->IsIgnoreNodeMessages()));
   }
   bout.nl();
   bout.format("|#1S|#9) Cls Between Msgs? : |#2{:<16} ",
@@ -709,13 +709,13 @@ static void optional_lines() {
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  auto regnum = bin.input_number(a()->user()->GetWWIVRegNumber());
+  const auto regnum = bin.input_number(a()->user()->GetWWIVRegNumber());
   a()->user()->SetWWIVRegNumber(regnum);
   changedsl();
 }
 
 void defaults(bool& need_menu_reload) {
-  bool done = false;
+  auto done = false;
   do {
     print_cur_stat();
     a()->tleft(true);
@@ -723,18 +723,15 @@ void defaults(bool& need_menu_reload) {
       return;
     }
     bout.nl();
-    char ch;
+    bout << "|#9Defaults: ";
+    string allowable = "Q?1234567BCDIKLMNTUW";
     if (okansi()) {
-      bout << "|#9Defaults: ";
-      string allowable = "Q?123456789ABCDIKLMSTUW";
+      allowable.append("89AS");
       if (a()->fullscreen_read_prompt()) {
         allowable.push_back('G');
       }
-      ch = onek(allowable, true);
-    } else {
-      bout << "|#9Defaults: ";
-      ch = onek("Q?1234567BCDIKLMTUW", true);
     }
+    const auto ch = onek(allowable, true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -823,6 +820,9 @@ void defaults(bool& need_menu_reload) {
           a()->user()->SetStatusFlag(User::noMsgs);
         }
       }
+      break;
+    case 'N':
+      wwiv::bbs::qwk::qwk_config_user();
       break;
     case 'S':
       a()->user()->ToggleStatusFlag(User::clearScreen);

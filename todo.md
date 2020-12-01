@@ -2,16 +2,6 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
-
-# QWK
-* Make menu commands for config, sysop config, upload, download
-* add qwk config to defaults
-* move qwk code into wwiv/qwk
-* make qwk command into a real 5.6 menu
-* use File on qwk_info for things, not posix file handles.
-* Show progress as packing qwk files.
-
-
 # WWIVconfig
 
 * Change hte way the color schemes work in localui, reuse the init_pairs code
