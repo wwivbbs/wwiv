@@ -17,22 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/gfiles.h"
+#include "sdk/gfiles.h"
 
+#include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "common/com.h"
 #include "bbs/gfileedit.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
-#include "common/input.h"
-#include "common/output.h"
-#include "common/pause.h"
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
+#include "common/input.h"
+#include "common/output.h"
 #include "core/datetime.h"
 #include "core/numbers.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
@@ -41,32 +42,13 @@
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-void gfl_hdr(int which);
-void list_sec(int *map, int nmap);
-void list_gfiles(gfilerec * g, int nf, int sn);
-void gfile_sec(int sn);
 void gfiles2();
 void gfiles3(int n);
 
-gfilerec *read_sec(int sn, int *nf) {
-  gfilerec *pRecord;
-  *nf = 0;
-
-  int nSectionSize = sizeof(gfilerec) * a()->gfilesec[sn].maxfiles;
-  if ((pRecord = static_cast<gfilerec *>(BbsAllocA(nSectionSize))) == nullptr) {
-    return nullptr;
-  }
-
-  File file(FilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    *nf = static_cast<int>(file.Read(pRecord, nSectionSize) / sizeof(gfilerec));
-  }
-  return pRecord;
-}
-
-void gfl_hdr(int which) {
+static void gfl_hdr(int which) {
   string s, s1, s2, s3;
   if (okansi()) {
     s2 = std::string(29, '\xC4');
@@ -129,9 +111,9 @@ void gfl_hdr(int which) {
   bout.Color(0);
 }
 
-void list_sec(int *map, int nmap) {
-  int i2 = 0;
-  bool abort = false;
+static void list_sec(std::vector<int> map) {
+  auto i2 = 0;
+  auto abort = false;
   string s, s2, s3, s4, s5, s6, s7;
   if (okansi()) {
     s2 = std::string(29, '\xC4');
@@ -147,11 +129,11 @@ void list_sec(int *map, int nmap) {
   bout.litebar(StrCat(a()->config()->system_name(), " G-Files Section"));
   gfl_hdr(0);
   string t = times();
-  for (int i = 0; i < nmap && !abort && !a()->sess().hangup(); i++) {
+  for (int i = 0; i < size_int(map) && !abort && !a()->sess().hangup(); i++) {
     std::string lnum = std::to_string(i+1);
     std::string rnum;
-    s4 = trim_to_size_ignore_colors(a()->gfilesec[map[i]].name, 34);
-    if (i + 1 >= nmap) {
+    s4 = trim_to_size_ignore_colors(a()->gfiles()[map[i]].name, 34);
+    if (i + 1 >= size_int(map)) {
       if (okansi()) {
         rnum = std::string(3, '\xFE');
         s5 = std::string(29, '\xFE');
@@ -161,7 +143,7 @@ void list_sec(int *map, int nmap) {
       }
     } else {
       rnum = std::to_string(i + 2);
-      s5 = trim_to_size_ignore_colors(a()->gfilesec[map[i + 1]].name, 29);
+      s5 = trim_to_size_ignore_colors(a()->gfiles()[map[i + 1]].name, 29);
     }
     if (okansi()) {
       s = fmt::sprintf("|#7\xB3|#2%3s|#7\xB3|#1%-34s|#7\xB3|#2%3s|#7\xB3|#1%-33s|#7\xB3", lnum, s4,
@@ -240,16 +222,16 @@ void list_sec(int *map, int nmap) {
   bout.nl();
 }
 
-void list_gfiles(gfilerec* g, int nf, int sn) {
+static void list_gfiles(const gfile_dir_t& g) {
   int i;
   string s, s2, s3, s4, s5;
   string lnum, rnum, lsize, rsize;
   const auto t = times();
 
-  bool abort = false;
+  auto abort = false;
   bout.cls();
-  bout.litebar(a()->gfilesec[sn].name);
-  int i2 = 0;
+  bout.litebar(g.name);
+  auto i2 = 0;
   if (okansi()) {
     s2 = std::string(29, '\xC4');
     s3 = std::string(12, '\xC4');
@@ -259,19 +241,19 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   }
   gfl_hdr(1);
   const auto gfilesdir = a()->config()->gfilesdir();
-  for (i = 0; i < nf && !abort && !a()->sess().hangup(); i++) {
+  for (i = 0; i < size_int(g.files) && !abort && !a()->sess().hangup(); i++) {
     i2++;
     lnum = std::to_string(i + 1);
-    s4 = trim_to_size_ignore_colors(g[i].description, 29);
+    s4 = trim_to_size_ignore_colors(g.files[i].description, 29);
     const auto path_name =
-        FilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i].filename));
+        FilePath(gfilesdir, FilePath(g.filename, g.files[i].filename));
     if (File::Exists(path_name)) {
       File handle(path_name);
       lsize = humanize(handle.length());
     } else {
       lsize = "OFL";
     }
-    if (i + 1 >= nf) {
+    if (i + 1 >= size_int(g.files)) {
       if (okansi()) {
         rnum = std::string(3, '\xFE');
         s5 = std::string(29, '\xFE');
@@ -283,9 +265,9 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       }
     } else {
       rnum = std::to_string(i + 2);
-      s5 = trim_to_size_ignore_colors(g[i + 1].description, 29);
+      s5 = trim_to_size_ignore_colors(g.files[i + 1].description, 29);
       const auto path_name2 =
-          FilePath(gfilesdir, FilePath(a()->gfilesec[sn].filename, g[i + 1].filename));
+          FilePath(gfilesdir, FilePath(g.filename, g.files[i + 1].filename));
       if (File::Exists(path_name2)) {
         File handle(path_name2);
         rsize = humanize(handle.length());
@@ -362,24 +344,23 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   bout.nl();
 }
 
-void gfile_sec(int sn) {
-  int i, i1, i2, nf;
+static void gfile_sec(int sn) {
+  int i, i1, i2;
   bool abort;
 
-  gfilerec* g = read_sec(sn, &nf);
-  if (g == nullptr) {
-    return;
-  }
+  const auto& section = a()->gfiles().dir(sn);
+  auto& g = a()->gfiles().dir(sn).files;
+  const auto nf = size_int(g);
   std::set<char> odc;
   for (i = 1; i <= nf / 10; i++) {
     odc.insert(static_cast<char>(i + '0'));
   }
-  list_gfiles(g, nf, sn);
+  list_gfiles(a()->gfiles().dir(sn));
   bool done = false;
   while (!done && !a()->sess().hangup()) {
     a()->tleft(true);
-    bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << "|#0\r\n";
-    bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
+    bout << "|#9Current G|#1-|#9File Section |#1: |#5" << section.name << "|#0\r\n";
+    bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << size_int(g) <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
     string ss = mmkey(odc);
     i = to_number<int>(ss);
@@ -390,12 +371,8 @@ void gfile_sec(int sn) {
       gfiles3(sn);
     }
     if (ss == "A" && so()) {
-      free(g);
       fill_sec(sn);
-      g = read_sec(sn, &nf);
-      if (g == nullptr) {
-        return;
-      }
+      g = a()->gfiles().dir(sn).files;
       odc.clear();
       for (i = 1; i <= nf / 10; i++) {
         odc.insert(static_cast<char>(i + '0'));
@@ -410,28 +387,21 @@ void gfile_sec(int sn) {
         if (bin.yesno()) {
           bout << "|#5Erase file too? ";
           if (bin.yesno()) {
-            const auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
+            const auto file_name = FilePath(section.filename, g[i - 1].filename);
             File::Remove(FilePath(a()->config()->gfilesdir(), file_name));
           }
-          for (i1 = i; i1 < nf; i1++) {
-            g[i1 - 1] = g[i1];
-          }
-          --nf;
-          const auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-          File file(FilePath(a()->config()->datadir(), file_name));
-          file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-          file.Write(g, nf * sizeof(gfilerec));
-          file.Close();
+          erase_at(g, i-1);
+          a()->gfiles().Save();
           bout << "\r\nDeleted.\r\n\n";
         }
       }
     } else if (ss == "?") {
-      list_gfiles(g, nf, sn);
+      list_gfiles(section);
     } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
       auto file_name = FilePath(a()->config()->gfilesdir(),
-                                FilePath(a()->gfilesec[sn].filename, g[i - 1].filename));
+                                FilePath(section.filename, g[i - 1].filename));
       i1 = bout.printfile_path(file_name);
       a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
@@ -445,14 +415,14 @@ void gfile_sec(int sn) {
         i2 = to_number<int>(ss);
         abort = false;
         if (ss == "?") {
-          list_gfiles(g, nf, sn);
-          bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << wwiv::endl;
+          list_gfiles(section);
+          bout << "|#9Current G|#1-|#9File Section |#1: |#5" << section.name << wwiv::endl;
         } else if (ss == "Q") {
-          list_gfiles(g, nf, sn);
+          list_gfiles(section);
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            auto file_name = FilePath(a()->gfilesec[sn].filename, g[i2 - 1].filename);
+            auto file_name = FilePath(section.filename, g[i2 - 1].filename);
             File file(FilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file << "]";
@@ -482,7 +452,6 @@ void gfile_sec(int sn) {
       }
     }
   }
-  free(g);
 }
 
 void gfiles2() {
@@ -500,25 +469,16 @@ void gfiles3(int n) {
 }
 
 void gfiles() {
-  int* map = static_cast<int *>(BbsAllocA(a()->max_gfilesec * sizeof(int)));
+  std::vector<int> map;
 
   bool done = false;
   int nmap = 0;
   int current_section = 0;
   std::set<char> odc;
-  for (const auto& r : a()->gfilesec) {
-    bool ok = true;
-    if (a()->user()->age() < r.age) {
-      ok = false;
-    }
-    if (a()->sess().effective_sl() < r.sl) {
-      ok = false;
-    }
-    if (!a()->user()->HasArFlag(r.ar) && r.ar) {
-      ok = false;
-    }
-    if (ok) {
-      map[nmap++] = current_section;
+  for (const auto& r : a()->gfiles().dirs()) {
+    if (wwiv::bbs::check_acs(r.acs)) {
+      map.push_back(current_section);
+      ++nmap;
       if ((nmap % 10) == 0) {
         odc.insert(static_cast<char>('0' + (nmap / 10)));
       }
@@ -527,10 +487,9 @@ void gfiles() {
   }
   if (nmap == 0) {
     bout << "\r\nNo G-file sections available.\r\n\n";
-    free(map);
     return;
   }
-  list_sec(map, nmap);
+  list_sec(map);
   while (!done && !a()->sess().hangup()) {
     a()->tleft(true);
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
@@ -546,7 +505,7 @@ void gfiles() {
       bool bIsSectionFull = false;
       for (int i = 0; i < nmap && !bIsSectionFull; i++) {
         bout.nl();
-        bout << "Now loading files for " << a()->gfilesec[map[i]].name << "\r\n\n";
+        bout << "Now loading files for " << a()->gfiles()[map[i]].name << "\r\n\n";
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {
@@ -556,8 +515,7 @@ void gfiles() {
       }
     }
     if (!done) {
-      list_sec(map, nmap);
+      list_sec(map);
     }
   }
-  free(map);
 }

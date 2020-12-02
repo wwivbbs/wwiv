@@ -70,6 +70,7 @@
 #include "local_io/null_local_io.h" // Used for Linux build.
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
+#include "sdk/gfiles.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -1187,6 +1188,14 @@ Networks& Application::nets() {
 
 const Networks& Application::nets() const {
   return *nets_;
+}
+
+GFiles& Application::gfiles() {
+  return *gfiles_;
+}
+
+const GFiles& Application::gfiles() const {
+  return *gfiles_;
 }
 
 const net_networks_rec& Application::current_net() const {

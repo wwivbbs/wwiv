@@ -45,6 +45,7 @@
 #include "sdk/chains.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/gfiles.h"
 #include "sdk/names.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -537,10 +538,8 @@ bool Application::read_language() {
 }
 
 void Application::read_gfile() {
-  DataFile<gfiledirrec> file(FilePath(config()->datadir(), GFILE_DAT));
-  if (file) {
-    file.ReadVector(gfilesec, max_gfilesec);
-  }
+  gfiles_ = std::make_unique<GFiles>(config()->datadir(), config()->max_backups());
+  gfiles_->Load();
 }
 
 

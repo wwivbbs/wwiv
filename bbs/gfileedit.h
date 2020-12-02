@@ -15,11 +15,11 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_GFILEEDIT_H__
-#define __INCLUDED_BBS_GFILEEDIT_H__
+#ifndef INCLUDED_BBS_GFILEEDIT_H
+#define INCLUDED_BBS_GFILEEDIT_H
 
 void modify_sec(int n);
 void gfileedit();
 bool fill_sec(int sn);
 
-#endif  // __INCLUDED_BBS_GFILEEDIT_H__
+#endif

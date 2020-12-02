@@ -20,7 +20,6 @@
 
 #include "sdk/vardec.h"
 
-gfilerec *read_sec(int sn, int *nf);
 void gfiles();
 
 #endif  // __INCLUDED_BBS_GFILES_H__

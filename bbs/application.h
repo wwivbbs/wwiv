@@ -70,6 +70,7 @@ struct conference_t;
 class Config;
 class Conferences;
 class Chains;
+class GFiles;
 class Names;
 class StatusMgr;
 class Subs;
@@ -271,6 +272,9 @@ public:
   [[nodiscard]] wwiv::sdk::Networks& nets();
   [[nodiscard]] const wwiv::sdk::Networks& nets() const;
 
+  [[nodiscard]] wwiv::sdk::GFiles& gfiles();
+  [[nodiscard]] const wwiv::sdk::GFiles& gfiles() const;
+
   bool read_subs();
   bool create_message_api();
 
@@ -351,7 +355,6 @@ public:
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
   std::vector<languagerec> languages;
-  std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
   // The current set of subs visible to the user in the current conference.
   // TODO(rusfan): Move into conf
@@ -444,6 +447,7 @@ private:
   std::unique_ptr<wwiv::sdk::Subs> subs_;
   std::unique_ptr<wwiv::sdk::files::Dirs> dirs_;
   std::unique_ptr<wwiv::sdk::Networks> nets_;
+  std::unique_ptr<wwiv::sdk::GFiles> gfiles_;
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};

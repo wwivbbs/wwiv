@@ -30,9 +30,9 @@
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/acs/expr.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include "sdk/acs/expr.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -44,16 +44,42 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+#pragma pack(push, 1)
+
+struct gfiledirrec {
+  char name[41],   // g-file section name
+      filename[9]; // g-file database filename
+
+  uint8_t sl, // sl required to read
+      age;    // minimum age for section
+
+  uint16_t maxfiles, // max # of files
+      ar;            // AR for g-file section
+};
+
+struct gfilerec {
+  char description[81], // description of file
+      filename[13];     // filename of file
+
+  daten_t daten; // date added
+};
+
+static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
+static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
+
+#pragma pack(pop)
+
 namespace wwiv::sdk {
 
-
-bool GFiles::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename, std::vector<gfile_dir_t>& entries) {
+bool GFiles::LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
+                          std::vector<gfile_dir_t>& entries) {
   entries.clear();
   JsonFile f(FilePath(dir, filename), "gfiles", entries, 1);
   return f.Load();
 }
 
-bool GFiles::SaveToJSON(const std::filesystem::path& dir, const std::string& filename, const std::vector<gfile_dir_t>& entries) {
+bool GFiles::SaveToJSON(const std::filesystem::path& dir, const std::string& filename,
+                        const std::vector<gfile_dir_t>& entries) {
   const auto path = FilePath(dir, filename);
   backup_file(path, max_backups_);
   JsonFile f(path, "gfiles", entries, 1);
@@ -65,11 +91,8 @@ bool GFiles::set_dirs(const std::vector<gfile_dir_t>& dirs) {
   return true;
 }
 
-
-
-// Classes
-
-GFiles::GFiles(std::filesystem::path datadir, int max_backups) : datadir_(std::move(datadir)), max_backups_(max_backups) {};
+GFiles::GFiles(std::filesystem::path datadir, int max_backups)
+    : datadir_(std::move(datadir)), max_backups_(max_backups){};
 
 GFiles::~GFiles() = default;
 
@@ -117,17 +140,11 @@ bool GFiles::Load() {
   return LoadFromJSON(datadir_, "gfiles.json", dirs_);
 }
 
-bool GFiles::Save() {
-  return SaveToJSON(datadir_, "gfiles.json", dirs_);
-}
+bool GFiles::Save() { return SaveToJSON(datadir_, "gfiles.json", dirs_); }
 
-bool GFiles::insert(int n, gfile_dir_t r) {
-  return insert_at(dirs_, n, r);
-}
+bool GFiles::insert(int n, gfile_dir_t r) { return insert_at(dirs_, n, r); }
 
-bool GFiles::erase(int n) {
-  return erase_at(dirs_, n);
-}
+bool GFiles::erase(int n) { return erase_at(dirs_, n); }
 
 const gfile_dir_t& GFiles::dir(const std::string& filename) const {
   for (const auto& n : dirs_) {
@@ -157,4 +174,4 @@ bool GFiles::exists(const std::string& filename) const {
   return false;
 }
 
-}
+} // namespace wwiv::sdk

@@ -917,24 +917,6 @@ struct ext_desc_type {
   int16_t len;
 };
 
-struct gfiledirrec {
-  char name[41],   // g-file section name
-      filename[9]; // g-file database filename
-
-  uint8_t sl, // sl required to read
-      age;    // minimum age for section
-
-  uint16_t maxfiles, // max # of files
-      ar;            // AR for g-file section
-};
-
-struct gfilerec {
-  char description[81], // description of file
-      filename[13];     // filename of file
-
-  daten_t daten; // date added
-};
-
 struct languagerec {
   char name[20]; // language name
 
@@ -1092,8 +1074,6 @@ static_assert(sizeof(chainregrec_422) == 64, "chainregrec_422 == 64");
 static_assert(sizeof(newexternalrec) == 512, "newexternalrec == 512");
 static_assert(sizeof(editorrec) == 366, "editorrec == 366");
 static_assert(sizeof(ext_desc_type) == 15, "ext_desc_type == 15");
-static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
-static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
 static_assert(sizeof(languagerec) == 258, "languagerec == 258");
 static_assert(sizeof(filestatusrec) == 23, "filestatusrec == 23");
 static_assert(sizeof(phonerec) == 15, "phonerec == 15");
