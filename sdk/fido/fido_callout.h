@@ -27,18 +27,26 @@
 
 namespace wwiv::sdk::fido {
 
-class FidoCallout : public Callout {
+class FidoCallout final : public Callout {
 public:
   typedef int size_type;
   static const size_type npos = -1;
   FidoCallout(const wwiv::sdk::Config& config, const net_networks_rec& net);
   // [[ VisibleForTesting ]]
-  virtual ~FidoCallout();
+  ~FidoCallout() override;
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
 
   [[nodiscard]] fido_node_config_t fido_node_config_for(const FidoAddress& a) const;
+  // Returns the packet config for the node, or a default empty config
+  // if none exist.
   [[nodiscard]] fido_packet_config_t packet_config_for(const FidoAddress& a) const;
+  [[nodiscard]] fido_packet_config_t
+  packet_config_for(const FidoAddress& a, const fido_packet_config_t& default_config) const;
+  // Creates a merged config, starting with the base_config then adds in values that exist
+  // in the node specific config.
+  [[nodiscard]] fido_packet_config_t
+  merged_packet_config_for(const FidoAddress& a, const fido_packet_config_t& base_config) const;
 
   // wwiv::sdk::Callout implementation
   [[nodiscard]] const net_call_out_rec* net_call_out_for(int node) const override;
@@ -49,7 +57,10 @@ public:
   bool erase(const FidoAddress& a);
   bool Load();
   bool Save() override;
-  [[nodiscard]] std::map<FidoAddress, fido_node_config_t> node_configs_map() const {
+  [[nodiscard]] const std::map<FidoAddress, fido_node_config_t>& node_configs_map() const{
+    return node_configs_;
+  }
+  [[nodiscard]] std::map<FidoAddress, fido_node_config_t>& node_configs_map() {
     return node_configs_;
   }
 

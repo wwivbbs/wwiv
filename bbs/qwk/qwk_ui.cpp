@@ -115,7 +115,7 @@ unsigned short select_qwk_protocol(qwk_state *qwk_info) {
 }
 
 
-void modify_bulletins(qwk_config& qwk_cfg) {
+void modify_bulletins(sdk::qwk_config& qwk_cfg) {
   char s[101], t[101];
 
   while (!a()->sess().hangup()) {
@@ -162,7 +162,7 @@ void modify_bulletins(qwk_config& qwk_cfg) {
         break;
       }
 
-      qwk_bulletin b{t, s};
+      sdk::qwk_bulletin b{t, s};
       qwk_cfg.bulletins.emplace_back(b);
       ++qwk_cfg.amount_blts;
     } break;

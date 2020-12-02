@@ -107,7 +107,6 @@ set(COMMON_SOURCES
  menus/menusupp.cpp
  menus/printcommands.cpp
  qwk/qwk.cpp
- qwk/qwk_config.cpp
  qwk/qwk_email.cpp
  qwk/qwk_mail_packet.cpp
  qwk/qwk_reply.cpp

@@ -20,13 +20,13 @@
 
 #include "bbs/bbs.h"
 #include "bbs/qwk/qwk.h"
-#include "bbs/qwk/qwk_config.h"
 #include "bbs/qwk/qwk_struct.h"
 #include "bbs/qwk/qwk_text.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/datafile.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/qwk_config.h"
 #include <iostream>
 #include <string>
 
@@ -39,6 +39,7 @@ using namespace wwiv::common;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::bbs::qwk;
+using namespace wwiv::sdk;
 
 class QwkTest : public ::testing::Test {
 protected:
@@ -64,7 +65,7 @@ TEST_F(QwkTest, ReadQwkConfig_Read_NoBulletins) {
     f.Close();
   }
 
-  auto q = read_qwk_cfg();
+  auto q = read_qwk_cfg(*helper.config_);
   EXPECT_EQ("RUSHFAN", q.packet_name);
   EXPECT_EQ(0, q.amount_blts);
   EXPECT_EQ(0u, q.bulletins.size());
@@ -100,7 +101,7 @@ TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
     f.Write(name, BNAME_SIZE);
   }
 
-  auto q = read_qwk_cfg();
+  auto q = read_qwk_cfg(*helper.config_);
   EXPECT_EQ("RUSHFAN", q.packet_name);
   EXPECT_EQ(2, q.amount_blts) << filename;
   EXPECT_EQ(2u, q.bulletins.size());
@@ -114,11 +115,11 @@ TEST_F(QwkTest, ReadQwkConfig_Read_TwoBulletins) {
 }
 
 TEST_F(QwkTest, ReadQwkConfig_Write_NoBulletins) {
-  qwk_config c{};
+  wwiv::sdk::qwk_config c{};
   c.packet_name = "TESTPAKT";
 
   ASSERT_FALSE(File::Exists(filename));
-  write_qwk_cfg(c);
+  wwiv::sdk::write_qwk_cfg(*helper.config_, c);
   ASSERT_TRUE(File::Exists(filename));
 
   {
@@ -143,7 +144,7 @@ TEST_F(QwkTest, ReadQwkConfig_Write_TwoBulletins) {
   c.bulletins.emplace_back(b);
 
   ASSERT_FALSE(File::Exists(filename));
-  write_qwk_cfg(c);
+  write_qwk_cfg(*helper.config_, c);
 
   ASSERT_TRUE(File::Exists(filename));
   File f(filename);

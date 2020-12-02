@@ -214,7 +214,7 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Conf
   }
   file.Close();
 
-  // Check for 5.2 config
+  // Check for 5.2+ config
   const std::string expected_sig = "WWIV";
   if (expected_sig != cfg.header.header.signature) {
     // We don't have a 5.2 header, let's convert.

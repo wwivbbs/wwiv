@@ -21,7 +21,6 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
-#include "bbs/qwk/qwk_config.h"
 #include "bbs/qwk/qwk_mail_packet.h"
 #include "bbs/qwk/qwk_reply.h"
 #include "bbs/qwk/qwk_ui.h"
@@ -30,10 +29,10 @@
 #include "common/com.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/printf.h"
+#include "sdk/qwk_config.h"
 #include "sdk/vardec.h"
 #include <memory>
 #include <string>
@@ -60,7 +59,7 @@ void qwk_upload() {
 }
 
 void qwk_menu() {
-  const auto qwk_cfg = read_qwk_cfg();
+  const auto qwk_cfg = read_qwk_cfg(*a()->config());
 
   while (!a()->sess().hangup()) {
     bout.cls();
@@ -344,7 +343,7 @@ void qwk_config_sysop() {
   }
   sysoplog() << "Ran Sysop Config";
 
-  auto c = read_qwk_cfg();
+  auto c = read_qwk_cfg(*a()->config());
 
   auto done = false;
   while (!done && !a()->sess().hangup()) {
@@ -352,7 +351,7 @@ void qwk_config_sysop() {
     bout.format("|#21|#9) Hello file     : |#5{}\r\n", c.hello.empty() ? "|#3<None>" : c.hello);
     bout.format("|#22|#9) News file      : |#5{}\r\n", c.news.empty() ? "|#3<None>" : c.news);
     bout.format("|#23|#9) Goodbye file   : |#5{}\r\n", c.bye.empty() ? "|#3<None>" : c.bye);
-    auto sn = qwk_system_name(c);
+    auto sn = qwk_system_name(c, a()->config()->system_name());
     bout.format("|#24|#9) Packet name    : |#5{}\r\n", sn);
     const auto max_msgs = c.max_msgs == 0 ? "(Unlimited)" : std::to_string(c.max_msgs);
     bout.format("|#25|#9) Max Msgs/Packet: |#5{}\r\n", max_msgs);
@@ -379,8 +378,8 @@ void qwk_config_sysop() {
       c.bye = bin.input(12);
       break;
     case '4': {
-      sn = qwk_system_name(c);
-      write_qwk_cfg(c);
+      sn = qwk_system_name(c, a()->config()->system_name());
+      write_qwk_cfg(*a()->config(), c);
       bout.nl();
       bout.format("|#9 Current Packet Name:  |#1{}\r\n", sn);
       bout << "|#9Enter new packet name: ";
@@ -389,7 +388,7 @@ void qwk_config_sysop() {
       if (!sn.empty()) {
         c.packet_name = sn;
       }
-      write_qwk_cfg(c);
+      write_qwk_cfg(*a()->config(), c);
     } break;
 
     case '5': {
@@ -405,7 +404,7 @@ void qwk_config_sysop() {
     }
   }
 
-  write_qwk_cfg(c);
+  write_qwk_cfg(*a()->config(), c);
 }
 
 } // namespace wwiv::bbs::qwk

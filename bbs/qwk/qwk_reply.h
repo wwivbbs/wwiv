@@ -22,12 +22,7 @@
 #include "bbs/qwk/qwk_struct.h"
 #include "core/datetime.h"
 #include "sdk/vardec.h"
-#include <optional>
 #include <string>
-
-
-#define BULL_SIZE     81
-#define BNAME_SIZE    13
 
 namespace wwiv::bbs::qwk {
 

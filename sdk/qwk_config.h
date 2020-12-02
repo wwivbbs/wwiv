@@ -16,15 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_QWK_QWK_CONFIG_H
-#define INCLUDED_BBS_QWK_QWK_CONFIG_H
+#ifndef INCLUDED_SDK_QWK_CONFIG_H
+#define INCLUDED_SDK_QWK_CONFIG_H
 
-#include "core/wwivport.h"
+#include "core/wwivport.h" // daten_t
+#include "sdk/config.h"
 
 #include <string>
 #include <vector>
 
-namespace wwiv::bbs::qwk {
+namespace wwiv::sdk {
+
 struct qwk_bulletin {
   std::string name;
   std::string path;
@@ -67,9 +69,9 @@ struct qwk_config_430 {
 
 static_assert(sizeof(qwk_config_430) == 656u, "qwk_config should be 656 bytes");
 
-std::string qwk_system_name(const qwk_config& c);
-qwk_config read_qwk_cfg();
-void write_qwk_cfg(const qwk_config& c);
+std::string qwk_system_name(const qwk_config& c, const std::string& system_name);
+qwk_config read_qwk_cfg(const Config& config);
+void write_qwk_cfg(const Config& config, const qwk_config& c);
 
 
 }

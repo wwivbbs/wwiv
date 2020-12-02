@@ -16,23 +16,37 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_QWK_QWK_UI_H
-#define INCLUDED_BBS_QWK_QWK_UI_H
 
-#include "bbs/qwk/qwk_struct.h"
-#include "sdk/qwk_config.h"
-#include <string>
+#ifndef INCLUDED_SDK_GFILES_CEREAL_H
+#define INCLUDED_SDK_GFILES_CEREAL_H
 
-namespace wwiv::bbs::qwk {
+#include "core/cereal_utils.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/gfiles.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/conf/conf_set_cereal.h"
 
-std::string qwk_which_zip();
-int select_qwk_archiver(qwk_state* qwk_info, int ask);
-std::string qwk_which_protocol();
-unsigned short select_qwk_protocol(qwk_state *qwk_info);
-void modify_bulletins(sdk::qwk_config& qwk_cfg);
-int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
+namespace wwiv::sdk {
+
+
+template <class Archive>
+void serialize (Archive& ar, gfile_t& d) {
+  SERIALIZE(d, filename);
+  SERIALIZE(d, daten);
+  SERIALIZE(d, description);
+}
+
+template <class Archive>
+void serialize(Archive & ar, gfile_dir_t& s) {
+  SERIALIZE(s, name);
+  SERIALIZE(s, filename);
+  SERIALIZE(s, acs);
+  SERIALIZE(s, maxfiles);
+  SERIALIZE(s, files);
+}
 
 
 }
+
 
 #endif

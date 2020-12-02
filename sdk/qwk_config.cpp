@@ -16,11 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/qwk/qwk_config.h"
+#include "sdk/qwk_config.h"
 
-#include "bbs/bbs.h"
-#include "bbs/qwk/qwk_reply.h"
-#include "bbs/qwk/qwk_struct.h"
+//#include "bbs/qwk/qwk_reply.h"
+#include "config.h"
 #include "core/cereal_utils.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
@@ -33,7 +32,7 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-namespace wwiv::bbs::qwk {
+namespace wwiv::sdk{
 
 template <class Archive> void serialize(Archive& ar, qwk_bulletin& s) { 
   SERIALIZE(s, name);
@@ -52,8 +51,8 @@ template <class Archive> void serialize(Archive& ar, qwk_config& s) {
   SERIALIZE(s, bulletins);
 }
 
-std::string qwk_system_name(const qwk_config& c) {
-  auto qwkname = !c.packet_name.empty() ? c.packet_name : a()->config()->system_name();
+std::string qwk_system_name(const qwk_config& c, const std::string& system_name) {
+  auto qwkname = !c.packet_name.empty() ? c.packet_name : system_name;
 
   if (qwkname.length() > 8) {
     qwkname.resize(8);
@@ -63,10 +62,13 @@ std::string qwk_system_name(const qwk_config& c) {
   return ToStringUpperCase(qwkname);
 }
 
-static qwk_config read_qwk_cfg_430() {
+#define BULL_SIZE     81
+#define BNAME_SIZE    13
+
+static qwk_config read_qwk_cfg_430(const Config& config) {
   qwk_config_430 o{};
 
-  const auto filename = FilePath(a()->config()->datadir(), QWK_CFG);
+  const auto filename = FilePath(config.datadir(), QWK_CFG);
   File f(filename);
 
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
@@ -112,18 +114,18 @@ static qwk_config read_qwk_cfg_430() {
   return c;
 }
 
-qwk_config read_qwk_cfg() {
-  const auto path = FilePath(a()->config()->datadir(), "qwk.json");
+qwk_config read_qwk_cfg(const Config& config) {
+  const auto path = FilePath(config.datadir(), "qwk.json");
   qwk_config c{};
   JsonFile f(path, "qwk", c, 1);
   if (f.Load()) {
     return c;
   }
-  return read_qwk_cfg_430();
+  return read_qwk_cfg_430(config);
 }
 
-void write_qwk_cfg(const qwk_config& c) {
-  const auto path = FilePath(a()->config()->datadir(), "qwk.json");
+void write_qwk_cfg(const Config& config, const qwk_config& c) {
+  const auto path = FilePath(config.datadir(), "qwk.json");
   JsonFile f(path, "qwk", c, 1);
   if (!f.Save()) {
     LOG(ERROR) << "Failed to save qwk.json";

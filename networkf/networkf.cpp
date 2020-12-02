@@ -335,8 +335,7 @@ bool NetworkF::import_bundle_file(const std::string& dir, const std::string& nam
   }
 
   const auto path = FilePath(dir, name);
-  const auto& arc =
-      wwiv::sdk::files::find_arcrec(arcs, path, net_.fido.packet_config.compression_type);
+  const auto& arc = files::find_arcrec(arcs, path, "ZIP");
   if (!arc) {
     LOG(ERROR) << "Unable to find archiver for file: " << path;
     return false;
@@ -1010,7 +1009,7 @@ bool NetworkF::export_main_type_email_name(std::set<std::string>& bundles, Packe
       // We only want to attach the bundle (or add it to the flo file)
       // one time, so skip ones that have already been done.
       bundles.insert(bundlename);
-      CreateNetmailAttachOrFloFile(route_to, bundlename, fido_callout_.packet_config_for(dest));
+      CreateNetmailAttachOrFloFile(route_to, bundlename, packet_config);
     }
   }
   return true;

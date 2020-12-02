@@ -5,12 +5,14 @@ set(COMMON_SOURCES
   bbslist.cpp
   chains.cpp
   config.cpp
+  gfiles.cpp
   names.cpp
   phone_numbers.cpp
   qscan.cpp
   ssm.cpp
   status.cpp
   subxtr.cpp
+  qwk_config.cpp
   user.cpp
   usermanager.cpp
   wwivd_config.cpp

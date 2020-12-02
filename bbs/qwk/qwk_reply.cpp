@@ -35,7 +35,6 @@
 #include "bbs/subacc.h"
 #include "bbs/sublist.h"
 #include "bbs/sysoplog.h"
-#include "bbs/qwk/qwk_config.h"
 #include "bbs/qwk/qwk_email.h"
 #include "bbs/qwk/qwk_text.h"
 #include "bbs/qwk/qwk_ui.h"
@@ -52,6 +51,7 @@
 #include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
 #include "sdk/names.h"
+#include "sdk/qwk_config.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
@@ -446,14 +446,14 @@ static void process_reply_dat(const std::string& name) {
 void upload_reply_packet() {
   bool rec = true;
   int save_conf = 0;
-  auto qwk_cfg = read_qwk_cfg();
+  auto qwk_cfg = read_qwk_cfg(*a()->config());
 
   if (!qwk_cfg.fu) {
     qwk_cfg.fu = daten_t_now();
   }
 
   ++qwk_cfg.timesu;
-  write_qwk_cfg(qwk_cfg);
+  write_qwk_cfg(*a()->config(), qwk_cfg);
 
   const auto save_sub = a()->current_user_sub_num();
   if (ok_multiple_conf(a()->user(), a()->uconfsub)) {
@@ -461,7 +461,7 @@ void upload_reply_packet() {
     tmp_disable_conf(true);
   }
 
-  const auto rep_name = StrCat(qwk_system_name(qwk_cfg), ".REP");
+  const auto rep_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".REP");
   bout.litebar("Upload QWK Reply Packet");
   bout.nl();
   bout.format("|#9QWK Reply Packet must be named: \"|#2{}|#9\"\r\n", rep_name);
@@ -481,7 +481,7 @@ void upload_reply_packet() {
     }
 
     if (rec) {
-      const auto msg_name = StrCat(qwk_system_name(qwk_cfg), ".MSG");
+      const auto msg_name = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".MSG");
       auto msg_path = ready_reply_packet(rep_path.string(), msg_name);
       process_reply_dat(msg_path.string());
     } else {

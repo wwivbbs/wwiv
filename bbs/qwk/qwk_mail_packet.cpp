@@ -18,11 +18,6 @@
 /**************************************************************************/
 #include "bbs/qwk/qwk_mail_packet.h"
 
-
-#include "qwk_config.h"
-#include "qwk_email.h"
-#include "qwk_ui.h"
-#include "qwk_util.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
@@ -37,10 +32,12 @@
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "bbs/qwk/qwk_email.h"
+#include "bbs/qwk/qwk_ui.h"
+#include "bbs/qwk/qwk_util.h"
 #include "common/input.h"
 #include "common/output.h"
 #include "common/pause.h"
-#include "sdk/vardec.h"
 #include "core/clock.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
@@ -51,7 +48,9 @@
 #include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/qscan.h"
+#include "sdk/qwk_config.h"
 #include "sdk/subxtr.h"
+#include "sdk/vardec.h"
 #include "sdk/ansi/makeansi.h"
 
 using namespace wwiv::core;
@@ -77,7 +76,7 @@ static bool replacefile(const std::string& src, const std::string& dst) {
   return File::Copy(src, dst);
 }
 
-bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_state *qwk_info) {
+bool build_control_dat(const sdk::qwk_config& qwk_cfg, Clock* clock, qwk_state *qwk_info) {
   const auto date_time = clock->Now().to_string("%m-%d-%Y,%H:%M:%S"); // 'mm-dd-yyyy,hh:mm:ss'
 
   TextFile fp(FilePath(a()->sess().dirs().qwk_directory(), "CONTROL.DAT"), "wd");
@@ -85,7 +84,7 @@ bool build_control_dat(const qwk_config& qwk_cfg, Clock* clock, qwk_state *qwk_i
     return false;
   }
 
-  const auto system_name = qwk_system_name(qwk_cfg);
+  const auto system_name = sdk::qwk_system_name(qwk_cfg, a()->config()->system_name());
   fp.WriteLine(fmt::format("{}.qwk", system_name));
   fp.WriteLine();  // System City and State
   fp.WriteLine(a()->config()->system_phone());
@@ -140,7 +139,7 @@ void build_qwk_packet() {
   bout.litebar("Download QWK Message Packet");
   bout.nl();
 
-  auto qwk_cfg = read_qwk_cfg();
+  auto qwk_cfg = read_qwk_cfg(*a()->config());
   max_msgs = qwk_cfg.max_msgs;
   if (a()->user()->data.qwk_max_msgs < max_msgs && a()->user()->data.qwk_max_msgs) {
     max_msgs = a()->user()->data.qwk_max_msgs;
@@ -151,7 +150,7 @@ void build_qwk_packet() {
   }
 
   ++qwk_cfg.timesd;
-  write_qwk_cfg(qwk_cfg);
+  write_qwk_cfg(*a()->config(), qwk_cfg);
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
@@ -674,7 +673,7 @@ void finish_qwk(qwk_state *qwk_info) {
     qwk_nscan();
   }
 
-  auto qwk_cfg = read_qwk_cfg();
+  auto qwk_cfg = read_qwk_cfg(*a()->config());
   if (!a()->user()->data.qwk_leave_bulletin) {
     bout.bputs("Grabbing hello/news/goodbye text files...");
 
@@ -708,7 +707,7 @@ void finish_qwk(qwk_state *qwk_info) {
     }
   }
 
-  auto qwkname = StrCat(qwk_system_name(qwk_cfg), ".qwk");
+  auto qwkname = StrCat(qwk_system_name(qwk_cfg, a()->config()->system_name()), ".qwk");
 
   if (!a()->user()->data.qwk_archive ||
       !a()->arcs[a()->user()->data.qwk_archive - 1].extension[0]) {

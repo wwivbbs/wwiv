@@ -137,7 +137,7 @@ template <class Archive> void serialize(Archive& ar, network_callout_config_t& n
 }
 
 template <class Archive>
-void serialize(Archive & ar, fido_network_config_t& n) {
+void load(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, fido_address);
   SERIALIZE(n, nodelist_base);
   SERIALIZE(n, mailer_type);
@@ -155,7 +155,27 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, process_tic);
   SERIALIZE(n, wwiv_heart_color_codes);
   SERIALIZE(n, wwiv_pipe_color_codes);
+}
 
+template <class Archive>
+void save(Archive & ar, const fido_network_config_t& n) {
+  SERIALIZE(n, fido_address);
+  SERIALIZE(n, nodelist_base);
+  SERIALIZE(n, mailer_type);
+  SERIALIZE(n, transport);
+  SERIALIZE(n, inbound_dir);
+  SERIALIZE(n, temp_inbound_dir);
+  SERIALIZE(n, temp_outbound_dir);
+  SERIALIZE(n, outbound_dir);
+  SERIALIZE(n, netmail_dir);
+  SERIALIZE(n, bad_packets_dir);
+  SERIALIZE(n, tic_dir);
+  SERIALIZE(n, unknown_dir);
+  SERIALIZE(n, origin_line);
+  //SERIALIZE(n, packet_config);
+  SERIALIZE(n, process_tic);
+  SERIALIZE(n, wwiv_heart_color_codes);
+  SERIALIZE(n, wwiv_pipe_color_codes);
 }
 
 // This has to be in the cereal or default to match net_networks_rec which

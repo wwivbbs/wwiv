@@ -29,12 +29,16 @@
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
 #include "local_io/wconstants.h"
+#include "sdk/chains.h"
 #include "sdk/filenames.h"
+#include "sdk/gfiles.h"
+#include "sdk/qwk_config.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
 #include "sdk/acs/expr.h"
+#include "sdk/fido/fido_callout.h"
 #include "sdk/files/dirs.h"
 #include "sdk/menus/menu.h"
 #include "sdk/net/networks.h"
@@ -42,8 +46,6 @@
 #include "wwivconfig/convert_jsonfile.h"
 #include <cstring>
 #include <filesystem>
-#include "sdk/chains.h"
-
 
 using namespace wwiv::core;
 using namespace wwiv::sdk::files;
@@ -480,33 +482,80 @@ static bool convert_to_v4(UIWindow* window, const std::string& datadir,
 }
 
 
+bool convert_to_v5(UIWindow* window, const string& config_filename) {
+  ShowBanner(window, "Updating to 5.2+ v5 format...");
+  const std::filesystem::path config_path{config_filename};
+  const Config config(config_path.parent_path().string());
+  if (!config.IsInitialized()) {
+    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
+    return false;
+  }
+  Networks networks(config);
+  if (!networks.IsInitialized()) {
+    LOG(ERROR) << "Unable to load networks (needed to load subs)";
+    return false;
+  }
+
+  // Update GFiles to JSON
+  GFiles gfiles(config.datadir(), config.max_backups());
+  if (gfiles.Load()) {
+    gfiles.Save();
+  }
+
+  // Update networks to get rid of base packet config.
+  for (const auto& net : networks.networks()) {
+    if (net.type == network_type_t::ftn) {
+      fido::FidoCallout callout(config, net);
+      for (auto& [a, node_config] : callout.node_configs_map()) {
+        auto merged_config = callout.merged_packet_config_for(a, net.fido.packet_config);
+        node_config.packet_config = merged_config;
+      }
+      callout.Save();
+    }
+  }
+  networks.Save();
+
+  // Update QWK to new version.
+  auto qwk_config = read_qwk_cfg(config);
+  write_qwk_cfg(config, qwk_config);
+
+  // Mark config.dat as upgraded.
+  return update_config_revision_number(config_filename, 5);
+}
+
 config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
-                             const std::string& config_filename,
-                             const uint32_t config_revision_number) {
+                                               const std::string& config_filename,
+                                               const uint32_t config_revision_number) {
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
-  if (config_revision_number >= 4) {
+  if (config_revision_number >= 5) {
     VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
     return config_upgrade_state_t::already_latest;
   }
-  // add others
+  // v1 is the GA 5.5 config version.
   if (config_revision_number < 1) {
-    VLOG(1) << "ensure_latest_5x_config: converting to v1";
+    LOG(INFO) << "ensure_latest_5x_config: converting to v1";
     convert_to_v1(window, datadir, config_filename);
   }
+  // v2-v5 added during 5.6.  Likely v5 will be the GA 5.6 version.
   if (config_revision_number < 2) {
     // Versioned subs, chains, and dirs
-    VLOG(1) << "ensure_latest_5x_config: converting to v2";
+    LOG(INFO) << "ensure_latest_5x_config: converting to v2";
     convert_to_v2(window, datadir, config_filename);
   }
   if (config_revision_number < 3) {
     // menus in JSON format.
-    VLOG(1) << "ensure_latest_5x_config: converting to v3";
+    LOG(INFO) << "ensure_latest_5x_config: converting to v3";
     convert_to_v3(window, config_filename);
   }
   if (config_revision_number < 4) {
     // menus in JSON format.
-    VLOG(1) << "ensure_latest_5x_config: converting to v4";
+    LOG(INFO) << "ensure_latest_5x_config: converting to v4";
     convert_to_v4(window, datadir, config_filename);
+  }
+  if (config_revision_number < 5) {
+    // gfiles in JSON format.
+    LOG(INFO) << "ensure_latest_5x_config: converting to v4";
+    convert_to_v5(window, config_filename);
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
@@ -526,7 +575,7 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir, con
   to_char_array(syscfg53.menudir, FilePath(syscfg53.gfilesdir, menus_dir).string());
 
   arcrec arc[MAX_ARCS]{};
-  for (int i = 0; i < MAX_ARCS; i++) {
+  for (auto i = 0; i < MAX_ARCS; i++) {
     if (syscfg53.arcs[i].extension[0] && i < 4) {
       to_char_array(arc[i].name, syscfg53.arcs[i].extension);
       to_char_array(arc[i].extension, syscfg53.arcs[i].extension);

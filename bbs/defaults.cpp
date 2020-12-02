@@ -61,9 +61,6 @@ using namespace wwiv::strings;
 static const int STOP_LIST = 0;
 static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 
-// Undefine this so users can not toggle the sysop sub on and off
-// #define NOTOGGLESYSOP
-
 void select_editor() {
   bout << "|#10|#9) Line Editor\r\n";
   if (okansi() && a()->IsUseInternalFsed()) {
@@ -82,8 +79,8 @@ void select_editor() {
   }
   bout << "1-" << a()->editors.size() << ", |#9(Q=No Change) ? ";
   const auto cur_editor = a()->user()->GetDefaultEditor();
-  auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
-                                   size_int(a()->editors), false);
+  const auto k = bin.input_number_hotkey(cur_editor != 0xff ? cur_editor : 0, keys, 0,
+                                         size_int(a()->editors), false);
   if (k.key == 'A') {
     a()->user()->SetDefaultEditor(0xff);
   } else if (k.key == 'Q') {
@@ -309,8 +306,8 @@ static void change_colors() {
     } else if (ch == 'R') {
       reset_user_colors_to_defaults();
     } else {
-      char nc = 0;
-      int nColorNum = ch - '0';
+      uint8_t nc;
+      const int color_num = ch - '0';
       if (a()->user()->HasColor()) {
         color_list();
         bout.Color(0);
@@ -320,27 +317,27 @@ static void change_colors() {
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast<char>(ch - '0');
+        nc = static_cast<uint8_t>(ch - '0');
         bout << "|#9(Q=Quit) Background? ";
         ch = onek("Q01234567");
         if (ch == 'Q') {
           continue;
         }
-        nc = static_cast<char>(nc | ((ch - '0') << 4));
+        nc = static_cast<uint8_t>(nc | ((ch - '0') << 4));
       } else {
         bout.nl();
         bout << "|#9Inversed? ";
         if (bin.yesno()) {
           if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast<char>(0 | ((a()->user()->GetBWColor(1) & 0x07) << 4));
+            nc = static_cast<uint8_t>(0 | ((a()->user()->GetBWColor(1) & 0x07) << 4));
           } else {
-            nc = static_cast<char>(a()->user()->GetBWColor(1) & 0x70);
+            nc = static_cast<uint8_t>(a()->user()->GetBWColor(1) & 0x70);
           }
         } else {
           if ((a()->user()->GetBWColor(1) & 0x70) == 0) {
-            nc = static_cast<char>(0 | (a()->user()->GetBWColor(1) & 0x07));
+            nc = static_cast<uint8_t>(0 | (a()->user()->GetBWColor(1) & 0x07));
           } else {
-            nc = static_cast<char>((a()->user()->GetBWColor(1) & 0x70) >> 4);
+            nc = static_cast<uint8_t>((a()->user()->GetBWColor(1) & 0x70) >> 4);
           }
         }
       }
@@ -363,9 +360,9 @@ static void change_colors() {
       if (bin.yesno()) {
         bout << "\r\nColor saved.\r\n\n";
         if (a()->user()->HasColor()) {
-          a()->user()->SetColor(nColorNum, nc);
+          a()->user()->SetColor(color_num, nc);
         } else {
-          a()->user()->SetBWColor(nColorNum, nc);
+          a()->user()->SetBWColor(color_num, nc);
         }
       } else {
         bout << "\r\nNot saved, then.\r\n\n";
@@ -487,7 +484,7 @@ static void list_macro(const std::string& s) {
           break;
         default:
           bout.bputch('^');
-          bout.bputch(static_cast<unsigned char>(macro_text[i] + 64));
+          bout.bputch(static_cast<char>(macro_text[i] + 64));
           break;
         }
       }
@@ -1055,18 +1052,9 @@ void config_scan_plus(int type) {
         break;
       case SPACE: {
         if (type == 0) {
-#ifdef NOTOGGLESYSOP
-          if (a()->usub[top + pos].subnum == 0) {
-            a()->sess().qsc_q[a()->usub[top +g pos].subnum / 32] |=
-                (1L << (a()->usub[top + pos].subnum % 32));
-          }
-          else
-#endif
-              a()->sess()
-                  .qsc_q[a()->usub[top + pos].subnum / 32] ^=
+          a()->sess().qsc_q[a()->usub[top + pos].subnum / 32] ^=
               (1L << (a()->usub[top + pos].subnum % 32));
-        }
-        else {
+        } else {
           auto sysdir = a()->udir[0].keys == "0";
           for (auto this_dir = 0; this_dir < wwiv::stl::size_int(a()->udir); this_dir++) {
             const auto s = std::to_string(sysdir ? top + pos : top + pos + 1);

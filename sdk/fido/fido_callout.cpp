@@ -106,7 +106,40 @@ fido_node_config_t FidoCallout::fido_node_config_for(const FidoAddress& address)
   return {};
 }
 
+
+static fido_packet_config_t default_packet_config() {
+  fido_packet_config_t c{};
+  c.compression_type = "ZIP";
+  c.packet_type = fido_packet_t::type2_plus;
+  c.max_archive_size = 1024*1024;
+  c.max_packet_size = 1024*1024;
+
+  return c;
+}
+
+static const fido_packet_config_t s_default_packet_config = default_packet_config();
+
 fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) const {
+  return packet_config_for(address, s_default_packet_config);
+}
+
+fido_packet_config_t
+FidoCallout::packet_config_for(const FidoAddress& address,
+                               const fido_packet_config_t& default_config) const {
+  if (!contains(node_configs_, address)) {
+    // Try 4D addressing if we don't have 5D.
+    VLOG(2) << "FidoCallout::packet_config_for: Trying address without zone";
+    const auto a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
+    if (contains(node_configs_, a)) {
+      return at(node_configs_, a).packet_config;
+    }
+  }
+  VLOG(2) << "FidoCallout::packet_config_for: Didn't have without zone, returning default";
+  return default_config;
+}
+
+fido_packet_config_t FidoCallout::merged_packet_config_for(const FidoAddress& address,
+    const fido_packet_config_t& base_config) const {
   auto a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
@@ -114,11 +147,15 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) 
     a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
   }
 
+  auto config = base_config;
   // base config
-  auto config = net_.fido.packet_config;
   if (contains(node_configs_, a)) {
     // handle overrides
-    const auto n = at(node_configs_, a).packet_config;
+    auto n = at(node_configs_, a).packet_config;
+    if (base_config.packet_type == fido_packet_t::unset) {
+      // Our base config is empty, just use the node one.
+      return n;
+    }
     if (!n.areafix_password.empty())
       config.areafix_password = n.areafix_password;
     if (!n.compression_type.empty())
@@ -131,6 +168,9 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) 
       config.packet_password = n.packet_password;
     if (n.packet_type != fido_packet_t::unset)
       config.packet_type = n.packet_type;
+    if (n.netmail_status != fido_bundle_status_t::unknown) {
+      config.netmail_status = n.netmail_status;
+    }
   }
   return config;
 }
