@@ -204,31 +204,8 @@ public:
                                                   &n->transport))
         ->set_help_text("This isn't currently used, but you likely want WWIV BinkP");
 
-    const vector<pair<fido_packet_t, string>> packetlist = {
-        {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
-    items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist,
-                                                &n->packet_config.packet_type));
-
-    items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
-                                 n->packet_config.compression_type));
-    items.add(new StringEditItem<std::string&>(
-        COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
-    items.add(new StringEditItem<std::string&>(
-        COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
-
     // dy_start
     int dy = dy_start_;
-    items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
-    items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
-
-    // from http://ftsc.org/docs/old/fts-5005.001
-    const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-        {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
-        {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
-        {fido_bundle_status_t::hold, "Hold"},
-    };
-    items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
-                                                       &n->packet_config.netmail_status));
     items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->process_tic))
         ->set_help_text("Process TIC files for this network.");
     items.add(new BooleanEditItem(COL2_POSITION, dy++, &n->wwiv_heart_color_codes))
@@ -250,18 +227,11 @@ public:
                       new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Unknown Dir  :"),
                       new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Origin Line:"),
                       new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Mailer:"),
-                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:"),
-                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
-                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
-                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
-                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:")});
+                      new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:")});
 
     // dy = y where we start to double up.
     dy = dy_start_;
-    items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
-                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
-                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:"),
-                      new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :"),
+    items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Process TIC  :"),
                       new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Cvt Hearts   :"),
                       new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Cvt WWIV Pipe:")
     });
@@ -284,7 +254,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   const vector<pair<fido_packet_t, string>> packetlist = {
       {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
-  int y = 1;
+  auto y = 1;
   auto& b = n.binkp_config;
   items
       .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
@@ -721,7 +691,6 @@ static bool insert_net(const Config& config, Networks& networks, int nn, network
       f.temp_outbound_dir = File::EnsureTrailingSlash("tempout");
       f.temp_inbound_dir = File::EnsureTrailingSlash("tempin");
       f.unknown_dir = File::EnsureTrailingSlash("unknown");
-      f.packet_config.compression_type = File::EnsureTrailingSlash("ZIP");
     } else if (type == network_type_t::wwivnet) {
       n.name = "New WWIVnet";
     }
