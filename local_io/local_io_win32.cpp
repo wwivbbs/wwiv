@@ -277,7 +277,7 @@ void Win32ConsoleIO::Putch(unsigned char ch) {
 
 // Outputs a string to the local screen.
 void Win32ConsoleIO::Puts(const string& text) {
-  for (char ch : text) {
+  for (auto ch : text) {
     Putch(ch);
   }
 }

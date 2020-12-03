@@ -223,6 +223,58 @@ char EditItems::GetKeyWithNavigation(const NavigationKeyConfig& config) const {
   return _GetKeyWithNavigation(window(), config);
 }
 
+int EditItems::max_display_width() const {
+  int result = 0;
+  for (const auto* i : items_) {
+    if ((i->x() + i->maxsize()) > result) {
+      result = i->x() + i->maxsize();
+    }
+  }
+  return std::min<int>(curses_out->window()->GetMaxX(), result + 2); // 2 is padding
+}
+
+int EditItems::max_display_height() {
+  int result = 1;
+  for (const auto* l : labels_) {
+    if (l->y() > result) {
+      result = l->y();
+    }
+  }
+  for (const auto* i : items_) {
+    if (i->y() > result) {
+      result = i->y();
+    }
+  }
+  return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
+}
+
+int EditItems::max_label_width() const {
+  std::string::size_type result = 0;
+  for (const auto* l : labels_) {
+    if (l->text().size() > result) {
+      result = l->text().size();
+    }
+  }
+  return static_cast<int>(result);
+}
+
+void EditItems::relayout_items_and_labels() {
+  const auto x = max_label_width();
+  for (auto* l : labels_) {
+    l->set_width(x);
+  }
+  for (auto* i : items_) {
+    i->set_x(x + 2 + 1); // 2 is a hack since that's always col1 position for label.
+  }
+}
+
+std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
+  return {
+      {"Esc", "Exit"}, {"Enter", "Edit"}, {"[", "Previous"},
+      {"]", "Next"}, {"{", "Previous 10"}, {"}", "Next 10"},
+  };
+}
+
 EditItems::~EditItems() {
   // Since we added raw pointers we must cleanup.  Since AFAIK there is
   // no easy way to convert from std::initializer_list<T> to

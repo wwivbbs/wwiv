@@ -34,7 +34,7 @@ class ColorScheme;
 
 class ListBoxItem {
 public:
-  ListBoxItem(std::string text, int hotkey = 0, int data = 0)
+  explicit ListBoxItem(std::string text, int hotkey = 0, int data = 0)
       : text_(std::move(text)), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() = default;
 
@@ -56,12 +56,12 @@ struct ListBoxResult {
 };
 
 // Curses implementation of a list box.
-class ListBox {
+class ListBox final {
 public:
   // Constructor/Destructor
   ListBox(UIWindow* parent, const std::string& title, std::vector<ListBoxItem>& items);
   ListBox(const ListBox& copy) = delete;
-  virtual ~ListBox() = default;
+  ~ListBox() = default;
 
   // Execute the listbox returning the index of the selected item.
   ListBoxResult Run() {

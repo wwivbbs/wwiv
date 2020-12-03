@@ -553,7 +553,8 @@ public:
   typedef std::function<std::string()> prefn;
   typedef std::function<void(const std::string&)> postfn;
   CustomEditItem(int x, int y, int maxsize, prefn to_field, postfn from_field)
-      : BaseEditItem(x, y, maxsize), to_field_(to_field), from_field_(from_field) {}
+      : BaseEditItem(x, y, maxsize), to_field_(std::move(to_field)),
+        from_field_(std::move(from_field)) {}
   CustomEditItem() = delete;
   CustomEditItem(CustomEditItem const&) = delete;
   CustomEditItem(CustomEditItem&&) = delete;
@@ -615,9 +616,9 @@ private:
 
 class FileSystemFilePathItem final : public EditItem<std::filesystem::path&> {
 public:
-  FileSystemFilePathItem(int x, int y, int maxsize, const std::filesystem::path& base,
+  FileSystemFilePathItem(int x, int y, int maxsize, std::filesystem::path base,
                          std::filesystem::path& data)
-      : EditItem<std::filesystem::path&>(x, y, maxsize, data), base_(base) {
+      : EditItem<std::filesystem::path&>(x, y, maxsize, data), base_(std::move(base)) {
     help_text_ =
         wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
   }
@@ -774,62 +775,20 @@ public:
   [[nodiscard]] CursesWindow* window() const { return window_.get(); }
   [[nodiscard]] int size() const noexcept { return static_cast<int>(items_.size()); }
 
-  [[nodiscard]] int max_display_width() const {
-    int result = 0;
-    for (const auto* i : items_) {
-      if ((i->x() + i->maxsize()) > result) {
-        result = i->x() + i->maxsize();
-      }
-    }
-    return std::min<int>(curses_out->window()->GetMaxX(), result + 2); // 2 is padding
-  }
+  [[nodiscard]] int max_display_width() const;
 
-  [[nodiscard]] int max_display_height() {
-    int result = 1;
-    for (const auto* l : labels_) {
-      if (l->y() > result) {
-        result = l->y();
-      }
-    }
-    for (const auto* i : items_) {
-      if (i->y() > result) {
-        result = i->y();
-      }
-    }
-    return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
-  }
+  [[nodiscard]] int max_display_height();
 
   /** Returns the size of the longest label */
-  [[nodiscard]] int max_label_width() const {
-    std::string::size_type result = 0;
-    for (const auto* l : labels_) {
-      if (l->text().size() > result) {
-        result = l->text().size();
-      }
-    }
-    return static_cast<int>(result);
-  }
+  [[nodiscard]] int max_label_width() const;
 
   /**
    * Moves the labels to the x position just after the labels.
    * This only works for single column layouts of: {label:} {item}
    */
-  void relayout_items_and_labels() {
-    const auto x = max_label_width();
-    for (auto* l : labels_) {
-      l->set_width(x);
-    }
-    for (auto* i : items_) {
-      i->set_x(x + 2 + 1); // 2 is a hack since that's always col1 position for label.
-    }
-  }
+  void relayout_items_and_labels();
 
-  static std::vector<HelpItem> StandardNavigationHelpItems() {
-    return {
-        {"Esc", "Exit"}, {"Enter", "Edit"},    {"[", "Previous"},
-        {"]", "Next"},   {"{", "Previous 10"}, {"}", "Next 10"},
-    };
-  }
+  static std::vector<HelpItem> StandardNavigationHelpItems();
 
   static std::vector<HelpItem> StandardEditorHelpItems() { return {{"Esc", "Exit"}}; }
 
