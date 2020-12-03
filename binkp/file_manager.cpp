@@ -98,9 +98,9 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   return result;
 }
 
-FileManager::FileManager(const std::string& root_directory, const net_networks_rec& net,
+FileManager::FileManager(const wwiv::sdk::Config& config, const net_networks_rec& net,
                          const std::string& receive_dir)
-  : net_(net), dirs_(root_directory, net, receive_dir) {
+  : config_(config), net_(net), dirs_(config.root_directory(), net, receive_dir) {
   const auto dir = dirs_.receive_dir();
   VLOG(1) << "FileManager: receive_dir: " << dir;
   if (!File::Exists(dir)) {
@@ -180,7 +180,7 @@ static bool move_without_overrite(const std::filesystem::path& src,
   return false;
 }
 
-void FileManager::rename_ftn_pending_files() {
+void FileManager::rename_ftn_pending_files(const Remote& remote) {
   VLOG(1) << "STATE: rename_ftn_pending_files";
   const auto rdir = dirs_.receive_dir();
   const sdk::files::TicParser tic_parser(rdir);
@@ -194,8 +194,11 @@ void FileManager::rename_ftn_pending_files() {
     }
     if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
-      move_without_overrite(rpath, ipath, "already exists in fido inbound dir. Please move manually.");
-    } else if (is_tic_file(file) && net_.fido.process_tic) {
+      move_without_overrite(rpath, ipath,
+                            "already exists in fido inbound dir. Please move manually.");
+      continue;
+    }
+    if (is_tic_file(file) && net_.fido.process_tic) {
       // TODO: here is where we can do the TIC support.
       // If TIC file, process tic file and move it and archive to the net_dir
       // then pass to networkt to process. For now HACK - let's just move all unknown
@@ -207,17 +210,35 @@ void FileManager::rename_ftn_pending_files() {
         continue;
       }
       auto tic = otick.value();
-      if (tic.IsValid()) {
-        LOG(INFO) << "Tic file " << ticpath.string() << " is valid.";
-        move_without_overrite(FilePath(rdir, tic.file), FilePath(dirs_.tic_dir(), tic.file),
-                              "File (from TIC) file already exists in TIC path.");
-        move_without_overrite(rpath, FilePath(dirs_.tic_dir(), file),
-                              "TIC file already exists in TIC path.");
-      } else {
+      if (!tic.IsValid()) {
         LOG(ERROR) << "       Tic file " << ticpath.string() << " IS NOT VALID.";
+        continue;
       }
+      LOG(INFO) << "Tic file " << ticpath.string() << " is valid.";
+      FidoCallout callout(config_, remote.network());
+      std::string expected_tic_pw;
+      try {
+        FidoAddress address(remote.ftn_address());
+        auto packet_config = callout.packet_config_for(address);
+        expected_tic_pw = packet_config.tic_password;
+      } catch (const bad_fidonet_address&) {
+      }
+      if (!expected_tic_pw.empty()) {
+        // We expect a password.
+        if (!iequals(expected_tic_pw, tic.pw)) {
+          LOG(ERROR) << "       Tic Password was not correct for tic: " << ticpath.string()
+                     << "; skipping.";
+          continue;
+        }
+      } else {
+        LOG(INFO) << "No password configured for node: " << remote.ftn_address();
+      }
+      move_without_overrite(FilePath(rdir, tic.file), FilePath(dirs_.tic_dir(), tic.file),
+                            "File (from TIC) file already exists in TIC path.");
+      move_without_overrite(rpath, FilePath(dirs_.tic_dir(), file),
+                            "TIC file already exists in TIC path.");
     } else {
-      LOG(ERROR) << "       unknown file received: '" << file << "' moving to TIC dir.";
+      LOG(ERROR) << "       tic processing disabled and unknown file received: '" << file << "' moving to TIC dir.";
     }
   }
   // pass 2: anything remaining move to unknown dir.
@@ -231,5 +252,4 @@ void FileManager::rename_ftn_pending_files() {
   }
 }
 
-
-}
+} // namespace wwiv::net

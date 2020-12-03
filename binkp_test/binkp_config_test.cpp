@@ -34,17 +34,17 @@ TEST_F(ParseBinkConfigLineTest, NoPort) {
   const string line = "@1234 myhost";
   auto r = ParseBinkConfigLine(line);
   ASSERT_TRUE(r.has_value());
-  auto [node, config] = r.value();
+  auto& [node, config] = r.value();
   EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(24554, config.port);
 }
 
 TEST_F(ParseBinkConfigLineTest, Port) {
-  string line = "@1234 myhost:2345";
+  const string line = "@1234 myhost:2345";
   auto r = ParseBinkConfigLine(line);
   ASSERT_TRUE(r.has_value());
-  auto [node, config] = r.value();
+  auto& [node, config] = r.value();
   EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(2345, config.port);
@@ -52,19 +52,19 @@ TEST_F(ParseBinkConfigLineTest, Port) {
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
   const string line = "*@1234 myhost";
-  auto r = ParseBinkConfigLine(line);
+  const auto r = ParseBinkConfigLine(line);
   ASSERT_FALSE(r.has_value());
 }
 
 TEST(BinkConfigTest, NodeConfig) {
   FileHelper files;
-  files.Mkdir("network");
+  ASSERT_TRUE(files.Mkdir("network"));
   const string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);
   const auto network_dir = files.DirName("network");
-  Config wwiv_config(files.TempDir());
-  BinkConfig config(1, wwiv_config, network_dir);
-  const binkp_session_config_t* node_config = config.binkp_session_config_for(2);
+  const Config wwiv_config(files.TempDir());
+  const BinkConfig config(1, wwiv_config, network_dir);
+  const auto* node_config = config.binkp_session_config_for(2);
   ASSERT_TRUE(node_config != nullptr);
   EXPECT_EQ("example.com", node_config->host);
   EXPECT_EQ(24554, node_config->port);

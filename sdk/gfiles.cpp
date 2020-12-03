@@ -64,8 +64,8 @@ struct gfilerec {
   daten_t daten; // date added
 };
 
-static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
 static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
+static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
 
 #pragma pack(pop)
 

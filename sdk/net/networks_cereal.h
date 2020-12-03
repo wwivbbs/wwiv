@@ -106,6 +106,7 @@ void serialize(Archive & ar, fido_packet_config_t& n) {
   SERIALIZE(n, packet_type);
   SERIALIZE(n, compression_type);
   SERIALIZE(n, packet_password);
+  SERIALIZE(n, tic_password);
   SERIALIZE(n, areafix_password);
   SERIALIZE(n, max_archive_size);
   SERIALIZE(n, max_packet_size);

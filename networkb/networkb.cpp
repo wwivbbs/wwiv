@@ -151,7 +151,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
       contact.add_failure(sendto_node, dt);
     }
 
-    throw e;
+    throw;
   }
 
   const auto net = bink_config.networks()[network_name];

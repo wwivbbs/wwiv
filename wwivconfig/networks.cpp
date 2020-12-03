@@ -25,7 +25,6 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
-#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -54,7 +53,7 @@ using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
 static bool del_net(const Config& config, Networks& networks, int nn) {
-  wwiv::sdk::Subs subs(config.datadir(), networks.networks());
+  Subs subs(config.datadir(), networks.networks());
   if (!subs.Load()) {
     return false;
   }
@@ -127,8 +126,8 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 
   // Update the user
   userrec u{};
-  const int nu = number_userrecs(config.datadir());
-  for (int i = 1; i <= nu; i++) {
+  const auto nu = number_userrecs(config.datadir());
+  for (auto i = 1; i <= nu; i++) {
     read_user(config, i, &u);
     if (u.net_num == nn) {
       u.forwardsys = u.forwardusr = u.net_num = 0;
@@ -246,8 +245,11 @@ private:
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   constexpr int LBL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 30;
+  constexpr int LABEL_WIDTH = 14;
   constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
+
+  constexpr int LBL2_POSITION = COL1_POSITION + 12;
+  constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
 
   auto& p = n.packet_config;
   EditItems items{};
@@ -256,27 +258,23 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 
   auto y = 1;
   auto& b = n.binkp_config;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL))
-      ->set_help_text("BinkP hostname to override default from nodelist");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL),
+            "BinkP hostname to override default from nodelist");
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
-           new NumberEditItem<int>(COL1_POSITION, y, &b.port))
-      ->set_help_text("BinkP post number to override default from nodelist");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &b.port),
+            "BinkP post number to override default from nodelist");
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password,
-                                            EditLineMode::UPPER_ONLY))
-      ->set_help_text("BinkP password to use when connection to this host.");
+  items.add(
+      new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
+      new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, EditLineMode::UPPER_ONLY),
+      "BinkP password to use when connection to this host.");
   y += 2;
 
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL))
-      ->set_help_text("Systems who route this this host. i.e. 1:*");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL),
+            "Systems who route this this host. i.e. 1:*");
 
   ++y;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet Type:"),
@@ -285,27 +283,11 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Compression:"),
             new StringListItem(COL1_POSITION, y, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password,
-                                            EditLineMode::UPPER_ONLY))
-      ->set_help_text("Password to use in the FTN packet.");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size), "NOT IMPLEMENTED YET");
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password,
-                                            EditLineMode::UPPER_ONLY))
-      ->set_help_text("NOT IMPLEMENTED YET");
-  y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
-           new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size))
-      ->set_help_text("NOT IMPLEMENTED YET");
-  y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
-           new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size))
-      ->set_help_text("NOT IMPLEMENTED YET");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size), "NOT IMPLEMENTED YET");
 
   const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
@@ -313,28 +295,41 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
       {fido_bundle_status_t::hold, "Hold"},
   };
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
-           new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
-                                                    &p.netmail_status))
-      ->set_help_text("Default bundle status to use when creating FTN Bundles");
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
+            new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
+                                                     &p.netmail_status),
+            "Default bundle status to use when creating FTN Bundles");
   y += 2;
+  auto y2 = y;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password,
+                                             EditLineMode::UPPER_ONLY),
+            "Password to use in the FTN packet.");
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Tic PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.tic_password,
+                                             EditLineMode::UPPER_ONLY),
+            "NOT IMPLEMENTED YET");
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password,
+                                             EditLineMode::UPPER_ONLY),
+            "NOT IMPLEMENTED YET");
+  y = y2;
+
   auto& c = n.callout_config;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Automatic Callouts:"),
-           new BooleanEditItem(COL1_POSITION, y, &c.auto_callouts))
-      ->set_help_text("Should wwivd automatically call out to this node?");
+  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Auto Callout:"),
+            new BooleanEditItem(COL2_POSITION, y, &c.auto_callouts),
+            "Should wwivd automatically call out to this node?");
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
-           new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
-                                                                &c.call_every_x_minutes))
-      ->set_help_text("Frequency in minutes between callout attempts");
+  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Every N min:"),
+            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL2_POSITION, y,
+                                                                 &c.call_every_x_minutes),
+            "Force a callout every N minutes.");
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
-           new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
-      ->set_help_text("Attempt callout sooner if this many k of packet is waiting");
+  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Min K:"),
+            new NumberEditItem<decltype(c.min_k)>(COL2_POSITION, y, &c.min_k),
+            "Attempt callout sooner if a packet over this size is ready.");
 
   items.Run(StrCat("Address: ", a.as_string()));
 }

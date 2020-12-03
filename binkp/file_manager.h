@@ -15,46 +15,44 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_FILE_MANAGER_H__
-#define __INCLUDED_NETWORKB_FILE_MANAGER_H__
+#ifndef INCLUDED_BINKP_FILE_MANAGER_H
+#define INCLUDED_BINKP_FILE_MANAGER_H
 
 #include "binkp/remote.h"
 #include "binkp/transfer_file.h"
-#include "sdk/net/net.h"
 #include "sdk/fido/fido_directories.h"
-#include <functional>
+#include "sdk/net/net.h"
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace net {
+namespace wwiv::net {
   
-class FileManager {
+class FileManager final {
 public:
-  explicit FileManager(const std::string& root_directory, const net_networks_rec& net,
+  FileManager(const wwiv::sdk::Config& config, const net_networks_rec& net,
                        const std::string& receive_dir);
-  virtual ~FileManager() = default;
+  ~FileManager() = default;
 
   [[nodiscard]] std::vector<TransferFile*> CreateTransferFileList(const Remote& remote) const;
   void ReceiveFile(const std::string& filename);
   [[nodiscard]] const std::vector<std::string>& received_files() const { return received_files_; }
   void rename_wwivnet_pending_files();
-  void rename_ftn_pending_files();
+  void rename_ftn_pending_files(const Remote& remote);
 
   // For tests.
-  const wwiv::sdk::fido::FtnDirectories& dirs() const { return dirs_; }
+  [[nodiscard]] const wwiv::sdk::fido::FtnDirectories& dirs() const { return dirs_; }
 
 private:
   [[nodiscard]] std::vector<TransferFile*> CreateWWIVnetTransferFileList(int destination_node) const;
   [[nodiscard]] std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address) const;
 
+  const wwiv::sdk::Config& config_;
   const net_networks_rec net_;
   const wwiv::sdk::fido::FtnDirectories dirs_;
   const std::string network_directory_;
   std::vector<std::string> received_files_;
 };
 
-}  // namespace net
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_NETWORKB_FILE_MANAGER_H__
+#endif

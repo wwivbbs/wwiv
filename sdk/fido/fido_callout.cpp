@@ -133,9 +133,10 @@ FidoCallout::packet_config_for(const FidoAddress& address,
     if (contains(node_configs_, a)) {
       return at(node_configs_, a).packet_config;
     }
+    VLOG(2) << "FidoCallout::packet_config_for: Didn't have without zone, returning default";
+    return default_config;
   }
-  VLOG(2) << "FidoCallout::packet_config_for: Didn't have without zone, returning default";
-  return default_config;
+  return at(node_configs_, address).packet_config;
 }
 
 fido_packet_config_t FidoCallout::merged_packet_config_for(const FidoAddress& address,

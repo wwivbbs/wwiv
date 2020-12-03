@@ -360,6 +360,8 @@ struct fido_packet_config_t {
   // Password to use in the packet.  It must be <= 8 chars.
   std::string packet_password;
   // Password to use for areafix requests. It must be <= 8 chars.
+  std::string tic_password;
+  // Password to use for areafix requests. It must be <= 8 chars.
   std::string areafix_password;
   // Maximum size of the bundles in bytes before a new one is created.
   int max_archive_size = 0;

@@ -85,7 +85,7 @@ string expected_password_for(const net_call_out_rec* con) {
   return "-";
 }
 
-BinkP::BinkP(wwiv::core::Connection* conn, BinkConfig* config, BinkSide side,
+BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
              const std::string& expected_remote_node,
              received_transfer_file_factory_t& received_transfer_file_factory)
     : config_(config), conn_(conn), side_(side), expected_remote_node_(expected_remote_node),
@@ -178,7 +178,7 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
     const auto rdir = config_->receive_dir(remote_.network().name);
     VLOG(1) << "Creating file manager for network: " << remote_.network().name << "; dir: " << rdir;
     file_manager_ =
-        std::make_unique<FileManager>(config_->config().root_directory(), remote_.network(),
+        std::make_unique<FileManager>(config_->config(), remote_.network(),
                                       rdir);
   } break;
   case BinkpCommands::M_OK: {
@@ -945,7 +945,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     // Handle FTN inbound files.
     if (file_manager_) {
       // file_manager_ is null in some tests (BinkpTest).
-      file_manager_->rename_ftn_pending_files();
+      file_manager_->rename_ftn_pending_files(remote_);
       if (!config_->skip_net()) {
         const auto network_number = config_->networks().network_number(remote_.network_name());
         System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
