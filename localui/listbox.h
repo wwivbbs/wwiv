@@ -34,7 +34,8 @@ class ColorScheme;
 
 class ListBoxItem {
 public:
-  explicit ListBoxItem(std::string text, int hotkey = 0, int data = 0)
+  // Need non-explicit constructor to use in initialize_lists
+  ListBoxItem(std::string text, int hotkey = 0, int data = 0)
       : text_(std::move(text)), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() = default;
 

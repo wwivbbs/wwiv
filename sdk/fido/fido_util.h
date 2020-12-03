@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
-#define __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
+#ifndef INCLUDED_SDK_FIDO_FIDO_UTIL_H
+#define INCLUDED_SDK_FIDO_FIDO_UTIL_H
 
 #include "core/datetime.h"
 #include "core/file.h"
@@ -28,9 +28,8 @@
 #include <string>
 #include <vector>
 
-namespace wwiv {
-namespace sdk {
-namespace fido {
+namespace wwiv::sdk::fido {
+
 class FidoStoredMessage;
 struct packet_header_2p_t;
 class FidoPackedMessage;
@@ -114,8 +113,12 @@ FidoAddress get_address_from_packet(const FidoPackedMessage& msg, const packet_h
  */
 FidoAddress get_address_from_stored_message(const FidoStoredMessage& msg);
 
-}  // namespace fido
-}  // namespace net
-}  // namespace wwiv
+/**
+ *  Gets the number of bytes waiting across all packets listed in flo files for
+ *  the 'dest' address on 'net' network.
+ */
+int ftn_bytes_waiting(const net_networks_rec& net, const fido::FidoAddress& dest);
 
-#endif  // __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
+}  // namespace
+
+#endif

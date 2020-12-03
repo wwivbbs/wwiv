@@ -352,3 +352,29 @@ TEST_F(FidoUtilTest, IsPacketFile) {
   EXPECT_FALSE(is_packet_file("0c386971.pkts"));  
   EXPECT_FALSE(is_packet_file(""));  
 }
+
+TEST_F(FidoUtilTest, FtnBytesWaiting) {
+  net_networks_rec net{};
+
+  net.dir = helper_.TempDir().string();
+  net.fido.fido_address = "11:1/211";
+  const FidoAddress dest("11:1/100");
+  const auto actual = helper_.CreateTempFile("0000006f.su0", std::string(2000, 'X'));
+  const auto line = fmt::format("^{}", actual.string());
+  auto p = helper_.CreateTempFile("00010064.flo", line);
+  const auto bytes_waiting = ftn_bytes_waiting(net, dest);
+  EXPECT_EQ(2000, bytes_waiting);
+}
+
+TEST_F(FidoUtilTest, FtnBytesWaiting_NonExistant) {
+  net_networks_rec net{};
+
+  net.dir = helper_.TempDir().string();
+  net.fido.fido_address = "11:1/211";
+  const FidoAddress dest("11:1/100");
+  const auto actual = helper_.CreateTempFile("0000006f.su0", std::string(2000, 'X'));
+  const auto line = fmt::format("^{}", actual.string());
+  auto p = helper_.CreateTempFilePath("00010064.flo");
+  const auto bytes_waiting = ftn_bytes_waiting(net, dest);
+  EXPECT_EQ(0, bytes_waiting);
+}

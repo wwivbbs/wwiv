@@ -40,11 +40,17 @@ public:
   // This is suitable for use in constructing paths
   [[nodiscard]] std::filesystem::path Dir(const std::string& name) const;
   // Creates a directory under TempDir.
-  bool Mkdir(const std::string& name) const;
+  bool Mkdir(const std::string& name) const;  // NOLINT(modernize-use-nodiscard)
+  // Creates a path to a filename under TempDir named 'name'.  Does not create nor
+  // write any contents to this file.
   [[nodiscard]] std::filesystem::path CreateTempFilePath(const std::string& name) const;
+  // Opens a FILE* handle to a file named 'name' under TempDir
   [[nodiscard]] std::tuple<FILE*, std::filesystem::path> OpenTempFile(const std::string& name) const;
+  // Creates a a file under TempDir named 'name' containing the text 'contents'
   std::filesystem::path CreateTempFile(const std::string& name, const std::string& contents);
+  // Returns the path of the temp directory for this testcase.
   [[nodiscard]] const std::filesystem::path& TempDir() const { return tmp_; }
+  // Reads and returns all of the text in a file under TempDir named 'name'
   [[nodiscard]] std::string ReadFile(const std::filesystem::path& name) const;
   static void set_wwiv_test_tempdir(const std::string& d) noexcept;
   static void set_wwiv_test_tempdir_from_commandline(int argc, char* argv[]) noexcept;

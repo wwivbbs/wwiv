@@ -137,4 +137,16 @@ bool FidoAddress::operator==(const FidoAddress& o) const {
   return true;
 }
 
+std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr) {
+  if (addr.empty()) {
+    return std::nullopt;
+  }
+  try {
+    FidoAddress a(addr);
+    return {a};
+  } catch (const bad_fidonet_address&) {
+    return std::nullopt;
+  }
+}
+
 } // namespace wwiv

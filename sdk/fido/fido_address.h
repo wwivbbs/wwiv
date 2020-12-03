@@ -19,6 +19,7 @@
 #define INCLUDED_SDK_FIDO_FIDO_ADDRESS_H
 
 #include <cstdint>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -133,6 +134,7 @@ public:
   explicit bad_fidonet_address(const std::string& message): runtime_error(message) {}
 };
 
+std::optional<FidoAddress> try_parse_fidoaddr(const std::string& addr);
 
 }  // namespace
 

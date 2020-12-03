@@ -28,6 +28,8 @@
 #include "sdk/net/contact.h"
 #include "sdk/net/networks.h"
 #include "sdk/status.h"
+#include "sdk/fido/fido_util.h"
+#include "sdk/fido/flo_file.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_non_http.h"
@@ -55,10 +57,11 @@ std::atomic<bool> need_to_reload_config;
 
 // TODO(rushfan): Add tests for new stuff in here.
 
-static NetworkContact network_contact_from_last_time(const std::string& address,
-                                                     const DateTime& t) {
+static NetworkContact network_contact_from_last_time(const fido::FidoAddress& address,
+                                                     const DateTime& t, int ftn_bytes_waiting) {
   network_contact_record ncr{};
-  ncr.address = address;
+  ncr.address = address.as_string();
+  ncr.ncr.bytes_waiting = ftn_bytes_waiting;
   ncr.ncr.lastcontact = t.to_daten_t();
   ncr.ncr.lasttry = t.to_daten_t();
   return NetworkContact{ncr};
@@ -66,7 +69,7 @@ static NetworkContact network_contact_from_last_time(const std::string& address,
 
 static void one_net_ftn_callout(const Config& config, const net_networks_rec& net,
                                 const wwivd_config_t& c, int network_number) {
-  const wwiv::sdk::fido::FidoCallout callout(config, net);
+  const fido::FidoCallout callout(config, net);
 
   // TODO(rushfan): 1. Right now we just keep the map of last call-out
   // time in memory, but we should checkpoint this to disk and reload
@@ -75,18 +78,19 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
   // handle min_k right.
   // 3. We should look for outbound files to other addresses we don't
   // know about and then figure out how to contact them (since their
-  // address is in the nodelist.
-  static std::map<int, std::map<std::string, time_t>> last_contact;
+  // address is in the nodelist_.
+  static std::map<int, std::map<fido::FidoAddress, time_t>> last_contact;
   auto& current_last_contact = last_contact[network_number];
 
-  for (const auto& kv : callout.node_configs_map()) {
-    const auto address = kv.first.as_string();
-    const auto& callout_config = kv.second.callout_config;
+  for (const auto& [address, node_config] : callout.node_configs_map()) {
+    const auto& callout_config = node_config.callout_config;
     if (!allowed_to_call(callout_config)) {
       // Is the call out bit set.
       continue;
     }
-    auto ncn = network_contact_from_last_time(address, DateTime::from_time_t(current_last_contact[address]));
+    auto ncn = network_contact_from_last_time(address,
+                                              DateTime::from_time_t(current_last_contact[address]),
+                                              ftn_bytes_waiting(net, address));
     if (!should_call(ncn, callout_config, DateTime::now())) {
       // Has it been long enough, or do we have enough k waiting.
       continue;
@@ -94,8 +98,9 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
     // 1: Update the last contact time to now.
     current_last_contact[address] = DateTime::now().to_time_t();
     // 2: Call it.
-    LOG(INFO) << "ftn: should call out to: " << kv.first << "." << net.name;
-    const std::map<char, string> params = {{'N', address}, {'T', std::to_string(network_number)}};
+    LOG(INFO) << "ftn: should call out to: " << address.as_string() << "." << net.name;
+    const std::map<char, string> params = {{'N', address.as_string()},
+                                           {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
     if (!ExecCommandAndWait(c, cmd, StrCat("[", get_pid(), "]"), -1, INVALID_SOCKET)) {
       LOG(ERROR) << "Error executing command: '" << cmd << "'";

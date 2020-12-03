@@ -17,9 +17,6 @@
 /**************************************************************************/
 #include "sdk/fido/fido_util.h"
 
-
-#include "fido_directories.h"
-#include "fido_packets.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/findfiles.h"
@@ -29,6 +26,9 @@
 #include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_directories.h"
+#include "sdk/fido/fido_packets.h"
+#include "sdk/fido/flo_file.h"
 #include <sstream>
 #include <string>
 #include <utility>
@@ -570,6 +570,34 @@ std::string tz_offset_from_utc(const core::DateTime& dt) {
     return z.substr(1);
   }
   return z;
+}
+
+// From file_manager.cpp
+std::vector<fido_bundle_status_t> statuses{
+    fido_bundle_status_t::crash, fido_bundle_status_t::normal, fido_bundle_status_t::direct,
+    fido_bundle_status_t::immediate};
+
+int ftn_bytes_waiting(const net_networks_rec& net, const FidoAddress& dest) {
+  const auto outbound_dir = FilePath(net.dir, net.fido.outbound_dir);
+  auto size = 0;
+  for (const auto& st : statuses) {
+    const auto name = flo_name(dest, st);
+    if (!File::Exists(FilePath(outbound_dir, name))) {
+      continue;
+    }
+    LOG(INFO) << "Found file file: " << outbound_dir << "; name: " << name;
+    const auto flo_path = FilePath(outbound_dir, name);
+    FloFile flo(net, flo_path);
+    if (!flo.Load()) {
+      continue;
+    }
+    for (const auto& [flow_entry_name, _] : flo.flo_entries()) {
+      File f(flow_entry_name);
+      size += f.length();
+    }
+  }
+  VLOG(2) << "ftn_bytes_waiting: size: " << size;
+  return size;
 }
 
 } // namespace wwiv
