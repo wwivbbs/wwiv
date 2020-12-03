@@ -22,7 +22,6 @@
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
 #include "sdk/fido/flo_file.h"
-
 #include "gtest/gtest.h"
 #include <ctime>
 #include <memory>

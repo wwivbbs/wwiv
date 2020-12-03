@@ -25,8 +25,7 @@
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_packets.h"
 
-namespace wwiv {
-namespace sdk {
+namespace wwiv::sdk {
 
 #pragma pack(push, 1)
  struct msgids {
@@ -45,24 +44,24 @@ public:
   ~FtnMessageDupe() = default;
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
-  std::string CreateMessageID(const wwiv::sdk::fido::FidoAddress& a);
-  bool add(const wwiv::sdk::fido::FidoPackedMessage& msg);
+  [[nodiscard]] std::string CreateMessageID(const fido::FidoAddress& a);
+  bool add(const fido::FidoPackedMessage& msg);
   bool add(uint32_t header_crc32, uint32_t msgid_crc32);
   bool remove(uint32_t header_crc32, uint32_t msgid_crc32);
   /** returns true if either the header or msgid crc is duplicated */
   [[nodiscard]] bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
-  [[nodiscard]] bool is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const;
+  [[nodiscard]] bool is_dupe(const fido::FidoPackedMessage& msg) const;
 
   /** Returns the MSGID from this message or an empty string. */
-  static std::string GetMessageIDFromText(const std::string& text);
-  static bool GetMessageCrc32s(const wwiv::sdk::fido::FidoPackedMessage& msg,
+  [[nodiscard]] static std::string GetMessageIDFromText(const std::string& text);
+  static bool GetMessageCrc32s(const fido::FidoPackedMessage& msg,
                                uint32_t& header_crc32, uint32_t& msgid_crc32);
 
   /**
    * Returns the MSGID from this message in WWIV format 
    * (^D0MSGID vs. ^AMSGID) or an empty string.
    */
-  static std::string GetMessageIDFromWWIVText(const std::string& text);
+  [[nodiscard]] static std::string GetMessageIDFromWWIVText(const std::string& text);
 
 private:
   bool Load();
@@ -76,9 +75,6 @@ private:
   bool use_filesystem_{true};
 };
 
-
-}
 }
 
-
-#endif  // INCLUDED_SDK_FTN_MSGDUPE_H
+#endif

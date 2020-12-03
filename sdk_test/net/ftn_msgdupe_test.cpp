@@ -22,10 +22,11 @@
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/net/ftn_msgdupe.h"
 #include "sdk_test/sdk_helper.h"
 #include <cstdint>
@@ -33,7 +34,6 @@
 #include <ctime>
 #include <string>
 #include <vector>
-#include "core/stl.h"
 
 using namespace std;
 
