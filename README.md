@@ -119,10 +119,10 @@ and run the following:
   ```
 
 Copy all of the files newly built, or symlinks to them from your WWIV base install
-i.e. in /home/wwiv/ (assuming the source is in $HOME/git/wwiv now.)
+i.e. in /opt/wwiv/ (assuming the source is in $HOME/git/wwiv now.)
 ```
  # This should be done as the wwiv user who has the source code.
- cd /home/wwiv
+ cd /opt/wwiv
  ln -s $HOME/git/wwiv/builds/tools/linux/use-built-bin.sh
  
  export BUILT_BIN=$HOME/out/wwiv

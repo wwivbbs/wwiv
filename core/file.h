@@ -54,7 +54,7 @@ std::filesystem::path FilePath(const std::filesystem::path& directory_name,
  * File: Provides a high level, cross-platform common wrapper for file handling using C++.
  *
  * Example:
- *   File f("/home/wwiv/bbs/config.dat");
+ *   File f("/opt/wwiv/bbs/config.dat");
  *   if (!f) { LOG(FATAL) << "config.dat does not exist!" << endl; }
  *   if (!f.Read(config, sizeof(configrec)) { LOG(FATAL) << "unable to load config.dat"; }
  *   // No need to close f since when f goes out of scope it'll close automatically.
