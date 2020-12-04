@@ -85,16 +85,22 @@ void EditItems::Display() const {
   window_->Refresh();
 }
 
-BaseEditItem* EditItems::add(BaseEditItem* item, int column) {
+BaseEditItem* EditItems::add(BaseEditItem* item, int column, int y) {
   DCHECK(item);
   item->set_column(column);
+  if (y >= 0) {
+    item->set_y(y);
+  }
   items_.push_back(item);
   return item;
 }
 
-Label* EditItems::add(Label* label, int column) {
+Label* EditItems::add(Label* label, int column, int y) {
   DCHECK(label);
   label->set_column(column);
+  if (y >= 0) {
+    label->set_y(y);
+  }
   labels_.push_back(label);
   return label;
 }
@@ -106,14 +112,14 @@ void EditItems::add_labels(std::initializer_list<Label*> labels) {
   }
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column) {
-  add(label, column);
-  return add(item, column);
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column, int y) {
+  add(label, column, y);
+  return add(item, column, y);
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column) {
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column, int y) {
   item->set_help_text(help);
-  return add(label, item, column);
+  return add(label, item, column, y);
 }
 
 void EditItems::create_window(const std::string& title) {
@@ -198,7 +204,7 @@ int EditItems::max_label_width(int column) const {
 }
 
 int EditItems::max_item_width(int column) const {
-  std::string::size_type result = 0;
+  auto result = 0;
   for (const auto* l : items_) {
     if (l->column() != column) {
       continue;
@@ -207,13 +213,32 @@ int EditItems::max_item_width(int column) const {
       result = l->width();
     }
   }
-  return static_cast<int>(result);
+  return result;
 }
 
 static constexpr auto PADDING = 2;
 
+/**
+ *  
+ * TODO(rushfan): This needs a big change.
+ *
+ * 1) Needs to be able to layout a column and look at max widths for only
+ *    a subset of rows, so you can have things like:
+ *
+ * LLLLL: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+ * LLLLL: FFFFFFFF    LLLLL: FFFFFFFFFFFFFFFFFFFFF
+ *
+ * Notice they have different max widths depending on the row. I think we
+ * need a two pass.
+ * (1) Compute max width per row
+ * (2) come up with the max over a span of rows and use that for laying out.
+ *     We can look at column count per row, and use that as the thing we
+ *     layout on. i.e layout all 1 col rows, then all 2 col rows.
+ */
 void EditItems::relayout_items_and_labels() {
+  std::vector<int> prev_width{};
   for (auto i = 1; i <= num_columns_; i++) {
+    // Figure out this columns width.
     auto& c = columns_.at(i);
     if (c.width_ == 0) {
       c.width_ = max_label_width(i) + 1 + max_item_width(i);

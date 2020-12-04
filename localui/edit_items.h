@@ -20,7 +20,7 @@
 #ifndef INCLUDED_LOCALUI_EDIT_ITEMS_H
 #define INCLUDED_LOCALUI_EDIT_ITEMS_H
 
-#include "core/file.h"
+//#include "core/file.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "localui/input.h"
@@ -29,6 +29,13 @@
 #include <string>
 #include <vector>
 
+/**
+ * Represent a column in the UI.
+ *
+ * The column number is a number 1-N
+ * x is the start position relative to the window
+ * Width span both label, padding between label and item, and item widths.
+ */
 class Column final {
 public:
   explicit Column(int num)
@@ -40,10 +47,18 @@ public:
   int num_;
 };
 
+//TODO(rushfan): Maybe this should be renamed to Form, since that's really
+//what this has evolved into from a simple structure of EditItem instances.
+/**
+ * Creates a window containing a form of items that may be filled out
+ * or "edited".
+ *
+ * Typically the items are instances of "EditItem" classes
+ */
 class EditItems final {
 public:
   typedef std::function<void()> additional_helpfn;
-  EditItems(int num_columns = 1);
+  explicit EditItems(int num_columns = 1);
   EditItems(EditItems const&) = delete;
   EditItems(EditItems&&) = delete;
   EditItems& operator=(EditItems const&) = delete;
@@ -63,16 +78,45 @@ public:
   }
 
   std::vector<BaseEditItem*>& items() { return items_; }
-  /** Adds an item to the list of EditItems. */
-  BaseEditItem* add(BaseEditItem* item, int column = 1);
-  /** Adds a label to the list of EditItems. */
-  Label* add(Label* label, int column = 1);
-  /** Adds a list of labels */
+
+  /**
+   * Adds an item to the list of EditItems.
+   *
+   * This uses both a column number and optionally a value to override for Y.
+   * If y is not set, the items preferred Y value will be used.
+   */
+  BaseEditItem* add(BaseEditItem* item, int column = 1, int y = -1);
+
+  /**
+   * Adds a label to the list of EditItems.
+   *
+   * This uses both a column number and optionally a value to override for Y.
+   * If y is not set, the items preferred Y value will be used.
+   */
+  Label* add(Label* label, int column = 1, int y = -1);
+
+  /**
+   * Adds a list of labels.
+   */
   void add_labels(std::initializer_list<Label*> labels);
-  /** Adds a label and item */
-  BaseEditItem* add(Label* label, BaseEditItem* item, int column = 1);
-  /** Adds a label and item and help text*/
-  BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help, int column = 1);
+
+  /**
+   * Adds a label and item
+   *
+   * This uses both a column number and optionally a value to override for Y.
+   * If y is not set, the items preferred Y value will be used.
+   */
+  BaseEditItem* add(Label* label, BaseEditItem* item, int column = 1, int y = -1);
+
+  /**
+   * Adds a label and item and help text
+   *
+   * This uses both a column number and optionally a value to override for Y.
+   * If y is not set, the items preferred Y value will be used.
+   */
+  BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help, int column = 1,
+                    int y = -1);
+
   void create_window(const std::string& title);
 
   /**

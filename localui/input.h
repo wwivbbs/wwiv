@@ -104,6 +104,7 @@ class Item {
 public:
   Item(int x, int y, int width) : x_(x), y_(y), width_(width) {}
   virtual ~Item() = default;
+  typedef ssize_t size_type;
 
   [[nodiscard]] virtual int x() const noexcept { return x_; }
   [[nodiscard]] virtual int y() const noexcept { return y_; }
@@ -111,6 +112,7 @@ public:
   virtual void set_y(int y) noexcept { y_ = y; }
   [[nodiscard]] virtual int width() const noexcept { return width_; }
   void set_width(int width) noexcept { width_ = width; }
+  [[nodiscard]] std::size_t size() const noexcept { return width_; }
 
   [[nodiscard]] virtual int column() const noexcept { return column_; }
   void set_column(int column) noexcept { column_ = column; }
