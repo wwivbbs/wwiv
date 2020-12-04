@@ -51,10 +51,10 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 
-void Label::Display(CursesWindow* window) { Display(window, x_, y_); }
+void Label::Display(CursesWindow* window) const { Display(window, x_, y_); }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void Label::Display(CursesWindow* window, int x, int y) {
+void Label::Display(CursesWindow* window, int x, int y) const {
   window->GotoXY(x, y);
   if (right_justify_) {
     const auto pad = std::max<int>(0, width_ - size_int(text_));
@@ -67,14 +67,14 @@ EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   auto s = to_field_();
 
-  const auto return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
+  const auto return_code = editline(window, &s, width_, EditLineMode::ALL, "");
   from_field_(s);
   return return_code;
 }
 
 void CustomEditItem::Display(CursesWindow* window) const {
   window->GotoXY(x_, y_);
-  const string blanks(maxsize_, ' ');
+  const string blanks(width_, ' ');
   window->Puts(blanks);
 
   const auto s = to_field_();

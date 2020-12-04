@@ -98,10 +98,32 @@ static std::string to_restriction_string(T data, int size, const std::string& re
   return s;
 }
 
-// Base item of an editable value, this class does not use templates.
-class BaseEditItem {
+// Base class of all items that can appear in a LocalUI based environment.
+
+class Item {
 public:
-  BaseEditItem(int x, int y, int maxsize) : x_(x), y_(y), maxsize_(maxsize) {}
+  Item(int x, int y, int width) : x_(x), y_(y), width_(width) {}
+  virtual ~Item() = default;
+
+  [[nodiscard]] virtual int x() const noexcept { return x_; }
+  [[nodiscard]] virtual int y() const noexcept { return y_; }
+  virtual void set_x(int x) noexcept { x_ = x; }
+  virtual void set_y(int y) noexcept { y_ = y; }
+  [[nodiscard]] virtual int width() const noexcept { return width_; }
+  void set_width(int width) noexcept { width_ = width; }
+
+  virtual void Display(CursesWindow* window) const = 0;
+
+ protected:
+  int x_;
+  int y_;
+  int width_;
+};
+
+// Base item of an editable value, this class does not use templates.
+class BaseEditItem : public Item {
+public:
+  BaseEditItem(int x, int y, int maxsize) : Item(x, y, maxsize) {}
   virtual ~BaseEditItem() = default;
 
   BaseEditItem() = delete;
@@ -110,47 +132,31 @@ public:
   BaseEditItem& operator=(BaseEditItem const&) = delete;
   BaseEditItem& operator=(BaseEditItem&&) = delete;
 
+  void Display(CursesWindow* window) const override = 0;
   virtual EditlineResult Run(CursesWindow* window) = 0;
-  virtual void Display(CursesWindow* window) const = 0;
   BaseEditItem* set_help_text(const std::string& help_text) {
     help_text_ = help_text;
     return this;
   }
 
   [[nodiscard]] std::string help_text() const { return help_text_; }
-  [[nodiscard]] virtual int x() const noexcept { return x_; }
-  virtual void set_x(int x) noexcept { x_ = x; }
-  [[nodiscard]] virtual int y() const noexcept { return y_; }
-  [[nodiscard]] virtual int maxsize() const noexcept { return maxsize_; }
 
 protected:
-  int x_;
-  int y_;
-  int maxsize_;
   std::string help_text_;
 };
 
 // Label class that's used to display a label for an EditItem
-class Label final {
+class Label final : public Item {
 public:
-  Label(int x, int y, const std::string& text)
-      : x_(x), y_(y), width_(wwiv::stl::size_int(text)), text_(text) {}
-  Label(int x, int y, int width, std::string text)
-      : x_(x), y_(y), width_(width), text_(std::move(text)) {}
+  Label(int x, int y, int width, std::string text) : Item(x, y, width), text_(std::move(text)) {}
+  Label(int x, int y, const std::string& text) : Label(x, y, wwiv::stl::size_int(text), text) {}
 
-  void Display(CursesWindow* window);
-  void Display(CursesWindow* window, int x, int y);
-  void set_width(int width) noexcept { width_ = width; }
-  [[nodiscard]] int width() const noexcept { return width_; }
+  void Display(CursesWindow* window) const override;
+  void Display(CursesWindow* window, int x, int y) const;
   void set_right_justified(bool r) noexcept { right_justify_ = r; }
-  [[nodiscard]] int x() const noexcept { return x_; }
-  [[nodiscard]] int y() const noexcept { return y_; }
   [[nodiscard]] const std::string& text() const noexcept { return text_; }
 
 protected:
-  int x_;
-  int y_;
-  int width_;
   bool right_justify_{true};
   const std::string text_;
 };
@@ -173,7 +179,7 @@ public:
 
   void Display(CursesWindow* window) const override {
     if (display_) {
-      const std::string blanks(maxsize_, ' ');
+      const std::string blanks(width(), ' ');
       const auto custom = display_();
       window->PutsXY(x_, y_, blanks);
       window->PutsXY(x_, y_, custom);
@@ -186,10 +192,10 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const = 0;
   virtual void DefaultDisplayString(CursesWindow* window, const std::string& text) const {
     auto s = text;
-    if (wwiv::stl::ssize(s) > maxsize_) {
-      s = text.substr(0, maxsize_);
-    } else if (wwiv::stl::ssize(s) < maxsize_) {
-      s = text + std::string(static_cast<std::string::size_type>(maxsize_) - text.size(), ' ');
+    if (wwiv::stl::ssize(s) > width()) {
+      s = text.substr(0, width());
+    } else if (wwiv::stl::ssize(s) < width()) {
+      s = text + std::string(static_cast<std::string::size_type>(width()) - text.size(), ' ');
     }
 
     window->PutsXY(this->x_, this->y_, s);
@@ -217,8 +223,8 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    // GCC wants this-> on data and maxsize_.
-    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_,
+    // GCC wants this-> on data and width_.
+    return editline(window, reinterpret_cast<char*>(this->data_), this->width_, edit_line_mode_,
                     "");
   }
 
@@ -245,7 +251,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
+    return editline(window, &this->data_, this->width_, edit_line_mode_, "");
   }
 
 protected:
@@ -279,7 +285,7 @@ public:
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
     const auto d = std::to_string(*this->data_);
-    window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->maxsize()));
+    window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->width()));
   }
 };
 
@@ -311,7 +317,7 @@ public:
   ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data)
       : EditItem<T*>(x, y, 0, data), items_(items) {
     for (const auto& item : items) {
-      this->maxsize_ = std::max<int>(this->maxsize_, wwiv::strings::ssize(item.second));
+      this->width_ = std::max<int>(this->width_, wwiv::strings::ssize(item.second));
     }
   }
   virtual ~ToggleEditItem() = default;
@@ -396,7 +402,7 @@ template <typename T> class FlagEditItem final : public EditItem<T*> {
 public:
   FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data)
       : EditItem<T*>(x, y, 0, data), flag_(flag) {
-    this->maxsize_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
+    this->width_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
@@ -589,7 +595,7 @@ public:
     const auto p = wwiv::core::File::FixPathSeparators(this->data_);
     strcpy(this->data_, p.c_str());
     const auto return_code =
-        editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
 
     // Update what we display in case it changed.
@@ -632,7 +638,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     auto data = this->data_.string();
-    const auto return_code = editline(window, &data, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    const auto return_code = editline(window, &data, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&data);
     if (!data.empty()) {
       data = wwiv::core::File::EnsureTrailingSlash(data);
@@ -680,7 +686,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
-        editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, &this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
       data_ = wwiv::core::File::EnsureTrailingSlash(data_);
@@ -720,7 +726,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
-        editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(this->data_);
     return return_code;
   }

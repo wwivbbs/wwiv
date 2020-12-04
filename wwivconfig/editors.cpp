@@ -87,7 +87,7 @@ static void edit_editor(editorrec& e) {
             new ToggleEditItem<uint8_t>(COL1_POSITION, y, bbs_types, &e.bbs_type));
 #ifndef _WIN32
   ++y;
-  items.add(new Label(2, y++, LABEL1_WIDTH, "Use STDIO:"),
+  items.add(new Label(2, y, LABEL1_WIDTH, "Use STDIO:"),
             new FlagEditItem<uint16_t>(COL1_POSITION, y, ansir_stdio, "Yes", "No ", &e.ansir));
   // Clear the FOSSIL flags if they are set accidentally.
   e.ansir &= ~ansir_netfoss;

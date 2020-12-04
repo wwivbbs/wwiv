@@ -319,80 +319,70 @@ void wwivd_ui(const Config& config) {
   auto c = LoadDaemonConfig(config);
 
   EditItems items{};
-  int y = 1;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Telnet Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port))
-    ->set_help_text("Telnet Server Port Number (or -1 to disable).");
+  auto y = 1;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Telnet Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port),
+            "Telnet Server Port Number (or -1 to disable).");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "SSH Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port))
-      ->set_help_text("SSH Server Port Number (or -1 to disable).");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "SSH Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port),
+            "SSH Server Port Number (or -1 to disable).");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Port:"),
-           new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))
-      ->set_help_text("Used for BBS node status [/status] (or -1 to disable).");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port),
+            "Used for BBS node status [/status] (or -1 to disable).");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Address:"),
-          new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, EditLineMode::ALL))
-      ->set_help_text("Network address for the BBS node status HTTP Server.");
+  items.add(
+      new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Address:"),
+      new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, EditLineMode::ALL),
+      "Network address for the BBS node status HTTP Server.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BinkP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port))
-      ->set_help_text("BINKP Server Port Number (or -1 to disable).");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BinkP Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port),
+            "BINKP Server Port Number (or -1 to disable).");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Launch Minimized:"),
-           new BooleanEditItem(COL1_POSITION, y, &c.launch_minimized))
-      ->set_help_text("Should wwivd launch bbs and network commands minimized (WIN32 Only)");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Launch Minimized:"),
+            new BooleanEditItem(COL1_POSITION, y, &c.launch_minimized),
+            "Should wwivd launch bbs and network commands minimized (WIN32 Only)");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
-           new BooleanEditItem(COL1_POSITION, y, &c.do_beginday_event))
-      ->set_help_text("Should wwivd execute the beginday event for WWIV.");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
+            new BooleanEditItem(COL1_POSITION, y, &c.do_beginday_event),
+            "Should wwivd execute the beginday event for WWIV.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),
-          new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, EditLineMode::ALL))
-      ->set_help_text("Command to execute for the beginday event.");
+  items.add(
+      new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),
+      new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, EditLineMode::ALL),
+      "Command to execute for the beginday event.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callouts:"),
-           new BooleanEditItem(COL1_POSITION, y, &c.do_network_callouts))
-      ->set_help_text("Command to execute to perform a network callout.");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callouts:"),
+            new BooleanEditItem(COL1_POSITION, y, &c.do_network_callouts),
+            "Command to execute to perform a network callout.");
 
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callout Cmd:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd,
-                                            EditLineMode::ALL))
-      ->set_help_text("Command to execute to perform a network callout.");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callout Cmd:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd,
+                                             EditLineMode::ALL),
+            "Command to execute to perform a network callout.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, EditLineMode::ALL))
       ->set_help_text("Command to execute for an inbound network request.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename,
-                                            EditLineMode::ALL))
-      ->set_help_text("Filename to display without extension before matrix bbs menu.");
+  items.add(
+      new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
+      new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, EditLineMode::ALL),
+      "Filename to display without extension before matrix bbs menu.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
-            new SubDialogFunction<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog))
-      ->set_help_text("Create/Edit/Delete Matrix BBS settings.");
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
+            new SubDialogFunction<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog),
+            "Create/Edit/Delete Matrix BBS settings.");
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
-            new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking))
-      ->set_help_text("IP Blocking Settings.");
-  
+  items.add(
+      new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
+      new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking),
+      "IP Blocking Settings.");
+
   items.Run("wwivd Configuration");
   if (!SaveDaemonConfig(config, c)) {
     messagebox(items.window(), "Error saving wwivd.json");

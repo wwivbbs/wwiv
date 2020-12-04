@@ -161,8 +161,8 @@ char EditItems::GetKeyWithNavigation(const NavigationKeyConfig& config) const {
 int EditItems::max_display_width() const {
   int result = 0;
   for (const auto* i : items_) {
-    if ((i->x() + i->maxsize()) > result) {
-      result = i->x() + i->maxsize();
+    if ((i->x() + i->width()) > result) {
+      result = i->x() + i->width();
     }
   }
   return std::min<int>(curses_out->window()->GetMaxX(), result + 2); // 2 is padding
