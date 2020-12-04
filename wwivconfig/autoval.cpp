@@ -22,10 +22,10 @@
 #include "core/wwivport.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
 #include <string>
 #include <vector>
 
@@ -70,20 +70,22 @@ static void edit_autoval(Config& config, int n) {
 
   valrec v = config.auto_val(n);
   EditItems items{};
-  items.add_items({
-      new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl),
-      new ArEditItem(COL1_POSITION, 3, &v.ar),
-      new ArEditItem(COL1_POSITION, 4, &v.dar),
-      new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict),
-  });
   int y = 1;
-  items.add_labels({new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "SL:"), 
-                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "DSL:"),
-                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "AR:"),
-                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "DAR:"),
-                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "Restrictions:")
-  });
+  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "SL:"), 
+      new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl));
+  ++y;
+  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "DSL:"),
+      new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl));
+  ++y;
+  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "AR:"),
+      new ArEditItem(COL1_POSITION, 3, &v.ar));
+  ++y;
+  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "DAR:"),
+      new ArEditItem(COL1_POSITION, 4, &v.dar));
+  ++y;
+  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "Restrictions:"),
+      new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict));
+
   items.Run(fmt::format("Auto-validation data for: Alt-F{}", n + 1));
   config.auto_val(n, v);
 }

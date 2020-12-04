@@ -85,7 +85,9 @@ static char g_szLastLoginDate[9];
 static void CleanUserInfo() {
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, a()->user()->GetLastSubConf(), 0);
+    a()->sess().set_current_user_sub_conf_num(a()->user()->GetLastSubConf());
     setuconf(ConferenceType::CONF_DIRS, a()->user()->GetLastDirConf(), 0);
+    a()->sess().set_current_user_dir_conf_num(a()->user()->GetLastDirConf());
   }
   if (a()->user()->GetLastSubNum() > a()->config()->max_subs()) {
     a()->user()->SetLastSubNum(0);

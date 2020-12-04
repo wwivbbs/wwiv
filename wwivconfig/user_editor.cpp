@@ -24,6 +24,7 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -176,46 +177,58 @@ void user_editor(const wwiv::sdk::Config& config) {
         user.year = static_cast<uint8_t>(year - 1900);
       });
 
-  EditItems items{};
-  items.add_items({
-      user_name_field,
-      new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, EditLineMode::ALL),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
-      new NumberEditItem<uint8_t>(DSL_POSITION, 3, &user.dsl),
-      new StringEditItem<char*>(COL1_POSITION, 4, 30, user.street, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.city, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 6, 2, user.state, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 7, 10, user.zipcode, EditLineMode::UPPER_ONLY),
-      birthday_field,
-      new StringEditItem<char*>(COL1_POSITION, 9, 8, user.pw, EditLineMode::UPPER_ONLY),
-      new StringEditItem<char*>(COL1_POSITION, 10, 12, user.phone, EditLineMode::UPPER_ONLY),
-      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.dataphone, EditLineMode::UPPER_ONLY),
-      new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type),
-      new RestrictionsEditItem(COL1_POSITION, 13, &user.restrict),
-      new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum),
-      new StringEditItem<char*>(COL1_POSITION, 15, 57, user.email, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, EditLineMode::ALL),
-  });
-  items.set_navigation_extra_help_items(create_extra_help_items());
-
   int y = 1;
-  items.add_labels({new Label(COL1_LINE, y++, LABEL_WIDTH, "Name/Handle:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Real Name:"),
-                    new Label(COL1_LINE, y, LABEL_WIDTH, "SL:"),
-                    new Label(DSL_LABEL, y++, DSL_LABEL_WIDTH, "DSL:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Address:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "City:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "State:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Postal Code:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Birthday:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Password:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Phone Number:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Data Number:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Computer Type:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Restrictions:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "WWIV Reg:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Email Address:"),
-                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Sysop Note:")});
+  EditItems items{};
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Name/Handle:"), user_name_field);
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Real Name:"),
+            new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, EditLineMode::ALL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "SL:"),
+      new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl));
+  y++;
+  items.add(new Label(DSL_LABEL, y, DSL_LABEL_WIDTH, "DSL:"),
+      new NumberEditItem<uint8_t>(DSL_POSITION, 3, &user.dsl));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Address:"),
+      new StringEditItem<char*>(COL1_POSITION, 4, 30, user.street, EditLineMode::ALL));
+  y++;
+  items.add(  new Label(COL1_LINE, y, LABEL_WIDTH, "City:"),
+      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.city, EditLineMode::ALL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "State:"),
+      new StringEditItem<char*>(COL1_POSITION, 6, 2, user.state, EditLineMode::ALL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Postal Code:"),
+      new StringEditItem<char*>(COL1_POSITION, 7, 10, user.zipcode, EditLineMode::UPPER_ONLY));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Birthday:"),
+      birthday_field);
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
+      new StringEditItem<char*>(COL1_POSITION, 9, 8, user.pw, EditLineMode::UPPER_ONLY));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Phone Number:"),
+      new StringEditItem<char*>(COL1_POSITION, 10, 12, user.phone, EditLineMode::UPPER_ONLY));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Data Number:"),
+      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.dataphone, EditLineMode::UPPER_ONLY));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Computer Type:"),
+      new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Restrictions:"),
+      new RestrictionsEditItem(COL1_POSITION, 13, &user.restrict));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "WWIV Reg:"),
+      new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum));
+  y++;
+  items.add( new Label(COL1_LINE, y, LABEL_WIDTH, "Email Address:"),
+      new StringEditItem<char*>(COL1_POSITION, 15, 57, user.email, EditLineMode::ALL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Note:"),
+      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, EditLineMode::ALL));
+  items.set_navigation_extra_help_items(create_extra_help_items());
 
   items.create_window("User Editor");
   items.Display();

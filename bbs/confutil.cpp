@@ -200,6 +200,7 @@ void setuconf(ConferenceType conf_type, int num, int old_subnum) {
     auto& conf = a()->all_confs().dirs_conf();
     const auto key = at(a()->uconfdir, num).key.key();
     setuconf(conf, key, old_subnum);
+    return;
   }
   auto& conf = a()->all_confs().subs_conf();
   const auto key = at(a()->uconfsub, num).key.key();

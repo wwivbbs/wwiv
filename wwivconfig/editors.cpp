@@ -23,6 +23,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"

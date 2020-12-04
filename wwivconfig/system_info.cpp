@@ -22,6 +22,7 @@
 #include "fmt/printf.h"
 #include "localui/input.h"
 #include "localui/curses_win.h"
+#include "localui/edit_items.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
 #include <cstdint>

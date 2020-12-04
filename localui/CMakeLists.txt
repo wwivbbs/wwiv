@@ -2,12 +2,13 @@
 Include(FindWWIVCurses)
 
 set(COMMON_SOURCES
-  colors.cpp
-  curses_io.cpp
-  curses_win.cpp
-  input.cpp
-  listbox.cpp
-  stdio_win.cpp
+  "colors.cpp"
+  "curses_io.cpp"
+  "curses_win.cpp"
+  "edit_items.cpp"
+  "input.cpp"
+  "listbox.cpp"
+  "stdio_win.cpp"
   )
 set_max_warnings()
 

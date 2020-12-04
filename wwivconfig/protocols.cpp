@@ -24,6 +24,7 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "fmt/format.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -105,15 +106,23 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
 
   int y = 1;
   EditItems items{};
-  items.add_labels({new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Description:"),
-                    new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Xfer OK code:"),
-                    new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Receive command line:")});
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Description:"),
+    new StringEditItem<char*>(COL1_POSITION, y, 50, c.description, EditLineMode::ALL));
   y++;
-  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Send command line:"));
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Xfer OK code:"),
+    new NumberEditItem<uint16_t>(COL1_POSITION, y, &c.ok1));
+  y+=2;
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Receive command line:"),
+    new CommandLineItem(2, y+1, 70, c.receivefn));
+  y+=2; 
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Send command line:"),
+    new CommandLineItem(2, y+1, 70, c.sendfn));
+  y+=2;
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Receive batch command line:"));
+  const auto receive_batch_pos = ++y;
   y++;
-  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Receive batch command line:"));
-  y++;
-  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Send batch command line:"));
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Send batch command line:"));
+  const auto send_batch_pos = ++y;
   y+=2;
   items.add(new Label(LABEL1_POSITION, y++, "%1 = com port baud rate"));
   items.add(new Label(LABEL1_POSITION, y++, "%2 = port number"));
@@ -121,28 +130,22 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   items.add(new Label(LABEL1_POSITION, y++, "%4 = modem speed"));
   items.add(new Label(LABEL1_POSITION, y++, "%5 = filename list to receive for batch UL"));
   items.add(new Label(LABEL1_POSITION, y, "NOTE: Batch protocols >MUST< correctly support DSZLOG."));
-
-  items.add_items({
-      new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, EditLineMode::ALL),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 2, &c.ok1),
-      new CommandLineItem(2, 4, 70, c.receivefn),
-      new CommandLineItem(2, 6, 70, c.sendfn),
-  });
+      
   curses_out->Cls(ACS_CKBOARD);
   items.create_window("Protocol Configuration");
   if (n < 6) {
     items.items().erase(items.items().begin());
     items.window()->PutsXY(COL1_POSITION, 1, c.description);
-    items.window()->PutsXY(2, 8, "-- N/A --");
-    items.window()->PutsXY(2, 10, "-- N/A --");
+    items.window()->PutsXY(2, receive_batch_pos, "-- N/A --");
+    items.window()->PutsXY(2, send_batch_pos, "-- N/A --");
   }
   // Not else since we want the n >= 4 to be invoked.
   if (n >= 6) {
-    items.items().emplace_back(new CommandLineItem(2, 8, 70, c.receivebatchfn));
-    items.items().emplace_back(new CommandLineItem(2, 10, 70, c.sendbatchfn));
+    items.add(new CommandLineItem(2, receive_batch_pos, 70, c.receivebatchfn));
+    items.add(new CommandLineItem(2, send_batch_pos, 70, c.sendbatchfn));
   } else if (n >= 4) {
-    items.items().emplace_back(new CommandLineItem(2, 8, 70, c.sendbatchfn));
-    items.window()->PutsXY(2, 10, "-- N/A --");
+    items.add(new CommandLineItem(2, receive_batch_pos, 70, c.sendbatchfn));
+    items.window()->PutsXY(2, send_batch_pos, "-- N/A --");
   }
 
   items.Run("Protocol Configuration");

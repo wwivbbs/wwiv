@@ -313,10 +313,11 @@ bool set_wwiv_codepage(wwiv_codepage_t cp) {
   }
 
 #endif
-  const auto* new_locale = std::setlocale(LC_ALL, default_locale.c_str());
-
+  // Note, we use LC_CTYPE not LC_ALL so we only affect characters to be UTF-8, but we leave
+  // the number formatting, etc as-is (in 'C')
+  const auto* new_locale = std::setlocale(LC_CTYPE, default_locale.c_str());
+  
   if (new_locale) {
-    std::locale::global(std::locale(std::setlocale(LC_ALL, new_locale)));
     VLOG(1) << "Resetting Locale: " << new_locale;
   }
   return true;

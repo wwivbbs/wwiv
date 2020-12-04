@@ -26,6 +26,7 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "localui/curses_win.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/fido/fido_callout.h"

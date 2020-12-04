@@ -18,13 +18,14 @@
 /**************************************************************************/
 #include "wwivconfig/archivers.h"
 
-#include "localui/wwiv_curses.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "fmt/format.h"
-#include "local_io/wconstants.h" // for MAX_ARCHIVERS
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
+#include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
@@ -43,28 +44,32 @@ static void edit_arc(int arc_number, arcrec* a) {
   static constexpr int LABEL_X = 2;
   static constexpr int COL1_POSITION = 23;
   static constexpr int LABEL_WIDTH = COL1_POSITION - LABEL_X - 1;
-  int y = 1;
+  auto y = 1;
   EditItems items{};
 
-  items.add_items({
-      new StringEditItem<char*>(COL1_POSITION, y++, 31, a->name, EditLineMode::ALL),
-      new StringEditItem<char*>(COL1_POSITION, y++, 3, a->extension, EditLineMode::UPPER_ONLY),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arcl),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arce),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arca),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arcd),
-      new CommandLineItem(COL1_POSITION, y++, 49, a->arck),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arct),
-  });
-  y = 1;
-  items.add_labels({new Label(2, y++, LABEL_WIDTH, "Archiver Name:"),
-                  new Label(2, y++, LABEL_WIDTH, "Archiver Extension:"),
-                  new Label(2, y++, LABEL_WIDTH, "List Archive:"),
-                  new Label(2, y++, LABEL_WIDTH, "Extract Archive:"),
-                  new Label(2, y++, LABEL_WIDTH, "Add to Archive:"),
-                  new Label(2, y++, LABEL_WIDTH, "Delete from Archive:"),
-                  new Label(2, y++, LABEL_WIDTH, "Comment Archive:"),
-                  new Label(2, y++, LABEL_WIDTH, "Test Archive:")});
+  items.add(new Label(2, y, LABEL_WIDTH, "Archiver Name:"),
+      new StringEditItem<char*>(COL1_POSITION, y, 31, a->name, EditLineMode::ALL));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Archiver Extension:"),
+      new StringEditItem<char*>(COL1_POSITION, y, 3, a->extension, EditLineMode::UPPER_ONLY));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "List Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arcl));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Extract Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arce));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Add to Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arca));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Delete from Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arcd));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Comment Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arck));
+  y++;
+  items.add(new Label(2, y, LABEL_WIDTH, "Test Archive:"),
+      new CommandLineItem(COL1_POSITION, y, 49, a->arct));
 
   y++;
   items.add_labels({new Label(6, y++, "%1 %2 etc. are parameters passed.  Minimum of two on Add and"),

@@ -19,6 +19,7 @@
 #include "wwivconfig/wwivd_ui.h"
 
 #include "core/strings.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/wwivd_config.h"

@@ -19,10 +19,9 @@
 #include "wwivconfig/paths.h"
 
 #include "core/strings.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
-#include "localui/wwiv_curses.h"
 #include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
 #include <memory>
 #include <string>
 
@@ -40,31 +39,34 @@ void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
   auto cfg = *config.config();
 
-  items.add_items({
-      new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),
-      new FilePathItem(COL1_POSITION, 2, 60, config.root_directory(), cfg.gfilesdir),
-      new FilePathItem(COL1_POSITION, 3, 60, config.root_directory(), cfg.menudir),
-      new FilePathItem(COL1_POSITION, 4, 60, config.root_directory(), cfg.datadir),
-      new FilePathItem(COL1_POSITION, 5, 60, config.root_directory(), cfg.logdir),
-      new FilePathItem(COL1_POSITION, 6, 60, config.root_directory(), cfg.scriptdir),
-      new FilePathItem(COL1_POSITION, 7, 60, config.root_directory(), cfg.dloadsdir),
-  });
-
-  int y = 1;
-  items.add_labels({new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Messages:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "GFiles:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Menus:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Data:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Logs:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Scripts:"),
-                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Downloads:")});
+  auto y = 1;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Messages:"),
+            new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.msgsdir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "GFiles:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.gfilesdir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Menus:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.menudir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Data:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.datadir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Logs:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.logdir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Scripts:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.scriptdir));
+  ++y;
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Downloads:"),
+      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.dloadsdir));
   y+=2;
-  items.add_labels({new Label(LABEL1_POS, y++, LABEL1_WIDTH,
-                              "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.")});
-  y+=1;
-  items.add_labels({new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH,
-                              "Changing any of these requires YOU to MANUALLY move files and/or"),
-                    new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH, "directory structures.")});
+  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH,
+                      "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS."));
+  y+=2;
+  items.add(new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH,
+                              "Changing any of these requires YOU to MANUALLY move files and/or"));
+  items.add(new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH, "directory structures."));
 
   if (!cfg.scriptdir[0]) {
     // This is added in 5.3
