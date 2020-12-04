@@ -85,14 +85,18 @@ void EditItems::Display() const {
   window_->Refresh();
 }
 
-BaseEditItem* EditItems::add(BaseEditItem* item) {
+BaseEditItem* EditItems::add(BaseEditItem* item, int column) {
+  DCHECK(item);
+  item->set_column(column);
   items_.push_back(item);
   return item;
 }
 
-Label* EditItems::add(Label* l) {
-  labels_.push_back(l);
-  return l;
+Label* EditItems::add(Label* label, int column) {
+  DCHECK(label);
+  label->set_column(column);
+  labels_.push_back(label);
+  return label;
 }
 
 void EditItems::add_labels(std::initializer_list<Label*> labels) {
@@ -102,17 +106,14 @@ void EditItems::add_labels(std::initializer_list<Label*> labels) {
   }
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item) {
-  DCHECK(label);
-  DCHECK(item);
-  labels_.push_back(label);
-  items_.push_back(item);
-  return item;
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column) {
+  add(label, column);
+  return add(item, column);
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help) {
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column) {
   item->set_help_text(help);
-  return add(label, item);
+  return add(label, item, column);
 }
 
 void EditItems::create_window(const std::string& title) {
@@ -159,7 +160,7 @@ char EditItems::GetKeyWithNavigation(const NavigationKeyConfig& config) const {
 }
 
 int EditItems::max_display_width() const {
-  int result = 0;
+  auto result = 0;
   for (const auto* i : items_) {
     if ((i->x() + i->width()) > result) {
       result = i->x() + i->width();
@@ -183,9 +184,12 @@ int EditItems::max_display_height() {
   return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
 }
 
-int EditItems::max_label_width() const {
+int EditItems::max_label_width(int column) const {
   std::string::size_type result = 0;
   for (const auto* l : labels_) {
+    if (l->column() != column) {
+      continue;
+    }
     if (l->text().size() > result) {
       result = l->text().size();
     }
@@ -193,13 +197,46 @@ int EditItems::max_label_width() const {
   return static_cast<int>(result);
 }
 
-void EditItems::relayout_items_and_labels() {
-  const auto x = max_label_width();
-  for (auto* l : labels_) {
-    l->set_width(x);
+int EditItems::max_item_width(int column) const {
+  std::string::size_type result = 0;
+  for (const auto* l : items_) {
+    if (l->column() != column) {
+      continue;
+    }
+    if (l->width() > result) {
+      result = l->width();
+    }
   }
-  for (auto* i : items_) {
-    i->set_x(x + 2 + 1); // 2 is a hack since that's always col1 position for label.
+  return static_cast<int>(result);
+}
+
+static constexpr auto PADDING = 2;
+
+void EditItems::relayout_items_and_labels() {
+  for (auto i = 1; i <= num_columns_; i++) {
+    auto& c = columns_.at(i);
+    if (c.width_ == 0) {
+      c.width_ = max_label_width(i) + 1 + max_item_width(i);
+    }
+    auto& prev = columns_.at(i - 1);
+    c.x_ = prev.x_ + prev.width_ + PADDING;
+  }
+
+  // column numbers start at 1
+  for (auto column = 1; column <= num_columns_; column++) {
+    const auto&c = columns_.at(column);
+    const auto label_width = max_label_width(column);
+    for (auto* l : labels_) {
+      if (l->column() == column) {
+        l->set_x(c.x_);
+        l->set_width(label_width);
+      }
+    }
+    for (auto* i : items_) {
+      if (i->column() == column) {
+        i->set_x(c.x_ + 1 + label_width);
+      }
+    }
   }
 }
 
@@ -208,6 +245,18 @@ std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
       {"Esc", "Exit"}, {"Enter", "Edit"}, {"[", "Previous"},
       {"]", "Next"}, {"{", "Previous 10"}, {"}", "Next 10"},
   };
+}
+
+EditItems::EditItems(int num_columns)
+  : navigation_help_items_(StandardNavigationHelpItems()),
+    editor_help_items_(StandardEditorHelpItems()), edit_mode_(false), num_columns_(num_columns) {
+  Column zero(0);
+  zero.x_ = 0;
+  zero.width_ = 0;
+  columns_.emplace_back(zero);
+  for (auto i = 1; i <= num_columns_; i++) {
+    columns_.emplace_back(i);
+  }
 }
 
 EditItems::~EditItems() {

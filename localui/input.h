@@ -112,12 +112,16 @@ public:
   [[nodiscard]] virtual int width() const noexcept { return width_; }
   void set_width(int width) noexcept { width_ = width; }
 
+  [[nodiscard]] virtual int column() const noexcept { return column_; }
+  void set_column(int column) noexcept { column_ = column; }
+
   virtual void Display(CursesWindow* window) const = 0;
 
  protected:
   int x_;
   int y_;
   int width_;
+  int column_{1};
 };
 
 // Base item of an editable value, this class does not use templates.

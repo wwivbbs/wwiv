@@ -31,17 +31,19 @@
 
 class Column final {
 public:
-  explicit Column(int num) : num_(num) {}
+  explicit Column(int num)
+    : num_(num) {
+  }
 
+  int x_{2};
+  int width_{0};
   int num_;
 };
 
 class EditItems final {
 public:
   typedef std::function<void()> additional_helpfn;
-  EditItems()
-      : navigation_help_items_(StandardNavigationHelpItems()),
-        editor_help_items_(StandardEditorHelpItems()), edit_mode_(false) {}
+  EditItems(int num_columns = 1);
   EditItems(EditItems const&) = delete;
   EditItems(EditItems&&) = delete;
   EditItems& operator=(EditItems const&) = delete;
@@ -62,15 +64,15 @@ public:
 
   std::vector<BaseEditItem*>& items() { return items_; }
   /** Adds an item to the list of EditItems. */
-  BaseEditItem* add(BaseEditItem* item);
+  BaseEditItem* add(BaseEditItem* item, int column = 1);
   /** Adds a label to the list of EditItems. */
-  Label* add(Label* label);
+  Label* add(Label* label, int column = 1);
   /** Adds a list of labels */
   void add_labels(std::initializer_list<Label*> labels);
   /** Adds a label and item */
-  BaseEditItem* add(Label* label, BaseEditItem* item);
+  BaseEditItem* add(Label* label, BaseEditItem* item, int column = 1);
   /** Adds a label and item and help text*/
-  BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help);
+  BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help, int column = 1);
   void create_window(const std::string& title);
 
   /**
@@ -87,7 +89,10 @@ public:
   [[nodiscard]] int max_display_height();
 
   /** Returns the size of the longest label */
-  [[nodiscard]] int max_label_width() const;
+  [[nodiscard]] int max_label_width(int column) const;
+  /** Returns the size of the longest non-label */
+  [[nodiscard]] int max_item_width(int column) const;
+  
 
   /**
    * Moves the labels to the x position just after the labels.
@@ -110,6 +115,7 @@ private:
   std::unique_ptr<CursesWindow> window_;
   bool edit_mode_;
   int num_columns_{0};
+  std::vector<Column> columns_;
 };
 
 #endif
