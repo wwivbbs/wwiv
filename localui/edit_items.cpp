@@ -25,7 +25,6 @@
 #include "localui/wwiv_curses.h"
 #include <algorithm>
 #include <cstdlib>
-#include <functional>
 #include <initializer_list>
 #include <memory>
 #include <set>
@@ -188,7 +187,7 @@ int EditItems::max_display_height() {
   int result = 1;
   for (const auto* l : labels_) {
     if (l->y() > result) {
-      result = l->y();
+      result = l->y() + l->height() - 1;
     }
   }
   for (const auto* i : items_) {

@@ -51,17 +51,35 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 
-void Label::Display(CursesWindow* window) const { Display(window, x_, y_); }
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-void Label::Display(CursesWindow* window, int x, int y) const {
-  window->GotoXY(x, y);
+void Label::Display(CursesWindow* window) const {
+  window->GotoXY(x_, y_);
   if (right_justify_) {
     const auto pad = std::max<int>(0, width_ - size_int(text_));
     window->Puts(std::string(pad, ' '));
   }
   window->Puts(text_);
-};
+}
+
+MultilineLabel::MultilineLabel(int x, int y, const std::string& text)
+    : Label(x, y, 0, text) {
+  lines_ = SplitString(text, "\r\n", false);
+  auto w = 0;
+  for (const auto& l : lines_) {
+    w = std::max<int>(w, size_int(l));
+  }
+  width_ = w;
+}
+
+void MultilineLabel::Display(CursesWindow* window) const {
+  for (auto i = 0; i < size_int(lines_); i++) {
+    window->GotoXY(x_, y_ + i);
+    window->Puts(at(lines_, i));
+  }
+}
+
+int MultilineLabel::height() const {
+  return size_int(lines_);
+}
 
 EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);

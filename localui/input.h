@@ -154,20 +154,33 @@ protected:
 };
 
 // Label class that's used to display a label for an EditItem
-class Label final : public Item {
+class Label : public Item {
 public:
   Label(int x, int y, int width, std::string text) : Item(x, y, width), text_(std::move(text)) {}
   Label(int x, int y, const std::string& text) : Label(x, y, wwiv::stl::size_int(text), text) {}
   explicit Label(const std::string& text) : Label(0, 0, wwiv::stl::size_int(text), text) {}
 
   void Display(CursesWindow* window) const override;
-  void Display(CursesWindow* window, int x, int y) const;
   void set_right_justified(bool r) noexcept { right_justify_ = r; }
   [[nodiscard]] const std::string& text() const noexcept { return text_; }
+  [[nodiscard]] virtual int height() const { return 1; }
 
 protected:
   bool right_justify_{true};
   const std::string text_;
+};
+
+// Label class that's used to display a label for an EditItem
+class MultilineLabel final : public Label {
+public:
+  MultilineLabel(int x, int y, const std::string& text);
+  MultilineLabel(const std::string& text) : MultilineLabel(0, 0, text) {}
+
+  void Display(CursesWindow* window) const override;
+  [[nodiscard]] int height() const override;
+
+private:
+  std::vector<std::string> lines_;
 };
 
 // Base item of an editable value that uses templates to hold the
@@ -745,6 +758,7 @@ private:
 class CommandLineItem final : public EditItem<char*> {
 public:
   CommandLineItem(int x, int y, int maxsize, char* data) : EditItem<char*>(x, y, maxsize, data) {}
+  CommandLineItem(int maxsize, char* data) : EditItem<char*>(maxsize, data) {}
   ~CommandLineItem() override = default;
   CommandLineItem() = delete;
   CommandLineItem(CommandLineItem const&) = delete;
