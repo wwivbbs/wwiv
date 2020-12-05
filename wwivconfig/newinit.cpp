@@ -134,7 +134,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   for (int i = 0; i < 256; i++) {
     slrec sl{};
     sl.time_per_logon = static_cast<uint16_t>((i / 10) * 10);
-    sl.time_per_day = static_cast<uint16_t>(static_cast<float>(sl.time_per_logon) * 2.5);
+    sl.time_per_day = static_cast<uint16_t>(sl.time_per_logon * 2.5);
     sl.messages_read = static_cast<uint16_t>((i / 10) * 100);
     if (i < 10) {
       sl.emails = 0;

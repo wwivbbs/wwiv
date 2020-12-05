@@ -103,7 +103,7 @@ static std::string to_restriction_string(T data, int size, const std::string& re
 class Item {
 public:
   Item(int x, int y, int width) : x_(x), y_(y), width_(width) {}
-  Item(int width) : x_(0), y_(0), width_(width) {}
+  explicit Item(int width) : x_(0), y_(0), width_(width) {}
   virtual ~Item() = default;
   typedef ssize_t size_type;
 
