@@ -16,11 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// ReSharper disable CppClangTidyBugproneMacroParentheses
 #ifndef INCLUDED_LOCALUI_EDIT_ITEMS_H
 #define INCLUDED_LOCALUI_EDIT_ITEMS_H
 
-//#include "core/file.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "localui/input.h"
@@ -30,21 +28,34 @@
 #include <vector>
 
 /**
- * Represent a column in the UI.
+ * Represent a cell in the UI.
  *
  * The column number is a number 1-N
  * x is the start position relative to the window
  * Width span both label, padding between label and item, and item widths.
  */
-class Column final {
+class Cell final {
 public:
-  explicit Column(int num)
-    : num_(num) {
-  }
+  Cell() = default;
+  [[nodiscard]] int width() const;
+  void set_width(int);
+  [[nodiscard]] int x() const { return x_; }
+  void set_x(int);
+  [[nodiscard]] int column() const;
+  void set_column(int c) { column_ = c; }
 
+  Item* item{nullptr};
   int x_{2};
   int width_{0};
-  int num_;
+  int column_{0};
+};
+
+
+class Column final {
+public:
+  Column() = default;
+  int width{0};
+  int x{0};
 };
 
 //TODO(rushfan): Maybe this should be renamed to Form, since that's really
@@ -132,12 +143,6 @@ public:
 
   [[nodiscard]] int max_display_height();
 
-  /** Returns the size of the longest label */
-  [[nodiscard]] int max_label_width(int column) const;
-  /** Returns the size of the longest non-label */
-  [[nodiscard]] int max_item_width(int column) const;
-  
-
   /**
    * Moves the labels to the x position just after the labels.
    * This only works for single column layouts of: {label:} {item}
@@ -159,7 +164,8 @@ private:
   std::unique_ptr<CursesWindow> window_;
   bool edit_mode_;
   int num_columns_{0};
-  std::vector<Column> columns_;
+  // row, then columns
+  std::map<int, std::map<int, Cell>> cells_;
 };
 
 #endif

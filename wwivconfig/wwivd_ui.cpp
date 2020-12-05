@@ -35,30 +35,19 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static constexpr int COL1_LINE = 2;
-static constexpr int COL1_POSITION = 21;
-static constexpr int LABEL1_WIDTH = 18;
-
-static const char enter_to_edit[] = "[Press Enter to Edit]";
-
-/** 
- * EditItem that executes a std::function<T, CursesWindow*> to 
+/**
+ * EditItem that executes a std::function<T, CursesWindow*> to
  * edit the items. It is intended that this function will invoke
  * a new EditItem dialog or ListBox for editing.
  */
 template <class T> class SubDialogFunction final : public SubDialog<T> {
 public:
-  SubDialogFunction(const Config& c, int x, int y, T& t, std::function<void(const Config&, T&, CursesWindow*)> fn)
-    : SubDialog<T>(c, x, y, t), c_(c), t__(t), fn_(std::move(fn)) {}
+  SubDialogFunction(const Config& c, T& t,
+                    std::function<void(const Config&, T&, CursesWindow*)> fn)
+      : SubDialog<T>(c, t), c_(c), t__(t), fn_(std::move(fn)) {}
   ~SubDialogFunction() override = default;
 
-  void RunSubDialog(CursesWindow* window) override {
-      fn_(c_, t__, window);
-  }
-
-  [[nodiscard]] std::string menu_label() const override {
-    return enter_to_edit;
-  }
+  void RunSubDialog(CursesWindow* window) override { fn_(c_, t__, window); }
 
 private:
   // For some reason GCC couldn't find config() or t_ from SubDialog.
@@ -108,8 +97,7 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
       auto& b = b_.block_cc_countries.at(result.selected);
-      const auto code_str =
-          dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
+      const auto code_str = dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
       if (code_str.empty()) {
         break;
       }
@@ -121,88 +109,73 @@ static void blocked_country_subdialog(const Config&, wwivd_blocking_t& b_, Curse
 }
 
 // Base item of an editable value, this class does not use templates.
-static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindow*) { 
-  EditItems items{}; 
+static void edit_blocking(const Config& config, wwivd_blocking_t& b, CursesWindow*) {
+  EditItems items{};
   int y = 1;
-  items.add(new Label(COL1_LINE, y, "Use goodip.txt?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.use_goodip_txt));
+  items.add(new Label("Use goodip.txt?"), new BooleanEditItem(&b.use_goodip_txt), 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Use badip.txt?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.use_badip_txt));
+  items.add(new Label("Use badip.txt?"), new BooleanEditItem(&b.use_badip_txt), 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Use 'Press <ESC> twice for BBS'?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.mailer_mode));
+  items.add(new Label("Press <ESC> for BBS?"), new BooleanEditItem(&b.mailer_mode), 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Use CC Server?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.use_dns_cc));
+  items.add(new Label("Use CC Server?"), new BooleanEditItem(&b.use_dns_cc), 1, y);
 
   y++;
-  items.add(
-      new Label(COL1_LINE, y, "DNS CC Server:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.dns_cc_server,
-                                             EditLineMode::ALL));
+  items.add(new Label("DNS CC Server:"),
+            new StringEditItem<std::string&>(40, b.dns_cc_server, EditLineMode::ALL), 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
-            new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, b, blocked_country_subdialog));
+  items.add(new Label("Blocked Countries:"),
+            new SubDialogFunction<wwivd_blocking_t>(config, b, blocked_country_subdialog), 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &b.max_concurrent_sessions));
+  items.add(new Label("Max Concurrent Sessions:"),
+            new NumberEditItem<int>(&b.max_concurrent_sessions), 1, y);
+  y += 2;
+  items.add(new Label("Enable Auto Blocking?"), new BooleanEditItem(&b.auto_blocklist), 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, ""));
+  items.add(new Label("Max Sessions Before Blocking:"),
+            new NumberEditItem<int>(&b.auto_bl_sessions), 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, "Enable Auto Blocking?"),
-            new BooleanEditItem(COL1_POSITION, y, &b.auto_blocklist));
-  y++;
-  items.add(new Label(COL1_LINE, y, "Max Sessions Before Blocking:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_sessions));
-  y++;
-  items.add(new Label(COL1_LINE, y, "Max Seconds Before Blocking:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_seconds));
+  items.add(new Label("Max Seconds Before Blocking:"), new NumberEditItem<int>(&b.auto_bl_seconds),
+            1, y);
 
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
 }
 
-static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) { 
+static void edit_matrix_entry(const Config& config, wwivd_matrix_entry_t& b) {
   EditItems items{};
   char key[2] = {b.key, 0};
   {
     int y = 1;
-    items.add(new Label(COL1_LINE, y, "Key:"),
-              new StringEditItem<char*>(COL1_POSITION, y, 1, key, EditLineMode::ALL));
+    items.add(new Label("Key:"), new StringEditItem<char*>(1, key, EditLineMode::ALL), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Name:"),
-        new StringEditItem<std::string&>(COL1_POSITION, y, 12, b.name, EditLineMode::ALL));
+    items.add(new Label("Name:"),
+              new StringEditItem<std::string&>(12, b.name, EditLineMode::ALL), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Description:"),
-        new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.description, EditLineMode::ALL));
+    items.add(new Label("Description:"),
+              new StringEditItem<std::string&>(52, b.description, EditLineMode::ALL), 1, y);
     y++;
-    items.add(
-        new Label(COL1_LINE, y, "Working Dir:"),
-        new StringFilePathItem(COL1_POSITION, y, 52, config.root_directory(), b.working_directory));
+    items.add(new Label("Working Dir:"),
+              new StringFilePathItem(52, config.root_directory(), b.working_directory), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Telnet Command:"),
-        new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.telnet_cmd, EditLineMode::ALL));
+    items.add(new Label("Telnet Command:"),
+              new StringEditItem<std::string&>(52, b.telnet_cmd, EditLineMode::ALL), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "SSH Command:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.ssh_cmd, EditLineMode::ALL));
+    items.add(new Label("SSH Command:"),
+              new StringEditItem<std::string&>(52, b.ssh_cmd, EditLineMode::ALL), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Require Ansi:"),
-              new BooleanEditItem(COL1_POSITION, y, &b.require_ansi));
+    items.add(new Label("Require Ansi:"), new BooleanEditItem(&b.require_ansi), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Start Node:"),
-              new NumberEditItem<int>(COL1_POSITION, y, &b.start_node));
+    items.add(new Label("Start Node:"), new NumberEditItem<int>(&b.start_node), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "End Node:"),
-              new NumberEditItem<int>(COL1_POSITION, y, &b.end_node));
+    items.add(new Label("End Node:"), new NumberEditItem<int>(&b.end_node), 1, y);
     y++;
-    items.add(new Label(COL1_LINE, y, "Local Node:"),
-              new NumberEditItem<int>(COL1_POSITION, y, &b.local_node));
+    items.add(new Label("Local Node:"), new NumberEditItem<int>(&b.local_node), 1, y);
   }
 
   items.relayout_items_and_labels();
@@ -274,15 +247,13 @@ static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
   return e;
 }
 
-bool SaveDaemonConfig(const wwiv::sdk::Config& config, wwivd_config_t& c) {
-  return c.Save(config);
-}
+bool SaveDaemonConfig(const wwiv::sdk::Config& config, wwivd_config_t& c) { return c.Save(config); }
 
 wwivd_config_t LoadDaemonConfig(const wwiv::sdk::Config& config) {
   wwivd_config_t c{};
   if (!c.Load(config)) {
     c.binkp_port = -1;
-    c.telnet_port = 
+    c.telnet_port =
 #ifdef _WIN32
         23;
 #else
@@ -320,69 +291,69 @@ void wwivd_ui(const Config& config) {
 
   EditItems items{};
   auto y = 1;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Telnet Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port),
-            "Telnet Server Port Number (or -1 to disable).");
+  items.add(new Label("Telnet Port:"),
+            new NumberEditItem<int>(&c.telnet_port),
+            "Telnet Server Port Number (or -1 to disable).", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "SSH Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port),
-            "SSH Server Port Number (or -1 to disable).");
+  items.add(new Label("SSH Port:"),
+            new NumberEditItem<int>(&c.ssh_port),
+            "SSH Server Port Number (or -1 to disable).", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port),
-            "Used for BBS node status [/status] (or -1 to disable).");
-  y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL1_WIDTH, "Status Address:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, EditLineMode::ALL),
-      "Network address for the BBS node status HTTP Server.");
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BinkP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port),
-            "BINKP Server Port Number (or -1 to disable).");
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Launch Minimized:"),
-            new BooleanEditItem(COL1_POSITION, y, &c.launch_minimized),
-            "Should wwivd launch bbs and network commands minimized (WIN32 Only)");
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
-            new BooleanEditItem(COL1_POSITION, y, &c.do_beginday_event),
-            "Should wwivd execute the beginday event for WWIV.");
+  items.add(new Label("Status Port:"),
+            new NumberEditItem<int>(&c.http_port),
+            "Used for BBS node status [/status] (or -1 to disable).", 1, y);
   y++;
   items.add(
-      new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, EditLineMode::ALL),
-      "Command to execute for the beginday event.");
+      new Label("Status Address:"),
+      new StringEditItem<std::string&>(16, c.http_address, EditLineMode::ALL),
+      "Network address for the BBS node status HTTP Server.", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callouts:"),
-            new BooleanEditItem(COL1_POSITION, y, &c.do_network_callouts),
-            "Command to execute to perform a network callout.");
+  items.add(new Label("BinkP Port:"),
+            new NumberEditItem<int>(&c.binkp_port),
+            "BINKP Server Port Number (or -1 to disable).", 1, y);
+  y++;
+  items.add(new Label("Launch Minimized:"),
+            new BooleanEditItem(&c.launch_minimized),
+            "Should wwivd launch bbs and network commands minimized (WIN32 Only)", 1, y);
+  y++;
+  items.add(new Label("Run BeginDay:"),
+            new BooleanEditItem(&c.do_beginday_event),
+            "Should wwivd execute the beginday event for WWIV.", 1, y);
+  y++;
+  items.add(
+      new Label("BeginDay Cmd:"),
+      new StringEditItem<std::string&>(52, c.beginday_cmd, EditLineMode::ALL),
+      "Command to execute for the beginday event.", 1, y);
+  y++;
+  items.add(new Label("Net Callouts:"),
+            new BooleanEditItem(&c.do_network_callouts),
+            "Command to execute to perform a network callout.", 1, y);
 
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callout Cmd:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd,
+  items.add(new Label("Net Callout Cmd:"),
+            new StringEditItem<std::string&>(52, c.network_callout_cmd,
                                              EditLineMode::ALL),
-            "Command to execute to perform a network callout.");
+            "Command to execute to perform a network callout.", 1, y);
   y++;
-  items
-      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, EditLineMode::ALL))
-      ->set_help_text("Command to execute for an inbound network request.");
-  y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, EditLineMode::ALL),
-      "Filename to display without extension before matrix bbs menu.");
-  y++;
-  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
-            new SubDialogFunction<wwivd_config_t>(config, COL1_POSITION, y, c, matrix_subdialog),
-            "Create/Edit/Delete Matrix BBS settings.");
+  items.add(new Label("Net receive cmd:"),
+            new StringEditItem<std::string&>(52, c.binkp_cmd, EditLineMode::ALL),
+            "Command to execute for an inbound network request.", 1, y);
   y++;
   items.add(
-      new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
-      new SubDialogFunction<wwivd_blocking_t>(config, COL1_POSITION, y, c.blocking, edit_blocking),
-      "IP Blocking Settings.");
+      new Label("Matrix Filename:"),
+      new StringEditItem<std::string&>(12, c.matrix_filename, EditLineMode::ALL),
+      "Filename to display without extension before matrix bbs menu.", 1, y);
+  y++;
+  items.add(new Label("Matrix Settings:"),
+            new SubDialogFunction<wwivd_config_t>(config, c, matrix_subdialog),
+            "Create/Edit/Delete Matrix BBS settings.", 1, y);
+  y++;
+  items.add(
+      new Label("Blocking:"),
+      new SubDialogFunction<wwivd_blocking_t>(config, c.blocking, edit_blocking),
+      "IP Blocking Settings.", 1, y);
 
+  items.relayout_items_and_labels();
   items.Run("wwivd Configuration");
   if (!SaveDaemonConfig(config, c)) {
     messagebox(items.window(), "Error saving wwivd.json");

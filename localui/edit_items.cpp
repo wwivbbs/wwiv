@@ -28,8 +28,11 @@
 #include <functional>
 #include <initializer_list>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
+
+using namespace wwiv::stl;
 
 void EditItems::Run(const std::string& title) {
   if (!window_) {
@@ -85,21 +88,27 @@ void EditItems::Display() const {
   window_->Refresh();
 }
 
-BaseEditItem* EditItems::add(BaseEditItem* item, int column, int y) {
+BaseEditItem* EditItems::add(BaseEditItem* item, int column, int row) {
   DCHECK(item);
   item->set_column(column);
-  if (y >= 0) {
-    item->set_y(y);
+  if (row >= 0) {
+    item->set_y(row);
+    auto& cell = cells_[row][column];
+    cell.item = item;
+    cell.set_column(column);
   }
   items_.push_back(item);
   return item;
 }
 
-Label* EditItems::add(Label* label, int column, int y) {
+Label* EditItems::add(Label* label, int column, int row) {
   DCHECK(label);
   label->set_column(column);
-  if (y >= 0) {
-    label->set_y(y);
+  if (row >= 0) {
+    label->set_y(row);
+    auto& cell = cells_[row][column];
+    cell.item = label;
+    cell.set_column(column);
   }
   labels_.push_back(label);
   return label;
@@ -112,14 +121,14 @@ void EditItems::add_labels(std::initializer_list<Label*> labels) {
   }
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column, int y) {
-  add(label, column, y);
-  return add(item, column, y);
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column, int row) {
+  add(label, column, row);
+  return add(item, column+1, row);
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column, int y) {
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column, int row) {
   item->set_help_text(help);
-  return add(label, item, column, y);
+  return add(label, item, column, row);
 }
 
 void EditItems::create_window(const std::string& title) {
@@ -190,32 +199,6 @@ int EditItems::max_display_height() {
   return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
 }
 
-int EditItems::max_label_width(int column) const {
-  std::string::size_type result = 0;
-  for (const auto* l : labels_) {
-    if (l->column() != column) {
-      continue;
-    }
-    if (l->text().size() > result) {
-      result = l->text().size();
-    }
-  }
-  return static_cast<int>(result);
-}
-
-int EditItems::max_item_width(int column) const {
-  auto result = 0;
-  for (const auto* l : items_) {
-    if (l->column() != column) {
-      continue;
-    }
-    if (l->width() > result) {
-      result = l->width();
-    }
-  }
-  return result;
-}
-
 static constexpr auto PADDING = 2;
 
 /**
@@ -236,31 +219,50 @@ static constexpr auto PADDING = 2;
  *     layout on. i.e layout all 1 col rows, then all 2 col rows.
  */
 void EditItems::relayout_items_and_labels() {
-  std::vector<int> prev_width{};
-  for (auto i = 1; i <= num_columns_; i++) {
-    // Figure out this columns width.
-    auto& c = columns_.at(i);
-    if (c.width_ == 0) {
-      c.width_ = max_label_width(i) + 1 + max_item_width(i);
-    }
-    auto& prev = columns_.at(i - 1);
-    c.x_ = prev.x_ + prev.width_ + PADDING;
+  if (cells_.empty()) {
+    return;
   }
 
-  // column numbers start at 1
-  for (auto column = 1; column <= num_columns_; column++) {
-    const auto&c = columns_.at(column);
-    const auto label_width = max_label_width(column);
-    for (auto* l : labels_) {
-      if (l->column() == column) {
-        l->set_x(c.x_);
-        l->set_width(label_width);
+  std::map<int, std::set<int>> widths_and_rows;
+  for (const auto& [row_num, row] : cells_) {
+    widths_and_rows[size_int(row)].insert(row_num);
+  }
+
+  std::map<int, Column> columns;
+  for (const auto& [_, row_nums] : widths_and_rows) {
+    // Compute Max Width per cell
+    for (const auto& row_num : row_nums) {
+      for (auto& [col_num, cell] : cells_[row_num]) {
+        // c.first is column, c.second is Cell
+        if (cell.width() > columns[col_num].width) {
+          columns[col_num].width = cell.width();
+        }
       }
     }
-    for (auto* i : items_) {
-      if (i->column() == column) {
-        i->set_x(c.x_ + 1 + label_width);
+    // Set Max Width per cell
+    for (const auto& row_num : row_nums) {
+      for (auto& [col_num, cell] : cells_[row_num]) {
+        if (const auto width = columns[col_num].width; width > 0) {
+          cell.set_width(width);
+        }
       }
+    }
+  }
+  // Figure out column x;
+  for (auto& [col_num, col] : columns) {
+    if (col_num <= 0) {
+      // should be in order, so skip column 0, which is width 0;
+      continue;
+    }
+    auto& prev = columns[col_num - 1];
+    col.x = prev.x + prev.width + 1;
+  }
+
+  // Now need to set X values for everything.
+  for (auto& [_, row] : cells_) {
+    for (auto& [col_num, cell] : row) {
+      auto& col = columns[col_num];
+      cell.set_x(col.x);
     }
   }
 }
@@ -272,16 +274,29 @@ std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
   };
 }
 
+int Cell::width() const {
+  return item ? item->width() + 1 : 0;
+}
+
+void Cell::set_width(int w) {
+  width_ = w;
+  if (item) {
+    item->set_width(w);
+  }
+}
+
+void Cell::set_x(int new_x) {
+  x_ = new_x;
+  if (item) {
+    item->set_x(new_x);
+  }
+}
+
+int Cell::column() const { return column_; }
+
 EditItems::EditItems(int num_columns)
   : navigation_help_items_(StandardNavigationHelpItems()),
     editor_help_items_(StandardEditorHelpItems()), edit_mode_(false), num_columns_(num_columns) {
-  Column zero(0);
-  zero.x_ = 0;
-  zero.width_ = 0;
-  columns_.emplace_back(zero);
-  for (auto i = 1; i <= num_columns_; i++) {
-    columns_.emplace_back(i);
-  }
 }
 
 EditItems::~EditItems() {

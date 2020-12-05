@@ -48,7 +48,7 @@ static constexpr auto EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 
 enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
-class NavigationKeyConfig {
+class NavigationKeyConfig final {
 public:
   explicit NavigationKeyConfig(std::string keys) : keys_(std::move(keys)) {}
   ~NavigationKeyConfig() = default;
@@ -103,6 +103,7 @@ static std::string to_restriction_string(T data, int size, const std::string& re
 class Item {
 public:
   Item(int x, int y, int width) : x_(x), y_(y), width_(width) {}
+  Item(int width) : x_(0), y_(0), width_(width) {}
   virtual ~Item() = default;
   typedef ssize_t size_type;
 
@@ -111,7 +112,7 @@ public:
   virtual void set_x(int x) noexcept { x_ = x; }
   virtual void set_y(int y) noexcept { y_ = y; }
   [[nodiscard]] virtual int width() const noexcept { return width_; }
-  void set_width(int width) noexcept { width_ = width; }
+  virtual void set_width(int width) noexcept { width_ = width; }
   [[nodiscard]] std::size_t size() const noexcept { return width_; }
 
   [[nodiscard]] virtual int column() const noexcept { return column_; }
@@ -130,7 +131,8 @@ public:
 class BaseEditItem : public Item {
 public:
   BaseEditItem(int x, int y, int maxsize) : Item(x, y, maxsize) {}
-  virtual ~BaseEditItem() = default;
+  BaseEditItem(int maxsize) : Item(maxsize) {}
+  ~BaseEditItem() override = default;
 
   BaseEditItem() = delete;
   BaseEditItem(BaseEditItem const&) = delete;
@@ -156,6 +158,7 @@ class Label final : public Item {
 public:
   Label(int x, int y, int width, std::string text) : Item(x, y, width), text_(std::move(text)) {}
   Label(int x, int y, const std::string& text) : Label(x, y, wwiv::stl::size_int(text), text) {}
+  Label(const std::string& text) : Label(0, 0, wwiv::stl::size_int(text), text) {}
 
   void Display(CursesWindow* window) const override;
   void Display(CursesWindow* window, int x, int y) const;
@@ -182,6 +185,12 @@ public:
   ~EditItem() override = default;
 
   void set_displayfn(displayfn f) { display_ = f; }
+  void set_width(int width) noexcept override {
+    if (width < width_) {
+      // NOP.  We don't allow setting the width over the original width.
+      width_ = width;
+    }
+  }
 
   void Display(CursesWindow* window) const override {
     if (display_) {
@@ -218,9 +227,14 @@ template <typename T> class StringEditItem : public EditItem<T> {
 public:
   StringEditItem(int x, int y, int maxsize, T data, EditLineMode edit_line_mode)
       : EditItem<T>(x, y, maxsize, data), edit_line_mode_(edit_line_mode) {}
+  StringEditItem(int maxsize, T data, EditLineMode edit_line_mode)
+      : StringEditItem(0, 0, maxsize, data, edit_line_mode) {}
   StringEditItem(int x, int y, int maxsize, T data)
       : StringEditItem(x, y, maxsize, data, EditLineMode::ALL) {}
+  StringEditItem(int maxsize, T data)
+      : StringEditItem(0, 0, maxsize, data, EditLineMode::ALL) {}
   virtual ~StringEditItem() = default;
+
   StringEditItem() = delete;
   StringEditItem(StringEditItem const&) = delete;
   StringEditItem(StringEditItem&&) = delete;
@@ -248,6 +262,8 @@ template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
 public:
   StringEditItem(int x, int y, int maxsize, std::string& data, EditLineMode mode)
       : EditItem<std::string&>(x, y, maxsize, data), edit_line_mode_(mode) {}
+  StringEditItem(int maxsize, std::string& data, EditLineMode mode)
+      : StringEditItem(0, 0, maxsize, data, mode) {} 
   ~StringEditItem() override = default;
   StringEditItem() = delete;
   StringEditItem(StringEditItem const&) = delete;
@@ -273,6 +289,7 @@ template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem final : public EditItem<T*> {
 public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, MAXLEN + 2, data) {}
+  NumberEditItem(T* data) : NumberEditItem(0, 0, data) {}
   virtual ~NumberEditItem() = default;
   NumberEditItem() = delete;
   NumberEditItem(NumberEditItem const&) = delete;
@@ -530,6 +547,7 @@ public:
 class BooleanEditItem final : public EditItem<bool*> {
 public:
   BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 6, data) {}
+  BooleanEditItem(bool* data) : BooleanEditItem(0, 0, data) {}
   ~BooleanEditItem() override = default;
   BooleanEditItem() = delete;
   BooleanEditItem(BooleanEditItem const&) = delete;
@@ -682,7 +700,10 @@ public:
       : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
+  StringFilePathItem(int maxsize, const std::filesystem::path& base, std::string& data)
+      : StringFilePathItem(0, 0, maxsize, base, data) {}
   ~StringFilePathItem() override = default;
+
   StringFilePathItem() = delete;
   StringFilePathItem(StringFilePathItem const&) = delete;
   StringFilePathItem(StringFilePathItem&&) = delete;
@@ -751,6 +772,8 @@ template <class T> class SubDialog : public BaseEditItem {
 public:
   SubDialog(const wwiv::sdk::Config& c, int x, int y, T& t)
       : BaseEditItem(x, y, 25), c_(c), t_(t) {}
+  SubDialog(const wwiv::sdk::Config& c, T& t)
+      : BaseEditItem(0, 0, 25), c_(c), t_(t) {}
   ~SubDialog() override = default;
 
   virtual void RunSubDialog(CursesWindow* window) = 0;
@@ -776,7 +799,7 @@ public:
 
 protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
-  [[nodiscard]] virtual std::string menu_label() const { return "[Enter to Edit]"; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
 
   const wwiv::sdk::Config& c_;
   T& t_;
