@@ -158,7 +158,7 @@ class Label final : public Item {
 public:
   Label(int x, int y, int width, std::string text) : Item(x, y, width), text_(std::move(text)) {}
   Label(int x, int y, const std::string& text) : Label(x, y, wwiv::stl::size_int(text), text) {}
-  Label(const std::string& text) : Label(0, 0, wwiv::stl::size_int(text), text) {}
+  explicit Label(const std::string& text) : Label(0, 0, wwiv::stl::size_int(text), text) {}
 
   void Display(CursesWindow* window) const override;
   void Display(CursesWindow* window, int x, int y) const;
@@ -182,6 +182,7 @@ public:
   EditItem& operator=(EditItem&&) = delete;
 
   EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data) {}
+  EditItem(int maxsize, T data) : BaseEditItem(maxsize), data_(data) {}
   ~EditItem() override = default;
 
   void set_displayfn(displayfn f) { display_ = f; }
@@ -524,6 +525,7 @@ class RestrictionsEditItem final : public BaseRestrictionsEditItem {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, xrestrictstring, xrestrictstring_size, data) {}
+  RestrictionsEditItem(uint16_t* data) : RestrictionsEditItem(0, 0, data) {}
   ~RestrictionsEditItem() override = default;
   RestrictionsEditItem() = delete;
   RestrictionsEditItem(RestrictionsEditItem const&) = delete;

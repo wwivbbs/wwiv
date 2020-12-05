@@ -24,6 +24,7 @@
 #include "localui/input.h"
 #include "sdk/config.h"
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -45,7 +46,7 @@ public:
   void set_column(int c) { column_ = c; }
 
   Item* item{nullptr};
-  int x_{2};
+  int x_{1};
   int width_{0};
   int column_{0};
 };
@@ -69,7 +70,7 @@ public:
 class EditItems final {
 public:
   typedef std::function<void()> additional_helpfn;
-  explicit EditItems(int num_columns = 1);
+  EditItems();
   EditItems(EditItems const&) = delete;
   EditItems(EditItems&&) = delete;
   EditItems& operator=(EditItems const&) = delete;
@@ -149,6 +150,11 @@ public:
    */
   void relayout_items_and_labels();
 
+  /**
+   * Add a column number to align label sizes for.
+   */
+  void add_aligned_width_column(int n) { align_label_cols_.insert(n); }
+
   static std::vector<HelpItem> StandardNavigationHelpItems();
 
   static std::vector<HelpItem> StandardEditorHelpItems() { return {{"Esc", "Exit"}}; }
@@ -163,9 +169,9 @@ private:
   std::vector<HelpItem> editor_help_items_;
   std::unique_ptr<CursesWindow> window_;
   bool edit_mode_;
-  int num_columns_{0};
   // row, then columns
   std::map<int, std::map<int, Cell>> cells_;
+  std::set<int> align_label_cols_;
 };
 
 #endif

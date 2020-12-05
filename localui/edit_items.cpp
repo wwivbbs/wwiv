@@ -228,12 +228,13 @@ void EditItems::relayout_items_and_labels() {
     widths_and_rows[size_int(row)].insert(row_num);
   }
 
-  std::map<int, Column> columns;
-  for (const auto& [_, row_nums] : widths_and_rows) {
+  std::map<int, std::map<int, Column>> widths_and_columns;
+  for (const auto& [num_cols_for_this_row, row_nums] : widths_and_rows) {
     // Compute Max Width per cell
     for (const auto& row_num : row_nums) {
       for (auto& [col_num, cell] : cells_[row_num]) {
         // c.first is column, c.second is Cell
+        auto& columns = widths_and_columns[num_cols_for_this_row];
         if (cell.width() > columns[col_num].width) {
           columns[col_num].width = cell.width();
         }
@@ -241,6 +242,7 @@ void EditItems::relayout_items_and_labels() {
     }
     // Set Max Width per cell
     for (const auto& row_num : row_nums) {
+      auto& columns = widths_and_columns[size_int(cells_[row_num])];
       for (auto& [col_num, cell] : cells_[row_num]) {
         if (const auto width = columns[col_num].width; width > 0) {
           cell.set_width(width);
@@ -248,18 +250,48 @@ void EditItems::relayout_items_and_labels() {
       }
     }
   }
-  // Figure out column x;
-  for (auto& [col_num, col] : columns) {
-    if (col_num <= 0) {
-      // should be in order, so skip column 0, which is width 0;
-      continue;
+
+  if (!align_label_cols_.empty()) {
+    std::map<int, int> aligned_col_max_width;
+    for (const auto aligned_col : align_label_cols_) {
+      auto& max_width = aligned_col_max_width[aligned_col];
+      for (auto& [rownum, row] : cells_) {
+        const auto width = row.at(aligned_col).width();
+        if (width > max_width) {
+          max_width = width;
+        }
+      }
     }
-    auto& prev = columns[col_num - 1];
-    col.x = prev.x + prev.width + 1;
+    for (const auto aligned_col : align_label_cols_) {
+      auto& width = aligned_col_max_width[aligned_col];
+      // Update width for the individual item.
+      for (auto& [rownum, row] : cells_) {
+        row.at(aligned_col).set_width(width);
+      }
+      // Update column width in Columns, used for spacing
+      for (auto& [wcwidth, cols] : widths_and_columns) {
+        cols.at(aligned_col).width = width;
+      }
+    }
+
+  }
+
+  // Figure out column x;
+  for (const auto& r : widths_and_rows) {
+    auto& columns = widths_and_columns[r.first];
+    for (auto& [col_num, col] : columns) {
+      if (col_num <= 0) {
+        // should be in order, so skip column 0, which is width 0;
+        continue;
+      }
+      auto& prev = columns[col_num - 1];
+      col.x = prev.x + prev.width + 1;
+    }
   }
 
   // Now need to set X values for everything.
   for (auto& [_, row] : cells_) {
+    auto& columns = widths_and_columns[size_int(row)];
     for (auto& [col_num, cell] : row) {
       auto& col = columns[col_num];
       cell.set_x(col.x);
@@ -294,10 +326,9 @@ void Cell::set_x(int new_x) {
 
 int Cell::column() const { return column_; }
 
-EditItems::EditItems(int num_columns)
+EditItems::EditItems()
   : navigation_help_items_(StandardNavigationHelpItems()),
-    editor_help_items_(StandardEditorHelpItems()), edit_mode_(false), num_columns_(num_columns) {
-}
+    editor_help_items_(StandardEditorHelpItems()), edit_mode_(false) { }
 
 EditItems::~EditItems() {
   // Since we added raw pointers we must cleanup.  Since AFAIK there is

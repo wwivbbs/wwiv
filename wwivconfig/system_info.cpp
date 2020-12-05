@@ -55,7 +55,7 @@ static const int MAX_TIME_EDIT_LEN = 5;
 
 class TimeEditItem final : public EditItem<uint16_t*> {
 public:
-  TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 5, data) {}
+  TimeEditItem(uint16_t* data) : EditItem<uint16_t*>(5, data) {}
   ~TimeEditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
@@ -75,7 +75,7 @@ protected:
 
 class Float53EditItem final : public EditItem<float*> {
 public:
-  Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 5, data) {}
+  Float53EditItem(float* data) : EditItem<float*>(5, data) {}
   ~Float53EditItem() override = default;
 
   EditlineResult Run(CursesWindow* window) override {
@@ -117,95 +117,90 @@ void sysinfo1(wwiv::sdk::Config& config) {
     save_status(config.datadir(), statusrec);
   }
 
-  static constexpr auto LABEL1_POSITION = 2;
-  static constexpr auto LABEL1_WIDTH = 18;
-  static constexpr auto LABEL2_WIDTH = 14;
-  static constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
-  static constexpr auto LABEL2_POSITION = COL1_POSITION + 17;
-  static constexpr auto COL2_POSITION = LABEL2_POSITION + LABEL2_WIDTH + 1;
-
   auto closed_system = cfg.closedsystem > 0;
   auto gold = static_cast<int>(cfg.newusergold);
 
   auto y = 1;
   EditItems items{};
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "System name:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 50, cfg.systemname, EditLineMode::ALL),
-    "Name of the BBS System");
+  items.add(new Label("System name:"),
+            new StringEditItem<char*>(50, cfg.systemname, EditLineMode::ALL),
+    "Name of the BBS System", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Sysop name:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 50, cfg.sysopname, EditLineMode::ALL),
-    "The name (or handle/alias) of the System Operator");
+  items.add(new Label("Sysop name:"),
+            new StringEditItem<char*>(50, cfg.sysopname, EditLineMode::ALL),
+    "The name (or handle/alias) of the System Operator", 1, y);
   ++y;
   items.add(
-      new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "System phone:"),
-      new StringEditItem<char*>(COL1_POSITION, y, 12, cfg.systemphone, EditLineMode::UPPER_ONLY),
-    "Phone number for the BBS (if you have one)");
+      new Label("System phone:"),
+      new StringEditItem<char*>(12, cfg.systemphone, EditLineMode::UPPER_ONLY),
+    "Phone number for the BBS (if you have one)", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "System PW:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 20, cfg.systempw, EditLineMode::UPPER_ONLY),
-            "Password needed to log in as sysop");
+  items.add(new Label("System PW:"),
+            new StringEditItem<char*>(20, cfg.systempw, EditLineMode::UPPER_ONLY),
+            "Password needed to log in as sysop", 1, y);
   y+=2;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Closed system?"),
-            new BooleanEditItem(COL1_POSITION, y, &closed_system),
-    "Are users allowed to establish accounts on this BBS");
+  items.add(new Label("Closed system?"),
+            new BooleanEditItem(&closed_system),
+    "Are users allowed to establish accounts on this BBS", 1, y);
   items.add(
-      new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "New User PW:"),
-      new StringEditItem<char*>(COL2_POSITION, y, 20, cfg.newuserpw, EditLineMode::UPPER_ONLY),
-    "Optional password users must provide in order create an account");
+      new Label("New User PW:"),
+      new StringEditItem<char*>(20, cfg.newuserpw, EditLineMode::UPPER_ONLY),
+    "Optional password users must provide in order create an account", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "New User SL:"),
-            new NumberEditItem<uint8_t>(COL1_POSITION, y, &cfg.newusersl),
-    "The security level that all new users are given. The default is 10");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "New User DSL:"),
-            new NumberEditItem<uint8_t>(COL2_POSITION, y, &cfg.newuserdsl),
-        "The download security level that all new users are given. The default is 10");
+  items.add(new Label("New User SL:"),
+            new NumberEditItem<uint8_t>(&cfg.newusersl),
+    "The security level that all new users are given. The default is 10", 1, y);
+  items.add(new Label("New User DSL:"),
+            new NumberEditItem<uint8_t>(&cfg.newuserdsl),
+        "The download security level that all new users are given. The default is 10", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "New User restrict:"),
-            new RestrictionsEditItem(COL1_POSITION, y, &cfg.newuser_restrict),
-    "Restrictions given to new users from certain features of the system.");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "New User gold:"),
-            new NumberEditItem<int>(COL2_POSITION, y, &gold),
-    "The default amount of gold given to new users");
+  items.add(new Label("New User restrict:"),
+            new RestrictionsEditItem(&cfg.newuser_restrict),
+    "Restrictions given to new users from certain features of the system.", 1, y);
+  items.add(new Label("New User gold:"),
+            new NumberEditItem<int>(&gold),
+    "The default amount of gold given to new users", 3, y);
   y+=2;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Sysop time: from:"),
-            new TimeEditItem(COL1_POSITION, y, &cfg.sysoplowtime),
-    "Set the time limits that the sysop is available for chat");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "to:"),
-            new TimeEditItem(COL2_POSITION, y, &cfg.sysophightime),
-    "Set the time limits that the sysop is available for chat");
+  items.add(new Label("Sysop time: from:"),
+            new TimeEditItem(&cfg.sysoplowtime),
+    "Set the time limits that the sysop is available for chat", 1, y);
+  items.add(new Label("to:"),
+            new TimeEditItem(&cfg.sysophightime),
+    "Set the time limits that the sysop is available for chat", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Ratios    :  U/D:"),
-            new Float53EditItem(COL1_POSITION, y, &cfg.req_ratio),
-    "Optional required ratio of (uploads/downloads) for downloading files");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "Post/Call:"),
-            new Float53EditItem(COL2_POSITION, y, &cfg.post_call_ratio),
-    "Optional required ratio of (uploads/downloads) for downloading files");
+  items.add(new Label("Ratios    :  U/D:"),
+            new Float53EditItem(&cfg.req_ratio),
+    "Optional required ratio of (uploads/downloads) for downloading files", 1, y);
+  items.add(new Label("Post/Call:"),
+            new Float53EditItem(&cfg.post_call_ratio),
+    "Optional required ratio of (uploads/downloads) for downloading files", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Max waiting:"),
-            new NumberEditItem<uint8_t>(COL1_POSITION, y, &cfg.maxwaiting),
-    "Maximum number of emails allowed for a user");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "Max users:"),
-            new NumberEditItem<uint16_t>(COL2_POSITION, y, &cfg.maxusers),
-    "The maximum number of users that can be on the system");
+  items.add(new Label("Max waiting:"),
+            new NumberEditItem<uint8_t>(&cfg.maxwaiting),
+    "Maximum number of emails allowed for a user", 1, y);
+  items.add(new Label("Max users:"),
+            new NumberEditItem<uint16_t>(&cfg.maxusers),
+    "The maximum number of users that can be on the system", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Total Calls:"),
-            new NumberEditItem<uint32_t>(COL1_POSITION, y, &statusrec.callernum1),
-    "Caller number for the last call to the BBS.");
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "Days active:"),
-            new NumberEditItem<uint16_t>(COL2_POSITION, y, &statusrec.days),
-    "Number of days the BBS has been active");
+  items.add(new Label("Total Calls:"),
+            new NumberEditItem<uint32_t>(&statusrec.callernum1),
+    "Caller number for the last call to the BBS.", 1, y);
+  items.add(new Label("Days active:"),
+            new NumberEditItem<uint16_t>(&statusrec.days),
+    "Number of days the BBS has been active", 3, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "4.x Reg Number:"),
-            new NumberEditItem<uint32_t>(COL1_POSITION, y, &cfg.wwiv_reg_number),
-    "Legacy registration # from WWIV 4.xx. Just used for bragging rights");
+  items.add(new Label("4.x Reg Number:"),
+            new NumberEditItem<uint32_t>(&cfg.wwiv_reg_number),
+    "Legacy registration # from WWIV 4.xx. Just used for bragging rights", 1, y);
 
-  items.add(new Label(LABEL2_POSITION, y, LABEL2_WIDTH, "Max Backups:"),
-            new NumberEditItem<uint8_t>(COL2_POSITION, y, &cfg.max_backups),
-    "Max number of backup to keep when making new datafile backups (0=unlimited)");
+  items.add(new Label("Max Backups:"),
+            new NumberEditItem<uint8_t>(&cfg.max_backups),
+    "Max number of backup to keep when making new datafile backups (0=unlimited)", 3, y);
 
   ++y;
 
+  items.add_aligned_width_column(1);
+  items.relayout_items_and_labels();
   items.Run("System Configuration");
   cfg.closedsystem = closed_system;
   cfg.newusergold = static_cast<float>(gold);
