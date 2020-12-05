@@ -68,43 +68,39 @@ static void edit_autoval(Config& config, int n) {
   constexpr int LABEL1_WIDTH = 14;
   constexpr int COL1_POSITION = LABEL1_POSTITION + LABEL1_WIDTH + 1;
 
-  valrec v = config.auto_val(n);
+  auto v = config.auto_val(n);
   EditItems items{};
-  int y = 1;
-  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "SL:"), 
-      new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl));
+  auto y = 1;
+  items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl), 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "DSL:"),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl));
+  items.add(new Label("DSL:"), new NumberEditItem<uint8_t>(&v.dsl), 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "AR:"),
-      new ArEditItem(COL1_POSITION, 3, &v.ar));
+  items.add(new Label("AR:"), new ArEditItem(&v.ar), 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "DAR:"),
-      new ArEditItem(COL1_POSITION, 4, &v.dar));
+  items.add(new Label("DAR:"), new ArEditItem(&v.dar), 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSTITION, y, LABEL1_WIDTH, "Restrictions:"),
-      new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict));
+  items.add(new Label("Restrictions:"), new RestrictionsEditItem(&v.restrict), 1,
+            y);
 
+  items.relayout_items_and_labels();
   items.Run(fmt::format("Auto-validation data for: Alt-F{}", n + 1));
   config.auto_val(n, v);
 }
 
-void autoval_levs(wwiv::sdk::Config& config) {
-  bool done = false;
+void autoval_levs(Config& config) {
+  auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
-    for (int i = 0; i < 10; i++) {
+    for (auto i = 0; i < 10; i++) {
       items.emplace_back(create_autoval_line(config, i));
     }
-    CursesWindow* window(curses_out->window());
-    ListBox list(window, "Select AutoVal", items);
+    ListBox list(curses_out->window(), "Select AutoVal", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
-    auto result = list.Run();
+    const auto result = list.Run();
 
     if (result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {

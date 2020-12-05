@@ -357,6 +357,8 @@ public:
       this->width_ = std::max<int>(this->width_, wwiv::strings::ssize(item.second));
     }
   }
+  ToggleEditItem(const std::vector<std::pair<T, std::string>>& items, T* data)
+    : ToggleEditItem(0, 0, items, data) {}
   virtual ~ToggleEditItem() = default;
   ToggleEditItem() = delete;
   ToggleEditItem(ToggleEditItem const&) = delete;
@@ -443,6 +445,8 @@ public:
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
+  FlagEditItem(int flag, const std::string& on, const std::string& off, T* data)
+    : FlagEditItem(0, 0, flag, on, off, data) {}
   virtual ~FlagEditItem() = default;
   FlagEditItem() = delete;
   FlagEditItem(FlagEditItem const&) = delete;
@@ -551,6 +555,8 @@ class ArEditItem final : public BaseRestrictionsEditItem {
 public:
   ArEditItem(int x, int y, uint16_t* data)
       : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
+  ArEditItem(uint16_t* data)
+      : ArEditItem(0, 0, data) {}
   ~ArEditItem() override = default;
   ArEditItem() = delete;
   ArEditItem(ArEditItem const&) = delete;
