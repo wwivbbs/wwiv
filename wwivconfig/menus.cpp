@@ -63,9 +63,11 @@ static const std::vector<pair<menus::menu_help_display_t, std::string>> help_act
 
 class ActionPickerSubDialog final : public SubDialog<std::string> {
 public:
-  ActionPickerSubDialog(const Config& config, std::vector<menus::menu_command_help_t> cmds, int x,
-                        int y, int width, std::string& c)
-      : SubDialog(config, x, y, c), cmds_(std::move(cmds)), width_(width) {}
+  ActionPickerSubDialog(const Config& config, std::vector<menus::menu_command_help_t> cmds,
+                        int width, std::string& c)
+      : SubDialog(config, c), cmds_(std::move(cmds)) {
+    this->width_ = width;
+  }
   ~ActionPickerSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -101,40 +103,35 @@ public:
   }
 
   [[nodiscard]] std::string menu_label() const override {
-    return fmt::format("{:<{}}", t_, width_);
+    return fmt::format("{:<{}}", t_, width());
   }
 
 private:
   const std::vector<menus::menu_command_help_t> cmds_;
-  int width_;
 };
 
 static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
-  constexpr auto LABEL_WIDTH = 6;
-  constexpr auto PADDING = 2;
-  constexpr auto COL1_LINE = PADDING;
-  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH;
-
   static const auto cmds = menus::LoadCommandHelpJSON(config.datadir());
 
   EditItems items{};
   auto y = 1;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Cmd:"),
-            new ActionPickerSubDialog(config, cmds, COL2_LINE, y, 40, a.cmd));
+  items.add(new Label("Cmd:"), new ActionPickerSubDialog(config, cmds, 40, a.cmd),
+            "Command to execute", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Data:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 70, a.data, EditLineMode::ALL));
+  items.add(new Label("Data:"), new StringEditItem<std::string&>(70, a.data, EditLineMode::ALL),
+            "Optional data to pass to the command", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 70, a.acs, EditLineMode::ALL));
+  items.add(new Label("ACS:"), new StringEditItem<std::string&>(70, a.acs, EditLineMode::ALL),
+            "WWIV ACS required to execute this command", 1, y);
 
+  items.relayout_items_and_labels();
   items.Run("Edit Action");
 }
 
 class ActionSubDialog final : public SubDialog<std::vector<menus::menu_action_56_t>> {
 public:
-  ActionSubDialog(const Config& config, int x, int y, std::vector<menus::menu_action_56_t>& actions)
-      : SubDialog(config, x, y, actions) {}
+  ActionSubDialog(const Config& config, std::vector<menus::menu_action_56_t>& actions)
+      : SubDialog(config, actions) {}
   ~ActionSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -203,48 +200,46 @@ public:
 };
 
 static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
-  constexpr auto LABEL_WIDTH = 12;
-  constexpr auto PADDING = 2;
-  constexpr auto COL1_LINE = PADDING;
-  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH;
-
   EditItems items{};
   auto y = 1;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Key:"),
-      new StringEditItem<std::string&>(COL2_LINE, y, 10, m.item_key, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Menu Key:"),
+            new StringEditItem<std::string&>(10, m.item_key, EditLineMode::UPPER_ONLY),
+            "Key(s) to execute command", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Text:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.item_text, EditLineMode::ALL));
+  items.add(new Label("Menu Text:"),
+            new StringEditItem<std::string&>(60, m.item_text, EditLineMode::ALL),
+            "What to show on generated menu", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Help Text:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.help_text, EditLineMode::ALL));
+  items.add(new Label("Help Text:"),
+            new StringEditItem<std::string&>(60, m.help_text, EditLineMode::ALL),
+            "One line help for command", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Log:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 50, m.log_text, EditLineMode::ALL));
+  items.add(new Label("Sysop Log:"),
+            new StringEditItem<std::string&>(50, m.log_text, EditLineMode::ALL),
+            "What to show in sysop log", 1, y);
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Instance :"),
-      new StringEditItem<std::string&>(COL2_LINE, y, 60, m.instance_message, EditLineMode::ALL));
+  items.add(new Label("Instance :"),
+            new StringEditItem<std::string&>(60, m.instance_message, EditLineMode::ALL),
+            "Instance message to send to all users", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 60, m.acs, EditLineMode::ALL));
+  items.add(new Label("ACS:"), new StringEditItem<std::string&>(60, m.acs, EditLineMode::ALL),
+            "WWIV ACS required to access this menu item", 1, y);
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
-      new StringEditItem<std::string&>(COL2_LINE, y, 20, m.password, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Password:"),
+            new StringEditItem<std::string&>(20, m.password, EditLineMode::UPPER_ONLY),
+            "Password required to access this menu item", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Actions:"),
-            new ActionSubDialog(config, COL2_LINE, y, m.actions));
+  items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions), 
+    "The actions to execute when this menu is selected", 1, y);
 
+  items.relayout_items_and_labels();
   items.Run(StrCat("Menu: ", m.item_key));
 }
 
 class MenuItemsSubDialog : public SubDialog<std::vector<menus::menu_item_56_t>> {
 public:
-  MenuItemsSubDialog(const Config& config, int x, int y,
-                     std::vector<menus::menu_item_56_t>& menu_items)
-      : SubDialog(config, x, y, menu_items) {}
+  MenuItemsSubDialog(const Config& config, std::vector<menus::menu_item_56_t>& menu_items)
+      : SubDialog(config, menu_items) {}
   ~MenuItemsSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -329,44 +324,42 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
     m.menu.color_title = 5;
   }
 
-  constexpr auto COL1_LINE = 2;
-  constexpr auto LABEL_WIDTH = 14;
-  constexpr auto COL2_LINE = COL1_LINE + LABEL_WIDTH + 1;
-
   EditItems items{};
   const string title = StrCat("Menu: ", menu_name);
   int y = 1;
   auto& h = m.menu;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Description:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 55, h.title, EditLineMode::ALL));
+  items.add(new Label("Description:"),
+            new StringEditItem<std::string&>(55, h.title, EditLineMode::ALL),
+            "This is the description users see when selecting a menu set", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Number Keys:"),
-            new ToggleEditItem<menus::menu_numflag_t>(COL2_LINE, y, numbers_action, &h.num_action));
+  items.add(new Label("Number Keys:"),
+            new ToggleEditItem<menus::menu_numflag_t>(numbers_action, &h.num_action),
+            "Select what number keys do in this menu", 1, y);
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Logging Type:"),
-      new ToggleEditItem<menus::menu_logtype_t>(COL2_LINE, y, logging_action, &h.logging_action));
+  items.add(new Label("Logging Type:"),
+            new ToggleEditItem<menus::menu_logtype_t>(logging_action, &h.logging_action),
+            "Select what will appear in the sysop log when the user executes the commands", 1, y);
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Display Help:"),
-      new ToggleEditItem<menus::menu_help_display_t>(COL2_LINE, y, help_action, &h.help_type));
+  items.add(new Label("Display Help:"),
+            new ToggleEditItem<menus::menu_help_display_t>(help_action, &h.help_type),
+            "When is the help screen (menu MSG/ANS/or generated help) displayed", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Enter Actions:"),
-            new ActionSubDialog(config, COL2_LINE, y, h.enter_actions));
+  items.add(new Label("Enter Actions:"), new ActionSubDialog(config, h.enter_actions),
+            "Menu actions to execute when entering this menu", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Exit Actions:"),
-            new ActionSubDialog(config, COL2_LINE, y, h.enter_actions));
+  items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.enter_actions),
+            "Menu actions to execute when leaving this menu", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "ACS:"),
-            new StringEditItem<std::string&>(COL2_LINE, y, 55, h.acs, EditLineMode::ALL));
+  items.add(new Label("ACS:"), new StringEditItem<std::string&>(55, h.acs, EditLineMode::ALL),
+            "WWIV ACS required to access this menu", 1, y);
   y++;
-  items.add(
-      new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
-      new StringEditItem<std::string&>(COL2_LINE, y, 20, h.password, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Password:"),
+            new StringEditItem<std::string&>(20, h.password, EditLineMode::UPPER_ONLY),
+            "Password to access menu. You may use '*SYSTEM' for system password.", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Items:"),
-            new MenuItemsSubDialog(config, COL2_LINE, y, h.items));
+  items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
 
+  items.relayout_items_and_labels();
   items.Run(title);
 
   if (!m.Save()) {
@@ -451,7 +444,7 @@ static bool check_for_menu_help(const string& datadir) {
   return true;
 }
 
-void menus(const wwiv::sdk::Config& config) {
+void menus(const Config& config) {
   try {
     const auto menu_dir = config.menudir();
     if (!check_for_menu_help(config.datadir())) {
