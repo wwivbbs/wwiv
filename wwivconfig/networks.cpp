@@ -25,14 +25,13 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/filenames.h"
 #include "sdk/net/networks.h"
-
-#include "localui/edit_items.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "wwivconfig/subacc.h"
@@ -74,7 +73,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
     if (i2 >= i) {
       iscan1(i, subs, config);
       open_sub(true);
-      for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
+      for (auto i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         auto p = get_post(i1);
         if (!p) {
           continue;
@@ -148,9 +147,9 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 // Base item of an editable value, this class does not use templates.
 class FidoNetworkConfigSubDialog : public SubDialog<net_networks_rec> {
 public:
-  FidoNetworkConfigSubDialog(const Config& config, std::filesystem::path bbsdir, int x, int y,
+  FidoNetworkConfigSubDialog(const Config& config, std::filesystem::path bbsdir,
                              net_networks_rec& d)
-      : SubDialog(config, x, y, d), netdir_(std::move(bbsdir)) {}
+      : SubDialog(config, d), netdir_(std::move(bbsdir)) {}
   ~FidoNetworkConfigSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -158,87 +157,79 @@ public:
     if (t_.type != network_type_t::ftn) {
       return;
     }
-    constexpr int LABEL_WIDTH = 14;
-    constexpr int SHORT_FIELD_WIDTH = 25;
-    constexpr int LBL1_POSITION = 2;
-    constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
-    constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
-    constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
     constexpr int MAX_STRING_LEN = 56;
     auto* n = &t_.fido;
     auto y = 1;
 
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "FTN Address:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, MAX_STRING_LEN, n->fido_address,
-                                               EditLineMode::ALL));
+    items.add(new Label("FTN Address:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, n->fido_address, EditLineMode::ALL),
+              "This system's FTN address for use on the network.", 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Nodelist Base:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, MAX_STRING_LEN, n->nodelist_base,
-                                               EditLineMode::ALL));
+    items.add(new Label("Nodelist Base:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, n->nodelist_base, EditLineMode::ALL),
+      "Base filename for the nodelist without path or extention. (e.g. FSXNET)", 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Inbound Dir:"),
-              new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->inbound_dir));
+    items.add(new Label("Inbound Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->inbound_dir), 1, y);
     ++y;
-    items.add(
-        new Label(LBL1_POSITION, y, LABEL_WIDTH, "Temp In Dir:"),
-        new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
+    items.add(new Label("Temp In Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->temp_inbound_dir), 1, y);
     ++y;
-    items.add(
-        new Label(LBL1_POSITION, y, LABEL_WIDTH, "Temp Out Dir:"),
-        new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->temp_outbound_dir));
+    items.add(new Label("Temp Out Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->temp_outbound_dir), 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Outbound Dir:"),
-              new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->outbound_dir));
+    items.add(new Label("Outbound Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->outbound_dir), 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "NetMail Dir:"),
-              new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->netmail_dir));
+    items.add(new Label("NetMail Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->netmail_dir), 1, y);
     ++y;
-    items.add(
-        new Label(LBL1_POSITION, y, LABEL_WIDTH, "BadPacket Dir:"),
-        new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
+    items.add(new Label("BadPacket Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->bad_packets_dir), 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "TIC Dir:"),
-              new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->tic_dir));
+    items.add(new Label("TIC Dir:"), new StringFilePathItem(MAX_STRING_LEN, netdir_, n->tic_dir), 1,
+              y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Unknown Dir:"),
-              new StringFilePathItem(COL1_POSITION, y, MAX_STRING_LEN, netdir_, n->unknown_dir));
+    items.add(new Label("Unknown Dir:"),
+              new StringFilePathItem(MAX_STRING_LEN, netdir_, n->unknown_dir), 1, y);
     ++y;
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Origin Line:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, MAX_STRING_LEN, n->origin_line,
-                                               EditLineMode::ALL));
+    items.add(new Label("Origin Line:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, n->origin_line, EditLineMode::ALL),
+      "Origin line to add to outgoing echomail messages from this system", 
+              1, y);
     ++y;
     dy_start_ = y;
     const vector<pair<fido_mailer_t, string>> mailerlist = {
         {fido_mailer_t::flo, "BSO (FLO) [Recommended]"},
         {fido_mailer_t::attach, "NetMail (ATTACH)"}};
-    items
-        .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Mailer:"),
-             new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y, mailerlist, &n->mailer_type))
-        ->set_help_text("Select BSO if using WWIV's Native BinkP.");
+    items.add(new Label("Mailer:"), new ToggleEditItem<fido_mailer_t>(mailerlist, &n->mailer_type),
+              "Select BSO if using WWIV's Native BinkP.", 1, y);
     ++y;
     const vector<pair<fido_transport_t, string>> transportlist = {
         {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP"}};
-    items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Transport:"),
-              new ToggleEditItem<fido_transport_t>(COL1_POSITION, y, transportlist, &n->transport),
-              "This isn't currently used, but you likely want WWIV BinkP");
+    items.add(new Label("Transport:"),
+              new ToggleEditItem<fido_transport_t>(transportlist, &n->transport),
+              "This isn't currently used, but you likely want WWIV BinkP", 1, y);
     ++y;
 
     // dy_start
     auto dy = dy_start_;
-    items.add(new Label(LBL2_POSITION, dy, LABEL_WIDTH, "Process TIC  :"),
-              new BooleanEditItem(COL2_POSITION, dy, &n->process_tic),
-              "Process TIC files for this network.");
+    items.add(new Label("Process TIC  :"), new BooleanEditItem(&n->process_tic),
+              "Process TIC files for this network.", 3, dy);
     ++dy;
-    items.add(new Label(LBL2_POSITION, dy, LABEL_WIDTH, "Cvt Hearts   :"),
-              new BooleanEditItem(COL2_POSITION, dy, &n->wwiv_heart_color_codes),
-              "Convert WWIV Heart codes into PIPE color codes.");
+    items.add(new Label("Cvt Hearts   :"), new BooleanEditItem(&n->wwiv_heart_color_codes),
+              "Convert WWIV Heart codes into PIPE color codes.", 3, dy);
     ++dy;
-    items.add(new Label(LBL2_POSITION, dy, LABEL_WIDTH, "Cvt WWIV Pipe:"),
-              new BooleanEditItem(COL2_POSITION, dy, &n->wwiv_pipe_color_codes),
-              "Convert WWIV user color pipe codes into standard PIPE color codes.");
+    // HACK: We can't layout in columns with empty columns before the control.
+    items.add(new Label(""), 1, dy);
+    items.add(new Label(""), 2, dy);
+    items.add(new Label("Cvt WWIV Pipe:"), new BooleanEditItem(&n->wwiv_pipe_color_codes),
+              "Convert WWIV user color pipe codes into standard PIPE color codes.", 3, dy);
     ++dy;
     window->GotoXY(x_, y_);
 
+    items.add_aligned_width_column(1);
+    items.relayout_items_and_labels();
     items.Run(menu_label());
     window->RedrawWin();
   }
@@ -249,13 +240,6 @@ private:
 };
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
-  constexpr int LBL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 14;
-  constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
-
-  constexpr int LBL2_POSITION = COL1_POSITION + 12;
-  constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
-
   auto& p = n.packet_config;
   EditItems items{};
   const vector<pair<fido_packet_t, string>> packetlist = {
@@ -263,36 +247,33 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 
   auto y = 1;
   auto& b = n.binkp_config;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL),
-            "BinkP hostname to override default from nodelist");
+  items.add(new Label("BinkP Host:"),
+            new StringEditItem<std::string&>(40, b.host, EditLineMode::ALL),
+            "BinkP hostname to override default from nodelist", 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &b.port),
-            "BinkP post number to override default from nodelist");
+  items.add(new Label("BinkP Port:"), new NumberEditItem<int>(&b.port),
+            "BinkP post number to override default from nodelist", 1, y);
   y++;
-  items.add(
-      new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, EditLineMode::UPPER_ONLY),
-      "BinkP password to use when connection to this host.");
+  items.add(new Label("Session PW:"),
+            new StringEditItem<std::string&>(8, b.password, EditLineMode::UPPER_ONLY),
+            "BinkP password to use when connection to this host.", 1, y);
   y += 2;
 
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL),
-            "Systems who route this this host. i.e. 1:*");
+  items.add(new Label("Routes:"), new StringEditItem<std::string&>(40, n.routes, EditLineMode::ALL),
+            "Systems who route this this host. i.e. 1:*", 1, y);
 
   ++y;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet Type:"),
-            new ToggleEditItem<fido_packet_t>(COL1_POSITION, y, packetlist, &p.packet_type));
+  items.add(new Label("Packet Type:"),
+            new ToggleEditItem<fido_packet_t>(packetlist, &p.packet_type), 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Compression:"),
-            new StringListItem(COL1_POSITION, y, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
+  items.add(new Label("Compression:"),
+            new StringListItem({"ZIP", "ARC", "PKT", ""}, p.compression_type), 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size), "NOT IMPLEMENTED YET");
+  items.add(new Label("Max Arc Size:"), new NumberEditItem<int>(&p.max_archive_size),
+            "NOT IMPLEMENTED YET", 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size), "NOT IMPLEMENTED YET");
+  items.add(new Label("Max Pkt Size:"), new NumberEditItem<int>(&p.max_packet_size),
+            "NOT IMPLEMENTED YET", 1, y);
 
   const vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
@@ -300,51 +281,45 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
       {fido_bundle_status_t::hold, "Hold"},
   };
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
-            new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
-                                                     &p.netmail_status),
-            "Default bundle status to use when creating FTN Bundles");
+  items.add(new Label("Bundle Status:"),
+            new ToggleEditItem<fido_bundle_status_t>(bundlestatuslist, &p.netmail_status),
+            "Default bundle status to use when creating FTN Bundles", 1, y);
   y += 2;
   auto y2 = y;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password,
-                                             EditLineMode::UPPER_ONLY),
-            "Password to use in the FTN packet.");
+  items.add(new Label("Packet PW:"),
+            new StringEditItem<std::string&>(8, p.packet_password, EditLineMode::UPPER_ONLY),
+            "Password to use in the FTN packet.", 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Tic PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.tic_password,
-                                             EditLineMode::UPPER_ONLY),
-            "NOT IMPLEMENTED YET");
+  items.add(new Label("Tic PW:"),
+            new StringEditItem<std::string&>(8, p.tic_password, EditLineMode::UPPER_ONLY),
+            "If set, the password an incoming TIC file must use.", 1, y);
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password,
-                                             EditLineMode::UPPER_ONLY),
-            "NOT IMPLEMENTED YET");
+  items.add(new Label("AreaFix PW:"),
+            new StringEditItem<std::string&>(8, p.areafix_password, EditLineMode::UPPER_ONLY),
+            "NOT IMPLEMENTED YET", 1, y);
   y = y2;
 
   auto& c = n.callout_config;
-  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Auto Callout:"),
-            new BooleanEditItem(COL2_POSITION, y, &c.auto_callouts),
-            "Should wwivd automatically call out to this node?");
+  items.add(new Label("Auto Callout:"), new BooleanEditItem(&c.auto_callouts),
+            "Should wwivd automatically call out to this node?", 3, y);
   y++;
-  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Every N min:"),
-            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL2_POSITION, y,
-                                                                 &c.call_every_x_minutes),
-            "Force a callout every N minutes.");
+  items.add(new Label("Every N min:"),
+            new NumberEditItem<decltype(c.call_every_x_minutes)>(&c.call_every_x_minutes),
+            "Force a callout every N minutes.", 3, y);
   y++;
-  items.add(new Label(LBL2_POSITION, y, LABEL_WIDTH, "Min K:"),
-            new NumberEditItem<decltype(c.min_k)>(COL2_POSITION, y, &c.min_k),
-            "Attempt callout sooner if a packet over this size is ready.");
+  items.add(new Label("Min K:"), new NumberEditItem<decltype(c.min_k)>(&c.min_k),
+            "Attempt callout sooner if a packet is larger than this size in (K)ilobytes", 3, y);
 
+  items.add_aligned_width_column(1);
+  items.relayout_items_and_labels();
   items.Run(StrCat("Address: ", a.as_string()));
 }
 
 // Base item of an editable value, this class does not use templates.
 class FidoPacketConfigSubDialog : public SubDialog<net_networks_rec> {
 public:
-  FidoPacketConfigSubDialog(const Config& config, std::filesystem::path bbsdir, int x, int y,
-                            net_networks_rec& t)
-      : SubDialog(config, x, y, t), netdir_(std::move(bbsdir)) {}
+  FidoPacketConfigSubDialog(const Config& config, std::filesystem::path bbsdir, net_networks_rec& t)
+      : SubDialog(config, t), netdir_(std::move(bbsdir)) {}
   ~FidoPacketConfigSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -410,64 +385,46 @@ private:
 };
 
 static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
-  constexpr int LBL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 30;
-  constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
-  constexpr int LBL2_POSITION = COL1_POSITION + 4 + 1;
-  constexpr int LABEL2_WIDTH = 4;
-  constexpr int COL2_POSITION = LBL2_POSITION + 1 + LABEL2_WIDTH;
   int y = 1;
 
   EditItems items{};
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password,
-                                            EditLineMode::ALL))
-      ->set_help_text("WWIVnet password to use when connecting to this node");
+  items.add(new Label("Password:"),
+            new StringEditItem<std::string&>(20, c.session_password, EditLineMode::ALL),
+            "WWIVnet password to use when connecting to this node", 1, y);
 
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
-           new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
-                                                 &c.options))
-      ->set_help_text("Is our system allowed to callout to this one?");
+  items.add(new Label("Allow Outbound Connections:"),
+            new FlagEditItem<decltype(c.options)>(options_no_call, "No", "Yes", &c.options),
+            "Is our system allowed to callout to this one?", 1, y);
   y += 2;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
-           new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
-                                                                &c.call_every_x_minutes))
-      ->set_help_text("Automatically call out every N minutes");
+  items.add(new Label("Call every N minutes:"),
+            new NumberEditItem<decltype(c.call_every_x_minutes)>(&c.call_every_x_minutes),
+            "Automatically call out every N minutes", 1, y);
 
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
-           new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
-      ->set_help_text("Automatically call out when K kilobytes of packet is pending");
+  items.add(new Label("Call when minimum k waiting:"),
+            new NumberEditItem<decltype(c.min_k)>(&c.min_k),
+            "Automatically call out when K kilobytes of packet is pending", 1, y);
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call between hours of:"),
-           new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr))
-      ->set_help_text("Only call automatically between the house of X and Y");
-  items
-      .add(new Label(LBL2_POSITION, y, LABEL2_WIDTH, "and:"),
-           new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr))
-      ->set_help_text("Only call automatically between the house of X and Y");
+  items.add(new Label("Call between hours of:"), new NumberEditItem<int8_t>(&c.min_hr),
+            "Only call automatically between the house of X and Y", 1, y);
+  items.add(new Label("and:"), new NumberEditItem<int8_t>(&c.max_hr),
+            "Only call automatically between the house of X and Y", 3, y);
   y++;
-  items
-      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
-           new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
-                                                 &c.options))
-      ->set_help_text("Hide this node from the WFC pending system display");
+  items.add(new Label("Hide from Pending List:"),
+            new FlagEditItem<decltype(c.options)>(options_hide_pend, "Yes ", "No", &c.options),
+            "Hide this node from the WFC pending system display", 1, y);
 
+  items.add_aligned_width_column(1);
+  items.relayout_items_and_labels();
   items.Run(StrCat("Node: @", c.sysnum, ".", net.name));
 }
 
 // Base item of an editable value, this class does not use templates.
 class CalloutNetSubDialog final : public SubDialog<net_networks_rec> {
 public:
-  CalloutNetSubDialog(const Config& config, std::filesystem::path bbsdir, int x, int y,
-                      net_networks_rec& d)
-      : SubDialog(config, x, y, d), netdir_(std::move(bbsdir)) {}
+  CalloutNetSubDialog(const Config& config, std::filesystem::path bbsdir, net_networks_rec& d)
+      : SubDialog(config, d), netdir_(std::move(bbsdir)) {}
   ~CalloutNetSubDialog() override = default;
 
   void RunSubDialog(CursesWindow* window) override {
@@ -550,51 +507,45 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   auto& n = wwiv::stl::at(networks, nn);
   const auto orig_network_name(n.name);
 
-  constexpr auto LABEL1_POSITION = 2;
-  constexpr auto LABEL_WIDTH = 11;
-  constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   auto y = 1;
   EditItems items{};
-  auto net_type_pos = y;
-  auto node_number_pos = 0;
-  items.add(new Label(LABEL1_POSITION, net_type_pos, LABEL_WIDTH, "Net Type:"));
+  items.add(new Label("Net Type:"), 1, y);
+  items.add(new Label(nettypes.at(static_cast<int>(n.type)).second), 2, y)
+      ->set_right_justified(false);
   y++;
-  items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Net Name:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 15, n.name, EditLineMode::ALL));
+  items.add(new Label("Net Name:"), new StringEditItem<std::string&>(15, n.name, EditLineMode::ALL),
+            "Name of the network to use to display to bbs callers", 1, y);
   y++;
-  items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Directory:"),
-            new FileSystemFilePathItem(COL1_POSITION, y, 60, config.root_directory(), n.dir));
+  items.add(new Label("Directory:"), new FileSystemFilePathItem(60, config.root_directory(), n.dir),
+            1, y);
   y++;
 
   const auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
     // skip over the node number
-    node_number_pos = y;
-    items.add(new Label(LABEL1_POSITION, node_number_pos, LABEL_WIDTH, "Node #:"));
+    items.add(new Label("Node #:"), 1, y);
+    if (n.type == network_type_t::ftn) {
+      items.add(new Label("N/A"), 2, y)->set_right_justified(false);
+    }
     y++;
-    items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Settings:"),
-              new FidoNetworkConfigSubDialog(config, net_dir, COL1_POSITION, y, n));
+    items.add(new Label("Settings:"), new FidoNetworkConfigSubDialog(config, net_dir, n),
+              "Edit settings for this network", 1, y);
     y++;
-    items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Addresses:"),
-              new FidoPacketConfigSubDialog(config, net_dir, COL1_POSITION, y, n));
+    items.add(new Label("Addresses:"), new FidoPacketConfigSubDialog(config, net_dir, n),
+              "Configure settings for systems allowed to connect in this network", 1, y);
     y++;
   } else if (n.type == network_type_t::wwivnet) {
-    items
-        .add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Node #:"),
-             new NumberEditItem<uint16_t>(COL1_POSITION, y, &n.sysnum))
-        ->set_help_text("WWIVnet node number");
+    items.add(new Label("Node #:"), new NumberEditItem<uint16_t>(&n.sysnum), "WWIVnet node number",
+              1, y);
     y++;
-    items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
-              new CalloutNetSubDialog(config, net_dir, COL1_POSITION, y, n));
+    items.add(new Label("Callout.net:"), new CalloutNetSubDialog(config, net_dir, n), 
+      "Edit the settings that define when to call out to a remote system", 1, y);
     y++;
   }
 
   const auto title = StrCat("Network Configuration: ", n.name, " [.", nn, "]");
-  items.create_window(title);
-  items.window()->PutsXY(COL1_POSITION, net_type_pos, nettypes.at(static_cast<int>(n.type)).second);
-  if (n.type == network_type_t::ftn) {
-    items.window()->PutsXY(COL1_POSITION, node_number_pos, "N/A");
-  }
+
+  items.relayout_items_and_labels();
   items.Run(title);
 
   if (subs_loaded && orig_network_name != n.name) {

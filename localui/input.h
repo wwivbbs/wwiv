@@ -407,6 +407,8 @@ class StringListItem final : public EditItem<std::string&> {
 public:
   StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
       : EditItem<std::string&>(x, y, maxlen_from_list(items), data), items_(items) {}
+  StringListItem(const std::vector<std::string>& items, std::string& data)
+    : StringListItem(0, 0, items, data) {}
   ~StringListItem() override = default;
   StringListItem() = delete;
   StringListItem(StringListItem const&) = delete;
@@ -674,6 +676,8 @@ public:
     help_text_ =
         wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
   }
+  FileSystemFilePathItem(int maxsize, std::filesystem::path base, std::filesystem::path& data)
+      : FileSystemFilePathItem(0, 0, maxsize, base, data) {}
   ~FileSystemFilePathItem() override = default;
   FileSystemFilePathItem() = delete;
   FileSystemFilePathItem(FileSystemFilePathItem const&) = delete;
