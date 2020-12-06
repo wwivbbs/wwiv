@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+enum class cell_type_t { label, edit_item };
 /**
  * Represent a cell in the UI.
  *
@@ -49,6 +50,8 @@ public:
   int x_{1};
   int width_{0};
   int column_{0};
+  cell_type_t cell_type_{cell_type_t::edit_item};
+  int colspan_ = 1;
 };
 
 
@@ -108,11 +111,6 @@ public:
   Label* add(Label* label, int column = 1, int y = -1);
 
   /**
-   * Adds a list of labels.
-   */
-  void add_labels(std::initializer_list<Label*> labels);
-
-  /**
    * Adds a label and item
    *
    * This uses both a column number and optionally a value to override for Y.
@@ -149,6 +147,8 @@ public:
    * This only works for single column layouts of: {label:} {item}
    */
   void relayout_items_and_labels();
+
+  Cell& cell(int row, int col);
 
   /**
    * Add a column number to align label sizes for.

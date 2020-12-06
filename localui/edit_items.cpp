@@ -108,16 +108,10 @@ Label* EditItems::add(Label* label, int column, int row) {
     auto& cell = cells_[row][column];
     cell.item = label;
     cell.set_column(column);
+    cell.cell_type_ = cell_type_t::label;
   }
   labels_.push_back(label);
   return label;
-}
-
-void EditItems::add_labels(std::initializer_list<Label*> labels) {
-  for (auto* l : labels) {
-    DCHECK(l);
-    labels_.push_back(l);
-  }
 }
 
 BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column, int row) {
@@ -234,7 +228,8 @@ void EditItems::relayout_items_and_labels() {
       for (auto& [col_num, cell] : cells_[row_num]) {
         // c.first is column, c.second is Cell
         auto& columns = widths_and_columns[num_cols_for_this_row];
-        if (cell.width() > columns[col_num].width) {
+        if (cell.colspan_ == 1 && cell.width() > columns[col_num].width) {
+          // Ignore cells with colspan > 1
           columns[col_num].width = cell.width();
         }
       }
@@ -255,8 +250,12 @@ void EditItems::relayout_items_and_labels() {
     for (const auto aligned_col : align_label_cols_) {
       auto& max_width = aligned_col_max_width[aligned_col];
       for (auto& [rownum, row] : cells_) {
-        const auto width = row.at(aligned_col).width();
-        if (width > max_width) {
+        if (!contains(row, aligned_col)) {
+          continue;
+        }
+        auto& c = at(row, aligned_col);
+        const auto width = c.width();
+        if (c.cell_type_ == cell_type_t::label && width > max_width) {
           max_width = width;
         }
       }
@@ -265,11 +264,20 @@ void EditItems::relayout_items_and_labels() {
       auto& width = aligned_col_max_width[aligned_col];
       // Update width for the individual item.
       for (auto& [rownum, row] : cells_) {
-        row.at(aligned_col).set_width(width);
+        if (!contains(row, aligned_col)) {
+          continue;
+        }
+        auto& cell = at(row, aligned_col);
+        if (cell.colspan_ == 1) {
+          cell.set_width(width);
+        }
       }
       // Update column width in Columns, used for spacing
       for (auto& [wcwidth, cols] : widths_and_columns) {
-        cols.at(aligned_col).width = width;
+        if (!contains(cols, aligned_col)) {
+          continue;
+        }
+        at(cols, aligned_col).width = width;
       }
     }
 
@@ -296,6 +304,10 @@ void EditItems::relayout_items_and_labels() {
       cell.set_x(col.x);
     }
   }
+}
+
+Cell& EditItems::cell(int row, int col) {
+  return cells_[row][col];
 }
 
 std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
