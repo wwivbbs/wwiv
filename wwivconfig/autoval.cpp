@@ -29,16 +29,13 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static string create_autoval_line(Config& config, int n) {
+static std::string create_autoval_line(Config& config, int n) {
   char ar[20], dar[20], r[20];
   const auto v = config.auto_val(n);
-  string res_str = restrict_string;
+  std::string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
       ar[i] = 'A' + i;
@@ -64,23 +61,23 @@ static string create_autoval_line(Config& config, int n) {
 }
 
 static void edit_autoval(Config& config, int n) {
-  constexpr int LABEL1_POSTITION = 2;
-  constexpr int LABEL1_WIDTH = 14;
-  constexpr int COL1_POSITION = LABEL1_POSTITION + LABEL1_WIDTH + 1;
-
   auto v = config.auto_val(n);
   EditItems items{};
   auto y = 1;
-  items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl), 1, y);
+  items.add(new Label("SL:"), new NumberEditItem<uint8_t>(&v.sl),
+            "Security Level (SL) to grant when using this auto-validation key.", 1, y);
   ++y;
-  items.add(new Label("DSL:"), new NumberEditItem<uint8_t>(&v.dsl), 1, y);
+  items.add(new Label("DSL:"), new NumberEditItem<uint8_t>(&v.dsl),
+            "Download Security Level (DSL) to grant when using this auto-validation key", 1, y);
   ++y;
-  items.add(new Label("AR:"), new ArEditItem(&v.ar), 1, y);
+  items.add(new Label("AR:"), new ArEditItem(&v.ar),
+            "Access Retriction (AR) to grant when using this auto-validation key.", 1, y);
   ++y;
-  items.add(new Label("DAR:"), new ArEditItem(&v.dar), 1, y);
+  items.add(new Label("DAR:"), new ArEditItem(&v.dar),
+            "Download Access (SL) to grant when using this auto-validation key.", 1, y);
   ++y;
-  items.add(new Label("Restrictions:"), new RestrictionsEditItem(&v.restrict), 1,
-            y);
+  items.add(new Label("Restrictions:"), new RestrictionsEditItem(&v.restrict),
+            "System Restrictions to grant when using this auto-validation key.", 1, y);
 
   items.relayout_items_and_labels();
   items.Run(fmt::format("Auto-validation data for: Alt-F{}", n + 1));
@@ -91,7 +88,7 @@ void autoval_levs(Config& config) {
   auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
-    vector<ListBoxItem> items;
+    std::vector<ListBoxItem> items;
     for (auto i = 0; i < 10; i++) {
       items.emplace_back(create_autoval_line(config, i));
     }

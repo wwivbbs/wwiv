@@ -44,22 +44,29 @@ static void edit_arc(int arc_number, arcrec* a) {
   EditItems items{};
 
   items.add(new Label("Archiver Name:"), new StringEditItem<char*>(31, a->name, EditLineMode::ALL),
-            1, y);
+            "Recognizable name you can assign to the archive type", 1, y);
   y++;
   items.add(new Label("Archiver Extension:"),
-            new StringEditItem<char*>(3, a->extension, EditLineMode::UPPER_ONLY), 1, y);
+            new StringEditItem<char*>(3, a->extension, EditLineMode::UPPER_ONLY), 
+    "The three letter file extension used by this archive type", 1, y);
   y++;
-  items.add(new Label("List Archive:"), new CommandLineItem(49, a->arcl), 1, y);
+  items.add(new Label("List Archive:"), new CommandLineItem(49, a->arcl),
+    "Command to list the contents of the archive without extracting the files", 1, y);
   y++;
-  items.add(new Label("Extract Archive:"), new CommandLineItem(49, a->arce), 1, y);
+  items.add(new Label("Extract Archive:"), new CommandLineItem(49, a->arce),
+    "Command to extract the files to the node's temp directory", 1, y);
   y++;
-  items.add(new Label("Add to Archive:"), new CommandLineItem(49, a->arca), 1, y);
+  items.add(new Label("Add to Archive:"), new CommandLineItem(49, a->arca), 
+    "Command to add a file to the archive.", 1, y);
   y++;
-  items.add(new Label("Delete from Archive:"), new CommandLineItem(49, a->arcd), 1, y);
+  items.add(new Label("Delete from Archive:"), new CommandLineItem(49, a->arcd),
+    "Command to delete a file from the archive", 1, y);
   y++;
-  items.add(new Label("Comment Archive:"), new CommandLineItem(49, a->arck), 1, y);
+  items.add(new Label("Comment Archive:"), new CommandLineItem(49, a->arck), 
+    "Command to add a comment to the archive. %K means gfiles/comment.txt", 1, y);
   y++;
-  items.add(new Label("Test Archive:"), new CommandLineItem(49, a->arct), 1, y);
+  items.add(new Label("Test Archive:"), new CommandLineItem(49, a->arct), 
+    "Command to test the archive for validity and integrity", 1, y);
 
   y+=2;
   items.add(new MultilineLabel(R""""(%1 %2 etc. are parameters passed.  Minimum of two on Add and

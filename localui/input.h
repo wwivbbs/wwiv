@@ -628,6 +628,7 @@ public:
       : EditItem<char*>(x, y, maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
+  FilePathItem(int maxsize, const std::string& base, char* data) : FilePathItem(0, 0, maxsize, base, data) {}
   FilePathItem() = delete;
   FilePathItem(FilePathItem&) = delete;
   FilePathItem(FilePathItem&&) = delete;
