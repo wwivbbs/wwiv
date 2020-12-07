@@ -20,6 +20,8 @@
 
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/chnedit.h"
 #include "bbs/dropfile.h"
 #include "bbs/execexternal.h"
 #include "bbs/instmsg.h"
@@ -218,7 +220,11 @@ void do_chains() {
     show_chains(&mapp, map);
     a()->tleft(true);
     bout.nl();
-    bout << "|#5Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
+    bout << "|#5Which Chain (1-" << mapp << ", Q=Quit, ";
+    if (so()) {
+      bout << "*=ChainEdit, ";
+    }
+    bout << "?=List): ";
 
     if (mapp < 100) {
       ss = mmkey(odc);
@@ -231,6 +237,8 @@ void do_chains() {
       run_chain(map[chain_num - 1]);
     } else if (ss == "Q") {
       done = true;
+    } else if (ss == "*" && so()) {
+      chainedit();
     } else if (ss == "?") {
       show_chains(&mapp, map);
     } else if (ss == "P") {

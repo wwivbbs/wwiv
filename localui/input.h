@@ -441,14 +441,12 @@ private:
 
 template <typename T> class FlagEditItem final : public EditItem<T*> {
 public:
-  FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data)
-      : EditItem<T*>(x, y, 0, data), flag_(flag) {
+  FlagEditItem(int flag, const std::string& on, const std::string& off, T* data)
+      : EditItem<T*>(0, data), flag_(flag) {
     this->width_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
-  FlagEditItem(int flag, const std::string& on, const std::string& off, T* data)
-    : FlagEditItem(0, 0, flag, on, off, data) {}
   virtual ~FlagEditItem() = default;
   FlagEditItem() = delete;
   FlagEditItem(FlagEditItem const&) = delete;
@@ -605,9 +603,9 @@ public:
   typedef std::function<void(const std::string&)> displayfn;
   typedef std::function<std::string()> prefn;
   typedef std::function<void(const std::string&)> postfn;
-  CustomEditItem(int x, int y, int maxsize, prefn to_field, postfn from_field)
-      : BaseEditItem(x, y, maxsize), to_field_(std::move(to_field)),
-        from_field_(std::move(from_field)) {}
+  CustomEditItem(int maxsize, prefn to_field, postfn from_field)
+      : BaseEditItem(maxsize), to_field_(std::move(to_field)),
+        from_field_(std::move(from_field)), field_width_(maxsize) {}
   CustomEditItem() = delete;
   CustomEditItem(CustomEditItem const&) = delete;
   CustomEditItem(CustomEditItem&&) = delete;
@@ -622,6 +620,7 @@ private:
   prefn to_field_;
   postfn from_field_;
   displayfn display_;
+  int field_width_{1};
 };
 
 class FilePathItem final : public EditItem<char*> {

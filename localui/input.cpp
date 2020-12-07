@@ -85,14 +85,16 @@ EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   auto s = to_field_();
 
-  const auto return_code = editline(window, &s, width_, EditLineMode::ALL, "");
+  // The width_ may be wider than the field width, so we need use field_width_.
+  const auto return_code = editline(window, &s, field_width_, EditLineMode::ALL, "");
   from_field_(s);
   return return_code;
 }
 
 void CustomEditItem::Display(CursesWindow* window) const {
   window->GotoXY(x_, y_);
-  const string blanks(width_, ' ');
+  // The width_ may be wider than the field width, so we need use field_width_.
+  const string blanks(field_width_, ' ');
   window->Puts(blanks);
 
   const auto s = to_field_();

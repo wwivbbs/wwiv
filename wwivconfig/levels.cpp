@@ -35,9 +35,6 @@ using namespace wwiv::strings;
 
 static constexpr int MAX_SL = 255;
 static constexpr int MIN_SL = 0;
-static constexpr int COL1_POSITION = 21;
-static constexpr int LABEL1_POSITION = 2;
-static constexpr int LABEL1_WIDTH = 18;
 
 static vector<HelpItem> create_extra_help_items() {
   vector<HelpItem> help_items = {{"J", "Jump"}};
@@ -62,49 +59,50 @@ void sec_levs(Config& config) {
   uint8_t cursl = 10;
   auto sl = config.sl(cursl);
   EditItems items{};
-  int y = 1;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Security level:"),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 1, &cursl));
+  auto y = 1;
+  items.add(new Label("Security level:"),
+      new NumberEditItem<uint8_t>(&cursl), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Time per day:"),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 2, &sl.time_per_day));
+  items.add(new Label("Time per day:"),
+      new NumberEditItem<uint16_t>(&sl.time_per_day), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Time per logon:"),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 3, &sl.time_per_logon));
+  items.add(new Label("Time per logon:"),
+      new NumberEditItem<uint16_t>(&sl.time_per_logon), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Messages read:"),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 4, &sl.messages_read));
+  items.add(new Label("Messages read:"),
+      new NumberEditItem<uint16_t>(&sl.messages_read), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Emails per day:"),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 5, &sl.emails));
+  items.add(new Label("Emails per day:"),
+      new NumberEditItem<uint16_t>(&sl.emails), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Posts per day:"),
-      new NumberEditItem<uint16_t>(COL1_POSITION, 6, &sl.posts));
+  items.add(new Label("Posts per day:"),
+      new NumberEditItem<uint16_t>(&sl.posts), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Post anony:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 7, ability_post_anony, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Post anony:"),
+      new FlagEditItem<uint32_t>(ability_post_anony, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Email anony:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 8, ability_email_anony, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Email anony:"),
+      new FlagEditItem<uint32_t>(ability_email_anony, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Read anony posts:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 9, ability_read_post_anony, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Read anony posts:"),
+      new FlagEditItem<uint32_t>(ability_read_post_anony, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Read anony email:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 10, ability_read_email_anony, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Read anony email:"),
+      new FlagEditItem<uint32_t>(ability_read_email_anony, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Limited co-sysop:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 11, ability_limited_cosysop, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Limited co-sysop:"),
+      new FlagEditItem<uint32_t>(ability_limited_cosysop, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Co-sysop:"),
-      new FlagEditItem<uint32_t>(COL1_POSITION, 12, ability_cosysop, "Yes", "No ",
-                                 &sl.ability));
+  items.add(new Label("Co-sysop:"),
+      new FlagEditItem<uint32_t>(ability_cosysop, "Yes", "No ",
+                                 &sl.ability), "", 1, y);
 
+  items.relayout_items_and_labels();
   items.set_navigation_extra_help_items(create_extra_help_items());
   curses_out->Cls(ACS_CKBOARD);
   items.create_window("Security Level Editor");
