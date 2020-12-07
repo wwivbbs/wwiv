@@ -16,14 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_STUFFIN_H__
-#define __INCLUDED_STUFFIN_H__
+#ifndef INCLUDED_BBS_STUFFIN_H
+#define INCLUDED_BBS_STUFFIN_H
 
 #include <string>
 
-const std::string stuff_in(
+std::string stuff_in(
     const std::string& commandline, const std::string& arg1,
     const std::string& arg2, const std::string& arg3,
     const std::string& arg4, const std::string& arg5);
 
-#endif  // __INCLUDED_STUFFIN_H__
+#endif

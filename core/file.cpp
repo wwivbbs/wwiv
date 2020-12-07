@@ -106,7 +106,7 @@ path FilePath(const path& directory_name, const path& file_name) {
     return file_name;
   }
   if (file_name.is_absolute()) {
-    LOG(INFO) << "Passed absolute filename to FilePath";
+    LOG(INFO) << "Passed absolute filename to FilePath: " << file_name;
     // TODO(rushfan): here once we are sure this won't break things.
     // return file_name; 
   }

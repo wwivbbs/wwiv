@@ -20,10 +20,9 @@
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/dropfile.h"
-#include "common/remote_io.h"
 #include "bbs/utility.h"
+#include "common/remote_io.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "local_io/wconstants.h"
@@ -37,17 +36,26 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-const unsigned int GetTimeLeft();
+/**
+ * Gets the time left in minutes.
+ */
+static unsigned int GetTimeLeft() {
+  auto d = nsl();
+  if (d < 0) {
+    d += SECONDS_PER_DAY;
+  }
+  return static_cast<unsigned int>(d / MINUTES_PER_HOUR);
+}
 
 /**
- * Creates a commandline by expanding the replacable parmeters offered by
+ * \verbatim 
+ * Creates a commandline by expanding the replaceable parameters offered by
  * WWIV.
  * 
- * If you add one, please update theese docs:
+ * If you add one, please update these docs:
  * - http://docs.wwivbbs.org/en/latest/chains/parameters
- * - bbs/admin/gfiles/cmdhelp.msg for the event editor.
  * 
- * Replacable parameters:
+ * Replaceable parameters:
  * ~~~~~~~~~~~~~~~~~~~~~~
  *  Param    Description                       Example
  *  ----------------------------------------------------------------------------
@@ -69,17 +77,19 @@ const unsigned int GetTimeLeft();
  *  %S       Com port BPS rate                     "38400"
  *  %T       Time remaining (min)                  "30"
  *  %U       Username                              "Rushfan #1"
+ *
+ * \endverbatim 
 */
-const string stuff_in(const string& commandline, const string& arg1, const string& arg2,
-                      const string& arg3, const string& arg4, const string& arg5) {
-  vector<string> flags = {arg1, arg2, arg3, arg4, arg5};
+std::string stuff_in(const string& commandline, const string& arg1, const string& arg2,
+                     const string& arg3, const string& arg4, const string& arg5) {
+  std::vector<std::string> flags = {arg1, arg2, arg3, arg4, arg5};
 
   auto iter = begin(commandline);
   std::ostringstream os;
   while (iter != end(commandline)) {
     if (*iter == '%') {
       ++iter;
-      char ch = to_upper_case<char>(*iter);
+      const auto ch = to_upper_case<char>(*iter);
       switch (ch) {
       // fixed strings
       case '%':
@@ -150,12 +160,4 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
     }
   }
   return os.str();
-}
-
-const unsigned int GetTimeLeft() {
-  auto d = nsl();
-  if (d < 0) {
-    d += SECONDS_PER_DAY;
-  }
-  return static_cast<unsigned int>(d / MINUTES_PER_HOUR);
 }
