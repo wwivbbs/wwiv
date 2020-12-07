@@ -60,8 +60,8 @@ void Label::Display(CursesWindow* window) const {
   window->Puts(text_);
 }
 
-MultilineLabel::MultilineLabel(int x, int y, const std::string& text)
-    : Label(x, y, 0, text) {
+MultilineLabel::MultilineLabel(const std::string& text)
+    : Label(0, text) {
   lines_ = SplitString(text, "\r\n", false);
   auto w = 0;
   for (const auto& l : lines_) {
