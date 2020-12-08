@@ -176,7 +176,15 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
     }
     const auto is_control_line = starts_with(l, control_char_);
     if (!is_control_line) {
+      std::string last_line;
       do {
+        if (l == last_line) {
+          // We have a loop!
+          VLOG(1) << "LOOP on line: '" << l << "'";
+          out.push_back(l.substr(0, style.line_length));
+          break;
+        }
+        last_line = l;
         const auto size_wc = size_without_colors(l);
         if (size_wc <= style.line_length) {
           if (style.reattribute_quotes && has_quote(l)) {
@@ -195,6 +203,12 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
         if (pos == 0) {
           pos = style.line_length;
         }
+        if (pos < 20) {
+          // We have nothing useful here.  Just dump what we can of L
+          VLOG(1) << "LOOP on line: '" << l << "'";
+          out.push_back(l.substr(0, style.line_length));
+          break;
+        }
         auto subset_of_l = l.substr(0, pos);
         l = l.substr(pos + 1);
         if (style.reattribute_quotes) {
@@ -209,7 +223,7 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
               possible_quote = possible_quote.substr(possible_quote_start + 1);
             }
             l = StrCat(possible_quote, " ", l);
-            // Remove any space from before the nonwrapped line so it matches.
+            // Remove any space from before the non-wrapped line so it matches.
             StringTrimBegin(&subset_of_l);
           }
         }
