@@ -249,7 +249,7 @@ ParsedMessageText::to_lines(const parsed_message_lines_style_t& style) const {
         out.push_back(l);
       }
       break;
-    default: ;
+    default:
       out.push_back(l);
     }
   }

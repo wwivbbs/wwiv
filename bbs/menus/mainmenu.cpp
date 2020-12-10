@@ -311,6 +311,23 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
 
 }
 
+/**
+ * Returns a string to display for a key.
+ * Examples:
+ *   'A' for a key 'A'
+ *   '/A' for a key '/A'
+ *   '//KEY' for a key 'KEY'
+ */
+static std::string display_key(const std::string& item_key) {
+  if (item_key.size() == 1) {
+    return fmt::format("|#9[|#2{}|#9]", item_key);
+  }
+  if (item_key.size() == 2 && item_key.front() == '/') {
+    fmt::format("|#2{}", item_key);
+  }
+  return fmt::format("|#2//{}", item_key);
+}
+
 void Menu::GenerateMenu() const {
   bout.Color(0);
   bout.nl();
@@ -328,8 +345,7 @@ void Menu::GenerateMenu() const {
     if (!check_acs(mi.acs)) {
       continue;
     }
-    const auto key = mi.item_key.size() == 1
-        ? fmt::format("|#9[|#2{}|#9]", mi.item_key) : fmt::format("|#2//{}", mi.item_key);
+    const auto key = display_key(mi.item_key;
     bout.format("{:<8} |#1{:<25}  ", key, mi.item_text);
     if (lines_displayed % 2) {
       bout.nl();
@@ -337,6 +353,32 @@ void Menu::GenerateMenu() const {
     ++lines_displayed;
   }
   bout.nl(2);
+}
+
+void Menu::GenerateLongMenu() const {
+  bout.Color(0);
+  bout.nl();
+
+  auto lines_displayed = 0;
+  const auto nums = menu().num_action;
+  if (nums != sdk::menus::menu_numflag_t::none) {
+    bout.format("|#1{:<8} |#1{:<25}  ", "[#]", "Change Sub/Dir #");
+    ++lines_displayed;
+  }
+  for (const auto& mi : menu().items) {
+    if (mi.item_key.empty()) {
+      continue;
+    }
+    if (!check_acs(mi.acs)) {
+      continue;
+    }
+    const auto key = display_key(mi.item_key;
+    const auto text = mi.help_text.empty() ? mi.item_text : mi.help_text;
+    bout.format("{:<8} |#1{}  ", key, text);
+    bout.nl();
+    ++lines_displayed;
+  }
+  bout.nl();
 }
 
 }

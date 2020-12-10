@@ -54,7 +54,10 @@ public:
   [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t>
   GetMenuItemForCommand(const std::string& cmd) const;
   void DisplayMenu() const;
+  // Generates the short form (multi-column) menu text.
   void GenerateMenu() const;
+  // Generates the long form, single colun, menu text.
+  void GenerateLongMenu() const;
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
   std::tuple<menu_command_action_t, std::string>
   ExecuteAction(const sdk::menus::menu_action_56_t& a);

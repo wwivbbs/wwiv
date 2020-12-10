@@ -779,7 +779,14 @@ public:
     curses_out->footer()->ShowHelpItems(
         0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
+    uint32_t old_attr;
+    short old_pair;
+    window->AttrGet(&old_attr, &old_pair);
+    window->SetColor(SchemeId::EDITLINE);
+    Display(window);
+    window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
+    window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       RunSubDialog(window);
       window->RedrawWin();

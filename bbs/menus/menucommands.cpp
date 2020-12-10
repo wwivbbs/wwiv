@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/menus/menucommands.h"
+
+#include "bbs/automsg.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
@@ -229,26 +231,61 @@ Runs a WWIVbasic Script
                                             ConfigUserMenuSet();
                                             context.need_reload = true;
                                           }));
-  m.emplace("DisplayHelp", MenuItem(R"( <filename>
 
-  An alias for DisplayMenu. 
-  This alias is deprecated, please use DisplayMenu.
+  // ========================================================================
+  // Menu
+
+  m.emplace(
+      "menu:display",
+      MenuItem(R"(Prints the 'novice menus' for the current menu set, or if one doesn't exist,
+  it will generate one using command "menu:generate_short")",
+               MENU_CAT_MENU, [](MenuContext& context) {
+                 if (context.cur_menu && a()->user()->IsExpert()) {
+                   context.cur_menu->DisplayMenu();
+                 }
+               }));
+  m.emplace("menu:generate_short",
+            MenuItem(R"( Generates the short form 'novice menus' for the current menu set.
+This command does not attempt to display a .msg/.ans file.)",
+                     MENU_CAT_MENU, [](MenuContext& context) {
+                       if (context.cur_menu && a()->user()->IsExpert()) {
+                         context.cur_menu->GenerateMenu();
+                       }
+                     }));
+
+  m.emplace(
+      "menu:generate_long",
+      MenuItem(
+          R"(Generates the long form (one cmd per line) help text/menu for the current menu set.
+This command does not attempt to display a .msg/.ans file.
 )",
+          MENU_CAT_MENU, [](MenuContext& context) {
+            if (context.cur_menu && a()->user()->IsExpert()) {
+              context.cur_menu->GenerateLongMenu();
+            }
+          }));
+
+    m.emplace("DisplayHelp", MenuItem(R"(An alias for DisplayMenu. 
+  This alias is deprecated, please use menu:display.)",
                                     MENU_CAT_MENU, [](MenuContext& context) {
                                       if (context.cur_menu && a()->user()->IsExpert()) {
                                         context.cur_menu->DisplayMenu();
                                       }
                                     }));
-  m.emplace("DisplayMenu", MenuItem(R"( <filename>
 
-  Prints the 'novice menus' for the current menu set, or if one doesn't exist,
-  it will generate one using the menu definitions.
+  m.emplace(
+        "DisplayMenu",
+        MenuItem(R"(Prints the 'novice menus' for the current menu set, or if one doesn't exist,
+  it will generate one using command "menu:generate_short"
 )",
-                                    MENU_CAT_MENU, [](MenuContext& context) {
-                                      if (context.cur_menu && a()->user()->IsExpert()) {
-                                        context.cur_menu->DisplayMenu();
-                                      }
-                                    }));
+                 MENU_CAT_MENU, [](MenuContext& context) {
+                   if (context.cur_menu && a()->user()->IsExpert()) {
+                     context.cur_menu->DisplayMenu();
+                   }
+                 }));
+
+  // ========================================================================
+
   m.emplace("SelectSub", MenuItem(R"(
 
   This will prompt the user to enter a sub to change to.  However, it does not
@@ -296,12 +333,39 @@ Runs a WWIVbasic Script
                               MENU_CAT_CHAIN, [](MenuContext&) { Chains(); }));
   m.emplace("TimeBank", MenuItem(R"(
   Enter the time bank
+)",MENU_CAT_SYS, [](MenuContext&) { TimeBank(); }));
+
+  // =========================================================================================
+
+  m.emplace("AutoMessage", MenuItem(R"(Displays the legacy automessage menu)", MENU_CAT_AUTOMSG,
+                                    [](MenuContext&) { do_legacy_automessage(); }));
+
+  m.emplace("ReadAutoMessage", MenuItem(R"(Read the auto message)", MENU_CAT_AUTOMSG,
+                                        [](MenuContext&) { read_automessage(); }));
+
+  m.emplace("amsg:read", MenuItem(R"(Read the auto message 
+[use automessage:read instead]
 )",
-                                 MENU_CAT_SYS, [](MenuContext&) { TimeBank(); }));
-  m.emplace("AutoMessage", MenuItem(R"(
-  Read the auto message
-)",
-                                    MENU_CAT_AUTOMSG, [](MenuContext&) { AutoMessage(); }));
+                                  MENU_CAT_AUTOMSG, [](MenuContext&) { read_automessage(); }));
+
+  m.emplace("amsg:write", MenuItem(R"(Writes a new auto message)", MENU_CAT_AUTOMSG,
+                                   [](MenuContext&) { write_automessage(); }));
+
+  m.emplace("amsg:delete", MenuItem(R"(Deletes the auto message (cosysop required))",
+                                    MENU_CAT_AUTOMSG, [](MenuContext&) { delete_automessage(); }));
+
+  m.emplace("amsg:lock", MenuItem(R"(Locks the automessage (cosysop required))", MENU_CAT_AUTOMSG,
+                                  [](MenuContext&) { lock_automessage(); }));
+  m.emplace("amsg:unlock", MenuItem(R"(Unlocks the automessage (cosysop required))",
+                                    MENU_CAT_AUTOMSG, [](MenuContext&) { unlock_automessage(); }));
+  m.emplace("amsg:email", MenuItem(R"(E-mail the author of the automessage)", MENU_CAT_AUTOMSG,
+                                   [](MenuContext&) { email_automessage_author(); }));
+
+  // =========================================================================================
+
+
+
+
   m.emplace("BBSList", MenuItem(R"(
   Read the bbslist
 )",
@@ -670,11 +734,6 @@ Runs a WWIVbasic Script
   Upload a file into dir#0, the sysop dir.
 )",
                                       MENU_CAT_FILE, [](MenuContext&) { UploadToSysop(); }));
-  m.emplace("ReadAutoMessage",
-            MenuItem(R"(
-  Read the auto message
-)",
-                     MENU_CAT_AUTOMSG, [](MenuContext&) { ReadAutoMessage(); }));
   m.emplace("SetNewScanMsg", MenuItem(R"(
   Enter the menu so that a user can set which subs he want to scan when doing
   a new message scan

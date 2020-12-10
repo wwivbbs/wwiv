@@ -80,7 +80,7 @@ public:
         auto help = e.help;
         help.erase(std::remove(help.begin(), help.end(), 10), help.end());
         help.erase(std::remove(help.begin(), help.end(), 13), help.end());
-        items.emplace_back(fmt::format("{:17.17} {:13.13} {:48.48}", e.cmd, cat, help));
+        items.emplace_back(fmt::format("{:20.20} {:13.13} {:44.44}", e.cmd, cat, help));
         if (iequals(e.cmd, t_)) {
           selected = count;
         }
@@ -103,7 +103,7 @@ public:
   }
 
   [[nodiscard]] std::string menu_label() const override {
-    return fmt::format("{:<{}}", t_, width());
+    return fmt::format("[Edit] '{:<.{}}'", t_, width());
   }
 
 private:
@@ -347,7 +347,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   items.add(new Label("Enter Actions:"), new ActionSubDialog(config, h.enter_actions),
             "Menu actions to execute when entering this menu", 1, y);
   y++;
-  items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.enter_actions),
+  items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.exit_actions),
             "Menu actions to execute when leaving this menu", 1, y);
   y++;
   items.add(new Label("ACS:"), new StringEditItem<std::string&>(55, h.acs, EditLineMode::ALL),
@@ -358,7 +358,9 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
             "Password to access menu. You may use '*SYSTEM' for system password.", 1, y);
   y++;
   items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
-
+  y++;
+  items.add(new Label("Prompt Filename:"), 1, y);
+  items.add(new Label(StrCat(menu_name, ".pro")), 2, y)->set_right_justified(false);
   items.relayout_items_and_labels();
   items.Run(title);
 

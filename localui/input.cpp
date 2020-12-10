@@ -564,6 +564,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
+  window->SetColor(SchemeId::EDITLINE);
   const auto cx = window->GetcurX();
   const auto cy = window->GetcurY();
   window->PutsXY(cx, cy, strings.at(value));
