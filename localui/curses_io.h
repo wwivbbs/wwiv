@@ -58,7 +58,11 @@ class CursesIO final {
   explicit CursesIO(const std::string& title);
   CursesIO(const CursesIO& copy) = delete;
   ~CursesIO();
+  // Initializes the DOS colors starting at 'start'.
+  void InitDosColorPairs(short start = 100);
+  void DisableLocalIO();
 
+  void ReenableLocalIO();
   void Cls(uint32_t background_char = ' ');
   [[nodiscard]] CursesWindow* window() const { return window_.get(); }
   [[nodiscard]] CursesFooter* footer() const { return footer_.get(); }

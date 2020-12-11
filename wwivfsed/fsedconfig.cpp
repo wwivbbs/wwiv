@@ -62,6 +62,11 @@ FsedConfig::FsedConfig(const CommandLine& cmdline)
   }
   local_ = cmdline.barg("local");
   pause_ = cmdline.barg("pause");
+  file_ = cmdline.barg("file");
+  if (file_) {
+    // Always local if we're editing a file
+    local_ = true;
+  }
   socket_handle_ = cmdline.iarg("socket_handle");
   if (!cmdline.remaining().empty()) {
     file_path_ = cmdline.remaining().front();
@@ -100,7 +105,7 @@ std::filesystem::path FsedConfig::file_path() const {
     return file_path_;
   }
 
-  return bbs_type() == FsedConfig::bbs_type_t::wwiv ? "input.msg" : "msgtmp";
+  return bbs_type() == bbs_type_t::wwiv ? "input.msg" : "msgtmp";
 }
 
 

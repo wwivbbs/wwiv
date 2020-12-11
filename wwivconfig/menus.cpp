@@ -59,7 +59,8 @@ static const std::vector<pair<menus::menu_logtype_t, std::string>> logging_actio
 static const std::vector<pair<menus::menu_help_display_t, std::string>> help_action = {
     {menus::menu_help_display_t::never, "Never"},
     {menus::menu_help_display_t::always, "Always"},
-    {menus::menu_help_display_t::on_entrance, "On Entrance"}};
+    {menus::menu_help_display_t::on_entrance, "On Entrance"},
+    {menus::menu_help_display_t::user_choice, "User Choice"}};
 
 class ActionPickerSubDialog final : public SubDialog<std::string> {
 public:
@@ -207,18 +208,18 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             "Key(s) to execute command", 1, y);
   y++;
   items.add(new Label("Menu Text:"),
-            new StringEditItem<std::string&>(60, m.item_text, EditLineMode::ALL),
+            new StringEditItemWithPipeCodes(60, m.item_text, EditLineMode::ALL),
             "What to show on generated menu", 1, y);
   y++;
   items.add(new Label("Help Text:"),
-            new StringEditItem<std::string&>(60, m.help_text, EditLineMode::ALL),
+            new StringEditItemWithPipeCodes(60, m.help_text, EditLineMode::ALL),
             "One line help for command", 1, y);
   y++;
   items.add(new Label("Sysop Log:"),
             new StringEditItem<std::string&>(50, m.log_text, EditLineMode::ALL),
             "What to show in sysop log", 1, y);
   y++;
-  items.add(new Label("Instance :"),
+  items.add(new Label("Instance:"),
             new StringEditItem<std::string&>(60, m.instance_message, EditLineMode::ALL),
             "Instance message to send to all users", 1, y);
   y++;
@@ -309,28 +310,78 @@ public:
     }
   }
 
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  [[nodiscard]] std::string menu_label() const override { return "[Press Enter to Edit]"; }
+};
+
+
+// Base item of an editable value, this class does not use templates.
+class GeneratedMenuSubDialog : public SubDialog<menus::generated_menu_56_t> {
+public:
+  GeneratedMenuSubDialog(const Config& config, menus::generated_menu_56_t& d)
+      : SubDialog(config, d) {}
+  ~GeneratedMenuSubDialog() override = default;
+
+  void RunSubDialog(CursesWindow* window) override {
+    EditItems items{};
+    constexpr int MAX_STRING_LEN = 10;
+    auto y = 1;
+
+    items.add(new Label("Num Columns:"),
+              new NumberEditItem<int, 1>(&t_.num_cols),
+              "How many columns should the generated menu contain", 1, y);
+    ++y;
+
+    items.add(new Label("Title Color:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, t_.color_title, EditLineMode::ALL),
+              "This system's FTN address for use on the network.", 1, y);
+    ++y;
+
+    items.add(new Label("Brace Color:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, t_.color_item_braces, EditLineMode::ALL),
+              "Pipe code to use to color the braces surrounding the key in generated menus.", 1, y);
+    ++y;
+
+    items.add(new Label("Key Color:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, t_.color_item_key, EditLineMode::ALL),
+              "Pipe code to use to color each menu item key in generated menus.", 1, y);
+    ++y;
+
+    items.add(new Label("Text Color:"),
+              new StringEditItem<std::string&>(MAX_STRING_LEN, t_.color_item_text, EditLineMode::ALL),
+              "Pipe code to use to color the text description in generated menus", 1, y);
+    ++y;
+
+    window->GotoXY(x_, y_);
+
+    //items.add_aligned_width_column(1);
+    items.relayout_items_and_labels();
+    items.Run(menu_label());
+    window->RedrawWin();
+  }
+
 };
 
 static void edit_menu(const Config& config, const std::filesystem::path& menu_dir,
                       const std::string& menu_set, const std::string& menu_name) {
   menus::Menu56 m(menu_dir, menu_set, menu_name);
+  const auto menu_path = FilePath(menu_dir, menu_set);
+
   if (!m.initialized()) {
     m.set_initialized(true);
     m.menu.title = "New WWIV Menu";
-    m.menu.color_item_braces = 9;
-    m.menu.color_item_key = 2;
-    m.menu.color_item_text = 1;
-    m.menu.color_title = 5;
   }
 
   EditItems items{};
   const string title = StrCat("Menu: ", menu_name);
   int y = 1;
   auto& h = m.menu;
-  items.add(new Label("Description:"),
-            new StringEditItem<std::string&>(55, h.title, EditLineMode::ALL),
-            "This is the description users see when selecting a menu set", 1, y);
+  items.add(new Label("Title:"),
+            new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
+            "This is the title to display at the top of the menu", 1, y);
+  y++;
+  items.add(new Label("Clear Screen:"),
+            new BooleanEditItem(&h.cls),
+            "Clear the screen before displaying menu.", 1, y);
   y++;
   items.add(new Label("Number Keys:"),
             new ToggleEditItem<menus::menu_numflag_t>(numbers_action, &h.num_action),
@@ -359,8 +410,12 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   y++;
   items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
   y++;
-  items.add(new Label("Prompt Filename:"), 1, y);
-  items.add(new Label(StrCat(menu_name, ".pro")), 2, y)->set_right_justified(false);
+  items.add(new Label("Generated Menu:"), new GeneratedMenuSubDialog(config, h.generated_menu), 
+    "Edits the settings for a generated menu (not using .msg/.ans file)", 1, y);
+  y++;
+  const auto prompt_name = StrCat(menu_name, ".pro");
+  auto p = FilePath(menu_path, prompt_name);
+  items.add(new Label("Prompt"), new EditExternalFileItem(p), 1, y);
   items.relayout_items_and_labels();
   items.Run(title);
 
@@ -490,3 +545,4 @@ void menus(const Config& config) {
     LOG(ERROR) << e.what();
   }
 }
+

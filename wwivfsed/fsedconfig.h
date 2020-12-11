@@ -27,7 +27,7 @@ namespace wwiv::wwivfsed {
 
 class FsedConfig final  {
 public:
-  explicit FsedConfig(const wwiv::core::CommandLine& cmdline);
+  explicit FsedConfig(const core::CommandLine& cmdline);
   ~FsedConfig() = default;
 
   enum class bbs_type_t { wwiv, qbbs };
@@ -35,6 +35,7 @@ public:
   [[nodiscard]] bbs_type_t bbs_type() const noexcept { return bbs_type_; }
   [[nodiscard]] int socket_handle() const noexcept { return socket_handle_; }
   [[nodiscard]] bool local() const noexcept { return local_; }
+  [[nodiscard]] bool file() const noexcept { return file_; }
   [[nodiscard]] bool pause() const noexcept { return pause_; }
   [[nodiscard]] const std::filesystem::path& root() const noexcept { return root_; }
   [[nodiscard]] std::filesystem::path help_path() const;  
@@ -49,6 +50,7 @@ private:
   bbs_type_t bbs_type_{bbs_type_t::wwiv};
   int socket_handle_{-1};
   bool local_{false};
+  bool file_{false};
   bool pause_{false};
   std::filesystem::path file_path_;
 };

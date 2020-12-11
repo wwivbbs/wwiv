@@ -105,6 +105,10 @@ void CustomEditItem::Display(CursesWindow* window) const {
   }
 }
 
+EditExternalFileItem::EditExternalFileItem(std::filesystem::path path)
+  : BaseEditItem(25), path_(std::move(path)) {
+}
+
 static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const auto maxx = parent->GetMaxX();
   const auto maxy = parent->GetMaxY();

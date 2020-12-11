@@ -202,6 +202,7 @@ public:
   }
 
   void Display(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     if (display_) {
       const std::string blanks(width(), ' ');
       const auto custom = display_();
@@ -222,6 +223,7 @@ protected:
       s = text + std::string(static_cast<std::string::size_type>(width()) - text.size(), ' ');
     }
 
+    window->SetColor(SchemeId::WINDOW_DATA);
     window->PutsXY(this->x_, this->y_, s);
   }
 
@@ -279,7 +281,46 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     this->DefaultDisplayString(window, data_);
+  }
+
+private:
+  EditLineMode edit_line_mode_;
+};
+
+// String Editor for Strings with Pipe codes.  The UI will attempt to display
+// These with color in the UI when not editing.
+class StringEditItemWithPipeCodes : public EditItem<std::string&> {
+public:
+  StringEditItemWithPipeCodes(int maxsize, std::string& data, EditLineMode mode)
+      : EditItem<std::string&>(maxsize, data), edit_line_mode_(mode) {}
+  ~StringEditItemWithPipeCodes() override = default;
+  StringEditItemWithPipeCodes() = delete;
+  StringEditItemWithPipeCodes(StringEditItemWithPipeCodes const&) = delete;
+  StringEditItemWithPipeCodes(StringEditItemWithPipeCodes&&) = delete;
+  StringEditItemWithPipeCodes& operator=(StringEditItemWithPipeCodes const&) = delete;
+  StringEditItemWithPipeCodes& operator=(StringEditItemWithPipeCodes&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override {
+    curses_out->footer()->ShowHelpItems(
+        0, {{"Esc", "Exit"}, {"NOTE", "Pipe codes allowed."}});
+    window->GotoXY(this->x_, this->y_);
+    return editline(window, &this->data_, this->width_, edit_line_mode_, "");
+  }
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override {
+    auto s = data_;
+    const auto siz = wwiv::strings::size_without_colors(s);
+    if (siz > width()) {
+      s = wwiv::strings::trim_to_size_ignore_colors(s, width());
+    } else if (siz < width()) {
+      const auto num_padding = width() - siz;
+      s = s + std::string(num_padding, ' ');
+    }
+
+    window->PutsWithPipeColors(x_, y_, s);
   }
 
 private:
@@ -307,6 +348,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     const auto d = std::to_string(*this->data_);
     window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->width()));
   }
@@ -366,6 +408,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     try {
       auto index = index_of(*this->data_, items_);
       const auto& s = items_.at(index).second;
@@ -508,6 +551,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     const auto s = to_restriction_string(*data_, rs_size_, rs_);
     DefaultDisplayString(window, s);
   }
@@ -522,7 +566,7 @@ static constexpr int xrestrictstring_size = 16;
 
 class RestrictionsEditItem final : public BaseRestrictionsEditItem {
 public:
-  RestrictionsEditItem(uint16_t* data)
+  explicit RestrictionsEditItem(uint16_t* data)
       : BaseRestrictionsEditItem(xrestrictstring, xrestrictstring_size, data) {}
   ~RestrictionsEditItem() override = default;
   RestrictionsEditItem() = delete;
@@ -534,7 +578,7 @@ public:
 
 class ArEditItem final : public BaseRestrictionsEditItem {
 public:
-  ArEditItem(uint16_t* data)
+  explicit ArEditItem(uint16_t* data)
       : BaseRestrictionsEditItem(ar_string, ar_string_size, data) {}
   ~ArEditItem() override = default;
   ArEditItem() = delete;
@@ -546,7 +590,7 @@ public:
 
 class BooleanEditItem final : public EditItem<bool*> {
 public:
-  BooleanEditItem(bool* data) : EditItem<bool*>(6, data) {}
+  explicit BooleanEditItem(bool* data) : EditItem<bool*>(6, data) {}
   ~BooleanEditItem() override = default;
   BooleanEditItem() = delete;
   BooleanEditItem(BooleanEditItem const&) = delete;
@@ -570,6 +614,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
     const auto& s = boolean_strings.at(*data_ ? 1 : 0);
     DefaultDisplayString(window, s);
@@ -638,7 +683,10 @@ public:
   }
 
 protected:
-  void DefaultDisplay(CursesWindow* window) const override { DefaultDisplayString(window, data_); }
+  void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    DefaultDisplayString(window, data_);
+  }
 
 private:
   const std::string base_;
@@ -686,6 +734,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
     DefaultDisplayString(window, data_.string());
   }
 
@@ -732,7 +781,10 @@ public:
   }
 
 protected:
-  void DefaultDisplay(CursesWindow* window) const override { DefaultDisplayString(window, data_); }
+  void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    DefaultDisplayString(window, data_);
+  }
 
 private:
   const std::filesystem::path base_;
@@ -757,7 +809,10 @@ public:
   }
 
 protected:
-  void DefaultDisplay(CursesWindow* window) const override { DefaultDisplayString(window, data_); }
+  void DefaultDisplay(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    DefaultDisplayString(window, data_);
+  }
 };
 
 
@@ -783,7 +838,8 @@ public:
     short old_pair;
     window->AttrGet(&old_attr, &old_pair);
     window->SetColor(SchemeId::EDITLINE);
-    Display(window);
+    // Don't use Display since we use that when we don't have focus here.
+    window->PutsXY(x_, y_, menu_label());
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
@@ -798,7 +854,10 @@ public:
     return EditlineResult::NEXT;
   }
 
-  void Display(CursesWindow* window) const override { window->PutsXY(x_, y_, menu_label()); }
+  void Display(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    window->PutsXY(x_, y_, menu_label());
+  }
 
 protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
@@ -806,6 +865,63 @@ protected:
 
   const wwiv::sdk::Config& c_;
   T& t_;
+};
+
+/**
+ * EditItem that executes a std::function<T, CursesWindow*> to
+ * edit the items. It is intended that this function will invoke
+ * a new EditItem dialog or ListBox for editing.
+ */
+class EditExternalFileItem : public BaseEditItem {
+public:
+  explicit EditExternalFileItem(std::filesystem::path path);
+  ~EditExternalFileItem() override = default;
+  EditExternalFileItem() = delete;
+  EditExternalFileItem(EditExternalFileItem const&) = delete;
+  EditExternalFileItem(EditExternalFileItem&&) = delete;
+  EditExternalFileItem& operator=(EditExternalFileItem const&) = delete;
+  EditExternalFileItem& operator=(EditExternalFileItem&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override {
+    wwiv::core::ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(
+        0, {{"Esc", "Exit"}, {"ENTER", "Edit File (opens editor)"}});
+    window->GotoXY(x_, y_);
+    uint32_t old_attr;
+    short old_pair;
+    window->AttrGet(&old_attr, &old_pair);
+    window->SetColor(SchemeId::EDITLINE);
+    Display(window);
+    window->GotoXY(x_, y_);
+    const auto ch = window->GetChar();
+    window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      curses_out->DisableLocalIO();
+      std::string exe;
+#ifdef _WIN32
+      exe = ".exe";
+#endif
+      const auto cmd = fmt::format(".{}wwivfsed{} -F {}", wwiv::core::File::pathSeparatorChar, exe, path_.string());
+      system(cmd.c_str());
+      curses_out->ReenableLocalIO();
+      window->RedrawWin();
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    } else if (ch == ESC) {
+      return EditlineResult::DONE;
+    }
+    return EditlineResult::NEXT;
+  }
+
+  void Display(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    window->PutsXY(x_, y_, menu_label());
+  }
+
+protected:
+  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
+
+  const std::filesystem::path path_;
 };
 
 #endif

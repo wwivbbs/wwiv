@@ -40,11 +40,11 @@ void load_minimal(Archive const&, menu_numflag_t& t, const std::string& s) {
 
 template <class Archive>
 std::string save_minimal(Archive const&, const menu_help_display_t& t) {
-  return to_enum_string<menu_help_display_t>(t, {"always", "never", "on_entrance"});
+  return to_enum_string<menu_help_display_t>(t, {"always", "never", "on_entrance", "user_choice"});
 }
 template <class Archive>
 void load_minimal(Archive const&, menu_help_display_t& t, const std::string& s) {
-  t = from_enum_string<menu_help_display_t>(s, {"always", "never", "on_entrance"});
+  t = from_enum_string<menu_help_display_t>(s, {"always", "never", "on_entrance", "user_choice"});
 }
 
 
@@ -80,15 +80,23 @@ void serialize(Archive & ar, menu_item_56_t& s) {
   SERIALIZE(s, actions);
 }
 
+
 template <class Archive>
-void serialize(Archive & ar, menu_56_t& s) {
-  SERIALIZE(s, num_action);
-  SERIALIZE(s, logging_action);
-  SERIALIZE(s, help_type);
+void serialize(Archive & ar, generated_menu_56_t& s) {
+  SERIALIZE(s, num_cols);
   SERIALIZE(s, color_title);
   SERIALIZE(s, color_item_key);
   SERIALIZE(s, color_item_text);
   SERIALIZE(s, color_item_braces);
+}
+
+template <class Archive>
+void serialize(Archive & ar, menu_56_t& s) {
+  SERIALIZE(s, cls);
+  SERIALIZE(s, num_action);
+  SERIALIZE(s, logging_action);
+  SERIALIZE(s, help_type);
+  SERIALIZE(s, generated_menu);
   SERIALIZE(s, title);
   SERIALIZE(s, acs);
   SERIALIZE(s, password);

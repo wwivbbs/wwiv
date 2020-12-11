@@ -108,6 +108,7 @@ CursesIO::CursesIO(const string& title)
   nonl();
   start_color();
   color_scheme_.reset(new ColorScheme());
+  InitDosColorPairs(100);
 
   const auto stdscr_maxx = getmaxx(stdscr);
   const auto stdscr_maxy = getmaxy(stdscr);
@@ -152,6 +153,30 @@ CursesIO::~CursesIO() {
   SetConsoleScreenBufferSize(hConOut, originalConsoleSize);
 #endif  // _WIN32
 }
+
+void CursesIO::InitDosColorPairs(short start) {
+  std::vector<short> lowbit_colors = {COLOR_BLACK, COLOR_BLUE,    COLOR_GREEN,  COLOR_CYAN,
+                                      COLOR_RED,   COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE};
+  auto num = start;
+  for (auto bg = 0; bg < 8; bg++) {
+    for (auto fg = 0; fg < 8; fg++) {
+      init_pair(num++, lowbit_colors[fg], lowbit_colors[bg]);
+    }
+  }
+}
+
+void CursesIO::DisableLocalIO() { endwin(); }
+
+void CursesIO::ReenableLocalIO() {
+  refresh();
+  footer()->window()->RedrawWin();
+  footer()->window()->Refresh();
+  header()->RedrawWin();
+  header()->Refresh();
+  window()->RedrawWin();
+  window()->Refresh();
+}
+
 
 /**
  * Clears the local logical screen

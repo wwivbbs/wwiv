@@ -79,9 +79,7 @@ CursesWindow::~CursesWindow() {
   }
 }
 
-std::any CursesWindow::window() const {
-  return window_;
-}
+std::any CursesWindow::window() const { return window_; }
 
 CursesWindow* CursesWindow::parent() const { return parent_; }
 
@@ -137,7 +135,7 @@ int CursesWindow::GetChar() const {
     // Win10 Terminal started using these
     case KEY_A1:
       return KEY_HOME;
-    case KEY_A2: // upper middle on Virt. keypad. 
+    case KEY_A2: // upper middle on Virt. keypad.
       return KEY_UP;
     case KEY_A3:
       return KEY_PPAGE;
@@ -189,7 +187,7 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
 
 void CursesWindow::PutchW(wchar_t ch) {
   // Curses seriously has no way to display a single wchar_t!!
-  wchar_t c[2] = { ch, 0 };
+  wchar_t c[2] = {ch, 0};
   waddwstr(std::any_cast<WINDOW*>(window_), c);
 
   Refresh();
@@ -208,4 +206,67 @@ void CursesWindow::PutsXYW(int x, int y, const std::wstring& text) {
 void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
   set_current_scheme_id(id);
+}
+
+void CursesWindow::SetDosColor(int original_color) {
+  const auto bold = (original_color & 8) != 0;
+  auto color = original_color;
+  const auto bg = (color >> 4) & 0x07;
+  const auto fg = color & 0x07;
+  color = (bg << 3) | fg;
+  // DOS colors start at color pair 100.
+  auto attr = COLOR_PAIR(color + 100);
+  if (bold) {
+    attr |= A_BOLD;
+  }
+  AttrSet(attr);
+}
+
+std::vector<int> colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
+
+enum class pipe_state_t { text, pipe };
+
+void CursesWindow::PutsWithPipeColors(const std::string& s) {
+  auto state = pipe_state_t::text;
+  std::string curpipe;
+  auto curatr = 0x07;
+  for (auto it = std::begin(s); it != std::end(s); ++it) {
+    const auto c = *it;
+    switch (state) {
+    case pipe_state_t::text: {
+      if (c == '|') {
+        state = pipe_state_t::pipe;
+        curpipe.push_back(c);
+      } else {
+        Putch(c);
+      }
+    } break;
+    // grab first
+    case pipe_state_t::pipe: {
+      const auto pipe_size = ssize(curpipe);
+      if (std::isdigit(c) && pipe_size == 2) {
+        curpipe.push_back(c);
+        if (curpipe[1] == '#') {
+          curatr = at(colors, curpipe[2] - '0');
+        } else {
+          curatr = to_number<int>(curpipe.substr(1));
+        }
+        curpipe.clear();
+        SetDosColor(curatr);
+        state = pipe_state_t::text;
+      } else if ((std::isdigit(c) || c == '#') && pipe_size == 1) {
+        curpipe.push_back(c);
+      } else {
+        state = pipe_state_t::text;
+        Puts(curpipe);
+        curpipe.clear();
+      }
+    } break;
+    }
+  }
+}
+
+void CursesWindow::PutsWithPipeColors(int x, int y, const std::string& text) {
+  GotoXY(x, y);
+  PutsWithPipeColors(text);
 }

@@ -152,9 +152,12 @@ Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
 }
 
 void Menu::DisplayMenu() const {
+  if (menu().cls) {
+    bout.cls();
+  }
   const auto path = common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
   if (!bout.printfile_path(path, true, false)) {
-    GenerateMenu();
+    GenerateMenu(menu_type_t::short_menu);
   }
 }
 
@@ -269,9 +272,17 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
     }
   }
 
+  bool first = true;
   // We have a good menu.
   for (;;) {
-    if (!a()->user()->IsExpert()) {
+    if (menu().help_type == sdk::menus::menu_help_display_t::never) {
+      // Do nothing
+    } else if (menu().help_type == sdk::menus::menu_help_display_t::always) {
+      DisplayMenu();
+    } else if (first && menu().help_type == sdk::menus::menu_help_display_t::on_entrance) {
+      DisplayMenu();
+      first = false;
+    } else if (menu().help_type == sdk::menus::menu_help_display_t::user_choice && !a()->user()->IsExpert()) {
       DisplayMenu();
     }
     const auto save_mci = bout.mci_enabled();
@@ -320,22 +331,51 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
  */
 static std::string display_key(const std::string& item_key) {
   if (item_key.size() == 1) {
-    return fmt::format("|#9[|#2{}|#9]", item_key);
+    return item_key;
   }
   if (item_key.size() == 2 && item_key.front() == '/') {
-    fmt::format("|#2{}", item_key);
+    return item_key;
   }
-  return fmt::format("|#2//{}", item_key);
+  return fmt::format("//{}", item_key);
 }
 
-void Menu::GenerateMenu() const {
+static std::string generate_menu_item_line(sdk::menus::generated_menu_56_t g,
+                                           const std::string& key, const std::string& text, 
+                                           int max_width) {
+  std::ostringstream ss;
+  ss << g.color_item_braces << "(" << g.color_item_key << display_key(key)
+  << g.color_item_braces << ")" << g.color_item_text;
+  if (key.size() == 1 && !text.empty() 
+    && strings::to_upper_case_char(text.front()) == strings::to_upper_case_char(key.front())) {
+    ss << text.substr(1);
+  } else {
+    ss << " " << text;
+  }
+  ss << " ";
+  const auto line = strings::trim_to_size_ignore_colors(ss.str(), max_width);
+  const auto len = strings::size_without_colors(line);
+  return fmt::format("{}{}", line, std::string(max_width - len, ' '));
+}
+
+void Menu::GenerateMenu(menu_type_t typ) const {
   bout.Color(0);
   bout.nl();
 
   auto lines_displayed = 0;
+  const auto& g = menu().generated_menu;
+  const auto title = menu().title;
+  const auto num_cols = typ == menu_type_t::short_menu ? g.num_cols : 1;
+  const auto screen_width = a()->user()->GetScreenChars() - num_cols + 1;
+  const auto col_width = typ == menu_type_t::short_menu ? screen_width / num_cols : screen_width - 1;
+  if (!title.empty()) {
+    const auto title_len = strings::size_without_colors(title);
+    const auto pad_len = (screen_width - title_len) / 2;
+    bout << std::string(pad_len, ' ') << g.color_title << title << "|#0" << wwiv::endl;
+    bout.nl();
+  }
   const auto nums = menu().num_action;
   if (nums != sdk::menus::menu_numflag_t::none) {
-    bout.format("|#1{:<8} |#1{:<25}  ", "[#]", "Change Sub/Dir #");
+    bout << generate_menu_item_line(g, "#", "Change Sub/Dir #", col_width);
     ++lines_displayed;
   }
   for (const auto& mi : menu().items) {
@@ -345,40 +385,15 @@ void Menu::GenerateMenu() const {
     if (!check_acs(mi.acs)) {
       continue;
     }
-    const auto key = display_key(mi.item_key;
-    bout.format("{:<8} |#1{:<25}  ", key, mi.item_text);
-    if (lines_displayed % 2) {
+    const auto key = display_key(mi.item_key);
+    const auto text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
+    bout << generate_menu_item_line(g, key, text, col_width);
+    if ((lines_displayed % num_cols) == 0) {
       bout.nl();
     }
     ++lines_displayed;
   }
   bout.nl(2);
-}
-
-void Menu::GenerateLongMenu() const {
-  bout.Color(0);
-  bout.nl();
-
-  auto lines_displayed = 0;
-  const auto nums = menu().num_action;
-  if (nums != sdk::menus::menu_numflag_t::none) {
-    bout.format("|#1{:<8} |#1{:<25}  ", "[#]", "Change Sub/Dir #");
-    ++lines_displayed;
-  }
-  for (const auto& mi : menu().items) {
-    if (mi.item_key.empty()) {
-      continue;
-    }
-    if (!check_acs(mi.acs)) {
-      continue;
-    }
-    const auto key = display_key(mi.item_key;
-    const auto text = mi.help_text.empty() ? mi.item_text : mi.help_text;
-    bout.format("{:<8} |#1{}  ", key, text);
-    bout.nl();
-    ++lines_displayed;
-  }
-  bout.nl();
 }
 
 }

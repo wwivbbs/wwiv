@@ -63,6 +63,9 @@ public:
   void PutsXYW(int x, int y, const std::wstring& text) override;
 
   void SetColor(SchemeId id) override;
+  void SetDosColor(int attr);
+  void PutsWithPipeColors(const std::string& text);
+  void PutsWithPipeColors(int x, int y, const std::string& text);
 
   [[nodiscard]] std::any window() const;
   [[nodiscard]] CursesWindow* parent() const override;

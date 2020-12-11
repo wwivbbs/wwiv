@@ -45,6 +45,7 @@ enum class menu_run_result_t {
 
 class Menu {
 public:
+  enum class menu_type_t { short_menu, long_menu };
   Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
                const std::string& menu_name);
   ~Menu() = default;
@@ -54,10 +55,8 @@ public:
   [[nodiscard]] std::optional<wwiv::sdk::menus::menu_item_56_t>
   GetMenuItemForCommand(const std::string& cmd) const;
   void DisplayMenu() const;
-  // Generates the short form (multi-column) menu text.
-  void GenerateMenu() const;
-  // Generates the long form, single colun, menu text.
-  void GenerateLongMenu() const;
+  // Generates the short form (multi-column) or long form (single col, help text) menu.
+  void GenerateMenu(menu_type_t typ) const;
   [[nodiscard]] const sdk::menus::menu_56_t& menu() const noexcept { return menu_.menu; }
   std::tuple<menu_command_action_t, std::string>
   ExecuteAction(const sdk::menus::menu_action_56_t& a);

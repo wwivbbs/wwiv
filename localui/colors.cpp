@@ -41,6 +41,7 @@ uint32_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
   return attr;
 }
 
+
 void ColorScheme::InitPairs() {
   // Create the color pairs for each of the colors defined in the color scheme.
   for (const auto& kv : scheme_) {
@@ -48,6 +49,7 @@ void ColorScheme::InitPairs() {
               static_cast<short>(kv.second.f()),
               static_cast<short>(kv.second.b()));
   }
+
 }
 
 
