@@ -133,20 +133,24 @@ int CursesWindow::GetChar() const {
       // but don't return it as a key for the application to (badly) handle.
       continue;
     }
+    if (ch == ERR) {
+      continue;
+    }
     if (ch == 27) {
-      // Check for alt.
       nodelay(window, true);
       wwiv::core::ScopeExit at_exit([=]{ nodelay(window, false); });
+      // Check for alt.
       const auto ch2 = wgetch(window);
       if (ch2 == ERR) {
         return 27;
       }
-      switch (ch) {
+      switch (ch2) {
         case 'I': 
         case 'i':
         return KEY_IC;
       }
       
+      continue;
     }
     switch (ch) {
 #ifdef __PDCURSES__
