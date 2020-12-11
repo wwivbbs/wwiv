@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "localui/curses_win.h"
+
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "fmt/format.h"
@@ -123,12 +125,28 @@ int CursesWindow::Box(uint32_t vert_ch, uint32_t horiz_ch) {
 }
 
 int CursesWindow::GetChar() const {
+  auto* window = std::any_cast<WINDOW*>(window_);
   for (;;) {
-    const auto ch = wgetch(std::any_cast<WINDOW*>(window_));
+    const auto ch = wgetch(window);
     if (ch == KEY_RESIZE) {
       // Since we don't support online window resizing just ignore this
       // but don't return it as a key for the application to (badly) handle.
       continue;
+    }
+    if (ch == 27) {
+      // Check for alt.
+      nodelay(window, true);
+      wwiv::core::ScopeExit at_exit([=]{ nodelay(window, false); });
+      const auto ch2 = wgetch(window);
+      if (ch2 == ERR) {
+        return 27;
+      }
+      switch (ch) {
+        case 'I': 
+        case 'i':
+        return KEY_IC;
+      }
+      
     }
     switch (ch) {
 #ifdef __PDCURSES__

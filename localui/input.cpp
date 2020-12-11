@@ -420,6 +420,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       done = true;
       rc = EditlineResult::NEXT;
       break;
+#ifdef __PDCURSES__
+    // This is a PD-CURSES only key, ncurses doesn't support alt keys
+    // directly.
+    case ALT_I:
+#endif
     case KEY_IC: // curses
       if (status != EditLineMode::SET) {
         if (bInsert) {
