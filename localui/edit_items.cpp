@@ -25,11 +25,13 @@
 #include "localui/wwiv_curses.h"
 #include <algorithm>
 #include <cstdlib>
-#include <functional>
 #include <initializer_list>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
+
+using namespace wwiv::stl;
 
 void EditItems::Run(const std::string& title) {
   if (!window_) {
@@ -85,34 +87,41 @@ void EditItems::Display() const {
   window_->Refresh();
 }
 
-BaseEditItem* EditItems::add(BaseEditItem* item) {
-  items_.push_back(item);
-  return item;
-}
-
-Label* EditItems::add(Label* l) {
-  labels_.push_back(l);
-  return l;
-}
-
-void EditItems::add_labels(std::initializer_list<Label*> labels) {
-  for (auto* l : labels) {
-    DCHECK(l);
-    labels_.push_back(l);
-  }
-}
-
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item) {
-  DCHECK(label);
+BaseEditItem* EditItems::add(BaseEditItem* item, int column, int row) {
   DCHECK(item);
-  labels_.push_back(label);
+  item->set_column(column);
+  if (row >= 0) {
+    item->set_y(row);
+    auto& cell = cells_[row][column];
+    cell.item = item;
+    cell.set_column(column);
+  }
   items_.push_back(item);
   return item;
 }
 
-BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help) {
+Label* EditItems::add(Label* label, int column, int row) {
+  DCHECK(label);
+  label->set_column(column);
+  if (row >= 0) {
+    label->set_y(row);
+    auto& cell = cells_[row][column];
+    cell.item = label;
+    cell.set_column(column);
+    cell.cell_type_ = cell_type_t::label;
+  }
+  labels_.push_back(label);
+  return label;
+}
+
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, int column, int row) {
+  add(label, column, row);
+  return add(item, column+1, row);
+}
+
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item, const std::string& help, int column, int row) {
   item->set_help_text(help);
-  return add(label, item);
+  return add(label, item, column, row);
 }
 
 void EditItems::create_window(const std::string& title) {
@@ -159,10 +168,10 @@ char EditItems::GetKeyWithNavigation(const NavigationKeyConfig& config) const {
 }
 
 int EditItems::max_display_width() const {
-  int result = 0;
+  auto result = 0;
   for (const auto* i : items_) {
-    if ((i->x() + i->maxsize()) > result) {
-      result = i->x() + i->maxsize();
+    if ((i->x() + i->width()) > result) {
+      result = i->x() + i->width();
     }
   }
   return std::min<int>(curses_out->window()->GetMaxX(), result + 2); // 2 is padding
@@ -172,7 +181,7 @@ int EditItems::max_display_height() {
   int result = 1;
   for (const auto* l : labels_) {
     if (l->y() > result) {
-      result = l->y();
+      result = l->y() + l->height() - 1;
     }
   }
   for (const auto* i : items_) {
@@ -183,24 +192,122 @@ int EditItems::max_display_height() {
   return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
 }
 
-int EditItems::max_label_width() const {
-  std::string::size_type result = 0;
-  for (const auto* l : labels_) {
-    if (l->text().size() > result) {
-      result = l->text().size();
+static constexpr auto PADDING = 2;
+
+/**
+ *  
+ * TODO(rushfan): This needs a big change.
+ *
+ * 1) Needs to be able to layout a column and look at max widths for only
+ *    a subset of rows, so you can have things like:
+ *
+ * LLLLL: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+ * LLLLL: FFFFFFFF    LLLLL: FFFFFFFFFFFFFFFFFFFFF
+ *
+ * Notice they have different max widths depending on the row. I think we
+ * need a two pass.
+ * (1) Compute max width per row
+ * (2) come up with the max over a span of rows and use that for laying out.
+ *     We can look at column count per row, and use that as the thing we
+ *     layout on. i.e layout all 1 col rows, then all 2 col rows.
+ */
+void EditItems::relayout_items_and_labels() {
+  if (cells_.empty()) {
+    return;
+  }
+
+  std::map<int, std::set<int>> widths_and_rows;
+  for (const auto& [row_num, row] : cells_) {
+    widths_and_rows[size_int(row)].insert(row_num);
+  }
+
+  std::map<int, std::map<int, Column>> widths_and_columns;
+  for (const auto& [num_cols_for_this_row, row_nums] : widths_and_rows) {
+    // Compute Max Width per cell
+    for (const auto& row_num : row_nums) {
+      for (auto& [col_num, cell] : cells_[row_num]) {
+        // c.first is column, c.second is Cell
+        auto& columns = widths_and_columns[num_cols_for_this_row];
+        if (cell.colspan_ == 1 && cell.width() > columns[col_num].width) {
+          // Ignore cells with colspan > 1
+          columns[col_num].width = cell.width();
+        }
+      }
+    }
+    // Set Max Width per cell
+    for (const auto& row_num : row_nums) {
+      auto& columns = widths_and_columns[size_int(cells_[row_num])];
+      for (auto& [col_num, cell] : cells_[row_num]) {
+        if (const auto width = columns[col_num].width; width > 0) {
+          cell.set_width(width);
+        }
+      }
     }
   }
-  return static_cast<int>(result);
+
+  if (!align_label_cols_.empty()) {
+    std::map<int, int> aligned_col_max_width;
+    for (const auto aligned_col : align_label_cols_) {
+      auto& max_width = aligned_col_max_width[aligned_col];
+      for (auto& [rownum, row] : cells_) {
+        if (!contains(row, aligned_col)) {
+          continue;
+        }
+        auto& c = at(row, aligned_col);
+        const auto width = c.width();
+        if (c.cell_type_ == cell_type_t::label && width > max_width) {
+          max_width = width;
+        }
+      }
+    }
+    for (const auto aligned_col : align_label_cols_) {
+      auto& width = aligned_col_max_width[aligned_col];
+      // Update width for the individual item.
+      for (auto& [rownum, row] : cells_) {
+        if (!contains(row, aligned_col)) {
+          continue;
+        }
+        auto& cell = at(row, aligned_col);
+        if (cell.colspan_ == 1) {
+          cell.set_width(width);
+        }
+      }
+      // Update column width in Columns, used for spacing
+      for (auto& [wcwidth, cols] : widths_and_columns) {
+        if (!contains(cols, aligned_col)) {
+          continue;
+        }
+        at(cols, aligned_col).width = width;
+      }
+    }
+
+  }
+
+  // Figure out column x;
+  for (const auto& r : widths_and_rows) {
+    auto& columns = widths_and_columns[r.first];
+    for (auto& [col_num, col] : columns) {
+      if (col_num <= 0) {
+        // should be in order, so skip column 0, which is width 0;
+        continue;
+      }
+      auto& prev = columns[col_num - 1];
+      col.x = prev.x + prev.width + 1;
+    }
+  }
+
+  // Now need to set X values for everything.
+  for (auto& [_, row] : cells_) {
+    auto& columns = widths_and_columns[size_int(row)];
+    for (auto& [col_num, cell] : row) {
+      auto& col = columns[col_num];
+      cell.set_x(col.x);
+    }
+  }
 }
 
-void EditItems::relayout_items_and_labels() {
-  const auto x = max_label_width();
-  for (auto* l : labels_) {
-    l->set_width(x);
-  }
-  for (auto* i : items_) {
-    i->set_x(x + 2 + 1); // 2 is a hack since that's always col1 position for label.
-  }
+Cell& EditItems::cell(int row, int col) {
+  return cells_[row][col];
 }
 
 std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
@@ -209,6 +316,30 @@ std::vector<HelpItem> EditItems::StandardNavigationHelpItems() {
       {"]", "Next"}, {"{", "Previous 10"}, {"}", "Next 10"},
   };
 }
+
+int Cell::width() const {
+  return item ? item->width() + 1 : 0;
+}
+
+void Cell::set_width(int w) {
+  width_ = w;
+  if (item) {
+    item->set_width(w);
+  }
+}
+
+void Cell::set_x(int new_x) {
+  x_ = new_x;
+  if (item) {
+    item->set_x(new_x);
+  }
+}
+
+int Cell::column() const { return column_; }
+
+EditItems::EditItems()
+  : navigation_help_items_(StandardNavigationHelpItems()),
+    editor_help_items_(StandardEditorHelpItems()), edit_mode_(false) { }
 
 EditItems::~EditItems() {
   // Since we added raw pointers we must cleanup.  Since AFAIK there is

@@ -28,7 +28,6 @@
 #include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
-#include "wwivconfig/utility.h"
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -41,43 +40,41 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void edit_arc(int arc_number, arcrec* a) {
-  static constexpr int LABEL_X = 2;
-  static constexpr int COL1_POSITION = 23;
-  static constexpr int LABEL_WIDTH = COL1_POSITION - LABEL_X - 1;
   auto y = 1;
   EditItems items{};
 
-  items.add(new Label(2, y, LABEL_WIDTH, "Archiver Name:"),
-      new StringEditItem<char*>(COL1_POSITION, y, 31, a->name, EditLineMode::ALL));
+  items.add(new Label("Archiver Name:"), new StringEditItem<char*>(31, a->name, EditLineMode::ALL),
+            "Recognizable name you can assign to the archive type", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Archiver Extension:"),
-      new StringEditItem<char*>(COL1_POSITION, y, 3, a->extension, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Archiver Extension:"),
+            new StringEditItem<char*>(3, a->extension, EditLineMode::UPPER_ONLY), 
+    "The three letter file extension used by this archive type", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "List Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arcl));
+  items.add(new Label("List Archive:"), new CommandLineItem(49, a->arcl),
+    "Command to list the contents of the archive without extracting the files", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Extract Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arce));
+  items.add(new Label("Extract Archive:"), new CommandLineItem(49, a->arce),
+    "Command to extract the files to the node's temp directory", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Add to Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arca));
+  items.add(new Label("Add to Archive:"), new CommandLineItem(49, a->arca), 
+    "Command to add a file to the archive.", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Delete from Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arcd));
+  items.add(new Label("Delete from Archive:"), new CommandLineItem(49, a->arcd),
+    "Command to delete a file from the archive", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Comment Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arck));
+  items.add(new Label("Comment Archive:"), new CommandLineItem(49, a->arck), 
+    "Command to add a comment to the archive. %K means gfiles/comment.txt", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL_WIDTH, "Test Archive:"),
-      new CommandLineItem(COL1_POSITION, y, 49, a->arct));
+  items.add(new Label("Test Archive:"), new CommandLineItem(49, a->arct), 
+    "Command to test the archive for validity and integrity", 1, y);
 
-  y++;
-  items.add_labels({new Label(6, y++, "%1 %2 etc. are parameters passed.  Minimum of two on Add and"),
-                    new Label(6, y++,
-                              "Extract command lines. For added security, a complete path to"),
-                    new Label(6, y++, "the archiver and extension should be used. i.e.:"),
-                    new Label(6, y, R"(c:\bin\arcs\zip.exe -a %1 %2)")});
+  y+=2;
+  items.add(new MultilineLabel(R""""(%1 %2 etc. are parameters passed.  Minimum of two on Add and
+Extract command lines. For added security, a complete path to
+the archiver and extension should be used. i.e.:
+c:\bin\arcs\zip.exe -a %1 %2)"""" ), 1, y);
 
+  items.relayout_items_and_labels();
   items.Run(fmt::format("Archiver #{}  {}", arc_number, ((arc_number == 1) ? "(Default)" : "")));
 }
 
@@ -136,8 +133,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
     for (auto& i : arc) {
       items.emplace_back(fmt::format("[{}] {}", i.extension, i.name));
     }
-    CursesWindow* window = curses_out->window();
-    ListBox list(window, "Select Archiver", items);
+    ListBox list(curses_out->window(), "Select Archiver", items);
 
     list.selection_returns_hotkey(true);
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
@@ -150,7 +146,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
     }
   } while (!done);
 
-  // Copy first four new fomat archivers to oldarcsrec
+  // Copy first four new format archivers to oldarcsrec
   // This was the 4.24 and lower place for them.  4.31 introduced
   // the new archivers record.
   for (int j = 0; j < 4; j++) {

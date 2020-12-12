@@ -34,8 +34,8 @@
 #include <string>
 #include <vector>
 
-using std::unique_ptr;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
@@ -56,9 +56,6 @@ static void edit_editor(editorrec& e) {
       {fossil_type_syncfoss, "SyncFoss"},
       {fossil_type_netfoss, "NetFoss"},
   };
-  constexpr auto LABEL1_POSITION = 2;
-  constexpr auto LABEL1_WIDTH = 29;
-  constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
   if (e.old_ansir != 0 && e.ansir == 0) {
     // update to wide ansir.
@@ -80,43 +77,48 @@ static void edit_editor(editorrec& e) {
 
   auto y = 1;
   EditItems items{};
-  items.add(new Label(2, y, LABEL1_WIDTH, "Description:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 35, e.description, EditLineMode::ALL));
+  items.add(new Label("Name:"), new StringEditItem<char*>(35, e.description, EditLineMode::ALL),
+            "The name of this editor, will be displayed to users", 1, y);
   ++y;
-  items.add(new Label(2, y, LABEL1_WIDTH, "BBS Type:"),
-            new ToggleEditItem<uint8_t>(COL1_POSITION, y, bbs_types, &e.bbs_type));
+  items.add(new Label("BBS Type:"), new ToggleEditItem<uint8_t>(bbs_types, &e.bbs_type),
+            "Type of BBS to emulate with editor control files:  WWIV or QuickBBS", 1, y);
 #ifndef _WIN32
   ++y;
-  items.add(new Label(2, y++, LABEL1_WIDTH, "Use STDIO:"),
-            new FlagEditItem<uint16_t>(COL1_POSITION, y, ansir_stdio, "Yes", "No ", &e.ansir));
+  items.add(new Label("Use STDIO:"),
+            new FlagEditItem<uint16_t>(ansir_stdio, "Yes", "No ", &e.ansir),
+            "Use stdin/stdout from the door for I/O", 1, y);
   // Clear the FOSSIL flags if they are set accidentally.
   e.ansir &= ~ansir_netfoss;
   e.ansir &= ~ansir_emulate_fossil;
 #else
   ++y;
-  items.add(
-      new Label(2, y, LABEL1_WIDTH, "Emulate FOSSIL:"),
-      new ToggleEditItem<int>(COL1_POSITION, y, fossil_types, &fossil_type));
+  items.add(new Label("FOSSIL:"), new ToggleEditItem<int>(fossil_types, &fossil_type),
+            "Should a FOSSIL be emulated through NetFoss, SyncFoss, or None", 1, y);
   // Clear the stdio flag if it's set accidentally.
   e.ansir &= ~ansir_stdio;
 #endif
   ++y;
-  items.add(new Label(2, y, LABEL1_WIDTH, "Temp Directory Working Dir:"),
-            new FlagEditItem<uint16_t>(COL1_POSITION, y, ansir_temp_dir, "Yes", "No ", &e.ansir));
+  items.add(new Label("Use Temp:"),
+            new FlagEditItem<uint16_t>(ansir_temp_dir, "Yes", "No ", &e.ansir),
+            "Launch using the temp directory as the current directory (recommended)", 1, y);
   y++;
-  items.add(new Label(2, y, LABEL1_WIDTH, "Filename to run remotely:"),
-    new CommandLineItem(LABEL1_POSITION, y+1, 75, e.filename));
-  y += 3;
-  items.add(new Label(2, y, LABEL1_WIDTH, "Filename to run locally:"),
-    new CommandLineItem(LABEL1_POSITION, y+1, 75, e.filenamecon));
+  items.add(new Label("Remote:"), new CommandLineItem(66, e.filename),
+            "Commandline to use when executing this editor remotely", 1, y);
+  y++;
+  items.add(new Label("Local:"), new CommandLineItem(66, e.filenamecon),
+            "Commandline to use when executing this editor locally", 1, y);
 
-  y+=3;
-  items.add_labels(
-      {new Label(2, y++, "%1 = filename to edit   %N = Node Number "),
-       new Label(2, y++, "%2 = chars per line     %H = Socket Handle"),
-       new Label(2, y++, "%3 = lines per page     %I = Temp directory"),
-       new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed."),
-       new Label(2, y, "See http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.")});
+  y += 2;
+  items.add(new MultilineLabel(R""""(%1 = filename to edit   %N = Node Number
+%2 = chars per line     %H = Socket Handle
+%3 = lines per page     %I = Temp directory
+%4 = max lines
+
+Note: All Other Chain Parameters are allowed. See 
+http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.
+)""""),
+            1, y);
+  items.relayout_items_and_labels();
   items.Run("External Editor Configuration");
 
   switch (fossil_type) {
@@ -158,43 +160,43 @@ void extrn_editors(const wwiv::sdk::Config& config) {
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
-    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
     auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
-        case 'D': {
-          if (!editors.empty()) {
-            auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
-            bool yn = dialog_yn(window, prompt);
-            if (!yn) {
-              break;
-            }
-            erase_at(editors, result.selected);
-          }
-        } break;
-        case 'I': {
-          if (editors.size() >= 10) {
-            messagebox(curses_out->window(), "Too many editors.");
+      case 'D': {
+        if (!editors.empty()) {
+          auto prompt = fmt::format("Delete '{}' ?", items[result.selected].text());
+          bool yn = dialog_yn(window, prompt);
+          if (!yn) {
             break;
           }
-          auto prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
-          auto i = dialog_input_number(curses_out->window(), prompt, 1, size_int(editors) + 1);
-          editorrec e{};
-          memset(&e, 0, sizeof(editorrec));
-          // N.B. i is one based, result.selected is 0 based.
-          if (i <= 0 || i > wwiv::stl::ssize(editors) + 1) {
-            break;
-          }
-          if (i > wwiv::stl::ssize(editors)) {
-            editors.push_back(e);
-            edit_editor(editors.back());
-          } else {
-            auto it = editors.begin();
-            std::advance(it, i - 1);
-            auto new_editor_it = editors.insert(it, e);
-            edit_editor(*new_editor_it);
-          }
-        } break;
+          erase_at(editors, result.selected);
+        }
+      } break;
+      case 'I': {
+        if (editors.size() >= 10) {
+          messagebox(curses_out->window(), "Too many editors.");
+          break;
+        }
+        auto prompt = fmt::format("Insert before which (1-{}) : ", editors.size() + 1);
+        auto i = dialog_input_number(curses_out->window(), prompt, 1, size_int(editors) + 1);
+        editorrec e{};
+        memset(&e, 0, sizeof(editorrec));
+        // N.B. i is one based, result.selected is 0 based.
+        if (i <= 0 || i > wwiv::stl::ssize(editors) + 1) {
+          break;
+        }
+        if (i > wwiv::stl::ssize(editors)) {
+          editors.push_back(e);
+          edit_editor(editors.back());
+        } else {
+          auto it = editors.begin();
+          std::advance(it, i - 1);
+          auto new_editor_it = editors.insert(it, e);
+          edit_editor(*new_editor_it);
+        }
+      } break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
       edit_editor(editors[result.selected]);

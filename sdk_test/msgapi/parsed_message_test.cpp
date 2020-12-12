@@ -23,6 +23,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/datetime.h"
+#include "core/textfile.h"
 #include "sdk/msgapi/parsed_message.h"
 
 using std::string;
@@ -202,4 +203,66 @@ TEST(WWIVParsedMessageTest, ToLines_ReattributeQuote) {
   EXPECT_EQ(3u, lines.size());
   EXPECT_EQ(expected,
             JoinStrings(lines, "|"));
+}
+
+TEST(WWIVParsedMessageTest, ToLines_Hang) {
+  const std::string cz(1, static_cast<char>(CZ));
+  //TextFile f(R"(U:\wwiv\gfiles\message-from-jim-killed-quoting.txt)", "rt");
+  //auto text = f.ReadFileIntoString();
+  std::string raw_text =R"(Re: WWIV Chat Sunday December 12th
+Jimmy Mac #1 @707
+Mon Dec  7 22:52:26 2020
+0R 53 - 12/07/20 23:21:22 wwivnet ->513
+0R 38RC6 - 12/07/20 18:06:42 WWIVnet ->1
+0R 38RC6 - 12/07/20 18:06:41 WWIVnet ->1
+0R 53 - 12/07/20 14:53:59 WWIVnet ->707
+RE: Re: WWIV Chat Sunday December 12th
+BY: Rushfan #1 @513
+
+0PID: WWIV 5.6.0.3359
+
+1R7> 5Oh, in wwiv.ini back in 5.2 or 5.3, I Changed the defaults for the temp0
+1R7> 5and batch directory (it shouldn't impact your use).  You may want to0
+1R7> 5change it, it's easier for scripting.  Here's what it is now:0
+1R7> 0
+1R7> 5;=======================================================================0
+1R7> 5=====0
+1R7> 5;                        TEMPORARY DIRECTORY SETTING0
+1R7> 5;=======================================================================0
+1R7> 5=====0
+1R7> 5NUM_INSTANCES        = 80
+1R7> 5TEMP_DIRECTORY       = e/%n/temp0
+1R7> 5BATCH_DIRECTORY      = e/%n/batch0
+1R7> 0
+1R7> 5The e is for ephemeral, and it makes it handle to just rmdir /s/q e to0
+1R7> 5clean everything up.0
+1R7> 0
+
+oh!  D'Oh! I'm still using my wwiv.ini from 4.3!  I'll need to review the new 
+one to see what else needs updating. So, do the same %x options apply in 
+chainedit? Will changing wwiv.ini impact the games requiring changes?
+
+J..
+
+1
+226<-->     The Blood Stone BBS - Telnet & HTTP www.bsbbs.com      <-->
+326 \/        WWIVnet Node 1@707 - Sonoma County California         \/
+4
+5
+
+
+  )";
+  auto raw_lines = SplitString(raw_text, "\n");
+  auto text = JoinStrings(raw_lines, "\r\n");
+  const std::string expected = "X";
+
+  WWIVParsedMessageText p(text);
+  parsed_message_lines_style_t style{};
+  style.line_length = 72;
+  style.ctrl_lines = msgapi::control_lines_t::no_control_lines;
+  style.add_wrapping_marker = false;
+  // experimental
+  style.reattribute_quotes = true;
+  const auto lines = p.to_lines(style);
+  EXPECT_EQ(34u, lines.size()) << JoinStrings(lines, "\n");
 }

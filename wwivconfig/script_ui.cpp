@@ -20,7 +20,6 @@
 #include "core/strings.h"
 #include "localui/edit_items.h"
 #include "localui/input.h"
-#include "sdk/wwivd_config.h"
 #include <memory>
 #include <string>
 
@@ -33,29 +32,26 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void script_ui(Config& config) {
-  static constexpr auto LABEL1_POSITION = 2;
-  static constexpr auto LABEL1_WIDTH = 25;
-  static constexpr auto COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
-
   auto allow_script = config.scripting_enabled();
   auto enable_file = config.script_package_file_enabled();
   auto enable_os = config.script_package_os_enabled();
 
   auto y = 1;
   EditItems items{};
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Enable Scripting Support:"),
-            new BooleanEditItem(COL1_POSITION, y, &allow_script),
-    "Are WWIVbasic scripts allowed to be executed anywhere.");
+  items.add(new Label("Enable Scripting:"),
+            new BooleanEditItem(&allow_script),
+    "Are WWIVbasic scripts allowed to be executed anywhere.", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Enable Package FILE:"),
-            new BooleanEditItem(COL1_POSITION, y, &enable_file),
-    "Enable package wwiv.io.file.");
+  items.add(new Label("Enable Package FILE:"),
+            new BooleanEditItem(&enable_file),
+    "Enable package wwiv.io.file.", 1, y);
   ++y;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Enable Package OS:"),
-            new BooleanEditItem(COL1_POSITION, y, &enable_os),
-    "Enable package wwiv.os (allowes executing external binaries).");
+  items.add(new Label("Enable Package OS:"),
+            new BooleanEditItem(&enable_os),
+    "Enable package wwiv.os (allows executing external binaries).", 1, y);
   ++y;
 
+  items.relayout_items_and_labels();
   items.Run("Scripting Configuration");
 
   auto cfg = *config.config();

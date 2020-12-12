@@ -30,50 +30,37 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static constexpr int LABEL1_POS = 2;
-static constexpr int LABEL1_WIDTH = 11;
-static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
-
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir, logdir */
 void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
   auto cfg = *config.config();
 
   auto y = 1;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Messages:"),
-            new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.msgsdir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "GFiles:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.gfilesdir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Menus:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.menudir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Data:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.datadir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Logs:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.logdir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Scripts:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.scriptdir));
-  ++y;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH, "Downloads:"),
-      new FilePathItem(COL1_POSITION, y, 60, config.root_directory(), cfg.dloadsdir));
-  y+=2;
-  items.add(new Label(LABEL1_POS, y, LABEL1_WIDTH,
-                      "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS."));
-  y+=2;
-  items.add(new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH,
-                              "Changing any of these requires YOU to MANUALLY move files and/or"));
-  items.add(new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH, "directory structures."));
+  items.add(new Label("Messages:"),
+            new FilePathItem(60, config.root_directory(), cfg.msgsdir), 1, y++);
+  items.add(new Label("GFiles:"),
+      new FilePathItem(60, config.root_directory(), cfg.gfilesdir), 1, y++);
+  items.add(new Label("Menus:"),
+      new FilePathItem(60, config.root_directory(), cfg.menudir), 1, y++);
+  items.add(new Label("Data:"),
+      new FilePathItem(60, config.root_directory(), cfg.datadir), 1, y++);
+  items.add(new Label("Logs:"),
+      new FilePathItem(60, config.root_directory(), cfg.logdir), 1, y++);
+  items.add(new Label("Scripts:"),
+      new FilePathItem(60, config.root_directory(), cfg.scriptdir), 1, y++);
+  items.add(new Label("Downloads:"),
+      new FilePathItem(60, config.root_directory(), cfg.dloadsdir), 1, y++);
+  y++;
+  items.add(new MultilineLabel(R"(CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.
+Changing any of these requires YOU to MANUALLY move files and/or
+directory structures.)"), 1, y++)->set_right_justified(false);
 
   if (!cfg.scriptdir[0]) {
     // This is added in 5.3
     auto sdir = File::EnsureTrailingSlash("scripts");
     to_char_array(cfg.scriptdir, sdir);
   }
-
+  items.relayout_items_and_labels();
   items.Run("System Paths");
   config.set_config(&cfg, true);
 }

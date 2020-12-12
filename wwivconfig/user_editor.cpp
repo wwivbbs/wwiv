@@ -39,13 +39,7 @@
 #include <string>
 #include <vector>
 
-static constexpr int LABEL_WIDTH = 14;
-static constexpr int COL1_LINE = 2;
-static constexpr int COL1_POSITION = COL1_LINE + LABEL_WIDTH + 1;
-static constexpr int COL2_POSITION = 50;
-static constexpr int DSL_LABEL_WIDTH = 4;
-static constexpr int DSL_LABEL = COL1_POSITION + DSL_LABEL_WIDTH + 1;
-static constexpr int DSL_POSITION = DSL_LABEL + DSL_LABEL_WIDTH + 1;
+static constexpr int NONEDITABLE_DATA_POS = 50;
 
 using std::string;
 using std::unique_ptr;
@@ -59,33 +53,33 @@ static void show_user(EditItems* items, userrec* user) {
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   const auto height = items->window()->GetMaxY() - 2;
   const auto width = items->window()->GetMaxX() - 2;
-  const string blank(width - COL2_POSITION, ' ');
+  const string blank(width - NONEDITABLE_DATA_POS, ' ');
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i = 1; i < height; i++) {
-    items->window()->PutsXY(COL2_POSITION, i, blank);
+    items->window()->PutsXY(NONEDITABLE_DATA_POS, i, blank);
   }
   if (user->inact & inact_deleted) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
-    items->window()->PutsXY(COL2_POSITION, 1, "[[ DELETED USER ]] ");
+    items->window()->PutsXY(NONEDITABLE_DATA_POS, 1, "[[ DELETED USER ]] ");
   } else if (user->inact & inact_inactive) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
-    items->window()->PutsXY(COL2_POSITION, 1, "[[ INACTIVE USER ]]");
+    items->window()->PutsXY(NONEDITABLE_DATA_POS, 1, "[[ INACTIVE USER ]]");
   }
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
-  int y = 2;
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("First on     : ", user->firston));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Last on      : ", user->laston));
+  auto y = 2;
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("First on     : ", user->firston));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Last on      : ", user->laston));
   y++;
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Total Calls  : ", user->logons));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Today Calls  : ", static_cast<unsigned>(user->ontoday)));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Bad Logins   : ", static_cast<unsigned>(user->illegal)));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Total Calls  : ", user->logons));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Today Calls  : ", static_cast<unsigned>(user->ontoday)));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Bad Logins   : ", static_cast<unsigned>(user->illegal)));
   y++;
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Num of Posts : ", user->msgpost));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Num of Emails: ", user->emailsent));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Feedback Sent: ", user->feedbacksent));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Msgs Waiting : ", static_cast<unsigned>(user->waiting)));
-  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Netmail Sent : ", user->emailnet));
-  items->window()->PutsXY(COL2_POSITION, y, StrCat("Deleted Posts: ", user->deletedposts));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Num of Posts : ", user->msgpost));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Num of Emails: ", user->emailsent));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Feedback Sent: ", user->feedbacksent));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Msgs Waiting : ", static_cast<unsigned>(user->waiting)));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Netmail Sent : ", user->emailnet));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y, StrCat("Deleted Posts: ", user->deletedposts));
 
   items->Display();
 }
@@ -143,14 +137,14 @@ void user_editor(const wwiv::sdk::Config& config) {
   userrec user{};
   read_user(config, current_usernum, &user);
 
-  auto user_name_field =
-      new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, EditLineMode::UPPER_ONLY);
+  auto* user_name_field =
+      new StringEditItem<unsigned char*>(30, user.name, EditLineMode::UPPER_ONLY);
   user_name_field->set_displayfn(
       // Not sure why but fmt::format("{} #{}"...) was crashing on linux.
       [&]() -> string { return StrCat(user.name, " #", current_usernum); });
 
-  auto birthday_field = new CustomEditItem(
-      COL1_POSITION, 8, 10,
+  auto* birthday_field = new CustomEditItem(
+      10,
       [&]() -> string {
         return fmt::sprintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
       },
@@ -177,59 +171,60 @@ void user_editor(const wwiv::sdk::Config& config) {
         user.year = static_cast<uint8_t>(year - 1900);
       });
 
-  int y = 1;
+  auto y = 1;
   EditItems items{};
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Name/Handle:"), user_name_field);
+  items.add(new Label("Name/Handle:"), user_name_field, "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Real Name:"),
-            new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, EditLineMode::ALL));
+  items.add(new Label("Real Name:"),
+            new StringEditItem<unsigned char*>(20, user.realname, EditLineMode::ALL), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "SL:"),
-      new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl));
+  items.add(new Label("SL:"),
+      new NumberEditItem<uint8_t>(&user.sl), "", 1, y);
   y++;
-  items.add(new Label(DSL_LABEL, y, DSL_LABEL_WIDTH, "DSL:"),
-      new NumberEditItem<uint8_t>(DSL_POSITION, 3, &user.dsl));
+  items.add(new Label("DSL:"),
+      new NumberEditItem<uint8_t>(&user.dsl), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Address:"),
-      new StringEditItem<char*>(COL1_POSITION, 4, 30, user.street, EditLineMode::ALL));
+  items.add(new Label("Address:"),
+      new StringEditItem<char*>(30, user.street, EditLineMode::ALL), "", 1, y);
   y++;
-  items.add(  new Label(COL1_LINE, y, LABEL_WIDTH, "City:"),
-      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.city, EditLineMode::ALL));
+  items.add(  new Label("City:"),
+      new StringEditItem<char*>(30, user.city, EditLineMode::ALL), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "State:"),
-      new StringEditItem<char*>(COL1_POSITION, 6, 2, user.state, EditLineMode::ALL));
+  items.add(new Label("State:"),
+      new StringEditItem<char*>( 2, user.state, EditLineMode::ALL), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Postal Code:"),
-      new StringEditItem<char*>(COL1_POSITION, 7, 10, user.zipcode, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Postal Code:"),
+      new StringEditItem<char*>(10, user.zipcode, EditLineMode::UPPER_ONLY), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Birthday:"),
-      birthday_field);
+  items.add(new Label("Birthday:"),
+      birthday_field, "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
-      new StringEditItem<char*>(COL1_POSITION, 9, 8, user.pw, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Password:"),
+      new StringEditItem<char*>(8, user.pw, EditLineMode::UPPER_ONLY), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Phone Number:"),
-      new StringEditItem<char*>(COL1_POSITION, 10, 12, user.phone, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Phone Number:"),
+      new StringEditItem<char*>(12, user.phone, EditLineMode::UPPER_ONLY), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Data Number:"),
-      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.dataphone, EditLineMode::UPPER_ONLY));
+  items.add(new Label("Data Number:"),
+      new StringEditItem<char*>(12, user.dataphone, EditLineMode::UPPER_ONLY), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Computer Type:"),
-      new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type));
+  items.add(new Label("Computer Type:"),
+      new NumberEditItem<int8_t>(&user.comp_type), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Restrictions:"),
-      new RestrictionsEditItem(COL1_POSITION, 13, &user.restrict));
+  items.add(new Label("Restrictions:"),
+      new RestrictionsEditItem(&user.restrict), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "WWIV Reg:"),
-      new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum));
+  items.add(new Label("WWIV Reg:"),
+      new NumberEditItem<uint32_t>(&user.wwiv_regnum), "", 1, y);
   y++;
-  items.add( new Label(COL1_LINE, y, LABEL_WIDTH, "Email Address:"),
-      new StringEditItem<char*>(COL1_POSITION, 15, 57, user.email, EditLineMode::ALL));
+  items.add( new Label("Email Address:"),
+      new StringEditItem<char*>(57, user.email, EditLineMode::ALL), "", 1, y);
   y++;
-  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Note:"),
-      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, EditLineMode::ALL));
-  items.set_navigation_extra_help_items(create_extra_help_items());
+  items.add(new Label("Sysop Note:"),
+      new StringEditItem<char*>(57, user.note, EditLineMode::ALL), "", 1, y);
 
+  items.relayout_items_and_labels();
+  items.set_navigation_extra_help_items(create_extra_help_items());
   items.create_window("User Editor");
   items.Display();
   show_user(&items, &user);

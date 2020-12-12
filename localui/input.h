@@ -48,7 +48,7 @@ static constexpr auto EDITLINE_FILENAME_CASE = EditLineMode::ALL;
 
 enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
-class NavigationKeyConfig {
+class NavigationKeyConfig final {
 public:
   explicit NavigationKeyConfig(std::string keys) : keys_(std::move(keys)) {}
   ~NavigationKeyConfig() = default;
@@ -98,11 +98,39 @@ static std::string to_restriction_string(T data, int size, const std::string& re
   return s;
 }
 
-// Base item of an editable value, this class does not use templates.
-class BaseEditItem {
+// Base class of all items that can appear in a LocalUI based environment.
+
+class Item {
 public:
-  BaseEditItem(int x, int y, int maxsize) : x_(x), y_(y), maxsize_(maxsize) {}
-  virtual ~BaseEditItem() = default;
+  explicit Item(int width) : x_(0), y_(0), width_(width) {}
+  virtual ~Item() = default;
+  typedef ssize_t size_type;
+
+  [[nodiscard]] virtual int x() const noexcept { return x_; }
+  [[nodiscard]] virtual int y() const noexcept { return y_; }
+  virtual void set_x(int x) noexcept { x_ = x; }
+  virtual void set_y(int y) noexcept { y_ = y; }
+  [[nodiscard]] virtual int width() const noexcept { return width_; }
+  virtual void set_width(int width) noexcept { width_ = width; }
+  [[nodiscard]] std::size_t size() const noexcept { return width_; }
+
+  [[nodiscard]] virtual int column() const noexcept { return column_; }
+  void set_column(int column) noexcept { column_ = column; }
+
+  virtual void Display(CursesWindow* window) const = 0;
+
+ protected:
+  int x_;
+  int y_;
+  int width_;
+  int column_{1};
+};
+
+// Base item of an editable value, this class does not use templates.
+class BaseEditItem : public Item {
+public:
+  BaseEditItem(int maxsize) : Item(maxsize) {}
+  ~BaseEditItem() override = default;
 
   BaseEditItem() = delete;
   BaseEditItem(BaseEditItem const&) = delete;
@@ -110,49 +138,45 @@ public:
   BaseEditItem& operator=(BaseEditItem const&) = delete;
   BaseEditItem& operator=(BaseEditItem&&) = delete;
 
+  void Display(CursesWindow* window) const override = 0;
   virtual EditlineResult Run(CursesWindow* window) = 0;
-  virtual void Display(CursesWindow* window) const = 0;
   BaseEditItem* set_help_text(const std::string& help_text) {
     help_text_ = help_text;
     return this;
   }
 
   [[nodiscard]] std::string help_text() const { return help_text_; }
-  [[nodiscard]] virtual int x() const noexcept { return x_; }
-  virtual void set_x(int x) noexcept { x_ = x; }
-  [[nodiscard]] virtual int y() const noexcept { return y_; }
-  [[nodiscard]] virtual int maxsize() const noexcept { return maxsize_; }
 
 protected:
-  int x_;
-  int y_;
-  int maxsize_;
   std::string help_text_;
 };
 
 // Label class that's used to display a label for an EditItem
-class Label final {
+class Label : public Item {
 public:
-  Label(int x, int y, const std::string& text)
-      : x_(x), y_(y), width_(wwiv::stl::size_int(text)), text_(text) {}
-  Label(int x, int y, int width, std::string text)
-      : x_(x), y_(y), width_(width), text_(std::move(text)) {}
+  explicit Label(const std::string& text) : Label(wwiv::stl::size_int(text), text) {}
 
-  void Display(CursesWindow* window);
-  void Display(CursesWindow* window, int x, int y);
-  void set_width(int width) noexcept { width_ = width; }
-  [[nodiscard]] int width() const noexcept { return width_; }
+  void Display(CursesWindow* window) const override;
   void set_right_justified(bool r) noexcept { right_justify_ = r; }
-  [[nodiscard]] int x() const noexcept { return x_; }
-  [[nodiscard]] int y() const noexcept { return y_; }
   [[nodiscard]] const std::string& text() const noexcept { return text_; }
+  [[nodiscard]] virtual int height() const { return 1; }
 
 protected:
-  int x_;
-  int y_;
-  int width_;
+  Label(int width, std::string text) : Item(width), text_(std::move(text)) {}
   bool right_justify_{true};
   const std::string text_;
+};
+
+// Label class that's used to display a label for an EditItem
+class MultilineLabel final : public Label {
+public:
+  MultilineLabel(const std::string& text);
+
+  void Display(CursesWindow* window) const override;
+  [[nodiscard]] int height() const override;
+
+private:
+  std::vector<std::string> lines_;
 };
 
 // Base item of an editable value that uses templates to hold the
@@ -166,14 +190,20 @@ public:
   EditItem& operator=(EditItem const&) = delete;
   EditItem& operator=(EditItem&&) = delete;
 
-  EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data) {}
+  EditItem(int maxsize, T data) : BaseEditItem(maxsize), data_(data) {}
   ~EditItem() override = default;
 
   void set_displayfn(displayfn f) { display_ = f; }
+  void set_width(int width) noexcept override {
+    if (width < width_) {
+      // NOP.  We don't allow setting the width over the original width.
+      width_ = width;
+    }
+  }
 
   void Display(CursesWindow* window) const override {
     if (display_) {
-      const std::string blanks(maxsize_, ' ');
+      const std::string blanks(width(), ' ');
       const auto custom = display_();
       window->PutsXY(x_, y_, blanks);
       window->PutsXY(x_, y_, custom);
@@ -186,10 +216,10 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const = 0;
   virtual void DefaultDisplayString(CursesWindow* window, const std::string& text) const {
     auto s = text;
-    if (wwiv::stl::ssize(s) > maxsize_) {
-      s = text.substr(0, maxsize_);
-    } else if (wwiv::stl::ssize(s) < maxsize_) {
-      s = text + std::string(static_cast<std::string::size_type>(maxsize_) - text.size(), ' ');
+    if (wwiv::stl::ssize(s) > width()) {
+      s = text.substr(0, width());
+    } else if (wwiv::stl::ssize(s) < width()) {
+      s = text + std::string(static_cast<std::string::size_type>(width()) - text.size(), ' ');
     }
 
     window->PutsXY(this->x_, this->y_, s);
@@ -204,11 +234,10 @@ protected:
 
 template <typename T> class StringEditItem : public EditItem<T> {
 public:
-  StringEditItem(int x, int y, int maxsize, T data, EditLineMode edit_line_mode)
-      : EditItem<T>(x, y, maxsize, data), edit_line_mode_(edit_line_mode) {}
-  StringEditItem(int x, int y, int maxsize, T data)
-      : StringEditItem(x, y, maxsize, data, EditLineMode::ALL) {}
+  StringEditItem(int maxsize, T data, EditLineMode edit_line_mode = EditLineMode::ALL)
+    : EditItem<T>(maxsize, data), edit_line_mode_(edit_line_mode) {}
   virtual ~StringEditItem() = default;
+
   StringEditItem() = delete;
   StringEditItem(StringEditItem const&) = delete;
   StringEditItem(StringEditItem&&) = delete;
@@ -217,8 +246,8 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    // GCC wants this-> on data and maxsize_.
-    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_,
+    // GCC wants this-> on data and width_.
+    return editline(window, reinterpret_cast<char*>(this->data_), this->width_, edit_line_mode_,
                     "");
   }
 
@@ -234,8 +263,8 @@ private:
 
 template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
 public:
-  StringEditItem(int x, int y, int maxsize, std::string& data, EditLineMode mode)
-      : EditItem<std::string&>(x, y, maxsize, data), edit_line_mode_(mode) {}
+  StringEditItem(int maxsize, std::string& data, EditLineMode mode)
+      : EditItem<std::string&>(maxsize, data), edit_line_mode_(mode) {}
   ~StringEditItem() override = default;
   StringEditItem() = delete;
   StringEditItem(StringEditItem const&) = delete;
@@ -245,7 +274,7 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
+    return editline(window, &this->data_, this->width_, edit_line_mode_, "");
   }
 
 protected:
@@ -260,7 +289,7 @@ private:
 template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem final : public EditItem<T*> {
 public:
-  NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, MAXLEN + 2, data) {}
+  explicit NumberEditItem(T* data) : EditItem<T*>(MAXLEN + 2, data) {}
   virtual ~NumberEditItem() = default;
   NumberEditItem() = delete;
   NumberEditItem(NumberEditItem const&) = delete;
@@ -279,7 +308,7 @@ public:
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
     const auto d = std::to_string(*this->data_);
-    window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->maxsize()));
+    window->PutsXY(this->x_, this->y_, fmt::format("{:<{}}", d, this->width()));
   }
 };
 
@@ -308,10 +337,10 @@ int index_of(T& haystack, const std::vector<std::pair<T, std::string>>& needle) 
 
 template <typename T> class ToggleEditItem final : public EditItem<T*> {
 public:
-  ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data)
-      : EditItem<T*>(x, y, 0, data), items_(items) {
+  ToggleEditItem(const std::vector<std::pair<T, std::string>>& items, T* data)
+      : EditItem<T*>(0, data), items_(items) {
     for (const auto& item : items) {
-      this->maxsize_ = std::max<int>(this->maxsize_, wwiv::strings::ssize(item.second));
+      this->width_ = std::max<int>(this->width_, wwiv::strings::ssize(item.second));
     }
   }
   virtual ~ToggleEditItem() = default;
@@ -360,8 +389,8 @@ static int maxlen_from_list(const std::vector<std::string>& items) {
 
 class StringListItem final : public EditItem<std::string&> {
 public:
-  StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
-      : EditItem<std::string&>(x, y, maxlen_from_list(items), data), items_(items) {}
+  StringListItem(const std::vector<std::string>& items, std::string& data)
+      : EditItem<std::string&>(maxlen_from_list(items), data), items_(items) {}
   ~StringListItem() override = default;
   StringListItem() = delete;
   StringListItem(StringListItem const&) = delete;
@@ -394,9 +423,9 @@ private:
 
 template <typename T> class FlagEditItem final : public EditItem<T*> {
 public:
-  FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data)
-      : EditItem<T*>(x, y, 0, data), flag_(flag) {
-    this->maxsize_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
+  FlagEditItem(int flag, const std::string& on, const std::string& off, T* data)
+      : EditItem<T*>(0, data), flag_(flag) {
+    this->width_ = std::max<int>(wwiv::stl::size_int(on), wwiv::stl::size_int(off));
     this->items_.push_back(off);
     this->items_.push_back(on);
   }
@@ -435,8 +464,8 @@ private:
 
 class BaseRestrictionsEditItem : public EditItem<uint16_t*> {
 public:
-  BaseRestrictionsEditItem(int x, int y, const char* rs, int rs_size, uint16_t* data)
-      : EditItem<uint16_t*>(x, y, rs_size, data), rs_(rs), rs_size_(rs_size) {}
+  BaseRestrictionsEditItem(const char* rs, int rs_size, uint16_t* data)
+      : EditItem<uint16_t*>(rs_size, data), rs_(rs), rs_size_(rs_size) {}
 
   ~BaseRestrictionsEditItem() override = default;
   BaseRestrictionsEditItem() = delete;
@@ -493,8 +522,8 @@ static constexpr int xrestrictstring_size = 16;
 
 class RestrictionsEditItem final : public BaseRestrictionsEditItem {
 public:
-  RestrictionsEditItem(int x, int y, uint16_t* data)
-      : BaseRestrictionsEditItem(x, y, xrestrictstring, xrestrictstring_size, data) {}
+  RestrictionsEditItem(uint16_t* data)
+      : BaseRestrictionsEditItem(xrestrictstring, xrestrictstring_size, data) {}
   ~RestrictionsEditItem() override = default;
   RestrictionsEditItem() = delete;
   RestrictionsEditItem(RestrictionsEditItem const&) = delete;
@@ -505,8 +534,8 @@ public:
 
 class ArEditItem final : public BaseRestrictionsEditItem {
 public:
-  ArEditItem(int x, int y, uint16_t* data)
-      : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
+  ArEditItem(uint16_t* data)
+      : BaseRestrictionsEditItem(ar_string, ar_string_size, data) {}
   ~ArEditItem() override = default;
   ArEditItem() = delete;
   ArEditItem(ArEditItem const&) = delete;
@@ -517,7 +546,7 @@ public:
 
 class BooleanEditItem final : public EditItem<bool*> {
 public:
-  BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 6, data) {}
+  BooleanEditItem(bool* data) : EditItem<bool*>(6, data) {}
   ~BooleanEditItem() override = default;
   BooleanEditItem() = delete;
   BooleanEditItem(BooleanEditItem const&) = delete;
@@ -552,9 +581,9 @@ public:
   typedef std::function<void(const std::string&)> displayfn;
   typedef std::function<std::string()> prefn;
   typedef std::function<void(const std::string&)> postfn;
-  CustomEditItem(int x, int y, int maxsize, prefn to_field, postfn from_field)
-      : BaseEditItem(x, y, maxsize), to_field_(std::move(to_field)),
-        from_field_(std::move(from_field)) {}
+  CustomEditItem(int maxsize, prefn to_field, postfn from_field)
+      : BaseEditItem(maxsize), to_field_(std::move(to_field)),
+        from_field_(std::move(from_field)), field_width_(maxsize) {}
   CustomEditItem() = delete;
   CustomEditItem(CustomEditItem const&) = delete;
   CustomEditItem(CustomEditItem&&) = delete;
@@ -569,12 +598,13 @@ private:
   prefn to_field_;
   postfn from_field_;
   displayfn display_;
+  int field_width_{1};
 };
 
 class FilePathItem final : public EditItem<char*> {
 public:
-  FilePathItem(int x, int y, int maxsize, const std::string& base, char* data)
-      : EditItem<char*>(x, y, maxsize, data), base_(base) {
+  FilePathItem(int maxsize, const std::string& base, char* data)
+      : EditItem<char*>(maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
   FilePathItem() = delete;
@@ -589,7 +619,7 @@ public:
     const auto p = wwiv::core::File::FixPathSeparators(this->data_);
     strcpy(this->data_, p.c_str());
     const auto return_code =
-        editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
 
     // Update what we display in case it changed.
@@ -616,9 +646,9 @@ private:
 
 class FileSystemFilePathItem final : public EditItem<std::filesystem::path&> {
 public:
-  FileSystemFilePathItem(int x, int y, int maxsize, std::filesystem::path base,
+  FileSystemFilePathItem(int maxsize, std::filesystem::path base,
                          std::filesystem::path& data)
-      : EditItem<std::filesystem::path&>(x, y, maxsize, data), base_(std::move(base)) {
+      : EditItem<std::filesystem::path&>(maxsize, data), base_(std::move(base)) {
     help_text_ =
         wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base_.string(), "'");
   }
@@ -632,7 +662,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     auto data = this->data_.string();
-    const auto return_code = editline(window, &data, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+    const auto return_code = editline(window, &data, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&data);
     if (!data.empty()) {
       data = wwiv::core::File::EnsureTrailingSlash(data);
@@ -665,12 +695,13 @@ private:
 
 class StringFilePathItem final : public EditItem<std::string&> {
 public:
-  StringFilePathItem(int x, int y, int maxsize, const std::filesystem::path& base,
+  StringFilePathItem(int maxsize, const std::filesystem::path& base,
                      std::string& data)
-      : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
+      : EditItem<std::string&>(maxsize, data), base_(base) {
     help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
   }
   ~StringFilePathItem() override = default;
+
   StringFilePathItem() = delete;
   StringFilePathItem(StringFilePathItem const&) = delete;
   StringFilePathItem(StringFilePathItem&&) = delete;
@@ -680,7 +711,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
-        editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, &this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
       data_ = wwiv::core::File::EnsureTrailingSlash(data_);
@@ -709,7 +740,7 @@ private:
 
 class CommandLineItem final : public EditItem<char*> {
 public:
-  CommandLineItem(int x, int y, int maxsize, char* data) : EditItem<char*>(x, y, maxsize, data) {}
+  CommandLineItem(int maxsize, char* data) : EditItem<char*>(maxsize, data) {}
   ~CommandLineItem() override = default;
   CommandLineItem() = delete;
   CommandLineItem(CommandLineItem const&) = delete;
@@ -720,7 +751,7 @@ public:
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     const auto return_code =
-        editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
+        editline(window, this->data_, this->width_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(this->data_);
     return return_code;
   }
@@ -737,8 +768,8 @@ protected:
  */
 template <class T> class SubDialog : public BaseEditItem {
 public:
-  SubDialog(const wwiv::sdk::Config& c, int x, int y, T& t)
-      : BaseEditItem(x, y, 25), c_(c), t_(t) {}
+  SubDialog(const wwiv::sdk::Config& c, T& t)
+      : BaseEditItem(25), c_(c), t_(t) {}
   ~SubDialog() override = default;
 
   virtual void RunSubDialog(CursesWindow* window) = 0;
@@ -764,7 +795,7 @@ public:
 
 protected:
   [[nodiscard]] const wwiv::sdk::Config& config() const noexcept { return c_; }
-  [[nodiscard]] virtual std::string menu_label() const { return "[Enter to Edit]"; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
 
   const wwiv::sdk::Config& c_;
   T& t_;

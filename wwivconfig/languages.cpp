@@ -46,20 +46,17 @@ using namespace wwiv::strings;
 static constexpr int MAX_LANGUAGES = 100;
 
 static void edit_lang(const std::string& base, languagerec& n) {
-  constexpr int LABEL1_POSITION = 2;
-  constexpr int LABEL1_WIDTH = 15;
-  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
-
   EditItems items{};
   int y = 1;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Language name:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 19, n.name, EditLineMode::ALL));
+  items.add(new Label("Language name:"), new StringEditItem<char*>(19, n.name, EditLineMode::ALL),
+            "Display name for this language", 1, y);
   y++;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Data Directory:"),
-            new FilePathItem(LABEL1_POSITION, y + 1, 75, base, n.dir));
-  y += 2;
-  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH , "Menu Directory:"),
-            new FilePathItem(LABEL1_POSITION, y+1, 75, base, n.mdir));
+  items.add(new Label("Data Directory:"), new FilePathItem(60, base, n.dir),
+            "Language specific gfiles directory for this language", 1, y);
+  y ++;
+  items.add(new Label("Menu Directory:"), new FilePathItem(60, base, n.mdir),
+            "Not Used Yet. We use DataDir/menus.", 1, y);
+  items.relayout_items_and_labels();
   items.Run("Language Configuration");
 };
 
@@ -76,7 +73,7 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   }
 
   // Getting close to uint8_t::max() so let's reuse.
-  for (uint8_t i=1; i<255; i++) {
+  for (uint8_t i = 1; i < 255; i++) {
     if (nums.find(i) == nums.end()) {
       return i;
     }
@@ -107,7 +104,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
-    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
     auto result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
@@ -137,8 +134,8 @@ void edit_languages(const wwiv::sdk::Config& config) {
         // N.B. i is one based, result.selected is 0 based.
         if (i <= 0 || i > ssize(languages) + 1) {
           break;
-        } 
-        
+        }
+
         languagerec l{};
         memset(&l, 0, sizeof(languagerec));
         to_char_array(l.name, "English");
@@ -166,7 +163,9 @@ void edit_languages(const wwiv::sdk::Config& config) {
 
   {
     DataFile<languagerec> file(FilePath(config.datadir(), LANGUAGE_DAT),
-      File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+                               File::modeWriteOnly | File::modeBinary | File::modeCreateFile |
+                                   File::modeTruncate,
+                               File::shareDenyReadWrite);
     if (file) {
       file.WriteVector(languages, MAX_LANGUAGES);
     }
