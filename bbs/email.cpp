@@ -386,7 +386,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
     if (((user_number == 1 && system_number == 0 &&
           (a()->user()->GetNumFeedbackSentToday() >= 10)) ||
          ((user_number != 1 || system_number != 0) &&
-          (a()->user()->GetNumEmailSentToday() >= a()->effective_slrec().emails)))
+          (a()->user()->GetNumEmailSentToday() >= a()->config()->sl(a()->sess().effective_sl()).emails)))
         && !cs()) {
       bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
@@ -440,7 +440,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     destination_bbs_name = csne->name;
   }
   bool an = true;
-  if (a()->effective_slrec().ability & ability_read_email_anony) {
+  if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_email_anony) {
     an = true;
   } else if (anony & (anony_sender | anony_sender_da | anony_sender_pp)) {
     an = false;
@@ -501,7 +501,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     bout.format(" |#9(|#1{}|#9)", a()->current_net().name); 
   }
   bout.nl();
-  uint8_t i = (a()->effective_slrec().ability & ability_email_anony) ? anony_enable_anony : anony_none;
+  uint8_t i = (a()->config()->sl(a()->sess().effective_sl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
     i = anony_enable_dear_abby;

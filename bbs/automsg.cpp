@@ -72,7 +72,7 @@ void read_automessage() {
   StringTrimEnd(&line);
   auto authorName = line;
   if (anonymous) {
-    if (a()->effective_slrec().ability & ability_read_post_anony) {
+    if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony) {
       stringstream ss;
       ss << "<<< " << line << " >>>";
       authorName = ss.str();
@@ -119,7 +119,7 @@ void write_automessage() {
   }
   bout.nl();
   bool bAnonStatus = false;
-  if (a()->effective_slrec().ability & ability_post_anony) {
+  if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_post_anony) {
     bout << "|#9Anonymous? ";
     bAnonStatus = bin.yesno();
   }

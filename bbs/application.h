@@ -149,7 +149,6 @@ public:
   bool WriteCurrentUser(int user_number);
 
   void reset_effective_sl();
-  [[nodiscard]] const slrec& effective_slrec() const;
 
   [[nodiscard]] int GetChatNameSelectionColor() const { return chatname_color_; }
 

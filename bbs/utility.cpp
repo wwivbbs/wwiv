@@ -114,8 +114,8 @@ long nsl() {
   }
   auto tot = duration_cast<seconds>(dd - a()->sess().system_logon_time());
 
-  const auto tpl = minutes(a()->effective_slrec().time_per_logon);
-  const auto tpd = minutes(a()->effective_slrec().time_per_day);
+  const auto tpl = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_logon);
+  const auto tpd = minutes(a()->config()->sl(a()->sess().effective_sl()).time_per_day);
   const auto extra_time =
       duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
   const auto tlc = std::chrono::duration_cast<seconds>(tpl - tot + extra_time);

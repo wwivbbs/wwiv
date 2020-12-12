@@ -266,9 +266,8 @@ void delete_message(int mn) {
 
   if (fileSub) {
     if (mn > 0 && mn <= a()->GetNumMessagesInCurrentMessageArea()) {
-      auto* buffer = static_cast<char*>(malloc(BUFSIZE));
-      if (buffer) {
-        const auto p1 = get_post(mn);
+      if (auto* buffer = static_cast<char*>(malloc(BUFSIZE))) {
+        const auto* p1 = get_post(mn);
         remove_link(&(p1->msg), a()->current_sub().filename);
 
         auto cp = static_cast<long>(mn + 1) * sizeof(postrec);

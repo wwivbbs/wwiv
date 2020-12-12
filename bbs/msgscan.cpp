@@ -220,7 +220,7 @@ static void HandleScanReadAutoReply(int& msgnum, const char* user_input,
     } break;
     }
   } else {
-    if (lcs() || (a()->effective_slrec().ability & ability_read_post_anony) || post->anony == 0) {
+    if (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony) || post->anony == 0) {
       email("", post->owneruser, post->ownersys, false, 0);
     } else {
       email("", post->owneruser, post->ownersys, false, post->anony);
@@ -298,7 +298,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     } else {
       line += "| ";
     }
-    if ((h.anony() & 0x0f) && ((a()->effective_slrec().ability & ability_read_post_anony) == 0)) {
+    if ((h.anony() & 0x0f) && ((a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony) == 0)) {
       line += ">UNKNOWN<";
     } else {
       line += trim_to_size_ignore_colors(h.from(), 25);
@@ -1063,7 +1063,7 @@ static void network_validate() {
 // user says Yes (and posts) or No.
 static bool query_post() {
   if (!a()->user()->IsRestrictionPost() &&
-      (a()->user()->GetNumPostsToday() < a()->effective_slrec().posts) &&
+      (a()->user()->GetNumPostsToday() < a()->config()->sl(a()->sess().effective_sl()).posts) &&
       wwiv::bbs::check_acs(a()->current_sub().post_acs)) {
     bout << "|#5Post on " << a()->current_sub().name << " (|#2Y/N/Q|#5) ? ";
     a()->sess().clear_irt();

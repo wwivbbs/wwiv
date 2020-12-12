@@ -175,6 +175,7 @@ struct generated_menu_56_t {
   std::string color_item_key{"|#2"};
   std::string color_item_braces{"|#1"};
   bool show_empty_text{false};
+  int num_newlines_at_end{1};
 };
 
 struct menu_56_t {

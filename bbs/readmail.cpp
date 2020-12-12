@@ -342,7 +342,7 @@ void readmail(int mode) {
   bool next = false, abort = false;
   std::vector<tmpmailrec> mloc;
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
-  auto sl = a()->effective_slrec();
+  auto sl = a()->config()->sl(a()->sess().effective_sl());
   auto mw = 0;
   {
     auto pFileEmail(OpenEmailFile(false));

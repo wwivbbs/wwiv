@@ -249,10 +249,6 @@ void Application::reset_effective_sl() {
   sess().effective_sl(user()->GetSl());
 }
 
-const slrec& Application::effective_slrec() const { 
-  return config()->sl(sess().effective_sl());
-}
-
 bool Application::WriteCurrentUser() {
   DCHECK_GE(sess().user_num(), 1);
   return WriteCurrentUser(sess().user_num()); 

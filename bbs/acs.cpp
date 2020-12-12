@@ -44,7 +44,7 @@ bool check_acs(const std::string& expression, acs_debug_t debug) {
   Eval eval(expression);
 
   auto esl = a()->sess().effective_sl();
-  auto eslrec = a()->effective_slrec();
+  auto eslrec = a()->config()->sl(esl);
   eval.add("user", std::make_unique<UserValueProvider>(a()->user(), esl, eslrec));
 
   const auto result = eval.eval();
@@ -64,7 +64,7 @@ bool validate_acs(const std::string& expression, acs_debug_t debug) {
   Eval eval(expression);
 
   auto esl = a()->sess().effective_sl();
-  auto eslrec = a()->effective_slrec();
+  auto eslrec = a()->config()->sl(esl);
   eval.add("user", std::make_unique<UserValueProvider>(a()->user(), esl, eslrec));
 
   try {

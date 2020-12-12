@@ -18,19 +18,25 @@
 /**************************************************************************/
 #include "bbs/menus/mainmenu.h"
 
-#include "bbs/menus/config_menus.h"
-#include "bbs/menus/menucommands.h"
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
 #include "bbs/mmkey.h"
 #include "bbs/sysoplog.h"
+#include "bbs/menus/config_menus.h"
+#include "bbs/menus/menucommands.h"
 #include "common/printfile.h"
+#include "core/strings.h"
 #include "sdk/config.h"
 
-namespace wwiv::bbs::menus {
+#include <string>
 
 using namespace wwiv::core;
+using namespace wwiv::strings;
+using namespace wwiv::core;
+using namespace wwiv::sdk::menus;
+
+namespace wwiv::bbs::menus {
 
 static bool CheckMenuPassword(const std::string& pw) {
   if (pw.empty()) {
@@ -43,17 +49,17 @@ static bool CheckMenuPassword(const std::string& pw) {
 }
 
 
-static void log_command(sdk::menus::menu_logtype_t logging, const sdk::menus::menu_item_56_t& mi) {
+static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
   switch (logging) {
-  case sdk::menus::menu_logtype_t::key:
+  case menu_logtype_t::key:
     sysopchar(mi.item_key);
     break;
-  case sdk::menus::menu_logtype_t::command: {
+  case menu_logtype_t::command: {
     for (const auto& a : mi.actions) {
       sysoplog() << a.cmd;
     }
   } break;
-  case sdk::menus::menu_logtype_t::description: {
+  case menu_logtype_t::description: {
     if (!mi.item_text.empty()) {
       sysoplog() << "(" << mi.item_key << ") : " << mi.item_text;
     } else {
@@ -63,7 +69,7 @@ static void log_command(sdk::menus::menu_logtype_t logging, const sdk::menus::me
     }
   }
   break;
-  case sdk::menus::menu_logtype_t::none:
+  case menu_logtype_t::none:
     break;
   }
 }
@@ -135,7 +141,7 @@ Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
   prompt_ = "|09Command? ";
 
   // Load Prompt;
-  const auto prompt_filename = wwiv::strings::StrCat(menu_name, ".pro");
+  const auto prompt_filename = StrCat(menu_name, ".pro");
   const auto prompt_path = FilePath(menu_set_path_, prompt_filename);
 
   TextFile prompt_file(prompt_path, "rb");
@@ -171,11 +177,11 @@ std::string Menu::GetCommandFromUser() const {
     return bin.input(50);
   }
   const auto nums = menu().num_action;
-  if (nums == sdk::menus::menu_numflag_t::dirs) {
+  if (nums == menu_numflag_t::dirs) {
     write_inst(INST_LOC_XFER, a()->current_user_dir().subnum, INST_FLAGS_NONE);
     return mmkey(MMKeyAreaType::dirs);
   }
-  if (nums == sdk::menus::menu_numflag_t::subs) {
+  if (nums == menu_numflag_t::subs) {
     write_inst(INST_LOC_MAIN, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     return mmkey(MMKeyAreaType::subs);
   }
@@ -195,19 +201,19 @@ static bool IsNumber(const std::string& command) {
   return true;
 }
 
-std::optional<sdk::menus::menu_item_56_t>
+std::optional<menu_item_56_t>
 Menu::GetMenuItemForCommand(const std::string& cmd) const {
   const auto nums = menu().num_action;
-  if (IsNumber(cmd) && nums != sdk::menus::menu_numflag_t::none) {
-    if (nums == sdk::menus::menu_numflag_t::subs) {
-      sdk::menus::menu_item_56_t i{};
-      sdk::menus::menu_action_56_t a{"SetSubNumber", cmd, ""};
+  if (IsNumber(cmd) && nums != menu_numflag_t::none) {
+    if (nums == menu_numflag_t::subs) {
+      menu_item_56_t i{};
+      menu_action_56_t a{"SetSubNumber", cmd, ""};
       i.actions.emplace_back(a);
       return {i};
     }
-    if (nums == sdk::menus::menu_numflag_t::dirs) {
-      sdk::menus::menu_item_56_t i{};
-      sdk::menus::menu_action_56_t a{"SetDirNumber", cmd, ""};
+    if (nums == menu_numflag_t::dirs) {
+      menu_item_56_t i{};
+      menu_action_56_t a{"SetDirNumber", cmd, ""};
       i.actions.emplace_back(a);
       return {i};
     }
@@ -222,7 +228,7 @@ Menu::GetMenuItemForCommand(const std::string& cmd) const {
 }
 
 
-std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const sdk::menus::menu_action_56_t& a) {
+std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const menu_action_56_t& a) {
   if (auto o = InterpretCommand(this, a.cmd, a.data)) {
     auto& ctx = o.value();
     if (ctx.menu_action == menu_command_action_t::return_from_menu) {
@@ -237,7 +243,7 @@ std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const sdk::me
 }
 
 std::tuple<menu_command_action_t, std::string>
-Menu::ExecuteActions(const std::vector<wwiv::sdk::menus::menu_action_56_t>& actions) {
+Menu::ExecuteActions(const std::vector<menu_action_56_t>& actions) {
   for (const auto& action : actions) {
     auto [a, d] = ExecuteAction(action);
     VLOG(1) << "Action: " << action.cmd << "; " << action.data << endl;
@@ -277,17 +283,17 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
     }
   }
 
-  bool first = true;
+  auto first = true;
   // We have a good menu.
   for (;;) {
-    if (menu().help_type == sdk::menus::menu_help_display_t::never) {
+    if (menu().help_type == menu_help_display_t::never) {
       // Do nothing
-    } else if (menu().help_type == sdk::menus::menu_help_display_t::always) {
+    } else if (menu().help_type == menu_help_display_t::always) {
       DisplayMenu();
-    } else if (first && menu().help_type == sdk::menus::menu_help_display_t::on_entrance) {
+    } else if (first && menu().help_type == menu_help_display_t::on_entrance) {
       DisplayMenu();
       first = false;
-    } else if (menu().help_type == sdk::menus::menu_help_display_t::user_choice && !a()->user()->IsExpert()) {
+    } else if (menu().help_type == menu_help_display_t::user_choice && !a()->user()->IsExpert()) {
       DisplayMenu();
     }
     const auto save_mci = bout.mci_enabled();
@@ -319,7 +325,7 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
         ExecuteActions(menu().exit_actions);
         return std::make_tuple(menu_run_result_t::return_from_menu, "");
       }
-      if (reload || !strings::iequals(menu_set, a()->user()->menu_set())) {
+      if (reload || !iequals(menu_set, a()->user()->menu_set())) {
         // We changed menu sets.  Reload is set by Defaults when changing the
         // menu set.
         return std::make_tuple(menu_run_result_t::change_menu_set, "");
@@ -346,27 +352,27 @@ static std::string display_key(const std::string& item_key) {
   if (item_key.size() == 2) {
     return fmt::format("//{}", item_key);
   }
-  if (wwiv::strings::starts_with(item_key, "//")) {
+  if (starts_with(item_key, "//")) {
     return item_key;
   }
   return fmt::format("//{}", item_key);
 }
 
-static std::string generate_menu_item_line(sdk::menus::generated_menu_56_t g,
+static std::string generate_menu_item_line(generated_menu_56_t g,
                                            const std::string& key, const std::string& text, 
                                            int max_width) {
   std::ostringstream ss;
   ss << g.color_item_braces << "(" << g.color_item_key << display_key(key)
   << g.color_item_braces << ")" << g.color_item_text;
   if (key.size() == 1 && !text.empty() 
-    && strings::to_upper_case_char(text.front()) == strings::to_upper_case_char(key.front())) {
+    && to_upper_case_char(text.front()) == to_upper_case_char(key.front())) {
     ss << text.substr(1);
   } else {
     ss << " " << text;
   }
   ss << " ";
-  const auto line = strings::trim_to_size_ignore_colors(ss.str(), max_width);
-  const auto len = strings::size_without_colors(line);
+  const auto line = trim_to_size_ignore_colors(ss.str(), max_width);
+  const auto len = size_without_colors(line);
   return fmt::format("{}{}", line, std::string(max_width - len, ' '));
 }
 
@@ -385,16 +391,17 @@ void Menu::GenerateMenu(menu_type_t typ) {
   const auto screen_width = a()->user()->GetScreenChars() - num_cols + 1;
   const auto col_width = typ == menu_type_t::short_menu ? screen_width / num_cols : screen_width - 1;
   if (!title.empty()) {
-    const auto title_len = strings::size_without_colors(title);
+    const auto title_len = size_without_colors(title);
     const auto pad_len = (screen_width - title_len) / 2;
     bout << std::string(pad_len, ' ') << g.color_title << title << "|#0" << wwiv::endl;
     bout.nl();
   }
   const auto nums = menu().num_action;
-  if (nums != sdk::menus::menu_numflag_t::none) {
+  if (nums != menu_numflag_t::none) {
     bout << generate_menu_item_line(g, "#", "Change Sub/Dir #", col_width);
     ++lines_displayed;
   }
+  bool just_nled = false;
   for (const auto& mi : menu().items) {
     if (mi.item_key.empty()) {
       continue;
@@ -402,21 +409,29 @@ void Menu::GenerateMenu(menu_type_t typ) {
     if (!check_acs(mi.acs)) {
       continue;
     }
-    if (!g.show_empty_text && strings::StringTrim(mi.item_text).empty()) {
+    if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {
       continue;
     }
     if (!mi.visible) {
       continue;
     }
+    if (bin.checka()) {
+      break;
+    }
+    just_nled = false;
     const auto key = display_key(mi.item_key);
     const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
     bout << generate_menu_item_line(g, key, text, col_width);
     const auto mod = ++lines_displayed % num_cols;
     if (mod == 0) {
       bout.nl();
+      just_nled = true;
     }
   }
-  bout.nl(2);
+  if (!just_nled) {
+    bout.nl();
+  }
+  bout.nl(g.num_newlines_at_end);
   menu_displayed_ = true;
 
 }

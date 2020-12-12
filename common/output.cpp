@@ -148,8 +148,11 @@ void Output::RestorePosition() {
   bputs("\x1b[u");
 }
 
-void Output::nl(int nNumLines) {
-  for (auto i = 0; i < nNumLines; i++) {
+void Output::nl(int num_lines) {
+  if (num_lines == 0) {
+    return;
+  }
+  for (auto i = 0; i < num_lines; i++) {
     bputs("\r\n");
     core::bus().invoke(ProcessInstanceMessages{});
   }

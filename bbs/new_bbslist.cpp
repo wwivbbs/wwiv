@@ -302,16 +302,14 @@ static char ShowBBSListMenuAndGetChoice() {
   if (so()) {
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
     return onek("QRNAD");
-  } else {
-    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
-    return onek("QRNA");
   }
+  bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+  return onek("QRNA");
 }
 
 void NewBBSList() {
-  bool done = false;
-  while (!done) {
-    char ch = ShowBBSListMenuAndGetChoice();
+  while (!a()->sess().hangup()) {
+    const auto ch = ShowBBSListMenuAndGetChoice();
     switch (ch) {
     case 'A': {
       vector<BbsListEntry> entries;
@@ -319,7 +317,8 @@ void NewBBSList() {
       if (a()->sess().effective_sl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
-      } else if (a()->user()->IsRestrictionAutomessage()) {
+      }
+      if (a()->user()->IsRestrictionAutomessage()) {
         bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }

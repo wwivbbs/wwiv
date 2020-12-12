@@ -77,7 +77,7 @@ public:
   void Right(int num);
   void SavePosition();
   void RestorePosition();
-  void nl(int nNumLines = 1);
+  void nl(int num_lines = 1);
   void bs();
   /* This sets the current color (both locally and remotely) to that
    * specified (in IBM format).

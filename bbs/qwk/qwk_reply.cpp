@@ -175,7 +175,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
       continue;
     }
 
-    ss = a()->effective_slrec();
+    ss = a()->config()->sl(a()->sess().effective_sl());
 
     int xa = 0;
     // User is restricted from posting

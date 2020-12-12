@@ -360,6 +360,11 @@ public:
               "Display menu items that have no text.", 1, y);
     ++y;
 
+    items.add(new Label("Num Newlines:"),
+              new NumberEditItem<int, 2>(&t_.num_newlines_at_end),
+              "Number of blank lines to add between generated menu and prompt.", 1, y);
+    ++y;
+
     window->GotoXY(x_, y_);
 
     //items.add_aligned_width_column(1);
@@ -381,8 +386,8 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   }
 
   EditItems items{};
-  const string title = StrCat("Menu: ", menu_name);
-  int y = 1;
+  const auto title = StrCat("Menu: ", menu_name);
+  auto y = 1;
   auto& h = m.menu;
   items.add(new Label("Title:"),
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),

@@ -66,7 +66,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   MessageEditorData data(a()->names()->UserName(a()->sess().user_num()));
   data.need_title = true;
-  if (a()->effective_slrec().ability & ability_email_anony) {
+  if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
@@ -305,7 +305,7 @@ void slash_e() {
     return;
   }
   if (((a()->user()->GetNumFeedbackSentToday() >= 10) ||
-       (a()->user()->GetNumEmailSentToday() >= a()->effective_slrec().emails))
+       (a()->user()->GetNumEmailSentToday() >= a()->config()->sl(a()->sess().effective_sl()).emails))
       && (!cs())) {
     bout << "Too much mail sent today.\r\n\n";
     return;

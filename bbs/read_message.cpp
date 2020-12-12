@@ -795,7 +795,7 @@ ReadMessageResult read_post(int& msgnum, bool* next, int* val) {
 
   auto p = *get_post(msgnum);
   const auto read_it =
-      (lcs() || (a()->effective_slrec().ability & ability_read_post_anony)) ? true : false;
+      (lcs() || (a()->config()->sl(a()->sess().effective_sl()).ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), read_it,
                               cs.filename.c_str(), p.ownersys, p.owneruser);

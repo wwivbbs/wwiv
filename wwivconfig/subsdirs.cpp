@@ -18,14 +18,13 @@
 /**************************************************************************/
 
 #include "core/file.h"
-#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "wwivconfig/utility.h"
-#include <cstdlib>
+
 #include <memory>
 #include <string>
 
@@ -80,32 +79,18 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
 
   const auto nqscn_len =
       static_cast<uint16_t>(4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32)));
-  auto nqsc = static_cast<uint32_t *>(malloc(nqscn_len));
-  wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
-  if (!nqsc) {
-    return;
-  }
-  memset(nqsc, 0, nqscn_len);
-
-  uint32_t* nqsc_n = nqsc + 1;
-  uint32_t* nqsc_q = nqsc_n + ((num_dirs + 31) / 32);
-  uint32_t* nqsc_p = nqsc_q + ((num_subs + 31) / 32);
+  const auto nqsc = std::make_unique<uint32_t[]>(nqscn_len);
+  auto* nqsc_n = nqsc.get() + 1;
+  auto* nqsc_q = nqsc_n + ((num_dirs + 31) / 32);
+  auto* nqsc_p = nqsc_q + ((num_subs + 31) / 32);
 
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  auto oqsc = static_cast<uint32_t *>(malloc(config.qscn_len()));
-  wwiv::core::ScopeExit free_oqsc([&]() { free(oqsc); oqsc = nullptr; });
-  if (!oqsc) {
-    messagebox(window, fmt::format("Could not allocate {} bytes for old quickscan rec\n",
-                                    config.qscn_len()));
-    return;
-  }
-  memset(oqsc, 0, config.qscn_len());
-
-  const auto oqsc_n = oqsc + 1;
-  const auto oqsc_q = oqsc_n + ((config.max_dirs() + 31) / 32);
-  const auto oqsc_p = oqsc_q + ((config.max_subs() + 31) / 32);
+  const auto oqsc = std::make_unique<uint32_t[]>(nqscn_len);
+  const auto* oqsc_n = oqsc.get() + 1;
+  const auto* oqsc_q = oqsc_n + ((config.max_dirs() + 31) / 32);
+  const auto* oqsc_p = oqsc_q + ((config.max_subs() + 31) / 32);
 
   if (num_dirs < config.max_dirs()) {
     l1 = ((num_dirs + 31) / 32) * 4;
@@ -134,17 +119,17 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   }
 
   const auto nu = oqf.length() / config.qscn_len();
-  for (int i = 0; i < nu; i++) {
+  for (auto i = 0; i < nu; i++) {
     if (i % 10 == 0) {
       window->Puts(StrCat(i, "/", nu, "\r"));
     }
-    oqf.Read(oqsc, config.qscn_len());
+    oqf.Read(oqsc.get(), config.qscn_len());
 
-    *nqsc = *oqsc;
+    *nqsc.get() = *oqsc.get();  // NOLINT(readability-redundant-smartptr-get)
     memcpy(nqsc_n, oqsc_n, l1);
     memcpy(nqsc_q, oqsc_q, l2);
     memcpy(nqsc_p, oqsc_p, l3);
-    nqf.Write(nqsc, nqscn_len);
+    nqf.Write(nqsc.get(), nqscn_len);
   }
 
   oqf.Close();

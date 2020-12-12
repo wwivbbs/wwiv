@@ -274,7 +274,7 @@ bool cs() {
     return true;
   }
 
-  return (a()->effective_slrec().ability & ability_cosysop) ? true : false;
+  return (a()->config()->sl(a()->sess().effective_sl()).ability & ability_cosysop) ? true : false;
 }
 
 
@@ -289,7 +289,7 @@ bool lcs() {
     return true;
   }
 
-  if (a()->effective_slrec().ability & ability_limited_cosysop) {
+  if (a()->config()->sl(a()->sess().effective_sl()).ability & ability_limited_cosysop) {
     if (*a()->sess().qsc == 999) {
       return true;
     }

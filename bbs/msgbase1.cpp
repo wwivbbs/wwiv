@@ -180,7 +180,7 @@ void post(const PostData& post_data) {
     return;
   }
   if (a()->user()->IsRestrictionPost() ||
-      a()->user()->GetNumPostsToday() >= a()->effective_slrec().posts) {
+      a()->user()->GetNumPostsToday() >= a()->config()->sl(a()->sess().effective_sl()).posts) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
@@ -193,7 +193,7 @@ void post(const PostData& post_data) {
   messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
   data.anonymous_flag = a()->subs().sub(a()->sess().GetCurrentReadMessageArea()).anony & 0x0f;
-  if (data.anonymous_flag == 0 && a()->effective_slrec().ability & ability_post_anony) {
+  if (data.anonymous_flag == 0 && a()->config()->sl(a()->sess().effective_sl()).ability & ability_post_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
   if (data.anonymous_flag == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
@@ -314,7 +314,7 @@ void post(const PostData& post_data) {
   if (a()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
     const auto end_time = DateTime::now().to_system_clock();
     auto diff_time = end_time - start_time;
-    const auto allowed_time_per_login = a()->effective_slrec().time_per_logon;
+    const auto allowed_time_per_login = a()->config()->sl(a()->sess().effective_sl()).time_per_logon;
     if (duration_cast<minutes>(diff_time).count() > allowed_time_per_login) {
       diff_time = minutes(allowed_time_per_login);
     }
