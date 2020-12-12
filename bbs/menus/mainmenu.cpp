@@ -405,6 +405,9 @@ void Menu::GenerateMenu(menu_type_t typ) {
     if (!g.show_empty_text && strings::StringTrim(mi.item_text).empty()) {
       continue;
     }
+    if (!mi.visible) {
+      continue;
+    }
     const auto key = display_key(mi.item_key);
     const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
     bout << generate_menu_item_line(g, key, text, col_width);

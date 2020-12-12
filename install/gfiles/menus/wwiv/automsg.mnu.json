@@ -1,0 +1,147 @@
+{
+    "version": 1,
+    "menu": {
+        "num_action": "none",
+        "logging_action": "key",
+        "help_type": "always",
+        "color_title": 5,
+        "color_item_key": 2,
+        "color_item_text": 1,
+        "color_item_braces": 9,
+        "title": "AutoMessage Menu",
+        "acs": "",
+        "password": "",
+        "enter_actions": [
+            {
+                "cmd": "amsg:read",
+                "data": "",
+                "acs": ""
+            }
+        ],
+        "exit_actions": [],
+        "items": [
+            {
+                "item_key": "",
+                "item_text": "",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": []
+            },
+            {
+                "item_key": "A",
+                "item_text": "Auto-reply",
+                "help_text": "Replies via email to the AutoMessage author",
+                "log_text": "AutoReply",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "amsg:email_author",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "R",
+                "item_text": "Read AutoMessage",
+                "help_text": "Reads the current auto message",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "amsg:read",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "L",
+                "item_text": "Lock AutoMessage",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "Amsg:Lock",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "U",
+                "item_text": "Unlock AutoMesssage",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.cosysop == true",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "Amsg:Unlock",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "W",
+                "item_text": "Write AutoMessage",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "user.sl >= 20",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "Amsg:Write",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "Q",
+                "item_text": "Quit",
+                "help_text": "Returns to the previous menu",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "ReturnFromMenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            },
+            {
+                "item_key": "?",
+                "item_text": "Display help",
+                "help_text": "",
+                "log_text": "",
+                "instance_message": "",
+                "acs": "",
+                "password": "",
+                "actions": [
+                    {
+                        "cmd": "DisplayMenu",
+                        "data": "",
+                        "acs": ""
+                    }
+                ]
+            }
+        ]
+    }
+}

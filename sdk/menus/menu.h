@@ -151,6 +151,8 @@ struct menu_item_56_t {
   std::string item_key;
   // Text for the item (i.e. "Chain Edit")
   std::string item_text;
+  // Is this item visible in generated menus
+  bool visible{true};
   // Help text to display in help screen
   std::string help_text;
   // What to log to sysops log when this menu item is invoked

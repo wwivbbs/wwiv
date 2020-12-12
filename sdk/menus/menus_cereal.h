@@ -72,6 +72,7 @@ template <class Archive>
 void serialize(Archive & ar, menu_item_56_t& s) {
   SERIALIZE(s, item_key);
   SERIALIZE(s, item_text);
+  SERIALIZE(s, visible);
   SERIALIZE(s, help_text);
   SERIALIZE(s, log_text);
   SERIALIZE(s, instance_message);

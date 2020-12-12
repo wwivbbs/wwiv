@@ -230,6 +230,10 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             new StringEditItem<std::string&>(20, m.password, EditLineMode::UPPER_ONLY),
             "Password required to access this menu item", 1, y);
   y++;
+  items.add(new Label("Visible:"),
+            new BooleanEditItem(&m.visible),
+            "Is this item included in the generated menus.", 1, y);
+  y++;
   items.add(new Label("Actions:"), new ActionSubDialog(config, m.actions), 
     "The actions to execute when this menu is selected", 1, y);
 
