@@ -408,10 +408,10 @@ void Menu::GenerateMenu(menu_type_t typ) {
     const auto key = display_key(mi.item_key);
     const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
     bout << generate_menu_item_line(g, key, text, col_width);
-    if ((lines_displayed % num_cols) == 0) {
+    const auto mod = ++lines_displayed % num_cols;
+    if (mod == 0) {
       bout.nl();
     }
-    ++lines_displayed;
   }
   bout.nl(2);
   menu_displayed_ = true;
