@@ -15,23 +15,29 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef INCLUDED_BBS_ACS_H
-#define INCLUDED_BBS_ACS_H
+#ifndef INCLUDED_SDK_ACS_ACS_H
+#define INCLUDED_SDK_ACS_ACS_H
 
-#include "common/input.h"
-#include "common/output.h"
-#include "sdk/acs/acs.h"
+#include "sdk/config.h"
+#include "sdk/user.h"
 
 #include <string>
+#include <tuple>
+#include <vector>
 
-namespace wwiv::bbs {
+namespace wwiv::sdk::acs {
 
-bool check_acs(const std::string& expression, sdk::acs::acs_debug_t debug = sdk::acs::acs_debug_t::none);
-bool validate_acs(const std::string& expression, sdk::acs::acs_debug_t debug = sdk::acs::acs_debug_t::none);
-std::string input_acs(common::Input& in, common::Output& out,
-                      const std::string& orig_text, int max_length);
+enum class acs_debug_t { local, remote, none };
 
+// Result: (true|false), debug lines
+std::tuple<bool, std::vector<std::string>> check_acs(Config& config, User* user, int eff_sl,
+                                                     const std::string& expression,
+                                                     acs_debug_t debug = acs_debug_t::none);
 
-}
+// Result: (true|false), exception message (if any), debug lines
+std::tuple<bool, std::string, std::vector<std::string>> validate_acs(Config& config, User* user, int eff_sl,
+                                                        const std::string& expression);
+
+} // namespace wwiv::sdk::acs
 
 #endif

@@ -16,16 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/acs.h"
-
-#include "bbs/application.h"
-#include "bbs/bbs.h"
-#include "common/input.h"
-#include "core/stl.h"
 #include "sdk/acs/acs.h"
+
+#include "core/stl.h"
+#include "sdk/acs/eval.h"
+#include "sdk/acs/eval_error.h"
 #include "sdk/acs/uservalueprovider.h"
+
 #include <memory>
 #include <string>
+#include <tuple>
+#include <vector>
 
 using std::string;
 using std::unique_ptr;
@@ -33,56 +34,42 @@ using namespace wwiv::stl;
 using namespace wwiv::sdk::acs;
 using namespace wwiv::strings;
 
-namespace wwiv::bbs {
+namespace wwiv::sdk::acs {
 
-bool check_acs(const std::string& expression, acs_debug_t debug) {
+static std::unique_ptr<Eval> make_eval(Config& config, User* user, int eff_sl,
+                                       const std::string& expression) {
+  auto eval = std::make_unique<Eval>(expression);
+
+  const auto& eslrec = config.sl(eff_sl);
+  eval->add("user", std::make_unique<UserValueProvider>(user, eff_sl, eslrec));
+  return eval;
+}
+
+std::tuple<bool, std::vector<std::string>> check_acs(Config& config, User* user, int eff_sl,
+                                                     const std::string& expression,
+                                                     acs_debug_t debug) {
   if (StringTrim(expression).empty()) {
     // Empty expression is always allowed.
-    return true;
-  }
-  auto [result, debug_info] = sdk::acs::check_acs(*a()->config(), a()->user(),
-                                                  a()->sess().effective_sl(), expression, debug);
-  for (const auto& l : debug_info) {
-    if (debug == acs_debug_t::local) {
-      LOG(INFO) << l;
-    } else if (debug == acs_debug_t::remote) {
-      bout << l << endl;
-    }
+    std::vector<std::string> debug_lines;
+    return std::make_tuple(true, debug_lines);
   }
 
-  return result;
+  auto eval = make_eval(config, user, eff_sl, expression);
+  const auto result = eval->eval();
+  return std::make_tuple(result, eval->debug_info());
 }
 
-bool validate_acs(const std::string& expression, acs_debug_t debug) {
-  auto [result, ex_what, debug_info] =
-      sdk::acs::validate_acs(*a()->config(), a()->user(), a()->sess().effective_sl(), expression);
-  if (result) {
-    return true;
+std::tuple<bool, std::string, std::vector<std::string>>
+validate_acs(Config& config, User* user, int eff_sl, const std::string& expression) {
+  auto eval = make_eval(config, user, eff_sl, expression);
+
+  try {
+    eval->eval_throws();
+    std::vector<std::string> debug_lines;
+    return std::make_tuple(true, "", debug_lines);
+  } catch (const eval_error& e) {
+    return std::make_tuple(false, e.what(), eval->debug_info());
   }
-  if (debug == acs_debug_t::local) {
-    LOG(INFO) << ex_what;
-  } else if (debug == acs_debug_t::remote) {
-    bout << ex_what << wwiv::endl;
-  }
-  for (const auto& l : debug_info) {
-    if (debug == acs_debug_t::local) {
-      LOG(INFO) << l;
-    } else if (debug == acs_debug_t::remote) {
-      bout << l << endl;
-    }
-  }
-  return false;
 }
 
-std::string input_acs(wwiv::common::Input& in, wwiv::common::Output& out,
-                      const std::string& orig_text, int max_length) {
-  auto s = in.input_text(orig_text, max_length);
-
-  if (!validate_acs(s, acs_debug_t::remote)) {
-    out.pausescr();
-    return orig_text;
-  }
-  return s;
-}
-
-} // namespace wwiv::bbs
+} // namespace wwiv::sdk::acs
