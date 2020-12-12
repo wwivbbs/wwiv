@@ -1,6 +1,6 @@
 ﻿{
   "configurations": [
-    {
+    { 
       "name": "x86-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",

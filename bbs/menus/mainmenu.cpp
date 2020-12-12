@@ -151,7 +151,11 @@ Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
 
 }
 
-void Menu::DisplayMenu() const {
+void Menu::DisplayMenu() {
+  if (menu_displayed_) {
+    VLOG(1) << "DisplayMenu: menu_displayed_ = true";
+    return;
+  }
   if (menu().cls) {
     bout.cls();
   }
@@ -159,6 +163,7 @@ void Menu::DisplayMenu() const {
   if (!bout.printfile_path(path, true, false)) {
     GenerateMenu(menu_type_t::short_menu);
   }
+  menu_displayed_ = true;
 }
 
 std::string Menu::GetCommandFromUser() const {
@@ -292,6 +297,8 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
     // Do actions on enter.
 
     auto cmd = GetCommandFromUser();
+    // Reset menu displayed
+    menu_displayed_ = false;
     if (auto omi = GetMenuItemForCommand(cmd)) {
       const auto& mi = omi.value();
       if (!check_acs(mi.acs)) {
@@ -336,6 +343,12 @@ static std::string display_key(const std::string& item_key) {
   if (item_key.size() == 2 && item_key.front() == '/') {
     return item_key;
   }
+  if (item_key.size() == 2) {
+    return fmt::format("//{}", item_key);
+  }
+  if (wwiv::strings::starts_with(item_key, "//")) {
+    return item_key;
+  }
   return fmt::format("//{}", item_key);
 }
 
@@ -357,7 +370,11 @@ static std::string generate_menu_item_line(sdk::menus::generated_menu_56_t g,
   return fmt::format("{}{}", line, std::string(max_width - len, ' '));
 }
 
-void Menu::GenerateMenu(menu_type_t typ) const {
+void Menu::GenerateMenu(menu_type_t typ) {
+  if (menu_displayed_) {
+    VLOG(1) << "GenerateMenu: menu_displayed_: true";
+    return;
+  }
   bout.Color(0);
   bout.nl();
 
@@ -385,8 +402,11 @@ void Menu::GenerateMenu(menu_type_t typ) const {
     if (!check_acs(mi.acs)) {
       continue;
     }
+    if (!g.show_empty_text && strings::StringTrim(mi.item_text).empty()) {
+      continue;
+    }
     const auto key = display_key(mi.item_key);
-    const auto text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
+    const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
     bout << generate_menu_item_line(g, key, text, col_width);
     if ((lines_displayed % num_cols) == 0) {
       bout.nl();
@@ -394,6 +414,8 @@ void Menu::GenerateMenu(menu_type_t typ) const {
     ++lines_displayed;
   }
   bout.nl(2);
+  menu_displayed_ = true;
+
 }
 
 }

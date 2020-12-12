@@ -240,7 +240,7 @@ Runs a WWIVbasic Script
       MenuItem(R"(Prints the 'novice menus' for the current menu set, or if one doesn't exist,
   it will generate one using command "menu:generate_short")",
                MENU_CAT_MENU, [](MenuContext& context) {
-                 if (context.cur_menu && a()->user()->IsExpert()) {
+                 if (context.cur_menu) {
                    context.cur_menu->DisplayMenu();
                  }
                }));
@@ -248,7 +248,7 @@ Runs a WWIVbasic Script
             MenuItem(R"( Generates the short form 'novice menus' for the current menu set.
 This command does not attempt to display a .msg/.ans file.)",
                      MENU_CAT_MENU, [](MenuContext& context) {
-                       if (context.cur_menu && a()->user()->IsExpert()) {
+                       if (context.cur_menu) {
                          context.cur_menu->GenerateMenu(Menu::menu_type_t::short_menu);
                        }
                      }));
@@ -260,7 +260,7 @@ This command does not attempt to display a .msg/.ans file.)",
 This command does not attempt to display a .msg/.ans file.
 )",
           MENU_CAT_MENU, [](MenuContext& context) {
-            if (context.cur_menu && a()->user()->IsExpert()) {
+            if (context.cur_menu) {
               context.cur_menu->GenerateMenu(Menu::menu_type_t::long_menu);
             }
           }));
@@ -268,7 +268,7 @@ This command does not attempt to display a .msg/.ans file.
     m.emplace("DisplayHelp", MenuItem(R"(An alias for DisplayMenu. 
   This alias is deprecated, please use menu:display.)",
                                     MENU_CAT_MENU, [](MenuContext& context) {
-                                      if (context.cur_menu && a()->user()->IsExpert()) {
+                                      if (context.cur_menu) {
                                         context.cur_menu->DisplayMenu();
                                       }
                                     }));
@@ -279,7 +279,7 @@ This command does not attempt to display a .msg/.ans file.
   it will generate one using command "menu:generate_short"
 )",
                  MENU_CAT_MENU, [](MenuContext& context) {
-                   if (context.cur_menu && a()->user()->IsExpert()) {
+                   if (context.cur_menu) {
                      context.cur_menu->DisplayMenu();
                    }
                  }));

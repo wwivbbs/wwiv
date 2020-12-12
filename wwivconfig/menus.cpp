@@ -351,6 +351,11 @@ public:
               "Pipe code to use to color the text description in generated menus", 1, y);
     ++y;
 
+    items.add(new Label("Show Empty:"),
+              new BooleanEditItem(&t_.show_empty_text),
+              "Display menu items that have no text.", 1, y);
+    ++y;
+
     window->GotoXY(x_, y_);
 
     //items.add_aligned_width_column(1);

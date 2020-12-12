@@ -88,6 +88,7 @@ void serialize(Archive & ar, generated_menu_56_t& s) {
   SERIALIZE(s, color_item_key);
   SERIALIZE(s, color_item_text);
   SERIALIZE(s, color_item_braces);
+  SERIALIZE(s, show_empty_text);
 }
 
 template <class Archive>
