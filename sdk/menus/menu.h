@@ -135,7 +135,7 @@ enum class menu_numflag_t { none, subs, dirs };
 enum class menu_logtype_t { key, command, description, none };
 
 // When is the menu displayed.
-enum class menu_help_display_t { always, never, on_entrance };
+enum class menu_help_display_t { always, never, on_entrance, user_choice };
 
 struct menu_action_56_t {
   // MenuCommand to execute
@@ -165,19 +165,27 @@ struct menu_item_56_t {
   std::vector<menu_action_56_t> actions;
 };
 
+struct generated_menu_56_t {
+  int num_cols{3};
+  // Colors
+  std::string color_title{"|#4"};
+  std::string color_item_text{"|#0"};
+  std::string color_item_key{"|#2"};
+  std::string color_item_braces{"|#1"};
+};
+
 struct menu_56_t {
-   /* What does a number do?  Set sub#, Set dir#, nothing? */
+  /** Clear screen before displaying menu? */
+  bool cls{false};
+  /* What does a number do?  Set sub#, Set dir#, nothing? */
   menu_numflag_t num_action;
-   /* Types of logging, Key, None, command, desc */
+  /* Types of logging, Key, None, command, desc */
   menu_logtype_t logging_action;
   /* force, display always, display on entrance only */
   menu_help_display_t help_type;
 
-  // Colors
-  int color_title;
-  int color_item_text;
-  int color_item_key;
-  int color_item_braces;
+  // Details for generated menus.
+  generated_menu_56_t generated_menu;
 
   // Title of this menu
   std::string title;

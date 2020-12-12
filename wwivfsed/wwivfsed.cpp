@@ -32,13 +32,13 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
-#include "fmt/format.h"
 #include "fsed/common.h"
 #include "fsed/fsed.h"
 #include "fsed/model.h"
 #include "local_io/local_io.h"
 #include "sdk/filenames.h"
 #include "wwivfsed/fsedconfig.h"
+
 #include <cstdlib>
 #include <exception>
 #include <string>
@@ -213,8 +213,10 @@ bool FsedApplication::DoFsed() {
   if (!file_lines.empty()) {
     ed.set_lines(std::move(file_lines));
   }
-
-  auto save = wwiv::fsed::fsed(context(), ed, data, false);
+  if (config_->file()) {
+    data.title = path.string();
+  }
+  auto save = fsed::fsed(context(), ed, data, config_->file());
   if (!save) {
     return false;
   }
@@ -262,6 +264,7 @@ int main(int argc, char** argv) {
   cmdline.add_argument({"socket_handle", 'H', "Socket Handle from BBS."});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.add_argument(BooleanCommandLineArgument{"local", 'L', "Run the door locally.", false});
+  cmdline.add_argument(BooleanCommandLineArgument{"file", 'F', "Run locally to edit a file.", false});
   cmdline.add_argument(BooleanCommandLineArgument{"pause", 'Z', "Pause to attach the debugger.", false});
   cmdline.set_no_args_allowed(true);
 

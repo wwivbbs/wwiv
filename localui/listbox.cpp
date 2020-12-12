@@ -146,7 +146,7 @@ ListBoxResult ListBox::RunDialog() {
     } break;
     case KEY_NEXT: // What is this key?
     case KEY_DOWN: {
-      int window_bottom = window_top_ + height_ - window_top_min_ - 1;
+      const auto window_bottom = window_top_ + height_ - window_top_min_ - 1;
       if (selected_ < window_bottom) {
         selected_++;
       } else if (window_top_ < size_int(items_) - height_ + window_top_min_) {
@@ -166,7 +166,7 @@ ListBoxResult ListBox::RunDialog() {
         // Can not select an item when the list is empty.
         break;
       }
-      int hotkey = items_.at(selected_).hotkey();
+      const auto hotkey = items_.at(selected_).hotkey();
       if (selection_returns_hotkey_ && hotkey > 0) {
         return ListBoxResult{ListBoxResultType::HOTKEY, selected_, hotkey};
       }

@@ -129,10 +129,11 @@ std::optional<Menu56> Create56MenuFrom43(const Menu430& m4, int max_backups) {
   h.num_action = to_menu_numflag_t(oh.nums);
   h.help_type = to_menu_help_display(oh.nForceHelp);
 
-  h.color_title = oh.nTitleColor;
-  h.color_item_key = oh.nItemTextHLColor;
-  h.color_item_braces = oh.nItemBorderColor;
-  h.color_item_text = oh.nItemTextColor;
+  auto& g = h.generated_menu;
+  g.color_title = fmt::format("|{:02}", oh.nTitleColor);
+  g.color_item_key = fmt::format("|{:02}", oh.nItemTextHLColor);
+  g.color_item_braces = fmt::format("|{:02}", oh.nItemBorderColor);
+  g.color_item_text = fmt::format("|{:02}", oh.nItemTextColor);
 
   h.title = oh.szMenuTitle;
   {
@@ -213,7 +214,7 @@ menu_logtype_t to_menu_logtype(int n) {
 
 menu_help_display_t to_menu_help_display(int n) {
   if (n == MENU_HELP_DONTFORCE) {
-    return menu_help_display_t::never;
+    return menu_help_display_t::user_choice;
   }
   if (n == MENU_HELP_ONENTRANCE) {
     return menu_help_display_t::on_entrance;

@@ -15,10 +15,17 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_AUTOMSG_H__
-#define __INCLUDED_BBS_AUTOMSG_H__
+#ifndef INCLUDED_BBS_AUTOMSG_H
+#define INCLUDED_BBS_AUTOMSG_H
 
 void read_automessage();
-void do_automessage();
+void do_legacy_automessage();
 
-#endif  // __INCLUDED_BBS_AUTOMSG_H__
+void write_automessage();
+void email_automessage_author();
+void delete_automessage();
+void lock_automessage();
+void unlock_automessage();
+
+
+#endif

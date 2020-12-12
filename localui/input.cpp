@@ -105,6 +105,10 @@ void CustomEditItem::Display(CursesWindow* window) const {
   }
 }
 
+EditExternalFileItem::EditExternalFileItem(std::filesystem::path path)
+  : BaseEditItem(25), path_(std::move(path)) {
+}
+
 static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const auto maxx = parent->GetMaxX();
   const auto maxy = parent->GetMaxY();
@@ -416,6 +420,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       done = true;
       rc = EditlineResult::NEXT;
       break;
+#ifdef __PDCURSES__
+    // This is a PD-CURSES only key, ncurses doesn't support alt keys
+    // directly.
+    case ALT_I:
+#endif
     case KEY_IC: // curses
       if (status != EditLineMode::SET) {
         if (bInsert) {
@@ -564,6 +573,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
+  window->SetColor(SchemeId::EDITLINE);
   const auto cx = window->GetcurX();
   const auto cy = window->GetcurY();
   window->PutsXY(cx, cy, strings.at(value));

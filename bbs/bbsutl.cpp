@@ -262,7 +262,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 // Returns 1 if current user has sysop access (permanent or temporary), else
 // returns 0.
 bool so() {
-  return (a()->sess().effective_sl() == 255);
+  return a()->sess().effective_sl() == 255;
 }
 
 /**

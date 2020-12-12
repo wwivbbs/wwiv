@@ -183,11 +183,6 @@ void TimeBank() {
   }
 }
 
-void AutoMessage() {
-  write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
-  do_automessage();
-}
-
 void Defaults(bool& need_menu_reload) {
   if (GuestCheck()) {
     write_inst(INST_LOC_DEFAULTS, 0, INST_FLAGS_NONE);
@@ -936,10 +931,6 @@ void UploadToSysop() {
   bout.nl(2);
   bout << "Sending file to sysop :-\r\n\n";
   upload(0);
-}
-
-void ReadAutoMessage() {
-  read_automessage();
 }
 
 void GuestApply() {
