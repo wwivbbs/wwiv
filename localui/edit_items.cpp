@@ -58,7 +58,6 @@ void EditItems::Run(const std::string& title) {
     } else if (i1 == EditlineResult::DONE) {
       curses_out->SetIndicatorMode(IndicatorMode::none);
       edit_mode_ = false;
-      Display();
       return;
     }
   }

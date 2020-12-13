@@ -146,13 +146,17 @@ bool Eval::eval_throws() {
 
   Ast ast{};
   if (!ast.parse(l)) {
-    return false;
+      return false;
   }
   auto* root = ast.root();
   if (!root) {
     throw eval_error(fmt::format("Failed to parse expression: '{}'.", expression_));
   }
   VLOG(1) << "Root: " << root->ToString();
+  if (root->ast_type() == AstType::ERROR) {
+    const auto* error_node = dynamic_cast<ErrorNode*>(root);
+    throw eval_error(error_node->message);
+  }
 
   root->accept(this);
 

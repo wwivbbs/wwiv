@@ -24,10 +24,13 @@
 #include "core/strings.h"
 #include "fmt/format.h"
 #include "localui/wwiv_curses.h"
+
 #include <algorithm>
+#include <chrono>
 #include <string>
 
 using std::string;
+using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -124,19 +127,28 @@ int CursesWindow::Box(uint32_t vert_ch, uint32_t horiz_ch) {
   return box(std::any_cast<WINDOW*>(window_), vert_ch, horiz_ch);
 }
 
-int CursesWindow::GetChar() const {
+int CursesWindow::GetChar(duration<double> timeout) const {
   auto* window = std::any_cast<WINDOW*>(window_);
+  const auto timeout_ms =  duration_cast<milliseconds>(timeout);
+  const auto start = system_clock::now();
+  const auto end = start + timeout_ms;
+
   for (;;) {
+    wtimeout(window, static_cast<int>(timeout_ms.count()));
     const auto ch = wgetch(window);
     if (ch == KEY_RESIZE) {
       // Since we don't support online window resizing just ignore this
       // but don't return it as a key for the application to (badly) handle.
       continue;
     }
+    if (ch == ERR && system_clock::now() >= end) {
+      return ERR;
+    }
     if (ch == ERR) {
       continue;
     }
     if (ch == 27) {
+      wtimeout(window, 0);
       nodelay(window, true);
       wwiv::core::ScopeExit at_exit([=]{ nodelay(window, false); });
       // Check for alt.
@@ -180,6 +192,10 @@ int CursesWindow::GetChar() const {
       return ch;
     }
   }
+}
+
+int CursesWindow::GetChar() const {
+  return GetChar(hours(24));
 }
 
 void CursesWindow::GotoXY(int x, int y) {

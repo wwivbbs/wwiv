@@ -433,7 +433,7 @@ bool Ast::parse(const Lexer& l) {
   if (!root_) {
     return false;
   }
-  return root_->node->ast_type() != AstType::ERROR;
+  return true;
 }
 
 AstNode* Ast::root() const { 

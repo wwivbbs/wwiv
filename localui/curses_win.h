@@ -22,6 +22,7 @@
 #include "localui/colors.h"
 #include "localui/ui_win.h"
 #include <any>
+#include <chrono>
 #include <string>
 
 // Curses implementation of screen display routines for wwivconfig.
@@ -52,6 +53,7 @@ public:
   int AttrGet(uint32_t* a, short* c) const override;
   int Box(uint32_t vert_ch, uint32_t horiz_ch) override;
 
+  [[nodiscard]] int GetChar(std::chrono::duration<double> timeout) const;
   [[nodiscard]] int GetChar() const override;
   void GotoXY(int x, int y) override;
   void Putch(uint32_t ch) override;

@@ -68,10 +68,24 @@ int dialog_input_number(CursesWindow* window, const std::string& prompt, int min
                         int max_value);
 int onek(UIWindow* window, const std::string& allowed, bool allow_keycodes = false);
 
+/////////////////////////////////////////////////////////////////////////////
+// Line editing support
+
+typedef std::function<void(std::string)> edline_validation_fn;
+
+EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
+                        const char* ss, edline_validation_fn);
+EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
+                        const char* ss, edline_validation_fn);
+
 EditlineResult editline(CursesWindow* window, std::string* s, int len, EditLineMode status,
                         const char* ss);
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
                         const char* ss);
+
+/////////////////////////////////////////////////////////////////////////////
+// Line editing support
+
 std::vector<std::string>::size_type toggleitem(CursesWindow* window,
                                                std::vector<std::string>::size_type value,
                                                const std::vector<std::string>& strings,
@@ -324,6 +338,27 @@ protected:
   }
 
 private:
+  EditLineMode edit_line_mode_;
+};
+
+class ACSEditItem : public EditItem<std::string&> {
+public:
+  ACSEditItem(const wwiv::sdk::Config& config, int maxsize, std::string& data)
+      : EditItem<std::string&>(maxsize, data), config_(config), edit_line_mode_(EditLineMode::ALL) {}
+  ~ACSEditItem() override = default;
+  ACSEditItem() = delete;
+  ACSEditItem(ACSEditItem const&) = delete;
+  ACSEditItem(ACSEditItem&&) = delete;
+  ACSEditItem& operator=(ACSEditItem const&) = delete;
+  ACSEditItem& operator=(ACSEditItem&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override;
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override;
+
+private:
+  const wwiv::sdk::Config& config_;
   EditLineMode edit_line_mode_;
 };
 

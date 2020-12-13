@@ -123,7 +123,7 @@ static void edit_menu_action(const Config& config, menus::menu_action_56_t& a) {
   items.add(new Label("Data:"), new StringEditItem<std::string&>(70, a.data, EditLineMode::ALL),
             "Optional data to pass to the command", 1, y);
   y++;
-  items.add(new Label("ACS:"), new StringEditItem<std::string&>(70, a.acs, EditLineMode::ALL),
+  items.add(new Label("ACS:"), new ACSEditItem(config, 70, a.acs),
             "WWIV ACS required to execute this command", 1, y);
 
   items.relayout_items_and_labels();
@@ -224,7 +224,7 @@ static void edit_menu_item(const Config& config, menus::menu_item_56_t& m) {
             new StringEditItem<std::string&>(60, m.instance_message, EditLineMode::ALL),
             "Instance message to send to all users", 1, y);
   y++;
-  items.add(new Label("ACS:"), new StringEditItem<std::string&>(60, m.acs, EditLineMode::ALL),
+  items.add(new Label("ACS:"), new ACSEditItem(config, 60, m.acs),
             "WWIV ACS required to access this menu item", 1, y);
   y++;
   items.add(new Label("Password:"),
@@ -463,7 +463,7 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
             "This is the title to display at the top of the menu", 1, y);
   y++;
-  items.add(new Label("ACS:"), new StringEditItem<std::string&>(55, h.acs, EditLineMode::ALL),
+  items.add(new Label("ACS:"), new ACSEditItem(config, 55, h.acs),
             "WWIV ACS required to access this menu", 1, y);
   y++;
   items.add(new Label("Number Keys:"),

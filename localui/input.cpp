@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "input.h"
+#include "localui/input.h"
 
 #include "core/file.h"
 #include "core/stl.h"
@@ -27,6 +27,7 @@
 #include "localui/ui_win.h"
 #include "localui/wwiv_curses.h"
 #include "local_io/keycodes.h"
+#include "sdk/acs/acs.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -75,6 +76,40 @@ void MultilineLabel::Display(CursesWindow* window) const {
 
 int MultilineLabel::height() const {
   return size_int(lines_);
+}
+
+EditlineResult ACSEditItem::Run(CursesWindow* window) {
+  window->GotoXY(this->x_, this->y_);
+  DefaultDisplay(window);
+  window->GotoXY(this->x_, this->y_);
+  std::string last_expr;
+  const edline_validation_fn fn = [&](const std::string& acs)->void
+  {
+    if (acs == last_expr) {
+      // Don't keep re-evaluating the same thing.
+      return;
+    }
+    last_expr = acs;
+
+    wwiv::sdk::User user{};
+    user.SetSl(255);
+    user.SetDsl(255);
+    user.SetAr(0xffff);
+    user.SetDar(0xffff);
+    auto [result, ex, info] = wwiv::sdk::acs::validate_acs(config_, &user, 255, acs);
+    window->SetColor(SchemeId::WINDOW_DATA);
+    if (result) {
+      curses_out->footer()->ShowContextHelp("The expression is valid.");
+    } else {
+      curses_out->footer()->ShowContextHelp(StrCat("ACS Error: ", ex));
+    }
+  };
+  return editline(window, &this->data_, this->width_, edit_line_mode_, "", fn);
+}
+
+void ACSEditItem::DefaultDisplay(CursesWindow* window) const {
+  window->GotoXY(this->x_, this->y_);
+  this->DefaultDisplayString(window, data_);
 }
 
 EditlineResult CustomEditItem::Run(CursesWindow* window) {
@@ -348,25 +383,36 @@ static int editlinestrlen(char* text) {
   return i;
 }
 
+
 EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode status,
                          const char* ss) {
+  return editline(window, s, len, status, ss, {});
+}
+
+EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode status,
+                         const char* ss, edline_validation_fn fn) {
   char buffer[255];
   to_char_array(buffer, *s);
-  const auto rc = editline(window, buffer, len, status, ss);
+  const auto rc = editline(window, buffer, len, status, ss, fn);
   s->assign(buffer);
   return rc;
 }
 
-/* Edits a string, doing I/O to the screen only. */
 EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
                          const char* ss) {
+  return editline(window, s, len, status, ss, {});
+}
+
+/* Edits a string, doing I/O to the screen only. */
+EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
+                         const char* ss, edline_validation_fn fn) {
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   const auto cx = window->GetcurX();
   const auto cy = window->GetcurY();
   auto rc = EditlineResult::NEXT;
-  for (int i = ssize(s); i < len; i++) {
+  for (auto i = ssize(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
@@ -374,11 +420,19 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   window->Puts(s);
   curses_out->SetIndicatorMode(IndicatorMode::overwrite);
   window->GotoXY(cx, cy);
-  bool done = false;
-  int pos = 0;
-  bool bInsert = false;
+  auto done = false;
+  auto pos = 0;
+  auto bInsert = false;
+  const auto timeout = std::chrono::seconds((fn) ? 1 : 60*60*24);
   do {
-    const auto raw_ch = window->GetChar();
+    const auto raw_ch = window->GetChar(timeout);
+    if (fn && raw_ch == ERR) {
+      // We have a timeout, invoke the validation function if we have one.
+      fn(s);
+      // reset the color since the validator may have changed it.
+      window->SetColor(SchemeId::EDITLINE);
+      continue;
+    }
     switch (raw_ch) {
     case KEY_F(1): // curses
       done = true;
