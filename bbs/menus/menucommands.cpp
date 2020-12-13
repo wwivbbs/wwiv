@@ -249,7 +249,7 @@ Runs a WWIVbasic Script
 This command does not attempt to display a .msg/.ans file.)",
                      MENU_CAT_MENU, [](MenuContext& context) {
                        if (context.cur_menu) {
-                         context.cur_menu->GenerateMenu(Menu::menu_type_t::short_menu);
+                         context.cur_menu->GenerateMenu(sdk::menus::menu_type_t::short_menu);
                        }
                      }));
 
@@ -261,7 +261,7 @@ This command does not attempt to display a .msg/.ans file.
 )",
           MENU_CAT_MENU, [](MenuContext& context) {
             if (context.cur_menu) {
-              context.cur_menu->GenerateMenu(Menu::menu_type_t::long_menu);
+              context.cur_menu->GenerateMenu(sdk::menus::menu_type_t::long_menu);
             }
           }));
 

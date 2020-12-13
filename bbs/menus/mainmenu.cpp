@@ -21,10 +21,10 @@
 #include "bbs/acs.h"
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
-#include "bbs/mmkey.h"
-#include "bbs/sysoplog.h"
 #include "bbs/menus/config_menus.h"
 #include "bbs/menus/menucommands.h"
+#include "bbs/mmkey.h"
+#include "bbs/sysoplog.h"
 #include "common/printfile.h"
 #include "core/strings.h"
 #include "sdk/config.h"
@@ -48,7 +48,6 @@ static bool CheckMenuPassword(const std::string& pw) {
   return actual_password == expected_password;
 }
 
-
 static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
   switch (logging) {
   case menu_logtype_t::key:
@@ -67,8 +66,7 @@ static void log_command(menu_logtype_t logging, const menu_item_56_t& mi) {
         sysoplog() << a.cmd;
       }
     }
-  }
-  break;
+  } break;
   case menu_logtype_t::none:
     break;
   }
@@ -99,7 +97,7 @@ void MainMenu::Run() {
     }
 
     auto& cur_menu = stack_.back();
-    auto[res, s] = cur_menu.Run();
+    auto [res, s] = cur_menu.Run();
     switch (res) {
     case menu_run_result_t::return_from_menu:
     case menu_run_result_t::error:
@@ -134,7 +132,7 @@ void mainmenu() {
 }
 
 Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
-                           const std::string& menu_name)
+           const std::string& menu_name)
     : menu_set_(menu_set), menu_name_(menu_name), menu_(menu_path, menu_set, menu_name) {
 
   menu_set_path_ = FilePath(menu_path, menu_set_);
@@ -154,7 +152,6 @@ Menu::Menu(const std::filesystem::path& menu_path, const std::string& menu_set,
       prompt_ = tmp;
     }
   }
-
 }
 
 void Menu::DisplayMenu() {
@@ -165,7 +162,8 @@ void Menu::DisplayMenu() {
   if (menu().cls) {
     bout.cls();
   }
-  const auto path = common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
+  const auto path =
+      common::CreateFullPathToPrint({menu_set_path_.string()}, *a()->user(), menu_name_);
   if (!bout.printfile_path(path, true, false)) {
     GenerateMenu(menu_type_t::short_menu);
   }
@@ -201,8 +199,7 @@ static bool IsNumber(const std::string& command) {
   return true;
 }
 
-std::optional<menu_item_56_t>
-Menu::GetMenuItemForCommand(const std::string& cmd) const {
+std::optional<menu_item_56_t> Menu::GetMenuItemForCommand(const std::string& cmd) const {
   const auto nums = menu().num_action;
   if (IsNumber(cmd) && nums != menu_numflag_t::none) {
     if (nums == menu_numflag_t::subs) {
@@ -227,19 +224,17 @@ Menu::GetMenuItemForCommand(const std::string& cmd) const {
   return std::nullopt;
 }
 
-
 std::tuple<menu_command_action_t, std::string> Menu::ExecuteAction(const menu_action_56_t& a) {
   if (auto o = InterpretCommand(this, a.cmd, a.data)) {
     auto& ctx = o.value();
     if (ctx.menu_action == menu_command_action_t::return_from_menu) {
-      return std::make_tuple(menu_command_action_t::return_from_menu,"");
+      return std::make_tuple(menu_command_action_t::return_from_menu, "");
     }
     if (ctx.menu_action == menu_command_action_t::push_menu) {
       return std::make_tuple(menu_command_action_t::push_menu, a.data);
     }
   }
   return std::make_tuple(menu_command_action_t::none, "");
-
 }
 
 std::tuple<menu_command_action_t, std::string>
@@ -332,108 +327,28 @@ std::tuple<menu_run_result_t, std::string> Menu::Run() {
       }
     }
   }
-
 }
 
-/**
- * Returns a string to display for a key.
- * Examples:
- *   'A' for a key 'A'
- *   '/A' for a key '/A'
- *   '//KEY' for a key 'KEY'
- */
-static std::string display_key(const std::string& item_key) {
-  if (item_key.size() == 1) {
-    return item_key;
-  }
-  if (item_key.size() == 2 && item_key.front() == '/') {
-    return item_key;
-  }
-  if (item_key.size() == 2) {
-    return fmt::format("//{}", item_key);
-  }
-  if (starts_with(item_key, "//")) {
-    return item_key;
-  }
-  return fmt::format("//{}", item_key);
-}
-
-static std::string generate_menu_item_line(generated_menu_56_t g,
-                                           const std::string& key, const std::string& text, 
-                                           int max_width) {
-  std::ostringstream ss;
-  ss << g.color_item_braces << "(" << g.color_item_key << display_key(key)
-  << g.color_item_braces << ")" << g.color_item_text;
-  if (key.size() == 1 && !text.empty() 
-    && to_upper_case_char(text.front()) == to_upper_case_char(key.front())) {
-    ss << text.substr(1);
-  } else {
-    ss << " " << text;
-  }
-  ss << " ";
-  const auto line = trim_to_size_ignore_colors(ss.str(), max_width);
-  const auto len = size_without_colors(line);
-  return fmt::format("{}{}", line, std::string(max_width - len, ' '));
-}
 
 void Menu::GenerateMenu(menu_type_t typ) {
   if (menu_displayed_) {
     VLOG(1) << "GenerateMenu: menu_displayed_: true";
     return;
   }
-  bout.Color(0);
-  bout.nl();
-
-  auto lines_displayed = 0;
-  const auto& g = menu().generated_menu;
-  const auto title = menu().title;
-  const auto num_cols = typ == menu_type_t::short_menu ? g.num_cols : 1;
-  const auto screen_width = a()->user()->GetScreenChars() - num_cols + 1;
-  const auto col_width = typ == menu_type_t::short_menu ? screen_width / num_cols : screen_width - 1;
-  if (!title.empty()) {
-    const auto title_len = size_without_colors(title);
-    const auto pad_len = (screen_width - title_len) / 2;
-    bout << std::string(pad_len, ' ') << g.color_title << title << "|#0" << wwiv::endl;
-    bout.nl();
-  }
-  const auto nums = menu().num_action;
-  if (nums != menu_numflag_t::none) {
-    bout << generate_menu_item_line(g, "#", "Change Sub/Dir #", col_width);
-    ++lines_displayed;
-  }
-  bool just_nled = false;
-  for (const auto& mi : menu().items) {
-    if (mi.item_key.empty()) {
-      continue;
-    }
-    if (!check_acs(mi.acs)) {
-      continue;
-    }
-    if (!g.show_empty_text && StringTrim(mi.item_text).empty()) {
-      continue;
-    }
-    if (!mi.visible) {
-      continue;
-    }
+  const auto lines = GenerateMenuAsLines(typ);
+  for (const auto& l : lines) {
     if (bin.checka()) {
       break;
     }
-    just_nled = false;
-    const auto key = display_key(mi.item_key);
-    const auto& text = typ == menu_type_t::short_menu ? mi.item_text : mi.help_text;
-    bout << generate_menu_item_line(g, key, text, col_width);
-    const auto mod = ++lines_displayed % num_cols;
-    if (mod == 0) {
-      bout.nl();
-      just_nled = true;
-    }
+    bout << l << endl;    
   }
-  if (!just_nled) {
-    bout.nl();
-  }
-  bout.nl(g.num_newlines_at_end);
   menu_displayed_ = true;
-
 }
 
+
+std::vector<std::string> Menu::GenerateMenuAsLines(menu_type_t typ) {
+  return GenerateMenuLines(*a()->config(), a()->sess().effective_sl(), menu(), *a()->user(), typ);
 }
+
+
+} // namespace wwiv::bbs::menus

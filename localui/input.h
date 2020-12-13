@@ -891,7 +891,7 @@ public:
     short old_pair;
     window->AttrGet(&old_attr, &old_pair);
     window->SetColor(SchemeId::EDITLINE);
-    Display(window);
+    window->PutsXY(x_, y_, menu_label());
     window->GotoXY(x_, y_);
     const auto ch = window->GetChar();
     window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
@@ -919,7 +919,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] virtual std::string menu_label() const { return "[Press Enter to Edit]"; }
+  [[nodiscard]] virtual std::string menu_label() const { return "[Edit]"; }
 
   const std::filesystem::path path_;
 };

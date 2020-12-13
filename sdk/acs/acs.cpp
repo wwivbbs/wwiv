@@ -36,7 +36,7 @@ using namespace wwiv::strings;
 
 namespace wwiv::sdk::acs {
 
-static std::unique_ptr<Eval> make_eval(Config& config, User* user, int eff_sl,
+static std::unique_ptr<Eval> make_eval(const Config& config, const User* user, int eff_sl,
                                        const std::string& expression) {
   auto eval = std::make_unique<Eval>(expression);
 
@@ -45,7 +45,7 @@ static std::unique_ptr<Eval> make_eval(Config& config, User* user, int eff_sl,
   return eval;
 }
 
-std::tuple<bool, std::vector<std::string>> check_acs(Config& config, User* user, int eff_sl,
+std::tuple<bool, std::vector<std::string>> check_acs(const Config& config, const User* user, int eff_sl,
                                                      const std::string& expression,
                                                      acs_debug_t debug) {
   if (StringTrim(expression).empty()) {
@@ -60,7 +60,7 @@ std::tuple<bool, std::vector<std::string>> check_acs(Config& config, User* user,
 }
 
 std::tuple<bool, std::string, std::vector<std::string>>
-validate_acs(Config& config, User* user, int eff_sl, const std::string& expression) {
+validate_acs(const Config& config, const User* user, int eff_sl, const std::string& expression) {
   auto eval = make_eval(config, user, eff_sl, expression);
 
   try {

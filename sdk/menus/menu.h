@@ -25,6 +25,13 @@
 #include <string>
 #include <vector>
 
+namespace wwiv {
+namespace sdk {
+class Config;
+class User;
+}
+}
+
 constexpr uint8_t MENU_FLAG_DELETED = 0x01;
 constexpr uint8_t MENU_FLAG_MAINMENU = 0x02;
 
@@ -254,6 +261,10 @@ struct menu_command_help_t {
 std::vector<menu_command_help_t> LoadCommandHelpJSON(const std::string& datadir);
 bool SaveCommandHelpJSON(const std::string& datadir, const std::vector<menu_command_help_t>& cmds);
 
+enum class menu_type_t { short_menu, long_menu };
+
+std::vector<std::string> GenerateMenuLines(const Config& config, int eff_sl, const menu_56_t& menu,
+                                           const sdk::User& user, menu_type_t typ);
 
 
 } 

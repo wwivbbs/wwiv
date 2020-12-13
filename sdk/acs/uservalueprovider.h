@@ -35,12 +35,12 @@ public:
    * Constructs a new ValueProvider.  'user' must remain valid for 
    * the duration of this instance lifetime.
    */
-  UserValueProvider(User* user, int effective_sl, slrec sl)
+  UserValueProvider(const User* user, int effective_sl, slrec sl)
   : ValueProvider("user"), user_(user), effective_sl_(effective_sl), sl_(sl) {}
   [[nodiscard]] std::optional<Value> value(const std::string& name) override;
 
 private:
-  User* user_;
+  const User* user_;
   int effective_sl_;
   slrec sl_;
 };

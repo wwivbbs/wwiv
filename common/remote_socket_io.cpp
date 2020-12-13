@@ -324,7 +324,6 @@ RemoteSocketIO::~RemoteSocketIO() {
   } catch (const std::exception& e) {
     std::cerr << e.what();
   }
-  std::cerr << "~RemoteSocketIO";
 }
 
 // Static Class Members.

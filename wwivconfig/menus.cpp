@@ -29,6 +29,7 @@
 #include "localui/edit_items.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "sdk/usermanager.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/menus/menu.h"
 #include <filesystem>
@@ -314,7 +315,7 @@ public:
     }
   }
 
-  [[nodiscard]] std::string menu_label() const override { return "[Press Enter to Edit]"; }
+  [[nodiscard]] std::string menu_label() const override { return "[Edit]"; }
 };
 
 
@@ -372,7 +373,76 @@ public:
     items.Run(menu_label());
     window->RedrawWin();
   }
+protected:
+  [[nodiscard]] virtual std::string menu_label() const { return "[Edit]"; }
+};
 
+/**
+ * EditItem that executes a std::function<T, CursesWindow*> to
+ * edit the items. It is intended that this function will invoke
+ * a new EditItem dialog or ListBox for editing.
+ */
+class ShowGeneratedMenuSubDialog : public BaseEditItem {
+public:
+  ShowGeneratedMenuSubDialog(const Config& config, const menus::menu_56_t& menu) : BaseEditItem(10)
+    ,config_(config), menu_(menu) {}
+  ~ShowGeneratedMenuSubDialog() override = default;
+  ShowGeneratedMenuSubDialog() = delete;
+  ShowGeneratedMenuSubDialog(ShowGeneratedMenuSubDialog const&) = delete;
+  ShowGeneratedMenuSubDialog(ShowGeneratedMenuSubDialog&&) = delete;
+  ShowGeneratedMenuSubDialog& operator=(ShowGeneratedMenuSubDialog const&) = delete;
+  ShowGeneratedMenuSubDialog& operator=(ShowGeneratedMenuSubDialog&&) = delete;
+
+  EditlineResult Run(CursesWindow* window) override {
+    ScopeExit at_exit([] { curses_out->footer()->SetDefaultFooter(); });
+    curses_out->footer()->ShowHelpItems(
+        0, {});
+    curses_out->footer()->ShowContextHelp("Viewing Menu: Press any key to continue.");
+    window->GotoXY(x_, y_);
+    uint32_t old_attr;
+    short old_pair;
+    window->AttrGet(&old_attr, &old_pair);
+    window->SetColor(SchemeId::EDITLINE);
+    window->PutsXY(x_, y_, menu_label());
+    window->GotoXY(x_, y_);
+    const auto ch = window->GetChar();
+    window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      curses_out->Cls();
+      UserManager um(config_);
+      User user{};
+      if (!um.readuser(&user, 1)) {
+        user.SetSl(255);
+        user.SetDsl(255);
+      }
+      const auto lines = GenerateMenuLines(config_, 255, menu_, user, menus::menu_type_t::short_menu);
+      auto y = 1;
+      for (const auto& l : lines) {
+        curses_out->window()->PutsWithPipeColors(0, y++, l);
+      }
+      (void) curses_out->window()->GetChar();
+      curses_out->Cls(ACS_CKBOARD);
+      // This clears up everything anyway.
+      curses_out->ReenableLocalIO();
+      window->RedrawWin();
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    } else if (ch == ESC) {
+      return EditlineResult::DONE;
+    }
+    return EditlineResult::NEXT;
+  }
+
+  void Display(CursesWindow* window) const override {
+    window->SetColor(SchemeId::WINDOW_DATA);
+    window->PutsXY(x_, y_, menu_label());
+  }
+
+protected:
+  [[nodiscard]] virtual std::string menu_label() const { return "[View]"; }
+
+  const Config& config_;
+  const menus::menu_56_t& menu_;
 };
 
 static void edit_menu(const Config& config, const std::filesystem::path& menu_dir,
@@ -393,9 +463,8 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
             new StringEditItemWithPipeCodes(55, h.title, EditLineMode::ALL),
             "This is the title to display at the top of the menu", 1, y);
   y++;
-  items.add(new Label("Clear Screen:"),
-            new BooleanEditItem(&h.cls),
-            "Clear the screen before displaying menu.", 1, y);
+  items.add(new Label("ACS:"), new StringEditItem<std::string&>(55, h.acs, EditLineMode::ALL),
+            "WWIV ACS required to access this menu", 1, y);
   y++;
   items.add(new Label("Number Keys:"),
             new ToggleEditItem<menus::menu_numflag_t>(numbers_action, &h.num_action),
@@ -415,21 +484,26 @@ static void edit_menu(const Config& config, const std::filesystem::path& menu_di
   items.add(new Label("Exit Actions:"), new ActionSubDialog(config, h.exit_actions),
             "Menu actions to execute when leaving this menu", 1, y);
   y++;
-  items.add(new Label("ACS:"), new StringEditItem<std::string&>(55, h.acs, EditLineMode::ALL),
-            "WWIV ACS required to access this menu", 1, y);
-  y++;
   items.add(new Label("Password:"),
             new StringEditItem<std::string&>(20, h.password, EditLineMode::UPPER_ONLY),
             "Password to access menu. You may use '*SYSTEM' for system password.", 1, y);
   y++;
-  items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
+  items.add(new Label("Clear Screen:"),
+            new BooleanEditItem(&h.cls),
+            "Clear the screen before displaying menu.", 1, y);
   y++;
-  items.add(new Label("Generated Menu:"), new GeneratedMenuSubDialog(config, h.generated_menu), 
+  items.add(new Label("Menu Settings:"), new GeneratedMenuSubDialog(config, h.generated_menu), 
     "Edits the settings for a generated menu (not using .msg/.ans file)", 1, y);
   y++;
-  const auto prompt_name = StrCat(menu_name, ".pro");
-  auto p = FilePath(menu_path, prompt_name);
-  items.add(new Label("Prompt"), new EditExternalFileItem(p), 1, y);
+  const auto p = FilePath(menu_path, StrCat(menu_name, ".pro"));
+  items.add(new Label("Edit Prompt:"), new EditExternalFileItem(p), 1, y);
+  y++;
+  items.add(new Label("Menu Items:"), new MenuItemsSubDialog(config, h.items), "", 1, y);
+  y++;
+  items.add(new Label("View Menu:"), new ShowGeneratedMenuSubDialog(config, h), 
+    "Display the generated menu for the sysop user.", 1, y);
+  y++;
+
   items.relayout_items_and_labels();
   items.Run(title);
 
