@@ -112,10 +112,14 @@ ListBoxResult ListBox::RunDialog() {
   window_top_ = std::min<int>(temp_top, size_int(items_) - height_ + window_top_min_);
   selected_ = std::min<int>(selected_, size_int(items_) - 1);
 
+  bool need_redraw{true};
   while (true) {
-    DrawAllItems();
-    window_->Move(selected_ - (window_top_ - window_top_min_) + window_top_min_, 1);
-    window_->Refresh();
+    if (need_redraw) {
+      DrawAllItems();
+      window_->Move(selected_ - (window_top_ - window_top_min_) + window_top_min_, 1);
+      window_->Refresh();
+    }
+    need_redraw = true;
     auto ch = window_->GetChar();
     switch (ch) {
     case KEY_HOME:
@@ -133,16 +137,25 @@ ListBoxResult ListBox::RunDialog() {
         if (window_top_ > window_top_min_) {
           window_top_--;
           selected_--;
+        } else {
+          // nothing happened.
+          need_redraw = false;
         }
       } else {
         selected_--;
       }
       break;
     case KEY_PPAGE: {
+      const auto old_window_top = window_top_;
+      const auto old_selected = selected_;
       window_top_ -= height_;
       selected_ -= height_;
       window_top_ = std::max<int>(window_top_, window_top_min_);
       selected_ = std::max<int>(selected_, 0);
+
+      if (old_window_top == window_top_ && old_selected == selected_) {
+        need_redraw = false;
+      }
     } break;
     case KEY_NEXT: // What is this key?
     case KEY_DOWN: {
@@ -152,13 +165,22 @@ ListBoxResult ListBox::RunDialog() {
       } else if (window_top_ < size_int(items_) - height_ + window_top_min_) {
         selected_++;
         window_top_++;
+      } else {
+        need_redraw = false;
       }
     } break;
     case KEY_NPAGE: {
+      const auto old_window_top = window_top_;
+      const auto old_selected = selected_;
+
       window_top_ += height_;
       selected_ += height_;
       window_top_ = std::min<int>(window_top_, size_int(items_) - height_ + window_top_min_);
       selected_ = std::min<int>(selected_, size_int(items_) - 1);
+
+      if (old_window_top == window_top_ && old_selected == selected_) {
+        need_redraw = false;
+      }
     } break;
     case KEY_ENTER:
     case 13: {
