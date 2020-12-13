@@ -18,6 +18,7 @@
 #include "wwivfsed/fsedconfig.h"
 
 #include "core/command_line.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
 #include "common/null_remote_io.h"
