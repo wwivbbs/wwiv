@@ -11,7 +11,8 @@
             "color_item_key": "|#2",
             "color_item_text": "|#0",
             "color_item_braces": "|#1",
-            "show_empty_text": false
+            "show_empty_text": false,
+            "num_newlines_at_end": 1
         },
         "title": "WWIV Main Menu",
         "acs": "",
@@ -594,6 +595,11 @@
                         "cmd": "printfile",
                         "data": "smain",
                         "acs": ""
+                    },
+                    {
+                        "cmd": "Pause",
+                        "data": "",
+                        "acs": ""
                     }
                 ]
             },
@@ -863,8 +869,8 @@
                 "password": "",
                 "actions": [
                     {
-                        "cmd": "bbslist",
-                        "data": "",
+                        "cmd": "MENU",
+                        "data": "bbslist",
                         "acs": ""
                     }
                 ]
@@ -1409,6 +1415,11 @@
                     {
                         "cmd": "printfile",
                         "data": "mbslash.msg",
+                        "acs": ""
+                    },
+                    {
+                        "cmd": "Pause",
+                        "data": "",
                         "acs": ""
                     }
                 ]

@@ -7,6 +7,7 @@ include(GoogleTest)
 set(test_sources
   bbs_helper.cpp
   bbs_macro_context_test.cpp
+  bbslist_test.cpp
   bputs_test.cpp
   bputch_test.cpp
   datetime_test.cpp
@@ -15,7 +16,6 @@ set(test_sources
   input_test.cpp
   make_abs_test.cpp
   msgbase1_test.cpp
-  new_bbslist_test.cpp
   pause_test.cpp
   printfile_test.cpp
   quote_test.cpp

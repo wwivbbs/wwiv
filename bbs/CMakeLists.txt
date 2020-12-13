@@ -12,6 +12,7 @@ set(COMMON_SOURCES
  batch.cpp
  bbs.cpp
  bbs_event_handlers.cpp
+ bbslist.cpp
  bbsovl1.cpp
  bbsovl2.cpp
  bbsovl3.cpp
@@ -57,7 +58,6 @@ set(COMMON_SOURCES
  multmail.cpp
  netsup.cpp
  newuser.cpp
- new_bbslist.cpp
  normupld.cpp
  pipe_expr.cpp
  save_qscan.cpp

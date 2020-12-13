@@ -20,10 +20,10 @@
 
 #include "bbs/automsg.h"
 #include "bbs/bbs.h"
+#include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/hop.h"
-#include "bbs/new_bbslist.h"
 #include "bbs/sublist.h"
 #include "bbs/syschat.h"
 #include "bbs/sysopf.h"
@@ -46,7 +46,6 @@
 using std::map;
 using std::string;
 using std::unique_ptr;
-using wwiv::bbslist::NewBBSList;
 using wwiv::core::IniFile;
 
 using namespace wwiv::strings;
@@ -362,14 +361,28 @@ This command does not attempt to display a .msg/.ans file.
                                    [](MenuContext&) { email_automessage_author(); }));
 
   // =========================================================================================
+  // BBS List
 
 
 
+  m.emplace("bbslist", MenuItem(R"(Legacy BBSList Menu)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { wwiv::bbslist::BBSList(); }));
+  m.emplace("bbslist:bbslist", MenuItem(R"(Legacy BBSList Menu)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { wwiv::bbslist::BBSList(); }));
+  m.emplace("bbslist:add", MenuItem(R"(Adds a new BBS to the BBSList)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { wwiv::bbslist::add_bbslist(); }));
+  m.emplace("bbslist:delete", MenuItem(R"(Deletes a new BBS from the BBSList)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { wwiv::bbslist::delete_bbslist(); }));
+  m.emplace("bbslist:read", MenuItem(R"(Read the bbslist)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { wwiv::bbslist::read_bbslist(); }));
+  m.emplace("bbslist:net", MenuItem(R"(Read the network bbs lists)", MENU_CAT_BBSLIST,
+                                [](MenuContext&) { print_net_listing(false); }));
 
-  m.emplace("BBSList", MenuItem(R"(
-  Read the bbslist
-)",
-                                MENU_CAT_BBSLIST, [](MenuContext&) { NewBBSList(); }));
+
+  // =========================================================================================
+  // BBS List
+
+
   m.emplace("RequestChat", MenuItem(R"(
   Request chat from the sysop
 )",

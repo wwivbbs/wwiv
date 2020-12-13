@@ -16,20 +16,21 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/new_bbslist.h"
+#include "bbs/bbslist.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
+#include "bbs/sysopf.h"
 #include "common/com.h"
 #include "common/input.h"
 #include "common/pause.h"
-#include "bbs/sysopf.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "fmt/format.h"
+// ReSharper disable once CppUnusedIncludeDirective
+#include "core/cereal_utils.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include <iomanip>
@@ -45,7 +46,6 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
 // ReSharper disable once CppUnusedIncludeDirective
-#include <cereal/types/vector.hpp>
 
 using std::left;
 using std::map;
@@ -59,41 +59,56 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+
+namespace cereal {
+//! Saving for std::map<std::string, std::string> for text based archives
+// Note that this shows off some internal cereal traits such as EnableIf,
+// which will only allow this template to be instantiated if its predicates
+// are true
+template <class Archive, class C, class A,
+  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
+  void save(Archive & ar, std::map<std::string, std::string, C, A> const & map) {
+  for (const auto & i : map)
+    ar(cereal::make_nvp(i.first, i.second));
+}
+
+//! Loading for std::map<std::string, std::string> for text based archives
+template <class Archive, class C, class A,
+  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
+  void load(Archive & ar, std::map<std::string, std::string, C, A> & map) {
+  map.clear();
+
+  auto hint = map.begin();
+  while (true) {
+    const auto namePtr = ar.getNodeName();
+
+    if (!namePtr)
+      break;
+
+    std::string key = namePtr;
+    std::string value; ar(value);
+    hint = map.emplace_hint(hint, std::move(key), std::move(value));
+  }
+}
+} // namespace cereal
+
+
 namespace wwiv::bbslist {
 
-template <class Archive>
-void serialize(Archive & ar, BbsListEntry &b) {
-  ar(cereal::make_nvp("name", b.name));
-  try {
-    ar(cereal::make_nvp("software", b.software));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(cereal::make_nvp("sysop_name", b.sysop_name));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(cereal::make_nvp("location", b.location));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(cereal::make_nvp("addresses", b.addresses));
-  } catch (const cereal::Exception& e) {
-    ar.setNextName(nullptr);
-    LOG(ERROR) << e.what();
-  }
+template <class Archive> void serialize(Archive& ar, BbsListEntry& b) {
+  SERIALIZE(b, name);
+  SERIALIZE(b, software);
+  SERIALIZE(b, sysop_name);
+  SERIALIZE(b, location);
+  SERIALIZE(b, addresses);
 }
 
-template <class Archive>
-void serialize(Archive & ar, BbsListAddress &a) {
-  ar(cereal::make_nvp("type", a.type));
-  ar(cereal::make_nvp("address", a.address));
+template <class Archive> void serialize(Archive& ar, BbsListAddress& a) {
+  SERIALIZE(a, type);
+  SERIALIZE(a, address);
 }
 
-bool LoadFromJSON(const std::filesystem::path& dir, const string& filename, 
+bool LoadFromJSON(const std::filesystem::path& dir, const string& filename,
                   std::vector<BbsListEntry>& entries) {
   entries.clear();
 
@@ -101,7 +116,7 @@ bool LoadFromJSON(const std::filesystem::path& dir, const string& filename,
   if (!file.IsOpen()) {
     return false;
   }
-  string text = file.ReadFileIntoString();
+  const auto text = file.ReadFileIntoString();
   std::stringstream ss;
   ss << text;
   cereal::JSONInputArchive load(ss);
@@ -115,17 +130,17 @@ bool LoadFromJSON(const std::filesystem::path& dir, const string& filename,
   return true;
 }
 
-bool SaveToJSON(const std::filesystem::path& dir, const string& filename, 
+bool SaveToJSON(const std::filesystem::path& dir, const string& filename,
                 const std::vector<BbsListEntry>& entries) {
   std::ostringstream ss;
   {
     cereal::JSONOutputArchive save(ss);
     save(cereal::make_nvp("bbslist", entries));
   }
-  
+
   TextFile file(FilePath(dir, filename), "w");
   if (!file.IsOpen()) {
-    // rapidjson will assert if the file does not exist, so we need to 
+    // rapidjson will assert if the file does not exist, so we need to
     // verify that the file exists first.
     return false;
   }
@@ -134,9 +149,8 @@ bool SaveToJSON(const std::filesystem::path& dir, const string& filename,
   return true;
 }
 
-static bool ConvertLegacyList(
-    const string& dir, const string& legacy_filename, 
-    std::vector<BbsListEntry>& entries) {
+static bool ConvertLegacyList(const string& dir, const string& legacy_filename,
+                              std::vector<BbsListEntry>& entries) {
 
   TextFile legacy_file(FilePath(dir, legacy_filename), "r");
   if (!legacy_file.IsOpen()) {
@@ -153,8 +167,8 @@ static bool ConvertLegacyList(
       // check for ddd-ddd-dddd
       continue;
     }
-    BbsListEntry e = {};
-    string name = line.substr(14, 42);
+    BbsListEntry e{};
+    auto name = line.substr(14, 42);
     StringTrimEnd(&name);
     e.name = name;
     e.addresses.push_back({"modem", line.substr(0, 12)});
@@ -165,7 +179,7 @@ static bool ConvertLegacyList(
 }
 
 static void ReadBBSList(const vector<BbsListEntry>& entries) {
-  int cnt = 0;
+  auto cnt = 0;
   bout.cls();
   bout.litebar(StrCat(a()->config()->system_name(), " BBS List"));
   for (const auto& entry : entries) {
@@ -173,13 +187,13 @@ static void ReadBBSList(const vector<BbsListEntry>& entries) {
     bout.format("{:<3} : {:<60} ({})\r\n", entry.id, entry.name, entry.software);
     for (const auto& a : entry.addresses) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout.format("{:<11} : {}\r\n",a.type, a.address);
+      bout.format("{:<11} : {}\r\n", a.type, a.address);
     }
   }
   bout.nl();
 }
 
-static void DeleteBbsListEntry() {
+void delete_bbslist() {
   vector<BbsListEntry> entries;
   LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
 
@@ -191,11 +205,11 @@ static void DeleteBbsListEntry() {
 
   ReadBBSList(entries);
   bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
-  auto r = bin.input_number_hotkey(1, {'Q'}, 1, 9999, false);
+  const auto r = bin.input_number_hotkey(1, {'Q'}, 1, 9999, false);
   if (r.key == 'Q' || r.num == 0) {
     return;
   }
-  for (auto b = std::begin(entries); b != std::end(entries); b++) {
+  for (auto b = std::begin(entries); b != std::end(entries); ++b) {
     if (b->id == r.num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;
@@ -213,16 +227,14 @@ static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
     return false;
   }
   for (const auto ch : phoneNumber) {
-    if (strchr("0123456789-", ch) == 0) {
+    if (!strchr("0123456789-", ch)) {
       return false;
     }
   }
   return true;
 }
 
-static bool IsBBSPhoneNumberUnique(
-    const string& phoneNumber,
-    const vector<BbsListEntry>& entries) {
+static bool IsBBSPhoneNumberUnique(const string& phoneNumber, const vector<BbsListEntry>& entries) {
   for (const auto& e : entries) {
     for (const auto& a : e.addresses) {
       if (a.type != "modem") {
@@ -239,9 +251,9 @@ static bool IsBBSPhoneNumberUnique(
 static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   bout.nl();
   bout << "|#9Does this BBS have a modem line? (y/N) : ";
-  bool has_pots = bin.noyes();
+  const auto has_pots = bin.noyes();
   bout << "|#9Is this BBS telnettable? (Y/n)         : ";
-  bool has_telnet = bin.yesno();
+  const auto has_telnet = bin.yesno();
 
   if (!has_telnet && !has_pots) {
     bout.nl();
@@ -254,7 +266,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   BbsListEntry entry = {};
   if (has_pots) {
     bout << "|#9Enter the Modem Number   : ";
-    auto phone_number = bin.input_phonenumber("", 12);
+    const auto phone_number = bin.input_phonenumber("", 12);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
@@ -269,7 +281,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
 
   if (has_telnet) {
     bout << "|#9Enter the Telnet Address : ";
-    string telnet_address = bin.input_text("", 50);
+    const auto telnet_address = bin.input_text("", 50);
     bout.nl();
     if (!telnet_address.empty()) {
       entry.addresses.push_back({"telnet", telnet_address});
@@ -300,50 +312,61 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
 static char ShowBBSListMenuAndGetChoice() {
   bout.nl();
   if (so()) {
-    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, "
+            "(|#1N|#9)et : ";
     return onek("QRNAD");
   }
   bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
   return onek("QRNA");
 }
 
-void NewBBSList() {
+void add_bbslist() {
+  vector<BbsListEntry> entries;
+  LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
+  if (a()->sess().effective_sl() <= 10) {
+    bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
+    return;
+  }
+  if (a()->user()->IsRestrictionAutomessage()) {
+    bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
+    return;
+  }
+  if (AddBBSListEntry(entries)) {
+    SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
+  }
+}
+
+void read_bbslist() {
+  vector<BbsListEntry> entries;
+  LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
+  if (entries.empty()) {
+    ConvertLegacyList(a()->config()->gfilesdir(), BBSLIST_MSG, entries);
+    SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
+  }
+  ReadBBSList(entries);
+}
+
+void BBSList() {
   while (!a()->sess().hangup()) {
     const auto ch = ShowBBSListMenuAndGetChoice();
     switch (ch) {
     case 'A': {
-      vector<BbsListEntry> entries;
-      LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
-      if (a()->sess().effective_sl() <= 10) {
-        bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
-        break;
-      }
-      if (a()->user()->IsRestrictionAutomessage()) {
-        bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
-        break;
-      }
-      if (AddBBSListEntry(entries)) {
-        SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
-      }
+      add_bbslist();
     } break;
     case 'D': {
-      DeleteBbsListEntry();
+      delete_bbslist();
     } break;
     case 'N':
       print_net_listing(false);
       break;
     case 'R': {
-      vector<BbsListEntry> entries;
-      LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
-      if (entries.empty()) {
-        ConvertLegacyList(a()->config()->gfilesdir(), BBSLIST_MSG, entries);
-        SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
-      }
-      ReadBBSList(entries);
+      read_bbslist();
     } break;
-    case 'Q': return;
+    case 'Q':
+      return;
+    default: break;
     }
   }
 }
 
-} // wwiv
+} // namespace wwiv::bbslist

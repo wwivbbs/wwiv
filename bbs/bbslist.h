@@ -16,16 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NEW_BBSLIST_H__
-#define __INCLUDED_NEW_BBSLIST_H__
+#ifndef INCLUDED_BBS_BBSLIST_H
+#define INCLUDED_BBS_BBSLIST_H
 
 #include <filesystem>
-#include <map>
-#include <memory>
 #include <string>
 #include <vector>
-#include <cereal/cereal.hpp>
-
 
 namespace wwiv::bbslist {
 
@@ -49,44 +45,12 @@ bool LoadFromJSON(const std::filesystem::path& dir, const std::string& filename,
 bool SaveToJSON(const std::filesystem::path& dir, const std::string& filename, 
                 const std::vector<BbsListEntry>& entries);
 
-void NewBBSList();
+void read_bbslist();
+void delete_bbslist();
+void add_bbslist();
+void BBSList();
 
 }  // namespace
 
 
-   // TODO - move this into it's own header somewhere.
-namespace cereal {
-//! Saving for std::map<std::string, std::string> for text based archives
-// Note that this shows off some internal cereal traits such as EnableIf,
-// which will only allow this template to be instantiated if its predicates
-// are true
-template <class Archive, class C, class A,
-  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
-  void save(Archive & ar, std::map<std::string, std::string, C, A> const & map) {
-  for (const auto & i : map)
-    ar(cereal::make_nvp(i.first, i.second));
-}
-
-//! Loading for std::map<std::string, std::string> for text based archives
-template <class Archive, class C, class A,
-  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
-  void load(Archive & ar, std::map<std::string, std::string, C, A> & map) {
-  map.clear();
-
-  auto hint = map.begin();
-  while (true) {
-    const auto namePtr = ar.getNodeName();
-
-    if (!namePtr)
-      break;
-
-    std::string key = namePtr;
-    std::string value; ar(value);
-    hint = map.emplace_hint(hint, std::move(key), std::move(value));
-  }
-}
-} // namespace cereal
-
-
-
-#endif  // __INCLUDED_NEW_BBSLIST_H__
+#endif

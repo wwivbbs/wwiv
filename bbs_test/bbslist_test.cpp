@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include "bbs/new_bbslist.h"
+#include "bbs/bbslist.h"
 #include "bbs_test/bbs_helper.h"
 #include "core_test/file_helper.h"
+
+#include "gtest/gtest.h"
 #include <filesystem>
 #include <memory>
 #include <string>
