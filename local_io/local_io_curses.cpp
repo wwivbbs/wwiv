@@ -386,7 +386,7 @@ void CursesLocalIO::EditLine(char* s, int len, AllowedKeys allowed_keys, Editlin
         done = true;
         *returncode = EditlineResult::NEXT;
         break;
-      case INSERT:
+      case KEY_INSERT:
         if (allowed_keys != AllowedKeys::SET) {
           insert = !insert;
         }

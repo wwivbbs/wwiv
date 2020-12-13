@@ -665,7 +665,7 @@ void Win32ConsoleIO::EditLine(char* in, int len, AllowedKeys allowed_keys,
         done = true;
         *returncode = EditlineResult::NEXT;
         break;
-      case INSERT:
+      case KEY_INSERT:
         if (allowed_keys != AllowedKeys::SET) {
           insert = !insert;
         }

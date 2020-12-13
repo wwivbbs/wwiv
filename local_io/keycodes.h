@@ -70,7 +70,7 @@ constexpr int HOME = 71;
 constexpr int CHOME = 119;
 constexpr int END = 79;
 constexpr int CEND = 117;
-constexpr int INSERT = 82;
+constexpr int KEY_INSERT = 82;
 constexpr int KEY_DELETE = 83;
 
 constexpr int F1 = 59;
@@ -218,7 +218,7 @@ constexpr int COMMAND_LEFT = (LARROW + 256);
 constexpr int COMMAND_RIGHT = (RARROW + 256);
 constexpr int COMMAND_UP = (UPARROW + 256);
 constexpr int COMMAND_DOWN = (DARROW + 256);
-constexpr int COMMAND_INSERT = (INSERT + 256);
+constexpr int COMMAND_INSERT = (KEY_INSERT + 256);
 constexpr int COMMAND_PAGEUP = (PAGEUP + 256);
 constexpr int COMMAND_PAGEDN = (PAGEDN + 256);
 constexpr int COMMAND_HOME = (HOME + 256);

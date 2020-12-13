@@ -39,10 +39,6 @@
 #include <string>
 #include <vector>
 
-#ifdef INSERT // defined in constants.h
-#undef INSERT
-#endif // INSERT
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -376,7 +372,7 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
   s[len] = '\0';
   window->SetColor(SchemeId::EDITLINE);
   window->Puts(s);
-  curses_out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+  curses_out->SetIndicatorMode(IndicatorMode::overwrite);
   window->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
@@ -429,11 +425,11 @@ EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode sta
       if (status != EditLineMode::SET) {
         if (bInsert) {
           bInsert = false;
-          curses_out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+          curses_out->SetIndicatorMode(IndicatorMode::overwrite);
           window->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-          curses_out->SetIndicatorMode(IndicatorMode::INSERT);
+          curses_out->SetIndicatorMode(IndicatorMode::insert);
           window->GotoXY(cx + pos, cy);
         }
       }

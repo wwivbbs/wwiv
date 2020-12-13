@@ -322,7 +322,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
     } break;
     default: ;
     }
-    curses_out->SetIndicatorMode(IndicatorMode::NONE);
+    curses_out->SetIndicatorMode(IndicatorMode::none);
   } while (!done);
 
   return true;
@@ -544,7 +544,7 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
     } break;
     default: ;
     }
-    curses_out->SetIndicatorMode(IndicatorMode::NONE);
+    curses_out->SetIndicatorMode(IndicatorMode::none);
   } while (!done);
 
   config.Save();

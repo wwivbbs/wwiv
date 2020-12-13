@@ -24,27 +24,23 @@
 #include <memory>
 #include <vector>
 
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif  // INSERT
-
 // Indicator mode for the header bar while editing text.
-enum class IndicatorMode { INSERT, OVERWRITE, NONE };
+enum class IndicatorMode { insert, overwrite, none };
 
 struct HelpItem {
   std::string key;
   std::string description;
 };
 
-class CursesFooter {
+class CursesFooter final {
 public:
   CursesFooter(CursesWindow* window, ColorScheme* color_scheme) 
     : window_(window), color_scheme_(color_scheme) {}
-  virtual ~CursesFooter() = default;
-  virtual void ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const;
-  virtual void ShowContextHelp(const std::string& help_text) const;
-  virtual void SetDefaultFooter() const;
-  [[nodiscard]] virtual CursesWindow* window() const { return window_.get(); }
+  ~CursesFooter() = default;
+  void ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const;
+  void ShowContextHelp(const std::string& help_text) const;
+  void SetDefaultFooter() const;
+  [[nodiscard]] CursesWindow* window() const { return window_.get(); }
 
  private:
    std::unique_ptr<CursesWindow> window_;

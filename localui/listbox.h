@@ -26,10 +26,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif // INSERT
-
 class ColorScheme;
 
 class ListBoxItem {

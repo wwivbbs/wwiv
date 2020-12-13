@@ -370,11 +370,11 @@ public:
 
     //items.add_aligned_width_column(1);
     items.relayout_items_and_labels();
-    items.Run(menu_label());
+    items.Run("Generated Menu Settings");
     window->RedrawWin();
   }
 protected:
-  [[nodiscard]] virtual std::string menu_label() const { return "[Edit]"; }
+  [[nodiscard]] std::string menu_label() const override { return "[Edit]"; }
 };
 
 /**

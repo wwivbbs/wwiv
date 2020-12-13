@@ -100,7 +100,7 @@ public:
    * This uses both a column number and optionally a value to override for Y.
    * If y is not set, the items preferred Y value will be used.
    */
-  BaseEditItem* add(BaseEditItem* item, int column = 1, int y = -1);
+  BaseEditItem* add(BaseEditItem* item, int column = 1, int row = -1);
 
   /**
    * Adds a label to the list of EditItems.
@@ -108,7 +108,7 @@ public:
    * This uses both a column number and optionally a value to override for Y.
    * If y is not set, the items preferred Y value will be used.
    */
-  Label* add(Label* label, int column = 1, int y = -1);
+  Label* add(Label* label, int column = 1, int row = -1);
 
   /**
    * Adds a label and item
@@ -116,7 +116,7 @@ public:
    * This uses both a column number and optionally a value to override for Y.
    * If y is not set, the items preferred Y value will be used.
    */
-  BaseEditItem* add(Label* label, BaseEditItem* item, int column = 1, int y = -1);
+  BaseEditItem* add(Label* label, BaseEditItem* item, int column = 1, int row = -1);
 
   /**
    * Adds a label and item and help text
@@ -125,7 +125,7 @@ public:
    * If y is not set, the items preferred Y value will be used.
    */
   BaseEditItem* add(Label* label, BaseEditItem* item, const std::string& help, int column = 1,
-                    int y = -1);
+                    int row = -1);
 
   void create_window(const std::string& title);
 

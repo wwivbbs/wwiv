@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "local_io/stdio_local_io.h"
 
-#include <cstdarg>
 #include <cstdio>
 
 StdioLocalIO::StdioLocalIO() = default;
@@ -30,9 +29,7 @@ void StdioLocalIO::Lf() { putchar(10); }
 
 void StdioLocalIO::Cr() { putchar(13); }
 
-void StdioLocalIO::Cls() {
-  // NOP
-}
+void StdioLocalIO::Cls() {}
 
 void StdioLocalIO::Backspace() { putchar(8); }
 

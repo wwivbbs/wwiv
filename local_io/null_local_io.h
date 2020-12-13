@@ -21,47 +21,38 @@
 
 #include <string>
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4125 4100)
-#endif
-
-class NullLocalIO : public LocalIO {
+class NullLocalIO final : public LocalIO {
 public:
   NullLocalIO();
-  virtual ~NullLocalIO();
-  void Putch(unsigned char ch) override{};
-  void GotoXY(int x, int y) override {}
-  int WhereX() const noexcept override { return 0; }
-  int WhereY() const noexcept override { return 0; }
+  ~NullLocalIO() override;
+  void Putch(unsigned char) override {}
+  void GotoXY(int, int) override {}
+  [[nodiscard]] int WhereX() const noexcept override { return 0; }
+  [[nodiscard]] int WhereY() const noexcept override { return 0; }
   void Lf() override {}
   void Cr() override {}
   void Cls() override {}
   void Backspace() override {}
-  void PutchRaw(unsigned char ch) override {}
-  void Puts(const std::string& s) override {}
-  void PutsXY(int x, int y, const std::string& text) override {}
-  void PutsXYA(int x, int y, int a, const std::string& text) override {}
-  void set_protect(int l) override {}
+  void PutchRaw(unsigned char) override {}
+  void Puts(const std::string&) override {}
+  void PutsXY(int, int, const std::string&) override {}
+  void PutsXYA(int, int, int, const std::string&) override {}
+  void set_protect(int) override {}
   void savescreen() override {}
   void restorescreen() override {}
-  bool KeyPressed() override { return false; }
-  unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
-  void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
-  void SetCursor(int cursorStyle) override {}
+  [[nodiscard]] bool KeyPressed() override { return false; }
+  [[nodiscard]] unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
+  void MakeLocalWindow(int, int, int, int) override {}
+  void SetCursor(int) override {}
   void ClrEol() override {}
-  void WriteScreenBuffer(const char* buffer) override {}
-  int GetDefaultScreenBottom() const noexcept override { return 24; }
-  void EditLine(char* s, int len, AllowedKeys allowed_keys, EditlineResult* returncode,
-                const char* ss) override {}
-  void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override {}
+  void WriteScreenBuffer(const char*) override {}
+  [[nodiscard]] int GetDefaultScreenBottom() const noexcept override { return 24; }
+  void EditLine(char*, int, AllowedKeys, EditlineResult*,
+                const char*) override {}
+  void UpdateNativeTitleBar(const std::string&, int) override {}
 
 private:
-  void FastPuts(const std::string& text) override {}
+  void FastPuts(const std::string&) override {}
 };
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // _MSC_VER
-
-#endif // __INCLUDED_BBS_NULL_LOCAL_IO_H__
+#endif

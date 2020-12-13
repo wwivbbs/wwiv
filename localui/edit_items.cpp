@@ -25,7 +25,6 @@
 #include "localui/wwiv_curses.h"
 #include <algorithm>
 #include <cstdlib>
-#include <initializer_list>
 #include <memory>
 #include <set>
 #include <string>
@@ -57,7 +56,7 @@ void EditItems::Run(const std::string& title) {
         cp = 0;
       }
     } else if (i1 == EditlineResult::DONE) {
-      curses_out->SetIndicatorMode(IndicatorMode::NONE);
+      curses_out->SetIndicatorMode(IndicatorMode::none);
       edit_mode_ = false;
       Display();
       return;
@@ -192,24 +191,15 @@ int EditItems::max_display_height() {
   return std::min<int>(curses_out->window()->GetMaxY(), result + 2);
 }
 
-static constexpr auto PADDING = 2;
-
 /**
  *  
- * TODO(rushfan): This needs a big change.
- *
- * 1) Needs to be able to layout a column and look at max widths for only
- *    a subset of rows, so you can have things like:
+ * Layout columns and look at max widths for only a subset of rows
+ * so you can have things like:
  *
  * LLLLL: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
  * LLLLL: FFFFFFFF    LLLLL: FFFFFFFFFFFFFFFFFFFFF
  *
- * Notice they have different max widths depending on the row. I think we
- * need a two pass.
- * (1) Compute max width per row
- * (2) come up with the max over a span of rows and use that for laying out.
- *     We can look at column count per row, and use that as the thing we
- *     layout on. i.e layout all 1 col rows, then all 2 col rows.
+ * Notice they have different max widths depending on the row.
  */
 void EditItems::relayout_items_and_labels() {
   if (cells_.empty()) {
@@ -357,5 +347,5 @@ EditItems::~EditItems() {
   // Clear the help bar on exit.
   curses_out->footer()->window()->Erase();
   curses_out->footer()->window()->Refresh();
-  curses_out->SetIndicatorMode(IndicatorMode::NONE);
+  curses_out->SetIndicatorMode(IndicatorMode::none);
 }

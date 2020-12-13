@@ -22,17 +22,12 @@
 
 #include <string>
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4125 4100)
-#endif
-
 class StdioLocalIO final : public LocalIO {
 public:
   StdioLocalIO();
   ~StdioLocalIO() override;
   void Putch(unsigned char ch) override;
-  void GotoXY(int x, int y) override {}
+  void GotoXY(int, int) override {}
   [[nodiscard]] int WhereX() const noexcept override { return 0; }
   [[nodiscard]]int WhereY() const noexcept override { return 0; }
 
@@ -50,7 +45,7 @@ public:
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
   unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
-  void MakeLocalWindow(int x, int y, int, int) override {}
+  void MakeLocalWindow(int, int, int, int) override {}
   void SetCursor(int) override {}
   void ClrEol() override {}
   void WriteScreenBuffer(const char*) override {}
@@ -63,8 +58,6 @@ private:
   void FastPuts(const std::string& text) override;
 };
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // _MSC_VER
+
 
 #endif

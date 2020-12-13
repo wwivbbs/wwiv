@@ -23,10 +23,6 @@
 #include "localui/ui_win.h"
 #include <string>
 
-#ifdef INSERT // defined in wconstants.h
-#undef INSERT
-#endif // INSERT
-
 // Generic implementation of screen display routines for wwivconfig.
 class StdioWindow : public UIWindow {
 public:

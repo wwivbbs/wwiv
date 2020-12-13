@@ -75,7 +75,7 @@ void CursesFooter::SetDefaultFooter() const {
 
 CursesIO::CursesIO(const string& title) 
     : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
-      header_(nullptr), indicator_mode_(IndicatorMode::NONE) {
+      header_(nullptr), indicator_mode_(IndicatorMode::none) {
 
 #ifdef _WIN32
   // Save the original window size and also resize the window buffer size
@@ -194,9 +194,9 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
     return;
   }
   std::string s = "   ";
-  if (mode == IndicatorMode::INSERT) {
+  if (mode == IndicatorMode::insert) {
     s = "INS";
-  } else if (mode == IndicatorMode::OVERWRITE) {
+  } else if (mode == IndicatorMode::overwrite) {
     s = "OVR";
   }
   header_->PutsXY(max_x_ - 5, 1, s);

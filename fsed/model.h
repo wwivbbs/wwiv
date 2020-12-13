@@ -152,8 +152,8 @@ public:
   //
   typedef std::function<void(FsedModel&, editor_range_t)> editor_range_invalidated_fn;
   typedef std::function<void(FsedModel&, int)> editor_current_line_redraw_fn;
-  bool add_callback(editor_range_invalidated_fn fn);
-  bool add_callback(editor_current_line_redraw_fn fn);
+  bool add_callback(const editor_range_invalidated_fn& fn);
+  bool add_callback(const editor_current_line_redraw_fn& fn);
   void invalidate_to_eol();
   void invalidate_to_eof();
   void invalidate_to_eof(int start_line);
