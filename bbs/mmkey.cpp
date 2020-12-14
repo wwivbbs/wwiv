@@ -151,10 +151,10 @@ std::string mmkey(MMKeyAreaType dl, bool bListOption) {
   case MMKeyAreaType::dirs: {
     const auto max_key = max_sub_key(a()->udir);
     for (char i = 1; i <= max_key / 10; i++) {
-      x.insert(i);
+      x.insert(i + '0');
     }
     for (char i = 1; i <= max_key / 100; i++) {
-      xx.insert(i);
+      xx.insert(i + '0');
     }
   } break;
   default: {
