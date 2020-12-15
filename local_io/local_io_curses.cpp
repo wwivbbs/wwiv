@@ -200,7 +200,7 @@ bool CursesLocalIO::KeyPressed() {
   }
   auto* w = std::any_cast<WINDOW*>(window_->window());
   nodelay(w, TRUE);
-  last_key_pressed = window_->GetChar();
+  last_key_pressed = window_->GetChar(std::chrono::milliseconds(0));
   return last_key_pressed != ERR;
 }
 
