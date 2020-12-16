@@ -16,19 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
-#include "sdk/net/networks.h"
 #include "sdk_test/sdk_helper.h"
+
+#include "gtest/gtest.h"
+#include <string>
 
 using namespace std;
 using namespace wwiv::core;
@@ -47,19 +43,19 @@ TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
 TEST_F(ConfigTest, Config_CurrentDirectory) {
   ASSERT_EQ(0, chdir(helper.root().c_str()));
 
-  Config config(File::current_directory());
+  const Config config(File::current_directory());
   ASSERT_TRUE(config.IsInitialized());
   EXPECT_EQ(helper.data_, config.datadir());
 }
 
 TEST_F(ConfigTest, Config_DifferentDirectory) {
-  Config config(helper.root());
+  const Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
   EXPECT_EQ(helper.data_, config.datadir());
 }
 
 TEST_F(ConfigTest, Config_WrongDirectory) {
-  Config config(StrCat(helper.root(), "x"));
+  const Config config(StrCat(helper.root(), "x"));
   ASSERT_FALSE(config.IsInitialized());
 }
 
@@ -67,26 +63,26 @@ TEST_F(ConfigTest, SetConfig) {
   Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
 
-  auto c = std::make_unique<configrec>();
-  to_char_array(c->systemname, "mysys");
-  config.set_config(c.get(), true);
-  ASSERT_EQ(c->systemname, config.system_name());
+  configrec c{};
+  to_char_array(c.systemname, "mysys");
+  config.set_config(&c, true);
+  ASSERT_EQ("mysys", config.system_name());
 }
 
 TEST_F(ConfigTest, WrittenByNumVersion) {
-  Config config(helper.root());
+  const Config config(helper.root());
 
   ASSERT_EQ(wwiv_config_version(), config.written_by_wwiv_num_version());
 }
 
 TEST_F(ConfigTest, Is5XXOrLater) {
-  Config config(helper.root());
+  const Config config(helper.root());
 
   ASSERT_TRUE(config.is_5xx_or_later());
 }
 
 TEST_F(ConfigTest, LogDirFromConfig_Found) {
-  Config config(helper.root());
+  const Config config(helper.root());
   ASSERT_EQ(config.logdir(), LogDirFromConfig(helper.root()));
 }
 

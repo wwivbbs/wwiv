@@ -62,7 +62,7 @@ bool save_config(configrec& c) {
   return false;
 }
 
-static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revision) {
+static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {
   if (!config.versioned_config_dat()) {
     cout << "Can only set the wwiv_version and config revision on a 5.1 or higher versioned "
             "config.dat"
@@ -70,8 +70,7 @@ static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revisi
     return false;
   }
 
-  configrec cfg430 = *config.config();
-  auto& h = cfg430.header.header;
+  auto& h = config.header();
   if (wwiv_ver >= 500) {
     cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
     h.written_by_wwiv_num_version = wwiv_ver;
@@ -86,7 +85,7 @@ static bool set_version(const Config& config, uint16_t wwiv_ver, uint32_t revisi
 
   if (wwiv_ver >= 500 || revision > 0) {
     cout << "Wrote Config.dat" << std::endl;
-    return save_config(cfg430);
+    config.Save();
   }
   cout << "Nothing changed; Nothing to do." << std::endl << std::endl;
   return false;

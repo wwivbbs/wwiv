@@ -58,5 +58,4 @@ bool UtilCommand::set_config(Configuration* config) {
   return true; 
 }
 
-}  // namespace wwivutil::wwiv
-
+}  // namespace

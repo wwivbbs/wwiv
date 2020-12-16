@@ -15,19 +15,18 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include "core/file.h"
-#include "core/strings.h"
-#include "core_test/file_helper.h"
 #include "binkp/binkp.h"
 #include "binkp/binkp_commands.h"
 #include "binkp/binkp_config.h"
-#include "sdk/net/callout.h"
 #include "binkp/transfer_file.h"
 #include "binkp_test/fake_connection.h"
 #include "core/file.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "core_test/file_helper.h"
+#include "sdk/net/callout.h"
 
+#include "gtest/gtest.h"
 #include <string>
 #include <thread>
 
@@ -47,19 +46,17 @@ static const int ORIGINATING_ADDRESS = 2;
 class BinkTest : public testing::Test {
 protected:
   void StartBinkpReceiver() {
-    files_.Mkdir("network");
-    files_.Mkdir("gfiles");
+    CHECK(files_.Mkdir("network"));
+    CHECK(files_.Mkdir("gfiles"));
     const string line("@1 example.com");
     files_.CreateTempFile("binkp.net", line);
     const auto network_dir = files_.DirName("network");
     const auto gfiles_dir = files_.DirName("gfiles");
-    memset(&wwiv_config_, 0, sizeof(configrec));
+    configrec wwiv_config_{};
     to_char_array(wwiv_config_.systemname, "Test System");
     to_char_array(wwiv_config_.sysopname, "Test Sysop");
-    to_char_array(wwiv_config_.gfilesdir, gfiles_dir);
-    wwiv::sdk::Config config(File::current_directory());
-    config.set_config(&wwiv_config_, true);
-    config.set_initialized_for_test(true);
+    wwiv::sdk::Config config(File::current_directory(), wwiv_config_);
+    config.gfilesdir(gfiles_dir);
     net_networks_rec net{};
     net.dir = network_dir;
     net.name = "Dummy Network";
@@ -85,7 +82,6 @@ protected:
   FakeConnection conn_;
   std::thread thread_;
   FileHelper files_;
-  configrec wwiv_config_{};
 };
 
 TEST_F(BinkTest, ErrorAbortsSession) {

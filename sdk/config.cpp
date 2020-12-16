@@ -31,12 +31,13 @@ namespace wwiv::sdk {
 
 static const int CONFIG_DAT_SIZE_424 = 5660;
 
-Config::Config(const configrec& config)
-    : initialized_(true), config_430_(std::make_unique<Config430>(config)), config_(config) {
+Config::Config(const std::filesystem::path& root_directory, const configrec& config)
+    : root_directory_(root_directory), initialized_(true),
+      config_430_(std::make_unique<Config430>(config)), config_(config) {
   update_paths();
 }
 
-Config::Config(const Config& c) : Config(*c.config()) {
+Config::Config(const Config& c) : Config(c.root_directory(), c.config_) {
   // Chained constructor sets initialized to true, but we want to
   // match it from the copy.
   initialized_ = c.IsInitialized();
@@ -83,7 +84,7 @@ bool Config::Load() {
 
 bool Config::Save() { 
   // Before we save, update the config on the 4.3x config.
-  config_430_->set_config(config(), true);
+  config_430_->set_config(&config_, true);
   return config_430_->Save();
 }
 
@@ -94,6 +95,22 @@ void Config::set_config(const configrec* config, bool need_to_update_paths) {
   if (need_to_update_paths) {
     update_paths();
   }
+}
+
+void Config::system_name(const std::string& d) {
+  to_char_array(config_.systemname, d);
+}
+
+void Config::sysop_name(const std::string& d) {
+  to_char_array(config_.sysopname, d);
+}
+
+void Config::system_phone(const std::string& d) {
+  to_char_array(config_.systemphone, d);
+}
+
+void Config::system_password(const std::string& d) {
+  to_char_array(config_.systempw, d);
 }
 
 std::string Config::config_filename() const { return FilePath(root_directory(), CONFIG_DAT).string(); }
@@ -160,19 +177,47 @@ Config430::Config430(const std::filesystem::path& root_directory)
 
 Config430::~Config430() = default;
 
+static void set_script_flag(uint16_t& data, uint16_t flg, bool on) {
+  if (on) {
+    data |= flg;
+  } else {
+    data &= ~flg;
+  }
+}
+
+void Config::newuser_password(const std::string& s) {
+  to_char_array(config_.newuserpw, s);
+}
+
+void Config::newuser_restrict(uint16_t d ) {
+  config_.newuser_restrict = d;
+}
+
 bool Config::scripting_enabled() const noexcept {
   return !(config_.script_flags & script_flag_disable_script);
+}
+
+void Config::scripting_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_disable_script, !b);
 }
 
 bool Config::script_package_file_enabled() const noexcept {
   return config_.script_flags & script_flag_enable_file;
 }
 
+void Config::script_package_file_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_enable_file, b);
+}
+
 bool Config::script_package_os_enabled() const noexcept {
   return config_.script_flags & script_flag_enable_os;
 }
 
-std::string Config::to_abs_path(const char* dir) {
+void Config::script_package_os_enabled(bool b) noexcept {
+  set_script_flag(config_.script_flags, script_flag_enable_os, b);
+}
+
+std::string Config::to_abs_path(const char* dir) const {
   return File::absolute(root_directory_.string(), dir).string();
 }
 

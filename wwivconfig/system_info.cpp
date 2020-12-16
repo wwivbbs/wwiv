@@ -107,7 +107,6 @@ protected:
 };
 
 void sysinfo1(wwiv::sdk::Config& config) {
-  auto cfg = *config.config();
   statusrec_t statusrec{};
   read_status(config.datadir(), statusrec);
 
@@ -117,26 +116,43 @@ void sysinfo1(wwiv::sdk::Config& config) {
     save_status(config.datadir(), statusrec);
   }
 
-  auto closed_system = cfg.closedsystem > 0;
-  auto gold = static_cast<int>(cfg.newusergold);
+  auto closed_system = config.closed_system();
+  auto gold = static_cast<int>(config.newuser_gold());
+
+  auto system_name = config.system_name();
+  auto sysop_name = config.sysop_name();
+  auto system_phone = config.system_phone();
+  auto system_pw = config.system_password();
+  auto newuser_pw = config.newuser_password();
+  auto newusersl = config.newuser_sl();
+  auto newuserdsl = config.newuser_dsl();
+  auto newuser_restrict = config.newuser_restrict();
+  auto sysoplowtime = config.sysop_low_time();
+  auto sysophightime = config.sysop_high_time();
+  auto req_ratio = config.req_ratio();
+  auto post_call_ratio = config.post_to_call_ratio();
+  auto max_users = config.max_users();
+  int max_waiting = config.max_waiting();
+  int wwiv_reg_number = config.wwiv_reg_number();
+  int max_backups = config.max_backups();
 
   auto y = 1;
   EditItems items{};
   items.add(new Label("System name:"),
-            new StringEditItem<char*>(50, cfg.systemname, EditLineMode::ALL),
+            new StringEditItem<std::string&>(50, system_name, EditLineMode::ALL),
     "Name of the BBS System", 1, y);
   ++y;
   items.add(new Label("Sysop name:"),
-            new StringEditItem<char*>(50, cfg.sysopname, EditLineMode::ALL),
+            new StringEditItem<std::string&>(50, sysop_name, EditLineMode::ALL),
     "The name (or handle/alias) of the System Operator", 1, y);
   ++y;
   items.add(
       new Label("System phone:"),
-      new StringEditItem<char*>(12, cfg.systemphone, EditLineMode::UPPER_ONLY),
+      new StringEditItem<std::string&>(12, system_phone, EditLineMode::UPPER_ONLY),
     "Phone number for the BBS (if you have one)", 1, y);
   ++y;
   items.add(new Label("System PW:"),
-            new StringEditItem<char*>(20, cfg.systempw, EditLineMode::UPPER_ONLY),
+            new StringEditItem<std::string&>(20, system_pw, EditLineMode::UPPER_ONLY),
             "Password needed to log in as sysop", 1, y);
   y+=2;
   items.add(new Label("Closed system?"),
@@ -144,42 +160,42 @@ void sysinfo1(wwiv::sdk::Config& config) {
     "Are users allowed to establish accounts on this BBS", 1, y);
   items.add(
       new Label("New User PW:"),
-      new StringEditItem<char*>(20, cfg.newuserpw, EditLineMode::UPPER_ONLY),
+      new StringEditItem<std::string&>(20, newuser_pw, EditLineMode::UPPER_ONLY),
     "Optional password users must provide in order create an account", 3, y);
   ++y;
   items.add(new Label("New User SL:"),
-            new NumberEditItem<uint8_t>(&cfg.newusersl),
+            new NumberEditItem<uint8_t>(&newusersl),
     "The security level that all new users are given. The default is 10", 1, y);
   items.add(new Label("New User DSL:"),
-            new NumberEditItem<uint8_t>(&cfg.newuserdsl),
+            new NumberEditItem<uint8_t>(&newuserdsl),
         "The download security level that all new users are given. The default is 10", 3, y);
   ++y;
   items.add(new Label("New User restrict:"),
-            new RestrictionsEditItem(&cfg.newuser_restrict),
+            new RestrictionsEditItem(&newuser_restrict),
     "Restrictions given to new users from certain features of the system.", 1, y);
   items.add(new Label("New User gold:"),
             new NumberEditItem<int>(&gold),
     "The default amount of gold given to new users", 3, y);
   y+=2;
   items.add(new Label("Sysop time: from:"),
-            new TimeEditItem(&cfg.sysoplowtime),
+            new TimeEditItem(&sysoplowtime),
     "Set the time limits that the sysop is available for chat", 1, y);
   items.add(new Label("to:"),
-            new TimeEditItem(&cfg.sysophightime),
+            new TimeEditItem(&sysophightime),
     "Set the time limits that the sysop is available for chat", 3, y);
   ++y;
   items.add(new Label("Ratios    :  U/D:"),
-            new Float53EditItem(&cfg.req_ratio),
+            new Float53EditItem(&req_ratio),
     "Optional required ratio of (uploads/downloads) for downloading files", 1, y);
   items.add(new Label("Post/Call:"),
-            new Float53EditItem(&cfg.post_call_ratio),
+            new Float53EditItem(&post_call_ratio),
     "Optional required ratio of (uploads/downloads) for downloading files", 3, y);
   ++y;
   items.add(new Label("Max waiting:"),
-            new NumberEditItem<uint8_t>(&cfg.maxwaiting),
+            new NumberEditItem<int, 3>(&max_waiting),
     "Maximum number of emails allowed for a user", 1, y);
   items.add(new Label("Max users:"),
-            new NumberEditItem<uint16_t>(&cfg.maxusers),
+            new NumberEditItem<uint16_t>(&max_users),
     "The maximum number of users that can be on the system", 3, y);
   ++y;
   items.add(new Label("Total Calls:"),
@@ -190,11 +206,11 @@ void sysinfo1(wwiv::sdk::Config& config) {
     "Number of days the BBS has been active", 3, y);
   ++y;
   items.add(new Label("4.x Reg Number:"),
-            new NumberEditItem<uint32_t>(&cfg.wwiv_reg_number),
+            new NumberEditItem<int>(&wwiv_reg_number),
     "Legacy registration # from WWIV 4.xx. Just used for bragging rights", 1, y);
 
   items.add(new Label("Max Backups:"),
-            new NumberEditItem<uint8_t>(&cfg.max_backups),
+            new NumberEditItem<int, 3>(&max_backups),
     "Max number of backup to keep when making new datafile backups (0=unlimited)", 3, y);
 
   ++y;
@@ -202,7 +218,23 @@ void sysinfo1(wwiv::sdk::Config& config) {
   items.add_aligned_width_column(1);
   items.relayout_items_and_labels();
   items.Run("System Configuration");
-  cfg.closedsystem = closed_system;
-  cfg.newusergold = static_cast<float>(gold);
-  config.set_config(&cfg, true);
+  config.closed_system(closed_system);
+  config.newuser_gold(static_cast<float>(gold));
+
+  config.system_name(system_name);
+  config.sysop_name(sysop_name);
+  config.system_phone(system_phone);
+  config.system_password(system_pw);
+  config.newuser_password(newuser_pw);
+  config.newuser_sl(newusersl);
+  config.newuser_dsl(newuserdsl);
+  config.newuser_restrict(newuser_restrict);
+  config.sysop_low_time(sysoplowtime);
+  config.sysop_high_time(sysophightime);
+  config.req_ratio(req_ratio);
+  config.post_to_call_ratio(post_call_ratio);
+  config.max_users(max_users);
+  config.max_waiting(max_waiting);
+  config.wwiv_reg_number(wwiv_reg_number);
+  config.max_backups(max_backups);
 }

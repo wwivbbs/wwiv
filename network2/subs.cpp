@@ -149,7 +149,7 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(0); // null after title.
 
   // Add from Name + \r\n + date + \r\n + \r\n
-  text.append(StrCat(context.config.config()->sysopname, " #1\r\n"));
+  text.append(StrCat(context.config.sysop_name(), " #1\r\n"));
   text.append(StrCat(daten_to_wwivnet_time(daten_t_now()), "\r\n\r\n"));
 
   // Add the text that probably came from a SA or SR  + subtype + .net file.

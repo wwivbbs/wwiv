@@ -59,10 +59,9 @@ protected:
   void SetUp() override {
     helper.SetUp();
     // Enable the FILE and OS package.
-    auto cfg = *helper.config_->config();
-    cfg.script_flags |= script_flag_enable_file;
-    cfg.script_flags |= script_flag_enable_os;
-    helper.config_->set_config(&cfg, false);
+    helper.config_->scripting_enabled(true);
+    helper.config_->script_package_file_enabled(true);
+    helper.config_->script_package_os_enabled(true);
     ctx.reset(new TestMacroContext(helper));
     basic.reset(new Basic(bin, bout, *a()->config(), ctx.get()));
   }

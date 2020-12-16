@@ -54,19 +54,7 @@ void script_ui(Config& config) {
   items.relayout_items_and_labels();
   items.Run("Scripting Configuration");
 
-  auto cfg = *config.config();
-  cfg.script_flags |= script_flag_disable_script;
-  cfg.script_flags &= ~script_flag_enable_file;
-  cfg.script_flags &= ~script_flag_enable_os;
-  if (allow_script) {
-    cfg.script_flags &= ~script_flag_disable_script;
-  }
-  if (enable_file) {
-    cfg.script_flags |= script_flag_enable_file;
-  }
-  if (enable_os) {
-    cfg.script_flags |= script_flag_enable_os;
-  }
-
-  config.set_config(&cfg, true);
+  config.scripting_enabled(allow_script);
+  config.script_package_os_enabled(enable_os);
+  config.script_package_file_enabled(enable_file);
 }

@@ -197,7 +197,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   save_config(cfg430);
 
   // cfg430 is done
-  Config config(cfg430);
+  Config config(bbsdir, cfg430);
 
   const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);

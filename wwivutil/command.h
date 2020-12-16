@@ -29,14 +29,14 @@ namespace wwiv::wwivutil {
 
 class Configuration {
 public:
-  Configuration(wwiv::sdk::Config* config) : config_(config), networks_(*config) {
+  explicit Configuration(wwiv::sdk::Config* config) : config_(config), networks_(*config) {
     if (!networks_.IsInitialized()) {
       initialized_ = false;
     }
   }
   virtual ~Configuration() = default;
 
-  [[nodiscard]] const wwiv::sdk::Config* config() const { return config_; }
+  [[nodiscard]] wwiv::sdk::Config* config() { return config_; }
   [[nodiscard]] bool initialized() const { return initialized_; }
   [[nodiscard]] wwiv::sdk::Networks networks() const { return networks_; }
 
