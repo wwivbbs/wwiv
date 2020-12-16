@@ -18,45 +18,13 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
+#include "sdk/config430.h"
 #include "sdk/vardec.h"
 #include <filesystem>
 #include <memory>
 
 namespace wwiv::sdk {
 
-// fwd declaration
-class Config;
-
-class Config430 {
-public:
-  explicit Config430(const Config& config);
-  explicit Config430(const configrec& config);
-  explicit Config430(const std::filesystem::path& root_directory);
-  ~Config430();
-  [[nodiscard]] bool IsInitialized() const { return initialized_; }
-  void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
-  void set_config(const configrec* config, bool update_paths);
-  [[nodiscard]] const configrec* config() const;
-  bool Load();
-  bool Save();
-
-  [[nodiscard]] bool versioned_config_dat() const { return versioned_config_dat_; }
-  [[nodiscard]] bool is_5xx_or_later() const { return written_by_wwiv_num_version_ >= 500; }
-  [[nodiscard]] uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
-  [[nodiscard]] uint32_t config_revision_number() const { return config_revision_number_; }
-
-  [[nodiscard]] bool IsReadable() const;
-
-private:
-  void update_paths();
-
-  bool initialized_{false};
-  configrec config_{};
-  const std::filesystem::path root_directory_;
-  bool versioned_config_dat_{false};
-  uint32_t config_revision_number_{0};
-  uint16_t written_by_wwiv_num_version_{0};
-}; // namespace sdk
 
 class Config {
 public:

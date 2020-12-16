@@ -1,16 +1,17 @@
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
-  arword.cpp
-  bbslist.cpp
-  chains.cpp
-  config.cpp
-  gfiles.cpp
-  names.cpp
-  phone_numbers.cpp
-  qscan.cpp
-  ssm.cpp
-  status.cpp
+  "arword.cpp"
+  "bbslist.cpp"
+  "chains.cpp"
+  "config.cpp"
+  "config430.cpp"
+  "gfiles.cpp"
+  "names.cpp"
+  "phone_numbers.cpp"
+  "qscan.cpp"
+  "ssm.cpp"
+  "status.cpp"
   subxtr.cpp
   qwk_config.cpp
   user.cpp
