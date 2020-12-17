@@ -18,23 +18,25 @@
 #ifndef INCLUDED_SDK_CONFIG430_H
 #define INCLUDED_SDK_CONFIG430_H
 
+#include "sdk/config.h"
 #include "sdk/vardec.h"
 #include <filesystem>
 
 namespace wwiv::sdk {
 
-// fwd declaration
-class Config;
-
 class Config430 {
 public:
-  explicit Config430(const Config& config);
+  explicit Config430(const Config430& config);
   explicit Config430(const configrec& config);
+  explicit Config430(const config_t& c5);
   explicit Config430(const std::filesystem::path& root_directory);
   ~Config430();
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const configrec* config, bool update_paths);
+
+  /** Provides a modern JSON version of the config from here. */
+  config_t to_json_config(std::vector<arcrec>);
   [[nodiscard]] const configrec* config() const;
   bool Load();
   bool Save();

@@ -21,7 +21,6 @@
 #include "binkp/transfer_file.h"
 #include "binkp_test/fake_connection.h"
 #include "core/file.h"
-#include "core/file.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/net/callout.h"
@@ -52,9 +51,9 @@ protected:
     files_.CreateTempFile("binkp.net", line);
     const auto network_dir = files_.DirName("network");
     const auto gfiles_dir = files_.DirName("gfiles");
-    configrec wwiv_config_{};
-    to_char_array(wwiv_config_.systemname, "Test System");
-    to_char_array(wwiv_config_.sysopname, "Test Sysop");
+    wwiv::sdk::config_t wwiv_config_{};
+    wwiv_config_.systemname = "Test System";
+    wwiv_config_.sysopname = "Test Sysop";
     wwiv::sdk::Config config(File::current_directory(), wwiv_config_);
     config.gfilesdir(gfiles_dir);
     net_networks_rec net{};

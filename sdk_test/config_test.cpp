@@ -63,9 +63,9 @@ TEST_F(ConfigTest, SetConfig) {
   Config config(helper.root());
   ASSERT_TRUE(config.IsInitialized());
 
-  configrec c{};
-  to_char_array(c.systemname, "mysys");
-  config.set_config(&c, true);
+  config_t c{};
+  c.systemname = "mysys";
+  config.set_config(c, true);
   ASSERT_EQ("mysys", config.system_name());
 }
 

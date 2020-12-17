@@ -527,7 +527,7 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
                                                const std::string& config_filename,
                                                const uint32_t config_revision_number) {
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
-  if (config_revision_number >= 5) {
+  if (config_revision_number >= final_wwiv_config_version()) {
     VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
     return config_upgrade_state_t::already_latest;
   }
@@ -559,6 +559,11 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
+}
+
+int final_wwiv_config_version() {
+  // TODO(rushfan): Update when we add a new version.
+  return 5;
 }
 
 void convert_config_424_to_430(UIWindow* window, const std::string& datadir, const std::string& config_filename) {

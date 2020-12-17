@@ -18,19 +18,110 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
-#include "sdk/config430.h"
 #include "sdk/vardec.h"
 #include <filesystem>
-#include <memory>
+#include <map>
 
 namespace wwiv::sdk {
 
+struct config_header_t {
+  int written_by_wwiv_num_version;
+  std::string written_by_wwiv_version;
+  std::string last_written_date;
+  int config_revision_number;
+};
+
+struct config_t {
+  config_header_t header;
+
+  // system password
+  std::string systempw;
+  // path for msgs directory
+  std::string msgsdir;
+  // path for gfiles dir
+  std::string gfilesdir;
+  // path for data directory
+  std::string datadir;
+  // path for dloads dir
+  std::string dloadsdir;
+  // script directory.
+  std::string scriptdir;
+  // New in 5.4: Default Log Directory to use.
+  std::string logdir;
+  // BBS system name
+  std::string systemname;
+  // BBS system phone number
+  std::string systemphone;
+  // sysop's name
+  std::string sysopname;
+
+  // new user SL
+  uint8_t newusersl;
+  // new user DSL
+  uint8_t newuserdsl;
+  // max mail waiting
+  uint8_t maxwaiting;
+  // file dir new uploads go
+  int newuploads;
+  // if system is closed
+  bool closedsystem;
+
+  // max users on system
+  uint16_t maxusers;
+  // new user restrictions
+  uint16_t newuser_restrict;
+  // System configuration
+  uint16_t sysconfig;
+  // Chat time on
+  uint16_t sysoplowtime;
+  // Chat time off
+  uint16_t sysophightime;
+  // Formerly required up/down ratio. This has been moved to wwiv.ini
+  float req_ratio;
+  // new user gold
+  float newusergold;
+  // security level data
+  std::map<int, slrec> sl;
+  // sysop quik-validation data
+  std::map<int, valrec> autoval;
+  // user record length
+  uint16_t userreclen;
+  // mail waiting offset
+  uint16_t waitingoffset;
+  // inactive offset
+  uint16_t inactoffset;
+  // SysOp's WWIV 4.x Registration Number
+  uint32_t wwiv_reg_number;
+  // New User Password
+  std::string newuserpw;
+  // Post/Call Ratio required to access transfers
+  float post_call_ratio;
+  // system status offset
+  uint16_t sysstatusoffset;
+  // offset values into user record, used by net3x.
+  uint16_t fuoffset;
+  uint16_t fsoffset;
+  uint16_t fnoffset;
+
+  // max subboards
+  uint16_t max_subs;
+  // max directories
+  uint16_t max_dirs;
+  // qscan pointer length in bytes
+  uint16_t qscn_len;
+  /** Max number of backup files to make of datafiles. 0 = unlimited */
+  uint8_t max_backups;
+  /** Flags that control the execution of scripts */
+  uint16_t script_flags;
+  // path for menu dir
+  std::string menudir;
+};
 
 class Config {
 public:
-  Config(const std::filesystem::path& root_directory, const configrec& config);
+  Config(const std::filesystem::path& root_directory, const config_t& config);
   explicit Config(const Config& c);
-  explicit Config(const std::filesystem::path& root_directory);
+  explicit Config(std::filesystem::path root_directory);
   ~Config();
 
   bool Load();
@@ -38,32 +129,33 @@ public:
 
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
-  //[[nodiscard]] const configrec* config() const { return &config_; }
-  void set_config(const configrec* config, bool update_paths);
+  void set_config(const config_t& config, bool update_paths);
   void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
                           const std::string& gfilesdir, const std::string& menudir,
                           const std::string& dloadsdir, const std::string& scriptdir);
 
   [[nodiscard]] bool versioned_config_dat() const { return versioned_config_dat_; }
-  [[nodiscard]] bool is_5xx_or_later() const { return written_by_wwiv_num_version_ >= 500; }
-  [[nodiscard]] uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
-  [[nodiscard]] uint32_t config_revision_number() const { return config_revision_number_; }
+  [[deprecated]] [[nodiscard]] bool is_5xx_or_later() const { return true; }
+  [[nodiscard]] int written_by_wwiv_num_version() const {
+    return config_.header.written_by_wwiv_num_version;
+  }
+  [[nodiscard]] int config_revision_number() const { return config_.header.config_revision_number; }
 
   [[nodiscard]] std::string root_directory() const { return root_directory_.string(); }
   [[nodiscard]] std::string datadir() const { return datadir_; }
-  void datadir(const std::string& d) { datadir_ = d; }
+  void datadir(const std::string& d) { config_.datadir = d; }
   [[nodiscard]] std::string msgsdir() const { return msgsdir_; }
-  void msgsdir(const std::string& d) { msgsdir_ = d; }
+  void msgsdir(const std::string& d) { config_.msgsdir = d; }
   [[nodiscard]] std::string gfilesdir() const { return gfilesdir_; }
-  void gfilesdir(const std::string& d) { gfilesdir_ = d; }
+  void gfilesdir(const std::string& d) { config_.gfilesdir = d; }
   [[nodiscard]] std::string menudir() const { return menudir_; }
-  void menudir(const std::string& d) { menudir_ = d; }
+  void menudir(const std::string& d) { config_.menudir = d; }
   [[nodiscard]] std::string dloadsdir() const { return dloadsdir_; }
-  void dloadsdir(const std::string& d) { dloadsdir_ = d; }
+  void dloadsdir(const std::string& d) { config_.dloadsdir = d; }
   [[nodiscard]] std::string scriptdir() const { return script_dir_; }
-  void scriptdir(const std::string& d) { script_dir_ = d; }
+  void scriptdir(const std::string& d) { config_.scriptdir = d; }
   [[nodiscard]] std::string logdir() const { return log_dir_; }
-  void logdir(const std::string& d) { log_dir_ = d; }
+  void logdir(const std::string& d) { config_.logdir = d; }
 
   [[nodiscard]] std::string system_name() const { return config_.systemname; }
   void system_name(const std::string& d);
@@ -90,7 +182,7 @@ public:
   [[nodiscard]] int max_waiting() const { return static_cast<int>(config_.maxwaiting); }
   void max_waiting(int d) { config_.maxwaiting = static_cast<uint8_t>(d); }
   // Directory number where uploads go by default.
-  [[nodiscard]] uint8_t new_uploads_dir() const { return config_.newuploads; }
+  [[nodiscard]] int new_uploads_dir() const { return config_.newuploads; }
 
   // Sets the value for the sysconfig flags.
   // These have been moved to the ini file.
@@ -117,7 +209,7 @@ public:
   void max_subs(uint16_t n) { config_.max_subs = n; }
   // Max Users.
   [[nodiscard]] uint16_t max_users() const { return config_.maxusers; }
-  void max_users(int n) { config_.maxusers = static_cast<uint16_t>(n);}
+  void max_users(int n) { config_.maxusers = static_cast<uint16_t>(n); }
   // Sysop Low Time.
   [[nodiscard]] uint16_t sysop_high_time() const { return config_.sysophightime; }
   void sysop_high_time(int n) { config_.sysophightime = static_cast<uint16_t>(n); }
@@ -143,20 +235,17 @@ public:
   [[nodiscard]] bool closed_system() const { return config_.closedsystem; }
   void closed_system(bool b) { config_.closedsystem = b; }
   // Auto validation record
-  [[nodiscard]] const valrec& auto_val(int n) const { return config_.autoval[n]; }
+  [[nodiscard]] const valrec& auto_val(int n) const;
   void auto_val(int n, const valrec& v) { config_.autoval[n] = v; }
   // Security Level information
-  [[nodiscard]] const slrec& sl(int n) const { return config_.sl[n]; }
+  [[nodiscard]] const slrec& sl(int n) const;
   void sl(int n, slrec& s) { config_.sl[n] = s; }
-  // Legacy 4.x Arcs
-  [[nodiscard]] const arcrec_424_t& arc(int n) const { return config_.arcs[n]; }
-  void arc(int n, arcrec_424_t& a) { config_.arcs[n] = a; }
   // Registration Number
   [[nodiscard]] uint32_t wwiv_reg_number() const { return config_.wwiv_reg_number; }
   void wwiv_reg_number(int d) { config_.wwiv_reg_number = d; }
   // max number of backups of datafiles to keep.
   [[nodiscard]] int max_backups() const noexcept { return config_.max_backups; }
-  void max_backups(int n) { config_.max_backups = static_cast<uint8_t>(n);}
+  void max_backups(int n) { config_.max_backups = static_cast<uint8_t>(n); }
 
   /** Is WWIVBasic scripting enabled */
   [[nodiscard]] bool scripting_enabled() const noexcept;
@@ -168,18 +257,16 @@ public:
   [[nodiscard]] bool script_package_os_enabled() const noexcept;
   void script_package_os_enabled(bool) noexcept;
 
-/** Modern header */
-  [[nodiscard]] configrec_header_t& header() { return config_.header.header; }
+  /** Modern header */
+  [[nodiscard]] config_header_t& header() { return config_.header; }
 
 private:
-  std::string to_abs_path(const char* dir) const;
+  std::string to_abs_path(const std::string& dir) const;
   void update_paths();
 
   bool initialized_{false};
   const std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
-  uint32_t config_revision_number_{0};
-  uint16_t written_by_wwiv_num_version_{0};
 
   std::string datadir_;
   std::string msgsdir_;
@@ -189,16 +276,15 @@ private:
   std::string script_dir_;
   std::string log_dir_;
 
-  std::unique_ptr<Config430> config_430_;
-  configrec config_{};
+  config_t config_{};
 };
 
 /**
- * Helper to load the config and get the logdir from it. 
+ * Helper to load the config and get the logdir from it.
  * Used by the Logger code.
  */
 std::string LogDirFromConfig(const std::string& bbsdir);
 
-} // namespace
+} // namespace wwiv::sdk
 
 #endif

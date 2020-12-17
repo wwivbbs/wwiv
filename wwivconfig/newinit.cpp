@@ -75,47 +75,34 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
   return false;
 }
 
-static void save_config(const configrec& c) {
-  DataFile<configrec> file(CONFIG_DAT,
-                           File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-  if (file) {
-    file.Write(&c);
-  }
-}
-
 static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  configrec cfg430{};
-  memset(&cfg430, 0, sizeof(configrec));
+  config_t cfg430{};
 
   // Set header
-  cfg430.header.header.config_revision_number = 1;
-  cfg430.header.header.config_size = sizeof(configrec);
-  cfg430.header.header.written_by_wwiv_num_version = wwiv_config_version();
-  to_char_array(cfg430.header.header.signature, "WWIV");
+  cfg430.header.config_revision_number = 5;
+  cfg430.header.written_by_wwiv_num_version = wwiv_config_version();
+  cfg430.header.last_written_date = DateTime::now().to_string();
 
-  to_char_array(cfg430.datadir, "data");
+  cfg430.systempw = "SYSOP";
+  cfg430.systemname = "My WWIV BBS";
+  cfg430.systemphone = "   -   -    ";
+  cfg430.sysopname = "The New Sysop";
 
-  to_char_array(cfg430.systempw, "SYSOP");
-  to_char_array(cfg430.systemname, "My WWIV BBS");
-  to_char_array(cfg430.systemphone, "   -   -    ");
-  to_char_array(cfg430.sysopname, "The New Sysop");
-
-  to_char_array(cfg430.msgsdir, "msgs");
-  to_char_array(cfg430.gfilesdir, "gfiles");
-  to_char_array(cfg430.dloadsdir, "dloads");
-  to_char_array(cfg430.tempdir, FilePath("temp", "1").string());
-  to_char_array(cfg430.menudir, FilePath("gfiles", "menus").string());
-  to_char_array(cfg430.scriptdir, "scripts");
+  cfg430.datadir = "data";
+  cfg430.msgsdir = "msgs";
+  cfg430.gfilesdir = "gfiles";
+  cfg430.dloadsdir = "dloads";
+  cfg430.menudir = FilePath("gfiles", "menus").string();
+  cfg430.scriptdir = "scripts";
 
   cfg430.newusersl = 10;
   cfg430.newuserdsl = 0;
   cfg430.maxwaiting = 50;
-  // Always use 1 for the primary port.
-  cfg430.primaryport = 1;
+
   cfg430.newuploads = 0;
   cfg430.maxusers = 500;
   cfg430.newuser_restrict = restrict_validate;
@@ -128,10 +115,11 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   v.restrict = 0;
   v.sl = 10;
   v.dsl = 0;
-  for (auto& i : cfg430.autoval) {
-    i = v;
+
+  for (auto i = 0; i < 10; i++) {
+    cfg430.autoval.emplace(i, v);
   }
-  for (int i = 0; i < 256; i++) {
+  for (auto i = 0; i < 256; i++) {
     slrec sl{};
     sl.time_per_logon = static_cast<uint16_t>((i / 10) * 10);
     sl.time_per_day = static_cast<uint16_t>(sl.time_per_logon * 2.5);
@@ -177,7 +165,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       sl.posts = 255;
       sl.emails = 255;
     }
-    cfg430.sl[i] = sl;
+    cfg430.sl.emplace(i, sl);
   }
 
   cfg430.userreclen = sizeof(userrec);
@@ -194,10 +182,10 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       4 * (1 + cfg430.max_subs + (cfg430.max_subs + 31) / 32 + (cfg430.max_dirs + 31) / 32);
 
   cfg430.post_call_ratio = 0.0;
-  save_config(cfg430);
 
   // cfg430 is done
   Config config(bbsdir, cfg430);
+  config.Save();
 
   const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);

@@ -79,9 +79,6 @@ static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {
     cout << "setting revision to " << revision << std::endl;
     h.config_revision_number = revision;
   }
-  h.config_size = sizeof(configrec);
-  memset(&h.unused, 0, sizeof(h.unused));
-  h.padding[0] = 0;
 
   if (wwiv_ver >= 500 || revision > 0) {
     cout << "Wrote Config.dat" << std::endl;

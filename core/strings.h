@@ -84,6 +84,17 @@ template <typename A, typename... Args> std::string StrCat(const A& a, const Arg
     return s.size() <= SIZE;
   }
 
+  /**
+   * Safe string -> character array. Ensures the character
+   * array is null-terminated.
+   * NB: will trim the output if it's too long.
+   */
+  template <size_t SIZE> bool to_char_array_trim(char (&out)[SIZE], const std::string& s) noexcept {
+    strncpy(out, s.c_str(), SIZE);
+    out[SIZE - 1] = '\0';
+    return s.size() <= SIZE;
+  }
+
   // Comparisons
   [[nodiscard]] bool IsEquals(const char* str1, const char* str2);
   [[nodiscard]] bool iequals(const char* str1, const char* str2);

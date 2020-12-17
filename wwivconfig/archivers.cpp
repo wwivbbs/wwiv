@@ -146,18 +146,6 @@ bool edit_archivers(wwiv::sdk::Config& config) {
     }
   } while (!done);
 
-  // Copy first four new format archivers to oldarcsrec
-  // This was the 4.24 and lower place for them.  4.31 introduced
-  // the new archivers record.
-  for (int j = 0; j < 4; j++) {
-    auto a = config.arc(j);
-    to_char_array(a.extension, arc[j].extension);
-    to_char_array(a.arca, arc[j].arca);
-    to_char_array(a.arce, arc[j].arce);
-    to_char_array(a.arcl, arc[j].arcl);
-    config.arc(j, a);
-  }
-
   // seek to beginning of file, write arcrecs, close file
   file.Seek(0, File::Whence::begin);
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
