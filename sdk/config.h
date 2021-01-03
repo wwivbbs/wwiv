@@ -18,9 +18,10 @@
 #ifndef INCLUDED_SDK_CONFIG_H
 #define INCLUDED_SDK_CONFIG_H
 
-#include "sdk/vardec.h"
+#include "sdk/vardec.h" // valrec and slrec
 #include <filesystem>
 #include <map>
+#include <string>
 
 namespace wwiv::sdk {
 
@@ -262,7 +263,7 @@ public:
   [[nodiscard]] config_header_t& header() { return config_.header; }
 
 private:
-  std::string to_abs_path(const std::string& dir) const;
+  [[nodiscard]] std::string to_abs_path(const std::string& dir) const;
   void update_paths();
 
   bool initialized_{false};

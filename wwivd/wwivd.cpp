@@ -35,14 +35,15 @@
 #include "wwivd/wwivd_http.h"
 #include "wwivd/wwivd_non_http.h"
 #include <atomic>
+#include <csignal>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <signal.h>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
+
 #ifdef _WIN32
 #include <WS2tcpip.h>
 #else // _WIN32
@@ -98,10 +99,10 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
  *  on UNIX platforms.
  */
 int Main(CommandLine& cmdline) {
-  auto wwiv_dir = cmdline.bbsdir();
+  const auto wwiv_dir = cmdline.bbsdir();
   VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
 
-  auto wwiv_user = cmdline.arg("wwiv_user").as_string();
+  const auto wwiv_user = cmdline.arg("wwiv_user").as_string();
   VLOG(2) << "Using WWIV_USER: " << wwiv_user;
 
   const Config config{wwiv_dir};

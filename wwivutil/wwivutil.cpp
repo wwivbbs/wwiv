@@ -21,6 +21,7 @@
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/config430.h"
 #include "wwivutil/acs/acs.h"
 #include "wwivutil/conf/conf.h"
 #include "wwivutil/config/config.h"
@@ -34,7 +35,6 @@
 #include "wwivutil/status/status.h"
 #include "wwivutil/subs/subs.h"
 #include <algorithm>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -74,13 +74,23 @@ public:
       Add(std::make_unique<PrintCommand>());
       Add(std::make_unique<StatusCommand>());
       Add(std::make_unique<SubsCommand>());
-      if (!cmdline_.Parse()) { return 1; }
-      Config config(cmdline_.bbsdir());
-      if (!config.IsInitialized()) {
-        LOG(ERROR) << "Unable to load CONFIG.DAT.";
+      if (!cmdline_.Parse()) {
         return 1;
       }
-      command_config_.reset(new Configuration(&config));
+      auto config = std::make_unique<Config>(cmdline_.bbsdir());
+      if (!config->IsInitialized()) {
+        // We didn't load config.json, let's try to load config.dat.
+        const Config430 c430(cmdline_.bbsdir());
+        if (!c430.IsInitialized()) {
+          // We couldn't load either.
+          LOG(ERROR) << "Unable to load config.json or config.dat";
+          return 1;
+        }
+        // We have a good 430.
+        LOG(INFO) << "No config.json found, using WWIV 4.x config.dat.";
+        config = std::make_unique<Config>(cmdline_.bbsdir(), c430.to_json_config());
+      }
+      command_config_ = std::make_shared<Configuration>(std::move(config));
       if (!command_config_->initialized()) {
         LOG(ERROR) << "Unable to load NETWORKS.";
         return 1;
@@ -94,7 +104,7 @@ public:
   }
 
 private:
-  void Add(std::unique_ptr<UtilCommand> cmd) {
+  void Add(std::unique_ptr<UtilCommand>&& cmd) {
     auto* c = cmd.get();
     cmdline_.add(std::move(cmd));
     c->AddStandardArgs();
@@ -104,15 +114,15 @@ private:
 
   void SetConfigs() {
     for (auto* s : subcommands_) {
-      s->set_config(command_config_.get());
+      s->set_config(command_config_);
     }
   }
   std::vector<UtilCommand*> subcommands_;
   CommandLine cmdline_;
-  std::unique_ptr<Configuration> command_config_;
+  std::shared_ptr<Configuration> command_config_;
 };
 
-}  // namespace wwiv::wwivutil
+}  // namespace
 
 int main(int argc, char *argv[]) {
   wwiv::wwivutil::WWIVUtil wwivutil(argc, argv);

@@ -50,7 +50,11 @@ bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
   return added;
 }
 
-bool UtilCommand::set_config(Configuration* config) { 
+Configuration* UtilCommand::config() const {
+  return config_.get();
+}
+
+bool UtilCommand::set_config(const std::shared_ptr<Configuration>& config) { 
   for (const auto& s : subcommands_) {
     s->set_config(config);
   }

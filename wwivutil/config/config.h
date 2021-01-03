@@ -15,24 +15,22 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_CONFIG_H__
-#define __INCLUDED_WWIVUTIL_CONFIG_H__
+#ifndef INCLUDED_WWIVUTIL_CONFIG_H
+#define INCLUDED_WWIVUTIL_CONFIG_H
 
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+namespace wwiv::wwivutil {
 
-class ConfigCommand: public UtilCommand {
+class ConfigCommand final : public UtilCommand {
 public:
   ConfigCommand(): UtilCommand("config", "WWIV config commands.") {}
-  virtual ~ConfigCommand() {}
+  ~ConfigCommand() = default;
   bool AddSubCommands() override final;
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
 
-#endif  // __INCLUDED_WWIVUTIL_CONFIG_H__
+#endif

@@ -24,47 +24,48 @@
 #include "core/command_line.h"
 #include "sdk/config.h"
 #include "sdk/net/networks.h"
+#include <memory>
 
 namespace wwiv::wwivutil {
 
-class Configuration {
+class Configuration final {
 public:
-  explicit Configuration(wwiv::sdk::Config* config) : config_(config), networks_(*config) {
+  explicit Configuration(std::unique_ptr<sdk::Config>&& config)
+      : config_(std::move(config)), networks_(*config_) {
     if (!networks_.IsInitialized()) {
       initialized_ = false;
     }
   }
-  virtual ~Configuration() = default;
+  ~Configuration() = default;
 
-  [[nodiscard]] wwiv::sdk::Config* config() { return config_; }
+  [[nodiscard]] sdk::Config* config() const { return config_.get(); }
   [[nodiscard]] bool initialized() const { return initialized_; }
-  [[nodiscard]] wwiv::sdk::Networks networks() const { return networks_; }
+  [[nodiscard]] sdk::Networks networks() const { return networks_; }
 
 private:
   const std::string bbsdir_;
-  wwiv::sdk::Config* config_{nullptr};
-  wwiv::sdk::Networks networks_;
+  std::unique_ptr<sdk::Config> config_;
+  sdk::Networks networks_;
   bool initialized_{true};
 };
 
 /** WWIVUTIL Command */
-class UtilCommand: public wwiv::core::CommandLineCommand {
+class UtilCommand : public core::CommandLineCommand {
 public:
   UtilCommand(const std::string& name, const std::string& description);
-  virtual ~UtilCommand();
+  ~UtilCommand() override;
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
   bool add(std::shared_ptr<UtilCommand> cmd);
 
-  [[nodiscard]] Configuration* config() const { return config_; }
-  bool set_config(Configuration* config);
+  [[nodiscard]] Configuration* config() const;
+  bool set_config(const std::shared_ptr<Configuration>& config);
 
 private:
-  Configuration* config_{nullptr};
+  std::shared_ptr<Configuration> config_;
   std::vector<std::shared_ptr<UtilCommand>> subcommands_;
 };
 
-}  // namespace wwivutil::wwiv
-
+} // namespace wwiv::wwivutil
 
 #endif
