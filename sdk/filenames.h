@@ -57,6 +57,7 @@ const constexpr auto CHAINS_JSON = "chains.json";
 #define CMDPARAM_NOEXT "cmdparam"
 
 #define CONFIG_DAT "config.dat"
+#define CONFIG_JSON "config.json"
 #define CONFIG_OVR "config.ovr"
 
 #define COMMENT_TXT "comment.txt"

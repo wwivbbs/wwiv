@@ -2,6 +2,14 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
+# CONFIG.JSON
+
+* Make wwivconfig upgrade work.
+* Make sure network tools can still use legacy config.dat
+* make sure bbs wants config.json
+* make sure wwivconfig can edit wwivd and networks for legacy 4.24 and 4.30 format
+
+
 # WWIVconfig
 
 * Change hte way the color schemes work in localui, reuse the init_pairs code

@@ -561,7 +561,7 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
   return config_upgrade_state_t::upgraded;
 }
 
-int final_wwiv_config_version() {
+uint32_t final_wwiv_config_version() {
   // TODO(rushfan): Update when we add a new version.
   return 5;
 }

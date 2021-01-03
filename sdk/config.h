@@ -119,7 +119,7 @@ struct config_t {
 
 class Config {
 public:
-  Config(const std::filesystem::path& root_directory, const config_t& config);
+  Config(std::filesystem::path root_directory, config_t config);
   explicit Config(const Config& c);
   explicit Config(std::filesystem::path root_directory);
   ~Config();
@@ -135,7 +135,8 @@ public:
                           const std::string& dloadsdir, const std::string& scriptdir);
 
   [[nodiscard]] bool versioned_config_dat() const { return versioned_config_dat_; }
-  [[deprecated]] [[nodiscard]] bool is_5xx_or_later() const { return true; }
+  // ReSharper disable once CppMemberFunctionMayBeStatic
+  [[nodiscard]] bool is_5xx_or_later() const { return true; }
   [[nodiscard]] int written_by_wwiv_num_version() const {
     return config_.header.written_by_wwiv_num_version;
   }

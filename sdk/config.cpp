@@ -15,23 +15,28 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include <utility>
+
 #include "sdk/config.h"
 
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/config_cereal.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include "sdk/config_cereal.h"
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv::sdk {
 
-Config::Config(const std::filesystem::path& root_directory, const config_t& config)
-    : initialized_(true), root_directory_(root_directory), config_(config) {
+Config::Config(std::filesystem::path root_directory, config_t config)
+    : initialized_(true), root_directory_(std::move(root_directory)),
+      config_(std::move(config)) {
   update_paths();
 }
 
@@ -58,6 +63,7 @@ bool Config::Load() {
   // We've initialized something. Update absolute paths.
   update_paths();
   versioned_config_dat_ = true;
+  return true;
 }
 
 bool Config::Save() {
@@ -127,7 +133,14 @@ void Config::newuser_restrict(uint16_t d) { config_.newuser_restrict = d; }
 
 const valrec& Config::auto_val(int n) const { return stl::at(config_.autoval, n); }
 
-const slrec& Config::sl(int n) const { return stl::at(config_.sl, n); }
+static const slrec empty_sl{};
+
+const slrec& Config::sl(int n) const {
+  if (!stl::contains(config_.sl, n)) {
+    return empty_sl;
+  }
+  return stl::at(config_.sl, n);
+}
 
 bool Config::scripting_enabled() const noexcept {
   return !(config_.script_flags & script_flag_disable_script);
@@ -158,7 +171,7 @@ std::string Config::to_abs_path(const std::string& dir) const {
 }
 
 std::string LogDirFromConfig(const std::string& bbsdir) {
-  Config config{bbsdir};
+  const Config config{bbsdir};
   if (!config.IsInitialized()) {
     return {};
   }

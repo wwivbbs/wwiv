@@ -429,6 +429,7 @@ BinkState BinkP::WaitConn() {
       const auto lower_case_network_name = ToStringLowerCase(net.name);
       network_addresses = fmt::format("20000:20000/{}@{}", net.sysnum, lower_case_network_name);
     } else if (config_->config().is_5xx_or_later()) {
+      // We don't support FTN on 4.x
       try {
         // Present single FTN address.
         const FidoAddress address(net.fido.fido_address);

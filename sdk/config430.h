@@ -36,7 +36,9 @@ public:
   void set_config(const configrec* config, bool update_paths);
 
   /** Provides a modern JSON version of the config from here. */
-  config_t to_json_config(std::vector<arcrec>);
+  [[nodiscard]] config_t to_json_config(std::vector<arcrec>) const;
+  /** Provides a modern JSON version of the config from here without arcs. */
+  [[nodiscard]] config_t to_json_config() const;
   [[nodiscard]] const configrec* config() const;
   bool Load();
   bool Save();
@@ -46,7 +48,7 @@ public:
   [[nodiscard]] uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
   [[nodiscard]] uint32_t config_revision_number() const { return config_revision_number_; }
 
-  [[nodiscard]] bool IsReadable() const;
+  [[nodiscard]] std::string root_directory() const { return root_directory_.string(); }
 
 private:
   void update_paths();

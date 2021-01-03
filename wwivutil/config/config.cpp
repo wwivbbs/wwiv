@@ -20,9 +20,7 @@
 #include "sdk/config.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
-#include "core/file.h"
 #include "core/strings.h"
-#include "sdk/filenames.h"
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -51,15 +49,6 @@ static int show_version(const Config& config) {
   cout << "Config Revision #       : " << config.config_revision_number() << std::endl;
 
   return 0;
-}
-
-bool save_config(configrec& c) {
-  DataFile<configrec> file(CONFIG_DAT,
-                           File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-  if (file) {
-    return file.Write(&c);
-  }
-  return false;
 }
 
 static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {

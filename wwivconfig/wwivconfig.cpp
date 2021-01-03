@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "wwivconfig/wwivconfig.h"
 
-
 #include "common/datetime.h"
 #include "core/command_line.h"
 #include "core/datafile.h"
@@ -35,6 +34,7 @@
 #include "localui/ui_win.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/config.h"
+#include "sdk/config430.h"
 #include "sdk/filenames.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
@@ -55,17 +55,16 @@
 #include "wwivconfig/system_info.h"
 #include "wwivconfig/user_editor.h"
 #include "wwivconfig/wwivd_ui.h"
+
 #include <clocale>
 #include <cstdlib>
 #include <memory>
 
-using std::string;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsdir) {
+static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
   auto num_instances = oini.value("NUM_INSTANCES", 4);
 
@@ -74,7 +73,7 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsd
     auto instance_tag = fmt::format("WWIV-{}", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
-    auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
+    auto temp_directory = ini.value<std::string>("TEMP_DIRECTORY");
     if (temp_directory.empty()) {
       LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
       return false;
@@ -82,7 +81,7 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const string& bbsd
 
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-    auto batch_directory = ini.value<string>("BATCH_DIRECTORY", temp_directory);
+    auto batch_directory = ini.value<std::string>("BATCH_DIRECTORY", temp_directory);
 
     // Replace %n with instance number value.
     const auto instance_num_string = std::to_string(i);
@@ -158,7 +157,7 @@ int main(int argc, char* argv[]) {
     ScopeExit at_exit(Logger::ExitLogger);
 
     const auto app = std::make_unique<WWIVConfigApplication>();
-    return app->main(argc, argv);
+    return app->Main(argc, argv);
   } catch (const std::exception& e) {
     LOG(INFO) << "Fatal exception launching WWIVconfig: " << e.what();
   } catch (...) {
@@ -196,11 +195,16 @@ enum class ShouldContinue { CONTINUE, EXIT };
 
 static ShouldContinue
 read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Config& config) {
-  // Convert 4.2X to 4.3 format if needed.
-  configrec cfg{};
+  const auto config_json_path = FilePath(config.root_directory(), CONFIG_JSON);
+  if (File::Exists(config_json_path)) {
+    // If we already have a config.json, nothing to do here.
+    return ShouldContinue::CONTINUE;
+  }
 
-  File file(config.config_filename());
+  const auto config_dat_path = FilePath(config.root_directory(), CONFIG_DAT);
+  File file(config_dat_path);
   if (file.length() != sizeof(configrec)) {
+    // Convert 4.2X to 4.3 format if needed.
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
     if (!dialog_yn(curses_out->window(), "Upgrade config.dat from 4.x format?")) {
       return ShouldContinue::EXIT;
@@ -209,6 +213,7 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Conf
     convert_config_424_to_430(window, config.datadir(), config.config_filename());
   }
 
+  configrec cfg{};
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     file.Read(&cfg, sizeof(configrec));
   }
@@ -268,25 +273,28 @@ static bool config_offsets_matches_actual(const Config& config) {
   return true;
 }
 
-bool legacy_4xx_menu(const Config& config, UIWindow* window) {
-  bool done = false;
-  int selected = -1;
+bool legacy_4xx_menu(const Config430& config430, UIWindow* window) {
+  auto done = false;
+  auto selected = -1;
+
+  std::vector<arcrec> arcs;
+  Config config(config430.root_directory(), config430.to_json_config(arcs));
   do {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
 
-    vector<ListBoxItem> items = {{"N. Network Configuration", 'N'},
-                                 {"U. User Editor", 'U'},
-                                 {"W. wwivd Configuration", 'W'},
-                                 {"Q. Quit", 'Q'}};
+    std::vector<ListBoxItem> items = {{"N. Network Configuration", 'N'},
+                                      {"U. User Editor", 'U'},
+                                      {"W. wwivd Configuration", 'W'},
+                                      {"Q. Quit", 'Q'}};
 
-    int selected_hotkey = -1;
+    auto selected_hotkey = -1;
     {
       ListBox list(window, "Main Menu", items);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
       list.set_selected(selected);
-      ListBoxResult result = list.Run();
+      auto result = list.Run();
       selected = list.selected();
       if (result.type == ListBoxResultType::HOTKEY) {
         selected_hotkey = result.hotkey;
@@ -313,7 +321,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
       wwivd_ui(config);
       break;
     case '$': {
-      vector<string> lines;
+      std::vector<std::string> lines;
       std::ostringstream ss;
       ss << "WWIV " << full_version() << " WWIVconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());
@@ -328,7 +336,7 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
   return true;
 }
 
-int WWIVConfigApplication::main(int argc, char** argv) const {
+int WWIVConfigApplication::Main(int argc, char** argv) const {
   setlocale(LC_ALL, "");
 
   CommandLine cmdline(argc, argv, "net");
@@ -344,7 +352,6 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
                                                   "Run the network editor and then exit.", false));
   cmdline.add_argument(
       BooleanCommandLineArgument("4xx", '4', "Only run editors that work on WWIV 4.xx.", false));
-  cmdline.add_argument({"menu_dir", "Override the menu directory when using --menu_editor.", ""});
 
   if (!cmdline.Parse() || cmdline.help_requested()) {
     ShowHelp(cmdline);
@@ -379,15 +386,9 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
   Config config(bbsdir);
   std::set<int> need_network3;
 
-  bool legacy_4xx_mode = false;
   if (cmdline.barg("menu_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
-    auto menu_dir = config.menudir();
-    auto menu_dir_arg = cmdline.sarg("menu_dir");
-    if (!menu_dir_arg.empty()) {
-      menu_dir = menu_dir_arg;
-    }
     menus(config);
     return 0;
   }
@@ -406,6 +407,7 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
     networks(config, need_network3);
     return 0;
   }
+  auto legacy_4xx_mode = false;
   if (cmdline.barg("4xx")) {
     if (!config_offsets_matches_actual(config)) {
       return 1;
@@ -419,7 +421,8 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
   }
 
   if (legacy_4xx_mode) {
-    legacy_4xx_menu(config, window);
+    Config430 config43(bbsdir);
+    legacy_4xx_menu(config43, window);
     return 0;
   }
   CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
@@ -454,21 +457,21 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
 
-    vector<ListBoxItem> items = {{"G. General System Configuration", 'G'},
-                                 {"P. System Paths", 'P'},
-                                 {"T. External Transfer Protocol Configuration", 'T'},
-                                 {"E. External Editor Configuration", 'E'},
-                                 {"S. Security Level Configuration", 'S'},
-                                 {"V. Auto-Validation Level Configuration", 'V'},
-                                 {"A. Archiver Configuration", 'A'},
-                                 {"L. Language Configuration", 'L'},
-                                 {"M. Menu Editor", 'M'},
-                                 {"N. Network Configuration", 'N'},
-                                 {"U. User Editor", 'U'},
-                                 {"X. Update Sub/Directory Maximums", 'X'},
-                                 {"W. wwivd Configuration", 'W'},
-                                 {"R. Scripting Configuration", 'R'},
-                                 {"Q. Quit", 'Q'}};
+    std::vector<ListBoxItem> items = { {"G. General System Configuration", 'G'},
+                                       {"P. System Paths", 'P'},
+                                       {"T. External Transfer Protocol Configuration", 'T'},
+                                       {"E. External Editor Configuration", 'E'},
+                                       {"S. Security Level Configuration", 'S'},
+                                       {"V. Auto-Validation Level Configuration", 'V'},
+                                       {"A. Archiver Configuration", 'A'},
+                                       {"L. Language Configuration", 'L'},
+                                       {"M. Menu Editor", 'M'},
+                                       {"N. Network Configuration", 'N'},
+                                       {"U. User Editor", 'U'},
+                                       {"X. Update Sub/Directory Maximums", 'X'},
+                                       {"W. wwivd Configuration", 'W'},
+                                       {"R. Scripting Configuration", 'R'},
+                                       {"Q. Quit", 'Q'} };
 
     auto selected_hotkey = -1;
     {
@@ -535,7 +538,7 @@ int WWIVConfigApplication::main(int argc, char** argv) const {
       up_subs_dirs(config);
       break;
     case '$': {
-      vector<string> lines;
+      std::vector<std::string> lines;
       std::ostringstream ss;
       ss << "WWIV " << full_version() << " WWIVconfig compiled " << wwiv_compile_datetime();
       lines.push_back(ss.str());

@@ -33,7 +33,6 @@ namespace wwiv::sdk {
 
 static const int CONFIG_DAT_SIZE_424 = 5660;
 
-
 Config430::Config430(const Config430& config) : Config430(config.root_directory_) {}
 
 Config430::Config430(const configrec& config) { set_config(&config, true); }
@@ -108,12 +107,6 @@ Config430::Config430(const config_t& c5) {
   update_paths();
 }
 
-bool Config430::IsReadable() const {
-  const DataFile<configrec> configFile(FilePath(root_directory_, CONFIG_DAT),
-                                       File::modeReadOnly | File::modeBinary);
-  return configFile ? true : false;
-}
-
 Config430::Config430(const std::filesystem::path& root_directory)
     : root_directory_(root_directory) {
   DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
@@ -126,7 +119,7 @@ Config430::Config430(const std::filesystem::path& root_directory)
   if (!initialized_) {
     configFile.Seek(0);
     auto size_read = configFile.file().Read(&config_, CONFIG_DAT_SIZE_424);
-    initialized_ = (size_read == CONFIG_DAT_SIZE_424);
+    initialized_ = size_read == CONFIG_DAT_SIZE_424;
     written_by_wwiv_num_version_ = 424;
     config_revision_number_ = 0;
     VLOG(1) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
@@ -151,7 +144,6 @@ void Config430::update_paths() {
     config_revision_number_ = h.config_revision_number;
     written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
   }
-
 }
 
 void Config430::set_config(const configrec* config, bool need_to_update_paths) {
@@ -163,10 +155,10 @@ void Config430::set_config(const configrec* config, bool need_to_update_paths) {
   }
 }
 
-config_t Config430::to_json_config(std::vector<arcrec> arcs) {
+config_t Config430::to_json_config(std::vector<arcrec> arcs) const {
   config_t c{};
 
-  auto&h = c.header;
+  auto& h = c.header;
   h.config_revision_number = config_.header.header.config_revision_number;
   h.written_by_wwiv_num_version = config_.header.header.written_by_wwiv_num_version;
   h.last_written_date = DateTime::now().to_string();
@@ -205,18 +197,18 @@ config_t Config430::to_json_config(std::vector<arcrec> arcs) {
   }
   c.userreclen = config_.userreclen;
   c.waitingoffset = config_.waitingoffset;
-  c.inactoffset= config_.inactoffset;
+  c.inactoffset = config_.inactoffset;
   c.wwiv_reg_number = config_.wwiv_reg_number;
   c.newuserpw = config_.newuserpw;
   c.post_call_ratio = config_.post_call_ratio;
-  c.sysstatusoffset= config_.sysstatusoffset;
+  c.sysstatusoffset = config_.sysstatusoffset;
   c.fuoffset = config_.fuoffset;
   c.fsoffset = config_.fsoffset;
-  c.fnoffset= config_.fnoffset;
-  c.max_subs= config_.max_subs;
+  c.fnoffset = config_.fnoffset;
+  c.max_subs = config_.max_subs;
   c.max_dirs = config_.max_dirs;
-  c.qscn_len= config_.qscn_len;
-  c.max_backups= config_.max_backups;
+  c.qscn_len = config_.qscn_len;
+  c.max_backups = config_.max_backups;
   c.script_flags = config_.script_flags;
   c.menudir = config_.menudir;
 
@@ -231,6 +223,11 @@ config_t Config430::to_json_config(std::vector<arcrec> arcs) {
     to_char_array(a.arcl, oa.arcl);
   }
   return c;
+}
+
+config_t Config430::to_json_config() const {
+  const std::vector<arcrec> empty_arcs;
+  return to_json_config(empty_arcs);
 }
 
 const configrec* Config430::config() const { return &config_; }
@@ -256,4 +253,4 @@ bool Config430::Save() {
   return file.Write(&config_, sizeof(configrec)) == sizeof(configrec);
 }
 
-} // namespace wwiv
+} // namespace wwiv::sdk

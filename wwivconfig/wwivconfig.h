@@ -27,7 +27,7 @@ class WWIVConfigApplication final {
   WWIVConfigApplication();
   ~WWIVConfigApplication();
 
-  int main(int argc, char* argv[]) const;
+  int Main(int argc, char* argv[]) const;
 };
 
 

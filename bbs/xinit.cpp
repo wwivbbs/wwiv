@@ -370,15 +370,15 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 bool Application::ReadConfig() {
   config_.reset(new Config(bbspath()));
   if (!config_->IsInitialized()) {
-    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    LOG(ERROR) << "config NOT FOUND.";
     return false;
   }
 
   if (!config_->versioned_config_dat()) {
-    std::cerr << "Please run WWIVconfig to upgrade " << CONFIG_DAT
-              << " to the most recent version.\r\n";
-    LOG(ERROR) << "Please run WWIVconfig to upgrade " << CONFIG_DAT
-               << " to the most recent version.";
+    const auto msg = fmt::format(
+        "Please run WWIVconfig to upgrade {} to the most recent version.", CONFIG_JSON);
+    std::cerr << msg << std::endl;
+    LOG(ERROR) << msg;
     sleep_for(seconds(2));
     return false;
   }

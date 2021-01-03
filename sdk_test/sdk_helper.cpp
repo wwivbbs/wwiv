@@ -17,22 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 #include "sdk_test/sdk_helper.h"
-#include <sstream>
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/wwivport.h"
 #include "core_test/file_helper.h"
-
-#include "gtest/gtest.h"
-#include "core/datetime.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
+#include "gtest/gtest.h"
+#include <string>
+
 
 using namespace std;
 using namespace wwiv::core;
@@ -67,36 +64,30 @@ SdkHelper::SdkHelper()
   logs_ = CreatePath("logs");
 
   {
-    configrec c = {};
-    to_char_array(c.msgsdir, "msgs");
-    to_char_array(c.gfilesdir, "gfiles");
-    to_char_array(c.menudir, "menus");
-    to_char_array(c.datadir, "data");
-    to_char_array(c.logdir, "logs");
-    to_char_array(c.dloadsdir, "dloads");
+    wwiv::sdk::config_t c{};
+    c.msgsdir = "msgs";
+    c.gfilesdir = "gfiles";
+    c.menudir = "menus";
+    c.datadir = "data";
+    c.logdir = "logs";
+    c.dloadsdir = "dloads";
 
     // Add header version.
     // TODO(rushfan): This really should all be done in the Config class and also used
     // by wwivconfig from there.
-    configrec_header_t h = {};
-    h.config_revision_number = 0;
-    h.config_size = sizeof(configrec);
+    c.header.config_revision_number = 0;
     c.userreclen = sizeof(userrec);
-    h.written_by_wwiv_num_version = wwiv_config_version();
-    to_char_array(h.signature, "WWIV");
-    c.header.header = h;
+    c.header.written_by_wwiv_num_version = wwiv_config_version();
 
     // Set some more defaults various tests need
     c.maxusers = 100;
     c.max_dirs = 64;
     c.max_subs = 64;
 
-    File cfile(FilePath(root_, CONFIG_DAT));
-    if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
-      throw std::runtime_error("failed to create config.dat");
+    wwiv::sdk::Config config(root_, c);
+    if (!config.Save()) {
+      throw std::runtime_error("failed to create config.json");
     }
-    cfile.Write(&c, sizeof(configrec));
-    cfile.Close();
   }
 
   {
@@ -111,7 +102,7 @@ SdkHelper::SdkHelper()
 }
 
 std::filesystem::path SdkHelper::CreatePath(const string& name) {
-  const auto path = files_.CreateTempFilePath(FilePath("bbs", name).string());
+  auto path = files_.CreateTempFilePath(FilePath("bbs", name).string());
   File::mkdirs(path);
   return path;
 }
