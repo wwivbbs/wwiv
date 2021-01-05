@@ -24,13 +24,25 @@
 
 namespace wwiv::sdk {
 
-class Config430 {
+class Config430 final {
 public:
   explicit Config430(const Config430& config);
   explicit Config430(const configrec& config);
   explicit Config430(const config_t& c5);
   explicit Config430(const std::filesystem::path& root_directory);
+  Config430(const std::filesystem::path& root_directory, const config_t& c5);
   ~Config430();
+
+  // remove unneeded operators/constructors
+
+  Config430() = delete;
+  explicit Config430(Config430&& config) = delete;
+  Config430& operator=(const Config430&) = delete;
+  Config430& operator=(Config430&&) = delete;
+
+  // members
+
+  [[nodiscard]] std::string config_filename() const;
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const configrec* config, bool update_paths);
@@ -55,7 +67,7 @@ private:
 
   bool initialized_{false};
   configrec config_{};
-  const std::filesystem::path root_directory_;
+  std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
   uint32_t config_revision_number_{0};
   uint16_t written_by_wwiv_num_version_{0};

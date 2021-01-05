@@ -21,7 +21,6 @@
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/config430.h"
 #include "wwivutil/acs/acs.h"
 #include "wwivutil/conf/conf.h"
 #include "wwivutil/config/config.h"
@@ -77,18 +76,10 @@ public:
       if (!cmdline_.Parse()) {
         return 1;
       }
-      auto config = std::make_unique<Config>(cmdline_.bbsdir());
-      if (!config->IsInitialized()) {
-        // We didn't load config.json, let's try to load config.dat.
-        const Config430 c430(cmdline_.bbsdir());
-        if (!c430.IsInitialized()) {
-          // We couldn't load either.
-          LOG(ERROR) << "Unable to load config.json or config.dat";
-          return 1;
-        }
-        // We have a good 430.
-        LOG(INFO) << "No config.json found, using WWIV 4.x config.dat.";
-        config = std::make_unique<Config>(cmdline_.bbsdir(), c430.to_json_config());
+      auto config = load_any_config(cmdline_.bbsdir());
+      if (!config) {
+        LOG(ERROR) << "Unable to load config.json or config.dat";
+        return 1;
       }
       command_config_ = std::make_shared<Configuration>(std::move(config));
       if (!command_config_->initialized()) {

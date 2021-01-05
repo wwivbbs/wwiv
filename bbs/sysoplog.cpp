@@ -22,9 +22,9 @@
 #include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "fmt/printf.h"
 #include "sdk/config.h"
-#include <cstddef>
 #include <string>
 
 using std::string;
@@ -33,75 +33,65 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local function prototypes
-void AddLineToSysopLogImpl(int cmd, const string& text);
+enum class log_cmd_t{ log_string, log_char };
+void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text);
 
-static const int LOG_STRING = 0;
-static const int LOG_CHAR = 4;
-static const std::size_t CAT_BUFSIZE = 8192;
 
 /*
-* Creates sysoplog filename in s, from datestring.
+* Creates sysop log filename in s, from date string.
 */
 string GetSysopLogFileName(const string& d) {
   return fmt::sprintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
 /*
-* Returns instance (temporary) sysoplog filename in s.
+* Returns instance (temporary) sysop log filename in s.
 */
 std::string GetTemporaryInstanceLogFileName() {
   return fmt::sprintf("inst-%3.3u.log", a()->instance_number());
 }
 
 /*
-* Copies temporary/instance sysoplog to primary sysoplog file.
+* Copies temporary/instance sysop log to primary sysop log file.
 */
 void catsl() {
-  auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-  auto instance_logfilename = FilePath(a()->config()->gfilesdir(), temporary_log_filename);
+  const auto templog_fn = FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
+  if (!File::Exists(templog_fn)) {
+    return;
+  }
 
-  if (File::Exists(instance_logfilename)) {
-    auto basename = GetSysopLogFileName(date());
-    File wholeLogFile(FilePath(a()->config()->gfilesdir(), basename));
-
-    auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
-    if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      wholeLogFile.Seek(0, File::Whence::begin);
-      wholeLogFile.Seek(0, File::Whence::end);
-
-      File instLogFile(instance_logfilename);
-      if (instLogFile.Open(File::modeReadOnly | File::modeBinary)) {
-        int num_read = 0;
-        do {
-          num_read = instLogFile.Read(buffer.get(), CAT_BUFSIZE);
-          if (num_read > 0) {
-            wholeLogFile.Write(buffer.get(), num_read);
-          }
-        } while (num_read == CAT_BUFSIZE);
-
-        instLogFile.Close();
-        File::Remove(instance_logfilename);
-      }
-      wholeLogFile.Close();
+  std::string instance_text;
+  {
+    TextFile tmplog(templog_fn, "rt");
+    if (!tmplog) {
+      return;
     }
+    instance_text = tmplog.ReadFileIntoString();
+  }
+
+  const auto basename = GetSysopLogFileName(date());
+  TextFile sysoplog_fn(FilePath(a()->config()->gfilesdir(), basename), "at");
+  if (sysoplog_fn) {
+    sysoplog_fn.WriteLine(instance_text);
+    File::Remove(templog_fn);
   }
 }
 
 /*
-* Writes a line to the sysoplog.
+* Writes a line to the sysop log.
 */
-void AddLineToSysopLogImpl(int cmd, const string& text) {
+void AddLineToSysopLogImpl(log_cmd_t cmd, const string& text) {
   static string::size_type midline = 0;
   
   if (a()->config()->gfilesdir().empty()) {
-    LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
+    LOG(ERROR) << "gfilesdir empty, can't write to sysop log: " << text;
     return;
   }
   const static auto s_sysoplog_filename =
       FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
 
   switch (cmd) {
-  case LOG_STRING: {  // Write line to sysop's log
+  case log_cmd_t::log_string: {  // Write line to sysop log
     File logFile(s_sysoplog_filename);
     if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
@@ -121,7 +111,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     logFile.Close();
   }
   break;
-  case LOG_CHAR: {
+  case log_cmd_t::log_char: {
     File logFile(s_sysoplog_filename);
     if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       // sysop log ?
@@ -143,27 +133,24 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     logFile.Close();
   }
   break;
-  default: {
-    AddLineToSysopLogImpl(LOG_STRING, StrCat("Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = ", std::to_string(cmd)));
-  } break;
   }
 }
 
 /*
-* Writes a string to the sysoplog.
+* Writes a string to the sysop log.
 */
 void sysopchar(const string& text) {
   if (!text.empty()) {
-    AddLineToSysopLogImpl(LOG_CHAR, text);
+    AddLineToSysopLogImpl(log_cmd_t::log_char, text);
   }
 }
 
 sysoplog::~sysoplog() {
   try {
     if (indent_) {
-      AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", stream_.str()));
+      AddLineToSysopLogImpl(log_cmd_t::log_string, StrCat("   ", stream_.str()));
     } else {
-      AddLineToSysopLogImpl(LOG_STRING, stream_.str());
+      AddLineToSysopLogImpl(log_cmd_t::log_string, stream_.str());
     }
   } catch (...) {
     // NOP

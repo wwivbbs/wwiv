@@ -296,6 +296,7 @@ bool File::Exists() const noexcept {
   return exists(full_path_name_, ec);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void File::set_length(size_type l) {
   // TODO(rushfan): Use std::filesystem::set_size
 #ifdef _WIN32
@@ -354,7 +355,7 @@ bool File::Remove(const std::filesystem::path& path, bool force) {
   std::error_code ec;
   const auto result = std::filesystem::remove(path, ec);
   if (!result) {
-    LOG(ERROR) << "File::Remove failed: error code: " << ec.value() << "; msg: " << ec.message();
+    LOG(ERROR) << "File::Remove failed: " << path.string() << "; error code: " << ec.value() << "; msg: " << ec.message();
   }
   return result;
 }

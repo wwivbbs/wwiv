@@ -130,7 +130,16 @@ Config430::Config430(const std::filesystem::path& root_directory)
   }
 }
 
+Config430::Config430(const std::filesystem::path& root_directory, const config_t& c5)
+    : Config430(c5) {
+  root_directory_ = root_directory;
+}
+
 Config430::~Config430() = default;
+
+std::string Config430::config_filename() const {
+  return FilePath(root_directory(), CONFIG_DAT).string();
+}
 
 void Config430::update_paths() {
   if (!config_.scriptdir[0]) {

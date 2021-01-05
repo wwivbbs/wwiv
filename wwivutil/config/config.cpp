@@ -21,6 +21,8 @@
 #include "core/command_line.h"
 #include "core/datafile.h"
 #include "core/strings.h"
+#include "sdk/config430.h"
+
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -77,7 +79,7 @@ static bool set_version(Config& config, uint16_t wwiv_ver, uint32_t revision) {
   return false;
 }
 
-class ConfigVersionCommand : public UtilCommand {
+class ConfigVersionCommand final : public UtilCommand {
 public:
   ConfigVersionCommand() : UtilCommand("version", "Sets or Gets the config version") {}
 
@@ -99,6 +101,47 @@ public:
       return show_version(*this->config()->config());
     }
     if (set_or_get == "set") {
+      if (!set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
+                       iarg("revision"))) {
+        std::cout << GetUsage() << GetHelp() << endl;
+        return 1;
+      }
+      return 0;
+    }
+    return 1;
+  }
+
+  bool AddSubCommands() override final {
+    add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
+    add_argument({"revision", "Configuration revision number", ""});
+    return true;
+  }
+};
+
+class ConfigConvertCommand final : public UtilCommand {
+public:
+  ConfigConvertCommand() : UtilCommand("convert", "converts the config to either JSON or DAT format") {}
+
+  [[nodiscard]] std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage: " << std::endl << std::endl;
+    ss << "  json : Writes a config.json." << std::endl;
+    ss << "  dat : Writes a config.dat." << std::endl << std::endl;
+    return ss.str();
+  }
+  int Execute() override final {
+    if (remaining().empty()) {
+      std::cout << GetUsage() << GetHelp() << endl;
+      return 2;
+    }
+    const auto out_format = ToStringLowerCase(remaining().front());
+
+    if (out_format == "dat") {
+      Config430 c430(config()->config()->to_config_t());
+      c430.Save();
+      return show_version(*this->config()->config());
+    }
+    if (out_format == "json") {
       if (!set_version(*this->config()->config(), static_cast<uint16_t>(iarg("wwiv_version")),
                        iarg("revision"))) {
         std::cout << GetUsage() << GetHelp() << endl;

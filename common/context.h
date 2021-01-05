@@ -82,7 +82,7 @@ public:
    * Initializes an empty context, called after Config.dat
    * has been read and processed.
    */
-  void InitalizeContext(const wwiv::sdk::Config& config);
+  void InitalizeContext(const sdk::Config& config);
 
   /**
    * Clears the qscan pointers.

@@ -91,11 +91,11 @@ void StatusManagerCallback(int i) {
     set_net_num(a()->net_num());
   } break;
   default: // NOP
-    ;
+    break;
   }
 }
 
-// Turns a string into a bitmapped unsigned short flag for use with ExecuteExternalProgram.
+// Turns a string into a bit mapped unsigned short flag for use with ExecuteExternalProgram.
 static uint16_t str2spawnopt(const std::string& s) {
   auto return_val = EFLAG_NONE;
   const auto ts = ToStringUpperCase(s);
@@ -181,7 +181,7 @@ static std::string to_array_key(const std::string& n, const std::string& index) 
     } else {                                                                                       \
       (f) = d;                                                                                       \
     }                                                                                              \
-  } while (0)
+  } while(0)
 
 static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FORCE_FBACK, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
@@ -368,15 +368,15 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 }
 
 bool Application::ReadConfig() {
-  config_.reset(new Config(bbspath()));
+  config_ = std::make_unique<Config>(bbspath());
   if (!config_->IsInitialized()) {
-    LOG(ERROR) << "config NOT FOUND.";
+    LOG(ERROR) << config_->config_filename() << " NOT FOUND.";
     return false;
   }
 
   if (!config_->versioned_config_dat()) {
     const auto msg = fmt::format(
-        "Please run WWIVconfig to upgrade {} to the most recent version.", CONFIG_JSON);
+        "Please run WWIVconfig to upgrade {} to the most recent version.", config_->config_filename());
     std::cerr << msg << std::endl;
     LOG(ERROR) << msg;
     sleep_for(seconds(2));
@@ -384,8 +384,8 @@ bool Application::ReadConfig() {
   }
 
   // initialize the user manager
-  user_manager_.reset(new UserManager(*config_));
-  statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
+  user_manager_ = std::make_unique<UserManager>(*config_);
+  statusMgr = std::make_unique<StatusMgr>(config_->datadir(), StatusManagerCallback);
 
   IniFile ini(FilePath(bbspath(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {

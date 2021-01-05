@@ -21,9 +21,11 @@
 
 #include "core/file.h"
 #include "core/jsonfile.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/chains_cereal.h"
 #include "sdk/subs_cereal.h"
 #include "wwivconfig/convert.h"
+
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -31,6 +33,8 @@
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/files/dirs_cereal.h"
+
+namespace wwiv::wwivconfig::convert {
 
 template <typename OLDT, typename NEWT>
 class ConvertJsonFile final {
@@ -83,5 +87,6 @@ public:
   int new_version_;
 };
 
+}
 
 #endif // INCLUDED_WWIVCONFIG_CONVERT_H

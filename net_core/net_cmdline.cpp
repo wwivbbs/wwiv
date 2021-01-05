@@ -24,7 +24,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "sdk/config430.h"
 #include "sdk/net/packets.h"
 #include <filesystem>
 #include <iomanip>
@@ -70,21 +69,11 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
 
   network_number_ = cmdline.arg("net").as_int();
   // TODO(rushfan): Need to look to see if WWIV_CONFIG_FILE is set 1st.
-  config_ = std::make_unique<sdk::Config>(cmdline.bbsdir());
-  if (!config_->IsInitialized()) {
-    // We didn't load config.json, let's try to load config.dat for the
-    // network stack.
-    const sdk::Config430 c430(cmdline.bbsdir());
-    if (!c430.IsInitialized()) {
-      // We couldn't load either.
-      LOG(ERROR) << "Unable to load config.json or config.dat";
-      initialized_ = false;
-      return;
-    }
-
-    // We have a good 430.
-    LOG(INFO) << "No config.json found, using WWIV 4.x config.dat.";
-    config_ = std::make_unique<sdk::Config>(cmdline.bbsdir(), c430.to_json_config());
+  config_ = sdk::load_any_config(cmdline.bbsdir());
+  if (!config_) {
+    LOG(ERROR) << "Unable to load config.json or config.dat";
+    initialized_ = false;
+    return;
   }
   networks_.reset(new sdk::Networks(*config_));
 

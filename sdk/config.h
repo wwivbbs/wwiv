@@ -83,7 +83,7 @@ struct config_t {
   float newusergold;
   // security level data
   std::map<int, slrec> sl;
-  // sysop quik-validation data
+  // sysop quick validation data
   std::map<int, valrec> autoval;
   // user record length
   uint16_t userreclen;
@@ -118,12 +118,21 @@ struct config_t {
   std::string menudir;
 };
 
-class Config {
+class Config final {
 public:
   Config(std::filesystem::path root_directory, config_t config);
   explicit Config(const Config& c);
   explicit Config(std::filesystem::path root_directory);
   ~Config();
+
+  // remove unneeded operators/constructors
+
+  Config() = delete;
+  explicit Config(Config&& config) = delete;
+  Config& operator=(const Config&) = delete;
+  Config& operator=(Config&&) = delete;
+
+  // members
 
   bool Load();
   bool Save();
@@ -131,6 +140,7 @@ public:
   [[nodiscard]] bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized; }
   void set_config(const config_t& config, bool update_paths);
+  [[nodiscard]] const config_t& to_config_t() const;
   void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
                           const std::string& gfilesdir, const std::string& menudir,
                           const std::string& dloadsdir, const std::string& scriptdir);
@@ -262,6 +272,11 @@ public:
   /** Modern header */
   [[nodiscard]] config_header_t& header() { return config_.header; }
 
+  // Is this config read only.
+  [[nodiscard]] bool readonly() const noexcept { return readonly_; }
+  // You probably shouldn't do this unless you are upgrading a dat to JSON.
+  void set_readonly(bool r) { readonly_ = r; }
+
 private:
   [[nodiscard]] std::string to_abs_path(const std::string& dir) const;
   void update_paths();
@@ -269,6 +284,8 @@ private:
   bool initialized_{false};
   const std::filesystem::path root_directory_;
   bool versioned_config_dat_{false};
+  // Is this config read only (meaning it was loaded from a dat file).
+  bool readonly_{true};
 
   std::string datadir_;
   std::string msgsdir_;
@@ -286,6 +303,11 @@ private:
  * Used by the Logger code.
  */
 std::string LogDirFromConfig(const std::string& bbsdir);
+
+/**
+ * Loads a config from either JSON or DAT.
+ */
+std::unique_ptr<Config> load_any_config(const std::string& bbsdir);
 
 } // namespace wwiv::sdk
 

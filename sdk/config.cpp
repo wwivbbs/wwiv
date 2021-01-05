@@ -15,16 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include <utility>
-
 #include "sdk/config.h"
 
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/config430.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
+#include <memory>
+#include <string>
+#include <utility>
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include "sdk/config_cereal.h"
@@ -51,7 +54,7 @@ Config::~Config() = default;
 Config::Config(std::filesystem::path root_directory) : root_directory_(std::move(root_directory)) {
   initialized_ = Load();
   if (!initialized_) {
-    // LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    // LOG(ERROR) << config_filename() << " NOT FOUND.";
   }
 }
 
@@ -63,11 +66,16 @@ bool Config::Load() {
   // We've initialized something. Update absolute paths.
   update_paths();
   versioned_config_dat_ = true;
+  readonly_ = false;
   return true;
 }
 
 bool Config::Save() {
   JsonFile f(FilePath(root_directory_, "config.json"), "config", config_, 1);
+  if (readonly_) {
+    LOG(ERROR) << "Tried to save a readonly config.json!";
+    return false;
+  }
   return f.Save();
 }
 
@@ -89,7 +97,7 @@ void Config::system_phone(const std::string& d) { config_.systemphone = d; }
 void Config::system_password(const std::string& d) { config_.systempw = d; }
 
 std::string Config::config_filename() const {
-  return FilePath(root_directory(), CONFIG_DAT).string();
+  return FilePath(root_directory(), CONFIG_JSON).string();
 }
 
 void Config::update_paths() {
@@ -106,6 +114,10 @@ void Config::update_paths() {
     // If the logdir is empty, leave log_dir_ empty.
     log_dir_ = to_abs_path(config_.logdir);
   }
+}
+
+const config_t& Config::to_config_t() const {
+  return config_;
 }
 
 void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
@@ -176,6 +188,23 @@ std::string LogDirFromConfig(const std::string& bbsdir) {
     return {};
   }
   return config.logdir();
+}
+
+std::unique_ptr<Config> load_any_config(const std::string& bbsdir) {
+  auto config = std::make_unique<Config>(bbsdir);
+  if (config->IsInitialized()) {
+    return config;
+  }
+  // We didn't load config.json, let's try to load config.dat.
+  const Config430 c430(bbsdir);
+  if (!c430.IsInitialized()) {
+    // We couldn't load either.
+    LOG(ERROR) << "Unable to load config.json or config.dat";
+    return {};
+  }
+  // We have a good 430.
+  LOG(INFO) << "No config.json found, using WWIV 4.x config.dat.";
+  return std::make_unique<Config>(bbsdir, c430.to_json_config());
 }
 
 } // namespace wwiv::sdk

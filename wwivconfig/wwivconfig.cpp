@@ -58,11 +58,11 @@
 
 #include <clocale>
 #include <cstdlib>
-#include <memory>
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
+using namespace wwiv::wwivconfig::convert;
 
 static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
@@ -70,17 +70,12 @@ static bool CreateConfigOvrAndUpdateSysConfig(Config& config, const std::string&
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (auto i = 1; i <= num_instances; i++) {
-    auto instance_tag = fmt::format("WWIV-{}", i);
+    const auto instance_tag = fmt::format("WWIV-{}", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
-
-    auto temp_directory = ini.value<std::string>("TEMP_DIRECTORY");
-    if (temp_directory.empty()) {
-      LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
-      return false;
-    }
 
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
+    auto temp_directory = ini.value<std::string>("TEMP_DIRECTORY", "e/%n/temp");
     auto batch_directory = ini.value<std::string>("BATCH_DIRECTORY", temp_directory);
 
     // Replace %n with instance number value.
@@ -156,8 +151,8 @@ int main(int argc, char* argv[]) {
     Logger::Init(argc, argv, config);
     ScopeExit at_exit(Logger::ExitLogger);
 
-    const auto app = std::make_unique<WWIVConfigApplication>();
-    return app->Main(argc, argv);
+    const WWIVConfigApplication app{};
+    return app.Main(argc, argv);
   } catch (const std::exception& e) {
     LOG(INFO) << "Fatal exception launching WWIVconfig: " << e.what();
   } catch (...) {
@@ -169,6 +164,10 @@ static bool IsUserDeleted(const User& user) { return user.data.inact & inact_del
 
 static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   Config config(bbsdir);
+  if (!config.IsInitialized()) {
+    // We only create the sysop account if we're in config.json mode.
+    return false;
+  }
   {
     UserManager usermanager(config);
     auto num_users = usermanager.num_user_records();
@@ -191,64 +190,12 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   return true;
 }
 
-enum class ShouldContinue { CONTINUE, EXIT };
-
-static ShouldContinue
-read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, wwiv::sdk::Config& config) {
-  const auto config_json_path = FilePath(config.root_directory(), CONFIG_JSON);
-  if (File::Exists(config_json_path)) {
-    // If we already have a config.json, nothing to do here.
-    return ShouldContinue::CONTINUE;
-  }
-
-  const auto config_dat_path = FilePath(config.root_directory(), CONFIG_DAT);
-  File file(config_dat_path);
-  if (file.length() != sizeof(configrec)) {
-    // Convert 4.2X to 4.3 format if needed.
-    // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-    if (!dialog_yn(curses_out->window(), "Upgrade config.dat from 4.x format?")) {
-      return ShouldContinue::EXIT;
-    }
-    window->Bkgd(' ');
-    convert_config_424_to_430(window, config.datadir(), config.config_filename());
-  }
-
-  configrec cfg{};
-  if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    file.Read(&cfg, sizeof(configrec));
-  }
-  file.Close();
-
-  // Check for 5.2+ config
-  const std::string expected_sig = "WWIV";
-  if (expected_sig != cfg.header.header.signature) {
-    // We don't have a 5.2 header, let's convert.
-    if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2+ format?")) {
-      return ShouldContinue::EXIT;
-    }
-
-    convert_config_to_52(window, config.config_filename());
-    if (file.Open(File::modeBinary | File::modeReadOnly)) {
-      file.Read(&cfg, sizeof(configrec));
-    }
-    file.Close();
-  }
-  const auto state = ensure_latest_5x_config(window, config.datadir(), config.config_filename(),
-                                             cfg.header.header.config_revision_number);
-  if (state == config_upgrade_state_t::upgraded) {
-    config.Load();
-  }
-
-  ensure_offsets_are_updated(window, config);
-  return ShouldContinue::CONTINUE;
-}
-
 static void ShowHelp(CommandLine& cmdline) {
   std::cout << cmdline.GetHelp() << std::endl;
   exit(1);
 }
 
-static bool config_offsets_matches_actual(const Config& config) {
+static bool config430_offsets_matches_actual(const Config430& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
@@ -271,6 +218,10 @@ static bool config_offsets_matches_actual(const Config& config) {
     return false;
   }
   return true;
+}
+
+static bool config_dat_or_json_exists() {
+  return File::Exists(CONFIG_DAT) || File::Exists(CONFIG_JSON);
 }
 
 bool legacy_4xx_menu(const Config430& config430, UIWindow* window) {
@@ -370,87 +321,101 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
     window->SetColor(SchemeId::NORMAL);
   }
 
-  if (forced_initialize && File::Exists(CONFIG_DAT)) {
+  if (forced_initialize && config_dat_or_json_exists()) {
     messagebox(window, "Unable to use --initialize when CONFIG.DAT exists.");
     return 1;
   }
-  auto need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
 
-  if (need_to_initialize) {
+  if (!config_dat_or_json_exists() || forced_initialize) {
+    // If this is true, we need to initialize
     window->Bkgd(' ');
-    if (!new_init(window, bbsdir, need_to_initialize)) {
+    if (!new_init(window, bbsdir, true)) {
       return 2;
     }
   }
 
-  Config config(bbsdir);
+  auto legacy_4xx_mode = cmdline.barg("4xx");
+  if (legacy_4xx_mode) {
+    Config430 config43(bbsdir);
+    if (!config430_offsets_matches_actual(config43)) {
+      return 1;
+    }
+    legacy_4xx_menu(config43, window);
+    return 0;
+  }
+
   std::set<int> need_network3;
 
   if (cmdline.barg("menu_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
+    Config config(bbsdir);
+    if (!config.IsInitialized() || legacy_4xx_mode) {
+      return 1;
+    }
     menus(config);
     return 0;
   }
   if (cmdline.barg("user_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
+    Config config(bbsdir);
+    if (!config.IsInitialized() || legacy_4xx_mode) {
+      return 1;
+    }
     user_editor(config);
     return 0;
   }
   if (cmdline.barg("network_editor")) {
     curses_out->Cls(ACS_CKBOARD);
     curses_out->footer()->SetDefaultFooter();
-    if (!config_offsets_matches_actual(config)) {
+    Config config(bbsdir);
+    if (!config.IsInitialized() || legacy_4xx_mode) {
       return 1;
     }
     networks(config, need_network3);
     return 0;
   }
-  auto legacy_4xx_mode = false;
-  if (cmdline.barg("4xx")) {
-    if (!config_offsets_matches_actual(config)) {
-      return 1;
+  
+  if (const auto config = load_any_config(bbsdir)) {
+    // Create archiver.dat with defaults if it does not exist.
+    {
+      File archiverfile(FilePath(config->datadir(), ARCHIVER_DAT));
+      if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
+        create_arcs(window, config->datadir());
+      }
     }
-    legacy_4xx_mode = true;
-  }
 
-  if (!legacy_4xx_mode &&
-      read_configdat_and_upgrade_datafiles_if_needed(window, config) == ShouldContinue::EXIT) {
-    legacy_4xx_mode = true;
-  }
-
-  if (legacy_4xx_mode) {
-    Config430 config43(bbsdir);
-    legacy_4xx_menu(config43, window);
-    return 0;
-  }
-  CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
-
-  // Create archiver.dat with defaults if it does not exist.
-  {
-    File archiverfile(FilePath(config.datadir(), ARCHIVER_DAT));
-    if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
-      create_arcs(window, config.datadir());
+    // Create wwivd.json with defaults if it does not exist.
+    if (!File::Exists(FilePath(config->datadir(), "wwivd.json"))) {
+      auto c = LoadDaemonConfig(*config);
+      if (!SaveDaemonConfig(*config, c)) {
+        LOG(ERROR) << "Error saving wwivd.json";
+      }
     }
+  } else {
+    messagebox(window, "Unable to load any config: 4.24-5.x");
+    return 1;
   }
 
-  // Create wwivd.json with defaults if it does not exist.
-  if (!File::Exists(FilePath(config.datadir(), "wwivd.json"))) {
-    auto c = LoadDaemonConfig(config);
-    if (!SaveDaemonConfig(config, c)) {
-      LOG(ERROR) << "Error saving wwivd.json";
-    }
-  }
-
+  CreateSysopAccountIfNeeded(bbsdir);
   if (forced_initialize) {
     return 0;
   }
 
-  // GP - We can move this up to after "read_status" if the
-  // wwivconfig --initialize flow should query the user to make an account.
-  CreateSysopAccountIfNeeded(bbsdir);
+  // Check for Upgrades needed.
+  if (do_wwiv_ugprades(window, bbsdir) == ShouldContinue::EXIT) {
+    return 1;
+  }
 
+  // We should be able to load a modern config.json here.
+  Config config(bbsdir);
+  if (!config.IsInitialized()) {
+    messagebox(window, "Unable to load 5.6+ JSON config");
+    return 1;
+  }
+
+  // We have a modern config, let's go.
   auto done = false;
   auto selected = -1;
   do {
@@ -539,18 +504,18 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
       break;
     case '$': {
       std::vector<std::string> lines;
-      std::ostringstream ss;
-      ss << "WWIV " << full_version() << " WWIVconfig compiled " << wwiv_compile_datetime();
-      lines.push_back(ss.str());
-      lines.push_back(StrCat("QScan Lenth: ", config.qscn_len()));
+      lines.emplace_back(fmt::format("WWIV {} WWIVconfig compiled {}", full_version(), wwiv_compile_datetime()));
+      lines.emplace_back(fmt::format("QScan Length: {}", config.qscn_len()));
       messagebox(window, lines);
     } break;
-    default: ;
+    default: break;
     }
     curses_out->SetIndicatorMode(IndicatorMode::none);
   } while (!done);
 
   config.Save();
+  // Write out config.ovr for compatibility reasons.
+  CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
 
   for (const auto nn : need_network3) {
     const auto path = FilePath(File::current_directory(), "network3");

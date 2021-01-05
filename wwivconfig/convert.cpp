@@ -30,6 +30,7 @@
 #include "localui/wwiv_curses.h"
 #include "local_io/wconstants.h"
 #include "sdk/chains.h"
+#include "sdk/config430.h"
 #include "sdk/filenames.h"
 #include "sdk/gfiles.h"
 #include "sdk/qwk_config.h"
@@ -54,6 +55,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using std::string;
 using std::vector;
+
+namespace wwiv::wwivconfig::convert {
 
 struct user_config {
   char name[31]; // verify against a user
@@ -82,7 +85,7 @@ static void ShowBanner(UIWindow* window, const std::string& m) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& config) {
+bool ensure_offsets_are_updated(UIWindow* window, const Config430& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
@@ -100,10 +103,10 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   file.Seek(0, File::Whence::begin);
   file.Read(&syscfg53, sizeof(configrec));
 
-  if (userreclen != config.userrec_length() || waitingoffset != config.waitingoffset() ||
-      inactoffset != config.inactoffset() || sysstatusoffset != config.sysstatusoffset() ||
-      fuoffset != config.fuoffset() || fsoffset != config.fsoffset() ||
-      fnoffset != config.fnoffset()) {
+  if (userreclen != config.config()->userreclen || waitingoffset != config.config()->waitingoffset ||
+      inactoffset != config.config()->inactoffset || sysstatusoffset != config.config()->sysstatusoffset ||
+      fuoffset != config.config()->fuoffset || fsoffset != config.config()->fsoffset ||
+      fnoffset != config.config()->fnoffset) {
 
     ShowBanner(window, "Updating Offsets...");
     syscfg53.userreclen = userreclen;
@@ -122,7 +125,7 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   return true;
 }
 
-config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::string& config_filename) {
+config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::filesystem::path& config_filename) {
   File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return config_upgrade_state_t::already_latest;
@@ -527,7 +530,7 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
                                                const std::string& config_filename,
                                                const uint32_t config_revision_number) {
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
-  if (config_revision_number >= final_wwiv_config_version()) {
+  if (config_revision_number >= final_wwiv_config_dat_version()) {
     VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
     return config_upgrade_state_t::already_latest;
   }
@@ -561,15 +564,15 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
   return config_upgrade_state_t::upgraded;
 }
 
-uint32_t final_wwiv_config_version() {
+uint32_t final_wwiv_config_dat_version() {
   // TODO(rushfan): Update when we add a new version.
   return 5;
 }
 
-void convert_config_424_to_430(UIWindow* window, const std::string& datadir, const std::string& config_filename) {
+bool convert_config_424_to_430(UIWindow* window, const std::filesystem::path& config_filename) {
   File file(config_filename);
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
-    return;
+    return false;
   }
   window->SetColor(SchemeId::INFO);
   write_and_log(window, "Converting config.dat to 4.3/5.x format...\n");
@@ -599,17 +602,83 @@ void convert_config_424_to_430(UIWindow* window, const std::string& datadir, con
   file.Write(&syscfg53, sizeof(configrec));
   file.Close();
 
-  File archiver(FilePath(datadir, ARCHIVER_DAT));
+  File archiver(FilePath(syscfg53.datadir, ARCHIVER_DAT));
   if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
     write_and_log(window, "Couldn't open 'ARCHIVER_DAT' for writing.\n");
     write_and_log(window, "Creating new file....\n");
-    create_arcs(window, datadir);
+    create_arcs(window, syscfg53.datadir);
     window->Puts( "\n");
     if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");
-      return;
+      return false;
     }
   }
-  archiver.Write(arc, MAX_ARCS * sizeof(arcrec));
-  archiver.Close();
+  return archiver.Write(arc, MAX_ARCS * sizeof(arcrec));
 }
+
+
+
+ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
+  // Start by checking if we're already at the latest.
+  if (File::Exists(FilePath(bbsdir, CONFIG_JSON))) {
+    // TODO(rushfan): Start checking version here.
+    // If we already have a config.json, nothing to do here.
+    return ShouldContinue::CONTINUE;
+  }
+
+  if (const auto path = FilePath(bbsdir, CONFIG_DAT); File::Exists(path)) {
+    // Now start with 4.24 and work forwards, doing each upgrade one at a time.
+    // We have a config.dat at least.  
+    const File file(FilePath(bbsdir, CONFIG_DAT));
+    if (file.length() != sizeof(configrec)) {
+      // Convert 4.2X to 4.3 format if needed.
+      // TODO(rushfan): make a sub-window here but until this clear the altcharset background.
+      if (!dialog_yn(curses_out->window(), "Upgrade config.dat from 4.x format?")) {
+        return ShouldContinue::EXIT;
+      }
+      window->Bkgd(' ');
+      if (!convert_config_424_to_430(window, path)) {
+        LOG(ERROR) << "Failed to upgrade to 4.3";
+        return ShouldContinue::EXIT;
+      }
+      // TODO(rushfan): We need to create the 4.3 menus here or later.
+    }
+  }
+
+  Config430 c430(bbsdir);
+  if (!c430.IsInitialized()) {
+    LOG(ERROR) << "Expected a valid 4.30 system at this point. Can't load config.dat";
+    return ShouldContinue::EXIT;
+  }
+
+  // Check for 5.2+ config
+  if (!c430.versioned_config_dat()) {
+    // We don't have a 5.2 header, let's convert.
+    if (!dialog_yn(curses_out->window(), "Upgrade config.dat to 5.2+ format?")) {
+      return ShouldContinue::EXIT;
+    }
+
+    convert_config_to_52(window, c430.config_filename());
+  }
+  // Reload changed config
+  c430.Load();
+  
+  const auto state = ensure_latest_5x_config(window, c430.config()->datadir, c430.config_filename(),
+                                             c430.config_revision_number());
+  if (state == config_upgrade_state_t::upgraded) {
+    c430.Load();
+  }
+  ensure_offsets_are_updated(window, c430);
+
+  // Now create the 5.x JSON. We know we have config.dat and no config.json
+  Config config56(bbsdir, c430.to_json_config());
+  // By default a config created any other way is read only.
+  config56.set_readonly(false);
+  if (!config56.Save()) {
+    messagebox(window, "Unable to save config.json");
+    return ShouldContinue::EXIT;
+  }
+  return ShouldContinue::CONTINUE;
+}
+
+} // namespace wwivconfig::convert
