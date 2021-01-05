@@ -59,14 +59,30 @@ Config::Config(std::filesystem::path root_directory) : root_directory_(std::move
 }
 
 bool Config::Load() {
-  JsonFile f(FilePath(root_directory_, "config.json"), "config", config_, 1);
-  if (!f.Load()) {
-    return false;
+  {
+    JsonFile f(FilePath(root_directory_, "config.json"), "config", config_, 1);
+    if (!f.Load()) {
+      return false;
+    }
+    // We've initialized something. Update absolute paths.
+    update_paths();
+    versioned_config_dat_ = true;
+    readonly_ = false;
   }
-  // We've initialized something. Update absolute paths.
-  update_paths();
-  versioned_config_dat_ = true;
-  readonly_ = false;
+
+  {
+    JsonFile f(FilePath(datadir_, "sl.json"), "sl", config_.sl, 1);
+    if (!f.Load()) {
+      return false;
+    }
+  }
+  {
+    JsonFile f(FilePath(datadir_, "autoval.json"), "autoval", config_.autoval, 1);
+    if (!f.Load()) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -76,7 +92,15 @@ bool Config::Save() {
     LOG(ERROR) << "Tried to save a readonly config.json!";
     return false;
   }
-  return f.Save();
+  if (!f.Save()) {
+    return false;
+  }
+
+  JsonFile sl_file(FilePath(datadir_, "sl.json"), "sl", config_.sl, 1);
+  sl_file.Save();
+  JsonFile av_file(FilePath(datadir_, "autoval.json"), "autoval", config_.autoval, 1);
+  av_file.Save();
+  return true;
 }
 
 void Config::set_config(const config_t& config, bool need_to_update_paths) {

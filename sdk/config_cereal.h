@@ -96,8 +96,10 @@ template <class Archive> void serialize(Archive& ar, config_t& n) {
   SERIALIZE(n, post_call_ratio);
   SERIALIZE(n, req_ratio);
 
-  SERIALIZE(n, sl);
-  SERIALIZE(n, autoval);
+  // We don't want to serialize this here, this goes into data/sl.json
+  // SERIALIZE(n, sl);
+  // We don't want to serialize this here, this goes into data/autoval.json
+  // SERIALIZE(n, autoval);
 
   SERIALIZE(n, userreclen);
   SERIALIZE(n, waitingoffset);

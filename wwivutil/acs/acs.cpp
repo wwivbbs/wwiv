@@ -70,7 +70,7 @@ int AcsCommand::Execute() {
   const auto& slr = config()->config()->sl(sl);
   eval.add("user", std::make_unique<UserValueProvider>(&user, sl, slr));
 
-  bool result = eval.eval();
+  auto result = eval.eval();
   std::cout << "Evaluate: '" << expr << "' ";
   if (!result) {
     std::cout << "evaluated to FALSE" << std::endl;
