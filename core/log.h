@@ -19,6 +19,8 @@
 #ifndef INCLUDED_CORE_LOG_H
 #define INCLUDED_CORE_LOG_H
 
+#include "core/os.h"
+
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -50,7 +52,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 
 #define CHECK(x) if (!(x)) wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0) \
-    << "Failed Precondition: at " << __FILE__ << ":" << __LINE__ << " Condition: " #x " " 
+    << "Failed Precondition: at " << __FILE__ << ":" << __LINE__ << " Condition: " #x " " << wwiv::os::stacktrace()
 
 #define CHECK_LE(x, y) LOG_IF(!((x) <= (y)), FATAL)
 #define CHECK_EQ(x, y) LOG_IF(!((x) == (y)), FATAL)

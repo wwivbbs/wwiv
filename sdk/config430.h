@@ -20,7 +20,10 @@
 
 #include "sdk/config.h"
 #include "sdk/vardec.h"
+
+#include <cstdint>
 #include <filesystem>
+#include <string>
 
 namespace wwiv::sdk {
 

@@ -21,26 +21,14 @@
 #define INCLUDED_SDK_CONFIG_CEREAL_H
 
 #include "core/cereal_utils.h"
-#include <cereal/specialize.hpp>
 #include "sdk/config.h"
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cereal/specialize.hpp>
 
 using namespace wwiv::sdk;
 
-//// We want to override how we store some enums as a string, not int.
-//// This has to be in the global namespace.
-//CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_mode_t, specialization::non_member_load_save_minimal);
-//CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(chain_exec_dir_t, specialization::non_member_load_save_minimal);
-
 namespace cereal {
-
-//template <class Archive>
-//std::string save_minimal(Archive const&, const chain_exec_mode_t& t) {
-//  return to_enum_string<chain_exec_mode_t>(t, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS"});
-//}
-//template <class Archive>
-//void load_minimal(Archive const&, chain_exec_mode_t& t, const std::string& s) {
-//  t = from_enum_string<chain_exec_mode_t>(s, {"none", "DOS", "FOSSIL", "STDIO", "NETFOSS"});
-//}
 
 template <class Archive> void serialize(Archive& ar, config_header_t& n) {
   SERIALIZE(n, config_revision_number);

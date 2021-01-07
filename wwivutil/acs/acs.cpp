@@ -18,16 +18,14 @@
 #include "wwivutil/acs/acs.h"
 
 #include "core/command_line.h"
-#include "core/log.h"
 #include "core/file.h"
-#include "core/stl.h"
+#include "core/log.h"
 #include "core/strings.h"
-#include "core/textfile.h"
-#include "sdk/acs/eval.h"
-#include "sdk/acs/uservalueprovider.h"
-#include "sdk/acs/value.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/acs/eval.h"
+#include "sdk/acs/uservalueprovider.h"
+
 #include <iostream>
 #include <string>
 

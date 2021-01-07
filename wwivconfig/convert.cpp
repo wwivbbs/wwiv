@@ -45,6 +45,7 @@
 #include "sdk/net/networks.h"
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/convert_jsonfile.h"
+
 #include <cstring>
 #include <filesystem>
 
@@ -630,6 +631,7 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
     // Now start with 4.24 and work forwards, doing each upgrade one at a time.
     // We have a config.dat at least.  
     const File file(FilePath(bbsdir, CONFIG_DAT));
+    backup_file(path, 10);
     if (file.length() != sizeof(configrec)) {
       // Convert 4.2X to 4.3 format if needed.
       // TODO(rushfan): make a sub-window here but until this clear the altcharset background.
@@ -658,6 +660,7 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
       return ShouldContinue::EXIT;
     }
 
+    backup_file(c430.config_filename(), 10);
     convert_config_to_52(window, c430.config_filename());
   }
   // Reload changed config
@@ -671,6 +674,7 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
   ensure_offsets_are_updated(window, c430);
 
   // Now create the 5.x JSON. We know we have config.dat and no config.json
+  backup_file(c430.config_filename(), 10);
   Config config56(bbsdir, c430.to_json_config());
   // By default a config created any other way is read only.
   config56.set_readonly(false);

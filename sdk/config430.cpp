@@ -26,6 +26,9 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
+#include <string>
+#include <vector>
+
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
@@ -254,6 +257,7 @@ bool Config430::Load() {
   return true;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool Config430::Save() {
   File file(FilePath(root_directory_, CONFIG_DAT));
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
