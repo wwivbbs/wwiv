@@ -4,11 +4,8 @@
 
 # CONFIG.JSON
 
-* Make wwivconfig upgrade work.
-* Make sure network tools can still use legacy config.dat
-* make sure bbs wants config.json
 * make sure wwivconfig can edit wwivd and networks for legacy 4.24 and 4.30 format
-
+* Save off config.dat when saving config.json from wwivconfig if it already exists.
 
 # WWIVconfig
 

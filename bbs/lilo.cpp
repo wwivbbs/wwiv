@@ -443,12 +443,13 @@ static void FixUserLinesAndColors() {
 static void UpdateUserStatsForLogin() {
   to_char_array(g_szLastLoginDate, date());
   if (a()->user()->GetLastOn() != g_szLastLoginDate) {
-    wwiv::sdk::ResetTodayUserStats(a()->user());
+    ResetTodayUserStats(a()->user());
   }
-  wwiv::sdk::AddCallToday(a()->user());
+  AddCallToday(a()->user());
   a()->set_current_user_sub_num(0);
   a()->SetNumMessagesReadThisLogon(0);
-  if (a()->udir[0].subnum == 0 && a()->udir[1].subnum > 0) {
+  const auto& udir = a()->udir;
+  if (udir.size() > 1 && udir[0].subnum == 0 && udir[1].subnum > 0) {
     a()->set_current_user_dir_num(1);
   } else {
     a()->set_current_user_dir_num(0);

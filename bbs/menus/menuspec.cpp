@@ -275,7 +275,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (auto i = 0; i < ssize(a()->dirs()); i++) {
+    for (auto i = 0; i < size_int(a()->udir); i++) {
       if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;
