@@ -85,6 +85,9 @@ SdkHelper::SdkHelper()
     c.max_subs = 64;
 
     wwiv::sdk::Config config(root_, c);
+    // Force this to be read-write since we're in a test environment (same as
+    // in the upgrade case)
+    config.set_readonly(false);
     if (!config.Save()) {
       throw std::runtime_error("failed to create config.json");
     }
