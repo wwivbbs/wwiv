@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace wwiv::sdk {
 

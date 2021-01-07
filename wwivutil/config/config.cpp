@@ -161,6 +161,7 @@ public:
 
 bool ConfigCommand::AddSubCommands() {
   add(make_unique<ConfigVersionCommand>());
+  add(make_unique<ConfigConvertCommand>());
   return true;
 }
 

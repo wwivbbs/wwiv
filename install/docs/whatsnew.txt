@@ -9,8 +9,13 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
-What's New in WWIV 5.6
-~~~~~~~~~~~~~~~~~~~~~~
+What's New in WWIV 5.6 (2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! config.dat has been replaced with config.json.  wwivconfig will automatically
+  upgrade to this new file.  networking utils and wwivutil will work with either.
+
+What's New in WWIV 5.6 (2020)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + Remove WSL stanzas, that makes MSVC 16.6 and newer unhappy (#1268)
 * Update instance.dat when a node exits. 
 + Implemented WWIVfsed. WWIV's internal FSED as an external.
