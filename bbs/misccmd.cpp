@@ -156,11 +156,11 @@ void kill_old_email() {
           break;
         case 'D': {
           done1 = true;
-          unique_ptr<File> delete_email_file(OpenEmailFile(true));
+          auto delete_email_file = OpenEmailFile(true);
           delete_email_file->Seek(cur * sizeof(mailrec), File::Whence::begin);
           delete_email_file->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-            delmail(*delete_email_file.get(), cur);
+            delmail(*delete_email_file, cur);
             bool found = false;
             if (m.status & status_file) {
               File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));

@@ -159,7 +159,9 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
   if (!File::Exists(fn)) {
     // If it does not exist, try to create it via the open call (sf bug 1215434)
     auto file = std::make_unique<File>(fn);
-    file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    if (!file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+      LOG(ERROR) << "Unable to create email file: " << fn;
+    }
     return file;
   }
 
@@ -171,6 +173,9 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
       return file;
     }
     sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
+  }
+  if (!file->IsOpen()) {
+    LOG(ERROR) << "Unable to open email file: " << fn;
   }
   return file;
 }

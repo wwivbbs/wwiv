@@ -201,12 +201,16 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
     return false;
   }
 
-  auto pFileEmail(OpenEmailFile(del || stat));
-  pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-  pFileEmail->Read(&m, sizeof(mailrec));
+  auto file = OpenEmailFile(del || stat);
+  if (!file->IsOpen()) {
+    LOG(ERROR) << "read_same_email: Failed to open email file.";
+    return false;
+  }
+  file->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
+  file->Read(&m, sizeof(mailrec));
 
   if (!same_email(mloc[rec], m)) {
-    pFileEmail->Close();
+    file->Close();
     a()->status_manager()->RefreshStatusCache();
     if (a()->emchg_) {
       resynch_email(mloc, mw, rec, &m, del, stat);
@@ -214,10 +218,10 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
       mloc[rec].index = -1;
     }
   } else {
-    if (stat && !del && (mloc[rec].index >= 0)) {
+    if (stat && !del && mloc[rec].index >= 0) {
       m.status |= stat;
-      pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Write(&m, sizeof(mailrec));
+      file->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
+      file->Write(&m, sizeof(mailrec));
     }
     if (del) {
       if (del == 2) {
@@ -226,16 +230,16 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
         m.daten = 0xffffffff;
         m.msg.storage_type = 0;
         m.msg.stored_as = 0xffffffff;
-        pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-        pFileEmail->Write(&m, sizeof(mailrec));
+        file->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
+        file->Write(&m, sizeof(mailrec));
       } else {
-        delmail(*pFileEmail, mloc[rec].index);
+        delmail(*file, mloc[rec].index);
       }
       mloc[rec].index = -1;
     }
-    pFileEmail->Close();
+    file->Close();
   }
-  return (mloc[rec].index != -1);
+  return mloc[rec].index != -1;
 }
 
 static void add_netsubscriber(const net_networks_rec& net, int network_number, int system_number) {
@@ -975,7 +979,7 @@ void readmail(int mode) {
             if (ok_to_mail(un, sn, false)) {
               bout << "|#5Forward to " << fwd_email_name << "? ";
               if (bin.yesno()) {
-                auto file(OpenEmailFile(true));
+                auto file = OpenEmailFile(true);
                 if (!file->IsOpen()) {
                   break;
                 }
