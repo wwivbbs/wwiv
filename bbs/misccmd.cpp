@@ -197,11 +197,11 @@ void kill_old_email() {
         break;
         case 'R': {
           bout.nl(2);
-          Type2MessageData msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
+          auto msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
           msg.title = m.title;
           msg.message_area = "Personal E-Mail";
-          bool next = false;
-          int fake_msgno = -1;
+          auto next = false;
+          auto fake_msgno = -1;
           display_type2_message(fake_msgno, msg, &next);
         }
         break;
@@ -367,7 +367,7 @@ void list_users(int mode) {
         bout.bpla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
         bout << "|#1[Enter] to continue or Q=Quit : ";
-        char ch = onek("Q\r ");
+        auto ch = onek("Q\r ");
         switch (ch) {
         case 'Q':
           abort = true;
