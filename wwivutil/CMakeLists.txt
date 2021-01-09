@@ -7,6 +7,7 @@ set(COMMAND_SOURCES
   acs/acs.cpp
   conf/conf.cpp
   config/config.cpp
+  "email/email.cpp"
   fido/fido.cpp
   fido/dump_fido_packet.cpp
   fido/dump_nodelist.cpp

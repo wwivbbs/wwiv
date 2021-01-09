@@ -24,6 +24,7 @@
 #include "wwivutil/acs/acs.h"
 #include "wwivutil/conf/conf.h"
 #include "wwivutil/config/config.h"
+#include "wwivutil/email/email.h"
 #include "wwivutil/fido/fido.h"
 #include "wwivutil/files/files.h"
 #include "wwivutil/fix/fix.h"
@@ -64,6 +65,7 @@ public:
       Add(std::make_unique<acs::AcsCommand>());
       Add(std::make_unique<ConfCommand>());
       Add(std::make_unique<ConfigCommand>());
+      Add(std::make_unique<EmailCommand>());
       Add(std::make_unique<fido::FidoCommand>());
       Add(std::make_unique<files::FilesCommand>());
       Add(std::make_unique<FixCommand>());

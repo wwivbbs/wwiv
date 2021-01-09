@@ -82,9 +82,9 @@ public:
 
 private:
   bool add_email(const mailrec& m);
-  const wwiv::sdk::Config& config_;
+  const Config& config_;
   const std::filesystem::path data_filename_;
-  wwiv::core::DataFile<mailrec> mail_file_;
+  core::DataFile<mailrec> mail_file_;
   bool open_{false};
   const int max_net_num_{-1};
 
