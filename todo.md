@@ -2,6 +2,11 @@
 # Copyright 2002-2020, WWIV Software Services
 ***
 
+# Things to add to fix.
+
+* Check for no conferences
+* Check for subs or dirs not part of any conference
+
 # CONFIG.JSON
 
 * make sure wwivconfig can edit wwivd and networks for legacy 4.24 and 4.30 format

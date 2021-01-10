@@ -157,47 +157,10 @@ config_upgrade_state_t convert_config_to_52(UIWindow* window, const std::filesys
 }
 
 
-static bool update_config_revision_number(const std::string& config_filename,
-                                          const uint32_t config_revision_number) {
-  VLOG(1) << "update_config_revision_number: " << config_revision_number;
-  File file(config_filename);
-  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
-    return false;
-  }
-  configrec syscfg53{};
-  if (file.Read(&syscfg53, sizeof(configrec)) < static_cast<int>(sizeof(configrec))) {
-    return false;
-  }
-  // Good housekeeping clear out unused fields.
-  memset(syscfg53.res, 0, sizeof(syscfg53.res));
-  memset(syscfg53.unused1, 0, sizeof(syscfg53.unused1));
-  memset(syscfg53.unused2, 0, sizeof(syscfg53.unused2));
-  memset(syscfg53.unused3, 0, sizeof(syscfg53.unused3));
-  memset(syscfg53.unused4, 0, sizeof(syscfg53.unused4));
-  memset(syscfg53.unused5, 0, sizeof(syscfg53.unused5));
-  memset(syscfg53.unused6, 0, sizeof(syscfg53.unused6));
-  memset(syscfg53.unused7, 0, sizeof(syscfg53.unused7));
-  memset(syscfg53.unused8, 0, sizeof(syscfg53.unused8));
-  memset(syscfg53.unused9, 0, sizeof(syscfg53.unused9));
-
-  syscfg53.unused_systemnumber = 0;
-  syscfg53.unused_executetime = 0;
-  syscfg53.unused_ramdrive = 0;
-  syscfg53.unused_systemnumber = 0;
-
-  // Update config_revision_number to the specified version
-  syscfg53.header.header.config_revision_number = config_revision_number;
-
-  file.Seek(0, File::Whence::begin);
-  file.Write(&syscfg53, sizeof(configrec));
-  file.Close();
-  return true;
-}
-
-static bool convert_to_v1(UIWindow* window, const std::string& datadir, const std::string& config_filename) {
+static bool convert_to_v1(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.2.1+ format...");
 
-  auto users_lst = FilePath(datadir, USER_LST);
+  const auto users_lst = FilePath(config.datadir(), USER_LST);
   auto backup_file = users_lst;
   backup_file += ".backup.pre-wwivconfig-upgrade";
 
@@ -206,7 +169,7 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   // Note we ignore the ec since we fail open.
   copy_file(users_lst, backup_file, ec);
 
-  DataFile<userrec> usersFile(FilePath(datadir, USER_LST),
+  DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
                               File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                               File::shareDenyReadWrite);
   if (!usersFile) {
@@ -256,9 +219,9 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
 
   // Update config.dat with new version to consider this "successful"
   // enough of an upgrade at this point.
-  update_config_revision_number(config_filename, 1);
+  config.config_revision_number(1);
 
-  const auto config_usr_filename = FilePath(datadir, "config.usr");
+  const auto config_usr_filename = FilePath(config.datadir(), "config.usr");
   DataFile<user_config> configUsrFile(config_usr_filename, File::modeReadOnly | File::modeBinary,
                                       File::shareDenyWrite);
   if (!configUsrFile) {
@@ -273,12 +236,12 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   }
 
   // merge in data from user_config
-  for (auto i = 0; i < wwiv::stl::ssize(users); i++) {
-    auto& u = wwiv::stl::at(users, i);
-    if (i >= wwiv::stl::ssize(second_config)) {
+  for (auto i = 0; i < stl::ssize(users); i++) {
+    auto& u = stl::at(users, i);
+    if (i >= stl::ssize(second_config)) {
       continue;
     }
-    const auto& c = wwiv::stl::at(second_config, i);
+    const auto& c = stl::at(second_config, i);
     u.hot_keys = c.hot_keys;
     u.lp_options = c.lp_options;
     memcpy(u.lp_colors, c.lp_colors, sizeof(u.lp_colors));
@@ -297,8 +260,7 @@ static bool convert_to_v1(UIWindow* window, const std::string& datadir, const st
   File::Remove(config_usr_filename);
 
   // 2nd version of config.usr that wwivconfig was mistakenly creating.
-  const auto user_dat_fn = FilePath(datadir, "user.dat");
-  File::Remove(user_dat_fn);
+  File::Remove(FilePath(config.datadir(), "user.dat"));
 
   LOG(INFO) << "Converted to config version v1";
   messagebox(window, "Converted to config version v1");
@@ -361,10 +323,10 @@ chain_t ConvertJsonFile<chain_55_t, chain_t>::ConvertType(const chain_55_t& oc) 
   return c;
 }
 
-static bool convert_to_v2(UIWindow* window, const std::string& datadir,
-                          const std::string& config_filename) {
+static bool convert_to_v2(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.2+ v2 format...");
 
+  const auto datadir = config.datadir();
   VLOG(1) << "Upgrading subs.json";
   ConvertJsonFile<subboard_52_t, subboard_t> cs(datadir, SUBS_JSON, "subs", 0, 1);
   cs.Convert();
@@ -378,7 +340,8 @@ static bool convert_to_v2(UIWindow* window, const std::string& datadir,
   cc.Convert();
 
   // Mark config.dat as upgraded.
-  return update_config_revision_number(config_filename, 2);
+  config.config_revision_number(2);
+  return true;
 }
 
 static bool convert_menu(const std::string& menu_dir, const std::string& menu_set,
@@ -406,15 +369,8 @@ static bool convert_menu(const std::string& menu_dir, const std::string& menu_se
   return false;
 }
 
-static bool convert_to_v3(UIWindow* window, const std::string& config_filename) {
+static bool convert_to_v3(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.2+ v3 format...");
-  const std::filesystem::path config_path{config_filename};
-
-  const Config config(config_path.parent_path().string());
-  if (!config.IsInitialized()) {
-    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
-    return false;
-  }
 
   auto dirs = FindFiles(FilePath(config.menudir(), "*"), FindFiles::FindFilesType::directories);
 
@@ -435,18 +391,12 @@ static bool convert_to_v3(UIWindow* window, const std::string& config_filename) 
   }
 
   // Mark config.dat as upgraded.
-  return update_config_revision_number(config_filename, 3);
+  config.config_revision_number(3);
+  return true;
 }
 
-static bool convert_to_v4(UIWindow* window, const std::string& datadir,
-                          const std::string& config_filename) {
+static bool convert_to_v4(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.2+ v4 format...");
-  const std::filesystem::path config_path{config_filename};
-  const Config config(config_path.parent_path().string());
-  if (!config.IsInitialized()) {
-    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
-    return false;
-  }
 
   Networks networks(config);
   if (!networks.IsInitialized()) {
@@ -454,6 +404,7 @@ static bool convert_to_v4(UIWindow* window, const std::string& datadir,
     return false;
   }
 
+  const auto datadir = config.datadir();
   Subs subs(datadir, networks.networks());
   Dirs dirs(datadir, 0);
   if (!subs.Load()) {
@@ -482,18 +433,13 @@ static bool convert_to_v4(UIWindow* window, const std::string& datadir,
   }
 
   // Mark config.dat as upgraded.
-  return update_config_revision_number(config_filename, 4);
+  config.config_revision_number(4);
+  return true;
 }
 
 
-bool convert_to_v5(UIWindow* window, const string& config_filename) {
+bool convert_to_v5(UIWindow* window, Config& config) {
   ShowBanner(window, "Updating to 5.2+ v5 format...");
-  const std::filesystem::path config_path{config_filename};
-  const Config config(config_path.parent_path().string());
-  if (!config.IsInitialized()) {
-    LOG(ERROR) << "Failed to open CONFIG.DAT in: " << config_path.string();
-    return false;
-  }
   Networks networks(config);
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks (needed to load subs)";
@@ -524,12 +470,12 @@ bool convert_to_v5(UIWindow* window, const string& config_filename) {
   write_qwk_cfg(config, qwk_config);
 
   // Mark config.dat as upgraded.
-  return update_config_revision_number(config_filename, 5);
+  config.config_revision_number(5);
+  return true;
 }
 
-config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::string& datadir,
-                                               const std::string& config_filename,
-                                               const uint32_t config_revision_number) {
+config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, Config& config) {
+  const auto config_revision_number = config.config_revision_number();
   VLOG(1) << "ensure_latest_5x_config: desired version=" << config_revision_number;
   if (config_revision_number >= final_wwiv_config_dat_version()) {
     VLOG(1) << "ensure_latest_5x_config: ALREADY LATEST";
@@ -538,28 +484,28 @@ config_upgrade_state_t ensure_latest_5x_config(UIWindow* window, const std::stri
   // v1 is the GA 5.5 config version.
   if (config_revision_number < 1) {
     LOG(INFO) << "ensure_latest_5x_config: converting to v1";
-    convert_to_v1(window, datadir, config_filename);
+    convert_to_v1(window, config);
   }
   // v2-v5 added during 5.6.  Likely v5 will be the GA 5.6 version.
   if (config_revision_number < 2) {
     // Versioned subs, chains, and dirs
     LOG(INFO) << "ensure_latest_5x_config: converting to v2";
-    convert_to_v2(window, datadir, config_filename);
+    convert_to_v2(window, config);
   }
   if (config_revision_number < 3) {
     // menus in JSON format.
     LOG(INFO) << "ensure_latest_5x_config: converting to v3";
-    convert_to_v3(window, config_filename);
+    convert_to_v3(window, config);
   }
   if (config_revision_number < 4) {
     // menus in JSON format.
     LOG(INFO) << "ensure_latest_5x_config: converting to v4";
-    convert_to_v4(window, datadir, config_filename);
+    convert_to_v4(window, config);
   }
   if (config_revision_number < 5) {
     // gfiles in JSON format.
     LOG(INFO) << "ensure_latest_5x_config: converting to v4";
-    convert_to_v5(window, config_filename);
+    convert_to_v5(window, config);
   }
   VLOG(1) << "ensure_latest_5x_config: UPGRADED";
   return config_upgrade_state_t::upgraded;
@@ -665,14 +611,9 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
   }
   // Reload changed config
   c430.Load();
-  
-  const auto state = ensure_latest_5x_config(window, c430.config()->datadir, c430.config_filename(),
-                                             c430.config_revision_number());
-  if (state == config_upgrade_state_t::upgraded) {
-    c430.Load();
-  }
   ensure_offsets_are_updated(window, c430);
 
+  // Were done changing config430 at this point.
   // Now create the 5.x JSON. We know we have config.dat and no config.json
   backup_file(c430.config_filename(), 10);
   Config config56(bbsdir, c430.to_json_config());
@@ -681,6 +622,15 @@ ShouldContinue do_wwiv_ugprades(UIWindow* window, const std::string& bbsdir) {
   if (!config56.Save()) {
     messagebox(window, "Unable to save config.json");
     return ShouldContinue::EXIT;
+  }
+
+  // Make sure we're at the latest 5.x config version.
+  auto state = ensure_latest_5x_config(window, config56);
+  if (state == config_upgrade_state_t::upgraded) {
+    if (!config56.Save()) {
+      messagebox(window, "Unable to save upgrades config.json");
+      return ShouldContinue::EXIT;
+    }
   }
   return ShouldContinue::CONTINUE;
 }

@@ -87,7 +87,7 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
     return false;
   }
 
-  const wwiv::sdk::msgapi::MessageApiOptions options;
+  const MessageApiOptions options;
   auto* x = new NullLastReadImpl();
   sub_ = find_sub(*subs_, basename).value_or(default_sub(basename));
 

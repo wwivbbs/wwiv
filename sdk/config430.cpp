@@ -43,13 +43,14 @@ Config430::Config430(const configrec& config) { set_config(&config, true); }
 // Generate a WWIV 4.30 config from a 5.6+ JSON config.
 Config430::Config430(const config_t& c5) {
   memset(&config_, 0, sizeof(configrec));
-  auto& c = config_;
-  c.header.header.written_by_wwiv_num_version =
-      static_cast<uint16_t>(c5.header.written_by_wwiv_num_version);
-  c.header.header.config_revision_number = c5.header.config_revision_number;
-  c.header.header.config_size = sizeof(configrec);
+  auto& h = config_.header.header;
+  to_char_array(h.signature, "WWIV");
+  h.written_by_wwiv_num_version = static_cast<uint16_t>(c5.header.written_by_wwiv_num_version);
+  h.config_revision_number = c5.header.config_revision_number;
+  h.config_size = sizeof(configrec);
   // update_paths() takes care of the header
 
+  auto& c = config_;
   to_char_array_trim(c.systempw, c5.systempw);
   to_char_array_trim(c.msgsdir, c5.msgsdir);
   to_char_array_trim(c.gfilesdir, c5.gfilesdir);
@@ -106,7 +107,6 @@ Config430::Config430(const config_t& c5) {
   c.max_backups = c5.max_backups;
   c.script_flags = c5.script_flags;
   to_char_array_trim(c.menudir, c5.menudir);
-
   update_paths();
 }
 

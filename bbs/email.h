@@ -32,21 +32,21 @@ public:
   ~EmailData() = default;
 
   std::string title;
-  messagerec * msg;
-  uint8_t anony = 0;
-  uint16_t user_number = 0;
-  uint16_t system_number = 0;
-  bool an = false;
-  uint16_t from_user = 0;
-  uint16_t from_system = 0;
-  int forwarded_code = 0;
-  int from_network_number = 0;
+  messagerec * msg{nullptr};
+  uint8_t anony{0};
+  uint16_t user_number{0};
+  uint16_t system_number{0};
+  bool an{false};
+  uint16_t from_user{0};
+  uint16_t from_system{0};
+  int forwarded_code{0};
+  int from_network_number{0};
 
   void set_from_user(int u) { from_user = static_cast<uint16_t>(u); }
   void set_from_system(int u) { from_system = static_cast<uint16_t>(u); }
   void set_user_number(int u) { user_number = static_cast<uint16_t>(u); }
 
-  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
+  bool silent_mode;     // Used for ASV and new emails.  No questions, etc.
 };
 
 bool ForwardMessage(uint16_t* user_number, uint16_t* system_number);

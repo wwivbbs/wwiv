@@ -152,6 +152,7 @@ public:
     return config_.header.written_by_wwiv_num_version;
   }
   [[nodiscard]] int config_revision_number() const { return config_.header.config_revision_number; }
+  void config_revision_number(int v) { config_.header.config_revision_number = v; }
 
   [[nodiscard]] std::string root_directory() const { return root_directory_.string(); }
   [[nodiscard]] std::string datadir() const { return datadir_; }

@@ -517,6 +517,12 @@ int WWIVConfigApplication::Main(int argc, char** argv) const {
   // Write out config.ovr for compatibility reasons.
   CreateConfigOvrAndUpdateSysConfig(config, bbsdir);
 
+  // Write out config.dat
+  auto c430 = std::make_unique<Config430>(config.root_directory(), config.to_config_t());
+  if (!c430 || !c430->Save()) {
+    LOG(INFO) << "Failed to write legacy condig.dat";
+  }
+
   for (const auto nn : need_network3) {
     const auto path = FilePath(File::current_directory(), "network3");
     std::ostringstream ss;
