@@ -183,8 +183,11 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   cfg430.post_call_ratio = 0.0;
 
-  // cfg430 is done
+  // cfg430 is done.  Create a 5.6+ style config.json
   Config config(bbsdir, cfg430);
+  // Since this was not loaded from disk as JSON, mark it mutable so it can
+  // be saved as JSON.
+  config.set_readonly(false);
   config.Save();
 
   const auto datadir = FilePath(bbsdir, "data");

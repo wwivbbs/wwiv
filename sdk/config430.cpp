@@ -260,7 +260,8 @@ bool Config430::Load() {
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool Config430::Save() {
   File file(FilePath(root_directory_, CONFIG_DAT));
-  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+  if (!file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
+    // We may have to create this now since config.json is source of truth
     return false;
   }
   return file.Write(&config_, sizeof(configrec)) == sizeof(configrec);
