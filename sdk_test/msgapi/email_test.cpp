@@ -45,7 +45,7 @@ public:
     MessageApiOptions options{};
     options.overflow_strategy = OverflowStrategy::delete_none;
     auto* a = new WWIVMessageApi(options, *config, {}, new NullLastReadImpl());
-    email = std::unique_ptr<WWIVEmail>(a->OpenEmail());
+    email = a->OpenEmail();
     api.reset(a);
   }
 

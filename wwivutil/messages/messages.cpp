@@ -25,11 +25,12 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
+#include "sdk/names.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
-#include "sdk/names.h"
 #include "sdk/net/networks.h"
 #include "wwivutil/util.h"
+
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -94,15 +95,18 @@ bool BaseMessagesSubCommand::CreateMessageApiMap(const std::string& basename) {
   apis_[sub_.storage_type] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
                                                             config()->networks().networks(), x);
 
-  if (!wwiv::stl::contains(apis_, 2)) {
+  if (!stl::contains(apis_, 2)) {
     // We always want to add type 2 
     apis_[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
                                                 config()->networks().networks(), x);
   }
-  if (!apis_[sub_.storage_type]->Exist(sub_)) {
-    clog << "Message area: '" << sub_.filename << "' does not exist." << endl;
-    return false;
-  }
+
+  // We try to open or create the sub later.
+
+  //if (!apis_[sub_.storage_type]->Exist(sub_)) {
+  //  clog << "Message area: '" << sub_.filename << "' does not exist." << endl;
+  //  return false;
+  //}
   return true;
 }
 
@@ -208,7 +212,7 @@ public:
       return 1;
     }
 
-    const auto filename = stl::at(remaining(),1);
+    const auto& filename = stl::at(remaining(),1);
     auto from = arg("from").as_string();
     auto title = arg("title").as_string();
     auto to = arg("to").as_string();
@@ -231,7 +235,7 @@ public:
 
     TextFile text_file(filename, "r");
     auto raw_text = text_file.ReadFileIntoString();
-    auto lines = wwiv::strings::SplitString(raw_text, "\n", false);
+    auto lines = SplitString(raw_text, "\n", false);
 
     auto msg(area->CreateMessage());
     auto& header = msg->header();
@@ -387,6 +391,7 @@ bool MessagesDumpCommand::AddSubCommands() {
   return true;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 int MessagesDumpCommand::ExecuteImpl(MessageArea* area, const string& basename, int start, int end,
                                      bool all) {
 

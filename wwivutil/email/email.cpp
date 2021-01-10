@@ -35,14 +35,7 @@
 #include <string>
 #include <vector>
 
-using std::clog;
-using std::cout;
-using std::endl;
-using std::make_unique;
 using std::setw;
-using std::string;
-using std::unique_ptr;
-using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -82,28 +75,28 @@ public:
 
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
-    ss << "Usage:   delete --num=NN <base sub filename>" << endl;
-    ss << "Example: delete --num=10 general" << endl;
+    ss << "Usage:   delete --num=NN <base sub filename>" << std::endl;
+    ss << "Example: delete --num=10 general" << std::endl;
     return ss.str();
   }
 
   int Execute() override {
 
     if (!CreateMessageApi()) {
-      clog << "Error Creating message apis." << endl;
+      std::clog << "Error Creating message apis." << std::endl;
       return 1;
     }
-    
-    unique_ptr<WWIVEmail> email(api().OpenEmail());
+
+    auto email = api().OpenEmail();
     if (!email) {
-      clog << "Unable to Open email" << endl;
+      std::clog << "Unable to Open email" << std::endl;
       return 1;
     }
 
     const auto num_messages = email->number_of_messages();
     const auto message_number = iarg("num");
-    cout << "Email has " << num_messages << " messages." << endl;
-    cout << string(72, '-') << endl;
+    std::cout << "Email has " << num_messages << " messages." << std::endl;
+    std::cout << std::string(72, '-') << std::endl;
 
     if (message_number < 0 || message_number > num_messages) {
       LOG(ERROR) << "Invalid message number #" << message_number;
@@ -140,8 +133,8 @@ public:
   [[nodiscard]] std::string GetUsage() const override {
     std::ostringstream ss;
     ss << "Usage:   add --title=\"Welcome\" --from=1 <text filename>"
-       << endl;
-    ss << "Example: add --from=1 --to=${to_usernum} mymessage.txt" << endl;
+       << std::endl;
+    ss << "Example: add --from=1 --to=${to_usernum} mymessage.txt" << std::endl;
     return ss.str();
   }
 
@@ -149,18 +142,18 @@ public:
 
 
     if (!CreateMessageApi()) {
-      clog << "Error Creating message api." << endl;
+      std::clog << "Error Creating message api." << std::endl;
       return 1;
     }
 
     if (remaining().empty()) {
-      clog << "Missing text filename." << endl;
+      std::clog << "Missing text filename." << std::endl;
       return 1;
     }
 
-    unique_ptr<WWIVEmail> area(api().OpenEmail());
+    auto area = api().OpenEmail();
     if (!area) {
-      clog << "Error opening email message area." << endl;
+      std::clog << "Error opening email message area." << std::endl;
       return 1;
     }
 
@@ -198,13 +191,13 @@ public:
 
 
 bool EmailCommand::AddSubCommands() {
-  if (!add(make_unique<EmailDumpCommand>())) {
+  if (!add(std::make_unique<EmailDumpCommand>())) {
     return false;
   }
-  if (!add(make_unique<DeleteEmailCommand>())) {
+  if (!add(std::make_unique<DeleteEmailCommand>())) {
     return false;
   }
-  if (!add(make_unique<AddEmailCommand>())) {
+  if (!add(std::make_unique<AddEmailCommand>())) {
     return false;
   }
   
@@ -216,8 +209,8 @@ EmailDumpCommand::EmailDumpCommand()
 
 std::string EmailDumpCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump <base sub filename>" << endl;
-  ss << "Example: dump general" << endl;
+  ss << "Usage:   dump <base sub filename>" << std::endl;
+  ss << "Example: dump general" << std::endl;
   return ss.str();
 }
 
@@ -229,80 +222,81 @@ bool EmailDumpCommand::AddSubCommands() {
   return true;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 int EmailDumpCommand::ExecuteImpl(WWIVEmail* area, int start, int end, bool all) {
 
-  Names names(*config()->config());
+  const Names names(*config()->config());
 
   const auto last_message = end >= 0 ? end : area->number_of_messages();
-  cout << "Email has " << area->number_of_messages() << " messages." << endl;
-  cout << string(72, '-') << endl;
+  std::cout << "Email has " << area->number_of_messages() << " messages." << std::endl;
+  std::cout << std::string(72, '-') << std::endl;
   for (auto current = start; current < last_message; current++) {
     mailrec m{};
     std::string text;
     if (!area->read_email_header_and_text(current, m, text)) {
-      cout << "#" << current << "  ERROR " << endl;
+      std::cout << "#" << current << "  ERROR " << std::endl;
       VLOG(1) << "Failed to read message number: " << current;
-      cout << string(72, '-') << endl;
+      std::cout << std::string(72, '-') << std::endl;
       continue;
     }
-    cout << "Email #" << current << std::endl;
+    std::cout << "Email #" << current << std::endl;
     const auto from_name  = names.UserName(m.fromuser);
-    cout << "From: #" << m.fromuser << " (" << from_name << ")";
+    std::cout << "From: #" << m.fromuser << " (" << from_name << ")";
     if (m.fromsys) {
       std::cout << "@" << m.fromsys;
       if (m.status & status_source_verified) {
-        cout << " at network #" << static_cast<int>(m.network.src_verified_msg.net_number) << std::endl;
-        cout << "Source Verified Type: " << m.network.src_verified_msg.source_verified_type;
+        std::cout << " at network #" << static_cast<int>(m.network.src_verified_msg.net_number) << std::endl;
+        std::cout << "Source Verified Type: " << m.network.src_verified_msg.source_verified_type;
       } else {
-        cout << " at network #" << static_cast<int>(m.network.network_msg.net_number);
+        std::cout << " at network #" << static_cast<int>(m.network.network_msg.net_number);
       }
     }
-    cout << std::endl;
+    std::cout << std::endl;
     const auto to_name  = names.UserName(m.touser);
-    cout << "To:   #" << m.touser << " (" << to_name << ")";
+    std::cout << "To:   #" << m.touser << " (" << to_name << ")";
     if (m.tosys) {
       std::cout << "@" << m.tosys;
     }
-    cout << std::endl;
-    cout << "date:  " << daten_to_wwivnet_time(m.daten) << std::endl;
-    cout << "title: " << m.title << std::endl;
-    ;
+    std::cout << std::endl;
+    std::cout << "date:  " << daten_to_wwivnet_time(m.daten) << std::endl;
+    std::cout << "title: " << m.title << std::endl;
+
     if (m.anony) {
-      cout << "title: " << m.anony << std::endl;
+      std::cout << "title: " << m.anony << std::endl;
     }
-    bool has_status = false;
+    auto has_status = false;
     if (m.status & status_multimail) {
-      cout << "[MULTI]";
+      std::cout << "[MULTI]";
       has_status = true;
     }
     if (m.status & status_source_verified) {
-      cout << "[VERIFIED]";
+      std::cout << "[VERIFIED]";
       has_status = true;
     }
     if (m.status & status_new_net) {
-      cout << "[NET]";
+      std::cout << "[NET]";
       has_status = true;
     }
     if (m.status & status_seen) {
-      cout << "[SEEN]";
+      std::cout << "[SEEN]";
       has_status = true;
     }
     if (m.status & status_replied) {
-      cout << "[REPLIED]";
+      std::cout << "[REPLIED]";
       has_status = true;
     }
     if (m.status & status_forwarded) {
-      cout << "[FORWARDED]";
+      std::cout << "[FORWARDED]";
       has_status = true;
     }
     if (m.status & status_file) {
-      cout << "[FILE]";
+      std::cout << "[FILE]";
       has_status = true;
     }
     if (has_status) {
-      cout << endl;
+      std::cout << std::endl;
     }
-    cout << string(72, '-') << endl;
+    std::cout << std::string(72, '-') << std::endl;
     auto lines = wwiv::strings::SplitString(text, "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
@@ -310,19 +304,19 @@ int EmailDumpCommand::ExecuteImpl(WWIVEmail* area, int start, int end, bool all)
       }
       if (line.front() != CD || all) {
         for (const auto ch : line) {
-          dump_char(cout, ch);
+          dump_char(std::cout, ch);
         }
-        cout << endl;
+        std::cout << std::endl;
       }
     }
-    cout << "------------------------------------------------------------------------" << endl;
+    std::cout << "------------------------------------------------------------------------" << std::endl;
   }
   return 0;
 }
 
 int EmailDumpCommand::Execute() {
   if (!CreateMessageApi()) {
-    clog << "Error Creating message api." << endl;
+    std::clog << "Error Creating message api." << std::endl;
     return 1;
   }
     
@@ -332,18 +326,14 @@ int EmailDumpCommand::Execute() {
   const auto end_date = sarg("end_date");
   const auto all = barg("all");
 
-
-  unique_ptr<WWIVEmail> area(api().OpenEmail());
-  if (!area) {
-    clog << "Error opening email area." << endl;
-    return 1;
+  if (auto area = api().OpenEmail()) {
+    // If we have dates, update the start and end numbers based on the dates.
+    const auto last_message = end >= 0 ? end : area->number_of_messages();
+    VLOG(1) << "start: " << start << "; end: " << last_message << std::endl;
+    return ExecuteImpl(area.get(), start, last_message, all);
   }
-
-  // If we have dates, update the start and end numbers based
-  // on the dates.
-  const auto last_message = end >= 0 ? end : area->number_of_messages();
-  VLOG(1) << "start: " << start << "; end: " << last_message << std::endl;
-  return ExecuteImpl(area.get(), start, last_message, all);
+  std::clog << "Error opening email area." << std::endl;
+  return 1;
 }
 
 } // namespace wwiv

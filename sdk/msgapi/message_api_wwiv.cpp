@@ -137,7 +137,7 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
   return area;
 }
 
-WWIVEmail* WWIVMessageApi::OpenEmail() {
+std::unique_ptr<WWIVEmail> WWIVMessageApi::OpenEmail() {
   const auto data = FilePath(subs_directory_, EMAIL_DAT);
   const auto text = FilePath(messages_directory_, EMAIL_DAT);
   {
@@ -145,32 +145,31 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
       // Create it if it doesn't exist.  We still can have an odd case
       // where 1 file exists, but that's not ever normal. so we'll
       // complain later about not being able to create this.
-      const auto created = Create("email", ".dat", ".dat", 0);
-      if (!created) {
-        return nullptr;
+      if (!Create("email", ".dat", ".dat", 0)) {
+        return {};
       }
       // Return the newly created WWIVEmail object.
-      return new WWIVEmail(config_, data, text, stl::size_int(net_networks_));
+      return std::make_unique<WWIVEmail>(config_, data, text, stl::size_int(net_networks_));
     }
 
     File datafile(data);
     if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
       LOG(ERROR) << "Unable to open datafile: " << data;
-      return nullptr;
+      return {};
     }
 
     if (!File::Exists(text)) {
       LOG(ERROR) << "'" << data << "' exists, but '" << text << "' does not! ";
-      return nullptr;
+      return {};
     }
     File textfile(text);
     if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
       LOG(ERROR) << "Unable to open msgsfile: " << data;
-      return nullptr;
+      return {};
     }
   }
 
-  return new WWIVEmail(config_, data, text, stl::size_int(net_networks_));
+  return std::make_unique<WWIVEmail>(config_, data, text, stl::size_int(net_networks_));
 }
 
 uint32_t WWIVMessageApi::last_read(int area) const {

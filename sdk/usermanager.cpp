@@ -178,7 +178,7 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   user.SetInactFlag(User::userDeleted);
   user.SetNumMailWaiting(0);
   {
-    std::unique_ptr<WWIVEmail> email(api.OpenEmail());
+    auto email = api.OpenEmail();
     email->DeleteAllMailToOrFrom(user_number);
   }
 

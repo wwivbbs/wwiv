@@ -143,7 +143,7 @@ bool handle_email(Context& context,
   d.text = string(iter, std::end(p.text()));
   LOG(INFO) << "  Title: '" << d.title << "'";
 
-  std::unique_ptr<WWIVEmail> email(context.email_api().OpenEmail());
+  auto email = context.email_api().OpenEmail();
   if (!email) {
     LOG(ERROR) << "    ! ERROR creating email class; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
