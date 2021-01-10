@@ -637,6 +637,10 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
       h.fromsys = current_net.sysnum;
       h.fromuser = 0;
     }
+    // This is what the BBS does. Do this in all cases in send_net_post
+    if (!h.fromsys) {
+      h.fromsys = current_net.sysnum;
+    }
     // If the subtype has changed, then change the subtype in the
     // packet text.
     const auto text = subnet.stype == original_subtype
