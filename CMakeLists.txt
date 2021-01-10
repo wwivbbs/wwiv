@@ -118,7 +118,9 @@ if (WWIV_INSTALL)
     file(GLOB PLATFORM_FILES "${PLATFORM_DIR}/*.sh" "${PLATFORM_DIR}/*.bash")
     foreach(file ${PLATFORM_FILES})
       message(DEBUG "Installing ${file}")
-      INSTALL(FILES "${file}" DESTINATION .)
+      INSTALL(FILES "${file}" 
+              PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+              DESTINATION .)
     endforeach()
   elseif(WIN32)
     set(PLATFORM_DIR "${WWIV_INSTALL_SRC}/platform/win32")
