@@ -65,16 +65,16 @@ public:
   [[nodiscard]] int network_version() const { return network_version_; }
   [[nodiscard]] bool crc() const { return crc_; }
   [[nodiscard]] bool cram_md5() const { return cram_md5_; }
-  [[nodiscard]] const wwiv::sdk::Config& config() const { return config_; }
+  [[nodiscard]] const sdk::Config& config() const { return config_; }
 
   [[nodiscard]] std::string session_identifier() const { return session_identifier_; }
   void session_identifier(std::string id);
 
 private:
-  const wwiv::sdk::Config& config_;
+  const sdk::Config& config_;
   std::string home_dir_;
 
-  int callout_wwivnet_node_ = 0;
+  int callout_wwivnet_node_{0};
   std::string callout_fido_node_;
   std::string system_name_;
   std::string callout_network_name_ = "wwivnet";
@@ -84,11 +84,11 @@ private:
   std::map<const std::string, std::unique_ptr<wwiv::sdk::Callout>> callouts_;
   std::unique_ptr<wwiv::sdk::Binkp> binkp_;
 
-  bool skip_net_ = false;
-  int verbose_ = 0;
-  int network_version_ = 38;
-  bool crc_ = false;
-  bool cram_md5_ = true;
+  bool skip_net_{false};
+  int verbose_{0};
+  int network_version_{38};
+  bool crc_{true};
+  bool cram_md5_{true};
   std::string session_identifier_;
 };
 

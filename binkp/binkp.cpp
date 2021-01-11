@@ -99,7 +99,7 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
 BinkP::~BinkP() { files_to_send_.clear(); }
 
 bool BinkP::process_opt(const std::string& opt) {
-  LOG(INFO) << "OPT line: '" << opt << "'";
+  VLOG(1) << "OPT line: '" << opt << "'";
 
   const auto opts = SplitString(opt, " ");
   for (const auto& s : opts) {
@@ -166,10 +166,8 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
 
       process_opt(s);
     } else if (starts_with(s, "SYS ")) {
-      LOG(INFO) << "Remote Side: " << s.substr(4);
       remote_.set_system_name(s.substr(4));
     } else if (starts_with(s, "VER ")) {
-      LOG(INFO) << "Remote Side: " << s.substr(4);
       remote_.set_version(s.substr(4));
     }
   } break;
@@ -909,7 +907,8 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
     }
   } catch (const socket_closed_error& e) {
     // The other end closed the socket before we did.
-    LOG(INFO) << "       connection was closed by the other side. details: " << e.what();
+    LOG(INFO) << "       connection was closed by the other side.";
+    VLOG(1)   << "       details: " << e.what();
   } catch (const socket_error& e) {
     LOG(ERROR) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }
