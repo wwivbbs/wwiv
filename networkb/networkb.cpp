@@ -94,7 +94,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
   do {  // NOLINT(bugprone-infinite-loop)
     try {
       string ip;
-      if (wwiv::core::GetRemotePeerAddress(sock, ip)) {
+      if (GetRemotePeerAddress(sock, ip)) {
         LOG(INFO) << "Received connection from: " << ip;
       }
       unique_ptr<SocketConnection> c;
@@ -104,7 +104,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
         LOG(INFO) << "BinkP receive; listening on port: " << port;
         sockaddr_in saddr{};
         socklen_t addr_length = sizeof(saddr);
-        SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
+        auto s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
         c = std::make_unique<SocketConnection>(s);
       }
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
@@ -130,7 +130,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
-  const binkp_session_config_t* node_config = bink_config.binkp_session_config_for(sendto_node);
+  auto* node_config = bink_config.binkp_session_config_for(sendto_node);
   if (node_config == nullptr) {
     LOG(ERROR) << "Unable to find node config for node: " << sendto_node;
     return false;
@@ -140,7 +140,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
     LOG(ERROR) << "Recording failure: '" << e.what() << "'";
-    const net_networks_rec& net = bink_config.networks()[network_name];
+    const auto& net = bink_config.networks()[network_name];
     Contact contact(net, true);
 
     auto dt = DateTime::from_time_t(system_clock::to_time_t(start_time));
@@ -154,7 +154,7 @@ static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const stri
     throw;
   }
 
-  const auto net = bink_config.networks()[network_name];
+  const auto& net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
     const auto dir = bink_config.receive_dir(network_name);
     return new WFileTransferFile(filename, std::make_unique<File>(FilePath(dir, filename)));
@@ -208,7 +208,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       Receive(net_cmdline.cmdline(), bink_config, port);
     } else if (net_cmdline.cmdline().barg("send")) {
       if (Send(net_cmdline.cmdline(), bink_config, sendto_node, network_name)) {
-        LOG(INFO) << "Normal Exit";
+        VLOG(1) << "Normal Exit";
         return 0;
       }
       return 1;

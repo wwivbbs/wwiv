@@ -156,7 +156,7 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
   if (command_id == BinkpCommands::M_PWD) {
     log_line = string(12, '*');
   }
-  VLOG(1) << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << log_line;
+  LOG(INFO) << "RECV:  " << BinkpCommands::command_id_to_name(command_id) << ": " << log_line;
   switch (command_id) {
   case BinkpCommands::M_NUL: {
     // TODO(rushfan): process these.
@@ -713,7 +713,7 @@ BinkState BinkP::WaitEob() {
 
 bool BinkP::SendFilePacket(TransferFile* file) {
   const auto filename(file->filename());
-  LOG(INFO) << "       SendFilePacket: " << filename;
+  VLOG(1) << "       SendFilePacket: " << filename;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(BinkpCommands::M_FILE, file->as_packet_data(0));
   process_frames(seconds(2));
@@ -727,7 +727,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 }
 
 bool BinkP::SendFileData(TransferFile* file) {
-  LOG(INFO) << "       SendFileData: " << file->filename();
+  VLOG(1) << "       SendFileData: " << file->filename();
   const auto file_length = file->file_size();
   const auto chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   const auto chunk = std::make_unique<char[]>(chunk_size);

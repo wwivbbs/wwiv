@@ -49,13 +49,13 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(int destination
     const auto fn = path.filename().string();
     result.push_back(
         new WFileTransferFile(fn, std::make_unique<File>(FilePath(dirs_.net_dir(), fn))));
-    LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << fn;
+    VLOG(1) << "       CreateWWIVnetTransferFileList: found file: " << fn;
   }
   return result;
 }
 
 std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) const {
-  LOG(INFO) << "CreateFtnTransferFileList: " << address;
+  VLOG(1) << "CreateFtnTransferFileList: " << address;
 
   std::vector<fido_bundle_status_t> statuses{
       fido_bundle_status_t::crash,
@@ -135,7 +135,7 @@ static void rename_wwivnet_pend(const string& receive_directory, const std::stri
   const auto num = filename.substr(1);
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
-  for (int i = 0; i < 1000; i++) {
+  for (auto i = 0; i < 1000; i++) {
     const auto new_basename = fmt::format("p{}-0-{}.net", prefix, i);
     const auto new_filename = FilePath(net_dir, new_basename);
     VLOG(2) << new_filename;
@@ -153,7 +153,7 @@ void FileManager::rename_wwivnet_pending_files() {
   for (const auto& file : received_files()) {
     const auto rdir = dirs_.receive_dir();
     const auto net_dir = dirs_.net_dir();
-    LOG(INFO) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
+    VLOG(1) << "       renaming_pending_file: dir: " << rdir << "; file: " << file;
     rename_wwivnet_pend(rdir, net_dir, file);
   }
 }

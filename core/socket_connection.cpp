@@ -37,6 +37,7 @@
 #include <unistd.h>
 #endif // _WIN32
 
+#include "scope_exit.h"
 #include "stl.h"
 #include "core/log.h"
 #include "core/net.h"
@@ -98,6 +99,28 @@ bool WouldSocketBlock() {
 #endif // _WIN32
 }
 
+std::string GetLastErrorText() {
+#if defined ( _WIN32 )
+  char* error_text{nullptr};
+  ScopeExit on_exit([&error_text] {LocalFree(error_text);});
+  const auto last_error = GetLastError();
+  FormatMessage(
+    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+    FORMAT_MESSAGE_FROM_SYSTEM |
+    FORMAT_MESSAGE_IGNORE_INSERTS,
+    nullptr,
+    last_error,
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+    LPTSTR(&error_text),
+    0,
+    nullptr
+  );
+  return fmt::format("last_error: {} {}", last_error, error_text);
+#else
+  return fmt::format("errno: {} {}", errno, strerror(errno));
+#endif
+}
+
 } // namespace
 
 SocketConnection::SocketConnection(SOCKET sock)
@@ -106,7 +129,7 @@ SocketConnection::SocketConnection(SOCKET sock)
 
 SocketConnection::SocketConnection(SOCKET sock, ExitMode exit_mode)
   : sock_(sock), open_(true), exit_mode_(exit_mode) {
-  static bool initialized = InitializeSockets();
+  static auto initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
   }
@@ -126,7 +149,7 @@ SocketConnection::SocketConnection(SOCKET sock, ExitMode exit_mode)
 }
 
 unique_ptr<SocketConnection> Connect(const string& host, int port) {
-  static bool initialized = InitializeSockets();
+  static auto initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
   }
@@ -143,7 +166,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     LOG(ERROR) << "ERROR calling getaddrinfo: " << result_addrinfo;
     // TODO(rushfan): Throw connection error here?
   }
-  for (struct addrinfo* res = address; res != nullptr; res = res->ai_next) {
+  for (auto* res = address; res != nullptr; res = res->ai_next) {
     auto s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (s == INVALID_SOCKET) {
       continue;
@@ -164,7 +187,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
 }
 
 /*
- ** Leaving here incase I need it again
+ ** Leaving here in case I need it again
 // From: http://stackoverflow.com/questions/2493136/how-can-i-obtain-the-ipv4-address-of-the-client
 // get sockaddr, IPv4 or IPv6:
 static void *get_in_addr(struct sockaddr* sa) {
@@ -197,7 +220,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
                      std::size_t size = SIZE) {
   const auto end = system_clock::now() + d;
   auto* p = reinterpret_cast<char*>(data);
-  int total_read = 0;
+  auto total_read = 0;
   auto remaining = static_cast<int>(size);
   while (true) {
     if (system_clock::now() > end) {
@@ -208,17 +231,15 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bo
     }
     const auto result = recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
+      const auto saved_errno = GetLastErrorText();
       if (WouldSocketBlock()) {
         sleep_for(SLEEP_MS);
         continue;
       }
+      LOG(ERROR) << "Got Socket Error on recv: " << saved_errno;
+      return total_read;
     }
-    if (result <= 0 && total_read == 0) {
-      VLOG(3) << "result == 0 && total_read == 0";
-      sleep_for(SLEEP_MS);
-      continue;
-    }
-    if (result <= 0 && total_read > 0) {
+    if (result <= 0) {
       return total_read;
     }
     total_read += result;
@@ -251,7 +272,7 @@ string SocketConnection::receive(int size, duration<double> d) {
 
 string SocketConnection::receive_upto(int size, duration<double> d) {
   const auto data = std::make_unique<char[]>(size);
-  const int num_read = receive_upto(data.get(), size, d);
+  const auto num_read = receive_upto(data.get(), size, d);
   return string(data.get(), num_read);
 }
 
@@ -291,7 +312,7 @@ int SocketConnection::send(const void* data, int size, duration<double>) {
   if (open_ && sent != size) {
     if (sent == -1) {
       throw socket_closed_error(
-          StrCat("read_uint16: got -1; errno: ", strerror(errno)));
+          StrCat("Socket Closed; errno: ", strerror(errno)));
     }
     LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
   }

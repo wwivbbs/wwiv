@@ -99,7 +99,7 @@ std::filesystem::path BinkConfig::network_dir(const std::string& network_name) c
 
 std::string BinkConfig::receive_dir(const std::string& network_name) const {
   const auto dir = wwiv::core::FilePath(network_dir(network_name), session_identifier_).string();
-  LOG(INFO) << "BinkConfig::receive_dir: " << dir;
+  VLOG(1) << "BinkConfig::receive_dir: " << dir;
   return dir;
 }
 

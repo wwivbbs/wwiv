@@ -43,7 +43,7 @@ WFileTransferFile::WFileTransferFile(const string& filename, std::unique_ptr<Fil
     : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(),
                    crc32file(file->path())),
       file_(std::move(file)) {
-  LOG(INFO) << "WFileTransferFile: " << filename;
+  VLOG(1) << "WFileTransferFile: " << filename;
   if (filename.find(File::pathSeparatorChar) != string::npos) {
     // Don't allow filenames with slashes in it.
     throw std::invalid_argument("filename can not be relative pathed");
