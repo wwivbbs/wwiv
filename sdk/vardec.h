@@ -1042,7 +1042,7 @@ struct instancerec {
   uint16_t flags, loc, subloc;
   daten_t last_update;
   uint16_t modem_speed;
-  uint32_t inst_started;
+  daten_t inst_started;
   uint8_t extra[80];
 };
 

@@ -113,6 +113,7 @@ public:
   bool add(conference_t r);
   bool erase(char key);
   [[nodiscard]] int size() const { return stl::size_int(confs_); }
+  [[nodiscard]] bool empty() const { return stl::size_int(confs_) == 0; }
 
   [[nodiscard]] ConferenceType type() const noexcept { return type_; }
 

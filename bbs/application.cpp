@@ -1213,7 +1213,7 @@ void Application::frequent_init() {
 
   // Context Globals to move to Application
   // Context Globals in Application
-  set_extratimecall(std::chrono::seconds(0));
+  set_extratimecall(seconds(0));
   ReadCurrentUser(1);
   sess().reset();
   bin.charbufferpointer_ = 0;

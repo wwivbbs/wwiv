@@ -324,18 +324,19 @@ chain_t ConvertJsonFile<chain_55_t, chain_t>::ConvertType(const chain_55_t& oc) 
 }
 
 static bool convert_to_v2(UIWindow* window, Config& config) {
+  LOG(INFO) << "Updating to 5.2+ v2 format...";
   ShowBanner(window, "Updating to 5.2+ v2 format...");
 
   const auto datadir = config.datadir();
-  VLOG(1) << "Upgrading subs.json";
+  LOG(INFO) << "Upgrading subs.json";
   ConvertJsonFile<subboard_52_t, subboard_t> cs(datadir, SUBS_JSON, "subs", 0, 1);
   cs.Convert();
 
-  VLOG(1) << "Upgrading dirs.json";
+  LOG(INFO) << "Upgrading dirs.json";
   ConvertJsonFile<directory_55_t, directory_t> cd(datadir, DIRS_JSON, "dirs", 0, 1);
   cd.Convert();
 
-  VLOG(1) << "Upgrading chains.json";
+  LOG(INFO) << "Upgrading chains.json";
   ConvertJsonFile<chain_55_t, chain_t> cc(datadir, CHAINS_JSON, "chains", 0, 1);
   cc.Convert();
 

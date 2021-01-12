@@ -314,7 +314,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
     return false;
   }
   const auto size = 3 + size_int(data); /* header + command + data + null*/
-  const unique_ptr<char[]> packet(new char[size]);
+  const auto packet = std::make_unique<uint8_t[]>(size);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a command this will be 2 less than our actual packet size.
   const auto packet_length = static_cast<uint16_t>(data.size() + sizeof(uint8_t)) | 0x8000;

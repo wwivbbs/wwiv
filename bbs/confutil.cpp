@@ -133,6 +133,10 @@ bool access_at_least_one_conf(Conference& conf, const conf_set_t& e) {
 
 // Populates uc with the user visible subs for the current conference.
 bool clear_usersubs(Conference& conf, std::vector<usersubrec>& uc, int old_subnum) {
+  if (conf.empty()) {
+    const key_t key('A');
+    conf.add(conference_t{key, "General", ""});
+  }
   auto new_conf_subnum = -1;
   uc.clear();
   // iterate through each sub and make sure we have access to at least
@@ -247,14 +251,22 @@ void changedsl() {
     }
   }
 
-  if (okconf(a()->user())) {
-    auto s = at(a()->uconfsub, a()->sess().current_user_sub_conf_num());
+  if (okconf(a()->user()) && !a()->uconfsub.empty()) {
+    // Only set the subs if our conf list is not empty.
+    const auto& s = at(a()->uconfsub, a()->sess().current_user_sub_conf_num());
     setuconf(a()->all_confs().subs_conf(), s.key.key(), -1);
-    auto d = at(a()->uconfdir, a()->sess().current_user_dir_conf_num());
-    setuconf(a()->all_confs().dirs_conf(), d.key.key(), -1);
   } else {
     clear_usersubs(a()->all_confs().subs_conf(), a()->usub, -1);
+    a()->uconfsub.emplace_back(a()->all_confs().subs_conf().front());
+  }
+
+  if (okconf(a()->user()) && !a()->uconfdir.empty()) {
+    // Only set the dirs if our conf list is not empty.
+    const auto& d = at(a()->uconfdir, a()->sess().current_user_dir_conf_num());
+    setuconf(a()->all_confs().dirs_conf(), d.key.key(), -1);
+  } else {
     clear_usersubs(a()->all_confs().dirs_conf(), a()->udir, -1);
+    a()->uconfdir.emplace_back(a()->all_confs().dirs_conf().front());
   }
 }
 

@@ -168,7 +168,7 @@ static std::map<std::string, uint16_t> eventinfo = {
     {"CLEANUP", EFLAG_NONE},
 };
 
-// TODO(rushfan): If we nee this elsewhere add it into IniFile
+// TODO(rushfan): If we need this elsewhere add it into IniFile
 static std::string to_array_key(const std::string& n, const std::string& index) {
   return StrCat(n, "[", index, "]");
 }

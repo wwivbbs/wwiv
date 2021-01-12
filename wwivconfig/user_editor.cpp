@@ -79,7 +79,8 @@ static void show_user(EditItems* items, userrec* user) {
   items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Feedback Sent: ", user->feedbacksent));
   items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Msgs Waiting : ", static_cast<unsigned>(user->waiting)));
   items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Netmail Sent : ", user->emailnet));
-  items->window()->PutsXY(NONEDITABLE_DATA_POS, y, StrCat("Deleted Posts: ", user->deletedposts));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y++, StrCat("Deleted Posts: ", user->deletedposts));
+  items->window()->PutsXY(NONEDITABLE_DATA_POS, y,     StrCat("Extra Time   : ", user->extratime));
 
   items->Display();
 }
