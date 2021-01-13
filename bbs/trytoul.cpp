@@ -321,7 +321,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   auto status = a()->status_manager()->BeginTransaction();
   status->IncrementNumUploadsToday();
-  status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
+  status->IncrementFileChangedFlag(Status::file_change_upload);
   a()->status_manager()->CommitTransaction(std::move(status));
   sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
   return 0;                                 // This means success

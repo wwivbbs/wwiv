@@ -225,9 +225,9 @@ void normalupload(int dn) {
             area->Save();
           }
           if (ok == 1) {
-            a()->status_manager()->Run([](WStatus& s) {
+            a()->status_manager()->Run([](Status& s) {
               s.IncrementNumUploadsToday();
-              s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
+              s.IncrementFileChangedFlag(Status::file_change_upload);
             });
             sysoplog() << fmt::format("+ \"{}\" uploaded on {}", f, a()->dirs()[dn].name);
             bout.nl(2);

@@ -96,8 +96,8 @@ static void save_gat(File& file) {
   const auto section_pos = gat_section * GATSECLEN;
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
-  a()->status_manager()->Run([](WStatus& s) {
-    s.IncrementFileChangedFlag(WStatus::fileChangePosts);
+  a()->status_manager()->Run([](Status& s) {
+    s.IncrementFileChangedFlag(Status::file_change_posts);
   });
 }
 

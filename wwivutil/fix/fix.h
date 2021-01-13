@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FIX_FIX_H__
-#define __INCLUDED_WWIVUTIL_FIX_FIX_H__
+#ifndef INCLUDED_WWIVUTIL_FIX_FIX_H
+#define INCLUDED_WWIVUTIL_FIX_FIX_H
 
 #include "wwivutil/command.h"
 
@@ -33,4 +33,4 @@ public:
 }
 
 
-#endif  // __INCLUDED_WWIVUTIL_FIX_FIX_H__
+#endif

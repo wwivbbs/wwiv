@@ -50,16 +50,15 @@ static char* dateFromTimeT(time_t t) {
 }
 
 static std::string dateFromTimeTForLog(time_t t) {
-  auto dt = DateTime::from_time_t(t);
+  const auto dt = DateTime::from_time_t(t);
   return dt.to_string("%y%m%d");
 }
 
 static bool checkFileSize(File& file, unsigned long len) {
   if (!file.IsOpen()) {
-    int nFileMode = File::modeReadOnly | File::modeBinary;
-    file.Open(nFileMode);
+    file.Open(File::modeReadOnly | File::modeBinary);
   }
-  unsigned long actual = file.length();
+  const unsigned long actual = file.length();
   file.Close();
   if (actual < len) {
     LOG(INFO) << file << " too short (" << actual << "<" << len << ").";
@@ -114,31 +113,42 @@ static bool initStatusDat(const std::string& datadir) {
                 << st.wwiv_version << ")";
     }
 
-    auto dt = DateTime::now();
+    const auto dt = DateTime::now();
     auto val = dt.to_time_t();
-    auto cur_date = dateFromTimeT(val);
+    auto* cur_date = dateFromTimeT(val);
+    VLOG(1) << "st.date1: " << st.date1 << "; expected: " << cur_date
+            << "; equals: " << std::boolalpha << iequals(cur_date, st.date1);
     if (!iequals(st.date1, cur_date)) {
       to_char_array(st.date1, cur_date);
       update = true;
       LOG(INFO) << "Date error in STATUS.DAT (st.date1) corrected";
+      LOG(INFO) << "was: " << st.date1 << "; expected: " << cur_date;
     }
 
     val -= 86400L;
     cur_date = dateFromTimeT(val);
-    if (strcmp(st.date2, cur_date)) {
+    VLOG(1) << "st.date2: " << st.date2 << "; expected: " << cur_date
+            << "; equals: " << std::boolalpha << iequals(cur_date, st.date2);
+    if (!iequals(st.date2, cur_date)) {
       strcpy(st.date2, cur_date);
       update = true;
       LOG(INFO) << "Date error in STATUS.DAT (st.date2) corrected";
+      LOG(INFO) << "was: " << st.date2 << "; expected: " << cur_date;
     }
     auto log_file = StrCat(dateFromTimeTForLog(val), ".log");
+    VLOG(1) << "st.log1: " << st.log1 << "; expected: " << log_file
+            << "; equals: " << std::boolalpha << iequals(log_file, st.log1);
     if (!iequals(log_file, st.log1)) {
       to_char_array(st.log1, log_file);
       update = true;
       LOG(INFO) << "Log filename error in STATUS.DAT (st.log1) corrected";
+      LOG(INFO) << "was: " << st.log1 << "; expected: " << log_file;
     }
 
     val -= 86400L;
     cur_date = dateFromTimeT(val);
+    VLOG(1) << "st.date3: " << st.date3 << "; expected: " << cur_date
+            << "; equals: " << std::boolalpha << iequals(cur_date, st.date3);
     if (!iequals(st.date3, cur_date)) {
       strcpy(st.date3, cur_date);
       update = true;
@@ -167,13 +177,11 @@ bool FixUsersCommand::AddSubCommands() {
 std::string FixUsersCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   fix users";
-  ss << "Example: WWIVUTIL fix users";
+  ss << "Example: WWIVutil fix users";
   return ss.str();
 }
 
 int FixUsersCommand::Execute() {
-  LOG(INFO) << "Runnning FixUsersCommand::Execute";
-
   initStatusDat(config()->config()->datadir());
   const auto user_fn = FilePath(config()->config()->datadir(), USER_LST);
   if (!File::Exists(user_fn)) {
@@ -183,7 +191,7 @@ int FixUsersCommand::Execute() {
 
   UserManager userMgr(*config()->config());
   LOG(INFO) << "Checking USER.LST... found " << userMgr.num_user_records() << " user records.";
-  LOG(INFO) << "TBD: Check for trashed user recs.";
+  LOG(INFO) << "TBD: Check for trashed user records.";
   if (userMgr.num_user_records() > config()->config()->max_users()) {
     LOG(INFO) << "Might be too many.";
     if (!arg("exp").as_bool()) {
@@ -221,7 +229,7 @@ int FixUsersCommand::Execute() {
 
   std::sort(smallrecords.begin(), smallrecords.end(),
             [](const smalrec& a, const smalrec& b) -> bool {
-              int equal = strcmp((char*)a.name, (char*)b.name);
+              const int equal = strcmp((char*)a.name, (char*)b.name);
 
               // Sort by user number if names match.
               if (equal == 0) {

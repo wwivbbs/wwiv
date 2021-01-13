@@ -24,6 +24,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
+
 #include <string>
 
 // Make sure it's after windows.h
@@ -35,7 +36,7 @@ using namespace wwiv::strings;
 
 extern char bbsdir[];
 
-static void fix_user_rec(userrec *u) {
+static void fix_user_rec(userrec* u) {
   u->name[sizeof(u->name) - 1] = 0;
   u->realname[sizeof(u->realname) - 1] = 0;
   u->callsign[sizeof(u->callsign) - 1] = 0;
@@ -49,32 +50,32 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs(const std::string& datadir) {
-  const DataFile<userrec> file(FilePath(datadir, USER_LST),
-                               File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
-  if (file) {
+  if (const auto file =
+          DataFile<userrec>(FilePath(datadir, USER_LST),
+                            File::modeReadWrite | File::modeBinary | File::modeCreateFile,
+                            File::shareDenyReadWrite)) {
     return static_cast<int>(file.number_of_records()) - 1;
   }
   return -1;
 }
 
 void read_user(const Config& config, int un, userrec* u) {
-  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
-  if (!file) {
+  if (auto file = DataFile<userrec>(FilePath(config.datadir(), USER_LST),
+                                    File::modeReadWrite | File::modeBinary | File::modeCreateFile,
+                                    File::shareDenyReadWrite)) {
+    const auto nu = static_cast<int>(file.number_of_records()) - 1;
+    if (un > nu) {
+      u->inact = inact_deleted;
+      fix_user_rec(u);
+      return;
+    }
+    file.Seek(un);
+    file.Read(u);
+    fix_user_rec(u);
+  } else {
     u->inact = inact_deleted;
     fix_user_rec(u);
-    return;
   }
-
-  const auto nu = static_cast<int>(file.number_of_records()) - 1;
-  if (un > nu) {
-    u->inact = inact_deleted;
-    fix_user_rec(u);
-    return;
-  }
-  file.Seek(un);
-  file.Read(u);
-  fix_user_rec(u);
 }
 
 void write_user(const Config& config, int un, userrec* u) {
@@ -82,27 +83,26 @@ void write_user(const Config& config, int un, userrec* u) {
     return;
   }
 
-  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  if (file) {
+  if (auto file =
+          DataFile<userrec>(FilePath(config.datadir(), USER_LST),
+                            File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     file.Seek(un);
     file.Write(u);
   }
 }
 
 void save_status(const std::string& datadir, const statusrec_t& statusrec) {
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
-                             File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-  if (file) {
+  if (auto file =
+          DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),
+                                File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
     file.Write(&statusrec);
   }
 }
 
 /** returns true if "status.dat" is read correctly */
 bool read_status(const std::string& datadir, statusrec_t& statusrec) {
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
-                             File::modeBinary | File::modeReadWrite);
-  if (file) {
+  if (auto file = DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),
+                                        File::modeBinary | File::modeReadWrite)) {
     return file.Read(&statusrec);
   }
   return false;

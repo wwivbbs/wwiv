@@ -52,7 +52,7 @@ static int show_qscan(const Config& config) {
 
 static int set_qscan(const Config& config, uint32_t qscan) {
   StatusMgr mgr(config.datadir(), [](int) {});
-  mgr.Run([=](WStatus& s) {
+  mgr.Run([=](Status& s) {
     s.SetQScanPointer(qscan);
   });
 

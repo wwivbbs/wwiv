@@ -661,7 +661,7 @@ void HandleMessageMove(int& msg_num) {
       open_sub(true);
       p2.msg.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
       savefile(b, &(p2.msg), (a()->current_sub().filename));
-      a()->status_manager()->Run([&](WStatus& s) { p2.qscan = s.IncrementQScanPointer(); });
+      a()->status_manager()->Run([&](Status& s) { p2.qscan = s.IncrementQScanPointer(); });
       if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
         auto temp_msg_num = 1;
         auto msg_to_delete = 0;

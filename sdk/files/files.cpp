@@ -148,8 +148,8 @@ FileAreaHeader& FileArea::header() const {
 
 bool FileArea::Load() {
   dirty_ = false;
-  DataFile<uploadsrec> file(path(), File::modeReadOnly | File::modeBinary);
-  if (file) {
+
+  if (auto file = DataFile<uploadsrec>(path(), File::modeReadOnly | File::modeBinary)) {
     if (file.ReadVector(files_)) {
       open_ = true;
     }
@@ -173,7 +173,9 @@ bool FileArea::Close() {
   return true;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeStatic
 bool FileArea::Lock() { return false; }
+// ReSharper disable once CppMemberFunctionMayBeStatic
 bool FileArea::Unlock() { return false; }
 
 int FileArea::number_of_files() const {

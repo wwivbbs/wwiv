@@ -66,22 +66,16 @@ static std::string prot_name(const vector<newexternalrec>& externs, int pn) {
 static void load_protocols(const std::string& datadir, vector<newexternalrec>& externs, vector<newexternalrec>& over_intern) {
   externs.clear();
   over_intern.clear();
-  {
-    DataFile<newexternalrec> file(FilePath(datadir, NEXTERN_DAT),
-                                  File::modeBinary | File::modeReadWrite);
-    if (file) {
-      file.ReadVector(externs, 15);
-    }
+  if (auto file = DataFile<newexternalrec>(FilePath(datadir, NEXTERN_DAT),
+                                           File::modeBinary | File::modeReadWrite)) {
+    file.ReadVector(externs, 15);
   }
-  {
-    DataFile<newexternalrec> file(FilePath(datadir, NINTERN_DAT),
-                                  File::modeBinary | File::modeReadWrite);
-    if (file) {
-      file.ReadVector(over_intern, 3);
-    } else {
-      for (auto i = 0; i < 3; i++) {
-        over_intern.push_back({});
-      }
+  if (auto file = DataFile<newexternalrec>(FilePath(datadir, NINTERN_DAT),
+                                File::modeBinary | File::modeReadWrite)) {
+    file.ReadVector(over_intern, 3);
+  } else {
+    for (auto i = 0; i < 3; i++) {
+      over_intern.push_back({});
     }
   }
 }
@@ -92,7 +86,7 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     return;
   }
 
-  newexternalrec c{};
+  newexternalrec c;
   if (n >= 6) {
     c = externs[n - 6];
   } else {

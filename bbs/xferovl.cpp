@@ -354,7 +354,7 @@ static bool upload_file(const std::string& file_name, uint16_t directory_num,
     }
     auto status = a()->status_manager()->BeginTransaction();
     status->IncrementNumUploadsToday();
-    status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
+    status->IncrementFileChangedFlag(Status::file_change_upload);
     a()->status_manager()->CommitTransaction(std::move(status));
     sysoplog() << "+ '" << f << "' uploaded on " << d.name;
     a()->UpdateTopScreen();

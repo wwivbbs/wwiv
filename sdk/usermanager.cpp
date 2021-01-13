@@ -124,21 +124,21 @@ static void DeleteSmallRecord(StatusMgr& sm, Names& names, const char *name) {
     return;
   }
 
-  sm.Run([&](WStatus& s) {
+  sm.Run([&](Status& s) {
     names.Remove(found_user);
     s.DecrementNumUsers();
-    s.IncrementFileChangedFlag(WStatus::fileChangeNames);
+    s.IncrementFileChangedFlag(Status::file_change_names);
     names.Save();
   });
 }
 
 // Inserts a record into NAMES.LST
 static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, const char *name) {
-  sm.Run([&](WStatus& s) {
+  sm.Run([&](Status& s) {
     names.Add(name, user_number);
     names.Save();
     s.IncrementNumUsers();
-    s.IncrementFileChangedFlag(WStatus::fileChangeNames);
+    s.IncrementFileChangedFlag(Status::file_change_names);
   });
 }
 

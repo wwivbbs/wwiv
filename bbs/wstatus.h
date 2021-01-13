@@ -20,7 +20,7 @@
 #define __INCLUDED_WSTATUS_H__
 
 #include "sdk/status.h"
-//using wwiv::sdk::WStatus;
+//using wwiv::sdk::Status;
 //using wwiv::sdk::StatusMgr;
 
 #endif // __INCLUDED_WSTATUS_H__

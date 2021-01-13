@@ -276,7 +276,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     p.ownersys = 0;
     p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
     {
-      a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
+      a()->status_manager()->Run([&](Status& s) { p.qscan = s.IncrementQScanPointer(); });
     }
     p.daten = daten_t_now();
     if (a()->user()->data.restrict & restrict_validate) {
@@ -324,7 +324,7 @@ static void qwk_post_text(std::string text, const std::string& to, const std::st
     ++a()->user()->data.msgpost;
     ++a()->user()->data.posttoday;
 
-    a()->status_manager()->Run([](WStatus& s) {
+    a()->status_manager()->Run([](Status& s) {
       s.IncrementNumLocalPosts();
       s.IncrementNumMessagesPostedToday();
     });

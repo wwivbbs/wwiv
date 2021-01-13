@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FIX_DIRS_H__
-#define __INCLUDED_WWIVUTIL_FIX_DIRS_H__
+#ifndef INCLUDED_WWIVUTIL_FIX_DIRS_H
+#define INCLUDED_WWIVUTIL_FIX_DIRS_H
 
 #include "wwivutil/command.h"
 
@@ -36,4 +36,4 @@ public:
 
 }
 
-#endif  // __INCLUDED_WWIVUTIL_FIX_DIRS_H__ 
+#endif

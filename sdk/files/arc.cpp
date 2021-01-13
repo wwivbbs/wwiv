@@ -560,8 +560,7 @@ std::optional<std::string> determine_arc_extension(const std::filesystem::path& 
 
 std::vector<arcrec> read_arcs(const std::string& datadir) {
   std::vector<arcrec> arcs;
-  wwiv::core::DataFile<arcrec> file(FilePath(datadir, ARCHIVER_DAT));
-  if (file) {
+  if (auto file = DataFile<arcrec>(FilePath(datadir, ARCHIVER_DAT))) {
     file.ReadVector(arcs, 20);
   }
   return arcs;

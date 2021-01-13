@@ -461,7 +461,7 @@ static void UpdateUserStatsForLogin() {
     a()->set_current_user_dir_num(0);
   }
   if (a()->sess().effective_sl() != 255 && !a()->sess().guest_user()) {
-    a()->status_manager()->Run([](WStatus& s) {
+    a()->status_manager()->Run([](Status& s) {
       s.IncrementCallerNumber();
       s.IncrementNumCallsToday();
     });
@@ -497,7 +497,7 @@ static void PrintUserSpecificFiles() {
   }
 }
 
-static std::string CreateLastOnLogLine(const WStatus& status) {
+static std::string CreateLastOnLogLine(const Status& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
     (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
@@ -950,7 +950,7 @@ void logoff() {
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 
-  a()->status_manager()->Run([=](WStatus& s) {
+  a()->status_manager()->Run([=](Status& s) {
     const int active_today = s.GetMinutesActiveToday();
     const auto minutes_used_now = std::chrono::duration_cast<std::chrono::minutes>(seconds_used_duration).count();
     s.SetMinutesActiveToday(active_today + minutes_used_now);
@@ -997,8 +997,8 @@ void logoff() {
         }
       }
       pFileEmail->set_length(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      a()->status_manager()->Run([](WStatus& s) {
-        s.IncrementFileChangedFlag(WStatus::fileChangeEmail);
+      a()->status_manager()->Run([](Status& s) {
+        s.IncrementFileChangedFlag(Status::file_change_email);
       });
       pFileEmail->Close();
     }

@@ -6,6 +6,7 @@
 
 * Check for no conferences
 * Check for subs or dirs not part of any conference
+* sub storage type != 2
 
 # CONFIG.JSON
 

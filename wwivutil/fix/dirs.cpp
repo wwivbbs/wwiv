@@ -27,8 +27,8 @@
 #include "sdk/vardec.h"
 #include "sdk/files/files.h"
 #include <iostream>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 using std::cout;
@@ -246,6 +246,9 @@ static void checkFileAreas(const wwiv::sdk::Config& config, bool /* verbose */, 
     }
     if (!ensure_path_exists(d, dry_run)) {
       continue;
+    }
+    if (d.area_tags.empty()) {
+      LOG(WARNING) << "** PLEASE FIX: Dir: " << d.filename << " is not part of any conference.";
     }
     auto area = api.Open(d);
     if (!area) {

@@ -124,9 +124,9 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(int ver, uint32_t num_messages)
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub,
                                  std::filesystem::path sub_filename,
                                  std::filesystem::path text_filename, int subnum,
-                                 const std::vector<net_networks_rec>& net_networks)
+                                 std::vector<net_networks_rec> net_networks)
     : MessageArea(api), Type2Text(std::move(text_filename)), wwiv_api_(api), sub_(sub),
-      sub_filename_(std::move(sub_filename)), header_{}, net_networks_(net_networks) {
+      sub_filename_(std::move(sub_filename)), header_{}, net_networks_(std::move(net_networks)) {
   DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!subfile) {
     // TODO: throw exception

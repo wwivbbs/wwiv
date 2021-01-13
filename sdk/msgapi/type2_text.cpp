@@ -117,7 +117,7 @@ void Type2Text::save_gat(File& file, int section, const std::vector<gati_t>& gat
   // resynch can work right on multi node configs.
   // 
   // auto status = a()->status_manager()->BeginTransaction();
-  // status->IncrementFileChangedFlag(WStatus::fileChangePosts);
+  // status->IncrementFileChangedFlag(Status::file_change_posts);
   // a()->status_manager()->CommitTransaction(status);
 }
 

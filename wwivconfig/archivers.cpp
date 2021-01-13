@@ -126,7 +126,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
   }
   file.Read(&arc, MAX_ARCS * sizeof(arcrec));
 
-  bool done = false;
+  auto done = false;
   do {
     curses_out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
@@ -146,7 +146,7 @@ bool edit_archivers(wwiv::sdk::Config& config) {
     }
   } while (!done);
 
-  // seek to beginning of file, write arcrecs, close file
+  // seek to beginning of file, write arcrec, close file
   file.Seek(0, File::Whence::begin);
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
   return true;

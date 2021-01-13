@@ -39,6 +39,7 @@
 #include "sdk/net/networks.h"
 #include "sdk/net/packets.h"
 #include "sdk/ssm.h"
+#include "sdk/status.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include <cstdlib>
@@ -72,19 +73,16 @@ static bool email_changed = false;
 static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
-  statusrec_t status{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
-  if (file) {
-    if (file.Read(0, &status)) {
-      if (email) {
-        status.filechange[filechange_email]++;
-      }
-      if (posts) {
-        status.filechange[filechange_posts]++;
-      }
-      file.Write(0, &status);
+  StatusMgr sm(datadir);
+  sm.Run([=](Status& s)
+  {
+    if (email) {
+      s.IncrementFileChangedFlag(Status::file_change_email);
     }
-  }
+    if (posts) {
+      s.IncrementFileChangedFlag(Status::file_change_posts);
+    }
+  });
 }
 
 static void ShowHelp(const NetworkCommandLine& cmdline) {

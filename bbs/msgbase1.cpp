@@ -257,7 +257,7 @@ void post(const PostData& post_data) {
   p.msg = m;
   p.ownersys = 0;
   p.owneruser = static_cast<uint16_t>(a()->sess().user_num());
-  a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
+  a()->status_manager()->Run([&](Status& s) { p.qscan = s.IncrementQScanPointer(); });
   p.daten = daten_t_now();
   p.status = 0;
   if (a()->user()->IsRestrictionValidate()) {
@@ -306,7 +306,7 @@ void post(const PostData& post_data) {
 
   a()->user()->SetNumMessagesPosted(a()->user()->GetNumMessagesPosted() + 1);
   a()->user()->SetNumPostsToday(a()->user()->GetNumPostsToday() + 1);
-  a()->status_manager()->Run([](WStatus& s) {
+  a()->status_manager()->Run([](Status& s) {
     s.IncrementNumMessagesPostedToday();
     s.IncrementNumLocalPosts();
   });

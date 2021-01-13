@@ -16,17 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_USERS_H__
-#define __INCLUDED_USERS_H__
-
-#include <map>
-#include <string>
+#ifndef INCLUDED_WWIVUTIL_FIX_USERS_H
+#define INCLUDED_WWIVUTIL_FIX_USERS_H
 
 #include "core/command_line.h"
 #include "wwivutil/command.h"
 
-namespace wwiv {
-namespace wwivutil {
+#include <string>
+
+namespace wwiv::wwivutil {
 
 class FixUsersCommand final: public UtilCommand {
 public:
@@ -38,7 +36,6 @@ public:
 };
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+}  // namespace
 
-#endif  // __INCLUDED_USERS_H__
+#endif

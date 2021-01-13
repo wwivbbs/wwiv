@@ -219,10 +219,10 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
               add_to_file_database(f);
               a()->user()->set_uk(a()->user()->uk() + static_cast<int>(bytes_to_k(f.numbytes())));
-              a()->status_manager()->Run([](WStatus& s)
+              a()->status_manager()->Run([](Status& s)
               {
                 s.IncrementNumUploadsToday();
-                s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
+                s.IncrementFileChangedFlag(Status::file_change_upload);
               });
               if (area->UpdateFile(f, nRecNum)) {
                 area->Save();

@@ -206,16 +206,16 @@ BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number,
 
   VLOG(3) << "Processing " << network_dir;
   // We now need to add in cost and routing information.
-  Connect connect(network_dir);
+  const Connect connect(network_dir);
 
   // Build the network graph
-  wwiv::graphs::Graph graph(net_node_number, std::numeric_limits<uint16_t>::max());
+  graphs::Graph graph(net_node_number, std::numeric_limits<uint16_t>::max());
   for (const auto& e : connect.node_config()) {
     const auto& c = e.second;
-    auto source = c.sysnum;
+    const auto source = c.sysnum;
     
     auto cost_iter = c.cost.begin();
-    for (auto dest_iter = c.connect.begin(); dest_iter != std::end(c.connect); dest_iter++, cost_iter++) {
+    for (auto dest_iter = c.connect.begin(); dest_iter != std::end(c.connect); ++dest_iter, ++cost_iter) {
       graph.add_edge(source, *dest_iter, *cost_iter);
     }
   }
@@ -229,13 +229,11 @@ BbsListNet BbsListNet::ReadBbsDataNet(const std::filesystem::path& network_dir) 
   BbsListNet b;
   vector<net_system_list_rec> system_list;
 
-  DataFile<net_system_list_rec> file(FilePath(network_dir, BBSDATA_NET));
-  if (file) {
+  if (auto file = DataFile<net_system_list_rec>(FilePath(network_dir, BBSDATA_NET))) {
     file.ReadVector(system_list);
-    for (const auto s : system_list) {
+    for (const auto& s : system_list) {
       b.node_config_.emplace(s.sysnum, s);
     }
-    file.Close();
   }
   return b;
 }

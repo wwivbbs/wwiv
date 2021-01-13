@@ -78,7 +78,7 @@ public:
   WWIVMessageArea(WWIVMessageApi* api, const subboard_t& sub, 
                   std::filesystem::path sub_filename,
                   std::filesystem::path text_filename, int subnum,
-                  const std::vector<net_networks_rec>& net_networks);
+                  std::vector<net_networks_rec> net_networks);
   ~WWIVMessageArea() override;
 
   // Message Sub Specific Operations

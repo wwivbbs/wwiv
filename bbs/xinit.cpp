@@ -71,7 +71,7 @@ using namespace wwiv::sdk;
 
 void StatusManagerCallback(int i) {
   switch (i) {
-  case WStatus::fileChangeNames: {
+  case Status::file_change_names: {
     // re-read names.lst
     if (a()->names()) {
       // We may not have the BBS initialized yet, so only
@@ -79,15 +79,15 @@ void StatusManagerCallback(int i) {
       a()->names()->Load();
     }
   } break;
-  case WStatus::fileChangeUpload:
+  case Status::file_change_upload:
     break;
-  case WStatus::fileChangePosts:
+  case Status::file_change_posts:
     a()->subchg = 1;
     break;
-  case WStatus::fileChangeEmail:
+  case Status::file_change_email:
     a()->emchg_ = true;
     break;
-  case WStatus::fileChangeNet: {
+  case Status::file_change_net: {
     set_net_num(a()->net_num());
   } break;
   default: // NOP
@@ -402,33 +402,28 @@ bool Application::ReadConfig() {
 
 void Application::read_nextern() {
   externs.clear();
-  DataFile<newexternalrec> externalFile(FilePath(config()->datadir(), NEXTERN_DAT));
-  if (externalFile) {
+  if (auto externalFile = DataFile<newexternalrec>(FilePath(config()->datadir(), NEXTERN_DAT))) {
     externalFile.ReadVector(externs, 15);
   }
 }
 
 void Application::read_arcs() {
   arcs.clear();
-  DataFile<arcrec> file(FilePath(config()->datadir(), ARCHIVER_DAT));
-  if (file) {
+  if (auto file = DataFile<arcrec>(FilePath(config()->datadir(), ARCHIVER_DAT))) {
     file.ReadVector(arcs, MAX_ARCS);
   }
 }
 
 void Application::read_editors() {
   editors.clear();
-  DataFile<editorrec> file(FilePath(config()->datadir(), EDITORS_DAT));
-  if (!file) {
-    return;
+  if (auto file = DataFile<editorrec>(FilePath(config()->datadir(), EDITORS_DAT))) {
+    file.ReadVector(editors, 10);
   }
-  file.ReadVector(editors, 10);
 }
 
 void Application::read_nintern() {
   over_intern.clear();
-  DataFile<newexternalrec> file(FilePath(config()->datadir(), NINTERN_DAT));
-  if (file) {
+  if (auto file = DataFile<newexternalrec>(FilePath(config()->datadir(), NINTERN_DAT))) {
     file.ReadVector(over_intern, 3);
   }
 }
@@ -513,11 +508,8 @@ void Application::read_chains() {
 }
 
 bool Application::read_language() {
-  {
-    DataFile<languagerec> file(FilePath(config()->datadir(), LANGUAGE_DAT));
-    if (file) {
-      file.ReadVector(languages);
-    }
+  if (auto file = DataFile<languagerec>(FilePath(config()->datadir(), LANGUAGE_DAT))) {
+    file.ReadVector(languages);
   }
   if (languages.empty()) {
     // Add a default language to the list.

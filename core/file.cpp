@@ -25,7 +25,6 @@
 #include "core/wfndfile.h"
 #include <cerrno>
 #include <cstring>
-#include <sstream>
 #include <string>
 #include "core/findfiles.h"
 
@@ -33,7 +32,7 @@
 #ifdef _WIN32
 // This makes it clear that we want the POSIX names without
 // leading underscores  This makes resharper happy with fcntl.h too.
-#define _CRT_DECLARE_NONSTDC_NAMES 1
+#define _CRT_DECLARE_NONSTDC_NAMES 1  
 #endif // _WIN32
 
 #include <fcntl.h>
@@ -56,7 +55,7 @@
 #ifdef _WIN32
 #include "core/wwiv_windows.h"
 
-int flock(int , int ) {return 0;}
+static int flock(int, int) { return 0; }
 
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
@@ -114,7 +113,7 @@ path FilePath(const path& directory_name, const path& file_name) {
 }
 
 void trim_backups(const path& from, int max_backups) {
-  path mask{from};
+  auto mask{from};
   mask += ".backup.*";
   FindFiles ff(mask, FindFiles::FindFilesType::files, FindFiles::WinNameType::long_name);
   if (!from.has_filename()) {
@@ -131,14 +130,14 @@ void trim_backups(const path& from, int max_backups) {
     if (num_to_remove-- == 0) {
       break;
     }
-    path file{from};
+    auto file{from};
     VLOG(1) << "Delete backup: " << file.replace_filename(f.name);
     File::Remove(file.replace_filename(f.name));
   }
 }
 
 bool backup_file(const path& from, int max_backups) {
-  path to{from};
+  auto to{from};
   to += StrCat(".backup.", DateTime::now().to_string("%Y%m%d%H%M%S"));
   VLOG(1) << "Backing up file: '" << from << "'; to: '" << to << "'";
   std::error_code ec;
@@ -251,6 +250,7 @@ void File::Close() noexcept {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 File::size_type File::Read(void* buffer, File::size_type size) {
   const auto ret = read(handle_, buffer, static_cast<size_t>(size));
   if (ret == -1) {
@@ -266,6 +266,7 @@ File::size_type File::Read(void* buffer, File::size_type size) {
   return ret;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 File::size_type File::Write(const void* buffer, File::size_type size) {
   const auto r = write(handle_, buffer, static_cast<size_t>(size));
   if (r == -1) {
@@ -281,6 +282,7 @@ File::size_type File::Write(const void* buffer, File::size_type size) {
   return r;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 File::size_type File::Seek(size_type offset, Whence whence) {
   CHECK(File::IsFileHandleValid(handle_));
   CHECK(whence == File::Whence::begin || whence == File::Whence::current ||
@@ -298,12 +300,8 @@ bool File::Exists() const noexcept {
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void File::set_length(size_type l) {
-  // TODO(rushfan): Use std::filesystem::set_size
-#ifdef _WIN32
-  (void) _chsize(handle_, static_cast<long>(l));
-#else
-  (void) ftruncate(handle_, l);
-#endif
+  std::error_code ec;
+  resize_file(full_path_name_, l, ec);
 }
 
 // static
@@ -382,20 +380,20 @@ bool File::SetFilePermissions(const std::filesystem::path& path, int perm) {
   return chmod(path.string().c_str(), perm) == 0;
 }
 
+// static
 bool File::IsFileHandleValid(int handle) noexcept { return handle != invalid_handle; }
 
 // static
-// static
-std::string File::EnsureTrailingSlash(const std::filesystem::path& orig) {
-  if (orig.empty()) {
+std::string File::EnsureTrailingSlash(const std::filesystem::path& path) {
+  if (path.empty()) {
     return {};
   }
-  std::string path{orig.string()};
-  if (path.back() == pathSeparatorChar) {
-    return path;
+  auto newpath{path.string()};
+  if (newpath.back() == pathSeparatorChar) {
+    return newpath;
   }
-  path.push_back(pathSeparatorChar);
-  return path;
+  newpath.push_back(pathSeparatorChar);
+  return newpath;
 }
 
 // static
@@ -418,7 +416,7 @@ std::string File::FixPathSeparators(const std::string& path) {
 }
 
 // static
-std::filesystem::path File::absolute(const std::filesystem::path& base, const std::filesystem::path& relative) {
+path File::absolute(const std::filesystem::path& base, const std::filesystem::path& relative) {
   if (relative.is_absolute()) {
     return relative;
   }
@@ -455,7 +453,11 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
   return os;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 bool File::set_last_write_time(time_t last_write_time) noexcept {
+  // Stick with calling utime vs. filesystem:last_write_time until C++20 since
+  // C++20 will allow portable output
+
   // ReSharper disable once CppInitializedValueIsAlwaysRewritten
   struct utimbuf ut{};
   ut.actime = ut.modtime = last_write_time;
@@ -479,6 +481,16 @@ std::unique_ptr<FileLock> File::lock(FileLockType lock_type) {
 
 #endif // _WIN32
   return std::make_unique<FileLock>(handle_, full_path_name_.string(), lock_type);
+}
+
+std::string File::full_pathname() const noexcept {
+  try {
+    return full_path_name_.string();
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Exception in File::full_pathname: " << e.what();
+    DLOG(FATAL) << "Exception in File::full_pathname: " << e.what();
+  }
+  return {};
 }
 
 bool File::Copy(const std::filesystem::path& from, const std::filesystem::path& to) {

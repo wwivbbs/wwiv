@@ -775,7 +775,7 @@ static void update_qscan(uint32_t qscan) {
     current_qscan_pointer = status->GetQScanPointer();
   }
   if (qscan >= current_qscan_pointer) {
-    a()->status_manager()->Run([&](WStatus& s) {
+    a()->status_manager()->Run([&](Status& s) {
       if (qscan >= s.GetQScanPointer()) {
         s.SetQScanPointer(qscan + 1);
       }

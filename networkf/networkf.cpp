@@ -77,8 +77,7 @@ namespace wwiv::net::networkf {
 
 static vector<arcrec> read_arcs(const std::string& datadir) {
   vector<arcrec> arcs;
-  DataFile<arcrec> file(FilePath(datadir, ARCHIVER_DAT));
-  if (file) {
+  if (auto file = DataFile<arcrec>(FilePath(datadir, ARCHIVER_DAT))) {
     file.ReadVector(arcs, 20);
   }
   return arcs;
@@ -86,8 +85,7 @@ static vector<arcrec> read_arcs(const std::string& datadir) {
 
 /** returns the arcrec for the extension, or the 1st one if none match */
 static arcrec find_arc(const vector<arcrec>& arcs, const std::string& extension) {
-  auto ue = extension;
-  StringUpperCase(&ue);
+  const auto ue = ToStringUpperCase(extension);
   for (const auto& a : arcs) {
     if (ue == a.extension) {
       return a;
@@ -99,7 +97,7 @@ static arcrec find_arc(const vector<arcrec>& arcs, const std::string& extension)
 static std::string arc_stuff_in(const std::string& command_line, const std::string& a1,
                                 const std::string& a2) {
   std::ostringstream os;
-  for (auto it = command_line.begin(); it != command_line.end(); it++) {
+  for (auto it = command_line.begin(); it != command_line.end(); ++it) {
     if (*it == '%') {
       ++it;
       switch (*it) {

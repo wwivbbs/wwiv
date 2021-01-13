@@ -142,8 +142,7 @@ http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.
 
 void extrn_editors(const wwiv::sdk::Config& config) {
   vector<editorrec> editors;
-  DataFile<editorrec> file(FilePath(config.datadir(), EDITORS_DAT));
-  if (file) {
+  if (auto file = DataFile<editorrec>(FilePath(config.datadir(), EDITORS_DAT))) {
     file.ReadVector(editors, 10);
     file.Close();
   }

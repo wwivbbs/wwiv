@@ -126,7 +126,7 @@ void write_automessage() {
 
   bout << "|#9Is this OK? ";
   if (bin.yesno()) {
-    a()->status_manager()->Run([bAnonStatus](WStatus& s) {
+    a()->status_manager()->Run([bAnonStatus](Status& s) {
       s.SetAutoMessageAnonymous(bAnonStatus);
       s.SetAutoMessageAuthorUserNumber(a()->sess().user_num());
     });

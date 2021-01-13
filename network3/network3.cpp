@@ -40,6 +40,7 @@
 #include "sdk/fido/fido_directories.h"
 #include "sdk/fido/nodelist.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 #include "sdk/net/callout.h"
 #include "sdk/net/connect.h"
 #include "sdk/net/contact.h"
@@ -372,10 +373,15 @@ static void update_net_ver_status_dat(const string& datadir) {
 }
 
 static void update_filechange_status_dat(const string& datadir) {
-  statusrec_t statusrec{};
-  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT),
-                             File::modeBinary | File::modeReadWrite);
-  if (file) {
+  StatusMgr sm(datadir);
+  sm.Run([=](Status& s)
+  {
+    s.IncrementFileChangedFlag(Status::file_change_net);
+  });
+
+  if (auto file = DataFile<statusrec_t>(FilePath(datadir, STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite)) {
+    statusrec_t statusrec{};
     if (file.Read(0, &statusrec)) {
       statusrec.filechange[filechange_net]++;
       file.Write(0, &statusrec);

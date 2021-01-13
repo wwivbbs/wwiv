@@ -133,7 +133,7 @@ public:
   std::unique_ptr<FileLock> lock(FileLockType lock_type);
 
   /** Returns the file path as a std::string path */
-  [[nodiscard]] std::string full_pathname() const noexcept { return full_path_name_.string(); }
+  [[nodiscard]] std::string full_pathname() const noexcept;
 
   /** Returns the file path as a std::filesystem path */
   [[nodiscard]] const std::filesystem::path& path() const noexcept { return full_path_name_; }
@@ -141,6 +141,7 @@ public:
   [[nodiscard]] std::string last_error() const noexcept { return error_text_; }
 
   // operators
+
   /** Returns true if the file is open */
   explicit operator bool() const noexcept { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const File& f);
@@ -217,7 +218,7 @@ public:
   [[nodiscard]] static bool is_directory(const std::string& path) noexcept;
 
   /** For debugging and testing only */
-  int handle() const noexcept { return handle_; }
+  [[nodiscard]] int handle() const noexcept { return handle_; }
 
 private:
   // Helper functions
